@@ -40,6 +40,7 @@ import {
   closePath,
   isKnownIssue,
   isPeriodOver,
+  isSettled,
   issuesOfVersion,
   messageOf,
   otherActionsOf,
@@ -118,7 +119,7 @@ function StatementLoader({ versionId }: { versionId: string }) {
   return <StatementContent version={detail.data.version} entries={detail.data.entries} />;
 }
 
-const NO_ACTIONS: RowActions = { prepare: false, regenerate: false, approve: false, publish: false, payout: false, close: false, closeWaitsForTheEnd: false, stale: false };
+const NO_ACTIONS: RowActions = { prepare: false, regenerate: false, approve: false, publish: false, payout: false, close: false, closeWaitsForTheEnd: false, stale: false, settled: false };
 /** The lines shown before «Mostra tutte»: a long statement is not a wall of rows. */
 const VISIBLE_LINES = 25;
 
@@ -148,10 +149,12 @@ function StatementContent({ version, entries }: { version: OwnerStatementVersion
   const monthOver = isPeriodOver(period, todayInRome());
   const ctx: ActionContext = { period, ownerId: version.ownerId, ownerName, version: latest, versionIds: allVersions.map((candidate) => candidate.id) };
   const controller = useOwnerActions(ctx);
-  // What is not known is not offered: the actions wait for the versions and the readiness of the month.
+  const payoutsOfMonth = (payouts.data ?? []).filter((payout) => ctx.versionIds.includes(payout.statementVersionId));
+  // What is not known is not offered: the actions wait for the versions and the readiness of the month. Whether the payments already cover the balance is not known until they are read.
   const known = versions.isSuccess && readiness.isSuccess;
+  const settled = payouts.isSuccess && latest !== null && isSettled(latest, payoutsOfMonth, ctx.versionIds);
   const actions = known && isCurrent
-    ? actionsOf({ status: ownerReadiness?.status ?? 'Open', version: latest, isDirty: ownerReadiness?.isDirty ?? false, issues: ownerReadiness?.issues ?? [], monthOver })
+    ? actionsOf({ status: ownerReadiness?.status ?? 'Open', version: latest, isDirty: ownerReadiness?.isDirty ?? false, issues: ownerReadiness?.issues ?? [], monthOver, settled })
     : NO_ACTIONS;
   const closed = ownerReadiness?.status === 'Closed';
   const primary = primaryActionOf(actions);
@@ -165,7 +168,6 @@ function StatementContent({ version, entries }: { version: OwnerStatementVersion
   const published = version.status === 'Published' || (version.status === 'Superseded' && version.publishedAt !== null);
 
   const payoutsOfVersion = (payouts.data ?? []).filter((payout) => payout.statementVersionId === version.id);
-  const payoutsOfMonth = (payouts.data ?? []).filter((payout) => ctx.versionIds.includes(payout.statementVersionId));
   const preview = previewReconciliation(version, payoutsOfMonth, ctx.versionIds);
 
   const saveFile = () =>
@@ -178,7 +180,7 @@ function StatementContent({ version, entries }: { version: OwnerStatementVersion
     ...otherActionsOf(actions).map((action: ActionKey) => ({ label: t(`ownerAccounting.actions.${action}.label`), onClick: () => controller.ask(action), testId: `statement-menu-${action}` })),
     ...(published ? [{ label: t('ownerAccounting.statement.downloadPublished'), onClick: saveFile, testId: 'statement-menu-download' }] : []),
     ...(closed ? [] : [{ label: t('ownerAccounting.correction.open'), onClick: () => setCorrecting(true), testId: 'statement-menu-correction' }]),
-    { label: t('ownerAccounting.statement.ownerProfile'), to: ownerFinancialPath(version.ownerId), testId: 'statement-menu-profile' },
+    { label: t('ownerAccounting.statement.ownerProfile'), to: ownerFinancialPath(version.ownerId, period), testId: 'statement-menu-profile' },
   ];
 
   const tone = version.status === 'Flagged' ? 'warning' : version.status === 'Published' || closed ? 'success' : 'neutral';

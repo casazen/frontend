@@ -6,6 +6,7 @@ import type {
   OwnerClosePeriodStatus,
   OwnerCloseReadiness,
   OwnerFiscalProfile,
+  OwnerFiscalReadiness,
   OwnerLedgerEntry,
   OwnerPayout,
   OwnerPayoutCommand,
@@ -14,6 +15,7 @@ import type {
   OwnerStatementVersion,
   OwnerStatementVersionStatus,
   TaxFilingState,
+  TaxReconciliation,
 } from '@/types';
 import { getProblemMessage } from '@/lib/api-errors';
 import { parseEuroAmount } from '@/lib/euro-amount';
@@ -28,8 +30,14 @@ export const statementPath = (versionId: string) => `${OWNER_CLOSE_PATH}/version
 /** The month-end page on a month (`?period=2026-10`). */
 export const closePath = (year: number, month: number) => `${OWNER_CLOSE_PATH}?period=${periodParam({ year, month })}`;
 
-/** The page of the fiscal profile of an owner, with its rule set and the accountant's approval. */
-export const ownerFinancialPath = (ownerId: string) => `/app/account/owners/${ownerId}/financial`;
+/**
+ * The page of the fiscal profile of an owner, with its rule set and the accountant's approval. From the month being closed it carries that month (`?period=2026-10`): the first
+ * profile of an owner then starts by default on the first day of it, so the month that sent the person here is covered.
+ */
+export const ownerFinancialPath = (ownerId: string, period?: Period) => `/app/account/owners/${ownerId}/financial${period ? `?period=${periodParam(period)}` : ''}`;
+
+/** The first day of a month. */
+export const startOfPeriod = (period: Period): string => `${periodParam(period)}-01`;
 
 /** Where the facts of an owner that are missing (the registry, the shares, the mandate) are completed: «Inizia con CasaZen», short rent. */
 export const OWNER_ONBOARDING_PATH = '/app/short-rent/onboarding';
@@ -297,6 +305,8 @@ export interface RowActions {
   closeWaitsForTheEnd: boolean;
   /** The ledger changed after the version: it cannot be approved or published as it is, a new version is needed. */
   stale: boolean;
+  /** The confirmed payouts already cover what the statement says is owed: paying again is not the next step, closing the month is. */
+  settled: boolean;
 }
 
 /**
@@ -310,11 +320,14 @@ export function actionsOf(input: {
   isDirty: boolean;
   issues: readonly OwnerReadinessIssue[];
   monthOver: boolean;
+  /** The payments already cover the balance (`isSettled`); unknown (the payments not read yet) is `false`. */
+  settled?: boolean;
 }): RowActions {
-  const none: RowActions = { prepare: false, regenerate: false, approve: false, publish: false, payout: false, close: false, closeWaitsForTheEnd: false, stale: false };
+  const none: RowActions = { prepare: false, regenerate: false, approve: false, publish: false, payout: false, close: false, closeWaitsForTheEnd: false, stale: false, settled: false };
   if (input.status === 'Closed') return none;
 
   const stale = input.isDirty || input.issues.some((issue) => issue.code === 'ledger_statement_imbalance' || issue.code === 'period_dirty');
+  const settled = input.settled === true;
   const status = input.version?.status ?? null;
   switch (status) {
     case null:
@@ -325,10 +338,18 @@ export function actionsOf(input: {
     case 'Draft':
       return { ...none, approve: !stale, regenerate: stale, stale };
     case 'Approved':
-      return { ...none, publish: !stale, payout: true, regenerate: stale, close: input.monthOver && !stale, closeWaitsForTheEnd: !input.monthOver, stale };
+      return { ...none, publish: !stale, payout: true, regenerate: stale, close: input.monthOver && !stale, closeWaitsForTheEnd: !input.monthOver, stale, settled };
     case 'Published':
-      return { ...none, payout: true, regenerate: stale, close: input.monthOver && !stale, closeWaitsForTheEnd: !input.monthOver, stale };
+      return { ...none, payout: true, regenerate: stale, close: input.monthOver && !stale, closeWaitsForTheEnd: !input.monthOver, stale, settled };
   }
+}
+
+/**
+ * Nothing is left to pay on the statement: the confirmed payouts of the month cover what it says is owed (the difference is not positive: it is paid, or there is nothing owed).
+ * Then the next step is the close, and a payment is only an extra one.
+ */
+export function isSettled(version: Pick<OwnerStatementVersion, 'closingBalance' | 'currency'>, payouts: readonly OwnerPayout[], versionIds: readonly string[]): boolean {
+  return toCents(previewReconciliation(version, payouts, versionIds).difference) <= 0;
 }
 
 // ── Reconciliation ───────────────────────────────────────────────────────────────────────────────────────────
@@ -368,11 +389,45 @@ export function previewReconciliation(version: Pick<OwnerStatementVersion, 'clos
 
 // ── The rule that decides a payout ───────────────────────────────────────────────────────────────────────────
 
-export type RuleBlock = 'profile_missing' | 'policy_missing' | 'policy_not_approved' | 'policy_not_effective' | 'policy_jurisdiction_mismatch';
+export type RuleBlock = 'profile_missing' | 'profile_incomplete' | 'policy_missing' | 'policy_not_approved' | 'policy_not_effective' | 'policy_jurisdiction_mismatch';
 
 export type RuleResolution =
   | { ok: true; profile: OwnerFiscalProfile; policy: OwnerAccountingPolicy; parameters: OwnerAccountingRuleParameters }
   | { ok: false; reason: RuleBlock };
+
+/** The rule a payout asks its facts from, as the server found it for the day (no profile: its values are not read for it). */
+export type PayoutRule =
+  | { ok: true; policy: OwnerAccountingPolicy; parameters: OwnerAccountingRuleParameters }
+  | { ok: false; reason: RuleBlock };
+
+const RULE_BLOCK_OF_CODE: Readonly<Record<string, RuleBlock>> = {
+  owner_fiscal_profile_missing: 'profile_missing',
+  owner_fiscal_profile_incomplete: 'profile_incomplete',
+  owner_fiscal_policy_missing: 'policy_missing',
+  owner_fiscal_policy_not_approved: 'policy_not_approved',
+  owner_fiscal_policy_not_effective: 'policy_not_effective',
+  owner_fiscal_policy_jurisdiction_mismatch: 'policy_jurisdiction_mismatch',
+};
+
+/**
+ * What the server says blocks the owner on a day: the `owner_fiscal_*` code of the 422 of `…/fiscal-profiles/readiness`. `null` for anything else (a network error, a 5xx, no
+ * answer): that is not a verdict on the owner and is told as a failure to read, never as a rule that is missing.
+ */
+export function ruleBlockOf(error: unknown): RuleBlock | null {
+  const { status, code } = problemFacts(error);
+  return status === 422 && code !== undefined ? (RULE_BLOCK_OF_CODE[code] ?? null) : null;
+}
+
+/**
+ * The rule set the server chose for the owner on the day, with its parameters from the rule sets of the agency. The decision is the server's (the profile, its missing facts, the
+ * approval, the days it is in force, the jurisdiction): this only finds the parameters of the rule it named, to ask the facts the rule needs.
+ */
+export function payoutRuleOf(found: Pick<OwnerFiscalReadiness, 'policyId'>, policies: readonly OwnerAccountingPolicy[]): PayoutRule {
+  const policy = policies.find((candidate) => candidate.id === found.policyId);
+  if (!policy) return { ok: false, reason: 'policy_missing' };
+  if (!policy.approved || !policy.parameters) return { ok: false, reason: 'policy_not_approved' };
+  return { ok: true, policy, parameters: policy.parameters };
+}
 
 const inForce = (from: string, to: string | null, day: string) => from <= day && (to === null || to >= day);
 
@@ -420,8 +475,9 @@ export function profileGaps(profile: OwnerFiscalProfile): string[] {
 }
 
 export type OwnerReadiness =
-  | { ready: true; profile: OwnerFiscalProfile; policy: OwnerAccountingPolicy }
-  | { ready: false; reason: RuleBlock | 'profile_incomplete'; gaps: string[]; profile: OwnerFiscalProfile | null; policy: OwnerAccountingPolicy | null };
+  /** `from`: the day from which the profile in force and its rule set both apply. Months before it are not covered by this data, whatever today says. */
+  | { ready: true; profile: OwnerFiscalProfile; policy: OwnerAccountingPolicy; from: string }
+  | { ready: false; reason: RuleBlock; gaps: string[]; profile: OwnerFiscalProfile | null; policy: OwnerAccountingPolicy | null };
 
 /**
  * Whether the owner can be used on a day, in the order the server decides it: the profile in force, its missing facts, then its rule set (chosen,
@@ -434,13 +490,60 @@ export function ownerReadinessOn(profiles: readonly OwnerFiscalProfile[], polici
   const policy = profile.accountingPolicyId ? (policies.find((candidate) => candidate.id === profile.accountingPolicyId) ?? null) : null;
   if (gaps.length > 0) return { ready: false, reason: 'profile_incomplete', gaps, profile, policy };
   const resolved = resolveRule(profiles, policies, day);
-  return resolved.ok ? { ready: true, profile: resolved.profile, policy: resolved.policy } : { ready: false, reason: resolved.reason, gaps: [], profile, policy };
+  return resolved.ok
+    ? { ready: true, profile: resolved.profile, policy: resolved.policy, from: resolved.profile.validFrom > resolved.policy.validFrom ? resolved.profile.validFrom : resolved.policy.validFrom }
+    : { ready: false, reason: resolved.reason, gaps: [], profile, policy };
+}
+
+/** The newest start among the profiles of an owner: a new profile must start after it (a day that is not later is refused, 409 `owner_fiscal_profile_overlap`). */
+export function latestProfileStart(profiles: readonly Pick<OwnerFiscalProfile, 'validFrom'>[]): string | null {
+  return profiles.reduce<string | null>((latest, profile) => (latest === null || profile.validFrom > latest ? profile.validFrom : latest), null);
 }
 
 /** The last four characters of a value and a dot for each one before them: how a value that was received in full is shown until the person asks for it. */
 export function maskValue(value: string | null): string | null {
   if (value === null || value === '') return value;
   return value.length <= 4 ? '•'.repeat(value.length) : '•'.repeat(value.length - 4) + value.slice(-4);
+}
+
+/** What a payout is, for its key: who is paid, on which version of the statement, how much and on which day. */
+export interface PayoutIntent {
+  ownerId: string;
+  statementVersionId: string;
+  grossAmount: number;
+  paidOn: string;
+}
+
+const payoutKeys = new Map<string, string>();
+
+const intentKey = (intent: PayoutIntent): string => [intent.ownerId, intent.statementVersionId, toCents(intent.grossAmount), intent.paidOn].join('|');
+
+/**
+ * The key of the request that records a payout: a retry of the same request answers the same payout (the server keeps one payout per key). It belongs to what is asked (the owner,
+ * the statement, the amount in cents, the day), not to the dialog that asks it: a retry after a failure, a second click, or the dialog closed and opened again with the same
+ * facts send the same key, so a payout whose answer was lost is never recorded twice. It is kept until the server has confirmed the payout (`settlePayoutKey`).
+ */
+export function payoutKeyFor(intent: PayoutIntent): string {
+  const known = payoutKeys.get(intentKey(intent));
+  if (known) return known;
+  const created = newIdempotencyKey();
+  payoutKeys.set(intentKey(intent), created);
+  return created;
+}
+
+/** The payout was confirmed: the same facts asked again are another payout (two payments of the same amount on the same day), with another key. */
+export function settlePayoutKey(intent: PayoutIntent): void {
+  payoutKeys.delete(intentKey(intent));
+}
+
+/** Forgets every key not yet confirmed (the tests start from none). */
+export function forgetPayoutKeys(): void {
+  payoutKeys.clear();
+}
+
+/** The amount is more than what is left to pay on the statement (`left`: the approved balance less the confirmed payouts; nothing left is 0). */
+export function exceedsWhatIsLeft(left: number | null, gross: number | null): boolean {
+  return left !== null && gross !== null && toCents(gross) > Math.max(toCents(left), 0);
 }
 
 export interface PayoutForm {
@@ -464,7 +567,8 @@ export function buildPayoutCommand(
   form: PayoutForm,
   ctx: Pick<ActionContext, 'ownerId'> & { versionId: string; currency: string },
   parameters: OwnerAccountingRuleParameters,
-  key: string,
+  /** The key of the request, or what makes it from the facts of the payout (`payoutKeyFor`): the amount is known only once the form is valid. */
+  key: string | ((intent: PayoutIntent) => string),
 ): { command: OwnerPayoutCommand } | { errors: PayoutFormErrors } {
   const errors: PayoutFormErrors = {};
   const gross = parseEuroAmount(form.gross);
@@ -487,9 +591,10 @@ export function buildPayoutCommand(
   }
 
   if (Object.keys(errors).length > 0 || gross === null) return { errors };
+  const idempotencyKey = typeof key === 'string' ? key : key({ ownerId: ctx.ownerId, statementVersionId: ctx.versionId, grossAmount: gross, paidOn: form.paidOn });
   return {
     command: {
-      idempotencyKey: key,
+      idempotencyKey,
       ownerId: ctx.ownerId,
       statementVersionId: ctx.versionId,
       grossAmount: gross,
@@ -656,6 +761,42 @@ export function nextFilingStates(file: FilingEvidence): ('Reviewed' | 'Submitted
   }
 }
 
+// ── The year of the withholdings against the F24 and the annual data ───────────────────────────────────────
+
+/** What the year's reconciliation says, told for each of the two things the withholdings are checked against. */
+export interface TaxYearCheck {
+  /** `none`: no withholding and no F24 in the year; `matches`: every F24 is what the withholdings of its month say; `differs`: at least one is not. */
+  f24: 'none' | 'matches' | 'differs';
+  /** The months where the F24 is not what the withholdings say, or where there are withholdings and no F24 yet. */
+  months: { month: number; obligations: number; f24: number | null }[];
+  /** The annual data of the year with whether it is what the withholdings of the year say; `null` while there is none (then nothing is said about it). */
+  annual: { total: number; matches: boolean } | null;
+}
+
+/**
+ * The withholdings of the year against the F24 of each month and against the annual data, each on its own: which of the two does not match is what the person needs to know.
+ * A year with nothing in it matches nothing (there is nothing to match), and the annual data is compared only when it exists.
+ */
+export function checkTaxYear(data: Pick<TaxReconciliation, 'obligationsTotal' | 'annualTotal' | 'months'>): TaxYearCheck {
+  const months = data.months
+    .filter((row) => (row.f24 === null ? toCents(row.obligations) !== 0 : toCents(row.f24) !== toCents(row.obligations)))
+    .map((row) => ({ month: row.month, obligations: row.obligations, f24: row.f24 }));
+  return {
+    f24: data.months.length === 0 ? 'none' : months.length === 0 ? 'matches' : 'differs',
+    months,
+    annual: data.annualTotal === null ? null : { total: data.annualTotal, matches: toCents(data.annualTotal) === toCents(data.obligationsTotal) },
+  };
+}
+
+export type TaxYearVerdict = 'empty' | 'reconciled' | 'f24Matches' | 'annualMatches' | 'differs';
+
+/** The one sentence the year gets: «reconciled» only with an F24 that matches and annual data that match; a match that is only half of that says which half. */
+export function taxYearVerdict(check: TaxYearCheck): TaxYearVerdict {
+  if (check.f24 === 'differs' || (check.annual !== null && !check.annual.matches)) return 'differs';
+  if (check.f24 === 'none') return check.annual === null ? 'empty' : 'annualMatches';
+  return check.annual === null ? 'f24Matches' : 'reconciled';
+}
+
 // ── Errors ───────────────────────────────────────────────────────────────────────────────────────────────────
 
 export interface ProblemFacts {
@@ -746,7 +887,8 @@ export function primaryActionOf(actions: RowActions): ActionKey | null {
   if (actions.regenerate) return 'regenerate';
   if (actions.approve) return 'approve';
   if (actions.publish) return 'publish';
-  if (actions.payout) return 'payout';
+  // A statement that is already paid is not asked to be paid again: the close is the next step (or nothing, while the month is not over).
+  if (actions.payout && !actions.settled) return 'payout';
   if (actions.close) return 'close';
   return null;
 }

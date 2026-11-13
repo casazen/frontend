@@ -36,9 +36,17 @@ async function sha256Hex(file: File): Promise<string> {
 export function ExternalInvoicesPanel({ version }: ExternalInvoicesPanelProps) {
   const { t } = useTranslation();
   const links = useExternalDocuments(version.id);
+  const verify = useVerifyExternalDocument();
   const [adding, setAdding] = useState(false);
   const [removing, setRemoving] = useState<OwnerExternalDocument | null>(null);
   const canLink = version.status === 'Approved' || version.status === 'Published';
+  // A link is being checked: no other button of the card can be pressed until the server has answered (unlinking or linking now would act on a link that is changing).
+  const busy = verify.isPending;
+  const onVerify = (link: OwnerExternalDocument) =>
+    verify.mutate(link.id, {
+      onSuccess: () => toast.success(t('ownerAccounting.external.verifiedDone')),
+      onError: (error) => toast.error(messageOf(error, t)),
+    });
 
   return (
     <div className="min-w-0 space-y-3" data-testid="external-invoices">
@@ -60,13 +68,13 @@ export function ExternalInvoicesPanel({ version }: ExternalInvoicesPanelProps) {
       ) : (
         <ul role="list" className="divide-y divide-border">
           {links.data.map((link) => (
-            <LinkRow key={link.id} link={link} onRemove={() => setRemoving(link)} />
+            <LinkRow key={link.id} link={link} busy={busy} verifying={verify.isPending && verify.variables === link.id} onVerify={() => onVerify(link)} onRemove={() => setRemoving(link)} />
           ))}
         </ul>
       )}
 
       {canLink ? (
-        <Button type="button" variant="outline" size="sm" onClick={() => setAdding(true)} data-testid={ADD_TEST_ID}>
+        <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => setAdding(true)} data-testid={ADD_TEST_ID}>
           {t('ownerAccounting.external.add')}
         </Button>
       ) : null}
@@ -77,10 +85,19 @@ export function ExternalInvoicesPanel({ version }: ExternalInvoicesPanelProps) {
   );
 }
 
-function LinkRow({ link, onRemove }: { link: OwnerExternalDocument; onRemove: () => void }) {
+interface LinkRowProps {
+  link: OwnerExternalDocument;
+  /** A link of the card is being checked: none of the buttons can be pressed. */
+  busy: boolean;
+  /** This link is the one being checked. */
+  verifying: boolean;
+  onVerify: () => void;
+  onRemove: () => void;
+}
+
+function LinkRow({ link, busy, verifying, onVerify, onRemove }: LinkRowProps) {
   const { t } = useTranslation();
   const { date, dateTime } = useOwnerFormat();
-  const verify = useVerifyExternalDocument();
   const removed = link.removedAt !== null;
   const url = attachmentUrlOf(link.documentUrl);
 
@@ -102,24 +119,12 @@ function LinkRow({ link, onRemove }: { link: OwnerExternalDocument; onRemove: ()
           </Button>
         ) : null}
         {!removed && link.status === 'Entered' ? (
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            loading={verify.isPending}
-            onClick={() =>
-              verify.mutate(link.id, {
-                onSuccess: () => toast.success(t('ownerAccounting.external.verifiedDone')),
-                onError: (error) => toast.error(messageOf(error, t)),
-              })
-            }
-            data-testid="external-verify"
-          >
+          <Button type="button" size="sm" variant="outline" loading={verifying} disabled={busy} onClick={onVerify} data-testid="external-verify">
             {t('ownerAccounting.external.verify')}
           </Button>
         ) : null}
         {!removed ? (
-          <Button type="button" size="sm" variant="danger-outline" onClick={onRemove} data-testid="external-remove">
+          <Button type="button" size="sm" variant="danger-outline" disabled={busy} onClick={onRemove} data-testid="external-remove">
             {t('ownerAccounting.external.remove')}
           </Button>
         ) : null}

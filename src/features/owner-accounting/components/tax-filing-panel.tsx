@@ -9,7 +9,6 @@ import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { saveBlobAs } from '@/lib/file-download';
-import { getHttpStatus } from '@/lib/api-errors';
 import {
   useAnnualDataset,
   useDownloadF24Pdf,
@@ -20,8 +19,8 @@ import {
   useSetF24FilingState,
   useTaxReconciliation,
 } from '@/queries/use-owner-accounting';
-import type { TaxFilingCommand, TaxF24Record, TaxReportingDataset } from '@/types';
-import { failureText, messageOf, nextFilingStates, toCents, type Period } from '../owner-accounting-model';
+import type { TaxFilingCommand, TaxF24Record, TaxReconciliation, TaxReportingDataset } from '@/types';
+import { checkTaxYear, failureText, messageOf, nextFilingStates, taxYearVerdict, toCents, type Period } from '../owner-accounting-model';
 import { useOwnerFormat } from '../use-owner-format';
 import { FilingStatus } from './filing-status';
 
@@ -53,6 +52,8 @@ export function TaxFilingPanel({ period }: TaxFilingPanelProps) {
   const annualDataset = annual.data;
   const generateF24 = useGenerateF24();
   const generateAnnual = useGenerateAnnualDataset();
+  // A file is being made again: no other button of the panel can be pressed until the server has answered (the steps and the regeneration work on the same record).
+  const busy = generateF24.isPending || generateAnnual.isPending;
   const [target, setTarget] = useState<Target | null>(null);
 
   const run = async (action: () => Promise<unknown>, done: string) => {
@@ -74,7 +75,7 @@ export function TaxFilingPanel({ period }: TaxFilingPanelProps) {
   } else if (reconciliation.isError) {
     body = (
       <Alert
-        variant={getHttpStatus(reconciliation.error) === 403 ? 'warning' : 'danger'}
+        variant="danger"
         action={
           <Button type="button" size="sm" variant="outline" onClick={() => void reconciliation.refetch()}>
             {t('shared.errorState.retry')}
@@ -82,7 +83,7 @@ export function TaxFilingPanel({ period }: TaxFilingPanelProps) {
         }
         data-testid="tax-error"
       >
-        {getHttpStatus(reconciliation.error) === 403 ? t('ownerAccounting.tax.noAccess') : messageOf(reconciliation.error, t)}
+        {messageOf(reconciliation.error, t)}
       </Alert>
     );
   } else if (reconciliation.data) {
@@ -98,7 +99,7 @@ export function TaxFilingPanel({ period }: TaxFilingPanelProps) {
                 {t('ownerAccounting.tax.loading')}
               </p>
             ) : f24Record ? (
-              <F24View record={f24Record} obligations={obligations} onStep={(step) => setTarget({ file: 'f24', id: f24Record.id, step })} onRegenerate={() => void run(() => generateF24.mutateAsync({ month: period.month, year: period.year }), t('ownerAccounting.tax.f24Regenerated'))} regenerating={generateF24.isPending} />
+              <F24View record={f24Record} obligations={obligations} onStep={(step) => setTarget({ file: 'f24', id: f24Record.id, step })} onRegenerate={() => void run(() => generateF24.mutateAsync({ month: period.month, year: period.year }), t('ownerAccounting.tax.f24Regenerated'))} regenerating={generateF24.isPending} busy={busy} />
             ) : (
               <Alert variant="danger">{messageOf(f24.error, t)}</Alert>
             )
@@ -108,7 +109,7 @@ export function TaxFilingPanel({ period }: TaxFilingPanelProps) {
               <p className="break-words text-sm" data-testid="tax-calculated">
                 {t('ownerAccounting.tax.calculated', { amount: money(obligations, TAX_CURRENCY) })}
               </p>
-              <Button type="button" size="sm" variant="outline" loading={generateF24.isPending} onClick={() => void run(() => generateF24.mutateAsync({ month: period.month, year: period.year }), t('ownerAccounting.tax.f24Generated'))} data-testid="tax-generate-f24">
+              <Button type="button" size="sm" variant="outline" loading={generateF24.isPending} disabled={busy} onClick={() => void run(() => generateF24.mutateAsync({ month: period.month, year: period.year }), t('ownerAccounting.tax.f24Generated'))} data-testid="tax-generate-f24">
                 {t('ownerAccounting.tax.generateF24')}
               </Button>
             </div>
@@ -128,13 +129,13 @@ export function TaxFilingPanel({ period }: TaxFilingPanelProps) {
           ) : annual.isError ? (
             <Alert variant="danger">{messageOf(annual.error, t)}</Alert>
           ) : annualDataset ? (
-            <AnnualView dataset={annualDataset} onStep={(step) => setTarget({ file: 'annual', id: annualDataset.id, step })} onRegenerate={() => void run(() => generateAnnual.mutateAsync(period.year), t('ownerAccounting.tax.annualRegenerated'))} regenerating={generateAnnual.isPending} />
+            <AnnualView dataset={annualDataset} onStep={(step) => setTarget({ file: 'annual', id: annualDataset.id, step })} onRegenerate={() => void run(() => generateAnnual.mutateAsync(period.year), t('ownerAccounting.tax.annualRegenerated'))} regenerating={generateAnnual.isPending} busy={busy} />
           ) : (
             <div className="space-y-2">
               <FilingStatus file={null} />
               <p className="break-words text-sm text-foreground/70">{t('ownerAccounting.tax.annualNone')}</p>
               {toCents(data.obligationsTotal) > 0 ? (
-                <Button type="button" size="sm" variant="outline" loading={generateAnnual.isPending} onClick={() => void run(() => generateAnnual.mutateAsync(period.year), t('ownerAccounting.tax.annualGenerated'))} data-testid="tax-generate-annual">
+                <Button type="button" size="sm" variant="outline" loading={generateAnnual.isPending} disabled={busy} onClick={() => void run(() => generateAnnual.mutateAsync(period.year), t('ownerAccounting.tax.annualGenerated'))} data-testid="tax-generate-annual">
                   {t('ownerAccounting.tax.generateAnnual')}
                 </Button>
               ) : null}
@@ -142,11 +143,7 @@ export function TaxFilingPanel({ period }: TaxFilingPanelProps) {
           )}
         </div>
 
-        <p className="break-words text-sm" data-testid="tax-year-check" data-reconciled={data.reconciled}>
-          {data.reconciled
-            ? t('ownerAccounting.tax.yearReconciled', { year: data.year, amount: money(data.obligationsTotal, TAX_CURRENCY) })
-            : t('ownerAccounting.tax.yearNotReconciled', { year: data.year, obligations: money(data.obligationsTotal, TAX_CURRENCY), f24: money(data.f24Total, TAX_CURRENCY) })}
-        </p>
+        <YearCheck data={data} />
         <p className="break-words text-sm text-foreground/70">{t('ownerAccounting.tax.note')}</p>
       </div>
     );
@@ -160,18 +157,60 @@ export function TaxFilingPanel({ period }: TaxFilingPanelProps) {
   );
 }
 
+/**
+ * The year against the F24 and the annual data (AC-NF110-4): each is compared on its own, and the sentence says which one does not match. «Reconciled» is said only when there is an F24
+ * that matches and annual data that match; a year with nothing in it says there is nothing to reconcile, and annual data that does not exist is not said to match.
+ */
+function YearCheck({ data }: { data: TaxReconciliation }) {
+  const { t } = useTranslation();
+  const { money, month } = useOwnerFormat();
+  const check = checkTaxYear(data);
+  const verdict = taxYearVerdict(check);
+  const amount = money(data.obligationsTotal, TAX_CURRENCY);
+
+  return (
+    <div className="space-y-1 break-words text-sm" data-testid="tax-year-check" data-verdict={verdict}>
+      {verdict === 'empty' ? <p className="text-foreground/70">{t('ownerAccounting.tax.yearEmpty', { year: data.year })}</p> : null}
+      {verdict === 'reconciled' ? <p>{t('ownerAccounting.tax.yearReconciled', { year: data.year, amount })}</p> : null}
+      {verdict === 'f24Matches' ? <p>{t('ownerAccounting.tax.yearF24Match', { year: data.year, amount })}</p> : null}
+      {verdict === 'annualMatches' && check.annual ? <p>{t('ownerAccounting.tax.yearAnnualMatch', { year: data.year, amount: money(check.annual.total, TAX_CURRENCY) })}</p> : null}
+      {check.f24 === 'differs' ? (
+        <div data-testid="tax-year-f24-differs">
+          <p>{t('ownerAccounting.tax.yearF24Mismatch', { year: data.year, count: check.months.length })}</p>
+          <ul role="list" className="list-disc pl-5">
+            {check.months.map((row) => (
+              <li key={row.month} data-month={row.month}>
+                {row.f24 === null
+                  ? t('ownerAccounting.tax.yearF24NotGenerated', { month: month(data.year, row.month), obligations: money(row.obligations, TAX_CURRENCY) })
+                  : t('ownerAccounting.tax.yearF24MonthLine', { month: month(data.year, row.month), obligations: money(row.obligations, TAX_CURRENCY), f24: money(row.f24, TAX_CURRENCY) })}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+      {check.annual && !check.annual.matches ? (
+        <p data-testid="tax-year-annual-differs">
+          {t('ownerAccounting.tax.yearAnnualMismatch', { year: data.year, annual: money(check.annual.total, TAX_CURRENCY), obligations: money(data.obligationsTotal, TAX_CURRENCY) })}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 interface FileViewProps {
   onStep: (step: Step) => void;
   onRegenerate: () => void;
   regenerating: boolean;
+  /** A file of the panel is being made again: none of its buttons can be pressed until the server has answered. */
+  busy: boolean;
 }
 
-function StepButtons({ file, onStep }: { file: TaxF24Record | TaxReportingDataset; onStep: (step: Step) => void }) {
+function StepButtons({ file, onStep, busy }: { file: TaxF24Record | TaxReportingDataset; onStep: (step: Step) => void; busy: boolean }) {
   const { t } = useTranslation();
   return (
     <>
       {nextFilingStates(file).map((step) => (
-        <Button key={step} type="button" size="sm" variant={step === 'Rejected' ? 'danger-outline' : 'outline'} onClick={() => onStep(step)} data-testid={`filing-step-${step}`}>
+        <Button key={step} type="button" size="sm" variant={step === 'Rejected' ? 'danger-outline' : 'outline'} disabled={busy} onClick={() => onStep(step)} data-testid={`filing-step-${step}`}>
           {t(`ownerAccounting.filing.step.${step}`)}
         </Button>
       ))}
@@ -179,7 +218,7 @@ function StepButtons({ file, onStep }: { file: TaxF24Record | TaxReportingDatase
   );
 }
 
-function F24View({ record, obligations, onStep, onRegenerate, regenerating }: FileViewProps & { record: TaxF24Record; obligations: number }) {
+function F24View({ record, obligations, onStep, onRegenerate, regenerating, busy }: FileViewProps & { record: TaxF24Record; obligations: number }) {
   const { t } = useTranslation();
   const { money, dateTime } = useOwnerFormat();
   const download = useDownloadF24Pdf();
@@ -220,6 +259,7 @@ function F24View({ record, obligations, onStep, onRegenerate, regenerating }: Fi
           size="sm"
           variant="outline"
           loading={download.isPending}
+          disabled={busy}
           onClick={() =>
             download.mutate(
               { month: record.referenceMonth, year: record.referenceYear, fileName: `f24-${record.referenceYear}-${String(record.referenceMonth).padStart(2, '0')}.pdf` },
@@ -230,9 +270,9 @@ function F24View({ record, obligations, onStep, onRegenerate, regenerating }: Fi
         >
           {t('ownerAccounting.tax.downloadPdf')}
         </Button>
-        <StepButtons file={record} onStep={onStep} />
+        <StepButtons file={record} onStep={onStep} busy={busy} />
         {record.filingState === 'Generated' ? (
-          <Button type="button" size="sm" variant="ghost" loading={regenerating} onClick={onRegenerate}>
+          <Button type="button" size="sm" variant="ghost" loading={regenerating} disabled={busy} onClick={onRegenerate} data-testid="f24-regenerate">
             {t('ownerAccounting.tax.regenerate')}
           </Button>
         ) : null}
@@ -241,7 +281,7 @@ function F24View({ record, obligations, onStep, onRegenerate, regenerating }: Fi
   );
 }
 
-function AnnualView({ dataset, onStep, onRegenerate, regenerating }: FileViewProps & { dataset: TaxReportingDataset }) {
+function AnnualView({ dataset, onStep, onRegenerate, regenerating, busy }: FileViewProps & { dataset: TaxReportingDataset }) {
   const { t } = useTranslation();
   const { money, dateTime } = useOwnerFormat();
 
@@ -275,9 +315,9 @@ function AnnualView({ dataset, onStep, onRegenerate, regenerating }: FileViewPro
         <Button type="button" size="sm" variant="outline" onClick={save} data-testid="annual-download">
           {t('ownerAccounting.tax.downloadData')}
         </Button>
-        <StepButtons file={dataset} onStep={onStep} />
+        <StepButtons file={dataset} onStep={onStep} busy={busy} />
         {dataset.filingState === 'Generated' ? (
-          <Button type="button" size="sm" variant="ghost" loading={regenerating} onClick={onRegenerate}>
+          <Button type="button" size="sm" variant="ghost" loading={regenerating} disabled={busy} onClick={onRegenerate} data-testid="annual-regenerate">
             {t('ownerAccounting.tax.regenerate')}
           </Button>
         ) : null}

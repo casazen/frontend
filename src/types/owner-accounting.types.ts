@@ -370,6 +370,20 @@ export interface OwnerFiscalProfile {
   masked: boolean;
 }
 
+/**
+ * `GET api/owners/{id}/fiscal-profiles/readiness?date=`: the profile and the approved rule set that apply to the owner on a day, by their ids and codes only. It holds no
+ * value of the profile (no identifier, no address, no bank account): it is what a payout asks to choose its rule without reading the profile itself. The refusal is a 422
+ * with the code of what blocks (`owner_fiscal_profile_missing`, `owner_fiscal_profile_incomplete`, `owner_fiscal_policy_*`).
+ */
+export interface OwnerFiscalReadiness {
+  ready: boolean;
+  profileId: string;
+  policyId: string;
+  ruleCode: string;
+  ruleVersion: string;
+  jurisdiction: string;
+}
+
 /** The new profile of an owner (`POST api/owners/{id}/fiscal-profiles`): effective from `validFrom`. */
 export interface OwnerFiscalProfileCommand {
   validFrom: string;

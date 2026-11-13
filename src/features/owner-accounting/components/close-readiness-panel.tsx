@@ -98,7 +98,7 @@ export function CloseReadinessPanel({ readiness, summary, period, names, onPost,
         <PlainSection title={t('ownerAccounting.anomalies.title')} count={groups.length} data-testid="close-anomalies">
           <ul role="list" className="divide-y divide-border">
             {shown.map((group) => (
-              <AnomalyRow key={group.key} group={group} names={names} onPost={onPost} onFix={onFix} posting={posting} />
+              <AnomalyRow key={group.key} group={group} names={names} period={period} onPost={onPost} onFix={onFix} posting={posting} />
             ))}
           </ul>
           {groups.length > VISIBLE_ANOMALIES ? (
@@ -115,12 +115,13 @@ export function CloseReadinessPanel({ readiness, summary, period, names, onPost,
 interface AnomalyRowProps {
   group: AnomalyGroup;
   names: ReadonlyMap<string, string>;
+  period: Period;
   onPost: () => void;
   posting: boolean;
   onFix: CloseReadinessPanelProps['onFix'];
 }
 
-function AnomalyRow({ group, names, onPost, posting, onFix }: AnomalyRowProps) {
+function AnomalyRow({ group, names, period, onPost, posting, onFix }: AnomalyRowProps) {
   const { t } = useTranslation();
   const { issue } = group;
   const action = actionForIssue(issue);
@@ -139,20 +140,22 @@ function AnomalyRow({ group, names, onPost, posting, onFix }: AnomalyRowProps) {
         </p>
         <p className="break-words text-sm text-foreground/70">{known ? t(`ownerAccounting.issue.${key}.how`) : t('ownerAccounting.issue.unknown.how')}</p>
       </div>
-      <div className="shrink-0">{renderAction(action, group, { t, onPost, posting, onFix })}</div>
+      <div className="shrink-0">{renderAction(action, group, { t, period, onPost, posting, onFix })}</div>
     </li>
   );
 }
 
 interface ActionEnv {
   t: ReturnType<typeof useTranslation>['t'];
+  /** The month being closed: the page of an owner's data opens knowing it. */
+  period: Period;
   onPost: () => void;
   posting: boolean;
   onFix: CloseReadinessPanelProps['onFix'];
 }
 
 /** The button or the link that resolves an anomaly: it opens the dialog or the page where the fact is fixed. Never a button that fixes it behind the person's back. */
-function renderAction(action: IssueAction, group: AnomalyGroup, { t, onPost, posting, onFix }: ActionEnv) {
+function renderAction(action: IssueAction, group: AnomalyGroup, { t, period, onPost, posting, onFix }: ActionEnv) {
   switch (action.kind) {
     case 'post':
       return (
@@ -170,7 +173,7 @@ function renderAction(action: IssueAction, group: AnomalyGroup, { t, onPost, pos
     case 'profile':
       return group.ownerId ? (
         <Button asChild size="sm" variant="outline">
-          <Link to={ownerFinancialPath(group.ownerId)}>{t('ownerAccounting.anomalies.actions.profile')}</Link>
+          <Link to={ownerFinancialPath(group.ownerId, period)}>{t('ownerAccounting.anomalies.actions.profile')}</Link>
         </Button>
       ) : null;
     case 'onboarding':

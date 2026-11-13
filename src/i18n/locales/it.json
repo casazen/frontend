@@ -13560,10 +13560,6 @@
     },
     "loadError": "Non riusciamo a leggere la chiusura del mese.",
     "loading": "Leggo il mese…",
-    "noReach": {
-      "description": "I rendiconti dei proprietari riguardano tutti gli immobili dell'organizzazione. Il tuo accesso è limitato ad alcuni immobili, oppure non hai il permesso di gestire le finanze dei proprietari: chiedi al titolare o a un amministratore.",
-      "title": "Non puoi aprire questa pagina"
-    },
     "owner": {
       "unnamed": "Proprietario {{id}}"
     },
@@ -13581,8 +13577,10 @@
         "policy_missing": "Il profilo non ha una regola fiscale.",
         "policy_not_approved": "La regola fiscale non è ancora approvata dal commercialista.",
         "policy_not_effective": "La regola fiscale non è in vigore nel giorno del pagamento.",
+        "profile_incomplete": "Il profilo del proprietario è incompleto per il giorno del pagamento: completalo prima.",
         "profile_missing": "Non c'è un profilo del proprietario valido nel giorno del pagamento."
       },
+      "checking": "Controllo la regola fiscale per questo giorno…",
       "choose": "Scegli…",
       "component": "Importo della voce «{{component}}»",
       "confirm": "Registra il pagamento",
@@ -13602,7 +13600,9 @@
       "loading": "Leggo la regola fiscale del proprietario…",
       "no": "No",
       "noVersion": "Prima prepara e approva il rendiconto.",
+      "nothingLeft": "Non resta niente da pagare: i pagamenti coprono già il saldo. Registrane un altro solo se sei sicuro.",
       "openProfile": "Apri i dati del proprietario",
+      "overLeft": "L'importo supera quello che resta da pagare ({{amount}}). Controllalo prima di registrare.",
       "paidOn": "Data del pagamento",
       "qualifyingShortLet": "I soggiorni rientrano in una locazione breve secondo la regola?",
       "recorded": "Pagamento registrato",
@@ -13610,6 +13610,7 @@
       "reference": "Riferimento del bonifico",
       "rule": "Regola applicata: {{rule}} versione {{version}} ({{jurisdiction}}), approvata da {{approver}} il {{date}}.",
       "ruleBlocked": "Non si può ancora registrare un pagamento",
+      "ruleError": "Non riusciamo a leggere la regola fiscale del proprietario",
       "title": "Registra un pagamento",
       "unresolved": "Manca un'informazione per decidere la ritenuta: {{field}}.",
       "useLeft": "Usa il residuo",
@@ -13653,6 +13654,7 @@
       "closed": "Chiuso",
       "loading": "Leggo il rendiconto…",
       "noStatement": "Nessun rendiconto",
+      "paymentsError": "Non riesco a leggere i pagamenti.",
       "profile": "Dati finanziari",
       "stale": "Da aggiornare",
       "state": "Versione {{version}} · {{status}} · saldo {{balance}}",
@@ -13740,7 +13742,6 @@
       "generatedAt": "Generati il",
       "loading": "Leggo le ritenute…",
       "mismatch": "L'F24 ({{f24}}) non corrisponde alle ritenute del mese ({{obligations}}): rigeneralo prima di andare avanti.",
-      "noAccess": "Non hai accesso alle ritenute: serve il permesso di chi gestisce le finanze dei proprietari.",
       "none": "Nessuna ritenuta da versare per questo mese: senza ritenuta non c'è un F24.",
       "notApplicable": "Nessuna ritenuta",
       "note": "CasaZen prepara i dati ma non li trasmette all'Agenzia delle Entrate: la trasmissione la fai tu o il tuo intermediario, e qui registri il riferimento e la ricevuta.",
@@ -13764,7 +13765,14 @@
       "title": "Ritenute e invii fiscali",
       "toPay": "Da pagare",
       "withheld": "Ritenuto",
-      "yearNotReconciled": "Nel {{year}} le ritenute ({{obligations}}) non coincidono con gli F24 ({{f24}}).",
+      "yearAnnualMatch": "Nel {{year}} i dati annuali ({{amount}}) coincidono con le ritenute.",
+      "yearAnnualMismatch": "I dati annuali del {{year}} ({{annual}}) non coincidono con le ritenute dell'anno ({{obligations}}).",
+      "yearEmpty": "Nel {{year}} non ci sono ritenute: non c'è niente da riconciliare.",
+      "yearF24Match": "Nel {{year}} le ritenute ({{amount}}) coincidono con gli F24.",
+      "yearF24Mismatch_one": "Nel {{year}} l'F24 di {{count}} mese non coincide con le ritenute:",
+      "yearF24Mismatch_other": "Nel {{year}} gli F24 di {{count}} mesi non coincidono con le ritenute:",
+      "yearF24MonthLine": "{{month}}: ritenute {{obligations}}, F24 {{f24}}",
+      "yearF24NotGenerated": "{{month}}: ritenute {{obligations}}, F24 non ancora generato",
       "yearReconciled": "Nel {{year}} le ritenute ({{amount}}) coincidono con gli F24 e con i dati annuali."
     },
     "title": "Chiusura mensile",
@@ -13864,7 +13872,9 @@
       "submit": "Salva la nuova versione",
       "title": "Nuova versione dei dati finanziari",
       "validFrom": "Vale dal",
-      "validFromHint": "Il primo giorno in cui i nuovi dati valgono."
+      "validFromFirst": "Il primo profilo di questo proprietario. I dati valgono dal giorno scelto in poi: i mesi prima restano bloccati, e un profilo non si può spostare indietro dopo. Fallo partire dal primo mese che devi ancora chiudere.",
+      "validFromHint": "Il primo giorno in cui i nuovi dati valgono.",
+      "validFromTooEarly": "Un profilo vale già dal {{date}}: scegli un giorno successivo."
     },
     "facts": {
       "empty": "Non indicato",
@@ -13928,7 +13938,7 @@
       "newPolicy": "Crea una regola",
       "ready": {
         "body": "Vale la regola {{rule}} versione {{version}} ({{jurisdiction}}), approvata da {{approver}}.",
-        "title": "I dati sono pronti: si possono preparare rendiconti e pagamenti"
+        "title": "I dati sono pronti dal {{from}}: da quel giorno in poi si possono preparare rendiconti e pagamenti"
       },
       "who": "Tocca a te"
     },
@@ -13940,8 +13950,14 @@
     "loadError": "Non riusciamo a leggere i dati finanziari.",
     "loading": "Leggo i dati finanziari…",
     "maskedNotice": "Per sicurezza vedi solo le ultime cifre di identificativi, indirizzo e conto. Li vede per intero, e li può cambiare, solo chi gestisce le finanze dei proprietari.",
+    "monthNotCovered": {
+      "body": "I dati valgono dal {{from}}, quindi il rendiconto di quel mese resta bloccato: un nuovo profilo non può partire da un giorno prima di quello in vigore. Chiedi aiuto per coprire quel mese.",
+      "title": "I dati non coprono {{period}}"
+    },
     "newVersion": "Nuova versione dei dati",
     "noProfile": "Questo proprietario non ha ancora dati finanziari.",
+    "notFound": "Questo proprietario non c'è",
+    "notFoundBody": "Non esiste, oppure appartiene a un'altra organizzazione. Torna alla chiusura mensile.",
     "onboarding": {
       "complete": "Nell'attivazione non risulta niente da completare per questo proprietario.",
       "completeAction": "Completa nell'attivazione",

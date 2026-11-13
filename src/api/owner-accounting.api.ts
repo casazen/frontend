@@ -11,6 +11,7 @@ import type {
   OwnerExternalDocument,
   OwnerFiscalProfile,
   OwnerFiscalProfileCommand,
+  OwnerFiscalReadiness,
   OwnerFxRate,
   OwnerLedgerEntry,
   OwnerOnboardingReadiness,
@@ -143,6 +144,12 @@ export const ownerAccountingApi = {
   listFiscalProfiles: (ownerId: string) => ApiClient.get<OwnerFiscalProfile[]>(`/owners/${ownerId}/fiscal-profiles`),
 
   saveFiscalProfile: (ownerId: string, command: OwnerFiscalProfileCommand) => ApiClient.post<OwnerFiscalProfile>(`/owners/${ownerId}/fiscal-profiles`, command),
+
+  /**
+   * The profile and the approved rule set that apply to the owner on a day (`date`, `yyyy-MM-dd`), by their ids and codes: a payout reads this instead of the profiles, which
+   * come with the identifiers and the bank account in full. A 422 says what blocks (`owner_fiscal_*`).
+   */
+  getFiscalReadiness: (ownerId: string, date: string) => ApiClient.get<OwnerFiscalReadiness>(`/owners/${ownerId}/fiscal-profiles/readiness`, { date }),
 
   listPolicies: () => ApiClient.get<OwnerAccountingPolicy[]>('/owner-accounting/policies'),
 

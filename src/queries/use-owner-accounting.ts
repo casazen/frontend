@@ -1,5 +1,6 @@
-import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { ownerAccountingApi } from '@/api/owner-accounting.api';
+import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
 import { saveBlobAs } from '@/lib/file-download';
 import type {
   OwnerAccountingPolicyCommand,
@@ -24,6 +25,7 @@ export const ownerAccountingKeys = {
   evidence: (year: number, month: number, ownerId: string) => [OWNER_ACCOUNTING_KEY, 'evidence', year, month, ownerId] as const,
   fxRates: [OWNER_ACCOUNTING_KEY, 'fx-rates'] as const,
   profiles: (ownerId: string) => [OWNER_ACCOUNTING_KEY, 'profiles', ownerId] as const,
+  fiscalReadiness: (ownerId: string, day: string) => [OWNER_ACCOUNTING_KEY, 'fiscal-readiness', ownerId, day] as const,
   policies: [OWNER_ACCOUNTING_KEY, 'policies'] as const,
   taxReconciliation: (year: number) => [WITHHOLDING_KEY, 'reconciliation', year] as const,
   f24: (month: number, year: number) => [WITHHOLDING_KEY, 'f24-record', month, year] as const,
@@ -40,9 +42,9 @@ function invalidateAll(queryClient: QueryClient) {
 
 // ── Reads ─────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-/** The owners of the agency's registry: their names. */
+/** The owners of the agency's registry: their names. A list that other pages change (the activation adds owners), read again every time a page asks for it. */
 export function useOwnerNames() {
-  return useQuery({ queryKey: ownerAccountingKeys.owners, queryFn: () => ownerAccountingApi.listOwners() });
+  return useQuery({ queryKey: ownerAccountingKeys.owners, queryFn: () => ownerAccountingApi.listOwners(), refetchOnMount: 'always' as const });
 }
 
 /** What is missing on each owner and property (the activation); `null` while that module is off. */
@@ -122,13 +124,31 @@ export function useFxRates(enabled = true) {
   return useQuery({ queryKey: ownerAccountingKeys.fxRates, queryFn: () => ownerAccountingApi.listFxRates(), enabled });
 }
 
-/** The fiscal profiles of an owner, the newest first (masked unless the caller manages the owners' finances). */
+/**
+ * The fiscal profiles of an owner, the newest first (masked unless the caller manages the owners' finances, who receive the identifiers, the address and the bank account in
+ * full). They are personal data: the answer is dropped as soon as the page that shows it is left (`gcTime: 0`), so no profile outlives the screen in the cache.
+ */
 export function useFiscalProfiles(ownerId: string | undefined) {
   return useQuery({
     queryKey: ownerAccountingKeys.profiles(ownerId ?? ''),
     queryFn: () => ownerAccountingApi.listFiscalProfiles(ownerId ?? ''),
     enabled: Boolean(ownerId),
     refetchOnMount: 'always' as const,
+    gcTime: 0,
+  });
+}
+
+/**
+ * Which profile and approved rule set apply to the owner on a day, as the server decides it: ids and codes only, so a payout chooses its rule without reading the profiles.
+ * A 422 is the verdict (what blocks), not a failure to retry. While the day changes the last answer stays on screen, marked as a placeholder.
+ */
+export function useFiscalReadiness(ownerId: string | undefined, day: string) {
+  return useQuery({
+    queryKey: ownerAccountingKeys.fiscalReadiness(ownerId ?? '', day),
+    queryFn: () => ownerAccountingApi.getFiscalReadiness(ownerId ?? '', day),
+    enabled: Boolean(ownerId) && /^\d{4}-\d{2}-\d{2}$/.test(day),
+    refetchOnMount: 'always' as const,
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -262,11 +282,22 @@ export function useRemoveExternalDocument() {
   });
 }
 
-/** A new profile of the owner from a day: the one in force ends the day before. */
+/**
+ * A new profile of the owner from a day: the one in force ends the day before. The command holds the identifiers, the address and the bank account of the owner, so the
+ * mutation is dropped as soon as nothing watches it (`gcTime: 0`) and what it keeps of a failure is the failure without its request (`withoutRequest`): the status, the
+ * code and the body of the answer, which the form turns into words, and no body that was sent.
+ */
 export function useSaveFiscalProfile(ownerId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (command: OwnerFiscalProfileCommand) => ownerAccountingApi.saveFiscalProfile(ownerId, command),
+    mutationFn: async (command: OwnerFiscalProfileCommand) => {
+      try {
+        return await ownerAccountingApi.saveFiscalProfile(ownerId, command);
+      } catch (error) {
+        throw withoutRequest(error);
+      }
+    },
+    gcTime: 0,
     onSuccess: () => invalidateAll(queryClient),
   });
 }

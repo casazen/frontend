@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -8,20 +8,25 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
+import { parseEuroAmount } from '@/lib/euro-amount';
 import { todayInRome } from '@/lib/stay-dates';
-import { useAccountingPolicies, useConfirmPayout, useFiscalProfiles, useOwnerPayouts } from '@/queries/use-owner-accounting';
+import { useAccountingPolicies, useConfirmPayout, useFiscalReadiness, useOwnerPayouts } from '@/queries/use-owner-accounting';
 import type { OwnerPayout } from '@/types';
 import {
   buildPayoutCommand,
+  exceedsWhatIsLeft,
   messageOf,
-  newIdempotencyKey,
   ownerFinancialPath,
+  payoutKeyFor,
+  payoutRuleOf,
   previewReconciliation,
   problemFacts,
-  resolveRule,
+  ruleBlockOf,
+  settlePayoutKey,
   type ActionContext,
   type PayoutForm,
   type PayoutFormErrors,
+  type PayoutRule,
 } from '../owner-accounting-model';
 import { useOwnerFormat } from '../use-owner-format';
 import { TaxEvidenceView } from './tax-evidence';
@@ -37,41 +42,62 @@ const asFormAmount = (amount: number) => amount.toFixed(2).replace('.', ',');
 /**
  * Registers a payout to the owner (E06/F05/US02/T04, «prepare payout»): what was paid, when, and the facts the approved rule of the owner needs to
  * decide the withholding. The page asks only what the rule asks, never defaults an answer, and does not compute the withholding: it is decided by
- * the server when the payout is confirmed, on the rule in force on the day of the payment, and shown here with its evidence. A payout is
- * confirmed once: the key of the request is made when the dialog opens, so a repeated click or a retry is the same payout.
+ * the server when the payout is confirmed, on the rule in force on the day of the payment, and shown here with its evidence.
+ *
+ * The rule is the one the server names for the day (`…/fiscal-profiles/readiness`: ids and codes), found among the rule sets of the agency: the profile of the owner, which comes
+ * with the identifiers and the bank account in full, is never read for a payment. A payout is confirmed once: its key belongs to what is asked (owner, statement, amount, day),
+ * not to this dialog, so a retry, a second click or the dialog opened again with the same facts is the same payout; and the dialog is not left while the request is on its way.
  */
 export function PayoutDialog({ open, onOpenChange, ctx }: PayoutDialogProps) {
   const { t } = useTranslation();
   const { money, dateTime } = useOwnerFormat();
   const { version } = ctx;
-  const [key] = useState(newIdempotencyKey);
   const [form, setForm] = useState<PayoutForm>(() => ({ gross: '', paidOn: todayInRome(), reference: '', agencyCollected: '', qualifyingShortLet: '', components: {} }));
   const [errors, setErrors] = useState<PayoutFormErrors>({});
   const [failure, setFailure] = useState<string | null>(null);
   const [done, setDone] = useState<OwnerPayout | null>(null);
 
   const confirm = useConfirmPayout();
-  const profiles = useFiscalProfiles(ctx.ownerId);
+  const readiness = useFiscalReadiness(ctx.ownerId, form.paidOn);
   const policies = useAccountingPolicies();
   const payouts = useOwnerPayouts(ctx.ownerId);
-  const rule = profiles.data && policies.data ? resolveRule(profiles.data, policies.data, form.paidOn) : null;
-  const loadingRule = profiles.isPending || policies.isPending;
+
+  // What the server says of the owner on the day: a rule it names, or what blocks (`owner_fiscal_*`). Any other failure is not a verdict: it is told as a failure to read.
+  const blockedBy = readiness.isError ? ruleBlockOf(readiness.error) : null;
+  const readFailed = readiness.isError && blockedBy === null;
+  const rule: PayoutRule | null = blockedBy ? { ok: false, reason: blockedBy } : readiness.data && policies.data ? payoutRuleOf(readiness.data, policies.data) : null;
+  // While the day changes the answer of the day before is still on screen: nothing is confirmed on it.
+  const checking = readiness.isFetching || readiness.isPlaceholderData;
+  const loadingRule = (readiness.isPending && readiness.fetchStatus === 'fetching') || policies.isPending;
+
   const left = version && payouts.data ? previewReconciliation(version, payouts.data.filter((payout) => ctx.versionIds.includes(payout.statementVersionId)), ctx.versionIds).difference : null;
+  const overLeft = exceedsWhatIsLeft(left, parseEuroAmount(form.gross));
 
   const set = (patch: Partial<PayoutForm>) => setForm((current) => ({ ...current, ...patch }));
+  // A request is on its way: the state of the mutation says it a moment later than the click, so a second submit in between is stopped here.
+  const sending = useRef(false);
+
+  // The request is on its way: the dialog stays (Escape, the cross and a click outside all end here), so nobody opens another one for a payout that may be recorded already.
+  const dismiss = (next: boolean) => {
+    if (!next && (confirm.isPending || sending.current)) return;
+    onOpenChange(next);
+  };
 
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    if (!version || !rule?.ok || confirm.isPending) return;
-    const built = buildPayoutCommand(form, { ownerId: ctx.ownerId, versionId: version.id, currency: version.currency }, rule.parameters, key);
+    if (!version || !rule?.ok || confirm.isPending || checking || sending.current) return;
+    const built = buildPayoutCommand(form, { ownerId: ctx.ownerId, versionId: version.id, currency: version.currency }, rule.parameters, payoutKeyFor);
     if ('errors' in built) {
       setErrors(built.errors);
       return;
     }
     setErrors({});
     setFailure(null);
+    sending.current = true;
     try {
       const payout = await confirm.mutateAsync(built.command);
+      // Confirmed: the same facts asked again are another payout, which gets its own key.
+      settlePayoutKey(built.command);
       setDone(payout);
       toast.success(t('ownerAccounting.payout.done', { owner: ctx.ownerName }));
     } catch (error) {
@@ -79,11 +105,13 @@ export function PayoutDialog({ open, onOpenChange, ctx }: PayoutDialogProps) {
       const message = messageOf(error, t);
       // A fact the rule needs that the form did not carry: the server names it, and it is shown beside the question that asks it.
       setFailure(facts.code === 'tax_applicability_unresolved' && facts.field ? t('ownerAccounting.payout.unresolved', { field: facts.field }) : message);
+    } finally {
+      sending.current = false;
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={dismiss}>
       <DialogContent className="max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t('ownerAccounting.payout.title')}</DialogTitle>
@@ -116,13 +144,26 @@ export function PayoutDialog({ open, onOpenChange, ctx }: PayoutDialogProps) {
           </p>
         ) : (
           <form onSubmit={(event) => void onSubmit(event)} noValidate className="grid gap-4" data-testid="payout-form">
-            {rule && !rule.ok ? (
+            {readFailed ? (
+              <Alert
+                variant="danger"
+                title={t('ownerAccounting.payout.ruleError')}
+                action={
+                  <Button type="button" size="sm" variant="outline" onClick={() => void readiness.refetch()}>
+                    {t('shared.errorState.retry')}
+                  </Button>
+                }
+                data-testid="payout-rule-error"
+              >
+                {messageOf(readiness.error, t)}
+              </Alert>
+            ) : rule && !rule.ok ? (
               <Alert
                 variant="warning"
                 title={t('ownerAccounting.payout.ruleBlocked')}
                 action={
                   <Button asChild size="sm" variant="outline">
-                    <Link to={ownerFinancialPath(ctx.ownerId)}>{t('ownerAccounting.payout.openProfile')}</Link>
+                    <Link to={ownerFinancialPath(ctx.ownerId, ctx.period)}>{t('ownerAccounting.payout.openProfile')}</Link>
                   </Button>
                 }
                 data-testid="payout-rule-blocked"
@@ -155,6 +196,11 @@ export function PayoutDialog({ open, onOpenChange, ctx }: PayoutDialogProps) {
                   {t('ownerAccounting.payout.useLeft')}
                 </Button>
               </div>
+            ) : null}
+            {overLeft ? (
+              <Alert variant="warning" data-testid="payout-over-left">
+                {left !== null && left > 0 ? t('ownerAccounting.payout.overLeft', { amount: money(left, version.currency) }) : t('ownerAccounting.payout.nothingLeft')}
+              </Alert>
             ) : null}
 
             <Field label={t('ownerAccounting.payout.reference')} optional error={errors.reference}>
@@ -201,6 +247,12 @@ export function PayoutDialog({ open, onOpenChange, ctx }: PayoutDialogProps) {
 
             <p className="break-words text-sm text-foreground/70">{t('ownerAccounting.payout.withholdingNote')}</p>
 
+            {checking ? (
+              <p role="status" className="text-sm text-foreground/70" data-testid="payout-checking">
+                {t('ownerAccounting.payout.checking')}
+              </p>
+            ) : null}
+
             {failure ? (
               <Alert variant="danger" data-testid="payout-error">
                 {failure}
@@ -211,7 +263,7 @@ export function PayoutDialog({ open, onOpenChange, ctx }: PayoutDialogProps) {
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={confirm.isPending}>
                 {t('shared.cancel')}
               </Button>
-              <Button type="submit" loading={confirm.isPending} disabled={!rule?.ok} data-testid="payout-confirm">
+              <Button type="submit" loading={confirm.isPending} disabled={!rule?.ok || checking} data-testid="payout-confirm">
                 {t('ownerAccounting.payout.confirm')}
               </Button>
             </DialogFooter>

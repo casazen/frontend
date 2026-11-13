@@ -13560,10 +13560,6 @@
     },
     "loadError": "We cannot read the month-end close.",
     "loading": "Reading the month…",
-    "noReach": {
-      "description": "The owners' statements cover every property of the organization. Your access is limited to some properties, or you do not have the permission to manage the owners' finances: ask the account owner or an administrator.",
-      "title": "You cannot open this page"
-    },
     "owner": {
       "unnamed": "Owner {{id}}"
     },
@@ -13581,8 +13577,10 @@
         "policy_missing": "The profile has no tax rule.",
         "policy_not_approved": "The tax rule is not yet approved by the accountant.",
         "policy_not_effective": "The tax rule is not in force on the payment day.",
+        "profile_incomplete": "The owner's profile is incomplete for the payment day: complete it first.",
         "profile_missing": "There is no valid owner profile on the payment day."
       },
+      "checking": "Checking the tax rule for this day…",
       "choose": "Choose…",
       "component": "Amount of the item «{{component}}»",
       "confirm": "Record the payment",
@@ -13602,7 +13600,9 @@
       "loading": "Reading the owner's tax rule…",
       "no": "No",
       "noVersion": "First prepare and approve the statement.",
+      "nothingLeft": "Nothing is left to pay: the payments already cover the balance. Record another one only if you are sure.",
       "openProfile": "Open the owner's data",
+      "overLeft": "The amount is more than what is left to pay ({{amount}}). Check it before recording.",
       "paidOn": "Payment date",
       "qualifyingShortLet": "Do the stays fall under a short-term let according to the rule?",
       "recorded": "Payment recorded",
@@ -13610,6 +13610,7 @@
       "reference": "Reference of the transfer",
       "rule": "Rule applied: {{rule}} version {{version}} ({{jurisdiction}}), approved by {{approver}} on {{date}}.",
       "ruleBlocked": "A payment cannot be recorded yet",
+      "ruleError": "We cannot read the owner's tax rule",
       "title": "Record a payment",
       "unresolved": "A fact is missing to decide the withholding: {{field}}.",
       "useLeft": "Use the amount left",
@@ -13653,6 +13654,7 @@
       "closed": "Closed",
       "loading": "Reading the statement…",
       "noStatement": "No statement",
+      "paymentsError": "I cannot read the payments.",
       "profile": "Financial data",
       "stale": "Out of date",
       "state": "Version {{version}} · {{status}} · balance {{balance}}",
@@ -13740,7 +13742,6 @@
       "generatedAt": "Generated on",
       "loading": "Reading the withholdings…",
       "mismatch": "The F24 ({{f24}}) does not match the withholdings of the month ({{obligations}}): generate it again before going on.",
-      "noAccess": "You have no access to the withholdings: the permission of who manages the owners' finances is needed.",
       "none": "No withholding to pay for this month: with no withholding there is no F24.",
       "notApplicable": "No withholding",
       "note": "CasaZen prepares the data but does not send it to the Revenue Agency: you or your intermediary do, and here you record the reference and the receipt.",
@@ -13764,7 +13765,14 @@
       "title": "Withholdings and tax filings",
       "toPay": "To pay",
       "withheld": "Withheld",
-      "yearNotReconciled": "In {{year}} the withholdings ({{obligations}}) do not match the F24 ({{f24}}).",
+      "yearAnnualMatch": "In {{year}} the annual data ({{amount}}) match the withholdings.",
+      "yearAnnualMismatch": "The annual data of {{year}} ({{annual}}) do not match the withholdings of the year ({{obligations}}).",
+      "yearEmpty": "In {{year}} there are no withholdings: there is nothing to reconcile.",
+      "yearF24Match": "In {{year}} the withholdings ({{amount}}) match the F24.",
+      "yearF24Mismatch_one": "In {{year}} the F24 of {{count}} month does not match the withholdings:",
+      "yearF24Mismatch_other": "In {{year}} the F24 of {{count}} months do not match the withholdings:",
+      "yearF24MonthLine": "{{month}}: withholdings {{obligations}}, F24 {{f24}}",
+      "yearF24NotGenerated": "{{month}}: withholdings {{obligations}}, F24 not generated yet",
       "yearReconciled": "In {{year}} the withholdings ({{amount}}) match the F24 and the annual data."
     },
     "title": "Month-end close",
@@ -13864,7 +13872,9 @@
       "submit": "Save the new version",
       "title": "New version of the financial data",
       "validFrom": "Applies from",
-      "validFromHint": "The first day the new data applies."
+      "validFromFirst": "The first profile of this owner. The data covers the days from this one on: the months before it stay blocked, and a profile cannot be moved back later. Start it from the first month you still have to close.",
+      "validFromHint": "The first day the new data applies.",
+      "validFromTooEarly": "A profile already applies from {{date}}: pick a later day."
     },
     "facts": {
       "empty": "Not given",
@@ -13928,7 +13938,7 @@
       "newPolicy": "Create a rule",
       "ready": {
         "body": "Rule {{rule}} version {{version}} ({{jurisdiction}}) applies, approved by {{approver}}.",
-        "title": "The data is ready: statements and payments can be prepared"
+        "title": "The data is ready from {{from}}: statements and payments can be prepared from that day on"
       },
       "who": "Your turn"
     },
@@ -13940,8 +13950,14 @@
     "loadError": "We cannot read the financial data.",
     "loading": "Reading the financial data…",
     "maskedNotice": "For safety you only see the last digits of identifiers, address and account. Only who manages the owners' finances sees them in full and can change them.",
+    "monthNotCovered": {
+      "body": "The data applies from {{from}}, so the statement of that month stays blocked: a new profile cannot start on a day before the one in force. Ask for help to cover that month.",
+      "title": "The data does not cover {{period}}"
+    },
     "newVersion": "New version of the data",
     "noProfile": "This owner has no financial data yet.",
+    "notFound": "This owner does not exist",
+    "notFoundBody": "It does not exist, or it belongs to another organization. Go back to the month-end close.",
     "onboarding": {
       "complete": "The activation reports nothing left to complete for this owner.",
       "completeAction": "Complete it in the activation",

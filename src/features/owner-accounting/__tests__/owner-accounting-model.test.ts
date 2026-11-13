@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import it_ from '@/i18n/locales/it.json';
 import en from '@/i18n/locales/en.json';
 import {
@@ -9,23 +9,35 @@ import {
   buildPayoutCommand,
   camelCode,
   changesSince,
+  checkTaxYear,
   defaultPeriod,
+  exceedsWhatIsLeft,
   filingLabelOf,
+  forgetPayoutKeys,
   groupAnomalies,
   groupOf,
   isPeriodOver,
+  isSettled,
+  latestProfileStart,
   maskValue,
   nextFilingStates,
   otherActionsOf,
+  ownerFinancialPath,
   ownerReadinessOn,
   parsePeriod,
+  payoutKeyFor,
+  payoutRuleOf,
   previewReconciliation,
   primaryActionOf,
   problemFacts,
   resolveRule,
+  ruleBlockOf,
+  settlePayoutKey,
   shiftPeriod,
   sourcePathOf,
+  startOfPeriod,
   summarize,
+  taxYearVerdict,
   type PayoutForm,
 } from '../owner-accounting-model';
 import type { TaxFilingState } from '@/types';
@@ -368,5 +380,177 @@ describe('what the server says about a refusal', () => {
   it('problemFacts_AnythingElseIsNothing', () => {
     expect(problemFacts(new Error('boom'))).toEqual({ status: undefined, code: undefined, field: undefined, fields: [], issues: [], figures: null });
     expect(problemFacts(refused('<html>'))).toMatchObject({ code: undefined, figures: null });
+  });
+
+  it('ruleBlockOf_OnlyTheVerdictOfTheServerOnTheOwnerIsARuleThatBlocks', () => {
+    expect(ruleBlockOf(refused({ code: 'owner_fiscal_profile_missing' }))).toBe('profile_missing');
+    expect(ruleBlockOf(refused({ code: 'owner_fiscal_profile_incomplete', fields: ['legalName'] }))).toBe('profile_incomplete');
+    expect(ruleBlockOf(refused({ code: 'owner_fiscal_policy_missing' }))).toBe('policy_missing');
+    expect(ruleBlockOf(refused({ code: 'owner_fiscal_policy_not_approved' }))).toBe('policy_not_approved');
+    expect(ruleBlockOf(refused({ code: 'owner_fiscal_policy_not_effective' }))).toBe('policy_not_effective');
+    expect(ruleBlockOf(refused({ code: 'owner_fiscal_policy_jurisdiction_mismatch' }))).toBe('policy_jurisdiction_mismatch');
+    // A failure that says nothing of the owner (the network, a 500, another 422) is no verdict: the owner is not told to have a rule missing.
+    expect(ruleBlockOf(refused({ code: 'owner_period_closed' }))).toBeNull();
+    expect(ruleBlockOf(refused({ code: 'owner_fiscal_policy_missing' }, 500))).toBeNull();
+    expect(ruleBlockOf(new Error('Network Error'))).toBeNull();
+  });
+});
+
+describe('the rule of a payout, as the server names it for the day', () => {
+  const found = { policyId: policy().id };
+
+  it('payoutRuleOf_TakesTheParametersOfTheRuleSetTheServerNamed', () => {
+    const withholding = policy({ parameters: { ...policy().parameters!, withholdingApplies: true, withholdingRatePercent: 5, withholdingTaxCode: 'X', grossBaseComponents: ['rent'] } });
+    expect(payoutRuleOf(found, [withholding])).toMatchObject({ ok: true, parameters: { withholdingApplies: true, grossBaseComponents: ['rent'] } });
+  });
+
+  it('payoutRuleOf_ARuleSetThatIsNotAmongTheOnesOfTheAgencyOrNotApprovedIsNotUsed', () => {
+    expect(payoutRuleOf(found, [])).toEqual({ ok: false, reason: 'policy_missing' });
+    expect(payoutRuleOf(found, [policy({ approved: false, approvedAt: null })])).toEqual({ ok: false, reason: 'policy_not_approved' });
+    expect(payoutRuleOf(found, [policy({ parameters: null })])).toEqual({ ok: false, reason: 'policy_not_approved' });
+  });
+});
+
+describe('the key of a payout belongs to what is asked', () => {
+  const intent = { ownerId: OWNER_ID, statementVersionId: VERSION_ID, grossAmount: 800, paidOn: '2025-02-05' };
+
+  beforeEach(() => forgetPayoutKeys());
+
+  it('payoutKeyFor_TheSameFactsAreTheSameKey_UntilTheServerConfirmedThePayout', () => {
+    const first = payoutKeyFor(intent);
+    // A retry, a second click, the dialog opened again: the same request, so the same key.
+    expect(payoutKeyFor({ ...intent })).toBe(first);
+    expect(payoutKeyFor({ ...intent, grossAmount: 800.0 })).toBe(first);
+    // Another amount, another day, another statement or another owner is another payout.
+    expect(payoutKeyFor({ ...intent, grossAmount: 800.01 })).not.toBe(first);
+    expect(payoutKeyFor({ ...intent, paidOn: '2025-02-06' })).not.toBe(first);
+    expect(payoutKeyFor({ ...intent, statementVersionId: 'other' })).not.toBe(first);
+    expect(payoutKeyFor({ ...intent, ownerId: 'other' })).not.toBe(first);
+
+    // Confirmed: the same facts again are a second payment of the same amount, which must not be answered with the first one.
+    settlePayoutKey(intent);
+    expect(payoutKeyFor(intent)).not.toBe(first);
+  });
+
+  it('buildPayoutCommand_TakesTheKeyFromTheFactsOfThePayoutOnceTheAmountIsKnown', () => {
+    const form: PayoutForm = { gross: '800,00', paidOn: '2025-02-05', reference: '', agencyCollected: '', qualifyingShortLet: '', components: {} };
+    const ctx = { ownerId: OWNER_ID, versionId: VERSION_ID, currency: 'EUR' };
+    const first = buildPayoutCommand(form, ctx, policy().parameters!, payoutKeyFor);
+    const again = buildPayoutCommand({ ...form, gross: '800' }, ctx, policy().parameters!, payoutKeyFor);
+    expect(first).toHaveProperty('command.idempotencyKey');
+    expect('command' in first && 'command' in again && first.command.idempotencyKey === again.command.idempotencyKey).toBe(true);
+    // An amount that is refused makes no key.
+    expect(buildPayoutCommand({ ...form, gross: '0' }, ctx, policy().parameters!, payoutKeyFor)).toHaveProperty('errors.gross');
+  });
+
+  it('exceedsWhatIsLeft_AnAmountOverTheResidue_OrAnyAmountWhenNothingIsLeft', () => {
+    expect(exceedsWhatIsLeft(300, 300)).toBe(false);
+    expect(exceedsWhatIsLeft(300, 300.01)).toBe(true);
+    expect(exceedsWhatIsLeft(0, 1)).toBe(true);
+    expect(exceedsWhatIsLeft(-50, 1)).toBe(true);
+    expect(exceedsWhatIsLeft(null, 1000)).toBe(false);
+    expect(exceedsWhatIsLeft(300, null)).toBe(false);
+  });
+});
+
+describe('a statement that is already paid is closed, not paid again', () => {
+  const base = { status: 'Open' as const, isDirty: false, issues: [], monthOver: true };
+  const closing = { closingBalance: 800, currency: 'EUR' };
+
+  it('isSettled_WhenTheConfirmedPayoutsCoverTheBalance_OrThereIsNothingOwed', () => {
+    expect(isSettled(closing, [payout({ grossAmount: 800 })], [VERSION_ID])).toBe(true);
+    expect(isSettled(closing, [payout({ grossAmount: 500 })], [VERSION_ID])).toBe(false);
+    expect(isSettled(closing, [], [VERSION_ID])).toBe(false);
+    // A reversed payout pays nothing, and a payout of another currency is no payment of this statement.
+    expect(isSettled(closing, [payout({ grossAmount: 800, status: 'Reversed' })], [VERSION_ID])).toBe(false);
+    expect(isSettled(closing, [payout({ grossAmount: 800, currency: 'CHF' })], [VERSION_ID])).toBe(false);
+    expect(isSettled({ closingBalance: 0, currency: 'EUR' }, [], [VERSION_ID])).toBe(true);
+  });
+
+  it('primaryActionOf_PaidInFull_PutsTheCloseFirst_AndWaitsWhenTheMonthIsNotOver', () => {
+    const unpaid = actionsOf({ ...base, version: { status: 'Published' }, settled: false });
+    expect(primaryActionOf(unpaid)).toBe('payout');
+    expect(otherActionsOf(unpaid)).toEqual(['close']);
+
+    const paid = actionsOf({ ...base, version: { status: 'Published' }, settled: true });
+    expect(primaryActionOf(paid)).toBe('close');
+    // The payment stays available, in the menu, for an extra one.
+    expect(otherActionsOf(paid)).toEqual(['payout']);
+
+    // Paid, but the month is not over: nothing to do until it is.
+    const waiting = actionsOf({ ...base, monthOver: false, version: { status: 'Published' }, settled: true });
+    expect(primaryActionOf(waiting)).toBeNull();
+    expect(waiting.closeWaitsForTheEnd).toBe(true);
+
+    // What is not known (the payments not read yet) is not paid.
+    expect(primaryActionOf(actionsOf({ ...base, version: { status: 'Published' } }))).toBe('payout');
+    // An approved statement is first published, paid or not.
+    expect(primaryActionOf(actionsOf({ ...base, version: { status: 'Approved' }, settled: true }))).toBe('publish');
+  });
+});
+
+describe('the year of the withholdings against the F24 and the annual data', () => {
+  const month = (m: number, obligations: number, f24: number | null) => ({ month: m, obligations, f24, filingState: f24 === null ? null : ('Generated' as const) });
+
+  it('checkTaxYear_AYearWithNothingInItMatchesNothing', () => {
+    const empty = checkTaxYear({ obligationsTotal: 0, annualTotal: null, months: [] });
+    expect(empty).toEqual({ f24: 'none', months: [], annual: null });
+    expect(taxYearVerdict(empty)).toBe('empty');
+  });
+
+  it('taxYearVerdict_ReconciledNeedsAnF24ThatMatchesAndAnnualDataThatMatch', () => {
+    const f24Only = checkTaxYear({ obligationsTotal: 120, annualTotal: null, months: [month(1, 120, 120)] });
+    expect(f24Only.annual).toBeNull();
+    // Annual data that does not exist is not said to match.
+    expect(taxYearVerdict(f24Only)).toBe('f24Matches');
+
+    const both = checkTaxYear({ obligationsTotal: 120, annualTotal: 120, months: [month(1, 120, 120)] });
+    expect(taxYearVerdict(both)).toBe('reconciled');
+
+    const annualOnly = checkTaxYear({ obligationsTotal: 0, annualTotal: 0, months: [] });
+    expect(taxYearVerdict(annualOnly)).toBe('annualMatches');
+  });
+
+  it('checkTaxYear_SaysWhichOfTheTwoDoesNotMatch', () => {
+    // The F24 are what the withholdings say; the annual data generated earlier is not.
+    const annualOff = checkTaxYear({ obligationsTotal: 500, annualTotal: 400, months: [month(1, 500, 500)] });
+    expect(annualOff.f24).toBe('matches');
+    expect(annualOff.annual).toEqual({ total: 400, matches: false });
+    expect(taxYearVerdict(annualOff)).toBe('differs');
+
+    // The annual data match; one F24 is not what the withholdings of its month say, and one month has withholdings and no F24 yet.
+    const f24Off = checkTaxYear({ obligationsTotal: 300, annualTotal: 300, months: [month(1, 100, 100), month(2, 100, 90), month(3, 100, null)] });
+    expect(f24Off.f24).toBe('differs');
+    expect(f24Off.months).toEqual([
+      { month: 2, obligations: 100, f24: 90 },
+      { month: 3, obligations: 100, f24: null },
+    ]);
+    expect(f24Off.annual).toEqual({ total: 300, matches: true });
+    expect(taxYearVerdict(f24Off)).toBe('differs');
+  });
+
+  it('checkTaxYear_ComparesInCents_WithoutFloatingPointNoise', () => {
+    expect(checkTaxYear({ obligationsTotal: 0.3, annualTotal: 0.3, months: [month(1, 0.1 + 0.2, 0.3)] }).f24).toBe('matches');
+  });
+});
+
+describe('the profile of an owner and the days it covers', () => {
+  it('ownerReadinessOn_SaysFromWhichDayTheDataHolds', () => {
+    const ready = ownerReadinessOn([profile({ validFrom: '2025-03-01' })], [policy({ validFrom: '2025-01-01' })], '2025-04-10');
+    expect(ready).toMatchObject({ ready: true, from: '2025-03-01' });
+    // The rule set that starts later is the one that decides: the data holds from the day both apply.
+    const later = ownerReadinessOn([profile({ validFrom: '2025-01-01' })], [policy({ validFrom: '2025-02-01' })], '2025-04-10');
+    expect(later).toMatchObject({ ready: true, from: '2025-02-01' });
+  });
+
+  it('latestProfileStart_ANewProfileMustStartAfterIt', () => {
+    expect(latestProfileStart([])).toBeNull();
+    expect(latestProfileStart([profile({ validFrom: '2024-01-01' }), profile({ validFrom: '2025-06-01' }), profile({ validFrom: '2025-02-01' })])).toBe('2025-06-01');
+  });
+
+  it('ownerFinancialPath_CarriesTheMonthThatSentThePersonThere', () => {
+    expect(ownerFinancialPath(OWNER_ID)).toBe(`/app/account/owners/${OWNER_ID}/financial`);
+    expect(ownerFinancialPath(OWNER_ID, { year: 2025, month: 1 })).toBe(`/app/account/owners/${OWNER_ID}/financial?period=2025-01`);
+    expect(startOfPeriod({ year: 2025, month: 1 })).toBe('2025-01-01');
   });
 });

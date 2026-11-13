@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/page-header';
 import { FocusBlock, PlainSection } from '@/components/shared/calm';
@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { SkeletonCard } from '@/components/ui/skeleton';
 import { useWorkspace } from '@/hooks/use-workspace';
+import { getHttpStatus } from '@/lib/api-errors';
 import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { todayInRome } from '@/lib/stay-dates';
 import { useAccountingPolicies, useFiscalProfiles, useOwnerNames, useOwnerOnboardingReadiness } from '@/queries/use-owner-accounting';
@@ -18,10 +19,16 @@ import {
   OWNER_ONBOARDING_PATH,
   PROFILE_OPTIONS,
   camelCode,
+  closePath,
+  defaultPeriod,
+  latestProfileStart,
   maskValue,
   ownerReadinessOn,
+  parsePeriod,
   shortId,
+  startOfPeriod,
   type OwnerReadiness,
+  type Period,
 } from '@/features/owner-accounting/owner-accounting-model';
 import { useOwnerFormat } from '@/features/owner-accounting/use-owner-format';
 import { ApprovePolicyDialog, PolicyDialog } from './components/policy-dialog';
@@ -91,10 +98,16 @@ function ProfileBody({ ownerId }: { ownerId: string }) {
   const [dialog, setDialog] = useState<'profile' | 'policy' | null>(null);
   const [approving, setApproving] = useState<OwnerAccountingPolicy | null>(null);
 
+  const [params] = useSearchParams();
   const owner = owners.data?.find((candidate) => candidate.id === ownerId);
   const ownerName = owner ? `${owner.firstName} ${owner.lastName}`.trim() : t('ownerAccounting.owner.unnamed', { id: shortId(ownerId) });
   const title = t('ownerProfile.title', { owner: ownerName });
   const today = todayInRome();
+  // The month that sent the person here (`?period=2026-10`, from the month-end close), else the month to close: the first profile of an owner starts by default on the first day
+  // of it, and the page says when the data does not reach back to it.
+  const fromMonth = params.has('period');
+  const period = parsePeriod(params.get('period'), defaultPeriod(todayInRome()));
+  const backTo = fromMonth ? closePath(period.year, period.month) : OWNER_CLOSE_PATH;
 
   const profileList = useMemo(() => profiles.data ?? [], [profiles.data]);
   const policyList = useMemo(() => policies.data ?? [], [policies.data]);
@@ -109,6 +122,22 @@ function ProfileBody({ ownerId }: { ownerId: string }) {
   let content: ReactNode = null;
   if (profiles.isPending || policies.isPending) {
     content = <SkeletonCard lines={5} label={t('ownerProfile.loading')} />;
+  } else if (getHttpStatus(profiles.error) === 404) {
+    // An owner that does not exist (or that belongs to another organization) is «not found», however the page got here: the way out is the month.
+    content = (
+      <Alert
+        variant="warning"
+        title={t('ownerProfile.notFound')}
+        action={
+          <Button asChild size="sm" variant="outline">
+            <Link to={backTo}>{t('ownerAccounting.statement.backToClose')}</Link>
+          </Button>
+        }
+        data-testid="profile-not-found"
+      >
+        {t('ownerProfile.notFoundBody')}
+      </Alert>
+    );
   } else if (profiles.isError || policies.isError || !readiness) {
     content = (
       <OwnerAccountingError
@@ -123,9 +152,14 @@ function ProfileBody({ ownerId }: { ownerId: string }) {
   } else {
     const ownerEntry = onboarding.data?.owners.find((candidate) => candidate.ownerId === ownerId);
     const properties = onboarding.data?.properties ?? [];
+    // The data covers the months from `from`: a month before it that sent the person here stays blocked, and nothing on this page can move the data back to it.
+    const startsAfterTheMonth = fromMonth && readiness.ready && readiness.from > startOfPeriod(period);
     content = (
       <div className="space-y-8">
-        <ReadinessFocus readiness={readiness} canEdit={canEdit} onEdit={() => setDialog('profile')} onApprove={setApproving} onNewPolicy={() => setDialog('policy')} />
+        <ReadinessFocus readiness={readiness} canEdit={canEdit} backTo={backTo} onEdit={() => setDialog('profile')} onApprove={setApproving} onNewPolicy={() => setDialog('policy')} />
+        {startsAfterTheMonth && readiness.ready ? (
+          <MonthNotCovered from={readiness.from} period={period} />
+        ) : null}
         {current?.masked ? (
           <Alert variant="info" data-testid="profile-masked-notice">
             {t('ownerProfile.maskedNotice')}
@@ -144,11 +178,21 @@ function ProfileBody({ ownerId }: { ownerId: string }) {
       <PageHeader
         title={title}
         description={t('ownerProfile.description')}
-        crumbs={[{ label: t('ownerAccounting.title'), to: OWNER_CLOSE_PATH }, { label: title }]}
+        crumbs={[{ label: t('ownerAccounting.title'), to: backTo }, { label: title }]}
         primary={newVersion}
       />
       {content}
-      {dialog === 'profile' ? <ProfileDialog open onOpenChange={(open) => !open && setDialog(null)} ownerId={ownerId} from={current && !current.masked ? current : null} policies={policyList} /> : null}
+      {dialog === 'profile' ? (
+        <ProfileDialog
+          open
+          onOpenChange={(open) => !open && setDialog(null)}
+          ownerId={ownerId}
+          from={current && !current.masked ? current : null}
+          policies={policyList}
+          suggestedFrom={startOfPeriod(period)}
+          latestStart={latestProfileStart(profileList)}
+        />
+      ) : null}
       {dialog === 'policy' ? <PolicyDialog open onOpenChange={(open) => !open && setDialog(null)} /> : null}
       {approving ? <ApprovePolicyDialog policy={approving} onClose={() => setApproving(null)} /> : null}
     </div>
@@ -158,23 +202,29 @@ function ProfileBody({ ownerId }: { ownerId: string }) {
 interface ReadinessFocusProps {
   readiness: OwnerReadiness;
   canEdit: boolean;
+  /** Where the way back goes: the month-end close, on the month that sent the person here when there is one. */
+  backTo: string;
   onEdit: () => void;
   onApprove: (policy: OwnerAccountingPolicy) => void;
   onNewPolicy: () => void;
 }
 
-/** The one highlighted block: whether the owner can be used for the statements and the payouts today, and the next step if not. */
-function ReadinessFocus({ readiness, canEdit, onEdit, onApprove, onNewPolicy }: ReadinessFocusProps) {
+/**
+ * The one highlighted block: whether the owner can be used for the statements and the payouts, and the next step if not. It is judged on today, and says from which day the data
+ * holds: a profile that starts today does not cover the months before it.
+ */
+function ReadinessFocus({ readiness, canEdit, backTo, onEdit, onApprove, onNewPolicy }: ReadinessFocusProps) {
   const { t } = useTranslation();
+  const { date } = useOwnerFormat();
 
   if (readiness.ready) {
     return (
       <FocusBlock
         tone="success"
         kicker={t('ownerProfile.focus.kicker')}
-        title={t('ownerProfile.focus.ready.title')}
+        title={t('ownerProfile.focus.ready.title', { from: date(readiness.from) })}
         body={t('ownerProfile.focus.ready.body', { rule: readiness.policy.ruleCode, version: readiness.policy.version, jurisdiction: readiness.policy.jurisdiction, approver: readiness.policy.approvedByName ?? '' })}
-        primary={{ label: t('ownerProfile.focus.back'), href: OWNER_CLOSE_PATH, testId: 'profile-focus-back' }}
+        primary={{ label: t('ownerProfile.focus.back'), href: backTo, testId: 'profile-focus-back' }}
         data-testid="profile-focus"
       />
     );
@@ -190,7 +240,7 @@ function ReadinessFocus({ readiness, canEdit, onEdit, onApprove, onNewPolicy }: 
       ? { label: t('ownerProfile.focus.newPolicy'), onClick: onNewPolicy, testId: 'profile-focus-new-policy' }
       : canEdit
         ? { label: t('ownerProfile.focus.complete'), onClick: onEdit, testId: 'profile-focus-complete' }
-        : { label: t('ownerProfile.focus.back'), href: OWNER_CLOSE_PATH, testId: 'profile-focus-back' };
+        : { label: t('ownerProfile.focus.back'), href: backTo, testId: 'profile-focus-back' };
 
   return (
     <FocusBlock
@@ -206,6 +256,17 @@ function ReadinessFocus({ readiness, canEdit, onEdit, onApprove, onNewPolicy }: 
       primary={primary}
       data-testid="profile-focus"
     />
+  );
+}
+
+/** The data is ready, but from a day after the month that sent the person here: that month stays blocked, and the page says so instead of «ready». */
+function MonthNotCovered({ from, period }: { from: string; period: Period }) {
+  const { t } = useTranslation();
+  const { date, month } = useOwnerFormat();
+  return (
+    <Alert variant="warning" title={t('ownerProfile.monthNotCovered.title', { period: month(period.year, period.month) })} data-testid="profile-month-not-covered">
+      {t('ownerProfile.monthNotCovered.body', { from: date(from) })}
+    </Alert>
   );
 }
 

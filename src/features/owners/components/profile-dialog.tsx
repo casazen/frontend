@@ -10,7 +10,7 @@ import { useSaveFiscalProfile } from '@/queries/use-owner-accounting';
 import type { OwnerAccountingPolicy, OwnerEntityKind, OwnerFiscalProfile, OwnerFiscalProfileCommand } from '@/types';
 import { FormDialog } from '@/features/owner-accounting/components/form-dialog';
 import { PROFILE_OPTIONS, failureText, type ProfileOptionField } from '@/features/owner-accounting/owner-accounting-model';
-
+import { useOwnerFormat } from '@/features/owner-accounting/use-owner-format';
 
 interface ProfileDialogProps {
   open: boolean;
@@ -20,6 +20,10 @@ interface ProfileDialogProps {
   from: OwnerFiscalProfile | null;
   /** The rule sets of the agency: the profile picks one. */
   policies: readonly OwnerAccountingPolicy[];
+  /** The day the FIRST profile of the owner starts by default: the first day of the month to close (a profile never covers the days before its start). */
+  suggestedFrom: string;
+  /** The start of the newest profile of the owner: a new one must start after it, since the server refuses a day that is not later (409). `null` for the first profile. */
+  latestStart: string | null;
 }
 
 interface FormState {
@@ -43,8 +47,9 @@ interface FormState {
   accountingPolicyId: string;
 }
 
-const initial = (from: OwnerFiscalProfile | null): FormState => ({
-  validFrom: todayInRome(),
+/** A new version starts today; the first profile starts on the first day of the month to close, so that month is covered and not left without a profile. */
+const initial = (from: OwnerFiscalProfile | null, suggestedFrom: string): FormState => ({
+  validFrom: from === null ? suggestedFrom : todayInRome(),
   entityKind: from?.entityKind ?? 'NaturalPerson',
   legalName: from?.legalName ?? '',
   taxResidenceCountry: from?.taxResidenceCountry ?? '',
@@ -95,10 +100,11 @@ const text = (value: string): string | undefined => (value.trim() === '' ? undef
  * day given; the one in force ends the day before, and nothing already posted changes. The country does not choose the rule: the person does, and
  * the server blocks a rule that is not approved, not in force or of another jurisdiction.
  */
-export function ProfileDialog({ open, onOpenChange, ownerId, from, policies }: ProfileDialogProps) {
+export function ProfileDialog({ open, onOpenChange, ownerId, from, policies, suggestedFrom, latestStart }: ProfileDialogProps) {
   const { t, i18n } = useTranslation();
+  const { date } = useOwnerFormat();
   const save = useSaveFiscalProfile(ownerId);
-  const [form, setForm] = useState<FormState>(() => initial(from));
+  const [form, setForm] = useState<FormState>(() => initial(from, suggestedFrom));
   const [error, setError] = useState<string | null>(null);
   const set = (patch: Partial<FormState>) => setForm((current) => ({ ...current, ...patch }));
 
@@ -106,8 +112,9 @@ export function ProfileDialog({ open, onOpenChange, ownerId, from, policies }: P
   const currencyOk = form.settlementCurrency.trim() === '' || /^[A-Za-z]{3}$/.test(form.settlementCurrency.trim());
   const jurisdictionOk = form.taxJurisdiction.trim() === '' || JURISDICTION.test(form.taxJurisdiction.trim());
   const mandateOk = form.mandateFrom === '' || form.mandateTo === '' || form.mandateTo >= form.mandateFrom;
-  const valid = DAY.test(form.validFrom) && countryOk && currencyOk && jurisdictionOk && mandateOk;
-
+  // The server refuses a profile that does not start after the newest one (409 `owner_fiscal_profile_overlap`): the form says so before it is sent.
+  const startsAfterTheLast = latestStart === null || !DAY.test(form.validFrom) || form.validFrom > latestStart;
+  const valid = DAY.test(form.validFrom) && startsAfterTheLast && countryOk && currencyOk && jurisdictionOk && mandateOk;
 
   const onSubmit = async () => {
     if (!valid) return;
@@ -154,7 +161,11 @@ export function ProfileDialog({ open, onOpenChange, ownerId, from, policies }: P
       onSubmit={onSubmit}
       testId="profile-dialog"
     >
-      <Field label={t('ownerProfile.dialog.validFrom')} hint={t('ownerProfile.dialog.validFromHint')}>
+      <Field
+        label={t('ownerProfile.dialog.validFrom')}
+        hint={from === null ? t('ownerProfile.dialog.validFromFirst') : t('ownerProfile.dialog.validFromHint')}
+        error={startsAfterTheLast || latestStart === null ? undefined : t('ownerProfile.dialog.validFromTooEarly', { date: date(latestStart) })}
+      >
         <Input type="date" value={form.validFrom} onChange={(event) => set({ validFrom: event.target.value })} data-testid="profile-valid-from" />
       </Field>
 

@@ -4,9 +4,12 @@ import { createElement, type ReactElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import i18n from '@/i18n/config';
+import { todayInRome } from '@/lib/stay-dates';
+import type { OwnerExternalDocument } from '@/types';
 import { MonthEndClosePage } from '../month-end-close-page';
 import { StatementDetailPage } from '../statement-detail-page';
 import { TaxFilingPanel } from '../components/tax-filing-panel';
+import { forgetPayoutKeys } from '../owner-accounting-model';
 import {
   BOOKING_ID,
   MONTH,
@@ -38,11 +41,14 @@ const api = vi.hoisted(() => ({
   publishVersion: vi.fn(),
   downloadPublishedFile: vi.fn(),
   closeMonth: vi.fn(),
+  postCorrection: vi.fn(),
   listExternalDocuments: vi.fn(),
+  verifyExternalDocument: vi.fn(),
   listPayouts: vi.fn(),
   getPayout: vi.fn(),
   confirmPayout: vi.fn(),
   listFiscalProfiles: vi.fn(),
+  getFiscalReadiness: vi.fn(),
   listPolicies: vi.fn(),
   getTaxReconciliation: vi.fn(),
   getF24: vi.fn(),
@@ -76,12 +82,47 @@ vi.setConfig({ testTimeout: 30_000 });
 
 const text = (key: string, options?: Record<string, unknown>) => i18n.t(key, options);
 
-function renderPage(path: string, routePath: string, element: ReactElement) {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } } });
+function renderPage(path: string, routePath: string, element: ReactElement, client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } } })) {
   return render(
     createElement(QueryClientProvider, { client }, createElement(MemoryRouter, { initialEntries: [path] }, createElement(Routes, null, createElement(Route, { path: routePath, element })))),
   );
 }
+
+/** What the server answers to a refusal: the status and the problem with its code (and what it adds). */
+const problem = (status: number, code: string, extra: Record<string, unknown> = {}) => Object.assign(new Error(code), { isAxiosError: true, response: { status, data: { code, ...extra } } });
+/** What axios throws when there is no answer at all. */
+const networkError = () => Object.assign(new Error('Network Error'), { isAxiosError: true, code: 'ERR_NETWORK' });
+/** A promise settled from outside: the request that is on its way. */
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((done) => {
+    resolve = done;
+  });
+  return { promise, resolve };
+}
+
+const READINESS = { ready: true, profileId: 'a1000000-0000-4000-8000-000000000001', policyId: 'b1000000-0000-4000-8000-000000000001', ruleCode: 'IT-RULE', ruleVersion: '2025.1', jurisdiction: 'IT' };
+const LINK_ID = 'ee000000-0000-4000-8000-000000000001';
+const link = (overrides: Partial<OwnerExternalDocument> = {}): OwnerExternalDocument => ({
+  id: LINK_ID,
+  statementVersionId: VERSION_ID,
+  ownerId: OWNER_ID,
+  provider: 'Gestionale',
+  externalId: 'X-1',
+  externalNumber: '12',
+  externalDate: '2025-02-10',
+  documentUrl: null,
+  documentSha256: null,
+  status: 'Entered',
+  verifiedAt: null,
+  verifiedByUserId: null,
+  removedAt: null,
+  removedByUserId: null,
+  removalReason: null,
+  createdAt: '2025-02-10T09:00:00Z',
+  createdByUserId: null,
+  ...overrides,
+});
 
 const renderStatement = () => renderPage(`/app/account/owner-close/versions/${VERSION_ID}`, '/app/account/owner-close/versions/:versionId', createElement(StatementDetailPage));
 const renderMonth = () => renderPage(`/app/account/owner-close?period=${YEAR}-01`, '/app/account/owner-close', createElement(MonthEndClosePage));
@@ -91,8 +132,10 @@ const previous = () => version({ id: OLD_VERSION_ID, version: 1, status: 'Supers
 
 beforeEach(async () => {
   vi.resetAllMocks();
+  forgetPayoutKeys();
   workspace.contexts = [{ contextKey: 'account', roleKey: 'org_owner' }];
   await i18n.changeLanguage('it');
+  api.getFiscalReadiness.mockResolvedValue(READINESS);
   api.listOwners.mockResolvedValue([
     { id: OWNER_ID, firstName: 'Marta', lastName: 'Rossi' },
     { id: OTHER_OWNER_ID, firstName: 'Luca', lastName: 'Bianchi' },
@@ -358,6 +401,9 @@ describe('the month-end close (E06/F05/US02/T04)', () => {
     const dialog = await screen.findByTestId('payout-form');
     // The rule asks whether the agency collected, and the amount of the rent: nothing about a short-term let, which this rule does not ask.
     await within(dialog).findByTestId('payout-facts');
+    // The rule is the one the server names for the day: the profiles of the owner, which come with the identifiers and the bank account in full, are never read for a payment.
+    expect(api.getFiscalReadiness).toHaveBeenCalledWith(OWNER_ID, todayInRome());
+    expect(api.listFiscalProfiles).not.toHaveBeenCalled();
     expect(within(dialog).getByTestId('payout-agency-collected')).toHaveValue('');
     expect(within(dialog).queryByTestId('payout-qualifying')).toBeNull();
     expect(within(dialog).getByTestId('payout-component-rent')).toBeInTheDocument();
@@ -382,14 +428,32 @@ describe('the month-end close (E06/F05/US02/T04)', () => {
   });
 
   it('MonthEndClose_Payout_WithoutAnApprovedRule_IsNotOffered', async () => {
-    api.listPolicies.mockResolvedValue([policy({ approved: false, approvedAt: null, approvedByName: null })]);
+    // The server says what blocks the owner on the day: the payment is not offered, and the way out is the owner's data.
+    api.getFiscalReadiness.mockRejectedValue(problem(422, 'owner_fiscal_policy_not_approved'));
     renderStatement();
     fireEvent.click(await screen.findByTestId('statement-payout'));
 
     const blocked = await screen.findByTestId('payout-rule-blocked');
     expect(blocked).toHaveTextContent(text('ownerAccounting.payout.blocked.policy_not_approved'));
     expect(screen.getByTestId('payout-confirm')).toBeDisabled();
+    expect(within(blocked).getByRole('link')).toHaveAttribute('href', `/app/account/owners/${OWNER_ID}/financial?period=${YEAR}-01`);
     expect(api.confirmPayout).not.toHaveBeenCalled();
+  });
+
+  it('MonthEndClose_Payout_AFailureToReadTheRule_IsNotAVerdictOnTheOwner_AndCanBeTriedAgain', async () => {
+    api.getFiscalReadiness.mockRejectedValueOnce(networkError());
+    renderStatement();
+    fireEvent.click(await screen.findByTestId('statement-payout'));
+
+    // A network error says nothing of the owner: it is told as a failure to read, never as a rule that is missing.
+    const failed = await screen.findByTestId('payout-rule-error');
+    expect(screen.queryByTestId('payout-rule-blocked')).toBeNull();
+    expect(screen.getByTestId('payout-confirm')).toBeDisabled();
+
+    fireEvent.click(within(failed).getByRole('button', { name: text('shared.errorState.retry') }));
+    await screen.findByTestId('payout-rule');
+    expect(screen.queryByTestId('payout-rule-error')).toBeNull();
+    expect(screen.getByTestId('payout-confirm')).toBeEnabled();
   });
 
   it('MonthEndClose_StatementDetail_ExplainsTheFormulaAndWhatChangedSinceThePreviousVersion', async () => {
@@ -430,12 +494,419 @@ describe('the month-end close (E06/F05/US02/T04)', () => {
     expect(api.getVersion).not.toHaveBeenCalled();
   });
 
-  it('MonthEndClose_ANoReachAnswer_IsToldAsSuch_NotAsAFailureToRetry', async () => {
-    // The owner accounting spans every property of the org: a caller restricted to some of them is answered 403 and the page says why.
-    api.getReadiness.mockRejectedValue(Object.assign(new Error('forbidden'), { isAxiosError: true, response: { status: 403, data: {} } }));
+  it('MonthEndClose_TheProtectionIsTheRole_NoReadStartsForAnyoneElse_OnAnyPageOfTheAccounting', async () => {
+    // The owner accounting spans every property of the org, and a read refused with no code is taken by the global handler of the app (the «nessun accesso» page) before a
+    // page could answer: what keeps the others out is the role, checked before anything is read. Not one endpoint of the money is called for a collaborator, an accountant, a manager.
+    const everything = Object.values(api);
+    for (const roleKey of ['org_accountant', 'org_manager', 'staff', 'accountant', 'property_manager']) {
+      workspace.contexts = [{ contextKey: 'account', roleKey }];
+      for (const render of [renderMonth, renderStatement]) {
+        const view = render();
+        expect(await screen.findByTestId('finance-admin-required')).toBeInTheDocument();
+        view.unmount();
+      }
+    }
+    for (const call of everything) expect(call).not.toHaveBeenCalled();
+  });
+
+  it('MonthEndClose_AFailedRead_IsToldWithTheWayToTryAgain', async () => {
+    api.getReadiness.mockRejectedValueOnce(networkError());
     renderMonth();
 
-    expect(await screen.findByTestId('owner-accounting-no-access')).toHaveTextContent(text('ownerAccounting.noReach.title'));
-    expect(screen.queryByTestId('owner-accounting-error')).toBeNull();
+    const failed = await screen.findByTestId('owner-accounting-error');
+    expect(api.getReadiness).toHaveBeenCalledTimes(1);
+    fireEvent.click(within(failed).getByRole('button', { name: text('shared.errorState.retry') }));
+
+    await screen.findByTestId('close-readiness');
+    expect(api.getReadiness).toHaveBeenCalledTimes(2);
+  });
+
+  it('MonthEndClose_TheListOfOwners_IsReadAgainEveryTimeThePageOpens', async () => {
+    // The activation adds owners: a list kept fresh for minutes would show «Proprietario 1A2B3C» for one that was just named.
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: 5 * 60_000 }, mutations: { retry: false } } });
+    const month = () => renderPage(`/app/account/owner-close?period=${YEAR}-01`, '/app/account/owner-close', createElement(MonthEndClosePage), client);
+
+    const first = month();
+    await screen.findByText('Marta Rossi');
+    first.unmount();
+    expect(api.listOwners).toHaveBeenCalledTimes(1);
+    month();
+    await screen.findByText('Marta Rossi');
+    await waitFor(() => expect(api.listOwners).toHaveBeenCalledTimes(2));
+  });
+});
+
+describe('the controlled close, step by step (E06/F05/US02/T04)', () => {
+  const draft = () => version({ status: 'Draft', version: 1, supersedesVersionId: null, supersededByVersionId: null, approvedAt: null, approvedByUserId: null, publishedAt: null, publishedByUserId: null, publishedSha256: null });
+
+  it('MonthEndClose_Approve_AsksForAConfirmationThatSaysWhatHappens_BeforeAnythingIsSent', async () => {
+    api.getReadiness.mockResolvedValue(readiness([ownerReadiness({ latestVersion: 1, latestStatus: 'Draft' })]));
+    api.listVersions.mockResolvedValue([draft()]);
+    api.approveVersion.mockResolvedValue({ ...draft(), status: 'Approved' });
+    renderMonth();
+
+    fireEvent.click(await screen.findByTestId(`row-${OWNER_ID}-approve`));
+    const dialog = await screen.findByRole('dialog');
+    // What happens and what is not possible afterwards is said before the person confirms; nothing is sent by opening it.
+    expect(within(dialog).getByText(text('ownerAccounting.step.approve.consequence1'))).toBeInTheDocument();
+    expect(within(dialog).getByText(text('ownerAccounting.step.approve.consequence2'))).toBeInTheDocument();
+    expect(api.approveVersion).not.toHaveBeenCalled();
+
+    fireEvent.click(within(dialog).getByRole('button', { name: text('ownerAccounting.step.approve.confirm') }));
+    await waitFor(() => expect(api.approveVersion).toHaveBeenCalledWith(VERSION_ID));
+    expect(api.publishVersion).not.toHaveBeenCalled();
+  });
+
+  it('MonthEndClose_Publish_AsksForAConfirmationThatSaysTheFileNeverChanges_AndIsAnotherStepThanTheApproval', async () => {
+    api.getReadiness.mockResolvedValue(readiness([ownerReadiness({ latestVersion: 1, latestStatus: 'Approved' })]));
+    api.listVersions.mockResolvedValue([{ ...draft(), status: 'Approved' }]);
+    api.publishVersion.mockResolvedValue(version());
+    renderMonth();
+
+    fireEvent.click(await screen.findByTestId(`row-${OWNER_ID}-publish`));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText(text('ownerAccounting.step.publish.consequence1'))).toBeInTheDocument();
+    expect(api.publishVersion).not.toHaveBeenCalled();
+
+    fireEvent.click(within(dialog).getByRole('button', { name: text('ownerAccounting.step.publish.confirm') }));
+    await waitFor(() => expect(api.publishVersion).toHaveBeenCalledWith(VERSION_ID));
+    // Publishing is not approving: the approval is not asked again.
+    expect(api.approveVersion).not.toHaveBeenCalled();
+  });
+
+  it('MonthEndClose_Correction_SignsTheAmountByWhoItIsInFavourOf', async () => {
+    api.postCorrection.mockResolvedValue(entry());
+    renderStatement();
+
+    // Charged to the owner: it is taken off the balance, so the line is negative.
+    fireEvent.click(await screen.findByTestId('statement-menu-correction'));
+    let dialog = await screen.findByTestId('correction-dialog');
+    fireEvent.change(within(dialog).getByTestId('correction-direction'), { target: { value: 'fromOwner' } });
+    fireEvent.change(within(dialog).getByTestId('correction-amount'), { target: { value: '50,00' } });
+    fireEvent.change(within(dialog).getByTestId('correction-reason'), { target: { value: 'Pulizia pagata due volte' } });
+    fireEvent.click(within(dialog).getByTestId('correction-dialog-submit'));
+    await waitFor(() => expect(api.postCorrection).toHaveBeenCalledTimes(1));
+    expect(api.postCorrection.mock.calls[0][0]).toEqual({ ownerId: OWNER_ID, amount: -50, currency: 'EUR', date: todayInRome(), description: 'Pulizia pagata due volte' });
+    await waitFor(() => expect(screen.queryByTestId('correction-dialog')).toBeNull());
+
+    // In favour of the owner: it is added to the balance, so the line is positive (the amount is typed without a sign).
+    fireEvent.click(await screen.findByTestId('statement-menu-correction'));
+    dialog = await screen.findByTestId('correction-dialog');
+    fireEvent.change(within(dialog).getByTestId('correction-amount'), { target: { value: '12,50' } });
+    fireEvent.change(within(dialog).getByTestId('correction-reason'), { target: { value: 'Rimborso dovuto' } });
+    fireEvent.click(within(dialog).getByTestId('correction-dialog-submit'));
+    await waitFor(() => expect(api.postCorrection).toHaveBeenCalledTimes(2));
+    expect(api.postCorrection.mock.calls[1][0]).toMatchObject({ amount: 12.5, description: 'Rimborso dovuto' });
+
+    // A correction with no reason is not sent: it is the reason that tells whoever checks the month why.
+    fireEvent.click(await screen.findByTestId('statement-menu-correction'));
+    dialog = await screen.findByTestId('correction-dialog');
+    fireEvent.change(within(dialog).getByTestId('correction-amount'), { target: { value: '5' } });
+    expect(within(dialog).getByTestId('correction-dialog-submit')).toBeDisabled();
+  });
+});
+
+describe('what a payment asks, and the payment that was made once (E06/F05/US02/T04)', () => {
+  /** Opens the dialog of the payment on the statement and types the amount. */
+  async function openPayoutWith(gross: string) {
+    fireEvent.click(await screen.findByTestId('statement-payout'));
+    const dialog = await screen.findByTestId('payout-form');
+    await waitFor(() => expect(within(dialog).getByTestId('payout-confirm')).toBeEnabled());
+    fireEvent.change(within(dialog).getByTestId('payout-gross'), { target: { value: gross } });
+    return dialog;
+  }
+  const keyOf = (call: number) => (api.confirmPayout.mock.calls[call][0] as { idempotencyKey: string }).idempotencyKey;
+
+  it('MonthEndClose_Payout_ARetryAfterAFailure_SendsTheSameKey_AndSoDoesTheDialogOpenedAgain_UntilTheServerConfirmed', async () => {
+    api.confirmPayout.mockRejectedValueOnce(networkError()).mockRejectedValueOnce(networkError()).mockResolvedValue(payout());
+    renderStatement();
+
+    // The answer was lost: the person asks again in the same dialog, and the same request is sent.
+    let dialog = await openPayoutWith('800,00');
+    fireEvent.click(within(dialog).getByTestId('payout-confirm'));
+    await within(dialog).findByTestId('payout-error');
+    fireEvent.click(within(dialog).getByTestId('payout-confirm'));
+    await waitFor(() => expect(api.confirmPayout).toHaveBeenCalledTimes(2));
+    await within(dialog).findByTestId('payout-error');
+    expect(keyOf(1)).toBe(keyOf(0));
+
+    // The dialog is closed and opened again with the same facts: still the same request.
+    fireEvent.click(within(dialog).getByRole('button', { name: text('shared.cancel') }));
+    await waitFor(() => expect(screen.queryByTestId('payout-form')).toBeNull());
+    dialog = await openPayoutWith('800,00');
+    fireEvent.click(within(dialog).getByTestId('payout-confirm'));
+    await screen.findByTestId('payout-done');
+    expect(api.confirmPayout).toHaveBeenCalledTimes(3);
+    expect(keyOf(2)).toBe(keyOf(0));
+
+    // Confirmed: the same amount on the same day is another payment, and it gets another key (the first one would answer with the payout that already exists).
+    fireEvent.click(within(screen.getByTestId('payout-done')).getByRole('button', { name: text('shared.close') }));
+    await waitFor(() => expect(screen.queryByTestId('payout-done')).toBeNull());
+    dialog = await openPayoutWith('800,00');
+    fireEvent.click(within(dialog).getByTestId('payout-confirm'));
+    await screen.findByTestId('payout-done');
+    expect(api.confirmPayout).toHaveBeenCalledTimes(4);
+    expect(keyOf(3)).not.toBe(keyOf(0));
+  });
+
+  it('MonthEndClose_Payout_ASecondClick_OrEscapeWhileTheRequestIsOnItsWay_RecordsNothingTwice', async () => {
+    const sent = deferred<ReturnType<typeof payout>>();
+    api.confirmPayout.mockReturnValue(sent.promise);
+    renderStatement();
+
+    const dialog = await openPayoutWith('800,00');
+    // Two submits in the same tick (a click and the Enter of the form): the second is stopped before the state of the mutation says a request is on its way.
+    fireEvent.submit(dialog);
+    fireEvent.submit(dialog);
+    await waitFor(() => expect(api.confirmPayout).toHaveBeenCalledTimes(1));
+    // A second click once the button is busy does nothing either.
+    fireEvent.click(within(dialog).getByTestId('payout-confirm'));
+    await new Promise((done) => setTimeout(done, 0));
+    expect(api.confirmPayout).toHaveBeenCalledTimes(1);
+
+    // The dialog is not left while the request is on its way (Escape, the cross, a click outside): nobody opens another one for a payment that may be recorded already.
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape', code: 'Escape' });
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: text('shared.close') }));
+    expect(screen.getByTestId('payout-form')).toBeInTheDocument();
+
+    sent.resolve(payout());
+    await screen.findByTestId('payout-done');
+    expect(api.confirmPayout).toHaveBeenCalledTimes(1);
+  });
+
+  it('MonthEndClose_Payout_AnAmountOverWhatIsLeft_IsWarnedBeforeItIsRecorded', async () => {
+    // 800 owed, 500 paid: 300 left.
+    api.listPayouts.mockResolvedValue([payout({ grossAmount: 500 })]);
+    renderStatement();
+
+    const dialog = await openPayoutWith('400,00');
+    const warning = await within(dialog).findByTestId('payout-over-left');
+    expect(warning).toHaveTextContent('300,00');
+    fireEvent.change(within(dialog).getByTestId('payout-gross'), { target: { value: '300,00' } });
+    expect(within(dialog).queryByTestId('payout-over-left')).toBeNull();
+  });
+
+  it('MonthEndClose_Payout_WhenTheBalanceIsAlreadyPaid_AnyAmountIsWarned', async () => {
+    api.listPayouts.mockResolvedValue([payout({ grossAmount: 800 })]);
+    renderStatement();
+
+    const dialog = await openPayoutWith('10,00');
+    expect(await within(dialog).findByTestId('payout-over-left')).toHaveTextContent(text('ownerAccounting.payout.nothingLeft'));
+  });
+});
+
+describe('the next step of an owner whose statement is published (E06/F05/US02/T04)', () => {
+  it('MonthEndClose_AStatementAlreadyPaid_PutsTheCloseFirst_NotAnotherPayment', async () => {
+    // 800 owed, 800 paid: the one highlighted step of the row is the close; the payment stays in the menu.
+    api.listPayouts.mockResolvedValue([payout({ grossAmount: 800 })]);
+    renderMonth();
+
+    expect(await screen.findByTestId(`row-${OWNER_ID}-close`)).toBeInTheDocument();
+    expect(screen.queryByTestId(`row-${OWNER_ID}-payout`)).toBeNull();
+    // The payment is still there for an extra one, in the menu of the row.
+    expect(screen.getByTestId(`row-${OWNER_ID}-more`)).toBeInTheDocument();
+  });
+
+  it('MonthEndClose_AStatementNotPaidYet_StillAsksForThePayment', async () => {
+    api.listPayouts.mockResolvedValue([payout({ grossAmount: 500 })]);
+    renderMonth();
+
+    expect(await screen.findByTestId(`row-${OWNER_ID}-payout`)).toBeInTheDocument();
+    expect(screen.queryByTestId(`row-${OWNER_ID}-close`)).toBeNull();
+  });
+
+  it('MonthEndClose_TheRowWaitsForThePayments_AndSaysWhenTheyCannotBeRead', async () => {
+    api.listPayouts.mockRejectedValue(networkError());
+    renderMonth();
+
+    // Not known: the payments are not read, so the row says so with the way to try again, and the step it can still offer is the one it always offered.
+    expect(await screen.findByTestId(`row-${OWNER_ID}-payments-error`)).toBeInTheDocument();
+    expect(screen.getByTestId(`row-${OWNER_ID}-payout`)).toBeInTheDocument();
+  });
+});
+
+describe('the tax year, told for what it is (E06/F05/US02/T04, AC-NF110-5)', () => {
+  const reconciliation = (overrides: Record<string, unknown>) => ({ year: YEAR, obligationsTotal: 0, f24Total: 0, annualTotal: null, months: [], reconciled: true, ...overrides });
+  const checked = () => screen.findByTestId('tax-year-check');
+
+  it('TaxYear_AYearWithNoWithholding_SaysThereIsNothingToReconcile_NotThatItMatches', async () => {
+    api.getTaxReconciliation.mockResolvedValue(reconciliation({}));
+    api.getAnnualDataset.mockResolvedValue(null);
+    renderTax();
+
+    const year = await checked();
+    expect(year).toHaveAttribute('data-verdict', 'empty');
+    expect(year).toHaveTextContent(text('ownerAccounting.tax.yearEmpty', { year: YEAR }));
+    expect(year).not.toHaveTextContent(/coincid/i);
+  });
+
+  it('TaxYear_F24ThatMatchAndNoAnnualDataYet_SaysOnlyTheF24Match', async () => {
+    api.getTaxReconciliation.mockResolvedValue(reconciliation({ obligationsTotal: 120, f24Total: 120, months: [{ month: MONTH, obligations: 120, f24: 120, filingState: 'Generated' }] }));
+    api.getF24.mockResolvedValue(f24());
+    api.getAnnualDataset.mockResolvedValue(null);
+    renderTax();
+
+    const year = await checked();
+    expect(year).toHaveAttribute('data-verdict', 'f24Matches');
+    expect(year).toHaveTextContent(/F24/);
+    // The annual data do not exist: they are not said to match.
+    expect(year).not.toHaveTextContent(/annual/i);
+  });
+
+  it('TaxYear_AnnualDataThatDoNotMatch_AreTheOnesToldApart_NotTheF24', async () => {
+    api.getTaxReconciliation.mockResolvedValue(reconciliation({ obligationsTotal: 500, f24Total: 500, annualTotal: 400, months: [{ month: MONTH, obligations: 500, f24: 500, filingState: 'Generated' }] }));
+    api.getF24.mockResolvedValue(f24({ totalAmount: 500 }));
+    api.getAnnualDataset.mockResolvedValue(dataset({ totalWithheld: 400 }));
+    renderTax();
+
+    const year = await checked();
+    expect(year).toHaveAttribute('data-verdict', 'differs');
+    const annual = within(year).getByTestId('tax-year-annual-differs');
+    expect(annual).toHaveTextContent('400,00');
+    expect(annual).toHaveTextContent('500,00');
+    expect(within(year).queryByTestId('tax-year-f24-differs')).toBeNull();
+  });
+
+  it('TaxYear_AnF24ThatIsNotWhatTheWithholdingsSay_IsToldMonthByMonth', async () => {
+    api.getTaxReconciliation.mockResolvedValue(
+      reconciliation({
+        obligationsTotal: 200,
+        f24Total: 90,
+        months: [
+          { month: 1, obligations: 100, f24: 90, filingState: 'Generated' },
+          { month: 2, obligations: 100, f24: null, filingState: null },
+        ],
+      }),
+    );
+    api.getF24.mockResolvedValue(f24({ totalAmount: 90 }));
+    api.getAnnualDataset.mockResolvedValue(null);
+    renderTax();
+
+    const year = await checked();
+    expect(year).toHaveAttribute('data-verdict', 'differs');
+    const lines = within(within(year).getByTestId('tax-year-f24-differs')).getAllByRole('listitem');
+    expect(lines).toHaveLength(2);
+    expect(lines[0]).toHaveTextContent('100,00');
+    expect(lines[0]).toHaveTextContent('90,00');
+    expect(lines[1]).toHaveTextContent('F24 non ancora generato');
+    expect(year).not.toHaveTextContent(/coincidono con gli F24 e/i);
+  });
+
+  it('TaxYear_ReconciledIsSaidOnlyWithAnF24AndAnnualDataThatMatch', async () => {
+    api.getTaxReconciliation.mockResolvedValue(reconciliation({ obligationsTotal: 120, f24Total: 120, annualTotal: 120, months: [{ month: MONTH, obligations: 120, f24: 120, filingState: 'Generated' }] }));
+    api.getF24.mockResolvedValue(f24());
+    api.getAnnualDataset.mockResolvedValue(dataset());
+    renderTax();
+
+    const year = await checked();
+    expect(year).toHaveAttribute('data-verdict', 'reconciled');
+    expect(year).toHaveTextContent(/coincidono con gli F24 e con i dati annuali/);
+  });
+
+  it('TaxFiling_MovingAFile_SendsTheProofTheStateIsCalledBy', async () => {
+    api.getTaxReconciliation.mockResolvedValue(reconciliation({ obligationsTotal: 120, f24Total: 120, annualTotal: 120, months: [{ month: MONTH, obligations: 120, f24: 120, filingState: 'Reviewed' }] }));
+    api.getF24.mockResolvedValue(f24({ filingState: 'Reviewed' }));
+    api.getAnnualDataset.mockResolvedValue(dataset({ filingState: 'Submitted', handoffReference: 'Commercialista' }));
+    api.setF24FilingState.mockResolvedValue(f24({ filingState: 'Submitted', handoffReference: 'x' }));
+    api.setDatasetFilingState.mockResolvedValue(dataset());
+    renderTax();
+
+    // The handoff of the F24: «inviato» needs who sent it and how, and nothing is sent without it.
+    fireEvent.click(await screen.findByTestId('filing-step-Submitted'));
+    let dialog = await screen.findByRole('dialog');
+    const confirmSubmitted = within(dialog).getByRole('button', { name: text('ownerAccounting.filing.dialog.Submitted.confirm') });
+    expect(confirmSubmitted).toBeDisabled();
+    fireEvent.change(within(dialog).getByTestId('filing-text'), { target: { value: ' Commercialista, 16/02 ' } });
+    fireEvent.click(confirmSubmitted);
+    await waitFor(() => expect(api.setF24FilingState).toHaveBeenCalledWith(f24().id, { state: 'Submitted', handoffReference: 'Commercialista, 16/02' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+
+    // The receipt of the annual data: «accettato» needs the receipt of the authority.
+    fireEvent.click(await screen.findByTestId('filing-step-Accepted'));
+    dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByRole('button', { name: text('ownerAccounting.filing.dialog.Accepted.confirm') })).toBeDisabled();
+    fireEvent.change(within(dialog).getByTestId('filing-text'), { target: { value: 'RIC-77' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: text('ownerAccounting.filing.dialog.Accepted.confirm') }));
+    await waitFor(() => expect(api.setDatasetFilingState).toHaveBeenCalledWith(dataset().id, { state: 'Accepted', receiptReference: 'RIC-77' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+
+    // A rejection needs its reason.
+    fireEvent.click(await screen.findByTestId('filing-step-Rejected'));
+    dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByRole('button', { name: text('ownerAccounting.filing.dialog.Rejected.confirm') })).toBeDisabled();
+    fireEvent.change(within(dialog).getByTestId('filing-text'), { target: { value: 'Dati non validi' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: text('ownerAccounting.filing.dialog.Rejected.confirm') }));
+    await waitFor(() => expect(api.setDatasetFilingState).toHaveBeenCalledWith(dataset().id, { state: 'Rejected', reason: 'Dati non validi' }));
+  });
+
+  it('TaxFiling_TheReviewOfAGeneratedFile_NeedsNoText_AndSendsNone', async () => {
+    api.getTaxReconciliation.mockResolvedValue(reconciliation({ obligationsTotal: 120, f24Total: 120, months: [{ month: MONTH, obligations: 120, f24: 120, filingState: 'Generated' }] }));
+    api.getF24.mockResolvedValue(f24());
+    api.getAnnualDataset.mockResolvedValue(null);
+    api.setF24FilingState.mockResolvedValue(f24({ filingState: 'Reviewed' }));
+    renderTax();
+
+    fireEvent.click(await screen.findByTestId('filing-step-Reviewed'));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).queryByTestId('filing-text')).toBeNull();
+    fireEvent.click(within(dialog).getByRole('button', { name: text('ownerAccounting.filing.dialog.Reviewed.confirm') }));
+    await waitFor(() => expect(api.setF24FilingState).toHaveBeenCalledWith(f24().id, { state: 'Reviewed' }));
+  });
+});
+
+describe('the buttons of a card while a step of it is on its way (E06/F05/US02/T04)', () => {
+  it('TaxFiling_WhileAFileIsBeingMade_NoOtherButtonOfThePanelCanBePressed', async () => {
+    const made = deferred<ReturnType<typeof f24>>();
+    api.getTaxReconciliation.mockResolvedValue({ year: YEAR, obligationsTotal: 120, f24Total: 120, annualTotal: null, months: [{ month: MONTH, obligations: 120, f24: 120, filingState: 'Generated' }], reconciled: true });
+    api.getF24.mockResolvedValue(f24());
+    api.getAnnualDataset.mockResolvedValue(null);
+    api.generateAnnualDataset.mockReturnValue(made.promise);
+    renderTax();
+
+    const regenerate = await screen.findByTestId('f24-regenerate');
+    const review = screen.getByTestId('filing-step-Reviewed');
+    expect(regenerate).toBeEnabled();
+    fireEvent.click(await screen.findByTestId('tax-generate-annual'));
+
+    // The annual data are being made: the F24 beside them cannot be reviewed, made again or downloaded until the server has answered.
+    await waitFor(() => expect(screen.getByTestId('tax-generate-annual')).toBeDisabled());
+    expect(regenerate).toBeDisabled();
+    expect(review).toBeDisabled();
+    expect(screen.getByTestId('f24-pdf')).toBeDisabled();
+
+    made.resolve(dataset());
+    await waitFor(() => expect(screen.getByTestId('filing-step-Reviewed')).toBeEnabled());
+  });
+
+  it('TaxFiling_WhileTheF24IsBeingMade_TheAnnualDataCannotBeMadeToo', async () => {
+    const made = deferred<ReturnType<typeof f24>>();
+    api.getTaxReconciliation.mockResolvedValue({ year: YEAR, obligationsTotal: 120, f24Total: 0, annualTotal: null, months: [{ month: MONTH, obligations: 120, f24: null, filingState: null }], reconciled: false });
+    api.getAnnualDataset.mockResolvedValue(null);
+    api.generateF24.mockReturnValue(made.promise);
+    renderTax();
+
+    fireEvent.click(await screen.findByTestId('tax-generate-f24'));
+    await waitFor(() => expect(screen.getByTestId('tax-generate-annual')).toBeDisabled());
+    expect(screen.getByTestId('tax-generate-f24')).toBeDisabled();
+
+    made.resolve(f24());
+    await waitFor(() => expect(screen.getByTestId('tax-generate-annual')).toBeEnabled());
+  });
+
+  it('MonthEndClose_WhileALinkIsBeingChecked_TheOtherButtonsOfTheInvoicesCannotBePressed', async () => {
+    const checking = deferred<OwnerExternalDocument>();
+    api.listExternalDocuments.mockResolvedValue([link()]);
+    api.verifyExternalDocument.mockReturnValue(checking.promise);
+    renderStatement();
+
+    fireEvent.click(await screen.findByTestId('external-verify'));
+    // Unlinking, or linking another invoice, would act on a link that is changing.
+    await waitFor(() => expect(screen.getByTestId('external-remove')).toBeDisabled());
+    expect(screen.getByTestId('external-add')).toBeDisabled();
+    expect(screen.getByTestId('external-verify')).toBeDisabled();
+
+    checking.resolve(link({ status: 'Verified', verifiedAt: '2025-02-11T09:00:00Z' }));
+    await waitFor(() => expect(screen.getByTestId('external-add')).toBeEnabled());
+    expect(screen.getByTestId('external-remove')).toBeEnabled();
   });
 });

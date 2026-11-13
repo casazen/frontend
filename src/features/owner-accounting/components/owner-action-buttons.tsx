@@ -15,7 +15,8 @@ interface OwnerActionButtonsProps {
 /**
  * The next step of an owner's month as the one button, and the others in «⋯» (approve, publish, pay, close, a new version): one thing to do at a
  * time. A published statement has no «edit»: the only change it offers is a new version, which supersedes it. What cannot be done now says why in
- * a line (the ledger changed after the version; the month is not over), never as a button that would be refused.
+ * a line (the ledger changed after the version; the month is not over), never as a button that would be refused. While a step of the card is on its way (`busy`) none of its
+ * buttons can be pressed, the «⋯» menu included.
  */
 export function OwnerActionButtons({ actions, busy = false, onAsk, testId }: OwnerActionButtonsProps) {
   const { t } = useTranslation();
@@ -33,7 +34,7 @@ export function OwnerActionButtons({ actions, busy = false, onAsk, testId }: Own
         {others.length > 0 ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button type="button" variant="outline" size="icon" aria-label={t('ownerAccounting.actions.more')} data-testid={`${testId}-more`}>
+              <Button type="button" variant="outline" size="icon" disabled={busy} aria-label={t('ownerAccounting.actions.more')} data-testid={`${testId}-more`}>
                 <Ellipsis className="h-5 w-5" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
