@@ -24,6 +24,12 @@ import {
 /** The plan page, `/app/short-rent/onboarding` (behind the flag `octorateOnboarding`). */
 export const ONBOARDING_PLAN_PATH = '/app/short-rent/onboarding';
 
+/** The bulk configuration for an agency with many properties, `/app/short-rent/onboarding/bulk` (E10/F03/US03/T02, behind the flag `octorateOnboarding`, in no menu). */
+export const ONBOARDING_BULK_PATH = `${ONBOARDING_PLAN_PATH}/bulk`;
+
+/** From how many properties the plan offers the bulk configuration: more than this (the pilot group is 5 to 10, H10). */
+export const BULK_OFFER_ABOVE = 10;
+
 /** The page of one part: the launcher that opens the wizard that owns it (E10/F03/US02/T02 registers `/app/short-rent/onboarding/parts/:partKey`). */
 export function partPath(key: OnboardingPartKey): string {
   return `${ONBOARDING_PLAN_PATH}/parts/${key}`;

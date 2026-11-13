@@ -1,5 +1,5 @@
 import { Fragment, useId, useMemo, useState, type ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { CircleHelp } from 'lucide-react';
@@ -13,9 +13,10 @@ import { supportConfig } from '@/config/support.config';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getProblemMessage } from '@/lib/api-errors';
-import { firstOpenPart, knownNeeds, knownParts } from '@/lib/onboarding-parts';
+import { BULK_OFFER_ABOVE, ONBOARDING_BULK_PATH, firstOpenPart, knownNeeds, knownParts } from '@/lib/onboarding-parts';
 import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { cn } from '@/lib/utils';
+import { useFlowSummaries } from '@/queries/use-onboarding-flows';
 import { useExitPart, useOnboardingPlan } from '@/queries/use-onboarding-plan';
 import type { OnboardingPart } from '@/types/onboarding.types';
 import { OnboardingDeferDialog } from './components/onboarding-defer-dialog';
@@ -52,6 +53,8 @@ export function OnboardingPlanPage() {
   // otherwise nothing of it is drawn or read.
   const showOwnerStep = flags.agencyTier && isAdmin;
   const plan = useOnboardingPlan();
+  // The offer of the bulk configuration is the administrator's (the page is, and the server asks `OrgBillingAdmin`): nobody else asks for the counts.
+  const flowSummaries = useFlowSummaries({ enabled: isAdmin });
   const exit = useExitPart();
   const adminNoteId = useId();
   const [deferring, setDeferring] = useState<Deferring | null>(null);
@@ -59,6 +62,9 @@ export function OnboardingPlanPage() {
   const parts = useMemo(() => knownParts(plan.data), [plan.data]);
   const needs = useMemo(() => knownNeeds(plan.data), [plan.data]);
   const focus = firstOpenPart(parts);
+  // Every flow counts every property the caller reaches (each is in exactly one state of each flow), so the largest total is the number of properties.
+  const propertyCount = (flowSummaries.data ?? []).reduce((largest, summary) => Math.max(largest, Number.isFinite(summary.total) ? summary.total : 0), 0);
+  const offerBulk = isAdmin && propertyCount > BULK_OFFER_ABOVE;
 
   /** The home of the host: the plan is a page of Affitti brevi. */
   const home = getDefaultRoute('short-rent');
@@ -142,6 +148,20 @@ export function OnboardingPlanPage() {
             {showOwnerStep && !parts.some((part) => part.code === 'properties') ? <OwnerStep /> : null}
           </ol>
         </section>
+
+        {offerBulk ? (
+          <section aria-labelledby={`${adminNoteId}-bulk`} className="min-w-0 space-y-2 rounded-lg border bg-card p-4" data-testid="onboarding-plan-bulk">
+            <h2 id={`${adminNoteId}-bulk`} className="text-lg font-semibold">
+              {t('onboardingPlan.bulk.entry.title')}
+            </h2>
+            <p className="text-sm text-foreground/70">{t('onboardingPlan.bulk.entry.text')}</p>
+            <Button asChild variant="outline" className={TOUCH_TARGET}>
+              <Link to={ONBOARDING_BULK_PATH} data-testid="onboarding-plan-bulk-link">
+                {t('onboardingPlan.bulk.entry.action')}
+              </Link>
+            </Button>
+          </section>
+        ) : null}
       </>
     );
   }

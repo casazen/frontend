@@ -111,6 +111,114 @@ describe('route manifest: the pages of the parts, the panel steps and the summar
   });
 });
 
+describe('route manifest: the integration settings (E10/F03/US03/T01)', () => {
+  const SETTINGS_PATH = '/app/short-rent/settings/integration';
+  const settings = ROUTE_MANIFEST.find((candidate) => candidate.path === SETTINGS_PATH);
+  const admin = (_context: string, permission: string) => permission === 'org.billing.admin';
+  const notAdmin = () => false;
+
+  it('RouteManifest_TheSettingsPage_IsAnEntryOfAltroBehindTheFlagForTheOrganizationAdministrator', () => {
+    expect(settings?.context).toBe('short-rent');
+    expect(settings?.featureFlag).toBe('octorateOnboarding');
+    expect(settings?.requiredPermissions).toEqual([]);
+    expect(settings?.orgBillingAdmin).toBe(true);
+    expect(settings?.navKey).toBe('nav.integrationSettings');
+    expect(settings?.navPlacement).toBe('secondary');
+    expect(settings?.navOrder).toBe(34);
+    expect(settings?.icon).toBe('Settings');
+    expect(settings?.icon && NAV_ICONS[settings.icon]).toBeDefined();
+    expect(ONBOARDING_ROUTES.filter((route) => route.path === SETTINGS_PATH)).toHaveLength(1);
+  });
+
+  it('RouteManifest_TheSettingsPage_IsInTheMenuOnlyForTheAdministratorWithTheFlagOnAndTheAddressStaysReachable', () => {
+    const inAltro = (hasPermission: (context: string, permission: string) => boolean, features?: Partial<typeof flagOn>) =>
+      getSecondaryNavEntries('short-rent', hasPermission as never, features).map((page) => page.path);
+
+    expect(inAltro(admin, flagOn)).toContain(SETTINGS_PATH);
+    // Anyone else has no entry, and with the flag off nobody has one: the page does not exist.
+    expect(inAltro(notAdmin, flagOn)).not.toContain(SETTINGS_PATH);
+    for (const features of [undefined, {}, DEFAULT_FEATURE_FLAGS]) expect(inAltro(admin, features)).not.toContain(SETTINGS_PATH);
+    // The route guard asks no permission (the menu does, through `orgBillingAdmin`): a person who is not the administrator who opens the address is told
+    // who manages the page by the page itself, and meets no 403.
+    expect(settings?.requiredPermissions).toEqual([]);
+    expect(settings && hasEntryPermission(settings, admin)).toBe(true);
+    expect(settings && hasEntryPermission(settings, notAdmin)).toBe(false);
+  });
+
+  // The first import of a page pulls in the whole shell: slow on a loaded machine, hence the room.
+  it('RouteManifest_TheSettingsPage_LoadsAPageThatIsAComponent', { timeout: 60_000 }, async () => {
+    const page = await settings?.component();
+
+    expect(typeof page?.default).toBe('function');
+  });
+});
+
+describe('route manifest: the bulk configuration (E10/F03/US03/T02)', () => {
+  const BULK_PATH = '/app/short-rent/onboarding/bulk';
+  const bulk = ROUTE_MANIFEST.find((candidate) => candidate.path === BULK_PATH);
+
+  it('RouteManifest_TheBulkPage_IsOnItsRouteBehindTheFlagInNoMenuAndForTheOrganizationAdministrator', () => {
+    expect(bulk?.context).toBe('short-rent');
+    expect(bulk?.featureFlag).toBe('octorateOnboarding');
+    expect(bulk?.requiredPermissions).toEqual([]);
+    expect(bulk?.orgBillingAdmin).toBe(true);
+    expect(bulk?.navPlacement).toBeUndefined();
+    expect(bulk?.navParent).toBeUndefined();
+    expect(bulk?.navKey).toBeUndefined();
+    expect(ONBOARDING_ROUTES.filter((route) => route.path === BULK_PATH)).toHaveLength(1);
+    expect(bulk && isEntryFeatureEnabled(bulk, DEFAULT_FEATURE_FLAGS)).toBe(false);
+    expect(bulk && isEntryFeatureEnabled(bulk, flagOn)).toBe(true);
+    for (const features of [undefined, {}, DEFAULT_FEATURE_FLAGS, flagOn]) {
+      expect(getVisibleNavEntries('short-rent', allowAll, features).map((candidate) => candidate.path)).not.toContain(BULK_PATH);
+      expect(getSecondaryNavEntries('short-rent', allowAll, features).map((candidate) => candidate.path)).not.toContain(BULK_PATH);
+    }
+  });
+
+  // The first import of a page pulls in the whole shell: slow on a loaded machine, hence the room.
+  it('RouteManifest_TheBulkPage_LoadsAPageThatIsAComponent', { timeout: 60_000 }, async () => {
+    const page = await bulk?.component();
+
+    expect(typeof page?.default).toBe('function');
+  });
+});
+
+describe('route manifest: the staff queue of the assist requests (E10/F03/US03/T03)', () => {
+  const ASSIST_PATH = '/app/admin/onboarding-assist';
+  const assist = ROUTE_MANIFEST.find((candidate) => candidate.path === ASSIST_PATH);
+  const staff = (_context: string, permission: string) => permission === 'admin.users.read';
+
+  it('RouteManifest_TheAssistQueue_IsAnEntryOfAltroOfTheStaffAreaBehindTheFlagAndAsksWhatTheOtherQueuePagesAsk', () => {
+    expect(assist?.context).toBe('admin');
+    expect(assist?.requiredPermissions).toEqual(['admin.users.read']);
+    expect(assist?.featureFlag).toBe('octorateOnboarding');
+    expect(assist?.navKey).toBe('nav.onboardingAssist');
+    expect(assist?.navGroup).toBe('platform');
+    expect(assist?.navPlacement).toBe('secondary');
+    expect(assist?.navOrder).toBe(27);
+    expect(assist?.icon).toBe('Wrench');
+    expect(assist?.icon && NAV_ICONS[assist.icon]).toBeDefined();
+    expect(ONBOARDING_ROUTES.filter((route) => route.path === ASSIST_PATH)).toHaveLength(1);
+  });
+
+  it('RouteManifest_TheAssistQueue_IsInTheMenuOnlyForTheStaffWithTheFlagOnAndInNoOtherArea', () => {
+    const inAltro = (area: 'admin' | 'short-rent', hasPermission: (context: string, permission: string) => boolean, features?: Partial<typeof flagOn>) =>
+      getSecondaryNavEntries(area, hasPermission as never, features).map((page) => page.path);
+
+    expect(inAltro('admin', staff, flagOn)).toContain(ASSIST_PATH);
+    expect(assist && hasEntryPermission(assist, () => false)).toBe(false);
+    expect(inAltro('admin', () => false, flagOn)).not.toContain(ASSIST_PATH);
+    for (const features of [undefined, {}, DEFAULT_FEATURE_FLAGS]) expect(inAltro('admin', staff, features)).not.toContain(ASSIST_PATH);
+    expect(inAltro('short-rent', allowAll, flagOn)).not.toContain(ASSIST_PATH);
+  });
+
+  // The first import of a page pulls in the whole shell: slow on a loaded machine, hence the room.
+  it('RouteManifest_TheAssistQueue_LoadsAPageThatIsAComponent', { timeout: 60_000 }, async () => {
+    const page = await assist?.component();
+
+    expect(typeof page?.default).toBe('function');
+  });
+});
+
 describe('feature flag octorateOnboarding (mirror of the backend Features:OctorateOnboarding)', () => {
   it('FeatureFlags_OctorateOnboarding_IsOffByDefaultAndWhileTheFlagsAreNotLoaded', () => {
     expect(DEFAULT_FEATURE_FLAGS.octorateOnboarding).toBe(false);
