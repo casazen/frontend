@@ -6,6 +6,7 @@ import { I18nextProvider } from 'react-i18next';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import { onboardingApi } from '@/api/onboarding.api';
+import { expectNoAxeViolations } from '@/test/axe';
 import { ONBOARDING_PART_KEYS, type IntegrationOverview, type IntegrationPart, type OnboardingPartKey } from '@/types/onboarding.types';
 import { IntegrationSettingsPage } from '../integration-settings-page';
 import { COLLABORATOR, OWNER, part, problemError } from './onboarding-fixtures';
@@ -274,6 +275,14 @@ describe('IntegrationSettingsPage, the integration settings (E10/F03/US03/T01)',
     expect(screen.queryByTestId('where')).not.toBeInTheDocument();
     // The buttons are back once the refusal is in.
     await waitFor(() => expect(screen.getByTestId('reopen-part-listings-action')).toBeEnabled());
+  });
+
+  it('IntegrationSettingsPage_WithAReconnectNotice_HasNoAccessibilityViolationAxeCanFind', async () => {
+    vi.mocked(onboardingApi.getIntegration).mockResolvedValue(overview({ connection: { status: 'Error', environment: 'Test', lastSyncedAt: null, reconnectRequired: true } }));
+    const { container } = renderPage();
+    await screen.findByTestId('connection-reconnect');
+
+    await expectNoAxeViolations(container);
   });
 
   it('IntegrationSettingsPage_TheReadFails_SaysItFailedWithARetryNeverThatAllIsInOrder', async () => {

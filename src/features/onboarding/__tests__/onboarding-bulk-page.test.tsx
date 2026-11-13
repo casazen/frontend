@@ -7,6 +7,7 @@ import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import { onboardingApi } from '@/api/onboarding.api';
 import { propertiesApi } from '@/api/properties.api';
+import { expectNoAxeViolations } from '@/test/axe';
 import {
   ONBOARDING_FLOW_KEYS,
   type BulkApplyItem,
@@ -352,6 +353,21 @@ describe('OnboardingBulkPage, the bulk configuration (E10/F03/US03/T02)', () => 
       const table = await screen.findByTestId('bulk-check-items');
       expect(within(table).getAllByRole('row')).toHaveLength(51);
       expect(screen.getByTestId('bulk-check-items-pager-status')).toHaveTextContent(i18n.t('onboardingPlan.bulk.pager.status', { page: 1, pages: 3, total: 120 }));
+    });
+  });
+
+  describe('accessibility', () => {
+    it('OnboardingBulkPage_WithAFilterAndACheckOnScreen_HasNoAccessibilityViolationAxeCanFind', async () => {
+      vi.mocked(onboardingApi.bulkApply).mockResolvedValue(applyResult(true, [item(P1, 'Casa del Mare', 'wouldChange'), item(P3, 'Chiusa', 'refused', 'sender_not_applicable')]));
+      const { container } = renderPage();
+      await screen.findByTestId('bulk-selection');
+      await screen.findByTestId('pilot-activation');
+      choose('filter', 'Manual');
+      fireEvent.change(screen.getByTestId('bulk-filter-comuni'), { target: { value: '099014' } });
+      fireEvent.click(screen.getByTestId('bulk-check'));
+      await screen.findByTestId('bulk-check-result');
+
+      await expectNoAxeViolations(container);
     });
   });
 

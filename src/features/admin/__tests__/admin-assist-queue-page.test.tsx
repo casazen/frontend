@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { onboardingApi } from '@/api/onboarding.api';
 import { problemError } from '@/features/onboarding/__tests__/onboarding-fixtures';
+import { expectNoAxeViolations } from '@/test/axe';
 import type { AdminAssistRequest, AssistQueueQuery, AssistRequestStatus, PagedAssistRequests } from '@/types/onboarding.types';
 import { AdminAssistQueuePage } from '../admin-assist-queue-page';
 
@@ -125,6 +126,15 @@ describe('AdminAssistQueuePage, the staff queue of the «Fallo per me» requests
     expect(within(taken).getByTestId('assist-row-id-assigned')).toHaveTextContent(STAFF.slice(0, 8));
     expect(within(taken).getByTestId('assist-row-id-assigned')).not.toHaveTextContent(STAFF);
     expect(within(taken).getByTestId('assist-row-note')).toHaveTextContent('Ho chiamato il titolare.');
+  });
+
+  it('AdminAssistQueuePage_WithTheRowsAndADialogOpen_HasNoAccessibilityViolationAxeCanFind', async () => {
+    const { container } = renderPage();
+    fireEvent.click(await screen.findByTestId('assist-row-take'));
+    await screen.findByTestId('assist-dialog-take');
+
+    await expectNoAxeViolations(container);
+    await expectNoAxeViolations(document.body);
   });
 
   it('AdminAssistQueuePage_NothingOpen_SaysNessunaRichiestaApertaNeverAnEmptyShell', async () => {
