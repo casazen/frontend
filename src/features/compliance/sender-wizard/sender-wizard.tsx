@@ -344,7 +344,7 @@ function SenderWizard({ propertyId, read }: SenderWizardProps) {
       onExit={() => navigate(leaveTo)}
       navigationDisabled={busy}
       renderDone={() => <SenderWizardDone propertyId={propertyId} />}
-      belowFooter={<SenderWizardExit onSaveAndExit={saveAndExit} />}
+      belowFooter={<SenderWizardExit busy={busy} onSaveAndExit={saveAndExit} />}
       testIds={{
         root: 'sender-wizard',
         back: 'sender-back',

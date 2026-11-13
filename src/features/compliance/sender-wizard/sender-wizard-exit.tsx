@@ -18,13 +18,15 @@ const HELP: Readonly<Record<SenderStepId, string>> = {
 interface SenderWizardExitProps {
   /** Leaves the wizard: what was answered stays as the draft of the wizard (on the server too), and nothing is changed by leaving. */
   onSaveAndExit: () => void;
+  /** A request of the wizard is in flight (the change of the sender, the test, the declaration, the credentials): like every button of the card, both are shut until it ends. */
+  busy: boolean;
 }
 
 /**
  * «Aiuto» and «Salva ed esci», on every step (NF-06). The help opens over the wizard and says what the step is for and how to reach the support: it never takes the person
  * to another page (NF-02). «Salva ed esci» is the way out that keeps the answers; the credentials are the one thing it does not keep, because they are never saved as a draft.
  */
-export function SenderWizardExit({ onSaveAndExit }: SenderWizardExitProps) {
+export function SenderWizardExit({ onSaveAndExit, busy }: SenderWizardExitProps) {
   const { t } = useTranslation();
   const stepId = useOptionalWizard()?.stepId;
   const helpKey = (Object.hasOwn(HELP, stepId ?? '') ? HELP[stepId as SenderStepId] : HELP[SENDER_STEP.choice]) as string;
@@ -34,7 +36,7 @@ export function SenderWizardExit({ onSaveAndExit }: SenderWizardExitProps) {
     <div className="flex flex-wrap items-center justify-between gap-2" data-testid="sender-wizard-exit-bar">
       <Dialog>
         <DialogTrigger asChild>
-          <Button type="button" variant="ghost" size="sm" className="min-h-11" data-testid="sender-wizard-help">
+          <Button type="button" variant="ghost" size="sm" className="min-h-11" disabled={busy} data-testid="sender-wizard-help">
             <CircleHelp aria-hidden="true" className="size-4" />
             {t('compliance.sender.help.button')}
           </Button>
@@ -58,7 +60,7 @@ export function SenderWizardExit({ onSaveAndExit }: SenderWizardExitProps) {
           </p>
         </DialogContent>
       </Dialog>
-      <Button type="button" variant="ghost" size="sm" className="ml-auto min-h-11" onClick={onSaveAndExit} data-testid="sender-wizard-save-exit">
+      <Button type="button" variant="ghost" size="sm" className="ml-auto min-h-11" disabled={busy} onClick={onSaveAndExit} data-testid="sender-wizard-save-exit">
         {t('compliance.sender.exit.saveAndExit')}
       </Button>
     </div>

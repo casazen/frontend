@@ -475,11 +475,101 @@ describe('SenderWizardPage: the test and «Attivo» (NF-42)', () => {
     click('sender-test-run');
 
     await waitFor(() => expect(screen.getByTestId('sender-test-run')).toBeDisabled(), WAIT);
-    // The way between the steps is shut too: a request that must not meet a change of step is on its way.
+    // The way between the steps is shut too: a request that must not meet a change of step is on its way. So is the way out of the wizard.
     expect(screen.getByTestId('sender-back')).toBeDisabled();
     expect(screen.getByTestId('sender-finish')).toBeDisabled();
+    expect(screen.getByTestId('sender-wizard-save-exit')).toBeDisabled();
+    expect(screen.getByTestId('sender-wizard-help')).toBeDisabled();
     release(testOf());
     await waitFor(() => expect(screen.getByTestId('sender-test-run')).not.toBeDisabled(), WAIT);
+    expect(screen.getByTestId('sender-wizard-save-exit')).not.toBeDisabled();
+    expect(screen.getByTestId('sender-wizard-help')).not.toBeDisabled();
+  });
+});
+
+// «Salva ed esci» and «Aiuto» are buttons of the card like the others: none of the requests of the wizard leaves them open.
+describe('SenderWizardPage: every request of the wizard shuts the way out too', () => {
+  const exitIs = (locked: boolean) => {
+    for (const id of ['sender-wizard-save-exit', 'sender-wizard-help']) {
+      if (locked) expect(screen.getByTestId(id)).toBeDisabled();
+      else expect(screen.getByTestId(id)).not.toBeDisabled();
+    }
+  };
+
+  it('SenderWizardPage_ChangeOfTheSenderInFlight_ShutsSaveAndExitAndHelpUntilItEnds', async () => {
+    let release: () => void = () => undefined;
+    vi.mocked(propertySenderApi.switch).mockImplementation(
+      () =>
+        new Promise<PropertySender>((resolve) => {
+          release = () => {
+            server = { ...server, sender: 'ChannelManager', istatSender: 'ChannelManager', source: 'Stored', delegationAccepted: true, state: 'Unverified', verification: 'Unverifiable' };
+            resolve({ ...server });
+          };
+        }),
+    );
+    await open();
+    click('sender-option-ChannelManager');
+    await screen.findByTestId('sender-delegation-consent');
+    click('sender-delegation-consent');
+    fireEvent.click(primary());
+    await onStep('summary');
+    click('sender-switch-confirmed');
+    exitIs(false);
+
+    fireEvent.click(primary());
+
+    await waitFor(() => exitIs(true), WAIT);
+    // Pressed meanwhile, it leaves nothing: the person is still on the summary.
+    fireEvent.click(screen.getByTestId('sender-wizard-save-exit'));
+    expect(screen.queryByTestId('property-page')).not.toBeInTheDocument();
+    release();
+    await onStep('credentials');
+    exitIs(false);
+  });
+
+  it('SenderWizardPage_CredentialsBeingSaved_ShutsSaveAndExitAndHelpUntilTheyAreSaved', async () => {
+    let release: () => void = () => undefined;
+    vi.mocked(questuraCredentialsApi.set).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          release = () => resolve({ configured: true, configuredAt: '2026-11-13T10:06:00Z' });
+        }),
+    );
+    await open();
+    await toTheCredentials();
+    typeCredentials();
+    exitIs(false);
+
+    click('sender-credentials-save');
+
+    await waitFor(() => exitIs(true), WAIT);
+    release();
+    await waitFor(() => exitIs(false), WAIT);
+  });
+
+  it('SenderWizardPage_DeclarationInFlight_ShutsSaveAndExitAndHelpUntilItEnds', async () => {
+    testResult = testOf({ outcome: 'Unverifiable', reason: 'octorate_police_not_exposed' });
+    let release: () => void = () => undefined;
+    vi.mocked(propertySenderApi.declareActivated).mockImplementation(
+      () =>
+        new Promise<PropertySender>((resolve) => {
+          release = () => {
+            server = { ...server, state: 'Declared', verification: 'UserDeclared', declaredAt: '2026-11-13T10:05:00Z' };
+            resolve({ ...server });
+          };
+        }),
+    );
+    await open();
+    await toTheTest();
+    click('sender-test-run');
+    await screen.findByTestId('sender-declare');
+    exitIs(false);
+
+    click('sender-declare-yes');
+
+    await waitFor(() => exitIs(true), WAIT);
+    release();
+    await waitFor(() => exitIs(false), WAIT);
   });
 });
 
