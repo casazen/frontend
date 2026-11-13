@@ -28,11 +28,17 @@ export function useAlloggiatiStatus(bookingId: string, enabled = true, options: 
   });
 }
 
-export function useAlloggiatiGuestSummary(bookingId: string) {
+/**
+ * The summary of the guests of a stay, as the record of the portal holds them: names, birth, citizenship, document (masked). A screen that shows it in a layer that
+ * goes away (the editor of the guests inside the check-out wizard) asks `gcTime: 0`, so that nothing of it stays in the cache once the layer is closed; the default
+ * keeps it for ten minutes after the last screen that used it.
+ */
+export function useAlloggiatiGuestSummary(bookingId: string, options: { gcTime?: number } = {}) {
   return useQuery({
     queryKey: [ALLOGGIATI_KEY, 'guest-summary', bookingId],
     queryFn: () => alloggiatiApi.getGuestSummary(bookingId),
     enabled: !!bookingId,
+    ...options,
   });
 }
 

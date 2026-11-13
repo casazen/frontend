@@ -95,13 +95,13 @@ function renderPanel() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const invalidate = vi.spyOn(client, 'invalidateQueries');
   const onOpenChange = vi.fn();
-  render(
+  const { unmount } = render(
     createElement(I18nextProvider, { i18n },
       createElement(QueryClientProvider, { client },
         createElement(MemoryRouter, null,
           createElement(CheckoutGuestDataSubflow, { bookingId: BOOKING_ID, open: true, onOpenChange })))),
   );
-  return { invalidate, onOpenChange };
+  return { client, invalidate, onOpenChange, unmount };
 }
 
 beforeEach(async () => {
@@ -152,5 +152,22 @@ describe('CheckoutGuestDataSubflow with the real guests editor of the check-in w
 
     expect(onOpenChange).toHaveBeenCalledWith(false);
     expect(checkInWizardApi.saveGuests).not.toHaveBeenCalled();
+  });
+
+  it('Panel_Closed_KeepsNothingOfTheGuestsInTheCache', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+    const { client, unmount } = renderPanel();
+    await screen.findByTestId('stay-guest-0');
+    // What the editor read of the guests: the state of the check-in wizard and the summary of the record of the portal (names, birth, citizenship, document).
+    await waitFor(() => expect(alloggiatiApi.getGuestSummary).toHaveBeenCalledWith(BOOKING_ID));
+    const summaryKey = [ALLOGGIATI_KEY, 'guest-summary', BOOKING_ID];
+    const stateKey = ['checkin-wizard', BOOKING_ID];
+    expect(client.getQueryCache().find({ queryKey: summaryKey })).toBeDefined();
+    expect(client.getQueryCache().find({ queryKey: stateKey })).toBeDefined();
+
+    // The panel is closed: nothing of the guests stays in the cache (the default would keep the summary for ten minutes).
+    unmount();
+
+    await waitFor(() => expect(client.getQueryCache().find({ queryKey: summaryKey })).toBeUndefined());
+    expect(client.getQueryCache().find({ queryKey: stateKey })).toBeUndefined();
   });
 });

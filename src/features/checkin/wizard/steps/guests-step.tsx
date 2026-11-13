@@ -169,7 +169,9 @@ export function GuestsEditor({ bookingId, form, onSaved, onDirtyChange }: Guests
   const { t } = useTranslation();
   // Inside the wizard the state is already on screen: share it. On its own, the editor reads it again each time it opens.
   const state = useCheckInWizardState(bookingId, true, form ? false : 'always');
-  const source = useHostCodeSource(bookingId);
+  // On its own the editor is in a layer that goes away, and so is what it reads of the guests (the state above is dropped with it): the summary of the guests is not kept
+  // in the cache once the editor is gone. Inside the wizard it is the wizard's, and keeps the default.
+  const source = useHostCodeSource(bookingId, form ? undefined : { gcTime: 0 });
 
   if (state.isLoading) {
     return (
