@@ -154,7 +154,7 @@ describe('DayPanel (E08/F05/US03/T02)', () => {
     expect(screen.getByTestId('calendar-change-saved')).toHaveTextContent('Salvato in CasaZen');
     const line = screen.getByTestId('calendar-change-property');
     expect(line).toHaveAttribute('data-state', 'accepted');
-    expect(line).toHaveTextContent('Accettata dal tuo gestionale.');
+    expect(line).toHaveTextContent('Accettata dal tuo channel manager.');
     expect(screen.getByTestId('day-panel-result').textContent).not.toMatch(/pubblicat/i);
   });
 
@@ -185,7 +185,7 @@ describe('DayPanel (E08/F05/US03/T02)', () => {
 
     expect(await screen.findByTestId('calendar-change-saved')).toHaveTextContent('Salvato in CasaZen');
     expect(screen.queryByTestId('calendar-change-property')).not.toBeInTheDocument();
-    expect(screen.getByTestId('day-panel-result').textContent).not.toMatch(/gestionale/i);
+    expect(screen.getByTestId('day-panel-result').textContent).not.toMatch(/channel manager/i);
   });
 
   it('DayPanel_AChangeThatFailed_SaysWhyAndOffersRetryNow_WhichSendsItAgain', async () => {
@@ -199,7 +199,7 @@ describe('DayPanel (E08/F05/US03/T02)', () => {
     fireEvent.change(screen.getByTestId('day-price-input'), { target: { value: '99' } });
     fireEvent.click(screen.getByTestId('day-rules-submit'));
 
-    expect(await screen.findByTestId('calendar-change-reason')).toHaveTextContent('Il tuo gestionale non risponde');
+    expect(await screen.findByTestId('calendar-change-reason')).toHaveTextContent('Il channel manager non ha risposto');
     expect(screen.getByTestId('calendar-change-property')).toHaveAttribute('data-state', 'failed');
     fireEvent.click(screen.getByTestId('calendar-change-retry'));
     await waitFor(() => expect(calendarChangesApi.retry).toHaveBeenCalledWith('c1'));

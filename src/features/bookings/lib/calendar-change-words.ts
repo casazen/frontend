@@ -37,15 +37,19 @@ export interface ChangeLine {
 
 const ERROR_PREFIX = 'booking.calendar.change.error';
 
-/** The words of each stable code of a change, written out so that a missing translation is found by a test. */
+/**
+ * The words of each stable code of a change, written out so that a missing translation is found by a test. The reasons that the push of a booking already words (the
+ * sentences under booking.syncReason, used by the booking pages of the channel manager) are not worded twice: the room not chosen, the channel manager that did not
+ * answer and the one that refused.
+ */
 const ERROR_KEYS: Readonly<Record<string, string>> = {
-  octorate_room_not_chosen: `${ERROR_PREFIX}.roomNotChosen`,
+  octorate_room_not_chosen: 'booking.syncReason.roomNotChosen',
   octorate_room_not_licensed: `${ERROR_PREFIX}.roomNotLicensed`,
   octorate_quota_low: `${ERROR_PREFIX}.quotaLow`,
-  octorate_unavailable: `${ERROR_PREFIX}.unavailable`,
+  octorate_unavailable: 'booking.syncReason.unavailable',
   octorate_not_authorized: `${ERROR_PREFIX}.notAuthorized`,
   octorate_channel_error: `${ERROR_PREFIX}.channelError`,
-  octorate_request_rejected: `${ERROR_PREFIX}.rejected`,
+  octorate_request_rejected: 'booking.syncReason.rejected',
 };
 
 /** The reason for a code of a change; a code this client has no words for (a newer API) gets the generic one, never the raw code. */

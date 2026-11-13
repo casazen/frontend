@@ -149,8 +149,8 @@ describe('CalendarBulkPage (E08/F05/US03/T03, NF-78, NF-05)', () => {
     renderPage();
 
     const connections = await screen.findAllByTestId('bulk-property-connection', undefined, WAIT);
-    expect(connections[0]).toHaveTextContent('Collegato al tuo gestionale');
-    expect(connections[1]).toHaveTextContent('Non collegato al tuo gestionale: la modifica resta in CasaZen.');
+    expect(connections[0]).toHaveTextContent('Collegato al tuo channel manager');
+    expect(connections[1]).toHaveTextContent('Non collegato al tuo channel manager: la modifica resta in CasaZen.');
     // At least one property is needed to go on.
     next();
     expect(await screen.findByTestId('bulk-properties-problem', undefined, WAIT)).toHaveTextContent('Scegli almeno un immobile.');
@@ -170,7 +170,7 @@ describe('CalendarBulkPage (E08/F05/US03/T03, NF-78, NF-05)', () => {
 
     const words = screen.getByTestId('bulk-summary-words');
     expect(words).toHaveTextContent('Cambieremo il prezzo di 31 giorni su 2 immobili in CasaZen.');
-    expect(words.textContent).not.toMatch(/gestionale/i);
+    expect(words.textContent).not.toMatch(/channel manager/i);
     expect(screen.queryByTestId('bulk-summary-quota')).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId('bulk-wizard-back'));
     fireEvent.click(screen.getByTestId('bulk-wizard-back'));
@@ -235,8 +235,8 @@ describe('CalendarBulkPage (E08/F05/US03/T03, NF-78, NF-05)', () => {
     });
     const words = screen.getByTestId('bulk-summary-words');
     expect(words).toHaveTextContent('Cambieremo il prezzo di 31 giorni su 2 immobili in CasaZen.');
-    expect(words).toHaveTextContent('Per Villa Mare la modifica viene inviata anche al tuo gestionale (circa 3 chiamate al gestionale).');
-    expect(words).toHaveTextContent('Casa Lago non è collegato al tuo gestionale: la sua modifica resta in CasaZen.');
+    expect(words).toHaveTextContent('Per Villa Mare la modifica viene inviata anche al tuo channel manager (circa 3 chiamate al channel manager).');
+    expect(words).toHaveTextContent('Casa Lago non è collegato al tuo channel manager: la sua modifica resta in CasaZen.');
     expect(screen.getByTestId('bulk-summary-quota')).toHaveTextContent('è solo una stima');
     // Per property the days that change and the days skipped, and the first changes before and after.
     const cards = screen.getAllByTestId('bulk-summary-property');

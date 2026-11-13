@@ -2238,9 +2238,9 @@
           "description_other": "{{days}} giorni su {{count}} immobili.",
           "next": {
             "calendar": "Controlla il calendario: i nuovi prezzi e le nuove restrizioni sono sui giorni.",
-            "checkAgain": "Il tuo gestionale non ha ancora risposto: premi «Controlla di nuovo» tra qualche minuto.",
-            "retry": "Premi «Riprova ora» sulla riga che non è partita: finché non va a buon fine, il tuo gestionale non ha quelle modifiche.",
-            "wait": "Puoi uscire: l'invio al tuo gestionale prosegue e lo vedi sopra il calendario."
+            "checkAgain": "Il tuo channel manager non ha ancora risposto: premi «Controlla di nuovo» tra qualche minuto.",
+            "retry": "Premi «Riprova ora» sulla riga che non è partita: finché non va a buon fine, il tuo channel manager non ha quelle modifiche.",
+            "wait": "Puoi uscire: l'invio al tuo channel manager prosegue e lo vedi sopra il calendario."
           },
           "propertyFallback": "Immobile",
           "title": "Modifica salvata in CasaZen"
@@ -2275,9 +2275,9 @@
         },
         "properties": {
           "all": "Scegli tutti",
-          "connected": "Collegato al tuo gestionale: la modifica viene inviata anche lì.",
+          "connected": "Collegato al tuo channel manager: la modifica viene inviata anche lì.",
           "none": "Togli la scelta",
-          "notConnected": "Non collegato al tuo gestionale: la modifica resta in CasaZen."
+          "notConnected": "Non collegato al tuo channel manager: la modifica resta in CasaZen."
         },
         "reloaded": "Le modifiche sono già sul calendario: puoi controllarle da lì.",
         "saveAndExit": "Salva ed esci",
@@ -2294,7 +2294,7 @@
           },
           "properties": {
             "label": "Immobili",
-            "purpose": "Quelli che puoi modificare. Per ognuno vedi se è collegato al tuo gestionale.",
+            "purpose": "Quelli che puoi modificare. Per ognuno vedi se è collegato al tuo channel manager.",
             "title": "Scegli gli immobili"
           },
           "summary": {
@@ -2316,17 +2316,17 @@
           },
           "invalidTitle": "Manca qualcosa nei passi precedenti",
           "loading": "Calcolo cosa succederebbe...",
-          "mirrored_one": "Per {{name}} la modifica viene inviata anche al tuo gestionale (circa {{count}} chiamata al gestionale).",
-          "mirrored_other": "Per {{name}} la modifica viene inviata anche al tuo gestionale (circa {{count}} chiamate al gestionale).",
-          "notMirrored": "{{name}} non è collegato al tuo gestionale: la sua modifica resta in CasaZen.",
+          "mirrored_one": "Per {{name}} la modifica viene inviata anche al tuo channel manager (circa {{count}} chiamata al channel manager).",
+          "mirrored_other": "Per {{name}} la modifica viene inviata anche al tuo channel manager (circa {{count}} chiamate al channel manager).",
+          "notMirrored": "{{name}} non è collegato al tuo channel manager: la sua modifica resta in CasaZen.",
           "nothingChanges": "Nessun giorno cambierebbe: i valori sono già questi.",
           "nothingSent": "Non viene inviato nulla finché non premi «Applica le modifiche».",
           "previewFailed": "Non riusciamo a calcolare cosa succederebbe",
           "previewFailedHint": "Riprova tra poco: non è stato salvato né inviato nulla.",
-          "quota_one": "In tutto circa {{count}} chiamata al gestionale: è solo una stima.",
-          "quota_other": "In tutto circa {{count}} chiamate al gestionale: è solo una stima.",
+          "quota_one": "In tutto circa {{count}} chiamata al channel manager: è solo una stima.",
+          "quota_other": "In tutto circa {{count}} chiamate al channel manager: è solo una stima.",
           "retry": "Riprova",
-          "roomNotChosen": "Per {{name}} la stanza non è scelta nel tuo gestionale: la modifica resta in CasaZen finché non la scegli.",
+          "roomNotChosen": "Per {{name}} la camera non è scelta nel tuo channel manager: la modifica resta in CasaZen finché non la scegli.",
           "samples": "Le prime modifiche, prima e dopo:",
           "skippedPast_one": "{{count}} giorno già passato non si tocca",
           "skippedPast_other": "{{count}} giorni già passati non si toccano",
@@ -2348,14 +2348,11 @@
       },
       "change": {
         "error": {
-          "channelError": "Il tuo gestionale ha preso la modifica ma ha segnalato un errore nell'invio ai canali.",
-          "notAuthorized": "Il tuo gestionale non ha accettato l'accesso di CasaZen: ricollega l'account e riprova.",
-          "quotaLow": "Il tuo gestionale ha quasi esaurito le richieste consentite: l'invio riprende da solo più tardi.",
-          "rejected": "Il tuo gestionale ha rifiutato la richiesta.",
-          "roomNotChosen": "La stanza dell'immobile non è scelta nel tuo gestionale: scegli la stanza nell'abbinamento, poi riprova.",
-          "roomNotLicensed": "La stanza non ha una licenza attiva nel tuo gestionale: attivala lì, poi riprova.",
-          "unavailable": "Il tuo gestionale non risponde: riprova tra qualche minuto.",
-          "unknown": "Il tuo gestionale non ha completato l'invio. Riprova tra poco."
+          "channelError": "Il tuo channel manager ha preso la modifica ma ha segnalato un errore nell'invio ai canali.",
+          "notAuthorized": "Il tuo channel manager non ha accettato l'accesso di CasaZen: ricollega l'account e riprova.",
+          "quotaLow": "Il tuo channel manager ha quasi esaurito le richieste consentite: l'invio riprende da solo più tardi.",
+          "roomNotLicensed": "La camera non ha una licenza attiva nel tuo channel manager: attivala lì, poi riprova.",
+          "unknown": "Il tuo channel manager non ha completato l'invio. Riprova tra poco."
         },
         "list": {
           "failed_one": "{{count}} modifica non è stata inviata.",
@@ -2366,38 +2363,38 @@
             "DayRules": "Prezzo e restrizioni",
             "Publication": "Invio iniziale del calendario"
           },
-          "noAnswer_one": "{{count}} modifica aspetta ancora: il tuo gestionale non ha risposto.",
-          "noAnswer_other": "{{count}} modifiche aspettano ancora: il tuo gestionale non ha risposto.",
+          "noAnswer_one": "{{count}} modifica aspetta ancora: il tuo channel manager non ha risposto.",
+          "noAnswer_other": "{{count}} modifiche aspettano ancora: il tuo channel manager non ha risposto.",
           "retry": "Riprova",
           "toggle": "Ultime modifiche",
-          "unreadable": "Non riusciamo a leggere le modifiche inviate al tuo gestionale.",
-          "waiting_one": "{{count}} modifica è in invio al tuo gestionale.",
-          "waiting_other": "{{count}} modifiche sono in invio al tuo gestionale."
+          "unreadable": "Non riusciamo a leggere le modifiche inviate al tuo channel manager.",
+          "waiting_one": "{{count}} modifica è in invio al tuo channel manager.",
+          "waiting_other": "{{count}} modifiche sono in invio al tuo channel manager."
         },
         "result": {
-          "accepted": "Accettata dal tuo gestionale.",
+          "accepted": "Accettata dal tuo channel manager.",
           "checkAgain": "Controlla di nuovo",
-          "confirmed": "Confermata dal tuo gestionale.",
-          "failed": "Non inviata al tuo gestionale.",
-          "noAnswer": "Il tuo gestionale non ha ancora risposto: la modifica è salvata in CasaZen.",
-          "notConnected": "Questo immobile non è collegato al tuo gestionale: la modifica resta in CasaZen.",
+          "confirmed": "Confermata dal tuo channel manager.",
+          "failed": "Non inviata al tuo channel manager.",
+          "noAnswer": "Il tuo channel manager non ha ancora risposto: la modifica è salvata in CasaZen.",
+          "notConnected": "Questo immobile non è collegato al tuo channel manager: la modifica resta in CasaZen.",
           "notFound": "Non troviamo più questa modifica.",
           "retry": "Riprova ora",
           "retryFailed": "Non siamo riusciti a inviare di nuovo la modifica. Riprova.",
           "saved": "La modifica è nel calendario di CasaZen.",
           "savedTitle": "Salvato in CasaZen",
-          "sending": "Invio al tuo gestionale in corso.",
-          "unreadable": "Non riusciamo a leggere a che punto è l'invio al tuo gestionale.",
-          "waiting": "In attesa di essere inviata al tuo gestionale."
+          "sending": "Invio al tuo channel manager in corso.",
+          "unreadable": "Non riusciamo a leggere a che punto è l'invio al tuo channel manager.",
+          "waiting": "In attesa di essere inviata al tuo channel manager."
         },
         "state": {
           "Applied": "Salvata in CasaZen",
-          "Confirmed": "Confermata dal tuo gestionale",
+          "Confirmed": "Confermata dal tuo channel manager",
           "Failed": "Non inviata",
           "PartiallySent": "Inviata solo in parte",
           "Queued": "In attesa di invio",
           "Sending": "In invio",
-          "Sent": "Accettata dal tuo gestionale"
+          "Sent": "Accettata dal tuo channel manager"
         },
         "tone": {
           "done": "fatto",

@@ -41,7 +41,7 @@ describe('what a change of the calendar says about itself (E08/F05/US03/T02, T03
 
   it('propertyLineOf_AFailedProperty_HasItsReasonAndARetryOnlyWhereTheApiAllowsIt', () => {
     const failed = change({ state: 'Failed', properties: [property({ state: 'Failed', errorCode: 'octorate_unavailable' })] });
-    expect(line({ change: failed })).toEqual({ kind: 'failed', reasonKey: 'booking.calendar.change.error.unavailable', canRetry: true });
+    expect(line({ change: failed })).toEqual({ kind: 'failed', reasonKey: 'booking.syncReason.unavailable', canRetry: true });
     expect(line({ change: failed, mayRetry: false }).canRetry).toBe(false);
     // A change that is waiting cannot be retried (409): the button is not offered.
     const waiting = change({ state: 'Queued', properties: [property({ state: 'Failed' })] });

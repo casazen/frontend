@@ -46,7 +46,7 @@ describe('CalendarChangeStatus (E08/F05/US03/T03, NF-36)', () => {
     vi.mocked(calendarChangesApi.list).mockResolvedValue([change({ state: 'Sending' })]);
     renderStatus();
 
-    expect(await screen.findByTestId('calendar-change-status-waiting')).toHaveTextContent('1 modifica è in invio al tuo gestionale.');
+    expect(await screen.findByTestId('calendar-change-status-waiting')).toHaveTextContent('1 modifica è in invio al tuo channel manager.');
     expect(screen.getByTestId('calendar-change-status')).toHaveAttribute('data-state', 'waiting');
   });
 
@@ -63,9 +63,9 @@ describe('CalendarChangeStatus (E08/F05/US03/T03, NF-36)', () => {
     const rows = screen.getAllByTestId('calendar-change-row');
     expect(rows).toHaveLength(2);
     expect(within(rows[0]).getByTestId('calendar-change-row-state')).toHaveTextContent('Non inviata');
-    expect(within(rows[0]).getByTestId('calendar-change-row-reason')).toHaveTextContent('Il tuo gestionale non risponde');
+    expect(within(rows[0]).getByTestId('calendar-change-row-reason')).toHaveTextContent('Il channel manager non ha risposto');
     expect(rows[0]).toHaveTextContent('Villa Mare');
-    expect(within(rows[1]).getByTestId('calendar-change-row-state')).toHaveTextContent('Confermata dal tuo gestionale');
+    expect(within(rows[1]).getByTestId('calendar-change-row-state')).toHaveTextContent('Confermata dal tuo channel manager');
 
     fireEvent.click(screen.getByTestId('calendar-change-status-retry'));
     await waitFor(() => expect(calendarChangesApi.retry).toHaveBeenCalledWith('c2'));
@@ -85,7 +85,7 @@ describe('CalendarChangeStatus (E08/F05/US03/T03, NF-36)', () => {
 
     const line = await screen.findByTestId('calendar-change-status');
     expect(line).toHaveAttribute('data-state', 'unreadable');
-    expect(line).toHaveTextContent('Non riusciamo a leggere le modifiche inviate al tuo gestionale.');
+    expect(line).toHaveTextContent('Non riusciamo a leggere le modifiche inviate al tuo channel manager.');
   });
 
   it('CalendarChangeStatus_ACallerWhoMayNotReadTheList_GetsNothingAndNoError', async () => {

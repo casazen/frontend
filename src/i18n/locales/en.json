@@ -2351,10 +2351,7 @@
           "channelError": "Your channel manager took the change but reported an error while sending it to the channels.",
           "notAuthorized": "Your channel manager refused CasaZen's access: connect the account again and try again.",
           "quotaLow": "Your channel manager has almost used up the requests it allows: the sending resumes by itself later.",
-          "rejected": "Your channel manager refused the request.",
-          "roomNotChosen": "The room of the property is not chosen in your channel manager: choose the room in the match, then try again.",
           "roomNotLicensed": "The room has no active license in your channel manager: activate it there, then try again.",
-          "unavailable": "Your channel manager is not answering: try again in a few minutes.",
           "unknown": "Your channel manager did not complete the sending. Try again in a moment."
         },
         "list": {
