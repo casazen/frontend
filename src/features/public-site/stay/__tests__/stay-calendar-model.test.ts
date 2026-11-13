@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { addDays } from '@/lib/stay-dates';
 import {
   addMonths,
+  arrivalProblem,
   buildCalendarIndex,
   calendarMonths,
   dayState,
   defaultFocusDate,
+  maxNightsAt,
   monthGrid,
   moveFocus,
   rangeProblem,
@@ -109,6 +111,198 @@ describe('selectDay', () => {
     const stay = { checkIn: '2026-11-02', checkOut: '2026-11-04' };
 
     expect(selectDay(index, stay, '2026-11-06')).toEqual({ value: stay, problem: { kind: 'busyArrival', date: '2026-11-06' } });
+  });
+});
+
+/**
+ * The rules the host set on the days (E08/F05/US01, NF-36): what the picker refuses must be what the checkout refuses, or a guest
+ * is offered a stay that the payment then turns down. Today is the 25th of October 2026, so «two days ahead» is the 27th.
+ */
+describe('the rules of the host on the days', () => {
+  /** The same nights with rules on some of them. */
+  const withRules = (rules: Record<string, Partial<CalendarDay>>) =>
+    buildCalendarIndex(
+      days.map((day) => ({ ...day, ...rules[day.date] })),
+      TODAY,
+      addDays(TODAY, 400),
+    );
+
+  describe('closed to arrival', () => {
+    const closed = withRules({ '2026-11-10': { closedToArrival: true } });
+
+    it('arrivalProblem_NightClosedToArrival_IsRefusedWithItsDate', () => {
+      expect(arrivalProblem(closed, '2026-11-10')).toEqual({ kind: 'arrivalClosed', date: '2026-11-10' });
+      expect(arrivalProblem(closed, '2026-11-11')).toBeNull();
+    });
+
+    it('rangeProblem_StayThatArrivesOnAClosedNight_IsRefusedWhateverItsLength', () => {
+      expect(rangeProblem(closed, '2026-11-10', '2026-11-12')).toEqual({ kind: 'arrivalClosed', date: '2026-11-10' });
+      expect(rangeProblem(closed, '2026-11-10', '2026-11-20')).toEqual({ kind: 'arrivalClosed', date: '2026-11-10' });
+    });
+
+    it('rangeProblem_ClosedNightInsideTheStayOrAsTheDayOfDeparture_IsFreeToSleepInAndToLeaveOn', () => {
+      expect(rangeProblem(closed, '2026-11-09', '2026-11-11')).toBeNull();
+      expect(rangeProblem(closed, '2026-11-08', '2026-11-10')).toBeNull();
+    });
+
+    it('selectDay_ClosedNightAsTheArrival_LeavesTheStayAsItWasAndSaysWhy', () => {
+      expect(selectDay(closed, none, '2026-11-10')).toEqual({
+        value: none,
+        problem: { kind: 'arrivalClosed', date: '2026-11-10' },
+      });
+      const stay = { checkIn: '2026-11-02', checkOut: '2026-11-04' };
+      expect(selectDay(closed, stay, '2026-11-10')).toEqual({ value: stay, problem: { kind: 'arrivalClosed', date: '2026-11-10' } });
+    });
+
+    it('selectDay_ClosedNightAfterTheArrival_IsTheDepartureAndIsTaken', () => {
+      expect(selectDay(closed, { checkIn: '2026-11-08', checkOut: '' }, '2026-11-10')).toEqual({
+        value: { checkIn: '2026-11-08', checkOut: '2026-11-10' },
+        problem: null,
+      });
+    });
+
+    it('rangeProblem_ClosedNightThatIsAlsoTaken_ReportsTheTakenNight', () => {
+      const both = withRules({ '2026-11-06': { closedToArrival: true } });
+
+      expect(arrivalProblem(both, '2026-11-06')).toEqual({ kind: 'busyArrival', date: '2026-11-06' });
+    });
+  });
+
+  describe('closed to departure', () => {
+    const closed = withRules({ '2026-11-18': { closedToDeparture: true } });
+
+    it('rangeProblem_DepartureOnADayClosedToDeparture_IsRefusedWithItsDate', () => {
+      expect(rangeProblem(closed, '2026-11-16', '2026-11-18')).toEqual({ kind: 'departureClosed', date: '2026-11-18' });
+      expect(rangeProblem(closed, '2026-11-16', '2026-11-19')).toBeNull();
+    });
+
+    it('rangeProblem_DayClosedToDeparture_IsStillFreeToArriveOnAndToSleepIn', () => {
+      expect(arrivalProblem(closed, '2026-11-18')).toBeNull();
+      expect(rangeProblem(closed, '2026-11-18', '2026-11-20')).toBeNull();
+      expect(rangeProblem(closed, '2026-11-16', '2026-11-19')).toBeNull();
+    });
+
+    it('selectDay_DepartureOnADayClosedToDeparture_KeepsTheArrivalAndSaysWhy', () => {
+      const arrival = { checkIn: '2026-11-16', checkOut: '' };
+
+      expect(selectDay(closed, arrival, '2026-11-18')).toEqual({
+        value: arrival,
+        problem: { kind: 'departureClosed', date: '2026-11-18' },
+      });
+    });
+
+    it('rangeProblem_ClosedDepartureAndTooFewNights_ReportsTheDepartureFirstLikeTheCheckout', () => {
+      // From the 13th the minimum is 3 nights; the 15th is closed to departure and the stay has 2 nights: the checkout says the closed day.
+      const both = withRules({ '2026-11-15': { closedToDeparture: true } });
+
+      expect(rangeProblem(both, '2026-11-13', '2026-11-15')).toEqual({ kind: 'departureClosed', date: '2026-11-15' });
+    });
+
+    it('rangeProblem_TakenNightInsideTheStay_IsReportedBeforeTheClosedDeparture', () => {
+      const both = withRules({ '2026-11-08': { closedToDeparture: true } });
+
+      expect(rangeProblem(both, '2026-11-04', '2026-11-08')).toEqual({ kind: 'busyBetween', date: '2026-11-05' });
+    });
+  });
+
+  describe('the most nights', () => {
+    const limited = withRules({ '2026-11-20': { maxNights: 4 }, '2026-11-21': { maxNights: 1 } });
+
+    it('rangeProblem_StayLongerThanTheMaximumOfItsArrival_IsRefusedWithTheMaximumAndTheLastDayToLeave', () => {
+      expect(rangeProblem(limited, '2026-11-20', '2026-11-25')).toEqual({
+        kind: 'maxNights',
+        maxNights: 4,
+        latestCheckOut: '2026-11-24',
+      });
+    });
+
+    it('rangeProblem_StayOfExactlyTheMaximum_IsAccepted', () => {
+      expect(rangeProblem(limited, '2026-11-20', '2026-11-24')).toBeNull();
+    });
+
+    it('rangeProblem_MaximumOfANightInsideTheStay_IsNotTheOneOfTheStay', () => {
+      // The 21st allows one night, but the stay arrives on the 20th: the rule is the one of the arrival.
+      expect(rangeProblem(limited, '2026-11-20', '2026-11-23')).toBeNull();
+    });
+
+    it('maxNightsAt_NoMaximumOrNonsense_IsNoMaximum', () => {
+      const odd = withRules({ '2026-11-22': { maxNights: null }, '2026-11-23': { maxNights: 0 } });
+
+      expect(maxNightsAt(limited, '2026-11-20')).toBe(4);
+      expect(maxNightsAt(odd, '2026-11-22')).toBeNull();
+      expect(maxNightsAt(odd, '2026-11-23')).toBeNull();
+      expect(maxNightsAt(odd, '2026-11-24')).toBeNull();
+    });
+
+    it('selectDay_DepartureBeyondTheMaximum_KeepsTheArrivalAndSaysTheMaximum', () => {
+      const arrival = { checkIn: '2026-11-20', checkOut: '' };
+
+      expect(selectDay(limited, arrival, '2026-11-26').problem).toEqual({
+        kind: 'maxNights',
+        maxNights: 4,
+        latestCheckOut: '2026-11-24',
+      });
+    });
+  });
+
+  describe('the advance', () => {
+    // Today is the 25th: the 27th is 2 days ahead, the 28th is 3, the 4th of November is 10, the 8th is 14.
+    const windowed = withRules({
+      '2026-10-27': { minAdvanceDays: 3 },
+      '2026-10-28': { minAdvanceDays: 3 },
+      '2026-11-04': { maxAdvanceDays: 10 },
+      '2026-11-08': { maxAdvanceDays: 10 },
+    });
+
+    it('arrivalProblem_ArrivalCloserThanTheMinimumAdvance_IsRefusedWithTheLimit', () => {
+      expect(arrivalProblem(windowed, '2026-10-27')).toEqual({ kind: 'advance', side: 'shorter', days: 3 });
+    });
+
+    it('arrivalProblem_ArrivalExactlyAtTheMinimumAdvance_IsAccepted', () => {
+      expect(arrivalProblem(windowed, '2026-10-28')).toBeNull();
+    });
+
+    it('arrivalProblem_ArrivalFurtherAheadThanTheMaximumAdvance_IsRefusedWithTheLimit', () => {
+      expect(arrivalProblem(windowed, '2026-11-08')).toEqual({ kind: 'advance', side: 'longer', days: 10 });
+    });
+
+    it('arrivalProblem_ArrivalExactlyAtTheMaximumAdvance_IsAccepted', () => {
+      expect(arrivalProblem(windowed, '2026-11-04')).toBeNull();
+    });
+
+    it('rangeProblem_StayThatBreaksTheAdvanceOfItsArrival_IsRefusedWhateverItsLength', () => {
+      expect(rangeProblem(windowed, '2026-10-27', '2026-10-31')).toEqual({ kind: 'advance', side: 'shorter', days: 3 });
+      expect(rangeProblem(windowed, '2026-11-08', '2026-11-10')).toEqual({ kind: 'advance', side: 'longer', days: 10 });
+    });
+
+    it('selectDay_ArrivalOutsideTheAdvanceWindow_LeavesTheStayAsItWasAndSaysWhy', () => {
+      expect(selectDay(windowed, none, '2026-10-27')).toEqual({
+        value: none,
+        problem: { kind: 'advance', side: 'shorter', days: 3 },
+      });
+    });
+
+    it('rangeProblem_AdvanceOfTheNightsInsideTheStay_IsNotChecked', () => {
+      // The 27th is too close, but the stay arrives on the 26th and the rule of the 27th is not the one of its arrival.
+      expect(rangeProblem(windowed, '2026-10-26', '2026-10-30')).toBeNull();
+    });
+  });
+
+  it('rangeProblem_DaysWithNoRuleAtAll_BehaveAsTheyAlwaysDid', () => {
+    const plain = withRules({
+      '2026-11-10': { maxNights: null, closedToArrival: false, closedToDeparture: false, minAdvanceDays: null, maxAdvanceDays: null },
+    });
+
+    expect(rangeProblem(plain, '2026-11-10', '2026-11-30')).toBeNull();
+    expect(rangeProblem(plain, '2026-11-08', '2026-11-10')).toBeNull();
+    expect(rangeProblem(index, '2026-11-10', '2026-11-30')).toBeNull();
+  });
+
+  it('rangeProblem_CalendarThatCouldNotBeRead_ChecksNoRule', () => {
+    // Nothing is known of the days: the checkout checks the same rules again before the payment.
+    const unread = { ...withRules({ '2026-11-10': { closedToArrival: true } }), unverified: true, days: new Map<string, CalendarDay>() };
+
+    expect(rangeProblem(unread, '2026-11-10', '2026-11-12')).toBeNull();
   });
 });
 
