@@ -75,6 +75,8 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
     workspace.contexts = OWNER;
     support.email = 'aiuto@casazen.test';
     vi.mocked(onboardingApi.getPlan).mockReset().mockResolvedValue(plan());
+    // The counts of the offer of the bulk configuration: few properties, so nothing is offered unless a test says otherwise.
+    vi.mocked(onboardingApi.getStatus).mockReset().mockResolvedValue({ flows: [] } as never);
     vi.mocked(onboardingApi.deferPart).mockReset();
     vi.mocked(onboardingApi.exitPart).mockReset();
     vi.mocked(toast.success).mockReset();
@@ -489,6 +491,50 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
 
       expect(await screen.findByTestId('onboarding-plan-empty')).toHaveTextContent(i18n.t('onboardingPlan.empty'));
       expect(screen.queryByTestId('onboarding-plan-parts')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('the offer of the bulk configuration (E10/F03/US03/T02)', () => {
+    /** The status of an org with `properties` properties: every flow counts every property, each in one state. */
+    function statusOf(properties: number) {
+      return { flows: ['Listings', 'Bookings', 'CheckInCompliance', 'Messages', 'Documents', 'Reports'].map((flow) => ({ flow, active: 0, toComplete: properties, notAvailable: 0, total: properties })) } as never;
+    }
+
+    it('OnboardingPlan_MoreThanTenProperties_OffersTheBulkPageToTheAdministrator', async () => {
+      vi.mocked(onboardingApi.getStatus).mockResolvedValue(statusOf(250));
+      renderPage();
+
+      const card = await screen.findByTestId('onboarding-plan-bulk');
+      expect(card).toHaveTextContent(i18n.t('onboardingPlan.bulk.entry.title'));
+      expect(within(card).getByTestId('onboarding-plan-bulk-link')).toHaveAttribute('href', '/app/short-rent/onboarding/bulk');
+    });
+
+    it('OnboardingPlan_TenPropertiesOrFewer_OffersNothing', async () => {
+      vi.mocked(onboardingApi.getStatus).mockResolvedValue(statusOf(10));
+      renderPage();
+      await rows();
+
+      await waitFor(() => expect(onboardingApi.getStatus).toHaveBeenCalled());
+      expect(screen.queryByTestId('onboarding-plan-bulk')).not.toBeInTheDocument();
+    });
+
+    it('OnboardingPlan_WhoIsNotTheAdministrator_IsNotOfferedTheBulkPageAndTheCountsAreNotAskedFor', async () => {
+      workspace.contexts = COLLABORATOR;
+      vi.mocked(onboardingApi.getStatus).mockResolvedValue(statusOf(250));
+      renderPage();
+      await rows();
+
+      expect(screen.queryByTestId('onboarding-plan-bulk')).not.toBeInTheDocument();
+      expect(onboardingApi.getStatus).not.toHaveBeenCalled();
+    });
+
+    it('OnboardingPlan_TheCountsFailToLoad_OffersNothingAndTheRestOfThePlanStays', async () => {
+      vi.mocked(onboardingApi.getStatus).mockRejectedValue(problemError(500, {}));
+      renderPage();
+
+      await rows();
+      await waitFor(() => expect(onboardingApi.getStatus).toHaveBeenCalled());
+      expect(screen.queryByTestId('onboarding-plan-bulk')).not.toBeInTheDocument();
     });
   });
 
