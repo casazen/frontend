@@ -130,11 +130,13 @@ export function deriveContextsFromRoles(user: UserWithRoles): DerivedContext[] {
         'guest.write',
         // Same set as the backend bootstrap (`ContextAccessBootstrap`, AM-03): what the owner holds on top of the ones above. Without
         // `servicerequest.write` the guided request («Richiedi un intervento») is a reserved page for a person from the token alone, and
-        // without `approval.decide` (E05/F04, NF-68) the queue of the approvals is one too: it asks it and no longer `property.write`.
+        // without `approval.decide` (E05/F04, NF-68) the queue of the approvals is one too: it asks it and no longer `property.write`. The same
+        // for `verification.decision` (E03/F04/US02/T01): the console of the identity verifications asks the permission the API asks.
         'servicerequest.write',
         'guest.manage',
         'alloggiati.submit',
         'approval.decide',
+        'verification.decision',
       ],
       defaultRoute: '/app/short-rent',
     });
