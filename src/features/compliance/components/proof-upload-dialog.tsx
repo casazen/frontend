@@ -40,20 +40,29 @@ interface ProofUploadDialogProps {
   alloggiatiPortalUrl?: string;
 }
 
-/** «Carica una prova» (NF-43, NF-47): the receipt of an Alloggiati communication, the proof of an ISTAT one or a tax receipt, as a PDF, a JPEG or a PNG. */
-export function ProofUploadDialog({ open, onClose, properties, kinds, prefill, alloggiatiPortalUrl }: ProofUploadDialogProps) {
+/**
+ * «Carica una prova» (NF-43, NF-47): the receipt of an Alloggiati communication, the proof of an ISTAT one or a tax receipt, as a PDF, a JPEG or a PNG.
+ * The dialog exists only while it is open, and so does its upload: the mutation (with the file, the answer or the refusal) lives in the part that is mounted
+ * for that time. Closing the dialog (the button, the cross, Escape, the file stored) unmounts it, nobody watches the mutation any more and `gcTime: 0` drops
+ * it; a hook that stayed mounted with the page would keep watching it, and would show the refusal of an older upload again on reopening.
+ */
+export function ProofUploadDialog({ open, ...dialog }: ProofUploadDialogProps) {
+  return open ? <OpenProofUploadDialog {...dialog} /> : null;
+}
+
+function OpenProofUploadDialog({ onClose, properties, kinds, prefill, alloggiatiPortalUrl }: Omit<ProofUploadDialogProps, 'open'>) {
   const upload = useUploadProof();
   const pending = upload.isPending;
 
   return (
     <Dialog
-      open={open}
+      open
       onOpenChange={(next) => {
         // While the file is on its way the dialog stays: closing it would hide an answer that is still to come.
         if (!next && !pending) onClose();
       }}
     >
-      {open ? <UploadForm onClose={onClose} properties={properties} kinds={kinds} prefill={prefill} alloggiatiPortalUrl={alloggiatiPortalUrl} upload={upload} /> : null}
+      <UploadForm onClose={onClose} properties={properties} kinds={kinds} prefill={prefill} alloggiatiPortalUrl={alloggiatiPortalUrl} upload={upload} />
     </Dialog>
   );
 }

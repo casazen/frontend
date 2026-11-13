@@ -121,6 +121,22 @@ function problem(status: number, code?: string): AxiosError {
   return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, { status, data: code ? { code } : {}, statusText: '', headers: {}, config });
 }
 
+/** True when `secret` is anywhere in `value`, in any text of it, however deep. */
+function holds(value: unknown, secret: string, seen = new WeakSet<object>()): boolean {
+  if (typeof value === 'string') return value.includes(secret);
+  if (typeof value !== 'object' || value === null || seen.has(value)) return false;
+  seen.add(value);
+  return Object.values(value).some((item) => holds(item, secret, seen));
+}
+
+/** A failed call as axios gives it, with the token of the caller in the request it keeps (a test of the cache of the mutations is only a real one if the token is there to be found). */
+function problemWithToken(status: number, code: string): AxiosError {
+  const failed = problem(status, code);
+  failed.config!.headers.set('Authorization', 'Bearer SECRET-TOKEN');
+  expect(holds(failed, 'SECRET-TOKEN')).toBe(true);
+  return failed;
+}
+
 function Where() {
   const location = useLocation();
   return createElement('output', { 'data-testid': 'where' }, `${location.pathname}${location.search}`);
@@ -133,7 +149,7 @@ interface Setup {
 
 function renderPage(initial = ARCHIVE, setup: Setup = {}) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  return render(
+  const view = render(
     createElement(
       QueryClientProvider,
       { client },
@@ -144,6 +160,7 @@ function renderPage(initial = ARCHIVE, setup: Setup = {}) {
       ),
     ),
   );
+  return { ...view, client };
 }
 
 const listCall = (index = 0) => vi.mocked(complianceArchiveApi.listEvidence).mock.calls[index][0];
@@ -327,6 +344,31 @@ describe('the archive of the proofs: the files', () => {
     await waitFor(() => expect(complianceArchiveApi.listEvidence).toHaveBeenCalledTimes(2));
   });
 
+  // A proof is the receipt of a communication about guests or of a tax, and the request that fails holds the access token: the cache of the mutations keeps
+  // neither, the file goes to the disk inside the mutation (its result is nothing) and not even the mutation stays once the page is left.
+  it('AlloggiatiPage_DownloadThatFails_KeepsNeitherTheTokenOfTheRequestNorTheFileInTheCacheOfTheMutations', async () => {
+    vi.mocked(complianceArchiveApi.downloadProof)
+      .mockRejectedValueOnce(problemWithToken(500, 'boom'))
+      .mockResolvedValueOnce({ blob: new Blob(['%PDF-1.4'], { type: 'application/pdf' }), contentDisposition: null });
+    const { client, unmount } = renderPage();
+    await screen.findByTestId('proof-archive-table');
+
+    fireEvent.click(screen.getByTestId('proof-download-e1'));
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(i18n.t('complianceArchive.download.failed')));
+    const failures = client.getMutationCache().getAll().map((mutation) => mutation.state.error);
+    expect(failures.length).toBeGreaterThan(0);
+    expect(holds(failures, 'SECRET-TOKEN')).toBe(false);
+
+    await waitFor(() => expect(screen.getByTestId('proof-download-e1')).not.toBeDisabled());
+    fireEvent.click(screen.getByTestId('proof-download-e1'));
+    await waitFor(() => expect(saveBlobAs).toHaveBeenCalledTimes(1));
+    expect(client.getMutationCache().getAll().every((mutation) => mutation.state.data === undefined)).toBe(true);
+
+    unmount();
+    await waitFor(() => expect(client.getMutationCache().getAll()).toHaveLength(0));
+  });
+
   // A 404 is «not found» even with the older answer in the cache: the rows of the older read are not shown as if they were still there.
   it('AlloggiatiPage_ListThatTurnsIntoA404_IsNotFoundNeverTheOlderRows', async () => {
     vi.mocked(complianceArchiveApi.downloadProof).mockRejectedValue(problem(404, 'compliance_proof_not_found'));
@@ -396,6 +438,30 @@ describe('the archive of the proofs: the files', () => {
 
     expect(await screen.findByTestId('archive-export-error')).toHaveTextContent('più prove di quante ne entrino in un archivio');
     expect(saveBlobAs).not.toHaveBeenCalled();
+  });
+
+  // The ZIP holds the receipts of a period: the mutation that builds it keeps nothing of the request that failed, nor of the file, and goes with the page.
+  it('AlloggiatiPage_ExportThatFails_KeepsNeitherTheTokenOfTheRequestNorTheZipInTheCacheOfTheMutations', async () => {
+    vi.mocked(complianceArchiveApi.exportProofs)
+      .mockRejectedValueOnce(problemWithToken(500, 'boom'))
+      .mockResolvedValueOnce({ blob: new Blob(['zip'], { type: 'application/zip' }), contentDisposition: null });
+    const { client, unmount } = renderPage();
+    await screen.findByTestId('proof-archive-table');
+
+    fireEvent.click(screen.getByTestId('archive-export-zip'));
+
+    await screen.findByTestId('archive-export-error');
+    const failures = client.getMutationCache().getAll().map((mutation) => mutation.state.error);
+    expect(failures.length).toBeGreaterThan(0);
+    expect(holds(failures, 'SECRET-TOKEN')).toBe(false);
+
+    await waitFor(() => expect(screen.getByTestId('archive-export-zip')).not.toBeDisabled());
+    fireEvent.click(screen.getByTestId('archive-export-zip'));
+    await waitFor(() => expect(saveBlobAs).toHaveBeenCalledTimes(1));
+    expect(client.getMutationCache().getAll().every((mutation) => mutation.state.data === undefined)).toBe(true);
+
+    unmount();
+    await waitFor(() => expect(client.getMutationCache().getAll()).toHaveLength(0));
   });
 });
 
@@ -653,6 +719,49 @@ describe('the upload of a proof', () => {
     expect(error).toHaveTextContent('Il file deve essere un PDF, un JPG o un PNG.');
     expect(screen.getByTestId('proof-upload-dialog')).toBeInTheDocument();
     expect(within(dialog).getByTestId('proof-upload-submit')).not.toBeDisabled();
+  });
+
+  // The file is a receipt about guests and the request that fails holds the access token. The upload lives only while the dialog is open: a refusal keeps
+  // nothing of the request, and closing the dialog leaves nothing of the upload (the file, the answer, the refusal) in the cache of the mutations; a dialog
+  // opened again starts clean, without the refusal of the first one.
+  it('AlloggiatiPage_UploadThatFailsAndIsClosed_LeavesNothingInTheCacheOfTheMutationsAndNoOldRefusalOnReopening', async () => {
+    vi.mocked(complianceArchiveApi.uploadProof).mockRejectedValueOnce(problemWithToken(415, 'compliance_proof_type_unsupported'));
+    const { client } = renderPage();
+    await screen.findByTestId('proof-archive-table');
+    fireEvent.click(screen.getByTestId('archive-upload-open'));
+    const dialog = await screen.findByTestId('proof-upload-dialog');
+    fireEvent.change(within(dialog).getByTestId('proof-upload-property'), { target: { value: P1 } });
+    fireEvent.change(within(dialog).getByTestId('proof-upload-day'), { target: { value: '2026-08-15' } });
+    fireEvent.change(within(dialog).getByTestId('proof-upload-file'), { target: { files: [file()] } });
+    fireEvent.click(within(dialog).getByTestId('proof-upload-submit'));
+
+    await within(dialog).findByTestId('proof-upload-error');
+    const failures = client.getMutationCache().getAll().map((mutation) => mutation.state.error);
+    expect(failures.length).toBeGreaterThan(0);
+    expect(holds(failures, 'SECRET-TOKEN')).toBe(false);
+
+    fireEvent.click(within(dialog).getByTestId('proof-upload-cancel'));
+    await waitFor(() => expect(screen.queryByTestId('proof-upload-dialog')).not.toBeInTheDocument());
+    await waitFor(() => expect(client.getMutationCache().getAll()).toHaveLength(0));
+
+    fireEvent.click(screen.getByTestId('archive-upload-open'));
+    const again = await screen.findByTestId('proof-upload-dialog');
+    expect(within(again).queryByTestId('proof-upload-error')).not.toBeInTheDocument();
+  });
+
+  it('AlloggiatiPage_UploadThatWorks_LeavesNothingOfTheFileInTheCacheOfTheMutationsOnceTheDialogIsClosed', async () => {
+    vi.mocked(complianceArchiveApi.uploadProof).mockResolvedValue(entry('new', { kind: 'AlloggiatiReceipt', day: '2026-08-15', period: null }));
+    const { client } = renderPage();
+    await screen.findByTestId('proof-archive-table');
+    fireEvent.click(screen.getByTestId('archive-upload-open'));
+    const dialog = await screen.findByTestId('proof-upload-dialog');
+    fireEvent.change(within(dialog).getByTestId('proof-upload-property'), { target: { value: P1 } });
+    fireEvent.change(within(dialog).getByTestId('proof-upload-day'), { target: { value: '2026-08-15' } });
+    fireEvent.change(within(dialog).getByTestId('proof-upload-file'), { target: { files: [file()] } });
+    fireEvent.click(within(dialog).getByTestId('proof-upload-submit'));
+
+    await waitFor(() => expect(screen.queryByTestId('proof-upload-dialog')).not.toBeInTheDocument());
+    await waitFor(() => expect(client.getMutationCache().getAll()).toHaveLength(0));
   });
 
   it('AlloggiatiPage_WhileTheFileIsOnItsWay_EveryControlOfTheDialogWaits', async () => {
