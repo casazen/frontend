@@ -1538,10 +1538,13 @@
       "ownerFileTooLarge": "The file is too large: 10 MB at most.",
       "ownerFileTypeNotAllowed": "This kind of file is not accepted: choose a PDF, a JPEG or a PNG image.",
       "ownerMessageInvalid": "Write the message before sending it.",
+      "ownerPortalInvoiceNotFound": "This invoice is not available.",
       "ownerPortalPermissionMissing": "The owner has not given you permission for this operation.",
       "ownerPortalPermissionUnknown": "One of the chosen permissions does not exist.",
       "ownerPortalPermissionsEmpty": "Choose at least one permission: no permission does not mean “all”.",
       "ownerPortalPropertyNotFound": "This property is not one of yours.",
+      "ownerStatementPdfNotAvailable": "The PDF of this statement is not available.",
+      "ownerStatementVersionNotFound": "This statement is not available.",
       "ownerStayAllowanceExceeded": "With this stay you would pass the nights you have available this year.",
       "ownerStayBeyondWindow": "The arrival is further ahead than the rules allow.",
       "ownerStayBlackout": "One of the nights falls on dates closed to owner stays.",
@@ -16941,7 +16944,26 @@
   "ownerPortal": {
     "accounting": {
       "ask": "Ask about this statement",
-      "description": "The statements your agency has published, the linked invoices and the accounting documents shared with you.",
+      "currencyMissing": "The currency of this statement is not given: the amounts are shown without a currency symbol.",
+      "description": "The statements your agency has published, with their amounts, the invoices from your property manager and the accounting documents shared with you.",
+      "detail": {
+        "back": "Back to accounting",
+        "balancesTitle": "Balance",
+        "error": "The statement could not be loaded",
+        "invoice": "Property manager invoice no. {{number}} of {{date}}.",
+        "invoiceHint": "You find it, with its PDF, among the property manager invoices on the Accounting page.",
+        "invoiceNoDate": "Property manager invoice no. {{number}}.",
+        "linesTitle": "The lines of the statement",
+        "noLines": "This statement has no lines.",
+        "notFound": {
+          "description": "This statement does not exist, or it is not one of those published for you.",
+          "title": "Statement not found"
+        },
+        "openNewer": "Open the newer version",
+        "owner": "Owner: {{name}}",
+        "signHint": "Positive amounts are in your favour, negative amounts are charged to you.",
+        "summaryTitle": "Summary"
+      },
       "documentsTitle": "Accounting documents",
       "error": "The statements could not be loaded",
       "invoiceOf": "Linked to the statement of {{period}}",
@@ -16951,17 +16973,61 @@
       },
       "invoiceTitle": "Invoice no. {{number}} of {{date}}",
       "invoicesError": "The linked invoices could not be loaded",
-      "invoicesNote": "These are invoices issued by the agency in its own system: here you find the link the agency recorded. CasaZen does not issue invoices.",
+      "invoicesNote": "These are invoices the agency issued outside CasaZen: here you find the link the agency recorded.",
       "invoicesTitle": "Linked invoices",
+      "line": {
+        "bookingCode": "Booking {{code}}",
+        "kind": {
+          "cleaning": "Cleaning",
+          "linen": "Linen"
+        },
+        "rechargedByAgency": "The channel billed the commission to the agency, which recharges it to you.",
+        "reversal": "Reversal",
+        "share": "Share {{percent}}%"
+      },
       "loading": "Loading the accounting",
       "noDocuments": "The agency has not shared any accounting document with you.",
       "noInvoiceLink": "The link to this invoice is not available.",
-      "noInvoices": "There are no invoices linked to your statements.",
-      "noPaymentNote": "You only see published statements here. Amounts and the state of payments are not shown in the portal yet: ask your agency in the messages for the detail.",
       "noStatements": "The agency has not published any statement for you yet.",
+      "open": "Open the statement",
+      "openAria": "Open the statement of {{period}}, version {{number}}",
       "openInvoice": "Open the invoice",
       "opensNewTab": "(opens in a new tab)",
+      "pdf": {
+        "download": "Download the PDF",
+        "downloadInvoiceAria": "Download the PDF of {{title}}",
+        "downloadStatementAria": "Download the PDF of the statement of {{period}}, version {{number}}",
+        "invoiceFile": "invoice",
+        "notAvailable": "The PDF of this statement is not available.",
+        "statementFile": "statement"
+      },
+      "pmInvoices": {
+        "cardTitle": "{{kind}} no. {{number}} of {{date}}",
+        "creditedInFull": "Fully credited",
+        "currencyMissing": "The currency of this document is not given: the amount is shown without a currency symbol.",
+        "empty": "Your property manager has not issued any invoice to you yet.",
+        "error": "The property manager invoices could not be loaded",
+        "kind": {
+          "CreditNote": "Credit note",
+          "Invoice": "Invoice",
+          "Other": "Document",
+          "Receipt": "Receipt"
+        },
+        "note": "The invoices your property manager has issued to you for the statements, each with its PDF.",
+        "of": "For the statement of {{period}}",
+        "title": "Property manager invoices",
+        "total": "Total"
+      },
       "publishedOn": "published on {{date}}",
+      "sections": {
+        "channelFees": "Channel commissions",
+        "commission": "Property manager commission",
+        "corrections": "Corrections",
+        "payments": "Payments",
+        "recharges": "Charges and expenses",
+        "stays": "Stays",
+        "withholding": "Withholding"
+      },
       "statementTitle": "Statement of {{period}}",
       "statementsTitle": "Published statements",
       "status": {
@@ -16970,6 +17036,25 @@
       },
       "supersededNote": "A newer version of this statement has taken its place: this one stays here as a record.",
       "title": "Accounting",
+      "totals": {
+        "channelFees": "Channel commissions",
+        "charges": "Charges and expenses",
+        "closingBalance": "Closing balance",
+        "commission": "Property manager commission",
+        "corrections": "Corrections",
+        "gross": "Gross of the stays",
+        "net": "Net of the period",
+        "openingBalance": "Opening balance",
+        "payments": "Payments",
+        "withholding": "Withholding"
+      },
+      "touristTax": {
+        "currencyMissing": "The currency of some of these taxes is not given: their amounts are shown without a currency symbol.",
+        "description": "The agency collected it for the stays of this statement. It is for information only: it is not part of the net.",
+        "empty": "The agency did not collect any tourist tax for the stays of this statement.",
+        "title": "Tourist tax",
+        "total": "Total"
+      },
       "version": "Version {{number}}"
     },
     "calendar": {
