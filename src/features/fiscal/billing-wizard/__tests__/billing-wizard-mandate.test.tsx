@@ -14,7 +14,7 @@ type Apply = UseMutationResult<OwnerMandateTemplateResult, unknown, OwnerMandate
 const TODAY = '2026-11-14';
 
 function applier(result: OwnerMandateTemplateResult = { created: 3, skipped: 0, createdOwnerIds: [], skippedOwnerIds: [] }) {
-  const mutateAsync = vi.fn(async (_template: OwnerMandateTemplate) => result);
+  const mutateAsync = vi.fn<(template: OwnerMandateTemplate) => Promise<OwnerMandateTemplateResult>>().mockResolvedValue(result);
   return { mutateAsync, mutation: { mutateAsync, isPending: false, isError: false, error: null } as unknown as Apply };
 }
 
