@@ -82,7 +82,7 @@ interface WizardResult {
 }
 
 /** What stops the host on a step, said in the words of the step (the shell shows the message of an error that has none of its own). */
-type Failing = 'consent' | 'mapping' | 'access' | 'import' | 'scenario';
+type Failing = 'consent' | 'mapping' | 'access' | 'noPortal' | 'import' | 'scenario';
 
 /** A condition of a step that is not met: the host is told which, by the step's own words. */
 class StepBlockedError extends Error {}
@@ -169,6 +169,8 @@ function ConnectWizard() {
   const [outcomes, setOutcomes] = useState<ListingOutcome[]>([]);
   // The buttons that can fail with no message of their own: which one, to say it right.
   const [failing, setFailing] = useState<Failing>('consent');
+  // The step of the portals found the list empty (the cache of the channel manager's catalog is still being filled): it says so, and the main button waits.
+  const [portalListEmpty, setPortalListEmpty] = useState(false);
 
   const retry = connect.phase === 'attention' || connect.phase === 'denied' || connect.phase === 'failed';
   const working = connect.phase === 'checking' || connect.phase === 'completing';
@@ -287,15 +289,18 @@ function ConnectWizard() {
       title: t('octorate.connect.steps.existingChannels.title'),
       purpose: t('octorate.connect.steps.existingChannels.purpose'),
       nextLabel: t('octorate.connect.steps.existingChannels.next'),
+      // With no portal to choose from yet the list is still being loaded: the step says so and there is nothing to go on with.
+      nextDisabled: portalListEmpty,
       // The import goes on for the channels whose access CasaZen saw (or the host confirmed after a check that could not tell): at least one.
       beforeNext: async (answers) => {
         const batch = answers.batchId ? await octorateApi.getExistingInventoryBatch(answers.batchId) : undefined;
         if (!batch?.channels.some(isAccessGiven)) {
-          setFailing('access');
+          // «No portal has its access yet» is true only for portals that were chosen: with none chosen the answer is to choose one.
+          setFailing(answers.channels.length === 0 ? 'noPortal' : 'access');
           throw new StepBlockedError('No channel has its access yet');
         }
       },
-      render: ({ goTo }) => <ExistingChannelsStep group={group} onAdvance={() => goTo(EXISTING_IMPORT_STEP_ID)} />,
+      render: ({ goTo }) => <ExistingChannelsStep group={group} onAdvance={() => goTo(EXISTING_IMPORT_STEP_ID)} onPortalListEmpty={setPortalListEmpty} />,
     };
     const existingImportStep: WizardStep<ConnectWizardValues> = {
       id: EXISTING_IMPORT_STEP_ID,
@@ -369,6 +374,7 @@ function ConnectWizard() {
     consent: t('octorate.connect.finishFailed'),
     mapping: t('octorate.connect.summary.failed.generic'),
     access: t('octorate.connect.existing.errors.accessPending'),
+    noPortal: t('octorate.connect.existing.channels.none'),
     import: t('octorate.connect.existing.errors.notInYet'),
     scenario: t('octorate.connect.errors.scenarioChangeRefused'),
   }[failing];
