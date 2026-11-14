@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { createElement, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
@@ -149,6 +149,32 @@ describe('a bulk issue says what happened to every document and never that all w
     expect(screen.queryByTestId('fiscal-documents-batch-result')).not.toBeInTheDocument();
     // Nothing is told as issued and the three drafts stay ticked.
     expect(screen.getByTestId('fiscal-documents-batch-count')).toHaveTextContent(i18n.t('fiscalDocuments.batch.selected', { count: 3 }));
+  });
+});
+
+describe('what is ticked belongs to the filters it was ticked under (data rule)', () => {
+  it('SelectThePeriod_TheFiltersChangeWhileTheSearchRuns_NeverTicksTheDraftsOfTheOldFilters', async () => {
+    let answerTheSearch: (found: { drafts: FiscalDocumentEntry[]; more: boolean }) => void = () => undefined;
+    vi.mocked(api.listDraftsForBatch).mockReturnValue(
+      new Promise((resolve) => {
+        answerTheSearch = resolve;
+      }),
+    );
+    renderPage();
+    await screen.findByRole('table');
+
+    fireEvent.click(screen.getByTestId('fiscal-documents-select-period'));
+    await waitFor(() => expect(api.listDraftsForBatch).toHaveBeenCalledTimes(1));
+    // The person changes a filter while the search is still running, and the search of the old filters answers afterwards.
+    fireEvent.change(screen.getByTestId('fiscal-documents-kind'), { target: { value: 'Receipt' } });
+    await act(async () => {
+      answerTheSearch({ drafts: DRAFTS, more: false });
+    });
+
+    // Nothing is ticked under the new filters and nothing is told of the old search; the button is free to ask again for the new filters.
+    await waitFor(() => expect(screen.getByTestId('fiscal-documents-select-period')).toBeEnabled());
+    expect(screen.queryByTestId('fiscal-documents-batch-bar')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('fiscal-documents-select-note')).not.toBeInTheDocument();
   });
 });
 

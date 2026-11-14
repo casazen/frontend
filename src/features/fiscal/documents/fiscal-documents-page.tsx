@@ -145,9 +145,11 @@ export function FiscalDocumentsPage() {
   const change = (next: DocumentFilters) => {
     setFilters(next);
     setPage(1);
-    // What was ticked belongs to the filters it was ticked under: another list never keeps boxes the person can no longer see.
+    // What was ticked belongs to the filters it was ticked under: another list never keeps boxes the person can no longer see. A search for the drafts
+    // of the old filters that is still running is dropped too (`reset` detaches its answer): it never ticks, under new filters, drafts it was not asked for.
     setSelected(NO_SELECTION);
     setNote(null);
+    picker.reset();
   };
   const reset = () => change(NO_FILTERS);
   const exportBlock = exportBlockOf(filters);
