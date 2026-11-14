@@ -1,4 +1,5 @@
 import type { CleaningFeeTreatment, DocumentRegime, StayVatTreatment } from './fiscal-issuer.types';
+import type { CommissionBase } from './owner-accounting.types';
 
 // The billing setup of the organization (E11/F01/US01/T04, NF-82, NF-104, NF-118): what `GET api/billing-setup` and `PUT api/billing-setup/{section}` send and take,
 // and the endpoints of the owner ledger that the steps «Commissioni dei canali» and «Mandato standard» of the wizard «Fatturazione» use. The API writes the enums by
@@ -157,9 +158,11 @@ export interface ChannelAccountHolderChange {
 // The owner ledger (E13/F01/US01/T01): what a portal keeps when its reservation carries no commission, and the standard mandate of the owners.
 // ---------------------------------------------------------------------------------------------------------------------
 
-/** What a commission is a percentage of (backend `CommissionBase`): the gross of the stay without the tourist tax, with or without the cleaning. */
-export const COMMISSION_BASES = ['GrossExclTouristTax', 'GrossExclTouristTaxAndCleaning'] as const;
-export type CommissionBase = (typeof COMMISSION_BASES)[number];
+/**
+ * What a commission is a percentage of (backend `CommissionBase`): the gross of the stay without the tourist tax, with or without the cleaning. The type is the one of the owner ledger
+ * (`owner-accounting.types.ts`, which the mandate form uses): this is the list the wizard offers, and it cannot hold a value the type does not.
+ */
+export const COMMISSION_BASES = ['GrossExclTouristTax', 'GrossExclTouristTaxAndCleaning'] as const satisfies readonly CommissionBase[];
 
 /** A commission rule of a portal, as stored (`rules` of `GET api/owner-accounting/channel-commission-rules`). */
 export interface ChannelCommissionRule {
