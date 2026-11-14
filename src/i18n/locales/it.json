@@ -1538,10 +1538,13 @@
       "ownerFileTooLarge": "Il file è troppo grande: al massimo 10 MB.",
       "ownerFileTypeNotAllowed": "Questo tipo di file non è accettato: scegli un PDF, un’immagine JPEG o PNG.",
       "ownerMessageInvalid": "Scrivi il messaggio prima di inviarlo.",
+      "ownerPortalInvoiceNotFound": "Questa fattura non è disponibile.",
       "ownerPortalPermissionMissing": "Il proprietario non ti ha dato il permesso per questa operazione.",
       "ownerPortalPermissionUnknown": "Uno dei permessi scelti non esiste.",
       "ownerPortalPermissionsEmpty": "Scegli almeno un permesso: nessun permesso non significa «tutti».",
       "ownerPortalPropertyNotFound": "Questo immobile non è tra i tuoi.",
+      "ownerStatementPdfNotAvailable": "Il PDF di questo rendiconto non è disponibile.",
+      "ownerStatementVersionNotFound": "Questo rendiconto non è disponibile.",
       "ownerStayAllowanceExceeded": "Con questo soggiorno supereresti le notti che hai a disposizione in questo anno.",
       "ownerStayBeyondWindow": "L’arrivo è più lontano di quanto le regole consentono.",
       "ownerStayBlackout": "Una delle notti cade in date chiuse ai soggiorni dei proprietari.",
@@ -16941,7 +16944,26 @@
   "ownerPortal": {
     "accounting": {
       "ask": "Chiedi informazioni su questo rendiconto",
-      "description": "I rendiconti che l’agenzia ha pubblicato, le fatture collegate e i documenti contabili condivisi con te.",
+      "currencyMissing": "La valuta di questo rendiconto non è indicata: gli importi sono mostrati senza simbolo di valuta.",
+      "description": "I rendiconti che l’agenzia ha pubblicato, con i loro importi, le fatture del gestore e i documenti contabili condivisi con te.",
+      "detail": {
+        "back": "Torna alla contabilità",
+        "balancesTitle": "Saldo",
+        "error": "Impossibile caricare il rendiconto",
+        "invoice": "Fattura del gestore n. {{number}} del {{date}}.",
+        "invoiceHint": "La trovi, con il suo PDF, tra le fatture del gestore nella pagina Contabilità.",
+        "invoiceNoDate": "Fattura del gestore n. {{number}}.",
+        "linesTitle": "Le righe del rendiconto",
+        "noLines": "Questo rendiconto non ha righe.",
+        "notFound": {
+          "description": "Questo rendiconto non esiste, oppure non è tra quelli pubblicati per te.",
+          "title": "Rendiconto non trovato"
+        },
+        "openNewer": "Apri la versione più recente",
+        "owner": "Proprietario: {{name}}",
+        "signHint": "Gli importi positivi sono a tuo favore, quelli negativi sono a tuo carico.",
+        "summaryTitle": "Riepilogo"
+      },
       "documentsTitle": "Documenti contabili",
       "error": "Impossibile caricare i rendiconti",
       "invoiceOf": "Collegata al rendiconto di {{period}}",
@@ -16951,17 +16973,61 @@
       },
       "invoiceTitle": "Fattura n. {{number}} del {{date}}",
       "invoicesError": "Impossibile caricare le fatture collegate",
-      "invoicesNote": "Sono fatture emesse dall’agenzia nel suo sistema: qui trovi il collegamento che l’agenzia ha registrato. CasaZen non emette fatture.",
+      "invoicesNote": "Sono fatture che l’agenzia ha emesso fuori da CasaZen: qui trovi il collegamento che l’agenzia ha registrato.",
       "invoicesTitle": "Fatture collegate",
+      "line": {
+        "bookingCode": "Prenotazione {{code}}",
+        "kind": {
+          "cleaning": "Pulizie",
+          "linen": "Biancheria"
+        },
+        "rechargedByAgency": "Il canale ha fatturato la commissione all’agenzia, che la riaddebita a te.",
+        "reversal": "Storno",
+        "share": "Quota {{percent}}%"
+      },
       "loading": "Caricamento della contabilità",
       "noDocuments": "L’agenzia non ha condiviso documenti contabili con te.",
       "noInvoiceLink": "Il collegamento a questa fattura non è disponibile.",
-      "noInvoices": "Non ci sono fatture collegate ai tuoi rendiconti.",
-      "noPaymentNote": "Qui vedi solo i rendiconti pubblicati. Gli importi e lo stato dei pagamenti non sono ancora mostrati nel portale: per il dettaglio chiedi all’agenzia nei messaggi.",
       "noStatements": "L’agenzia non ha ancora pubblicato rendiconti per te.",
+      "open": "Apri il rendiconto",
+      "openAria": "Apri il rendiconto di {{period}}, versione {{number}}",
       "openInvoice": "Apri la fattura",
       "opensNewTab": "(si apre in una nuova scheda)",
+      "pdf": {
+        "download": "Scarica il PDF",
+        "downloadInvoiceAria": "Scarica il PDF di {{title}}",
+        "downloadStatementAria": "Scarica il PDF del rendiconto di {{period}}, versione {{number}}",
+        "invoiceFile": "fattura",
+        "notAvailable": "Il PDF di questo rendiconto non è disponibile.",
+        "statementFile": "rendiconto"
+      },
+      "pmInvoices": {
+        "cardTitle": "{{kind}} n. {{number}} del {{date}}",
+        "creditedInFull": "Stornata per intero",
+        "currencyMissing": "La valuta di questo documento non è indicata: l’importo è mostrato senza simbolo di valuta.",
+        "empty": "Il gestore non ti ha ancora emesso fatture.",
+        "error": "Impossibile caricare le fatture del gestore",
+        "kind": {
+          "CreditNote": "Nota di credito",
+          "Invoice": "Fattura",
+          "Other": "Documento",
+          "Receipt": "Ricevuta"
+        },
+        "note": "Le fatture che il gestore ti ha emesso per i rendiconti, ciascuna con il suo PDF.",
+        "of": "Per il rendiconto di {{period}}",
+        "title": "Fatture del gestore",
+        "total": "Totale"
+      },
       "publishedOn": "pubblicato il {{date}}",
+      "sections": {
+        "channelFees": "Commissioni dei canali",
+        "commission": "Provvigione del gestore",
+        "corrections": "Rettifiche",
+        "payments": "Pagamenti",
+        "recharges": "Addebiti e spese",
+        "stays": "Soggiorni",
+        "withholding": "Ritenute"
+      },
       "statementTitle": "Rendiconto di {{period}}",
       "statementsTitle": "Rendiconti pubblicati",
       "status": {
@@ -16970,6 +17036,25 @@
       },
       "supersededNote": "Una versione più recente di questo rendiconto ha preso il suo posto: questa resta qui come traccia.",
       "title": "Contabilità",
+      "totals": {
+        "channelFees": "Commissioni dei canali",
+        "charges": "Addebiti e spese",
+        "closingBalance": "Saldo finale",
+        "commission": "Provvigione del gestore",
+        "corrections": "Rettifiche",
+        "gross": "Lordo dei soggiorni",
+        "net": "Netto del periodo",
+        "openingBalance": "Saldo precedente",
+        "payments": "Pagamenti",
+        "withholding": "Ritenuta"
+      },
+      "touristTax": {
+        "currencyMissing": "La valuta di alcune di queste imposte non è indicata: i loro importi sono mostrati senza simbolo di valuta.",
+        "description": "L’agenzia l’ha incassata per i soggiorni di questo rendiconto. È solo un’informazione: non fa parte del netto.",
+        "empty": "Per i soggiorni di questo rendiconto l’agenzia non ha incassato imposta di soggiorno.",
+        "title": "Imposta di soggiorno",
+        "total": "Totale"
+      },
       "version": "Versione {{number}}"
     },
     "calendar": {

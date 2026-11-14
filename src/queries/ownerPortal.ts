@@ -161,6 +161,34 @@ export function useOwnerExternalDocuments() {
   });
 }
 
+/** The published statements of the owner with their totals (E13/F02/US02/T01): read again at every visit, and gone from the cache when the person leaves the portal. */
+export function useOwnerStatements() {
+  return useQuery({
+    queryKey: [OWNER_PORTAL_KEY, 'statements'],
+    queryFn: () => ownerPortalApi.listStatements(),
+    ...PERSONAL,
+  });
+}
+
+/** One published statement with its lines and its tourist tax box. Not read without an id; a 404 is «not found» whatever an earlier answer left (the page asks `isError` first). */
+export function useOwnerStatement(statementId: string | undefined) {
+  return useQuery({
+    queryKey: [OWNER_PORTAL_KEY, 'statement', statementId ?? null],
+    queryFn: () => ownerPortalApi.getStatement(statementId ?? ''),
+    enabled: Boolean(statementId),
+    ...PERSONAL,
+  });
+}
+
+/** The invoices the property manager issued to the owner. */
+export function useOwnerInvoices() {
+  return useQuery({
+    queryKey: [OWNER_PORTAL_KEY, 'invoices'],
+    queryFn: () => ownerPortalApi.listInvoices(),
+    ...PERSONAL,
+  });
+}
+
 // ---------------------------------------------------------------- delegated contacts
 
 /** The contacts of the owner. A 403 `owner_contact_owner_only` is the answer for a person who is itself a contact. */

@@ -85,6 +85,115 @@ const DOCUMENTS = {
   ],
 };
 
+/** The statements with their amounts (E13/F02/US02/T01): the newest version and the one it replaced, in francs. Long names, so that the phones are tried with text that does not fit. */
+const AGENCY_NAME = 'Agenzia del Lago con un nome molto lungo che deve andare a capo';
+
+const STATEMENT_TOTALS = { gross: 1800, channelFees: -270, withholding: 0, commission: -216, charges: -79.5, corrections: 0, net: 1234.5, payments: 0, openingBalance: 0, closingBalance: 1234.5 };
+
+const STATEMENTS = [
+  {
+    statementId: 'sv-1',
+    agencyId: 'org-1',
+    agencyName: AGENCY_NAME,
+    year: 2026,
+    month: 10,
+    version: 2,
+    currency: 'CHF',
+    publishedAt: '2026-11-02T09:00:00Z',
+    superseded: false,
+    supersededByStatementId: null,
+    hasPdf: true,
+    totals: STATEMENT_TOTALS,
+  },
+  {
+    statementId: 'sv-0',
+    agencyId: 'org-1',
+    agencyName: AGENCY_NAME,
+    year: 2026,
+    month: 10,
+    version: 1,
+    currency: 'CHF',
+    publishedAt: '2026-11-01T09:00:00Z',
+    superseded: true,
+    supersededByStatementId: 'sv-1',
+    hasPdf: true,
+    totals: STATEMENT_TOTALS,
+  },
+];
+
+/** The statement the newer version replaced: its lines, its tourist tax box and the way to the version that took its place. */
+const STATEMENT_DETAIL = {
+  statement: STATEMENTS[1],
+  ownerName: 'Maria Bianchi',
+  ownerInvoiceNumber: '2026/0042',
+  ownerInvoiceDate: '2026-11-05',
+  entriesSha256: 'a'.repeat(64),
+  sections: [
+    {
+      section: 'stays',
+      total: 1800,
+      lines: [
+        {
+          id: 'l1',
+          type: 'BookingRevenue',
+          date: '2026-10-14',
+          checkIn: '2026-10-10',
+          checkOut: '2026-10-14',
+          property: PROPERTY.propertyName,
+          channel: 'Airbnb',
+          bookingCode: 'BK-1001',
+          kind: null,
+          description: null,
+          sharePercent: 100,
+          amount: 1800,
+          reversal: false,
+          channelFeeRechargedByAgency: false,
+        },
+      ],
+    },
+    {
+      section: 'recharges',
+      total: -79.5,
+      lines: [
+        {
+          id: 'l2',
+          type: 'OwnerCharge',
+          date: '2026-10-31',
+          checkIn: null,
+          checkOut: null,
+          property: null,
+          channel: null,
+          bookingCode: null,
+          kind: 'cleaning',
+          description: 'Pulizie finali di ottobre con una descrizione molto lunga che deve andare a capo senza uscire dallo schermo',
+          sharePercent: 100,
+          amount: -79.5,
+          reversal: false,
+          channelFeeRechargedByAgency: false,
+        },
+      ],
+    },
+  ],
+  touristTax: [{ property: PROPERTY.propertyName, checkIn: '2026-10-10', checkOut: '2026-10-14', channel: 'Airbnb', bookingCode: 'BK-1001', currency: 'CHF', amount: 8 }],
+};
+
+const INVOICES = [
+  {
+    invoiceId: 'inv-1',
+    agencyId: 'org-1',
+    agencyName: AGENCY_NAME,
+    number: '2026/0042',
+    issueDate: '2026-11-05',
+    kind: 'Invoice',
+    total: 233.25,
+    currency: 'CHF',
+    periodYear: 2026,
+    periodMonth: 10,
+    statementId: 'sv-1',
+    creditedInFull: false,
+  },
+];
+
 const CONTACT = {
   id: 'contact-1',
   orgId: 'org-1',
@@ -150,6 +259,9 @@ async function mockOwnerPortal(page: Page) {
     if (pathname.endsWith('/stays')) {
       return json(route, [stay('requested', 'Requested', 'stay-1'), stay('approved_syncing', 'Approved', 'stay-2'), stay('confirmed', 'Approved', 'stay-3'), stay('sync_failed', 'Approved', 'stay-4')]);
     }
+    if (pathname.endsWith('/statements')) return json(route, STATEMENTS);
+    if (/\/statements\/[^/]+$/.test(pathname)) return json(route, STATEMENT_DETAIL);
+    if (pathname.endsWith('/invoices')) return json(route, INVOICES);
     if (pathname.endsWith('/external-documents')) {
       return json(route, [{ id: 'inv-1', statementVersionId: 'sv-1', externalNumber: '2026/114', externalDate: '2026-11-03', documentUrl: 'https://fatture.example.com/f/114', status: 'Verified' }]);
     }
@@ -165,6 +277,7 @@ async function mockOwnerPortal(page: Page) {
 const PAGES = [
   { name: 'calendar and stays', path: '/portale-proprietari/calendario/prop-1', ready: 'owner-stays' },
   { name: 'accounting', path: '/portale-proprietari/contabilita', ready: 'owner-statements' },
+  { name: 'a statement', path: '/portale-proprietari/contabilita/sv-0', ready: 'owner-statement-detail' },
   { name: 'documents', path: '/portale-proprietari/documenti', ready: 'owner-documents' },
   { name: 'messages', path: '/portale-proprietari/messaggi', ready: 'owner-conversations' },
   { name: 'a conversation', path: '/portale-proprietari/messaggi/conv-1', ready: 'owner-messages' },
@@ -292,14 +405,17 @@ test.describe('Owner portal: phones, tablet and desktop (E07/F07/US01/T03)', () 
       await expect(page.locator('[data-testid="owner-stay"][data-state="sync_failed"]')).toContainText('Non è confermato');
     });
 
-    test('nothing of a guest is on the calendar and a statement that is not published is not on the accounting page', async ({ page }) => {
+    test('nothing of a guest is on the calendar, and the accounting page shows its amounts in francs and no word of a payment that nobody confirmed', async ({ page }) => {
       await page.goto('/portale-proprietari/calendario/prop-1', { waitUntil: 'domcontentloaded' });
       await expect(page.getByTestId('owner-calendar-runs')).toContainText('Occupato');
       await expect(page.getByTestId('owner-calendar')).not.toContainText(/@|Airbnb|Booking\.com|ospite/i);
 
       await page.goto('/portale-proprietari/contabilita', { waitUntil: 'domcontentloaded' });
       await expect(page.getByTestId('owner-statements')).toBeVisible();
-      await expect(page.getByTestId('owner-accounting-note')).toContainText('non sono ancora mostrati');
+      // The amounts are there, in the currency of the statement, and the sentence that said they were not is gone.
+      await expect(page.getByTestId('owner-statement-net').first()).toContainText('CHF');
+      await expect(page.getByTestId('owner-pm-invoice-total').first()).toContainText('CHF');
+      await expect(page.getByTestId('owner-accounting-note')).toHaveCount(0);
       await expect(page.locator('main')).not.toContainText(/\b(pagat[oaie]|inviat[oaie]|accettat[oaie])\b/i);
     });
   });
