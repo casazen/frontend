@@ -3,11 +3,13 @@ import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-do
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { leasesApi } from '@/api/leases.api';
+import { FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { PageHeader } from '@/components/layout/page-header';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { ErrorState } from '@/components/shared/error-state';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { useLeases } from '@/queries/use-leases';
 import { useCfPracticeLease } from '@/queries/use-concordatofacile';
 import type { CfSyncState } from '@/types/concordatofacile.types';
@@ -152,7 +154,7 @@ export function LeaseDocumentsUploadPage() {
   const practices = params.getAll('practice');
   const practiceId = practices.length === 1 && PRACTICE.test(practices[0]) ? practices[0] : '';
   const practiceInvalid = practices.length > 0 && practiceId === '';
-  return <div className="mx-auto max-w-3xl space-y-6" data-testid="cf-documents-page">
+  return <div className={cn(FOCUS_COLUMN, 'space-y-6')} data-testid="cf-documents-page">
     <PageHeader title={t('cfDocuments.title')} description={t('cfDocuments.description')} />
     {invalid ? <Alert variant="danger" action={<Link className="underline" to="/app/long-rent/properties">{t('cfDocuments.backToHouses')}</Link>}>{t('cfDocuments.invalidLease')}</Alert>
       : leaseId ? <LeaseDocuments key={leaseId} leaseId={leaseId} practiceId={practiceId || undefined} practiceLine={practiceId ? t('cfDocuments.practice.chosen', { practice: practiceId }) : undefined} confirmed={confirmed} />

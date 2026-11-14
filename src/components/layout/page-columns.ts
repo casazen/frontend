@@ -1,8 +1,9 @@
 // The width of a page in the shell. The content of the shell is a flex column, and in a flex column a block that has `mx-auto` and a
 // `max-w-*` but no `w-full` takes the width of its content: a profile came out 390 px wide on a 1600 px screen. So a page does not
-// center a narrow block: it uses the width of the shell, and spends it on columns (`PAGE_COLUMNS`); a guided flow or a short form is
-// a column that starts under the title (`FOCUS_COLUMN`). A grid of these has a single column of `minmax(0, 1fr)` (`grid-cols-1`)
-// until it has two: with no column set the track is `auto`, and a table or a long word in it would push the page out sideways.
+// center a narrow block, and it is not a narrow column either: it uses the whole width of the shell and spends it on columns
+// (`PAGE_COLUMNS`, `FIELD_COLUMNS`); a guided flow puts its steps in a column of their own beside the step (`WizardShell`). A grid of
+// these has a single column of `minmax(0, 1fr)` (`grid-cols-1`) until it has two: with no column set the track is `auto`, and a table
+// or a long word in it would push the page out sideways.
 
 /**
  * The sections of a page side by side from `xl`: two equal columns, each as tall as its own content. A page uses the whole width of
@@ -34,8 +35,18 @@ export const PAGE_COLUMN = 'min-w-0 space-y-6';
 export const PAGE_MAIN_ASIDE = 'grid grid-cols-1 gap-8 2xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] 2xl:items-start';
 
 /**
- * The column of a guided flow (a wizard) or of a short form: it starts at the left edge of the title above it (never centered under a
- * title that is on the left) and is as wide as `max-w-4xl`, so that a field or a line of text does not run across the whole screen.
- * `w-full` matters: in the column of the shell a block with only `max-w-*` and `mx-auto` shrinks to the width of its content.
+ * The fields of a form two to a row, or its groups of fields side by side, once the form is about 900 px wide (`@4xl`): a form that
+ * fills the page without a field running across the whole screen. The width of the form decides, not the one of the screen, so the
+ * same form works on a page of its own, in half of a page and in a card. Narrower, the fields stack with the spacing of a form, as
+ * they always did. The parent of the grid has to be a container (`@container`); a field that must span both columns takes
+ * `@4xl:col-span-2`.
  */
-export const FOCUS_COLUMN = 'w-full min-w-0 max-w-4xl';
+export const FIELD_COLUMNS = 'grid grid-cols-1 gap-x-8 gap-y-5 @4xl:grid-cols-2 @4xl:items-start';
+
+/**
+ * The block of a guided flow (a wizard) or of a short form: as wide as the page and starting at the left edge of the title above it
+ * (never a narrow column with half of the screen empty beside it). The width is spent on columns: a wizard puts its steps beside the
+ * step on a wide screen (`WizardShell`, from `2xl`), a form puts its sections in {@link PAGE_COLUMNS} or its fields in
+ * {@link FIELD_COLUMNS}. `w-full` matters: in the column of the shell a block without it shrinks to the width of its content.
+ */
+export const FOCUS_COLUMN = 'w-full min-w-0';

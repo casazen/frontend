@@ -47,7 +47,8 @@ export function TosReacceptance({ tos }: { tos: SupplierTos }) {
         onCheckedChange={setChecked}
         disabled={accept.isPending}
       />
-      <Button className="w-full" disabled={!checked || accept.isPending} onClick={() => void handleAccept()}>
+      {/* As wide as the page on a phone; its own width on a wide screen, where the page is the whole screen. */}
+      <Button className="w-full xl:w-auto" disabled={!checked || accept.isPending} onClick={() => void handleAccept()}>
         {t('supplier.activation.reaccept.button')}
       </Button>
     </div>

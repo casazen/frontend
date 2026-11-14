@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { FOCUS_COLUMN } from '@/components/layout/page-columns';
+import { FIELD_COLUMNS, FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { getProblemMessage } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
 import { LONG_RENT_PROPERTY_CREATE_PATH } from '@/features/properties/long-rent/paths';
@@ -59,59 +59,62 @@ export function ConcordatoDraftStart({ defaultPropertyId }: { defaultPropertyId?
 
   return (
     <form
-      className={cn(FOCUS_COLUMN, 'space-y-4')}
+      className={cn(FOCUS_COLUMN, '@container space-y-4')}
       data-testid="concordato-draft-start"
       onSubmit={(event) => {
         event.preventDefault();
         void create();
       }}
     >
-      {isError ? (
-        <div
-          role="alert"
-          data-testid="concordato-properties-error"
-          className="flex flex-wrap items-center gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
-        >
-          <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
-          <span className="flex-1">{getProblemMessage(error, t) ?? t('leases.form.propertiesLoadError')}</span>
-          <Button type="button" variant="outline" size="sm" onClick={() => void refetch()} disabled={isFetching}>
-            {t('leases.form.retry')}
-          </Button>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          <Label htmlFor={selectId}>{t('leases.form.propertyLabel')}</Label>
-          <select
-            id={selectId}
-            value={propertyId}
-            onChange={(event) => setChosen(event.target.value)}
-            aria-busy={isLoading}
-            disabled={createDraft.isPending}
-            className={SELECT_CLASS}
+      {/* The property and, beside it once the form is wide, what happens next (under it when it is not). */}
+      <div className={cn(FIELD_COLUMNS, 'gap-y-4')}>
+        {isError ? (
+          <div
+            role="alert"
+            data-testid="concordato-properties-error"
+            className="flex flex-wrap items-center gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
           >
-            <option value="">{isLoading ? t('leases.form.propertiesLoading') : t('leases.form.selectProperty')}</option>
-            {properties.map((property) => (
-              <option key={property.id} value={property.id}>
-                {property.name} — {property.city}
-              </option>
-            ))}
-          </select>
-          {noProperties ? (
-            <div
-              role="status"
-              data-testid="concordato-no-properties"
-              className="flex flex-wrap items-center gap-2 rounded-md border border-amber-500/50 bg-amber-500/10 p-3 text-sm"
+            <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <span className="flex-1">{getProblemMessage(error, t) ?? t('leases.form.propertiesLoadError')}</span>
+            <Button type="button" variant="outline" size="sm" onClick={() => void refetch()} disabled={isFetching}>
+              {t('leases.form.retry')}
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <Label htmlFor={selectId}>{t('leases.form.propertyLabel')}</Label>
+            <select
+              id={selectId}
+              value={propertyId}
+              onChange={(event) => setChosen(event.target.value)}
+              aria-busy={isLoading}
+              disabled={createDraft.isPending}
+              className={SELECT_CLASS}
             >
-              <span className="flex-1">{t('leaseWizard.start.concordato.noProperties')}</span>
-              <Button asChild variant="outline" size="sm">
-                <Link to={LONG_RENT_PROPERTY_CREATE_PATH}>{t('leases.form.createProperty')}</Link>
-              </Button>
-            </div>
-          ) : null}
-        </div>
-      )}
+              <option value="">{isLoading ? t('leases.form.propertiesLoading') : t('leases.form.selectProperty')}</option>
+              {properties.map((property) => (
+                <option key={property.id} value={property.id}>
+                  {property.name} — {property.city}
+                </option>
+              ))}
+            </select>
+            {noProperties ? (
+              <div
+                role="status"
+                data-testid="concordato-no-properties"
+                className="flex flex-wrap items-center gap-2 rounded-md border border-amber-500/50 bg-amber-500/10 p-3 text-sm"
+              >
+                <span className="flex-1">{t('leaseWizard.start.concordato.noProperties')}</span>
+                <Button asChild variant="outline" size="sm">
+                  <Link to={LONG_RENT_PROPERTY_CREATE_PATH}>{t('leases.form.createProperty')}</Link>
+                </Button>
+              </div>
+            ) : null}
+          </div>
+        )}
 
-      <p className="text-sm text-foreground/70">{t('leaseWizard.start.concordato.whatHappens')}</p>
+        <p className="min-w-0 text-sm text-foreground/70">{t('leaseWizard.start.concordato.whatHappens')}</p>
+      </div>
 
       {properties.length > 0 ? (
         <MissingNote

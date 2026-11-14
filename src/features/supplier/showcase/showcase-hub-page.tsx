@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AlertCircle, CheckCircle2, Copy, ExternalLink, PauseCircle, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { FOCUS_COLUMN } from '@/components/layout/page-columns';
+import { FOCUS_COLUMN, PAGE_COLUMNS } from '@/components/layout/page-columns';
 import { PageHeader } from '@/components/layout/page-header';
 import { FocusBlock, PlainSection, StatStrip, StatTile, type CalmAction } from '@/components/shared/calm';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
@@ -233,90 +233,93 @@ export function SupplierShowcaseHubPage() {
 
       <FocusBlock {...focus} data-testid="supplier-showcase-focus" />
 
-      {url || data.publicPath ? (
-        <PlainSection title={t('supplier.showcase.address.title')} data-testid="supplier-showcase-address">
-          <p className="break-all text-sm" data-testid="supplier-showcase-url">
-            {url ?? t('supplier.showcase.noPublicUrl')}
-          </p>
-          {data.state === 'Draft' ? <p className="text-sm text-foreground/70">{t('supplier.showcase.address.draftNote')}</p> : null}
-          <div className="flex flex-wrap gap-2 pt-1">
-            {data.publicPath && data.state !== 'Draft' ? (
-              <Button type="button" variant="outline" size="sm" onClick={openPublic}>
-                <ExternalLink className="mr-1 h-4 w-4" aria-hidden="true" />
-                {t('supplier.showcase.open')}
+      {/* The quiet sections two by two from `xl`, in their order (under each other on a narrower screen); none, no room left for them. */}
+      <div className={cn(PAGE_COLUMNS, 'empty:hidden')}>
+        {url || data.publicPath ? (
+          <PlainSection title={t('supplier.showcase.address.title')} data-testid="supplier-showcase-address">
+            <p className="break-all text-sm" data-testid="supplier-showcase-url">
+              {url ?? t('supplier.showcase.noPublicUrl')}
+            </p>
+            {data.state === 'Draft' ? <p className="text-sm text-foreground/70">{t('supplier.showcase.address.draftNote')}</p> : null}
+            <div className="flex flex-wrap gap-2 pt-1">
+              {data.publicPath && data.state !== 'Draft' ? (
+                <Button type="button" variant="outline" size="sm" onClick={openPublic}>
+                  <ExternalLink className="mr-1 h-4 w-4" aria-hidden="true" />
+                  {t('supplier.showcase.open')}
+                </Button>
+              ) : null}
+              {url ? (
+                <>
+                  <Button type="button" variant="outline" size="sm" onClick={() => void copyLink()}>
+                    <Copy className="mr-1 h-4 w-4" aria-hidden="true" />
+                    {t('supplier.showcase.copyLink')}
+                  </Button>
+                  <Button type="button" variant="outline" size="sm" onClick={() => setShareOpen(true)} data-testid="supplier-showcase-share-open">
+                    <Share2 className="mr-1 h-4 w-4" aria-hidden="true" />
+                    {t('supplier.showcase.share.open')}
+                  </Button>
+                </>
+              ) : null}
+            </div>
+          </PlainSection>
+        ) : null}
+
+        {toFix.length > 0 || (data.changes.length > 0 && data.state !== 'Draft') ? (
+          <PlainSection title={t('supplier.showcase.before.title')} data-testid="supplier-showcase-missing">
+            {data.state !== 'Draft' && data.changes.length > 0 ? (
+              <p className="text-sm" data-testid="supplier-showcase-changes">
+                {t('supplier.showcase.before.changes', { changes: changesList })}
+              </p>
+            ) : null}
+            {toFix.length > 0 ? (
+              <ul className="space-y-2" aria-label={t('supplier.showcase.before.missing')}>
+                {toFix.map((item) => {
+                  const path = fixPathOf(item);
+                  return (
+                    <li key={item.code} className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm" data-testid={`supplier-showcase-todo-${item.code}`}>
+                      <span className={cn('font-medium', item.required && 'text-warning-foreground')}>
+                        {item.required ? t('supplier.showcase.before.required') : t('supplier.showcase.before.advised')}
+                      </span>
+                      <span className="min-w-0 break-words">{t(`supplier.showcase.readiness.${item.code}`)}</span>
+                      {path ? (
+                        <Link className="inline-flex min-h-11 items-center font-medium underline underline-offset-4" to={path}>
+                          {t('supplier.showcase.before.fix')}
+                        </Link>
+                      ) : null}
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : null}
+          </PlainSection>
+        ) : null}
+
+        {(data.state === 'Online' || data.state === 'ChangesReady') && !data.bookings.open && reasonKey ? (
+          <PlainSection title={t('supplier.showcase.bookings.title')} data-testid="supplier-showcase-bookings">
+            <p className="text-sm">{t(reasonKey)}</p>
+            {data.bookings.blockedBy.includes('payments_account_not_ready') ? (
+              <Button asChild variant="outline" size="sm">
+                <Link to={PAYMENTS_SETTINGS_PATH}>{t('supplier.showcase.bookings.goToPayments')}</Link>
               </Button>
             ) : null}
-            {url ? (
-              <>
-                <Button type="button" variant="outline" size="sm" onClick={() => void copyLink()}>
-                  <Copy className="mr-1 h-4 w-4" aria-hidden="true" />
-                  {t('supplier.showcase.copyLink')}
-                </Button>
-                <Button type="button" variant="outline" size="sm" onClick={() => setShareOpen(true)} data-testid="supplier-showcase-share-open">
-                  <Share2 className="mr-1 h-4 w-4" aria-hidden="true" />
-                  {t('supplier.showcase.share.open')}
-                </Button>
-              </>
-            ) : null}
-          </div>
-        </PlainSection>
-      ) : null}
+          </PlainSection>
+        ) : null}
 
-      {toFix.length > 0 || (data.changes.length > 0 && data.state !== 'Draft') ? (
-        <PlainSection title={t('supplier.showcase.before.title')} data-testid="supplier-showcase-missing">
-          {data.state !== 'Draft' && data.changes.length > 0 ? (
-            <p className="text-sm" data-testid="supplier-showcase-changes">
-              {t('supplier.showcase.before.changes', { changes: changesList })}
-            </p>
-          ) : null}
-          {toFix.length > 0 ? (
-            <ul className="space-y-2" aria-label={t('supplier.showcase.before.missing')}>
-              {toFix.map((item) => {
-                const path = fixPathOf(item);
-                return (
-                  <li key={item.code} className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm" data-testid={`supplier-showcase-todo-${item.code}`}>
-                    <span className={cn('font-medium', item.required && 'text-warning-foreground')}>
-                      {item.required ? t('supplier.showcase.before.required') : t('supplier.showcase.before.advised')}
-                    </span>
-                    <span className="min-w-0 break-words">{t(`supplier.showcase.readiness.${item.code}`)}</span>
-                    {path ? (
-                      <Link className="inline-flex min-h-11 items-center font-medium underline underline-offset-4" to={path}>
-                        {t('supplier.showcase.before.fix')}
-                      </Link>
-                    ) : null}
-                  </li>
-                );
-              })}
+        {secondary.length > 0 ? (
+          <PlainSection title={t('supplier.showcase.settings.title')} data-testid="supplier-showcase-settings">
+            <ul className="divide-y">
+              {secondary.map((action) => (
+                <li key={action.testId} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3">
+                  <p className="min-w-0 flex-1 basis-60 text-sm text-foreground/80">{action.hint}</p>
+                  <Button type="button" variant="outline" size="sm" disabled={busy} onClick={action.onClick} data-testid={action.testId}>
+                    {action.label}
+                  </Button>
+                </li>
+              ))}
             </ul>
-          ) : null}
-        </PlainSection>
-      ) : null}
-
-      {(data.state === 'Online' || data.state === 'ChangesReady') && !data.bookings.open && reasonKey ? (
-        <PlainSection title={t('supplier.showcase.bookings.title')} data-testid="supplier-showcase-bookings">
-          <p className="text-sm">{t(reasonKey)}</p>
-          {data.bookings.blockedBy.includes('payments_account_not_ready') ? (
-            <Button asChild variant="outline" size="sm">
-              <Link to={PAYMENTS_SETTINGS_PATH}>{t('supplier.showcase.bookings.goToPayments')}</Link>
-            </Button>
-          ) : null}
-        </PlainSection>
-      ) : null}
-
-      {secondary.length > 0 ? (
-        <PlainSection title={t('supplier.showcase.settings.title')} data-testid="supplier-showcase-settings">
-          <ul className="divide-y">
-            {secondary.map((action) => (
-              <li key={action.testId} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3">
-                <p className="min-w-0 flex-1 basis-60 text-sm text-foreground/80">{action.hint}</p>
-                <Button type="button" variant="outline" size="sm" disabled={busy} onClick={action.onClick} data-testid={action.testId}>
-                  {action.label}
-                </Button>
-              </li>
-            ))}
-          </ul>
-        </PlainSection>
-      ) : null}
+          </PlainSection>
+        ) : null}
+      </div>
 
       {stats.data ? (
         <StatStrip label={t('supplier.showcase.stats.label')} data-testid="supplier-showcase-stats">

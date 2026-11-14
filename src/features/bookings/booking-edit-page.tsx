@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
-import { FOCUS_COLUMN } from '@/components/layout/page-columns';
+import { FIELD_COLUMNS, FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BookingForm, type BookingFormSubmit } from './components/booking-form';
@@ -15,7 +15,7 @@ import { useWorkspace } from '@/hooks/use-workspace';
 import { useBooking, useBookingEditQuote, useRetryOctorateSync, useUpdateBooking } from '@/queries/use-bookings';
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import { formatStayDate } from '@/lib/stay-dates';
-import { formatCurrency } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 import type { BookingEditQuote, BookingEditSettlement as SavedSettlement, UpdateBookingDto } from '@/types';
 import { channelGuidanceOf, channelVersionChange, settlementHasMoney, stayChanged, stayLockOf } from './lib/booking-change';
 import { useSyncWatch } from './lib/use-sync-watch';
@@ -301,23 +301,28 @@ function EditReview({ change, quote, canMoveMoney, busy, error, language, onConf
         <CardTitle>{t('booking.edit.review.title')}</CardTitle>
         <CardDescription>{t('booking.edit.review.description')}</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <dl className="space-y-1 rounded-lg bg-muted p-4 text-sm">
-          <div className="flex justify-between gap-4">
-            <dt className="text-muted-foreground">{t('booking.edit.review.dates')}</dt>
-            <dd>{`${day(change.checkInDate)} → ${day(change.checkOutDate)}`}</dd>
-          </div>
-          <div className="flex justify-between gap-4">
-            <dt className="text-muted-foreground">{t('booking.edit.review.guests')}</dt>
-            <dd>{t('booking.list.guestCount', { count: change.numberOfGuests })}</dd>
-          </div>
-          <div className="flex justify-between gap-4 border-t pt-1 font-semibold">
-            <dt>{t('booking.edit.review.total')}</dt>
-            <dd data-testid="booking-edit-review-total">{formatCurrency(quote.newTotal, quote.currency)}</dd>
-          </div>
-        </dl>
+      <CardContent className="@container space-y-4">
+        {/* The new stay and, beside it once the card is wide, what happens to the money (under each other when it is not). */}
+        <div className={cn(FIELD_COLUMNS, 'gap-y-4')}>
+          <dl className="min-w-0 space-y-1 rounded-lg bg-muted p-4 text-sm">
+            <div className="flex justify-between gap-4">
+              <dt className="text-muted-foreground">{t('booking.edit.review.dates')}</dt>
+              <dd>{`${day(change.checkInDate)} → ${day(change.checkOutDate)}`}</dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-muted-foreground">{t('booking.edit.review.guests')}</dt>
+              <dd>{t('booking.list.guestCount', { count: change.numberOfGuests })}</dd>
+            </div>
+            <div className="flex justify-between gap-4 border-t pt-1 font-semibold">
+              <dt>{t('booking.edit.review.total')}</dt>
+              <dd data-testid="booking-edit-review-total">{formatCurrency(quote.newTotal, quote.currency)}</dd>
+            </div>
+          </dl>
 
-        <BookingEditSettlement quote={quote} />
+          <div className="min-w-0">
+            <BookingEditSettlement quote={quote} />
+          </div>
+        </div>
 
         {blocked && (
           <p role="alert" className="text-sm text-destructive" data-testid="booking-edit-review-blocked">
