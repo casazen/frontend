@@ -1521,6 +1521,15 @@
       "ownerMandateInvalid": "I dati del mandato non sono validi. Controlla il campo indicato e riprova.",
       "ownerMandateOverlap": "Una versione del mandato parte già da quel giorno o dopo: scegli un giorno successivo all'inizio dell'ultima.",
       "ownerAddressInvalid": "L'indirizzo non è valido. Controlla il campo indicato e riprova.",
+      "ownerInvoiceVersionSuperseded": "Questa versione del rendiconto è stata sostituita: la fattura si fa dall'ultima versione.",
+      "ownerInvoiceNothingToInvoice": "In questo rendiconto non c'è nulla da fatturare: nessuna provvigione, riaddebito o spesa dell'agenzia.",
+      "documentDraftOutdated": "La bozza non è più quella che verrebbe emessa adesso: il rendiconto, il mandato o le regole sono cambiati. Ricalcolala e controllala di nuovo.",
+      "documentAlreadyIssued": "La fattura di questo mese è già emessa.",
+      "documentConfirmationRequired": "Serve la conferma dell'emissione.",
+      "documentRuleNotConfigured": "Mancano le regole dell'IVA per questo documento. Completale in «Fatturazione» e riprova.",
+      "documentInvoiceDataMissing": "Mancano dati del destinatario per fare la fattura (indirizzo o dati fiscali). Completali nei dati finanziari del proprietario e riprova.",
+      "documentNotDraft": "Questa fattura non è più una bozza.",
+      "ownerPeriodInvalid": "Il mese non è valido.",
       "ownerAttachmentNotFound": "Questo allegato non è disponibile.",
       "ownerCalendarRangeInvalid": "Il periodo scelto non è valido.",
       "ownerContactAgencyRequired": "Il tuo profilo è collegato a più agenzie: per invitare un contatto scrivi all’agenzia interessata.",
@@ -13987,6 +13996,7 @@
     "verifications": "Verifiche",
     "wireTransfers": "Bonifici proprietari",
     "ownerClose": "Chiusura mensile",
+    "ownerInvoices": "Fatture ai proprietari",
     "owners": "Proprietari",
     "withholding": "Ritenute d'acconto"
   },
@@ -16140,6 +16150,10 @@
         "how": "Inserisci il suo profilo, valido da questo mese.",
         "title": "Mancano i dati finanziari del proprietario"
       },
+      "ownerInvoiceAfterApproval": {
+        "how": "Prepara una nuova versione: comprenderà l'IVA della fattura.",
+        "title": "La fattura è stata emessa dopo l'approvazione del rendiconto"
+      },
       "ownershipMissing": {
         "how": "Indica chi lo possiede nell'attivazione: senza proprietario i suoi incassi non vanno a nessun rendiconto.",
         "title": "Un immobile non ha proprietari in questo periodo"
@@ -16385,6 +16399,7 @@
       "loadError": "Non riusciamo a leggere il rendiconto.",
       "loading": "Leggo il rendiconto…",
       "nonFiscal": "Questo rendiconto non è un documento fiscale: è il riepilogo di quello che l'agenzia deve al proprietario. Se serve una fattura, la emette il sistema fiscale della tua agenzia e qui la colleghi.",
+      "nonFiscalInvoicing": "Questo rendiconto non è un documento fiscale: è il riepilogo di quello che l'agenzia deve al proprietario. La fattura dell'agenzia al proprietario si crea e si emette qui sotto, in «Fattura del PM».",
       "notFound": "Questo rendiconto non c'è",
       "notFoundBody": "Non esiste, o è di un'altra organizzazione. Torna alla chiusura mensile.",
       "openLatest": "Apri la versione più recente",
@@ -16660,6 +16675,104 @@
         "description": "Il link è già stato usato da un account. Se sei tu, apri il portale e accedi; altrimenti chiedi all'agenzia un nuovo invito.",
         "title": "Questo invito è già stato usato"
       }
+    }
+  },
+  "ownerInvoice": {
+    "currencyMissing": "Per qualche fattura il server non ha indicato la valuta: gli importi sono scritti senza simbolo.",
+    "issue": {
+      "confirm": "Emetti la fattura",
+      "consequenceFinal": "Una volta emessa la fattura non si modifica più.",
+      "consequenceNumber": "Riceve il suo numero adesso, in ordine e senza buchi: il numero non si può riutilizzare.",
+      "consequenceVat": "L'IVA che la fattura aggiunge entra nel libro del proprietario, una volta sola.",
+      "description": "Stai per emettere la fattura di {{owner}} per {{period}}.",
+      "done": "Fattura {{number}} emessa.",
+      "number": "Numero",
+      "numberNext": "Lo assegna CasaZen all'emissione",
+      "series": "Serie",
+      "title": "Emettere la fattura al proprietario?",
+      "total": "Totale"
+    },
+    "lineType": {
+      "AdvancedExpense": "Spesa anticipata, fuori campo IVA",
+      "Commission": "Provvigione",
+      "Recharge": "Riaddebito"
+    },
+    "lines": {
+      "caption": "Le righe della fattura con la loro IVA",
+      "description": "Descrizione",
+      "net": "Importo",
+      "rate": "IVA",
+      "vat": "Importo IVA"
+    },
+    "page": {
+      "allMonths": "Tutti i mesi",
+      "allOwners": "Tutti i proprietari",
+      "description": "Le fatture che l'agenzia fa ai proprietari dai loro rendiconti, con il totale nella loro valuta.",
+      "empty": "Non ci sono ancora fatture ai proprietari. Si creano dal rendiconto di un proprietario.",
+      "emptyAction": "Apri la chiusura mensile",
+      "emptyFiltered": "Nessuna fattura per questo mese e questo proprietario.",
+      "filterOwner": "Proprietario",
+      "filterPeriod": "Mese",
+      "listTitle": "Fatture",
+      "loadError": "Non riusciamo a leggere le fatture.",
+      "loading": "Leggo le fatture…",
+      "row": {
+        "draft": "Bozza",
+        "number": "Fattura n. {{number}}",
+        "ownerAndMonth": "{{owner}} · {{month}}",
+        "pdfLabel": "Scarica il PDF della fattura {{number}}",
+        "statement": "Apri il rendiconto"
+      },
+      "title": "Fatture ai proprietari",
+      "unavailable": "Le fatture ai proprietari non sono attive."
+    },
+    "panel": {
+      "create": "Crea la fattura",
+      "createFromThis": "Ricalcola la bozza da questa versione",
+      "credited": "Fattura n. {{number}} annullata con una nota di credito.",
+      "description": "La fattura che l'agenzia fa al proprietario: la provvigione, i riaddebiti e le spese anticipate di questo rendiconto, con la loro IVA.",
+      "draft": "Bozza pronta: totale {{total}}.",
+      "draftMade": "Bozza della fattura preparata.",
+      "issue": "Emetti",
+      "issued": "Fattura n. {{number}} del {{date}}",
+      "loadError": "Non riusciamo a leggere la fattura.",
+      "loading": "Cerco la fattura…",
+      "none": "Non c'è ancora una fattura per questo rendiconto.",
+      "otherVersionDraft": "La bozza della fattura di questo mese è stata fatta da un'altra versione del rendiconto.",
+      "otherVersionIssued": "La fattura n. {{number}} di questo mese è stata fatta da un'altra versione del rendiconto.",
+      "otherVersionOpen": "Apri quella versione",
+      "pdf": "Scarica il PDF",
+      "readOnly": "La fattura la crea e la emette solo il titolare o chi amministra l'organizzazione.",
+      "recalculate": "Ricalcola la bozza",
+      "review": "Rivedi la bozza",
+      "reviewFirst": "Prima di emettere, rivedi le righe: la bozza si ricalcola dalla versione e dal mandato di adesso.",
+      "superseded": "Questa versione è stata sostituita: la fattura si fa dall'ultima versione.",
+      "title": "Fattura del PM",
+      "unknownState": "Stato della fattura non riconosciuto: {{status}}."
+    },
+    "settlement": {
+      "credited": "Annullata con una nota di credito",
+      "offset": "Compensata nel rendiconto",
+      "qrBill": "Il PDF porta la QR-fattura per il pagamento, se l'agenzia ha registrato il suo IBAN.",
+      "toPay": "Da pagare: {{amount}}",
+      "unknown": "Pagamento: stato non riconosciuto ({{state}})"
+    },
+    "status": {
+      "Credited": "Annullata",
+      "Draft": "Bozza",
+      "Issued": "Emessa"
+    },
+    "totals": {
+      "stampDuty": "Imposta di bollo",
+      "taxable": "Imponibile",
+      "total": "Totale",
+      "vat": "IVA"
+    },
+    "vat": {
+      "outside": "Fuori campo IVA{{nature}}: imponibile {{taxable}}",
+      "rate": "IVA {{rate}}: imponibile {{taxable}}, imposta {{tax}}",
+      "rateWithoutTax": "IVA {{rate}}: imponibile {{taxable}}",
+      "title": "IVA per aliquota"
     }
   },
   "ownerMandate": {

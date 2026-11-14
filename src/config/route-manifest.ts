@@ -1278,6 +1278,21 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     legacyPaths: ['/app/admin/statements'],
   },
   {
+    // «Fatture ai proprietari» (E13/F02/US01/T03, NF-114): the invoices of the agency to its owners, made from their statements, with the filters of the month and of the owner and the PDF of
+    // each. A tab of «Chiusura mensile», right after the statements they are made from (the order asks for 1.5: the withholding and the transfers keep theirs). Behind the flag
+    // `ownerInvoicing` (the backend answers 404 while it is off, and the page is not in the menu); the page checks the role and the agency plan of the organization before it reads anything.
+    path: '/app/account/owner-invoices',
+    context: 'account',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    featureFlag: 'ownerInvoicing',
+    navKey: 'nav.ownerInvoices',
+    navParent: '/app/account/owner-close',
+    navOrder: 1.5,
+    icon: 'Receipt',
+    component: async () => ({ default: (await import('@/features/owner-invoices/owner-invoices-page')).OwnerInvoicesPage }),
+  },
+  {
     // Withholding tax management (ADR-018): the withholding of the month by owner, the F24 with its PDF and the registration of its payment. For the
     // org billing administrator, who holds `agency.withholding.manage` as the owner or an administrator. Agency plan only (`agencyTier`).
     path: '/app/account/withholding',

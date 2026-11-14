@@ -237,6 +237,7 @@ export const ISSUE_CODES = [
   'owner_fiscal_policy_not_effective',
   'owner_fiscal_profile_incomplete',
   'owner_fiscal_profile_missing',
+  'owner_invoice_after_approval',
   'ownership_missing',
   'ownership_share_gap',
   'period_closed',
@@ -266,8 +267,10 @@ export function actionForIssue(issue: OwnerReadinessIssue): IssueAction {
       return { kind: 'post' };
     case 'statement_missing':
       return { kind: 'prepare' };
+    // `owner_invoice_after_approval`: the invoice of the property manager was issued after the statement was approved, so its VAT is in the ledger and not in the version.
     case 'period_dirty':
     case 'ledger_statement_imbalance':
+    case 'owner_invoice_after_approval':
       return { kind: 'regenerate' };
     case 'statement_not_approved':
       return { kind: 'approve' };

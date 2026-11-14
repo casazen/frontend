@@ -1521,6 +1521,15 @@
       "ownerMandateInvalid": "The data of the mandate are not valid. Check the field named and try again.",
       "ownerMandateOverlap": "A version of the mandate already starts on that day or later: choose a day after the start of the latest one.",
       "ownerAddressInvalid": "The address is not valid. Check the field named and try again.",
+      "ownerInvoiceVersionSuperseded": "This version of the statement was replaced: the invoice is made from the latest version.",
+      "ownerInvoiceNothingToInvoice": "There is nothing to invoice in this statement: no commission, recharge or expense of the agency.",
+      "documentDraftOutdated": "The draft is no longer what would be issued now: the statement, the mandate or the rules changed. Make it again and review it again.",
+      "documentAlreadyIssued": "The invoice of this month is already issued.",
+      "documentConfirmationRequired": "The issue has to be confirmed.",
+      "documentRuleNotConfigured": "The VAT rules for this document are missing. Complete them in «Invoicing» and try again.",
+      "documentInvoiceDataMissing": "Data of the recipient are missing to make the invoice (address or fiscal data). Complete them in the financial data of the owner and try again.",
+      "documentNotDraft": "This invoice is no longer a draft.",
+      "ownerPeriodInvalid": "The month is not valid.",
       "ownerAttachmentNotFound": "This attachment is not available.",
       "ownerCalendarRangeInvalid": "The chosen period is not valid.",
       "ownerContactAgencyRequired": "Your profile is linked to more than one agency: to invite a contact write to the agency concerned.",
@@ -13987,6 +13996,7 @@
     "verifications": "Verifications",
     "wireTransfers": "Owner Wire Transfers",
     "ownerClose": "Month-end close",
+    "ownerInvoices": "Invoices to the owners",
     "owners": "Owners",
     "withholding": "Withholding tax"
   },
@@ -16140,6 +16150,10 @@
         "how": "Enter his profile, valid from this month.",
         "title": "The owner's financial data is missing"
       },
+      "ownerInvoiceAfterApproval": {
+        "how": "Prepare a new version: it will include the VAT of the invoice.",
+        "title": "The invoice was issued after the statement was approved"
+      },
       "ownershipMissing": {
         "how": "State who owns it in the activation: with no owner its revenue goes to no statement.",
         "title": "A property has no owner in this period"
@@ -16385,6 +16399,7 @@
       "loadError": "We cannot read the statement.",
       "loading": "Reading the statement…",
       "nonFiscal": "This statement is not a fiscal document: it is the summary of what the agency owes the owner. If an invoice is needed, your agency's fiscal system issues it and you link it here.",
+      "nonFiscalInvoicing": "This statement is not a fiscal document: it is the summary of what the agency owes the owner. The invoice of the agency to the owner is made and issued below, in «Property manager invoice».",
       "notFound": "This statement does not exist",
       "notFoundBody": "It does not exist, or it belongs to another organization. Go back to the month-end close.",
       "openLatest": "Open the latest version",
@@ -16660,6 +16675,104 @@
         "description": "The link has already been used by an account. If that was you, open the portal and sign in; otherwise ask your agency for a new invitation.",
         "title": "This invitation has already been used"
       }
+    }
+  },
+  "ownerInvoice": {
+    "currencyMissing": "For some invoice the server did not give the currency: the amounts are written without a symbol.",
+    "issue": {
+      "confirm": "Issue the invoice",
+      "consequenceFinal": "Once issued, the invoice can no longer be changed.",
+      "consequenceNumber": "It gets its number now, in sequence and without gaps: the number cannot be reused.",
+      "consequenceVat": "The VAT the invoice adds goes into the ledger of the owner, once.",
+      "description": "You are about to issue the invoice of {{owner}} for {{period}}.",
+      "done": "Invoice {{number}} issued.",
+      "number": "Number",
+      "numberNext": "CasaZen gives it when the invoice is issued",
+      "series": "Series",
+      "title": "Issue the invoice to the owner?",
+      "total": "Total"
+    },
+    "lineType": {
+      "AdvancedExpense": "Advanced expense, outside VAT",
+      "Commission": "Commission",
+      "Recharge": "Recharge"
+    },
+    "lines": {
+      "caption": "The lines of the invoice with their VAT",
+      "description": "Description",
+      "net": "Amount",
+      "rate": "VAT",
+      "vat": "VAT amount"
+    },
+    "page": {
+      "allMonths": "All months",
+      "allOwners": "All owners",
+      "description": "The invoices the agency makes out to the owners from their statements, with the total in their currency.",
+      "empty": "There are no invoices to the owners yet. They are made from the statement of an owner.",
+      "emptyAction": "Open the month-end close",
+      "emptyFiltered": "No invoice for this month and this owner.",
+      "filterOwner": "Owner",
+      "filterPeriod": "Month",
+      "listTitle": "Invoices",
+      "loadError": "We cannot read the invoices.",
+      "loading": "Reading the invoices…",
+      "row": {
+        "draft": "Draft",
+        "number": "Invoice no. {{number}}",
+        "ownerAndMonth": "{{owner}} · {{month}}",
+        "pdfLabel": "Download the PDF of invoice {{number}}",
+        "statement": "Open the statement"
+      },
+      "title": "Invoices to the owners",
+      "unavailable": "The invoices to the owners are not active."
+    },
+    "panel": {
+      "create": "Make the invoice",
+      "createFromThis": "Make the draft again from this version",
+      "credited": "Invoice no. {{number}} cancelled with a credit note.",
+      "description": "The invoice the agency makes out to the owner: the commission, the recharges and the advanced expenses of this statement, with their VAT.",
+      "draft": "Draft ready: total {{total}}.",
+      "draftMade": "Draft of the invoice made.",
+      "issue": "Issue",
+      "issued": "Invoice no. {{number}} of {{date}}",
+      "loadError": "We cannot read the invoice.",
+      "loading": "Looking for the invoice…",
+      "none": "There is no invoice for this statement yet.",
+      "otherVersionDraft": "The draft of the invoice of this month was made from another version of the statement.",
+      "otherVersionIssued": "Invoice no. {{number}} of this month was made from another version of the statement.",
+      "otherVersionOpen": "Open that version",
+      "pdf": "Download the PDF",
+      "readOnly": "Only the owner or the administrators of the organization make and issue the invoice.",
+      "recalculate": "Make the draft again",
+      "review": "Review the draft",
+      "reviewFirst": "Before issuing, review the lines: the draft is made again from the version and the mandate as they are now.",
+      "superseded": "This version was replaced: the invoice is made from the latest version.",
+      "title": "Property manager invoice",
+      "unknownState": "Invoice state not recognized: {{status}}."
+    },
+    "settlement": {
+      "credited": "Cancelled with a credit note",
+      "offset": "Offset in the statement",
+      "qrBill": "The PDF carries the QR-bill for the payment, if the agency has registered its IBAN.",
+      "toPay": "To pay: {{amount}}",
+      "unknown": "Payment: state not recognized ({{state}})"
+    },
+    "status": {
+      "Credited": "Cancelled",
+      "Draft": "Draft",
+      "Issued": "Issued"
+    },
+    "totals": {
+      "stampDuty": "Stamp duty",
+      "taxable": "Taxable amount",
+      "total": "Total",
+      "vat": "VAT"
+    },
+    "vat": {
+      "outside": "Outside VAT{{nature}}: taxable amount {{taxable}}",
+      "rate": "VAT {{rate}}: taxable amount {{taxable}}, tax {{tax}}",
+      "rateWithoutTax": "VAT {{rate}}: taxable amount {{taxable}}",
+      "title": "VAT by rate"
     }
   },
   "ownerMandate": {

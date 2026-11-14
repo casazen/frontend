@@ -9,6 +9,8 @@ import { Alert } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { SkeletonCard } from '@/components/ui/skeleton';
+import { isFeatureEnabled } from '@/config/feature-flags';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getHttpStatus } from '@/lib/api-errors';
 import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
@@ -30,6 +32,7 @@ import { ExternalInvoicesPanel } from './components/external-invoices-panel';
 import { LedgerLineDrawer } from './components/ledger-line-drawer';
 import { OwnerActionDialogs } from './components/owner-action-dialogs';
 import { FinanceAdminRequired, OwnerAccountingError } from './components/owner-accounting-error';
+import { OwnerInvoicePanel } from './components/owner-invoice-panel';
 import { PayoutReconciliationPanel } from './components/payout-reconciliation-panel';
 import { StatementGroups } from './components/statement-groups';
 import { TaxEvidenceView } from './components/tax-evidence';
@@ -127,6 +130,9 @@ const VISIBLE_LINES = 25;
 function StatementContent({ version, entries }: { version: OwnerStatementVersion; entries: OwnerLedgerEntry[] }) {
   const { t } = useTranslation();
   const { money, dateTime, month } = useOwnerFormat();
+  const { flags } = useFeatureFlags();
+  // With the invoice of the property manager on, CasaZen issues it (panel «Fattura del PM»): nobody issues outside it, so the links to invoices issued elsewhere are not offered.
+  const invoicing = isFeatureEnabled(flags, 'ownerInvoicing');
   const period = useMemo(() => ({ year: version.year, month: version.month }), [version.year, version.month]);
   const owners = useOwnerNames();
   const versions = useOwnerVersions(period.year, period.month, version.ownerId);
@@ -204,7 +210,7 @@ function StatementContent({ version, entries }: { version: OwnerStatementVersion
       />
 
       <Alert variant="info" data-testid="statement-non-fiscal">
-        {t('ownerAccounting.statement.nonFiscal')}
+        {invoicing ? t('ownerAccounting.statement.nonFiscalInvoicing') : t('ownerAccounting.statement.nonFiscal')}
       </Alert>
 
       {version.status === 'Superseded' ? (
@@ -391,9 +397,13 @@ function StatementContent({ version, entries }: { version: OwnerStatementVersion
         {actions.closeWaitsForTheEnd ? <p className="break-words text-sm text-foreground/70">{t('ownerAccounting.actions.closeWaits')}</p> : null}
       </Disclosure>
 
-      <Disclosure title={t('ownerAccounting.external.title')} data-testid="statement-external">
-        <ExternalInvoicesPanel version={version} />
-      </Disclosure>
+      <OwnerInvoicePanel version={version} />
+
+      {invoicing ? null : (
+        <Disclosure title={t('ownerAccounting.external.title')} data-testid="statement-external">
+          <ExternalInvoicesPanel version={version} />
+        </Disclosure>
+      )}
 
       {published ? (
         <Disclosure title={t('ownerAccounting.statement.fileTitle')} data-testid="statement-file">

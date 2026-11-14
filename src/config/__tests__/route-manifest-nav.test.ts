@@ -255,8 +255,11 @@ describe('route-manifest main menu (UI-04a)', () => {
     expect(entryOf('/app/account/owners').navGroup).toBe('account');
   });
 
-  it('opens the list of the owners, and only for the finance administrators of the organization', async () => {
-    for (const [path, componentName] of [['/app/account/owners', 'OwnersListPage']] as const) {
+  it('opens the list of the owners and the invoices to them, and only for the finance administrators of the organization', async () => {
+    for (const [path, componentName] of [
+      ['/app/account/owners', 'OwnersListPage'],
+      ['/app/account/owner-invoices', 'OwnerInvoicesPage'],
+    ] as const) {
       const entry = entryOf(path);
       expect(entry.context, path).toBe('account');
       expect(entry.orgBillingAdmin, path).toBe(true);
@@ -264,6 +267,32 @@ describe('route-manifest main menu (UI-04a)', () => {
       expect((await entry.component()).default.name, path).toBe(componentName);
     }
   }, 30_000);
+
+  it('puts the invoices to the owners next to the statements they are made from, behind their own flag, and in no menu without it (E13/F02/US01/T03)', () => {
+    const entry = entryOf('/app/account/owner-invoices');
+    expect(entry.featureFlag).toBe('ownerInvoicing');
+    // A tab of the month of the owners, right after the statements: the withholding and the transfers keep their places.
+    expect(entry.navParent).toBe('/app/account/owner-close');
+    expect(entry.navPlacement).toBeUndefined();
+    expect(entry.navOrder).toBeGreaterThan(entryOf('/app/account/statements').navOrder ?? Number.POSITIVE_INFINITY);
+    expect(entry.navOrder).toBeLessThan(entryOf('/app/account/withholding').navOrder ?? Number.NEGATIVE_INFINITY);
+
+    const both = { agencyTier: true, ownerInvoicing: true };
+    expect(paths(getNavSection('/app/account/statements', allowAll, both))).toEqual([
+      '/app/account/owner-close',
+      '/app/account/statements',
+      '/app/account/owner-invoices',
+      '/app/account/withholding',
+      '/app/account/wire-transfers',
+    ]);
+    // The flag off: nothing changes for the plan that exists today.
+    expect(paths(getNavSection('/app/account/statements', allowAll, { agencyTier: true }))).not.toContain('/app/account/owner-invoices');
+    expect(paths(getNavMatchEntries('account', allowAll, { agencyTier: true }))).not.toContain('/app/account/owner-invoices');
+    expect(isEntryFeatureEnabled(entry, {})).toBe(false);
+    expect(isEntryFeatureEnabled(entry, { ownerInvoicing: true })).toBe(true);
+    // Whoever is not the owner or an administrator of the organization has no way in.
+    expect(paths(getNavMatchEntries('account', notBillingAdmin, both))).not.toContain('/app/account/owner-invoices');
+  });
 
   it.each(AGENCY_PAGES)('%s: keeps %s out of the menus while the agencyTier flag is off', (contextKey, path) => {
     expect(entryOf(path).featureFlag).toBe('agencyTier');
@@ -382,7 +411,8 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
     // «Impostazioni»: the organization, then the integration and the assistant (each behind its flag).
     '/app/short-rent/settings/organization': ['/app/short-rent/settings/integration', '/app/short-rent/settings/assistant'],
     // The month of the owners of an agency, in the order of its steps.
-    '/app/account/owner-close': ['/app/account/statements', '/app/account/withholding', '/app/account/wire-transfers'],
+    // The invoices to the owners (E13/F02/US01/T03, behind their flag) come right after the statements they are made from, at 1.5.
+    '/app/account/owner-close': ['/app/account/statements', '/app/account/owner-invoices', '/app/account/withholding', '/app/account/wire-transfers'],
     '/app/admin/suppliers': ['/app/admin/suppliers/invite', '/app/admin/invite-qr'],
     '/app/admin/seo': ['/app/admin/marketing'],
     '/app/admin/jobs': ['/app/admin/ai', '/app/admin/demo'],
@@ -431,6 +461,7 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
     fiscalDocumentIssuance: true,
     octorateOnboarding: true,
     messageAssistant: true,
+    ownerInvoicing: true,
   };
 
   it('lists the pages of each section in tab order, and no other page hangs', () => {
@@ -632,6 +663,7 @@ describe('route-manifest sections as tabs (UI-04a)', () => {
       fiscalDocumentIssuance: true,
       octorateOnboarding: true,
       messageAssistant: true,
+      ownerInvoicing: true,
     };
     for (const entry of ROUTE_MANIFEST.filter((candidate) => candidate.navParent)) {
       const tabs = paths(getNavSection(entry.path, allowAll, flags));
