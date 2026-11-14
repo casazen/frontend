@@ -363,7 +363,8 @@ describe('issueBatch', () => {
 
     const result = await issueBatch(['a', 'b']);
 
-    expect(axios.post).toHaveBeenCalledWith('/fiscal/documents/issue-batch', { documentIds: ['a', 'b'] });
+    // The call works through up to 200 documents in a row: it is given more than the 30 s of every other call, so the answer of every document is not lost to a timeout.
+    expect(axios.post).toHaveBeenCalledWith('/fiscal/documents/issue-batch', { documentIds: ['a', 'b'] }, { timeout: 5 * 60_000 });
     expect([result.issued, result.failed, result.remaining]).toEqual([1, 1, 3]);
     expect(result.rows).toEqual([
       { id: 'a', issued: true, number: '2026/6', errorCode: null },

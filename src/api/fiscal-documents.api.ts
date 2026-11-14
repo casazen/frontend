@@ -35,6 +35,12 @@ const DOWNLOAD_TIMEOUT_MS = 120_000;
 const EXPORT_TIMEOUT_MS = 5 * 60_000;
 
 /**
+ * A bulk issue works through up to 200 documents one after the other in a single call, each in its own transaction: it takes far more than the 30 s of every other call. Cut at 30 s the page would
+ * tell a failure and lose the answer of every document (the server, which stops when the client leaves, would have issued only some).
+ */
+const BATCH_TIMEOUT_MS = 5 * 60_000;
+
+/**
  * The codes of the problems of the documents (`FiscalDocumentErrors`, `OctorateDocumentErrors`, the export and the FatturaPA schema): the screens tell each one in its
  * own words (`apiErrors.codes.*`). `schemaUnavailable` is the 422 of the issue while the FatturaPA schema is not installed: it is never a generic error and never a success.
  */
@@ -413,7 +419,7 @@ export async function discardDraft(id: string): Promise<void> {
  */
 export async function issueBatch(documentIds: readonly string[]): Promise<FiscalDocumentBatchResult> {
   const path = `${PATH}/issue-batch`;
-  const response = await axios.post<unknown>(path, { documentIds });
+  const response = await axios.post<unknown>(path, { documentIds }, { timeout: BATCH_TIMEOUT_MS });
   const result = batchResultOf(response.data);
   if (result === null) throw new UnexpectedApiResponseError(path);
   return result;
