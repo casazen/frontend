@@ -68,8 +68,16 @@ export function MandateStep({ currency, ownersWithoutMandate, apply, busy }: Man
   const confirm = async () => {
     if (busy) return;
     setConfirming(false);
+    // The fields stay open while the confirmation is up, so what is applied is what the form says NOW, checked again: a percent emptied after the confirmation was asked for is
+    // no mandate (never one of 0%, given to every owner that has none), and the field says what is wrong instead.
+    const values = getValues();
+    const template = mandateTemplateOf(values);
+    if (!template) {
+      for (const name of mandateTemplateProblems(values)) setError(name, { type: 'validate', message: FIELD_ERRORS[name] });
+      return;
+    }
     try {
-      setDone(await apply.mutateAsync(mandateTemplateOf(getValues())));
+      setDone(await apply.mutateAsync(template));
     } catch {
       // The failure is on the mutation: it is read below, in words, and nothing is claimed as done.
     }

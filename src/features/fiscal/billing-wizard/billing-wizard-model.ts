@@ -29,6 +29,7 @@ import {
   PORTAL_SOURCES,
   issuerStepSchema,
   italyStepSchema,
+  mandateTemplateProblems,
   numberingStepSchema,
   parseDecimal,
   touristTaxStepSchema,
@@ -450,14 +451,20 @@ export function commissionRulesRequest(
 // The step «Mandato standard»
 // ---------------------------------------------------------------------------------------------------------------------
 
-/** The standard mandate as the form says it: a percent, a base, the flat fees when written, who bears the payment fees and «+ IVA» or VAT included (⚖ R4). */
-export function mandateTemplateOf(values: BillingWizardValues): OwnerMandateTemplate {
+/**
+ * The standard mandate as the form says it: a percent, a base, the flat fees when written, who bears the payment fees and «+ IVA» or VAT included (⚖ R4). `null` while the form
+ * does not say a mandate that can be applied (no percent, a percent or an amount that is not one, no day): a blank percent is never 0%, which would give every owner without a
+ * mandate a commission of nothing.
+ */
+export function mandateTemplateOf(values: BillingWizardValues): OwnerMandateTemplate | null {
+  const percent = parseDecimal(values.mandateCommissionPercent);
+  if (percent === null || mandateTemplateProblems(values).length > 0) return null;
   const cleaning = parseDecimal(values.mandateCleaningFlatRate);
   const linen = parseDecimal(values.mandateLinenFlatRate);
   const base: CommissionBase = values.mandateCommissionBase;
   return {
     validFrom: values.mandateValidFrom.trim(),
-    commissionPercent: parseDecimal(values.mandateCommissionPercent) ?? 0,
+    commissionPercent: percent,
     commissionBase: base,
     commissionIncludesVat: values.mandateCommissionIncludesVat,
     ...(cleaning === null ? {} : { cleaningFlatRate: cleaning }),

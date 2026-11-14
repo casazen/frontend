@@ -230,6 +230,17 @@ describe('the step «Commissioni dei canali»', () => {
       mandateTemplateOf(values({ mandateCommissionPercent: '20', mandateCleaningFlatRate: '45,50', mandateLinenFlatRate: '', mandatePassthroughPaymentFees: true, mandateCommissionIncludesVat: true })),
     ).toEqual({ validFrom: TODAY, commissionPercent: 20, commissionBase: 'GrossExclTouristTax', commissionIncludesVat: true, cleaningFlatRate: 45.5, passthroughPaymentFees: true });
   });
+
+  // Money rule: the standard mandate is given to every owner that has none, so a form that does not say a percent is no mandate. It is never one of 0%.
+  it('MandateTemplate_ABlankOrInvalidPercentOrDayIsNoMandateAtAllNeverOneOfZeroPercent', () => {
+    for (const mandateCommissionPercent of ['', '   ', 'abc', '101', '12,345', '-5']) {
+      expect(mandateTemplateOf(values({ mandateCommissionPercent })), mandateCommissionPercent).toBeNull();
+    }
+    expect(mandateTemplateOf(values({ mandateCommissionPercent: '20', mandateValidFrom: '' }))).toBeNull();
+    expect(mandateTemplateOf(values({ mandateCommissionPercent: '20', mandateCleaningFlatRate: 'abc' }))).toBeNull();
+    // A percent of 0 that the person wrote is a choice: it is the blank one that is not.
+    expect(mandateTemplateOf(values({ mandateCommissionPercent: '0' }))).toMatchObject({ commissionPercent: 0 });
+  });
 });
 
 describe('what the server refused', () => {
