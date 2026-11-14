@@ -231,7 +231,7 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
           ...base,
           schema: checked(mandateStepSchema),
           nextDisabled: leaving || apply.isPending,
-          render: () => frame(id, <MandateStep currency={currencyOfCountry(values.countryCode)} ownersWithoutMandate={ownersWithoutMandate} apply={apply} />),
+          render: () => frame(id, <MandateStep currency={currencyOfCountry(values.countryCode)} ownersWithoutMandate={ownersWithoutMandate} apply={apply} busy={saving || leaving} />),
         };
       case BILLING_STEPS.issuing:
         return { ...base, render: () => frame(id, <IssuingStep />) };

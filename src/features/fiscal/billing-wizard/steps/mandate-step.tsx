@@ -21,6 +21,8 @@ interface MandateStepProps {
   ownersWithoutMandate: number;
   /** The standard mandate for every owner that has none (`POST api/owner-mandates/apply-template`). */
   apply: UseMutationResult<OwnerMandateTemplateResult, unknown, OwnerMandateTemplate>;
+  /** Another request of the wizard is on its way (the save of a step, the way out): the action of the step waits for it, as «Continua» waits for the action. */
+  busy: boolean;
 }
 
 const FIELD_ERRORS = {
@@ -36,7 +38,7 @@ const FIELD_ERRORS = {
  * VAT included. «Applica ai proprietari senza mandato» creates that mandate for every owner that has none, and says how many they are first and how many it did; nothing
  * changes for an owner that already has a mandate. It is an action of its own, asked to be confirmed, and it is never done by «Continua».
  */
-export function MandateStep({ currency, ownersWithoutMandate, apply }: MandateStepProps) {
+export function MandateStep({ currency, ownersWithoutMandate, apply, busy }: MandateStepProps) {
   const { t } = useTranslation();
   const {
     register,
@@ -53,6 +55,7 @@ export function MandateStep({ currency, ownersWithoutMandate, apply }: MandateSt
   const [done, setDone] = useState<OwnerMandateTemplateResult | null>(null);
 
   const ask = () => {
+    if (busy) return;
     const problems = mandateTemplateProblems(getValues());
     if (problems.length > 0) {
       for (const name of problems) setError(name, { type: 'validate', message: FIELD_ERRORS[name] });
@@ -63,6 +66,7 @@ export function MandateStep({ currency, ownersWithoutMandate, apply }: MandateSt
   };
 
   const confirm = async () => {
+    if (busy) return;
     setConfirming(false);
     try {
       setDone(await apply.mutateAsync(mandateTemplateOf(getValues())));
@@ -153,7 +157,7 @@ export function MandateStep({ currency, ownersWithoutMandate, apply }: MandateSt
           <div role="group" aria-label={t('billingWizard.mandate.apply.confirmLabel')} className="flex flex-col gap-3 rounded-md bg-muted p-3" data-testid="billing-mandate-confirm">
             <p className="text-sm">{t('billingWizard.mandate.apply.confirmText', { count: ownersWithoutMandate })}</p>
             <div className="flex flex-wrap gap-2">
-              <Button type="button" onClick={() => void confirm()} data-testid="billing-mandate-confirm-yes">
+              <Button type="button" disabled={busy} onClick={() => void confirm()} data-testid="billing-mandate-confirm-yes">
                 {t('billingWizard.mandate.apply.confirm', { count: ownersWithoutMandate })}
               </Button>
               <Button type="button" variant="ghost" onClick={() => setConfirming(false)} data-testid="billing-mandate-confirm-no">
@@ -163,7 +167,7 @@ export function MandateStep({ currency, ownersWithoutMandate, apply }: MandateSt
           </div>
         ) : (
           <div>
-            <Button type="button" variant="outline" loading={apply.isPending} disabled={ownersWithoutMandate === 0 || apply.isPending} onClick={ask} data-testid="billing-mandate-apply-button">
+            <Button type="button" variant="outline" loading={apply.isPending} disabled={ownersWithoutMandate === 0 || apply.isPending || busy} onClick={ask} data-testid="billing-mandate-apply-button">
               {t('billingWizard.mandate.apply.button')}
             </Button>
           </div>
