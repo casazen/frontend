@@ -7,7 +7,7 @@ import type { BillingSetupItemKey, BillingSetupSectionName } from '@/types/billi
  * the person gives the answer, not the section the server keeps it in: the Italian VAT number, the fiscal code and the Swiss UID are asked with the regime, in «IVA».
  *
  * The table is complete by construction (`Record` over every key of the contract: a key added to `BILLING_SETUP_ITEM_KEYS` with no row here does not compile), and
- * `billing-item-steps.test.ts` keeps it the same as the list the backend sends, so that an item with no step is told by a failing test and never by a dead link.
+ * `onboarding-billing.test.ts` keeps it the same as the list the backend sends, so that an item with no step is told by a failing test and never by a dead link.
  */
 export const BILLING_ITEM_STEPS: Readonly<Record<BillingSetupItemKey, BillingStepId>> = {
   country_missing: BILLING_STEPS.issuer,
