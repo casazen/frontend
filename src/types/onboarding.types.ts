@@ -1,3 +1,4 @@
+import type { BillingSetupItemKey } from './billing-setup.types';
 import type { ComplianceSenderType } from './checkin-wizard.types';
 import type { ChannelPublishStatus } from './listing.types';
 import type { OctorateConnectionStatus, OctorateEnvironment } from './octorate.types';
@@ -171,7 +172,6 @@ export const ONBOARDING_FLOW_REASONS = [
   'property_inactive',
   'content_managed_on_channel',
   'chat_not_licensed',
-  'accountant_handles',
   'not_provided',
 ] as const;
 export type OnboardingFlowReason = (typeof ONBOARDING_FLOW_REASONS)[number];
@@ -271,7 +271,10 @@ export type OnboardingPartKey = (typeof ONBOARDING_PART_KEYS)[number];
 export const ONBOARDING_PART_STATES = ['done', 'open', 'deferred', 'blocked', 'notAvailable'] as const;
 export type OnboardingPartState = (typeof ONBOARDING_PART_STATES)[number];
 
-/** Why a part is not done (backend `OnboardingPartReasons`). Null for a part that is done. */
+/**
+ * Why a part is not done (backend `OnboardingPartReasons`). Null for a part that is done. The code `accountant_handles` is not here any more: the accountant only receives exports since
+ * 2026-11-14 and the backend never produces it again (the constant stays there for old rows); a row that still carries it reads as a reason this version has no text for.
+ */
 export const ONBOARDING_PART_REASONS = [
   'inventory_scenario_missing',
   'existing_ota_import_incomplete',
@@ -291,7 +294,6 @@ export const ONBOARDING_PART_REASONS = [
   'notification_preferences_missing',
   'assistant_situation_missing',
   'issuer_missing',
-  'accountant_handles',
   'partner_integration_missing',
   'connector_off',
   'no_property',
@@ -353,7 +355,11 @@ export interface OnboardingPart {
   code: OnboardingPartKey;
   order: number;
   state: OnboardingPartState;
-  reason: OnboardingPartReason | null;
+  /**
+   * Why the part is not done. For the part «Fatturazione» (`fiscalDocuments`) it is the key of the first missing item of the billing setup (`BillingSetupItemKey`, in the order of
+   * the wizard): the guide opens the wizard at the step the key belongs to. `issuer_missing` there means the issuance of fiscal documents is off.
+   */
+  reason: OnboardingPartReason | BillingSetupItemKey | null;
   done: number;
   total: number;
   requires: OnboardingPartKey[];

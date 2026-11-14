@@ -15469,7 +15469,7 @@
         "checkInCompliance": "Il check-in online e gli adempimenti ti evitano sanzioni e telefonate.",
         "checkListings": "Così sai che gli annunci sui canali sono completi.",
         "connectChannels": "Così prenotazioni e calendari dei tuoi canali arrivano in CasaZen.",
-        "fiscalDocuments": "Stabilisci chi emette i documenti fiscali delle prenotazioni.",
+        "fiscalDocuments": "Imposta la fatturazione: chi emette, IVA, numerazione e come si emettono i documenti.",
         "messagesAi": "Scegli come e quando scrivere ai tuoi ospiti.",
         "pricesCalendar": "Prezzi e regole si impostano una volta sola e valgono su tutti i canali."
       }
@@ -15634,8 +15634,8 @@
         "what": "Chi invia Alloggiati Web e ISTAT, imposta di soggiorno e CIN."
       },
       "fiscalDocuments": {
-        "title": "Documenti fiscali",
-        "what": "Chi li emette, il regime fiscale e i dati di chi li emette."
+        "title": "Fatturazione",
+        "what": "I dati di chi emette, l’IVA, la numerazione e come si emettono i documenti."
       },
       "identification": {
         "title": "Identificazione e accesso",
@@ -15683,7 +15683,7 @@
           "title": "Collega i canali"
         },
         "fiscalDocuments": {
-          "title": "Documenti fiscali"
+          "title": "Fatturazione"
         },
         "messagesAi": {
           "title": "Messaggi e AI"
@@ -15697,7 +15697,6 @@
     "progress": "{{done}} di {{total}}",
     "reasons": {
       "access_code_missing": "Manca il codice di accesso di almeno un immobile.",
-      "accountant_handles": "Hai scelto che i documenti fiscali li emette il tuo commercialista: qui non c'è altro da fare.",
       "assistant_situation_missing": "L'assistente è acceso, ma non hai ancora configurato nessuna situazione.",
       "channel_content_to_fix": "Un canale ha rifiutato i contenuti di un annuncio: vanno corretti.",
       "channels_missing": "Almeno un immobile non è ancora su nessun canale.",
@@ -15709,7 +15708,7 @@
       "flows_incomplete": "C'è ancora qualcosa da completare in uno dei flussi di un immobile.",
       "identification_off": "L'identificazione degli ospiti non è attiva in questa installazione.",
       "inventory_scenario_missing": "Dicci prima se i tuoi immobili sono già su Octorate, sui portali o nuovi.",
-      "issuer_missing": "Non hai ancora scelto chi emette i documenti fiscali.",
+      "issuer_missing": "La fatturazione non è ancora attiva per la tua organizzazione.",
       "mapping_unavailable": "Ora non riusciamo a leggere gli abbinamenti con Octorate. Riprova tra poco.",
       "mapping_unconfirmed": "Manca la conferma dell'abbinamento tra gli annunci di Octorate e i tuoi immobili.",
       "no_property": "Non ci sono ancora immobili da configurare.",
@@ -15718,7 +15717,6 @@
       "partner_integration_missing": "Non hai ancora attivato nessuna integrazione dal marketplace.",
       "price_missing": "Manca il prezzo base di almeno un immobile.",
       "property": {
-        "accountant_handles": "I documenti fiscali li emette il tuo commercialista: CasaZen non ne prepara.",
         "channel_content_to_fix": "Un canale ha rifiutato i contenuti dell'annuncio: vanno corretti.",
         "chat_not_licensed": "La licenza del tuo channel manager non comprende la chat con gli ospiti: i messaggi non si leggono da qui.",
         "cin_missing_or_invalid": "Il CIN di questo immobile manca o non è valido.",
@@ -15726,7 +15724,7 @@
         "connection_missing": "Il tuo channel manager non è ancora collegato.",
         "content_managed_on_channel": "Il contenuto è gestito sul canale.",
         "flow_not_activated": "È tutto pronto: manca solo l'attivazione.",
-        "issuer_missing": "Manca la scelta di chi emette i documenti fiscali della tua organizzazione.",
+        "issuer_missing": "Mancano i dati di fatturazione della tua organizzazione: completa «Fatturazione».",
         "mapping_unavailable": "Ora non riusciamo a leggere l'abbinamento. Riprova tra poco.",
         "mapping_unconfirmed": "L'annuncio non è ancora abbinato a questo immobile: va confermato.",
         "message_sync_not_ready": "Stiamo ancora copiando le conversazioni di questo annuncio: succede da solo, non serve fare nulla.",
@@ -15798,7 +15796,7 @@
         "cin": "il CIN",
         "connection": "il collegamento",
         "content": "i contenuti dell'annuncio",
-        "issuer": "la scelta di chi emette i documenti fiscali",
+        "issuer": "i dati di fatturazione di chi emette i documenti",
         "mapping": "l'abbinamento degli annunci",
         "messageSync": "la copia delle conversazioni",
         "singleSender": "chi invia Alloggiati Web e ISTAT",

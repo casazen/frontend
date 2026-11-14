@@ -25,7 +25,7 @@ const EXISTING = [
   '/app/short-rent/compliance/identification',
   '/app/short-rent/reports/tourist-tax',
   '/app/short-rent/fiscal/wizard',
-  '/app/short-rent/fiscal/issuer',
+  '/app/short-rent/fiscal/setup',
   '/app/short-rent/marketplace',
   '/app/short-rent/messages',
 ];
@@ -65,7 +65,7 @@ describe('the launch registry of the plan «Inizia con CasaZen» (E10/F03/US02/T
     expect(resolveLaunchTarget('mapping')?.to).toBe('/app/short-rent/integrations/octorate?step=mapping');
     expect(resolveLaunchTarget('channels')?.to).toBe('/app/short-rent/channels');
     expect(resolveLaunchTarget('identification')?.to).toBe('/app/short-rent/compliance/identification');
-    expect(resolveLaunchTarget('fiscal')?.to).toBe('/app/short-rent/fiscal/wizard');
+    expect(resolveLaunchTarget('fiscal')?.to).toBe('/app/short-rent/fiscal/setup');
     expect(resolveLaunchTarget('marketplace')?.to).toBe('/app/short-rent/marketplace');
     // The inbox of E05 is registered now: the target resolves to it by itself.
     expect(resolveLaunchTarget('messages')?.to).toBe('/app/short-rent/messages');

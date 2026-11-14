@@ -119,6 +119,16 @@ describe('the guide of the header', () => {
     expect(within(todo).getByTestId('guide-todo-all')).toHaveAttribute('href', '/app/short-rent/activities');
   });
 
+  it('GuidePanel_SetupRoad_ListsInvoicingByItsNewNameLikeTheOtherParts', async () => {
+    renderButton();
+    fireEvent.click(screen.getByTestId('guide-button'));
+
+    const setup = await within(await screen.findByTestId('guide-panel')).findByTestId('guide-setup');
+    // The part «Documenti fiscali» is «Fatturazione» since 2026-11-14: a stop of the road like the others, with its own words.
+    expect(within(setup).getByText('Fatturazione')).toBeInTheDocument();
+    expect(setup).not.toHaveTextContent('Documenti fiscali');
+  });
+
   it('GuidePanel_OtherArea_OnlyHelpsWithTheManualOfThatArea', async () => {
     renderButton('supplier');
     fireEvent.click(screen.getByTestId('guide-button'));

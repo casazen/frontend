@@ -111,6 +111,28 @@ describe('OnboardingPartPage, one part of the plan (E10/F03/US02/T02)', () => {
     expect(screen.getByTestId('part-launch-back')).toHaveAttribute('href', '/app/short-rent/onboarding');
   });
 
+  it('OnboardingPartPage_FatturazionePart_OpensTheWizardAtTheStepOfItsFirstMissingItem', async () => {
+    vi.mocked(onboardingApi.getPlan).mockResolvedValue(
+      plan({ fiscalDocuments: { state: 'open', reason: 'guest_series_unconfirmed', done: 2, total: 5, launchTarget: 'fiscal' } }),
+    );
+    vi.mocked(onboardingApi.getFlowProperties).mockResolvedValue(page([]));
+    renderPage('/app/short-rent/onboarding/parts/fiscalDocuments');
+
+    expect(await screen.findByTestId('onboarding-part-reason')).toHaveTextContent(i18n.t('billingWizard.items.guest_series_unconfirmed'));
+    expect(screen.getByTestId('onboarding-part-progress')).toHaveTextContent(i18n.t('onboardingPlan.progress', { done: 2, total: 5 }));
+    // «Riprendi» opens the wizard «Fatturazione» at the step the item belongs to, in the same tab.
+    expect(screen.getByTestId('part-launch-primary')).toHaveAttribute('href', '/app/short-rent/fiscal/setup?step=numbering');
+  });
+
+  it('OnboardingPartPage_FatturazionePartWithTheIssuanceOff_OpensTheWizardWithNoStep', async () => {
+    vi.mocked(onboardingApi.getPlan).mockResolvedValue(plan({ fiscalDocuments: { state: 'open', reason: 'issuer_missing', done: 0, total: 1, launchTarget: 'fiscal' } }));
+    vi.mocked(onboardingApi.getFlowProperties).mockResolvedValue(page([]));
+    renderPage('/app/short-rent/onboarding/parts/fiscalDocuments');
+
+    expect(await screen.findByTestId('onboarding-part-reason')).toHaveTextContent(i18n.t('onboardingPlan.reasons.issuer_missing'));
+    expect(screen.getByTestId('part-launch-primary')).toHaveAttribute('href', '/app/short-rent/fiscal/setup');
+  });
+
   it('OnboardingPartPage_PropertiesOfThePart_ShowTheirStateWhatIsMissingAndAFaiOraForThatProperty', async () => {
     renderPage('/app/short-rent/onboarding/parts/compliance');
 

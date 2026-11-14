@@ -13,14 +13,13 @@ import { resolveLaunchTarget } from '@/lib/onboarding-part-launch';
 import {
   ONBOARDING_PLAN_PATH,
   isOnboardingPartKey,
-  isOnboardingPartReason,
   knownParts,
   needKey,
   normalizePartState,
   partTitleKey,
+  partReasonTextKey,
   partsWaitedFor,
   partWhatKey,
-  reasonKey,
   stateKey,
 } from '@/lib/onboarding-parts';
 import { cn } from '@/lib/utils';
@@ -53,12 +52,14 @@ export function OnboardingPartPage() {
 
   const state = part ? normalizePartState(part.state) : 'open';
   const flow = flowOfPart(partKey);
-  // The launch that the plan names for the part, resolved against the manifest; the reopen of the backend may name another target for a part that is done.
-  const launch = part ? resolveLaunchTarget(part.launchTarget, null, null, hasPermission) : null;
+  // The launch that the plan names for the part, resolved against the manifest; the reopen of the backend may name another target for a part that is done. A wizard with
+  // steps of its own (the part «Fatturazione») opens at the one the reason of the part points to.
+  const launch = part ? resolveLaunchTarget(part.launchTarget, null, null, hasPermission, part.reason) : null;
   const waiting = state === 'blocked' || state === 'notAvailable' || state === 'done';
   // What is missing, in plain words; a part that waits for others names them, and a reason this version has no text for reads as a neutral line.
   const waitedFor = part ? partsWaitedFor(part, parts).map((waited) => t(partTitleKey(waited.code))).join(', ') : '';
-  const reason = part && state !== 'done' ? (isOnboardingPartReason(part.reason) && i18n.exists(reasonKey(part.reason)) ? t(reasonKey(part.reason), { parts: waitedFor }) : t('onboardingPlan.reasons.unknown')) : null;
+  const reasonKeyOfPart = part ? partReasonTextKey(part) : null;
+  const reason = part && state !== 'done' ? (reasonKeyOfPart && i18n.exists(reasonKeyOfPart) ? t(reasonKeyOfPart, { parts: waitedFor }) : t('onboardingPlan.reasons.unknown')) : null;
   const assistFirst = partKey === 'compliance' && draft.restored?.values.scenario === 'newInventory';
 
   let content: ReactNode;

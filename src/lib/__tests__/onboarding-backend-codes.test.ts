@@ -13,7 +13,9 @@ import { isOnboardingPartReason, reasonKey } from '../onboarding-parts';
 /**
  * The codes the backend sends (E10/F01/US04/T01, backend `develop`: `OnboardingFlowModels.cs` and `OnboardingPlanModels.cs`), copied as they stand there. The list
  * is the contract: a code the backend adds must be added here AND in the app (types, texts, launcher), or this test says which one is missing. A code the backend
- * sends that the app has no text for would be shown as a bare key, which is what these tests keep from happening.
+ * sends that the app has no text for would be shown as a bare key, which is what these tests keep from happening. `accountant_handles` is not in the lists: since
+ * 2026-11-14 the accountant only receives exports and the backend never produces it again (E11/F01/US01/T04: the constant stays there for old rows), so the app has no
+ * text for it and a row that still carries it reads as the neutral line.
  */
 const BACKEND_FLOW_REASONS = [
   'connection_missing',
@@ -32,7 +34,6 @@ const BACKEND_FLOW_REASONS = [
   'property_inactive',
   'content_managed_on_channel',
   'chat_not_licensed',
-  'accountant_handles',
   'not_provided',
 ];
 
@@ -59,7 +60,6 @@ const BACKEND_PART_REASONS = [
   'notification_preferences_missing',
   'assistant_situation_missing',
   'issuer_missing',
-  'accountant_handles',
   'partner_integration_missing',
   'connector_off',
   'no_property',
