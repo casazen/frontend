@@ -28,7 +28,11 @@ import {
   seriesOf,
   type CreditForm,
   type CreditProblem,
+  type Numbering,
 } from './document-model';
+
+/** What the confirmation of a credit note says of its series and its number: nothing. */
+const NO_NUMBERING: Numbering = { series: null, last: null, next: null };
 
 /** What a dialog needs to know of the document it is about: its kind and number for its name, and its total in its own currency. */
 export interface DialogDocument {
@@ -59,9 +63,10 @@ function SummaryRow({ label, children, testId }: { label: string; children: Reac
 /**
  * The confirmation of the issue of a draft (E12/F02/US01/T01): what the document is, the series and the number it is expected to get, and its total in its own currency (a document in francs
  * is confirmed in francs). Issuing gives the document its number and it can no longer be changed, so the host confirms it here; the server gives the number when it issues, in order and
- * with no gaps, and the number told here is an expectation and says so: the series comes from the setting of the issuer and the number from the newest documents issued. While either could
- * not be read nothing is expected, and the dialog says that CasaZen gives the number when it issues. A refusal (the draft was made with rules or data that changed, the data of the invoice
- * missing...) is told in the dialog, in the words of its code, and the dialog stays open.
+ * with no gaps, and the number told here is an expectation and says so: the series comes from the setting of the issuer and the number from the newest documents issued that the person sees (a
+ * person who reaches only some properties sees only theirs, so the dialog says it is worked out from the list). While either could not be read, or none of the documents read is in the series,
+ * nothing is expected, and the dialog says that CasaZen gives the number when it issues. A credit note is issued in the series of the document it corrects: it says that and no number. A refusal
+ * (the draft was made with rules or data that changed, the data of the invoice missing...) is told in the dialog, in the words of its code, and the dialog stays open.
  */
 export function IssueDocumentDialog({ document, onClose, onIssued }: DialogProps & { onIssued?: (id: string) => void }) {
   const { t, i18n } = useTranslation();
@@ -70,9 +75,11 @@ export function IssueDocumentDialog({ document, onClose, onIssued }: DialogProps
   const [problem, setProblem] = useState<string | null>(null);
   // The setting that holds the series is read by who may read payments and properties, like the page of the documents.
   const canReadSetting = hasPermission('short-rent', 'payment.read') && hasPermission('short-rent', 'property.read');
-  const context = useFiscalDocumentsContext(canReadSetting);
-  const issued = useIssuedNumbers(true);
-  const numbering = numberingOf(seriesOf(context.data?.guestDocumentSeries, todayInRome()), issued.data);
+  // A credit note is issued in the series of the document it corrects, which may be another year's: nothing is said of its series or number, and nothing is read for them.
+  const correction = document.kind === 'CreditNote';
+  const context = useFiscalDocumentsContext(canReadSetting && !correction);
+  const issued = useIssuedNumbers(!correction);
+  const numbering = correction ? NO_NUMBERING : numberingOf(seriesOf(context.data?.guestDocumentSeries, todayInRome()), issued.data);
 
   return (
     <ConfirmationDialog
@@ -100,7 +107,7 @@ export function IssueDocumentDialog({ document, onClose, onIssued }: DialogProps
       <dl className="grid gap-2 text-sm" data-testid="fiscal-document-issue-summary">
         <SummaryRow label={t('fiscalDocuments.issue.document')}>{documentKindWords(t, document.kind)}</SummaryRow>
         <SummaryRow label={t('fiscalDocuments.issue.series')} testId="fiscal-document-issue-series">
-          {numbering.series ?? t('fiscalDocuments.issue.seriesUnknown')}
+          {correction ? t('fiscalDocuments.issue.seriesOfOriginal') : (numbering.series ?? t('fiscalDocuments.issue.seriesUnknown'))}
         </SummaryRow>
         <SummaryRow label={t('fiscalDocuments.issue.number')} testId="fiscal-document-issue-number">
           {numbering.next ? t('fiscalDocuments.issue.numberExpected', { number: numbering.next }) : t('fiscalDocuments.issue.numberUnknown')}
@@ -112,6 +119,12 @@ export function IssueDocumentDialog({ document, onClose, onIssued }: DialogProps
       {numbering.last ? (
         <p className="text-sm text-foreground/70" data-testid="fiscal-document-issue-last">
           {t('fiscalDocuments.issue.lastNumber', { number: numbering.last })}
+        </p>
+      ) : null}
+      {/* What was told of the number comes from the documents the person sees in the list: it may leave some out, so it is an indication and says so. */}
+      {numbering.next || numbering.last ? (
+        <p className="text-sm text-foreground/70" data-testid="fiscal-document-issue-note">
+          {t('fiscalDocuments.issue.numberNote')}
         </p>
       ) : null}
       {problem ? (

@@ -391,8 +391,13 @@ describe('numbering (the number the next document is expected to get)', () => {
 
   it('NumberingOf_TheIssuedDocumentsOfTheSeries_ExpectsTheNumberAfterTheHighest', () => {
     expect(numberingOf('2026', issued)).toEqual({ series: '2026', last: '2026/4', next: '2026/5' });
-    // Another series is another counter: the first of a new year is 1, whatever the old series reached.
-    expect(numberingOf('2027', issued)).toEqual({ series: '2027', last: null, next: '2027/1' });
+  });
+
+  it('NumberingOf_NoIssuedDocumentOfTheSeriesAmongTheOnesRead_ExpectsNothingAndNeverTheFirstNumber', () => {
+    // The list may leave documents out (a person who reaches only some of the properties, the newest 100) and the counter of the server starts above the numbers
+    // already used: an empty series in what was read is no proof that it is empty there.
+    expect(numberingOf('2027', issued)).toEqual({ series: '2027', last: null, next: null });
+    expect(numberingOf('2026', [])).toEqual({ series: '2026', last: null, next: null });
   });
 
   it('NumberingOf_IssuedDocumentsThatCouldNotBeRead_ExpectsNothingAndNeverTheFirstNumber', () => {

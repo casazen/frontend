@@ -106,6 +106,25 @@ describe('a document in francs is shown in francs wherever it is drawn (money ru
     // The next number is the one after the highest of the series, and it says it is an expectation.
     expect(await within(summary).findByText(i18n.t('fiscalDocuments.issue.numberExpected', { number: '2026/5' }))).toBeInTheDocument();
     expect(screen.getByTestId('fiscal-document-issue-last')).toHaveTextContent('2026/4');
+    // The number comes from the documents the person sees, which may be only some of them: the confirmation says it is an indication.
+    expect(screen.getByTestId('fiscal-document-issue-note')).toHaveTextContent(i18n.t('fiscalDocuments.issue.numberNote'));
+  });
+
+  it('FiscalDocumentsPage_TheConfirmationOfTheIssueOfACreditNoteDraft_TellsNoSeriesOfTodayAndNoNumberAndReadsNone', async () => {
+    vi.mocked(api.listDocuments).mockResolvedValue(page([draft({ id: CHF_ID, kind: 'CreditNote', currency: 'CHF', total: 100 })]));
+    renderInProviders(createElement(FiscalDocumentsPage));
+
+    const [row] = within(await screen.findByRole('table')).getAllByTestId('fiscal-document-row');
+    fireEvent.click(within(row).getByTestId('fiscal-document-issue'));
+
+    // A credit note is issued in the series of the document it corrects, which may be another year's: no series of today and no number are told.
+    const summary = await screen.findByTestId('fiscal-document-issue-summary');
+    expect(within(summary).getByTestId('fiscal-document-issue-series')).toHaveTextContent(i18n.t('fiscalDocuments.issue.seriesOfOriginal'));
+    expect(within(summary).getByTestId('fiscal-document-issue-number')).toHaveTextContent(i18n.t('fiscalDocuments.issue.numberUnknown'));
+    expect(screen.queryByTestId('fiscal-document-issue-note')).not.toBeInTheDocument();
+    expectFrancsOnly(plain(within(summary).getByTestId('fiscal-document-issue-total').textContent));
+    // The issued documents are not even read for it.
+    expect(api.listDocuments).not.toHaveBeenCalledWith({ status: 'Issued', source: 'CasaZen' }, 1, 100);
   });
 
   it('FiscalDocumentsPage_TheCreditNoteOfACHFInvoice_AsksForTheAmountInFrancs', async () => {

@@ -7819,8 +7819,10 @@
       "lastNumber": "Ultimo numero emesso: {{number}}",
       "number": "Numero",
       "numberExpected": "{{number}} (previsto)",
+      "numberNote": "Calcolato sui documenti che vedi nell’elenco: il numero definitivo lo assegna CasaZen all’emissione, in ordine e senza buchi.",
       "numberUnknown": "Lo assegna CasaZen all’emissione, in ordine e senza buchi",
       "series": "Serie",
+      "seriesOfOriginal": "La stessa del documento che correggi",
       "seriesUnknown": "La assegna CasaZen all’emissione",
       "title": "Emettere il documento?",
       "total": "Totale"

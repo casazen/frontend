@@ -7819,8 +7819,10 @@
       "lastNumber": "Last number issued: {{number}}",
       "number": "Number",
       "numberExpected": "{{number}} (expected)",
+      "numberNote": "Worked out from the documents you see in the list: CasaZen gives the final number when it issues, in order and with no gaps.",
       "numberUnknown": "Assigned by CasaZen when issuing, in order and with no gaps",
       "series": "Series",
+      "seriesOfOriginal": "The same as the document you are correcting",
       "seriesUnknown": "Assigned by CasaZen when issuing",
       "title": "Issue the document?",
       "total": "Total"

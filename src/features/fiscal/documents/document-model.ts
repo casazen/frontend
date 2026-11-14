@@ -426,9 +426,10 @@ export interface Numbering {
 }
 
 /**
- * The number the next document of the series is expected to get: the one after the highest number the issued documents have in it (`series/number`, the way the server writes it), or the first one
- * when none has. It is an expectation and says so: the server gives the number when it issues, in order and with no gaps, and another document may be issued before this one. While the series is not
- * known nothing is expected, and only the last number issued is told.
+ * The number the next document of the series is expected to get: the one after the highest number the issued documents have in it (`series/number`, the way the server writes it). It is an
+ * expectation and says so: the server gives the number when it issues, in order and with no gaps, and another document may be issued before this one. While the series is not known nothing is
+ * expected, and only the last number issued is told. Nothing is expected either, and never «the first number», when none of the documents read is in the series: the list a person reads may leave
+ * documents out (a person who reaches only some of the properties, the newest 100) and the counter of the server starts above the numbers already used, so an empty series here proves nothing there.
  */
 export function numberingOf(series: string | null, issued: readonly NumberedDocument[] | undefined): Numbering {
   // The issued documents could not be read (yet): nothing is expected, and above all never «the first number of the series».
@@ -439,7 +440,7 @@ export function numberingOf(series: string | null, issued: readonly NumberedDocu
     return { series: null, last: latest?.number ?? null, next: null };
   }
   const inSeries = numbered.filter((document) => document.series === series);
-  if (inSeries.length === 0) return { series, last: null, next: `${series}/1` };
+  if (inSeries.length === 0) return { series, last: null, next: null };
   const highest = inSeries.reduce((top, document) => ((document.sequenceNumber ?? 0) > (top.sequenceNumber ?? 0) ? document : top));
   return { series, last: highest.number, next: `${series}/${(highest.sequenceNumber ?? 0) + 1}` };
 }
