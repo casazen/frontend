@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { flowNameKey, flowReasonKey, reasonOf, normalizeFlowState } from '@/lib/onboarding-flows';
 import { launchTargetForAction, resolveLaunchTarget } from '@/lib/onboarding-part-launch';
@@ -38,6 +39,7 @@ interface PartPropertyTableProps {
 export function PartPropertyTable({ flow, target, panelSteps = false, assistFirst = false }: PartPropertyTableProps) {
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();
+  const { flags } = useFeatureFlags();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const term = useDebouncedValue(search.trim(), 300);
@@ -75,7 +77,7 @@ export function PartPropertyTable({ flow, target, panelSteps = false, assistFirs
       <ul className="space-y-2" role="list" data-testid="part-properties-list">
         {query.data.items.map((row) => {
           const action = launchTargetForAction(row.action);
-          const launch = resolveLaunchTarget(action?.target ?? target, action?.focus, row.propertyId, hasPermission);
+          const launch = resolveLaunchTarget(action?.target ?? target, action?.focus, row.propertyId, hasPermission, undefined, flags);
           const state = normalizeFlowState(row.state);
           const reason = reasonOf(row);
           return (

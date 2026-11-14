@@ -132,9 +132,12 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    */
   octorateDocumentImport: false,
   /**
-   * The invoice of the property manager to its owners (backend `OwnerInvoicing`, E14/F01/US01/T01, NF-114), off until the product owner turns it on in the test environment.
-   * While it is off the panel «Fattura del PM» of the statement and the page «Fatture ai proprietari» (`/app/account/owner-invoices`) do not exist: the panel is not drawn, nothing
+   * The invoices of the property manager to the owners (backend `OwnerInvoicing`, E14/F01/US01/T01, NF-114, D9, D15), off until the accountant confirms the ⚖ choices (R4, I10, I11) and on in the test environment
+   * only. While it is off the panel «Fattura del PM» of the statement and the page «Fatture ai proprietari» (`/app/account/owner-invoices`) do not exist: the panel is not drawn, nothing
    * asks the server, the page has no entry in the menu and its address leads to the home of the area. The backend answers 404 to every endpoint of the invoices while it is off.
+   * The same flag decides who holds the accounts of the portals (`PUT api/billing-setup/channels`, `api/billing-setup/channel-account-holders`, which answer 404 while it is off, and the section
+   * `channels` of the billing setup then shows no values): the step «Commissioni dei canali» of the wizard «Fatturazione» keeps the account holders out and says that they are not available
+   * yet; the commission rules of the portals do not depend on it.
    */
   ownerInvoicing: false,
 };

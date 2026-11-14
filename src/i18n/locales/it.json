@@ -1406,7 +1406,12 @@
       "archiveDocumentHasNoFile": "Questo documento non ha un file da scaricare.",
       "archiveDocumentNotFound": "Non troviamo più questo documento, oppure non è tra gli immobili a cui hai accesso. L'elenco è stato aggiornato.",
       "archiveExportTooLarge": "L'archivio sarebbe troppo grande. Scegli un periodo più breve o meno tipi di documento.",
+      "billingChannelsInvalid": "I dati sugli account dei portali non sono validi. Controlla e riprova.",
       "bookingNotActive": "La prenotazione non è attiva (è annullata o l’ospite non si è presentato): non si può emettere un documento.",
+      "channelAccountHoldersConflict": "Un altro salvataggio ha cambiato gli stessi annunci: ricarica la pagina e riprova.",
+      "channelAccountHoldersInvalid": "Le modifiche agli intestatari non sono valide: controlla gli annunci e i portali e riprova.",
+      "channelCommissionRuleInUse": "Una regola di commissione è già stata usata nei rendiconti: puoi chiuderla ma non cambiarne la percentuale né toglierla.",
+      "channelCommissionRulesInvalid": "Una delle percentuali dei portali non è valida. Controlla e riprova.",
       "complianceBookingNotFound": "Non troviamo questo soggiorno.",
       "complianceExportTooLarge": "Nel periodo ci sono più prove di quante ne entrino in un archivio: scegli un periodo più breve.",
       "complianceProofDayInvalid": "Il giorno della prova non è valido: scegli un giorno passato.",
@@ -1431,6 +1436,8 @@
       "documentReadOnly": "Questo documento è in sola lettura: non lo emette CasaZen.",
       "documentRuleNotConfigured": "Mancano le regole fiscali di questo documento (aliquote e tipo di documento): completa la configurazione della fatturazione.",
       "fatturapaXmlInvalid": "Il file della fattura elettronica non è valido: controlla i dati di chi emette e di chi riceve il documento.",
+      "issuerRegimeCountryMismatch": "Il regime scelto non vale per il paese di chi emette. Controlla il paese e il regime.",
+      "ownerMandateOwnersEmpty": "Non c’è nessun proprietario a cui applicare il mandato.",
       "reportInvalidPeriod": "Il periodo non è valido: controlla le date.",
       "reportPeriodTooLong": "Il periodo è troppo lungo: scegline uno di al massimo 24 mesi.",
       "archiveInvalidPage": "La pagina richiesta non è valida.",
@@ -2641,6 +2648,540 @@
     "adminRequired": {
       "title": "Riservato all'amministratore dell'organizzazione",
       "description": "Piano e fatturazione sono gestiti dall'amministratore della tua organizzazione: contatta l'amministratore per cambiarli."
+    }
+  },
+  "billingWizard": {
+    "card": {
+      "action": "Imposta la fatturazione",
+      "description": "Chi emette, IVA, numerazione, tassa di soggiorno ed emissione dei tuoi documenti, a passi guidati.",
+      "title": "Fatturazione"
+    },
+    "channels": {
+      "commissions": {
+        "default": "Percentuale proposta da CasaZen: non l’hai ancora confermata.",
+        "hint": "Quando il portale non indica la sua commissione, CasaZen usa questa percentuale sull’importo del soggiorno, tassa di soggiorno esclusa. Confermandola la salvi come regola della tua agenzia.",
+        "inForce": "È la percentuale in vigore.",
+        "keepsInForce": "Lasciato vuoto, resta in vigore il {{percent}}%: da qui una regola non si toglie, si cambia scrivendo la nuova percentuale.",
+        "loadError": "Non riusciamo a leggere le commissioni dei portali.",
+        "loading": "Leggo le commissioni dei portali",
+        "none": "Nessuna percentuale impostata: i soggiorni di questo portale senza commissione restano in attesa.",
+        "title": "Commissione dei portali"
+      },
+      "exceptions": {
+        "bulk": {
+          "allPortals": "Tutti i portali",
+          "apply_one": "Applica a 1 annuncio",
+          "apply_other": "Applica a {{count}} annunci",
+          "holder": "Intestatario",
+          "label": "Cambia più annunci insieme",
+          "portal": "Portale"
+        },
+        "caption": "Intestatario dell’account di ogni annuncio su ogni portale",
+        "cell": "{{name}} su {{portal}}",
+        "empty": "Non hai ancora annunci: gli intestatari si scelgono quando ci sono.",
+        "hint": "Se un annuncio fa eccezione, cambia qui l’intestatario. Per cambiarne molti insieme, spunta gli annunci, scegli portale e intestatario e premi «Applica».",
+        "listing": "Annuncio",
+        "loadError": "Non riusciamo a leggere gli annunci e i loro intestatari.",
+        "loading": "Leggo gli annunci",
+        "pending_one": "1 modifica da salvare con «Continua».",
+        "pending_other": "{{count}} modifiche da salvare con «Continua».",
+        "sameAsOrganization": "Come l’organizzazione ({{holder}})",
+        "selectAll": "Seleziona tutti gli annunci",
+        "selectListing": "Seleziona {{name}}",
+        "title": "Eccezioni per annuncio"
+      },
+      "holder": {
+        "Agency": {
+          "invoice": "Il portale fattura l’agenzia.",
+          "recharge": "La commissione arriva al proprietario come riaddebito nella fattura dell’agenzia, se lo attivi qui sotto.",
+          "td17": "In Italia la fattura del portale è senza IVA: la integra l’agenzia (TD17).",
+          "title": "Dell’agenzia"
+        },
+        "hint": "Scegli come hai aperto gli account sui portali. Da confermare con il commercialista.",
+        "legend": "Di chi è l’account del portale?",
+        "names": {
+          "Agency": "Agenzia",
+          "Owner": "Proprietario"
+        },
+        "Owner": {
+          "invoice": "Il portale fattura il proprietario: l’agenzia fattura solo il suo compenso.",
+          "recharge": "Nel rendiconto la commissione è una trattenuta del portale, senza riaddebito.",
+          "td17": "Nessun TD17 a carico dell’agenzia.",
+          "title": "Del proprietario"
+        },
+        "suggested": "consigliato",
+        "unavailable": "L’intestatario degli account dei portali si sceglie quando la fatturazione ai proprietari è attiva: per ora non è disponibile."
+      },
+      "intro": "Le commissioni dei portali finiscono nel rendiconto del proprietario. Qui dici di chi è l’account del portale e quanto trattiene quando non lo indica.",
+      "recharge": {
+        "description": "La commissione che il portale ha fatturato all’agenzia entra nella fattura al proprietario, con l’IVA del compenso. Da confermare con il commercialista.",
+        "legend": "Commissioni dei portali pagate dall’agenzia",
+        "title": "Riaddebita le commissioni dei portali al proprietario"
+      }
+    },
+    "description": "Imposta come CasaZen emette i tuoi documenti: pochi passi, uno alla volta. Ogni passo si salva da solo e puoi riprendere quando vuoi.",
+    "done": {
+      "autoOff": "Prima di emettere un documento ti chiediamo conferma.",
+      "autoOn": "I documenti si emettono da soli, a fine soggiorno.",
+      "change": "Puoi cambiare ogni scelta quando vuoi, da qui.",
+      "draft": "A fine soggiorno CasaZen prepara la bozza del documento per l’ospite.",
+      "emailOff": "Il documento emesso non viene inviato per e-mail all’ospite.",
+      "emailOn": "Il documento emesso viene inviato all’ospite per e-mail, quando c’è un indirizzo.",
+      "partial": {
+        "continue": "Completa",
+        "later": "Lo faccio dopo",
+        "lead": "Quello che hai inserito è salvato. La fatturazione non è ancora pronta: manca questo.",
+        "title": "Hai salvato quello che hai inserito"
+      },
+      "title": "La fatturazione è pronta",
+      "toFiscal": "Vai a Regime fiscale",
+      "toHome": "Vai alla home",
+      "toPlan": "Torna alla guida"
+    },
+    "errors": {
+      "addressCivic": "Il numero civico è troppo lungo (al massimo 20 caratteri).",
+      "addressStreet": "Scrivi la via, al massimo 200 caratteri.",
+      "amount": "Scrivi un importo, con al massimo due decimali.",
+      "city": "Scrivi la città.",
+      "collector": "Scegli chi incassa la tassa di soggiorno per questo portale.",
+      "country": "Scegli il paese da cui emetti i documenti.",
+      "date": "Scegli un giorno valido.",
+      "fatturaPaRegimeCode": "Il codice del regime ha al massimo quattro tra lettere e cifre, per esempio RF01.",
+      "fiscalCode": "Il codice fiscale non è valido: controlla le lettere e le cifre.",
+      "legalName": "Scrivi il nome che compare sui documenti, al massimo 200 caratteri.",
+      "percent": "Scrivi una percentuale da 0 a 100, con al massimo due decimali.",
+      "postalCodeCh": "Il CAP svizzero ha quattro cifre.",
+      "postalCodeIt": "Il CAP italiano ha cinque cifre.",
+      "provinceCh": "Il cantone si scrive con due lettere, per esempio TI.",
+      "provinceIt": "La provincia si scrive con due lettere, per esempio MI.",
+      "regime": "Scegli il tuo regime.",
+      "series": "La serie ha al massimo 10 caratteri, tra lettere, cifre e . _ / -",
+      "stampDutyReference": "Scrivi al massimo 60 caratteri.",
+      "swissVatNumber": "Il numero UID si scrive così: CHE-123.456.789.",
+      "swissVatRegistered": "Dicci se sei iscritto all’IVA.",
+      "vatNumber": "La partita IVA ha 11 cifre."
+    },
+    "exit": {
+      "failed": "Non siamo riusciti a salvare. Quello che hai scritto è ancora qui: riprova.",
+      "mandateNotSaved": "I termini del mandato non si salvano da qui: si applicano con «Applica ai proprietari senza mandato». Quando riprendi, li riscrivi.",
+      "nothingNew": "Non c’era niente di nuovo da salvare: riprendi quando vuoi.",
+      "notSaved": "Non abbiamo salvato quello che hai scritto in questo passo: non è completo o non è corretto. Quando riprendi, lo correggi.",
+      "saveAndExit": "Salva ed esci",
+      "saved": "Salvato. Riprendi quando vuoi: riparti da dove sei rimasto.",
+      "savedPartly": "Abbiamo salvato quello che era corretto. Quello che non lo era è rimasto fuori: quando riprendi, lo correggi."
+    },
+    "finishLabel": "Fatto",
+    "help": {
+      "button": "Aiuto",
+      "channels": "Gli account dei portali possono essere del proprietario o dell’agenzia: da questo dipende chi riceve la fattura del portale. Per ogni portale scrivi la percentuale che trattiene quando non indica la commissione.",
+      "issuer": "CasaZen emette ogni documento a nome della tua organizzazione. Scegli il paese, scrivi il nome come deve comparire sui documenti e l’indirizzo completo.",
+      "issuing": "A fine soggiorno CasaZen prepara sempre la bozza. Scegli se emetterla da sola o aspettare la tua conferma, e se inviare il documento all’ospite per e-mail.",
+      "italy": "Sono due promemoria: l’adesione gratuita alla conservazione dei documenti sul portale dell’Agenzia delle Entrate e il bollo. Spunta quando l’hai fatto: CasaZen non può verificarlo per te.",
+      "mandate": "Il mandato standard vale per i proprietari che non ne hanno uno: commissione, importi fissi e a carico di chi sono le spese dei pagamenti. Non cambia i mandati che esistono già.",
+      "numbering": "I documenti si numerano di seguito, senza salti, per ogni serie. Controlla come comincia il numero: l’anno è già compreso.",
+      "summary": "Qui controlli che cosa manca, ogni voce apre il suo passo, e vedi un documento di esempio con le aliquote in vigore.",
+      "supportGeneric": "Se non sai che cosa rispondere, scrivi all’assistenza di CasaZen.",
+      "supportWithEmail": "Se non sai che cosa rispondere, scrivi all’assistenza di CasaZen:",
+      "title": "Come rispondere",
+      "touristTax": "In Svizzera dici, per ogni portale, chi incassa la tassa di soggiorno. In Italia le aliquote sono quelle dei comuni: le tiene CasaZen.",
+      "vat": "In Svizzera dici se sei iscritto all’IVA. In Italia scegli il regime: da questo dipende il documento che emetti. L’IVA del soggiorno va confermata con il commercialista."
+    },
+    "issuer": {
+      "address": {
+        "city": {
+          "exampleCh": "Lugano",
+          "exampleIt": "Milano",
+          "label": "Città"
+        },
+        "civic": {
+          "label": "Numero civico"
+        },
+        "postalCode": {
+          "hintCh": "Quattro cifre.",
+          "hintIt": "Cinque cifre.",
+          "label": "CAP"
+        },
+        "province": {
+          "hintCh": "Le due lettere del cantone.",
+          "hintIt": "Le due lettere della provincia.",
+          "labelCh": "Cantone",
+          "labelIt": "Provincia"
+        },
+        "street": {
+          "example": "Via Roma",
+          "label": "Via"
+        }
+      },
+      "country": {
+        "CH": {
+          "description": "Documento secondo la legge svizzera, in franchi svizzeri.",
+          "title": "Svizzera"
+        },
+        "IT": {
+          "description": "Ricevuta o fattura elettronica, in euro.",
+          "title": "Italia"
+        },
+        "legend": "Da quale paese emetti i documenti?"
+      },
+      "intro": "CasaZen emette ogni documento a nome della tua organizzazione: i documenti agli ospiti, per ogni prenotazione, e le fatture ai proprietari. Qui ci dici da dove emetti e i dati che compaiono sui documenti.",
+      "legalName": {
+        "hint": "Il nome della tua organizzazione, come deve stare sul documento.",
+        "label": "Nome sui documenti"
+      }
+    },
+    "issuing": {
+      "auto": {
+        "off": "Prima di emettere un documento ti chiediamo conferma.",
+        "on": "I documenti si emettono da soli, a fine soggiorno, senza chiederti conferma.",
+        "title": "Emetti in automatico"
+      },
+      "draft": "A fine di ogni soggiorno CasaZen prepara sempre la bozza del documento: non è una scelta.",
+      "email": {
+        "off": "Il documento emesso non viene inviato all’ospite.",
+        "on": "Il documento emesso viene inviato all’ospite per e-mail, quando c’è un indirizzo.",
+        "title": "Invia il documento all’ospite per e-mail"
+      },
+      "legend": "Che cosa succede dopo la bozza?"
+    },
+    "italy": {
+      "conservation": {
+        "description": "È un servizio gratuito dell’Agenzia delle Entrate: conserva le tue fatture elettroniche per quindici anni.",
+        "title": "Ho aderito alla conservazione gratuita dei documenti"
+      },
+      "intro": "Per un emittente italiano restano due promemoria. CasaZen non può controllarli sul portale dell’Agenzia delle Entrate: spunta quando li hai fatti.",
+      "legend": "Promemoria per l’Italia",
+      "note": "Senza numero di autorizzazione né conferma, sui documenti con bollo compare «imposta di bollo da assolvere».",
+      "sdi": {
+        "configured": "CasaZen è collegata allo SDI: le fatture elettroniche possono essere inviate.",
+        "notConfigured": "Il collegamento allo SDI non è ancora attivo: le fatture elettroniche si preparano e restano da inviare.",
+        "title": "Collegamento allo SDI",
+        "unknown": "Non riusciamo a leggere lo stato del collegamento allo SDI."
+      },
+      "stampReference": {
+        "hint": "Il numero dell’autorizzazione al bollo virtuale, o il numero del contrassegno. Se non ce l’hai, spunta la conferma qui sopra.",
+        "label": "Numero di autorizzazione o di contrassegno"
+      },
+      "virtualStamp": {
+        "description": "L’Agenzia delle Entrate ti ha autorizzato a pagare il bollo in modo virtuale sui documenti in PDF.",
+        "title": "Ho l’autorizzazione al bollo virtuale"
+      }
+    },
+    "items": {
+      "address_missing": "Manca l’indirizzo completo di chi emette.",
+      "auto_issue_unconfirmed": "Non hai ancora scelto come emettere i documenti agli ospiti.",
+      "channel_commissions_unconfirmed": "Non hai ancora confermato le commissioni dei portali.",
+      "conservation_agreement_unconfirmed": "Non hai ancora confermato l’adesione alla conservazione dei documenti.",
+      "country_missing": "Non hai ancora scelto il paese da cui emetti i documenti.",
+      "fiscal_code_missing": "Manca il codice fiscale di chi emette.",
+      "guest_series_unconfirmed": "Non hai ancora confermato la numerazione dei documenti agli ospiti.",
+      "legal_name_missing": "Manca il nome di chi emette sui documenti.",
+      "owner_series_unconfirmed": "Non hai ancora confermato la numerazione delle fatture ai proprietari.",
+      "owners_without_mandate": "Ci sono proprietari senza mandato.",
+      "owners_without_mandate_one": "C’è 1 proprietario senza mandato.",
+      "owners_without_mandate_other": "Ci sono {{count}} proprietari senza mandato.",
+      "regime_code_missing": "Manca il codice del regime della fattura elettronica.",
+      "regime_missing": "Non hai ancora scelto il regime.",
+      "stamp_duty_unconfirmed": "Manca il riferimento del bollo o la conferma del bollo virtuale.",
+      "swiss_uid_missing": "Manca il numero UID di chi emette.",
+      "tax_rule_missing": "Per questo regime non c’è ancora una regola di IVA in vigore: la aggiunge CasaZen.",
+      "tourist_tax_channels_unconfirmed": "Non hai ancora confermato quali portali incassano la tassa di soggiorno.",
+      "unknown": "C’è ancora qualcosa da completare.",
+      "vat_number_missing": "Manca la partita IVA di chi emette."
+    },
+    "labels": {
+      "regime": {
+        "PrivatePerson": "Privato, senza partita IVA",
+        "SwissNotRegistered": "Non iscritto all’IVA",
+        "SwissVatRegistered": "Iscritto all’IVA",
+        "VatFlatRate": "Partita IVA, regime forfettario",
+        "VatOrdinary": "Partita IVA, regime ordinario"
+      }
+    },
+    "lineTypes": {
+      "Accommodation": "Soggiorno",
+      "AdvancedExpense": "Spese anticipate",
+      "Cleaning": "Pulizie",
+      "Commission": "Provvigione",
+      "ExtraService": "Servizi extra",
+      "Other": "Altro",
+      "Recharge": "Riaddebito",
+      "TouristTax": "Tassa di soggiorno"
+    },
+    "loadError": "Non riusciamo a leggere le impostazioni di fatturazione.",
+    "loading": "Leggo le impostazioni di fatturazione",
+    "mandate": {
+      "apply": {
+        "allHaveOne": "Tutti i proprietari hanno già un mandato: non c’è nulla da applicare.",
+        "button": "Applica ai proprietari senza mandato",
+        "cancel": "Annulla",
+        "confirm_one": "Sì, applica a 1 proprietario",
+        "confirm_other": "Sì, applica a {{count}} proprietari",
+        "confirmLabel": "Conferma l’applicazione del mandato",
+        "confirmText_one": "Stai per creare questo mandato per 1 proprietario che non ne ha uno. I mandati che esistono già non cambiano.",
+        "confirmText_other": "Stai per creare questo mandato per {{count}} proprietari che non ne hanno uno. I mandati che esistono già non cambiano.",
+        "result_one": "Mandato creato per 1 proprietario. Saltati: {{skipped}}.",
+        "result_other": "Mandato creato per {{count}} proprietari. Saltati: {{skipped}}.",
+        "title": "Applica il mandato",
+        "withoutMandate_one": "1 proprietario non ha un mandato.",
+        "withoutMandate_other": "{{count}} proprietari non hanno un mandato."
+      },
+      "applyFailed": "Non siamo riusciti ad applicare il mandato. Non è stato creato nessun mandato: riprova.",
+      "base": {
+        "GrossExclTouristTax": "Importo del soggiorno, pulizie incluse",
+        "GrossExclTouristTaxAndCleaning": "Importo del soggiorno, pulizie escluse",
+        "hint": "Su che cosa si calcola la commissione. La tassa di soggiorno non ne fa mai parte.",
+        "label": "La commissione si calcola su"
+      },
+      "cleaning": {
+        "hint": "Importo fisso per ogni soggiorno. Lascia vuoto se non c’è.",
+        "label": "Importo fisso per le pulizie",
+        "labelCurrency": "Importo fisso per le pulizie ({{currency}})"
+      },
+      "fees": {
+        "description": "Le spese dei pagamenti con carta incassati tramite CasaZen passano al proprietario.",
+        "legend": "Spese dei pagamenti",
+        "title": "Le spese dei pagamenti sono a carico del proprietario"
+      },
+      "intro": "Sono le condizioni che l’agenzia dà ai proprietari che non hanno un mandato proprio. Le applichi tu, quando sei pronto, con il pulsante in fondo: non succede nulla da sola.",
+      "linen": {
+        "hint": "Importo fisso per ogni soggiorno. Lascia vuoto se non c’è.",
+        "label": "Importo fisso per la biancheria",
+        "labelCurrency": "Importo fisso per la biancheria ({{currency}})"
+      },
+      "noCurrency": "Scegli prima il paese di chi emette: gli importi fissi sono nella sua valuta.",
+      "percent": {
+        "hint": "Da 0 a 100, con al massimo due decimali.",
+        "label": "Commissione dell’agenzia (%)"
+      },
+      "validFrom": {
+        "hint": "Il primo giorno in cui il mandato vale. Di solito è oggi.",
+        "label": "Vale dal"
+      },
+      "vat": {
+        "hint": "Da confermare con il commercialista.",
+        "included": {
+          "description": "La percentuale e gli importi fissi comprendono già l’IVA.",
+          "title": "IVA inclusa"
+        },
+        "legend": "Commissione e importi fissi, con o senza IVA?",
+        "plus": {
+          "description": "L’IVA si aggiunge in fattura, sopra la commissione e gli importi fissi.",
+          "title": "+ IVA"
+        }
+      }
+    },
+    "numbering": {
+      "guest": {
+        "hint": "Per i documenti agli ospiti. «{{token}}» diventa l’anno; al massimo {{max}} caratteri.",
+        "label": "Serie dei documenti agli ospiti"
+      },
+      "intro": "I documenti si numerano di seguito, senza salti, per ogni serie. Controlla come comincia il numero.",
+      "note": "Il numero vero continua da quello dell’ultimo documento emesso. La serie la confermi con questo passo, anche se lasci quella proposta.",
+      "owner": {
+        "hint": "Per le fatture ai proprietari. «{{token}}» diventa l’anno; al massimo {{max}} caratteri.",
+        "label": "Serie delle fatture ai proprietari"
+      },
+      "preview": "Esempio di numero: {{number}}"
+    },
+    "readOnly": {
+      "noPermission": "Il tuo ruolo può vedere la fatturazione ma non cambiarla: chiedi a chi amministra l’organizzazione.",
+      "partialScope": "Il tuo accesso riguarda solo alcuni immobili, e la fatturazione è di tutta l’organizzazione: puoi vederla ma non cambiarla.",
+      "title": "Puoi solo guardare"
+    },
+    "saveFailed": "Non siamo riusciti a salvare. Quello che hai scritto è ancora qui: riprova.",
+    "steps": {
+      "channels": {
+        "label": "Commissioni dei canali",
+        "purpose": "Di chi sono gli account dei portali e quanto trattengono.",
+        "title": "Commissioni dei canali"
+      },
+      "issuer": {
+        "label": "Chi emette",
+        "purpose": "Il paese, il nome e l’indirizzo che compaiono sui documenti.",
+        "title": "Chi emette i documenti"
+      },
+      "issuing": {
+        "label": "Emissione",
+        "purpose": "Quando i documenti agli ospiti vengono emessi e inviati.",
+        "title": "Come emettere i documenti"
+      },
+      "italy": {
+        "label": "Italia",
+        "purpose": "Due promemoria per l’Italia: conservazione e bollo.",
+        "title": "Promemoria per l’Italia"
+      },
+      "mandate": {
+        "label": "Mandato standard",
+        "purpose": "Le condizioni che l’agenzia dà ai proprietari senza mandato.",
+        "title": "Mandato standard"
+      },
+      "numbering": {
+        "label": "Numerazione",
+        "purpose": "Le serie dei documenti e delle fatture.",
+        "title": "Numerazione dei documenti"
+      },
+      "summary": {
+        "label": "Riepilogo",
+        "purpose": "Che cosa manca e un documento di esempio.",
+        "title": "Controlla e finisci"
+      },
+      "touristTax": {
+        "label": "Tassa di soggiorno",
+        "purpose": "Chi incassa la tassa di soggiorno.",
+        "title": "Tassa di soggiorno"
+      },
+      "vat": {
+        "label": "IVA",
+        "purpose": "Il tuo regime e l’IVA dei documenti.",
+        "title": "IVA"
+      }
+    },
+    "summary": {
+      "automatic": "emissione automatica",
+      "complete": {
+        "text": "Non manca niente: CasaZen può emettere i tuoi documenti.",
+        "title": "Tutto a posto"
+      },
+      "emailNo": "senza e-mail all’ospite",
+      "emailYes": "con e-mail all’ospite",
+      "example": {
+        "caption": "Documento di esempio con le aliquote in vigore",
+        "columns": {
+          "line": "Voce",
+          "net": "Importo",
+          "total": "Totale",
+          "vat": "IVA"
+        },
+        "heading": "Un documento di esempio",
+        "loadError": "Non riusciamo a leggere le aliquote in vigore: l’esempio non si può mostrare.",
+        "loading": "Preparo l’esempio",
+        "noCurrency": "Gli importi sono senza valuta: scegli il paese di chi emette per vederli nella sua valuta.",
+        "noRule": "Non c’è ancora una regola di IVA in vigore per il tuo regime: l’esempio compare quando c’è.",
+        "note": "Gli importi sono quelli di un soggiorno di prova (due notti e le pulizie). Un documento vero ha gli importi della prenotazione.",
+        "rule": "Regola in vigore: versione {{version}}, dal {{from}}.",
+        "stamp": "Imposta di bollo",
+        "totalRow": "Totale"
+      },
+      "issuing": "{{auto}}, {{email}}",
+      "items": {
+        "address": "Indirizzo",
+        "channels": "Account dei portali",
+        "country": "Paese",
+        "issuing": "Emissione",
+        "name": "Nome sui documenti",
+        "numbering": "Numerazione",
+        "regime": "Regime",
+        "touristTax": "Tassa di soggiorno"
+      },
+      "manual": "emissione con la tua conferma",
+      "missing": {
+        "byAdmin": "Lo completa chi amministra l’organizzazione",
+        "complete": "Completa",
+        "openStep": "Completa: {{step}}",
+        "title_one": "Manca ancora 1 cosa",
+        "title_other": "Mancano ancora {{count}} cose"
+      },
+      "numbering": "Ospiti {{guest}}, proprietari {{owner}}",
+      "touristTax": {
+        "none": "Nessun portale: la incassi tu",
+        "portals": "La incassano i portali: {{portals}}"
+      }
+    },
+    "title": "Fatturazione",
+    "touristTax": {
+      "italy": {
+        "empty": "Non hai ancora immobili: qui compariranno i comuni dei tuoi immobili con la loro tassa di soggiorno.",
+        "intro": "In Italia la tassa di soggiorno si calcola con le regole del comune di ogni immobile: le tiene CasaZen e qui non devi impostare niente.",
+        "loading": "Leggo le regole dei comuni",
+        "noRate": "Da fare: manca l’aliquota",
+        "toDo_one": "CasaZen aggiunge l’aliquota del comune di {{comuni}}: ti avvisiamo appena c’è. Nel frattempo puoi andare avanti.",
+        "toDo_other": "CasaZen aggiunge le aliquote dei comuni di {{comuni}}: ti avvisiamo appena ci sono. Nel frattempo puoi andare avanti.",
+        "toDoTitle": "Da fare",
+        "unavailable": "Non riusciamo a leggere le regole dei comuni. Puoi andare avanti: non cambia nulla qui."
+      },
+      "noCountry": "Scegli prima il paese di chi emette, nel primo passo.",
+      "swiss": {
+        "choose": "Da scegliere",
+        "host": "La incasso io",
+        "intro": "Per ogni portale dici chi incassa la tassa di soggiorno. Se la incassa il portale, sul documento non compare la riga. Se la incassi tu, compare con la regola del cantone.",
+        "note": "Rispondi per ogni portale: non salviamo una scelta che non hai fatto.",
+        "portal": "La incassa il portale"
+      }
+    },
+    "vat": {
+      "cleaning": {
+        "FollowsStay": {
+          "description": "Le pulizie hanno la stessa IVA del soggiorno.",
+          "title": "Parte del soggiorno"
+        },
+        "hint": "Da confermare con il commercialista.",
+        "legend": "Le pulizie finali sono…",
+        "Service": {
+          "description": "Le pulizie sono un servizio, con la loro IVA.",
+          "title": "Un servizio a parte"
+        }
+      },
+      "italy": {
+        "fiscalCode": {
+          "hint": "Il tuo codice fiscale personale.",
+          "label": "Codice fiscale"
+        },
+        "legend": "Qual è il tuo regime?",
+        "onRecord": {
+          "fiscalCode": "Codice fiscale già registrato: {{value}}.",
+          "vatNumber": "Partita IVA già registrata: {{value}}."
+        },
+        "regimeCode": {
+          "hint": "Lascia vuoto: CasaZen usa quello del tuo regime.",
+          "label": "Codice del regime della fattura elettronica"
+        },
+        "regimes": {
+          "PrivatePerson": {
+            "description": "Non hai una partita IVA: emetti una ricevuta.",
+            "title": "Privato"
+          },
+          "VatFlatRate": {
+            "description": "Hai una partita IVA e applichi il regime forfettario.",
+            "title": "Forfettario"
+          },
+          "VatOrdinary": {
+            "description": "Hai una partita IVA e applichi l’IVA.",
+            "title": "Regime ordinario"
+          }
+        },
+        "vatNumber": {
+          "hint": "Undici cifre, senza lettere.",
+          "label": "Partita IVA"
+        }
+      },
+      "stay": {
+        "ExemptArt10": {
+          "description": "Il soggiorno è esente IVA, articolo 10 numero 8.",
+          "title": "Esente, art. 10 n. 8"
+        },
+        "hint": "Da confermare con il commercialista.",
+        "legend": "L’IVA del soggiorno è…",
+        "Standard": {
+          "description": "Il soggiorno ha l’IVA al 10%.",
+          "title": "IVA al 10%"
+        }
+      },
+      "swiss": {
+        "legend": "Sei iscritto all’IVA?",
+        "no": {
+          "description": "I tuoi documenti sono ricevute senza IVA.",
+          "title": "No, non sono iscritto"
+        },
+        "notRegisteredNote": "Senza iscrizione all’IVA, i documenti non hanno IVA e non servono il numero UID né l’aliquota.",
+        "uid": {
+          "hint": "Il numero di identificazione delle imprese, con CHE davanti.",
+          "label": "Numero UID"
+        },
+        "yes": {
+          "description": "Fatture svizzere con l’IVA e il tuo numero UID.",
+          "title": "Sì, sono iscritto"
+        }
+      }
     }
   },
   "booking": {
@@ -7842,267 +8383,6 @@
       "title": "Emettere il documento?",
       "total": "Totale"
     },
-    "issuer": {
-      "address": {
-        "city": {
-          "example": "Milano",
-          "label": "Comune"
-        },
-        "civic": {
-          "label": "Numero civico"
-        },
-        "postalCode": {
-          "hint": "Il codice di avviamento postale: 5 cifre.",
-          "label": "CAP"
-        },
-        "province": {
-          "hint": "La sigla di due lettere.",
-          "label": "Provincia"
-        },
-        "street": {
-          "example": "Via Roma",
-          "label": "Via o piazza"
-        }
-      },
-      "card": {
-        "action": "Imposta",
-        "description": "Scegli chi emette i documenti fiscali dei tuoi soggiorni: il tuo channel manager, CasaZen o il tuo commercialista.",
-        "title": "Come emetti i documenti"
-      },
-      "data": {
-        "defaultSeries": {
-          "hint": "Le lettere che stanno davanti al numero del documento. Se la lasci vuota usiamo l’anno.",
-          "label": "Serie dei numeri"
-        },
-        "fatturaPaRegimeCode": {
-          "hint": "Se la lasci vuota usiamo il codice del tuo regime.",
-          "label": "Codice del regime nella fattura elettronica"
-        },
-        "fiscalCode": {
-          "hint": "Serve per le ricevute. Lo salviamo nel tuo profilo fiscale.",
-          "label": "Codice fiscale"
-        },
-        "issuerPec": {
-          "hint": "Solo se ricevi le fatture elettroniche sulla tua PEC (posta elettronica certificata).",
-          "label": "PEC"
-        },
-        "issuerSdiRecipientCode": {
-          "hint": "Sono 7 lettere o cifre. Solo se ricevi le fatture elettroniche con un canale tuo.",
-          "label": "Codice destinatario del tuo canale"
-        },
-        "legalName": {
-          "hint": "La ragione sociale, oppure nome e cognome.",
-          "label": "Nome sui documenti"
-        },
-        "moreOptions": "Altre opzioni",
-        "moreOptionsHint": "Di solito non servono: se non sai cosa sono, lasciale vuote.",
-        "onRecord": {
-          "fiscalCode": "Codice fiscale {{value}}, dal tuo profilo fiscale.",
-          "vatNumber": "Partita IVA {{value}}, dal tuo profilo fiscale."
-        },
-        "vatNumber": {
-          "hint": "Sono 11 cifre. La salviamo nel tuo profilo fiscale.",
-          "label": "Partita IVA"
-        }
-      },
-      "description": "Dicci chi emette i documenti fiscali dei tuoi soggiorni e che documento serve al tuo regime. Ti bastano pochi minuti.",
-      "done": {
-        "rule": {
-          "invoice": "Per il tuo regime il documento è una fattura elettronica.",
-          "receipt": "Per il tuo regime il documento è una ricevuta in PDF."
-        },
-        "title": "Abbiamo salvato come emetti i documenti",
-        "toFiscal": "Torna al regime fiscale",
-        "toHome": "Vai alla home"
-      },
-      "effects": {
-        "accountant": {
-          "issues": "CasaZen non emette documenti per le tue prenotazioni: se ne occupa il tuo commercialista."
-        },
-        "casazen": {
-          "direct": "CasaZen emette i documenti solo per le prenotazioni dirette: quelle del tuo sito e quelle che inserisci tu.",
-          "portals": "Per le prenotazioni che arrivano dai portali CasaZen non emette mai documenti: per ogni prenotazione c’è un solo emittente.",
-          "receipt": "Per il tuo regime il documento è una ricevuta, non una fattura elettronica: non c’è nessun file XML e non si invia nulla al Sistema di Interscambio (SDI).",
-          "ruleUnconfirmed": "Finché il tipo di documento e l’IVA del tuo regime non sono confermati, CasaZen non emette nessun documento."
-        },
-        "change": "Puoi cambiare questa scelta quando vuoi.",
-        "noSdi": "CasaZen non invia nulla al Sistema di Interscambio (SDI, il canale delle fatture elettroniche dell’Agenzia delle Entrate).",
-        "octorate": {
-          "issues": "I documenti li emette il tuo channel manager: CasaZen non ne emette.",
-          "oneIssuer": "Per ogni prenotazione c’è un solo emittente: dove emette il tuo channel manager, CasaZen non emette mai."
-        },
-        "sdi": {
-          "available": "CasaZen può inviare le fatture elettroniche al Sistema di Interscambio (SDI, il canale delle fatture elettroniche dell’Agenzia delle Entrate).",
-          "notAvailable": "L’invio al Sistema di Interscambio (SDI, il canale delle fatture elettroniche dell’Agenzia delle Entrate) non è ancora disponibile: il file XML lo scarichi tu."
-        }
-      },
-      "errors": {
-        "addressCivic": "Il numero civico può avere al massimo 20 caratteri.",
-        "addressStreet": "Scrivi la via o la piazza.",
-        "casazenUnavailable": "CasaZen non emette ancora documenti: scegli un’altra risposta.",
-        "city": "Scrivi il comune.",
-        "defaultSeries": "La serie può avere lettere, cifre e i segni . _ / - (al massimo 20 caratteri).",
-        "fatturaPaRegimeCode": "Il codice del regime ha al massimo 4 lettere o cifre, per esempio RF01.",
-        "fiscalCode": "Il codice fiscale non è valido: ricontrolla i 16 caratteri (o le 11 cifre di una società).",
-        "hasVatNumber": "Rispondi: hai una partita IVA?",
-        "issuerPec": "Scrivi un indirizzo PEC valido, per esempio nome@pec.it.",
-        "issuerSdiRecipientCode": "Il codice destinatario ha 7 lettere o cifre.",
-        "legalName": "Scrivi il nome che compare sui documenti (al massimo 200 caratteri).",
-        "modeRequired": "Scegli chi emette i documenti.",
-        "octorateUnavailable": "Il tuo channel manager non è collegato: scegli un’altra risposta.",
-        "postalCode": "Il CAP ha 5 cifre.",
-        "province": "La provincia è la sigla di due lettere, per esempio MI.",
-        "regime": "Scegli il tuo regime.",
-        "vatNumber": "La partita IVA ha 11 cifre.",
-        "vatRegime": "Scegli il regime che applichi."
-      },
-      "example": {
-        "heading": "Esempio di documento",
-        "issuedTo": "Il nome e i dati dell’ospite",
-        "note": "È solo un esempio: il tipo di documento e l’IVA definitivi li conferma il tuo commercialista.",
-        "PrivatePerson": {
-          "issuedBy": "Il tuo nome e il tuo codice fiscale",
-          "title": "Ricevuta",
-          "vat": "Nessuna IVA"
-        },
-        "rows": {
-          "issuedBy": "Emesso da",
-          "issuedTo": "Intestato a",
-          "stay": "Soggiorno",
-          "vat": "IVA"
-        },
-        "stay": "Date e numero di notti, con l’importo",
-        "VatFlatRate": {
-          "issuedBy": "Il tuo nome o la tua ragione sociale e la tua partita IVA",
-          "title": "Fattura elettronica",
-          "vat": "Senza IVA, con la dicitura del regime forfettario"
-        },
-        "VatOrdinary": {
-          "issuedBy": "Il tuo nome o la tua ragione sociale e la tua partita IVA",
-          "title": "Fattura elettronica",
-          "vat": "IVA indicata sul documento"
-        }
-      },
-      "exit": {
-        "saveAndExit": "Salva ed esci",
-        "saved": "Risposte salvate in questo browser. Non è cambiato nulla finché non confermi."
-      },
-      "finishLabel": "Conferma e salva",
-      "help": {
-        "address": "Scrivi l’indirizzo di chi emette i documenti, come deve comparire sul documento.",
-        "button": "Aiuto",
-        "issuer": "Il nome sui documenti è quello di chi li emette: la ragione sociale, oppure nome e cognome. Le altre opzioni di solito non servono.",
-        "regime": "Il regime dice che documento serve: una ricevuta per un privato, una fattura elettronica se hai una partita IVA. Se non sei sicuro, chiedilo al tuo commercialista.",
-        "summary": "Controlla le risposte: «Modifica» torna al passo giusto. Non cambia nulla finché non confermi.",
-        "supportGeneric": "Hai ancora dubbi? Contatta il supporto CasaZen.",
-        "supportWithEmail": "Hai ancora dubbi? Scrivi al supporto:",
-        "title": "Come emetti i documenti?",
-        "who": "Per ogni prenotazione i documenti li emette una sola persona: il tuo channel manager, CasaZen (solo per le prenotazioni dirette) oppure il tuo commercialista. Scegli quello che usi già."
-      },
-      "labels": {
-        "mode": {
-          "Accountant": "Il tuo commercialista",
-          "CasaZenDirectOnly": "CasaZen, solo per le prenotazioni dirette",
-          "Octorate": "Il tuo channel manager"
-        },
-        "regime": {
-          "PrivatePerson": "Privato, senza partita IVA",
-          "VatFlatRate": "Partita IVA, regime forfettario",
-          "VatOrdinary": "Partita IVA, regime ordinario"
-        }
-      },
-      "loadError": "Non riusciamo a caricare come emetti i documenti.",
-      "loading": "Carico le tue impostazioni…",
-      "regime": {
-        "hasVatNumber": {
-          "legend": "Hai una partita IVA?",
-          "no": {
-            "description": "Affitti come privato, senza partita IVA.",
-            "title": "No, sono un privato"
-          },
-          "yes": {
-            "description": "Affitti come attività, con una partita IVA.",
-            "title": "Sì, ho una partita IVA"
-          }
-        },
-        "vatRegime": {
-          "flatRate": {
-            "description": "Fatturi senza IVA, con le regole del regime agevolato.",
-            "title": "Regime forfettario"
-          },
-          "hint": "Non sei sicuro? Chiedilo al tuo commercialista.",
-          "legend": "Che regime applichi?",
-          "ordinary": {
-            "description": "Applichi l’IVA come le altre attività.",
-            "title": "Regime ordinario"
-          }
-        }
-      },
-      "saved": "Come emetti i documenti è stato salvato",
-      "saveFailed": "Non siamo riusciti a salvare. Riprova tra un attimo.",
-      "steps": {
-        "address": {
-          "label": "Indirizzo",
-          "purpose": "L’indirizzo di chi emette, come deve comparire sul documento.",
-          "title": "L’indirizzo sui documenti"
-        },
-        "issuer": {
-          "label": "Dati",
-          "purpose": "Controlla il nome sui documenti. Abbiamo già compilato quello che sappiamo.",
-          "title": "I tuoi dati sui documenti"
-        },
-        "regime": {
-          "label": "Regime",
-          "purpose": "Due domande semplici: poi ti mostriamo il documento del tuo regime.",
-          "title": "Che regime hai?"
-        },
-        "summary": {
-          "label": "Riepilogo",
-          "purpose": "Ecco cosa succederà. Non cambia nulla finché non confermi.",
-          "title": "Controlla e conferma"
-        },
-        "who": {
-          "label": "Chi emette",
-          "purpose": "Scegli una sola risposta: per ogni prenotazione c’è un solo emittente.",
-          "title": "Chi emette i documenti?"
-        }
-      },
-      "summary": {
-        "effects": "Cosa succederà",
-        "items": {
-          "address": "Indirizzo",
-          "fiscalCode": "Codice fiscale",
-          "name": "Nome sui documenti",
-          "regime": "Regime",
-          "vatNumber": "Partita IVA",
-          "who": "Chi emette"
-        },
-        "problems": {
-          "fix": "Correggi",
-          "fixStep": "Correggi: {{step}}",
-          "title": "Prima di confermare, correggi questo"
-        }
-      },
-      "title": "Come emetti i documenti?",
-      "who": {
-        "accountant": {
-          "description": "CasaZen non emette documenti: restano a lui.",
-          "title": "Se ne occupa il commercialista"
-        },
-        "casazen": {
-          "description": "CasaZen emette i documenti delle prenotazioni del tuo sito e di quelle che inserisci tu, mai di quelle che arrivano dai portali.",
-          "title": "CasaZen emette i documenti (solo per le prenotazioni dirette)",
-          "unavailable": "Non ancora disponibile: in questo momento CasaZen non emette documenti."
-        },
-        "channelManager": {
-          "description": "CasaZen non emette nulla: i documenti li emette il tuo channel manager.",
-          "title": "Il tuo channel manager emette i documenti",
-          "unavailable": "Non ancora disponibile: il tuo channel manager non è collegato a CasaZen."
-        },
-        "legend": "Chi emette i documenti dei tuoi soggiorni?",
-        "recommended": "Consigliato"
-      }
-    },
     "list": {
       "actions": {
         "credit": "Nota di credito",
@@ -8139,7 +8419,7 @@
         "notFound": "Documento non trovato."
       },
       "empty": {
-        "action": "Scegli chi emette i documenti",
+        "action": "Completa la fatturazione",
         "filteredDescription": "Cambia il periodo o i filtri per vedere altri documenti.",
         "filteredTitle": "Nessun documento con questi filtri",
         "mode": {
@@ -8147,7 +8427,7 @@
           "CasaZenDirectOnly": "CasaZen emette i documenti delle prenotazioni dirette: li trovi qui appena ne viene emesso uno.",
           "Octorate": "Li emette il tuo channel manager: CasaZen li importa in sola lettura e li mostra qui.",
           "unknown": "Quando CasaZen emette un documento, o lo riceve dal tuo channel manager, lo trovi qui.",
-          "unset": "Non hai ancora scelto chi emette i documenti fiscali. Quando lo scegli, li trovi qui."
+          "unset": "Non hai ancora completato la fatturazione. Quando l’hai fatto, CasaZen prepara qui i documenti e li trovi in questa pagina."
         },
         "title": "Ancora nessun documento fiscale"
       },
@@ -15404,7 +15684,7 @@
         "checkInCompliance": "Il check-in online e gli adempimenti ti evitano sanzioni e telefonate.",
         "checkListings": "Così sai che gli annunci sui canali sono completi.",
         "connectChannels": "Così prenotazioni e calendari dei tuoi canali arrivano in CasaZen.",
-        "fiscalDocuments": "Stabilisci chi emette i documenti fiscali delle prenotazioni.",
+        "fiscalDocuments": "Imposta la fatturazione: chi emette, IVA, numerazione e come si emettono i documenti.",
         "messagesAi": "Scegli come e quando scrivere ai tuoi ospiti.",
         "pricesCalendar": "Prezzi e regole si impostano una volta sola e valgono su tutti i canali."
       }
@@ -15569,8 +15849,8 @@
         "what": "Chi invia Alloggiati Web e ISTAT, imposta di soggiorno e CIN."
       },
       "fiscalDocuments": {
-        "title": "Documenti fiscali",
-        "what": "Chi li emette, il regime fiscale e i dati di chi li emette."
+        "title": "Fatturazione",
+        "what": "I dati di chi emette, l’IVA, la numerazione e come si emettono i documenti."
       },
       "identification": {
         "title": "Identificazione e accesso",
@@ -15618,7 +15898,7 @@
           "title": "Collega i canali"
         },
         "fiscalDocuments": {
-          "title": "Documenti fiscali"
+          "title": "Fatturazione"
         },
         "messagesAi": {
           "title": "Messaggi e AI"
@@ -15632,7 +15912,6 @@
     "progress": "{{done}} di {{total}}",
     "reasons": {
       "access_code_missing": "Manca il codice di accesso di almeno un immobile.",
-      "accountant_handles": "Hai scelto che i documenti fiscali li emette il tuo commercialista: qui non c'è altro da fare.",
       "assistant_situation_missing": "L'assistente è acceso, ma non hai ancora configurato nessuna situazione.",
       "channel_content_to_fix": "Un canale ha rifiutato i contenuti di un annuncio: vanno corretti.",
       "channels_missing": "Almeno un immobile non è ancora su nessun canale.",
@@ -15644,7 +15923,7 @@
       "flows_incomplete": "C'è ancora qualcosa da completare in uno dei flussi di un immobile.",
       "identification_off": "L'identificazione degli ospiti non è attiva in questa installazione.",
       "inventory_scenario_missing": "Dicci prima se i tuoi immobili sono già su Octorate, sui portali o nuovi.",
-      "issuer_missing": "Non hai ancora scelto chi emette i documenti fiscali.",
+      "issuer_missing": "La fatturazione non è ancora attiva per la tua organizzazione.",
       "mapping_unavailable": "Ora non riusciamo a leggere gli abbinamenti con Octorate. Riprova tra poco.",
       "mapping_unconfirmed": "Manca la conferma dell'abbinamento tra gli annunci di Octorate e i tuoi immobili.",
       "no_property": "Non ci sono ancora immobili da configurare.",
@@ -15653,7 +15932,6 @@
       "partner_integration_missing": "Non hai ancora attivato nessuna integrazione dal marketplace.",
       "price_missing": "Manca il prezzo base di almeno un immobile.",
       "property": {
-        "accountant_handles": "I documenti fiscali li emette il tuo commercialista: CasaZen non ne prepara.",
         "channel_content_to_fix": "Un canale ha rifiutato i contenuti dell'annuncio: vanno corretti.",
         "chat_not_licensed": "La licenza del tuo channel manager non comprende la chat con gli ospiti: i messaggi non si leggono da qui.",
         "cin_missing_or_invalid": "Il CIN di questo immobile manca o non è valido.",
@@ -15661,7 +15939,7 @@
         "connection_missing": "Il tuo channel manager non è ancora collegato.",
         "content_managed_on_channel": "Il contenuto è gestito sul canale.",
         "flow_not_activated": "È tutto pronto: manca solo l'attivazione.",
-        "issuer_missing": "Manca la scelta di chi emette i documenti fiscali della tua organizzazione.",
+        "issuer_missing": "Mancano i dati di fatturazione della tua organizzazione: completa «Fatturazione».",
         "mapping_unavailable": "Ora non riusciamo a leggere l'abbinamento. Riprova tra poco.",
         "mapping_unconfirmed": "L'annuncio non è ancora abbinato a questo immobile: va confermato.",
         "message_sync_not_ready": "Stiamo ancora copiando le conversazioni di questo annuncio: succede da solo, non serve fare nulla.",
@@ -15733,7 +16011,7 @@
         "cin": "il CIN",
         "connection": "il collegamento",
         "content": "i contenuti dell'annuncio",
-        "issuer": "la scelta di chi emette i documenti fiscali",
+        "issuer": "i dati di fatturazione di chi emette i documenti",
         "mapping": "l'abbinamento degli annunci",
         "messageSync": "la copia delle conversazioni",
         "singleSender": "chi invia Alloggiati Web e ISTAT",

@@ -118,6 +118,22 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
       expect(within(row('octorateConnection')).queryByRole('button')).not.toBeInTheDocument();
     });
 
+    it('OnboardingPlan_FatturazionePart_IsCalledInvoicingAndShowsDoneOverTotalAndTheReasonOfItsFirstMissingItem', async () => {
+      vi.mocked(onboardingApi.getPlan).mockResolvedValue(plan({ fiscalDocuments: { state: 'open', reason: 'swiss_uid_missing', done: 3, total: 6, launchTarget: 'fiscal' } }));
+      renderPage();
+      await rows();
+
+      const invoicing = row('fiscalDocuments');
+      expect(within(invoicing).getByRole('heading', { level: 3 })).toHaveTextContent('Fatturazione');
+      // The sections that have nothing missing, over the sections that apply, as the backend counts them.
+      expect(within(invoicing).getByTestId('onboarding-part-progress')).toHaveTextContent(i18n.t('onboardingPlan.progress', { done: 3, total: 6 }));
+      // The reason is the key of the first missing item of the billing setup, in plain words: never the key.
+      expect(within(invoicing).getByTestId('onboarding-part-reason')).toHaveTextContent(i18n.t('billingWizard.items.swiss_uid_missing'));
+      expect(within(invoicing).getByTestId('onboarding-part-reason')).not.toHaveTextContent('swiss_uid_missing');
+      // The code of the retired «my accountant issues» is not known any more: its text is gone.
+      expect(i18n.exists('onboardingPlan.reasons.accountant_handles')).toBe(false);
+    });
+
     it('OnboardingPlan_Needs_ListsTheFiveThingsTheHostShouldHaveAtHand', async () => {
       renderPage();
       await rows();

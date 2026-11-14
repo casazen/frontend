@@ -27,9 +27,9 @@ import type { FiscalCreditNoteRequest, FiscalDocumentCriteria, FiscalDocumentEnt
 import { PAYMENTS_KEY } from './use-payments';
 
 /**
- * Root of the query keys of the fiscal documents. It is under `fiscal` on purpose: a change to the tax profile or to who issues (`FISCAL_ISSUER_KEY`, which lives under
- * `['fiscal', 'documents']` too) reads the documents again. The list, the detail of a document, the documents of a booking and the numbers issued all live under it, so one
- * invalidation of this key (a document issued, a message of the live channel) reads every one of them again.
+ * Root of the query keys of the fiscal documents. It is under `fiscal` on purpose: a change to the tax profile or to the invoicing setup (`useBillingSetup`, which invalidates it
+ * after every save) reads the documents again. The list, the detail of a document, the documents of a booking and the numbers issued all live under it, so one invalidation of
+ * this key (a document issued, a message of the live channel) reads every one of them again.
  */
 export const FISCAL_DOCUMENTS_KEY = ['fiscal', 'documents'] as const;
 

@@ -6,7 +6,7 @@ import { PageHeader } from '@/components/layout/page-header';
 import { ListPagination } from '@/components/shared/list-view/list-pagination';
 import { Button } from '@/components/ui/button';
 import { isFeatureEnabled } from '@/config/feature-flags';
-import { ISSUER_PATH } from '@/features/fiscal/issuer-wizard/issuer-paths';
+import { BILLING_SETUP_PATH } from '@/features/fiscal/billing-wizard/billing-wizard-ids';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getHttpStatus } from '@/lib/api-errors';
@@ -231,8 +231,9 @@ export function FiscalDocumentsPage() {
         icon: FileText,
         title: t('fiscalDocuments.list.empty.title'),
         description: t(`fiscalDocuments.list.empty.mode.${issuerMode}`),
-        // Whoever may not change who issues has no button to it: the wizard asks `property.write`, and the button never leads where the guard says no.
-        action: canChangeIssuer ? { label: t('fiscalDocuments.list.empty.action'), href: ISSUER_PATH } : undefined,
+        // Whoever may not change the invoicing setup has no button to it: the wizard «Fatturazione» is for who writes it, and the button never leads where the guard says no.
+        // The page is open while either flag of the documents is on, the wizard only while the issuance is: with the issuance off its address leads to the home of the area, so no button.
+        action: canChangeIssuer && isFeatureEnabled(flags, 'fiscalDocumentIssuance') ? { label: t('fiscalDocuments.list.empty.action'), href: BILLING_SETUP_PATH } : undefined,
       };
 
   return (

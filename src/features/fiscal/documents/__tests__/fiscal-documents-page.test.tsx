@@ -7,7 +7,7 @@ import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios
 import { toast } from 'sonner';
 import * as api from '@/api/fiscal-documents.api';
 import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
-import { ISSUER_PATH } from '@/features/fiscal/issuer-wizard/issuer-paths';
+import { BILLING_SETUP_PATH } from '@/features/fiscal/billing-wizard/billing-wizard-ids';
 import i18n from '@/i18n/config';
 import { saveBlobAs } from '@/lib/file-download';
 import { SDI_POLL_MS, SDI_WATCH_MS } from '@/queries/use-fiscal-documents';
@@ -304,12 +304,24 @@ describe('FiscalDocumentsPage: the empty list', () => {
     expect(screen.getByText(i18n.t('fiscalDocuments.list.empty.title'))).toBeInTheDocument();
   });
 
-  it('FiscalDocumentsPage_NoDocumentsAndNoChoiceYet_SaysSoAndLeadsToTheIssuerWizardForWhoMayChangeIt', async () => {
+  it('FiscalDocumentsPage_NoDocumentsAndNoSetupYet_SaysSoAndLeadsToTheInvoicingWizardForWhoMayChangeIt', async () => {
+    env.flags = { fiscalDocumentIssuance: true };
     vi.mocked(api.getDocumentsContext).mockResolvedValue({ ...CONTEXT, mode: null });
     renderPage();
 
     await waitFor(() => expect(screen.getByText(i18n.t('fiscalDocuments.list.empty.mode.unset'))).toBeInTheDocument());
-    expect(screen.getByRole('link', { name: i18n.t('fiscalDocuments.list.empty.action') })).toHaveAttribute('href', ISSUER_PATH);
+    expect(screen.getByRole('link', { name: i18n.t('fiscalDocuments.list.empty.action') })).toHaveAttribute('href', BILLING_SETUP_PATH);
+  });
+
+  // Flag rule: the page is open while either flag of the documents is on, but the wizard only while the issuance is: with it off the address of the wizard leads to the home of
+  // the area, so the empty list has no button to it (the person who imports the documents of the channel manager has nothing to set up here).
+  it('FiscalDocumentsPage_NoDocumentsWithTheIssuanceOffAndTheImportOn_HasNoButtonToTheWizardThatIsNotThere', async () => {
+    env.flags = { octorateConnector: true, octorateDocumentImport: true, fiscalDocumentIssuance: false };
+    vi.mocked(api.getDocumentsContext).mockResolvedValue({ ...CONTEXT, mode: null });
+    renderPage();
+
+    await waitFor(() => expect(screen.getByText(i18n.t('fiscalDocuments.list.empty.mode.unset'))).toBeInTheDocument());
+    expect(screen.queryByRole('link', { name: i18n.t('fiscalDocuments.list.empty.action') })).not.toBeInTheDocument();
   });
 
   it('FiscalDocumentsPage_NoDocumentsForWhoMayNotWriteTheSetting_HasNoButtonToTheWizard', async () => {

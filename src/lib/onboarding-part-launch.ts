@@ -1,5 +1,8 @@
 import { generatePath } from 'react-router-dom';
-import { getManifestEntry, hasEntryPermission, type PermissionPredicate, type RouteManifestEntry } from '@/config/route-manifest';
+import type { FeatureFlags } from '@/config/feature-flags';
+import { getManifestEntry, hasEntryPermission, isEntryFeatureEnabled, type PermissionPredicate, type RouteManifestEntry } from '@/config/route-manifest';
+import { BILLING_SETUP_PATH } from '@/features/fiscal/billing-wizard/billing-wizard-ids';
+import { billingStepOfReason } from '@/lib/onboarding-billing';
 import type { OnboardingFlowAction, OnboardingLaunchTarget } from '@/types/onboarding.types';
 
 /**
@@ -33,6 +36,17 @@ interface LaunchEntry {
   general: readonly LaunchCandidate[];
   /** What a focus asks for, instead of the lists above (tried first, then the lists above). */
   focus?: Partial<Record<LaunchFocus, { property?: readonly LaunchCandidate[]; general?: readonly LaunchCandidate[] }>>;
+  /**
+   * The step of the wizard to open on, from the reason the part is open for (the part «Fatturazione» opens its wizard at the step of its first missing item). `null`: the
+   * reason says no step, and the wizard opens where it would without one. A step the candidate itself names (`LaunchCandidate.step`) is used when the reason gives none.
+   */
+  stepOfReason?: (reason: string | null | undefined) => string | null;
+  /**
+   * The page of the target is behind a feature flag (the wizard «Fatturazione» is behind `fiscalDocumentIssuance`) and the target exists only while that flag is on: with the
+   * flag off, or while the flags are not known, nothing resolves and the part says «Non ancora disponibile». A link to it would be sent back to the home of the area by the
+   * route guard, which is a dead link. The callers pass the flags to `resolveLaunchTarget`; a target without this mark ignores them.
+   */
+  needsFeatureFlag?: boolean;
 }
 
 /** The connect wizard of E02 (`fe-octorate-connect-wizard`): the consent, the listings found, the mapping and the existing inventory import. */
@@ -65,7 +79,9 @@ const REGISTRY: Readonly<Record<OnboardingLaunchTarget, LaunchEntry>> = {
   },
   identification: { general: [{ path: '/app/short-rent/compliance/identification' }] },
   messages: { general: [{ path: '/app/short-rent/messages' }] },
-  fiscal: { general: [{ path: '/app/short-rent/fiscal/wizard' }, { path: '/app/short-rent/fiscal/issuer' }] },
+  // The wizard «Fatturazione» (E11/F02/US01/T01): the whole invoicing setup, opened at the step its part is missing. Its route exists only while the issuance of the fiscal
+  // documents is on: with it off the part says «Non ancora disponibile» instead of leading to the home of the area.
+  fiscal: { general: [{ path: BILLING_SETUP_PATH }], stepOfReason: billingStepOfReason, needsFeatureFlag: true },
   marketplace: { general: [{ path: '/app/short-rent/marketplace' }] },
   summary: { general: [{ path: '/app/short-rent/onboarding/summary' }] },
 };
@@ -83,16 +99,22 @@ export function resolveCandidates(
   propertyId: string | undefined,
   hasPermission?: PermissionPredicate,
   lookup: (path: string) => RouteManifestEntry | undefined = getManifestEntry,
+  step?: string | null,
+  /** The flags the page is shown under, to check the pages behind a flag too (`features` undefined: every flag is off); not given: only the permissions are checked. */
+  gate?: { features: Partial<FeatureFlags> | undefined },
 ): ResolvedLaunch | null {
   for (const candidate of candidates) {
     const entry = lookup(candidate.path);
     if (!entry || !hasEntryPermission(entry, hasPermission)) continue;
+    // A page behind a flag that is off is not there for anyone: the route sends the person back to the home of the area, so it is no candidate.
+    if (gate && !isEntryFeatureEnabled(entry, gate.features)) continue;
     // A page of one property needs the property; without it the page is not a candidate.
     if (candidate.path.includes(':id') && !propertyId) continue;
     const path = candidate.path.includes(':id') ? generatePath(candidate.path, { id: propertyId ?? '' }) : candidate.path;
     const query: string[] = [];
     if (candidate.propertyParam && propertyId) query.push(`${candidate.propertyParam}=${encodeURIComponent(propertyId)}`);
-    if (candidate.step) query.push(`step=${encodeURIComponent(candidate.step)}`);
+    const opensOn = step ?? candidate.step;
+    if (opensOn) query.push(`step=${encodeURIComponent(opensOn)}`);
     return { entry, to: query.length > 0 ? `${path}?${query.join('&')}` : path };
   }
   return null;
@@ -101,25 +123,31 @@ export function resolveCandidates(
 /**
  * The page that does a launch target (and, for `compliance`, its focus) for a property or for the whole org, resolved against the ROUTE_MANIFEST:
  * `null` when no candidate is a page the person may open (the part then says «Non ancora disponibile», never a dead link). A target this version of
- * the app does not know (the server is newer) resolves to `null` too.
+ * the app does not know (the server is newer) resolves to `null` too. `reason` is the reason the part is open for: a wizard that has the steps of its own parts
+ * (the registry says how, `stepOfReason`) opens at the one the reason points to. `features` are the flags the page is shown under: a target that exists only while its flag
+ * is on (`needsFeatureFlag`, the wizard «Fatturazione») resolves to `null` without them, so a caller that does not pass them never leads to a page the guard refuses.
  */
 export function resolveLaunchTarget(
   target: OnboardingLaunchTarget | string,
   focus?: LaunchFocus | null,
   propertyId?: string | null,
   hasPermission?: PermissionPredicate,
+  reason?: string | null,
+  features?: Partial<FeatureFlags>,
 ): ResolvedLaunch | null {
   if (!Object.hasOwn(REGISTRY, target)) return null;
   const entry = REGISTRY[target as OnboardingLaunchTarget];
   const property = propertyId ?? undefined;
   const focused = focus ? entry.focus?.[focus] : undefined;
+  const step = entry.stepOfReason?.(reason) ?? null;
+  const gate = entry.needsFeatureFlag ? { features } : undefined;
   const lists = [
     ...(property ? [focused?.property, entry.property] : []),
     focused?.general,
     entry.general,
   ];
   for (const list of lists) {
-    const resolved = list ? resolveCandidates(list, property, hasPermission) : null;
+    const resolved = list ? resolveCandidates(list, property, hasPermission, getManifestEntry, step, gate) : null;
     if (resolved) return resolved;
   }
   return null;

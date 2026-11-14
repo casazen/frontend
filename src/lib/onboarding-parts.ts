@@ -1,3 +1,4 @@
+import { billingItemTextKey, isBillingItemKey } from '@/lib/onboarding-billing';
 import { addDays, romeWallTimeToUtc, todayInRome } from '@/lib/stay-dates';
 import {
   ONBOARDING_NEED_CODES,
@@ -84,6 +85,16 @@ export function isOnboardingPartKey(value: unknown): value is OnboardingPartKey 
 /** True for a reason of a part this version has a text for. */
 export function isOnboardingPartReason(value: unknown): value is OnboardingPartReason {
   return typeof value === 'string' && PART_REASONS.has(value);
+}
+
+/**
+ * The key of the text that says why a part is not done, or `null` when this version has none for the reason it carries (the part then reads as a neutral line, never as the
+ * code). The reason of the part «Fatturazione» is the key of an item of the billing setup, which has its own texts (`billingWizard.items.*`); any other part carries one of its
+ * `OnboardingPartReasons`.
+ */
+export function partReasonTextKey(part: Pick<OnboardingPart, 'code' | 'reason'>): string | null {
+  if (part.code === 'fiscalDocuments' && isBillingItemKey(part.reason)) return billingItemTextKey(part.reason);
+  return isOnboardingPartReason(part.reason) ? reasonKey(part.reason) : null;
 }
 
 /** True for one of the five codes of «What you need» this version has a text for. */

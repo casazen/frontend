@@ -5,10 +5,11 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import { fiscalApi, type FiscalRegimeSnapshot } from '@/api/fiscal.api';
-import { ISSUER_PATH } from '../issuer-wizard/issuer-paths';
+import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
+import { BILLING_SETUP_PATH } from '../billing-wizard/billing-wizard-ids';
 import { FiscalDashboardPage } from '../fiscal-dashboard-page';
 
-const permissions = vi.hoisted(() => ({ canWrite: true }));
+const permissions = vi.hoisted(() => ({ canWrite: true, issuance: true }));
 
 vi.mock('@/api/fiscal.api', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/api/fiscal.api')>();
@@ -23,6 +24,9 @@ vi.mock('@/components/layout/page-header', () => ({
 }));
 vi.mock('@/hooks/use-workspace', () => ({
   useWorkspace: () => ({ hasPermission: (_context: string, permission: string) => permission !== 'property.write' || permissions.canWrite }),
+}));
+vi.mock('@/hooks/use-feature-flags', () => ({
+  useFeatureFlags: () => ({ flags: { ...DEFAULT_FEATURE_FLAGS, fiscalDocumentIssuance: permissions.issuance }, isLoading: false }),
 }));
 
 const noProperties: FiscalRegimeSnapshot = {
@@ -42,40 +46,51 @@ function renderPage() {
   return render(createElement(MemoryRouter, null, createElement(QueryClientProvider, { client }, createElement(FiscalDashboardPage))));
 }
 
-describe('FiscalDashboardPage: the card «Come emetti i documenti» (E06/F02/US02/T03)', () => {
+describe('FiscalDashboardPage: the card «Fatturazione» (E11/F02/US01/T01)', () => {
   beforeEach(async () => {
     vi.resetAllMocks();
     permissions.canWrite = true;
+    permissions.issuance = true;
     await i18n.changeLanguage('it');
     vi.mocked(fiscalApi.getRegime).mockResolvedValue(noProperties);
   });
 
-  it('FiscalDashboard_IssuerCard_LeadsToTheWizardAndIsAQuietSectionNotASecondHighlightedBlock', async () => {
+  it('FiscalDashboard_BillingCard_LeadsToTheWizardAndIsAQuietSectionNotASecondHighlightedBlock', async () => {
     renderPage();
 
-    const card = await screen.findByTestId('fiscal-issuer-card');
-    expect(within(card).getByRole('heading', { level: 2, name: i18n.t('fiscalDocuments.issuer.card.title') })).toBeInTheDocument();
-    expect(within(card).getByText(i18n.t('fiscalDocuments.issuer.card.description'))).toBeInTheDocument();
-    expect(screen.getByTestId('fiscal-issuer-card-cta')).toHaveAttribute('href', ISSUER_PATH);
-    expect(screen.getByTestId('fiscal-issuer-card-cta')).toHaveTextContent(i18n.t('fiscalDocuments.issuer.card.action'));
+    const card = await screen.findByTestId('fiscal-billing-card');
+    expect(within(card).getByRole('heading', { level: 2, name: i18n.t('billingWizard.card.title') })).toBeInTheDocument();
+    expect(within(card).getByText(i18n.t('billingWizard.card.description'))).toBeInTheDocument();
+    expect(screen.getByTestId('fiscal-billing-card-cta')).toHaveAttribute('href', BILLING_SETUP_PATH);
+    expect(screen.getByTestId('fiscal-billing-card-cta')).toHaveTextContent(i18n.t('billingWizard.card.action'));
     // The one highlighted block of the page stays the one that was there.
     expect(await screen.findByTestId('fiscal-dashboard-empty')).toBeInTheDocument();
   });
 
-  it('FiscalDashboard_IssuerCard_WhoMayNotWriteHasNoButtonToTheWizard', async () => {
+  it('FiscalDashboard_BillingCard_WhoMayNotWriteHasNoButtonToTheWizard', async () => {
     permissions.canWrite = false;
     renderPage();
 
     expect(await screen.findByTestId('fiscal-dashboard-empty')).toBeInTheDocument();
-    expect(screen.queryByTestId('fiscal-issuer-card')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('fiscal-issuer-card-cta')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('fiscal-billing-card')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('fiscal-billing-card-cta')).not.toBeInTheDocument();
   });
 
-  it('FiscalDashboard_IssuerCard_IsInEnglishToo', async () => {
+  // Flag rule: with the issuance off the wizard is not there (its address leads to the home of the area), so the card is not there either.
+  it('FiscalDashboard_BillingCard_WithTheIssuanceOffIsNotThereForAnyone', async () => {
+    permissions.issuance = false;
+    renderPage();
+
+    expect(await screen.findByTestId('fiscal-dashboard-empty')).toBeInTheDocument();
+    expect(screen.queryByTestId('fiscal-billing-card')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('fiscal-billing-card-cta')).not.toBeInTheDocument();
+  });
+
+  it('FiscalDashboard_BillingCard_IsInEnglishToo', async () => {
     await i18n.changeLanguage('en');
     renderPage();
 
-    expect(await screen.findByRole('heading', { level: 2, name: 'How you issue documents' })).toBeInTheDocument();
-    expect(screen.getByTestId('fiscal-issuer-card-cta')).toHaveTextContent('Set up');
+    expect(await screen.findByRole('heading', { level: 2, name: 'Invoicing' })).toBeInTheDocument();
+    expect(screen.getByTestId('fiscal-billing-card-cta')).toHaveTextContent('Set up invoicing');
   });
 });
