@@ -11,6 +11,7 @@ import {
   saveChannelCommissionRules,
   savePortalAccountSettings,
 } from '@/api/billing-setup.api';
+import { fiscalApi, type FiscalTaxProfileUpdate } from '@/api/fiscal.api';
 import { touristTaxApi } from '@/api/tourist-tax.api';
 import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
 import type {
@@ -109,6 +110,31 @@ export function useSaveBillingSection() {
     },
     onSuccess: (saved) => {
       queryClient.setQueryData<BillingSetup | undefined>(BILLING_SETUP_KEY, (current) => withSection(current, saved));
+      afterSave();
+    },
+  });
+}
+
+/**
+ * The VAT number or the fiscal code of the organization, written to its tax profile (`PUT api/fiscal/tax-profile`), where they live: the step «IVA» of the wizard adds what the
+ * profile does not have yet. A fiscal code is personal data, so the mutation is dropped as soon as nothing observes it (`gcTime: 0`) and a refusal is kept without the request
+ * that was sent (`withoutRequest`). The tax profile and the setup are read again.
+ */
+export function useSaveTaxIdentity() {
+  const queryClient = useQueryClient();
+  const afterSave = useAfterSave();
+
+  return useMutation({
+    gcTime: 0,
+    mutationFn: async (body: FiscalTaxProfileUpdate) => {
+      try {
+        return await fiscalApi.putTaxProfile(body);
+      } catch (error) {
+        throw withoutRequest(error);
+      }
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['fiscal'] });
       afterSave();
     },
   });

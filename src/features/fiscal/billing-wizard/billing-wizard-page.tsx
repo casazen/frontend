@@ -29,8 +29,8 @@ import {
   useSaveChannelAccountHolders,
   useSaveChannelCommissionRules,
   useSavePortalAccountSettings,
+  useSaveTaxIdentity,
 } from '@/queries/use-billing-setup';
-import { useUpdateFiscalTaxProfile } from '@/queries/use-fiscal';
 import { useProperties } from '@/queries/use-properties';
 import { useCurrentUser } from '@/queries/use-users';
 import type { BillingSetup } from '@/types';
@@ -110,7 +110,7 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
   const readOnlyReason = !canWrite ? 'noPermission' : 'partialScope';
 
   const save = useSaveBillingSection();
-  const updateTaxProfile = useUpdateFiscalTaxProfile();
+  const saveTaxIdentity = useSaveTaxIdentity();
   const savePortalSettings = useSavePortalAccountSettings();
   const saveHolders = useSaveChannelAccountHolders();
   const saveRules = useSaveChannelCommissionRules();
@@ -122,7 +122,7 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
   const rules = useChannelCommissionRules(agency);
   // No button of the wizard takes a second press while a request of the person is on its way: the save of a step, the application of the mandate, the way out.
   const [leaving, setLeaving] = useState(false);
-  const saving = save.isPending || updateTaxProfile.isPending || savePortalSettings.isPending || saveHolders.isPending || saveRules.isPending || apply.isPending;
+  const saving = save.isPending || saveTaxIdentity.isPending || savePortalSettings.isPending || saveHolders.isPending || saveRules.isPending || apply.isPending;
 
   // The wizard starts from the setup as it was when the page opened: a later read of it (the window comes back, a save) does not change the answers under the person's hands.
   const [today] = useState(() => todayInRome());
@@ -146,7 +146,7 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
     try {
       if (id === BILLING_STEPS.vat) {
         const addition = taxProfileAddition(values, onRecord, { draft });
-        if (addition) await updateTaxProfile.mutateAsync(addition);
+        if (addition) await saveTaxIdentity.mutateAsync(addition);
       }
       if (id === BILLING_STEPS.channels) {
         if (flags.ownerInvoicing) {

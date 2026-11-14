@@ -179,6 +179,9 @@ export function FiscalDashboardPage() {
   const { flags } = useFeatureFlags();
   const documentsEntry = getManifestEntry(FISCAL_DOCUMENTS_PATH);
   const canOpenDocuments = documentsEntry !== undefined && isEntryFeatureEnabled(documentsEntry, flags) && hasEntryPermission(documentsEntry, hasPermission);
+  // The same for the wizard «Fatturazione»: its card is for who may change the setup, and only where the wizard exists (the issuance of fiscal documents is on): a card never leads to the home of the area.
+  const billingEntry = getManifestEntry(BILLING_SETUP_PATH);
+  const canOpenBilling = canWrite && billingEntry !== undefined && isEntryFeatureEnabled(billingEntry, flags) && hasEntryPermission(billingEntry, hasPermission);
   const taxYear = useMemo(() => currentFiscalYear(), []);
   const { data, isLoading, isError, error, refetch } = useFiscalRegime(taxYear);
   const assign = useAssignFiscalRegime(taxYear);
@@ -231,7 +234,7 @@ export function FiscalDashboardPage() {
         ) : null}
 
         {/* The invoicing setup of the organization (the wizard «Fatturazione»): a quiet section, not a second highlighted block. Whoever may not change it has no button to it. */}
-        {canWrite ? (
+        {canOpenBilling ? (
           <PlainSection
             title={t('billingWizard.card.title')}
             actionLabel={t('billingWizard.card.action')}

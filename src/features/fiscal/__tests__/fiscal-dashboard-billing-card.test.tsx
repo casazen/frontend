@@ -5,10 +5,11 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import { fiscalApi, type FiscalRegimeSnapshot } from '@/api/fiscal.api';
+import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import { BILLING_SETUP_PATH } from '../billing-wizard/billing-wizard-ids';
 import { FiscalDashboardPage } from '../fiscal-dashboard-page';
 
-const permissions = vi.hoisted(() => ({ canWrite: true }));
+const permissions = vi.hoisted(() => ({ canWrite: true, issuance: true }));
 
 vi.mock('@/api/fiscal.api', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/api/fiscal.api')>();
@@ -23,6 +24,9 @@ vi.mock('@/components/layout/page-header', () => ({
 }));
 vi.mock('@/hooks/use-workspace', () => ({
   useWorkspace: () => ({ hasPermission: (_context: string, permission: string) => permission !== 'property.write' || permissions.canWrite }),
+}));
+vi.mock('@/hooks/use-feature-flags', () => ({
+  useFeatureFlags: () => ({ flags: { ...DEFAULT_FEATURE_FLAGS, fiscalDocumentIssuance: permissions.issuance }, isLoading: false }),
 }));
 
 const noProperties: FiscalRegimeSnapshot = {
@@ -46,6 +50,7 @@ describe('FiscalDashboardPage: the card «Fatturazione» (E11/F02/US01/T01)', ()
   beforeEach(async () => {
     vi.resetAllMocks();
     permissions.canWrite = true;
+    permissions.issuance = true;
     await i18n.changeLanguage('it');
     vi.mocked(fiscalApi.getRegime).mockResolvedValue(noProperties);
   });
@@ -64,6 +69,16 @@ describe('FiscalDashboardPage: the card «Fatturazione» (E11/F02/US01/T01)', ()
 
   it('FiscalDashboard_BillingCard_WhoMayNotWriteHasNoButtonToTheWizard', async () => {
     permissions.canWrite = false;
+    renderPage();
+
+    expect(await screen.findByTestId('fiscal-dashboard-empty')).toBeInTheDocument();
+    expect(screen.queryByTestId('fiscal-billing-card')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('fiscal-billing-card-cta')).not.toBeInTheDocument();
+  });
+
+  // Flag rule: with the issuance off the wizard is not there (its address leads to the home of the area), so the card is not there either.
+  it('FiscalDashboard_BillingCard_WithTheIssuanceOffIsNotThereForAnyone', async () => {
+    permissions.issuance = false;
     renderPage();
 
     expect(await screen.findByTestId('fiscal-dashboard-empty')).toBeInTheDocument();
