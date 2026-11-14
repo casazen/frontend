@@ -58,8 +58,9 @@ export function TodayCard({ rows, day, more }: TodayCardProps) {
   }, [refresh]);
 
   return (
-    <section aria-labelledby="home-today-title" data-testid="home-today" className="min-w-0 overflow-hidden rounded-xl bg-card ring-1 ring-inset ring-primary/25">
-      <header className="space-y-3 bg-primary-soft px-4 py-4 sm:px-5">
+    // A plain card: the one highlight of the Home is the road of the next steps above it («I tuoi prossimi passi»), so the day has no tinted band.
+    <section aria-labelledby="home-today-title" data-testid="home-today" className="min-w-0 overflow-hidden rounded-xl bg-card ring-1 ring-inset ring-border">
+      <header className="space-y-3 border-b border-border px-4 py-4 sm:px-5">
         <h2 id="home-today-title" className="break-words text-xl font-bold tracking-tight">
           {t('dashboard.today.title')}
           <span className="font-medium text-foreground/70"> · {formatStayDate(day, i18n.language, { weekday: 'long', day: 'numeric', month: 'long' })}</span>

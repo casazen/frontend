@@ -19,7 +19,7 @@ test.describe('Area navigation (UI-04a)', () => {
       await pinE2eLocale(page, 'it');
     });
 
-    test('the main menu has eight entries in three groups, the adempimenti among them, and "Altro" holds four more', async ({ page }) => {
+    test('the main menu has eight entries in three groups, the adempimenti among them, no "Altro", and the settings at the foot', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
       const menu = page.getByRole('navigation', { name: 'Menu Affitti brevi' });
@@ -29,12 +29,11 @@ test.describe('Area navigation (UI-04a)', () => {
         await expect(menu.getByRole('link', { name })).toBeVisible();
       }
 
-      const more = menu.getByRole('button', { name: 'Altro' });
-      await expect(more).toHaveAttribute('aria-expanded', 'false');
-      await more.click();
-      await expect(more).toHaveAttribute('aria-expanded', 'true');
-      // It held sixteen entries. The pages of a section are tabs on the page of their entry (below), Profilo is in the menu of the user.
-      await expect(menu.getByTestId('nav-more').getByRole('link')).toHaveText(['Coda di approvazione', 'Organizzazione', 'Consiglia CasaZen', 'Attività']);
+      // It held sixteen entries, then eight. The queues are tabs of the Cruscotto, the settings are pinned at the foot of the sidebar,
+      // «Inizia con CasaZen» is the welcome of the first access and the guide of the header, Profilo is in the menu of the user.
+      await expect(menu.getByRole('button', { name: 'Altro' })).toHaveCount(0);
+      const foot = page.getByRole('navigation', { name: 'Impostazioni e inviti' });
+      await expect(foot.getByRole('link')).toHaveText(['Impostazioni', 'Consiglia CasaZen']);
       // The pages that hang from an entry, the profile, plan and billing are in no menu.
       const inNoMenu = [
         'Messaggi',
@@ -170,12 +169,13 @@ test.describe('Area navigation (UI-04a)', () => {
       await expect(inbox.getByTestId('nav-count')).toHaveText(/1/);
     });
 
-    test('a page inside "Altro" opens it and keeps its entry highlighted', async ({ page }) => {
+    test('a queue of the host is a tab of the Cruscotto, which stays highlighted', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent/approval-queue', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
       const menu = page.getByRole('navigation', { name: 'Menu Affitti brevi' });
-      await expect(menu.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'true');
-      await expect(menu.getByRole('link', { name: 'Coda di approvazione', exact: true })).toHaveAttribute('aria-current', 'page');
+      await expect(menu.getByRole('link', { name: 'Cruscotto', exact: true })).toHaveAttribute('aria-current', 'page');
+      const tabs = page.getByRole('navigation', { name: 'Sezioni di Cruscotto' });
+      await expect(tabs.getByRole('link', { name: 'Da approvare' })).toHaveAttribute('aria-current', 'page');
     });
 
     test('a page that hangs from an entry is reached from that entry and highlights it', async ({ page }) => {
@@ -197,9 +197,8 @@ test.describe('Area navigation (UI-04a)', () => {
       await tabs.getByRole('link', { name: 'Alloggiati', exact: true }).click();
 
       await expect(page).toHaveURL(/\/app\/short-rent\/alloggiati$/);
-      // Still "Adempimenti" that is highlighted in the menu, and "Altro" stays closed; the tabs are there on this page too.
+      // Still "Adempimenti" that is highlighted in the menu; the tabs are there on this page too.
       await expect(menu.getByRole('link', { name: 'Adempimenti' })).toHaveAttribute('aria-current', 'page');
-      await expect(menu.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'false');
       await expect(menu.getByRole('link', { name: 'Alloggiati', exact: true })).toHaveCount(0);
       await expect(tabs.getByRole('link')).toHaveText(['Adempimenti', 'Alloggiati', 'Report Alloggiati', 'CIN', 'Identificazione']);
       await expect(tabs.getByRole('link', { name: 'Alloggiati', exact: true })).toHaveAttribute('aria-current', 'page');
@@ -259,8 +258,8 @@ test.describe('Area navigation (UI-04a)', () => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
       const menu = page.getByRole('navigation', { name: 'Menu Affitti brevi' });
-      await menu.getByRole('button', { name: 'Altro' }).click();
       await expect(menu.getByRole('link', { name: /Piano|Fatturazione/ })).toHaveCount(0);
+      await expect(page.getByRole('navigation', { name: 'Impostazioni e inviti' }).getByRole('link', { name: /Piano|Fatturazione/ })).toHaveCount(0);
 
       await page.getByTestId('org-badge').click();
       await expect(page).toHaveURL(/\/app\/short-rent\/settings\/plan/);
@@ -303,7 +302,7 @@ test.describe('Area navigation (UI-04a)', () => {
       await expect(menu.getByRole('group')).toHaveCount(3);
       await expect(menu.getByRole('group', { name: 'Every day' })).toBeVisible();
       await expect(menu.getByRole('link', { name: 'Booking site' })).toBeVisible();
-      await expect(menu.getByRole('button', { name: 'More' })).toBeVisible();
+      await expect(page.getByRole('navigation', { name: 'Settings and invitations' }).getByRole('link', { name: 'Settings' })).toBeVisible();
       await expect(page.getByTestId('area-header')).toContainText('Short-term rentals');
     });
   });
@@ -325,15 +324,15 @@ test.describe('Area navigation (UI-04a)', () => {
       const sheet = page.getByRole('dialog');
       await expect(sheet.getByRole('group', { name: 'La tua offerta' })).toBeVisible();
       await expect(sheet.getByRole('group', { name: 'Gestione' })).toBeVisible();
-      await expect(sheet.getByRole('group', { name: 'Altro' })).toBeVisible();
+      await expect(sheet.getByRole('group', { name: 'Impostazioni e inviti' })).toBeVisible();
       await expect(sheet.getByRole('link', { name: 'Cruscotto' })).toHaveCount(0);
-      // Four tiles in "Altro" where there were sixteen (the To do list is the last); the profile is in the account row at the end of the sheet.
-      await expect(sheet.getByRole('group', { name: 'Altro' }).getByRole('link')).toHaveText(['Coda di approvazione', 'Organizzazione', 'Consiglia CasaZen', 'Attività']);
-      await sheet.getByRole('link', { name: 'Coda di approvazione' }).click();
+      // The settings close the sheet as they close the sidebar; the queues are tabs of the Cruscotto; the profile is in the account row.
+      await expect(sheet.getByRole('group', { name: 'Impostazioni e inviti' }).getByRole('link')).toHaveText(['Impostazioni', 'Consiglia CasaZen']);
+      await sheet.getByRole('link', { name: 'Impostazioni' }).click();
 
-      await expect(page).toHaveURL(/\/app\/short-rent\/approval-queue/);
+      await expect(page).toHaveURL(/\/app\/short-rent\/settings\/organization/);
       await expect(sheet).not.toBeVisible();
-      // The approval queue is not one of the destinations of the bar: "Altro" is the marked tab (its sheet is closed again).
+      // The settings are not one of the destinations of the bar: "Altro" is the marked tab (its sheet is closed again).
       await expect(bar.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-current', 'page');
       await expect(bar.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'false');
     });

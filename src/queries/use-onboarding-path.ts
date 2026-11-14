@@ -48,8 +48,9 @@ export interface VisibleOnboardingPath {
  * Nothing (`path` null) while the flag is off, for someone who is not an organization administrator, while it loads, when it cannot be
  * read and once it is complete; `pending` is true only while it loads for someone who is shown it, so the home does not flash another card first.
  */
-export function useVisibleOnboardingPath(): { path: VisibleOnboardingPath | null; pending: boolean } {
-  const enabled = useOnboardingPathEnabled();
+export function useVisibleOnboardingPath(options?: { enabled?: boolean }): { path: VisibleOnboardingPath | null; pending: boolean } {
+  // A screen that has no use for the path now (the guide while it is closed, a welcome already seen) asks nothing of the server.
+  const enabled = useOnboardingPathEnabled() && (options?.enabled ?? true);
   const query = useOnboardingPath({ enabled });
 
   return useMemo(() => {

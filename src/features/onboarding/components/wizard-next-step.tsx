@@ -79,7 +79,13 @@ export function WizardNextStep({ currentPart }: WizardNextStepProps) {
   }
 
   return (
-    <section aria-labelledby={titleId} className="min-w-0 rounded-lg border border-primary/30 bg-primary/5 p-4 text-left" data-testid="wizard-next-step">
+    <section
+      aria-labelledby={titleId}
+      className="relative min-w-0 overflow-hidden rounded-lg border bg-card p-4 pl-5 text-left shadow-sm"
+      data-testid="wizard-next-step"
+    >
+      {/* The next stop of the road, not a notice: the accent is on the edge of a plain card (as `NextStepCard`). */}
+      <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1 bg-primary" />
       <p className="text-xs font-semibold uppercase tracking-wide text-primary-text">{t('onboardingPlan.nextStep.kicker')}</p>
       <h3 id={titleId} className="mt-1 break-words text-base font-semibold">
         {t(pathStepTitleKey(suggested.code))}

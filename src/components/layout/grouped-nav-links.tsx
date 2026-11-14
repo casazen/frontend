@@ -193,10 +193,48 @@ function NavMoreMenu({
   );
 }
 
+interface FooterNavLinksProps {
+  /** The entries pinned at the foot of the sidebar (`ContextNav.footer`). */
+  entries: RouteManifestEntry[];
+  /** The entries of the menus and the pages that hang from them: the open page is looked for among them. */
+  matchEntries: RouteManifestEntry[];
+  collapsed?: boolean;
+  counts?: NavCounts;
+  onNavigate?: () => void;
+}
+
 /**
- * The menu of an area (UI-04a): labelled groups of at most seven primary entries and "Altro". The sidebar draws it with the
- * counters and, collapsed, only the icons with their names as tooltips (UI-04b); the sheet of the phone
- * (`variant="sheet"`) lists what the bottom bar does not, as tiles, and shows "Altro" as one more group.
+ * The foot of the sidebar (UI-04a): the settings of the area and «Consiglia CasaZen», apart from the daily work and always in the same
+ * place, under the menu that scrolls. The same rows as the menu (and only the icons on the rail), so the open page is highlighted here too.
+ */
+export function FooterNavLinks({ entries, matchEntries, collapsed = false, counts = {}, onNavigate }: FooterNavLinksProps) {
+  const { pathname } = useLocation();
+  if (entries.length === 0) return null;
+  const activePath = resolveActiveNavEntry(pathname, matchEntries)?.path;
+
+  // The list is named by the landmark around it (the sidebar puts it in a `nav` of its own).
+  return (
+    <ul className="flex flex-col gap-0.5" data-testid="nav-footer">
+      {entries.map((entry) => (
+        <li key={entry.path}>
+          <NavLinkItem
+            entry={entry}
+            active={entry.path === activePath}
+            collapsed={collapsed}
+            count={entry.navCount ? (counts[entry.navCount] ?? 0) : 0}
+            onNavigate={onNavigate}
+          />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/**
+ * The menu of an area (UI-04a): labelled groups of at most nine primary entries and, only for a page whose section the user cannot
+ * open, "Altro". The sidebar draws it with the counters and, collapsed, only the icons with their names as tooltips (UI-04b); its
+ * foot (the settings) is `FooterNavLinks`. The sheet of the phone (`variant="sheet"`) lists what the bottom bar does not, as tiles,
+ * and shows "Altro" and the foot of the sidebar as two more groups.
  */
 export function GroupedNavLinks({
   nav,
@@ -211,7 +249,8 @@ export function GroupedNavLinks({
   const baseId = useId();
   const activePath = resolveActiveNavEntry(pathname, matchEntries)?.path;
   const isSheet = variant === 'sheet';
-  const groupCount = nav.sections.length + (isSheet && nav.more.length > 0 ? 1 : 0);
+  const groupCount =
+    nav.sections.length + (isSheet && nav.more.length > 0 ? 1 : 0) + (isSheet && nav.footer.length > 0 ? 1 : 0);
   // A single group needs no name.
   const showGroupLabels = groupCount > 1 && !collapsed;
 
@@ -285,6 +324,22 @@ export function GroupedNavLinks({
           />
         </div>
       )}
+      {/* The foot of the sidebar is drawn by the sidebar itself (`FooterNavLinks`, pinned under the menu); the sheet of the phone lists it last. */}
+      {isSheet && nav.footer.length > 0 ? (
+        <div
+          role="group"
+          aria-labelledby={showGroupLabels ? `${baseId}-footer` : undefined}
+          aria-label={showGroupLabels ? undefined : t('nav.group.footer')}
+          data-testid="nav-group-footer"
+        >
+          {showGroupLabels ? (
+            <p id={`${baseId}-footer`} className={GROUP_LABEL_STYLES.sheet}>
+              {t('nav.group.footer')}
+            </p>
+          ) : null}
+          <ul className={listClass}>{nav.footer.map(renderEntry)}</ul>
+        </div>
+      ) : null}
     </div>
   );
 }

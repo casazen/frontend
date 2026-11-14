@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/page-header';
-import { NavChildLinks } from '@/components/layout/nav-child-links';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CinComplianceTable } from './components/cin-compliance-table';
@@ -26,11 +25,8 @@ export function AdminCinPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={t('admin.cin.title')}
-        description={t('admin.cin.description')}
-        action={<NavChildLinks parentPath="/app/admin/cin" />}
-      />
+      {/* The tax rates and the LTR reference data are the tabs of this section, drawn by the header. */}
+      <PageHeader title={t('admin.cin.title')} description={t('admin.cin.description')} />
 
       <Card>
         <CardHeader>

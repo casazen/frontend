@@ -14,7 +14,8 @@ import { SupplierSuspendedBanner } from '@/features/supplier/components/supplier
 import { AppShellContext } from './app-shell-context';
 import { BottomNav } from './bottom-nav';
 import { ContextSidebar } from './context-sidebar';
-import { GuideLink } from '@/features/help/guide-link';
+import { FirstRunWizard } from '@/features/guide/first-run-wizard';
+import { GuideButton } from '@/features/guide/guide-panel';
 import { NotificationBell } from '@/features/notifications/notification-bell';
 import { Header } from './header';
 import { LegalConsentsNotice } from './legal-consents-notice';
@@ -74,8 +75,8 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
           <MoreSheet contextKey={contextKey} organizationName={organizationName} />
           <div className="flex min-w-0 flex-1 flex-col">
             <DemoBanner />
-            {/* The notifications bell (UI-12) and the help (UI-08) are handed to the header here too, each only when its function exists. */}
-            <Header search={<CommandPaletteTrigger />} notifications={<NotificationBell />} help={<GuideLink contextKey={contextKey} />} />
+            {/* The notifications bell (UI-12) and the guide (the help of UI-08 is inside it) are handed to the header here too, each only when its function exists. */}
+            <Header search={<CommandPaletteTrigger />} notifications={<NotificationBell />} help={<GuideButton contextKey={contextKey} />} />
             <main
               id={MAIN_CONTENT_ID}
               ref={mainRef}
@@ -100,6 +101,8 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
         <DetailDrawerHost />
         {/* The popup alerts (ADR-025): one at a time, over the content, and not while a wizard is open. Only for a signed-in user of the real app (the bell's conditions). */}
         <AlertPopup />
+        {/* «Inizia con CasaZen» as the first wizard of a new host: a layer of its own, once, at the first access to Affitti brevi. */}
+        {contextKey === 'short-rent' ? <FirstRunWizard /> : null}
       </CommandPaletteProvider>
     </AppShellContext.Provider>
   );

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { deriveContextsFromRoles, ROLE_PROPERTY_OWNER } from '@/lib/auth-roles';
-import { ROUTE_MANIFEST, getVisibleNavEntries, hasEntryPermission } from '../route-manifest';
+import { ROUTE_MANIFEST, getNavMatchEntries, hasEntryPermission } from '../route-manifest';
 
 const APPROVAL_QUEUE_PATH = '/app/short-rent/approval-queue';
 const entry = ROUTE_MANIFEST.find((candidate) => candidate.path === APPROVAL_QUEUE_PATH);
@@ -25,9 +25,11 @@ describe('route manifest: the approval queue (E05/F04/US02, NF-68, AC-NF68-5)', 
     expect(entry && hasEntryPermission(entry, holding())).toBe(false);
   });
 
-  it('RouteManifest_ApprovalQueue_HasNoEntryInTheMenuForWhoCannotDecide', () => {
+  it('RouteManifest_ApprovalQueue_IsATabOfTheCruscottoOnlyForWhoMayDecide', () => {
+    // «Da approvare»: a tab of the Cruscotto, which every role opens.
+    expect(entry?.navParent).toBe('/app/short-rent');
     const paths = (hasPermission: (context: string, permission: string) => boolean) =>
-      getVisibleNavEntries('short-rent', hasPermission, undefined).map((page) => page.path);
+      getNavMatchEntries('short-rent', hasPermission, undefined).map((page) => page.path);
 
     expect(paths(holding('approval.decide'))).toContain(APPROVAL_QUEUE_PATH);
     expect(paths(holding('property.read', 'property.write', 'booking.read'))).not.toContain(APPROVAL_QUEUE_PATH);

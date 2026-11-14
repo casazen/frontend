@@ -168,7 +168,8 @@ describe('PageHeader with the trail (UI-05)', () => {
   it('PageHeader_EmptyCrumbs_DrawNoTrailAndNoBackLink', () => {
     render(inShell('short-rent', <PageHeader title="Cruscotto" crumbs={[]} />));
 
-    expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
+    // The Cruscotto has the tabs of its section (Da fare, Da approvare…): no trail is drawn above them.
+    expect(screen.queryByRole('navigation', { name: 'Percorso di navigazione' })).not.toBeInTheDocument();
     expect(screen.queryByTestId('back-link')).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: 'Cruscotto' })).toBeInTheDocument();
   });

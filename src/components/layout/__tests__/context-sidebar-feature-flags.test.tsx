@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/i18n/config';
@@ -31,11 +31,8 @@ function renderSidebar(otaPartnerApi?: boolean) {
   );
 }
 
-const openMore = () => fireEvent.click(screen.getByRole('button', { name: 'Altro' }));
-
 // FD-20 / D10: the OTA channels are behind the otaPartnerApi flag, off by default. Since UI-04a they are a tab of Immobili, not an
-// entry of the sidebar: the flag never adds an entry to the menu, and "Altro" holds the same three entries with it on or off. The
-// tab itself is tested with `NavSectionTabs`.
+// entry of the sidebar: the flag never adds an entry to the menu, nor to its foot. The tab itself is tested with `NavSectionTabs`.
 describe('ContextSidebar feature flags', () => {
   beforeEach(() => {
     vi.mocked(useWorkspace).mockReturnValue({
@@ -50,22 +47,18 @@ describe('ContextSidebar feature flags', () => {
 
   it.each([[false], [undefined], [true]])('has no OTA entry in the sidebar, whatever the otaPartnerApi flag (%s)', (flag) => {
     renderSidebar(flag);
-    openMore();
 
     expect(screen.getByRole('link', { name: 'Immobili' })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'OTA' })).not.toBeInTheDocument();
     expect(document.querySelector('a[href^="/app/short-rent/ota"]')).toBeNull();
   });
 
-  it('lists the same entries in "Altro" with the flag on and off', () => {
-    const linksOfMore = () => {
-      openMore();
-      return screen.getAllByRole('link').map((link) => link.getAttribute('href'));
-    };
+  it('lists the same entries with the flag on and off', () => {
+    const links = () => screen.getAllByRole('link').map((link) => link.getAttribute('href'));
     renderSidebar(false);
-    const off = linksOfMore();
+    const off = links();
     cleanup();
     renderSidebar(true);
-    expect(linksOfMore()).toEqual(off);
+    expect(links()).toEqual(off);
   });
 });

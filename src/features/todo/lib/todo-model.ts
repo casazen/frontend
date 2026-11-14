@@ -6,9 +6,6 @@ import { COMPLIANCE_REASON_CODES } from '@/types/compliance.types';
 /** The page of the whole list (ADR-026-R8): the Home links here, and so does the nav. */
 export const TODO_LIST_PATH = '/app/short-rent/activities';
 
-/** How many of the next items the Home lists under the one it shows first. */
-export const HOME_NEXT_ITEMS = 3;
-
 /** The most items the server sends in the list (`TodoLimits.MaxPendingItems` of the backend): it cuts the list there, while `/count` counts them all. */
 export const TODO_LIST_LIMIT = 50;
 

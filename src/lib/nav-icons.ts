@@ -12,6 +12,7 @@ import {
   CreditCard,
   FileCheck,
   FileText,
+  Gift,
   Globe,
   HelpCircle,
   Home,
@@ -81,6 +82,7 @@ export const NAV_ICONS: Record<string, LucideIcon> = {
   TrendingUp,
   Wallet,
   Wrench,
+  Gift,
 };
 
 export function getNavIcon(iconName?: string): LucideIcon {

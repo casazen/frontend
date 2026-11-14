@@ -7,13 +7,13 @@ import { getNavSection, type AppContextKey, type RouteManifestEntry } from '@/co
 import { WorkspaceContext } from '@/contexts/workspace-context';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useNavCounts, type NavCounts } from '@/hooks/use-nav-counts';
-import { getNavCountLabel, getNavLabel } from '@/lib/nav-labels';
+import { getNavCountLabel, getNavLabel, getNavTabLabel } from '@/lib/nav-labels';
 
 /**
- * The areas whose sections are tabs. The staff console and the supplier area keep the links to their sub-pages in the header of the
- * page of the entry (`NavChildLinks`).
+ * The areas whose sections are tabs: the rental areas, the Amministrazione and the staff console, so that a section looks the same
+ * wherever it is. The supplier area keeps the links to its sub-pages in the header of the page of the entry (`NavChildLinks`).
  */
-const TAB_AREAS: readonly AppContextKey[] = ['short-rent', 'long-rent'];
+const TAB_AREAS: readonly AppContextKey[] = ['short-rent', 'long-rent', 'account', 'admin'];
 
 interface NavSectionTabsProps {
   className?: string;
@@ -73,7 +73,7 @@ function SectionTabStrip({ section, counts, className }: { section: RouteManifes
   const items: RouteTabItem[] = section.map((page, index) => {
     const count = index > 0 && page.navCount ? (counts[page.navCount] ?? 0) : 0;
     return {
-      label: getNavLabel(page, t),
+      label: getNavTabLabel(page, t),
       href: page.path,
       testId: `nav-section-tab-${page.path.slice(`/app/${page.context}/`.length).replace(/\//g, '-')}`,
       ...(count > 0 && page.navCount ? { count, countLabel: getNavCountLabel(page.navCount, count, t) } : {}),

@@ -1,9 +1,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import { ProductGuidePage } from '../product-guide-page';
-import { GuideLink } from '../guide-link';
 
 beforeEach(async () => { await i18n.changeLanguage('it'); });
 afterEach(cleanup);
@@ -30,9 +28,5 @@ describe('Product guide', () => {
     expect(screen.getAllByRole('heading', { level: 2 })).toHaveLength(11);
     expect(screen.getByText(/In the current workflow CasaZen prepares/)).toBeInTheDocument();
   });
-
-  it('keeps the header link in the current work area', () => {
-    render(<MemoryRouter><GuideLink contextKey="supplier" /></MemoryRouter>);
-    expect(screen.getByRole('link', { name: 'Guida' })).toHaveAttribute('href', '/app/supplier/help');
-  });
+  // The way in from the header is the «Guida» panel now (its link to this page per area: `features/guide/__tests__/guide.test.tsx`).
 });

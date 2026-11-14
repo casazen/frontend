@@ -105,7 +105,17 @@ describe('FocusBlock (UI-16)', () => {
     const { container } = renderBlock();
 
     expect(container.querySelector('section')).toHaveAttribute('data-tone', 'neutral');
-    expect(container.querySelector('section')).toHaveClass('bg-primary-soft');
+    // A card with the accent on its edge and on its icon, never a block tinted from edge to edge (it read as an error message).
+    expect(container.querySelector('section')).toHaveClass('bg-card');
+    expect(container.querySelector('section > span.bg-primary')).not.toBeNull();
+  });
+
+  it('FocusBlock_Danger_IsNotATintedBlock', () => {
+    const { container } = renderBlock({ tone: 'danger' });
+
+    const region = container.querySelector('section')!;
+    expect(region.className).not.toMatch(/\bbg-danger-soft\b/);
+    expect(region.querySelector('span.bg-danger-foreground')).not.toBeNull();
   });
 
   it('FocusBlock_Icon_ReplacesTheIconOfTheTone', () => {

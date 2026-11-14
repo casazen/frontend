@@ -17,7 +17,10 @@ export function permissionCheckOfRole(role: OrgRoleInfo): PermissionPredicate {
   };
 }
 
-/** What a person finds in one area: whether it can enter, and the pages of its main menu and of «Altro», in menu order. */
+/**
+ * What a person finds in one area: whether it can enter, the pages of its main menu, and the others of the sidebar in menu order («Altro», then
+ * the settings pinned at its foot).
+ */
 export interface AreaMenu {
   area: PreviewArea;
   enters: boolean;
@@ -37,6 +40,6 @@ export function buildAreaMenus(role: OrgRoleInfo, areas: readonly string[], feat
   return PREVIEW_AREAS.map((area) => {
     if (!enters.includes(area)) return { area, enters: false, main: [], more: [] };
     const nav = getContextNav(area, check, features);
-    return { area, enters: true, main: nav.sections.flatMap((section) => section.entries), more: nav.more };
+    return { area, enters: true, main: nav.sections.flatMap((section) => section.entries), more: [...nav.more, ...nav.footer] };
   });
 }

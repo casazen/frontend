@@ -89,19 +89,23 @@ describe('DashboardPage To do list', () => {
     cleanup();
   });
 
-  it('DashboardPage_ToDoItems_ShowsTheFirstInNowAndTheNextOnesWithTheUrgentCount', () => {
+  /** The steps of the road «I tuoi prossimi passi», and the one to do now. */
+  const steps = () => within(screen.getByTestId('home-todo-steps')).getAllByRole('listitem');
+  const current = () => steps().find((step) => step.getAttribute('aria-current') === 'step');
+
+  it('DashboardPage_ToDoItems_AreARoadWithTheFirstToDoNowAndTheUrgentCount', () => {
     renderDashboard();
 
-    const focus = screen.getByTestId('home-todo-focus');
-    expect(within(focus).getByRole('heading', { level: 2 })).toHaveTextContent('Alloggiati Web in scadenza');
-    expect(focus).toHaveTextContent('Adesso');
-
-    const summary = screen.getByTestId('home-todo-summary');
-    // The first is in the focus block: the summary lists the two after it, and counts all three and the two urgent ones.
-    expect(within(summary).getAllByRole('listitem')).toHaveLength(2);
-    expect(within(summary).getByTestId('home-todo-counts')).toHaveTextContent('3 attività da fare');
-    expect(within(summary).getByTestId('home-todo-urgent')).toHaveTextContent('2 urgenti');
-    expect(within(summary).getByTestId('home-todo-see-all')).toHaveAttribute('href', '/app/short-rent/activities');
+    const road = screen.getByTestId('home-todo-path');
+    // The first item is the step to do now; the road goes on with the next ones, and counts all three and the two urgent ones.
+    expect(current()).toHaveTextContent('Alloggiati Web in scadenza');
+    expect(current()).toHaveTextContent('Adesso');
+    expect(steps()).toHaveLength(3);
+    expect(within(road).getByTestId('home-todo-counts')).toHaveTextContent('3 attività da fare');
+    expect(within(road).getByTestId('home-todo-urgent')).toHaveTextContent('2 urgenti');
+    expect(within(road).getByTestId('home-todo-see-all')).toHaveAttribute('href', '/app/short-rent/activities');
+    // No tinted block: the guide does not look like an error.
+    expect(screen.queryByTestId('home-todo-focus')).not.toBeInTheDocument();
   });
 
   it('DashboardPage_ListCutByTheServer_SaysTheFirstOnesAndTakesTheUrgentCountFromTheMenu', () => {
@@ -111,11 +115,9 @@ describe('DashboardPage To do list', () => {
     vi.mocked(useActivityCount).mockReturnValue({ data: { count: 61 } } as unknown as ReturnType<typeof useActivityCount>);
     renderDashboard();
 
-    const summary = screen.getByTestId('home-todo-summary');
-    expect(within(summary).getByTestId('home-todo-counts')).toHaveTextContent('Le prime 50 attività da fare');
-    expect(within(summary).getByTestId('home-todo-urgent')).toHaveTextContent('61 urgenti');
-    // "Poi: altre 49 attività" would be a total too.
-    expect(screen.getByTestId('home-todo-focus')).not.toHaveTextContent('Poi:');
+    const road = screen.getByTestId('home-todo-path');
+    expect(within(road).getByTestId('home-todo-counts')).toHaveTextContent('Le prime 50 attività da fare');
+    expect(within(road).getByTestId('home-todo-urgent')).toHaveTextContent('61 urgenti');
   });
 
   it('DashboardPage_NothingToDo_DrawsNothingForIt', () => {
@@ -123,39 +125,35 @@ describe('DashboardPage To do list', () => {
     renderDashboard();
 
     expect(screen.getByTestId('sr-home')).toBeInTheDocument();
-    expect(screen.queryByTestId('home-todo-focus')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('home-todo-summary')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('home-todo-path')).not.toBeInTheDocument();
   });
 
   it('DashboardPage_ListNotLoadedYet_DrawsNothingForIt', () => {
     vi.mocked(useActivities).mockReturnValue({ data: undefined } as unknown as ReturnType<typeof useActivities>);
     renderDashboard();
 
-    expect(screen.queryByTestId('home-todo-focus')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('home-todo-summary')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('home-todo-path')).not.toBeInTheDocument();
   });
 
-  it('DashboardPage_RiskOfASanction_KeepsTheOneHighlightedBlockAndListsEverythingInTheSummary', () => {
-    // What carries a risk of a sanction holds the one focus block of the Home: the To do list does not add a second one.
+  it('DashboardPage_RiskOfASanction_KeepsTheOneHighlightedBlockAndTheRoadHasNoStepToDoNow', () => {
+    // What carries a risk of a sanction holds the one focus block of the Home: the To do road does not add a second highlight.
     vi.mocked(useComplianceFineCount).mockReturnValue(2);
     renderDashboard();
 
-    expect(screen.queryByTestId('home-todo-focus')).not.toBeInTheDocument();
-    const summary = screen.getByTestId('home-todo-summary');
-    expect(within(summary).getAllByRole('listitem')).toHaveLength(3);
-    expect(within(summary).getByTestId('home-todo-urgent')).toHaveTextContent('2 urgenti');
+    expect(current()).toBeUndefined();
+    expect(steps()).toHaveLength(3);
+    expect(within(screen.getByTestId('home-todo-path')).getByTestId('home-todo-urgent')).toHaveTextContent('2 urgenti');
   });
 
-  // E03/F03/US01/T02 (NF-52, AC-NF52-8): with the traffic light on the compliance reaches the "Adesso" block through this very list.
-  it('DashboardPage_TrafficLightOn_TheFirstToDoIsTheNowBlockEvenWithSomethingRed', () => {
+  // E03/F03/US01/T02 (NF-52, AC-NF52-8): with the traffic light on the compliance reaches the "Adesso" step through this very list.
+  it('DashboardPage_TrafficLightOn_TheFirstToDoIsTheStepToDoNowEvenWithSomethingRed', () => {
     vi.mocked(useComplianceFineCount).mockReturnValue(2);
     vi.mocked(useComplianceLightsOn).mockReturnValue(true);
     renderDashboard();
 
-    // The feeder put the red item in the list: the block of the sanctions is only a line, so the Home has the one highlighted block and no item twice.
-    const focus = screen.getByTestId('home-todo-focus');
-    expect(within(focus).getByRole('heading', { level: 2 })).toHaveTextContent('Alloggiati Web in scadenza');
-    expect(within(screen.getByTestId('home-todo-summary')).getAllByRole('listitem')).toHaveLength(2);
+    // The feeder put the red item in the list: the block of the sanctions is only a line, so the Home has the one highlight and no item twice.
+    expect(current()).toHaveTextContent('Alloggiati Web in scadenza');
+    expect(steps()).toHaveLength(3);
   });
 
   it('DashboardPage_TrafficLightOff_TheBlockOfTheSanctionsStillHoldsTheNowPlace', () => {
@@ -164,7 +162,7 @@ describe('DashboardPage To do list', () => {
     vi.mocked(useComplianceLightsOn).mockReturnValue(false);
     renderDashboard();
 
-    expect(screen.queryByTestId('home-todo-focus')).not.toBeInTheDocument();
+    expect(current()).toBeUndefined();
   });
 
   it('DashboardPage_ComplianceCounters_AreOnlyForWhoMayReadTheBookings', () => {

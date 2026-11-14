@@ -484,6 +484,11 @@
         "then_one": "Poi: un'altra attività",
         "then_other": "Poi: altre {{count}} attività"
       },
+      "path": {
+        "now": "Adesso",
+        "open": "Apri",
+        "title": "I tuoi prossimi passi"
+      },
       "listLabel": "Attività da fare",
       "loadError": "Non riusciamo a caricare le attività.",
       "loading": "Carico le attività…",
@@ -3965,6 +3970,11 @@
     "ariaLabel": "Percorso di navigazione"
   },
   "calm": {
+    "path": {
+      "current": "passo attuale",
+      "done": "fatto",
+      "upcoming": "da fare"
+    },
     "statStrip": {
       "label": "In breve"
     },
@@ -3973,6 +3983,57 @@
       "items_other": "{{count}} elementi",
       "label": "Giorni della settimana",
       "today": "oggi"
+    }
+  },
+  "guide": {
+    "button": "Guida",
+    "description": "Ti accompagna passo per passo: cosa hai già fatto, cosa fare adesso e cosa viene dopo.",
+    "help": {
+      "manual": "Apri il manuale di CasaZen",
+      "support": "Scrivi all'assistenza",
+      "text": "Il manuale spiega ogni area con parole semplici. Se ti blocchi, scrivici: ti rispondiamo noi.",
+      "title": "Ti serve una mano?"
+    },
+    "open": "Apri la guida",
+    "openWithCount_one": "Apri la guida: {{count}} cosa urgente da fare",
+    "openWithCount_other": "Apri la guida: {{count}} cose urgenti da fare",
+    "setup": {
+      "all": "Vedi tutti i passi",
+      "continue": "Continua",
+      "label": "I passi per configurare CasaZen",
+      "now": "Adesso",
+      "progress": "{{done}} di {{total}} passi fatti",
+      "titleChecklist": "Attiva il tuo sito di prenotazione",
+      "titlePath": "Inizia con CasaZen"
+    },
+    "title": "La tua guida",
+    "todo": {
+      "all": "Vedi tutte le cose da fare",
+      "count_one": "{{count}} cosa da fare, nell'ordine in cui farla.",
+      "count_other": "{{count}} cose da fare, nell'ordine in cui farle.",
+      "countUrgent_one": "{{count}} cosa da fare, {{urgent}} urgente: parti dall'alto.",
+      "countUrgent_other": "{{count}} cose da fare, {{urgent}} urgenti: parti dall'alto.",
+      "nothing": "Niente da fare per ora: tutto in ordine.",
+      "title": "Da fare adesso"
+    },
+    "welcome": {
+      "intro_one": "CasaZen ti accompagna un passo alla volta: c'è {{count}} passo per essere operativo.",
+      "intro_other": "CasaZen ti accompagna un passo alla volta: ci sono {{count}} passi per essere operativo.",
+      "kicker": "Benvenuto in CasaZen",
+      "later": "Più tardi",
+      "next": "Vediamo il percorso",
+      "pathIntro": "Ogni passo apre la procedura guidata giusta. Quando ne finisci uno, ti proponiamo il successivo.",
+      "pathKicker": "Inizia con CasaZen",
+      "pathTitle_one": "Il tuo percorso: {{count}} passo",
+      "pathTitle_other": "Il tuo percorso: {{count}} passi",
+      "promise": {
+        "guide": "La Guida in alto a destra ti dice sempre cosa fare dopo.",
+        "pause": "Puoi fermarti quando vuoi: riprendi da dove eri, non perdi nulla.",
+        "steps": "Ti mostriamo una cosa alla volta, nell'ordine giusto."
+      },
+      "start": "Inizia: {{step}}",
+      "title": "Ciao {{name}}, iniziamo insieme",
+      "titleNoName": "Iniziamo insieme"
     }
   },
   "campaigns": {
@@ -13806,6 +13867,9 @@
     "domain": "Dominio pubblico",
     "organization": "Organizzazione",
     "accountSettings": "Impostazioni",
+    "settings": "Impostazioni",
+    "todo": "Da fare",
+    "toApprove": "Da approvare",
     "ota": "OTA",
     "leases": "Contratti",
     "rents": "Canoni",
@@ -13847,11 +13911,16 @@
     "group": {
       "account": "Il tuo account",
       "activity": "La tua attività",
+      "content": "Contenuti",
       "everyday": "Ogni giorno",
+      "footer": "Impostazioni e inviti",
       "management": "Gestione",
       "offer": "La tua offerta",
+      "owners": "Proprietari",
       "platform": "Piattaforma",
       "portfolio": "Patrimonio",
+      "support": "Supporto",
+      "system": "Sistema",
       "work": "Lavoro"
     },
     "ltrReferenceData": "Dati normativi LTR",

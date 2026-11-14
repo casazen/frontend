@@ -134,7 +134,10 @@ describe('isNavEntryActive on the route manifest', () => {
     ['short-rent', '/app/short-rent/reviews', '/app/short-rent/bookings'],
     ['short-rent', '/app/short-rent/trusted-suppliers', '/app/short-rent/properties'],
     ['short-rent', '/app/short-rent/channels', '/app/short-rent/properties'],
-    ['short-rent', '/app/short-rent/verifications', '/app/short-rent/approval-queue'],
+    // The queues of the host are tabs of the Cruscotto: the open page highlights it.
+    ['short-rent', '/app/short-rent/verifications', '/app/short-rent'],
+    ['short-rent', '/app/short-rent/approval-queue', '/app/short-rent'],
+    ['short-rent', '/app/short-rent/activities', '/app/short-rent'],
     ['short-rent', '/app/short-rent/fiscal/wizard', '/app/short-rent/payments'],
     ['short-rent', '/app/short-rent/ota/create', '/app/short-rent/properties'],
     // Plan, billing and the profile are in no menu: no entry stands for them.
@@ -159,7 +162,9 @@ describe('isNavEntryActive on the route manifest', () => {
     ['admin', '/app/admin', '/app/admin'],
     ['admin', '/app/admin/compliance/tax-rates', '/app/admin/cin'],
     ['admin', '/app/admin/compliance/ltr-reference-data', '/app/admin/cin'],
-    ['admin', '/app/admin/suppliers/invite', '/app/admin/suppliers/invite'],
+    // The invites are a tab of Fornitori.
+    ['admin', '/app/admin/suppliers/invite', '/app/admin/suppliers'],
+    ['admin', '/app/admin/marketing', '/app/admin/seo'],
   ] as const)('%s %s highlights %s', (contextKey, pathname, expected) => {
     expect(activePath(contextKey, pathname)).toBe(expected);
   });
