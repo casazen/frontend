@@ -42,9 +42,10 @@ function useShortProperties(propertyId: string | undefined) {
   return { query, list, property: list.find((candidate) => candidate.id === propertyId) };
 }
 
+/** One counter of the guests in a box of its own: the adults and the minors sit side by side as the two dates above them do. */
 function GuestCountRow({ label, hint, children }: { label: string; hint: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
+    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-md border px-4 py-3">
       <div className="min-w-0 flex-1 basis-40">
         <p className="break-words text-sm font-medium">{label}</p>
         <p className="break-words text-sm text-foreground/70">{hint}</p>
@@ -168,7 +169,8 @@ export function StayStep({ agesMissing, onAgesChange }: StayStepProps) {
 
       <fieldset className="min-w-0 space-y-3">
         <legend className="text-sm font-medium">{t('booking.create.stay.guestsTitle')}</legend>
-        <div className="divide-y rounded-md border">
+        {/* Side by side from `sm`, as the dates: on a wide screen a counter does not end up at the far end of the step, away from its name. */}
+        <div className="grid gap-3 sm:grid-cols-2">
           <GuestCountRow label={t('booking.create.stay.adults')} hint={t('booking.create.stay.adultsHint')}>
             <Qty
               label={t('booking.create.stay.adults')}
@@ -300,7 +302,8 @@ function PriceBlock({ hasStay, quote, isLoading, error }: { hasStay: boolean; qu
         : t('booking.form.price.taxNotCalculated');
 
   return (
-    <dl className="min-w-0 space-y-2 rounded-lg bg-muted p-4 text-sm" data-testid="booking-price-summary">
+    // A receipt: as wide as a receipt (`max-w-xl`), so each amount stays next to what it pays for on a wide screen.
+    <dl className="min-w-0 max-w-xl space-y-2 rounded-lg bg-muted p-4 text-sm" data-testid="booking-price-summary">
       <div className="flex min-w-0 justify-between gap-3">
         <dt className="min-w-0 break-words text-foreground/70">
           {t('booking.form.price.lodging', { count: quote.nights, perNight: money(quote.nightlyRate) })}

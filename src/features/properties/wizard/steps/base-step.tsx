@@ -27,6 +27,17 @@ const SPACES: ReadonlyArray<{ name: SpaceName; min: number; max: number }> = [
   { name: 'bathrooms', min: 1, max: 50 },
 ];
 
+/**
+ * The counters of the spaces side by side, by the width of the step (a container: the same step is narrow on a phone and very wide beside
+ * the steps of a large screen): one under the other, then two per row, then all four in a row as small tiles. A counter never sits at the far
+ * end of a line that runs across the whole screen, away from the name it counts.
+ */
+const SPACE_GRID = 'grid grid-cols-1 gap-x-8 gap-y-4 @2xl:grid-cols-2 @5xl:grid-cols-4 @5xl:gap-4';
+
+/** One counter of the grid: the name beside its buttons, and, four in a row, a small tile with the buttons under the name. */
+const SPACE_ITEM =
+  'flex min-w-0 items-center justify-between gap-4 @5xl:flex-col @5xl:items-start @5xl:justify-between @5xl:gap-3 @5xl:rounded-lg @5xl:p-4 @5xl:ring-1 @5xl:ring-inset @5xl:ring-border';
+
 interface SpaceRowProps {
   form: UseFormReturn<PropertyWizardValues>;
   name: SpaceName;
@@ -34,7 +45,7 @@ interface SpaceRowProps {
   max: number;
 }
 
-/** One counter of the spaces: the name and what it counts on the left, the two buttons on the right. */
+/** One counter of the spaces: the name and what it counts, and the two buttons beside it (under it in a tile). */
 function SpaceRow({ form, name, min, max }: SpaceRowProps) {
   const { t } = useTranslation();
   const label = t(`propertyWizard.base.spaces.${name}.label`);
@@ -44,7 +55,7 @@ function SpaceRow({ form, name, min, max }: SpaceRowProps) {
       control={form.control}
       name={name}
       render={({ field }) => (
-        <div className="flex min-w-0 items-center justify-between gap-4">
+        <div className={SPACE_ITEM}>
           <div className="min-w-0">
             <div className="font-medium">{label}</div>
             <div className="text-sm text-foreground/70">{t(`propertyWizard.base.spaces.${name}.hint`)}</div>
@@ -68,7 +79,7 @@ function DerivedRow({ name, value }: { name: 'bedrooms' | 'beds'; value: number 
   const { t } = useTranslation();
 
   return (
-    <div className="flex min-w-0 items-center justify-between gap-4" data-testid={`property-wizard-${name}-derived`}>
+    <div className={SPACE_ITEM} data-testid={`property-wizard-${name}-derived`}>
       <div className="min-w-0">
         <div className="font-medium">{t(`propertyWizard.base.spaces.${name}.label`)}</div>
         <div className="text-sm text-foreground/70">{t('propertyWizard.base.spaces.fromRooms')}</div>
@@ -165,13 +176,17 @@ export function BaseStep({ form, storedRoomCount = 0 }: BaseStepProps) {
         <h3 id="property-wizard-spaces" className="text-base font-semibold">
           {t('propertyWizard.base.spaces.title')}
         </h3>
-        {SPACES.map((space) =>
-          hasRooms && (space.name === 'bedrooms' || space.name === 'beds') ? (
-            <DerivedRow key={space.name} name={space.name} value={watch(space.name)} />
-          ) : (
-            <SpaceRow key={space.name} form={form} {...space} />
-          ),
-        )}
+        <div className="@container min-w-0">
+          <div className={SPACE_GRID} data-testid="property-wizard-spaces-grid">
+            {SPACES.map((space) =>
+              hasRooms && (space.name === 'bedrooms' || space.name === 'beds') ? (
+                <DerivedRow key={space.name} name={space.name} value={watch(space.name)} />
+              ) : (
+                <SpaceRow key={space.name} form={form} {...space} />
+              ),
+            )}
+          </div>
+        </div>
         <Field label={t('propertyWizard.base.areaSqm.label')} optional hint={t('propertyWizard.base.areaSqm.hint')} error={errors.areaSqm} className="max-w-xs">
           <Input inputMode="numeric" autoComplete="off" maxLength={4} {...register('areaSqm')} />
         </Field>

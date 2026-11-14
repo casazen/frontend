@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { ArrowRight, Loader2, Upload } from 'lucide-react';
+import { FIELD_COLUMNS } from '@/components/layout/page-columns';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,6 +12,7 @@ import { ServiceCategoryPicker } from '@/features/service-requests/components/se
 import { SupplierComuniField, type SupplierComuniValue } from '@/features/supplier/components/supplier-comuni-field';
 import { getProblemMessage } from '@/lib/api-errors';
 import { keepKnownCategories } from '@/lib/service-categories';
+import { cn } from '@/lib/utils';
 import { useComuneDatasetStatus } from '@/queries/use-comuni';
 import { useServiceCategories } from '@/queries/use-service-categories';
 import { useUpdateSupplierProfile, useUploadSupplierPhotos } from '@/queries/supplier/use-profile';
@@ -25,9 +27,13 @@ interface StepProps {
   onSaved: () => void;
 }
 
+/**
+ * The button of a step: as wide as the form while the fields are under each other, its own width once they are two to a row (the forms
+ * of the steps are containers, `FIELD_COLUMNS`), so that it does not run across the whole page.
+ */
 function NextButton({ saving, label }: { saving: boolean; label: string }) {
   return (
-    <Button type="submit" disabled={saving} className="w-full">
+    <Button type="submit" disabled={saving} className="w-full @4xl:w-auto">
       {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
       {label} {!saving && <ArrowRight className="ml-2 h-4 w-4" />}
     </Button>
@@ -57,12 +63,12 @@ export function IdentityStep({ profile, onSaved }: StepProps) {
   };
 
   return (
-    <form onSubmit={(event) => void handleSubmit(event)} className="space-y-6">
+    <form onSubmit={(event) => void handleSubmit(event)} className="@container space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>{t('supplier.activation.identity.title')}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className={cn(FIELD_COLUMNS, 'gap-y-4')}>
           <div>
             <Label htmlFor="legal-name">{t('supplier.activation.identity.legalName')}</Label>
             <Input
@@ -135,12 +141,12 @@ export function ServicesStep({ profile, onSaved }: StepProps) {
 
   const saving = updateProfile.isPending;
   return (
-    <form onSubmit={(event) => void handleSubmit(event)} className="space-y-6">
+    <form onSubmit={(event) => void handleSubmit(event)} className="@container space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>{t('supplier.activation.services.title')}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className={cn(FIELD_COLUMNS, 'gap-y-4')}>
           <div>
             <Label>{t('supplier.serviceCategories')}</Label>
             <p className="mb-2 text-xs text-muted-foreground">{t('supplier.categoriesHint')}</p>
@@ -247,12 +253,12 @@ export function PresentationStep({ profile, onSaved }: StepProps) {
   };
 
   return (
-    <form onSubmit={(event) => void handleSubmit(event)} className="space-y-6">
+    <form onSubmit={(event) => void handleSubmit(event)} className="@container space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>{t('supplier.activation.profile.title')}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className={cn(FIELD_COLUMNS, 'gap-y-6')}>
           <div className="space-y-2">
             <Label htmlFor="bio">{t('supplier.activation.profile.label')}</Label>
             <Textarea

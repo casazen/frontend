@@ -212,12 +212,11 @@ export function BookingDetailPage() {
         <Tabs label={t('booking.detailPage.tabsLabel')} items={tabs} defaultValue="details" value={activeTab} selectTestId="booking-tabs-select">
           {activeTab === 'details' && <BookingStayTab booking={booking} />}
 
+          {/* The conversation and the history are as wide as the page, as the inbox is: no narrow column with the tab empty beside it. */}
           {activeTab === 'messages' && (
-            <div className="max-w-xl">
-              <PlainSection title={t('booking.messages.title')}>
-                <BookingMessagesSection booking={booking} />
-              </PlainSection>
-            </div>
+            <PlainSection title={t('booking.messages.title')}>
+              <BookingMessagesSection booking={booking} />
+            </PlainSection>
           )}
 
           {activeTab === 'guest' && (
@@ -236,11 +235,7 @@ export function BookingDetailPage() {
 
           {activeTab === 'payment' && <BookingPaymentTab booking={booking} />}
 
-          {activeTab === 'history' && (
-            <div className="max-w-xl">
-              <BookingTimelineSection bookingId={booking.id} currency={booking.currency} />
-            </div>
-          )}
+          {activeTab === 'history' && <BookingTimelineSection bookingId={booking.id} currency={booking.currency} />}
         </Tabs>
       </div>
 

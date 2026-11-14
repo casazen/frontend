@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { PAGE_COLUMNS } from '@/components/layout/page-columns';
 import { PageHeader } from '@/components/layout/page-header';
 import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
 interface GuideSection {
   title: string;
@@ -20,12 +22,14 @@ export function ProductGuidePage() {
   );
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6">
+    // As wide as the page, from the left edge of its title: the chapters two by two from `xl` (one under the other on a narrower screen).
+    <div className="w-full min-w-0 space-y-6">
       <PageHeader title={t('productGuide.title')} description={t('productGuide.description')} />
       <p className="rounded-lg border bg-muted/40 p-4 text-sm text-muted-foreground">
         {t('productGuide.availability')}
       </p>
-      <div className="space-y-2">
+      {/* A search box is a few words long: it does not run across the page. */}
+      <div className="max-w-xl space-y-2">
         <label htmlFor="guide-search" className="text-sm font-medium">{t('productGuide.search')}</label>
         <Input id="guide-search" type="search" value={query} onChange={(event) => setQuery(event.target.value)} />
       </div>
@@ -37,14 +41,16 @@ export function ProductGuidePage() {
         ))}
       </nav>
       {matches.length === 0 ? <p role="status">{t('productGuide.empty')}</p> : null}
-      {matches.map(([id, section]) => (
-        <section key={id} id={`guide-${id}`} aria-labelledby={`guide-${id}-title`} className="space-y-4 rounded-xl border bg-card p-5 md:p-6">
-          <h2 id={`guide-${id}-title`} className="text-xl font-semibold">{section.title}</h2>
-          <ol className="list-decimal space-y-3 pl-5 leading-relaxed">
-            {section.steps.map((step) => <li key={step}>{step}</li>)}
-          </ol>
-        </section>
-      ))}
+      <div className={cn(PAGE_COLUMNS, 'empty:hidden')}>
+        {matches.map(([id, section]) => (
+          <section key={id} id={`guide-${id}`} aria-labelledby={`guide-${id}-title`} className="min-w-0 space-y-4 rounded-xl border bg-card p-5 md:p-6">
+            <h2 id={`guide-${id}-title`} className="text-xl font-semibold">{section.title}</h2>
+            <ol className="list-decimal space-y-3 pl-5 leading-relaxed">
+              {section.steps.map((step) => <li key={step}>{step}</li>)}
+            </ol>
+          </section>
+        ))}
+      </div>
     </div>
   );
 }

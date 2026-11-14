@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Info, ShieldAlert } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
-import { FOCUS_COLUMN } from '@/components/layout/page-columns';
+import { FIELD_COLUMNS, FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
@@ -257,169 +257,181 @@ export function OrganizationSettings({ showSiteAppearanceLink = false }: { showS
   };
 
   return (
-    <>
-    <form onSubmit={handleSave} noValidate className="min-w-0 space-y-5" data-testid="org-settings-form">
-      {org?.planTier ? (
-        <div className="flex items-center gap-2" data-testid="org-tier-badge">
-          <span className="text-sm text-foreground/70">{t('org.tier.badge')}:</span>
-          <Badge variant="secondary">{org.planTier}</Badge>
-        </div>
-      ) : null}
-      <Field label={t('orgSettings.nameLabel')} error={fieldErrors.name}>
-        <Input
-          id={ORG_NAME_FIELD_ID}
-          data-testid="org-name-input"
-          value={form.name}
-          maxLength={200}
-          autoComplete="organization"
-          onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
-        />
-      </Field>
-
-      <div className="space-y-1.5">
-        <Field id="org-slug" label={t('orgSettings.slugLabel')} hint={t('orgSettings.slugHelp')} error={fieldErrors.slug}>
-          {(control) => (
-            <div className="flex items-center gap-1">
-              <span className="shrink-0 text-sm text-foreground/70" aria-hidden="true">
-                {PUBLIC_PATH_PREFIX}
-              </span>
+    // The columns follow the width of this block, not the one of the screen: the form is also half of the account settings page.
+    <div className="@container min-w-0">
+      <form onSubmit={handleSave} noValidate className="min-w-0 space-y-5" data-testid="org-settings-form">
+        {org?.planTier ? (
+          <div className="flex items-center gap-2" data-testid="org-tier-badge">
+            <span className="text-sm text-foreground/70">{t('org.tier.badge')}:</span>
+            <Badge variant="secondary">{org.planTier}</Badge>
+          </div>
+        ) : null}
+        <div className={FIELD_COLUMNS}>
+          {/* How the org is known and reached: the name and address of its site, the email and the phone. */}
+          <div className="min-w-0 space-y-5">
+            <Field label={t('orgSettings.nameLabel')} error={fieldErrors.name}>
               <Input
-                {...control}
-                data-testid="org-slug-input"
-                value={form.slug}
-                maxLength={100}
-                autoComplete="off"
-                autoCapitalize="none"
-                spellCheck={false}
-                aria-invalid={control['aria-invalid'] ?? (slugUnavailable ? true : undefined)}
-                className="min-w-0 flex-1"
-                onChange={(event) => setForm((current) => ({ ...current, slug: event.target.value }))}
+                id={ORG_NAME_FIELD_ID}
+                data-testid="org-name-input"
+                value={form.name}
+                maxLength={200}
+                autoComplete="organization"
+                onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
+              />
+            </Field>
+
+            <div className="space-y-1.5">
+              <Field id="org-slug" label={t('orgSettings.slugLabel')} hint={t('orgSettings.slugHelp')} error={fieldErrors.slug}>
+                {(control) => (
+                  <div className="flex items-center gap-1">
+                    <span className="shrink-0 text-sm text-foreground/70" aria-hidden="true">
+                      {PUBLIC_PATH_PREFIX}
+                    </span>
+                    <Input
+                      {...control}
+                      data-testid="org-slug-input"
+                      value={form.slug}
+                      maxLength={100}
+                      autoComplete="off"
+                      autoCapitalize="none"
+                      spellCheck={false}
+                      aria-invalid={control['aria-invalid'] ?? (slugUnavailable ? true : undefined)}
+                      className="min-w-0 flex-1"
+                      onChange={(event) => setForm((current) => ({ ...current, slug: event.target.value }))}
+                    />
+                  </div>
+                )}
+              </Field>
+              {fieldErrors.slug ? null : (
+                <SlugStatus slugChanged={slugChanged} typedSlug={typedSlug} debouncedSlug={debouncedSlug} availability={availabilityQuery} />
+              )}
+              {slugChanged && typedSlug ? (
+                <p className="flex items-start gap-2 text-sm text-foreground/70" data-testid="org-slug-change-notice">
+                  <Info className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                  <span className="min-w-0 break-words">{t('orgSettings.slugChangeNotice', { previous: `${PUBLIC_PATH_PREFIX}${savedSlug}` })}</span>
+                </p>
+              ) : null}
+            </div>
+
+            <Field label={t('orgSettings.contactEmailLabel')} hint={t('orgSettings.contactEmailHelp')} error={fieldErrors.contactEmail}>
+              <Input
+                id="org-contact-email"
+                data-testid="org-contact-email-input"
+                type="email"
+                autoComplete="email"
+                value={form.contactEmail}
+                maxLength={255}
+                onChange={(event) => setForm((current) => ({ ...current, contactEmail: event.target.value }))}
+              />
+            </Field>
+
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0 space-y-1">
+                <Label htmlFor="org-contact-email-public">{t('orgSettings.contactEmailPublicLabel')}</Label>
+                <p id="org-contact-email-public-help" className="break-words text-sm text-foreground/70">
+                  {t('orgSettings.contactEmailPublicHelp')}
+                </p>
+              </div>
+              <Switch
+                id="org-contact-email-public"
+                aria-describedby="org-contact-email-public-help"
+                data-testid="org-contact-email-public-switch"
+                checked={form.contactEmailPublic}
+                onCheckedChange={(checked) => setForm((current) => ({ ...current, contactEmailPublic: checked }))}
               />
             </div>
-          )}
-        </Field>
-        {fieldErrors.slug ? null : (
-          <SlugStatus slugChanged={slugChanged} typedSlug={typedSlug} debouncedSlug={debouncedSlug} availability={availabilityQuery} />
-        )}
-        {slugChanged && typedSlug ? (
-          <p className="flex items-start gap-2 text-sm text-foreground/70" data-testid="org-slug-change-notice">
-            <Info className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-            <span className="min-w-0 break-words">{t('orgSettings.slugChangeNotice', { previous: `${PUBLIC_PATH_PREFIX}${savedSlug}` })}</span>
+
+            {/* The phone of the account (AM-08b-b): to be reached by CasaZen and the team; unlike the email it has no switch because it is never published. */}
+            <Field label={t('orgSettings.contactPhoneLabel')} hint={t('orgSettings.contactPhoneHelp')}>
+              <Input
+                id="org-contact-phone"
+                data-testid="org-contact-phone-input"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                value={form.contactPhone}
+                maxLength={CONTACT_PHONE_MAX_LENGTH}
+                onChange={(event) => setForm((current) => ({ ...current, contactPhone: event.target.value }))}
+              />
+            </Field>
+          </div>
+
+          {/* Who runs it by law, and the language and currency of the account. */}
+          <div className="min-w-0 space-y-5">
+            {/* Who runs the site (DB-03b-a): shown in the footer of the booking site with the VAT number of the fiscal profile. */}
+            <div className="space-y-4" data-testid="org-operator-section">
+              <p id="org-operator-help" className="break-words text-sm text-foreground/70" data-testid="org-operator-help">
+                {t('orgSettings.operatorHelp')}
+              </p>
+              <Field label={t('orgSettings.legalNameLabel')}>
+                <Input
+                  id="org-legal-name"
+                  data-testid="org-legal-name-input"
+                  aria-describedby="org-operator-help"
+                  value={form.legalName}
+                  maxLength={LEGAL_NAME_MAX_LENGTH}
+                  autoComplete="organization"
+                  onChange={(event) => setForm((current) => ({ ...current, legalName: event.target.value }))}
+                />
+              </Field>
+              <Field label={t('orgSettings.registeredOfficeLabel')} example={t('orgSettings.registeredOfficeExample')}>
+                <Input
+                  id="org-registered-office"
+                  data-testid="org-registered-office-input"
+                  aria-describedby="org-operator-help"
+                  value={form.registeredOffice}
+                  maxLength={REGISTERED_OFFICE_MAX_LENGTH}
+                  autoComplete="street-address"
+                  onChange={(event) => setForm((current) => ({ ...current, registeredOffice: event.target.value }))}
+                />
+              </Field>
+            </div>
+
+            {/* Language and currency (AM-08b-b): the language is the account's choice; the currency and the time zone are the product's, shown and not asked. */}
+            <div className="space-y-3" data-testid="org-language-section">
+              <div className="space-y-1.5">
+                <p className="text-sm font-medium leading-snug">{t('orgSettings.languageLabel')}</p>
+                <Segmented<OrgLanguage>
+                  label={t('orgSettings.languageLabel')}
+                  value={form.defaultLanguage}
+                  onValueChange={(language) => setForm((current) => ({ ...current, defaultLanguage: language }))}
+                  options={[
+                    { value: 'it', label: t('orgSettings.languageIt'), testId: 'org-language-it' },
+                    { value: 'en', label: t('orgSettings.languageEn'), testId: 'org-language-en' },
+                  ]}
+                />
+                <p className="break-words text-sm text-foreground/70">{t('orgSettings.languageHelp')}</p>
+              </div>
+              <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1 text-sm" data-testid="org-regional-info">
+                <dt className="text-foreground/70">{t('orgSettings.currencyLabel')}</dt>
+                <dd>{t('orgSettings.currencyValue')}</dd>
+                <dt className="text-foreground/70">{t('orgSettings.timezoneLabel')}</dt>
+                <dd>{t('orgSettings.timezoneValue')}</dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <Button type="submit" loading={updateSettings.isPending} disabled={slugUnavailable} className="w-full sm:w-auto" data-testid="save-org-settings">
+            {t('orgSettings.save')}
+          </Button>
+        </div>
+
+        {/* The public site's branding has its own page in the short-rent shell (BK-12). */}
+        {showSiteAppearanceLink ? (
+          <p className="text-sm text-foreground/70" data-testid="org-settings-site-appearance-hint">
+            {t('orgSettings.siteAppearanceHint')}{' '}
+            <Link to={SITE_APPEARANCE_PATH} className="underline">
+              {t('orgSettings.siteAppearanceLink')}
+            </Link>
           </p>
         ) : null}
+      </form>
+      {/* In the first column, under the fields it is read with: a switch at the far end of a wide row would be far from its name. */}
+      <div className={FIELD_COLUMNS}>
+        <ServiceRequestBackupsSetting />
       </div>
-
-      <Field label={t('orgSettings.contactEmailLabel')} hint={t('orgSettings.contactEmailHelp')} error={fieldErrors.contactEmail}>
-        <Input
-          id="org-contact-email"
-          data-testid="org-contact-email-input"
-          type="email"
-          autoComplete="email"
-          value={form.contactEmail}
-          maxLength={255}
-          onChange={(event) => setForm((current) => ({ ...current, contactEmail: event.target.value }))}
-        />
-      </Field>
-
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0 space-y-1">
-          <Label htmlFor="org-contact-email-public">{t('orgSettings.contactEmailPublicLabel')}</Label>
-          <p id="org-contact-email-public-help" className="break-words text-sm text-foreground/70">
-            {t('orgSettings.contactEmailPublicHelp')}
-          </p>
-        </div>
-        <Switch
-          id="org-contact-email-public"
-          aria-describedby="org-contact-email-public-help"
-          data-testid="org-contact-email-public-switch"
-          checked={form.contactEmailPublic}
-          onCheckedChange={(checked) => setForm((current) => ({ ...current, contactEmailPublic: checked }))}
-        />
-      </div>
-
-      {/* The phone of the account (AM-08b-b): to be reached by CasaZen and the team; unlike the email it has no switch because it is never published. */}
-      <Field label={t('orgSettings.contactPhoneLabel')} hint={t('orgSettings.contactPhoneHelp')}>
-        <Input
-          id="org-contact-phone"
-          data-testid="org-contact-phone-input"
-          type="tel"
-          inputMode="tel"
-          autoComplete="tel"
-          value={form.contactPhone}
-          maxLength={CONTACT_PHONE_MAX_LENGTH}
-          onChange={(event) => setForm((current) => ({ ...current, contactPhone: event.target.value }))}
-        />
-      </Field>
-
-      {/* Who runs the site (DB-03b-a): shown in the footer of the booking site with the VAT number of the fiscal profile. */}
-      <div className="space-y-4" data-testid="org-operator-section">
-        <p id="org-operator-help" className="break-words text-sm text-foreground/70" data-testid="org-operator-help">
-          {t('orgSettings.operatorHelp')}
-        </p>
-        <Field label={t('orgSettings.legalNameLabel')}>
-          <Input
-            id="org-legal-name"
-            data-testid="org-legal-name-input"
-            aria-describedby="org-operator-help"
-            value={form.legalName}
-            maxLength={LEGAL_NAME_MAX_LENGTH}
-            autoComplete="organization"
-            onChange={(event) => setForm((current) => ({ ...current, legalName: event.target.value }))}
-          />
-        </Field>
-        <Field label={t('orgSettings.registeredOfficeLabel')} example={t('orgSettings.registeredOfficeExample')}>
-          <Input
-            id="org-registered-office"
-            data-testid="org-registered-office-input"
-            aria-describedby="org-operator-help"
-            value={form.registeredOffice}
-            maxLength={REGISTERED_OFFICE_MAX_LENGTH}
-            autoComplete="street-address"
-            onChange={(event) => setForm((current) => ({ ...current, registeredOffice: event.target.value }))}
-          />
-        </Field>
-      </div>
-
-      {/* Language and currency (AM-08b-b): the language is the account's choice; the currency and the time zone are the product's, shown and not asked. */}
-      <div className="space-y-3" data-testid="org-language-section">
-        <div className="space-y-1.5">
-          <p className="text-sm font-medium leading-snug">{t('orgSettings.languageLabel')}</p>
-          <Segmented<OrgLanguage>
-            label={t('orgSettings.languageLabel')}
-            value={form.defaultLanguage}
-            onValueChange={(language) => setForm((current) => ({ ...current, defaultLanguage: language }))}
-            options={[
-              { value: 'it', label: t('orgSettings.languageIt'), testId: 'org-language-it' },
-              { value: 'en', label: t('orgSettings.languageEn'), testId: 'org-language-en' },
-            ]}
-          />
-          <p className="break-words text-sm text-foreground/70">{t('orgSettings.languageHelp')}</p>
-        </div>
-        <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1 text-sm" data-testid="org-regional-info">
-          <dt className="text-foreground/70">{t('orgSettings.currencyLabel')}</dt>
-          <dd>{t('orgSettings.currencyValue')}</dd>
-          <dt className="text-foreground/70">{t('orgSettings.timezoneLabel')}</dt>
-          <dd>{t('orgSettings.timezoneValue')}</dd>
-        </dl>
-      </div>
-
-      <div>
-        <Button type="submit" loading={updateSettings.isPending} disabled={slugUnavailable} className="w-full sm:w-auto" data-testid="save-org-settings">
-          {t('orgSettings.save')}
-        </Button>
-      </div>
-
-      {/* The public site's branding has its own page in the short-rent shell (BK-12). */}
-      {showSiteAppearanceLink ? (
-        <p className="text-sm text-foreground/70" data-testid="org-settings-site-appearance-hint">
-          {t('orgSettings.siteAppearanceHint')}{' '}
-          <Link to={SITE_APPEARANCE_PATH} className="underline">
-            {t('orgSettings.siteAppearanceLink')}
-          </Link>
-        </p>
-      ) : null}
-    </form>
-    <ServiceRequestBackupsSetting />
-    </>
+    </div>
   );
 }

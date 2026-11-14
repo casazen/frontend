@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
+import { FIELD_COLUMNS } from '@/components/layout/page-columns';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
@@ -10,7 +11,7 @@ import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { getProblemMessage } from '@/lib/api-errors';
 import { todayInRome } from '@/lib/stay-dates';
-import { formatCurrency } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 import { useCreatePayment } from '@/queries/use-payments';
 import { newIdempotencyKey, RECORDABLE_METHODS } from '../lib/record-payment';
 import { paymentFormSchema, type PaymentFormValues } from '../schemas/payment.schema';
@@ -88,52 +89,60 @@ export function RecordPaymentForm({ options, fixedBookingId, initialBookingId, o
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
-      {fixedBookingId ? (
-        <input type="hidden" {...register('bookingId')} />
-      ) : (
-        <Field id="bookingId" label={t('payment.create.booking')} error={errors.bookingId}>
-          <Select {...register('bookingId', { onChange: (event) => offerTheBalance(event.target.value) })}>
-            <option value="">{t('payment.create.selectBooking')}</option>
-            {options.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.label}
-              </option>
-            ))}
-          </Select>
-        </Field>
-      )}
+    // The columns follow the width of the form: two on the page of its own, one in the dialog of a booking.
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="@container space-y-4">
+      <div className={cn(FIELD_COLUMNS, 'gap-y-4')}>
+        {/* What was received, and beside it how and with which note. */}
+        <div className="min-w-0 space-y-4">
+          {fixedBookingId ? (
+            <input type="hidden" {...register('bookingId')} />
+          ) : (
+            <Field id="bookingId" label={t('payment.create.booking')} error={errors.bookingId}>
+              <Select {...register('bookingId', { onChange: (event) => offerTheBalance(event.target.value) })}>
+                <option value="">{t('payment.create.selectBooking')}</option>
+                {options.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.label}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          )}
 
-      {balance !== null ? (
-        <p className="text-sm text-foreground/70" data-testid="record-payment-balance">
-          {t('payment.create.balance', { amount: formatCurrency(balance) })}
-        </p>
-      ) : null}
+          {balance !== null ? (
+            <p className="text-sm text-foreground/70" data-testid="record-payment-balance">
+              {t('payment.create.balance', { amount: formatCurrency(balance) })}
+            </p>
+          ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field id="amount" label={t('payment.create.amount')} error={errors.amount}>
-          <Input type="number" step="0.01" inputMode="decimal" {...register('amount', { valueAsNumber: true })} placeholder={t('payment.create.amountPlaceholder')} />
-        </Field>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field id="amount" label={t('payment.create.amount')} error={errors.amount}>
+              <Input type="number" step="0.01" inputMode="decimal" {...register('amount', { valueAsNumber: true })} placeholder={t('payment.create.amountPlaceholder')} />
+            </Field>
 
-        <Field id="receivedOn" label={t('payment.create.receivedOn')} error={errors.receivedOn}>
-          <Input type="date" max={today} {...register('receivedOn')} />
-        </Field>
+            <Field id="receivedOn" label={t('payment.create.receivedOn')} error={errors.receivedOn}>
+              <Input type="date" max={today} {...register('receivedOn')} />
+            </Field>
+          </div>
+        </div>
+
+        <div className="min-w-0 space-y-4">
+          <Field id="method" label={t('payment.create.paymentMethod')} error={errors.method}>
+            <Select {...register('method')}>
+              <option value="">{t('payment.create.selectMethod')}</option>
+              {RECORDABLE_METHODS.map((value) => (
+                <option key={value} value={value}>
+                  {t(`payment.create.methods.${value}`)}
+                </option>
+              ))}
+            </Select>
+          </Field>
+
+          <Field id="description" label={t('payment.create.note')} optional>
+            <Textarea {...register('description')} placeholder={t('payment.create.descriptionPlaceholder')} rows={3} maxLength={1000} />
+          </Field>
+        </div>
       </div>
-
-      <Field id="method" label={t('payment.create.paymentMethod')} error={errors.method}>
-        <Select {...register('method')}>
-          <option value="">{t('payment.create.selectMethod')}</option>
-          {RECORDABLE_METHODS.map((value) => (
-            <option key={value} value={value}>
-              {t(`payment.create.methods.${value}`)}
-            </option>
-          ))}
-        </Select>
-      </Field>
-
-      <Field id="description" label={t('payment.create.note')} optional>
-        <Textarea {...register('description')} placeholder={t('payment.create.descriptionPlaceholder')} rows={3} maxLength={1000} />
-      </Field>
 
       {createPayment.isError ? (
         <Alert variant="danger" data-testid="record-payment-error">

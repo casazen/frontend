@@ -75,7 +75,8 @@ export function PricesStep({ form, propertyId }: PricesStepProps) {
         control={form.control}
         name="minNights"
         render={({ field }) => (
-          <div className="flex min-w-0 items-center justify-between gap-4">
+          // As wide as the fields above it and no wider: on a wide screen the buttons stay beside the name they count, not at the far end of the step.
+          <div className="flex min-w-0 max-w-xl items-center justify-between gap-4">
             <div className="min-w-0">
               <div className="font-medium">{t('propertyWizard.prices.minNights.label')}</div>
               <div className="text-sm text-foreground/70">{t('propertyWizard.prices.minNights.hint')}</div>
