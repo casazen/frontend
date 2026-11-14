@@ -9,6 +9,7 @@ import type {
   OwnerFiscalProfile,
   OwnerFiscalReadiness,
   OwnerLedgerEntry,
+  OwnerLedgerEntryType,
   OwnerMandate,
   OwnerPayout,
   OwnerPayoutCommand,
@@ -952,4 +953,70 @@ export interface OwnerProfileFacts {
 export function profileFactsOf(profiles: readonly OwnerFiscalProfile[], day: string): OwnerProfileFacts | null {
   const profile = profiles.find((candidate) => candidate.validFrom <= day && (candidate.validTo === null || candidate.validTo >= day)) ?? profiles[0];
   return profile ? { entityKind: profile.entityKind, settlementCurrency: profile.settlementCurrency } : null;
+}
+
+// ── The statement as the owner reads it (E13/F02/US01/T02) ─────────────────────────────────────────────────────
+
+/**
+ * The parts of a statement, in the order of its PDF and its CSV: the stays (the gross without the tourist tax), what the channels kept, the withholding, the commission of the property
+ * manager (the VAT its invoice adds is counted with it), the recharges and expenses, the manual corrections, and the payments between the agency and the owner. `other` is a line of a
+ * type this client does not know (the server may be newer): it is counted in the total, never dropped.
+ */
+export type StatementSection = 'stays' | 'channelFees' | 'withholding' | 'commission' | 'recharges' | 'corrections' | 'payments' | 'other';
+
+/** The part of the statement each type of ledger line is in: the same table as the server's (`OwnerStatementLayout.SectionOf`). Every type has one, so a new type fails to compile here. */
+const SECTION_OF: Record<OwnerLedgerEntryType, StatementSection> = {
+  BookingRevenue: 'stays',
+  ChannelFee: 'channelFees',
+  Withholding: 'withholding',
+  AgencyCommission: 'commission',
+  AgencyVat: 'commission',
+  OwnerCharge: 'recharges',
+  OwnerExpense: 'recharges',
+  Correction: 'corrections',
+  OwnerPayment: 'payments',
+  AgencyPayment: 'payments',
+};
+
+export interface StatementGroup {
+  section: StatementSection;
+  /** The signed total of its lines in the currency of the statement: positive is owed to the owner. */
+  amount: number;
+  count: number;
+}
+
+export interface StatementGroups {
+  /** The parts that make the total of the period, in the order of the PDF: the withholding, the corrections and the unknown lines only when there are some. */
+  groups: StatementGroup[];
+  /** The total of the period: every part but the payments. */
+  period: number;
+  /** What was paid between the agency and the owner (a payment to the owner is negative). */
+  payments: StatementGroup;
+  opening: number;
+  /** What the agency owes the owner at the end of the month, as the version stored it. */
+  closing: number;
+}
+
+/** The parts in the order of the PDF. The stays, the channels, the commission and the recharges are always there; the others only when a line is in them. */
+const PARTS_IN_ORDER: readonly StatementSection[] = ['stays', 'channelFees', 'withholding', 'commission', 'recharges', 'corrections', 'other'];
+const ALWAYS_SHOWN: ReadonlySet<StatementSection> = new Set(['stays', 'channelFees', 'commission', 'recharges']);
+
+/**
+ * The lines of a version grouped as its PDF groups them. The amounts are the signed amounts of the lines added up in cents (never as floats), the balances the ones the version stores:
+ * nothing here works a commission, a fee or a tax out.
+ */
+export function statementGroupsOf(version: Pick<OwnerStatementVersion, 'openingBalance' | 'closingBalance'>, entries: readonly OwnerLedgerEntry[]): StatementGroups {
+  const cents = new Map<StatementSection, { amount: number; count: number }>();
+  for (const entry of entries) {
+    const section = SECTION_OF[entry.type] ?? 'other';
+    const current = cents.get(section) ?? { amount: 0, count: 0 };
+    cents.set(section, { amount: current.amount + toCents(entry.amount), count: current.count + 1 });
+  }
+  const group = (section: StatementSection): StatementGroup => {
+    const found = cents.get(section);
+    return { section, amount: (found?.amount ?? 0) / 100, count: found?.count ?? 0 };
+  };
+  const groups = PARTS_IN_ORDER.map(group).filter((candidate) => ALWAYS_SHOWN.has(candidate.section) || candidate.count > 0);
+  const period = groups.reduce((sum, candidate) => sum + toCents(candidate.amount), 0) / 100;
+  return { groups, period, payments: group('payments'), opening: version.openingBalance, closing: version.closingBalance };
 }

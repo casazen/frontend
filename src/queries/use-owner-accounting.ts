@@ -12,6 +12,7 @@ import type {
   OwnerPayoutCommand,
   TaxFilingCommand,
 } from '@/types';
+import { saveDownload } from './save-download';
 
 /** Root of the query keys of the owner accounting: a write that changes the ledger invalidates everything under it. */
 export const OWNER_ACCOUNTING_KEY = 'owner-accounting';
@@ -441,6 +442,21 @@ export function useDownloadPublishedFile() {
     mutationFn: async ({ versionId, fileName }: { versionId: string; fileName: string }) => {
       saveBlobAs(await ownerAccountingApi.downloadPublishedFile(versionId), fileName);
     },
+  });
+}
+
+/**
+ * Saves the PDF or the CSV of a version under the name the server gave it, or under `fileName` when the page cannot read the header; the bytes are not kept. The language is the one of the
+ * app (`en` asks for English, anything else is Italian).
+ */
+export function useDownloadVersionFile() {
+  return useMutation({
+    mutationFn: ({ versionId, format, language, fileName }: { versionId: string; format: 'pdf' | 'csv'; language: string; fileName: string }) =>
+      saveDownload(
+        format === 'pdf' ? ownerAccountingApi.downloadVersionPdf(versionId, language) : ownerAccountingApi.downloadVersionCsv(versionId, language),
+        fileName,
+      ),
+    gcTime: 0,
   });
 }
 

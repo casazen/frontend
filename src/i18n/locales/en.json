@@ -16195,6 +16195,7 @@
       "formula": {
         "AgencyCommission": "Agency commission under the mandate, on the owner's revenue. It is taken off the balance.",
         "AgencyPayment": "Payment from the owner to the agency, for instance to cover a negative balance. It is added to the balance.",
+        "AgencyVat": "VAT the invoice of the agency adds to the commission and the recharges. It is taken off the balance.",
         "BookingRevenue": "Payment collected for the booking, net of refunds, for the owner's share. It is added to the balance.",
         "ChannelFee": "Commission kept by the channel on the booking, for the owner's share. It is taken off the balance.",
         "Correction": "Manual correction with its reason: it replaces a line or adds one.",
@@ -16215,8 +16216,10 @@
       "reverses": "Cancels line {{id}}.",
       "source": {
         "Booking": "Booking",
+        "MandateFlatFee": "Flat fee of the mandate",
         "Manual": "Manual correction",
         "OwnerCharge": "Charge or expense",
+        "OwnerInvoice": "Invoice of the agency",
         "OwnerPayout": "Payout to the owner",
         "Payment": "Payment",
         "WireBatch": "Wire transfer"
@@ -16235,6 +16238,7 @@
       "type": {
         "AgencyCommission": "Agency commission",
         "AgencyPayment": "Payment from the owner",
+        "AgencyVat": "VAT on the invoice of the agency",
         "BookingRevenue": "Revenue of a booking",
         "ChannelFee": "Channel fee",
         "Correction": "Correction",
@@ -16416,6 +16420,34 @@
         "description": "The ledger of {{owner}} changed after version {{version}} of {{period}}: a new one is needed.",
         "done": "New version of {{owner}} prepared.",
         "title": "New version after {{version}}"
+      }
+    },
+    "summary": {
+      "caption": "The parts of the statement and the net, in the currency of the statement",
+      "description": "The same parts as the PDF and the CSV the owner receives, in {{currency}}.",
+      "downloadCsv": "CSV",
+      "downloadCsvLabel": "Download the CSV of the statement",
+      "downloadPdf": "PDF",
+      "downloadPdfLabel": "Download the PDF of the statement",
+      "lines_one": "{{count}} line",
+      "lines_other": "{{count}} lines",
+      "net": "Net: closing balance",
+      "opening": "Opening balance",
+      "part": {
+        "channelFees": "Channel commissions",
+        "commission": "Commission of the property manager",
+        "corrections": "Corrections",
+        "other": "Other lines",
+        "recharges": "Recharges and expenses",
+        "stays": "Stays",
+        "withholding": "Withholding"
+      },
+      "payments": "Payments",
+      "period": "Total of the period",
+      "title": "The statement as the owner receives it",
+      "touristTax": {
+        "body": "It is not part of the net. The agency collects it on behalf of the municipality or the tourism office and remits it: the detail of each stay is in the PDF and the CSV.",
+        "title": "Tourist tax"
       }
     },
     "tax": {

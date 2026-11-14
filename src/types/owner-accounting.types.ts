@@ -19,10 +19,12 @@ export type OwnerLedgerEntryType =
   | 'OwnerPayment'
   | 'AgencyPayment'
   | 'Correction'
-  | 'Withholding';
+  | 'Withholding'
+  /** The VAT an owner invoice added on top of the commission and the recharges (E14): the statement counts it with the commission. */
+  | 'AgencyVat';
 
-/** Where a line of the owner ledger comes from. */
-export type OwnerLedgerSourceType = 'Payment' | 'Booking' | 'OwnerCharge' | 'WireBatch' | 'Manual' | 'OwnerPayout';
+/** Where a line of the owner ledger comes from. `MandateFlatFee` is a flat fee of the mandate for a stay, `OwnerInvoice` an owner invoice (or its credit note) of CasaZen. */
+export type OwnerLedgerSourceType = 'Payment' | 'Booking' | 'OwnerCharge' | 'WireBatch' | 'Manual' | 'OwnerPayout' | 'MandateFlatFee' | 'OwnerInvoice';
 
 /** The life of a version of an owner statement. */
 export type OwnerStatementVersionStatus = 'Draft' | 'Flagged' | 'Approved' | 'Published' | 'Superseded';

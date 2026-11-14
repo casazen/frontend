@@ -31,6 +31,7 @@ import { LedgerLineDrawer } from './components/ledger-line-drawer';
 import { OwnerActionDialogs } from './components/owner-action-dialogs';
 import { FinanceAdminRequired, OwnerAccountingError } from './components/owner-accounting-error';
 import { PayoutReconciliationPanel } from './components/payout-reconciliation-panel';
+import { StatementGroups } from './components/statement-groups';
 import { TaxEvidenceView } from './components/tax-evidence';
 import {
   OWNER_CLOSE_PATH,
@@ -259,6 +260,8 @@ function StatementContent({ version, entries }: { version: OwnerStatementVersion
           closing: money(version.closingBalance, version.currency),
         })}
       </p>
+
+      <StatementGroups version={version} entries={entries} />
 
       <PlainSection title={t('ownerAccounting.lines.title')} count={entries.length} data-testid="statement-lines">
         {entries.length === 0 ? (

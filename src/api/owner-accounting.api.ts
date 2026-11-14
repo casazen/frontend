@@ -1,5 +1,6 @@
 import { ApiClient } from './client';
 import { acceptsRefusal } from './accept-refusal';
+import { fileApi, type DownloadedFile } from './file.api';
 import axios from '@/lib/axios';
 import { getHttpStatus } from '@/lib/api-errors';
 import { withJsonErrorBody } from '@/lib/file-download';
@@ -44,6 +45,9 @@ async function orNull<T>(request: Promise<T>): Promise<T | null> {
     throw error;
   }
 }
+
+/** The query of a file in the language of the app: the server writes Italian unless it is asked for English (`lang=en`). */
+const fileLanguage = (language: string): { lang: string } | undefined => (language.startsWith('en') ? { lang: 'en' } : undefined);
 
 /**
  * The owner accounting of an agency (E06/F05/US02). Paths are relative to the API base URL, which already ends in `/api`. Every write is an
@@ -107,6 +111,15 @@ export const ownerAccountingApi = {
       throw await withJsonErrorBody(error);
     }
   },
+
+  /**
+   * The PDF of a version (`agency.statement.view`, the whole organization): the file stored at the publication, exactly as the owner downloads it, or built from the lines of the version
+   * (a draft carries the watermark of a draft). The language is the one of the app; a stored file keeps the language it was published in.
+   */
+  downloadVersionPdf: (versionId: string, language: string): Promise<DownloadedFile> => fileApi.get(`/owner-accounting/versions/${versionId}/pdf`, fileLanguage(language)),
+
+  /** The CSV of a version: the same lines, totals and tourist tax as the PDF. */
+  downloadVersionCsv: (versionId: string, language: string): Promise<DownloadedFile> => fileApi.get(`/owner-accounting/versions/${versionId}/csv`, fileLanguage(language)),
 
   /** Closes the owner's month on its approved version; a difference or a negative balance needs the reason of a waiver. */
   closeMonth: (year: number, month: number, ownerId: string, waiverReason?: string) =>

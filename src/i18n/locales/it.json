@@ -16195,6 +16195,7 @@
       "formula": {
         "AgencyCommission": "Commissione dell'agenzia secondo il mandato, sul ricavo del proprietario. Si toglie dal saldo.",
         "AgencyPayment": "Pagamento del proprietario all'agenzia, per esempio per coprire un saldo negativo. Si somma al saldo.",
+        "AgencyVat": "IVA che la fattura dell'agenzia aggiunge alla provvigione e ai riaddebiti. Si toglie dal saldo.",
         "BookingRevenue": "Incasso della prenotazione, al netto dei rimborsi, per la quota del proprietario. Si somma al saldo.",
         "ChannelFee": "Commissione trattenuta dal canale sulla prenotazione, per la quota del proprietario. Si toglie dal saldo.",
         "Correction": "Rettifica fatta a mano, con il suo motivo: sostituisce una riga o ne aggiunge una.",
@@ -16215,8 +16216,10 @@
       "reverses": "Annulla la riga {{id}}.",
       "source": {
         "Booking": "Prenotazione",
+        "MandateFlatFee": "Forfait del mandato",
         "Manual": "Rettifica manuale",
         "OwnerCharge": "Addebito o spesa",
+        "OwnerInvoice": "Fattura dell'agenzia",
         "OwnerPayout": "Pagamento al proprietario",
         "Payment": "Pagamento",
         "WireBatch": "Bonifico"
@@ -16235,6 +16238,7 @@
       "type": {
         "AgencyCommission": "Commissione dell'agenzia",
         "AgencyPayment": "Pagamento del proprietario",
+        "AgencyVat": "IVA sulla fattura dell'agenzia",
         "BookingRevenue": "Incasso di una prenotazione",
         "ChannelFee": "Commissione del canale",
         "Correction": "Rettifica",
@@ -16416,6 +16420,34 @@
         "description": "Il registro di {{owner}} è cambiato dopo la versione {{version}} di {{period}}: ne serve una nuova.",
         "done": "Nuova versione di {{owner}} preparata.",
         "title": "Nuova versione dopo la {{version}}"
+      }
+    },
+    "summary": {
+      "caption": "Le parti del rendiconto e il netto, nella valuta del rendiconto",
+      "description": "Le stesse parti del PDF e del CSV che riceve il proprietario, in {{currency}}.",
+      "downloadCsv": "CSV",
+      "downloadCsvLabel": "Scarica il CSV del rendiconto",
+      "downloadPdf": "PDF",
+      "downloadPdfLabel": "Scarica il PDF del rendiconto",
+      "lines_one": "{{count}} riga",
+      "lines_other": "{{count}} righe",
+      "net": "Netto: saldo di chiusura",
+      "opening": "Saldo di apertura",
+      "part": {
+        "channelFees": "Commissioni dei canali",
+        "commission": "Provvigione del PM",
+        "corrections": "Rettifiche",
+        "other": "Altre voci",
+        "recharges": "Riaddebiti e spese",
+        "stays": "Soggiorni",
+        "withholding": "Ritenuta"
+      },
+      "payments": "Pagamenti",
+      "period": "Totale del periodo",
+      "title": "Il rendiconto come lo riceve il proprietario",
+      "touristTax": {
+        "body": "Non fa parte del netto. L'agenzia la incassa per conto del comune o dell'ente del turismo e la versa: il dettaglio di ogni soggiorno è nel PDF e nel CSV.",
+        "title": "Imposta di soggiorno"
       }
     },
     "tax": {
