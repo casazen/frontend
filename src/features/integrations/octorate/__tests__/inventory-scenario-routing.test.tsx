@@ -579,6 +579,77 @@ describe('the existing listings: the access to the channels (E02/F01/US03/T02, D
     expect(screen.queryByTestId(`existing-channel-booking_xml-confirm-box`)).not.toBeInTheDocument();
   });
 
+  it('OctorateConnectWizard_ExistingChannelsWithAnEmptyList_SaysTheListIsBeingLoadedAndNeverThatNoPortalHasItsAccess', async () => {
+    // The cache of the channel manager's catalog is filled a moment after the first start of an environment: until then the sales channels come back empty.
+    const full = await getMarketplaceCatalog(undefined, 'it');
+    vi.mocked(getMarketplaceCatalog).mockResolvedValue({ ...full, groups: [{ id: 'salesChannels', unchangedFlow: false, entries: [] }] });
+    writeWizardDraft(WIZARD_DRAFT_ID, SCOPE, { step: 'existing-channels', values: { scenario: 'onOtas', channels: [] } });
+    const { container } = renderWizard(`${OCTORATE_CONNECT_PATH}?step=existing-channels`);
+    await onStep('existing-channels');
+
+    // The step says the list is being loaded and to try again in a few minutes; it shows no card to choose and no request to choose one.
+    const notice = await screen.findByTestId('existing-channels-empty', undefined, WAIT);
+    expect(notice).toHaveTextContent(i18n.t('octorate.connect.existing.channels.empty'));
+    expect(notice).toHaveTextContent(/qualche minuto/);
+    expect(screen.queryAllByRole('checkbox')).toHaveLength(0);
+    expect(screen.queryByTestId('existing-channels-none')).not.toBeInTheDocument();
+    // There is nothing to go on with, so the main button waits: it cannot end in «Nessun portale ha ancora l'accesso».
+    await waitFor(() => expect(screen.getByTestId('octorate-connect-next')).toBeDisabled(), WAIT);
+    expect(screen.queryByText(i18n.t('octorate.connect.existing.errors.accessPending'))).not.toBeInTheDocument();
+    expect(octorateApi.getExistingInventoryBatch).not.toHaveBeenCalled();
+    await expectNoAxeViolations(container);
+
+    // The cache fills: the button reads the list again (and it is not the one of the wizard: pressing it moves nothing), the portals appear, the main button is back.
+    vi.mocked(getMarketplaceCatalog).mockResolvedValue(full);
+    fireEvent.click(screen.getByTestId('existing-channels-empty-retry'));
+    expect(await screen.findByTestId('existing-channel-choice-booking_xml', undefined, WAIT)).toBeInTheDocument();
+    expect(screen.queryByTestId('existing-channels-empty')).not.toBeInTheDocument();
+    expect(screen.getByTestId('octorate-connect-wizard')).toHaveAttribute('data-step', 'existing-channels');
+    expect(screen.getByTestId('existing-channels-none')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId('octorate-connect-next')).toBeEnabled(), WAIT);
+  });
+
+  it('OctorateConnectWizard_ExistingChannelsWithAnEmptyList_ThenInEnglish_SaysItInEnglish', async () => {
+    await i18n.changeLanguage('en');
+    const full = await getMarketplaceCatalog(undefined, 'en');
+    vi.mocked(getMarketplaceCatalog).mockResolvedValue({ ...full, groups: [{ id: 'salesChannels', unchangedFlow: false, entries: [] }] });
+    writeWizardDraft(WIZARD_DRAFT_ID, SCOPE, { step: 'existing-channels', values: { scenario: 'onOtas', channels: [] } });
+    renderWizard(`${OCTORATE_CONNECT_PATH}?step=existing-channels`);
+    await onStep('existing-channels');
+
+    const notice = await screen.findByTestId('existing-channels-empty', undefined, WAIT);
+    expect(notice).toHaveTextContent('The list of portals is still being loaded. Try again in a few minutes');
+    expect(within(notice).getByTestId('existing-channels-empty-retry')).toHaveTextContent('Try again');
+  });
+
+  it('OctorateConnectWizard_ExistingChannelsChosenBeforeAndAnEmptyList_KeepTheirRowsAndTheMainButton', async () => {
+    // Portals chosen in an earlier visit (the draft) are never hidden by a list that came back empty: their rows, and the way on, stay.
+    const full = await getMarketplaceCatalog(undefined, 'it');
+    vi.mocked(getMarketplaceCatalog).mockResolvedValue({ ...full, groups: [{ id: 'salesChannels', unchangedFlow: false, entries: [] }] });
+    writeWizardDraft(WIZARD_DRAFT_ID, SCOPE, { step: 'existing-channels', values: { scenario: 'onOtas', channels: ['booking_xml'], batchId: 'batch-1' } });
+    vi.mocked(octorateApi.getExistingInventoryBatch).mockResolvedValue(batch([channel({ accessState: 'Waiting' })]));
+    renderWizard(`${OCTORATE_CONNECT_PATH}?step=existing-channels`);
+    await onStep('existing-channels');
+
+    expect(await screen.findByTestId('existing-channel-booking_xml', undefined, WAIT)).toBeInTheDocument();
+    expect(screen.queryByTestId('existing-channels-empty')).not.toBeInTheDocument();
+    expect(screen.getByTestId('octorate-connect-next')).toBeEnabled();
+  });
+
+  it('OctorateConnectWizard_ExistingChannelsWithNoPortalChosen_AsksToChooseOneNeverThatNoPortalHasItsAccess', async () => {
+    await toTheOtaChannels();
+    await screen.findByTestId('existing-channel-choice-booking_xml', undefined, WAIT);
+    expect(screen.queryByTestId('existing-channels-empty')).not.toBeInTheDocument();
+
+    next();
+
+    // The portals are there and none was chosen: the answer is to choose one, not that «no portal has its access yet».
+    const problem = await screen.findByTestId('octorate-connect-finish-error', undefined, WAIT);
+    expect(problem).toHaveTextContent(i18n.t('octorate.connect.existing.channels.none'));
+    expect(problem).not.toHaveTextContent(i18n.t('octorate.connect.existing.errors.accessPending'));
+    expect(screen.getByTestId('octorate-connect-wizard')).toHaveAttribute('data-step', 'existing-channels');
+  });
+
   it('OctorateConnectWizard_ExistingChannels_GoOnByThemselvesWhenTheAccessIsSeenAndNeverBefore', async () => {
     const { win } = fakeWindow();
     vi.spyOn(window, 'open').mockImplementation(() => win as unknown as Window);

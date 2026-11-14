@@ -14169,6 +14169,7 @@
           "confirmYes": "Yes, I did",
           "connect": "Connect on Octorate",
           "credentials": "You enter the portal credentials only on Octorate or on the portal itself, never in CasaZen.",
+          "empty": "The list of portals is still being loaded. Try again in a few minutes: once it is ready you can choose where your listings already are.",
           "legend": "The portals where you already have listings",
           "listLabel": "The chosen portals and their connection",
           "loadFailed": "We could not load the list of portals.",

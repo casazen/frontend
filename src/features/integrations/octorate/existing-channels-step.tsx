@@ -266,6 +266,8 @@ interface ExistingChannelsStepProps {
   group?: string;
   /** Goes on to the import: every channel chosen has its access, which CasaZen saw by itself. */
   onAdvance: () => void;
+  /** Tells the wizard whether there is no portal to choose from yet (the list came back empty), so its main button waits for the list instead of failing. */
+  onPortalListEmpty?: (empty: boolean) => void;
 }
 
 /**
@@ -277,7 +279,7 @@ interface ExistingChannelsStepProps {
  * Credentials are given on the panel of the channel manager or the OTA, never here: the only thing written here is the id of a structure on a portal,
  * which is an identifier and not a credential.
  */
-export function ExistingChannelsStep({ group, onAdvance }: ExistingChannelsStepProps) {
+export function ExistingChannelsStep({ group, onAdvance, onPortalListEmpty }: ExistingChannelsStepProps) {
   const { t } = useTranslation();
   const { control, setValue, getValues } = useFormContext<ConnectWizardValues>();
   const selected = useWatch({ control, name: 'channels' }) ?? [];
@@ -335,6 +337,35 @@ export function ExistingChannelsStep({ group, onAdvance }: ExistingChannelsStepP
     sawPending.current = false;
     onAdvance();
   }, [judged, allGiven, onAdvance]);
+
+  // The portals are the sales channels of the marketplace catalog, which CasaZen reads from its own cache of the channel manager's catalog; on a new environment
+  // that cache is filled a moment after the first start, so the list can come back empty. Read and empty (not while it loads, not when the read failed, and
+  // not when portals were chosen before) there is nothing to choose from: the step says the list is being loaded and to try again in a few minutes, and the
+  // main button of the wizard waits, instead of ending in «Nessun portale ha ancora l'accesso».
+  const waitingForList = !catalog.isPending && !catalog.isError && catalog.choices.length === 0 && selected.length === 0;
+  useEffect(() => {
+    onPortalListEmpty?.(waitingForList);
+    return () => onPortalListEmpty?.(false);
+  }, [waitingForList, onPortalListEmpty]);
+
+  if (waitingForList) {
+    return (
+      <div className="flex flex-col gap-4" data-testid="existing-channels-step">
+        <Alert
+          variant="info"
+          data-testid="existing-channels-empty"
+          action={
+            // `type="button"`: inside the form of the wizard a button with no type would submit it and move the host on.
+            <Button type="button" size="sm" variant="outline" loading={catalog.isFetching} onClick={() => void catalog.refetch()} data-testid="existing-channels-empty-retry">
+              {t('shared.errorState.retry')}
+            </Button>
+          }
+        >
+          {t('octorate.connect.existing.channels.empty')}
+        </Alert>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4" data-testid="existing-channels-step">

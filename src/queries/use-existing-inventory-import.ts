@@ -185,5 +185,5 @@ export function useOtaChannelChoices() {
   const catalog = useMarketplaceCatalog(undefined);
   const choices = useMemo(() => otaChannelChoices(catalog.data?.groups.find((group) => group.id === 'salesChannels')?.entries), [catalog.data]);
 
-  return { choices, isPending: catalog.isPending, isError: catalog.isError, error: catalog.error, refetch: catalog.refetch };
+  return { choices, isPending: catalog.isPending, isFetching: catalog.isFetching, isError: catalog.isError, error: catalog.error, refetch: catalog.refetch };
 }

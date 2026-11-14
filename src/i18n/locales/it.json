@@ -14169,6 +14169,7 @@
           "confirmYes": "Sì, ho fatto",
           "connect": "Collega su Octorate",
           "credentials": "Le credenziali del portale le inserisci solo su Octorate o sul portale stesso, mai in CasaZen.",
+          "empty": "L'elenco dei portali si sta ancora caricando. Riprova tra qualche minuto: appena è pronto potrai scegliere dove hai già annunci.",
           "legend": "I portali dove hai già annunci",
           "listLabel": "I portali scelti e il loro collegamento",
           "loadFailed": "Non è stato possibile caricare l'elenco dei portali.",
