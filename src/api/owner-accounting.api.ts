@@ -1,4 +1,6 @@
 import { ApiClient } from './client';
+import { acceptsRefusal } from './accept-refusal';
+import { fileApi, type DownloadedFile } from './file.api';
 import axios from '@/lib/axios';
 import { getHttpStatus } from '@/lib/api-errors';
 import { withJsonErrorBody } from '@/lib/file-download';
@@ -6,6 +8,8 @@ import type {
   OwnerAccountingEvidence,
   OwnerAccountingPolicy,
   OwnerAccountingPolicyCommand,
+  OwnerAddress,
+  OwnerAddressCommand,
   OwnerClosePeriod,
   OwnerCloseReadiness,
   OwnerExternalDocument,
@@ -14,6 +18,8 @@ import type {
   OwnerFiscalReadiness,
   OwnerFxRate,
   OwnerLedgerEntry,
+  OwnerMandate,
+  OwnerMandateCommand,
   OwnerOnboardingReadiness,
   OwnerPayout,
   OwnerPayoutCommand,
@@ -40,6 +46,9 @@ async function orNull<T>(request: Promise<T>): Promise<T | null> {
   }
 }
 
+/** The query of a file in the language of the app: the server writes Italian unless it is asked for English (`lang=en`). */
+const fileLanguage = (language: string): { lang: string } | undefined => (language.startsWith('en') ? { lang: 'en' } : undefined);
+
 /**
  * The owner accounting of an agency (E06/F05/US02). Paths are relative to the API base URL, which already ends in `/api`. Every write is an
  * explicit call: nothing here posts, regenerates or closes by itself.
@@ -50,6 +59,26 @@ export const ownerAccountingApi = {
 
   /** What is missing on each owner and property for the owner accounting; `null` while the activation module is off (404). */
   getOnboardingReadiness: () => orNull(ApiClient.get<OwnerOnboardingReadiness>('/onboarding/owners/readiness')),
+
+  // ── The mandate and the billing address of an owner (E13/F01/US01/T01) ─────────────────────────────────────────────
+
+  /** The versions of the owner's mandate, the newest first (`agency.owner.view`). */
+  listMandates: (ownerId: string) => ApiClient.get<OwnerMandate[]>(`/owners/${ownerId}/mandates`),
+
+  /** A new version from `validFrom`: the one in force ends the day before (`agency.owner.financial.manage`). 422 `owner_mandate_invalid` (with the `field`), 409 `owner_mandate_overlap`. */
+  createMandate: (ownerId: string, command: OwnerMandateCommand) => ApiClient.post<OwnerMandate>(`/owners/${ownerId}/mandates`, command),
+
+  /**
+   * The structured billing address of the owner, in clear (`agency.owner.financial.read`); `null` when the server refuses it to this caller (403): a refused read would send the whole app
+   * to the page of no access, and the page only has to say that the address is not for this person.
+   */
+  getAddress: async (ownerId: string): Promise<OwnerAddress | null> => {
+    const response = await axios.get<OwnerAddress>(`/owners/${ownerId}/address`, { validateStatus: acceptsRefusal });
+    return response.status === 403 ? null : response.data;
+  },
+
+  /** Replaces the address (`agency.owner.financial.manage`). 422 `owner_address_invalid` (with the `field`). */
+  saveAddress: (ownerId: string, command: OwnerAddressCommand) => ApiClient.put<OwnerAddress>(`/owners/${ownerId}/address`, command),
 
   // ── The month ────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -82,6 +111,15 @@ export const ownerAccountingApi = {
       throw await withJsonErrorBody(error);
     }
   },
+
+  /**
+   * The PDF of a version (`agency.statement.view`, the whole organization): the file stored at the publication, exactly as the owner downloads it, or built from the lines of the version
+   * (a draft carries the watermark of a draft). The language is the one of the app; a stored file keeps the language it was published in.
+   */
+  downloadVersionPdf: (versionId: string, language: string): Promise<DownloadedFile> => fileApi.get(`/owner-accounting/versions/${versionId}/pdf`, fileLanguage(language)),
+
+  /** The CSV of a version: the same lines, totals and tourist tax as the PDF. */
+  downloadVersionCsv: (versionId: string, language: string): Promise<DownloadedFile> => fileApi.get(`/owner-accounting/versions/${versionId}/csv`, fileLanguage(language)),
 
   /** Closes the owner's month on its approved version; a difference or a negative balance needs the reason of a waiver. */
   closeMonth: (year: number, month: number, ownerId: string, waiverReason?: string) =>
