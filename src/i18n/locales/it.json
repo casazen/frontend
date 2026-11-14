@@ -1406,6 +1406,7 @@
       "archiveDocumentHasNoFile": "Questo documento non ha un file da scaricare.",
       "archiveDocumentNotFound": "Non troviamo più questo documento, oppure non è tra gli immobili a cui hai accesso. L'elenco è stato aggiornato.",
       "archiveExportTooLarge": "L'archivio sarebbe troppo grande. Scegli un periodo più breve o meno tipi di documento.",
+      "bookingNotActive": "La prenotazione non è attiva (è annullata o l’ospite non si è presentato): non si può emettere un documento.",
       "complianceBookingNotFound": "Non troviamo questo soggiorno.",
       "complianceExportTooLarge": "Nel periodo ci sono più prove di quante ne entrino in un archivio: scegli un periodo più breve.",
       "complianceProofDayInvalid": "Il giorno della prova non è valido: scegli un giorno passato.",
@@ -1413,6 +1414,23 @@
       "complianceProofNotFound": "Non troviamo questa prova: forse non esiste più o non puoi vederla.",
       "complianceProofTooLarge": "Il file è troppo grande: scegline uno più piccolo.",
       "complianceProofTypeUnsupported": "Il file deve essere un PDF, un JPG o un PNG.",
+      "creditAmountExceeds": "L’importo supera quello che resta da stornare di questo documento.",
+      "documentAlreadyIssued": "Questa prenotazione ha già un documento emesso.",
+      "documentAmountsInvalid": "Gli importi del documento non sono validi: aggiorna la bozza e controllali.",
+      "documentBatchPeriodInvalid": "Il periodo non è valido: il primo giorno deve essere prima dell’ultimo.",
+      "documentBatchSelectionRequired": "Scegli almeno una bozza da emettere.",
+      "documentBatchTooLarge": "Hai scelto troppi documenti: se ne emettono al massimo 200 alla volta.",
+      "documentBookingNotDirect": "Questo documento non è collegato a una prenotazione, quindi non si può emettere da qui.",
+      "documentConfirmationRequired": "Serve la tua conferma per emettere il documento: riprova.",
+      "documentDraftOutdated": "La bozza è stata fatta con regole o dati che nel frattempo sono cambiati. Premi «Aggiorna» sulla bozza, controlla gli importi e poi emetti di nuovo.",
+      "documentInvoiceDataMissing": "Mancano i dati di chi riceve il documento: completali nei dati di fatturazione della prenotazione.",
+      "documentIssueFailed": "Il documento non è stato emesso per un nostro problema: è ancora una bozza, riprova tra poco.",
+      "documentIssuerConflict": "Per questa prenotazione ha già emesso un altro soggetto: CasaZen non emette un secondo documento.",
+      "documentNotCreditable": "Si può fare una nota di credito solo di una fattura o di una ricevuta già emessa.",
+      "documentNotDraft": "Il documento non è più una bozza. Aggiorna l’elenco.",
+      "documentReadOnly": "Questo documento è in sola lettura: non lo emette CasaZen.",
+      "documentRuleNotConfigured": "Mancano le regole fiscali di questo documento (aliquote e tipo di documento): completa la configurazione della fatturazione.",
+      "fatturapaXmlInvalid": "Il file della fattura elettronica non è valido: controlla i dati di chi emette e di chi riceve il documento.",
       "reportInvalidPeriod": "Il periodo non è valido: controlla le date.",
       "reportPeriodTooLong": "Il periodo è troppo lungo: scegline uno di al massimo 24 mesi.",
       "archiveInvalidPage": "La pagina richiesta non è valida.",
@@ -1569,6 +1587,7 @@
       "propertyHasUpcomingBookings": "Non puoi eliminare l'immobile: ha prenotazioni future. Annullale o attendi che si concludano.",
       "propertyHasActiveLeases": "Non puoi eliminare l'immobile: ha locazioni attive. Concludile prima di eliminarlo.",
       "propertyResponsibleInvalid": "La persona scelta non può essere responsabile di questo immobile: deve essere un membro attivo che può già accedervi.",
+      "seriesTooLong": "La serie dei numeri è troppo lunga: accorciala nella configurazione della fatturazione.",
       "xlsxTooManyRows": "Troppe righe: un foglio di un file Excel può avere al massimo 10.000 righe. Scegli un periodo più breve e riprova.",
       "planLimitReached": "Hai raggiunto il limite del tuo piano",
       "planRequired": "Questa funzione richiede un piano superiore.",
@@ -7649,6 +7668,168 @@
     }
   },
   "fiscalDocuments": {
+    "batch": {
+      "bar": "Bozze selezionate",
+      "clear": "Deseleziona",
+      "confirm": {
+        "confirm_one": "Emetti il documento",
+        "confirm_other": "Emetti {{count}} documenti",
+        "consequence": "Dopo l’emissione i documenti non si modificano più: per correggerne uno serve una nota di credito.",
+        "description": "Ogni documento riceve il suo numero, in ordine e senza buchi. Se uno non si può emettere, gli altri vengono emessi lo stesso e ti diciamo quale non è stato emesso e perché.",
+        "failed": "Non siamo riusciti a completare l’emissione. Controlla l’elenco per vedere cosa è stato emesso, poi riprova.",
+        "title_one": "Emettere 1 documento?",
+        "title_other": "Emettere {{count}} documenti?"
+      },
+      "issue": "Emetti selezionate",
+      "result": {
+        "all_one": "Il documento è stato emesso.",
+        "all_other": "Tutti i {{count}} documenti sono stati emessi.",
+        "close": "Chiudi",
+        "failures_one": "Non emesso",
+        "failures_other": "Non emessi",
+        "issuedOnly_one": "È stato emesso 1 documento.",
+        "issuedOnly_other": "Sono stati emessi {{count}} documenti.",
+        "none": "Nessun documento è stato emesso.",
+        "reasonUnknown": "Non sappiamo il motivo. Apri il documento e prova a emetterlo da solo.",
+        "remaining_one": "Nella selezione c’è ancora 1 bozza da emettere: ripeti l’emissione.",
+        "remaining_other": "Nella selezione ci sono ancora {{count}} bozze da emettere: ripeti l’emissione.",
+        "some": "Documenti emessi: {{issued}} su {{asked}}. Non emessi: {{failed}}.",
+        "title": "Emissione in blocco",
+        "unknownDocument": "Documento non più nell’elenco"
+      },
+      "selectBox": "Seleziona {{document}}",
+      "selectCapped_one": "Selezionata la prima bozza: ce ne sono altre. Emetti questa e poi ripeti.",
+      "selectCapped_other": "Selezionate le prime {{count}} bozze: ce ne sono altre. Emetti queste e poi ripeti.",
+      "selectCard": "Seleziona questa bozza",
+      "selectDone_one": "Selezionata 1 bozza.",
+      "selectDone_other": "Selezionate {{count}} bozze.",
+      "selected_one": "{{count}} bozza selezionata",
+      "selected_other": "{{count}} bozze selezionate",
+      "selectFailed": "Non siamo riusciti a cercare le bozze. Riprova tra poco.",
+      "selectNone": "Non ci sono bozze da selezionare con questi filtri.",
+      "selectPage": "Seleziona le bozze di questa pagina (le note di credito si spuntano una per una)",
+      "selectPeriod": "Seleziona tutte le bozze del periodo",
+      "tooMany": "Puoi emettere al massimo {{max}} documenti alla volta: deseleziona quelli in più."
+    },
+    "bookingCard": {
+      "createDraft": "Crea bozza",
+      "draftCreated": "Bozza creata. Controllala ed emettila quando sei pronto.",
+      "draftFailed": "Non siamo riusciti a creare la bozza. Riprova tra poco.",
+      "empty": "Per questa prenotazione non c’è ancora nessun documento fiscale.",
+      "emptyWrite": "Per questa prenotazione non c’è ancora nessun documento fiscale. Crea la bozza, controllala ed emettila quando sei pronto.",
+      "issuedOn": "Emesso il {{date}}",
+      "loadError": "Non riusciamo a caricare i documenti fiscali di questa prenotazione.",
+      "loading": "Carico i documenti fiscali…",
+      "notFound": "Non troviamo i documenti di questa prenotazione, oppure non hai accesso.",
+      "open": "Tutti i documenti fiscali",
+      "title": "Documento fiscale"
+    },
+    "credit": {
+      "amount": {
+        "hint": "Scrivi l’importo con i centesimi, per esempio 120,50. Non può superare quello che resta da stornare: lo controlla il sistema.",
+        "label": "Importo da stornare in {{currency}}"
+      },
+      "confirm": "Emetti la nota di credito",
+      "description": "Correggi {{document}}. La nota di credito viene emessa subito, con il suo numero, e il documento originale non cambia.",
+      "done": "Nota di credito emessa.",
+      "errors": {
+        "amountInvalid": "Scrivi un importo maggiore di zero, con al massimo due decimali e senza separatore delle migliaia.",
+        "amountTooHigh": "L’importo supera il totale del documento.",
+        "reasonRequired": "Scrivi il motivo della nota di credito."
+      },
+      "failed": "Non siamo riusciti a emettere la nota di credito. Riprova tra poco.",
+      "reason": {
+        "hint": "Compare sulla nota di credito.",
+        "label": "Motivo"
+      },
+      "scope": {
+        "legend": "Quanto vuoi stornare?",
+        "part": "Solo una parte",
+        "whole": "Tutto quello che resta da stornare (totale del documento: {{amount}})"
+      },
+      "title": "Nota di credito"
+    },
+    "detail": {
+      "description": "Righe, IVA e totali del documento.",
+      "issuer": {
+        "country": "Paese: {{country}}",
+        "inPdf": "I dati di chi ha emesso il documento sono quelli del PDF, com’erano quando è stato emesso.",
+        "title": "Emesso da",
+        "vatNumber": "Partita IVA {{number}}"
+      },
+      "lines": {
+        "amount": "Importo senza IVA",
+        "description": "Descrizione",
+        "none": "Il documento non ha righe.",
+        "quantity": "Quantità",
+        "rate": "IVA",
+        "title": "Righe"
+      },
+      "lineType": {
+        "Accommodation": "Soggiorno",
+        "AdvancedExpense": "Spesa anticipata",
+        "Cleaning": "Pulizie",
+        "Commission": "Provvigione",
+        "ExtraService": "Servizio extra",
+        "Other": "Altro",
+        "Recharge": "Riaddebito",
+        "TouristTax": "Imposta di soggiorno"
+      },
+      "loadError": "Non riusciamo a caricare il documento.",
+      "loading": "Carico il documento…",
+      "payment": {
+        "paid": "Pagato",
+        "paidPortal": "Pagato tramite il portale",
+        "title": "Pagamento",
+        "toCollect": "Da incassare",
+        "unrecognized": "Incasso: {{code}}"
+      },
+      "rate": {
+        "noVat": "Senza IVA",
+        "noVatNature": "Senza IVA ({{code}})"
+      },
+      "recipient": "Intestato a {{name}}",
+      "title": "Dettaglio del documento",
+      "totals": {
+        "stampDuty": "Imposta di bollo",
+        "taxableBase": "Totale senza IVA",
+        "title": "Totali",
+        "total": "Totale",
+        "vat": "IVA"
+      },
+      "vat": {
+        "rate": "Aliquota",
+        "taxable": "Imponibile",
+        "title": "IVA per aliquota",
+        "vat": "IVA"
+      }
+    },
+    "discard": {
+      "confirm": "Scarta la bozza",
+      "description": "{{document}} viene scartata. Non consuma nessun numero e la prenotazione potrà avere una nuova bozza.",
+      "done": "Bozza scartata.",
+      "failed": "Non siamo riusciti a scartare la bozza. Riprova tra poco.",
+      "title": "Scartare la bozza?"
+    },
+    "issue": {
+      "confirm": "Emetti",
+      "consequence": "Dopo l’emissione il documento non si modifica più: per correggerlo serve una nota di credito.",
+      "description": "Controlla i dati: il documento riceve il suo numero e viene emesso da CasaZen.",
+      "document": "Documento",
+      "done": "Documento emesso.",
+      "doneNumbered": "Documento {{number}} emesso.",
+      "failed": "Non siamo riusciti a emettere il documento. Riprova tra poco.",
+      "lastNumber": "Ultimo numero emesso: {{number}}",
+      "number": "Numero",
+      "numberExpected": "{{number}} (previsto)",
+      "numberNote": "Calcolato sui documenti che vedi nell’elenco: il numero definitivo lo assegna CasaZen all’emissione, in ordine e senza buchi.",
+      "numberUnknown": "Lo assegna CasaZen all’emissione, in ordine e senza buchi",
+      "series": "Serie",
+      "seriesOfOriginal": "La stessa del documento che correggi",
+      "seriesUnknown": "La assegna CasaZen all’emissione",
+      "title": "Emettere il documento?",
+      "total": "Totale"
+    },
     "issuer": {
       "address": {
         "city": {
@@ -7912,8 +8093,17 @@
     },
     "list": {
       "actions": {
+        "credit": "Nota di credito",
+        "creditLabel": "Emetti una nota di credito per {{document}}",
+        "discard": "Scarta",
+        "discardLabel": "Scarta la bozza {{document}}",
+        "issue": "Emetti",
+        "issueLabel": "Emetti {{document}}",
+        "openLabel": "Apri il dettaglio di {{document}}",
         "pdf": "PDF",
         "pdfLabel": "Scarica il PDF di {{document}}",
+        "refresh": "Aggiorna",
+        "refreshLabel": "Aggiorna la bozza {{document}}",
         "xml": "XML",
         "xmlLabel": "Scarica l'XML di {{document}}"
       },
@@ -8023,6 +8213,10 @@
         "over": "Non controlliamo più da soli se lo SDI ha risposto. Controlla di nuovo per vedere gli stati aggiornati."
       },
       "xmlUnavailable": "XML non disponibile"
+    },
+    "refresh": {
+      "done": "Bozza aggiornata con i dati attuali della prenotazione.",
+      "failed": "Non siamo riusciti ad aggiornare la bozza. Riprova tra poco."
     }
   },
   "guestCancellation": {
