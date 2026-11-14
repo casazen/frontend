@@ -43,7 +43,8 @@ function scenariosFor(area: AppContextKey): Scenario[] {
  */
 function reachableFromTheMenu(area: AppContextKey, scenario: Scenario): Set<string> {
   const nav = getContextNav(area, scenario.hasPermission, scenario.flags);
-  const inTheMenus = [...nav.sections.flatMap((section) => section.entries), ...nav.more];
+  // The main menu, "Altro" and the settings pinned at the foot of the sidebar.
+  const inTheMenus = [...nav.sections.flatMap((section) => section.entries), ...nav.more, ...nav.footer];
   const children = inTheMenus.flatMap((entry) => getNavChildren(entry.path, scenario.hasPermission, scenario.flags));
   return new Set([...inTheMenus, ...children].map((entry) => entry.path));
 }

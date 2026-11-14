@@ -98,9 +98,10 @@ test.describe('Mobile navigation (UI-04b)', () => {
       await expect(sheet(page).getByTestId('area-header')).toContainText('Affitti brevi');
       await expect(sheet(page).getByRole('link', { name: 'Cruscotto' })).toHaveCount(0);
 
-      // A page of the sheet opens, the sheet goes, the heading of the page has the focus, "Altro" is the marked tab.
-      await sheet(page).getByRole('link', { name: 'Impostazioni' }).click();
-      await expect(page).toHaveURL(/\/app\/short-rent\/settings\/organization$/);
+      // A page of the sheet opens, the sheet goes, the heading of the page has the focus, "Altro" is the marked tab. (The adempimenti: the demo
+      // mocks what their page reads.)
+      await sheet(page).getByRole('link', { name: 'Adempimenti' }).click();
+      await expect(page).toHaveURL(/\/app\/short-rent\/compliance$/);
       await expect(sheet(page)).toBeHidden();
       await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
       await expect(more(page)).toHaveAttribute('aria-current', 'page');
@@ -319,7 +320,8 @@ test.describe('Mobile navigation (UI-04b)', () => {
       await more(page).click();
       await expect(sheet(page).getByRole('link', { name: 'SEO & Contenuti' })).toBeVisible();
       await expect(sheet(page).getByRole('link', { name: 'Conformità' })).toBeVisible();
-      await expect(sheet(page).getByRole('link', { name: 'Profilo' })).toBeVisible();
+      // Profilo is in the account row at the end of the sheet, as in every area: no tile of its own.
+      await expect(sheet(page).getByRole('link', { name: 'Profilo', exact: true })).toHaveCount(0);
     });
 
     test('with reduced motion the sheet appears and goes without sliding', async ({ page }) => {
@@ -423,16 +425,15 @@ test.describe('Mobile navigation (UI-04b)', () => {
       await expect(tooltip(page)).toHaveCount(0);
     });
 
-    test('the settings pinned at the foot are on the rail too, with their names, and open', async ({ page }) => {
+    test('the settings pinned at the foot are on the rail too, with their names and their pages', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
       const foot = page.getByRole('navigation', { name: 'Impostazioni e inviti' });
 
       const settings = foot.getByRole('link', { name: 'Impostazioni', exact: true });
       await settings.focus();
       await expect(tooltip(page)).toHaveText('Impostazioni');
-      await page.keyboard.press('Enter');
-      await expect(page).toHaveURL(/\/app\/short-rent\/settings\/organization$/);
-      await expect(settings).toHaveAttribute('aria-current', 'page');
+      await expect(settings).toHaveAttribute('href', '/app/short-rent/settings/organization');
+      await expect(foot.getByRole('link', { name: 'Consiglia CasaZen' })).toHaveAttribute('href', '/app/short-rent/settings/invitations');
     });
 
     test('with several areas the switcher is the icon of the area, with its name, and it works', async ({ page }) => {

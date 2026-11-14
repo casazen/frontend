@@ -328,11 +328,11 @@ test.describe('Area navigation (UI-04a)', () => {
       await expect(sheet.getByRole('link', { name: 'Cruscotto' })).toHaveCount(0);
       // The settings close the sheet as they close the sidebar; the queues are tabs of the Cruscotto; the profile is in the account row.
       await expect(sheet.getByRole('group', { name: 'Impostazioni e inviti' }).getByRole('link')).toHaveText(['Impostazioni', 'Consiglia CasaZen']);
-      await sheet.getByRole('link', { name: 'Impostazioni' }).click();
+      await sheet.getByRole('link', { name: 'Adempimenti' }).click();
 
-      await expect(page).toHaveURL(/\/app\/short-rent\/settings\/organization/);
+      await expect(page).toHaveURL(/\/app\/short-rent\/compliance/);
       await expect(sheet).not.toBeVisible();
-      // The settings are not one of the destinations of the bar: "Altro" is the marked tab (its sheet is closed again).
+      // The adempimenti are not one of the destinations of the bar: "Altro" is the marked tab (its sheet is closed again).
       await expect(bar.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-current', 'page');
       await expect(bar.getByRole('button', { name: 'Altro' })).toHaveAttribute('aria-expanded', 'false');
     });
