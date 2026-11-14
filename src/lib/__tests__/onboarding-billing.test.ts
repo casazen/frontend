@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import { BILLING_SETUP_PATH, BILLING_STEP_ORDER } from '@/features/fiscal/billing-wizard/billing-wizard-ids';
 import i18n from '@/i18n/config';
 import { BILLING_SETUP_ITEM_KEYS, BILLING_SETUP_SECTIONS } from '@/types/billing-setup.types';
@@ -34,6 +35,9 @@ const BACKEND_ITEM_KEYS = [
 const BACKEND_SECTIONS = ['issuer', 'vat', 'numbering', 'touristTax', 'channels', 'mandates', 'automation', 'italy'];
 
 const LANGUAGES = ['it', 'en'] as const;
+
+/** The flags with the issuance of the fiscal documents on: the wizard «Fatturazione» exists, so the part may open it. */
+const ISSUANCE_ON = { ...DEFAULT_FEATURE_FLAGS, fiscalDocumentIssuance: true };
 
 beforeEach(async () => {
   await i18n.changeLanguage('it');
@@ -85,13 +89,21 @@ describe('the part «Fatturazione» of the guide opens its wizard at the step of
   it('BillingItemSteps_TheLaunchOfThePart_OpensTheWizardAtTheStepOfTheReasonAndOnlyAtThatOne', () => {
     for (const key of BACKEND_ITEM_KEYS) {
       const step = BILLING_ITEM_STEPS[key as keyof typeof BILLING_ITEM_STEPS];
-      expect(resolveLaunchTarget('fiscal', null, null, undefined, key)?.to, key).toBe(`${BILLING_SETUP_PATH}?step=${step}`);
+      expect(resolveLaunchTarget('fiscal', null, null, undefined, key, ISSUANCE_ON)?.to, key).toBe(`${BILLING_SETUP_PATH}?step=${step}`);
     }
     // No reason, a reason that is not an item and a key the app does not know: the wizard opens where it would without a step (at what is missing), never at a wrong one.
     for (const reason of [null, undefined, '', 'issuer_missing', 'brand_new_item']) {
-      expect(resolveLaunchTarget('fiscal', null, null, undefined, reason)?.to, String(reason)).toBe(BILLING_SETUP_PATH);
+      expect(resolveLaunchTarget('fiscal', null, null, undefined, reason, ISSUANCE_ON)?.to, String(reason)).toBe(BILLING_SETUP_PATH);
     }
     // The reason of another part never gives the wizard a step.
     expect(resolveLaunchTarget('messages', null, null, undefined, 'regime_missing')?.to).toBe('/app/short-rent/messages');
+  });
+
+  // Flag rule: with the issuance off the wizard is not there (its route leads to the home of the area), so no reason, the one that says «not active yet» included, opens it.
+  it('BillingItemSteps_TheLaunchOfThePartWithTheIssuanceOff_OpensNothingForAnyReason', () => {
+    for (const reason of [...BACKEND_ITEM_KEYS, 'issuer_missing', null, undefined]) {
+      expect(resolveLaunchTarget('fiscal', null, null, undefined, reason, DEFAULT_FEATURE_FLAGS), String(reason)).toBeNull();
+      expect(resolveLaunchTarget('fiscal', null, null, undefined, reason), String(reason)).toBeNull();
+    }
   });
 });

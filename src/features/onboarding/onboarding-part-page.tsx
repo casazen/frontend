@@ -6,6 +6,7 @@ import { FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { PageHeader } from '@/components/layout/page-header';
 import { ErrorState } from '@/components/shared/error-state';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWizardDraft } from '@/hooks/use-wizard-draft';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { flowOfPart } from '@/lib/onboarding-flows';
@@ -39,6 +40,7 @@ export function OnboardingPartPage() {
   const { t, i18n } = useTranslation();
   const { partKey } = useParams();
   const { hasPermission } = useWorkspace();
+  const { flags } = useFeatureFlags();
   const plan = useOnboardingPlan();
   const known = isOnboardingPartKey(partKey);
   const parts = useMemo(() => knownParts(plan.data), [plan.data]);
@@ -53,8 +55,8 @@ export function OnboardingPartPage() {
   const state = part ? normalizePartState(part.state) : 'open';
   const flow = flowOfPart(partKey);
   // The launch that the plan names for the part, resolved against the manifest; the reopen of the backend may name another target for a part that is done. A wizard with
-  // steps of its own (the part «Fatturazione») opens at the one the reason of the part points to.
-  const launch = part ? resolveLaunchTarget(part.launchTarget, null, null, hasPermission, part.reason) : null;
+  // steps of its own (the part «Fatturazione») opens at the one the reason of the part points to, and only while its page exists (the issuance of the fiscal documents is on).
+  const launch = part ? resolveLaunchTarget(part.launchTarget, null, null, hasPermission, part.reason, flags) : null;
   const waiting = state === 'blocked' || state === 'notAvailable' || state === 'done';
   // What is missing, in plain words; a part that waits for others names them, and a reason this version has no text for reads as a neutral line.
   const waitedFor = part ? partsWaitedFor(part, parts).map((waited) => t(partTitleKey(waited.code))).join(', ') : '';

@@ -232,7 +232,8 @@ export function FiscalDocumentsPage() {
         title: t('fiscalDocuments.list.empty.title'),
         description: t(`fiscalDocuments.list.empty.mode.${issuerMode}`),
         // Whoever may not change the invoicing setup has no button to it: the wizard «Fatturazione» is for who writes it, and the button never leads where the guard says no.
-        action: canChangeIssuer ? { label: t('fiscalDocuments.list.empty.action'), href: BILLING_SETUP_PATH } : undefined,
+        // The page is open while either flag of the documents is on, the wizard only while the issuance is: with the issuance off its address leads to the home of the area, so no button.
+        action: canChangeIssuer && isFeatureEnabled(flags, 'fiscalDocumentIssuance') ? { label: t('fiscalDocuments.list.empty.action'), href: BILLING_SETUP_PATH } : undefined,
       };
 
   return (

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import { ROUTE_MANIFEST, getManifestEntry, type PermissionPredicate, type RouteManifestEntry } from '@/config/route-manifest';
 import {
   allLaunchCandidates,
@@ -10,6 +11,9 @@ import { flowOfPart } from '@/lib/onboarding-flows';
 import { ONBOARDING_FLOW_ACTIONS, ONBOARDING_LAUNCH_TARGETS, ONBOARDING_PART_KEYS } from '@/types/onboarding.types';
 
 const PROPERTY = '9d4f6a0e-2c1b-4c5d-8e7f-3a2b1c0d9e8f';
+
+/** The flags with the issuance of the fiscal documents on: the wizard «Fatturazione» exists, and the part «Fatturazione» may open it. */
+const ISSUANCE_ON = { ...DEFAULT_FEATURE_FLAGS, fiscalDocumentIssuance: true };
 
 /** The pages the registry names that exist today: a renamed page breaks this list, not the person. */
 const EXISTING = [
@@ -65,11 +69,30 @@ describe('the launch registry of the plan «Inizia con CasaZen» (E10/F03/US02/T
     expect(resolveLaunchTarget('mapping')?.to).toBe('/app/short-rent/integrations/octorate?step=mapping');
     expect(resolveLaunchTarget('channels')?.to).toBe('/app/short-rent/channels');
     expect(resolveLaunchTarget('identification')?.to).toBe('/app/short-rent/compliance/identification');
-    expect(resolveLaunchTarget('fiscal')?.to).toBe('/app/short-rent/fiscal/setup');
+    expect(resolveLaunchTarget('fiscal', null, null, undefined, null, ISSUANCE_ON)?.to).toBe('/app/short-rent/fiscal/setup');
     expect(resolveLaunchTarget('marketplace')?.to).toBe('/app/short-rent/marketplace');
     // The inbox of E05 is registered now: the target resolves to it by itself.
     expect(resolveLaunchTarget('messages')?.to).toBe('/app/short-rent/messages');
     expect(resolveLaunchTarget('summary')?.to).toBe('/app/short-rent/onboarding/summary');
+  });
+
+  // Flag rule: the route of the wizard «Fatturazione» is behind the issuance of the fiscal documents and leads to the home of the area while it is off, so the part says «Non
+  // ancora disponibile» then, for every caller (the part page, the tables of the properties, the reopen of a part), and never a link that is sent back.
+  it('resolveLaunchTarget_FiscalWithTheIssuanceOffOrFlagsNotKnown_ResolvesToNothingInsteadOfARouteTheGuardRefuses', () => {
+    expect(resolveLaunchTarget('fiscal', null, null, undefined, null, DEFAULT_FEATURE_FLAGS)).toBeNull();
+    expect(resolveLaunchTarget('fiscal', null, null, undefined, 'guest_series_unconfirmed', { ...DEFAULT_FEATURE_FLAGS, octorateDocumentImport: true })).toBeNull();
+    // A caller that does not say which flags are on never gets a link to a page behind one.
+    expect(resolveLaunchTarget('fiscal')).toBeNull();
+    expect(resolveLaunchTarget('fiscal', null, PROPERTY)).toBeNull();
+    // On: the wizard, at the step of the reason.
+    expect(resolveLaunchTarget('fiscal', null, null, undefined, 'guest_series_unconfirmed', ISSUANCE_ON)?.to).toBe('/app/short-rent/fiscal/setup?step=numbering');
+  });
+
+  it('resolveLaunchTarget_AnotherTargetIgnoresTheFlags_OnlyTheOnesThatDeclareTheirPageBehindAFlagAreChecked', () => {
+    for (const features of [undefined, DEFAULT_FEATURE_FLAGS, ISSUANCE_ON]) {
+      expect(resolveLaunchTarget('messages', null, null, undefined, null, features)?.to, JSON.stringify(features)).toBe('/app/short-rent/messages');
+      expect(resolveLaunchTarget('connect', null, null, undefined, null, features)?.to, JSON.stringify(features)).toBe('/app/short-rent/integrations/octorate?step=consent');
+    }
   });
 
   it('resolveLaunchTarget_APropertyIsNamed_OpensThePageOfThatProperty', () => {

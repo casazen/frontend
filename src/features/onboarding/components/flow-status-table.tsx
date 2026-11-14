@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { flowNameKey, flowReasonKey, normalizeFlowState, reasonOf } from '@/lib/onboarding-flows';
 import { launchTargetForAction, resolveLaunchTarget } from '@/lib/onboarding-part-launch';
@@ -43,13 +44,14 @@ interface FlowCellProps {
 function FlowCell({ status, flow, onActivate }: FlowCellProps) {
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();
+  const { flags } = useFeatureFlags();
   if (!status) return <span className="text-sm text-foreground/70">{t('onboardingPlan.summary.table.noData')}</span>;
 
   const state = normalizeFlowState(status.state);
   const reason = reasonOf(status);
   const action = state === 'toComplete' ? launchTargetForAction(status.action) : null;
   const activation = action !== null && status.action === 'activate';
-  const launch = action && !activation ? resolveLaunchTarget(action.target, action.focus, status.propertyId, hasPermission) : null;
+  const launch = action && !activation ? resolveLaunchTarget(action.target, action.focus, status.propertyId, hasPermission, undefined, flags) : null;
   const doNow = `${t('onboardingPlan.actions.doNow')}: ${status.name} · ${t(flowNameKey(flow))}`;
 
   let doing: ReactNode = null;

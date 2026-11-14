@@ -305,11 +305,23 @@ describe('FiscalDocumentsPage: the empty list', () => {
   });
 
   it('FiscalDocumentsPage_NoDocumentsAndNoSetupYet_SaysSoAndLeadsToTheInvoicingWizardForWhoMayChangeIt', async () => {
+    env.flags = { fiscalDocumentIssuance: true };
     vi.mocked(api.getDocumentsContext).mockResolvedValue({ ...CONTEXT, mode: null });
     renderPage();
 
     await waitFor(() => expect(screen.getByText(i18n.t('fiscalDocuments.list.empty.mode.unset'))).toBeInTheDocument());
     expect(screen.getByRole('link', { name: i18n.t('fiscalDocuments.list.empty.action') })).toHaveAttribute('href', BILLING_SETUP_PATH);
+  });
+
+  // Flag rule: the page is open while either flag of the documents is on, but the wizard only while the issuance is: with it off the address of the wizard leads to the home of
+  // the area, so the empty list has no button to it (the person who imports the documents of the channel manager has nothing to set up here).
+  it('FiscalDocumentsPage_NoDocumentsWithTheIssuanceOffAndTheImportOn_HasNoButtonToTheWizardThatIsNotThere', async () => {
+    env.flags = { octorateConnector: true, octorateDocumentImport: true, fiscalDocumentIssuance: false };
+    vi.mocked(api.getDocumentsContext).mockResolvedValue({ ...CONTEXT, mode: null });
+    renderPage();
+
+    await waitFor(() => expect(screen.getByText(i18n.t('fiscalDocuments.list.empty.mode.unset'))).toBeInTheDocument());
+    expect(screen.queryByRole('link', { name: i18n.t('fiscalDocuments.list.empty.action') })).not.toBeInTheDocument();
   });
 
   it('FiscalDocumentsPage_NoDocumentsForWhoMayNotWriteTheSetting_HasNoButtonToTheWizard', async () => {
