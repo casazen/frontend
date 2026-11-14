@@ -62,8 +62,8 @@ describe('FiscalDashboardPage: the card of the fiscal documents (E06/F03/US04/T0
     expect(await screen.findByTestId('fiscal-dashboard-empty')).toBeInTheDocument();
     expect(screen.queryByTestId('fiscal-documents-card')).not.toBeInTheDocument();
     expect(screen.queryByTestId('fiscal-documents-card-cta')).not.toBeInTheDocument();
-    // The other card of the page is where it was.
-    expect(screen.getByTestId('fiscal-issuer-card')).toBeInTheDocument();
+    // The card of the invoicing wizard is not there either: its route is behind the flag of the issuance, and a card never leads to the home of the area.
+    expect(screen.queryByTestId('fiscal-billing-card')).not.toBeInTheDocument();
   });
 
   it.each([

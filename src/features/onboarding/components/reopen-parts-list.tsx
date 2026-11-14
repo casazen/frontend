@@ -2,6 +2,7 @@ import { useId, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getProblemMessage } from '@/lib/api-errors';
 import { resolveLaunchTarget, type LaunchFocus } from '@/lib/onboarding-part-launch';
@@ -68,6 +69,7 @@ export function ReopenPartsList({ parts, senders, channels }: ReopenPartsListPro
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { hasPermission } = useWorkspace();
+  const { flags } = useFeatureFlags();
   const reopen = useReopenPart();
   const listId = useId();
   const [unavailablePart, setUnavailablePart] = useState<OnboardingPartKey | null>(null);
@@ -81,7 +83,7 @@ export function ReopenPartsList({ parts, senders, channels }: ReopenPartsListPro
     reopen.mutate(code, {
       onSuccess: (answer) => {
         // The wizard of the part, and for the compliance wizard the step of the sender the server names (or the one the quick action is about).
-        const target = resolveLaunchTarget(answer.launchTarget, answer.focus === 'sender' ? 'sender' : (focus ?? null), null, hasPermission);
+        const target = resolveLaunchTarget(answer.launchTarget, answer.focus === 'sender' ? 'sender' : (focus ?? null), null, hasPermission, undefined, flags);
         if (target) navigate(target.to);
         else setUnavailablePart(code);
       },

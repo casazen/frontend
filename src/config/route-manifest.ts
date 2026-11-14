@@ -268,15 +268,26 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
-    // «Come emetti i documenti?» (E06/F02/US02/T03, FIS-02, NF-82): who issues the fiscal documents of the organization and which document its
-    // regime needs. A guided flow opened from a card of the fiscal page, in no menu and no tab. It changes the setting of the whole
-    // organization, so it asks `property.write`, as the backend does for the save (which also needs `payment.read` and the whole organization:
-    // the wizard says so when the server refuses).
+    // The wizard «Fatturazione» (E11/F02/US01/T01, NF-82, NF-118): the whole invoicing setup of the organization (who issues, the VAT, the numbering, the tourist tax, for an
+    // agency the commissions of the portals and the standard mandate, the issuing, the Italian reminders and the summary), a part of the onboarding guide. A guided flow opened
+    // from a card of the fiscal page and from the guide, in no menu and no tab. It is read by who reads the properties and the payments (`GET api/billing-setup` asks
+    // `payment.read`): a person who may not change it (no `property.write`, or an access to only some of the properties) sees it read-only, with the reason. It exists while the
+    // issuance of the fiscal documents is on: with it off the tab and the card are not there and the address leads to the home of the area, as the backend answers 404.
+    path: '/app/short-rent/fiscal/setup',
+    context: 'short-rent',
+    requiredPermissions: ['property.read', 'payment.read'],
+    featureFlag: 'fiscalDocumentIssuance',
+    component: async () => ({
+      default: (await import('@/features/fiscal/billing-wizard/billing-wizard-page')).BillingWizardPage,
+    }),
+  },
+  {
+    // The old wizard «Come emetti i documenti?» (E06/F02/US02/T03): CasaZen issues every document since 2026-11-14, so its address leads to the wizard «Fatturazione».
     path: '/app/short-rent/fiscal/issuer',
     context: 'short-rent',
-    requiredPermissions: ['property.write'],
+    requiredPermissions: [],
     component: async () => ({
-      default: (await import('@/features/fiscal/issuer-wizard/issuer-wizard-page')).IssuerWizardPage,
+      default: (await import('@/features/fiscal/billing-wizard/legacy-issuer-redirect')).LegacyIssuerRedirect,
     }),
   },
   {

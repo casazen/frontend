@@ -14,7 +14,7 @@ import { FiscalPropertyItem } from '@/features/fiscal/components/fiscal-property
 import { FISCAL_DOCUMENTS_PATH } from '@/features/fiscal/documents/document-paths';
 import { fiscalFocus, fiscalRegimeSelectId, type FiscalFocus } from '@/features/fiscal/fiscal-focus';
 import { currentFiscalYear } from '@/features/fiscal/fiscal-format';
-import { ISSUER_PATH } from '@/features/fiscal/issuer-wizard/issuer-paths';
+import { BILLING_SETUP_PATH } from '@/features/fiscal/billing-wizard/billing-wizard-ids';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getProblemMessage } from '@/lib/api-errors';
@@ -179,6 +179,9 @@ export function FiscalDashboardPage() {
   const { flags } = useFeatureFlags();
   const documentsEntry = getManifestEntry(FISCAL_DOCUMENTS_PATH);
   const canOpenDocuments = documentsEntry !== undefined && isEntryFeatureEnabled(documentsEntry, flags) && hasEntryPermission(documentsEntry, hasPermission);
+  // The same for the wizard «Fatturazione»: its card is for who may change the setup, and only where the wizard exists (the issuance of fiscal documents is on): a card never leads to the home of the area.
+  const billingEntry = getManifestEntry(BILLING_SETUP_PATH);
+  const canOpenBilling = canWrite && billingEntry !== undefined && isEntryFeatureEnabled(billingEntry, flags) && hasEntryPermission(billingEntry, hasPermission);
   const taxYear = useMemo(() => currentFiscalYear(), []);
   const { data, isLoading, isError, error, refetch } = useFiscalRegime(taxYear);
   const assign = useAssignFiscalRegime(taxYear);
@@ -230,16 +233,16 @@ export function FiscalDashboardPage() {
           </PlainSection>
         ) : null}
 
-        {/* Who issues the fiscal documents of the organization: a quiet section, not a second highlighted block. Whoever may not change it has no button to it. */}
-        {canWrite ? (
+        {/* The invoicing setup of the organization (the wizard «Fatturazione»): a quiet section, not a second highlighted block. Whoever may not change it has no button to it. */}
+        {canOpenBilling ? (
           <PlainSection
-            title={t('fiscalDocuments.issuer.card.title')}
-            actionLabel={t('fiscalDocuments.issuer.card.action')}
-            href={ISSUER_PATH}
-            actionTestId="fiscal-issuer-card-cta"
-            data-testid="fiscal-issuer-card"
+            title={t('billingWizard.card.title')}
+            actionLabel={t('billingWizard.card.action')}
+            href={BILLING_SETUP_PATH}
+            actionTestId="fiscal-billing-card-cta"
+            data-testid="fiscal-billing-card"
           >
-            <p className="text-sm text-foreground/70">{t('fiscalDocuments.issuer.card.description')}</p>
+            <p className="text-sm text-foreground/70">{t('billingWizard.card.description')}</p>
           </PlainSection>
         ) : null}
 

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import i18n from '@/i18n/config';
 import {
   ONBOARDING_FLOW_ACTIONS,
@@ -10,10 +11,15 @@ import { flowReasonKey, prerequisiteKey } from '../onboarding-flows';
 import { launchTargetForAction, resolveLaunchTarget } from '../onboarding-part-launch';
 import { isOnboardingPartReason, reasonKey } from '../onboarding-parts';
 
+/** The flags with the issuance of the fiscal documents on: the wizard «Fatturazione» exists then, and the launch of the part may lead to it. */
+const ISSUANCE_ON = { ...DEFAULT_FEATURE_FLAGS, fiscalDocumentIssuance: true };
+
 /**
  * The codes the backend sends (E10/F01/US04/T01, backend `develop`: `OnboardingFlowModels.cs` and `OnboardingPlanModels.cs`), copied as they stand there. The list
  * is the contract: a code the backend adds must be added here AND in the app (types, texts, launcher), or this test says which one is missing. A code the backend
- * sends that the app has no text for would be shown as a bare key, which is what these tests keep from happening.
+ * sends that the app has no text for would be shown as a bare key, which is what these tests keep from happening. `accountant_handles` is not in the lists: since
+ * 2026-11-14 the accountant only receives exports and the backend never produces it again (E11/F01/US01/T04: the constant stays there for old rows), so the app has no
+ * text for it and a row that still carries it reads as the neutral line.
  */
 const BACKEND_FLOW_REASONS = [
   'connection_missing',
@@ -32,7 +38,6 @@ const BACKEND_FLOW_REASONS = [
   'property_inactive',
   'content_managed_on_channel',
   'chat_not_licensed',
-  'accountant_handles',
   'not_provided',
 ];
 
@@ -59,7 +64,6 @@ const BACKEND_PART_REASONS = [
   'notification_preferences_missing',
   'assistant_situation_missing',
   'issuer_missing',
-  'accountant_handles',
   'partner_integration_missing',
   'connector_off',
   'no_property',
@@ -121,11 +125,11 @@ describe('the codes of the onboarding the backend sends (E10/F01/US04/T01) all h
     for (const action of BACKEND_FLOW_ACTIONS) {
       const launch = launchTargetForAction(action);
       expect(launch, action).not.toBeNull();
-      // Every action leads to a page of the manifest the person may open, never to a dead end.
-      expect(resolveLaunchTarget(launch!.target, launch!.focus ?? null)?.to, action).toEqual(expect.any(String));
+      // Every action leads to a page of the manifest the person may open, never to a dead end (the page of the issuance is open only while its flag is on).
+      expect(resolveLaunchTarget(launch!.target, launch!.focus ?? null, null, undefined, null, ISSUANCE_ON)?.to, action).toEqual(expect.any(String));
     }
     expect(launchTargetForAction('chooseIssuer')).toEqual({ target: 'fiscal' });
-    expect(resolveLaunchTarget('fiscal')?.to).toMatch(/^\/app\/short-rent\/fiscal\//);
+    expect(resolveLaunchTarget('fiscal', null, null, undefined, null, ISSUANCE_ON)?.to).toMatch(/^\/app\/short-rent\/fiscal\//);
   });
 });
 

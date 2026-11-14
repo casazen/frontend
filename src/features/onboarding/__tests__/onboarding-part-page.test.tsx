@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import i18n from '@/i18n/config';
+import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
+import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { onboardingApi } from '@/api/onboarding.api';
 import { wizardDraftApi } from '@/api/wizard-draft.api';
 import { expectNoAxeViolations } from '@/test/axe';
@@ -61,18 +63,20 @@ function Arrived() {
   return <p data-testid="arrived">{`${location.pathname}${location.search}`}</p>;
 }
 
-function renderPage(entry: string) {
+function renderPage(entry: string, features: Partial<typeof DEFAULT_FEATURE_FLAGS> = {}) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
     <I18nextProvider i18n={i18n}>
-      <QueryClientProvider client={client}>
-        <MemoryRouter initialEntries={[entry]}>
-          <Routes>
-            <Route path="/app/short-rent/onboarding/parts/:partKey" element={<OnboardingPartPage />} />
-            <Route path="*" element={<Arrived />} />
-          </Routes>
-        </MemoryRouter>
-      </QueryClientProvider>
+      <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, ...features }, isLoading: false }}>
+        <QueryClientProvider client={client}>
+          <MemoryRouter initialEntries={[entry]}>
+            <Routes>
+              <Route path="/app/short-rent/onboarding/parts/:partKey" element={<OnboardingPartPage />} />
+              <Route path="*" element={<Arrived />} />
+            </Routes>
+          </MemoryRouter>
+        </QueryClientProvider>
+      </FeatureFlagsContext.Provider>
     </I18nextProvider>,
   );
 }
@@ -109,6 +113,46 @@ describe('OnboardingPartPage, one part of the plan (E10/F03/US02/T02)', () => {
     // The one primary button opens the page that does the part (resolved against the manifest), and «Torna al piano» is always there.
     expect(screen.getByTestId('part-launch-primary')).toHaveAttribute('href', '/app/short-rent/compliance');
     expect(screen.getByTestId('part-launch-back')).toHaveAttribute('href', '/app/short-rent/onboarding');
+  });
+
+  it('OnboardingPartPage_FatturazionePart_OpensTheWizardAtTheStepOfItsFirstMissingItem', async () => {
+    vi.mocked(onboardingApi.getPlan).mockResolvedValue(
+      plan({ fiscalDocuments: { state: 'open', reason: 'guest_series_unconfirmed', done: 2, total: 5, launchTarget: 'fiscal' } }),
+    );
+    vi.mocked(onboardingApi.getFlowProperties).mockResolvedValue(page([]));
+    renderPage('/app/short-rent/onboarding/parts/fiscalDocuments', { fiscalDocumentIssuance: true });
+
+    expect(await screen.findByTestId('onboarding-part-reason')).toHaveTextContent(i18n.t('billingWizard.items.guest_series_unconfirmed'));
+    expect(screen.getByTestId('onboarding-part-progress')).toHaveTextContent(i18n.t('onboardingPlan.progress', { done: 2, total: 5 }));
+    // «Riprendi» opens the wizard «Fatturazione» at the step the item belongs to, in the same tab.
+    expect(screen.getByTestId('part-launch-primary')).toHaveAttribute('href', '/app/short-rent/fiscal/setup?step=numbering');
+  });
+
+  // Flag rule: with the issuance off the route of the wizard leads to the home of the area, so the part says that invoicing is not active and offers no button to it.
+  it('OnboardingPartPage_FatturazionePartWithTheIssuanceOff_SaysNotYetAvailableAndHasNoButtonToTheWizard', async () => {
+    vi.mocked(onboardingApi.getPlan).mockResolvedValue(plan({ fiscalDocuments: { state: 'open', reason: 'issuer_missing', done: 0, total: 1, launchTarget: 'fiscal' } }));
+    vi.mocked(onboardingApi.getFlowProperties).mockResolvedValue(page([]));
+    renderPage('/app/short-rent/onboarding/parts/fiscalDocuments');
+
+    expect(await screen.findByTestId('onboarding-part-reason')).toHaveTextContent(i18n.t('onboardingPlan.reasons.issuer_missing'));
+    expect(await screen.findByTestId('part-launch-unavailable')).toHaveTextContent(i18n.t('onboardingPlan.launch.unavailable.title'));
+    expect(screen.queryByTestId('part-launch-primary')).not.toBeInTheDocument();
+    // The same part with the issuance on is the wizard, with no step when the reason is not an item of the setup.
+    cleanup();
+    renderPage('/app/short-rent/onboarding/parts/fiscalDocuments', { fiscalDocumentIssuance: true });
+    expect(await screen.findByTestId('part-launch-primary')).toHaveAttribute('href', '/app/short-rent/fiscal/setup');
+  });
+
+  it('OnboardingPartPage_FatturazionePartWithTheIssuanceOff_HasNoButtonToTheWizardOnItsPropertiesEither', async () => {
+    vi.mocked(onboardingApi.getPlan).mockResolvedValue(plan({ fiscalDocuments: { state: 'open', reason: 'issuer_missing', done: 0, total: 1, launchTarget: 'fiscal' } }));
+    vi.mocked(onboardingApi.getFlowProperties).mockResolvedValue(
+      page([status({ flow: 'Documents', state: 'toComplete', reason: 'issuer_missing', action: 'chooseIssuer' })]),
+    );
+    renderPage('/app/short-rent/onboarding/parts/fiscalDocuments');
+
+    const row = await screen.findByTestId(`part-property-${PROPERTY}`);
+    expect(within(row).queryByTestId(`part-property-${PROPERTY}-do`)).not.toBeInTheDocument();
+    expect(within(row).getByTestId(`part-property-${PROPERTY}-unavailable`)).toHaveTextContent(i18n.t('onboardingPlan.launch.unavailable.title'));
   });
 
   it('OnboardingPartPage_PropertiesOfThePart_ShowTheirStateWhatIsMissingAndAFaiOraForThatProperty', async () => {

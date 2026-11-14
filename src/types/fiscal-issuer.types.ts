@@ -1,154 +1,65 @@
 /**
- * Who issues the fiscal documents of the organization (FIS-02, NF-82, E06/F02/US02): the contract of `GET` and `PUT api/fiscal/documents/settings`
- * and of `GET api/fiscal/documents/issuer-preview`. The API writes the enums by name and leaves out what is empty (a member that is `null` on the
- * server is not in the answer), so every optional member below is `undefined` when it is not there.
+ * The issuer of the fiscal documents (FIS-02, NF-82, E11/F01/US01): CasaZen is the only issuer since 2026-11-14, so there is no mode to choose and no accountant
+ * mode. What the wizard «Fatturazione» still needs of the issuer: its regime (Italian or Swiss), the treatments of the stay and of the cleaning, and the tax rule in
+ * force that `GET api/fiscal/documents/issuer-preview` sends for its summary. The API writes the enums by name and leaves out what is empty.
  */
 
 /**
- * Who issues the documents, by the member name of the backend enum `DocumentIssuerMode`: the channel manager (CasaZen reads what it issues),
- * CasaZen (the direct bookings only, never an OTA booking) or nobody here, because the accountant takes care of it.
+ * The fiscal regime of whoever issues, by the member name of the backend enum `DocumentRegime`. Italy: a private person with no VAT number, a VAT number in the
+ * ordinary regime, a VAT number in the flat-rate regime. Switzerland: registered for the VAT (with its UID) or not. The country of the issuer decides which ones are valid
+ * (a regime of the other country is 422 `issuer_regime_country_mismatch`).
  */
-export const DOCUMENT_ISSUER_MODES = ['Octorate', 'CasaZenDirectOnly', 'Accountant'] as const;
-
-export type DocumentIssuerMode = (typeof DOCUMENT_ISSUER_MODES)[number];
-
-/**
- * The fiscal regime of whoever issues, by the member name of the backend enum `DocumentRegime`: a private person with no VAT number, a VAT number
- * in the ordinary regime, a VAT number in the flat-rate regime. There is no regime for the invoice of an agency to its owners: CasaZen does not
- * issue it.
- */
-export const DOCUMENT_REGIMES = ['PrivatePerson', 'VatOrdinary', 'VatFlatRate'] as const;
+export const DOCUMENT_REGIMES = ['PrivatePerson', 'VatOrdinary', 'VatFlatRate', 'SwissVatRegistered', 'SwissNotRegistered'] as const;
 
 export type DocumentRegime = (typeof DOCUMENT_REGIMES)[number];
 
-/** The kind of document a rule gives to the guest (`None`: not decided yet, so nothing is issued). */
-export type FiscalDocumentKind = 'None' | 'Receipt' | 'Invoice' | 'DualHeadingInvoice';
+/** The VAT of the stay of an Italian issuer (⚖ I1): the standard one (10%) or exempt under art. 10 n. 8. */
+export const STAY_VAT_TREATMENTS = ['Standard', 'ExemptArt10'] as const;
 
-/**
- * The data of the issuer. The VAT number and the fiscal code are those of the organization (its tax profile): they are read here and never sent
- * back by the save.
- */
-export interface FiscalIssuerData {
-  legalName?: string;
-  addressStreet?: string;
-  addressCivic?: string;
-  postalCode?: string;
-  city?: string;
-  /** The two letters of the Italian province. */
-  province?: string;
-  /** ISO 3166-1 alpha-2, `IT` by default. */
-  countryCode: string;
-  /** The regime code the accountant chose; absent when the one of the rule is used. */
+export type StayVatTreatment = (typeof STAY_VAT_TREATMENTS)[number];
+
+/** The cleaning fee as part of the stay, which follows its VAT (⚖ C2, the default), or as a service with its own. */
+export const CLEANING_FEE_TREATMENTS = ['FollowsStay', 'Service'] as const;
+
+export type CleaningFeeTreatment = (typeof CLEANING_FEE_TREATMENTS)[number];
+
+/** The VAT of one type of line of a document, in percent, with the nature code of an Italian 0% (`lineType`: `Accommodation`, `Cleaning`, `ExtraService`...). */
+export interface FiscalTaxRuleRate {
+  lineType: string;
+  percent: number;
+  natureCode?: string;
+}
+
+/** The stamp duty of the documents without VAT: due above `threshold` of amounts without VAT, of `amount`, added to the total when `chargedToRecipient`. */
+export interface FiscalTaxRuleStampDuty {
+  threshold: number;
+  amount: number;
+  chargedToRecipient: boolean;
+}
+
+/** The tax rule in force today for the profile of the issuer (`FiscalDocuments:TaxRules`): its version and dates, the kind of document and the VAT of every line type. */
+export interface FiscalTaxRule {
+  /** `IT` or `CH`. */
+  jurisdiction: string;
+  regime: string;
+  /** The version stored on the documents made with the rule. */
+  version: string;
+  validFrom: string;
+  validTo?: string;
+  sourceUrl?: string;
+  /** `Receipt` or `Invoice`. */
+  documentKind: string;
   fatturaPaRegimeCode?: string;
-  /** The regime code that would be used: the one above, else the rule's. */
-  effectiveRegimeCode?: string;
-  issuerSdiRecipientCode?: string;
-  issuerPec?: string;
-  defaultSeries?: string;
-  vatNumber?: string;
-  fiscalCode?: string;
+  rates: FiscalTaxRuleRate[];
+  stampDuty?: FiscalTaxRuleStampDuty;
 }
 
-/** The e-invoice channel CasaZen has to the SDI in this environment. */
-export interface FiscalSdiProvider {
-  providerConfigured: boolean;
-  providerName?: string;
-}
-
-/** The rule of the documents of the regime of the issuer, as configured on the server. */
-export interface FiscalDocumentRule {
-  documentKind: FiscalDocumentKind;
-  /** The rule is complete enough to issue with; false means that issuing is refused (`document_rule_not_configured`). */
-  configured: boolean;
-  fatturaPaRegimeCode?: string;
-  vatRatePercent?: number;
-  vatNatureCode?: string;
-  invoiceTypeCode: string;
-  creditNoteTypeCode: string;
-  touristTaxNatureCode?: string;
-  seriesPattern: string;
-}
-
-/** The setting of the organization (`GET`, and the answer of the `PUT`). */
-export interface FiscalDocumentSettings {
-  /** Absent while the organization has not chosen. */
-  mode?: DocumentIssuerMode;
-  regime?: DocumentRegime;
-  issuer: FiscalIssuerData;
-  /** When the wizard was completed (ISO 8601). */
-  confirmedAt?: string;
-  /** The flag `Features:FiscalDocumentIssuance`: the choice «CasaZen issues» exists only while it is on. */
-  casazenIssuanceEnabled: boolean;
-  /** The answer to D34: the channel manager is the recommended issuer only while it is true. */
-  octorateIssuesAllBookings: boolean;
-  /** The organization has an active connection with the channel manager in this environment (the choice «the channel manager issues» needs it). */
-  octorateConnected: boolean;
-  sdi: FiscalSdiProvider;
-  /** What the choice «CasaZen issues» would still need, by the names of the fields (`IssuerFields` of the server); empty when the profile is complete. */
-  missingFields: string[];
-  /** The rule of the regime as configured; absent while there is no regime or no rule for it. */
-  rule?: FiscalDocumentRule;
-}
-
-/** The issuer's data of a save. A save replaces the setting as a whole: a text that is left out is cleared. */
-export interface SaveFiscalIssuerDataRequest {
-  legalName?: string;
-  addressStreet?: string;
-  addressCivic?: string;
-  postalCode?: string;
-  city?: string;
-  province?: string;
-  countryCode?: string;
-  fatturaPaRegimeCode?: string;
-  issuerSdiRecipientCode?: string;
-  issuerPec?: string;
-  defaultSeries?: string;
-}
-
-/** The answers of the wizard «Come emetti i documenti?» (`PUT`). The VAT number and the fiscal code are not sent: they live in the tax profile. */
-export interface SaveFiscalDocumentSettingsRequest {
-  mode: DocumentIssuerMode;
-  regime?: DocumentRegime;
-  issuer?: SaveFiscalIssuerDataRequest;
-  /** The wizard was completed: it sets the time of the confirmation. */
-  confirmed: boolean;
-}
-
-/** Who would issue the documents of a booking (`GET issuer-preview`). */
-export type FiscalIssuerKind = 'None' | 'Octorate' | 'CasaZen';
-
-/** The stable reason of the answer of the preview. */
-export type FiscalIssuerReason =
-  | 'issuer_octorate'
-  | 'issuer_casazen'
-  | 'issuer_nobody'
-  | 'booking_not_direct'
-  | 'issuer_locked_octorate'
-  | 'issuance_off';
-
+/** The preview of the issuer of the organization (`GET api/fiscal/documents/issuer-preview` without a booking): CasaZen, and the rule in force when there is one. */
 export interface FiscalIssuerPreview {
-  bookingId: string;
-  issuer: FiscalIssuerKind;
-  reason: FiscalIssuerReason;
+  /** `CasaZen`, or `None` while the issuance is off. */
+  issuer: string;
+  /** `issuer_casazen` or `issuance_off`. */
+  reason: string;
+  /** Absent while the profile has no regime or no rule of the catalog covers it. */
+  rule?: FiscalTaxRule;
 }
-
-/** The names of the fields of the issuer setting as the API says them (`issuer_profile_incomplete` and `issuer_field_invalid` name them). */
-export const FISCAL_ISSUER_FIELDS = [
-  'mode',
-  'regime',
-  'legalName',
-  'addressStreet',
-  'addressCivic',
-  'postalCode',
-  'city',
-  'province',
-  'countryCode',
-  'fatturaPaRegimeCode',
-  'issuerSdiRecipientCode',
-  'issuerPec',
-  'defaultSeries',
-  'vatNumber',
-  'fiscalCode',
-] as const;
-
-export type FiscalIssuerField = (typeof FISCAL_ISSUER_FIELDS)[number];

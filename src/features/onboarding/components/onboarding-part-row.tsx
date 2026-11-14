@@ -23,9 +23,9 @@ import { STATUS_TONE_CLASSES } from '@/components/shared/status/status-view';
 import { Button } from '@/components/ui/button';
 import {
   ONBOARDING_PART_ICONS,
-  isOnboardingPartReason,
   normalizePartState,
   partPath,
+  partReasonTextKey,
   partTitleKey,
   partWhatKey,
   partsWaitedFor,
@@ -127,7 +127,7 @@ export function OnboardingPartRow({ part, parts, highlighted, canDefer, adminNot
   } else if (state === 'deferred' && waitingFor.length > 0) {
     reason = t(reasonKey('required_part_not_done'), { parts: waitingFor.join(', ') });
   } else if (state !== 'done') {
-    const keyOfReason = isOnboardingPartReason(part.reason) ? reasonKey(part.reason) : null;
+    const keyOfReason = partReasonTextKey(part);
     reason = keyOfReason && i18n.exists(keyOfReason) ? t(keyOfReason) : t('onboardingPlan.reasons.unknown');
   }
 
