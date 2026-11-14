@@ -1434,10 +1434,14 @@
       "d6ResultUnknown": "We do not know how it went: check the panel and then ask again.",
       "documentIssuanceNotAvailable": "CasaZen does not issue documents yet: choose another answer.",
       "existingInventoryAccessPending": "No portal has its access yet: finish the step on the panel first.",
+      "existingInventoryAccommodationUnknown": "One of the properties is not on Octorate: refresh the page and try again.",
       "existingInventoryChannelNotSupported": "One of the chosen portals is not available for the import.",
       "existingInventoryChannelsRequired": "Choose at least one portal.",
+      "existingInventoryConnectEmpty": "Write the ID of at least one property.",
+      "existingInventoryConnectNotSupported": "This portal cannot be connected from here: use the Octorate panel.",
       "existingInventoryGroupNotFound": "This group does not exist.",
       "existingInventoryGroupScenarioMismatch": "The group holds properties in a different situation.",
+      "existingInventoryHotelIdInvalid": "One of the IDs is not valid: use only letters, numbers, dots, dashes and underscores (up to 64 characters).",
       "existingInventoryMappingPending": "First decide for each listing: confirm, import, exclude or leave for later.",
       "existingInventoryNeedsWholeOrg": "To import the whole inventory you need to be able to see all the properties of the organization.",
       "existingInventoryNotReady": "The listings have not been imported yet.",
@@ -13055,7 +13059,9 @@
       "salesChannels": {
         "description": "The portals where you sell your listings, and the calendars you keep in line.",
         "title": "Sales channels"
-      }
+      },
+      "showLess": "Show only the main ones",
+      "showMore": "Show other channels ({{count}})"
     },
     "activation": {
       "access": {
@@ -14012,7 +14018,8 @@
       "serviceRequestBackupActive": "A request is free: the first to accept gets the job.",
       "serviceRequestBackupWon": "The job of a request has passed to you.",
       "serviceRequestBackupClosed": "A request you were a backup for was closed.",
-      "verificationRequired": "A guest's identity is waiting for you to verify it."
+      "verificationRequired": "A guest's identity is waiting for you to verify it.",
+      "assistRequested": "New «Do it for me» request to handle."
     }
   },
   "octorate": {
@@ -14134,6 +14141,28 @@
         "channels": {
           "batchFailed": "We could not prepare the import. Try again.",
           "blocked": "The browser blocked the window. Allow pop-ups for this site and try again: your progress is saved.",
+          "byId": {
+            "action": "Connect",
+            "failed": "We could not connect. Try again.",
+            "idHint": "You can find it in your {{name}} account.",
+            "idInvalid": "Use only letters, numbers, dots, dashes and underscores (up to 64 characters).",
+            "idLabel": "Property ID on {{name}}",
+            "intro": "Write the ID of your properties on {{name}}: leave it empty where a property is not there.",
+            "lastStep": {
+              "booking": "In the Booking extranet open Account → Connectivity provider, look for Octorate and accept.",
+              "bookingLink": "Open the Booking extranet",
+              "expedia": "In Expedia Partner Central choose Octorate as your connectivity provider and confirm.",
+              "expediaLink": "Open Expedia Partner Central",
+              "other": "In your {{name}} account approve Octorate as your channel manager.",
+              "title": "Last step on {{name}}",
+              "watching": "As soon as {{name}} approves, CasaZen notices by itself."
+            },
+            "needOne": "Write the ID of at least one property.",
+            "newTab": "(opens in a new tab)",
+            "noStructures": "I do not see your properties on Octorate yet: connect from the panel.",
+            "notValid": "The connection does not look valid: check the IDs and try again.",
+            "reading": "Reading your properties..."
+          },
           "confirmFailed": "We could not confirm. Try again.",
           "confirmNo": "No, open it again",
           "confirmQuestion": "Did you complete the access and see the portal as Activated?",
@@ -14146,7 +14175,14 @@
           "none": "Choose at least one portal.",
           "notValid": "The access does not look valid: open the panel again and retry.",
           "openFailed": "We could not open the panel. Try again.",
+          "panelHint": {
+            "airbnb": "The Airbnb page opens in the Octorate panel: complete the connection and sign in with your Airbnb account.",
+            "other": "The {{name}} page opens in the Octorate panel: complete the connection there.",
+            "vrbo": "The Vrbo page opens in the Octorate panel: ask for the activation there, which Octorate support takes care of."
+          },
           "reopen": "Open the panel again",
+          "showLess": "Show only the main ones",
+          "showMore": "Show other portals ({{count}})",
           "state": {
             "connected": "Connected",
             "error": "Error",

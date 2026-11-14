@@ -59,8 +59,9 @@ function AssistRequest({ part, context, propertyId, channelCode, label = 'doItFo
   const requests = useAssistRequests();
   const request = useRequestAssist();
 
-  // What support has open for this step: from the list the server gave, or from the answer of the request made a moment ago.
-  const listed = findOpenAssist(requests.data, context, propertyId);
+  // What support has open for this step (the context, the property and the channel: a request for another channel is not this step's): from the list the
+  // server gave, or from the answer of the request made a moment ago.
+  const listed = findOpenAssist(requests.data, context, propertyId, channelCode);
   const made = request.data && (request.data.status === 'Requested' || request.data.status === 'InProgress') ? request.data : undefined;
   const open = listed ?? made;
   const alreadyOpen = isAxiosError(request.error) && getProblemCode(request.error.response?.data) === ALREADY_OPEN_CODE;

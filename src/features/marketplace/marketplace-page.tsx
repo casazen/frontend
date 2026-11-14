@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
+import { Button } from '@/components/ui/button';
 import { SkeletonLine } from '@/components/ui/skeleton';
 import { useMarketplaceCatalog } from '@/queries/use-marketplace';
 import { useMarketplaceSuppliers } from '@/queries/use-service-requests';
@@ -14,6 +16,7 @@ import { ChannelManagerOffNote, MarketplaceCards, MarketplaceGroup, MarketplaceG
 import { SupplierSearchBox } from './components/supplier-search-box';
 import { SuppliersError, SuppliersLoading } from './components/suppliers-state';
 import { countByCategory } from './lib/category-groups';
+import { splitMainChannels } from './lib/main-channels';
 import { CHANNEL_MANAGER_GROUP_IDS, channelManagerAvailable, findMarketplaceGroup } from './lib/marketplace-entry';
 import { MARKETPLACE_QUERY_PARAM, MARKETPLACE_SEARCH_PATH, marketplaceHref } from './lib/marketplace-paths';
 import { useMarketplaceProperty } from './lib/marketplace-property';
@@ -128,25 +131,42 @@ interface CatalogGroupProps {
 
 /**
  * A group that waits for the channel manager: CasaZen's own integrations, then the cards of the catalog. While the channel manager is
- * not available or not connected the cards of the catalog are replaced by a sentence and the way to connect it.
+ * not available or not connected the cards of the catalog are replaced by a sentence and the way to connect it. The sales channels show
+ * the main ones at once and the others behind «Visualizza altri»: a channel that is active, pending or to fix is never hidden.
  */
 function CatalogGroup({ id, propertyId, catalog, integrations }: CatalogGroupProps) {
   const { t } = useTranslation();
+  const [showAll, setShowAll] = useState(false);
   const data = catalog.data;
   const waiting = data !== undefined && !channelManagerAvailable(data);
   const entries = data && !waiting ? (findMarketplaceGroup(data, id)?.entries ?? []) : [];
+  const split = id === 'salesChannels' ? splitMainChannels(entries, (entry) => entry.status !== 'NotActive') : { main: entries, others: [] };
+  const shown = showAll ? [...split.main, ...split.others] : split.main;
 
   const cards = [
     ...integrations.map((integration) => {
       const { entry, testId, builtIn } = integrationCardProps(integration, t);
       return <MarketplaceEntryCard key={`built-in-${integration.id}`} entry={entry} propertyId={propertyId} builtIn={builtIn} testId={testId} />;
     }),
-    ...entries.map((entry) => <MarketplaceEntryCard key={`${entry.kind}:${entry.code}`} entry={entry} propertyId={propertyId} />),
+    ...shown.map((entry) => <MarketplaceEntryCard key={`${entry.kind}:${entry.code}`} entry={entry} propertyId={propertyId} />),
   ];
 
   return (
     <MarketplaceGroup id={id}>
       {cards.length > 0 ? <MarketplaceCards>{cards}</MarketplaceCards> : null}
+      {split.others.length > 0 ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="mt-2 pointer-coarse:min-h-11"
+          aria-expanded={showAll}
+          onClick={() => setShowAll((value) => !value)}
+          data-testid={`marketplace-group-${id}-show-more`}
+        >
+          {showAll ? t('marketplace.groups.showLess') : t('marketplace.groups.showMore', { count: split.others.length })}
+        </Button>
+      ) : null}
       {catalog.isPending ? (
         <SkeletonLine lines={2} label={t('marketplace.loading')} className="pt-2" />
       ) : !data ? (

@@ -120,3 +120,27 @@ describe('octorateApi (E02/F01/US02 endpoints of the listings and their mapping)
     expect(result).toEqual({ propertyId: 'prop-9' });
   });
 });
+
+describe('octorateApi (the listings that already exist on OTAs: the channels of a batch)', () => {
+  it('connectChannel_GivesTheIdOfEachStructureOnThePortalToTheChannelOfTheBatchAndAnswersTheBatch', async () => {
+    const answer = { id: 'batch-1', channels: [] };
+    vi.mocked(ApiClient.post).mockResolvedValueOnce(answer);
+
+    const result = await octorateApi.connectChannel('batch-1', '142', { accommodations: [{ accommodationId: 'acc-1', hotelId: '12345678' }] });
+
+    expect(ApiClient.post).toHaveBeenCalledWith('/octorate/existing-inventory/batches/batch-1/channels/142/connect', {
+      accommodations: [{ accommodationId: 'acc-1', hotelId: '12345678' }],
+    });
+    expect(result).toBe(answer);
+  });
+
+  it('channelEndpoints_AnIdThatIsNotPlain_TravelsEncodedInThePath', async () => {
+    vi.mocked(ApiClient.post).mockResolvedValue({});
+
+    await octorateApi.connectChannel('a/b c', 'x y', { accommodations: [] });
+    await octorateApi.startChannelAccess('a/b c', 'x y');
+
+    expect(ApiClient.post).toHaveBeenNthCalledWith(1, '/octorate/existing-inventory/batches/a%2Fb%20c/channels/x%20y/connect', { accommodations: [] });
+    expect(ApiClient.post).toHaveBeenNthCalledWith(2, '/octorate/existing-inventory/batches/a%2Fb%20c/channels/x%20y/access/start');
+  });
+});

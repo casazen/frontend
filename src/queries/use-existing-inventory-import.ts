@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { octorateApi } from '@/api/octorate.api';
 import type {
+  ConnectChannelAccommodation,
   CreateExistingInventoryBatchRequest,
   ExistingInventoryBatch,
   InventoryIntentAssignment,
@@ -88,6 +89,22 @@ export function useConfirmChannelAccess() {
 }
 
 /**
+ * The host gives the id of each structure on a portal that needs nothing else (`POST .../channels/{code}/connect`): the server makes the connection
+ * on the channel manager and answers the batch, whose channel now waits only for the approval on the portal's own site. The answer is the batch the
+ * screens follow; a refusal (422) is shown by the step where the host is looking, and the batch is read again (the server may have moved on).
+ */
+export function useConnectChannel() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ batchId, channelCode, accommodations }: { batchId: string; channelCode: string; accommodations: ConnectChannelAccommodation[] }) =>
+      octorateApi.connectChannel(batchId, channelCode, { accommodations }),
+    onSuccess: (batch) => remember(queryClient, batch),
+    onError: (_error, { batchId }) => void queryClient.invalidateQueries({ queryKey: batchKey(batchId) }),
+  });
+}
+
+/**
  * Imports the rooms of the channels whose access is given (`POST .../run`; repeating it is safe) and stops at the mapping. The listings found are
  * read again: the mapping step shows what the import brought.
  */
@@ -152,11 +169,15 @@ export interface OtaChannelChoice {
   code: string;
   name: string;
   logoUrl: string | null;
+  /** The portal needs only the id of each property on it: the host gives them in CasaZen (`connect`) instead of going through the panel. */
+  connectByPropertyId: boolean;
 }
 
 /** The sales channels of the catalog the host can import from (the entries of the group «Canali di vendita»), in the order the catalog gives them. */
 export function otaChannelChoices(entries: readonly MarketplaceCatalogEntry[] | undefined): OtaChannelChoice[] {
-  return (entries ?? []).filter((entry) => entry.kind === 'Channel').map((entry) => ({ code: entry.code, name: entry.name, logoUrl: entry.logoUrl }));
+  return (entries ?? [])
+    .filter((entry) => entry.kind === 'Channel')
+    .map((entry) => ({ code: entry.code, name: entry.name, logoUrl: entry.logoUrl, connectByPropertyId: entry.connectByPropertyId === true }));
 }
 
 /** The OTAs the host can choose from: the sales channels of the marketplace catalog (the same list the host sees in «Scopri»). */

@@ -238,6 +238,33 @@ describe('MarketplacePage · Scopri', () => {
     expect(within(portal).queryByRole('img')).not.toBeInTheDocument();
   });
 
+  it('MarketplacePage_Scopri_SalesChannels_ShowTheMainOnesAndTheOthersOnlyOnRequest_NeverHidingAnActiveOne', async () => {
+    const channel = (code: string, status: MarketplaceCatalogEntry['status'] = 'NotActive'): MarketplaceCatalogEntry => ({
+      ...PORTAL,
+      code,
+      name: `TEST ${code}`,
+      status,
+    });
+    const entries = [channel('274'), channel('142'), channel('277'), channel('518', 'Active'), channel('596')];
+    hooks.catalog.mockReturnValue(catalogAnswer({ ...catalog(), groups: [{ id: 'salesChannels', unchangedFlow: false, entries }] }));
+    renderAt(<MarketplacePage />);
+
+    const group = await screen.findByTestId('marketplace-group-salesChannels');
+    expect(within(group).getByTestId('marketplace-entry-Channel-142')).toBeInTheDocument();
+    expect(within(group).getByTestId('marketplace-entry-Channel-274')).toBeInTheDocument();
+    expect(within(group).getByTestId('marketplace-entry-Channel-518')).toBeInTheDocument();
+    expect(within(group).queryByTestId('marketplace-entry-Channel-277')).not.toBeInTheDocument();
+
+    const more = within(group).getByTestId('marketplace-group-salesChannels-show-more');
+    expect(more).toHaveTextContent(i18n.t('marketplace.groups.showMore', { count: 2 }));
+    fireEvent.click(more);
+
+    expect(within(group).getByTestId('marketplace-entry-Channel-277')).toBeInTheDocument();
+    expect(within(group).getByTestId('marketplace-entry-Channel-596')).toBeInTheDocument();
+    expect(more).toHaveTextContent(i18n.t('marketplace.groups.showLess'));
+    expect(more).toHaveAttribute('aria-expanded', 'true');
+  });
+
   it('MarketplacePage_Scopri_StatusesAndActions_ActivateOpensTheWizard_ManageGoesToActive_FixOpensTheWizard', async () => {
     renderAt(<MarketplacePage />);
     await screen.findByTestId('marketplace-entry-Channel-PORTAL1');
