@@ -15,7 +15,16 @@ const env = vi.hoisted(() => ({ permissions: new Set<string>(), flags: {} as Rec
 
 vi.mock('@/api/fiscal-documents.api', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/api/fiscal-documents.api')>();
-  return { ...actual, listDocuments: vi.fn(), getDocumentsContext: vi.fn(), issueBatch: vi.fn(), issueDocument: vi.fn(), listDraftsForBatch: vi.fn(), refreshDraft: vi.fn() };
+  return {
+    ...actual,
+    listDocuments: vi.fn(),
+    getDocumentsContext: vi.fn(),
+    issueBatch: vi.fn(),
+    issueDocument: vi.fn(),
+    discardDraft: vi.fn(),
+    listDraftsForBatch: vi.fn(),
+    refreshDraft: vi.fn(),
+  };
 });
 vi.mock('sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 vi.mock('@/components/layout/app-shell', () => ({
@@ -252,6 +261,23 @@ describe('a call that is on its way keeps its confirmation open, so that a failu
     });
 
     expect(await screen.findByTestId('fiscal-document-issue-problem')).toBeInTheDocument();
+  });
+
+  // The dialog that stays while its call runs must still close by itself when the call is done.
+  it.each([
+    ['IssueDocument', 'fiscal-document-issue', 'fiscalDocuments.issue.confirm'],
+    ['DiscardDraft', 'fiscal-document-discard', 'fiscalDocuments.discard.confirm'],
+  ])('%s_TheCallSucceeds_TheDialogClosesByItself', async (_case, buttonTestId, confirmKey) => {
+    vi.mocked(api.issueDocument).mockResolvedValue({ id: A, number: '2026/6' });
+    vi.mocked(api.discardDraft).mockResolvedValue(undefined);
+    renderPage();
+    const [row] = within(await screen.findByRole('table')).getAllByTestId('fiscal-document-row');
+    fireEvent.click(within(row).getByTestId(buttonTestId));
+    const dialog = await screen.findByRole('dialog');
+
+    fireEvent.click(within(dialog).getByRole('button', { name: i18n.t(confirmKey) }));
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 
   it('IssueBatch_TheCallIsOnItsWay_TheConfirmationStaysOnEscapeAndTellsItsFailure', async () => {
