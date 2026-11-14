@@ -9,6 +9,7 @@ import {
   initialValues,
   isNeedsWholeOrg,
   mandateTemplateOf,
+  portalSettingsChanged,
   problemsOf,
   stepIdsFor,
   stepSave,
@@ -102,6 +103,33 @@ describe('what a step saves on the server', () => {
     expect(stepSave(BILLING_STEPS.numbering, values({ guestDocumentSeries: 'AAAAAAAAAAAA' }), { draft: true })?.request).toEqual({ ownerInvoiceSeries: 'PM{year}' });
   });
 
+  // Data rule: «Salva ed esci» keeps what the person changed. A proposal that is left as it was (the name of the organization as the legal name, the series of the server, a
+  // «no» that nobody answered) is not an answer, and saving a draft must not make the part «Fatturazione» of the guide count it as done.
+  it('StepSave_ADraftOfAStepThePersonLeftAsItStartedSendsNothing', () => {
+    const start = initialValues(emptySetup(), { organizationName: 'Casa Mia Srl', today: TODAY });
+    const draft = (step: Parameters<typeof stepSave>[0]) => stepSave(step, start, { draft: true, onRecord: NOBODY, initial: start });
+
+    expect(draft(BILLING_STEPS.issuer)?.request).toEqual({});
+    expect(draft(BILLING_STEPS.vat)?.request).toEqual({});
+    expect(draft(BILLING_STEPS.numbering)?.request).toEqual({});
+    expect(draft(BILLING_STEPS.issuing)?.request).toEqual({});
+    expect(draft(BILLING_STEPS.italy)?.request).toEqual({});
+    // The same steps, checked with «Continua», are the answers of the person: every field is sent, the proposals too.
+    expect(stepSave(BILLING_STEPS.issuing, start)?.request).toEqual({ autoIssueGuestDocuments: false, emailGuestDocuments: false });
+    expect(stepSave(BILLING_STEPS.numbering, start)?.request).toEqual({ guestDocumentSeries: start.guestDocumentSeries, ownerInvoiceSeries: start.ownerInvoiceSeries });
+  });
+
+  it('StepSave_ADraftSendsOnlyTheFieldsThePersonChanged', () => {
+    const start = initialValues(emptySetup(), { organizationName: 'Casa Mia Srl', today: TODAY });
+    const draft = (step: Parameters<typeof stepSave>[0], changes: Partial<BillingWizardValues>) => stepSave(step, { ...start, ...changes }, { draft: true, onRecord: NOBODY, initial: start })?.request;
+
+    expect(draft(BILLING_STEPS.issuer, { countryCode: 'CH', addressStreet: ' Via Nassa ' })).toEqual({ countryCode: 'CH', addressStreet: 'Via Nassa' });
+    expect(draft(BILLING_STEPS.issuer, { legalName: 'Casa Mia SA' })).toEqual({ legalName: 'Casa Mia SA' });
+    expect(draft(BILLING_STEPS.issuing, { emailGuestDocuments: true })).toEqual({ emailGuestDocuments: true });
+    expect(draft(BILLING_STEPS.italy, { virtualStampConfirmed: true, stampDutyReference: ' AUT-77 ' })).toEqual({ virtualStampConfirmed: true, stampDutyReference: 'AUT-77' });
+    expect(draft(BILLING_STEPS.numbering, { ownerInvoiceSeries: 'FATT{year}' })).toEqual({ ownerInvoiceSeries: 'FATT{year}' });
+  });
+
   it('StepSave_TouristTaxIsAListOnceEveryPortalIsAnsweredAndAnEmptyListIsAnAnswer', () => {
     const all = Object.fromEntries(['Airbnb', 'BookingCom', 'Expedia', 'Vrbo', 'TripAdvisor', 'Agoda', 'OtherChannel'].map((portal) => [portal, 'host' as const]));
     expect(stepSave(BILLING_STEPS.touristTax, values({ touristTaxCollectors: all }))?.request).toEqual({ platformCollectedTouristTaxChannels: [] });
@@ -145,6 +173,22 @@ describe('the step «Commissioni dei canali»', () => {
       { channel: 'BookingCom', percent: 15, base: 'GrossExclTouristTax', validFrom: '2026-01-01', validTo: null },
       { channel: 'Airbnb', percent: 15.5, base: 'GrossExclTouristTax', validFrom: TODAY },
     ]);
+  });
+
+  it('CommissionRules_ADraftSavesOnlyThePercentsThePersonTypedNeverTheDefaultsThatAreOnlyShown', () => {
+    // Money rule: the percent of a portal is the agency's own rule only once the person gave it. Leaving the step with the default on screen creates no rule.
+    expect(commissionRulesRequest(set, {}, TODAY, { draft: true })).toBeNull();
+    expect(commissionRulesRequest(set, { Airbnb: '16' }, TODAY, { draft: true })).toEqual([
+      { channel: 'BookingCom', percent: 15, base: 'GrossExclTouristTax', validFrom: '2026-01-01', validTo: null },
+      { channel: 'Airbnb', percent: 16, base: 'GrossExclTouristTax', validFrom: TODAY },
+    ]);
+  });
+
+  it('PortalSettings_AreChangedOnlyWhenThePersonAnsweredSoADraftDoesNotAnswerForThem', () => {
+    const start = values();
+    expect(portalSettingsChanged(start, start)).toBe(false);
+    expect(portalSettingsChanged({ ...start, portalAccountHolder: 'Agency' }, start)).toBe(true);
+    expect(portalSettingsChanged({ ...start, rechargePortalCommissions: !start.rechargePortalCommissions }, start)).toBe(true);
   });
 
   it('CommissionRules_APercentThatIsAlreadyTheRuleInForceChangesNothing', () => {

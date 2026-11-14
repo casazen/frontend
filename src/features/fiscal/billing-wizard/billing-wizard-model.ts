@@ -232,17 +232,31 @@ function invalidFieldsOf(step: BillingStepId, values: BillingWizardValues, onRec
   return new Set(result.error.issues.map((issue) => String(issue.path[0])));
 }
 
+/** Two answers of the form are the same answer (the text of a field, a choice, or the list of the portals that say who collects the tourist tax). */
+function sameAnswer(a: unknown, b: unknown): boolean {
+  return a === b || JSON.stringify(a) === JSON.stringify(b);
+}
+
 /**
  * What the step saves (`PUT api/billing-setup/{section}`), or `null` for a step that saves nothing in that section (the steps of the portals and of the mandate have their own
  * calls; the Italian tourist tax has nothing to save). A step that was checked sends every field it asks. A DRAFT (what «Salva ed esci» keeps) sends only what is valid and
- * not empty: nothing the person has not answered is saved as an answer, and a field that is not valid does not stop the others from being kept.
+ * not empty: nothing the person has not answered is saved as an answer, and a field that is not valid does not stop the others from being kept. When the page says what the
+ * step started from (`initial`), a draft also leaves out every field the person did not change: a proposal left as it was (the name of the organization as the name on the
+ * documents, the series the server proposes, a choice that is «no» until it is answered) is not an answer, and leaving the step must not turn it into one.
  */
-export function stepSave(step: BillingStepId, values: BillingWizardValues, options: { draft?: boolean; onRecord?: BillingIdentityOnRecord } = {}): StepSave | null {
+export function stepSave(
+  step: BillingStepId,
+  values: BillingWizardValues,
+  options: { draft?: boolean; onRecord?: BillingIdentityOnRecord; initial?: BillingWizardValues } = {},
+): StepSave | null {
   const draft = options.draft === true;
   const invalid = draft ? invalidFieldsOf(step, values, options.onRecord ?? { vatNumber: false, fiscalCode: false }) : new Set<string>();
-  /** A text field: sent when it is asked; in a draft only when it is filled and valid. */
+  const initial = options.initial;
+  /** A draft of a step the person left as it started: that field is not an answer. */
+  const untouched = (field: keyof BillingWizardValues): boolean => draft && initial !== undefined && sameAnswer(values[field], initial[field]);
+  /** A text field: sent when it is asked; in a draft only when it is filled, valid and changed. */
   const put = (request: SaveBillingSetupSectionRequest, field: BillingSetupField, value: string): void => {
-    if (draft && (value === '' || invalid.has(field))) return;
+    if (draft && (value === '' || invalid.has(field) || untouched(field as keyof BillingWizardValues))) return;
     (request as Record<string, unknown>)[field] = value;
   };
 
@@ -263,17 +277,19 @@ export function stepSave(step: BillingStepId, values: BillingWizardValues, optio
       if (values.countryCode === 'CH') {
         if (values.swissVatRegistered !== '' && !invalid.has('swissVatRegistered')) {
           const registered = values.swissVatRegistered === 'yes';
-          request.regime = registered ? 'SwissVatRegistered' : 'SwissNotRegistered';
-          request.vatRegistered = registered;
+          if (!untouched('swissVatRegistered')) {
+            request.regime = registered ? 'SwissVatRegistered' : 'SwissNotRegistered';
+            request.vatRegistered = registered;
+          }
           if (registered) put(request, 'swissVatNumber', text(values.swissVatNumber).toUpperCase());
         }
       } else {
-        if (values.regime !== '' && !invalid.has('regime')) request.regime = values.regime;
+        if (values.regime !== '' && !invalid.has('regime') && !untouched('regime')) request.regime = values.regime;
         // A draft that left the regime code empty does not clear a code the accountant gave.
         put(request, 'fatturaPaRegimeCode', text(values.fatturaPaRegimeCode).toUpperCase());
-        request.stayVatTreatment = values.stayVatTreatment;
+        if (!untouched('stayVatTreatment')) request.stayVatTreatment = values.stayVatTreatment;
       }
-      request.cleaningFeeTreatment = values.cleaningFeeTreatment;
+      if (!untouched('cleaningFeeTreatment')) request.cleaningFeeTreatment = values.cleaningFeeTreatment;
       return { section: 'vat', request };
     }
     case BILLING_STEPS.numbering: {
@@ -286,14 +302,21 @@ export function stepSave(step: BillingStepId, values: BillingWizardValues, optio
       if (values.countryCode !== 'CH') return null;
       const answered = PORTAL_SOURCES.every((portal) => values.touristTaxCollectors[portal] === 'portal' || values.touristTaxCollectors[portal] === 'host');
       // A list is an answer, an empty one included: «no portal collects it». A draft with a portal still unanswered says nothing about the others.
-      if (!answered) return null;
+      if (!answered || untouched('touristTaxCollectors')) return null;
       return { section: 'touristTax', request: { platformCollectedTouristTaxChannels: PORTAL_SOURCES.filter((portal) => values.touristTaxCollectors[portal] === 'portal') } };
     }
-    case BILLING_STEPS.issuing:
-      return { section: 'automation', request: { autoIssueGuestDocuments: values.autoIssueGuestDocuments, emailGuestDocuments: values.emailGuestDocuments } };
+    case BILLING_STEPS.issuing: {
+      const request: SaveBillingSetupSectionRequest = {};
+      if (!untouched('autoIssueGuestDocuments')) request.autoIssueGuestDocuments = values.autoIssueGuestDocuments;
+      if (!untouched('emailGuestDocuments')) request.emailGuestDocuments = values.emailGuestDocuments;
+      return { section: 'automation', request };
+    }
     case BILLING_STEPS.italy: {
-      const request: SaveBillingSetupSectionRequest = { conservationAgreementConfirmed: values.conservationAgreementConfirmed, virtualStampConfirmed: values.virtualStampConfirmed };
-      request.stampDutyReference = text(values.stampDutyReference);
+      const request: SaveBillingSetupSectionRequest = {};
+      if (!untouched('conservationAgreementConfirmed')) request.conservationAgreementConfirmed = values.conservationAgreementConfirmed;
+      if (!untouched('virtualStampConfirmed')) request.virtualStampConfirmed = values.virtualStampConfirmed;
+      // A reference the person cleared is an answer too (no reference), unless it is not valid.
+      if (!untouched('stampDutyReference') && !invalid.has('stampDutyReference')) request.stampDutyReference = text(values.stampDutyReference);
       return { section: 'italy', request };
     }
     default:
@@ -360,6 +383,16 @@ export function holderChangesRequest(changes: Record<string, HolderChoice>, over
   return rows.length > 0 ? rows : null;
 }
 
+type PortalSettings = Pick<BillingWizardValues, 'portalAccountHolder' | 'rechargePortalCommissions'>;
+
+/**
+ * Whether the person changed who holds the accounts of the portals, or whether their commissions are recharged to the owners, since the step opened. A draft saves them only
+ * then: the owner and the recharge «on» are proposals until the person answers (⚖ I10, I11), and leaving the step must not answer for them.
+ */
+export function portalSettingsChanged(values: PortalSettings, initial: PortalSettings): boolean {
+  return values.portalAccountHolder !== initial.portalAccountHolder || values.rechargePortalCommissions !== initial.rechargePortalCommissions;
+}
+
 /** The percent shown for a portal: what the person typed, else the one that applies today (the rule in force, or the default of the configuration). */
 export function commissionPercentText(row: Pick<ChannelCommissionInForce, 'channel' | 'percent'>, typed: Record<string, string>): string {
   const own = typed[row.channel];
@@ -371,9 +404,15 @@ export function commissionPercentText(row: Pick<ChannelCommissionInForce, 'chann
  * The whole list of the commission rules a save sends (the `PUT` replaces the list): every rule the organization has stays, and for each portal with a percent on screen
  * that no stored rule in force already says, a rule from `today` on. A percent the person left at the default is saved as the agency's rule (accepting the default is what
  * confirms the step); a rule in force that gets another percent is closed the day before `today`, or changed in place when it starts today; a portal with no percent gets no
- * rule. `null` when nothing differs from what is stored: nothing is sent.
+ * rule. `null` when nothing differs from what is stored: nothing is sent. A DRAFT (what «Salva ed esci» keeps) takes only the percents the person typed: the ones that are
+ * only shown (the default of the configuration, which nobody confirmed) are not saved as the agency's rules by leaving the step.
  */
-export function commissionRulesRequest(current: ChannelCommissionRuleSet, typed: Record<string, string>, today: string): ChannelCommissionRuleInput[] | null {
+export function commissionRulesRequest(
+  current: ChannelCommissionRuleSet,
+  typed: Record<string, string>,
+  today: string,
+  options: { draft?: boolean } = {},
+): ChannelCommissionRuleInput[] | null {
   const rules: ChannelCommissionRuleInput[] = current.rules.map((rule) => ({
     channel: rule.channel,
     percent: rule.percent,
@@ -384,6 +423,7 @@ export function commissionRulesRequest(current: ChannelCommissionRuleSet, typed:
   let changed = false;
 
   for (const row of current.channels) {
+    if (options.draft && typed[row.channel] === undefined) continue;
     const percent = parseDecimal(commissionPercentText(row, typed));
     if (percent === null) continue;
 

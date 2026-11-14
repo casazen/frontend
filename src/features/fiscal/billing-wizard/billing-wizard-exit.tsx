@@ -24,8 +24,9 @@ const HELP: Readonly<Record<string, string>> = {
 
 interface BillingWizardExitProps {
   /**
-   * Keeps what the step on screen holds, as a draft on the server (what is valid and not empty: nothing the person did not answer is saved as an answer), and leaves. It
-   * resolves `true` when the person may go; on `false` the wizard stays where it is and says why, so that nothing typed is lost.
+   * Keeps what the step on screen holds, as a draft on the server (what is valid, not empty and changed since the step opened: nothing the person did not answer, and no
+   * proposal left as it was, is saved as an answer), and leaves. It resolves `true` when the person may go; on `false` the wizard stays where it is and says why, so that
+   * nothing typed is lost.
    */
   onSaveAndExit: (values: BillingWizardValues, stepId: string) => Promise<boolean>;
   /** A request of the person is on its way (the save of a step, the application of the mandate): the way out waits for it. */

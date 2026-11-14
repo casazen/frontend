@@ -47,6 +47,7 @@ import {
   initialValues,
   isNeedsWholeOrg,
   missingItemsOf,
+  portalSettingsChanged,
   problemsOf,
   sectionOf,
   stepIdsFor,
@@ -137,9 +138,11 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
   const home = flags.octorateOnboarding ? { to: ONBOARDING_PLAN_PATH, label: t('billingWizard.done.toPlan') } : { to: FISCAL_PATH, label: t('billingWizard.done.toFiscal') };
 
   /**
-   * Saves what a step holds on the server. A step that was checked sends every field it asks; a draft (what «Salva ed esci» keeps) sends only what is valid and not empty.
-   * The VAT number or the fiscal code the tax profile did not have, and the person wrote, go to the tax profile first (the setup cannot carry them: they live on the
-   * organization). A refusal that names fields is kept to be shown on them; one that says the person's reach is only some of the properties makes the wizard read-only.
+   * Saves what a step holds on the server. A step that was checked sends every field it asks; a draft (what «Salva ed esci» keeps) sends only what is valid, not empty and
+   * changed since the step opened: a proposal left as it was (the owner as the holder of the portal accounts, the percents of the configuration, the series of the server) is
+   * not an answer, and leaving must not turn it into one. The VAT number or the fiscal code the tax profile did not have, and the person wrote, go to the tax profile first
+   * (the setup cannot carry them: they live on the organization). A refusal that names fields is kept to be shown on them; one that says the person's reach is only some of
+   * the properties makes the wizard read-only.
    */
   const saveStep = async (id: BillingStepId, values: BillingWizardValues, draft: boolean): Promise<void> => {
     setProblems([]);
@@ -150,15 +153,17 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
       }
       if (id === BILLING_STEPS.channels) {
         if (flags.ownerInvoicing) {
-          await savePortalSettings.mutateAsync({ portalAccountHolder: values.portalAccountHolder, rechargePortalCommissions: values.rechargePortalCommissions });
+          if (!draft || portalSettingsChanged(values, defaults)) {
+            await savePortalSettings.mutateAsync({ portalAccountHolder: values.portalAccountHolder, rechargePortalCommissions: values.rechargePortalCommissions });
+          }
           const rows = holderChangesRequest(values.holderChanges, holders.data ?? []);
           if (rows) await saveHolders.mutateAsync(rows);
         }
-        const list = rules.data ? commissionRulesRequest(rules.data, values.commissionPercents, today) : null;
+        const list = rules.data ? commissionRulesRequest(rules.data, values.commissionPercents, today, { draft }) : null;
         if (list) await saveRules.mutateAsync(list);
         return;
       }
-      const step = stepSave(id, values, { draft, onRecord });
+      const step = stepSave(id, values, { draft, onRecord, initial: defaults });
       if (step && Object.keys(step.request).length > 0) await save.mutateAsync(step);
     } catch (error) {
       if (isNeedsWholeOrg(error)) setRefused(true);
