@@ -12,8 +12,10 @@ import { BOOKING_THREAD_QUERY, HOST_THREADS_QUERY, UNREAD_MESSAGES_QUERY } from 
 import { BOOKINGS_KEY } from '@/queries/use-bookings';
 import { CHECKIN_SESSION_KEY } from '@/queries/use-checkin';
 import { DASHBOARD_KEY } from '@/queries/use-dashboard';
+import { FISCAL_DOCUMENTS_KEY } from '@/queries/use-fiscal-documents';
 import { INVOICE_DATA_KEY, useInvoiceData } from '@/queries/use-invoice-data';
 import { NOTIFICATIONS_QUERY, UNREAD_COUNT_KEY } from '@/queries/use-notifications';
+import { PAYMENTS_KEY } from '@/queries/use-payments';
 import { VERIFICATION_KEY } from '@/queries/verification';
 import type { PendingAlert } from '@/types/alert';
 import type { NotificationsChange, RealtimeClient, RealtimeState } from '../realtime-client';
@@ -184,6 +186,21 @@ describe('useNotificationsRealtime', () => {
     // A host asked for help while the socket was down: the queue open in front of the staff reads it again.
     const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
     expect(keys).toContainEqual([...ADMIN_ASSIST_KEY]);
+  });
+
+  it('useNotificationsRealtime_ReconnectAfterAGap_AlsoReadsAgainTheFiscalDocuments', () => {
+    const { queryClient, wrapper } = setup();
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    const client = fakeClient();
+    renderHook(() => useNotificationsRealtime({ enabled: true, userId: 'u1', getAccessToken, client }), { wrapper });
+
+    act(() => client.setState('connected'));
+    act(() => client.setState('connecting'));
+    act(() => client.setState('connected'));
+
+    // A document issued while the socket was down sent no message: the pages that show it read the documents again.
+    const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+    expect(keys).toContainEqual([...FISCAL_DOCUMENTS_KEY]);
   });
 
   it('useNotificationsRealtime_AssistRequestedArrives_ReadsTheStaffQueueAgainAndTellsTheBell', () => {
@@ -472,6 +489,47 @@ describe('applyNotificationsChange', () => {
     act(() => applyNotificationsChange(queryClient, { unreadCount: 1, type: 'assist-requested', entityId: 'ar-1' }));
 
     await waitFor(() => expect(readQueue).toHaveBeenCalledTimes(2));
+  });
+
+  // E12/F02/US01/T01: a document of a booking was issued (the push `fiscal-document-issued`, whose entity is the booking): the pages of the documents show it without a reload.
+  it('applyNotificationsChange_FiscalDocumentIssued_ReadsAgainTheDocumentsAndTheLedgerAndNothingOfTheCheckIn', () => {
+    const { queryClient } = setup();
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    applyNotificationsChange(queryClient, { unreadCount: 1, type: 'fiscal-document-issued', entityId: 'b-1' });
+    const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+    expect(keys).toContainEqual([...FISCAL_DOCUMENTS_KEY]);
+    expect(keys).toContainEqual([PAYMENTS_KEY]);
+    expect(keys).not.toContainEqual([CHECKIN_SESSION_KEY]);
+    expect(keys).not.toContainEqual([VERIFICATION_KEY]);
+  });
+
+  it('applyNotificationsChange_FiscalDocumentIssued_AnOpenListAndTheCardOfTheBookingReadTheNewDocumentWithoutAReload', async () => {
+    const { queryClient, wrapper } = setup();
+    const readList = vi.fn().mockResolvedValue({ items: [], totalCount: 0, page: 1, pageSize: 20 });
+    const readCard = vi.fn().mockResolvedValue([]);
+    // What the open page of the documents (`useFiscalDocuments`) and the card of the booking (`useBookingFiscalDocuments`) keep mounted.
+    renderHook(
+      () => [
+        useQuery({ queryKey: [...FISCAL_DOCUMENTS_KEY, 'list', {}, 1, 20], queryFn: readList }),
+        useQuery({ queryKey: [...FISCAL_DOCUMENTS_KEY, 'booking', 'b-1'], queryFn: readCard }),
+      ],
+      { wrapper },
+    );
+    await waitFor(() => expect(readList).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(readCard).toHaveBeenCalledTimes(1));
+
+    act(() => applyNotificationsChange(queryClient, { unreadCount: 1, type: 'fiscal-document-issued', entityId: 'b-1' }));
+
+    await waitFor(() => expect(readList).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(readCard).toHaveBeenCalledTimes(2));
+  });
+
+  it.each(['guest-message', 'new-booking', 'guest-checkin-completed'])('applyNotificationsChange_%s_DoesNotReadTheFiscalDocumentsAgain', (type) => {
+    const { queryClient } = setup();
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    applyNotificationsChange(queryClient, { unreadCount: 1, type, entityId: 'x-1' });
+    const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+    expect(keys).not.toContainEqual([...FISCAL_DOCUMENTS_KEY]);
   });
 
   it.each(['guest-message', 'new-booking', 'verification-required', 'service-request-taken'])(

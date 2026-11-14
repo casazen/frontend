@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { ReportPeriod } from '@/api/reports.api';
-import { formatMoney } from '@/features/fiscal/fiscal-format';
+import { FISCAL_REPORT_CURRENCY, formatMoney } from '@/features/fiscal/fiscal-format';
 import type { ReportSource } from '@/features/reports/report-catalog';
 import { periodProblem } from '@/features/reports/report-period';
 import { parseEuros } from '@/features/supplier/services/lib/service-money';
@@ -48,9 +48,12 @@ function hasSoundGroups(input: string): boolean {
   return separators < 2 || GROUPED_AMOUNT.test(text);
 }
 
-/** An amount to read, from the cents the server sends: `1.234,56 €` in Italian, `€1,234.56` in English. */
+/**
+ * An amount to read, from the cents the server sends: `1.234,56 €` in Italian, `€1,234.56` in English. The tourist tax of these pages is the Italian one, by comune, paid in euro: the answers carry
+ * no currency, so the currency of the Italian tax reports is named here.
+ */
 export function formatCents(cents: number, locale: string): string {
-  return formatMoney(cents / 100, locale);
+  return formatMoney(cents / 100, locale, FISCAL_REPORT_CURRENCY);
 }
 
 /**

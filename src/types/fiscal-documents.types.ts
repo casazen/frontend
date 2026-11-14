@@ -43,6 +43,9 @@ export interface FiscalDocumentEntry {
   source: string;
   kind: string;
   status: string;
+  /** The series and the number in it that the server gave the document when it issued it (`number` is the two together): a draft has none. */
+  series: string | null;
+  sequenceNumber: number | null;
   number: string | null;
   issueDate: string | null;
   currency: string;
@@ -86,10 +89,95 @@ export interface FiscalDocumentsContext {
   mode: string | null;
   casazenIssuanceEnabled: boolean;
   sdiProviderConfigured: boolean;
+  /**
+   * The pattern of the series of the documents of the guests, as the setting holds it (`{year}` stands for the year of the issue). `''`: the setting has none, so the server uses the
+   * year. Left out (or `null`) when the setting could not say, and nothing is claimed about the series then.
+   */
+  guestDocumentSeries?: string | null;
 }
 
 /** A file the API sent back: its bytes and the name it gave it (`Content-Disposition`, when the page may read it). */
 export interface FiscalDocumentFile {
   blob: Blob;
   contentDisposition: string | null;
+}
+
+/** What a line of a document is (backend `FiscalLineType`): the words are written for these codes, any other one is shown as it came. */
+export const FISCAL_DOCUMENT_LINE_TYPES = ['Accommodation', 'AdvancedExpense', 'Cleaning', 'Commission', 'ExtraService', 'Other', 'Recharge', 'TouristTax'] as const;
+
+/**
+ * One line of a document as the detail shows it. The amounts are the ones the server stored: `totalPrice` is the amount of the line WITHOUT VAT (the server keeps the lines net of VAT) and
+ * `unitPrice` the same per unit. `lineType` and `vatAmount` are there only when the server sends them (`null`: it did not, and nothing is made up).
+ */
+export interface FiscalDocumentLine {
+  lineNumber: number;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  vatRatePercent: number;
+  vatNatureCode: string | null;
+  lineType: string | null;
+  vatAmount: number | null;
+}
+
+/** Who issued the document as it was when it was issued (the snapshot), as far as the server says it: `null` while the answer carries none. */
+export interface FiscalDocumentIssuer {
+  legalName: string | null;
+  vatNumber: string | null;
+  country: string | null;
+}
+
+/**
+ * One document with its lines (`GET api/fiscal/documents/{id}`), reduced like the list: the name of the recipient is kept and nothing else of it (no fiscal code, VAT number, address or PEC).
+ * `taxableBase`, `vatAmount`, `stampDuty` and `total` are the server's, in `currency`. `paymentChannel` (who collected the money: the portal, CasaZen or outside) and `issuer` are there only
+ * when the server sends them.
+ */
+export interface FiscalDocumentDetail extends FiscalDocumentEntry {
+  taxableBase: number;
+  vatAmount: number;
+  stampDuty: number;
+  lines: FiscalDocumentLine[];
+  paymentChannel: string | null;
+  issuer: FiscalDocumentIssuer | null;
+}
+
+/** What a write on a document answers, reduced to what the screens use: the document and the number it has now (a draft has none). */
+export interface FiscalDocumentChange {
+  id: string;
+  number: string | null;
+}
+
+/** One document of a bulk issue: issued with its number, or not with the stable code of why (`errorCode`). */
+export interface FiscalDocumentBatchRow {
+  id: string;
+  issued: boolean;
+  number: string | null;
+  errorCode: string | null;
+}
+
+/** The answer of a bulk issue: one row per document, how many were issued, how many were not, and how many more drafts the selection matched beyond what one request issues. */
+export interface FiscalDocumentBatchResult {
+  rows: FiscalDocumentBatchRow[];
+  issued: number;
+  failed: number;
+  remaining: number;
+}
+
+/** What a credit note is asked for: the amount (the whole document when left out) and why. The confirmation is the host pressing the button. */
+export interface FiscalCreditNoteRequest {
+  amount?: number;
+  reason: string;
+}
+
+/** One document of a booking as its card shows it (`GET api/bookings/{id}/fiscal-documents`): no recipient and no line. */
+export interface BookingFiscalDocument {
+  id: string;
+  kind: string;
+  status: string;
+  number: string | null;
+  total: number;
+  currency: string;
+  paymentState: string;
+  issueDate: string | null;
 }

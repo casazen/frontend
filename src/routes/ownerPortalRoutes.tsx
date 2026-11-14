@@ -14,6 +14,7 @@ import { OwnerDashboard } from '@/pages/owner-portal/OwnerDashboard';
 import { OwnerDocuments } from '@/pages/owner-portal/OwnerDocuments';
 import { OwnerInbox } from '@/pages/owner-portal/OwnerInbox';
 import { OwnerProperties } from '@/pages/owner-portal/OwnerProperties';
+import { OwnerStatementDetail } from '@/pages/owner-portal/OwnerStatementDetail';
 import { OwnerStatements } from '@/pages/owner-portal/OwnerStatements';
 
 /**
@@ -49,6 +50,8 @@ export const ownerPortalRoutes: RouteObject[] = [
       { path: 'immobili/:propertyId', element: <OwnerProperties /> },
       { path: 'calendario/:propertyId?', element: <OwnerCalendar /> },
       { path: 'contabilita', element: <OwnerStatements /> },
+      // One published statement with its lines: the id of its version only (no amount and no name in the address).
+      { path: 'contabilita/:statementId', element: <OwnerStatementDetail /> },
       // The old address of the statements: the accounting page holds them now.
       { path: 'rendiconti', element: <Navigate to={ownerPortalPaths.accounting} replace /> },
       { path: 'documenti', element: <OwnerDocuments /> },

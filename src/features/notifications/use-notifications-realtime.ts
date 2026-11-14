@@ -10,7 +10,9 @@ import { BOOKINGS_KEY } from '@/queries/use-bookings';
 import { CHECKIN_SESSION_KEY } from '@/queries/use-checkin';
 import { DASHBOARD_KEY } from '@/queries/use-dashboard';
 import { INVOICE_DATA_KEY } from '@/queries/use-invoice-data';
+import { FISCAL_DOCUMENTS_KEY } from '@/queries/use-fiscal-documents';
 import { NOTIFICATIONS_QUERY, UNREAD_COUNT_KEY } from '@/queries/use-notifications';
+import { PAYMENTS_KEY } from '@/queries/use-payments';
 import { VERIFICATION_KEY } from '@/queries/verification';
 import type { PendingAlert } from '@/types/alert';
 import {
@@ -112,6 +114,22 @@ function refreshVerifications(queryClient: QueryClient): void {
 }
 
 /**
+ * A fiscal document of a booking was issued (`PushTypes.FiscalDocumentIssued`, E12/F01/US01/T02, sent to the hosts of the booking for a single issue and for what a correction issues by itself);
+ * its `entityId` is the booking.
+ */
+const FISCAL_DOCUMENT_ISSUED = 'fiscal-document-issued';
+
+/**
+ * What an issued document changes on screen: the list of the fiscal documents, the detail of a document, the documents of a booking (the card of its tab Pagamento) and the numbers the next
+ * confirmation reads, all under `FISCAL_DOCUMENTS_KEY`, and the payment ledger, which shows the fiscal document of a booking. A page open in front of the host shows the new number and state
+ * without a reload. The bulk issue and the daily run send nothing (one message per document would flood the bell): the page that asked for the bulk issue reads its own answer.
+ */
+function refreshFiscalDocuments(queryClient: QueryClient): void {
+  void queryClient.invalidateQueries({ queryKey: FISCAL_DOCUMENTS_KEY });
+  void queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY] });
+}
+
+/**
  * What a request of help from a host changes on screen: the staff queue of the «Fallo per me» requests (`ADMIN_ASSIST_KEY`, the list and its pages): the
  * page open in front of the staff shows the new request without a reload. The queries of anyone who has no such page do not exist, so nothing is read.
  */
@@ -141,6 +159,7 @@ export function applyNotificationsChange(queryClient: QueryClient, change: Notif
   else if (change.type !== null && COMPLIANCE_ALERT_TYPES.has(change.type)) refreshComplianceLights(queryClient, change.type);
   if (change.type === VERIFICATION_REQUIRED) refreshVerifications(queryClient);
   if (change.type === ASSIST_REQUESTED) refreshAssistQueue(queryClient);
+  if (change.type === FISCAL_DOCUMENT_ISSUED) refreshFiscalDocuments(queryClient);
 }
 
 /** After a gap in the channel events may have been missed: everything the channel feeds is read again, the count included. */
@@ -154,6 +173,8 @@ export function refreshAfterGap(queryClient: QueryClient): void {
   // The same for a verification handed to an operator, and for a request of help that reached the staff.
   refreshVerifications(queryClient);
   refreshAssistQueue(queryClient);
+  // And for a document issued while the channel was down.
+  refreshFiscalDocuments(queryClient);
 }
 
 // One connection per tab: every user of the hook shares this client, and the channel closes with the last one.

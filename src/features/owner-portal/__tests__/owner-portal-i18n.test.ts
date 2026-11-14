@@ -105,6 +105,10 @@ describe('the texts of the owner portal', () => {
       ['ownerPortal.documents.versionState', ['upcoming', 'current', 'superseded', 'expired'], ['']],
       ['ownerPortal.accounting.invoiceStatus', ['Entered', 'Verified'], ['']],
       ['ownerPortal.accounting.status', ['published', 'superseded'], ['']],
+      ['ownerPortal.accounting.totals', ['gross', 'channelFees', 'withholding', 'commission', 'charges', 'corrections', 'net', 'payments', 'openingBalance', 'closingBalance'], ['']],
+      ['ownerPortal.accounting.sections', ['stays', 'channelFees', 'withholding', 'commission', 'recharges', 'corrections', 'payments'], ['']],
+      ['ownerPortal.accounting.pmInvoices.kind', ['Invoice', 'Receipt', 'CreditNote', 'Other'], ['']],
+      ['ownerPortal.accounting.line.kind', ['cleaning', 'linen'], ['']],
       ['ownerPortal.inbox.topic', ['General', 'Property', 'OwnerStay', 'Document', 'StatementVersion'], ['']],
       ['ownerPortal.inbox.new.topics', ['general', 'property', 'ownerStay', 'document', 'statementVersion'], ['']],
       ['ownerPortal.inbox.thread.attachment', ['type', 'size', 'empty'], ['']],
@@ -133,7 +137,7 @@ describe('the texts of the owner portal', () => {
       'owner_contact_agency_required', 'owner_contact_invalid', 'owner_contact_exists', 'owner_contact_limit_reached', 'owner_contact_daily_limit_reached',
       'owner_contact_revoked', 'owner_contact_email_not_queued', 'owner_conversation_not_found', 'owner_conversation_invalid',
       'owner_conversation_reference_not_found', 'owner_message_invalid', 'owner_attachment_not_found', 'owner_file_too_large', 'owner_file_type_not_allowed',
-      'owner_file_active_content',
+      'owner_file_active_content', 'owner_statement_version_not_found', 'owner_statement_pdf_not_available', 'owner_portal_invoice_not_found',
     ];
     const camel = (code: string) => {
       const [first, ...rest] = code.split('_');

@@ -18,6 +18,8 @@ describe('ownerPortalApi: what is not the answer of the endpoint is an error to 
     ['getProperties', () => ownerPortalApi.getProperties()],
     ['listStays', () => ownerPortalApi.listStays()],
     ['listExternalDocuments', () => ownerPortalApi.listExternalDocuments()],
+    ['listStatements', () => ownerPortalApi.listStatements()],
+    ['listInvoices', () => ownerPortalApi.listInvoices()],
     ['listContacts', () => ownerPortalApi.listContacts()],
     ['listConversations', () => ownerPortalApi.listConversations()],
     ['listMessages', () => ownerPortalApi.listMessages('c1')],
@@ -53,6 +55,27 @@ describe('ownerPortalApi: what is not the answer of the endpoint is an error to 
 
     await expect(ownerPortalApi.listDocuments()).resolves.toEqual({ documents: [{ id: 'd1' }], statements: [{ statementVersionId: 's1' }] });
     expect(axios.get).toHaveBeenCalledWith('/owner-portal/documents', { params: undefined });
+  });
+
+  it.each([[[null]], [[{ statementId: 's1' }]], [[{ totals: {} }]]])('listStatements_AnItemThatIsNotAStatementWithItsTotals_IsALoadError (%j)', async (body) => {
+    vi.mocked(axios.get).mockResolvedValueOnce({ data: body });
+    await expect(ownerPortalApi.listStatements()).rejects.toBeInstanceOf(UnexpectedApiResponseError);
+  });
+
+  it.each([[{ statement: { totals: {} } }], [{ statement: { totals: {} }, sections: [{}], touristTax: [] }], [{ sections: [], touristTax: [] }], [[]]])(
+    'getStatement_TheStatementWithItsTotalsAndBothListsMustBeThere_OrTheAnswerIsNotTheOneOfTheEndpoint (%j)',
+    async (body) => {
+      vi.mocked(axios.get).mockResolvedValueOnce({ data: body });
+      await expect(ownerPortalApi.getStatement('s1')).rejects.toBeInstanceOf(UnexpectedApiResponseError);
+    },
+  );
+
+  it('getStatement_AsksForOneStatementByItsId_AndKeepsTheAnswerAsItCame', async () => {
+    const detail = { statement: { statementId: 's/1', totals: { net: 1 } }, sections: [{ section: 'stays', total: 1, lines: [] }], touristTax: [] };
+    vi.mocked(axios.get).mockResolvedValueOnce({ data: detail });
+
+    await expect(ownerPortalApi.getStatement('s/1')).resolves.toEqual(detail);
+    expect(axios.get).toHaveBeenCalledWith('/owner-portal/statements/s%2F1', { params: undefined });
   });
 });
 
@@ -138,6 +161,17 @@ describe('ownerPortalApi: the files (a blob from the authenticated API, a multip
     await expect(ownerPortalApi.downloadAttachment('c1', 'm 1')).resolves.toBe(blob);
 
     expect(axios.get).toHaveBeenCalledWith('/owner-portal/conversations/c1/messages/m%201/attachment', { responseType: 'blob' });
+  });
+
+  it('downloadStatementPdf_AndDownloadInvoicePdf_AskForTheFileOfThatIdAsABlob_TheInvoiceInTheLanguageGiven', async () => {
+    const blob = new Blob(['%PDF']);
+    vi.mocked(axios.get).mockResolvedValue({ data: blob });
+
+    await expect(ownerPortalApi.downloadStatementPdf('s/1')).resolves.toBe(blob);
+    await ownerPortalApi.downloadInvoicePdf('i 1', 'en');
+
+    expect(axios.get).toHaveBeenNthCalledWith(1, '/owner-portal/statements/s%2F1/pdf', { responseType: 'blob' });
+    expect(axios.get).toHaveBeenNthCalledWith(2, '/owner-portal/invoices/i%201/pdf?lang=en', { responseType: 'blob' });
   });
 
   it('downloadDocument_AProblemBodyThatArrivesAsABlob_IsParsedSoThatItsCodeCanBeRead', async () => {

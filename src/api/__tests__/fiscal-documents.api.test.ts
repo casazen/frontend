@@ -2,9 +2,20 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios';
 import { getHttpStatus, getProblemCode, UnexpectedApiResponseError } from '@/lib/api-errors';
 import axios from '@/lib/axios';
-import { downloadPdf, downloadXml, exportList, FISCAL_DOCUMENT_ERROR, getDocumentsContext, listDocuments, pdfPathOf } from '../fiscal-documents.api';
+import {
+  downloadPdf,
+  downloadXml,
+  exportList,
+  FISCAL_DOCUMENT_ERROR,
+  getDocument,
+  getDocumentsContext,
+  issueBatch,
+  listBookingDocuments,
+  listDocuments,
+  pdfPathOf,
+} from '../fiscal-documents.api';
 
-vi.mock('@/lib/axios', () => ({ default: { get: vi.fn() } }));
+vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), post: vi.fn() } }));
 
 /** What the shared client resolves with for a read that came back with a status the read accepts. */
 const answer = (data: unknown, status = 200, headers: Record<string, string> = {}) => ({ status, data, headers });
@@ -151,6 +162,8 @@ describe('a 403 (permission rule: the refusal of the server is an answer of the 
     ['the XML', () => downloadXml({ id: DOCUMENT_ID })],
     ['a file of the list', () => exportList('csv', {})],
     ['the setting', () => getDocumentsContext()],
+    ['the detail', () => getDocument(DOCUMENT_ID)],
+    ['the documents of a booking', () => listBookingDocuments('b0000000-0000-4000-8000-000000000001')],
   ])('%s_A403_IsAcceptedByTheClientAndThrownAsTheRefusalItIsWithItsResponse', async (_case, read) => {
     vi.mocked(axios.get).mockResolvedValueOnce(answer('', 403));
 
@@ -262,7 +275,8 @@ describe('getDocumentsContext', () => {
     const context = await getDocumentsContext();
 
     expect(axios.get).toHaveBeenCalledWith('/fiscal/documents/settings', expect.anything());
-    expect(context).toEqual({ mode: 'CasaZenDirectOnly', casazenIssuanceEnabled: true, sdiProviderConfigured: false });
+    // The setting has no series of its own: the server uses the year, which the context says with an empty pattern.
+    expect(context).toEqual({ mode: 'CasaZenDirectOnly', casazenIssuanceEnabled: true, sdiProviderConfigured: false, guestDocumentSeries: '' });
     const kept = JSON.stringify(context);
     for (const secret of [VAT_NUMBER, FISCAL_CODE, 'Via Roma', 'pec.example', 'Some Provider']) expect(kept).not.toContain(secret);
   });
@@ -270,7 +284,15 @@ describe('getDocumentsContext', () => {
   it('GetDocumentsContext_ASettingNobodyChoseYet_HasNoMode', async () => {
     vi.mocked(axios.get).mockResolvedValueOnce(answer(settings({ mode: undefined, sdi: { providerConfigured: true } })));
 
-    expect(await getDocumentsContext()).toEqual({ mode: null, casazenIssuanceEnabled: true, sdiProviderConfigured: true });
+    expect(await getDocumentsContext()).toEqual({ mode: null, casazenIssuanceEnabled: true, sdiProviderConfigured: true, guestDocumentSeries: '' });
+  });
+
+  it('GetDocumentsContext_TheSeriesOfTheSetting_IsKeptAsThePatternItIsAndNothingIsClaimedWithoutTheIssuer', async () => {
+    vi.mocked(axios.get).mockResolvedValueOnce(answer(settings({ issuer: { legalName: 'Casa Srl', guestDocumentSeries: ' PM-{year} ' } })));
+    expect((await getDocumentsContext()).guestDocumentSeries).toBe('PM-{year}');
+
+    vi.mocked(axios.get).mockResolvedValueOnce(answer(settings({ issuer: undefined })));
+    expect((await getDocumentsContext()).guestDocumentSeries).toBeNull();
   });
 
   it.each([
@@ -283,5 +305,102 @@ describe('getDocumentsContext', () => {
     vi.mocked(axios.get).mockResolvedValueOnce(answer(body));
 
     await expect(getDocumentsContext()).rejects.toBeInstanceOf(UnexpectedApiResponseError);
+  });
+});
+
+describe('getDocument', () => {
+  // Privacy rule: the detail keeps the lines and the name of the recipient and nothing fiscal of it (no fiscal code, VAT number, address or PEC).
+  it('GetDocument_ADocumentWithItsLines_KeepsTheLinesAndTheNameAndNothingFiscalOfTheRecipient', async () => {
+    vi.mocked(axios.get).mockResolvedValueOnce(answer(wire({ lines: [{ lineNumber: 1, description: 'Soggiorno', quantity: 1, unitPrice: 100, totalPrice: 100, vatRatePercent: 22, lineType: 'Accommodation', vatAmount: 18.03 }] })));
+
+    const detail = await getDocument(DOCUMENT_ID);
+
+    expect(axios.get).toHaveBeenCalledWith(`/fiscal/documents/${DOCUMENT_ID}`, expect.anything());
+    expect(detail.recipientName).toBe('Mario Rossi');
+    expect(detail.lines).toEqual([
+      { lineNumber: 1, description: 'Soggiorno', quantity: 1, unitPrice: 100, totalPrice: 100, vatRatePercent: 22, vatNatureCode: null, lineType: 'Accommodation', vatAmount: 18.03 },
+    ]);
+    expect([detail.taxableBase, detail.vatAmount, detail.stampDuty, detail.total, detail.currency]).toEqual([100, 22.1, 0, 122.1, 'EUR']);
+    const kept = JSON.stringify(detail);
+    for (const secret of [FISCAL_CODE, VAT_NUMBER, 'Via Roma', 'pec.example', '00100']) expect(kept).not.toContain(secret);
+    expect(Object.keys(detail).filter((key) => /fiscalcode|vatnumber|address|pec|postal|city|sdicode/i.test(key))).toEqual([]);
+  });
+
+  it('GetDocument_WhatTheServerDoesNotSayOfALine_IsNullAndNeverMadeUp', async () => {
+    vi.mocked(axios.get).mockResolvedValueOnce(answer(wire()));
+
+    const [line] = (await getDocument(DOCUMENT_ID)).lines;
+
+    expect(line).toMatchObject({ lineType: null, vatAmount: null, vatNatureCode: null });
+  });
+
+  it.each([
+    ['a line with no amount', wire({ lines: [{ lineNumber: 1, description: 'Soggiorno', quantity: 1, unitPrice: 100, vatRatePercent: 22 }] })],
+    ['no lines', wire({ lines: undefined })],
+    ['a total of the document that is a text', wire({ taxableBase: '100' })],
+    ['the index.html behind a wrong rewrite', '<!doctype html><html></html>'],
+  ])('GetDocument_%s_IsALoadErrorAndNeverADocument', async (_case, body) => {
+    vi.mocked(axios.get).mockResolvedValueOnce(answer(body));
+
+    await expect(getDocument(DOCUMENT_ID)).rejects.toBeInstanceOf(UnexpectedApiResponseError);
+  });
+});
+
+describe('issueBatch', () => {
+  // Data rule: the counts are made from the rows, one per document, so a count can never say «all issued» over a row that failed.
+  it('IssueBatch_TheCounts_AreMadeFromTheRowsAndNotTakenFromTheAnswer', async () => {
+    vi.mocked(axios.post).mockResolvedValueOnce(
+      answer({
+        rows: [
+          { id: 'a', issued: true, number: '2026/6' },
+          { id: 'b', issued: false, errorCode: 'document_draft_outdated' },
+        ],
+        issued: 2,
+        failed: 0,
+        remaining: 3,
+      }),
+    );
+
+    const result = await issueBatch(['a', 'b']);
+
+    // The call works through up to 200 documents in a row: it is given more than the 30 s of every other call, so the answer of every document is not lost to a timeout.
+    expect(axios.post).toHaveBeenCalledWith('/fiscal/documents/issue-batch', { documentIds: ['a', 'b'] }, { timeout: 5 * 60_000 });
+    expect([result.issued, result.failed, result.remaining]).toEqual([1, 1, 3]);
+    expect(result.rows).toEqual([
+      { id: 'a', issued: true, number: '2026/6', errorCode: null },
+      { id: 'b', issued: false, number: null, errorCode: 'document_draft_outdated' },
+    ]);
+  });
+
+  it.each([
+    ['no rows', { issued: 2, failed: 0 }],
+    ['a row with no verdict', { rows: [{ id: 'a' }] }],
+    ['the index.html behind a wrong rewrite', '<!doctype html><html></html>'],
+  ])('IssueBatch_%s_IsALoadErrorAndNeverASuccess', async (_case, body) => {
+    vi.mocked(axios.post).mockResolvedValueOnce(answer(body));
+
+    await expect(issueBatch(['a'])).rejects.toBeInstanceOf(UnexpectedApiResponseError);
+  });
+});
+
+describe('listBookingDocuments', () => {
+  it('ListBookingDocuments_TheDocumentsOfABooking_AreKeptWithTheirCurrencyAndTheirPaymentState', async () => {
+    vi.mocked(axios.get).mockResolvedValueOnce(
+      answer([{ id: 'd-1', kind: 'Invoice', status: 'Issued', number: '2026/5', total: 736, currency: 'CHF', paymentState: 'ToCollect', issueDate: '2026-11-05', creditedDocumentId: null }]),
+    );
+
+    const documents = await listBookingDocuments('b-1');
+
+    expect(axios.get).toHaveBeenCalledWith('/bookings/b-1/fiscal-documents', expect.anything());
+    expect(documents).toEqual([{ id: 'd-1', kind: 'Invoice', status: 'Issued', number: '2026/5', total: 736, currency: 'CHF', paymentState: 'ToCollect', issueDate: '2026-11-05' }]);
+  });
+
+  it.each([
+    ['not a list', { items: [] }],
+    ['a document with no currency', [{ id: 'd-1', kind: 'Invoice', status: 'Issued', total: 736, paymentState: 'ToCollect' }]],
+  ])('ListBookingDocuments_%s_IsALoadErrorAndNeverAnEmptyCard', async (_case, body) => {
+    vi.mocked(axios.get).mockResolvedValueOnce(answer(body));
+
+    await expect(listBookingDocuments('b-1')).rejects.toBeInstanceOf(UnexpectedApiResponseError);
   });
 });
