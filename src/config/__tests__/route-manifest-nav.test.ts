@@ -439,9 +439,11 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
       '/app/short-rent/settings/domain',
     ],
     // Documenti (NF-99) is the tab right after Report: it asks for 2.5, and Regime fiscale keeps its 3. Documenti fiscali (E06/F03/US04/T01, behind the flags of the documents) is next to Regime fiscale, at 3.5.
+    // Commercialista (E15/F02/US01/T01, behind its flag) is next to Report too, at 2.25: while its flag is off Documenti is right after Report, as it was.
     '/app/short-rent/payments': [
       '/app/short-rent/payments/revenue',
       '/app/short-rent/reports',
+      '/app/short-rent/accountant',
       '/app/short-rent/documents',
       '/app/short-rent/fiscal',
       '/app/short-rent/fiscal/documents',
@@ -462,6 +464,7 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
     octorateOnboarding: true,
     messageAssistant: true,
     ownerInvoicing: true,
+    accountantPackage: true,
   };
 
   it('lists the pages of each section in tab order, and no other page hangs', () => {
@@ -664,6 +667,7 @@ describe('route-manifest sections as tabs (UI-04a)', () => {
       octorateOnboarding: true,
       messageAssistant: true,
       ownerInvoicing: true,
+      accountantPackage: true,
     };
     for (const entry of ROUTE_MANIFEST.filter((candidate) => candidate.navParent)) {
       const tabs = paths(getNavSection(entry.path, allowAll, flags));

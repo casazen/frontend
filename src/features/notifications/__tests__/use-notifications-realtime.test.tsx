@@ -6,6 +6,7 @@ import { getInvoiceData } from '@/api/invoice-data.api';
 import { COMPLIANCE_KEY } from '@/features/compliance/use-compliance';
 import { COMPLIANCE_ARCHIVE_KEY } from '@/queries/compliance-archive';
 import { COMPLIANCE_HEALTH_KEY } from '@/queries/compliance-health';
+import { ACCOUNTANT_PACKAGE_KEY } from '@/queries/use-accountant-package';
 import { ADMIN_ASSIST_KEY } from '@/queries/use-admin-onboarding-assist';
 import { ALLOGGIATI_KEY } from '@/queries/use-alloggiati';
 import { BOOKING_THREAD_QUERY, HOST_THREADS_QUERY, UNREAD_MESSAGES_QUERY } from '@/queries/use-booking-messages';
@@ -499,6 +500,8 @@ describe('applyNotificationsChange', () => {
     const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
     expect(keys).toContainEqual([...FISCAL_DOCUMENTS_KEY]);
     expect(keys).toContainEqual([PAYMENTS_KEY]);
+    // The summary of the page «Commercialista» counts the documents issued to the guests (E15/F02/US01/T01): an open page reads it again too.
+    expect(keys).toContainEqual([ACCOUNTANT_PACKAGE_KEY]);
     expect(keys).not.toContainEqual([CHECKIN_SESSION_KEY]);
     expect(keys).not.toContainEqual([VERIFICATION_KEY]);
   });

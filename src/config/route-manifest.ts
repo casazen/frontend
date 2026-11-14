@@ -319,6 +319,21 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/reports/reports-page')).ReportsPage }),
   },
   {
+    // «Commercialista» (E15/F02/US01/T01, NF-101, NF-115): the summary of the agency for a month or a year, as compact tables, and the ZIP the accountant receives, from one page. A tab of
+    // Incassi next to Report (2.25: Documenti keeps its 2.5, Regime fiscale its 3). It asks what the API asks at its door, `payment.read` (the owner, the administrators, the property managers
+    // and the accountant hold it); the owner accounting inside it is shown only when the server says the caller may read it. It exists only while the flag `accountantPackage` is on: off, the
+    // tab is not there, the address leads to the home of the area and the backend answers 404 to both endpoints. For who may not read payments, there is no way in.
+    path: '/app/short-rent/accountant',
+    context: 'short-rent',
+    requiredPermissions: ['payment.read'],
+    featureFlag: 'accountantPackage',
+    navKey: 'nav.accountant',
+    navParent: '/app/short-rent/payments',
+    navOrder: 2.25,
+    icon: 'FileCheck',
+    component: async () => ({ default: (await import('@/features/accountant/accountant-package-page')).AccountantPackagePage }),
+  },
+  {
     // The documents of the organization in one place (NF-99, REP-04): the property documents, the contracts, the tourist tax receipts and, as
     // their tasks arrive, the compliance proofs and the fiscal documents; filtered by type, days and property, searched, downloaded one by one
     // or as a ZIP of a period. A tab of Incassi right after Report (2.5: Regime fiscale keeps its 3). It asks what the API asks at its door,
