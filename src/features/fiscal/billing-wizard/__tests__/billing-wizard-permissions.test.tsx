@@ -67,6 +67,12 @@ async function onStep(step: string) {
   await waitFor(() => expect(wizard()).toHaveAttribute('data-step', step), WAIT);
 }
 
+/** «Continua», once the button is enabled: a click on a button that is still switched off does nothing, and the test would then wait for a step that never comes. */
+async function next() {
+  await waitFor(() => expect(screen.getByTestId('fiscal-billing-next')).toBeEnabled(), WAIT);
+  fireEvent.click(screen.getByTestId('fiscal-billing-next'));
+}
+
 /** Every field of the step on screen: the text boxes, the choices, the lists and the buttons drawn inside it. */
 function fieldsOfTheStep(step: string): HTMLElement[] {
   return Array.from(screen.getByTestId(`billing-step-${step}`).querySelectorAll<HTMLElement>('input, select, textarea, button'));
@@ -102,7 +108,7 @@ describe('the wizard «Fatturazione» is read-only for who may not change the se
     for (const field of fields) expect(field, field.getAttribute('data-testid') ?? field.tagName).toBeDisabled();
 
     // «Continua» only moves on: nothing is saved for a person who may not save, and the next step is read-only too.
-    fireEvent.click(screen.getByTestId('fiscal-billing-next'));
+    await next();
     await onStep('vat');
     expect(fieldsOfTheStep('vat').length).toBeGreaterThan(0);
     for (const field of fieldsOfTheStep('vat')) expect(field, field.getAttribute('data-testid') ?? field.tagName).toBeDisabled();
@@ -118,7 +124,7 @@ describe('the wizard «Fatturazione» is read-only for who may not change the se
     expect(screen.getByTestId('billing-read-only')).toHaveTextContent(text('billingWizard.readOnly.noPermission'));
     for (const field of fieldsOfTheStep('issuer')) expect(field, field.getAttribute('data-testid') ?? field.tagName).toBeDisabled();
     expect(api.canChangeBillingSetup).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByTestId('fiscal-billing-next'));
+    await next();
     await onStep('vat');
     expect(api.saveBillingSetupSection).not.toHaveBeenCalled();
   });
@@ -132,7 +138,7 @@ describe('the wizard «Fatturazione» is read-only for who may not change the se
     expect(screen.getByTestId('billing-legal-name')).toBeEnabled();
     expect(screen.getByTestId('billing-street')).toBeEnabled();
 
-    fireEvent.click(screen.getByTestId('fiscal-billing-next'));
+    await next();
     await onStep('vat');
     expect(api.saveBillingSetupSection).toHaveBeenCalledTimes(1);
     expect(vi.mocked(api.saveBillingSetupSection).mock.calls[0][0]).toBe('issuer');
@@ -150,7 +156,7 @@ describe('the wizard «Fatturazione» is read-only for who may not change the se
     await onStep('issuer');
 
     fireEvent.change(screen.getByTestId('billing-legal-name'), { target: { value: 'Casa Lugano 2 SA' } });
-    fireEvent.click(screen.getByTestId('fiscal-billing-next'));
+    await next();
 
     await waitFor(() => expect(screen.getByTestId('billing-read-only')).toHaveTextContent(text('billingWizard.readOnly.partialScope')), WAIT);
     for (const field of fieldsOfTheStep('issuer')) expect(field, field.getAttribute('data-testid') ?? field.tagName).toBeDisabled();
