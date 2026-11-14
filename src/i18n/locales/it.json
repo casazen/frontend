@@ -2661,6 +2661,7 @@
         "default": "Percentuale proposta da CasaZen: non l’hai ancora confermata.",
         "hint": "Quando il portale non indica la sua commissione, CasaZen usa questa percentuale sull’importo del soggiorno, tassa di soggiorno esclusa. Confermandola la salvi come regola della tua agenzia.",
         "inForce": "È la percentuale in vigore.",
+        "keepsInForce": "Lasciato vuoto, resta in vigore il {{percent}}%: da qui una regola non si toglie, si cambia scrivendo la nuova percentuale.",
         "loadError": "Non riusciamo a leggere le commissioni dei portali.",
         "loading": "Leggo le commissioni dei portali",
         "none": "Nessuna percentuale impostata: i soggiorni di questo portale senza commissione restano in attesa.",

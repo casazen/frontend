@@ -2661,6 +2661,7 @@
         "default": "The percentage CasaZen proposes: you have not confirmed it yet.",
         "hint": "When a portal does not state its commission, CasaZen uses this percentage on the amount of the stay, tourist tax excluded. Confirming it saves it as the rule of your agency.",
         "inForce": "This is the percentage in force.",
+        "keepsInForce": "Left empty, the {{percent}}% in force stays: a rule is not removed from here, it is changed by writing the new percentage.",
         "loadError": "We cannot read the commissions of the portals.",
         "loading": "Reading the commissions of the portals",
         "none": "No percentage set: the stays of this portal that carry no commission wait.",
