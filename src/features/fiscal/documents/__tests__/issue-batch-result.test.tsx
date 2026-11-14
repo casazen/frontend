@@ -15,7 +15,7 @@ const env = vi.hoisted(() => ({ permissions: new Set<string>(), flags: {} as Rec
 
 vi.mock('@/api/fiscal-documents.api', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/api/fiscal-documents.api')>();
-  return { ...actual, listDocuments: vi.fn(), getDocumentsContext: vi.fn(), issueBatch: vi.fn(), listDraftsForBatch: vi.fn() };
+  return { ...actual, listDocuments: vi.fn(), getDocumentsContext: vi.fn(), issueBatch: vi.fn(), listDraftsForBatch: vi.fn(), refreshDraft: vi.fn() };
 });
 vi.mock('sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 vi.mock('@/components/layout/app-shell', () => ({
@@ -175,6 +175,33 @@ describe('what is ticked belongs to the filters it was ticked under (data rule)'
     await waitFor(() => expect(screen.getByTestId('fiscal-documents-select-period')).toBeEnabled());
     expect(screen.queryByTestId('fiscal-documents-batch-bar')).not.toBeInTheDocument();
     expect(screen.queryByTestId('fiscal-documents-select-note')).not.toBeInTheDocument();
+  });
+});
+
+describe('a bulk issue never starts a second write on a draft that is being written (data rule)', () => {
+  it('IssueSelected_ADraftTickedIsBeingMadeAgain_IsOfferedOnlyOnceThatWriteIsDone', async () => {
+    let finishTheRefresh: () => void = () => undefined;
+    vi.mocked(api.refreshDraft).mockReturnValue(
+      new Promise((resolve) => {
+        finishTheRefresh = () => resolve({ id: A, number: null });
+      }),
+    );
+    renderPage();
+    const table = await screen.findByRole('table');
+    fireEvent.click(screen.getByTestId('fiscal-documents-select-page'));
+    const [firstRow] = within(table).getAllByTestId('fiscal-document-row');
+
+    fireEvent.click(within(firstRow).getByTestId('fiscal-document-refresh'));
+
+    // The draft is being made again: its own buttons wait, and so does the bulk issue that has it ticked.
+    await waitFor(() => expect(screen.getByTestId('fiscal-documents-issue-selected')).toBeDisabled());
+    expect(within(firstRow).getByTestId('fiscal-document-issue')).toBeDisabled();
+
+    await act(async () => {
+      finishTheRefresh();
+    });
+    await waitFor(() => expect(screen.getByTestId('fiscal-documents-issue-selected')).toBeEnabled());
+    expect(api.issueBatch).not.toHaveBeenCalled();
   });
 });
 

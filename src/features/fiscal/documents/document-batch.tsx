@@ -20,6 +20,8 @@ interface BatchControlsProps {
   searching: boolean;
   /** A bulk issue is running. */
   issuing: boolean;
+  /** A write is running on one of the ticked drafts (one made again, one issued from its detail...): the bulk issue waits for it, as the buttons of that draft do. */
+  waiting: boolean;
   note: SelectNote | null;
   onSelectPeriod: () => void;
   onIssue: () => void;
@@ -29,11 +31,11 @@ interface BatchControlsProps {
 /**
  * What a bulk issue is started from (E12/F02/US01/T01): «Seleziona tutte le bozze del periodo», which ticks the drafts of the stays that the filters of the list show (at most the 200 a bulk issue takes,
  * and it says when there are more), and, while some are ticked, the bar with their count, «Emetti selezionate» and a way to untick them all. Nothing is issued by ticking: the bulk issue asks for its
- * confirmation first. The buttons wait while the search or the issue runs.
+ * confirmation first. The buttons wait while the search or the issue runs, and while any other write runs on one of the ticked drafts (a second write on the same document never starts).
  */
-export function DocumentBatchControls({ count, canSelectPeriod, searching, issuing, note, onSelectPeriod, onIssue, onClear }: BatchControlsProps) {
+export function DocumentBatchControls({ count, canSelectPeriod, searching, issuing, waiting, note, onSelectPeriod, onIssue, onClear }: BatchControlsProps) {
   const { t } = useTranslation();
-  const busy = searching || issuing;
+  const busy = searching || issuing || waiting;
   const tooMany = count > BATCH_MAX;
 
   return (
@@ -95,6 +97,8 @@ interface BatchConfirmProps {
   count: number;
   /** The bulk issue is running: the confirmation cannot be given a second time. */
   busy: boolean;
+  /** A write is running on one of the documents (one made again...): the confirmation waits for it. */
+  waiting: boolean;
   onClose: () => void;
   /** Issues them. A rejection keeps the dialog open and is told in it, in the words of its code. */
   onConfirm: () => Promise<void>;
@@ -104,7 +108,7 @@ interface BatchConfirmProps {
  * The confirmation of a bulk issue: how many documents, that each one gets its number in order and can no longer be changed, and that one that cannot be issued does not stop the others (the
  * answer says which and why). A refusal of the whole request (more than the limit, a network error) is told here and the dialog stays open.
  */
-export function BatchConfirmDialog({ count, busy, onClose, onConfirm }: BatchConfirmProps) {
+export function BatchConfirmDialog({ count, busy, waiting, onClose, onConfirm }: BatchConfirmProps) {
   const { t } = useTranslation();
   const [problem, setProblem] = useState<string | null>(null);
 
@@ -119,6 +123,7 @@ export function BatchConfirmDialog({ count, busy, onClose, onConfirm }: BatchCon
       confirmLabel={t('fiscalDocuments.batch.confirm.confirm', { count })}
       consequences={[t('fiscalDocuments.batch.confirm.consequence')]}
       isLoading={busy}
+      confirmDisabled={waiting}
       onConfirm={async () => {
         setProblem(null);
         try {

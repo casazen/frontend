@@ -11,6 +11,7 @@ import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getHttpStatus } from '@/lib/api-errors';
 import {
+  useDocumentsBusy,
   useExportFiscalDocuments,
   useFiscalDocuments,
   useFiscalDocumentsContext,
@@ -130,7 +131,10 @@ export function FiscalDocumentsPage() {
   const exporter = useExportFiscalDocuments();
   const batch = useIssueFiscalDocumentsBatch();
   const picker = useSelectDraftsOfPeriod();
-  const selectedIds = useMemo(() => new Set(selected.keys()), [selected]);
+  const selectedList = useMemo(() => [...selected.keys()], [selected]);
+  const selectedIds = useMemo(() => new Set(selectedList), [selectedList]);
+  // A write that runs on one of the ticked drafts (one made again, one issued from its detail) makes the bulk issue wait, as it makes the buttons of that draft wait.
+  const writing = useDocumentsBusy({ documentIds: selectedList });
 
   const read = documentsReadOf({ enabled, isError: documents.isError, status: getHttpStatus(documents.error), hasData: documents.data !== undefined });
   const data = read === 'ok' ? documents.data : undefined;
@@ -285,6 +289,7 @@ export function FiscalDocumentsPage() {
                 canSelectPeriod={canSelectPeriod}
                 searching={picker.isPending}
                 issuing={batch.isPending}
+                waiting={writing}
                 note={note}
                 onSelectPeriod={selectPeriod}
                 onIssue={() => setConfirming(true)}
@@ -341,6 +346,7 @@ export function FiscalDocumentsPage() {
               <BatchConfirmDialog
                 count={selected.size}
                 busy={batch.isPending}
+                waiting={writing}
                 onClose={() => setConfirming(false)}
                 onConfirm={async () => {
                   await issueSelected();
