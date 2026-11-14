@@ -1,4 +1,50 @@
-import type { OwnerStatement } from '@/types';
+import type { OwnerPayout, OwnerStatement, WireBatch, WireOwner } from '@/types';
+
+/** A confirmed payout as `GET api/owner-accounting/payouts` answers it (without its evidence): the net is what a wire file pays. */
+export function payout(overrides: Partial<OwnerPayout> = {}): OwnerPayout {
+  return {
+    id: 'dddddddd-0000-4000-8000-000000000001',
+    ownerId: 'bbbbbbbb-0000-4000-8000-000000000001',
+    statementVersionId: 'eeeeeeee-0000-4000-8000-000000000001',
+    idempotencyKey: 'payout-key-1',
+    reference: null,
+    paidOn: '2026-11-10',
+    currency: 'CHF',
+    grossAmount: 1300,
+    withholdingAmount: 0,
+    netAmount: 1234.5,
+    agencyCollected: null,
+    qualifyingShortLet: null,
+    status: 'Confirmed',
+    confirmedAt: '2026-11-10T09:00:00Z',
+    reversedAt: null,
+    reversalReason: null,
+    evidence: [],
+    ...overrides,
+  };
+}
+
+/** An owner of the registry as the wire page keeps it: the name and the end of the IBAN. */
+export function wireOwner(overrides: Partial<WireOwner> = {}): WireOwner {
+  return { id: 'bbbbbbbb-0000-4000-8000-000000000001', name: 'Marta Rossi', ibanEnd: '•••• 3456', ...overrides };
+}
+
+/** A batch of `GET api/wire-transfers/batches`. */
+export function wireBatch(overrides: Partial<WireBatch> = {}): WireBatch {
+  return {
+    id: 'b1b2c3d4-0000-4000-8000-000000000000',
+    currency: 'CHF',
+    status: 'Generated',
+    transferCount: 1,
+    totalAmount: 1234.5,
+    executionDate: '2026-11-20',
+    format: 'pain.001.001.09.ch.03',
+    createdAt: '2026-11-14T10:00:00Z',
+    downloadedAt: null,
+    paidAt: null,
+    ...overrides,
+  };
+}
 
 /** An owner statement as `GET api/statements` answers it: the figures are the server's. */
 export function statement(overrides: Partial<OwnerStatement> = {}): OwnerStatement {
