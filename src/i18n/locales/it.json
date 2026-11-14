@@ -117,6 +117,197 @@
       "PropertyManager": "Property manager"
     }
   },
+  "accountantPackage": {
+    "columns": {
+      "adr": "Prezzo medio per notte",
+      "amount": "Importo",
+      "batches": "Lotti",
+      "canton": "Cantone",
+      "channel": "Canale",
+      "collected": "Incassata",
+      "commission": "Provvigione",
+      "commissions": "Provvigioni",
+      "cost": "Costo",
+      "costKind": "Tipo di costo",
+      "costRate": "Incidenza",
+      "creditNotes": "Note di credito",
+      "currency": "Valuta",
+      "documents": "Documenti",
+      "expenses": "Spese anticipate",
+      "gross": "Lordo",
+      "invoiced": "Fatturato",
+      "invoices": "Fatture",
+      "issuer": "Emittente",
+      "kind": "Tipo",
+      "margin": "Margine",
+      "net": "Netto",
+      "occupancy": "Occupazione",
+      "occupiedNights": "Notti occupate",
+      "owed": "Dovuta",
+      "owner": "Proprietario",
+      "paid": "Versata",
+      "payments": "Pagamenti ricevuti",
+      "payouts": "Pagamenti",
+      "portalCommissionsBorne": "Commissioni dei portali a carico",
+      "properties": "Immobili",
+      "rate": "Aliquota",
+      "recharges": "Riaddebiti",
+      "revenue": "Ricavi",
+      "revPar": "Ricavo per notte disponibile",
+      "status": "Stato",
+      "stays": "Soggiorni",
+      "staysWithoutAmount": "Soggiorni senza importo",
+      "taxable": "Imponibile",
+      "toRemit": "Da versare",
+      "total": "Totale",
+      "transfers": "Bonifici",
+      "vat": "IVA",
+      "withholding": "Ritenuta"
+    },
+    "costKind": {
+      "channelCommission": "Commissione del portale",
+      "noCost": "Nessun costo",
+      "paymentFee": "Commissioni di pagamento"
+    },
+    "currencyMissing": "Per questi importi il servizio non indica la valuta: sono scritti senza simbolo e non sono convertiti.",
+    "currencyNotGiven": "Il servizio non indica la valuta di questi importi: sono scritti senza simbolo e, se gli immobili sono in valute diverse, il servizio li somma senza convertirli.",
+    "description": "Il riepilogo dell'agenzia per un mese o per un anno e il pacchetto da dare al commercialista.",
+    "documents": {
+      "empty": "Nessun documento emesso in questo periodo.",
+      "guest": {
+        "caption": "Documenti emessi agli ospiti, per emittente, tipo e valuta",
+        "title": "Agli ospiti"
+      },
+      "owners": {
+        "counts": {
+          "caption": "Fatture e note di credito emesse ai proprietari, per valuta",
+          "title": "Ai proprietari"
+        },
+        "rates": {
+          "caption": "Fatture ai proprietari, per valuta e aliquota IVA",
+          "title": "Ai proprietari, per aliquota IVA"
+        }
+      },
+      "title": "Documenti emessi"
+    },
+    "download": {
+      "done": "Il pacchetto è stato scaricato.",
+      "failed": "Non è stato possibile scaricare il pacchetto. Riprova.",
+      "forbidden": "Il tuo ruolo non può scaricare il pacchetto.",
+      "preparing": "Sto preparando il pacchetto: può volerci un po'. Non lasciare questa pagina.",
+      "received": "Sto scaricando il pacchetto: {{size}} ricevuti finora. Non lasciare questa pagina.",
+      "tooLarge": "Il pacchetto di questo periodo avrebbe {{files}} file, ma ne ammette al massimo {{max}}. Scegli un periodo più breve."
+    },
+    "focus": {
+      "cancel": "Annulla",
+      "contents": "Un solo file ZIP, sempre con la stessa struttura: i documenti agli ospiti, le fatture ai proprietari, i rendiconti, l'IVA per aliquota, le ritenute, l'imposta di soggiorno e gli incassi, con un indice che elenca ogni file.",
+      "download": "Scarica il pacchetto",
+      "issuer": "CasaZen emette ogni documento: il commercialista non emette nulla e riceve soltanto questi file.",
+      "kicker": "Periodo: {{period}}",
+      "ownerOmitted": "Il tuo ruolo non apre la contabilità dei proprietari: i rendiconti, le fatture ai proprietari e le ritenute restano fuori dal pacchetto e l'indice li segna come omessi.",
+      "title": "Il pacchetto per il commercialista"
+    },
+    "kind": {
+      "creditNote": "Nota di credito",
+      "invoice": "Fattura",
+      "receipt": "Ricevuta"
+    },
+    "loadError": "Non riusciamo a leggere il riepilogo.",
+    "loading": "Leggo il riepilogo…",
+    "noAccess": "Non hai accesso al riepilogo e al pacchetto del commercialista.",
+    "notAvailable": "n.d.",
+    "ownerName": {
+      "anonymized": "Proprietario anonimizzato",
+      "nobody": "Immobili senza proprietario"
+    },
+    "owners": {
+      "borne": {
+        "caption": "Commissioni dei portali a carico dell'agenzia, per canale e valuta",
+        "note": "Solo a titolo informativo: non si aggiungono all'IVA da versare.",
+        "title": "Commissioni dei portali a carico dell'agenzia"
+      },
+      "commissions": {
+        "caption": "Provvigioni, riaddebiti e spese anticipate fatturati a ogni proprietario, per valuta",
+        "title": "Provvigioni per proprietario"
+      },
+      "empty": "Nessuna provvigione o pagamento ai proprietari in questo periodo.",
+      "margin": {
+        "caption": "Margine dell'agenzia, per valuta",
+        "note": "Provvigioni e riaddebiti fatturati, meno le commissioni dei portali a carico dell'agenzia.",
+        "title": "Margine"
+      },
+      "payouts": {
+        "caption": "Pagamenti ai proprietari, per valuta",
+        "title": "Pagamenti ai proprietari"
+      },
+      "performance": {
+        "caption": "Andamento degli immobili di ogni proprietario",
+        "title": "Andamento per proprietario"
+      },
+      "title": "Provvigioni e pagamenti ai proprietari",
+      "wires": {
+        "caption": "Lotti di bonifici, per valuta e stato",
+        "title": "Bonifici"
+      }
+    },
+    "period": {
+      "label": "Periodo",
+      "months": "Mesi",
+      "year": "Anno {{year}}",
+      "years": "Anni"
+    },
+    "rate": {
+      "none": "Non indicata",
+      "withNature": "{{rate}} (natura {{code}})"
+    },
+    "stays": {
+      "collected": {
+        "caption": "Incassato nel periodo, al netto dei rimborsi",
+        "title": "Incassato nel periodo"
+      },
+      "costs": {
+        "caption": "Costi dei canali di vendita nel periodo",
+        "note": "Un costo che nessuno ha comunicato è «n.d.», mai zero.",
+        "title": "Costi dei canali"
+      },
+      "nights": "{{occupied}} di {{available}}",
+      "stays": {
+        "caption": "Soggiorni, occupazione e ricavi del periodo",
+        "title": "Soggiorni del periodo"
+      },
+      "title": "Soggiorni, incassi e imposta di soggiorno",
+      "toCollect": {
+        "caption": "Importi ancora da incassare, per valuta",
+        "title": "Ancora da incassare"
+      }
+    },
+    "summary": {
+      "range": "Dal {{from}} al {{to}}. Cifre lette il {{generated}}.",
+      "title": "Riepilogo dell'agenzia",
+      "yearNote": "Per un anno è il riepilogo annuale delle provvigioni."
+    },
+    "title": "Commercialista",
+    "touristTax": {
+      "italy": {
+        "caption": "Imposta di soggiorno in Italia: dovuta, versata e da versare",
+        "partial": "Versata e da versare compaiono solo per chi vede tutti gli immobili.",
+        "title": "Imposta di soggiorno in Italia"
+      },
+      "noCanton": "Immobile senza comune",
+      "switzerland": {
+        "caption": "Imposta di soggiorno incassata in Svizzera, per cantone e valuta",
+        "note": "Quanto è stato versato non è registrato in CasaZen.",
+        "title": "Imposta di soggiorno in Svizzera"
+      }
+    },
+    "unavailable": "Il pacchetto per il commercialista non è attivo.",
+    "vatLine": "IVA {{amount}}",
+    "wireStatus": {
+      "downloaded": "Scaricato",
+      "generated": "Generato",
+      "paid": "Pagato"
+    }
+  },
   "accountBilling": {
     "compare": {
       "current": "Il tuo piano",
@@ -1403,6 +1594,8 @@
     "forbidden": "Non hai i permessi per eseguire questa operazione.",
     "tooManyRequests": "Troppe richieste in poco tempo. Riprova tra qualche istante.",
     "codes": {
+      "accountantPackageInvalidPeriod": "Il periodo scelto non è valido: serve un mese o un anno.",
+      "accountantPackageTooLarge": "Il pacchetto sarebbe troppo grande. Scegli un periodo più breve.",
       "archiveDocumentHasNoFile": "Questo documento non ha un file da scaricare.",
       "archiveDocumentNotFound": "Non troviamo più questo documento, oppure non è tra gli immobili a cui hai accesso. L'elenco è stato aggiornato.",
       "archiveExportTooLarge": "L'archivio sarebbe troppo grande. Scegli un periodo più breve o meno tipi di documento.",
@@ -14349,6 +14542,7 @@
     }
   },
   "nav": {
+    "accountant": "Commercialista",
     "accountHome": "Home",
     "people": "Persone",
     "dashboard": "Cruscotto",

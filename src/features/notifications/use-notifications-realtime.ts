@@ -14,6 +14,7 @@ import { FISCAL_DOCUMENTS_KEY } from '@/queries/use-fiscal-documents';
 import { NOTIFICATIONS_QUERY, UNREAD_COUNT_KEY } from '@/queries/use-notifications';
 import { PAYMENTS_KEY } from '@/queries/use-payments';
 import { VERIFICATION_KEY } from '@/queries/verification';
+import { ACCOUNTANT_PACKAGE_KEY } from '@/queries/use-accountant-package';
 import type { PendingAlert } from '@/types/alert';
 import {
   createRealtimeClient,
@@ -121,12 +122,14 @@ const FISCAL_DOCUMENT_ISSUED = 'fiscal-document-issued';
 
 /**
  * What an issued document changes on screen: the list of the fiscal documents, the detail of a document, the documents of a booking (the card of its tab Pagamento) and the numbers the next
- * confirmation reads, all under `FISCAL_DOCUMENTS_KEY`, and the payment ledger, which shows the fiscal document of a booking. A page open in front of the host shows the new number and state
- * without a reload. The bulk issue and the daily run send nothing (one message per document would flood the bell): the page that asked for the bulk issue reads its own answer.
+ * confirmation reads, all under `FISCAL_DOCUMENTS_KEY`, and the payment ledger, which shows the fiscal document of a booking, and the summary of the agency of the page «Commercialista»
+ * (E15/F02/US01/T01), which counts the documents issued to the guests. A page open in front of the host shows the new number and state without a reload. The bulk issue and the daily run send
+ * nothing (one message per document would flood the bell): the page that asked for the bulk issue reads its own answer.
  */
 function refreshFiscalDocuments(queryClient: QueryClient): void {
   void queryClient.invalidateQueries({ queryKey: FISCAL_DOCUMENTS_KEY });
   void queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY] });
+  void queryClient.invalidateQueries({ queryKey: [ACCOUNTANT_PACKAGE_KEY] });
 }
 
 /**

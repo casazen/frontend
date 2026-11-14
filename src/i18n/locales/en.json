@@ -117,6 +117,197 @@
       "PropertyManager": "Property manager"
     }
   },
+  "accountantPackage": {
+    "columns": {
+      "adr": "Average rate per night",
+      "amount": "Amount",
+      "batches": "Batches",
+      "canton": "Canton",
+      "channel": "Channel",
+      "collected": "Collected",
+      "commission": "Commission",
+      "commissions": "Commissions",
+      "cost": "Cost",
+      "costKind": "Kind of cost",
+      "costRate": "Cost rate",
+      "creditNotes": "Credit notes",
+      "currency": "Currency",
+      "documents": "Documents",
+      "expenses": "Advanced expenses",
+      "gross": "Gross",
+      "invoiced": "Invoiced",
+      "invoices": "Invoices",
+      "issuer": "Issuer",
+      "kind": "Type",
+      "margin": "Margin",
+      "net": "Net",
+      "occupancy": "Occupancy",
+      "occupiedNights": "Occupied nights",
+      "owed": "Owed",
+      "owner": "Owner",
+      "paid": "Remitted",
+      "payments": "Payments received",
+      "payouts": "Payouts",
+      "portalCommissionsBorne": "Portal commissions borne",
+      "properties": "Properties",
+      "rate": "Rate",
+      "recharges": "Recharges",
+      "revenue": "Revenue",
+      "revPar": "Revenue per available night",
+      "status": "State",
+      "stays": "Stays",
+      "staysWithoutAmount": "Stays with no amount",
+      "taxable": "Taxable",
+      "toRemit": "To remit",
+      "total": "Total",
+      "transfers": "Transfers",
+      "vat": "VAT",
+      "withholding": "Withholding"
+    },
+    "costKind": {
+      "channelCommission": "Portal commission",
+      "noCost": "No cost",
+      "paymentFee": "Payment fees"
+    },
+    "currencyMissing": "The service gives no currency for these amounts: they are written without a symbol and are not converted.",
+    "currencyNotGiven": "The service gives no currency for these amounts: they are written without a symbol and, if the properties are in different currencies, the service adds them up with no conversion.",
+    "description": "The summary of the agency for a month or a year, and the package to give to the accountant.",
+    "documents": {
+      "empty": "No document issued in this period.",
+      "guest": {
+        "caption": "Documents issued to the guests, by issuer, type and currency",
+        "title": "To the guests"
+      },
+      "owners": {
+        "counts": {
+          "caption": "Invoices and credit notes issued to the owners, by currency",
+          "title": "To the owners"
+        },
+        "rates": {
+          "caption": "Invoices to the owners, by currency and VAT rate",
+          "title": "To the owners, by VAT rate"
+        }
+      },
+      "title": "Documents issued"
+    },
+    "download": {
+      "done": "The package was downloaded.",
+      "failed": "The package couldn't be downloaded. Try again.",
+      "forbidden": "Your role can't download the package.",
+      "preparing": "Preparing the package: it can take a while. Don't leave this page.",
+      "received": "Downloading the package: {{size}} received so far. Don't leave this page.",
+      "tooLarge": "The package of this period would hold {{files}} files, but it allows at most {{max}}. Choose a shorter period."
+    },
+    "focus": {
+      "cancel": "Cancel",
+      "contents": "One ZIP file, always with the same structure: the documents to the guests, the invoices to the owners, the statements, the VAT by rate, the withholding, the tourist tax and the collections, with an index that lists every file.",
+      "download": "Download the package",
+      "issuer": "CasaZen issues every document: the accountant issues nothing and receives only these files.",
+      "kicker": "Period: {{period}}",
+      "ownerOmitted": "Your role does not open the owner accounting: the statements, the invoices to the owners and the withholding stay out of the package, and the index marks them as omitted.",
+      "title": "The package for the accountant"
+    },
+    "kind": {
+      "creditNote": "Credit note",
+      "invoice": "Invoice",
+      "receipt": "Receipt"
+    },
+    "loadError": "We couldn't read the summary.",
+    "loading": "Reading the summary…",
+    "noAccess": "You don't have access to the accountant summary and package.",
+    "notAvailable": "n/a",
+    "ownerName": {
+      "anonymized": "Anonymized owner",
+      "nobody": "Properties with no owner"
+    },
+    "owners": {
+      "borne": {
+        "caption": "Portal commissions the agency bears, by channel and currency",
+        "note": "For information only: they are not added to the VAT due.",
+        "title": "Portal commissions the agency bears"
+      },
+      "commissions": {
+        "caption": "Commissions, recharges and advanced expenses invoiced to each owner, by currency",
+        "title": "Commissions by owner"
+      },
+      "empty": "No commission or payment to the owners in this period.",
+      "margin": {
+        "caption": "Margin of the agency, by currency",
+        "note": "Commissions and recharges invoiced, less the portal commissions the agency bears.",
+        "title": "Margin"
+      },
+      "payouts": {
+        "caption": "Payouts to the owners, by currency",
+        "title": "Payouts to the owners"
+      },
+      "performance": {
+        "caption": "Performance of the properties of each owner",
+        "title": "Performance by owner"
+      },
+      "title": "Commissions and payments to the owners",
+      "wires": {
+        "caption": "Batches of wire transfers, by currency and state",
+        "title": "Wire transfers"
+      }
+    },
+    "period": {
+      "label": "Period",
+      "months": "Months",
+      "year": "Year {{year}}",
+      "years": "Years"
+    },
+    "rate": {
+      "none": "Not stated",
+      "withNature": "{{rate}} (nature {{code}})"
+    },
+    "stays": {
+      "collected": {
+        "caption": "Collected in the period, net of refunds",
+        "title": "Collected in the period"
+      },
+      "costs": {
+        "caption": "Costs of the sales channels in the period",
+        "note": "A cost nobody reported is «n/a», never zero.",
+        "title": "Costs of the channels"
+      },
+      "nights": "{{occupied}} of {{available}}",
+      "stays": {
+        "caption": "Stays, occupancy and revenue of the period",
+        "title": "Stays of the period"
+      },
+      "title": "Stays, collections and tourist tax",
+      "toCollect": {
+        "caption": "Amounts still to collect, by currency",
+        "title": "Still to collect"
+      }
+    },
+    "summary": {
+      "range": "From {{from}} to {{to}}. Figures read on {{generated}}.",
+      "title": "Summary of the agency",
+      "yearNote": "For a year it is the annual summary of the commissions."
+    },
+    "title": "Accountant",
+    "touristTax": {
+      "italy": {
+        "caption": "Tourist tax in Italy: owed, remitted and to remit",
+        "partial": "Remitted and to remit are shown only to who sees all the properties.",
+        "title": "Tourist tax in Italy"
+      },
+      "noCanton": "Property with no municipality",
+      "switzerland": {
+        "caption": "Tourist tax collected in Switzerland, by canton and currency",
+        "note": "What was remitted is not recorded in CasaZen.",
+        "title": "Tourist tax in Switzerland"
+      }
+    },
+    "unavailable": "The accountant package is not active.",
+    "vatLine": "VAT {{amount}}",
+    "wireStatus": {
+      "downloaded": "Downloaded",
+      "generated": "Generated",
+      "paid": "Paid"
+    }
+  },
   "accountBilling": {
     "compare": {
       "current": "Your plan",
@@ -1403,6 +1594,8 @@
     "forbidden": "You do not have permission to perform this action.",
     "tooManyRequests": "Too many requests in a short time. Try again in a moment.",
     "codes": {
+      "accountantPackageInvalidPeriod": "The period you chose is not valid: it has to be a month or a year.",
+      "accountantPackageTooLarge": "The package would be too large. Choose a shorter period.",
       "archiveDocumentHasNoFile": "This document has no file to download.",
       "archiveDocumentNotFound": "We can no longer find this document, or it is not among the properties you have access to. The list has been refreshed.",
       "archiveExportTooLarge": "The archive would be too large. Choose a shorter period or fewer types of document.",
@@ -14349,6 +14542,7 @@
     }
   },
   "nav": {
+    "accountant": "Accountant",
     "accountHome": "Home",
     "people": "People",
     "dashboard": "Dashboard",
