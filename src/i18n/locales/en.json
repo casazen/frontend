@@ -13977,7 +13977,8 @@
       "serviceRequestBackupActive": "A request is free: the first to accept gets the job.",
       "serviceRequestBackupWon": "The job of a request has passed to you.",
       "serviceRequestBackupClosed": "A request you were a backup for was closed.",
-      "verificationRequired": "A guest's identity is waiting for you to verify it."
+      "verificationRequired": "A guest's identity is waiting for you to verify it.",
+      "assistRequested": "New «Do it for me» request to handle."
     }
   },
   "octorate": {

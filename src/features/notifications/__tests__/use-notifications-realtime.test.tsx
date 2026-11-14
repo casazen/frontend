@@ -6,6 +6,7 @@ import { getInvoiceData } from '@/api/invoice-data.api';
 import { COMPLIANCE_KEY } from '@/features/compliance/use-compliance';
 import { COMPLIANCE_ARCHIVE_KEY } from '@/queries/compliance-archive';
 import { COMPLIANCE_HEALTH_KEY } from '@/queries/compliance-health';
+import { ADMIN_ASSIST_KEY } from '@/queries/use-admin-onboarding-assist';
 import { ALLOGGIATI_KEY } from '@/queries/use-alloggiati';
 import { BOOKING_THREAD_QUERY, HOST_THREADS_QUERY, UNREAD_MESSAGES_QUERY } from '@/queries/use-booking-messages';
 import { BOOKINGS_KEY } from '@/queries/use-bookings';
@@ -168,6 +169,38 @@ describe('useNotificationsRealtime', () => {
     // A guest handed a verification to an operator while the socket was down: the console open in front of the operator reads it again.
     const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
     expect(keys).toContainEqual([VERIFICATION_KEY]);
+  });
+
+  it('useNotificationsRealtime_ReconnectAfterAGap_AlsoReadsAgainTheStaffQueueOfTheRequestsOfHelp', () => {
+    const { queryClient, wrapper } = setup();
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    const client = fakeClient();
+    renderHook(() => useNotificationsRealtime({ enabled: true, userId: 'u1', getAccessToken, client }), { wrapper });
+
+    act(() => client.setState('connected'));
+    act(() => client.setState('connecting'));
+    act(() => client.setState('connected'));
+
+    // A host asked for help while the socket was down: the queue open in front of the staff reads it again.
+    const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+    expect(keys).toContainEqual([...ADMIN_ASSIST_KEY]);
+  });
+
+  it('useNotificationsRealtime_AssistRequestedArrives_ReadsTheStaffQueueAgainAndTellsTheBell', () => {
+    const { queryClient, wrapper } = setup();
+    queryClient.setQueryData(UNREAD_COUNT_KEY, 0);
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    const client = fakeClient();
+    const onNewNotification = vi.fn();
+    renderHook(() => useNotificationsRealtime({ enabled: true, userId: 'staff-1', getAccessToken, client, onNewNotification }), { wrapper });
+
+    const change = { unreadCount: 1, type: 'assist-requested', entityId: 'ar-1' };
+    act(() => client.emit(change));
+
+    // The staff are told at once (the pop-up of the bell, with the way to the queue), and the queue that is open shows the request.
+    expect(onNewNotification).toHaveBeenCalledWith(change);
+    const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+    expect(keys).toContainEqual([...ADMIN_ASSIST_KEY]);
   });
 
   it('useNotificationsRealtime_State_FollowsTheChannel', () => {
@@ -415,6 +448,42 @@ describe('applyNotificationsChange', () => {
     // It is not a completed check-in: the booking data is not read again.
     expect(keys).not.toContainEqual([INVOICE_DATA_KEY]);
   });
+
+  // E10/F03/US03/T03: a host asked CasaZen support to do a step. The entity is the request of help: it is not read as a booking.
+  it('applyNotificationsChange_AssistRequested_ReadsTheStaffQueueAgainAndNothingOfABooking', () => {
+    const { queryClient } = setup();
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    applyNotificationsChange(queryClient, { unreadCount: 1, type: 'assist-requested', entityId: 'ar-1' });
+    const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+    expect(keys).toContainEqual([...ADMIN_ASSIST_KEY]);
+    expect(keys).not.toContainEqual([BOOKING_THREAD_QUERY, 'ar-1']);
+    expect(keys).not.toContainEqual([BOOKING_THREAD_QUERY]);
+    expect(keys).not.toContainEqual([BOOKINGS_KEY]);
+    expect(keys).not.toContainEqual([VERIFICATION_KEY]);
+  });
+
+  it('applyNotificationsChange_AssistRequested_AnOpenStaffQueueReadsTheNewRequestWithoutAReload', async () => {
+    const { queryClient, wrapper } = setup();
+    const readQueue = vi.fn().mockResolvedValue({ items: [], totalCount: 0, page: 1, pageSize: 20 });
+    // What the open page of the staff queue keeps mounted (`useAssistQueue`): one page of the list of a status.
+    renderHook(() => useQuery({ queryKey: [...ADMIN_ASSIST_KEY, 'list', { status: 'Requested', page: 1 }], queryFn: readQueue }), { wrapper });
+    await waitFor(() => expect(readQueue).toHaveBeenCalledTimes(1));
+
+    act(() => applyNotificationsChange(queryClient, { unreadCount: 1, type: 'assist-requested', entityId: 'ar-1' }));
+
+    await waitFor(() => expect(readQueue).toHaveBeenCalledTimes(2));
+  });
+
+  it.each(['guest-message', 'new-booking', 'verification-required', 'service-request-taken'])(
+    'applyNotificationsChange_%s_DoesNotReadTheStaffQueueAgain',
+    (type) => {
+      const { queryClient } = setup();
+      const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+      applyNotificationsChange(queryClient, { unreadCount: 1, type, entityId: 'x-1' });
+      const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+      expect(keys).not.toContainEqual([...ADMIN_ASSIST_KEY]);
+    },
+  );
 
   it.each(['guest-message', 'new-booking', 'service-request-taken'])(
     'applyNotificationsChange_%s_DoesNotReadTheVerificationsAgain',

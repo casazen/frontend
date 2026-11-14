@@ -13977,7 +13977,8 @@
       "serviceRequestBackupActive": "Una richiesta è libera: il primo che accetta ha il lavoro.",
       "serviceRequestBackupWon": "Il lavoro di una richiesta è passato a te.",
       "serviceRequestBackupClosed": "Una richiesta come riserva è stata chiusa.",
-      "verificationRequired": "L'identità di un ospite aspetta la tua verifica."
+      "verificationRequired": "L'identità di un ospite aspetta la tua verifica.",
+      "assistRequested": "Nuova richiesta «Fallo per me» da gestire."
     }
   },
   "octorate": {

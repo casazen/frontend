@@ -3,6 +3,7 @@ import { useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { COMPLIANCE_KEY } from '@/features/compliance/use-compliance';
 import { COMPLIANCE_ARCHIVE_KEY } from '@/queries/compliance-archive';
 import { COMPLIANCE_HEALTH_KEY } from '@/queries/compliance-health';
+import { ADMIN_ASSIST_KEY } from '@/queries/use-admin-onboarding-assist';
 import { ALLOGGIATI_KEY } from '@/queries/use-alloggiati';
 import { BOOKING_THREAD_QUERY, HOST_THREADS_QUERY, UNREAD_MESSAGES_QUERY } from '@/queries/use-booking-messages';
 import { BOOKINGS_KEY } from '@/queries/use-bookings';
@@ -33,6 +34,12 @@ const GUEST_CHECKIN_COMPLETED = 'guest-checkin-completed';
  * `verification.decision` are told at once; its `entityId` is the booking.
  */
 const VERIFICATION_REQUIRED = 'verification-required';
+
+/**
+ * A host asked CasaZen support to do a step (`PushTypes.AssistRequested`, «Fallo per me», E10/F03/US03/T03): the platform administrators are told at
+ * once; its `entityId` is the request of help, not a booking.
+ */
+const ASSIST_REQUESTED = 'assist-requested';
 
 /** The guests list and the guest card (`['guests', …]`, not shared as a constant by the pages that read them). */
 const GUESTS_QUERY = 'guests';
@@ -105,17 +112,27 @@ function refreshVerifications(queryClient: QueryClient): void {
 }
 
 /**
+ * What a request of help from a host changes on screen: the staff queue of the «Fallo per me» requests (`ADMIN_ASSIST_KEY`, the list and its pages): the
+ * page open in front of the staff shows the new request without a reload. The queries of anyone who has no such page do not exist, so nothing is read.
+ */
+function refreshAssistQueue(queryClient: QueryClient): void {
+  void queryClient.invalidateQueries({ queryKey: ADMIN_ASSIST_KEY });
+}
+
+/**
  * What a change makes stale. The count is written as the server sent it (no extra request); the list, the threads of the Home and
  * the per-booking counters are read again; the thread of the booking in the change is read again too (an open tab shows the new
  * message at once). A change without an entity (read on another device, unknown type) refreshes every open thread. A completed
- * check-in also refreshes the data it changes (`STALE_ON_CHECK_IN`).
+ * check-in also refreshes the data it changes (`STALE_ON_CHECK_IN`), and a request of help from a host the staff queue.
  */
 export function applyNotificationsChange(queryClient: QueryClient, change: NotificationsChange): void {
   queryClient.setQueryData(UNREAD_COUNT_KEY, change.unreadCount);
   void queryClient.invalidateQueries({ queryKey: [NOTIFICATIONS_QUERY], predicate: (query) => query.queryKey[1] !== UNREAD_COUNT_KEY[1] });
   void queryClient.invalidateQueries({ queryKey: [HOST_THREADS_QUERY] });
   void queryClient.invalidateQueries({ queryKey: [UNREAD_MESSAGES_QUERY] });
-  if (change.entityId && !isServiceRequestType(change.type)) {
+  // The entity is a booking, except for a service request and for a request of help.
+  const entityIsBooking = !isServiceRequestType(change.type) && change.type !== ASSIST_REQUESTED;
+  if (change.entityId && entityIsBooking) {
     void queryClient.invalidateQueries({ queryKey: [BOOKING_THREAD_QUERY, change.entityId] });
   } else if (!change.entityId) {
     void queryClient.invalidateQueries({ queryKey: [BOOKING_THREAD_QUERY] });
@@ -123,6 +140,7 @@ export function applyNotificationsChange(queryClient: QueryClient, change: Notif
   if (change.type === GUEST_CHECKIN_COMPLETED) refreshCheckInData(queryClient);
   else if (change.type !== null && COMPLIANCE_ALERT_TYPES.has(change.type)) refreshComplianceLights(queryClient, change.type);
   if (change.type === VERIFICATION_REQUIRED) refreshVerifications(queryClient);
+  if (change.type === ASSIST_REQUESTED) refreshAssistQueue(queryClient);
 }
 
 /** After a gap in the channel events may have been missed: everything the channel feeds is read again, the count included. */
@@ -133,8 +151,9 @@ export function refreshAfterGap(queryClient: QueryClient): void {
   void queryClient.invalidateQueries({ queryKey: [BOOKING_THREAD_QUERY] });
   // A check-in completed while the channel was down sent no message: the pages that show its data read it again.
   refreshCheckInData(queryClient);
-  // The same for a verification handed to an operator.
+  // The same for a verification handed to an operator, and for a request of help that reached the staff.
   refreshVerifications(queryClient);
+  refreshAssistQueue(queryClient);
 }
 
 // One connection per tab: every user of the hook shares this client, and the channel closes with the last one.

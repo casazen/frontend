@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { ONBOARDING_ROUTES } from '@/config/onboarding-routes';
 import en from '@/i18n/locales/en.json';
 import it_ from '@/i18n/locales/it.json';
 import { KNOWN_NOTIFICATION_TYPES, badgeText, notificationKind, notificationRoute } from '../notification-model';
@@ -32,6 +33,8 @@ describe('notification model', () => {
       'service-request-backup-invited', 'service-request-backup-active', 'service-request-backup-won', 'service-request-backup-closed',
       // E03/F04/US02/T03: a guest handed the verification of the identity to a person.
       'verification-required',
+      // E10/F03/US03/T03: a host asked CasaZen support to do a step («Fallo per me»).
+      'assist-requested',
     ];
     for (const type of backend) expect(notificationKind(type).textKey, type).not.toBe('notifications.types.generic');
   });
@@ -54,6 +57,19 @@ describe('notification model', () => {
     // The push is for the operators who decide the verifications: the bell leads them to the console, not to the booking.
     expect(notificationRoute({ type: 'verification-required', entityId: 'b-1' }, 'short-rent')).toBe('/app/short-rent/verifications');
     expect(notificationKind('verification-required').textKey).toBe('notifications.types.verificationRequired');
+  });
+
+  it('notificationRoute_AssistRequested_OpensTheStaffQueueOfTheRequestsWhateverTheContext', () => {
+    // The push is for the platform administrators: the bell tells them that a host asked for help and leads them to the queue. Its entity is the request, never a booking.
+    for (const context of ['admin', 'short-rent', null] as const) {
+      expect(notificationRoute({ type: 'assist-requested', entityId: 'ar-1' }, context), String(context)).toBe('/app/admin/onboarding-assist');
+    }
+    // The address is the page of the staff queue that the routes of the onboarding register, so a click does not end on a page that does not exist.
+    expect(ONBOARDING_ROUTES.find((route) => route.path === '/app/admin/onboarding-assist')?.context).toBe('admin');
+    // The sentence is in both languages and names the action as the host's button does.
+    expect(notificationKind('assist-requested').textKey).toBe('notifications.types.assistRequested');
+    expect(lookup(it_, 'notifications.types.assistRequested')).toContain('«Fallo per me»');
+    expect(lookup(en, 'notifications.types.assistRequested')).toContain('«Do it for me»');
   });
 
   it('notificationRoute_ServiceRequest_GoesToTheInboxForASupplierAndToMyAppsOfTheMarketplaceForAHost', () => {
