@@ -8,6 +8,11 @@ export interface OwnerFormat {
   locale: string;
   /** An amount in its own currency (the currency of a statement is the owner's, never an assumed euro). */
   money: (amount: number, currency: string) => string;
+  /**
+   * An amount whose currency is not known: the figure with two decimals and no symbol, never an assumed euro. The caller says in words that the currency is missing
+   * (a flat fee of a mandate, typed for an owner whose profile has no settlement currency yet).
+   */
+  amount: (amount: number) => string;
   /** A day (`yyyy-MM-dd`) as the language of the app writes it; empty for none. */
   date: (day: string | null | undefined) => string;
   /** An instant of the API as a date and time in Europe/Rome; empty for none. */
@@ -33,6 +38,7 @@ export function useOwnerFormat(): OwnerFormat {
           return `${amount.toFixed(2)} ${currency}`;
         }
       },
+      amount: (amount) => new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount),
       date: (day) => (day ? formatStayDate(day, locale) : ''),
       dateTime: (instant) =>
         instant

@@ -18,6 +18,10 @@ const api = vi.hoisted(() => ({
   approvePolicy: vi.fn(),
   saveFiscalProfile: vi.fn(),
   createPolicy: vi.fn(),
+  listMandates: vi.fn(),
+  createMandate: vi.fn(),
+  getAddress: vi.fn(),
+  saveAddress: vi.fn(),
 }));
 
 vi.mock('@/api/owner-accounting.api', () => ({ ownerAccountingApi: api }));
@@ -56,6 +60,9 @@ beforeEach(async () => {
   api.getOnboardingReadiness.mockResolvedValue(null);
   api.listFiscalProfiles.mockResolvedValue([profile()]);
   api.listPolicies.mockResolvedValue([policy()]);
+  // The mandate and the address of the owner (E13/F02/US01/T01) are read by the page too: none here.
+  api.listMandates.mockResolvedValue([]);
+  api.getAddress.mockResolvedValue(null);
 });
 
 afterEach(() => cleanup());

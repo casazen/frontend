@@ -1536,6 +1536,18 @@
       "ownerStatementNotApproved": "The statement must be approved first.",
       "ownerStatementNotDraft": "This version is no longer a draft.",
       "ownerStatementUnchanged": "Nothing changed after the last version: a new one is not needed.",
+      "ownerMandateInvalid": "The data of the mandate are not valid. Check the field named and try again.",
+      "ownerMandateOverlap": "A version of the mandate already starts on that day or later: choose a day after the start of the latest one.",
+      "ownerAddressInvalid": "The address is not valid. Check the field named and try again.",
+      "ownerInvoiceVersionSuperseded": "This version of the statement was replaced: the invoice is made from the latest version.",
+      "ownerInvoiceNothingToInvoice": "There is nothing to invoice in this statement: no commission, recharge or expense of the agency.",
+      "documentDraftOutdated": "The draft is no longer what would be issued now: the statement, the mandate or the rules changed. Make it again and review it again.",
+      "documentAlreadyIssued": "The invoice of this month is already issued.",
+      "documentConfirmationRequired": "The issue has to be confirmed.",
+      "documentRuleNotConfigured": "The VAT rules for this document are missing. Complete them in «Invoicing» and try again.",
+      "documentInvoiceDataMissing": "Data of the recipient are missing to make the invoice (address or fiscal data). Complete them in the financial data of the owner and try again.",
+      "documentNotDraft": "This invoice is no longer a draft.",
+      "ownerPeriodInvalid": "The month is not valid.",
       "ownerAttachmentNotFound": "This attachment is not available.",
       "ownerCalendarRangeInvalid": "The chosen period is not valid.",
       "ownerContactAgencyRequired": "Your profile is linked to more than one agency: to invite a contact write to the agency concerned.",
@@ -14181,6 +14193,8 @@
     "verifications": "Verifications",
     "wireTransfers": "Owner Wire Transfers",
     "ownerClose": "Month-end close",
+    "ownerInvoices": "Invoices to the owners",
+    "owners": "Owners",
     "withholding": "Withholding tax"
   },
   "notFound": {
@@ -16126,10 +16140,16 @@
       "approvedByName": "approver's name",
       "attachmentReference": "attachment",
       "baseCurrency": "from currency",
+      "buildingNumber": "building number",
+      "cleaningFlatRate": "cleaning flat fee",
+      "commissionBase": "base of the commission",
+      "commissionPercent": "commission",
       "components": "base components",
+      "country": "country",
       "currency": "currency",
       "date": "date",
       "description": "reason",
+      "documentReference": "document of the mandate",
       "documentSha256": "file fingerprint",
       "documentUrl": "document address",
       "externalDate": "invoice date",
@@ -16139,9 +16159,12 @@
       "grossBaseComponents": "gross base components",
       "handoffReference": "who handed it over and how",
       "jurisdiction": "jurisdiction",
+      "linenFlatRate": "linen flat fee",
       "paidOn": "payment date",
       "parameters": "parameters",
+      "postalCode": "postal code",
       "provider": "issuing system",
+      "province": "province",
       "qualifyingShortLet": "short-term let",
       "quoteCurrency": "to currency",
       "rate": "exchange rate",
@@ -16155,11 +16178,14 @@
       "source": "source",
       "sourceSha256": "source fingerprint",
       "sourceUrl": "source address",
+      "street": "street",
+      "town": "town",
       "validFrom": "valid from",
       "validTo": "valid until",
       "version": "version",
       "withholdingRatePercent": "withholding rate",
-      "withholdingTaxCode": "tax code"
+      "withholdingTaxCode": "tax code",
+      "withholdingTreatment": "treatment of the commission"
     },
     "filing": {
       "dialog": {
@@ -16321,6 +16347,10 @@
         "how": "Enter his profile, valid from this month.",
         "title": "The owner's financial data is missing"
       },
+      "ownerInvoiceAfterApproval": {
+        "how": "Prepare a new version: it will include the VAT of the invoice.",
+        "title": "The invoice was issued after the statement was approved"
+      },
       "ownershipMissing": {
         "how": "State who owns it in the activation: with no owner its revenue goes to no statement.",
         "title": "A property has no owner in this period"
@@ -16376,6 +16406,7 @@
       "formula": {
         "AgencyCommission": "Agency commission under the mandate, on the owner's revenue. It is taken off the balance.",
         "AgencyPayment": "Payment from the owner to the agency, for instance to cover a negative balance. It is added to the balance.",
+        "AgencyVat": "VAT the invoice of the agency adds to the commission and the recharges. It is taken off the balance.",
         "BookingRevenue": "Payment collected for the booking, net of refunds, for the owner's share. It is added to the balance.",
         "ChannelFee": "Commission kept by the channel on the booking, for the owner's share. It is taken off the balance.",
         "Correction": "Manual correction with its reason: it replaces a line or adds one.",
@@ -16396,8 +16427,10 @@
       "reverses": "Cancels line {{id}}.",
       "source": {
         "Booking": "Booking",
+        "MandateFlatFee": "Flat fee of the mandate",
         "Manual": "Manual correction",
         "OwnerCharge": "Charge or expense",
+        "OwnerInvoice": "Invoice of the agency",
         "OwnerPayout": "Payout to the owner",
         "Payment": "Payment",
         "WireBatch": "Wire transfer"
@@ -16416,6 +16449,7 @@
       "type": {
         "AgencyCommission": "Agency commission",
         "AgencyPayment": "Payment from the owner",
+        "AgencyVat": "VAT on the invoice of the agency",
         "BookingRevenue": "Revenue of a booking",
         "ChannelFee": "Channel fee",
         "Correction": "Correction",
@@ -16562,6 +16596,7 @@
       "loadError": "We cannot read the statement.",
       "loading": "Reading the statement…",
       "nonFiscal": "This statement is not a fiscal document: it is the summary of what the agency owes the owner. If an invoice is needed, your agency's fiscal system issues it and you link it here.",
+      "nonFiscalInvoicing": "This statement is not a fiscal document: it is the summary of what the agency owes the owner. The invoice of the agency to the owner is made and issued below, in «Property manager invoice».",
       "notFound": "This statement does not exist",
       "notFoundBody": "It does not exist, or it belongs to another organization. Go back to the month-end close.",
       "openLatest": "Open the latest version",
@@ -16597,6 +16632,34 @@
         "description": "The ledger of {{owner}} changed after version {{version}} of {{period}}: a new one is needed.",
         "done": "New version of {{owner}} prepared.",
         "title": "New version after {{version}}"
+      }
+    },
+    "summary": {
+      "caption": "The parts of the statement and the net, in the currency of the statement",
+      "description": "The same parts as the PDF and the CSV the owner receives, in {{currency}}.",
+      "downloadCsv": "CSV",
+      "downloadCsvLabel": "Download the CSV of the statement",
+      "downloadPdf": "PDF",
+      "downloadPdfLabel": "Download the PDF of the statement",
+      "lines_one": "{{count}} line",
+      "lines_other": "{{count}} lines",
+      "net": "Net: closing balance",
+      "opening": "Opening balance",
+      "part": {
+        "channelFees": "Channel commissions",
+        "commission": "Commission of the property manager",
+        "corrections": "Corrections",
+        "other": "Other lines",
+        "recharges": "Recharges and expenses",
+        "stays": "Stays",
+        "withholding": "Withholding"
+      },
+      "payments": "Payments",
+      "period": "Total of the period",
+      "title": "The statement as the owner receives it",
+      "touristTax": {
+        "body": "It is not part of the net. The agency collects it on behalf of the municipality or the tourism office and remits it: the detail of each stay is in the PDF and the CSV.",
+        "title": "Tourist tax"
       }
     },
     "tax": {
@@ -16664,6 +16727,28 @@
         "Superseded": "Superseded"
       }
     }
+  },
+  "ownerAddress": {
+    "countryHint": "Two letters, for example IT or CH.",
+    "countryInvalid": "The country is two letters.",
+    "description": "The address the agency's invoice, the QR-bill and the bank transfer to the owner need. Saving it replaces the one before.",
+    "fields": {
+      "buildingNumber": "Building number",
+      "country": "Country",
+      "postalCode": "Postal code",
+      "province": "Province or canton",
+      "street": "Street",
+      "town": "Town"
+    },
+    "loadError": "We cannot read the address.",
+    "loading": "Reading the address…",
+    "notForYou": "The address is personal data: only who manages the finances of the owners sees and changes it.",
+    "notFound": "This owner does not exist.",
+    "provinceHint": "In Italy the two letters of the code (for example MI); abroad the canton or the region.",
+    "provinceRequired": "In Italy the province is required.",
+    "save": "Save the address",
+    "saved": "Address saved.",
+    "title": "Billing address"
   },
   "ownerContactInvitation": {
     "accepting": "We are activating your access",
@@ -16787,6 +16872,164 @@
         "description": "The link has already been used by an account. If that was you, open the portal and sign in; otherwise ask your agency for a new invitation.",
         "title": "This invitation has already been used"
       }
+    }
+  },
+  "ownerInvoice": {
+    "currencyMissing": "For some invoice the server did not give the currency: the amounts are written without a symbol.",
+    "issue": {
+      "confirm": "Issue the invoice",
+      "consequenceFinal": "Once issued, the invoice can no longer be changed.",
+      "consequenceNumber": "It gets its number now, in sequence and without gaps: the number cannot be reused.",
+      "consequenceVat": "The VAT the invoice adds goes into the ledger of the owner, once.",
+      "description": "You are about to issue the invoice of {{owner}} for {{period}}.",
+      "done": "Invoice {{number}} issued.",
+      "number": "Number",
+      "numberNext": "CasaZen gives it when the invoice is issued",
+      "series": "Series",
+      "title": "Issue the invoice to the owner?",
+      "total": "Total"
+    },
+    "lineType": {
+      "AdvancedExpense": "Advanced expense, outside VAT",
+      "Commission": "Commission",
+      "Recharge": "Recharge"
+    },
+    "lines": {
+      "caption": "The lines of the invoice with their VAT",
+      "description": "Description",
+      "net": "Amount",
+      "rate": "VAT",
+      "vat": "VAT amount"
+    },
+    "page": {
+      "allMonths": "All months",
+      "allOwners": "All owners",
+      "description": "The invoices the agency makes out to the owners from their statements, with the total in their currency.",
+      "empty": "There are no invoices to the owners yet. They are made from the statement of an owner.",
+      "emptyAction": "Open the month-end close",
+      "emptyFiltered": "No invoice for this month and this owner.",
+      "filterOwner": "Owner",
+      "filterPeriod": "Month",
+      "listTitle": "Invoices",
+      "loadError": "We cannot read the invoices.",
+      "loading": "Reading the invoices…",
+      "row": {
+        "draft": "Draft",
+        "number": "Invoice no. {{number}}",
+        "ownerAndMonth": "{{owner}} · {{month}}",
+        "pdfLabel": "Download the PDF of invoice {{number}}",
+        "statement": "Open the statement"
+      },
+      "title": "Invoices to the owners",
+      "unavailable": "The invoices to the owners are not active."
+    },
+    "panel": {
+      "create": "Make the invoice",
+      "createFromThis": "Make the draft again from this version",
+      "credited": "Invoice no. {{number}} cancelled with a credit note.",
+      "description": "The invoice the agency makes out to the owner: the commission, the recharges and the advanced expenses of this statement, with their VAT.",
+      "draft": "Draft ready: total {{total}}.",
+      "draftMade": "Draft of the invoice made.",
+      "issue": "Issue",
+      "issued": "Invoice no. {{number}} of {{date}}",
+      "loadError": "We cannot read the invoice.",
+      "loading": "Looking for the invoice…",
+      "none": "There is no invoice for this statement yet.",
+      "otherVersionDraft": "The draft of the invoice of this month was made from another version of the statement.",
+      "otherVersionIssued": "Invoice no. {{number}} of this month was made from another version of the statement.",
+      "otherVersionOpen": "Open that version",
+      "pdf": "Download the PDF",
+      "readOnly": "Only the owner or the administrators of the organization make and issue the invoice.",
+      "recalculate": "Make the draft again",
+      "review": "Review the draft",
+      "reviewFirst": "Before issuing, review the lines: the draft is made again from the version and the mandate as they are now.",
+      "superseded": "This version was replaced: the invoice is made from the latest version.",
+      "title": "Property manager invoice",
+      "unknownState": "Invoice state not recognized: {{status}}."
+    },
+    "settlement": {
+      "credited": "Cancelled with a credit note",
+      "offset": "Offset in the statement",
+      "qrBill": "The PDF carries the QR-bill for the payment, if the agency has registered its IBAN.",
+      "toPay": "To pay: {{amount}}",
+      "unknown": "Payment: state not recognized ({{state}})"
+    },
+    "status": {
+      "Credited": "Cancelled",
+      "Draft": "Draft",
+      "Issued": "Issued"
+    },
+    "totals": {
+      "stampDuty": "Stamp duty",
+      "taxable": "Taxable amount",
+      "total": "Total",
+      "vat": "VAT"
+    },
+    "vat": {
+      "outside": "Outside VAT{{nature}}: taxable amount {{taxable}}",
+      "rate": "VAT {{rate}}: taxable amount {{taxable}}, tax {{tax}}",
+      "rateWithoutTax": "VAT {{rate}}: taxable amount {{taxable}}",
+      "title": "VAT by rate"
+    }
+  },
+  "ownerMandate": {
+    "base": {
+      "GrossExclTouristTax": "takings of the stay without the tourist tax (cleaning included)",
+      "GrossExclTouristTaxAndCleaning": "takings of the stay without the tourist tax and without the cleaning"
+    },
+    "currencyMissing": "The settlement currency of the owner is not set in its fiscal profile yet: the flat fees are written without a symbol, in the currency that will be set there.",
+    "dialog": {
+      "commission": "Commission",
+      "description": "A new version starts on the day you choose and ends the one in force the day before. What is already in the ledger does not change.",
+      "documentHint": "The address (https) where the signed mandate is. The document is never shown here: if you leave it empty, the new version has no document.",
+      "documentInvalid": "An address that starts with https:// is needed.",
+      "done": "New version of the mandate saved.",
+      "feeHint": "For each stay, in the settlement currency of the owner. Leave it empty if there is none.",
+      "feeHintNoCurrency": "For each stay. The settlement currency of the owner is not set yet: the amount is in the currency that will be set in the fiscal profile.",
+      "feeInvalid": "Write an amount from 0 with at most two decimals, for example 80,00.",
+      "feeWithCurrency": "{{fee}} ({{currency}})",
+      "fees": "Flat fees and payment fees",
+      "percentHint": "From 0 to 100, with at most two decimals.",
+      "percentInvalid": "The commission is a number from 0 to 100, with at most two decimals.",
+      "submit": "Save the new version",
+      "title": "New version of the mandate",
+      "validFromHint": "It must be after the start of the latest version.",
+      "validFromTooEarly": "It must be after {{date}}, when the latest version starts.",
+      "vatHint": "«+ VAT»: the VAT is added on the invoice. «VAT included»: the VAT is already in the amount."
+    },
+    "fields": {
+      "cleaningFlatRate": "Cleaning flat fee",
+      "commissionBase": "Base of the commission",
+      "commissionIncludesVat": "VAT on the commission and the flat fees",
+      "commissionPercent": "Commission (%)",
+      "documentReference": "Signed mandate",
+      "linenFlatRate": "Linen flat fee",
+      "passthroughPaymentFees": "Fees on card payments",
+      "validFrom": "Valid from"
+    },
+    "loadError": "We cannot read the mandate.",
+    "loading": "Reading the mandate…",
+    "missing": "The mandate is missing: record it to calculate the commission.",
+    "newVersion": "New version",
+    "notFound": "This owner does not exist.",
+    "readOnly": "Only who manages the finances of the owners writes the mandate.",
+    "title": "Mandate",
+    "vat": {
+      "excluded": "+ VAT",
+      "included": "VAT included"
+    },
+    "version": {
+      "between": "From {{from}} to {{to}}",
+      "cleaning": "Cleaning flat fee per stay: {{amount}}",
+      "document": "Signed mandate: on file",
+      "feesAgency": "Fees on card payments: borne by the agency",
+      "feesOwner": "Fees on card payments: borne by the owner",
+      "from": "From {{from}}",
+      "inForce": "In force",
+      "linen": "Linen flat fee per stay: {{amount}}",
+      "noDocument": "Signed mandate: not recorded",
+      "terms": "Commission {{percent}}, {{vat}}. Base: {{base}}.",
+      "upcoming": "Not in force yet"
     }
   },
   "ownerOnboarding": {
@@ -17879,6 +18122,33 @@
     },
     "title": "Financial data of {{owner}}",
     "titleGeneric": "Owner's financial data"
+  },
+  "owners": {
+    "description": "The owners of the properties you manage, with the mandate in force of each.",
+    "empty": "There are no owners yet. They are loaded from the step «Owners» of «Get started with CasaZen».",
+    "emptyAction": "Open «Get started with CasaZen»",
+    "list": {
+      "showAll": "Show all ({{count}})",
+      "showLess": "Show fewer",
+      "title": "List of the owners"
+    },
+    "loadError": "We cannot read the owners.",
+    "loading": "Reading the owners…",
+    "row": {
+      "kindAndCurrency": "{{kind}} · currency {{currency}}",
+      "kindNoCurrency": "{{kind}} · settlement currency missing",
+      "loading": "Reading the profile…",
+      "mandateActive": "Commission {{percent}} {{vat}}, from {{from}}",
+      "mandateError": "We cannot read the mandate.",
+      "mandateLoading": "Reading the mandate…",
+      "mandateMissing": "The mandate is missing",
+      "mandateUpcoming": "Mandate from {{from}}: commission {{percent}}",
+      "noProfile": "No fiscal profile",
+      "open": "Financial data",
+      "openLabel": "Open the financial data of {{owner}}",
+      "profileError": "We cannot read the fiscal profile."
+    },
+    "title": "Owners"
   },
   "pageHeader": {
     "moreActions": "More actions",

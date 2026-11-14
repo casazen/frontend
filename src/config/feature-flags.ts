@@ -18,7 +18,8 @@ export type FeatureFlagKey =
   | 'complianceTrafficLight'
   | 'messageAssistant'
   | 'fiscalDocumentIssuance'
-  | 'octorateDocumentImport';
+  | 'octorateDocumentImport'
+  | 'ownerInvoicing';
 
 export type FeatureFlags = Record<FeatureFlagKey, boolean>;
 
@@ -130,6 +131,12 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * decides whether the page of the fiscal documents exists, and on its own whether an imported document has a PDF button.
    */
   octorateDocumentImport: false,
+  /**
+   * The invoice of the property manager to its owners (backend `OwnerInvoicing`, E14/F01/US01/T01, NF-114), off until the product owner turns it on in the test environment.
+   * While it is off the panel «Fattura del PM» of the statement and the page «Fatture ai proprietari» (`/app/account/owner-invoices`) do not exist: the panel is not drawn, nothing
+   * asks the server, the page has no entry in the menu and its address leads to the home of the area. The backend answers 404 to every endpoint of the invoices while it is off.
+   */
+  ownerInvoicing: false,
 };
 
 /** Known flags from the API response; anything but `true` is off. */
