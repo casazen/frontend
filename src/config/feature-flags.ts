@@ -18,7 +18,8 @@ export type FeatureFlagKey =
   | 'complianceTrafficLight'
   | 'messageAssistant'
   | 'fiscalDocumentIssuance'
-  | 'octorateDocumentImport';
+  | 'octorateDocumentImport'
+  | 'ownerInvoicing';
 
 export type FeatureFlags = Record<FeatureFlagKey, boolean>;
 
@@ -130,6 +131,12 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * decides whether the page of the fiscal documents exists, and on its own whether an imported document has a PDF button.
    */
   octorateDocumentImport: false,
+  /**
+   * The invoices of the property manager to the owners (backend `OwnerInvoicing`, E14/F01/US01/T01, NF-114, D9, D15), off until the accountant confirms the ⚖ choices (R4, I10, I11) and on in the test environment
+   * only. With it off, who holds the accounts of the portals (`PUT api/billing-setup/channels`, `api/billing-setup/channel-account-holders`) answers 404 and the section `channels` of the billing setup shows no
+   * values: the step «Commissioni dei canali» of the wizard «Fatturazione» then keeps the account holders out and says that they are not available yet; the commission rules of the portals do not depend on it.
+   */
+  ownerInvoicing: false,
 };
 
 /** Known flags from the API response; anything but `true` is off. */

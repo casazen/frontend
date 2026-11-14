@@ -14,7 +14,7 @@ import { FiscalPropertyItem } from '@/features/fiscal/components/fiscal-property
 import { FISCAL_DOCUMENTS_PATH } from '@/features/fiscal/documents/document-paths';
 import { fiscalFocus, fiscalRegimeSelectId, type FiscalFocus } from '@/features/fiscal/fiscal-focus';
 import { currentFiscalYear } from '@/features/fiscal/fiscal-format';
-import { ISSUER_PATH } from '@/features/fiscal/issuer-wizard/issuer-paths';
+import { BILLING_SETUP_PATH } from '@/features/fiscal/billing-wizard/billing-wizard-ids';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getProblemMessage } from '@/lib/api-errors';
@@ -230,16 +230,16 @@ export function FiscalDashboardPage() {
           </PlainSection>
         ) : null}
 
-        {/* Who issues the fiscal documents of the organization: a quiet section, not a second highlighted block. Whoever may not change it has no button to it. */}
+        {/* The invoicing setup of the organization (the wizard «Fatturazione»): a quiet section, not a second highlighted block. Whoever may not change it has no button to it. */}
         {canWrite ? (
           <PlainSection
-            title={t('fiscalDocuments.issuer.card.title')}
-            actionLabel={t('fiscalDocuments.issuer.card.action')}
-            href={ISSUER_PATH}
-            actionTestId="fiscal-issuer-card-cta"
-            data-testid="fiscal-issuer-card"
+            title={t('billingWizard.card.title')}
+            actionLabel={t('billingWizard.card.action')}
+            href={BILLING_SETUP_PATH}
+            actionTestId="fiscal-billing-card-cta"
+            data-testid="fiscal-billing-card"
           >
-            <p className="text-sm text-foreground/70">{t('fiscalDocuments.issuer.card.description')}</p>
+            <p className="text-sm text-foreground/70">{t('billingWizard.card.description')}</p>
           </PlainSection>
         ) : null}
 

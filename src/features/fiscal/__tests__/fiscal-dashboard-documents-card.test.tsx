@@ -63,7 +63,7 @@ describe('FiscalDashboardPage: the card of the fiscal documents (E06/F03/US04/T0
     expect(screen.queryByTestId('fiscal-documents-card')).not.toBeInTheDocument();
     expect(screen.queryByTestId('fiscal-documents-card-cta')).not.toBeInTheDocument();
     // The other card of the page is where it was.
-    expect(screen.getByTestId('fiscal-issuer-card')).toBeInTheDocument();
+    expect(screen.getByTestId('fiscal-billing-card')).toBeInTheDocument();
   });
 
   it.each([

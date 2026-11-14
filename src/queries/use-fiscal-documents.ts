@@ -11,8 +11,8 @@ import { saveBlobAs } from '@/lib/file-download';
 import type { FiscalDocumentCriteria, FiscalDocumentEntry, FiscalDocumentExportFormat } from '@/types';
 
 /**
- * Root of the query keys of the fiscal documents. It is under `fiscal` on purpose: a change to the tax profile or to who issues (`FISCAL_ISSUER_KEY`, which lives under
- * `['fiscal', 'documents']` too) reads the documents again.
+ * Root of the query keys of the fiscal documents. It is under `fiscal` on purpose: a change to the tax profile or to the invoicing setup (`useBillingSetup`, which invalidates it
+ * after every save) reads the documents again.
  */
 export const FISCAL_DOCUMENTS_KEY = ['fiscal', 'documents'] as const;
 
