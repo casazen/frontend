@@ -455,6 +455,8 @@ export interface PropertyOwnerSummary {
   id: string;
   firstName: string;
   lastName: string;
+  /** The IBAN as the registry answers it, already masked to its last four characters (`****3456`); `null` when the owner has none. Never the full account. */
+  ibanMasked?: string | null;
 }
 
 /** One missing or wrong fact of an owner or of a property: a code and the name of the field, never a value. */
