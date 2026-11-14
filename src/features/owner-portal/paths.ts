@@ -12,6 +12,8 @@ export const ownerPortalPaths = {
   /** The calendar and the owner stays: of one property when the id is given, of the first one the owner has otherwise. */
   calendar: (propertyId?: string) => `${OWNER_PORTAL_ROOT}/calendario${propertyId ? `/${encodeURIComponent(propertyId)}` : ''}`,
   accounting: `${OWNER_PORTAL_ROOT}/contabilita`,
+  /** One published statement: the id of its version, nothing else (no amount, no name). */
+  statement: (statementId: string) => `${OWNER_PORTAL_ROOT}/contabilita/${encodeURIComponent(statementId)}`,
   documents: `${OWNER_PORTAL_ROOT}/documenti`,
   messages: `${OWNER_PORTAL_ROOT}/messaggi`,
   conversation: (conversationId: string) => `${OWNER_PORTAL_ROOT}/messaggi/${encodeURIComponent(conversationId)}`,

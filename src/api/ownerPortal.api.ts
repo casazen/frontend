@@ -12,9 +12,12 @@ import type {
   OwnerMessage,
   OwnerPortalDocuments,
   OwnerPortalExternalDocument,
+  OwnerPortalInvoice,
   OwnerPortalOverview,
   OwnerPortalProperty,
   OwnerPortalReportQuery,
+  OwnerPortalStatement,
+  OwnerPortalStatementDetail,
   OwnerPortalTrend,
   OwnerPortalPermission,
   OwnerStay,
@@ -56,6 +59,25 @@ function asDocuments(url: string, data: unknown): OwnerPortalDocuments {
   const report = asReport<Partial<OwnerPortalDocuments>>(url, data);
   if (!Array.isArray(report.documents) || !Array.isArray(report.statements)) throw new UnexpectedApiResponseError(url);
   return { documents: report.documents, statements: report.statements };
+}
+
+/** The published statements: every item must be a statement with its totals, or the answer is not the one of the endpoint (nothing to draw an amount from). */
+function asStatements(url: string, data: unknown): OwnerPortalStatement[] {
+  const list = asList<Partial<OwnerPortalStatement> | null>(url, data);
+  if (!list.every((item) => typeof item === 'object' && item !== null && typeof item.statementId === 'string' && typeof item.totals === 'object' && item.totals !== null)) {
+    throw new UnexpectedApiResponseError(url);
+  }
+  return list as OwnerPortalStatement[];
+}
+
+/** A statement with its lines: the statement with its totals and both lists must be there, or the answer is not the one of the endpoint. */
+function asStatementDetail(url: string, data: unknown): OwnerPortalStatementDetail {
+  const detail = asReport<Partial<OwnerPortalStatementDetail>>(url, data);
+  const { statement, sections, touristTax } = detail;
+  if (typeof statement !== 'object' || statement === null || typeof statement.totals !== 'object' || statement.totals === null) throw new UnexpectedApiResponseError(url);
+  if (!Array.isArray(sections) || !Array.isArray(touristTax)) throw new UnexpectedApiResponseError(url);
+  if (!sections.every((section: { lines?: unknown } | null) => typeof section === 'object' && section !== null && Array.isArray(section.lines))) throw new UnexpectedApiResponseError(url);
+  return detail as OwnerPortalStatementDetail;
 }
 
 /** A file the portal hands out, with the name it is saved under chosen by the caller (the name of the server is not trusted for the disk). */
@@ -121,6 +143,26 @@ export const ownerPortalApi = {
   /** The links of the invoices the agency issued elsewhere for the owner's published statement versions. */
   listExternalDocuments: async () =>
     asList<OwnerPortalExternalDocument>(`${BASE}/external-documents`, await ApiClient.get<unknown>(`${BASE}/external-documents`)),
+
+  // ---------------------------------------------------------------- statements with their amounts and the invoices of the property manager (needs `accounting.read`)
+
+  /** The published statements of the owner with their totals, the latest first; a version a later one replaced is marked `superseded`. */
+  listStatements: async () => asStatements(`${BASE}/statements`, await ApiClient.get<unknown>(`${BASE}/statements`)),
+
+  /** One published statement with its lines grouped as in its PDF and the tourist tax box. A statement that is not the caller's is a 404, the same as one that is not there. */
+  getStatement: async (statementId: string) => {
+    const url = `${BASE}/statements/${encodeURIComponent(statementId)}`;
+    return asStatementDetail(url, await ApiClient.get<unknown>(url));
+  },
+
+  /** The PDF stored with a published statement: exactly the file that was published. The server writes the download before it hands the file out. */
+  downloadStatementPdf: (statementId: string) => getFile(`${BASE}/statements/${encodeURIComponent(statementId)}/pdf`),
+
+  /** The invoices of the property manager to the owner, the latest first. */
+  listInvoices: async () => asList<OwnerPortalInvoice>(`${BASE}/invoices`, await ApiClient.get<unknown>(`${BASE}/invoices`)),
+
+  /** The PDF of one invoice, made from the document as it was issued, in the language of the person (Italian unless it is English). */
+  downloadInvoicePdf: (invoiceId: string, language: 'it' | 'en') => getFile(`${BASE}/invoices/${encodeURIComponent(invoiceId)}/pdf?lang=${language}`),
 
   // ---------------------------------------------------------------- delegated contacts (only the owner manages them)
 
