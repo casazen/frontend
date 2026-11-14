@@ -21275,6 +21275,29 @@
       "step3Request": "Invia la richiesta"
     }
   },
+  "publicFiscalDocument": {
+    "description": "Qui trovi il riepilogo del documento che hai ricevuto. Scarica il PDF per conservarlo.",
+    "download": "Scarica il PDF",
+    "invalid": {
+      "description": "Questo link non è valido o è scaduto. Chiedi un nuovo invio alla struttura.",
+      "title": "Link non valido o scaduto"
+    },
+    "kind": {
+      "creditNote": "Nota di credito",
+      "invoice": "Fattura",
+      "other": "Documento",
+      "receipt": "Ricevuta"
+    },
+    "loading": "Carico il documento…",
+    "noCurrency": "La valuta non è indicata nel documento: l'importo è mostrato senza simbolo.",
+    "summary": {
+      "date": "Data",
+      "kind": "Tipo",
+      "number": "Numero",
+      "total": "Totale"
+    },
+    "title": "Il tuo documento"
+  },
   "publicProperty": {
     "amenities": {
       "AirConditioning": "Aria condizionata",

@@ -36,6 +36,8 @@ describe('routes that keep the current look (NOT_REDESIGNED_ROUTE_HANDLE)', () =
     '/checkin/abc123',
     '/rent/pay/installment-1',
     '/service/pay/payment-1',
+    // The document a guest got by e-mail (E12/F02/US02) is a guest's page too.
+    '/documents/view/document-1',
     // The pages the marketing e-mails link to (CRM-08, CRM-03) are pages of guests too.
     UNSUBSCRIBE_PATH,
     MARKETING_CONFIRM_PATH,
