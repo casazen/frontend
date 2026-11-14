@@ -1,5 +1,6 @@
 import type { FiscalExportFormat, FiscalReportKind, FiscalReportPeriod, FiscalTaxNote } from '@/api/fiscal.api';
 import { todayInRome } from '@/lib/stay-dates';
+import { formatCurrency } from '@/lib/utils';
 
 /** First tax year of the fiscal area (the backend refuses earlier years). */
 export const FIRST_FISCAL_YEAR = 2026;
@@ -43,9 +44,15 @@ export function fiscalReportFileName(kind: FiscalReportKind, period: FiscalRepor
   return `${REPORT_FILE_NAMES[kind]}-${period.from}-${period.to}.${format}`;
 }
 
-/** Euro amount in the UI locale. */
-export function formatMoney(value: number, locale: string): string {
-  return new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR' }).format(value);
+/**
+ * The currency of the Italian tax reports (the annual income, the withholding and the tourist tax of the comuni): they are declared in euro by law, so their answers carry no currency field and
+ * their screens name it here, once, instead of the formatter assuming it. A figure that has a currency in its data (a document, a statement, a payment) is shown in that one.
+ */
+export const FISCAL_REPORT_CURRENCY = 'EUR';
+
+/** An amount in its currency, in the UI locale. The currency is asked for and never assumed: whoever formats a figure says which one it is in. */
+export function formatMoney(value: number, locale: string, currency: string): string {
+  return formatCurrency(value, currency, locale);
 }
 
 /** Rate given as a fraction (0.21) shown as a percentage. */

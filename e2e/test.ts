@@ -179,6 +179,15 @@ async function installDefaultDemoApiMocks(page: import('@playwright/test').Page)
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ bookingId: '', events: [] }) });
   });
 
+  // The fiscal documents of a booking (E12/F02/US01/T01) are asked by the card «Documento fiscale» of the tab Pagamento: none, unless a spec answers otherwise.
+  await page.route('**/api/bookings/*/fiscal-documents', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+  });
+
   await page.route('**/api/payments**', async (route) => {
     if (route.request().method() !== 'GET') {
       await route.fallback();

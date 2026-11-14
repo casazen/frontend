@@ -5,15 +5,18 @@ import i18n from '@/i18n/config';
 import { FISCAL_DOCUMENT_ERROR } from '@/api/fiscal-documents.api';
 import it_ from '@/i18n/locales/it.json';
 import en from '@/i18n/locales/en.json';
-import { document, importedDocument } from './document-fixtures';
+import { document, draft, importedDocument, swissDetail } from './document-fixtures';
 import {
   bookingLinkOf,
+  creditProblemOf,
+  creditRequestOf,
   criteriaOf,
   DOCUMENT_STATE_KEYS,
   documentActionsOf,
   documentFileName,
   documentsReadOf,
   documentStatesOf,
+  documentWriteActionsOf,
   exportBlockOf,
   exportFileName,
   formatDocumentAmount,
@@ -22,9 +25,13 @@ import {
   isAwaitingSdi,
   issuerModeOf,
   NO_FILTERS,
+  numberingOf,
+  parseCreditAmount,
   periodProblemOf,
   sdiNoteVisibleFor,
+  seriesOf,
   unavailabilityOf,
+  vatSummaryOf,
 } from '../document-model';
 
 const IMPORT_ON = { ...DEFAULT_FEATURE_FLAGS, octorateConnector: true, octorateDocumentImport: true };
@@ -308,5 +315,120 @@ describe('reads', () => {
     expect(bookingLinkOf({ bookingId: 'b-1' }, true)).toBe('/app/short-rent/bookings/b-1');
     expect(bookingLinkOf({ bookingId: 'b-1' }, false)).toBeNull();
     expect(bookingLinkOf({ bookingId: null }, true)).toBeNull();
+  });
+});
+
+describe('documentWriteActionsOf (what may be changed, by state)', () => {
+  const none = { issue: false, refresh: false, discard: false, credit: false };
+
+  it('DocumentWriteActionsOf_WithoutTheRightToChange_IsNothingWhateverTheDocument', () => {
+    for (const candidate of [document(), draft(), importedDocument(), draft({ kind: 'CreditNote' })]) expect(documentWriteActionsOf(candidate, false)).toEqual(none);
+  });
+
+  it.each([
+    ['a draft of CasaZen', draft(), { issue: true, refresh: true, discard: true, credit: false }],
+    // A credit note that is a draft is the amounts of the document it credits: it is issued or dropped, never made again from a booking.
+    ['a credit note that is a draft', draft({ kind: 'CreditNote' }), { issue: true, refresh: false, discard: true, credit: false }],
+    ['an invoice that was issued', document(), { ...none, credit: true }],
+    ['a receipt that was issued', document({ kind: 'Receipt' }), { ...none, credit: true }],
+    ['a credit note that was issued', document({ kind: 'CreditNote' }), none],
+    ['a dropped draft', draft({ status: 'Discarded' }), none],
+    ['a document of the channel manager', importedDocument({ status: 'Draft' }), none],
+  ])('DocumentWriteActionsOf_%s_IsRead', (_case, candidate, expected) => {
+    expect(documentWriteActionsOf(candidate, true)).toEqual(expected);
+  });
+});
+
+describe('vatSummaryOf (a summary that does not add up to the totals is never drawn)', () => {
+  const lines = swissDetail().lines;
+
+  it('VatSummaryOf_TheLinesOfASwissInvoice_AddUpToTheTotalsAndAreGroupedByRate', () => {
+    const rows = vatSummaryOf({ lines, taxableBase: 708.11, vatAmount: 27.89 });
+
+    expect(rows).toEqual([
+      { ratePercent: 8.1, natureCode: null, taxable: 37, vat: 3 },
+      { ratePercent: 3.8, natureCode: null, taxable: 655.11, vat: 24.89 },
+      { ratePercent: 0, natureCode: null, taxable: 16, vat: 0 },
+    ]);
+  });
+
+  it.each([
+    ['a VAT of the document that is not the sum of the rows', { taxableBase: 708.11, vatAmount: 27.9 }],
+    ['a taxable base of the document that is not the sum of the rows', { taxableBase: 700, vatAmount: 27.89 }],
+  ])('VatSummaryOf_%s_IsNotDrawn', (_case, totals) => {
+    expect(vatSummaryOf({ lines, ...totals })).toBeNull();
+  });
+
+  it('VatSummaryOf_TheVatTheServerStoredOnTheLines_IsWhatIsSummedNotTheOneWorkedOutFromTheRate', () => {
+    const stored = lines.map((line) => (line.vatRatePercent === 3.8 ? { ...line, vatAmount: line.lineNumber === 1 ? 21.97 : 2.93 } : line.vatRatePercent === 8.1 ? { ...line, vatAmount: 3 } : { ...line, vatAmount: 0 }));
+
+    expect(vatSummaryOf({ lines: stored, taxableBase: 708.11, vatAmount: 27.9 })?.find((row) => row.ratePercent === 3.8)?.vat).toBe(24.9);
+  });
+
+  it('VatSummaryOf_ADocumentWithNoLine_IsNotDrawn', () => {
+    expect(vatSummaryOf({ lines: [], taxableBase: 0, vatAmount: 0 })).toBeNull();
+  });
+});
+
+describe('numbering (the number the next document is expected to get)', () => {
+  const issued = [
+    { series: '2026', sequenceNumber: 4, number: '2026/4' },
+    { series: '2026', sequenceNumber: 3, number: '2026/3' },
+    { series: '2025', sequenceNumber: 90, number: '2025/90' },
+  ];
+
+  it('SeriesOf_ThePatternOfTheSetting_GivesTheSeriesOfTheYearOfTheIssue', () => {
+    expect(seriesOf('', '2026-11-14')).toBe('2026');
+    expect(seriesOf('{year}', '2027-01-02')).toBe('2027');
+    expect(seriesOf('PM-{year}', '2026-11-14')).toBe('PM-2026');
+    expect(seriesOf('A', '2026-11-14')).toBe('A');
+  });
+
+  it('SeriesOf_ASettingThatCouldNotBeRead_ClaimsNoSeries', () => {
+    expect(seriesOf(null, '2026-11-14')).toBeNull();
+    expect(seriesOf(undefined, '2026-11-14')).toBeNull();
+  });
+
+  it('NumberingOf_TheIssuedDocumentsOfTheSeries_ExpectsTheNumberAfterTheHighest', () => {
+    expect(numberingOf('2026', issued)).toEqual({ series: '2026', last: '2026/4', next: '2026/5' });
+    // Another series is another counter: the first of a new year is 1, whatever the old series reached.
+    expect(numberingOf('2027', issued)).toEqual({ series: '2027', last: null, next: '2027/1' });
+  });
+
+  it('NumberingOf_IssuedDocumentsThatCouldNotBeRead_ExpectsNothingAndNeverTheFirstNumber', () => {
+    expect(numberingOf('2026', undefined)).toEqual({ series: '2026', last: null, next: null });
+  });
+
+  it('NumberingOf_ASeriesThatIsNotKnown_TellsOnlyTheLastNumberIssued', () => {
+    expect(numberingOf(null, issued)).toEqual({ series: null, last: '2026/4', next: null });
+  });
+});
+
+describe('the credit note', () => {
+  it.each([
+    ['120', 120],
+    ['120,5', 120.5],
+    ['120.50', 120.5],
+    [' 0,01 ', 0.01],
+  ])('ParseCreditAmount_%s_IsRead', (text, amount) => {
+    expect(parseCreditAmount(text)).toBe(amount);
+  });
+
+  // A separator of thousands is not read: a figure is never read as another one.
+  it.each(['', '0', '-5', '1.250,00', '12,345', 'abc', '12 EUR'])('ParseCreditAmount_%s_IsNotAnAmount', (text) => {
+    expect(parseCreditAmount(text)).toBeNull();
+  });
+
+  it('CreditProblemOf_APartAboveTheTotalOrAReasonThatIsMissing_IsToldBeforeTheServerIsAsked', () => {
+    expect(creditProblemOf({ scope: 'whole', amount: '', reason: 'Errore' }, 736)).toBeNull();
+    expect(creditProblemOf({ scope: 'whole', amount: '', reason: '  ' }, 736)).toBe('reasonRequired');
+    expect(creditProblemOf({ scope: 'part', amount: '', reason: 'Errore' }, 736)).toBe('amountInvalid');
+    expect(creditProblemOf({ scope: 'part', amount: '736,01', reason: 'Errore' }, 736)).toBe('amountTooHigh');
+    expect(creditProblemOf({ scope: 'part', amount: '736', reason: 'Errore' }, 736)).toBeNull();
+  });
+
+  it('CreditRequestOf_TheWholeDocument_LeavesTheAmountOutAndAPartSendsIt', () => {
+    expect(creditRequestOf({ scope: 'whole', amount: '50', reason: ' Errore ' })).toEqual({ reason: 'Errore' });
+    expect(creditRequestOf({ scope: 'part', amount: '50,5', reason: 'Errore' })).toEqual({ amount: 50.5, reason: 'Errore' });
   });
 });

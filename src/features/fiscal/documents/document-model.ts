@@ -1,12 +1,23 @@
 import { isAxiosError } from 'axios';
+import type { TFunction } from 'i18next';
 import { FISCAL_DOCUMENT_ERROR } from '@/api/fiscal-documents.api';
 import { isFeatureEnabled, type FeatureFlags } from '@/config/feature-flags';
 import { BOOKINGS_PATH } from '@/features/bookings/lib/booking-list-query';
 import { contentDispositionFileName } from '@/features/document-archive/document-file';
-import { getProblemCode } from '@/lib/api-errors';
+import { getProblemCode, translateErrorCode } from '@/lib/api-errors';
 import type { StatusIconName, StatusTone } from '@/lib/status-dictionary';
 import { formatStayDate, isStayDate, todayInRome } from '@/lib/stay-dates';
-import type { FiscalDocumentCriteria, FiscalDocumentEntry, FiscalDocumentExportFormat, FiscalDocumentsContext } from '@/types';
+import {
+  FISCAL_DOCUMENT_LINE_TYPES,
+  type BookingFiscalDocument,
+  type FiscalCreditNoteRequest,
+  type FiscalDocumentBatchResult,
+  type FiscalDocumentCriteria,
+  type FiscalDocumentDetail,
+  type FiscalDocumentEntry,
+  type FiscalDocumentExportFormat,
+  type FiscalDocumentsContext,
+} from '@/types';
 
 /** Documents on a page of the list (the page size the server uses when it is not told one). */
 export const DOCUMENTS_PAGE_SIZE = 20;
@@ -187,13 +198,16 @@ function sdiStateOf(document: FiscalDocumentEntry): DocumentState {
   }
 }
 
-/** Whether the amount of the document was collected, or `null` when the server does not say (nothing is claimed then). */
-function paymentStateOf(document: FiscalDocumentEntry): DocumentState | null {
+/**
+ * Whether the amount of the document was collected, or `null` when the server does not say (nothing is claimed then). The icon of «Pagata» is a check and never a euro sign: the
+ * document may be in francs, and a currency symbol is only ever the one of the data.
+ */
+function paymentStateOf(document: Pick<FiscalDocumentEntry, 'paymentState'>): DocumentState | null {
   switch (document.paymentState) {
     case 'ToCollect':
       return state('toCollect', 'warning', 'clock');
     case 'Paid':
-      return state('paid', 'success', 'euro');
+      return state('paid', 'success', 'check-circle');
     case 'Unknown':
       return null;
     default:
@@ -330,4 +344,292 @@ export function issuerModeOf(context: FiscalDocumentsContext | undefined): Issue
  */
 export function sdiNoteVisibleFor(context: FiscalDocumentsContext | undefined, documents: readonly FiscalDocumentEntry[]): boolean {
   return context?.sdiProviderConfigured === false && (documents.length === 0 || documents.some((document) => document.source === 'CasaZen' && document.sdiStatus === 'to_send'));
+}
+
+// ---------------------------------------------------------------------------------------------------------------------------------
+// Names and write actions (E12/F02/US01/T01)
+
+/** The words of the kind of a document; a kind this client has no words for (the server is newer) is shown as it came. */
+export function documentKindWords(t: TFunction, kind: string): string {
+  const key = documentKindKey(kind);
+  return key ? t(key) : kind;
+}
+
+/** What names a document: its kind and the number the server gave it (a draft has none, and says so). */
+export function documentNameOf(t: TFunction, document: Pick<FiscalDocumentEntry, 'kind' | 'number'>): string {
+  const kind = documentKindWords(t, document.kind);
+  return document.number ? t('fiscalDocuments.list.named', { kind, number: document.number }) : t('fiscalDocuments.list.unnumbered', { kind });
+}
+
+/** What names a document to a person who has several of them in front: its name and, when it has one, the recipient (a list of drafts has no number to tell them apart by). */
+export function documentLabelOf(t: TFunction, document: Pick<FiscalDocumentEntry, 'kind' | 'number' | 'recipientName'>): string {
+  const name = documentNameOf(t, document);
+  return document.recipientName ? `${name} · ${document.recipientName}` : name;
+}
+
+/** What a person with the right to write payments may do with a document, on top of what it offers to everybody (`documentActionsOf`). */
+export interface DocumentWriteActions {
+  /** A draft is issued. */
+  issue: boolean;
+  /** A draft is made again from the booking. */
+  refresh: boolean;
+  /** A draft is dropped: it consumed no number. */
+  discard: boolean;
+  /** An invoice or a receipt that was issued is credited, in whole or in part. */
+  credit: boolean;
+}
+
+const NO_WRITE_ACTIONS: DocumentWriteActions = { issue: false, refresh: false, discard: false, credit: false };
+
+/**
+ * What can be changed in a document. `canWrite` is the right to write payments (`payment.write`) AND the flag of the issuance of CasaZen: without either of them nothing can be
+ * changed, whatever the document is. Only a document CasaZen issues can be changed (an imported one is read-only). A draft is issued, dropped or, when it is made from a booking, made
+ * again (a credit note that is still a draft is the amounts of the document it credits: there is nothing to make it again from). An invoice or a receipt that was issued is credited;
+ * a credit note and a proforma never are.
+ */
+export function documentWriteActionsOf(document: Pick<FiscalDocumentEntry, 'source' | 'status' | 'kind'>, canWrite: boolean): DocumentWriteActions {
+  if (!canWrite || document.source !== 'CasaZen') return NO_WRITE_ACTIONS;
+  const draft = document.status === 'Draft';
+  return {
+    issue: draft,
+    refresh: draft && document.kind !== 'CreditNote',
+    discard: draft,
+    credit: document.status === 'Issued' && (document.kind === 'Invoice' || document.kind === 'Receipt'),
+  };
+}
+
+// ---------------------------------------------------------------------------------------------------------------------------------
+// Numbering: the series and the number a document will have
+
+/**
+ * The series a document issued on `day` gets, from the pattern of the setting (`{year}` stands for the year of the issue; an empty pattern is the year, the rule of the server), or `null`
+ * while the pattern is not known: nothing is claimed about a series that could not be read.
+ */
+export function seriesOf(pattern: string | null | undefined, day: string): string | null {
+  if (pattern === null || pattern === undefined) return null;
+  const effective = pattern.trim() === '' ? '{year}' : pattern.trim();
+  return effective.split('{year}').join(day.slice(0, 4));
+}
+
+/** What the numbering needs of an issued document: its series, its number in it and the number as written. */
+export interface NumberedDocument {
+  series: string | null;
+  sequenceNumber: number | null;
+  number: string | null;
+}
+
+/** The numbering of a series as far as the issued documents show it: the last number used and the one that comes after it (`null` when it cannot be told). */
+export interface Numbering {
+  series: string | null;
+  last: string | null;
+  next: string | null;
+}
+
+/**
+ * The number the next document of the series is expected to get: the one after the highest number the issued documents have in it (`series/number`, the way the server writes it), or the first one
+ * when none has. It is an expectation and says so: the server gives the number when it issues, in order and with no gaps, and another document may be issued before this one. While the series is not
+ * known nothing is expected, and only the last number issued is told.
+ */
+export function numberingOf(series: string | null, issued: readonly NumberedDocument[] | undefined): Numbering {
+  // The issued documents could not be read (yet): nothing is expected, and above all never «the first number of the series».
+  if (issued === undefined) return { series, last: null, next: null };
+  const numbered = issued.filter((document) => document.sequenceNumber !== null);
+  if (series === null) {
+    const latest = issued.find((document) => document.number !== null);
+    return { series: null, last: latest?.number ?? null, next: null };
+  }
+  const inSeries = numbered.filter((document) => document.series === series);
+  if (inSeries.length === 0) return { series, last: null, next: `${series}/1` };
+  const highest = inSeries.reduce((top, document) => ((document.sequenceNumber ?? 0) > (top.sequenceNumber ?? 0) ? document : top));
+  return { series, last: highest.number, next: `${series}/${(highest.sequenceNumber ?? 0) + 1}` };
+}
+
+// ---------------------------------------------------------------------------------------------------------------------------------
+// The detail: lines, VAT per rate, payment
+
+/** The key of the words of a line type, or `null` for a type this client has no words for (shown as it came) and for a line the server did not give a type. */
+export function lineTypeKey(lineType: string | null): string | null {
+  return lineType !== null && (FISCAL_DOCUMENT_LINE_TYPES as readonly string[]).includes(lineType) ? `fiscalDocuments.detail.lineType.${lineType}` : null;
+}
+
+/** A rate of VAT as a percentage in the language of the person: `3,8%`. */
+export function formatDocumentRate(percent: number, language: string): string {
+  return `${numberFormat(language, null).format(percent)}%`;
+}
+
+/** One row of the VAT summary: the rate (and the nature code of an operation without VAT), what is taxed at it and the VAT of it. */
+export interface VatRow {
+  ratePercent: number;
+  natureCode: string | null;
+  taxable: number;
+  vat: number;
+}
+
+/** An amount of the server in cents, as a whole number: the sums of the summary are made in cents, so that no figure picks up the error of a decimal. */
+const centsOf = (amount: number): number => Math.round(amount * 100);
+
+/**
+ * The VAT per rate of a document, from its lines: what is taxed at each rate is the sum of the amounts of its lines (the server keeps them net of VAT), and the VAT of the rate is the sum of
+ * the VAT the server stored on its lines when it sends it, else the taxable amount at the rate, to the cent. The summary is shown only when it **adds up to the totals of the document** (the
+ * taxable base and the VAT the server wrote): a summary that does not is never drawn, whatever it would say: the totals and the PDF are the document.
+ */
+export function vatSummaryOf(detail: Pick<FiscalDocumentDetail, 'lines' | 'taxableBase' | 'vatAmount'>): VatRow[] | null {
+  if (detail.lines.length === 0) return null;
+  const groups = new Map<string, { ratePercent: number; natureCode: string | null; taxable: number; stored: number; allStored: boolean }>();
+  for (const line of detail.lines) {
+    const natureCode = line.vatRatePercent === 0 ? line.vatNatureCode : null;
+    const key = `${line.vatRatePercent}|${natureCode ?? ''}`;
+    const group = groups.get(key) ?? { ratePercent: line.vatRatePercent, natureCode, taxable: 0, stored: 0, allStored: true };
+    group.taxable += centsOf(line.totalPrice);
+    if (line.vatAmount === null) group.allStored = false;
+    else group.stored += centsOf(line.vatAmount);
+    groups.set(key, group);
+  }
+  const rows = [...groups.values()]
+    .map((group) => ({
+      ratePercent: group.ratePercent,
+      natureCode: group.natureCode,
+      taxable: group.taxable,
+      vat: group.ratePercent === 0 ? 0 : group.allStored ? group.stored : Math.round((group.taxable * group.ratePercent) / 100),
+    }))
+    .sort((a, b) => b.ratePercent - a.ratePercent || (a.natureCode ?? '').localeCompare(b.natureCode ?? ''));
+  const taxable = rows.reduce((sum, row) => sum + row.taxable, 0);
+  const vat = rows.reduce((sum, row) => sum + row.vat, 0);
+  if (taxable !== centsOf(detail.taxableBase) || vat !== centsOf(detail.vatAmount)) return null;
+  return rows.map((row) => ({ ...row, taxable: row.taxable / 100, vat: row.vat / 100 }));
+}
+
+/**
+ * How a document stands on the money, in words, for the detail: «Pagato tramite il portale» when the portal collected it (the server says `Portal` as the channel), «Pagato», «Da incassare», and a state
+ * nobody knows as it came. `null` when nothing is claimed: the server does not say, or the document has no collection (a draft, a credit note, a proforma).
+ */
+export function paymentWordsOf(document: Pick<FiscalDocumentDetail, 'kind' | 'status' | 'paymentState' | 'paymentChannel'>): DocumentState | null {
+  if (document.status !== 'Issued' || document.kind === 'CreditNote' || document.kind === 'Proforma') return null;
+  switch (document.paymentState) {
+    case 'Unknown':
+      return null;
+    case 'ToCollect':
+      return { key: 'fiscalDocuments.detail.payment.toCollect', tone: 'warning', icon: 'clock' };
+    case 'Paid':
+      return { key: document.paymentChannel === 'Portal' ? 'fiscalDocuments.detail.payment.paidPortal' : 'fiscalDocuments.detail.payment.paid', tone: 'success', icon: 'check-circle' };
+    default:
+      return { key: 'fiscalDocuments.detail.payment.unrecognized', tone: 'neutral', icon: 'circle-dashed', detail: document.paymentState };
+  }
+}
+
+// ---------------------------------------------------------------------------------------------------------------------------------
+// The card of the booking
+
+/** The state of a document of the card of the booking: a draft, issued, a dropped draft; a state nobody knows is shown as it came and never as one that is complete. */
+export function bookingDocumentStateOf(document: Pick<BookingFiscalDocument, 'status'>): DocumentState {
+  switch (document.status) {
+    case 'Draft':
+      return state('draft', 'neutral', 'pencil');
+    case 'Issued':
+      return state('issued', 'success', 'check-circle');
+    case 'Discarded':
+      return state('discarded', 'neutral', 'ban');
+    default:
+      return state('unrecognizedStatus', 'neutral', 'circle-dashed', document.status);
+  }
+}
+
+/** The collection line of a document of the card: only an issued invoice or receipt has one, and nothing is claimed when the server does not say. */
+export function bookingDocumentPaymentOf(document: Pick<BookingFiscalDocument, 'kind' | 'status' | 'paymentState'>): DocumentState | null {
+  return document.status !== 'Issued' || document.kind === 'CreditNote' || document.kind === 'Proforma' ? null : paymentStateOf(document);
+}
+
+// ---------------------------------------------------------------------------------------------------------------------------------
+// Credit note
+
+/** The longest reason of a credit note the server keeps (it cuts what is longer). */
+export const CREDIT_REASON_MAX = 200;
+
+export type CreditScope = 'whole' | 'part';
+
+/** What the dialog of the credit note holds: the whole document or a part, the amount as typed and the reason. */
+export interface CreditForm {
+  scope: CreditScope;
+  amount: string;
+  reason: string;
+}
+
+export type CreditProblem = 'amountInvalid' | 'amountTooHigh' | 'reasonRequired';
+
+/**
+ * The amount a person typed: digits with at most two decimals, a point or a comma between them (`120`, `120,5`, `120.50`), above zero. A separator of thousands is not read (`1.250,00` is no
+ * amount: whoever types it is asked for the figure without it), so that a figure is never read as another one.
+ */
+export function parseCreditAmount(text: string): number | null {
+  const typed = text.trim().replace(/\s/g, '');
+  if (!/^\d+(?:[.,]\d{1,2})?$/.test(typed)) return null;
+  const amount = Number(typed.replace(',', '.'));
+  return Number.isFinite(amount) && amount > 0 ? amount : null;
+}
+
+/**
+ * What is wrong with the credit note before it is asked of the server, or `null`: a part needs an amount above zero that is not above the total of the document (the server checks what is left
+ * to credit: other credit notes may exist), and the reason is always asked. The comparison is in cents.
+ */
+export function creditProblemOf(form: CreditForm, total: number): CreditProblem | null {
+  if (form.scope === 'part') {
+    const amount = parseCreditAmount(form.amount);
+    if (amount === null) return 'amountInvalid';
+    if (centsOf(amount) > centsOf(total)) return 'amountTooHigh';
+  }
+  return form.reason.trim() === '' ? 'reasonRequired' : null;
+}
+
+/** The credit note as the server is asked for it: the whole document when the amount is left out. */
+export function creditRequestOf(form: CreditForm): FiscalCreditNoteRequest {
+  const reason = form.reason.trim().slice(0, CREDIT_REASON_MAX);
+  const amount = form.scope === 'part' ? parseCreditAmount(form.amount) : null;
+  return amount === null ? { reason } : { amount, reason };
+}
+
+// ---------------------------------------------------------------------------------------------------------------------------------
+// Bulk issue
+
+/** The most documents one bulk issue takes (the limit of the server). */
+export const BATCH_MAX = 200;
+
+/** A draft that gets a box: a draft CasaZen issues. */
+export function isBatchDraft(document: Pick<FiscalDocumentEntry, 'source' | 'status'>): boolean {
+  return document.source === 'CasaZen' && document.status === 'Draft';
+}
+
+/**
+ * The drafts «Seleziona tutte le bozze del periodo» takes: the drafts of the stays. A credit note that is a draft is a correction the host looks at one by one, and is only ever issued in bulk
+ * when its box is ticked by hand (the server does the same: a correction is issued only when it is named).
+ */
+export function isPeriodDraft(document: Pick<FiscalDocumentEntry, 'source' | 'status' | 'kind'>): boolean {
+  return isBatchDraft(document) && document.kind !== 'CreditNote';
+}
+
+/** What the bulk issue came to, as the screen says it. */
+export interface BatchOutcome {
+  /** The documents that were asked for and answered. */
+  asked: number;
+  issued: number;
+  failures: readonly { id: string; code: string | null }[];
+  /** More drafts the selection matched than one request takes. */
+  remaining: number;
+  /** `all`: every document was issued and none is left; `some`: some were issued and not all; `none`: nothing was issued. */
+  verdict: 'all' | 'some' | 'none';
+}
+
+/**
+ * What the bulk issue came to. It is read from the rows, one per document: «all» is said only when every row was issued and nothing is left over, and one failed row (or one draft left) is
+ * always a `some` or a `none`: the screen never says that everything was issued when one document was not.
+ */
+export function batchOutcomeOf(result: FiscalDocumentBatchResult): BatchOutcome {
+  const failures = result.rows.filter((row) => !row.issued).map((row) => ({ id: row.id, code: row.errorCode }));
+  const issued = result.rows.length - failures.length;
+  const complete = result.rows.length > 0 && failures.length === 0 && result.remaining === 0;
+  return { asked: result.rows.length, issued, failures, remaining: result.remaining, verdict: complete ? 'all' : issued > 0 ? 'some' : 'none' };
+}
+
+/** The reason one document of a bulk issue was not issued, in plain words: the words of its code when the app has them, else a sentence that says the reason is not known (never the code alone). */
+export function batchReasonOf(code: string | null, t: TFunction): string {
+  return translateErrorCode(code, t) ?? t('fiscalDocuments.batch.result.reasonUnknown');
 }

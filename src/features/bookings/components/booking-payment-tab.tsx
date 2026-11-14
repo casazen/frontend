@@ -9,6 +9,7 @@ import { formatCurrency } from '@/lib/utils';
 import type { Booking, BookingAmountSources } from '@/types';
 import { bookingPriceBreakdown } from '../lib/booking-price';
 import { Amount, AmountSourceLine } from './booking-facts';
+import { BookingFiscalDocumentCard } from './booking-fiscal-document-card';
 import { BookingInvoiceDataSection } from './booking-invoice-data-section';
 import { BookingLedgerSection } from './booking-ledger-section';
 import { BookingOtaAmounts } from './booking-ota-amounts';
@@ -26,6 +27,7 @@ import { BookingOtaAmounts } from './booking-ota-amounts';
  * Under the amounts there is "Incassi" (FIS-05, NF-85): the ledger of the booking, everything collected for it, card, manual and channel payments, each with its
  * commission, its net, its state and the fiscal document. "Registra incasso" above it marks the payments stale when it succeeds, and the ledger is read again.
  * After the amounts of the channel there is "Dati di fatturazione" (FIS-01, NF-81): who the invoice of the booking is made out to. Both are for who may read payments.
+ * Last comes "Documento fiscale" (E12/F02/US01/T01): the documents CasaZen has for the booking, with «Crea bozza» and «Emetti»; it is there only while the issuance of CasaZen is on.
  */
 export function BookingPaymentTab({ booking }: { booking: Booking }) {
   const { t } = useTranslation();
@@ -107,6 +109,9 @@ export function BookingPaymentTab({ booking }: { booking: Booking }) {
 
       {/* FIS-01, NF-81: who the invoice is made out to, and where the data comes from; the section is not there for who may not read payments. */}
       <BookingInvoiceDataSection bookingId={booking.id} />
+
+      {/* E12/F02/US01/T01: the documents CasaZen has for the booking and what to do next with them; not there while the issuance is off, nor for who may not read payments. */}
+      <BookingFiscalDocumentCard bookingId={booking.id} />
     </div>
   );
 }

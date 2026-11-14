@@ -5,17 +5,29 @@ import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { ListPagination } from '@/components/shared/list-view/list-pagination';
 import { Button } from '@/components/ui/button';
+import { isFeatureEnabled } from '@/config/feature-flags';
 import { ISSUER_PATH } from '@/features/fiscal/issuer-wizard/issuer-paths';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getHttpStatus } from '@/lib/api-errors';
-import { useExportFiscalDocuments, useFiscalDocuments, useFiscalDocumentsContext } from '@/queries/use-fiscal-documents';
+import {
+  useExportFiscalDocuments,
+  useFiscalDocuments,
+  useFiscalDocumentsContext,
+  useIssueFiscalDocumentsBatch,
+  useSelectDraftsOfPeriod,
+} from '@/queries/use-fiscal-documents';
 import type { FiscalDocumentEntry, FiscalDocumentExportFormat } from '@/types';
+import type { DocumentChange } from './document-actions';
+import { BatchConfirmDialog, BatchResultDialog, DocumentBatchControls, type SelectNote } from './document-batch';
+import { DocumentDetailDrawer } from './document-detail-drawer';
 import { DocumentFilterBar } from './document-filters';
 import { DocumentList } from './document-list';
 import {
+  batchOutcomeOf,
   criteriaOf,
   DOCUMENTS_PAGE_SIZE,
+  documentLabelOf,
   documentsReadOf,
   exportBlockOf,
   hasActiveFilters,
@@ -23,10 +35,18 @@ import {
   NO_FILTERS,
   periodProblemOf,
   sdiNoteVisibleFor,
+  type BatchOutcome,
   type DocumentFilters,
 } from './document-model';
 
 const NO_DOCUMENTS: readonly FiscalDocumentEntry[] = [];
+const NO_SELECTION: ReadonlyMap<string, FiscalDocumentEntry> = new Map();
+
+/** What a bulk issue came to and the names of its documents as the page knew them when it was asked (a draft that was issued is not in the list any more). */
+interface BatchReport {
+  outcome: BatchOutcome;
+  labels: ReadonlyMap<string, string>;
+}
 
 interface ExportActionsProps {
   /** The files cannot be asked now (a period with a problem, a status that has no file): both buttons wait. */
@@ -80,6 +100,10 @@ function ExportActions({ blocked, pending, format, onExport }: ExportActionsProp
  * issues needs): without it nothing is asked, and a refusal of the server (403) is told in words in the page and does not send the person to the no-access page. A read that
  * failed is a failed read, with a retry, and is never an empty list; a 404 is «not found» whatever the query still holds. The filters and the page are in the screen and nowhere else:
  * not in the address, not in the browser's storage. The list is read again whenever it opens, and while a document waits for the answer of the SDI.
+ *
+ * A click on a row opens the detail of the document (E12/F02/US01/T01). Who may write payments, with the issuance of CasaZen on (`payment.write` and the flag `fiscalDocumentIssuance`), also has the
+ * actions of the state of each document, a box on every draft and the bulk issue: «Seleziona tutte le bozze del periodo» ticks the drafts of the filters, «Emetti selezionate» asks for a confirmation
+ * and then says what came of every document, never that all went well when one did not. Without either of the two nothing that changes a document is drawn.
  */
 export function FiscalDocumentsPage() {
   const { t } = useTranslation();
@@ -89,15 +113,24 @@ export function FiscalDocumentsPage() {
   const canSeeSetting = canRead && hasPermission('short-rent', 'property.read');
   const canChangeIssuer = hasPermission('short-rent', 'property.write');
   const canReadBookings = hasPermission('short-rent', 'booking.read');
+  const canWrite = canRead && hasPermission('short-rent', 'payment.write') && isFeatureEnabled(flags, 'fiscalDocumentIssuance');
 
   const [filters, setFilters] = useState<DocumentFilters>(NO_FILTERS);
   const [page, setPage] = useState(1);
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [selected, setSelected] = useState<ReadonlyMap<string, FiscalDocumentEntry>>(NO_SELECTION);
+  const [note, setNote] = useState<SelectNote | null>(null);
+  const [confirming, setConfirming] = useState(false);
+  const [report, setReport] = useState<BatchReport | null>(null);
   const problem = periodProblemOf(filters);
   const enabled = canRead && problem === null;
   const criteria = useMemo(() => criteriaOf(filters), [filters]);
   const documents = useFiscalDocuments(criteria, page, DOCUMENTS_PAGE_SIZE, { enabled });
   const context = useFiscalDocumentsContext(canSeeSetting);
   const exporter = useExportFiscalDocuments();
+  const batch = useIssueFiscalDocumentsBatch();
+  const picker = useSelectDraftsOfPeriod();
+  const selectedIds = useMemo(() => new Set(selected.keys()), [selected]);
 
   const read = documentsReadOf({ enabled, isError: documents.isError, status: getHttpStatus(documents.error), hasData: documents.data !== undefined });
   const data = read === 'ok' ? documents.data : undefined;
@@ -112,9 +145,72 @@ export function FiscalDocumentsPage() {
   const change = (next: DocumentFilters) => {
     setFilters(next);
     setPage(1);
+    // What was ticked belongs to the filters it was ticked under: another list never keeps boxes the person can no longer see.
+    setSelected(NO_SELECTION);
+    setNote(null);
   };
   const reset = () => change(NO_FILTERS);
   const exportBlock = exportBlockOf(filters);
+
+  const toggle = (document: FiscalDocumentEntry) =>
+    setSelected((current) => {
+      const next = new Map(current);
+      if (next.has(document.id)) next.delete(document.id);
+      else next.set(document.id, document);
+      return next;
+    });
+  const togglePage = (pageDocuments: readonly FiscalDocumentEntry[], select: boolean) =>
+    setSelected((current) => {
+      const next = new Map(current);
+      for (const document of pageDocuments) {
+        if (select) next.set(document.id, document);
+        else next.delete(document.id);
+      }
+      return next;
+    });
+  const clearSelection = () => {
+    setSelected(NO_SELECTION);
+    setNote(null);
+  };
+  // The drafts of the stays that the filters show (the status of the filter is not read: only drafts are asked for), at most the 200 a bulk issue takes.
+  const selectPeriod = () => {
+    setNote(null);
+    picker.mutate(criteria, {
+      onSuccess: ({ drafts, more }) => {
+        if (drafts.length === 0) {
+          setNote({ kind: 'none' });
+          return;
+        }
+        setSelected(new Map(drafts.map((draft) => [draft.id, draft])));
+        setNote({ kind: 'selected', count: drafts.length, more });
+      },
+      onError: () => setNote({ kind: 'failed' }),
+    });
+  };
+  // Issues the ticked drafts. What was issued leaves the selection; what was not stays ticked, so the person can mend it and ask again.
+  const issueSelected = async () => {
+    const labels = new Map([...selected].map(([id, draft]) => [id, documentLabelOf(t, draft)] as const));
+    const result = await batch.mutateAsync({ documentIds: [...selected.keys()] });
+    setSelected((current) => {
+      const next = new Map(current);
+      for (const row of result.rows) if (row.issued) next.delete(row.id);
+      return next;
+    });
+    setReport({ outcome: batchOutcomeOf(result), labels });
+  };
+  // What a button of a document did to it: an issued or dropped draft is no draft to issue in bulk any more, and a dropped one has no detail to show.
+  const changed = (id: string, kind: DocumentChange) => {
+    if (kind !== 'credited') {
+      setSelected((current) => {
+        if (!current.has(id)) return current;
+        const next = new Map(current);
+        next.delete(id);
+        return next;
+      });
+    }
+    if (kind === 'discarded') setOpenId((current) => (current === id ? null : current));
+  };
+  const canSelectPeriod = read === 'ok' && problem === null && (filters.status === '' || filters.status === 'Draft');
 
   const filtered = hasActiveFilters(filters);
   const issuerMode = issuerModeOf(context.data);
@@ -181,12 +277,33 @@ export function FiscalDocumentsPage() {
               </div>
             ) : null}
 
+            {canWrite && read === 'ok' ? (
+              <DocumentBatchControls
+                count={selected.size}
+                canSelectPeriod={canSelectPeriod}
+                searching={picker.isPending}
+                issuing={batch.isPending}
+                note={note}
+                onSelectPeriod={selectPeriod}
+                onIssue={() => setConfirming(true)}
+                onClear={clearSelection}
+              />
+            ) : null}
+
             {problem === null ? (
               <DocumentList
                 documents={rows}
                 label={t('fiscalDocuments.list.tableLabel')}
                 canReadBookings={canReadBookings}
                 flags={flags}
+                canWrite={canWrite}
+                onOpen={(document) => setOpenId(document.id)}
+                onChanged={changed}
+                selection={
+                  canWrite
+                    ? { selected: selectedIds, disabled: picker.isPending || batch.isPending, onToggle: toggle, onTogglePage: togglePage }
+                    : undefined
+                }
                 // Whatever the failure, a list that could not be read is never drawn as an empty one, and a 404 is never the rows a query still holds.
                 isLoading={read === 'loading'}
                 isError={read === 'failed' || read === 'notFound'}
@@ -206,6 +323,34 @@ export function FiscalDocumentsPage() {
                     </div>
                   ) : null
                 }
+              />
+            ) : null}
+
+            <DocumentDetailDrawer
+              documentId={openId}
+              onClose={() => setOpenId(null)}
+              flags={flags}
+              canWrite={canWrite}
+              canReadBookings={canReadBookings}
+              onChanged={changed}
+            />
+
+            {confirming ? (
+              <BatchConfirmDialog
+                count={selected.size}
+                busy={batch.isPending}
+                onClose={() => setConfirming(false)}
+                onConfirm={async () => {
+                  await issueSelected();
+                  setConfirming(false);
+                }}
+              />
+            ) : null}
+            {report ? (
+              <BatchResultDialog
+                outcome={report.outcome}
+                labelOf={(id) => report.labels.get(id) ?? t('fiscalDocuments.batch.result.unknownDocument')}
+                onClose={() => setReport(null)}
               />
             ) : null}
           </>
