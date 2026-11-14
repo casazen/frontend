@@ -27,6 +27,7 @@ import {
   BILLING_ERROR_KEYS,
   ITALIAN_REGIMES,
   PORTAL_SOURCES,
+  channelsStepSchema,
   issuerStepSchema,
   italyStepSchema,
   mandateTemplateProblems,
@@ -323,6 +324,38 @@ export function stepSave(
     default:
       return null;
   }
+}
+
+/** The fields of the form of the standard mandate: the step saves none of them, the terms are applied by their own action. */
+const MANDATE_FIELDS = [
+  'mandateValidFrom',
+  'mandateCommissionPercent',
+  'mandateCommissionBase',
+  'mandateCleaningFlatRate',
+  'mandateLinenFlatRate',
+  'mandatePassthroughPaymentFees',
+  'mandateCommissionIncludesVat',
+] as const satisfies readonly (keyof BillingWizardValues)[];
+
+/**
+ * What the person wrote in the step on screen that a draft («Salva ed esci») does NOT keep, by the names of the fields: an answer that is not valid (a draft keeps what is valid and
+ * leaves the rest out), the percents of the portals that are not percents, and every term of the standard mandate that was changed (the step saves none of them: they are
+ * applied by their own action). A field the person left as it started, or left empty, is not something they wrote. The page says so when it is not empty, so that a draft with
+ * part of the input left out is never told as «saved».
+ */
+export function draftLeftOut(step: BillingStepId, values: BillingWizardValues, options: { initial: BillingWizardValues; onRecord: BillingIdentityOnRecord }): string[] {
+  const written = (field: keyof BillingWizardValues): boolean => {
+    const value = values[field];
+    if (typeof value === 'string' && value.trim() === '') return false;
+    return !sameAnswer(value, options.initial[field]);
+  };
+
+  if (step === BILLING_STEPS.mandate) return MANDATE_FIELDS.filter(written);
+  if (step === BILLING_STEPS.channels) {
+    const result = channelsStepSchema.safeParse(values);
+    return result.success ? [] : [...new Set(result.error.issues.map((issue) => issue.path.join('.')))];
+  }
+  return [...invalidFieldsOf(step, values, options.onRecord)].filter((field) => written(field as keyof BillingWizardValues));
 }
 
 /**

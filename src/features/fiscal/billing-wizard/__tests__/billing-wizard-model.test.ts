@@ -4,6 +4,7 @@ import type { ChannelAccountHolder, ChannelCommissionRuleSet } from '@/types';
 import { BILLING_STEPS } from '../billing-wizard-ids';
 import {
   commissionRulesRequest,
+  draftLeftOut,
   firstMissingStep,
   holderChangesRequest,
   initialValues,
@@ -128,6 +129,26 @@ describe('what a step saves on the server', () => {
     expect(draft(BILLING_STEPS.issuing, { emailGuestDocuments: true })).toEqual({ emailGuestDocuments: true });
     expect(draft(BILLING_STEPS.italy, { virtualStampConfirmed: true, stampDutyReference: ' AUT-77 ' })).toEqual({ virtualStampConfirmed: true, stampDutyReference: 'AUT-77' });
     expect(draft(BILLING_STEPS.numbering, { ownerInvoiceSeries: 'FATT{year}' })).toEqual({ ownerInvoiceSeries: 'FATT{year}' });
+  });
+
+  // Data rule: «Salva ed esci» tells what it kept. What the person wrote and a draft does not keep (not valid, or the terms of the mandate that no step saves) is named, so that the
+  // page does not say «Salvato» for all of it; what was left as it started, or emptied, is not something that was written.
+  it('DraftLeftOut_NamesWhatWasWrittenAndIsNotKeptAndNothingElse', () => {
+    const start = initialValues(swissSetup(), { organizationName: 'Casa Lugano SA', today: TODAY });
+    const left = (step: Parameters<typeof draftLeftOut>[0], changes: Partial<BillingWizardValues>) => draftLeftOut(step, { ...start, ...changes }, { initial: start, onRecord: NOBODY });
+
+    expect(left(BILLING_STEPS.issuer, {})).toEqual([]);
+    expect(left(BILLING_STEPS.issuer, { legalName: 'Nuovo SA' })).toEqual([]);
+    expect(left(BILLING_STEPS.issuer, { legalName: 'Nuovo SA', postalCode: '69' })).toEqual(['postalCode']);
+    expect(left(BILLING_STEPS.issuer, { postalCode: '' })).toEqual([]);
+    expect(left(BILLING_STEPS.numbering, { guestDocumentSeries: 'AAAAAAAAAAAA' })).toEqual(['guestDocumentSeries']);
+    expect(left(BILLING_STEPS.issuing, { autoIssueGuestDocuments: true })).toEqual([]);
+    // The percents of the portals: one that is a percent is kept, one that is not is left out, an empty one was not written.
+    expect(left(BILLING_STEPS.channels, { commissionPercents: { Airbnb: '16' } })).toEqual([]);
+    expect(left(BILLING_STEPS.channels, { commissionPercents: { Airbnb: 'abc', Vrbo: '' } })).toEqual(['commissionPercents.Airbnb']);
+    // No step saves the terms of the standard mandate: every one that was changed is left out.
+    expect(left(BILLING_STEPS.mandate, {})).toEqual([]);
+    expect(left(BILLING_STEPS.mandate, { mandateCommissionPercent: '20', mandatePassthroughPaymentFees: true })).toEqual(['mandateCommissionPercent', 'mandatePassthroughPaymentFees']);
   });
 
   it('StepSave_TouristTaxIsAListOnceEveryPortalIsAnsweredAndAnEmptyListIsAnAnswer', () => {

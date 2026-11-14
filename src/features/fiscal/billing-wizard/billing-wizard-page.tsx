@@ -41,6 +41,7 @@ import { AREA_HOME_PATH, BILLING_STEPS, FISCAL_PATH, type BillingStepId } from '
 import {
   commissionRulesRequest,
   currencyOfCountry,
+  draftLeftOut,
   firstMissingStep,
   holderChangesRequest,
   identityOnRecord,
@@ -142,29 +143,44 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
    * changed since the step opened: a proposal left as it was (the owner as the holder of the portal accounts, the percents of the configuration, the series of the server) is
    * not an answer, and leaving must not turn it into one. The VAT number or the fiscal code the tax profile did not have, and the person wrote, go to the tax profile first
    * (the setup cannot carry them: they live on the organization). A refusal that names fields is kept to be shown on them; one that says the person's reach is only some of
-   * the properties makes the wizard read-only.
+   * the properties makes the wizard read-only. It says whether anything was sent at all: the way out tells the person what was kept.
    */
-  const saveStep = async (id: BillingStepId, values: BillingWizardValues, draft: boolean): Promise<void> => {
+  const saveStep = async (id: BillingStepId, values: BillingWizardValues, draft: boolean): Promise<{ sent: boolean }> => {
     setProblems([]);
+    let sent = false;
     try {
       if (id === BILLING_STEPS.vat) {
         const addition = taxProfileAddition(values, onRecord, { draft });
-        if (addition) await saveTaxIdentity.mutateAsync(addition);
+        if (addition) {
+          await saveTaxIdentity.mutateAsync(addition);
+          sent = true;
+        }
       }
       if (id === BILLING_STEPS.channels) {
         if (flags.ownerInvoicing) {
           if (!draft || portalSettingsChanged(values, defaults)) {
             await savePortalSettings.mutateAsync({ portalAccountHolder: values.portalAccountHolder, rechargePortalCommissions: values.rechargePortalCommissions });
+            sent = true;
           }
           const rows = holderChangesRequest(values.holderChanges, holders.data ?? []);
-          if (rows) await saveHolders.mutateAsync(rows);
+          if (rows) {
+            await saveHolders.mutateAsync(rows);
+            sent = true;
+          }
         }
         const list = rules.data ? commissionRulesRequest(rules.data, values.commissionPercents, today, { draft }) : null;
-        if (list) await saveRules.mutateAsync(list);
-        return;
+        if (list) {
+          await saveRules.mutateAsync(list);
+          sent = true;
+        }
+        return { sent };
       }
       const step = stepSave(id, values, { draft, onRecord, initial: defaults });
-      if (step && Object.keys(step.request).length > 0) await save.mutateAsync(step);
+      if (step && Object.keys(step.request).length > 0) {
+        await save.mutateAsync(step);
+        sent = true;
+      }
+      return { sent };
     } catch (error) {
       if (isNeedsWholeOrg(error)) setRefused(true);
       setProblems(problemsOf(error, values.countryCode));
@@ -177,8 +193,12 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
     try {
       if (!readOnly) {
         try {
-          await saveStep(stepId as BillingStepId, values, true);
-          toast.success(t('billingWizard.exit.saved'));
+          const { sent } = await saveStep(stepId as BillingStepId, values, true);
+          // «Salvato» only for what is true: part of what was written may have been left out (not valid, or terms the step never saves), and a draft may have had nothing to send.
+          const left = draftLeftOut(stepId as BillingStepId, values, { initial: defaults, onRecord });
+          if (left.length === 0) toast.success(t(sent ? 'billingWizard.exit.saved' : 'billingWizard.exit.nothingNew'));
+          else if (stepId === BILLING_STEPS.mandate) toast.warning(t('billingWizard.exit.mandateNotSaved'));
+          else toast.warning(t(sent ? 'billingWizard.exit.savedPartly' : 'billingWizard.exit.notSaved'));
         } catch (error) {
           // A person whose reach turned out to be only some of the properties has nothing of theirs to keep: they leave. Any other refusal keeps them here, with what they typed.
           if (!isNeedsWholeOrg(error)) {
@@ -209,7 +229,12 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
       label: t(`billingWizard.steps.${key}.label`),
       title: t(`billingWizard.steps.${key}.title`),
       purpose: t(`billingWizard.steps.${key}.purpose`),
-      beforeNext: readOnly || id === BILLING_STEPS.summary ? undefined : (next: BillingWizardValues) => saveStep(id, next, false),
+      beforeNext:
+        readOnly || id === BILLING_STEPS.summary
+          ? undefined
+          : async (next: BillingWizardValues) => {
+              await saveStep(id, next, false);
+            },
       nextDisabled: leaving,
     };
     switch (id) {

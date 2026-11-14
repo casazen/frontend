@@ -2763,8 +2763,12 @@
     },
     "exit": {
       "failed": "Non siamo riusciti a salvare. Quello che hai scritto è ancora qui: riprova.",
+      "mandateNotSaved": "I termini del mandato non si salvano da qui: si applicano con «Applica ai proprietari senza mandato». Quando riprendi, li riscrivi.",
+      "nothingNew": "Non c’era niente di nuovo da salvare: riprendi quando vuoi.",
+      "notSaved": "Non abbiamo salvato quello che hai scritto in questo passo: non è completo o non è corretto. Quando riprendi, lo correggi.",
       "saveAndExit": "Salva ed esci",
-      "saved": "Salvato. Riprendi quando vuoi: riparti da dove sei rimasto."
+      "saved": "Salvato. Riprendi quando vuoi: riparti da dove sei rimasto.",
+      "savedPartly": "Abbiamo salvato quello che era corretto. Quello che non lo era è rimasto fuori: quando riprendi, lo correggi."
     },
     "finishLabel": "Fatto",
     "help": {

@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { createElement, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import * as api from '@/api/billing-setup.api';
 import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
@@ -263,5 +264,56 @@ describe('the standard mandate is applied by its own action and never by «Conti
     await onStep('issuing');
 
     expect(api.applyMandateTemplate).not.toHaveBeenCalled();
+  });
+});
+
+/** «Salva ed esci» on the step on screen, once the button is enabled. */
+async function saveAndExit() {
+  await waitFor(() => expect(screen.getByTestId('billing-save-exit')).toBeEnabled(), WAIT);
+  fireEvent.click(screen.getByTestId('billing-save-exit'));
+}
+
+// «Salva ed esci» keeps what is valid and changed, and the word «Salvato» is for what is true: the terms of the mandate are saved by no step, and a percent that is not one is left out.
+describe('«Salva ed esci» on the steps of the agency says what it kept (E11/F02/US01/T01)', () => {
+  it('SaveAndExit_MandateStepWithTheTermsWritten_SaysTheyAreNotSavedFromHereAndAppliesNothing', async () => {
+    renderWizard('mandate');
+    await onStep('mandate');
+    fireEvent.change(await screen.findByTestId('billing-mandate-percent'), { target: { value: '20' } });
+
+    await saveAndExit();
+
+    await waitFor(() => expect(toast.warning).toHaveBeenCalledWith(i18n.t('billingWizard.exit.mandateNotSaved')), WAIT);
+    expect(toast.success).not.toHaveBeenCalled();
+    expect(api.applyMandateTemplate).not.toHaveBeenCalled();
+    expect(api.saveBillingSetupSection).not.toHaveBeenCalled();
+  });
+
+  it('SaveAndExit_ChannelsStepWithAPercentThatIsNotOne_IsNeverToldSavedAndNothingIsSent', async () => {
+    renderWizard('channels');
+    await onStep('channels');
+    await screen.findByTestId('billing-commissions');
+    fireEvent.change(screen.getByTestId('billing-commission-Airbnb'), { target: { value: 'abc' } });
+
+    await saveAndExit();
+
+    await waitFor(() => expect(toast.warning).toHaveBeenCalledWith(i18n.t('billingWizard.exit.notSaved')), WAIT);
+    expect(toast.success).not.toHaveBeenCalled();
+    expect(api.saveChannelCommissionRules).not.toHaveBeenCalled();
+  });
+
+  it('SaveAndExit_ChannelsStepWithAValidPercentAndOneThatIsNot_KeepsTheValidOneOnlyAndSaysTheRestWasLeftOut', async () => {
+    renderWizard('channels');
+    await onStep('channels');
+    await screen.findByTestId('billing-commissions');
+    fireEvent.change(screen.getByTestId('billing-commission-Airbnb'), { target: { value: '16' } });
+    fireEvent.change(screen.getByTestId('billing-commission-BookingCom'), { target: { value: 'abc' } });
+
+    await saveAndExit();
+
+    await waitFor(() => expect(toast.warning).toHaveBeenCalledWith(i18n.t('billingWizard.exit.savedPartly')), WAIT);
+    // The percent the person wrote is the agency's rule; the one that is only shown (BookingCom, the default of the configuration) is not an answer.
+    expect(api.saveChannelCommissionRules).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(api.saveChannelCommissionRules).mock.calls[0][0].map((rule) => [rule.channel, rule.percent])).toEqual([['Airbnb', 16]]);
+    expect(toast.success).not.toHaveBeenCalled();
   });
 });

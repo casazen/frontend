@@ -2763,8 +2763,12 @@
     },
     "exit": {
       "failed": "We could not save. What you wrote is still here: try again.",
+      "mandateNotSaved": "The terms of the mandate are not saved from here: they are applied with “Apply to the owners with no mandate”. When you come back, you write them again.",
+      "nothingNew": "There was nothing new to save: come back whenever you like.",
+      "notSaved": "We did not save what you wrote in this step: it is not complete or not correct. When you come back, you correct it.",
       "saveAndExit": "Save and exit",
-      "saved": "Saved. Pick it up whenever you like: you restart where you left off."
+      "saved": "Saved. Pick it up whenever you like: you restart where you left off.",
+      "savedPartly": "We saved what was correct. What was not has been left out: when you come back, you correct it."
     },
     "finishLabel": "Done",
     "help": {
