@@ -2696,17 +2696,17 @@
           "td17": "In Italy the portal’s invoice has no VAT: the agency integrates it (TD17).",
           "title": "The agency’s"
         },
-        "Owner": {
-          "invoice": "The portal invoices the owner: the agency invoices only its own fee.",
-          "recharge": "In the statement the commission is a deduction by the portal, with no recharge.",
-          "td17": "No TD17 for the agency.",
-          "title": "The owner’s"
-        },
         "hint": "Choose how you opened the accounts on the portals. To be confirmed with your accountant.",
         "legend": "Whose account is the portal account?",
         "names": {
           "Agency": "Agency",
           "Owner": "Owner"
+        },
+        "Owner": {
+          "invoice": "The portal invoices the owner: the agency invoices only its own fee.",
+          "recharge": "In the statement the commission is a deduction by the portal, with no recharge.",
+          "td17": "No TD17 for the agency.",
+          "title": "The owner’s"
         },
         "suggested": "suggested",
         "unavailable": "Who holds the portal accounts is chosen once invoicing to owners is active: it is not available yet."
@@ -2909,11 +2909,11 @@
         "allHaveOne": "Every owner already has a mandate: there is nothing to apply.",
         "button": "Apply to the owners with no mandate",
         "cancel": "Cancel",
+        "confirm_one": "Yes, apply to 1 owner",
+        "confirm_other": "Yes, apply to {{count}} owners",
         "confirmLabel": "Confirm applying the mandate",
         "confirmText_one": "You are about to create this mandate for 1 owner who has none. The mandates that already exist do not change.",
         "confirmText_other": "You are about to create this mandate for {{count}} owners who have none. The mandates that already exist do not change.",
-        "confirm_one": "Yes, apply to 1 owner",
-        "confirm_other": "Yes, apply to {{count}} owners",
         "result_one": "Mandate created for 1 owner. Skipped: {{skipped}}.",
         "result_other": "Mandate created for {{count}} owners. Skipped: {{skipped}}.",
         "title": "Apply the mandate",
@@ -3089,9 +3089,9 @@
         "intro": "In Italy the tourist tax is worked out with the rules of the comune of each property: CasaZen keeps them and you set nothing here.",
         "loading": "Reading the rules of the comuni",
         "noRate": "To do: the rate is missing",
-        "toDoTitle": "To do",
         "toDo_one": "CasaZen adds the rate of the comune of {{comuni}}: we let you know as soon as it is there. You can go on meanwhile.",
         "toDo_other": "CasaZen adds the rates of the comuni of {{comuni}}: we let you know as soon as they are there. You can go on meanwhile.",
+        "toDoTitle": "To do",
         "unavailable": "We cannot read the rules of the comuni. You can go on: nothing changes here."
       },
       "noCountry": "Choose the country of the issuer first, in the first step.",
@@ -3109,12 +3109,12 @@
           "description": "The cleaning has the same VAT as the stay.",
           "title": "Part of the stay"
         },
+        "hint": "To be confirmed with your accountant.",
+        "legend": "The final cleaning is…",
         "Service": {
           "description": "The cleaning is a service, with its own VAT.",
           "title": "A separate service"
-        },
-        "hint": "To be confirmed with your accountant.",
-        "legend": "The final cleaning is…"
+        }
       },
       "italy": {
         "fiscalCode": {
@@ -3154,12 +3154,12 @@
           "description": "The stay is exempt from VAT, article 10 number 8.",
           "title": "Exempt, art. 10 n. 8"
         },
+        "hint": "To be confirmed with your accountant.",
+        "legend": "The VAT of the stay is…",
         "Standard": {
           "description": "The stay has VAT at 10%.",
           "title": "VAT at 10%"
-        },
-        "hint": "To be confirmed with your accountant.",
-        "legend": "The VAT of the stay is…"
+        }
       },
       "swiss": {
         "legend": "Are you registered for VAT?",

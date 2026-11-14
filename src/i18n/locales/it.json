@@ -2696,17 +2696,17 @@
           "td17": "In Italia la fattura del portale è senza IVA: la integra l’agenzia (TD17).",
           "title": "Dell’agenzia"
         },
-        "Owner": {
-          "invoice": "Il portale fattura il proprietario: l’agenzia fattura solo il suo compenso.",
-          "recharge": "Nel rendiconto la commissione è una trattenuta del portale, senza riaddebito.",
-          "td17": "Nessun TD17 a carico dell’agenzia.",
-          "title": "Del proprietario"
-        },
         "hint": "Scegli come hai aperto gli account sui portali. Da confermare con il commercialista.",
         "legend": "Di chi è l’account del portale?",
         "names": {
           "Agency": "Agenzia",
           "Owner": "Proprietario"
+        },
+        "Owner": {
+          "invoice": "Il portale fattura il proprietario: l’agenzia fattura solo il suo compenso.",
+          "recharge": "Nel rendiconto la commissione è una trattenuta del portale, senza riaddebito.",
+          "td17": "Nessun TD17 a carico dell’agenzia.",
+          "title": "Del proprietario"
         },
         "suggested": "consigliato",
         "unavailable": "L’intestatario degli account dei portali si sceglie quando la fatturazione ai proprietari è attiva: per ora non è disponibile."
@@ -2909,11 +2909,11 @@
         "allHaveOne": "Tutti i proprietari hanno già un mandato: non c’è nulla da applicare.",
         "button": "Applica ai proprietari senza mandato",
         "cancel": "Annulla",
+        "confirm_one": "Sì, applica a 1 proprietario",
+        "confirm_other": "Sì, applica a {{count}} proprietari",
         "confirmLabel": "Conferma l’applicazione del mandato",
         "confirmText_one": "Stai per creare questo mandato per 1 proprietario che non ne ha uno. I mandati che esistono già non cambiano.",
         "confirmText_other": "Stai per creare questo mandato per {{count}} proprietari che non ne hanno uno. I mandati che esistono già non cambiano.",
-        "confirm_one": "Sì, applica a 1 proprietario",
-        "confirm_other": "Sì, applica a {{count}} proprietari",
         "result_one": "Mandato creato per 1 proprietario. Saltati: {{skipped}}.",
         "result_other": "Mandato creato per {{count}} proprietari. Saltati: {{skipped}}.",
         "title": "Applica il mandato",
@@ -3089,9 +3089,9 @@
         "intro": "In Italia la tassa di soggiorno si calcola con le regole del comune di ogni immobile: le tiene CasaZen e qui non devi impostare niente.",
         "loading": "Leggo le regole dei comuni",
         "noRate": "Da fare: manca l’aliquota",
-        "toDoTitle": "Da fare",
         "toDo_one": "CasaZen aggiunge l’aliquota del comune di {{comuni}}: ti avvisiamo appena c’è. Nel frattempo puoi andare avanti.",
         "toDo_other": "CasaZen aggiunge le aliquote dei comuni di {{comuni}}: ti avvisiamo appena ci sono. Nel frattempo puoi andare avanti.",
+        "toDoTitle": "Da fare",
         "unavailable": "Non riusciamo a leggere le regole dei comuni. Puoi andare avanti: non cambia nulla qui."
       },
       "noCountry": "Scegli prima il paese di chi emette, nel primo passo.",
@@ -3109,12 +3109,12 @@
           "description": "Le pulizie hanno la stessa IVA del soggiorno.",
           "title": "Parte del soggiorno"
         },
+        "hint": "Da confermare con il commercialista.",
+        "legend": "Le pulizie finali sono…",
         "Service": {
           "description": "Le pulizie sono un servizio, con la loro IVA.",
           "title": "Un servizio a parte"
-        },
-        "hint": "Da confermare con il commercialista.",
-        "legend": "Le pulizie finali sono…"
+        }
       },
       "italy": {
         "fiscalCode": {
@@ -3154,12 +3154,12 @@
           "description": "Il soggiorno è esente IVA, articolo 10 numero 8.",
           "title": "Esente, art. 10 n. 8"
         },
+        "hint": "Da confermare con il commercialista.",
+        "legend": "L’IVA del soggiorno è…",
         "Standard": {
           "description": "Il soggiorno ha l’IVA al 10%.",
           "title": "IVA al 10%"
-        },
-        "hint": "Da confermare con il commercialista.",
-        "legend": "L’IVA del soggiorno è…"
+        }
       },
       "swiss": {
         "legend": "Sei iscritto all’IVA?",
