@@ -1,13 +1,18 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { ownerAccountingApi } from '@/api/owner-accounting.api';
+import { profileFactsOf } from '@/features/owner-accounting/owner-accounting-model';
 import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
 import { saveBlobAs } from '@/lib/file-download';
+import { todayInRome } from '@/lib/stay-dates';
 import type {
   OwnerAccountingPolicyCommand,
+  OwnerAddressCommand,
   OwnerFiscalProfileCommand,
+  OwnerMandateCommand,
   OwnerPayoutCommand,
   TaxFilingCommand,
 } from '@/types';
+import { saveDownload } from './save-download';
 
 /** Root of the query keys of the owner accounting: a write that changes the ledger invalidates everything under it. */
 export const OWNER_ACCOUNTING_KEY = 'owner-accounting';
@@ -15,6 +20,9 @@ const WITHHOLDING_KEY = 'withholding';
 
 export const ownerAccountingKeys = {
   owners: [OWNER_ACCOUNTING_KEY, 'owners'] as const,
+  mandates: (ownerId: string) => [OWNER_ACCOUNTING_KEY, 'mandates', ownerId] as const,
+  address: (ownerId: string) => [OWNER_ACCOUNTING_KEY, 'address', ownerId] as const,
+  profileFacts: (ownerId: string) => [OWNER_ACCOUNTING_KEY, 'profile-facts', ownerId] as const,
   onboarding: [OWNER_ACCOUNTING_KEY, 'onboarding-readiness'] as const,
   readiness: (year: number, month: number) => [OWNER_ACCOUNTING_KEY, 'readiness', year, month] as const,
   versions: (year: number, month: number, ownerId: string) => [OWNER_ACCOUNTING_KEY, 'versions', year, month, ownerId] as const,
@@ -45,6 +53,48 @@ function invalidateAll(queryClient: QueryClient) {
 /** The owners of the agency's registry: their names. A list that other pages change (the activation adds owners), read again every time a page asks for it. */
 export function useOwnerNames() {
   return useQuery({ queryKey: ownerAccountingKeys.owners, queryFn: () => ownerAccountingApi.listOwners(), refetchOnMount: 'always' as const });
+}
+
+/**
+ * The versions of an owner's mandate, the newest first. The mandates change on this page and from the standard mandate of the wizard: read again every time a page asks for them, and
+ * soon after (`staleTime`), so a page that stays open shows the terms in force.
+ */
+export function useOwnerMandates(ownerId: string | undefined, enabled = true) {
+  return useQuery({
+    queryKey: ownerAccountingKeys.mandates(ownerId ?? ''),
+    queryFn: () => ownerAccountingApi.listMandates(ownerId ?? ''),
+    enabled: enabled && Boolean(ownerId),
+    refetchOnMount: 'always' as const,
+    staleTime: 30_000,
+  });
+}
+
+/**
+ * The kind and the settlement currency of an owner, from the profile in force: what the list of the owners shows. The profile is read whole (it comes with the identifiers, the address and the
+ * bank account) and reduced to these two facts in the query itself, so only they are kept by the cache.
+ */
+export function useOwnerProfileFacts(ownerId: string | undefined, enabled = true) {
+  return useQuery({
+    queryKey: ownerAccountingKeys.profileFacts(ownerId ?? ''),
+    queryFn: async () => profileFactsOf(await ownerAccountingApi.listFiscalProfiles(ownerId ?? ''), todayInRome()),
+    enabled: enabled && Boolean(ownerId),
+    refetchOnMount: 'always' as const,
+    staleTime: 30_000,
+  });
+}
+
+/**
+ * The billing address of an owner, in clear: personal data, read only by who manages the owners' finances (`enabled`), and dropped as soon as the page that shows it is left
+ * (`gcTime: 0`), so no address outlives the screen in the cache. `null` when the server does not give it to this caller.
+ */
+export function useOwnerAddress(ownerId: string | undefined, enabled = true) {
+  return useQuery({
+    queryKey: ownerAccountingKeys.address(ownerId ?? ''),
+    queryFn: () => ownerAccountingApi.getAddress(ownerId ?? ''),
+    enabled: enabled && Boolean(ownerId),
+    refetchOnMount: 'always' as const,
+    gcTime: 0,
+  });
 }
 
 /** What is missing on each owner and property (the activation); `null` while that module is off. */
@@ -304,6 +354,41 @@ export function useSaveFiscalProfile(ownerId: string) {
   });
 }
 
+/**
+ * A new version of the owner's mandate from a day: the one in force ends the day before, and nothing already posted changes. The mutation is dropped as soon as nothing watches it
+ * (`gcTime: 0`) and what it keeps of a failure is the failure without its request (`withoutRequest`): the command may name where the signed mandate is.
+ */
+export function useCreateOwnerMandate(ownerId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (command: OwnerMandateCommand) => {
+      try {
+        return await ownerAccountingApi.createMandate(ownerId, command);
+      } catch (error) {
+        throw withoutRequest(error);
+      }
+    },
+    gcTime: 0,
+    onSuccess: () => invalidateAll(queryClient),
+  });
+}
+
+/** Replaces the billing address of the owner: personal data, so the mutation is dropped as soon as nothing watches it and keeps of a failure the answer without the request. */
+export function useSaveOwnerAddress(ownerId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (command: OwnerAddressCommand) => {
+      try {
+        return await ownerAccountingApi.saveAddress(ownerId, command);
+      } catch (error) {
+        throw withoutRequest(error);
+      }
+    },
+    gcTime: 0,
+    onSuccess: () => invalidateAll(queryClient),
+  });
+}
+
 export function useCreatePolicy() {
   const queryClient = useQueryClient();
   return useMutation({ mutationFn: (command: OwnerAccountingPolicyCommand) => ownerAccountingApi.createPolicy(command), onSuccess: () => invalidateAll(queryClient) });
@@ -357,6 +442,21 @@ export function useDownloadPublishedFile() {
     mutationFn: async ({ versionId, fileName }: { versionId: string; fileName: string }) => {
       saveBlobAs(await ownerAccountingApi.downloadPublishedFile(versionId), fileName);
     },
+  });
+}
+
+/**
+ * Saves the PDF or the CSV of a version under the name the server gave it, or under `fileName` when the page cannot read the header; the bytes are not kept. The language is the one of the
+ * app (`en` asks for English, anything else is Italian).
+ */
+export function useDownloadVersionFile() {
+  return useMutation({
+    mutationFn: ({ versionId, format, language, fileName }: { versionId: string; format: 'pdf' | 'csv'; language: string; fileName: string }) =>
+      saveDownload(
+        format === 'pdf' ? ownerAccountingApi.downloadVersionPdf(versionId, language) : ownerAccountingApi.downloadVersionCsv(versionId, language),
+        fileName,
+      ),
+    gcTime: 0,
   });
 }
 

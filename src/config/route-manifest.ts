@@ -1240,6 +1240,24 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/account/properties/account-properties-page')).AccountPropertiesPage }),
   },
   {
+    // «Proprietari» (E13/F02/US01/T01, NF-110, NF-115): the owners of the properties the agency manages, with their kind, their settlement currency and the mandate in force (the commission,
+    // or «manca il mandato»), and the way to the financial page of each, where the mandate and the billing address are written. It reads the endpoints of the owners (`agency.owner.view`) and
+    // writes with `agency.owner.financial.manage`, which only the owner and the administrators hold and which is not among the context permissions of `/me/contexts`: like the other pages of
+    // the agency's money, it is behind the plan (`agencyTier`) and for the org billing administrator, and the page checks the role and the plan of the organization before it reads anything.
+    // In the group «Il tuo account», after the people and the properties; its pages (the financial page of an owner) hang from its address.
+    path: '/app/account/owners',
+    context: 'account',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    featureFlag: 'agencyTier',
+    navKey: 'nav.owners',
+    navGroup: 'account',
+    navPlacement: 'primary',
+    navOrder: 4,
+    icon: 'UserRound',
+    component: async () => ({ default: (await import('@/features/owners/owners-list-page')).OwnersListPage }),
+  },
+  {
     // «Rendiconti» (E06/F05/US01/T02, NF-25): the monthly statements of the agency's owners, with the real PDF and CSV. It reads and writes the agency
     // endpoint `/statements` (ADR-010: only an org on the Agency plan, so behind `agencyTier`), which is the agency's own and not the platform console's:
     // it was `/app/admin/statements` and that address stays as an old one that opens this page. The backend asks `agency.statement.view` for it (and
@@ -1258,6 +1276,21 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     icon: 'FileText',
     component: async () => ({ default: (await import('@/pages/StatementsPage')).StatementsPage }),
     legacyPaths: ['/app/admin/statements'],
+  },
+  {
+    // «Fatture ai proprietari» (E13/F02/US01/T03, NF-114): the invoices of the agency to its owners, made from their statements, with the filters of the month and of the owner and the PDF of
+    // each. A tab of «Chiusura mensile», right after the statements they are made from (the order asks for 1.5: the withholding and the transfers keep theirs). Behind the flag
+    // `ownerInvoicing` (the backend answers 404 while it is off, and the page is not in the menu); the page checks the role and the agency plan of the organization before it reads anything.
+    path: '/app/account/owner-invoices',
+    context: 'account',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    featureFlag: 'ownerInvoicing',
+    navKey: 'nav.ownerInvoices',
+    navParent: '/app/account/owner-close',
+    navOrder: 1.5,
+    icon: 'Receipt',
+    component: async () => ({ default: (await import('@/features/owner-invoices/owner-invoices-page')).OwnerInvoicesPage }),
   },
   {
     // Withholding tax management (ADR-018): the withholding of the month by owner, the F24 with its PDF and the registration of its payment. For the
@@ -1302,7 +1335,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navKey: 'nav.ownerClose',
     navGroup: 'owners',
     navPlacement: 'primary',
-    navOrder: 4,
+    navOrder: 5,
     icon: 'CalendarCheck',
     component: async () => ({ default: (await import('@/features/owner-accounting/month-end-close-page')).MonthEndClosePage }),
   },
@@ -1317,8 +1350,8 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/owner-accounting/statement-detail-page')).StatementDetailPage }),
   },
   {
-    // «Dati finanziari» of an owner (E06/F05/US02/T04, NF-109): the fiscal profile masked, the mandate, the rule set with the accountant's approval, what the
-    // activation still misses. In no menu: the month-end close and its anomalies lead here.
+    // «Dati finanziari» of an owner (E06/F05/US02/T04, NF-109, E13/F02/US01/T01): the fiscal profile masked, the versions of the mandate and the billing address (written only by who manages the
+    // owners' finances), the rule set with the accountant's approval, what the activation still misses. In no menu: the list «Proprietari», the month-end close and its anomalies lead here.
     path: '/app/account/owners/:ownerId/financial',
     context: 'account',
     requiredPermissions: [],

@@ -1536,6 +1536,18 @@
       "ownerStatementNotApproved": "Il rendiconto deve prima essere approvato.",
       "ownerStatementNotDraft": "Questa versione non è più una bozza.",
       "ownerStatementUnchanged": "Dopo l'ultima versione non è cambiato niente: non serve una nuova versione.",
+      "ownerMandateInvalid": "I dati del mandato non sono validi. Controlla il campo indicato e riprova.",
+      "ownerMandateOverlap": "Una versione del mandato parte già da quel giorno o dopo: scegli un giorno successivo all'inizio dell'ultima.",
+      "ownerAddressInvalid": "L'indirizzo non è valido. Controlla il campo indicato e riprova.",
+      "ownerInvoiceVersionSuperseded": "Questa versione del rendiconto è stata sostituita: la fattura si fa dall'ultima versione.",
+      "ownerInvoiceNothingToInvoice": "In questo rendiconto non c'è nulla da fatturare: nessuna provvigione, riaddebito o spesa dell'agenzia.",
+      "documentDraftOutdated": "La bozza non è più quella che verrebbe emessa adesso: il rendiconto, il mandato o le regole sono cambiati. Ricalcolala e controllala di nuovo.",
+      "documentAlreadyIssued": "La fattura di questo mese è già emessa.",
+      "documentConfirmationRequired": "Serve la conferma dell'emissione.",
+      "documentRuleNotConfigured": "Mancano le regole dell'IVA per questo documento. Completale in «Fatturazione» e riprova.",
+      "documentInvoiceDataMissing": "Mancano dati del destinatario per fare la fattura (indirizzo o dati fiscali). Completali nei dati finanziari del proprietario e riprova.",
+      "documentNotDraft": "Questa fattura non è più una bozza.",
+      "ownerPeriodInvalid": "Il mese non è valido.",
       "ownerAttachmentNotFound": "Questo allegato non è disponibile.",
       "ownerCalendarRangeInvalid": "Il periodo scelto non è valido.",
       "ownerContactAgencyRequired": "Il tuo profilo è collegato a più agenzie: per invitare un contatto scrivi all’agenzia interessata.",
@@ -14181,6 +14193,8 @@
     "verifications": "Verifiche",
     "wireTransfers": "Bonifici proprietari",
     "ownerClose": "Chiusura mensile",
+    "ownerInvoices": "Fatture ai proprietari",
+    "owners": "Proprietari",
     "withholding": "Ritenute d'acconto"
   },
   "notFound": {
@@ -16126,10 +16140,16 @@
       "approvedByName": "nome di chi approva",
       "attachmentReference": "allegato",
       "baseCurrency": "valuta di partenza",
+      "buildingNumber": "numero civico",
+      "cleaningFlatRate": "forfait pulizie",
+      "commissionBase": "base della provvigione",
+      "commissionPercent": "provvigione",
       "components": "voci della base",
+      "country": "paese",
       "currency": "valuta",
       "date": "data",
       "description": "motivo",
+      "documentReference": "documento del mandato",
       "documentSha256": "impronta del file",
       "documentUrl": "indirizzo del documento",
       "externalDate": "data della fattura",
@@ -16139,9 +16159,12 @@
       "grossBaseComponents": "voci della base lorda",
       "handoffReference": "chi l'ha trasmesso e come",
       "jurisdiction": "giurisdizione",
+      "linenFlatRate": "forfait biancheria",
       "paidOn": "data del pagamento",
       "parameters": "parametri",
+      "postalCode": "CAP",
       "provider": "sistema che l'ha emessa",
+      "province": "provincia",
       "qualifyingShortLet": "locazione breve",
       "quoteCurrency": "valuta di arrivo",
       "rate": "cambio",
@@ -16155,11 +16178,14 @@
       "source": "fonte",
       "sourceSha256": "impronta della fonte",
       "sourceUrl": "indirizzo della fonte",
+      "street": "via",
+      "town": "località",
       "validFrom": "valida dal",
       "validTo": "valida fino al",
       "version": "versione",
       "withholdingRatePercent": "aliquota della ritenuta",
-      "withholdingTaxCode": "codice tributo"
+      "withholdingTaxCode": "codice tributo",
+      "withholdingTreatment": "trattamento della provvigione"
     },
     "filing": {
       "dialog": {
@@ -16321,6 +16347,10 @@
         "how": "Inserisci il suo profilo, valido da questo mese.",
         "title": "Mancano i dati finanziari del proprietario"
       },
+      "ownerInvoiceAfterApproval": {
+        "how": "Prepara una nuova versione: comprenderà l'IVA della fattura.",
+        "title": "La fattura è stata emessa dopo l'approvazione del rendiconto"
+      },
       "ownershipMissing": {
         "how": "Indica chi lo possiede nell'attivazione: senza proprietario i suoi incassi non vanno a nessun rendiconto.",
         "title": "Un immobile non ha proprietari in questo periodo"
@@ -16376,6 +16406,7 @@
       "formula": {
         "AgencyCommission": "Commissione dell'agenzia secondo il mandato, sul ricavo del proprietario. Si toglie dal saldo.",
         "AgencyPayment": "Pagamento del proprietario all'agenzia, per esempio per coprire un saldo negativo. Si somma al saldo.",
+        "AgencyVat": "IVA che la fattura dell'agenzia aggiunge alla provvigione e ai riaddebiti. Si toglie dal saldo.",
         "BookingRevenue": "Incasso della prenotazione, al netto dei rimborsi, per la quota del proprietario. Si somma al saldo.",
         "ChannelFee": "Commissione trattenuta dal canale sulla prenotazione, per la quota del proprietario. Si toglie dal saldo.",
         "Correction": "Rettifica fatta a mano, con il suo motivo: sostituisce una riga o ne aggiunge una.",
@@ -16396,8 +16427,10 @@
       "reverses": "Annulla la riga {{id}}.",
       "source": {
         "Booking": "Prenotazione",
+        "MandateFlatFee": "Forfait del mandato",
         "Manual": "Rettifica manuale",
         "OwnerCharge": "Addebito o spesa",
+        "OwnerInvoice": "Fattura dell'agenzia",
         "OwnerPayout": "Pagamento al proprietario",
         "Payment": "Pagamento",
         "WireBatch": "Bonifico"
@@ -16416,6 +16449,7 @@
       "type": {
         "AgencyCommission": "Commissione dell'agenzia",
         "AgencyPayment": "Pagamento del proprietario",
+        "AgencyVat": "IVA sulla fattura dell'agenzia",
         "BookingRevenue": "Incasso di una prenotazione",
         "ChannelFee": "Commissione del canale",
         "Correction": "Rettifica",
@@ -16562,6 +16596,7 @@
       "loadError": "Non riusciamo a leggere il rendiconto.",
       "loading": "Leggo il rendiconto…",
       "nonFiscal": "Questo rendiconto non è un documento fiscale: è il riepilogo di quello che l'agenzia deve al proprietario. Se serve una fattura, la emette il sistema fiscale della tua agenzia e qui la colleghi.",
+      "nonFiscalInvoicing": "Questo rendiconto non è un documento fiscale: è il riepilogo di quello che l'agenzia deve al proprietario. La fattura dell'agenzia al proprietario si crea e si emette qui sotto, in «Fattura del PM».",
       "notFound": "Questo rendiconto non c'è",
       "notFoundBody": "Non esiste, o è di un'altra organizzazione. Torna alla chiusura mensile.",
       "openLatest": "Apri la versione più recente",
@@ -16597,6 +16632,34 @@
         "description": "Il registro di {{owner}} è cambiato dopo la versione {{version}} di {{period}}: ne serve una nuova.",
         "done": "Nuova versione di {{owner}} preparata.",
         "title": "Nuova versione dopo la {{version}}"
+      }
+    },
+    "summary": {
+      "caption": "Le parti del rendiconto e il netto, nella valuta del rendiconto",
+      "description": "Le stesse parti del PDF e del CSV che riceve il proprietario, in {{currency}}.",
+      "downloadCsv": "CSV",
+      "downloadCsvLabel": "Scarica il CSV del rendiconto",
+      "downloadPdf": "PDF",
+      "downloadPdfLabel": "Scarica il PDF del rendiconto",
+      "lines_one": "{{count}} riga",
+      "lines_other": "{{count}} righe",
+      "net": "Netto: saldo di chiusura",
+      "opening": "Saldo di apertura",
+      "part": {
+        "channelFees": "Commissioni dei canali",
+        "commission": "Provvigione del PM",
+        "corrections": "Rettifiche",
+        "other": "Altre voci",
+        "recharges": "Riaddebiti e spese",
+        "stays": "Soggiorni",
+        "withholding": "Ritenuta"
+      },
+      "payments": "Pagamenti",
+      "period": "Totale del periodo",
+      "title": "Il rendiconto come lo riceve il proprietario",
+      "touristTax": {
+        "body": "Non fa parte del netto. L'agenzia la incassa per conto del comune o dell'ente del turismo e la versa: il dettaglio di ogni soggiorno è nel PDF e nel CSV.",
+        "title": "Imposta di soggiorno"
       }
     },
     "tax": {
@@ -16664,6 +16727,28 @@
         "Superseded": "Sostituito"
       }
     }
+  },
+  "ownerAddress": {
+    "countryHint": "Due lettere, per esempio IT o CH.",
+    "countryInvalid": "Il paese è di due lettere.",
+    "description": "L'indirizzo che serve alla fattura dell'agenzia, alla QR-fattura e al bonifico al proprietario. Salvandolo si sostituisce quello di prima.",
+    "fields": {
+      "buildingNumber": "Numero civico",
+      "country": "Paese",
+      "postalCode": "CAP",
+      "province": "Provincia o cantone",
+      "street": "Via",
+      "town": "Località"
+    },
+    "loadError": "Non riusciamo a leggere l'indirizzo.",
+    "loading": "Leggo l'indirizzo…",
+    "notForYou": "L'indirizzo è un dato personale: lo vede e lo modifica solo chi gestisce i dati finanziari dei proprietari.",
+    "notFound": "Questo proprietario non c'è.",
+    "provinceHint": "In Italia sono le due lettere della sigla (per esempio MI); all'estero il cantone o la regione.",
+    "provinceRequired": "In Italia la provincia è obbligatoria.",
+    "save": "Salva l'indirizzo",
+    "saved": "Indirizzo salvato.",
+    "title": "Indirizzo di fatturazione"
   },
   "ownerContactInvitation": {
     "accepting": "Stiamo attivando il tuo accesso",
@@ -16787,6 +16872,164 @@
         "description": "Il link è già stato usato da un account. Se sei tu, apri il portale e accedi; altrimenti chiedi all'agenzia un nuovo invito.",
         "title": "Questo invito è già stato usato"
       }
+    }
+  },
+  "ownerInvoice": {
+    "currencyMissing": "Per qualche fattura il server non ha indicato la valuta: gli importi sono scritti senza simbolo.",
+    "issue": {
+      "confirm": "Emetti la fattura",
+      "consequenceFinal": "Una volta emessa la fattura non si modifica più.",
+      "consequenceNumber": "Riceve il suo numero adesso, in ordine e senza buchi: il numero non si può riutilizzare.",
+      "consequenceVat": "L'IVA che la fattura aggiunge entra nel libro del proprietario, una volta sola.",
+      "description": "Stai per emettere la fattura di {{owner}} per {{period}}.",
+      "done": "Fattura {{number}} emessa.",
+      "number": "Numero",
+      "numberNext": "Lo assegna CasaZen all'emissione",
+      "series": "Serie",
+      "title": "Emettere la fattura al proprietario?",
+      "total": "Totale"
+    },
+    "lineType": {
+      "AdvancedExpense": "Spesa anticipata, fuori campo IVA",
+      "Commission": "Provvigione",
+      "Recharge": "Riaddebito"
+    },
+    "lines": {
+      "caption": "Le righe della fattura con la loro IVA",
+      "description": "Descrizione",
+      "net": "Importo",
+      "rate": "IVA",
+      "vat": "Importo IVA"
+    },
+    "page": {
+      "allMonths": "Tutti i mesi",
+      "allOwners": "Tutti i proprietari",
+      "description": "Le fatture che l'agenzia fa ai proprietari dai loro rendiconti, con il totale nella loro valuta.",
+      "empty": "Non ci sono ancora fatture ai proprietari. Si creano dal rendiconto di un proprietario.",
+      "emptyAction": "Apri la chiusura mensile",
+      "emptyFiltered": "Nessuna fattura per questo mese e questo proprietario.",
+      "filterOwner": "Proprietario",
+      "filterPeriod": "Mese",
+      "listTitle": "Fatture",
+      "loadError": "Non riusciamo a leggere le fatture.",
+      "loading": "Leggo le fatture…",
+      "row": {
+        "draft": "Bozza",
+        "number": "Fattura n. {{number}}",
+        "ownerAndMonth": "{{owner}} · {{month}}",
+        "pdfLabel": "Scarica il PDF della fattura {{number}}",
+        "statement": "Apri il rendiconto"
+      },
+      "title": "Fatture ai proprietari",
+      "unavailable": "Le fatture ai proprietari non sono attive."
+    },
+    "panel": {
+      "create": "Crea la fattura",
+      "createFromThis": "Ricalcola la bozza da questa versione",
+      "credited": "Fattura n. {{number}} annullata con una nota di credito.",
+      "description": "La fattura che l'agenzia fa al proprietario: la provvigione, i riaddebiti e le spese anticipate di questo rendiconto, con la loro IVA.",
+      "draft": "Bozza pronta: totale {{total}}.",
+      "draftMade": "Bozza della fattura preparata.",
+      "issue": "Emetti",
+      "issued": "Fattura n. {{number}} del {{date}}",
+      "loadError": "Non riusciamo a leggere la fattura.",
+      "loading": "Cerco la fattura…",
+      "none": "Non c'è ancora una fattura per questo rendiconto.",
+      "otherVersionDraft": "La bozza della fattura di questo mese è stata fatta da un'altra versione del rendiconto.",
+      "otherVersionIssued": "La fattura n. {{number}} di questo mese è stata fatta da un'altra versione del rendiconto.",
+      "otherVersionOpen": "Apri quella versione",
+      "pdf": "Scarica il PDF",
+      "readOnly": "La fattura la crea e la emette solo il titolare o chi amministra l'organizzazione.",
+      "recalculate": "Ricalcola la bozza",
+      "review": "Rivedi la bozza",
+      "reviewFirst": "Prima di emettere, rivedi le righe: la bozza si ricalcola dalla versione e dal mandato di adesso.",
+      "superseded": "Questa versione è stata sostituita: la fattura si fa dall'ultima versione.",
+      "title": "Fattura del PM",
+      "unknownState": "Stato della fattura non riconosciuto: {{status}}."
+    },
+    "settlement": {
+      "credited": "Annullata con una nota di credito",
+      "offset": "Compensata nel rendiconto",
+      "qrBill": "Il PDF porta la QR-fattura per il pagamento, se l'agenzia ha registrato il suo IBAN.",
+      "toPay": "Da pagare: {{amount}}",
+      "unknown": "Pagamento: stato non riconosciuto ({{state}})"
+    },
+    "status": {
+      "Credited": "Annullata",
+      "Draft": "Bozza",
+      "Issued": "Emessa"
+    },
+    "totals": {
+      "stampDuty": "Imposta di bollo",
+      "taxable": "Imponibile",
+      "total": "Totale",
+      "vat": "IVA"
+    },
+    "vat": {
+      "outside": "Fuori campo IVA{{nature}}: imponibile {{taxable}}",
+      "rate": "IVA {{rate}}: imponibile {{taxable}}, imposta {{tax}}",
+      "rateWithoutTax": "IVA {{rate}}: imponibile {{taxable}}",
+      "title": "IVA per aliquota"
+    }
+  },
+  "ownerMandate": {
+    "base": {
+      "GrossExclTouristTax": "incasso del soggiorno senza imposta di soggiorno (pulizie incluse)",
+      "GrossExclTouristTaxAndCleaning": "incasso del soggiorno senza imposta di soggiorno e senza pulizie"
+    },
+    "currencyMissing": "La valuta di liquidazione del proprietario non è ancora impostata nel suo profilo fiscale: i forfait sono scritti senza simbolo, nella valuta che sarà indicata lì.",
+    "dialog": {
+      "commission": "Provvigione",
+      "description": "Una nuova versione parte dal giorno scelto e chiude quella in vigore il giorno prima. Quello che è già nel libro non cambia.",
+      "documentHint": "L'indirizzo (https) dove si trova il mandato firmato. Il documento non viene mai mostrato qui: se lasci vuoto, la nuova versione risulta senza documento.",
+      "documentInvalid": "Serve un indirizzo che inizia con https://.",
+      "done": "Nuova versione del mandato salvata.",
+      "feeHint": "Per ogni soggiorno, nella valuta di liquidazione del proprietario. Lascia vuoto se non c'è.",
+      "feeHintNoCurrency": "Per ogni soggiorno. La valuta di liquidazione del proprietario non è ancora impostata: l'importo è nella valuta che sarà indicata nel profilo fiscale.",
+      "feeInvalid": "Scrivi un importo da 0 con al massimo due decimali, per esempio 80,00.",
+      "feeWithCurrency": "{{fee}} ({{currency}})",
+      "fees": "Forfait e commissioni di pagamento",
+      "percentHint": "Da 0 a 100, con al massimo due decimali.",
+      "percentInvalid": "La provvigione è un numero da 0 a 100, con al massimo due decimali.",
+      "submit": "Salva la nuova versione",
+      "title": "Nuova versione del mandato",
+      "validFromHint": "Deve essere dopo l'inizio dell'ultima versione.",
+      "validFromTooEarly": "Deve essere dopo il {{date}}, quando inizia l'ultima versione.",
+      "vatHint": "«+ IVA»: l'IVA si aggiunge in fattura. «IVA inclusa»: l'IVA è già nell'importo."
+    },
+    "fields": {
+      "cleaningFlatRate": "Forfait pulizie",
+      "commissionBase": "Base della provvigione",
+      "commissionIncludesVat": "IVA sulla provvigione e sui forfait",
+      "commissionPercent": "Provvigione (%)",
+      "documentReference": "Mandato firmato",
+      "linenFlatRate": "Forfait biancheria",
+      "passthroughPaymentFees": "Commissioni sui pagamenti con carta",
+      "validFrom": "Valido dal"
+    },
+    "loadError": "Non riusciamo a leggere il mandato.",
+    "loading": "Leggo il mandato…",
+    "missing": "Manca il mandato: registralo per calcolare la provvigione.",
+    "newVersion": "Nuova versione",
+    "notFound": "Questo proprietario non c'è.",
+    "readOnly": "Il mandato lo scrive solo chi gestisce i dati finanziari dei proprietari.",
+    "title": "Mandato",
+    "vat": {
+      "excluded": "+ IVA",
+      "included": "IVA inclusa"
+    },
+    "version": {
+      "between": "Dal {{from}} al {{to}}",
+      "cleaning": "Forfait pulizie per soggiorno: {{amount}}",
+      "document": "Mandato firmato: presente",
+      "feesAgency": "Commissioni sui pagamenti con carta: a carico dell'agenzia",
+      "feesOwner": "Commissioni sui pagamenti con carta: a carico del proprietario",
+      "from": "Dal {{from}}",
+      "inForce": "In vigore",
+      "linen": "Forfait biancheria per soggiorno: {{amount}}",
+      "noDocument": "Mandato firmato: non registrato",
+      "terms": "Provvigione {{percent}}, {{vat}}. Base: {{base}}.",
+      "upcoming": "Non ancora in vigore"
     }
   },
   "ownerOnboarding": {
@@ -17879,6 +18122,33 @@
     },
     "title": "Dati finanziari di {{owner}}",
     "titleGeneric": "Dati finanziari del proprietario"
+  },
+  "owners": {
+    "description": "I proprietari degli immobili che gestisci, con il mandato in vigore di ognuno.",
+    "empty": "Non ci sono ancora proprietari. Si caricano dal passo «Proprietari» di «Inizia con CasaZen».",
+    "emptyAction": "Apri «Inizia con CasaZen»",
+    "list": {
+      "showAll": "Mostra tutti ({{count}})",
+      "showLess": "Mostra meno",
+      "title": "Elenco dei proprietari"
+    },
+    "loadError": "Non riusciamo a leggere i proprietari.",
+    "loading": "Leggo i proprietari…",
+    "row": {
+      "kindAndCurrency": "{{kind}} · valuta {{currency}}",
+      "kindNoCurrency": "{{kind}} · valuta di liquidazione mancante",
+      "loading": "Leggo il profilo…",
+      "mandateActive": "Provvigione {{percent}} {{vat}}, dal {{from}}",
+      "mandateError": "Non riusciamo a leggere il mandato.",
+      "mandateLoading": "Leggo il mandato…",
+      "mandateMissing": "Manca il mandato",
+      "mandateUpcoming": "Mandato dal {{from}}: provvigione {{percent}}",
+      "noProfile": "Nessun profilo fiscale",
+      "open": "Dati finanziari",
+      "openLabel": "Apri i dati finanziari di {{owner}}",
+      "profileError": "Non riusciamo a leggere il profilo fiscale."
+    },
+    "title": "Proprietari"
   },
   "pageHeader": {
     "moreActions": "Altre azioni",
