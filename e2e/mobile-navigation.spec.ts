@@ -91,16 +91,17 @@ test.describe('Mobile navigation (UI-04b)', () => {
       expect(Math.round(box.width)).toBe(390);
       expect(Math.round(box.y + box.height)).toBe(844);
 
-      // What the bar does not list, in the groups of the sidebar; the area is named, with the organization.
+      // What the bar does not list, in the groups of the sidebar, and the settings of its foot; the area is named, with the organization.
       await expect(sheet(page).getByRole('group', { name: 'La tua offerta' })).toBeVisible();
       await expect(sheet(page).getByRole('group', { name: 'Gestione' })).toBeVisible();
-      await expect(sheet(page).getByRole('group', { name: 'Altro' })).toBeVisible();
+      await expect(sheet(page).getByRole('group', { name: 'Impostazioni e inviti' })).toBeVisible();
       await expect(sheet(page).getByTestId('area-header')).toContainText('Affitti brevi');
       await expect(sheet(page).getByRole('link', { name: 'Cruscotto' })).toHaveCount(0);
 
-      // A page of "Altro" opens, the sheet goes, the heading of the page has the focus, "Altro" is the marked tab.
-      await sheet(page).getByRole('link', { name: 'Coda di approvazione' }).click();
-      await expect(page).toHaveURL(/\/app\/short-rent\/approval-queue$/);
+      // A page of the sheet opens, the sheet goes, the heading of the page has the focus, "Altro" is the marked tab. (The adempimenti: the demo
+      // mocks what their page reads.)
+      await sheet(page).getByRole('link', { name: 'Adempimenti' }).click();
+      await expect(page).toHaveURL(/\/app\/short-rent\/compliance$/);
       await expect(sheet(page)).toBeHidden();
       await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
       await expect(more(page)).toHaveAttribute('aria-current', 'page');
@@ -163,9 +164,10 @@ test.describe('Mobile navigation (UI-04b)', () => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
       await expect(page.getByRole('button', { name: 'Apri menu di navigazione' })).toHaveCount(0);
-      // What the header has is the search (UI-06) and the profile: no button that opens a menu of the pages.
-      await expect(page.locator('header').getByRole('button')).toHaveCount(2);
+      // What the header has is the search (UI-06), the guide and the profile: no button that opens a menu of the pages.
+      await expect(page.locator('header').getByRole('button')).toHaveCount(3);
       await expect(page.locator('header').getByTestId('command-palette-trigger')).toBeVisible();
+      await expect(page.locator('header').getByTestId('guide-button')).toBeVisible();
       await more(page).click();
       await expect(sheet(page)).toBeVisible();
     });
@@ -318,7 +320,8 @@ test.describe('Mobile navigation (UI-04b)', () => {
       await more(page).click();
       await expect(sheet(page).getByRole('link', { name: 'SEO & Contenuti' })).toBeVisible();
       await expect(sheet(page).getByRole('link', { name: 'Conformità' })).toBeVisible();
-      await expect(sheet(page).getByRole('link', { name: 'Profilo' })).toBeVisible();
+      // Profilo is in the account row at the end of the sheet, as in every area: no tile of its own.
+      await expect(sheet(page).getByRole('link', { name: 'Profilo', exact: true })).toHaveCount(0);
     });
 
     test('with reduced motion the sheet appears and goes without sliding', async ({ page }) => {
@@ -422,22 +425,15 @@ test.describe('Mobile navigation (UI-04b)', () => {
       await expect(tooltip(page)).toHaveCount(0);
     });
 
-    test('"Altro" opens in the rail, its icons have names too, and a page of it opens', async ({ page }) => {
+    test('the settings pinned at the foot are on the rail too, with their names and their pages', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
-      const menu = page.getByRole('navigation', { name: 'Menu Affitti brevi' });
+      const foot = page.getByRole('navigation', { name: 'Impostazioni e inviti' });
 
-      const other = menu.getByRole('button', { name: 'Altro' });
-      await other.focus();
-      await expect(tooltip(page)).toHaveText('Altro');
-      await page.keyboard.press('Enter');
-      await expect(other).toHaveAttribute('aria-expanded', 'true');
-
-      await page.keyboard.press('Tab');
-      await expect(menu.getByRole('link', { name: 'Coda di approvazione', exact: true })).toBeFocused();
-      await expect(tooltip(page)).toHaveText('Coda di approvazione');
-      await page.keyboard.press('Enter');
-      await expect(page).toHaveURL(/\/app\/short-rent\/approval-queue$/);
-      await expect(menu.getByRole('link', { name: 'Coda di approvazione', exact: true })).toHaveAttribute('aria-current', 'page');
+      const settings = foot.getByRole('link', { name: 'Impostazioni', exact: true });
+      await settings.focus();
+      await expect(tooltip(page)).toHaveText('Impostazioni');
+      await expect(settings).toHaveAttribute('href', '/app/short-rent/settings/organization');
+      await expect(foot.getByRole('link', { name: 'Consiglia CasaZen' })).toHaveAttribute('href', '/app/short-rent/settings/invitations');
     });
 
     test('with several areas the switcher is the icon of the area, with its name, and it works', async ({ page }) => {
@@ -500,13 +496,17 @@ test.describe('Mobile navigation (UI-04b)', () => {
       await sidebar(page).getByRole('button', { name: 'Comprimi menu' }).click();
       await expect(sidebar(page)).toHaveAttribute('data-collapsed', 'true');
 
-      // The click gave the toggle the focus; the keyboard goes back through the menu: the names show as tooltips.
+      // The click gave the toggle the focus; the keyboard goes back through the foot and the menu: the names show as tooltips.
       await page.keyboard.press('Shift+Tab');
-      await expect(sidebar(page).getByRole('button', { name: 'Altro' })).toBeFocused();
-      await expect(tooltip(page)).toHaveText('Altro');
+      await expect(sidebar(page).getByRole('link', { name: 'Consiglia CasaZen' })).toBeFocused();
+      await expect(tooltip(page)).toHaveText('Consiglia CasaZen');
+      await page.keyboard.press('Shift+Tab');
+      await expect(sidebar(page).getByRole('link', { name: 'Impostazioni' })).toBeFocused();
+      await expect(tooltip(page)).toHaveText('Impostazioni');
       await page.keyboard.press('Shift+Tab');
       await expect(sidebar(page).getByRole('link', { name: 'Incassi' })).toBeFocused();
       await expect(tooltip(page)).toHaveText('Incassi');
+      await page.keyboard.press('Tab');
       await page.keyboard.press('Tab');
       await page.keyboard.press('Tab');
       await expect(sidebar(page).getByTestId('sidebar-collapse-toggle')).toBeFocused();

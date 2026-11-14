@@ -27,7 +27,15 @@ export interface NextStepCardProps extends Omit<React.HTMLAttributes<HTMLDivElem
  */
 export function NextStepCard({ kicker, title, titleAs: Title = 'h2', detail, position, cta, className, ...props }: NextStepCardProps) {
   return (
-    <div {...props} className={cn('rounded-lg border border-primary/30 bg-primary/5 p-4 text-left', className)}>
+    // A card with the accent on its edge (a pseudo-element: no node of its own), as the focus block: a tinted box reads as a notice, the guide is the
+    // next stop of a road.
+    <div
+      {...props}
+      className={cn(
+        'relative overflow-hidden rounded-lg border bg-card p-4 pl-5 text-left shadow-sm before:absolute before:inset-y-0 before:left-0 before:w-1 before:bg-primary',
+        className,
+      )}
+    >
       <p className="text-xs font-semibold uppercase tracking-wide text-primary-text">{kicker}</p>
       <Title className="mt-1 text-base font-semibold">{title}</Title>
       {detail ? <p className="mt-1 text-sm text-foreground/70">{detail}</p> : null}

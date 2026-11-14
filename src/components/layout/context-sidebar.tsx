@@ -10,7 +10,7 @@ import { useUiStore } from '@/store/ui-store';
 import { cn } from '@/lib/utils';
 import { CasaZenLogo } from '@/components/brand/casazen-mark';
 import { AreaSwitcher } from './area-switcher';
-import { GroupedNavLinks } from './grouped-nav-links';
+import { FooterNavLinks, GroupedNavLinks } from './grouped-nav-links';
 import { useRailTooltip } from './rail-tooltip';
 
 interface ContextSidebarProps {
@@ -95,6 +95,12 @@ export function ContextSidebar({ contextKey, organizationName = null }: ContextS
       >
         <GroupedNavLinks nav={nav} matchEntries={matchEntries} collapsed={collapsed} counts={counts} />
       </nav>
+      {/* The settings of the area, pinned under the menu that scrolls (on the rail of a tablet too), then the button that reduces the sidebar. */}
+      {nav.footer.length > 0 ? (
+        <nav aria-label={t('nav.group.footer')} className="border-t px-3 py-2">
+          <FooterNavLinks entries={nav.footer} matchEntries={matchEntries} collapsed={collapsed} counts={counts} />
+        </nav>
+      ) : null}
       {isTablet ? null : (
         <div className="flex flex-col gap-1 border-t p-3">
           <CollapseToggle

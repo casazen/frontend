@@ -12,15 +12,29 @@ export type AppContextKey = 'short-rent' | 'long-rent' | 'admin' | 'supplier' | 
 
 /**
  * Group of the main menu (UI-04a): a labelled set of primary entries. The groups of an area follow the order of their
- * entries (`navOrder`); the labels are `nav.group.<group>`. The entries of "Altro" have no group.
+ * entries (`navOrder`); the labels are `nav.group.<group>`. The entries of "Altro" and of the foot of the sidebar have no group.
  */
-export type NavGroup = 'everyday' | 'offer' | 'management' | 'portfolio' | 'work' | 'activity' | 'platform' | 'account';
+export type NavGroup =
+  | 'everyday'
+  | 'offer'
+  | 'management'
+  | 'portfolio'
+  | 'work'
+  | 'activity'
+  | 'platform'
+  | 'account'
+  | 'owners'
+  | 'support'
+  | 'content'
+  | 'system';
 
 /**
- * Where an entry shows: `primary` in the main menu (at most {@link MAX_PRIMARY_NAV_ENTRIES} per area), `secondary` in
- * "Altro". An entry with neither a placement nor a {@link RouteManifestEntry.navParent} is in no menu.
+ * Where an entry shows: `primary` in the main menu (at most {@link MAX_PRIMARY_NAV_ENTRIES} per area), `footer` pinned at the
+ * foot of the sidebar (the settings of the area and «Consiglia CasaZen»: what is set once, apart from the daily work), `secondary`
+ * in "Altro", which now only holds a page whose section the user cannot open. An entry with neither a placement nor a
+ * {@link RouteManifestEntry.navParent} is in no menu.
  */
-export type NavPlacement = 'primary' | 'secondary';
+export type NavPlacement = 'primary' | 'secondary' | 'footer';
 
 /**
  * The light queries that give a menu entry its counter ({@link RouteManifestEntry.navCount}); see `useNavCounts`. `compliance` is
@@ -30,8 +44,11 @@ export type NavPlacement = 'primary' | 'secondary';
  */
 export type NavCountKey = 'bookingRequests' | 'supplierRequests' | 'compliance' | 'activities' | 'messages';
 
-/** The main menu of an area never has more primary entries than this: the rest goes to "Altro" (UI-04a). */
-export const MAX_PRIMARY_NAV_ENTRIES = 8;
+/**
+ * The main menu of an area never has more primary entries than this (UI-04a). Nine since the menus lost "Altro" as a place for daily pages:
+ * Affitti brevi has eight, and the CRM of the guests is the ninth while its flag is on; what is set once is at the foot of the sidebar.
+ */
+export const MAX_PRIMARY_NAV_ENTRIES = 9;
 
 /** The bottom bar of the phone has at most this many destinations, "Altro" apart (UI-04a/UI-04b). */
 export const MAX_BOTTOM_NAV_ENTRIES = 4;
@@ -41,6 +58,11 @@ export interface RouteManifestEntry {
   context: AppContextKey;
   requiredPermissions: string[];
   navKey?: string;
+  /**
+   * The name of the entry on its tab, when the menu names the whole section and the tab names the page (the menu says «Impostazioni»,
+   * the tab «Organizzazione»). Without it the tab has the name of the menu.
+   */
+  navTabKey?: string;
   /** Italian nav label when navKey i18n entry is not used */
   navLabel?: string;
   /** Group of a primary entry in the main menu. */
@@ -365,43 +387,44 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   },
   {
     // Identity verification console (NF-12, NF-50, NF-51): the verifications that wait for an operator, with why and the checks, and the figures.
-    // A tab of "Da approvare", the other queue of decisions. It asks the permission the API asks for every call of it, `verification.decision` (the
-    // owner, the administrators and the property managers; E03/F04/US02/T01): an entry the user opens must not end on a 403.
+    // The last tab of the Cruscotto, after «Da approvare», the other queue of decisions. It asks the permission the API asks for every call of it,
+    // `verification.decision` (the owner, the administrators and the property managers; E03/F04/US02/T01): an entry the user opens must not end on a 403.
     path: '/app/short-rent/verifications',
     context: 'short-rent',
     requiredPermissions: ['verification.decision'],
     navKey: 'nav.verifications',
-    navParent: '/app/short-rent/approval-queue',
-    navOrder: 1,
+    navParent: '/app/short-rent',
+    navOrder: 3,
     icon: 'ShieldCheck',
     component: async () => ({ default: (await import('@/pages/VerificationQueuePage')).VerificationQueuePage }),
   },
   {
     // Approval queue (NF-06, NF-68): items requiring human decision before execution: the drafts of messages, the campaigns, the texts of the AI.
-    // In "Altro", the entry of the queues of decisions: the verifications of the guests are its other tab. Deciding asks its own permission,
-    // `approval.decide` (the owner, the administrators and the property managers; not the collaborator or the accountant), the one the API asks
-    // for every call of the queue: an entry the user opens must not end on a 403.
+    // A tab of the Cruscotto («Da approvare»), with the «Da fare» list and the verifications of the guests: what waits for the host is one section
+    // of the menu, not entries of "Altro". Deciding asks its own permission, `approval.decide` (the owner, the administrators and the property
+    // managers; not the collaborator or the accountant), the one the API asks for every call of the queue: an entry the user opens must not end on a 403.
     path: '/app/short-rent/approval-queue',
     context: 'short-rent',
     requiredPermissions: ['approval.decide'],
     navKey: 'nav.approvalQueue',
-    navPlacement: 'secondary',
-    navOrder: 29,
+    navTabKey: 'nav.toApprove',
+    navParent: '/app/short-rent',
+    navOrder: 2,
     icon: 'CheckSquare',
     component: async () => ({ default: (await import('@/pages/ApprovalQueuePage')).ApprovalQueuePage }),
   },
   {
-    // «Attività» (NF-07, ADR-026): everything the system asks of the host, the most urgent first, each with its «Fallo ora»; the counter
-    // is the number of the urgent ones. In "Altro", the last of it: the main menu has its eight entries (UI-04a) and the Home already
-    // carries the first item and the next ones; "Altro" says on its own tab that something urgent waits inside. The server shows each user
-    // only the items its scope reaches (HostScope), so the page asks what reading the properties asks, held by every role of the area;
-    // each «Fallo ora» opens a page that asks its own permission (`ACTION_ROUTE_MAP`). Not the staff page `/app/admin/activities`.
+    // «Da fare» (NF-07, ADR-026): everything the system asks of the host, the most urgent first, each with its «Fallo ora»; the counter
+    // is the number of the urgent ones, on its tab and on the «Guida» of the header. The first tab of the Cruscotto after the home itself,
+    // which carries the next items as a path (`TodoPath`). The server shows each user only the items its scope reaches (HostScope), so the
+    // page asks what reading the properties asks, held by every role of the area; each «Fallo ora» opens a page that asks its own permission
+    // (`ACTION_ROUTE_MAP`). Not the staff page `/app/admin/activities`.
     path: '/app/short-rent/activities',
     context: 'short-rent',
     requiredPermissions: ['property.read'],
-    navKey: 'nav.activities',
-    navPlacement: 'secondary',
-    navOrder: 35,
+    navKey: 'nav.todo',
+    navParent: '/app/short-rent',
+    navOrder: 1,
     navCount: 'activities',
     icon: 'ListChecks',
     component: async () => ({ default: (await import('@/features/todo/todo-list')).TodoListPage }),
@@ -443,14 +466,16 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
-    // Org identity: name, public slug and contact email opt-in (A1-22, A1-23).
+    // Org identity: name, public slug and contact email opt-in (A1-22, A1-23). «Impostazioni», pinned at the foot of the sidebar: the integration
+    // and the assistant are its tabs, and the menu calls it by the section while its tab keeps the name of the page («Organizzazione»).
     path: '/app/short-rent/settings/organization',
     context: 'short-rent',
     requiredPermissions: [],
     orgBillingAdmin: true,
-    navKey: 'nav.organization',
-    navPlacement: 'secondary',
-    navOrder: 33,
+    navKey: 'nav.settings',
+    navTabKey: 'nav.organization',
+    navPlacement: 'footer',
+    navOrder: 40,
     icon: 'Settings',
     component: async () => ({
       default: (await import('@/features/settings/organization/organization-settings-page')).OrganizationSettingsPage,
@@ -499,30 +524,31 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   },
   {
     // A host recommends CasaZen to a friend: any member of a host org, whatever the role (backend policy `SharedPropertyRead`, held by every
-    // host role). Daily quota per org. No role is assigned: the invited person signs up as usual.
+    // host role). Daily quota per org. No role is assigned: the invited person signs up as usual. Pinned at the foot of the sidebar, under «Impostazioni».
     path: '/app/short-rent/settings/invitations',
     context: 'short-rent',
     requiredPermissions: ['property.read'],
     navKey: 'nav.hostInvites',
-    navPlacement: 'secondary',
-    navOrder: 34,
-    icon: 'UserPlus',
+    navPlacement: 'footer',
+    navOrder: 41,
+    icon: 'Gift',
     component: async () => ({
       default: (await import('@/features/invites/host-invites-page')).HostInvitesPage,
     }),
   },
   {
-    // The assistant of the guests' messages (E05/F05/US04/T02, NF-66): its rules, its properties and its situations, in "Altro". Only with the flag `messageAssistant`
-    // (backend `MessageAssistant`, off by default): while it is off the entry is in no menu, the address leads to the home of the area and the server answers 404 to every
-    // endpoint of the assistant. The page asks `property.write` (the exceptions and the answers of a property are written with it); inside it, the rules, the situations
-    // and the answers of the organization are changed by the organization administrator alone, and the others read them with the reason in words.
+    // The assistant of the guests' messages (E05/F05/US04/T02, NF-66): its rules, its properties and its situations, a tab of «Impostazioni». Only with the flag
+    // `messageAssistant` (backend `MessageAssistant`, off by default): while it is off the tab is not there, the address leads to the home of the area and the server
+    // answers 404 to every endpoint of the assistant. The page asks `property.write` (the exceptions and the answers of a property are written with it); inside it, the
+    // rules, the situations and the answers of the organization are changed by the organization administrator alone, and the others read them with the reason in words.
+    // Who may not open «Impostazioni» (not the organization administrator) finds it in "Altro", as every page whose section is closed to its user.
     path: '/app/short-rent/settings/assistant',
     context: 'short-rent',
     requiredPermissions: ['property.write'],
     featureFlag: 'messageAssistant',
     navKey: 'nav.assistant',
-    navPlacement: 'secondary',
-    navOrder: 34,
+    navParent: '/app/short-rent/settings/organization',
+    navOrder: 2,
     icon: 'Sparkles',
     component: async () => ({ default: (await import('@/features/assistant/assistant-settings-page')).AssistantSettingsPage }),
   },
@@ -1119,15 +1145,17 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
       default: (await import('@/features/billing/billing-settings-page')).BillingSettingsContent,
     }),
   },
-  // Org identity: same page as in short-rent (A1-22, A1-23), inside the long-rent shell.
+  // Org identity: same page as in short-rent (A1-22, A1-23), inside the long-rent shell. «Impostazioni» pinned at the foot of the sidebar, as in
+  // short-rent, so the two rental areas keep their settings in the same place.
   {
     path: '/app/long-rent/settings/organization',
     context: 'long-rent',
     requiredPermissions: [],
     orgBillingAdmin: true,
-    navKey: 'nav.organization',
-    navPlacement: 'secondary',
-    navOrder: 33,
+    navKey: 'nav.settings',
+    navTabKey: 'nav.organization',
+    navPlacement: 'footer',
+    navOrder: 40,
     icon: 'Settings',
     component: async () => ({
       default: (await import('@/features/settings/organization/organization-settings-page')).OrganizationSettingsContent,
@@ -1138,9 +1166,9 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'long-rent',
     requiredPermissions: ['property.read'],
     navKey: 'nav.hostInvites',
-    navPlacement: 'secondary',
-    navOrder: 34,
-    icon: 'UserPlus',
+    navPlacement: 'footer',
+    navOrder: 41,
+    icon: 'Gift',
     component: async () => ({
       default: (await import('@/features/invites/host-invites-page')).HostInvitesContent,
     }),
@@ -1224,9 +1252,9 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     orgBillingAdmin: true,
     featureFlag: 'agencyTier',
     navKey: 'nav.statements',
-    navGroup: 'account',
-    navPlacement: 'primary',
-    navOrder: 3.5,
+    // The first tab of «Chiusura mensile»: the month of the owners is one section, in the order its steps follow (statements, withholding, transfers).
+    navParent: '/app/account/owner-close',
+    navOrder: 1,
     icon: 'FileText',
     component: async () => ({ default: (await import('@/pages/StatementsPage')).StatementsPage }),
     legacyPaths: ['/app/admin/statements'],
@@ -1240,9 +1268,8 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     orgBillingAdmin: true,
     featureFlag: 'agencyTier',
     navKey: 'nav.withholding',
-    navGroup: 'account',
-    navPlacement: 'primary',
-    navOrder: 4,
+    navParent: '/app/account/owner-close',
+    navOrder: 2,
     icon: 'FileText',
     component: async () => ({ default: (await import('@/pages/WithholdingPage')).WithholdingPage }),
   },
@@ -1256,9 +1283,8 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     orgBillingAdmin: true,
     featureFlag: 'agencyTier',
     navKey: 'nav.wireTransfers',
-    navGroup: 'account',
-    navPlacement: 'primary',
-    navOrder: 4.5,
+    navParent: '/app/account/owner-close',
+    navOrder: 3,
     icon: 'Send',
     component: async () => ({ default: (await import('@/pages/WireTransferPage')).WireTransferPage }),
   },
@@ -1266,15 +1292,17 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     // «Chiusura mensile» (E06/F05/US02/T04, NF-110): the month of the agency's owners in four groups (to prepare, to check, approved, published) with
     // its readiness and the next step of each owner: check, approve, publish, pay, close. It reads the endpoints of the owner accounting, which need
     // the finance permissions of the owner and the administrators and the whole reach of the org, so it is behind the plan (`agencyTier`) and for the
-    // org billing administrator like the other pages of the agency's money. In "Altro": the main menu of the area is at its limit.
+    // org billing administrator like the other pages of the agency's money. The entry of the group «Proprietari»: the statements, the withholding and
+    // the transfers are its tabs, the steps of the same month.
     path: '/app/account/owner-close',
     context: 'account',
     requiredPermissions: [],
     orgBillingAdmin: true,
     featureFlag: 'agencyTier',
     navKey: 'nav.ownerClose',
-    navPlacement: 'secondary',
-    navOrder: 26,
+    navGroup: 'owners',
+    navPlacement: 'primary',
+    navOrder: 4,
     icon: 'CalendarCheck',
     component: async () => ({ default: (await import('@/features/owner-accounting/month-end-close-page')).MonthEndClosePage }),
   },
@@ -1301,39 +1329,37 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   {
     // "Fatturazione e piano" (AM-08a): the plan, how it is used, how it is paid and the billing data, in one page. For the owner and the
     // administrators, who alone have the endpoints (`OrgBillingAdmin`): the page itself asks anyone else to contact them. The plan and
-    // billing pages of the rental areas stay as the pages Stripe returns to, and hand these people over to this one.
+    // billing pages of the rental areas stay as the pages Stripe returns to, and hand these people over to this one. Pinned at the foot of the
+    // sidebar with «Impostazioni», as the settings of the rental areas are.
     path: '/app/account/billing',
     context: 'account',
     requiredPermissions: [],
     orgBillingAdmin: true,
     navKey: 'nav.billing',
-    navGroup: 'account',
-    navPlacement: 'primary',
-    navOrder: 5,
+    navPlacement: 'footer',
+    navOrder: 40,
     icon: 'CreditCard',
     component: async () => ({ default: (await import('@/features/account/billing/account-billing-page')).AccountBillingPage }),
   },
   {
+    // In no menu, as the profile of every area: the menu of the user (header, sheet of the phone) leads to it.
     path: '/app/account/profile',
     context: 'account',
     requiredPermissions: [],
     navKey: 'nav.profile',
-    navPlacement: 'secondary',
-    navOrder: 30,
     icon: 'User',
     component: async () => ({ default: (await import('@/features/account/account-profile-page')).AccountProfilePage }),
   },
   {
     // "Impostazioni" (AM-08b): the org's name, the address of its booking site, its contact email and its Stripe account in one page, for
     // the owner and the administrators (`org.settings.manage`; the endpoints are the ones of `OrgBillingAdmin`, which they pass too). The
-    // organization and payments pages of the rental areas stay where they are.
+    // organization and payments pages of the rental areas stay where they are. Pinned at the foot of the sidebar.
     path: '/app/account/settings',
     context: 'account',
     requiredPermissions: ['org.settings.manage'],
     navKey: 'nav.accountSettings',
-    navGroup: 'account',
-    navPlacement: 'primary',
-    navOrder: 7,
+    navPlacement: 'footer',
+    navOrder: 41,
     icon: 'Settings',
     component: async () => ({ default: (await import('@/features/account/account-settings-page')).AccountSettingsPage }),
   },
@@ -1365,12 +1391,11 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     legacyPaths: ['/admin/users'],
   },
   {
+    // In no menu, as the profile of every area: the menu of the user (header, sheet of the phone) leads to it.
     path: '/app/admin/profile',
     context: 'admin',
     requiredPermissions: ['admin.users.read'],
     navKey: 'nav.profile',
-    navPlacement: 'secondary',
-    navOrder: 30,
     icon: 'User',
     component: async () => ({ default: (await import('@/features/admin/admin-profile-page')).AdminProfilePage }),
   },
@@ -1390,10 +1415,10 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     path: '/app/admin/suppliers/invite',
     context: 'admin',
     requiredPermissions: ['admin.users.manage'],
-    // The one section of the invites (supplier and host); the address stays the one of the supplier invite.
+    // The one section of the invites (supplier and host); the address stays the one of the supplier invite. A tab of Fornitori, with the QR.
     navKey: 'nav.invites',
-    navPlacement: 'secondary',
-    navOrder: 21,
+    navParent: '/app/admin/suppliers',
+    navOrder: 1,
     icon: 'UserPlus',
     component: async () => ({ default: (await import('@/features/admin/admin-invites-page')).AdminInvitesPage }),
     legacyPaths: ['/admin/suppliers/invite'],
@@ -1403,19 +1428,20 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'admin',
     requiredPermissions: ['admin.users.manage'],
     navKey: 'nav.inviteQr',
-    navPlacement: 'secondary',
-    navOrder: 22,
+    navParent: '/app/admin/suppliers',
+    navOrder: 2,
     icon: 'QrCode',
     component: async () => ({ default: (await import('@/features/admin/admin-invite-qr-page')).AdminInviteQrPage }),
   },
   {
+    // «Processi», in the group «Sistema» of the staff: the background jobs, with the configuration of the AI and the demo environment as its tabs.
     path: '/app/admin/jobs',
     context: 'admin',
     requiredPermissions: ['admin.jobs.read'],
     navKey: 'nav.jobs',
-    navGroup: 'platform',
+    navGroup: 'system',
     navPlacement: 'primary',
-    navOrder: 4,
+    navOrder: 7,
     navBottom: 4,
     icon: 'Settings',
     component: async () => ({ default: (await import('@/features/admin/admin-jobs-page')).AdminJobsPage }),
@@ -1426,8 +1452,8 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'admin',
     requiredPermissions: ['admin.seo.read'],
     navKey: 'nav.ai',
-    navPlacement: 'secondary',
-    navOrder: 23,
+    navParent: '/app/admin/jobs',
+    navOrder: 1,
     icon: 'Sparkles',
     component: async () => ({ default: (await import('@/features/admin/admin-ai-page')).AdminAiPage }),
     legacyPaths: ['/admin/ai'],
@@ -1437,22 +1463,21 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'admin',
     requiredPermissions: ['admin.seo.read'],
     navKey: 'nav.seo',
-    navGroup: 'platform',
+    navGroup: 'content',
     navPlacement: 'primary',
     navOrder: 5,
     icon: 'Globe',
     component: async () => ({ default: (await import('@/features/admin/seo-dashboard-page')).SeoDashboardPage }),
     legacyPaths: ['/admin/seo'],
   },
-  // Marketing section (SE-03): surfaces existing tracking data (signup attributions, top-converting comuni).
+  // Marketing section (SE-03): surfaces existing tracking data (signup attributions, top-converting comuni). A tab of «SEO & Contenuti».
   {
     path: '/app/admin/marketing',
     context: 'admin',
     requiredPermissions: ['admin.seo.read'],
     navKey: 'nav.marketing',
-    navGroup: 'platform',
-    navPlacement: 'primary',
-    navOrder: 6,
+    navParent: '/app/admin/seo',
+    navOrder: 1,
     icon: 'TrendingUp',
     component: async () => ({ default: (await import('@/features/admin/marketing-page')).MarketingPage }),
     legacyPaths: ['/admin/marketing'],
@@ -1503,8 +1528,8 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   },
   // The CRM and marketing module (NF-23, NF-95, ADR-021, E07): aggregated guest data for marketing and segmentation, filtered by HostScope.
   // It is unfinished, so every page of it is behind the flag `crmMarketing` (backend `CrmMarketing`): while the flag is off the entry is in
-  // no menu and the addresses lead to the home of the area. The entry «CRM Ospiti» is one of «Altro» (the main menu has its eight entries),
-  // right after the queue of the verifications of the guests; the pages of the epic hang from it as tabs (`navParent` set to its path), in
+  // no menu and the addresses lead to the home of the area. The entry «CRM Ospiti» is in the group «Gestione» of the main menu, after Incassi;
+  // the pages of the epic hang from it as tabs (`navParent` set to its path), in
   // this order: `nav.crmSegments`, `nav.crmCampaigns`, `nav.crmAutomations`, `nav.crmMerge`.
   // Convention: each page task of the epic adds its own entry here with `featureFlag: 'crmMarketing'` and `navParent:
   // '/app/short-rent/crm/guests'`, never a menu entry of its own. The pages the e-mails link to (`/unsubscribe`, `/marketing/confirm`, the
@@ -1517,8 +1542,9 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: ['guest.read'],
     featureFlag: 'crmMarketing',
     navKey: 'nav.crm',
-    navPlacement: 'secondary',
-    navOrder: 30,
+    navGroup: 'management',
+    navPlacement: 'primary',
+    navOrder: 8,
     icon: 'Users',
     component: async () => ({ default: (await import('@/pages/crm/GuestList')).default }),
   },
@@ -1544,13 +1570,13 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/crm/merge/merge-page')).MergePage }),
   },
   // Admin CIN audit (A1-16): platform-wide CIN compliance report, unreachable until this route existed. The menu entry
-  // is "Conformità" (UI-04a): the tax rates and the LTR reference data hang from it and its page links to them.
+  // is "Conformità" (UI-04a), in the group «Sistema»: the tax rates and the LTR reference data are its tabs.
   {
     path: '/app/admin/cin',
     context: 'admin',
     requiredPermissions: ['admin.cin.read'],
     navKey: 'nav.complianceAudit',
-    navGroup: 'platform',
+    navGroup: 'system',
     navPlacement: 'primary',
     navOrder: 6,
     icon: 'BadgeCheck',
@@ -1588,21 +1614,22 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'admin',
     requiredPermissions: ['admin.cin.read'],
     navKey: 'nav.demoEnvironment',
-    navPlacement: 'secondary',
-    navOrder: 25,
+    navParent: '/app/admin/jobs',
+    navOrder: 2,
     icon: 'Shield',
     component: async () => ({ default: (await import('@/features/admin/admin-demo-page')).AdminDemoPage }),
   },
   {
-    // Reads the agency endpoint `/internal-activities` (ADR-010), which answers only an org on the Agency plan: behind `agencyTier`.
+    // Reads the agency endpoint `/internal-activities` (ADR-010), which answers only an org on the Agency plan: behind `agencyTier`. In the group
+    // «Supporto» of the staff, with the requests of help.
     path: '/app/admin/activities',
     context: 'admin',
     requiredPermissions: ['admin.users.read'],
     featureFlag: 'agencyTier',
     navKey: 'nav.staffActivities',
-    navGroup: 'platform',
-    navPlacement: 'secondary',
-    navOrder: 26,
+    navGroup: 'support',
+    navPlacement: 'primary',
+    navOrder: 4.5,
     icon: 'ClipboardCheck',
     component: async () => ({ default: (await import('@/pages/StaffActivitiesPage')).StaffActivitiesPage }),
   },
@@ -1834,7 +1861,7 @@ function isEntryAvailable(
   return hasEntryPermission(entry, hasPermission) && isEntryFeatureEnabled(entry, features);
 }
 
-const PLACEMENT_RANK: Record<NavPlacement, number> = { primary: 0, secondary: 1 };
+const PLACEMENT_RANK: Record<NavPlacement, number> = { primary: 0, secondary: 1, footer: 2 };
 
 function placementRank(entry: RouteManifestEntry): number {
   return PLACEMENT_RANK[entry.navPlacement ?? 'secondary'];
@@ -1844,7 +1871,7 @@ function byNavOrder(a: RouteManifestEntry, b: RouteManifestEntry): number {
   return (a.navOrder ?? 99) - (b.navOrder ?? 99);
 }
 
-/** Menu order: the main menu first, then "Altro"; inside each, by `navOrder`. */
+/** Menu order: the main menu first, then "Altro", then the foot of the sidebar; inside each, by `navOrder`. */
 function byMenuOrder(a: RouteManifestEntry, b: RouteManifestEntry): number {
   return placementRank(a) - placementRank(b) || byNavOrder(a, b);
 }
@@ -1919,6 +1946,15 @@ export function getSecondaryNavEntries(
   );
 }
 
+/** The entries pinned at the foot of the sidebar: the settings of the area and «Consiglia CasaZen». */
+export function getFooterNavEntries(
+  contextKey: AppContextKey,
+  hasPermission?: PermissionPredicate,
+  features?: Partial<FeatureFlags>,
+): RouteManifestEntry[] {
+  return getVisibleNavEntries(contextKey, hasPermission, features).filter((entry) => entry.navPlacement === 'footer');
+}
+
 /** The destinations of the bottom bar of the phone, in bar order (at most {@link MAX_BOTTOM_NAV_ENTRIES}). */
 export function getBottomNavEntries(
   contextKey: AppContextKey,
@@ -1987,8 +2023,10 @@ export interface NavSection {
 export interface ContextNav {
   /** The main menu: labelled groups of primary entries, in the order of their entries. */
   sections: NavSection[];
-  /** "Altro". */
+  /** "Altro": only the pages whose section the user cannot open (UI-04a). */
   more: RouteManifestEntry[];
+  /** Pinned at the foot of the sidebar: the settings of the area and «Consiglia CasaZen». */
+  footer: RouteManifestEntry[];
 }
 
 /**
@@ -2003,8 +2041,13 @@ export function getContextNav(
 ): ContextNav {
   const sections: NavSection[] = [];
   const more: RouteManifestEntry[] = [];
+  const footer: RouteManifestEntry[] = [];
   for (const entry of getVisibleNavEntries(contextKey, hasPermission, features)) {
     if (options.withoutBottom && entry.navBottom !== undefined) continue;
+    if (entry.navPlacement === 'footer') {
+      footer.push(entry);
+      continue;
+    }
     if (entry.navPlacement !== 'primary') {
       more.push(entry);
       continue;
@@ -2014,7 +2057,7 @@ export function getContextNav(
     if (section) section.entries.push(entry);
     else sections.push({ group, entries: [entry] });
   }
-  return { sections, more };
+  return { sections, more, footer };
 }
 
 export function getManifestEntry(path: string): RouteManifestEntry | undefined {

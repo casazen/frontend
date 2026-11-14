@@ -484,6 +484,11 @@
         "then_one": "Next: one more task",
         "then_other": "Next: {{count}} more tasks"
       },
+      "path": {
+        "now": "Now",
+        "open": "Open",
+        "title": "Your next steps"
+      },
       "listLabel": "Tasks to do",
       "loadError": "We could not load your tasks.",
       "loading": "Loading your tasks…",
@@ -3969,6 +3974,11 @@
     "ariaLabel": "Breadcrumb"
   },
   "calm": {
+    "path": {
+      "current": "current step",
+      "done": "done",
+      "upcoming": "to do"
+    },
     "statStrip": {
       "label": "At a glance"
     },
@@ -3977,6 +3987,57 @@
       "items_other": "{{count}} items",
       "label": "Days of the week",
       "today": "today"
+    }
+  },
+  "guide": {
+    "button": "Guide",
+    "description": "It walks you through step by step: what you have done, what to do now and what comes next.",
+    "help": {
+      "manual": "Open the CasaZen manual",
+      "support": "Write to support",
+      "text": "The manual explains every area in plain words. If you get stuck, write to us: we will answer.",
+      "title": "Need a hand?"
+    },
+    "open": "Open the guide",
+    "openWithCount_one": "Open the guide: {{count}} urgent thing to do",
+    "openWithCount_other": "Open the guide: {{count}} urgent things to do",
+    "setup": {
+      "all": "See all the steps",
+      "continue": "Continue",
+      "label": "The steps to set up CasaZen",
+      "now": "Now",
+      "progress": "{{done}} of {{total}} steps done",
+      "titleChecklist": "Activate your booking site",
+      "titlePath": "Get started with CasaZen"
+    },
+    "title": "Your guide",
+    "todo": {
+      "all": "See everything to do",
+      "count_one": "{{count}} thing to do, in the order to do it.",
+      "count_other": "{{count}} things to do, in the order to do them.",
+      "countUrgent_one": "{{count}} thing to do, {{urgent}} urgent: start from the top.",
+      "countUrgent_other": "{{count}} things to do, {{urgent}} urgent: start from the top.",
+      "nothing": "Nothing to do for now: all in order.",
+      "title": "To do now"
+    },
+    "welcome": {
+      "intro_one": "CasaZen walks you through one step at a time: there is {{count}} step to be up and running.",
+      "intro_other": "CasaZen walks you through one step at a time: there are {{count}} steps to be up and running.",
+      "kicker": "Welcome to CasaZen",
+      "later": "Later",
+      "next": "Show me the path",
+      "pathIntro": "Each step opens the right guided flow. When you finish one, we suggest the next.",
+      "pathKicker": "Get started with CasaZen",
+      "pathTitle_one": "Your path: {{count}} step",
+      "pathTitle_other": "Your path: {{count}} steps",
+      "promise": {
+        "guide": "The Guide at the top right always tells you what to do next.",
+        "pause": "You can stop whenever you like: pick up where you left off, nothing is lost.",
+        "steps": "We show you one thing at a time, in the right order."
+      },
+      "start": "Start: {{step}}",
+      "title": "Hi {{name}}, let's start together",
+      "titleNoName": "Let's start together"
     }
   },
   "campaigns": {
@@ -13812,6 +13873,9 @@
     "domain": "Public domain",
     "organization": "Organization",
     "accountSettings": "Settings",
+    "settings": "Settings",
+    "todo": "To do",
+    "toApprove": "To approve",
     "ota": "OTA",
     "leases": "Leases",
     "rents": "Rents",
@@ -13853,11 +13917,16 @@
     "group": {
       "account": "Your account",
       "activity": "Your business",
+      "content": "Content",
       "everyday": "Every day",
+      "footer": "Settings and invitations",
       "management": "Management",
       "offer": "Your offer",
+      "owners": "Owners",
       "platform": "Platform",
       "portfolio": "Portfolio",
+      "support": "Support",
+      "system": "System",
       "work": "Work"
     },
     "ltrReferenceData": "LTR reference data",

@@ -332,30 +332,14 @@ describe('BottomNav (UI-04b)', () => {
       expect(more()).toBeInTheDocument();
     });
 
-    it('BottomNav_UrgentActivitiesBehindAltro_MarkTheTabAndSayItAloud', () => {
+    it('BottomNav_UrgentActivities_AreNotToldOnAltroSinceTheyAreATabOfTheCruscottoAndOnTheGuide', () => {
+      // The «Da fare» list is a tab of the Cruscotto (the first place of the bar) and the «Guida» of the header carries its number.
       vi.mocked(useNavCounts).mockReturnValue({ activities: 2 });
       renderBar('short-rent');
 
       const tab = within(bar()).getByRole('button', { name: /^Altro/ });
-      expect(within(tab).getByTestId('more-activities-mark')).toBeInTheDocument();
-      expect(tab).toHaveAccessibleName('Altro, 2 attività urgenti');
-    });
-
-    it('BottomNav_RiskOfASanctionAndUrgentActivities_AreBothToldOnAltro', () => {
-      vi.mocked(useNavCounts).mockReturnValue({ compliance: 3, activities: 2 });
-      renderBar('short-rent');
-
-      const tab = within(bar()).getByRole('button', { name: /^Altro/ });
-      expect(within(tab).getByTestId('more-compliance-mark')).toBeInTheDocument();
-      expect(tab).toHaveAccessibleName('Altro, 3 adempimenti con rischio di sanzione, 2 attività urgenti');
-    });
-
-    it('BottomNav_NoUrgentActivity_LeavesAltroPlain', () => {
-      vi.mocked(useNavCounts).mockReturnValue({ activities: 0 });
-      renderBar('short-rent');
-
-      expect(screen.queryByTestId('more-activities-mark')).not.toBeInTheDocument();
-      expect(more()).toBeInTheDocument();
+      expect(within(tab).queryByTestId('more-compliance-mark')).not.toBeInTheDocument();
+      expect(tab).toHaveAccessibleName('Altro');
     });
   });
 

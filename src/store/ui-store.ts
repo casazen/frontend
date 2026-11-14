@@ -37,6 +37,9 @@ interface UiState {
   openWizards: number;
   wizardOpened: () => void;
   wizardClosed: () => void;
+  /** The «Guida» panel of the header is open (`GuidePanel`, opened by the button of the header). Not persisted. */
+  guideOpen: boolean;
+  setGuideOpen: (open: boolean) => void;
 }
 
 export const useUiStore = create<UiState>()(
@@ -54,6 +57,8 @@ export const useUiStore = create<UiState>()(
       openWizards: 0,
       wizardOpened: () => set((state) => ({ openWizards: state.openWizards + 1 })),
       wizardClosed: () => set((state) => ({ openWizards: Math.max(0, state.openWizards - 1) })),
+      guideOpen: false,
+      setGuideOpen: (open) => set({ guideOpen: open }),
     }),
     {
       name: UI_STORE_STORAGE_KEY,

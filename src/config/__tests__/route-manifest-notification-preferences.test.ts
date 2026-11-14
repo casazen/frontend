@@ -68,7 +68,9 @@ describe('route manifest: Notifiche, the second tab of the profile (E05/F03/US02
     }
   });
 
-  it('RouteManifest_Notifications_LoadsAPageThatIsAComponent', async () => {
+  // The first import of a page pulls in the whole shell (the guide of the header included): slow on a loaded machine, hence the room, as the
+  // other pages of the manifest have.
+  it('RouteManifest_Notifications_LoadsAPageThatIsAComponent', { timeout: 30_000 }, async () => {
     const page = await entry?.component();
 
     expect(typeof page?.default).toBe('function');

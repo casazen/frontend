@@ -97,8 +97,9 @@ describe('NavChildLinks (UI-04a)', () => {
 });
 
 // The sidebar keeps a parent highlighted and leaves its children out of the menus: the page of the parent is the way in. A
-// parent page that forgot `<NavChildLinks>` would leave its children without one. The rental areas do it with tabs on every page of
-// the section (`NavSectionTabs`, in `PageHeader`: see its test); the staff console and the supplier area link from the parent.
+// parent page that forgot `<NavChildLinks>` would leave its children without one. The rental areas, the Amministrazione and the staff
+// console do it with tabs on every page of the section (`NavSectionTabs`, in `PageHeader`: see its test); the supplier area links from
+// the parent.
 describe('pages that hang from a menu entry link to their children', () => {
   const sources = import.meta.glob<string>(['/src/**/*.tsx', '!/src/**/*.test.tsx', '!/src/**/__tests__/**'], {
     query: '?raw',
@@ -107,15 +108,13 @@ describe('pages that hang from a menu entry link to their children', () => {
   });
   const parents = [
     ...new Set(
-      ROUTE_MANIFEST.filter((entry) => entry.navParent && (entry.context === 'admin' || entry.context === 'supplier')).map(
-        (entry) => entry.navParent as string,
-      ),
+      ROUTE_MANIFEST.filter((entry) => entry.navParent && entry.context === 'supplier').map((entry) => entry.navParent as string),
     ),
   ];
 
   it('has at least one parent', () => {
     expect(Object.keys(sources).length).toBeGreaterThan(100);
-    expect(parents.length).toBeGreaterThanOrEqual(3);
+    expect(parents.length).toBeGreaterThanOrEqual(2);
   });
 
   it.each(parents)('%s renders NavChildLinks', (parent) => {

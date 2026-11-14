@@ -45,9 +45,10 @@ function findEntry(contextKey: AppContextKey, pathname: string): RouteManifestEn
  * address is the start of its own (`/payments` for `/payments/:id`). The home of the area is not one: the trail starts there.
  */
 function findParent(entry: RouteManifestEntry): RouteManifestEntry | undefined {
-  if (entry.navParent) return getManifestEntry(entry.navParent);
-
   const home = getDefaultRoute(entry.context);
+  // A tab of the Cruscotto («Da fare», «Da approvare») hangs from the home itself: the area that starts the trail already leads there.
+  if (entry.navParent) return entry.navParent === home ? undefined : getManifestEntry(entry.navParent);
+
   return ROUTE_MANIFEST.filter(
     (candidate) =>
       candidate.context === entry.context &&

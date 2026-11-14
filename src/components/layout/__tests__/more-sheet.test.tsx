@@ -4,6 +4,7 @@ import { MemoryRouter, useLocation } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import type { ContextBootstrapDto } from '@/api/contexts';
 import type { AppContextKey } from '@/config/route-manifest';
+import { ORG_BILLING_ADMIN_PERMISSION } from '@/lib/org-billing-admin';
 import { useUiStore } from '@/store/ui-store';
 import { stubViewportWidth } from '@/test/viewport';
 import { MoreSheet } from '../more-sheet';
@@ -109,7 +110,7 @@ describe('MoreSheet (UI-04b)', () => {
         'nav-group-everyday',
         'nav-group-offer',
         'nav-group-management',
-        'nav-group-more',
+        'nav-group-footer',
       ]);
       // The adempimenti are first on the phone too, with their counter: what the law dates is not tucked in "Altro".
       expect(groups[0]).toHaveAccessibleName('Ogni giorno');
@@ -118,10 +119,10 @@ describe('MoreSheet (UI-04b)', () => {
       expect(tiles(groups[1])).toEqual(['Sito di prenotazione', 'Marketplace']);
       expect(groups[2]).toHaveAccessibleName('Gestione');
       expect(tiles(groups[2])).toEqual(['Incassi']);
-      expect(groups[3]).toHaveAccessibleName('Altro');
-      // Four tiles where there were sixteen: the pages of a section are tabs on the page of their entry, and the profile is in the
-      // account row at the end of the sheet. The To do list is the last of them.
-      expect(tiles(groups[3])).toEqual(['Coda di approvazione', 'Organizzazione', 'Consiglia CasaZen', 'Attività']);
+      // The settings close the sheet as they close the sidebar; the queues are tabs of the Cruscotto, the profile is in the account row
+      // at the end of the sheet: there is no "Altro" group left.
+      expect(groups[3]).toHaveAccessibleName('Impostazioni e inviti');
+      expect(tiles(groups[3])).toEqual(['Impostazioni', 'Consiglia CasaZen']);
       // The destinations of the bar are not repeated.
       for (const name of ['Cruscotto', 'Calendario', 'Prenotazioni', 'Immobili']) {
         expect(within(sheet()).queryByRole('link', { name })).not.toBeInTheDocument();
@@ -135,18 +136,18 @@ describe('MoreSheet (UI-04b)', () => {
       open();
 
       expect(within(sheet()).getByRole('link', { name: 'Incassi' })).toHaveAttribute('href', '/app/short-rent/payments');
-      expect(within(sheet()).getByRole('link', { name: 'Organizzazione' })).toHaveAttribute('href', '/app/short-rent/settings/organization');
+      expect(within(sheet()).getByRole('link', { name: 'Impostazioni' })).toHaveAttribute('href', '/app/short-rent/settings/organization');
     });
 
     it('MoreSheet_AreaWithJustAltro_HasNoGroupHeadings', () => {
-      // A role that reads the leases and not the properties: the bar holds what it can open, so behind "Altro"
-      // there is only "Altro". Interventi asks for the properties. The condominium register needs property.read, so it is absent.
-      arrange(['long-rent'], (_ctx, permission) => permission !== 'property.read');
+      // A role that reads the leases and not the properties, and is not the organization administrator: the bar holds what it can open and
+      // nothing is at the foot, so behind "Altro" there is only "Altro". The condominium register needs property.read, so it is absent.
+      arrange(['long-rent'], (_ctx, permission) => permission !== 'property.read' && permission !== ORG_BILLING_ADMIN_PERMISSION);
       renderSheet('long-rent', '/app/long-rent/leases');
 
       open();
 
-      expect(tiles(sheet())).toEqual(['Report fiscale', 'Organizzazione']);
+      expect(tiles(sheet())).toEqual(['Report fiscale']);
       // One group needs no name on the screen (the title says it), and still has one for a screen reader.
       expect(within(sheet()).getByRole('group', { name: 'Altro' })).toBeInTheDocument();
       expect(within(sheet()).queryByText('Altro', { selector: 'p' })).not.toBeInTheDocument();
