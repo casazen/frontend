@@ -116,7 +116,8 @@ export function BatchConfirmDialog({ count, busy, waiting, onClose, onConfirm }:
     <ConfirmationDialog
       open
       onOpenChange={(open) => {
-        if (!open) onClose();
+        // While the bulk issue is on its way the dialog stays: closed, a failure of the call would have nowhere to be told, and the person would not know what was issued.
+        if (!open && !busy) onClose();
       }}
       title={t('fiscalDocuments.batch.confirm.title', { count })}
       description={t('fiscalDocuments.batch.confirm.description')}

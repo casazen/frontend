@@ -85,7 +85,8 @@ export function IssueDocumentDialog({ document, onClose, onIssued }: DialogProps
     <ConfirmationDialog
       open
       onOpenChange={(open) => {
-        if (!open) onClose();
+        // While the call is on its way the dialog stays (Esc, the cross and a click outside included): closed, it would leave a failure with nowhere to be told.
+        if (!open && !issue.isPending) onClose();
       }}
       title={t('fiscalDocuments.issue.title')}
       description={t('fiscalDocuments.issue.description')}
@@ -146,7 +147,8 @@ export function DiscardDraftDialog({ document, onClose, onDiscarded }: DialogPro
     <ConfirmationDialog
       open
       onOpenChange={(open) => {
-        if (!open) onClose();
+        // As in the issue: the dialog stays while the call is on its way, so that a failure is told in it.
+        if (!open && !discard.isPending) onClose();
       }}
       title={t('fiscalDocuments.discard.title')}
       description={t('fiscalDocuments.discard.description', { document: documentNameOf(t, document) })}
@@ -214,7 +216,8 @@ export function CreditNoteDialog({ document, onClose, onCredited }: DialogProps 
     <Dialog
       open
       onOpenChange={(open) => {
-        if (!open) onClose();
+        // As in the issue: the dialog stays while the call is on its way, so that a failure is told in it.
+        if (!open && !credit.isPending) onClose();
       }}
     >
       <DialogContent data-testid="fiscal-credit-note-dialog">

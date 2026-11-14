@@ -15,7 +15,7 @@ const env = vi.hoisted(() => ({ permissions: new Set<string>(), flags: {} as Rec
 
 vi.mock('@/api/fiscal-documents.api', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/api/fiscal-documents.api')>();
-  return { ...actual, listDocuments: vi.fn(), getDocumentsContext: vi.fn(), issueBatch: vi.fn(), listDraftsForBatch: vi.fn(), refreshDraft: vi.fn() };
+  return { ...actual, listDocuments: vi.fn(), getDocumentsContext: vi.fn(), issueBatch: vi.fn(), issueDocument: vi.fn(), listDraftsForBatch: vi.fn(), refreshDraft: vi.fn() };
 });
 vi.mock('sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 vi.mock('@/components/layout/app-shell', () => ({
@@ -202,6 +202,59 @@ describe('a bulk issue never starts a second write on a draft that is being writ
     });
     await waitFor(() => expect(screen.getByTestId('fiscal-documents-issue-selected')).toBeEnabled());
     expect(api.issueBatch).not.toHaveBeenCalled();
+  });
+});
+
+describe('a call that is on its way keeps its confirmation open, so that a failure is always told (data rule)', () => {
+  const offline = () => Object.assign(new Error('offline'), { isAxiosError: true, code: 'ERR_NETWORK' });
+
+  it('IssueDocument_TheCallIsOnItsWay_TheDialogStaysOnEscapeAndTellsItsFailure', async () => {
+    let refuse: (error: unknown) => void = () => undefined;
+    vi.mocked(api.issueDocument).mockReturnValue(
+      new Promise((_, reject) => {
+        refuse = reject;
+      }),
+    );
+    renderPage();
+    const [row] = within(await screen.findByRole('table')).getAllByTestId('fiscal-document-row');
+    fireEvent.click(within(row).getByTestId('fiscal-document-issue'));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('fiscalDocuments.issue.confirm') }));
+    await waitFor(() => expect(api.issueDocument).toHaveBeenCalledTimes(1));
+
+    // Escape while the call is on its way: the dialog stays, and the failure that comes is told in it.
+    fireEvent.keyDown(dialog, { key: 'Escape' });
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    await act(async () => {
+      refuse(offline());
+    });
+
+    expect(await screen.findByTestId('fiscal-document-issue-problem')).toBeInTheDocument();
+  });
+
+  it('IssueBatch_TheCallIsOnItsWay_TheConfirmationStaysOnEscapeAndTellsItsFailure', async () => {
+    let refuse: (error: unknown) => void = () => undefined;
+    vi.mocked(api.issueBatch).mockReturnValue(
+      new Promise((_, reject) => {
+        refuse = reject;
+      }),
+    );
+    renderPage();
+    await screen.findByRole('table');
+    fireEvent.click(screen.getByTestId('fiscal-documents-select-page'));
+    fireEvent.click(screen.getByTestId('fiscal-documents-issue-selected'));
+    const confirm = await screen.findByRole('dialog');
+    fireEvent.click(within(confirm).getByRole('button', { name: i18n.t('fiscalDocuments.batch.confirm.confirm', { count: 3 }) }));
+    await waitFor(() => expect(api.issueBatch).toHaveBeenCalledTimes(1));
+
+    fireEvent.keyDown(confirm, { key: 'Escape' });
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    await act(async () => {
+      refuse(offline());
+    });
+
+    expect(await screen.findByTestId('fiscal-documents-batch-problem')).toBeInTheDocument();
+    expect(screen.queryByTestId('fiscal-documents-batch-result')).not.toBeInTheDocument();
   });
 });
 
