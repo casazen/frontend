@@ -1,4 +1,5 @@
 import { ApiClient } from './client';
+import { acceptsRefusal } from './accept-refusal';
 import axios from '@/lib/axios';
 import { getHttpStatus } from '@/lib/api-errors';
 import { withJsonErrorBody } from '@/lib/file-download';
@@ -6,6 +7,8 @@ import type {
   OwnerAccountingEvidence,
   OwnerAccountingPolicy,
   OwnerAccountingPolicyCommand,
+  OwnerAddress,
+  OwnerAddressCommand,
   OwnerClosePeriod,
   OwnerCloseReadiness,
   OwnerExternalDocument,
@@ -14,6 +17,8 @@ import type {
   OwnerFiscalReadiness,
   OwnerFxRate,
   OwnerLedgerEntry,
+  OwnerMandate,
+  OwnerMandateCommand,
   OwnerOnboardingReadiness,
   OwnerPayout,
   OwnerPayoutCommand,
@@ -50,6 +55,26 @@ export const ownerAccountingApi = {
 
   /** What is missing on each owner and property for the owner accounting; `null` while the activation module is off (404). */
   getOnboardingReadiness: () => orNull(ApiClient.get<OwnerOnboardingReadiness>('/onboarding/owners/readiness')),
+
+  // ── The mandate and the billing address of an owner (E13/F01/US01/T01) ─────────────────────────────────────────────
+
+  /** The versions of the owner's mandate, the newest first (`agency.owner.view`). */
+  listMandates: (ownerId: string) => ApiClient.get<OwnerMandate[]>(`/owners/${ownerId}/mandates`),
+
+  /** A new version from `validFrom`: the one in force ends the day before (`agency.owner.financial.manage`). 422 `owner_mandate_invalid` (with the `field`), 409 `owner_mandate_overlap`. */
+  createMandate: (ownerId: string, command: OwnerMandateCommand) => ApiClient.post<OwnerMandate>(`/owners/${ownerId}/mandates`, command),
+
+  /**
+   * The structured billing address of the owner, in clear (`agency.owner.financial.read`); `null` when the server refuses it to this caller (403): a refused read would send the whole app
+   * to the page of no access, and the page only has to say that the address is not for this person.
+   */
+  getAddress: async (ownerId: string): Promise<OwnerAddress | null> => {
+    const response = await axios.get<OwnerAddress>(`/owners/${ownerId}/address`, { validateStatus: acceptsRefusal });
+    return response.status === 403 ? null : response.data;
+  },
+
+  /** Replaces the address (`agency.owner.financial.manage`). 422 `owner_address_invalid` (with the `field`). */
+  saveAddress: (ownerId: string, command: OwnerAddressCommand) => ApiClient.put<OwnerAddress>(`/owners/${ownerId}/address`, command),
 
   // ── The month ────────────────────────────────────────────────────────────────────────────────────────────────────
 

@@ -162,10 +162,12 @@ describe('route-manifest main menu (UI-04a)', () => {
 
   it('keeps the Amministrazione to its account, the month of the owners and the settings at the foot', () => {
     expect(paths(getPrimaryNavEntries('account', allowAll))).toEqual(['/app/account', '/app/account/people', '/app/account/properties']);
+    // «Proprietari» (the registry with the mandate of each) is in the group of the account, before the month of the owners.
     expect(paths(getPrimaryNavEntries('account', allowAll, { agencyTier: true }))).toEqual([
       '/app/account',
       '/app/account/people',
       '/app/account/properties',
+      '/app/account/owners',
       '/app/account/owner-close',
     ]);
     expect(getContextNav('account', allowAll, { agencyTier: true }).sections.map((section) => section.group)).toEqual(['account', 'owners']);
@@ -181,6 +183,7 @@ describe('route-manifest main menu (UI-04a)', () => {
     ['account', '/app/account/withholding'],
     ['account', '/app/account/wire-transfers'],
     ['account', '/app/account/owner-close'],
+    ['account', '/app/account/owners'],
     ['admin', '/app/admin/activities'],
   ];
 
@@ -235,7 +238,7 @@ describe('route-manifest main menu (UI-04a)', () => {
 
   it('keeps the pages of the owner accounting behind the agency plan and for the finance administrators of the org', () => {
     // E06/F05/US02/T04: the endpoints they read answer only an org on the agency plan and the owner and the administrators (`agency.*` permissions).
-    for (const path of ['/app/account/owner-close', '/app/account/owner-close/versions/:versionId', '/app/account/owners/:ownerId/financial']) {
+    for (const path of ['/app/account/owner-close', '/app/account/owner-close/versions/:versionId', '/app/account/owners', '/app/account/owners/:ownerId/financial']) {
       const entry = entryOf(path);
       expect(entry.context, path).toBe('account');
       expect(entry.featureFlag, path).toBe('agencyTier');
@@ -247,7 +250,20 @@ describe('route-manifest main menu (UI-04a)', () => {
     expect(entryOf('/app/account/owner-close').navGroup).toBe('owners');
     expect(entryOf('/app/account/owner-close/versions/:versionId').navPlacement).toBeUndefined();
     expect(entryOf('/app/account/owners/:ownerId/financial').navPlacement).toBeUndefined();
+    // «Proprietari» (E13/F02/US01/T01) is an entry of the menu in the group of the account, and the financial page of an owner is one of its pages (the sidebar keeps it highlighted).
+    expect(entryOf('/app/account/owners').navPlacement).toBe('primary');
+    expect(entryOf('/app/account/owners').navGroup).toBe('account');
   });
+
+  it('opens the list of the owners, and only for the finance administrators of the organization', async () => {
+    for (const [path, componentName] of [['/app/account/owners', 'OwnersListPage']] as const) {
+      const entry = entryOf(path);
+      expect(entry.context, path).toBe('account');
+      expect(entry.orgBillingAdmin, path).toBe(true);
+      expect(entry.requiredPermissions, path).toEqual([]);
+      expect((await entry.component()).default.name, path).toBe(componentName);
+    }
+  }, 30_000);
 
   it.each(AGENCY_PAGES)('%s: keeps %s out of the menus while the agencyTier flag is off', (contextKey, path) => {
     expect(entryOf(path).featureFlag).toBe('agencyTier');

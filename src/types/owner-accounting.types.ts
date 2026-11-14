@@ -500,3 +500,71 @@ export interface OwnerOnboardingReadiness {
   owners: OwnerOnboardingOwner[];
   properties: OwnerOnboardingProperty[];
 }
+
+// ── The mandate and the billing address of an owner (E13/F01/US01/T01, NF-110, NF-115) ───────────────────────────────────
+
+/** What the commission of the agency is a percentage of (backend `CommissionBase`): the tourist tax is never part of it. */
+export type CommissionBase = 'GrossExclTouristTax' | 'GrossExclTouristTaxAndCleaning';
+
+/** The tax treatment of the commission for the owner's tax calculation (backend `CommissionTreatment`). */
+export type CommissionTreatment = 'Deductible' | 'NotDeductible';
+
+/**
+ * A version of the mandate of an owner (`GET api/owners/{id}/mandates`, the newest first): in force from `validFrom` to `validTo` (both included, `yyyy-MM-dd`; `null` until a later
+ * version). The commission and the flat fees are «+ IVA» unless `commissionIncludesVat` says they already hold it (⚖ R4); the flat fees are per stay, in the settlement currency of the
+ * owner (`null`: none). `hasDocument` only says the signed mandate is on file: the reference itself is never returned.
+ */
+export interface OwnerMandate {
+  id: string;
+  ownerId: string;
+  /** Set only on a mandate of one ownership, of before E13: the versions the API writes cover every property of the owner. */
+  ownershipId: string | null;
+  validFrom: string;
+  validTo: string | null;
+  commissionPercent: number;
+  commissionBase: CommissionBase;
+  commissionIncludesVat: boolean;
+  cleaningFlatRate: number | null;
+  linenFlatRate: number | null;
+  passthroughPaymentFees: boolean;
+  withholdingTreatment: CommissionTreatment;
+  monthlyFrequency: number;
+  hasDocument: boolean;
+  createdAt: string;
+  createdByUserId: string | null;
+}
+
+/** A new version of the mandate (`POST api/owners/{id}/mandates`): the one in force ends the day before `validFrom`, which must be later than the start of every version. */
+export interface OwnerMandateCommand {
+  validFrom: string;
+  commissionPercent: number;
+  commissionBase: CommissionBase;
+  commissionIncludesVat: boolean;
+  cleaningFlatRate: number | null;
+  linenFlatRate: number | null;
+  passthroughPaymentFees: boolean;
+  withholdingTreatment: CommissionTreatment;
+  /** Where the signed mandate is, an https address: without it the activation says the document is missing. */
+  documentReference?: string;
+}
+
+/** The structured billing address of an owner (`GET api/owners/{id}/address`), in clear: personal data, read only by who manages the owners' finances. */
+export interface OwnerAddress {
+  ownerId: string;
+  street: string | null;
+  buildingNumber: string | null;
+  postalCode: string | null;
+  town: string | null;
+  province: string | null;
+  country: string | null;
+}
+
+/** The whole address (`PUT api/owners/{id}/address` replaces it): street, postal code, town and a two-letter country are required, the province too in Italy. */
+export interface OwnerAddressCommand {
+  street: string;
+  buildingNumber?: string;
+  postalCode: string;
+  town: string;
+  province?: string;
+  country: string;
+}

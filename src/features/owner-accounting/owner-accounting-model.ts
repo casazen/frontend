@@ -5,9 +5,11 @@ import type {
   OwnerAccountingRuleParameters,
   OwnerClosePeriodStatus,
   OwnerCloseReadiness,
+  OwnerEntityKind,
   OwnerFiscalProfile,
   OwnerFiscalReadiness,
   OwnerLedgerEntry,
+  OwnerMandate,
   OwnerPayout,
   OwnerPayoutCommand,
   OwnerPeriodReadiness,
@@ -904,4 +906,50 @@ export function otherActionsOf(actions: RowActions): ActionKey[] {
   if (actions.payout) all.push('payout');
   if (actions.close) all.push('close');
   return all.filter((action) => action !== primary);
+}
+
+// ── The mandate of an owner (E13/F02/US01/T01) ────────────────────────────────────────────────────────────────
+
+/** True when the version is in force on `day` (`yyyy-MM-dd`, its first and last day included): the one definition the server applies (`OwnerMandateRules.Covers`). */
+export const mandateCovers = (mandate: Pick<OwnerMandate, 'validFrom' | 'validTo'>, day: string): boolean =>
+  mandate.validFrom <= day && (mandate.validTo === null || mandate.validTo >= day);
+
+/** The mandate of an owner on a day: the version in force, or the first one that starts later, or none. The page never says «none» for a mandate it could not read. */
+export type MandateState = { kind: 'active'; mandate: OwnerMandate } | { kind: 'upcoming'; mandate: OwnerMandate } | { kind: 'missing' };
+
+/**
+ * Which version of the mandate applies to an owner on `day`: the one in force (the latest start when more are, as the server decides), else the first one that starts after it, else
+ * none. The versions the API writes cover every property of the owner; one of a single ownership, of before E13, is looked at only when the owner has none of its own.
+ */
+export function mandateStateOn(mandates: readonly OwnerMandate[], day: string): MandateState {
+  const ofTheOwner = mandates.filter((mandate) => mandate.ownershipId === null);
+  const candidates = ofTheOwner.length > 0 ? ofTheOwner : mandates;
+  const inForce = candidates.filter((mandate) => mandateCovers(mandate, day)).sort((a, b) => b.validFrom.localeCompare(a.validFrom))[0];
+  if (inForce) return { kind: 'active', mandate: inForce };
+  const next = candidates.filter((mandate) => mandate.validFrom > day).sort((a, b) => a.validFrom.localeCompare(b.validFrom))[0];
+  return next ? { kind: 'upcoming', mandate: next } : { kind: 'missing' };
+}
+
+/** The start of the newest version of the mandate: a new version must start after it, since the server refuses a day that is not later (409 `owner_mandate_overlap`). */
+export function latestMandateStart(mandates: readonly Pick<OwnerMandate, 'validFrom'>[]): string | null {
+  return mandates.reduce<string | null>((latest, mandate) => (latest === null || mandate.validFrom > latest ? mandate.validFrom : latest), null);
+}
+
+/** The highest flat fee the server stores (`decimal(10,2)`): above it is a typing mistake (422 `owner_mandate_invalid`). */
+export const MAX_FLAT_FEE = 99_999_999.99;
+
+/** What the list of the owners shows of a fiscal profile: its kind and its settlement currency (`null` while the profile has none). Nothing else of the profile is kept. */
+export interface OwnerProfileFacts {
+  entityKind: OwnerEntityKind;
+  settlementCurrency: string | null;
+}
+
+/**
+ * The kind and the settlement currency of the profile in force on `day` (the newest when none is in force, as the page of the owner does), or `null` for an owner with no profile. The profile
+ * comes with the identifiers, the address and the bank account of the owner: the list reduces it to these two facts as soon as it is read, so none of them reaches the cache of the
+ * queries.
+ */
+export function profileFactsOf(profiles: readonly OwnerFiscalProfile[], day: string): OwnerProfileFacts | null {
+  const profile = profiles.find((candidate) => candidate.validFrom <= day && (candidate.validTo === null || candidate.validTo >= day)) ?? profiles[0];
+  return profile ? { entityKind: profile.entityKind, settlementCurrency: profile.settlementCurrency } : null;
 }

@@ -1518,6 +1518,9 @@
       "ownerStatementNotApproved": "The statement must be approved first.",
       "ownerStatementNotDraft": "This version is no longer a draft.",
       "ownerStatementUnchanged": "Nothing changed after the last version: a new one is not needed.",
+      "ownerMandateInvalid": "The data of the mandate are not valid. Check the field named and try again.",
+      "ownerMandateOverlap": "A version of the mandate already starts on that day or later: choose a day after the start of the latest one.",
+      "ownerAddressInvalid": "The address is not valid. Check the field named and try again.",
       "ownerAttachmentNotFound": "This attachment is not available.",
       "ownerCalendarRangeInvalid": "The chosen period is not valid.",
       "ownerContactAgencyRequired": "Your profile is linked to more than one agency: to invite a contact write to the agency concerned.",
@@ -13984,6 +13987,7 @@
     "verifications": "Verifications",
     "wireTransfers": "Owner Wire Transfers",
     "ownerClose": "Month-end close",
+    "owners": "Owners",
     "withholding": "Withholding tax"
   },
   "notFound": {
@@ -15929,10 +15933,16 @@
       "approvedByName": "approver's name",
       "attachmentReference": "attachment",
       "baseCurrency": "from currency",
+      "buildingNumber": "building number",
+      "cleaningFlatRate": "cleaning flat fee",
+      "commissionBase": "base of the commission",
+      "commissionPercent": "commission",
       "components": "base components",
+      "country": "country",
       "currency": "currency",
       "date": "date",
       "description": "reason",
+      "documentReference": "document of the mandate",
       "documentSha256": "file fingerprint",
       "documentUrl": "document address",
       "externalDate": "invoice date",
@@ -15942,9 +15952,12 @@
       "grossBaseComponents": "gross base components",
       "handoffReference": "who handed it over and how",
       "jurisdiction": "jurisdiction",
+      "linenFlatRate": "linen flat fee",
       "paidOn": "payment date",
       "parameters": "parameters",
+      "postalCode": "postal code",
       "provider": "issuing system",
+      "province": "province",
       "qualifyingShortLet": "short-term let",
       "quoteCurrency": "to currency",
       "rate": "exchange rate",
@@ -15958,11 +15971,14 @@
       "source": "source",
       "sourceSha256": "source fingerprint",
       "sourceUrl": "source address",
+      "street": "street",
+      "town": "town",
       "validFrom": "valid from",
       "validTo": "valid until",
       "version": "version",
       "withholdingRatePercent": "withholding rate",
-      "withholdingTaxCode": "tax code"
+      "withholdingTaxCode": "tax code",
+      "withholdingTreatment": "treatment of the commission"
     },
     "filing": {
       "dialog": {
@@ -16468,6 +16484,28 @@
       }
     }
   },
+  "ownerAddress": {
+    "countryHint": "Two letters, for example IT or CH.",
+    "countryInvalid": "The country is two letters.",
+    "description": "The address the agency's invoice, the QR-bill and the bank transfer to the owner need. Saving it replaces the one before.",
+    "fields": {
+      "buildingNumber": "Building number",
+      "country": "Country",
+      "postalCode": "Postal code",
+      "province": "Province or canton",
+      "street": "Street",
+      "town": "Town"
+    },
+    "loadError": "We cannot read the address.",
+    "loading": "Reading the address…",
+    "notForYou": "The address is personal data: only who manages the finances of the owners sees and changes it.",
+    "notFound": "This owner does not exist.",
+    "provinceHint": "In Italy the two letters of the code (for example MI); abroad the canton or the region.",
+    "provinceRequired": "In Italy the province is required.",
+    "save": "Save the address",
+    "saved": "Address saved.",
+    "title": "Billing address"
+  },
   "ownerContactInvitation": {
     "accepting": "We are activating your access",
     "claimsPending": {
@@ -16590,6 +16628,66 @@
         "description": "The link has already been used by an account. If that was you, open the portal and sign in; otherwise ask your agency for a new invitation.",
         "title": "This invitation has already been used"
       }
+    }
+  },
+  "ownerMandate": {
+    "base": {
+      "GrossExclTouristTax": "takings of the stay without the tourist tax (cleaning included)",
+      "GrossExclTouristTaxAndCleaning": "takings of the stay without the tourist tax and without the cleaning"
+    },
+    "currencyMissing": "The settlement currency of the owner is not set in its fiscal profile yet: the flat fees are written without a symbol, in the currency that will be set there.",
+    "dialog": {
+      "commission": "Commission",
+      "description": "A new version starts on the day you choose and ends the one in force the day before. What is already in the ledger does not change.",
+      "documentHint": "The address (https) where the signed mandate is. The document is never shown here: if you leave it empty, the new version has no document.",
+      "documentInvalid": "An address that starts with https:// is needed.",
+      "done": "New version of the mandate saved.",
+      "feeHint": "For each stay, in the settlement currency of the owner. Leave it empty if there is none.",
+      "feeHintNoCurrency": "For each stay. The settlement currency of the owner is not set yet: the amount is in the currency that will be set in the fiscal profile.",
+      "feeInvalid": "Write an amount from 0 with at most two decimals, for example 80,00.",
+      "feeWithCurrency": "{{fee}} ({{currency}})",
+      "fees": "Flat fees and payment fees",
+      "percentHint": "From 0 to 100, with at most two decimals.",
+      "percentInvalid": "The commission is a number from 0 to 100, with at most two decimals.",
+      "submit": "Save the new version",
+      "title": "New version of the mandate",
+      "validFromHint": "It must be after the start of the latest version.",
+      "validFromTooEarly": "It must be after {{date}}, when the latest version starts.",
+      "vatHint": "«+ VAT»: the VAT is added on the invoice. «VAT included»: the VAT is already in the amount."
+    },
+    "fields": {
+      "cleaningFlatRate": "Cleaning flat fee",
+      "commissionBase": "Base of the commission",
+      "commissionIncludesVat": "VAT on the commission and the flat fees",
+      "commissionPercent": "Commission (%)",
+      "documentReference": "Signed mandate",
+      "linenFlatRate": "Linen flat fee",
+      "passthroughPaymentFees": "Fees on card payments",
+      "validFrom": "Valid from"
+    },
+    "loadError": "We cannot read the mandate.",
+    "loading": "Reading the mandate…",
+    "missing": "The mandate is missing: record it to calculate the commission.",
+    "newVersion": "New version",
+    "notFound": "This owner does not exist.",
+    "readOnly": "Only who manages the finances of the owners writes the mandate.",
+    "title": "Mandate",
+    "vat": {
+      "excluded": "+ VAT",
+      "included": "VAT included"
+    },
+    "version": {
+      "between": "From {{from}} to {{to}}",
+      "cleaning": "Cleaning flat fee per stay: {{amount}}",
+      "document": "Signed mandate: on file",
+      "feesAgency": "Fees on card payments: borne by the agency",
+      "feesOwner": "Fees on card payments: borne by the owner",
+      "from": "From {{from}}",
+      "inForce": "In force",
+      "linen": "Linen flat fee per stay: {{amount}}",
+      "noDocument": "Signed mandate: not recorded",
+      "terms": "Commission {{percent}}, {{vat}}. Base: {{base}}.",
+      "upcoming": "Not in force yet"
     }
   },
   "ownerOnboarding": {
@@ -17600,6 +17698,33 @@
     },
     "title": "Financial data of {{owner}}",
     "titleGeneric": "Owner's financial data"
+  },
+  "owners": {
+    "description": "The owners of the properties you manage, with the mandate in force of each.",
+    "empty": "There are no owners yet. They are loaded from the step «Owners» of «Get started with CasaZen».",
+    "emptyAction": "Open «Get started with CasaZen»",
+    "list": {
+      "showAll": "Show all ({{count}})",
+      "showLess": "Show fewer",
+      "title": "List of the owners"
+    },
+    "loadError": "We cannot read the owners.",
+    "loading": "Reading the owners…",
+    "row": {
+      "kindAndCurrency": "{{kind}} · currency {{currency}}",
+      "kindNoCurrency": "{{kind}} · settlement currency missing",
+      "loading": "Reading the profile…",
+      "mandateActive": "Commission {{percent}} {{vat}}, from {{from}}",
+      "mandateError": "We cannot read the mandate.",
+      "mandateLoading": "Reading the mandate…",
+      "mandateMissing": "The mandate is missing",
+      "mandateUpcoming": "Mandate from {{from}}: commission {{percent}}",
+      "noProfile": "No fiscal profile",
+      "open": "Financial data",
+      "openLabel": "Open the financial data of {{owner}}",
+      "profileError": "We cannot read the fiscal profile."
+    },
+    "title": "Owners"
   },
   "pageHeader": {
     "moreActions": "More actions",

@@ -1518,6 +1518,9 @@
       "ownerStatementNotApproved": "Il rendiconto deve prima essere approvato.",
       "ownerStatementNotDraft": "Questa versione non è più una bozza.",
       "ownerStatementUnchanged": "Dopo l'ultima versione non è cambiato niente: non serve una nuova versione.",
+      "ownerMandateInvalid": "I dati del mandato non sono validi. Controlla il campo indicato e riprova.",
+      "ownerMandateOverlap": "Una versione del mandato parte già da quel giorno o dopo: scegli un giorno successivo all'inizio dell'ultima.",
+      "ownerAddressInvalid": "L'indirizzo non è valido. Controlla il campo indicato e riprova.",
       "ownerAttachmentNotFound": "Questo allegato non è disponibile.",
       "ownerCalendarRangeInvalid": "Il periodo scelto non è valido.",
       "ownerContactAgencyRequired": "Il tuo profilo è collegato a più agenzie: per invitare un contatto scrivi all’agenzia interessata.",
@@ -13984,6 +13987,7 @@
     "verifications": "Verifiche",
     "wireTransfers": "Bonifici proprietari",
     "ownerClose": "Chiusura mensile",
+    "owners": "Proprietari",
     "withholding": "Ritenute d'acconto"
   },
   "notFound": {
@@ -15929,10 +15933,16 @@
       "approvedByName": "nome di chi approva",
       "attachmentReference": "allegato",
       "baseCurrency": "valuta di partenza",
+      "buildingNumber": "numero civico",
+      "cleaningFlatRate": "forfait pulizie",
+      "commissionBase": "base della provvigione",
+      "commissionPercent": "provvigione",
       "components": "voci della base",
+      "country": "paese",
       "currency": "valuta",
       "date": "data",
       "description": "motivo",
+      "documentReference": "documento del mandato",
       "documentSha256": "impronta del file",
       "documentUrl": "indirizzo del documento",
       "externalDate": "data della fattura",
@@ -15942,9 +15952,12 @@
       "grossBaseComponents": "voci della base lorda",
       "handoffReference": "chi l'ha trasmesso e come",
       "jurisdiction": "giurisdizione",
+      "linenFlatRate": "forfait biancheria",
       "paidOn": "data del pagamento",
       "parameters": "parametri",
+      "postalCode": "CAP",
       "provider": "sistema che l'ha emessa",
+      "province": "provincia",
       "qualifyingShortLet": "locazione breve",
       "quoteCurrency": "valuta di arrivo",
       "rate": "cambio",
@@ -15958,11 +15971,14 @@
       "source": "fonte",
       "sourceSha256": "impronta della fonte",
       "sourceUrl": "indirizzo della fonte",
+      "street": "via",
+      "town": "località",
       "validFrom": "valida dal",
       "validTo": "valida fino al",
       "version": "versione",
       "withholdingRatePercent": "aliquota della ritenuta",
-      "withholdingTaxCode": "codice tributo"
+      "withholdingTaxCode": "codice tributo",
+      "withholdingTreatment": "trattamento della provvigione"
     },
     "filing": {
       "dialog": {
@@ -16468,6 +16484,28 @@
       }
     }
   },
+  "ownerAddress": {
+    "countryHint": "Due lettere, per esempio IT o CH.",
+    "countryInvalid": "Il paese è di due lettere.",
+    "description": "L'indirizzo che serve alla fattura dell'agenzia, alla QR-fattura e al bonifico al proprietario. Salvandolo si sostituisce quello di prima.",
+    "fields": {
+      "buildingNumber": "Numero civico",
+      "country": "Paese",
+      "postalCode": "CAP",
+      "province": "Provincia o cantone",
+      "street": "Via",
+      "town": "Località"
+    },
+    "loadError": "Non riusciamo a leggere l'indirizzo.",
+    "loading": "Leggo l'indirizzo…",
+    "notForYou": "L'indirizzo è un dato personale: lo vede e lo modifica solo chi gestisce i dati finanziari dei proprietari.",
+    "notFound": "Questo proprietario non c'è.",
+    "provinceHint": "In Italia sono le due lettere della sigla (per esempio MI); all'estero il cantone o la regione.",
+    "provinceRequired": "In Italia la provincia è obbligatoria.",
+    "save": "Salva l'indirizzo",
+    "saved": "Indirizzo salvato.",
+    "title": "Indirizzo di fatturazione"
+  },
   "ownerContactInvitation": {
     "accepting": "Stiamo attivando il tuo accesso",
     "claimsPending": {
@@ -16590,6 +16628,66 @@
         "description": "Il link è già stato usato da un account. Se sei tu, apri il portale e accedi; altrimenti chiedi all'agenzia un nuovo invito.",
         "title": "Questo invito è già stato usato"
       }
+    }
+  },
+  "ownerMandate": {
+    "base": {
+      "GrossExclTouristTax": "incasso del soggiorno senza imposta di soggiorno (pulizie incluse)",
+      "GrossExclTouristTaxAndCleaning": "incasso del soggiorno senza imposta di soggiorno e senza pulizie"
+    },
+    "currencyMissing": "La valuta di liquidazione del proprietario non è ancora impostata nel suo profilo fiscale: i forfait sono scritti senza simbolo, nella valuta che sarà indicata lì.",
+    "dialog": {
+      "commission": "Provvigione",
+      "description": "Una nuova versione parte dal giorno scelto e chiude quella in vigore il giorno prima. Quello che è già nel libro non cambia.",
+      "documentHint": "L'indirizzo (https) dove si trova il mandato firmato. Il documento non viene mai mostrato qui: se lasci vuoto, la nuova versione risulta senza documento.",
+      "documentInvalid": "Serve un indirizzo che inizia con https://.",
+      "done": "Nuova versione del mandato salvata.",
+      "feeHint": "Per ogni soggiorno, nella valuta di liquidazione del proprietario. Lascia vuoto se non c'è.",
+      "feeHintNoCurrency": "Per ogni soggiorno. La valuta di liquidazione del proprietario non è ancora impostata: l'importo è nella valuta che sarà indicata nel profilo fiscale.",
+      "feeInvalid": "Scrivi un importo da 0 con al massimo due decimali, per esempio 80,00.",
+      "feeWithCurrency": "{{fee}} ({{currency}})",
+      "fees": "Forfait e commissioni di pagamento",
+      "percentHint": "Da 0 a 100, con al massimo due decimali.",
+      "percentInvalid": "La provvigione è un numero da 0 a 100, con al massimo due decimali.",
+      "submit": "Salva la nuova versione",
+      "title": "Nuova versione del mandato",
+      "validFromHint": "Deve essere dopo l'inizio dell'ultima versione.",
+      "validFromTooEarly": "Deve essere dopo il {{date}}, quando inizia l'ultima versione.",
+      "vatHint": "«+ IVA»: l'IVA si aggiunge in fattura. «IVA inclusa»: l'IVA è già nell'importo."
+    },
+    "fields": {
+      "cleaningFlatRate": "Forfait pulizie",
+      "commissionBase": "Base della provvigione",
+      "commissionIncludesVat": "IVA sulla provvigione e sui forfait",
+      "commissionPercent": "Provvigione (%)",
+      "documentReference": "Mandato firmato",
+      "linenFlatRate": "Forfait biancheria",
+      "passthroughPaymentFees": "Commissioni sui pagamenti con carta",
+      "validFrom": "Valido dal"
+    },
+    "loadError": "Non riusciamo a leggere il mandato.",
+    "loading": "Leggo il mandato…",
+    "missing": "Manca il mandato: registralo per calcolare la provvigione.",
+    "newVersion": "Nuova versione",
+    "notFound": "Questo proprietario non c'è.",
+    "readOnly": "Il mandato lo scrive solo chi gestisce i dati finanziari dei proprietari.",
+    "title": "Mandato",
+    "vat": {
+      "excluded": "+ IVA",
+      "included": "IVA inclusa"
+    },
+    "version": {
+      "between": "Dal {{from}} al {{to}}",
+      "cleaning": "Forfait pulizie per soggiorno: {{amount}}",
+      "document": "Mandato firmato: presente",
+      "feesAgency": "Commissioni sui pagamenti con carta: a carico dell'agenzia",
+      "feesOwner": "Commissioni sui pagamenti con carta: a carico del proprietario",
+      "from": "Dal {{from}}",
+      "inForce": "In vigore",
+      "linen": "Forfait biancheria per soggiorno: {{amount}}",
+      "noDocument": "Mandato firmato: non registrato",
+      "terms": "Provvigione {{percent}}, {{vat}}. Base: {{base}}.",
+      "upcoming": "Non ancora in vigore"
     }
   },
   "ownerOnboarding": {
@@ -17600,6 +17698,33 @@
     },
     "title": "Dati finanziari di {{owner}}",
     "titleGeneric": "Dati finanziari del proprietario"
+  },
+  "owners": {
+    "description": "I proprietari degli immobili che gestisci, con il mandato in vigore di ognuno.",
+    "empty": "Non ci sono ancora proprietari. Si caricano dal passo «Proprietari» di «Inizia con CasaZen».",
+    "emptyAction": "Apri «Inizia con CasaZen»",
+    "list": {
+      "showAll": "Mostra tutti ({{count}})",
+      "showLess": "Mostra meno",
+      "title": "Elenco dei proprietari"
+    },
+    "loadError": "Non riusciamo a leggere i proprietari.",
+    "loading": "Leggo i proprietari…",
+    "row": {
+      "kindAndCurrency": "{{kind}} · valuta {{currency}}",
+      "kindNoCurrency": "{{kind}} · valuta di liquidazione mancante",
+      "loading": "Leggo il profilo…",
+      "mandateActive": "Provvigione {{percent}} {{vat}}, dal {{from}}",
+      "mandateError": "Non riusciamo a leggere il mandato.",
+      "mandateLoading": "Leggo il mandato…",
+      "mandateMissing": "Manca il mandato",
+      "mandateUpcoming": "Mandato dal {{from}}: provvigione {{percent}}",
+      "noProfile": "Nessun profilo fiscale",
+      "open": "Dati finanziari",
+      "openLabel": "Apri i dati finanziari di {{owner}}",
+      "profileError": "Non riusciamo a leggere il profilo fiscale."
+    },
+    "title": "Proprietari"
   },
   "pageHeader": {
     "moreActions": "Altre azioni",
