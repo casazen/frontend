@@ -7704,7 +7704,7 @@
       "selected_other": "{{count}} bozze selezionate",
       "selectFailed": "Non siamo riusciti a cercare le bozze. Riprova tra poco.",
       "selectNone": "Non ci sono bozze da selezionare con questi filtri.",
-      "selectPage": "Seleziona le bozze di questa pagina",
+      "selectPage": "Seleziona le bozze di questa pagina (le note di credito si spuntano una per una)",
       "selectPeriod": "Seleziona tutte le bozze del periodo",
       "tooMany": "Puoi emettere al massimo {{max}} documenti alla volta: deseleziona quelli in più."
     },

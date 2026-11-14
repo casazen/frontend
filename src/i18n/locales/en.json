@@ -7704,7 +7704,7 @@
       "selected_other": "{{count}} drafts selected",
       "selectFailed": "We could not look for the drafts. Try again in a moment.",
       "selectNone": "There are no drafts to select with these filters.",
-      "selectPage": "Select the drafts of this page",
+      "selectPage": "Select the drafts of this page (credit notes are ticked one by one)",
       "selectPeriod": "Select all the drafts of the period",
       "tooMany": "You can issue at most {{max}} documents at a time: clear the extra ones."
     },

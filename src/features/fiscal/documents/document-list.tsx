@@ -15,6 +15,7 @@ import {
   formatDocumentAmount,
   formatDocumentDay,
   isBatchDraft,
+  isPeriodDraft,
 } from './document-model';
 import { DocumentStateBadge } from './document-state-badge';
 
@@ -209,8 +210,11 @@ export function DocumentList({
 }: DocumentListProps) {
   const { t, i18n } = useTranslation();
   const language = i18n.language;
+  // Every draft CasaZen issues has a box. The box of the head ticks only the drafts of the stays: a credit note that is a draft is a correction the host looks at one by one, and its own box is
+  // ticked by hand (as «Seleziona tutte le bozze del periodo» leaves it out too).
   const drafts = useMemo(() => documents.filter(isBatchDraft), [documents]);
-  const allDrafts = selection !== undefined && drafts.length > 0 && drafts.every((draft) => selection.selected.has(draft.id));
+  const stayDrafts = useMemo(() => drafts.filter(isPeriodDraft), [drafts]);
+  const allDrafts = selection !== undefined && stayDrafts.length > 0 && stayDrafts.every((draft) => selection.selected.has(draft.id));
   const someDrafts = selection !== undefined && drafts.some((draft) => selection.selected.has(draft.id));
 
   const columns = useMemo(
@@ -223,9 +227,10 @@ export function DocumentList({
                 <SelectBox
                   checked={allDrafts}
                   indeterminate={someDrafts}
-                  disabled={selection.disabled || drafts.length === 0}
+                  disabled={selection.disabled || stayDrafts.length === 0}
                   label={t('fiscalDocuments.batch.selectPage')}
-                  onChange={() => selection.onTogglePage(drafts, !allDrafts)}
+                  // Ticking takes the drafts of the stays; unticking clears every box of the page, a credit note ticked by hand included.
+                  onChange={() => selection.onTogglePage(allDrafts ? drafts : stayDrafts, !allDrafts)}
                   testId="fiscal-documents-select-page"
                 />
               ),
@@ -266,7 +271,7 @@ export function DocumentList({
         cell: (document) => <DocumentStateBadge document={document} />,
       },
     ],
-    [t, language, canReadBookings, onOpen, selection, allDrafts, someDrafts, drafts],
+    [t, language, canReadBookings, onOpen, selection, allDrafts, someDrafts, drafts, stayDrafts],
   );
 
   const renderCard = (document: FiscalDocumentEntry) => (

@@ -205,6 +205,28 @@ describe('a bulk issue never starts a second write on a draft that is being writ
   });
 });
 
+describe('a correction is issued one by one, never ticked for the host (data rule)', () => {
+  it('SelectThePage_ACreditNoteDraftOnThePage_IsNotTickedByTheHeadAndIsTickedByHand', async () => {
+    const stay = [draft({ id: A, recipientName: 'Anna Verdi' }), draft({ id: B, recipientName: 'Bruno Neri' })];
+    vi.mocked(api.listDocuments).mockResolvedValue(page([...stay, draft({ id: C, kind: 'CreditNote', recipientName: 'Carla Gialli' })]));
+    renderPage();
+    const table = await screen.findByRole('table');
+
+    fireEvent.click(screen.getByTestId('fiscal-documents-select-page'));
+
+    // The drafts of the stays are ticked and the credit note is not.
+    expect(screen.getByTestId('fiscal-documents-batch-count')).toHaveTextContent(i18n.t('fiscalDocuments.batch.selected', { count: 2 }));
+    const boxes = within(table).getAllByTestId('fiscal-document-select');
+    expect(boxes.map((box) => (box as HTMLInputElement).checked)).toEqual([true, true, false]);
+
+    // Its own box is ticked by hand, and the head then clears every box of the page, that one included.
+    fireEvent.click(boxes[2] as HTMLElement);
+    expect(screen.getByTestId('fiscal-documents-batch-count')).toHaveTextContent(i18n.t('fiscalDocuments.batch.selected', { count: 3 }));
+    fireEvent.click(screen.getByTestId('fiscal-documents-select-page'));
+    expect(screen.queryByTestId('fiscal-documents-batch-bar')).not.toBeInTheDocument();
+  });
+});
+
 describe('a call that is on its way keeps its confirmation open, so that a failure is always told (data rule)', () => {
   const offline = () => Object.assign(new Error('offline'), { isAxiosError: true, code: 'ERR_NETWORK' });
 
