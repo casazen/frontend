@@ -1439,10 +1439,14 @@
       "d6ResultUnknown": "Non sappiamo com'è andata: controlla nel pannello e poi chiedi di nuovo.",
       "documentIssuanceNotAvailable": "CasaZen non emette ancora documenti: scegli un’altra risposta.",
       "existingInventoryAccessPending": "Nessun portale ha ancora l'accesso: finisci prima il passaggio sul pannello.",
+      "existingInventoryAccommodationUnknown": "Una delle strutture non risulta su Octorate: aggiorna la pagina e riprova.",
       "existingInventoryChannelNotSupported": "Uno dei portali scelti non è disponibile per l'importazione.",
       "existingInventoryChannelsRequired": "Scegli almeno un portale.",
+      "existingInventoryConnectEmpty": "Scrivi l'ID di almeno una struttura.",
+      "existingInventoryConnectNotSupported": "Questo portale non si collega da qui: usa il pannello di Octorate.",
       "existingInventoryGroupNotFound": "Questo gruppo non esiste.",
       "existingInventoryGroupScenarioMismatch": "Il gruppo contiene immobili in una situazione diversa.",
+      "existingInventoryHotelIdInvalid": "Uno degli ID non è valido: usa solo lettere, numeri, punti, trattini e trattini bassi (al massimo 64 caratteri).",
       "existingInventoryMappingPending": "Prima decidi per ogni annuncio: conferma, importa, escludi o lascia per dopo.",
       "existingInventoryNeedsWholeOrg": "Per importare tutto l'inventario serve poter vedere tutti gli immobili dell'organizzazione.",
       "existingInventoryNotReady": "Gli annunci non sono ancora stati importati.",
@@ -13116,7 +13120,9 @@
       "salesChannels": {
         "description": "I portali dove vendi i tuoi alloggi e i calendari che tieni allineati.",
         "title": "Canali di vendita"
-      }
+      },
+      "showLess": "Mostra solo i principali",
+      "showMore": "Visualizza altri canali ({{count}})"
     },
     "activation": {
       "access": {
@@ -14081,7 +14087,8 @@
       "serviceRequestBackupActive": "Una richiesta è libera: il primo che accetta ha il lavoro.",
       "serviceRequestBackupWon": "Il lavoro di una richiesta è passato a te.",
       "serviceRequestBackupClosed": "Una richiesta come riserva è stata chiusa.",
-      "verificationRequired": "L'identità di un ospite aspetta la tua verifica."
+      "verificationRequired": "L'identità di un ospite aspetta la tua verifica.",
+      "assistRequested": "Nuova richiesta «Fallo per me» da gestire."
     }
   },
   "octorate": {
@@ -14203,19 +14210,49 @@
         "channels": {
           "batchFailed": "Non è stato possibile preparare l'importazione. Riprova.",
           "blocked": "Il browser ha bloccato la finestra. Consenti le finestre a comparsa per questo sito e riprova: il tuo avanzamento è salvato.",
+          "byId": {
+            "action": "Collega",
+            "failed": "Non è stato possibile collegare. Riprova.",
+            "idHint": "Lo trovi nel tuo account su {{name}}.",
+            "idInvalid": "Usa solo lettere, numeri, punti, trattini e trattini bassi (al massimo 64 caratteri).",
+            "idLabel": "ID della struttura su {{name}}",
+            "intro": "Scrivi l'ID delle tue strutture su {{name}}: lascia vuoto dove non ci sono.",
+            "lastStep": {
+              "booking": "Nell'extranet di Booking apri Account → Provider di connettività, cerca Octorate e accetta.",
+              "bookingLink": "Apri l'extranet di Booking",
+              "expedia": "In Expedia Partner Central scegli Octorate come provider di connettività e conferma.",
+              "expediaLink": "Apri Expedia Partner Central",
+              "other": "Nel tuo account su {{name}} approva Octorate come channel manager.",
+              "title": "Ultimo passo su {{name}}",
+              "watching": "Appena {{name}} approva, CasaZen se ne accorge da solo."
+            },
+            "needOne": "Scrivi l'ID di almeno una struttura.",
+            "newTab": "(si apre in una nuova scheda)",
+            "noStructures": "Non vedo ancora le tue strutture su Octorate: collega dal pannello.",
+            "notValid": "Il collegamento non risulta valido: controlla gli ID e riprova.",
+            "reading": "Leggo le tue strutture..."
+          },
           "confirmFailed": "Non è stato possibile confermare. Riprova.",
           "confirmNo": "No, riapri",
           "confirmQuestion": "Hai completato l'accesso e visto il portale come Attivato?",
           "confirmYes": "Sì, ho fatto",
           "connect": "Collega su Octorate",
           "credentials": "Le credenziali del portale le inserisci solo su Octorate o sul portale stesso, mai in CasaZen.",
+          "empty": "L'elenco dei portali si sta ancora caricando. Riprova tra qualche minuto: appena è pronto potrai scegliere dove hai già annunci.",
           "legend": "I portali dove hai già annunci",
           "listLabel": "I portali scelti e il loro collegamento",
           "loadFailed": "Non è stato possibile caricare l'elenco dei portali.",
           "none": "Scegli almeno un portale.",
           "notValid": "L'accesso non risulta valido: riapri il pannello e riprova.",
           "openFailed": "Non è stato possibile aprire il pannello. Riprova.",
+          "panelHint": {
+            "airbnb": "Si apre la pagina di Airbnb nel pannello di Octorate: completa il collegamento e accedi con il tuo account Airbnb.",
+            "other": "Si apre la pagina di {{name}} nel pannello di Octorate: completa lì il collegamento.",
+            "vrbo": "Si apre la pagina di Vrbo nel pannello di Octorate: da lì chiedi l'attivazione, che segue il supporto di Octorate."
+          },
           "reopen": "Riapri il pannello",
+          "showLess": "Mostra solo i principali",
+          "showMore": "Visualizza altri portali ({{count}})",
           "state": {
             "connected": "Collegato",
             "error": "Errore",

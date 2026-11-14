@@ -54,6 +54,12 @@ export interface MarketplaceCatalogEntry {
   /** The codes of `GET api/service-categories` the partner works for. */
   serviceCategories?: string[] | null;
   octoratePortalCode?: string | null;
+  /**
+   * A sales channel that needs nothing from the host but the id of each property on the portal (Booking, Expedia, Agoda, HomeToGo, Holidu...): the
+   * connect wizard can create the connection from CasaZen (`connect`), and the last step is the approval of the channel manager on the portal's own site.
+   * Absent or `false` for the others (Airbnb authorises with a token, Vrbo is activated by the channel manager's support): they go through its panel.
+   */
+  connectByPropertyId?: boolean;
 }
 
 export interface MarketplaceCatalogGroup {

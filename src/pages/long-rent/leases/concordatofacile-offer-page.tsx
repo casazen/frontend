@@ -9,7 +9,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { PageHeader } from '@/components/layout/page-header';
-import { FOCUS_COLUMN } from '@/components/layout/page-columns';
+import { FOCUS_COLUMN, PAGE_COLUMNS } from '@/components/layout/page-columns';
 import { BackLink } from '@/components/shared/back-link';
 import { useLease } from '@/queries/use-leases';
 import {
@@ -258,7 +258,8 @@ function GuidedContract() {
 
       <BackLink to={`/app/long-rent/leases/${id}`} label={t('concordatofacile.offer.backToLease')} />
 
-      <div className={cn(FOCUS_COLUMN, 'space-y-6')}>
+      {/* The contract and, beside it from `xl`, the service with its price and its button (under each other on a narrower screen). */}
+      <div className={cn(FOCUS_COLUMN, PAGE_COLUMNS)}>
         {/* Property and contract details */}
         <Card>
           <CardHeader>

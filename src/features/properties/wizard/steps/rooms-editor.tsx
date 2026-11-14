@@ -55,6 +55,9 @@ export function RoomsEditor({ form, storedRoomCount = 0 }: RoomsEditorProps) {
         </p>
       </div>
 
+      {/* The rooms side by side once the step is wide (a container, as the counters above): a card of a room never runs across the whole screen. */}
+      <div className="@container min-w-0">
+      <div className="grid grid-cols-1 gap-4 @4xl:grid-cols-2 @4xl:items-start">
       {rooms.map((room, index) => {
         const free = nextFreeBedType(room.beds);
         return (
@@ -150,6 +153,8 @@ export function RoomsEditor({ form, storedRoomCount = 0 }: RoomsEditorProps) {
           </fieldset>
         );
       })}
+      </div>
+      </div>
 
       {lastIsSaved ? (
         <p className="text-sm text-foreground/70" data-testid="property-wizard-rooms-last-saved">

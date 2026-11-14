@@ -8,6 +8,7 @@ import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { readWizardDraft, writeWizardDraft } from "@/lib/wizard-draft";
 import { useUiStore } from "@/store/ui-store";
+import { stubViewportWidth } from "@/test/viewport";
 import { useOptionalWizard } from "../wizard-context";
 import { WizardShell, type WizardShellProps, type WizardStep } from "../wizard-shell";
 import { WizardSummary } from "../wizard-summary";
@@ -728,6 +729,42 @@ describe("WizardShell on a phone", () => {
       expect(button.className).toContain("min-w-0");
       expect(button.className).toContain("min-h-11");
     }
+  });
+});
+
+describe("WizardShell on a wide screen", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("WizardShell_From2xl_PutsTheStepsInAColumnBesideTheStepAndANarrowerWindowPutsThemBackWithoutLosingTheForm", async () => {
+    const viewport = stubViewportWidth(1600);
+    renderWizard();
+
+    type("Nome", "Anna");
+    next();
+    const heading = await screen.findByRole("heading", { level: 2, name: "La casa" });
+
+    // One list of steps, one under the other, after the step and outside it: not the bar of the phone above the title.
+    const steps = screen.getByRole("list", { name: "Passaggi" });
+    expect(steps.closest('[data-orientation="vertical"]')).not.toBeNull();
+    expect(heading.compareDocumentPosition(steps) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(steps.closest("form")).toBeNull();
+    expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
+    expect(screen.getAllByText("Passo 2 di 3")).toHaveLength(1);
+    // A done step is still the way back to it.
+    fireEvent.click(within(steps).getByRole("button", { name: /Persona/ }));
+    await screen.findByRole("heading", { level: 2, name: "Chi sei" });
+
+    const input = screen.getByLabelText("Nome");
+    act(() => viewport.resize(1440));
+
+    // Under `2xl` the steps are the bar above the title again; the form is the same one, with what was typed.
+    const above = screen.getByRole("list", { name: "Passaggi" });
+    expect(above.closest('[data-orientation="vertical"]')).toBeNull();
+    expect(above.compareDocumentPosition(screen.getByRole("heading", { level: 2, name: "Chi sei" })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.getByLabelText("Nome")).toBe(input);
+    expect(input).toHaveValue("Anna");
   });
 });
 

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
+import { FIELD_COLUMNS } from '@/components/layout/page-columns';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,7 +17,7 @@ import { useHostBookingQuote } from '@/queries/use-bookings';
 import { getProblemMessage } from '@/lib/api-errors';
 import { isStayDate } from '@/lib/stay-dates';
 import { completeChildrenAges, resizeChildrenAges } from '@/lib/tourist-tax';
-import { formatCurrency } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 import type { BookingFormValues } from '../schemas/booking.schema';
 import type { Booking, BookingEditLock, HostBookingQuotePayload } from '@/types';
 import type { DirectBookingQuote } from '@/types/direct-booking.types';
@@ -155,130 +156,137 @@ export function BookingForm({ booking, stayLock = null, initialValues, initialPr
           <CardTitle>{t('booking.form.bookingDetails')}</CardTitle>
           <CardDescription>{t('booking.form.bookingDetailsDescription')}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="propertyId">{t('booking.form.property')}</Label>
-            {/* Controlled by the form value, so the preselected property (edit, or "new booking" from a property) is
-                shown as soon as its option is loaded. */}
-            <select
-              id="propertyId"
-              {...register('propertyId')}
-              value={propertyId ?? ''}
-              className={selectClassName}
-              disabled={!!booking || propertiesLoading || propertiesError}
-            >
-              <option value="">
-                {propertiesLoading ? t('booking.form.propertiesLoading') : t('booking.form.selectProperty')}
-              </option>
-              {properties.map((property) => (
-                <option key={property.id} value={property.id}>
-                  {property.name} - {property.city}
-                </option>
-              ))}
-            </select>
-            {propertiesError && (
-              <p role="alert" className="text-sm text-destructive" data-testid="booking-properties-error">
-                {t('booking.form.propertiesLoadError')}
-              </p>
-            )}
-            {noProperties && (
-              <p className="text-sm text-muted-foreground" data-testid="booking-properties-empty">
-                {t('booking.form.noProperties')}
-              </p>
-            )}
-            <FormFieldError error={errors.propertyId} />
-          </div>
-
-          {stayLocked && (
-            <p className="rounded-md border bg-muted/40 px-4 py-3 text-sm text-muted-foreground" data-testid="booking-stay-locked">
-              {stayLock === 'Started' ? t('booking.form.stayLockedStarted') : t('booking.form.stayLockedSource')}
-            </p>
-          )}
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="checkInDate">{t('booking.form.checkInDate')}</Label>
-              <Input id="checkInDate" type="date" disabled={stayLocked} {...register('checkInDate')} />
-              <FormFieldError error={errors.checkInDate} />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="checkOutDate">{t('booking.form.checkOutDate')}</Label>
-              <Input id="checkOutDate" type="date" disabled={stayLocked} {...register('checkOutDate')} />
-              <FormFieldError error={errors.checkOutDate} />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="numberOfGuests">{t('booking.form.numberOfGuests')}</Label>
-              <Input
-                id="numberOfGuests"
-                type="number"
-                min={1}
-                disabled={stayLocked}
-                {...register('numberOfGuests', { valueAsNumber: true })}
-                placeholder={t('booking.form.numberOfGuestsPlaceholder')}
-              />
-              <FormFieldError error={errors.numberOfGuests} />
-            </div>
-
-            {showChildren && (
+        {/* The stay and, beside it once the card is wide, its price and the requests (under each other when it is not). */}
+        <CardContent className="@container">
+          <div className={cn(FIELD_COLUMNS, 'gap-y-4')}>
+            <div className="min-w-0 space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="numberOfChildren">{t('booking.form.numberOfChildren')}</Label>
-                <Input
-                  id="numberOfChildren"
-                  type="number"
-                  min={0}
-                  {...register('numberOfChildren', { valueAsNumber: true })}
-                />
-                <p className="text-xs text-muted-foreground">{t('booking.form.numberOfChildrenHint')}</p>
-                <FormFieldError error={errors.numberOfChildren} />
+                <Label htmlFor="propertyId">{t('booking.form.property')}</Label>
+                {/* Controlled by the form value, so the preselected property (edit, or "new booking" from a property) is
+                    shown as soon as its option is loaded. */}
+                <select
+                  id="propertyId"
+                  {...register('propertyId')}
+                  value={propertyId ?? ''}
+                  className={selectClassName}
+                  disabled={!!booking || propertiesLoading || propertiesError}
+                >
+                  <option value="">
+                    {propertiesLoading ? t('booking.form.propertiesLoading') : t('booking.form.selectProperty')}
+                  </option>
+                  {properties.map((property) => (
+                    <option key={property.id} value={property.id}>
+                      {property.name} - {property.city}
+                    </option>
+                  ))}
+                </select>
+                {propertiesError && (
+                  <p role="alert" className="text-sm text-destructive" data-testid="booking-properties-error">
+                    {t('booking.form.propertiesLoadError')}
+                  </p>
+                )}
+                {noProperties && (
+                  <p className="text-sm text-muted-foreground" data-testid="booking-properties-empty">
+                    {t('booking.form.noProperties')}
+                  </p>
+                )}
+                <FormFieldError error={errors.propertyId} />
               </div>
-            )}
-          </div>
 
-          {askAges && (
-            <div className="space-y-2">
-              <ChildrenAgesFields
-                ages={childrenAges}
-                idPrefix="booking"
-                showMissing={showAgesMissing}
-                onChange={(next) => {
-                  setShowAgesMissing(false);
-                  setChildrenAges(next);
-                }}
-              />
-              {showAgesMissing && (
-                <p role="alert" className="text-sm text-destructive" data-testid="booking-ages-missing">
-                  {t('booking.form.childrenAgesMissing')}
+              {stayLocked && (
+                <p className="rounded-md border bg-muted/40 px-4 py-3 text-sm text-muted-foreground" data-testid="booking-stay-locked">
+                  {stayLock === 'Started' ? t('booking.form.stayLockedStarted') : t('booking.form.stayLockedSource')}
                 </p>
               )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="checkInDate">{t('booking.form.checkInDate')}</Label>
+                  <Input id="checkInDate" type="date" disabled={stayLocked} {...register('checkInDate')} />
+                  <FormFieldError error={errors.checkInDate} />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="checkOutDate">{t('booking.form.checkOutDate')}</Label>
+                  <Input id="checkOutDate" type="date" disabled={stayLocked} {...register('checkOutDate')} />
+                  <FormFieldError error={errors.checkOutDate} />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="numberOfGuests">{t('booking.form.numberOfGuests')}</Label>
+                  <Input
+                    id="numberOfGuests"
+                    type="number"
+                    min={1}
+                    disabled={stayLocked}
+                    {...register('numberOfGuests', { valueAsNumber: true })}
+                    placeholder={t('booking.form.numberOfGuestsPlaceholder')}
+                  />
+                  <FormFieldError error={errors.numberOfGuests} />
+                </div>
+
+                {showChildren && (
+                  <div className="space-y-2">
+                    <Label htmlFor="numberOfChildren">{t('booking.form.numberOfChildren')}</Label>
+                    <Input
+                      id="numberOfChildren"
+                      type="number"
+                      min={0}
+                      {...register('numberOfChildren', { valueAsNumber: true })}
+                    />
+                    <p className="text-xs text-muted-foreground">{t('booking.form.numberOfChildrenHint')}</p>
+                    <FormFieldError error={errors.numberOfChildren} />
+                  </div>
+                )}
+              </div>
+
+              {askAges && (
+                <div className="space-y-2">
+                  <ChildrenAgesFields
+                    ages={childrenAges}
+                    idPrefix="booking"
+                    showMissing={showAgesMissing}
+                    onChange={(next) => {
+                      setShowAgesMissing(false);
+                      setChildrenAges(next);
+                    }}
+                  />
+                  {showAgesMissing && (
+                    <p role="alert" className="text-sm text-destructive" data-testid="booking-ages-missing">
+                      {t('booking.form.childrenAgesMissing')}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
-          )}
 
-          {quotePayload && (
-            <StayPriceSummary
-              quote={quoteData}
-              isLoading={quote.isLoading}
-              error={quote.isError ? (getProblemMessage(quote.error, t) ?? t('booking.form.price.loadError')) : null}
-            />
-          )}
+            <div className="min-w-0 space-y-4">
+              {quotePayload && (
+                <StayPriceSummary
+                  quote={quoteData}
+                  isLoading={quote.isLoading}
+                  error={quote.isError ? (getProblemMessage(quote.error, t) ?? t('booking.form.price.loadError')) : null}
+                />
+              )}
 
-          {booking && !stayLocked && (
-            <p className="text-xs text-muted-foreground" data-testid="booking-reprice-notice">
-              {t('booking.form.repriceNotice')}
-            </p>
-          )}
+              {booking && !stayLocked && (
+                <p className="text-xs text-muted-foreground" data-testid="booking-reprice-notice">
+                  {t('booking.form.repriceNotice')}
+                </p>
+              )}
 
-          <div className="space-y-2">
-            <Label htmlFor="specialRequests">{t('booking.form.specialRequests')}</Label>
-            <Textarea
-              id="specialRequests"
-              {...register('specialRequests')}
-              placeholder={t('booking.form.specialRequestsPlaceholder')}
-              rows={3}
-            />
+              <div className="space-y-2">
+                <Label htmlFor="specialRequests">{t('booking.form.specialRequests')}</Label>
+                <Textarea
+                  id="specialRequests"
+                  {...register('specialRequests')}
+                  placeholder={t('booking.form.specialRequestsPlaceholder')}
+                  rows={3}
+                />
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>

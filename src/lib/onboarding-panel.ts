@@ -262,16 +262,21 @@ export function isPanelWindowOpen(target: Window | null | undefined): target is 
   }
 }
 
-/** The request of the «Do it for me» for a step that is still open (`Requested` or `InProgress`), if the host has one. */
+/**
+ * The request of the «Do it for me» for a step that is still open (`Requested` or `InProgress`), if the host has one. A step is the context, the
+ * property and the channel: the request of one channel is never the request of another, and a step with no channel matches only a request with none.
+ */
 export function findOpenAssist(
   requests: readonly AssistRequest[] | undefined,
   context: AssistRequestContext,
   propertyId?: string | null,
+  channelCode?: string | null,
 ): AssistRequest | undefined {
   return requests?.find(
     (request) =>
       request.context === context &&
       (request.propertyId ?? null) === (propertyId ?? null) &&
+      (request.channelCode ?? null) === (channelCode ?? null) &&
       (request.status === 'Requested' || request.status === 'InProgress'),
   );
 }

@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Loader2, Wallet } from 'lucide-react';
+import { PAGE_COLUMNS } from '@/components/layout/page-columns';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
 import { SkeletonLine } from '@/components/ui/skeleton';
 import { getHttpStatus } from '@/lib/api-errors';
+import { cn } from '@/lib/utils';
 import { useSupplierPaymentsAccount } from '@/queries/use-supplier-payments';
 import { InvoiceData } from './invoice-data';
 import { PaymentsFocus } from './payments-focus';
@@ -87,8 +89,11 @@ export function SupplierPaymentsPanel() {
   return (
     <div className="space-y-8" data-testid="supplier-payments-page">
       {account.askingStripe ? <CheckingNote /> : null}
-      <PaymentsFocus account={data} mark={mark} checking={account.askingStripe} onCheckAgain={account.askStripeAgain} />
-      <InvoiceData />
+      {/* The account and, beside it from `xl`, the data on the invoices (under each other on a narrower screen). */}
+      <div className={cn(PAGE_COLUMNS, 'gap-8')}>
+        <PaymentsFocus account={data} mark={mark} checking={account.askingStripe} onCheckAgain={account.askStripeAgain} />
+        <InvoiceData />
+      </div>
     </div>
   );
 }

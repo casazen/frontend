@@ -1,7 +1,7 @@
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
-import { FOCUS_COLUMN } from '@/components/layout/page-columns';
+import { PAGE_COLUMNS } from '@/components/layout/page-columns';
 import { PageHeader } from '@/components/layout/page-header';
 import { Field } from '@/components/ui/field';
 import { Select } from '@/components/ui/select';
@@ -34,9 +34,10 @@ interface PermissionsProps {
   isAdmin: boolean;
 }
 
+/** The rules of the organization and, beside them from `xl`, the answers that hold for every property (under each other on a narrower screen). */
 function RulesTab({ canReadRules, isAdmin }: Pick<PermissionsProps, 'canReadRules' | 'isAdmin'>) {
   return (
-    <div className={cn(FOCUS_COLUMN, 'space-y-10')} data-testid="assistant-tab-rules">
+    <div className={cn(PAGE_COLUMNS, 'gap-10')} data-testid="assistant-tab-rules">
       <RulesForm canRead={canReadRules} canEdit={isAdmin} />
       <KnowledgeList scope={{ kind: 'organization' }} canRead={canReadRules} canEdit={isAdmin} />
     </div>

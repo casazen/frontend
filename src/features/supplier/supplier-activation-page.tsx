@@ -4,7 +4,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { CheckCircle2, Circle, Loader2 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
-import { FOCUS_COLUMN } from '@/components/layout/page-columns';
+import { FOCUS_COLUMN, PAGE_COLUMNS } from '@/components/layout/page-columns';
 import { ErrorState } from '@/components/shared/error-state';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { Button } from '@/components/ui/button';
@@ -84,42 +84,45 @@ function TermsStep({ activation, onGoToStep }: { activation: ActivationStatus; o
 
   return (
     <div className="space-y-6">
-      <ActivationTermsCard
-        version={activation.tos.currentVersion}
-        checked={tosAccepted}
-        onCheckedChange={setTosAccepted}
-        disabled={complete.isPending}
-      />
+      {/* The Terms and, beside them from `xl`, what is still missing (under each other on a narrower screen). */}
+      <div className={PAGE_COLUMNS}>
+        <ActivationTermsCard
+          version={activation.tos.currentVersion}
+          checked={tosAccepted}
+          onCheckedChange={setTosAccepted}
+          disabled={complete.isPending}
+        />
 
-      <Card data-testid="supplier-activation-summary">
-        <CardContent className="space-y-3 pt-6">
-          <h3 className="text-sm font-semibold">{t('supplier.activation.summary.title')}</h3>
-          {missing.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{t('supplier.activation.summary.ready')}</p>
-          ) : (
-            <>
-              <p className="text-sm text-muted-foreground">{t('supplier.activation.summary.missing')}</p>
-              <ul className="space-y-1">
-                {missing.map(({ step, number }) => (
-                  <li key={step.id} className="flex items-center justify-between gap-3 text-sm">
-                    <span data-testid={`supplier-activation-blocker-${step.blocker}`}>
-                      {t(`supplier.activation.blockers.${step.blocker}`)}
-                    </span>
-                    <Button type="button" variant="link" size="sm" onClick={() => onGoToStep(number)}>
-                      {t('supplier.activation.summary.goTo', { step: number })}
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-        </CardContent>
-      </Card>
+        <Card data-testid="supplier-activation-summary">
+          <CardContent className="space-y-3 pt-6">
+            <h3 className="text-sm font-semibold">{t('supplier.activation.summary.title')}</h3>
+            {missing.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{t('supplier.activation.summary.ready')}</p>
+            ) : (
+              <>
+                <p className="text-sm text-muted-foreground">{t('supplier.activation.summary.missing')}</p>
+                <ul className="space-y-1">
+                  {missing.map(({ step, number }) => (
+                    <li key={step.id} className="flex items-center justify-between gap-3 text-sm">
+                      <span data-testid={`supplier-activation-blocker-${step.blocker}`}>
+                        {t(`supplier.activation.blockers.${step.blocker}`)}
+                      </span>
+                      <Button type="button" variant="link" size="sm" onClick={() => onGoToStep(number)}>
+                        {t('supplier.activation.summary.goTo', { step: number })}
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       <Button
         onClick={() => void handleActivate()}
         disabled={complete.isPending || !tosAccepted || missing.length > 0}
-        className="w-full"
+        className="w-full xl:w-auto"
       >
         {complete.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
         {complete.isPending ? t('supplier.activation.activating') : t('supplier.activation.activate')}

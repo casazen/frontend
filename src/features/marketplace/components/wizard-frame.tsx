@@ -34,7 +34,7 @@ interface WizardFrameProps {
   children: ReactNode;
 }
 
-/** The page of a wizard of the marketplace: a column that starts under the title, and the trail back to the Marketplace. */
+/** The page of a wizard of the marketplace: as wide as the page, under its title, and the trail back to the Marketplace. */
 export function WizardFrame({ title, description, testId, children }: WizardFrameProps) {
   const { t } = useTranslation();
 

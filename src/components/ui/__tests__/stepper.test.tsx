@@ -156,6 +156,42 @@ describe('Stepper compact', () => {
   });
 });
 
+describe('Stepper vertical', () => {
+  it('Stepper_Vertical_IsOneListAtEveryWidthWithTheSameStatesAndTheDoneStepsAsButtons', () => {
+    const onStepSelect = vi.fn();
+    render(<Stepper steps={STEPS} current={2} onStepSelect={onStepSelect} orientation="vertical" />);
+
+    // No bar of the phone and no list hidden under `md`: "Step 3 of 4" above the steps, one under the other.
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+    expect(screen.getAllByText('Passo 3 di 4')).toHaveLength(1);
+    expect(extended()).not.toHaveClass('hidden');
+    const items = itemsOf();
+    expect(items[0]).toHaveTextContent('Dati (completato)');
+    expect(items[2]).toHaveTextContent('Documenti (passo attuale)');
+    expect(items[3]).toHaveTextContent('Riepilogo (da fare)');
+    const current = extended().querySelectorAll('[aria-current]');
+    expect(current).toHaveLength(1);
+    expect(current[0]).toHaveAttribute('aria-current', 'step');
+    expect(current[0]).toHaveTextContent('Documenti');
+    expect(within(items[0]).getByText(/completato/)).toHaveClass('sr-only');
+
+    const buttons = within(extended()).getAllByRole('button');
+    expect(buttons).toHaveLength(2);
+    expect(buttons[1]).toHaveAccessibleName(/^Immobile ?\(completato\)$/);
+    expect(buttons[1]).toHaveClass('pointer-coarse:min-h-11');
+    fireEvent.click(buttons[1]);
+    expect(onStepSelect).toHaveBeenCalledWith(1);
+  });
+
+  it('Stepper_Vertical_LongLabel_WrapsInsteadOfBeingCut', () => {
+    render(<Stepper steps={[{ id: 'a', label: 'Una denominazione molto lunga del passaggio' }]} current={0} orientation="vertical" />);
+
+    const label = within(extended()).getByText('Una denominazione molto lunga del passaggio');
+    expect(label).not.toHaveClass('truncate');
+    expect(label).toHaveClass('break-words');
+  });
+});
+
 describe('Stepper edge cases', () => {
   it('Stepper_CurrentOutOfRange_IsClamped', () => {
     const { rerender } = render(<Stepper steps={STEPS} current={99} />);

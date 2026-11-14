@@ -590,6 +590,8 @@ export interface AssistRequest {
   id: string;
   part: OnboardingPartKey;
   propertyId: string | null;
+  /** The channel (portal code) of a channel access; `null` or absent for a request that is not about one. */
+  channelCode?: string | null;
   context: AssistRequestContext;
   status: AssistRequestStatus;
   requestedAt: Instant;

@@ -1,4 +1,4 @@
-import { AlertTriangle, BedDouble, Bell, CalendarClock, ClipboardCheck, LogOut, MessageSquare, ShieldAlert, ShieldCheck, UserCheck, Wrench, type LucideIcon } from 'lucide-react';
+import { AlertTriangle, BedDouble, Bell, CalendarClock, ClipboardCheck, LifeBuoy, LogOut, MessageSquare, ShieldAlert, ShieldCheck, UserCheck, Wrench, type LucideIcon } from 'lucide-react';
 import type { InAppNotification } from '@/api/notifications.api';
 import type { AppContextKey } from '@/config/route-manifest';
 
@@ -6,7 +6,7 @@ interface NotificationKind {
   icon: LucideIcon;
   /** Sentence in the language of the user (`notifications.types.*`). */
   textKey: string;
-  /** Where a click goes, given the id of the entity (a booking, or a service request for `service-request-*`). */
+  /** Where a click goes, given the id of the entity (a booking, a service request for `service-request-*`, a request of help for `assist-requested`). */
   route: (entityId: string, context: AppContextKey | null) => string;
 }
 
@@ -23,6 +23,9 @@ const serviceRequest = (textKey: string): NotificationKind => ({ icon: Wrench, t
 /** The console of the identity verifications: the bell tells the operators (who hold `verification.decision`) that a guest waits for a person. */
 const VERIFICATIONS_ROUTE = '/app/short-rent/verifications';
 
+/** The staff queue of the «Fallo per me» requests (`onboarding-routes.ts`): the bell tells the platform administrators that a host asked CasaZen support to do a step. */
+const ASSIST_QUEUE_ROUTE = '/app/admin/onboarding-assist';
+
 /**
  * The push types of the backend (`PushTypes`) the bell knows. A type that is not here is shown with a generic sentence and
  * opens nothing: a newer server must not break an older app.
@@ -35,6 +38,8 @@ const KINDS: Record<string, NotificationKind> = {
   'guest-data-missing': { icon: ClipboardCheck, textKey: 'notifications.types.guestDataMissing', route: bookingTab('guest') },
   // E03/F04/US02/T03: a guest handed the verification of the identity to a person; the operators open the console.
   'verification-required': { icon: ShieldCheck, textKey: 'notifications.types.verificationRequired', route: () => VERIFICATIONS_ROUTE },
+  // E10/F03/US03/T03: a host asked CasaZen support to do a step («Fallo per me»); the entity is the request, and the staff open the queue of the requests.
+  'assist-requested': { icon: LifeBuoy, textKey: 'notifications.types.assistRequested', route: () => ASSIST_QUEUE_ROUTE },
   'alloggiati-deadline': { icon: CalendarClock, textKey: 'notifications.types.alloggiatiDeadline', route: bookingTab('alloggiati') },
   'alloggiati-overdue': { icon: ShieldAlert, textKey: 'notifications.types.alloggiatiOverdue', route: bookingTab('alloggiati') },
   'alloggiati-failed': { icon: AlertTriangle, textKey: 'notifications.types.alloggiatiFailed', route: bookingTab('alloggiati') },

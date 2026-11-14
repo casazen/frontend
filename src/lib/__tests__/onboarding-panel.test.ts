@@ -171,4 +171,32 @@ describe('what the page opens and what it asks', () => {
     expect(findOpenAssist([request({})], 'panelPolice', 'p2')).toBeUndefined();
     expect(findOpenAssist([request({ propertyId: null })], 'panelPolice', null)).toBeDefined();
   });
+
+  it('findOpenAssist_ARequestOfOneChannel_IsNeverTheRequestOfAnotherChannelOrOfNone', () => {
+    const request = (channelCode?: string | null): AssistRequest => ({
+      id: 'r',
+      part: 'channels',
+      propertyId: null,
+      context: 'panelChannelAccess',
+      status: 'Requested',
+      requestedAt: '2026-11-10T09:00:00Z',
+      updatedAt: '2026-11-10T09:00:00Z',
+      completedAt: null,
+      staffNote: null,
+      activityId: null,
+      ...(channelCode === undefined ? {} : { channelCode }),
+    });
+
+    // The step of a channel is its context, its property and its channel.
+    expect(findOpenAssist([request('142')], 'panelChannelAccess', null, '142')?.id).toBe('r');
+    expect(findOpenAssist([request('142')], 'panelChannelAccess', null, '274')).toBeUndefined();
+    // A step with no channel matches only a request with none (an older request, or one that is not about a channel), whether the server says `null` or says nothing.
+    expect(findOpenAssist([request('142')], 'panelChannelAccess')).toBeUndefined();
+    expect(findOpenAssist([request('142')], 'panelChannelAccess', null, null)).toBeUndefined();
+    expect(findOpenAssist([request(null)], 'panelChannelAccess')).toBeDefined();
+    expect(findOpenAssist([request()], 'panelChannelAccess', null, null)).toBeDefined();
+    // And the other way: a request with no channel is not the request of a channel.
+    expect(findOpenAssist([request(null)], 'panelChannelAccess', null, '142')).toBeUndefined();
+    expect(findOpenAssist([request('274'), request('142')], 'panelChannelAccess', null, '142')?.channelCode).toBe('142');
+  });
 });
