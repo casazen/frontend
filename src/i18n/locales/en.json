@@ -1406,6 +1406,7 @@
       "archiveDocumentHasNoFile": "This document has no file to download.",
       "archiveDocumentNotFound": "We can no longer find this document, or it is not among the properties you have access to. The list has been refreshed.",
       "archiveExportTooLarge": "The archive would be too large. Choose a shorter period or fewer types of document.",
+      "bookingNotActive": "The booking is not active (it was cancelled or the guest did not show up): no document can be issued.",
       "complianceBookingNotFound": "We can't find this stay.",
       "complianceExportTooLarge": "The period holds more proofs than one archive can carry: choose a shorter period.",
       "complianceProofDayInvalid": "The day of the proof is not valid: choose a day in the past.",
@@ -1413,6 +1414,23 @@
       "complianceProofNotFound": "We can't find this proof: it may no longer exist or you may not be able to see it.",
       "complianceProofTooLarge": "The file is too large: choose a smaller one.",
       "complianceProofTypeUnsupported": "The file must be a PDF, a JPG or a PNG.",
+      "creditAmountExceeds": "The amount is more than what is left to credit on this document.",
+      "documentAlreadyIssued": "This booking already has an issued document.",
+      "documentAmountsInvalid": "The amounts of the document are not valid: refresh the draft and check them.",
+      "documentBatchPeriodInvalid": "The period is not valid: the first day must be before the last one.",
+      "documentBatchSelectionRequired": "Choose at least one draft to issue.",
+      "documentBatchTooLarge": "You chose too many documents: at most 200 are issued at a time.",
+      "documentBookingNotDirect": "This document is not linked to a booking, so it cannot be issued from here.",
+      "documentConfirmationRequired": "Your confirmation is needed to issue the document: try again.",
+      "documentDraftOutdated": "The draft was made with rules or data that have changed since. Press «Refresh» on the draft, check the amounts and then issue it again.",
+      "documentInvoiceDataMissing": "The details of who receives the document are missing: complete them in the invoicing details of the booking.",
+      "documentIssueFailed": "The document was not issued because of a problem on our side: it is still a draft, try again in a moment.",
+      "documentIssuerConflict": "Someone else has already issued the document of this booking: CasaZen does not issue a second one.",
+      "documentNotCreditable": "A credit note can only be made of an invoice or a receipt that was already issued.",
+      "documentNotDraft": "The document is no longer a draft. Refresh the list.",
+      "documentReadOnly": "This document is read-only: CasaZen did not issue it.",
+      "documentRuleNotConfigured": "The tax rules of this document (rates and kind of document) are missing: complete the invoicing setup.",
+      "fatturapaXmlInvalid": "The electronic invoice file is not valid: check the details of who issues and who receives the document.",
       "reportInvalidPeriod": "The period is not valid: check the dates.",
       "reportPeriodTooLong": "The period is too long: choose one of at most 24 months.",
       "archiveInvalidPage": "The requested page is not valid.",
@@ -1550,10 +1568,13 @@
       "ownerFileTooLarge": "The file is too large: 10 MB at most.",
       "ownerFileTypeNotAllowed": "This kind of file is not accepted: choose a PDF, a JPEG or a PNG image.",
       "ownerMessageInvalid": "Write the message before sending it.",
+      "ownerPortalInvoiceNotFound": "This invoice is not available.",
       "ownerPortalPermissionMissing": "The owner has not given you permission for this operation.",
       "ownerPortalPermissionUnknown": "One of the chosen permissions does not exist.",
       "ownerPortalPermissionsEmpty": "Choose at least one permission: no permission does not mean “all”.",
       "ownerPortalPropertyNotFound": "This property is not one of yours.",
+      "ownerStatementPdfNotAvailable": "The PDF of this statement is not available.",
+      "ownerStatementVersionNotFound": "This statement is not available.",
       "ownerStayAllowanceExceeded": "With this stay you would pass the nights you have available this year.",
       "ownerStayBeyondWindow": "The arrival is further ahead than the rules allow.",
       "ownerStayBlackout": "One of the nights falls on dates closed to owner stays.",
@@ -1578,6 +1599,7 @@
       "propertyHasUpcomingBookings": "You cannot delete this property: it has upcoming bookings. Cancel them or wait until they end.",
       "propertyHasActiveLeases": "You cannot delete this property: it has active leases. End them before deleting it.",
       "propertyResponsibleInvalid": "That person cannot be in charge of this property: they must be an active member who can already access it.",
+      "seriesTooLong": "The series of the numbers is too long: shorten it in the invoicing setup.",
       "xlsxTooManyRows": "Too many rows: a sheet of an Excel file can have at most 10,000 rows. Choose a shorter period and try again.",
       "planLimitReached": "You have reached your plan limit",
       "planRequired": "This feature requires a higher plan.",
@@ -7658,6 +7680,168 @@
     }
   },
   "fiscalDocuments": {
+    "batch": {
+      "bar": "Selected drafts",
+      "clear": "Clear selection",
+      "confirm": {
+        "confirm_one": "Issue the document",
+        "confirm_other": "Issue {{count}} documents",
+        "consequence": "Once issued, documents can no longer be changed: correcting one takes a credit note.",
+        "description": "Each document gets its own number, in order and with no gaps. If one cannot be issued, the others are issued anyway and we tell you which one was not and why.",
+        "failed": "We could not complete the issue. Check the list to see what was issued, then try again.",
+        "title_one": "Issue 1 document?",
+        "title_other": "Issue {{count}} documents?"
+      },
+      "issue": "Issue selected",
+      "result": {
+        "all_one": "The document was issued.",
+        "all_other": "All {{count}} documents were issued.",
+        "close": "Close",
+        "failures_one": "Not issued",
+        "failures_other": "Not issued",
+        "issuedOnly_one": "1 document was issued.",
+        "issuedOnly_other": "{{count}} documents were issued.",
+        "none": "No document was issued.",
+        "reasonUnknown": "We do not know the reason. Open the document and try to issue it on its own.",
+        "remaining_one": "1 more draft in the selection is still to be issued: run the issue again.",
+        "remaining_other": "{{count}} more drafts in the selection are still to be issued: run the issue again.",
+        "some": "Documents issued: {{issued}} of {{asked}}. Not issued: {{failed}}.",
+        "title": "Bulk issue",
+        "unknownDocument": "Document no longer in the list"
+      },
+      "selectBox": "Select {{document}}",
+      "selectCapped_one": "Selected the first draft: there are more. Issue this one, then repeat.",
+      "selectCapped_other": "Selected the first {{count}} drafts: there are more. Issue these, then repeat.",
+      "selectCard": "Select this draft",
+      "selectDone_one": "Selected 1 draft.",
+      "selectDone_other": "Selected {{count}} drafts.",
+      "selected_one": "{{count}} draft selected",
+      "selected_other": "{{count}} drafts selected",
+      "selectFailed": "We could not look for the drafts. Try again in a moment.",
+      "selectNone": "There are no drafts to select with these filters.",
+      "selectPage": "Select the drafts of this page (credit notes are ticked one by one)",
+      "selectPeriod": "Select all the drafts of the period",
+      "tooMany": "You can issue at most {{max}} documents at a time: clear the extra ones."
+    },
+    "bookingCard": {
+      "createDraft": "Create draft",
+      "draftCreated": "Draft created. Check it and issue it when you are ready.",
+      "draftFailed": "We could not create the draft. Try again in a moment.",
+      "empty": "This booking has no fiscal document yet.",
+      "emptyWrite": "This booking has no fiscal document yet. Create the draft, check it and issue it when you are ready.",
+      "issuedOn": "Issued on {{date}}",
+      "loadError": "We cannot load the fiscal documents of this booking.",
+      "loading": "Loading the fiscal documents…",
+      "notFound": "We cannot find the documents of this booking, or you do not have access.",
+      "open": "All fiscal documents",
+      "title": "Fiscal document"
+    },
+    "credit": {
+      "amount": {
+        "hint": "Write the amount with the cents, for example 120.50. It cannot be more than what is left to credit: the system checks it.",
+        "label": "Amount to credit in {{currency}}"
+      },
+      "confirm": "Issue the credit note",
+      "description": "Correct {{document}}. The credit note is issued at once, with its own number, and the original document does not change.",
+      "done": "Credit note issued.",
+      "errors": {
+        "amountInvalid": "Write an amount above zero, with at most two decimals and no thousands separator.",
+        "amountTooHigh": "The amount is more than the total of the document.",
+        "reasonRequired": "Write the reason for the credit note."
+      },
+      "failed": "We could not issue the credit note. Try again in a moment.",
+      "reason": {
+        "hint": "It appears on the credit note.",
+        "label": "Reason"
+      },
+      "scope": {
+        "legend": "How much do you want to credit?",
+        "part": "Only part of it",
+        "whole": "Everything that is left to credit (total of the document: {{amount}})"
+      },
+      "title": "Credit note"
+    },
+    "detail": {
+      "description": "Lines, VAT and totals of the document.",
+      "issuer": {
+        "country": "Country: {{country}}",
+        "inPdf": "The details of who issued the document are the ones in the PDF, as they were when it was issued.",
+        "title": "Issued by",
+        "vatNumber": "VAT number {{number}}"
+      },
+      "lines": {
+        "amount": "Amount without VAT",
+        "description": "Description",
+        "none": "The document has no lines.",
+        "quantity": "Quantity",
+        "rate": "VAT",
+        "title": "Lines"
+      },
+      "lineType": {
+        "Accommodation": "Stay",
+        "AdvancedExpense": "Advanced expense",
+        "Cleaning": "Cleaning",
+        "Commission": "Commission",
+        "ExtraService": "Extra service",
+        "Other": "Other",
+        "Recharge": "Recharge",
+        "TouristTax": "Tourist tax"
+      },
+      "loadError": "We cannot load the document.",
+      "loading": "Loading the document…",
+      "payment": {
+        "paid": "Paid",
+        "paidPortal": "Paid through the portal",
+        "title": "Payment",
+        "toCollect": "To collect",
+        "unrecognized": "Collection: {{code}}"
+      },
+      "rate": {
+        "noVat": "No VAT",
+        "noVatNature": "No VAT ({{code}})"
+      },
+      "recipient": "Made out to {{name}}",
+      "title": "Document detail",
+      "totals": {
+        "stampDuty": "Stamp duty",
+        "taxableBase": "Total without VAT",
+        "title": "Totals",
+        "total": "Total",
+        "vat": "VAT"
+      },
+      "vat": {
+        "rate": "Rate",
+        "taxable": "Taxable amount",
+        "title": "VAT by rate",
+        "vat": "VAT"
+      }
+    },
+    "discard": {
+      "confirm": "Discard the draft",
+      "description": "{{document}} is discarded. It uses no number and the booking can have a new draft.",
+      "done": "Draft discarded.",
+      "failed": "We could not discard the draft. Try again in a moment.",
+      "title": "Discard the draft?"
+    },
+    "issue": {
+      "confirm": "Issue",
+      "consequence": "Once issued, the document can no longer be changed: correcting it takes a credit note.",
+      "description": "Check the details: the document gets its number and is issued by CasaZen.",
+      "document": "Document",
+      "done": "Document issued.",
+      "doneNumbered": "Document {{number}} issued.",
+      "failed": "We could not issue the document. Try again in a moment.",
+      "lastNumber": "Last number issued: {{number}}",
+      "number": "Number",
+      "numberExpected": "{{number}} (expected)",
+      "numberNote": "Worked out from the documents you see in the list: CasaZen gives the final number when it issues, in order and with no gaps.",
+      "numberUnknown": "Assigned by CasaZen when issuing, in order and with no gaps",
+      "series": "Series",
+      "seriesOfOriginal": "The same as the document you are correcting",
+      "seriesUnknown": "Assigned by CasaZen when issuing",
+      "title": "Issue the document?",
+      "total": "Total"
+    },
     "issuer": {
       "address": {
         "city": {
@@ -7921,8 +8105,17 @@
     },
     "list": {
       "actions": {
+        "credit": "Credit note",
+        "creditLabel": "Issue a credit note for {{document}}",
+        "discard": "Discard",
+        "discardLabel": "Discard the draft {{document}}",
+        "issue": "Issue",
+        "issueLabel": "Issue {{document}}",
+        "openLabel": "Open the detail of {{document}}",
         "pdf": "PDF",
         "pdfLabel": "Download the PDF of {{document}}",
+        "refresh": "Refresh",
+        "refreshLabel": "Refresh the draft {{document}}",
         "xml": "XML",
         "xmlLabel": "Download the XML of {{document}}"
       },
@@ -8032,6 +8225,10 @@
         "over": "We no longer check by ourselves whether the SDI has answered. Check again to see the updated statuses."
       },
       "xmlUnavailable": "XML not available"
+    },
+    "refresh": {
+      "done": "Draft updated with the current details of the booking.",
+      "failed": "We could not update the draft. Try again in a moment."
     }
   },
   "guestCancellation": {
@@ -17184,7 +17381,26 @@
   "ownerPortal": {
     "accounting": {
       "ask": "Ask about this statement",
-      "description": "The statements your agency has published, the linked invoices and the accounting documents shared with you.",
+      "currencyMissing": "The currency of this statement is not given: the amounts are shown without a currency symbol.",
+      "description": "The statements your agency has published, with their amounts, the invoices from your property manager and the accounting documents shared with you.",
+      "detail": {
+        "back": "Back to accounting",
+        "balancesTitle": "Balance",
+        "error": "The statement could not be loaded",
+        "invoice": "Property manager invoice no. {{number}} of {{date}}.",
+        "invoiceHint": "You find it, with its PDF, among the property manager invoices on the Accounting page.",
+        "invoiceNoDate": "Property manager invoice no. {{number}}.",
+        "linesTitle": "The lines of the statement",
+        "noLines": "This statement has no lines.",
+        "notFound": {
+          "description": "This statement does not exist, or it is not one of those published for you.",
+          "title": "Statement not found"
+        },
+        "openNewer": "Open the newer version",
+        "owner": "Owner: {{name}}",
+        "signHint": "Positive amounts are in your favour, negative amounts are charged to you.",
+        "summaryTitle": "Summary"
+      },
       "documentsTitle": "Accounting documents",
       "error": "The statements could not be loaded",
       "invoiceOf": "Linked to the statement of {{period}}",
@@ -17194,17 +17410,61 @@
       },
       "invoiceTitle": "Invoice no. {{number}} of {{date}}",
       "invoicesError": "The linked invoices could not be loaded",
-      "invoicesNote": "These are invoices issued by the agency in its own system: here you find the link the agency recorded. CasaZen does not issue invoices.",
+      "invoicesNote": "These are invoices the agency issued outside CasaZen: here you find the link the agency recorded.",
       "invoicesTitle": "Linked invoices",
+      "line": {
+        "bookingCode": "Booking {{code}}",
+        "kind": {
+          "cleaning": "Cleaning",
+          "linen": "Linen"
+        },
+        "rechargedByAgency": "The channel billed the commission to the agency, which recharges it to you.",
+        "reversal": "Reversal",
+        "share": "Share {{percent}}%"
+      },
       "loading": "Loading the accounting",
       "noDocuments": "The agency has not shared any accounting document with you.",
       "noInvoiceLink": "The link to this invoice is not available.",
-      "noInvoices": "There are no invoices linked to your statements.",
-      "noPaymentNote": "You only see published statements here. Amounts and the state of payments are not shown in the portal yet: ask your agency in the messages for the detail.",
       "noStatements": "The agency has not published any statement for you yet.",
+      "open": "Open the statement",
+      "openAria": "Open the statement of {{period}}, version {{number}}",
       "openInvoice": "Open the invoice",
       "opensNewTab": "(opens in a new tab)",
+      "pdf": {
+        "download": "Download the PDF",
+        "downloadInvoiceAria": "Download the PDF of {{title}}",
+        "downloadStatementAria": "Download the PDF of the statement of {{period}}, version {{number}}",
+        "invoiceFile": "invoice",
+        "notAvailable": "The PDF of this statement is not available.",
+        "statementFile": "statement"
+      },
+      "pmInvoices": {
+        "cardTitle": "{{kind}} no. {{number}} of {{date}}",
+        "creditedInFull": "Fully credited",
+        "currencyMissing": "The currency of this document is not given: the amount is shown without a currency symbol.",
+        "empty": "Your property manager has not issued any invoice to you yet.",
+        "error": "The property manager invoices could not be loaded",
+        "kind": {
+          "CreditNote": "Credit note",
+          "Invoice": "Invoice",
+          "Other": "Document",
+          "Receipt": "Receipt"
+        },
+        "note": "The invoices your property manager has issued to you for the statements, each with its PDF.",
+        "of": "For the statement of {{period}}",
+        "title": "Property manager invoices",
+        "total": "Total"
+      },
       "publishedOn": "published on {{date}}",
+      "sections": {
+        "channelFees": "Channel commissions",
+        "commission": "Property manager commission",
+        "corrections": "Corrections",
+        "payments": "Payments",
+        "recharges": "Charges and expenses",
+        "stays": "Stays",
+        "withholding": "Withholding"
+      },
       "statementTitle": "Statement of {{period}}",
       "statementsTitle": "Published statements",
       "status": {
@@ -17213,6 +17473,25 @@
       },
       "supersededNote": "A newer version of this statement has taken its place: this one stays here as a record.",
       "title": "Accounting",
+      "totals": {
+        "channelFees": "Channel commissions",
+        "charges": "Charges and expenses",
+        "closingBalance": "Closing balance",
+        "commission": "Property manager commission",
+        "corrections": "Corrections",
+        "gross": "Gross of the stays",
+        "net": "Net of the period",
+        "openingBalance": "Opening balance",
+        "payments": "Payments",
+        "withholding": "Withholding"
+      },
+      "touristTax": {
+        "currencyMissing": "The currency of some of these taxes is not given: their amounts are shown without a currency symbol.",
+        "description": "The agency collected it for the stays of this statement. It is for information only: it is not part of the net.",
+        "empty": "The agency did not collect any tourist tax for the stays of this statement.",
+        "title": "Tourist tax",
+        "total": "Total"
+      },
       "version": "Version {{number}}"
     },
     "calendar": {

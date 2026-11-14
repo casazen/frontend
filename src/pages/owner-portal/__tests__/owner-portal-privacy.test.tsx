@@ -13,7 +13,9 @@ import { OwnerConversation } from '../OwnerConversation';
 import { OwnerDocuments } from '../OwnerDocuments';
 import { OwnerInbox } from '../OwnerInbox';
 import { OwnerProperties } from '../OwnerProperties';
+import { OwnerStatementDetail } from '../OwnerStatementDetail';
 import { OwnerStatements } from '../OwnerStatements';
+import { CHF_INVOICE, CHF_STATEMENT, statementDetail, statementLine } from './owner-statement-fixtures';
 
 vi.mock('@/api/ownerPortal.api', () => ({
   ownerPortalApi: {
@@ -23,6 +25,9 @@ vi.mock('@/api/ownerPortal.api', () => ({
     getStayRule: vi.fn(),
     listDocuments: vi.fn(),
     listExternalDocuments: vi.fn(),
+    listStatements: vi.fn(),
+    getStatement: vi.fn(),
+    listInvoices: vi.fn(),
     listContacts: vi.fn(),
     listConversations: vi.fn(),
     listMessages: vi.fn(),
@@ -63,17 +68,9 @@ const PROPERTY = {
   ],
 };
 
-function statement(status: string, month: number, versionNumber = 1) {
-  return {
-    statementVersionId: `sv-${status}-${month}-${versionNumber}`,
-    orgId: 'o1',
-    propertyOwnerId: 'po1',
-    periodYear: 2026,
-    periodMonth: month,
-    versionNumber,
-    status,
-    publishedAt: '2026-11-02T09:00:00Z',
-  };
+/** A published statement as the portal reads it (E13/F02/US02/T01): a month of 2026, its version, and whether a later version replaced it. */
+function statement(month: number, version = 1, superseded = false) {
+  return { ...CHF_STATEMENT, statementId: `sv-${month}-${version}`, month, version, superseded };
 }
 
 function renderPortal(path: string) {
@@ -86,6 +83,7 @@ function renderPortal(path: string) {
             <Route path="immobili/:propertyId" element={<OwnerProperties />} />
             <Route path="calendario/:propertyId?" element={<OwnerCalendar />} />
             <Route path="contabilita" element={<OwnerStatements />} />
+            <Route path="contabilita/:statementId" element={<OwnerStatementDetail />} />
             <Route path="documenti" element={<OwnerDocuments />} />
             <Route path="messaggi" element={<OwnerInbox />} />
             <Route path="messaggi/:conversationId" element={<OwnerConversation />} />
@@ -119,6 +117,9 @@ beforeEach(async () => {
   });
   api.listDocuments.mockResolvedValue({ documents: [], statements: [] });
   api.listExternalDocuments.mockResolvedValue([]);
+  api.listStatements.mockResolvedValue([]);
+  api.listInvoices.mockResolvedValue([]);
+  api.getStatement.mockResolvedValue(statementDetail(CHF_STATEMENT));
   api.listContacts.mockResolvedValue([]);
   api.listConversations.mockResolvedValue([]);
   api.listMessages.mockResolvedValue([]);
@@ -196,47 +197,84 @@ describe('the owner portal never shows a guest (ADR-011-R3, AC-NF111-1)', () => 
     expect(Object.keys(sources)).toHaveLength(3);
     expect(code).not.toMatch(/guest|ospite|booking(Id)?\b|channel|phone/i);
   });
+
+  it('OwnerPortal_StatementPages_NeverShowAGuest_EvenFromAnAnswerThatCarriesOne', async () => {
+    // A leaking answer: every member a guest has, on the statement, on a line and on a row of the tourist tax. The pages draw the members of the contract and nothing else.
+    const guest = { guestName: 'Mario Rossi', guestEmail: 'mario.rossi@example.com', guestPhone: '+39 333 1234567', guestDocument: 'AB1234567' };
+    api.listStatements.mockResolvedValue([{ ...statement(10), ...guest } as never]);
+    api.getStatement.mockResolvedValue({
+      ...statementDetail(statement(10)),
+      ...guest,
+      sections: [{ section: 'stays', total: 1800, lines: [{ ...statementLine('l1'), ...guest }] }],
+      touristTax: [{ property: 'Casa Lago', checkIn: '2026-10-10', checkOut: '2026-10-14', channel: 'Airbnb', bookingCode: 'BK-1001', currency: 'CHF', amount: 8, ...guest }],
+    } as never);
+
+    renderPortal('/portale-proprietari/contabilita');
+    await screen.findByTestId('owner-statements');
+    expect(document.body.textContent).not.toMatch(/Mario|Rossi|mario\.rossi|333 1234567|AB1234567/);
+    cleanup();
+
+    renderPortal('/portale-proprietari/contabilita/sv-10-1');
+    await screen.findByTestId('owner-statement-detail');
+    const text = document.body.textContent ?? '';
+    // A stay is told by its property, its days, its channel and its booking code.
+    expect(text).toContain('Casa Lago');
+    expect(text).toContain('Airbnb');
+    expect(text).toContain('BK-1001');
+    expect(text).not.toMatch(/Mario|Rossi|mario\.rossi|333 1234567|AB1234567/);
+  });
+
+  it('OwnerPortal_NoGuestMemberInTheContractOfTheStatementsAndTheirPages', async () => {
+    const sources = import.meta.glob<string>(
+      [
+        '/src/types/owner-portal-statements.types.ts',
+        '/src/features/owner-portal/owner-statement-model.ts',
+        '/src/features/owner-portal/statement-parts.tsx',
+        '/src/pages/owner-portal/OwnerStatements.tsx',
+        '/src/pages/owner-portal/OwnerStatementDetail.tsx',
+      ],
+      { query: '?raw', import: 'default', eager: true },
+    );
+    const code = Object.values(sources)
+      .join('\n')
+      // Comments say what is NOT there: only the code counts.
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^\s*\/\/.*$/gm, '');
+    expect(Object.keys(sources)).toHaveLength(5);
+    // The channel and the booking code are what tells a stay apart (no guest in them); a name, an e-mail, a phone or a document of a guest has no member here.
+    expect(code).not.toMatch(/guest|ospite|phone|telefono|e-?mail/i);
+  });
 });
 
-describe('the accounting of the owner (E06): published versions only, and no word of a payment that nobody confirmed', () => {
+describe('the accounting of the owner (E06, E13/F02/US02/T01): the published versions with their amounts, and no word of a payment that nobody confirmed', () => {
   it('OwnerPortal_OnlyPublishedAccountingVersionsVisible_Test', async () => {
-    api.listDocuments.mockResolvedValue({
-      documents: [],
-      statements: [
-        statement('Draft', 9),
-        statement('Flagged', 8),
-        statement('Approved', 7),
-        statement('Superseded', 6, 1),
-        statement('Published', 6, 2),
-        statement('Published', 5),
-      ] as never,
-    });
+    // The server lists what the agency published, and a version a later one replaced (a draft, a flagged or an only approved version has no place in the answer).
+    api.listStatements.mockResolvedValue([statement(5), statement(6, 1, true), statement(6, 2)]);
 
     renderPortal('/portale-proprietari/contabilita');
     await screen.findByTestId('owner-statements');
 
     const shown = screen.getAllByTestId('owner-statement');
     expect(shown.map((item) => item.getAttribute('data-status'))).toEqual(['Published', 'Superseded', 'Published']);
-    // Newest period first; September, August and July (draft, flagged, only approved) never appear.
-    const text = document.body.textContent ?? '';
-    expect(text).not.toMatch(/settembre 2026|agosto 2026|luglio 2026/i);
+    // Newest period first and, in the same period, the newest version; the superseded one stays as a record and says so.
     expect(shown[0].textContent).toContain('giugno 2026');
     expect(shown[1].textContent).toContain('Sostituito');
+    expect(shown[2].textContent).toContain('maggio 2026');
 
     // The portal has no payout state and no evidence of a submission for the owner: nothing here is called paid, sent or accepted.
+    const text = document.body.textContent ?? '';
     expect(text).not.toMatch(/\b(pagat[oaie]|inviat[oaie]|accettat[oaie]|incassat[oaie]|saldat[oaie])\b/i);
-    expect(screen.getByTestId('owner-accounting-note').textContent).toContain('non sono ancora mostrati');
   });
 
   it('OwnerPortal_Accounting_AReadThatFails_IsNeverSaidToBeInOrder_AndARefusalIsItsOwnHonestState', async () => {
-    api.listDocuments.mockRejectedValue(new Error('Network Error'));
+    api.listStatements.mockRejectedValue(new Error('Network Error'));
     renderPortal('/portale-proprietari/contabilita');
     expect(await screen.findByTestId('owner-accounting-error')).toBeInTheDocument();
     // Not «no statements published yet»: a failed read is a failed read.
     expect(screen.queryByTestId('owner-statements-empty')).toBeNull();
     cleanup();
 
-    api.listDocuments.mockRejectedValue(refusal(403, 'owner_portal_permission_missing'));
+    api.listStatements.mockRejectedValue(refusal(403, 'owner_portal_permission_missing'));
     renderPortal('/portale-proprietari/contabilita');
     const notice = await screen.findByTestId('owner-accounting-error');
     expect(notice.getAttribute('data-state')).toBe('permission');
@@ -258,24 +296,34 @@ describe('the accounting of the owner (E06): published versions only, and no wor
           versions: [{ id: 'v9', versionNumber: 1, fileName: 'fattura.pdf', contentType: 'application/pdf', sizeBytes: 100, sha256: 'a', state: 'current', uploadedAt: '2026-11-01T10:00:00Z' }],
         },
       ],
-      statements: [statement('Published', 10)],
+      statements: [],
     } as never);
+    api.listStatements.mockResolvedValueOnce([statement(10)]);
+    api.listInvoices.mockResolvedValueOnce([CHF_INVOICE]);
     const { client } = renderPortal('/portale-proprietari/contabilita');
     expect(await screen.findByTestId('owner-accounting-documents')).toBeInTheDocument();
-    expect(screen.getByTestId('owner-statements')).toBeInTheDocument();
+    expect(await screen.findByTestId('owner-statements')).toBeInTheDocument();
+    expect(await screen.findByTestId('owner-pm-invoices')).toBeInTheDocument();
 
-    // The access is withdrawn: the next read is refused, and what the read before it left (TanStack Query keeps it) is not drawn under the notice.
+    // The access is withdrawn: the next reads are refused, and what the reads before them left (TanStack Query keeps it) is not drawn under the notices.
+    api.listStatements.mockRejectedValue(refusal(403, 'owner_portal_permission_missing'));
+    api.listInvoices.mockRejectedValue(refusal(403, 'owner_portal_permission_missing'));
     api.listDocuments.mockRejectedValue(refusal(403, 'owner_portal_permission_missing'));
     await act(async () => {
-      await client.refetchQueries({ queryKey: [OWNER_PORTAL_KEY, 'documents'] });
+      await Promise.all(
+        ['statements', 'invoices', 'documents'].map((name) => client.refetchQueries({ queryKey: [OWNER_PORTAL_KEY, name] })),
+      );
     });
 
     const notice = await screen.findByTestId('owner-accounting-error');
     expect(notice.getAttribute('data-state')).toBe('permission');
+    expect((await screen.findByTestId('owner-pm-invoices-error')).getAttribute('data-state')).toBe('permission');
+    expect((await screen.findByTestId('owner-accounting-documents-error')).getAttribute('data-state')).toBe('permission');
     expect(screen.queryByTestId('owner-accounting-documents')).toBeNull();
     expect(screen.queryByTestId('owner-accounting-documents-empty')).toBeNull();
     expect(screen.queryByTestId('owner-statements')).toBeNull();
-    expect(document.body.textContent).not.toContain('Fattura di novembre');
+    expect(screen.queryByTestId('owner-pm-invoices')).toBeNull();
+    expect(document.body.textContent).not.toMatch(/Fattura di novembre|2026\/0042|1234,50/);
   });
 });
 
@@ -347,8 +395,11 @@ describe('the portal works from a phone and from the keyboard (NF-111, AC-NF111-
           ],
         },
       ],
-      statements: [statement('Published', 10) as never],
+      statements: [],
     });
+    api.listStatements.mockResolvedValue([statement(10)]);
+    api.listInvoices.mockResolvedValue([{ ...CHF_INVOICE, statementId: 'sv-10-1' }]);
+    api.getStatement.mockResolvedValue(statementDetail(statement(10)));
     api.listContacts.mockResolvedValue([
       {
         id: 'c1',
@@ -369,6 +420,7 @@ describe('the portal works from a phone and from the keyboard (NF-111, AC-NF111-
     const pages: Array<[string, string]> = [
       ['calendario/p1', 'owner-stays'],
       ['contabilita', 'owner-statements'],
+      ['contabilita/sv-10-1', 'owner-statement-detail'],
       ['documenti', 'owner-documents'],
       ['messaggi', 'owner-conversations'],
       ['contatti', 'owner-contacts'],
@@ -376,6 +428,8 @@ describe('the portal works from a phone and from the keyboard (NF-111, AC-NF111-
     for (const [page, marker] of pages) {
       renderPortal(`/portale-proprietari/${page}`);
       await screen.findByTestId(marker);
+      // The accounting page reads three lists: the invoices of the manager are on it before the buttons are counted.
+      if (page === 'contabilita') await screen.findByTestId('owner-pm-invoices');
       // No table to scroll sideways: the lists are lists of cards.
       expect(document.querySelectorAll('main table')).toHaveLength(0);
       // Every button and link of the page is a 44 px target and has a name.

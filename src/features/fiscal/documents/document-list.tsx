@@ -1,24 +1,21 @@
-import { useMemo, useState, type ComponentProps, type ReactNode } from 'react';
-import type { TFunction } from 'i18next';
-import { FileDown, Lock } from 'lucide-react';
+import { useMemo, type ComponentProps, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/shared/empty-state';
-import { Button } from '@/components/ui/button';
 import { DataView, type DataColumn } from '@/components/ui/data-view';
 import type { FeatureFlags } from '@/config/feature-flags';
-import { useDownloadFiscalDocument } from '@/queries/use-fiscal-documents';
 import { cn } from '@/lib/utils';
 import type { FiscalDocumentEntry } from '@/types';
+import { DocumentActionBar, type DocumentChange } from './document-actions';
 import {
   bookingLinkOf,
-  documentActionsOf,
-  documentKindKey,
+  documentLabelOf,
+  documentNameOf,
   documentSourceKey,
   formatDocumentAmount,
   formatDocumentDay,
-  unavailabilityOf,
-  type Unavailable,
+  isBatchDraft,
+  isPeriodDraft,
 } from './document-model';
 import { DocumentStateBadge } from './document-state-badge';
 
@@ -34,105 +31,35 @@ function Missing({ label, testId }: { label: string; testId?: string }) {
   );
 }
 
-/** The words of the kind of a document; a kind this client has no words for (the server is newer) is shown as it came. */
-function kindWords(t: TFunction, document: FiscalDocumentEntry): string {
-  const key = documentKindKey(document.kind);
-  return key ? t(key) : document.kind;
-}
-
-/** What names a document: its kind and the number the server gave it (a draft has none, and says so). */
-function documentName(t: TFunction, document: FiscalDocumentEntry): string {
-  const kind = kindWords(t, document);
-  return document.number ? t('fiscalDocuments.list.named', { kind, number: document.number }) : t('fiscalDocuments.list.unnumbered', { kind });
-}
-
 /**
- * The buttons of a document: its PDF and, for a document CasaZen issued, its XML. A document of the channel manager is «sola lettura», and has a PDF button only when the
- * channel manager holds one and the endpoint exists here. The buttons of a card wait for each other: while any download of this document is on the way every one of them is
- * disabled, so a second click cannot start a second download. A document that is not found any more (404) is told as such and has no button left; an XML that the server
- * says it does not have is told next to the PDF. A PDF the channel manager could not give (`octorate_pdf_unavailable`, which the server also sends for a read that failed just
- * now) keeps its button: the message says why and the person may ask again.
+ * The drafts ticked for a bulk issue (E12/F02/US01/T01), as the list shows them: a box on every draft CasaZen issues and none on any other document. `disabled` while a bulk issue, or the search for
+ * the drafts of the period, is running: nothing can be ticked or unticked under it.
  */
-function DocumentActions({ document, flags }: { document: FiscalDocumentEntry; flags: Partial<FeatureFlags> }) {
-  const { t } = useTranslation();
-  const { mutate, isPending, variables } = useDownloadFiscalDocument();
-  const [gone, setGone] = useState<ReadonlySet<Unavailable>>(() => new Set());
-  const actions = documentActionsOf(document, flags);
-  const name = documentName(t, document);
+export interface DocumentSelection {
+  selected: ReadonlySet<string>;
+  disabled: boolean;
+  onToggle: (document: FiscalDocumentEntry) => void;
+  onTogglePage: (documents: readonly FiscalDocumentEntry[], select: boolean) => void;
+}
 
-  const download = (format: 'pdf' | 'xml') =>
-    mutate(
-      { document, format },
-      {
-        onError: (error) => {
-          const missing = unavailabilityOf(error);
-          if (missing) setGone((current) => new Set(current).add(missing));
-        },
-      },
-    );
-
-  if (gone.has('document')) {
-    return (
-      <p className="text-sm text-foreground/70" data-testid="fiscal-document-gone">
-        {t('fiscalDocuments.list.gone')}
-      </p>
-    );
-  }
-
-  const showPdf = actions.pdf;
-  const showXml = actions.xml && !gone.has('xml');
-
+/** The box of a draft: 16 px of box in the 44 px of a finger, named by what it selects. */
+function SelectBox({ checked, indeterminate = false, disabled, label, onChange, testId }: { checked: boolean; indeterminate?: boolean; disabled: boolean; label: string; onChange: () => void; testId?: string }) {
   return (
-    <div className="flex min-w-0 flex-col items-start gap-1.5 sm:items-end" data-testid="fiscal-document-actions">
-      <div className="flex flex-wrap items-center gap-2">
-        {showPdf ? (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={isPending}
-            loading={isPending && variables?.format === 'pdf'}
-            onClick={() => download('pdf')}
-            aria-label={t('fiscalDocuments.list.actions.pdfLabel', { document: name })}
-            data-testid="fiscal-document-pdf"
-          >
-            <FileDown className="size-4" aria-hidden="true" />
-            {t('fiscalDocuments.list.actions.pdf')}
-          </Button>
-        ) : null}
-        {showXml ? (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={isPending}
-            loading={isPending && variables?.format === 'xml'}
-            onClick={() => download('xml')}
-            aria-label={t('fiscalDocuments.list.actions.xmlLabel', { document: name })}
-            data-testid="fiscal-document-xml"
-          >
-            <FileDown className="size-4" aria-hidden="true" />
-            {t('fiscalDocuments.list.actions.xml')}
-          </Button>
-        ) : null}
-      </div>
-      {actions.readOnly ? (
-        <span className="inline-flex items-center gap-1 text-xs text-foreground/70" data-testid="fiscal-document-readonly">
-          <Lock className="size-3" aria-hidden="true" />
-          {t('fiscalDocuments.list.readOnly')}
-        </span>
-      ) : null}
-      {actions.pdfUnavailable ? (
-        <span className="text-xs text-foreground/70" data-testid="fiscal-document-pdf-unavailable">
-          {t('fiscalDocuments.list.pdfUnavailable')}
-        </span>
-      ) : null}
-      {gone.has('xml') ? (
-        <span className="text-xs text-foreground/70" data-testid="fiscal-document-xml-unavailable">
-          {t('fiscalDocuments.list.xmlUnavailable')}
-        </span>
-      ) : null}
-    </div>
+    <label className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center">
+      <input
+        type="checkbox"
+        className="h-4 w-4 cursor-pointer accent-primary"
+        aria-label={label}
+        checked={checked}
+        disabled={disabled}
+        onChange={onChange}
+        ref={(input) => {
+          // "Some of them" has no attribute, only a property.
+          if (input) input.indeterminate = indeterminate && !checked;
+        }}
+        data-testid={testId}
+      />
+    </label>
   );
 }
 
@@ -186,16 +113,32 @@ function TotalFigure({ document, language }: { document: FiscalDocumentEntry; la
   );
 }
 
-/** The kind and the number, the day of the issue and who issued it: the number and the day are the ones of the server. */
-function DocumentCell({ document, language }: { document: FiscalDocumentEntry; language: string }) {
+/**
+ * The kind and the number, the day of the issue and who issued it: the number and the day are the ones of the server. With `onOpen` the name is the button that opens the detail of the document
+ * (the row opens with a click too, for the pointer: the keyboard has this button).
+ */
+function DocumentCell({ document, language, onOpen }: { document: FiscalDocumentEntry; language: string; onOpen?: (document: FiscalDocumentEntry) => void }) {
   const { t } = useTranslation();
   const sourceKey = documentSourceKey(document.source);
+  const name = documentNameOf(t, document);
 
   return (
     <div className="min-w-0">
-      <span className="block break-words" data-testid="fiscal-document-name">
-        {documentName(t, document)}
-      </span>
+      {onOpen ? (
+        <button
+          type="button"
+          onClick={() => onOpen(document)}
+          className={cn(LINK, 'block max-w-full break-words text-left')}
+          aria-label={t('fiscalDocuments.list.actions.openLabel', { document: name })}
+          data-testid="fiscal-document-open"
+        >
+          <span data-testid="fiscal-document-name">{name}</span>
+        </button>
+      ) : (
+        <span className="block break-words" data-testid="fiscal-document-name">
+          {name}
+        </span>
+      )}
       <span className="mt-0.5 block text-sm font-normal text-foreground/70" data-testid="fiscal-document-date">
         {document.issueDate ? formatDocumentDay(document.issueDate, language) : t('fiscalDocuments.list.noDate')}
       </span>
@@ -215,6 +158,14 @@ interface DocumentListProps {
   canReadBookings: boolean;
   /** The flags of the backend, which say whether the PDF of an imported document can be asked. */
   flags: Partial<FeatureFlags>;
+  /** The person may change documents: the right to write payments AND the flag of the issuance. Without both no button that changes a document is drawn, and no draft has a box. */
+  canWrite?: boolean;
+  /** Opens the detail of a document: its name is a button, and the row opens with a click. */
+  onOpen?: (document: FiscalDocumentEntry) => void;
+  /** The drafts ticked for a bulk issue; without it no draft has a box. */
+  selection?: DocumentSelection;
+  /** What happened to a document through its buttons (issued, discarded, credited): the page forgets what it kept of it. */
+  onChanged?: (id: string, change: DocumentChange) => void;
   isLoading?: boolean;
   isError?: boolean;
   error?: unknown;
@@ -231,19 +182,22 @@ interface DocumentListProps {
 }
 
 /**
- * The fiscal documents (FIS-04, NF-84, E06/F03/US04/T01): one table with one row for each document, the ones CasaZen issued and the ones imported from the channel manager, with
- * the kind and the number, the day, the recipient and the booking, the total, the state in words with a color and an icon, and the PDF and the XML to download. On a phone each
- * row is a card with the same things.
+ * The fiscal documents (FIS-04, NF-84, E06/F03/US04/T01, E12/F02/US01/T01): one table with one row for each document, the ones CasaZen issued and the ones imported from the channel manager, with
+ * the kind and the number, the day, the recipient and the booking, the total, the state in words with a color and an icon, and the actions of the document: the PDF and the XML to download and, for
+ * who may change documents, the ones of its state (issue, make again, discard, credit). A draft CasaZen issues has a box, to be ticked for a bulk issue. On a phone each row is a card with the same things.
  *
- * Everything is shown as the server wrote it: the number and the day of the document, the total in the currency of its own document (nothing is added up, rounded to another unit
- * or converted, and two currencies are never in one figure). The table adds no total: the server gives none. A read that failed is a failed read, with a retry, and is never an
- * empty list.
+ * Everything is shown as the server wrote it: the number and the day of the document, the total in the currency of its own document (nothing is added up, rounded to another unit or converted, and two
+ * currencies are never in one figure). The table adds no total: the server gives none. A read that failed is a failed read, with a retry, and is never an empty list.
  */
 export function DocumentList({
   documents,
   label,
   canReadBookings,
   flags,
+  canWrite = false,
+  onOpen,
+  selection,
+  onChanged,
   isLoading = false,
   isError = false,
   error,
@@ -256,14 +210,49 @@ export function DocumentList({
 }: DocumentListProps) {
   const { t, i18n } = useTranslation();
   const language = i18n.language;
+  // Every draft CasaZen issues has a box. The box of the head ticks only the drafts of the stays: a credit note that is a draft is a correction the host looks at one by one, and its own box is
+  // ticked by hand (as «Seleziona tutte le bozze del periodo» leaves it out too).
+  const drafts = useMemo(() => documents.filter(isBatchDraft), [documents]);
+  const stayDrafts = useMemo(() => drafts.filter(isPeriodDraft), [drafts]);
+  const allDrafts = selection !== undefined && stayDrafts.length > 0 && stayDrafts.every((draft) => selection.selected.has(draft.id));
+  const someDrafts = selection !== undefined && drafts.some((draft) => selection.selected.has(draft.id));
 
   const columns = useMemo(
     (): DataColumn<FiscalDocumentEntry>[] => [
+      ...(selection
+        ? [
+            {
+              key: 'select',
+              header: (
+                <SelectBox
+                  checked={allDrafts}
+                  indeterminate={someDrafts}
+                  disabled={selection.disabled || stayDrafts.length === 0}
+                  label={t('fiscalDocuments.batch.selectPage')}
+                  // Ticking takes the drafts of the stays; unticking clears every box of the page, a credit note ticked by hand included.
+                  onChange={() => selection.onTogglePage(allDrafts ? drafts : stayDrafts, !allDrafts)}
+                  testId="fiscal-documents-select-page"
+                />
+              ),
+              className: 'w-11 px-1 py-0',
+              cell: (document: FiscalDocumentEntry) =>
+                isBatchDraft(document) ? (
+                  <SelectBox
+                    checked={selection.selected.has(document.id)}
+                    disabled={selection.disabled}
+                    label={t('fiscalDocuments.batch.selectBox', { document: documentLabelOf(t, document) })}
+                    onChange={() => selection.onToggle(document)}
+                    testId="fiscal-document-select"
+                  />
+                ) : null,
+            } satisfies DataColumn<FiscalDocumentEntry>,
+          ]
+        : []),
       {
         key: 'document',
         header: t('fiscalDocuments.list.columns.document'),
         rowHeader: true,
-        cell: (document) => <DocumentCell document={document} language={language} />,
+        cell: (document) => <DocumentCell document={document} language={language} onOpen={onOpen} />,
       },
       {
         key: 'recipient',
@@ -282,20 +271,32 @@ export function DocumentList({
         cell: (document) => <DocumentStateBadge document={document} />,
       },
     ],
-    [t, language, canReadBookings],
+    [t, language, canReadBookings, onOpen, selection, allDrafts, someDrafts, drafts, stayDrafts],
   );
 
   const renderCard = (document: FiscalDocumentEntry) => (
     <div className="space-y-3" data-testid="fiscal-document-card">
+      {selection && isBatchDraft(document) ? (
+        <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            className="h-4 w-4 cursor-pointer accent-primary"
+            checked={selection.selected.has(document.id)}
+            disabled={selection.disabled}
+            onChange={() => selection.onToggle(document)}
+          />
+          {t('fiscalDocuments.batch.selectCard')}
+        </label>
+      ) : null}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 font-medium text-foreground">
-          <DocumentCell document={document} language={language} />
+          <DocumentCell document={document} language={language} onOpen={onOpen} />
         </div>
         <TotalFigure document={document} language={language} />
       </div>
       <RecipientCell document={document} canReadBookings={canReadBookings} />
       <DocumentStateBadge document={document} />
-      <DocumentActions document={document} flags={flags} />
+      <DocumentActionBar document={document} flags={flags} canWrite={canWrite} onChanged={onChanged} />
     </div>
   );
 
@@ -306,7 +307,7 @@ export function DocumentList({
         rows={documents}
         columns={columns}
         rowKey={(document) => document.id}
-        rowActions={(document) => <DocumentActions document={document} flags={flags} />}
+        rowActions={(document) => <DocumentActionBar document={document} flags={flags} canWrite={canWrite} onChanged={onChanged} />}
         renderCard={renderCard}
         isLoading={isLoading}
         isError={isError}
@@ -316,6 +317,7 @@ export function DocumentList({
         empty={empty}
         cardsUntil="xl"
         footer={footer}
+        onRowClick={onOpen ? (document) => onOpen(document) : undefined}
         rowClassName={(document) => (document.sdiStatus === 'rejected' && document.source === 'CasaZen' ? 'bg-danger-soft/40' : undefined)}
         rowTestId={() => 'fiscal-document-row'}
       />

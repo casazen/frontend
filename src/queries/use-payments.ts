@@ -6,6 +6,12 @@ import i18n from '@/i18n/config';
 
 export const PAYMENTS_KEY = 'payments';
 
+/**
+ * The root of the keys of the fiscal documents (`FISCAL_DOCUMENTS_KEY` of `use-fiscal-documents.ts`, which imports this file, so it cannot be imported here). Whether a document of a booking is
+ * collected is worked out from the payments each time it is read: a payment recorded or a refund asked changes what the list, the detail and the card of the booking show.
+ */
+const FISCAL_DOCUMENTS_ROOT = ['fiscal', 'documents'] as const;
+
 export function usePayments(params?: Record<string, unknown>) {
   return useQuery({
     queryKey: [PAYMENTS_KEY, params],
@@ -45,6 +51,7 @@ export function useCreatePayment() {
       queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY] });
       // The key of `use-bookings.ts` (which imports this file, so it cannot be imported here): what came in changed.
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      queryClient.invalidateQueries({ queryKey: FISCAL_DOCUMENTS_ROOT });
       toast.success(i18n.t('toast.paymentCreated'));
     },
   });
@@ -79,6 +86,7 @@ export function useRefundPayment() {
     onSettled: (_, __, variables) => {
       queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY] });
       queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY, variables.id] });
+      queryClient.invalidateQueries({ queryKey: FISCAL_DOCUMENTS_ROOT });
     },
   });
 }

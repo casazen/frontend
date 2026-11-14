@@ -14,6 +14,7 @@ import {
 import { FiscalDisclaimer } from '@/features/fiscal/components/fiscal-disclaimer';
 import {
   FISCAL_PERIOD_PRESETS,
+  FISCAL_REPORT_CURRENCY,
   fiscalReportFileName,
   fiscalYears,
   formatMonth,
@@ -253,7 +254,7 @@ function ReportSection<T>({
 
 function AnnualTable({ report }: { report: AnnualIncomeReport }) {
   const { t, i18n } = useTranslation();
-  const money = (v: number) => formatMoney(v, i18n.language);
+  const money = (v: number) => formatMoney(v, i18n.language, FISCAL_REPORT_CURRENCY);
   const regime = (r: AnnualIncomeReport['properties'][number]['regime']) =>
     r ? t(`fiscal.regime.${r}`) : t('fiscal.notAssigned');
   const { totals, rules } = report;
@@ -365,7 +366,7 @@ function AnnualTable({ report }: { report: AnnualIncomeReport }) {
 
 function WithholdingTables({ report }: { report: WithholdingReport }) {
   const { t, i18n } = useTranslation();
-  const money = (v: number) => formatMoney(v, i18n.language);
+  const money = (v: number) => formatMoney(v, i18n.language, FISCAL_REPORT_CURRENCY);
   return (
     <div className="space-y-4">
       <div className="overflow-x-auto">
@@ -441,7 +442,7 @@ function WithholdingTables({ report }: { report: WithholdingReport }) {
 
 function TouristTaxTable({ report }: { report: TouristTaxReport }) {
   const { t, i18n } = useTranslation();
-  const money = (v: number) => formatMoney(v, i18n.language);
+  const money = (v: number) => formatMoney(v, i18n.language, FISCAL_REPORT_CURRENCY);
   return (
     <div className="space-y-4">
       <div className="overflow-x-auto">
