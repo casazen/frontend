@@ -254,7 +254,7 @@ export function OwnersSection({ summary }: SectionProps) {
             </TableBlock>
           ) : null}
           {owners.length > 0 ? (
-            <TableBlock title={t('accountantPackage.owners.performance.title')} note={t('accountantPackage.currencyMissing')} wide testId="accountant-owner-performance">
+            <TableBlock title={t('accountantPackage.owners.performance.title')} note={t('accountantPackage.currencyNotGiven')} wide testId="accountant-owner-performance">
               <SummaryTable
                 caption={t('accountantPackage.owners.performance.caption')}
                 testId="accountant-owner-performance-table"
@@ -339,7 +339,7 @@ export function StaysSection({ summary }: SectionProps) {
   return (
     <PlainSection title={t('accountantPackage.stays.title')} data-testid="accountant-stays">
       <p className={NOTE} data-testid="accountant-stays-currency-note">
-        {t('accountantPackage.currencyMissing')}
+        {t('accountantPackage.currencyNotGiven')}
       </p>
       <div className={PAGE_COLUMNS_WIDE}>
         <TableBlock title={t('accountantPackage.stays.stays.title')} wide testId="accountant-stays-figures">

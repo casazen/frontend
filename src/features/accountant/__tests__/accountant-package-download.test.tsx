@@ -190,7 +190,9 @@ describe('the page «Commercialista» (E15/F02/US01/T01)', () => {
       expect(await screen.findByTestId('accountant-download-problem')).toHaveTextContent(i18n.t('accountantPackage.download.tooLarge', { files: 1500, max: 1000 }));
       expect(save).not.toHaveBeenCalled();
       // The failure belongs to the period it came from: another period shows none of it.
-      fireEvent.change(screen.getByTestId('accountant-period'), { target: { value: '2026-05' } });
+      const select = screen.getByTestId('accountant-period');
+      await waitFor(() => expect(select).toBeEnabled());
+      fireEvent.change(select, { target: { value: '2026-05' } });
       await waitFor(() => expect(screen.queryByTestId('accountant-download-problem')).toBeNull());
     });
 

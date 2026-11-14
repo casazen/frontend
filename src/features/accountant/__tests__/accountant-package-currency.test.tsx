@@ -111,8 +111,8 @@ describe('the agency summary keeps every currency apart (E15/F02/US01/T01)', () 
       expect(text(id), id).not.toMatch(/€|CHF|EUR/);
     }
     // ...and the page says why, in words.
-    expect(screen.getByTestId('accountant-stays-currency-note')).toHaveTextContent(i18n.t('accountantPackage.currencyMissing'));
-    expect(screen.getByTestId('accountant-owner-performance-note')).toHaveTextContent(i18n.t('accountantPackage.currencyMissing'));
+    expect(screen.getByTestId('accountant-stays-currency-note')).toHaveTextContent(i18n.t('accountantPackage.currencyNotGiven'));
+    expect(screen.getByTestId('accountant-owner-performance-note')).toHaveTextContent(i18n.t('accountantPackage.currencyNotGiven'));
 
     // The costs of the channels: the row the server adds up whatever the currency of the houses is not drawn, so the table holds the two channels and no total.
     const costs = rows('accountant-portal-costs');

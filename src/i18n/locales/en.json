@@ -170,6 +170,7 @@
       "paymentFee": "Payment fees"
     },
     "currencyMissing": "The service gives no currency for these amounts: they are written without a symbol and are not converted.",
+    "currencyNotGiven": "The service gives no currency for these amounts: they are written without a symbol and, if the properties are in different currencies, the service adds them up with no conversion.",
     "description": "The summary of the agency for a month or a year, and the package to give to the accountant.",
     "documents": {
       "empty": "No document issued in this period.",

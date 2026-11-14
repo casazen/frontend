@@ -170,6 +170,7 @@
       "paymentFee": "Commissioni di pagamento"
     },
     "currencyMissing": "Per questi importi il servizio non indica la valuta: sono scritti senza simbolo e non sono convertiti.",
+    "currencyNotGiven": "Il servizio non indica la valuta di questi importi: sono scritti senza simbolo e, se gli immobili sono in valute diverse, il servizio li somma senza convertirli.",
     "description": "Il riepilogo dell'agenzia per un mese o per un anno e il pacchetto da dare al commercialista.",
     "documents": {
       "empty": "Nessun documento emesso in questo periodo.",
