@@ -71,7 +71,9 @@ function SwissTouristTax() {
 function ItalianTouristTax() {
   const { t } = useTranslation();
   const today = todayInRome();
-  const properties = useProperties({ mode: 'short' });
+  // The list is read again whenever the step opens: a property is created or changed on other pages, where this list is not watched, and the app keeps a list it has read for
+  // five minutes and never reads it again on mount. A comune of a property that is not in the list would be left out of the «Da fare».
+  const properties = useProperties({ mode: 'short' }, { fresh: true });
   const rates = useMunicipalTouristTaxRates(true);
 
   const comuni = useMemo(() => {
