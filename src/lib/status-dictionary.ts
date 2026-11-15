@@ -199,6 +199,10 @@ export const STATUS_DICTIONARY = {
     Rifiutato: { tone: "danger", icon: "alert-circle", next: "InviatoManualmente", need: true },
     Errore: { tone: "danger", icon: "alert-circle", next: "InviatoManualmente", need: true },
     NotDue: { tone: "neutral", icon: "circle-dashed" },
+    // The guests are on the channel manager, which sends them (E20/F01/US01/T02): yellow and waiting for the receipt, never the green of a communication that is proven.
+    EntrustedToChannelManager: { tone: "warning", icon: "hourglass", next: "Inviato", need: true },
+    // A guest could not be written to the channel manager: the host corrects the data or asks again; once every guest is on it the stay is entrusted.
+    ChannelManagerWriteFailed: { tone: "danger", icon: "alert-circle", next: "EntrustedToChannelManager", need: true },
   }),
   /** The CIN of a property, as `GET /properties/cin-compliance` says it. The deadline and the penalties are the page's: they come from the backend. */
   cin: defineKind<CinStatus>({
