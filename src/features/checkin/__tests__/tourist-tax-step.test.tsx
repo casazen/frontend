@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterEach, beforeAll, beforeEach } from 'vite
 import { act, cleanup, configure, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { createElement, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { AxiosError, AxiosHeaders } from 'axios';
 import type { InternalAxiosRequestConfig } from 'axios';
@@ -523,7 +523,14 @@ const openContext: PublicCheckInContextDto = {
   availableCodeTables: [],
 };
 
-function renderPage(flags: Partial<FeatureFlags> = {}) {
+/** The query string the router is at: what the page leaves in the address. */
+function LocationSearch() {
+  const { search } = useLocation();
+  return <span data-testid="location-search">{search}</span>;
+}
+
+/** The page at `/checkin/:token` followed by `search` (what Stripe adds to the address of a payment method that redirects, say). */
+function renderPage(flags: Partial<FeatureFlags> = {}, search = '') {
   const client = queryClientOf();
   return render(
     createElement(
@@ -534,8 +541,20 @@ function renderPage(flags: Partial<FeatureFlags> = {}) {
         { client },
         createElement(
           MemoryRouter,
-          { initialEntries: [`/checkin/${TOKEN}`] },
-          createElement(Routes, null, createElement(Route, { path: '/checkin/:token', element: createElement(CheckInPage) })),
+          { initialEntries: [`/checkin/${TOKEN}${search}`] },
+          createElement(
+            Routes,
+            null,
+            createElement(Route, {
+              path: '/checkin/:token',
+              element: (
+                <>
+                  <CheckInPage />
+                  <LocationSearch />
+                </>
+              ),
+            }),
+          ),
         ),
       ),
     ),
@@ -657,6 +676,50 @@ describe('CheckInPage and the tourist tax', () => {
     await screen.findByTestId('tourist-tax-processing');
     await waitFor(() => expect(screen.getByTestId('checkin-next')).toBeEnabled());
     expect(screen.getByRole('button', { name: /Indietro/ })).toBeEnabled();
+  });
+
+  it('twoClicksInTheSameInstant_ConfirmOnce_AndAvantiIsLetGoOnlyWhenTheServerSaysPaid', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+    // The organization asks for the tax before the lock code: «Avanti» is held until the server says the tax is paid.
+    let serverSaysPaid = false;
+    vi.mocked(publicCheckinApi.getTouristTax).mockImplementation(async () =>
+      serverSaysPaid
+        ? taxView({ requiredBeforeAccessCode: true, status: 'PaidOnline', reason: 'NothingDue', payable: 0, collectedAmount: 9 })
+        : taxView({ requiredBeforeAccessCode: true }),
+    );
+    let finish: (result: unknown) => void = () => undefined;
+    stripe.confirmPayment.mockReturnValue(new Promise((resolve) => (finish = resolve)));
+    renderPage({ touristTaxOnlinePayment: true });
+    await fillGuestAndDocument();
+    await waitFor(() => expect(screen.getByTestId('checkin-progress').children).toHaveLength(6));
+    fireEvent.click(screen.getByRole('button', { name: /Avanti/ }));
+    const pay = await screen.findByRole('button', { name: /^Paga 9,00\s*CHF$/ });
+    expect(screen.getByTestId('checkin-next')).toBeDisabled();
+
+    // Two clicks before the page has drawn anything (the same act, so the button is not disabled yet for the second one): the guard of the form lets one confirmation through.
+    act(() => {
+      pay.click();
+      pay.click();
+    });
+    expect(stripe.confirmPayment).toHaveBeenCalledTimes(1);
+
+    // The browser got «succeeded», but the server has not recorded the payment: the step says it is being confirmed and «Avanti» is still held.
+    finish({ paymentIntent: { status: 'succeeded' } });
+    await screen.findByTestId('tourist-tax-processing');
+    expect(screen.getByTestId('checkin-next')).toBeDisabled();
+
+    // The server records it (its webhook): the next read of the page says paid, and only then «Avanti» is let go.
+    serverSaysPaid = true;
+    await waitFor(() => expect(screen.getByTestId('checkin-next')).toBeEnabled());
+    expect(screen.getByTestId('tourist-tax-paid')).toBeInTheDocument();
+    expect(stripe.confirmPayment).toHaveBeenCalledTimes(1);
+  });
+
+  it('backFromAPaymentThatRedirects_TheSecretOfTheIntentGoesFromTheAddressAtOnce_TheRestOfTheAddressStays', async () => {
+    renderPage({ touristTaxOnlinePayment: true }, '?payment_intent=pi_1&payment_intent_client_secret=pi_1_secret_abc&redirect_status=succeeded&keep=1');
+
+    await screen.findByTestId('checkin-page');
+    await waitFor(() => expect(screen.getByTestId('location-search')).toHaveTextContent(/^\?keep=1$/));
+    expect(screen.getByTestId('location-search').textContent).not.toMatch(/payment_intent|secret|redirect_status/);
   });
 
   it('completedCheckIn_TheTaxThatCanStillBePaidIsUnderTheCard', async () => {
