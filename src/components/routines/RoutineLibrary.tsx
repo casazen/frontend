@@ -1,160 +1,144 @@
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { BookCheck, MessageSquare, Star, FileWarning } from 'lucide-react';
-import type { RoutineLibraryTemplate, RoutineEventType, RoutineActionType } from '@/types';
+import { BookCheck, MessageSquare, Star, FileWarning, type LucideIcon } from 'lucide-react';
+import { eventLabelKey, unavailableActionTypes, type ActionAvailability } from '@/lib/routine-model';
+import type { RoutineLibraryTemplate } from '@/types';
 
 interface RoutineLibraryProps {
-  onActivate: (template: RoutineLibraryTemplate) => void;
-  isActivating?: boolean;
+  /** What the catalog says of each action: a template that holds an action that cannot run yet cannot be switched on, only created in test mode. */
+  availability?: ActionAvailability;
+  /** Creates the routine of a template: on (`testMode` false) or as a simulation (`testMode` true). */
+  onCreate: (template: RoutineLibraryTemplate, options: { testMode: boolean }) => void;
+  /** A routine is being created: every button of the library waits for it. */
+  isCreating?: boolean;
 }
 
-export function RoutineLibrary({ onActivate, isActivating }: RoutineLibraryProps) {
-  const { t } = useTranslation();
-
-  // Pre-built routine templates (AC-NF26-12, AC-NF26-13)
-  const templates: RoutineLibraryTemplate[] = [
+/**
+ * The ready routines (AC-NF26-12, AC-NF26-13). Each one is a valid routine of the API as it stands: the configuration of every action is the one its type takes
+ * (`RoutineActionRules`) and the condition, when it has one, is on a field a routine reads. The To do of the cleaning is the one the action `CreateActivity` makes; the
+ * messages need an action that cannot run yet, so they are created in test mode until it can.
+ */
+function buildTemplates(t: TFunction): Array<{ template: RoutineLibraryTemplate; icon: LucideIcon }> {
+  return [
     {
-      name: t('routines.library.cleaningTitle'),
-      description: t('routines.library.cleaningDescription'),
-      eventType: 'CheckoutOccurred' as RoutineEventType,
-      actions: [
-        {
-          type: 'CreateActivity' as RoutineActionType,
-          config: {
-            activityType: 'Cleaning',
-          },
-        },
-      ],
+      icon: BookCheck,
+      template: {
+        name: t('routines.library.cleaningTitle'),
+        description: t('routines.library.cleaningDescription'),
+        eventType: 'CheckoutOccurred',
+        actions: [{ type: 'CreateActivity', config: { text: t('routines.library.cleaningTaskText') } }],
+      },
     },
     {
-      name: t('routines.library.instructionsTitle'),
-      description: t('routines.library.instructionsDescription'),
-      eventType: 'BeforeCheckin' as RoutineEventType,
-      eventConfig: {
-        days: 2,
-        hours: 0,
+      icon: MessageSquare,
+      template: {
+        name: t('routines.library.instructionsTitle'),
+        description: t('routines.library.instructionsDescription'),
+        eventType: 'BeforeCheckin',
+        eventConfig: { days: 2, hours: 0 },
+        actions: [{ type: 'MessageToGuest', config: { channel: 'email' } }],
       },
-      actions: [
-        {
-          type: 'MessageToGuest' as RoutineActionType,
-          config: {
-            channel: 'email',
-          },
-        },
-      ],
     },
     {
-      name: t('routines.library.reviewTitle'),
-      description: t('routines.library.reviewDescription'),
-      eventType: 'AfterCheckout' as RoutineEventType,
-      eventConfig: {
-        days: 1,
-        hours: 0,
+      icon: Star,
+      template: {
+        name: t('routines.library.reviewTitle'),
+        description: t('routines.library.reviewDescription'),
+        eventType: 'AfterCheckout',
+        eventConfig: { days: 1, hours: 0 },
+        actions: [{ type: 'MessageToGuest', config: { channel: 'email' } }],
       },
-      actions: [
-        {
-          type: 'MessageToGuest' as RoutineActionType,
-          config: {
-            channel: 'email',
-          },
-        },
-      ],
     },
     {
-      name: t('routines.library.documentReminderTitle'),
-      description: t('routines.library.documentReminderDescription'),
-      eventType: 'BeforeCheckin' as RoutineEventType,
-      eventConfig: {
-        days: 3,
-        hours: 0,
+      // No condition: a routine does not read whether the documents were uploaded (the fields it reads are the property, the channel and the counts of the booking), so
+      // the reminder goes to every guest, and the description says so.
+      icon: FileWarning,
+      template: {
+        name: t('routines.library.documentReminderTitle'),
+        description: t('routines.library.documentReminderDescription'),
+        eventType: 'BeforeCheckin',
+        eventConfig: { days: 3, hours: 0 },
+        actions: [{ type: 'MessageToGuest', config: { channel: 'email' } }],
       },
-      condition: {
-        operator: 'not',
-        rules: [
-          {
-            field: 'idVerificationCompleted',
-            operator: 'equals',
-            value: true,
-          },
-        ],
-      },
-      actions: [
-        {
-          type: 'MessageToGuest' as RoutineActionType,
-          config: {
-            channel: 'email',
-          },
-        },
-      ],
     },
   ];
+}
 
-  const getIcon = (index: number) => {
-    switch (index) {
-      case 0:
-        return <BookCheck className="h-6 w-6" />;
-      case 1:
-        return <MessageSquare className="h-6 w-6" />;
-      case 2:
-        return <Star className="h-6 w-6" />;
-      case 3:
-        return <FileWarning className="h-6 w-6" />;
-      default:
-        return <MessageSquare className="h-6 w-6" />;
-    }
-  };
+export function RoutineLibrary({ availability, onCreate, isCreating }: RoutineLibraryProps) {
+  const { t } = useTranslation();
+  const templates = buildTemplates(t);
 
   return (
     <div className="space-y-4">
-      <div>
-        <h2 className="text-xl font-semibold">{t('routines.library.title')}</h2>
-        <p className="text-sm text-muted-foreground">{t('routines.library.description')}</p>
-      </div>
-
       <div className="grid gap-4 md:grid-cols-2">
-        {templates.map((template, index) => (
-          <Card key={index} data-testid={`library-template-${index}`}>
-            <CardHeader>
-              <div className="flex items-start gap-3">
-                <div className="p-2 rounded-lg bg-primary/10 text-primary">{getIcon(index)}</div>
-                <div className="flex-1">
-                  <CardTitle className="text-base">{template.name}</CardTitle>
-                  <CardDescription className="mt-1">{template.description}</CardDescription>
+        {templates.map(({ template, icon: Icon }, index) => {
+          const cannotRun = unavailableActionTypes(availability, template.actions).length > 0;
+          return (
+            <Card key={template.name} data-testid={`library-template-${index}`}>
+              <CardHeader>
+                <div className="flex items-start gap-3">
+                  <div className="rounded-lg bg-primary/10 p-2 text-primary">
+                    <Icon className="h-6 w-6" aria-hidden="true" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <CardTitle className="text-base">{template.name}</CardTitle>
+                    <CardDescription className="mt-1">{template.description}</CardDescription>
+                  </div>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="text-xs text-muted-foreground">
-                  <p>
-                    <span className="font-medium">{t('routines.eventType')}:</span>{' '}
-                    {t(`routines.events.${template.eventType.charAt(0).toLowerCase() + template.eventType.slice(1)}`)}
-                  </p>
-                  {template.eventConfig && (
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="text-xs text-muted-foreground">
                     <p>
-                      <span className="font-medium">{t('routines.timing')}:</span>{' '}
-                      {template.eventConfig.days} {t('routines.days')}
+                      <span className="font-medium">{t('routines.eventType')}:</span> {t(eventLabelKey(template.eventType))}
                     </p>
+                    {template.eventConfig && (
+                      <p>
+                        <span className="font-medium">{t('routines.timing')}:</span> {template.eventConfig.days} {t('routines.days')}
+                      </p>
+                    )}
+                    <p>
+                      <span className="font-medium">{t('routines.actions')}:</span> {template.actions.length}
+                    </p>
+                  </div>
+
+                  {cannotRun ? (
+                    <>
+                      <div className="space-y-1" data-testid={`template-unavailable-${index}`}>
+                        <Badge variant="outline">{t('routines.action.unavailable')}</Badge>
+                        <p className="text-xs text-muted-foreground">{t('routines.library.unavailableNote')}</p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                        onClick={() => onCreate(template, { testMode: true })}
+                        disabled={isCreating}
+                        data-testid={`test-template-${index}`}
+                      >
+                        {isCreating ? t('routines.library.activating') : t('routines.library.createInTestMode')}
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => onCreate(template, { testMode: false })}
+                      disabled={isCreating}
+                      data-testid={`activate-template-${index}`}
+                    >
+                      {isCreating ? t('routines.library.activating') : t('routines.library.activate')}
+                    </Button>
                   )}
-                  <p>
-                    <span className="font-medium">{t('routines.actions')}:</span> {template.actions.length}
-                  </p>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => onActivate(template)}
-                  disabled={isActivating}
-                  data-testid={`activate-template-${index}`}
-                >
-                  {isActivating ? t('routines.library.activating') : t('routines.library.activate')}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );

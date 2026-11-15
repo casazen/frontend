@@ -107,7 +107,7 @@ describe('describeTodo and the month of a property', () => {
   });
 });
 
-// Every `ActivityType` of the backend (`Casazen.Core/Entities/Enums/ActivityType.cs`, today 26 values) has its own words in both languages, not «Attività da completare».
+// Every `ActivityType` of the backend (`Casazen.Core/Entities/Enums/ActivityType.cs`, today 27 values) has its own words in both languages, not «Attività da completare».
 const BACKEND_TYPES = [
   'CheckInPending',
   'CheckOutPending',
@@ -135,6 +135,7 @@ const BACKEND_TYPES = [
   'OwnerStayToReview',
   'OwnerStaySyncFailed',
   'OwnerDocumentExpiring',
+  'RoutineTask',
 ] as const;
 
 describe('describeTodo for every type of the backend', () => {
@@ -155,5 +156,31 @@ describe('describeTodo for every type of the backend', () => {
     // No two types share a title: the host tells them apart in the list.
     expect(titles.size).toBe(BACKEND_TYPES.length);
     await i18n.changeLanguage('it');
+  });
+});
+
+// The To do that a routine makes carries the words the host wrote in the routine (E01/F04/US02/T01): they are its reason as they are, even one word, and never a key of the texts.
+describe('describeTodo and the To do of a routine', () => {
+  it.each(['Pulizia', 'Controlla la casa dopo la partenza', 'a.b', 'constructor', 'connection_inactive', 'activity.todo.type.unknown.why'])(
+    'describeTodo_RoutineTaskWithTheWordsOfTheHost_SaysThemAsTheyAre_%s',
+    (reason) => {
+      expect(describeTodo(activity('RoutineTask', { action: 'ReviewBooking', reason }), contextOf('it')).why).toBe(reason);
+    },
+  );
+
+  it('describeTodo_RoutineTaskWithSpacesAroundTheWords_SaysThemWithoutTheSpaces', () => {
+    expect(describeTodo(activity('RoutineTask', { action: 'ReviewBooking', reason: '  Pulizia  ' }), contextOf('it')).why).toBe('Pulizia');
+  });
+
+  it.each([null, '', '   '])('describeTodo_RoutineTaskWithNoWords_SaysWhatItsTypeSays_%j', (reason) => {
+    const fixed = i18n.getFixedT('it');
+
+    expect(describeTodo(activity('RoutineTask', { action: 'ReviewBooking', reason }), contextOf('it')).why).toBe(fixed('activity.todo.type.RoutineTask.why'));
+  });
+
+  it('describeTodo_OneWordReasonOfAnotherType_IsStillNotShown', () => {
+    const fixed = i18n.getFixedT('it');
+
+    expect(describeTodo(activity('IstatDeadline', { reason: 'Pulizia' }), contextOf('it')).why).toBe(fixed('activity.todo.type.IstatDeadline.why'));
   });
 });
