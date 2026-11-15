@@ -23,6 +23,8 @@ describe('isPublicUnauthenticatedPath', () => {
     expect(isPublicUnauthenticatedPath('/checkin/token')).toBe(true);
     expect(isPublicUnauthenticatedPath('/rent/pay/11111111-1111-1111-1111-111111111111')).toBe(true);
     expect(isPublicUnauthenticatedPath('/service/pay/11111111-1111-1111-1111-111111111111')).toBe(true);
+    // The document a guest got by e-mail (E12/F02/US02): Auth0 is never loaded for a guest who only opens the link.
+    expect(isPublicUnauthenticatedPath('/documents/view/11111111-1111-1111-1111-111111111111')).toBe(true);
     expect(isPublicUnauthenticatedPath('/guided-form')).toBe(true);
   });
 

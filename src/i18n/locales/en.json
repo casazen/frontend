@@ -21395,6 +21395,29 @@
       "step3Request": "Send the request"
     }
   },
+  "publicFiscalDocument": {
+    "description": "Here is the summary of the document you received. Download the PDF to keep it.",
+    "download": "Download the PDF",
+    "invalid": {
+      "description": "This link is not valid or has expired. Ask the property to send it again.",
+      "title": "Link not valid or expired"
+    },
+    "kind": {
+      "creditNote": "Credit note",
+      "invoice": "Invoice",
+      "other": "Document",
+      "receipt": "Receipt"
+    },
+    "loading": "Loading the document…",
+    "noCurrency": "The currency is not stated in the document: the amount is shown without a symbol.",
+    "summary": {
+      "date": "Date",
+      "kind": "Type",
+      "number": "Number",
+      "total": "Total"
+    },
+    "title": "Your document"
+  },
   "publicProperty": {
     "amenities": {
       "AirConditioning": "Air conditioning",
