@@ -8498,6 +8498,12 @@
     "openPropertyPage": "Apri pagina struttura",
     "orgUrlSectionTitle": "URL organizzazione",
     "selectPropertyHint": "Seleziona una struttura per vedere l'anteprima della pagina di prenotazione.",
+    "siteAddress": {
+      "copiedFailed": "URL copiato, ma è l'indirizzo di CasaZen: non riusciamo a leggere quello del tuo sito.",
+      "copiedRestricted": "URL copiato, ma è l'indirizzo di CasaZen: quello del tuo sito lo vede solo chi amministra l'account.",
+      "failed": "Non riusciamo a leggere l'indirizzo del tuo sito: questo è l'indirizzo di CasaZen.",
+      "restricted": "Questo è l'indirizzo di CasaZen: quello del tuo sito lo vede solo chi amministra l'account."
+    },
     "bookingLink": {
       "campaign": "Nome della campagna",
       "campaignHint": "Serve a riconoscere da dove arrivano le prenotazioni, per esempio «estate-2026». Non scrivere nomi di persone, e-mail o numeri di telefono.",

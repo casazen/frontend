@@ -8498,6 +8498,12 @@
     "openPropertyPage": "Open property page",
     "orgUrlSectionTitle": "Org URL",
     "selectPropertyHint": "Select a property to preview its booking page.",
+    "siteAddress": {
+      "copiedFailed": "URL copied, but it's the CasaZen address: we can't read the address of your site.",
+      "copiedRestricted": "URL copied, but it's the CasaZen address: only whoever manages the account can see the address of your site.",
+      "failed": "We can't read the address of your site: this is the CasaZen address.",
+      "restricted": "This is the CasaZen address: only whoever manages the account can see the address of your site."
+    },
     "bookingLink": {
       "campaign": "Campaign name",
       "campaignHint": "It tells you where bookings come from, for example “summer-2026”. Don't write people's names, e-mail addresses or phone numbers.",

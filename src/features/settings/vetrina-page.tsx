@@ -79,7 +79,7 @@ export function VetrinaPage() {
                 </button>
                 {!orgUrlCollapsed && (
                   <div className="px-3 pb-3">
-                    <VetrinaUrlCopy url={orgSiteUrl(bookingSite.site)} variant="inline" />
+                    <VetrinaUrlCopy url={orgSiteUrl(bookingSite.site)} status={bookingSite.status} variant="inline" />
                   </div>
                 )}
               </div>

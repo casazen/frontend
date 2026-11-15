@@ -3,10 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { Check, Copy, ExternalLink, Link2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
 import { propertySiteUrl } from '@/lib/booking-link';
 import { isPropertyPublishable } from '@/lib/booking-url';
 import type { Property } from '@/types';
+import { copySiteAddress } from '../domain/copy-site-address';
 import type { OrgBookingSite } from '../domain/use-org-domain';
 import { BookingLinkDialog } from './booking-link-dialog';
 
@@ -30,16 +30,13 @@ export function VetrinaPropertyRow({ property, bookingSite, isSelected, onSelect
     complianceStatus: property.complianceStatus ?? undefined,
   });
 
+  // The address is copied once it is known: while the settings of the site are on their way nothing is, and when they could not be read the host is told that what it
+  // got is the address of CasaZen (`copySiteAddress`).
   const handleCopy = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    try {
-      await navigator.clipboard.writeText(propertyUrl);
-      setCopied(true);
-      toast.success(t('directBooking.urlCopied'));
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error(t('directBooking.urlCopyError'));
-    }
+    if (!(await copySiteAddress(propertyUrl, bookingSite.status, t))) return;
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -74,6 +71,7 @@ export function VetrinaPropertyRow({ property, bookingSite, isSelected, onSelect
             className="h-7 w-7"
             aria-label={t('directBooking.copyPropertyUrl')}
             data-testid="vetrina-property-copy-url"
+            disabled={bookingSite.status === 'loading'}
             onClick={handleCopy}
           >
             {copied ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5" />}
