@@ -535,6 +535,61 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       pending.resolve({ ...CLEANING, active: false });
       await waitFor(() => expect(screen.getByTestId('toggle-test-mode-r1')).toBeEnabled());
     });
+
+    it('RoutinesPage_WritesOnTwoCardsInFlightAtOnce_KeepEachCardWaitingUntilItsOwnAnswer', async () => {
+      const first = deferred<Routine>();
+      const second = deferred<Routine>();
+      const other = routine({ id: 'r5', name: 'Altra routine' });
+      vi.mocked(routinesApi.getAll).mockResolvedValue([CLEANING, other]);
+      vi.mocked(routinesApi.setActive).mockReturnValueOnce(first.promise).mockReturnValueOnce(second.promise);
+      renderPage();
+
+      // A write on the first card and, while it is still on its way, one with the same hook on the second: a mutation hook follows only its last call.
+      fireEvent.click(await screen.findByTestId('toggle-active-r1'));
+      await waitFor(() => expect(screen.getByTestId('toggle-test-mode-r1')).toBeDisabled());
+      fireEvent.click(screen.getByTestId('toggle-active-r5'));
+      await waitFor(() => expect(screen.getByTestId('toggle-test-mode-r5')).toBeDisabled());
+
+      // The first card still waits for its own answer.
+      for (const control of ['toggle-active-r1', 'toggle-test-mode-r1', 'edit-routine-r1', 'delete-routine-r1']) {
+        expect(screen.getByTestId(control), control).toBeDisabled();
+      }
+
+      // The answer of the second one frees the second card only.
+      second.resolve({ ...other, active: false });
+      await waitFor(() => expect(screen.getByTestId('toggle-test-mode-r5')).toBeEnabled());
+      for (const control of ['toggle-active-r1', 'toggle-test-mode-r1', 'edit-routine-r1', 'delete-routine-r1']) {
+        expect(screen.getByTestId(control), control).toBeDisabled();
+      }
+
+      first.resolve({ ...CLEANING, active: false });
+      await waitFor(() => expect(screen.getByTestId('toggle-test-mode-r1')).toBeEnabled());
+      expect(screen.getByTestId('edit-routine-r1')).toBeEnabled();
+      expect(screen.getByTestId('delete-routine-r1')).toBeEnabled();
+    });
+
+    it('RoutinesPage_WritesOfDifferentKindsOnTwoCards_KeepEachCardWaitingUntilItsOwnAnswer', async () => {
+      const activation = deferred<Routine>();
+      const testMode = deferred<Routine>();
+      const other = routine({ id: 'r5', name: 'Altra routine' });
+      vi.mocked(routinesApi.getAll).mockResolvedValue([CLEANING, other]);
+      vi.mocked(routinesApi.setActive).mockReturnValueOnce(activation.promise);
+      vi.mocked(routinesApi.setTestMode).mockReturnValueOnce(testMode.promise);
+      renderPage();
+
+      fireEvent.click(await screen.findByTestId('toggle-active-r1'));
+      await waitFor(() => expect(screen.getByTestId('edit-routine-r1')).toBeDisabled());
+      fireEvent.click(screen.getByTestId('toggle-test-mode-r5'));
+      await waitFor(() => expect(screen.getByTestId('edit-routine-r5')).toBeDisabled());
+      expect(screen.getByTestId('edit-routine-r1')).toBeDisabled();
+
+      testMode.resolve({ ...other, testMode: true });
+      await waitFor(() => expect(screen.getByTestId('edit-routine-r5')).toBeEnabled());
+      expect(screen.getByTestId('edit-routine-r1')).toBeDisabled();
+
+      activation.resolve({ ...CLEANING, active: false });
+      await waitFor(() => expect(screen.getByTestId('edit-routine-r1')).toBeEnabled());
+    });
   });
 
   describe('the library', () => {

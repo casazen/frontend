@@ -1,4 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
+import { useMutation, useMutationState, useQuery, useQueryClient } from '@tanstack/react-query';
 import { routinesApi } from '@/api/routines.api';
 import type { CreateRoutineDto, UpdateRoutineDto } from '@/types';
 import { toast } from 'sonner';
@@ -8,6 +9,8 @@ import { describeRoutineError } from '@/lib/routine-errors';
 const ROUTINES_KEY = 'routines';
 /** Outside the key of the routines, so that a change to a routine never reads the catalog again. */
 const ROUTINE_ACTIONS_KEY = 'routine-actions';
+/** The key every write on ONE routine carries (change, delete, switch on or off, switch test mode): `useRoutineIdsBeingWritten` asks the mutation cache which of them are on their way. */
+const ROUTINE_WRITE_KEY = [ROUTINES_KEY, 'write'] as const;
 
 /** How long the list of the routines and the log of one are fresh: they change by what the host does and by the events of the stays, so a page that is opened reads them again. */
 const ROUTINES_STALE_TIME = 30 * 1000;
@@ -55,6 +58,25 @@ export function useRoutineExecutions(routineId: string | undefined) {
   });
 }
 
+/** The routine a write was called with: its id alone (the deletion) or the object that holds it (the others). */
+function routineIdOf(variables: unknown): string | undefined {
+  if (typeof variables === 'string') return variables;
+  const id = typeof variables === 'object' && variables !== null ? (variables as { id?: unknown }).id : undefined;
+  return typeof id === 'string' ? id : undefined;
+}
+
+/**
+ * The routines that have a write on their way, however many writes are in flight at once. A mutation hook follows only its LAST call (`mutate` lets go of the one before), so a page
+ * that reads `isPending` of its hooks frees the card of a first write as soon as a second one starts on another card: it asks the mutation cache instead, which knows them all.
+ */
+export function useRoutineIdsBeingWritten(): ReadonlySet<string> {
+  const ids = useMutationState({
+    filters: { mutationKey: [...ROUTINE_WRITE_KEY], status: 'pending' },
+    select: (mutation) => routineIdOf(mutation.state.variables),
+  });
+  return useMemo(() => new Set(ids.filter((id): id is string => id !== undefined)), [ids]);
+}
+
 export function useCreateRoutine() {
   const queryClient = useQueryClient();
 
@@ -74,6 +96,7 @@ export function useUpdateRoutine() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: [...ROUTINE_WRITE_KEY, 'update'],
     mutationFn: ({ id, dto }: { id: string; dto: UpdateRoutineDto }) => routinesApi.update(id, dto),
     onSuccess: (_data, variables) => {
       void queryClient.invalidateQueries({ queryKey: [ROUTINES_KEY] });
@@ -90,6 +113,7 @@ export function useDeleteRoutine() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: [...ROUTINE_WRITE_KEY, 'delete'],
     mutationFn: (id: string) => routinesApi.delete(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: [ROUTINES_KEY] });
@@ -106,6 +130,7 @@ export function useSetRoutineActive() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: [...ROUTINE_WRITE_KEY, 'set-active'],
     mutationFn: ({ id, active }: { id: string; active: boolean }) => routinesApi.setActive(id, active),
     onSuccess: (_data, variables) => {
       void queryClient.invalidateQueries({ queryKey: [ROUTINES_KEY] });
@@ -123,6 +148,7 @@ export function useSetRoutineTestMode() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: [...ROUTINE_WRITE_KEY, 'set-test-mode'],
     mutationFn: ({ id, testMode }: { id: string; testMode: boolean }) => routinesApi.setTestMode(id, testMode),
     onSuccess: (_data, variables) => {
       void queryClient.invalidateQueries({ queryKey: [ROUTINES_KEY] });

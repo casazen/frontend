@@ -36,6 +36,7 @@ import {
   useDeleteRoutine,
   useRoutineActions,
   useRoutineExecutions,
+  useRoutineIdsBeingWritten,
   useRoutines,
   useSetRoutineActive,
   useSetRoutineTestMode,
@@ -66,12 +67,9 @@ export function RoutinesPage() {
   const [routineToDelete, setRoutineToDelete] = useState<Routine | undefined>();
   const [filter, setFilter] = useState<RoutineFilter>('active');
 
-  // A card waits while ANY write on its routine is on its way: a second click on another button of the same card would answer for a routine that is about to change.
-  const busyIds = new Set<string>();
-  if (updateRoutine.isPending && updateRoutine.variables) busyIds.add(updateRoutine.variables.id);
-  if (deleteRoutine.isPending && deleteRoutine.variables) busyIds.add(deleteRoutine.variables);
-  if (setActive.isPending && setActive.variables) busyIds.add(setActive.variables.id);
-  if (setTestMode.isPending && setTestMode.variables) busyIds.add(setTestMode.variables.id);
+  // A card waits while ANY write on its routine is on its way, whichever write and however many are in flight on other cards at the same time (the hooks above follow only
+  // their last call, so the ids come from the mutation cache): a second click on another button of the same card would answer for a routine that is about to change.
+  const busyIds = useRoutineIdsBeingWritten();
 
   const handleCreate = () => {
     setSelectedRoutine(undefined);
