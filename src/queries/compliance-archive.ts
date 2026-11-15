@@ -61,6 +61,23 @@ export function useBookingCompliance(bookingId: string, enabled = true) {
 }
 
 /**
+ * What a receipt of the Alloggiati communication of a day would prove for the flats it would cover (E20/F02/US02/T01): the stays that become proven, in all and for each flat. The
+ * host reads it before saving, so it never shows an older answer as the one of the days and flats now chosen: the key holds both, nothing of the last choice is kept while the
+ * next one is read (no `placeholderData`), it is read again on every mount and a read less than a moment old is never fresh, and a read that fails is an error whatever the cache
+ * still holds of the same choice (the dialog looks at the error before it looks at the data). `enabled` is false until there is a day and at least one flat: asking with none is a
+ * mistake the server answers with a 422, never «every flat».
+ */
+export function useReceiptCoverage(day: string, propertyIds: readonly string[], enabled = true) {
+  return useQuery({
+    queryKey: [COMPLIANCE_ARCHIVE_KEY, 'receipt-coverage', day, propertyIds],
+    queryFn: ({ signal }) => complianceArchiveApi.getReceiptCoverage(day, propertyIds, signal),
+    enabled: enabled && day !== '' && propertyIds.length > 0,
+    refetchOnMount: 'always',
+    staleTime: 0,
+  });
+}
+
+/**
  * Downloads one proof and saves it. A proof is the receipt of a communication about guests or of a tax: the mutation keeps nothing of it once
  * nobody watches it (`gcTime: 0`), what its function hands back is nothing (the file goes to the disk inside it, never into the cache of the
  * mutations) and a failure is kept without its request, which holds the access token of the caller (`withoutRequest`). A proof that is not
@@ -140,8 +157,10 @@ export function useExportCoverageReport() {
 /**
  * Uploads a proof. The file is a receipt about guests or a tax: the variables go with the mutation, so it keeps nothing once the dialog that
  * asked is closed (`gcTime: 0`), and a failure is kept without its request. The dialog tells the refusals (a file that is not a PDF, a JPEG or a
- * PNG, one that is too large, a day that is not acceptable) next to the button. When it is done, the archive, the report and the compliance
- * cockpit (whose lights this proof may change) are read again.
+ * PNG, one that is too large, a day that is not acceptable, flats a receipt cannot cover) next to the button. When it is done, the archive (the
+ * proofs of a stay and the answers of the summary before saving included), the report, the compliance cockpit (whose lights this proof may
+ * change) and the Alloggiati status of the stays (a stay the receipt covers is no longer waiting for it: the page of a booking that is open shows
+ * it without a reload) are read again.
  */
 export function useUploadProof() {
   const queryClient = useQueryClient();
@@ -158,6 +177,8 @@ export function useUploadProof() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: [COMPLIANCE_ARCHIVE_KEY] });
       void queryClient.invalidateQueries({ queryKey: ['compliance'] });
+      // `ALLOGGIATI_KEY` of `use-alloggiati`, which imports this file: the key is written out here so the two do not import each other.
+      void queryClient.invalidateQueries({ queryKey: ['alloggiati'] });
       toast.success(i18n.t('complianceArchive.upload.done'));
     },
   });

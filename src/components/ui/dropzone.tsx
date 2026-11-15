@@ -19,6 +19,11 @@ export interface DropzoneProps {
   disabled?: boolean;
   className?: string;
   'data-testid'?: string;
+  /**
+   * The `data-testid` of the file input, for a screen whose input already has a name its tests and its e2e read (`proof-upload-file`) and that moves to this zone. Default: the one of the
+   * zone with `-input` after it.
+   */
+  inputTestId?: string;
 }
 
 /**
@@ -36,6 +41,7 @@ export function Dropzone({
   disabled = false,
   className,
   'data-testid': testId = 'dropzone',
+  inputTestId,
 }: DropzoneProps) {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const titleId = React.useId();
@@ -97,7 +103,7 @@ export function Dropzone({
         tabIndex={-1}
         aria-hidden="true"
         className="hidden"
-        data-testid={`${testId}-input`}
+        data-testid={inputTestId ?? `${testId}-input`}
         onChange={(event) => {
           hand(event.target.files);
           // The same file can be chosen again after a failure.

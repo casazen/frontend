@@ -207,6 +207,15 @@ describe('the archive of the proofs: the address and the filters', () => {
     expect(complianceArchiveApi.getCoverageReport).not.toHaveBeenCalled();
   });
 
+  // The proofs of the archive are of short stays: the page asks for the short-rent flats only (its filter and the flats the dialog of a receipt offers to cover), never one let long-term.
+  it('AlloggiatiPage_Flats_AreAskedForTheShortRentOnesOnly', async () => {
+    renderPage();
+
+    await screen.findByTestId('proof-archive-table');
+    expect(vi.mocked(useProperties)).toHaveBeenCalled();
+    expect(vi.mocked(useProperties).mock.calls.every(([params]) => params?.mode === 'short')).toBe(true);
+  });
+
   it('AlloggiatiPage_LinkOfTheCockpitWithTheSummary_NarrowsTheSummaryToTheSameFilters', async () => {
     vi.mocked(complianceArchiveApi.getCoverageReport).mockResolvedValue(
       report([row('Missing'), row('Missing', { kind: 'Alloggiati', bookingId: 'b1', bookingCode: 'AB123-CD456', day: '2026-08-15', period: null })]),
