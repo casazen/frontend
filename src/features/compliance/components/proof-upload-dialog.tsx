@@ -137,7 +137,14 @@ function UploadForm({ onClose, properties: listed, kinds, prefill, alloggiatiPor
   const coverage = useReceiptCoverage(day, covered, coverageAsked);
   // Before an upload that cannot be undone (the photos of the documents go) the host reads what it will touch: the summary has to be there.
   const summaryRequired = purgeOn && isReceipt;
-  const ready = propertyId !== '' && kind !== '' && when !== '' && !dayProblem && file !== null && !fileProblem && (!summaryRequired || coverage.isSuccess);
+  // A summary that failed to answer (not one the server refused: changing the flats mends that one) must not shut the save for good, nor in silence: the failure says why the save waits, and the
+  // host may go on without the count by confirming that the deletion cannot be undone. The confirmation is for the question it was given for (the day and the flats), never for the next one.
+  const question = `${day}|${covered.join(',')}`;
+  const [confirmedFor, setConfirmedFor] = useState<string | null>(null);
+  const mayGoOnWithoutSummary = summaryRequired && coverageAsked && coverage.isError && summaryRefusal(coverage.error) === undefined;
+  const goesOnWithoutSummary = mayGoOnWithoutSummary && confirmedFor === question;
+  const ready =
+    propertyId !== '' && kind !== '' && when !== '' && !dayProblem && file !== null && !fileProblem && (!summaryRequired || coverage.isSuccess || goesOnWithoutSummary);
 
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -341,7 +348,14 @@ function UploadForm({ onClose, properties: listed, kinds, prefill, alloggiatiPor
           fileArea
         )}
 
-        {isReceipt && coverageAsked ? <CoverageSummary coverage={coverage} purge={purgeOn} busy={pending} /> : null}
+        {isReceipt && coverageAsked ? (
+          <CoverageSummary
+            coverage={coverage}
+            purge={purgeOn}
+            busy={pending}
+            goOn={mayGoOnWithoutSummary ? { confirmed: goesOnWithoutSummary, onConfirm: (confirmed) => setConfirmedFor(confirmed ? question : null) } : undefined}
+          />
+        ) : null}
 
         {upload.isError ? (
           <Alert variant="danger" role="alert" data-testid="proof-upload-error">
@@ -405,6 +419,11 @@ function FlatsChoice({ flats, primaryId, added, full, disabled, onToggle }: Flat
           );
         })}
       </div>
+      {full ? (
+        <p className="break-words text-sm text-muted-foreground" data-testid="proof-upload-flats-limit">
+          {t('complianceArchive.upload.flats.limit', { max: MAX_RECEIPT_FLATS })}
+        </p>
+      ) : null}
     </fieldset>
   );
 }
@@ -425,34 +444,52 @@ interface CoverageSummaryProps {
   purge: boolean;
   /** An upload is on its way: nothing of the layer can be pressed. */
   busy: boolean;
+  /** Offered only while the deletion is on and the summary failed to answer: the host may save without the count by confirming that the deletion cannot be undone. */
+  goOn?: { confirmed: boolean; onConfirm: (confirmed: boolean) => void };
 }
 
 /**
  * «Diventano in regola: N soggiorni» (UX-05, riepilogo prima): what the receipt would prove for the days and flats chosen now, from the server (the count of the traffic light: a stay
  * whose communication failed or was only partly accepted is not in it). A read that fails is told as a failure, never as a count, and never with the number of an older choice or an
  * older read: the error comes before the data, and a flat the server does not find (404) is told as such whatever the cache still holds. With the deletion of the documents on, the summary
- * also says that the photos of the documents of those stays will be deleted, and that this cannot be undone.
+ * also says that the photos of the documents of those stays will be deleted, and that this cannot be undone; and a failure says why the save waits and how to go on (try again, or confirm).
  */
-function CoverageSummary({ coverage, purge, busy }: CoverageSummaryProps) {
+function CoverageSummary({ coverage, purge, busy, goOn }: CoverageSummaryProps) {
   const { t } = useTranslation();
 
   if (coverage.isError) {
     const refusal = summaryRefusal(coverage.error);
-    const failed = getProblemMessage(coverage.error, t) ?? t(purge ? 'complianceArchive.upload.coverage.failedPurge' : 'complianceArchive.upload.coverage.failed');
+    const reason = getProblemMessage(coverage.error, t);
+    // The deletion is on: whatever the reason, the host is told why the save waits (and the reason first, when the server gave one). With it off nothing is waiting and nothing is said of it.
+    const failed = purge ? t('complianceArchive.upload.coverage.failedPurge') : (reason ?? t('complianceArchive.upload.coverage.failed'));
     return (
-      <Alert
-        variant="warning"
-        data-testid="proof-upload-coverage-error"
-        action={
-          refusal ? undefined : (
-            <Button type="button" variant="outline" size="sm" className="min-h-11" disabled={busy} onClick={() => void coverage.refetch()} data-testid="proof-upload-coverage-retry">
-              {t('complianceArchive.upload.coverage.retry')}
-            </Button>
-          )
-        }
-      >
-        {refusal === 'notFound' ? t('complianceArchive.upload.coverage.notFound') : failed}
-      </Alert>
+      <div className="space-y-3" data-testid="proof-upload-coverage-failure">
+        <Alert
+          variant="warning"
+          data-testid="proof-upload-coverage-error"
+          action={
+            refusal ? undefined : (
+              <Button type="button" variant="outline" size="sm" className="min-h-11" disabled={busy} onClick={() => void coverage.refetch()} data-testid="proof-upload-coverage-retry">
+                {t('complianceArchive.upload.coverage.retry')}
+              </Button>
+            )
+          }
+        >
+          {refusal === 'notFound' ? t('complianceArchive.upload.coverage.notFound') : refusal === 'coverageInvalid' ? reason : purge && reason ? `${reason} ${failed}` : failed}
+        </Alert>
+        {goOn ? (
+          <label className="flex min-h-11 cursor-pointer items-start gap-3 text-sm">
+            <Checkbox
+              checked={goOn.confirmed}
+              disabled={busy}
+              onCheckedChange={(checked) => goOn.onConfirm(checked === true)}
+              className="mt-0.5"
+              data-testid="proof-upload-coverage-go-on"
+            />
+            <span className="min-w-0 break-words">{t('complianceArchive.upload.coverage.goOn')}</span>
+          </label>
+        ) : null}
+      </div>
     );
   }
 

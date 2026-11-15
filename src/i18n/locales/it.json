@@ -7614,9 +7614,10 @@
       "chooseProperty": "Scegli l'immobile",
       "coverage": {
         "failed": "Non riusciamo a contare i soggiorni che diventano in regola. Puoi salvare la ricevuta lo stesso.",
-        "failedPurge": "Non riusciamo a contare i soggiorni che diventano in regola. Prima di salvare serve saperlo, perché dopo il salvataggio si cancellano le foto dei documenti degli ospiti: riprova.",
+        "failedPurge": "Non riusciamo a contare i soggiorni che diventano in regola. Di solito serve saperlo prima di salvare, perché dopo il salvataggio si cancellano le foto dei documenti degli ospiti: riprova. Se continua a non riuscire, puoi salvare lo stesso confermando qui sotto.",
         "flatLine_one": "{{name}}: {{count}} soggiorno",
         "flatLine_other": "{{name}}: {{count}} soggiorni",
+        "goOn": "Salvo lo stesso, senza il conteggio: so che CasaZen cancella le foto dei documenti degli ospiti dei soggiorni che questa ricevuta mette in regola e che non si può annullare.",
         "loading": "Conto i soggiorni che diventano in regola…",
         "none": "Con questa ricevuta non diventa in regola nessun soggiorno.",
         "noneHint": "Nel giorno e negli immobili scelti non c'è nessun soggiorno da mettere in regola, oppure il loro invio non è completo. La ricevuta si può salvare lo stesso.",
@@ -7642,7 +7643,8 @@
       "flats": {
         "current": "{{name}} (questo immobile)",
         "hint": "Se usi un solo account del portale per più immobili, la ricevuta del giorno li comprende tutti. Una ricevuta può valere per più immobili solo se sono tutti in Italia, al massimo {{max}}.",
-        "legend": "Questa ricevuta vale per"
+        "legend": "Questa ricevuta vale per",
+        "limit": "Una ricevuta può valere al massimo per {{max}} immobili: per sceglierne un altro togli la spunta a uno."
       },
       "kind": "Cosa dimostra",
       "month": "Mese",

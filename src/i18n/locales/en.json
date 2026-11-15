@@ -7614,9 +7614,10 @@
       "chooseProperty": "Choose the property",
       "coverage": {
         "failed": "We couldn't count the stays that become in order. You can still save the receipt.",
-        "failedPurge": "We couldn't count the stays that become in order. We need to know before saving, because the photos of the guests' documents are deleted afterwards: try again.",
+        "failedPurge": "We couldn't count the stays that become in order. You normally need to know before saving, because the photos of the guests' documents are deleted afterwards: try again. If it keeps failing, you can still save by confirming below.",
         "flatLine_one": "{{name}}: {{count}} stay",
         "flatLine_other": "{{name}}: {{count}} stays",
+        "goOn": "Save anyway, without the count: I understand that CasaZen deletes the photos of the guests' documents of the stays this receipt puts in order, and that this cannot be undone.",
         "loading": "Counting the stays that become in order…",
         "none": "No stay becomes in order with this receipt.",
         "noneHint": "On that day, in the properties you chose, there is no stay to put in order, or their send is not complete. You can still save the receipt.",
@@ -7642,7 +7643,8 @@
       "flats": {
         "current": "{{name}} (this property)",
         "hint": "If you use one portal account for several properties, the receipt of the day covers all of them. A receipt can cover several properties only if they are all in Italy, up to {{max}}.",
-        "legend": "This receipt covers"
+        "legend": "This receipt covers",
+        "limit": "A receipt can cover at most {{max}} properties: untick one to choose another."
       },
       "kind": "What it proves",
       "month": "Month",

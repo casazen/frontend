@@ -135,13 +135,20 @@ interface RenderOptions {
   prefill?: ProofUploadPrefill;
   kinds?: readonly ComplianceProofKind[];
   client?: QueryClient;
+  properties?: ProofUploadProperty[];
 }
 
-function renderDialog({ flags = {}, prefill = { propertyId: A, kind: 'AlloggiatiReceipt', day: DAY }, kinds = ['AlloggiatiReceipt', 'IstatProof'], client = newClient() }: RenderOptions = {}) {
+function renderDialog({
+  flags = {},
+  prefill = { propertyId: A, kind: 'AlloggiatiReceipt', day: DAY },
+  kinds = ['AlloggiatiReceipt', 'IstatProof'],
+  client = newClient(),
+  properties = PROPERTIES,
+}: RenderOptions = {}) {
   render(
     <QueryClientProvider client={client}>
       <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, ...flags }, isLoading: false }}>
-        <ProofUploadDialog open onClose={onClose} properties={PROPERTIES} kinds={kinds} prefill={prefill} alloggiatiPortalUrl={PORTAL} />
+        <ProofUploadDialog open onClose={onClose} properties={properties} kinds={kinds} prefill={prefill} alloggiatiPortalUrl={PORTAL} />
       </FeatureFlagsContext.Provider>
     </QueryClientProvider>,
   );
@@ -273,6 +280,9 @@ describe('the receipt covers the flats the host chose', () => {
     expect(within(refusal).queryByTestId('proof-upload-coverage-retry')).not.toBeInTheDocument();
     expect(screen.queryByTestId('proof-upload-coverage')).not.toBeInTheDocument();
     expect(lastCoverage().getAll('propertyIds')).toEqual([A, D]);
+    // The server refused the question itself: going on without the count would be refused the same way, so no confirmation is offered (taking the flat off mends it).
+    expect(screen.queryByTestId('proof-upload-coverage-go-on')).not.toBeInTheDocument();
+    expect(screen.getByTestId('proof-upload-submit')).toBeDisabled();
 
     fireEvent.click(screen.getByTestId(`proof-upload-flat-${D}`));
 
@@ -338,6 +348,36 @@ describe('the receipt covers the flats the host chose', () => {
     ]);
     expect(screen.getByTestId('proof-upload-flats')).not.toHaveTextContent(NAMES[E]);
   });
+
+  // The summary is a GET that carries the id of every flat in its address (about 49 characters each) and the server reads a request line of at most 8 KB, which is about 160 flats: the dialog lets
+  // a receipt name at most 100, says so, and the question about 100 flats still fits the request line.
+  it('dialog_MoreFlatsThanASummaryCanCarry_CannotBeTickedAndTheLimitIsSaid', async () => {
+    const many: ProofUploadProperty[] = Array.from({ length: 102 }, (_, index) => ({
+      id: `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`,
+      name: `Casa ${index}`,
+      rentalMode: 'Short' as const,
+    }));
+    answer({ coverage: (params) => ({ day: DAY, stays: 0, properties: params.getAll('propertyIds').map((id) => ({ propertyId: id, propertyName: id, stays: 0 })) }) });
+    renderDialog({ properties: many, prefill: { propertyId: many[0].id, kind: 'AlloggiatiReceipt', day: DAY } });
+    await total();
+    expect(screen.getByTestId('proof-upload-flats')).toHaveTextContent('al massimo 100');
+    expect(screen.queryByTestId('proof-upload-flats-limit')).not.toBeInTheDocument();
+
+    // The flat of the request and 99 more: a hundred.
+    for (const flat of many.slice(1, 100)) fireEvent.click(screen.getByTestId(`proof-upload-flat-${flat.id}`));
+
+    await waitFor(() => expect(lastCoverage().getAll('propertyIds')).toHaveLength(100));
+    expect(await screen.findByTestId('proof-upload-flats-limit')).toHaveTextContent('al massimo per 100 immobili');
+    expect(screen.getByTestId(`proof-upload-flat-${many[100].id}`)).toBeDisabled();
+    expect(screen.getByTestId(`proof-upload-flat-${many[101].id}`)).toBeDisabled();
+    expect(screen.getByTestId(`proof-upload-flat-${many[99].id}`)).toBeEnabled();
+    expect(lastCoverage().toString().length).toBeLessThan(8 * 1024 - 512);
+
+    // A flat taken off opens the place again.
+    fireEvent.click(screen.getByTestId(`proof-upload-flat-${many[99].id}`));
+    await waitFor(() => expect(screen.queryByTestId('proof-upload-flats-limit')).not.toBeInTheDocument());
+    expect(screen.getByTestId(`proof-upload-flat-${many[100].id}`)).toBeEnabled();
+  }, 30_000);
 
   it('dialog_FileDroppedOnTheStep_IsTheFileOfTheReceipt', async () => {
     renderDialog();
@@ -419,9 +459,10 @@ describe('what the host is told before saving and after', () => {
     const failure = await screen.findByTestId('proof-upload-coverage-error', undefined, { timeout: 5000 });
     expect(failure).toHaveTextContent('Non riusciamo a contare i soggiorni che diventano in regola');
     expect(screen.queryByTestId('proof-upload-coverage')).not.toBeInTheDocument();
-    // Nothing irreversible is waiting (the deletion is off): the receipt can still be saved.
+    // Nothing irreversible is waiting (the deletion is off): the receipt can still be saved, with nothing to confirm.
     chooseFile();
     expect(screen.getByTestId('proof-upload-submit')).toBeEnabled();
+    expect(screen.queryByTestId('proof-upload-coverage-go-on')).not.toBeInTheDocument();
 
     answer();
     fireEvent.click(within(failure).getByTestId('proof-upload-coverage-retry'));
@@ -445,7 +486,9 @@ describe('what the host is told before saving and after', () => {
     expect(document.body.textContent).not.toMatch(/Diventano in regola/);
   });
 
-  it('dialog_DeletionAfterTheReceiptOnAndSummaryThatFails_CannotBeSavedBlind', async () => {
+  // With the deletion on, a summary that cannot be read shuts the save and says why. It does not shut it for good: the host can try again, or confirm that the deletion cannot be undone and save
+  // without the count, for that choice of flats only (another choice asks it again).
+  it('dialog_DeletionAfterTheReceiptOnAndSummaryThatFails_SaysWhyTheSaveWaitsAndOnlyAConfirmationOpensIt', async () => {
     answer({
       coverage: () => {
         throw problem(500);
@@ -455,7 +498,55 @@ describe('what the host is told before saving and after', () => {
     chooseFile();
 
     const failure = await screen.findByTestId('proof-upload-coverage-error', undefined, { timeout: 5000 });
-    expect(failure).toHaveTextContent('Prima di salvare serve saperlo');
+    expect(failure).toHaveTextContent('Non riusciamo a contare i soggiorni che diventano in regola');
+    expect(failure).toHaveTextContent('si cancellano le foto dei documenti degli ospiti');
+    expect(within(failure).getByTestId('proof-upload-coverage-retry')).toBeEnabled();
+    expect(screen.getByTestId('proof-upload-submit')).toBeDisabled();
+    expect(screen.getByTestId('proof-upload-coverage-go-on')).toHaveAttribute('aria-checked', 'false');
+
+    fireEvent.click(screen.getByTestId('proof-upload-coverage-go-on'));
+
+    await waitFor(() => expect(screen.getByTestId('proof-upload-submit')).toBeEnabled());
+    fireEvent.click(screen.getByTestId('proof-upload-submit'));
+    const form = await waitFor(() => posted());
+    expect(form.get('propertyId')).toBe(A);
+    expect(form.getAll('propertyIds')).toEqual([]);
+  });
+
+  it('dialog_ConfirmationToSaveWithoutTheCount_IsForThatChoiceOfFlatsOnly', async () => {
+    answer({
+      coverage: () => {
+        throw problem(500);
+      },
+    });
+    renderDialog({ flags: { purgeDocumentsAfterReceipt: true } });
+    chooseFile();
+    await screen.findByTestId('proof-upload-coverage-error', undefined, { timeout: 5000 });
+    fireEvent.click(screen.getByTestId('proof-upload-coverage-go-on'));
+    await waitFor(() => expect(screen.getByTestId('proof-upload-submit')).toBeEnabled());
+
+    fireEvent.click(screen.getByTestId(`proof-upload-flat-${B}`));
+
+    // Another choice of flats is another question: its summary fails too, and the host confirms again.
+    await waitFor(() => expect(screen.getByTestId('proof-upload-submit')).toBeDisabled());
+    expect(await screen.findByTestId('proof-upload-coverage-go-on', undefined, { timeout: 5000 })).toHaveAttribute('aria-checked', 'false');
+    expect(screen.getByTestId('proof-upload-submit')).toBeDisabled();
+  });
+
+  // A failure that has a reason of its own (here a refusal of the permission) still says why the save waits, and the way on is the same.
+  it('dialog_DeletionAfterTheReceiptOnAndSummaryRefusedForAReasonOfItsOwn_StillSaysWhyTheSaveWaits', async () => {
+    answer({
+      coverage: () => {
+        throw problem(403);
+      },
+    });
+    renderDialog({ flags: { purgeDocumentsAfterReceipt: true } });
+    chooseFile();
+
+    const failure = await screen.findByTestId('proof-upload-coverage-error', undefined, { timeout: 5000 });
+    expect(failure).toHaveTextContent(i18n.t('apiErrors.forbidden'));
+    expect(failure).toHaveTextContent('si cancellano le foto dei documenti degli ospiti');
+    expect(screen.getByTestId('proof-upload-coverage-go-on')).toBeInTheDocument();
     expect(screen.getByTestId('proof-upload-submit')).toBeDisabled();
   });
 
