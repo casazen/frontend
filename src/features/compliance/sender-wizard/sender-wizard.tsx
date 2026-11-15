@@ -15,19 +15,29 @@ import { WizardShell, type WizardStep } from '@/components/shared/wizard/wizard-
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { SkeletonLine } from '@/components/ui/skeleton';
+import {
+  EMPTY_ISTAT_CREDENTIALS,
+  hasTypedIstatCredentials,
+  validateIstatCredentials,
+  type IstatCredentialsErrors,
+  type IstatCredentialsField,
+} from '@/features/compliance/components/istat-credentials-form';
 import { CONNECTION_HEALTH_SECTION } from '@/features/compliance/lib/connection-health-model';
 import { EMPTY_QUESTURA_CREDENTIALS, validateQuesturaCredentials, type QuesturaCredentialsErrors, type QuesturaCredentialsField } from '@/features/properties/components/questura-credentials-form';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getHttpStatus } from '@/lib/api-errors';
 import { ORG_BILLING_ADMIN_PERMISSION } from '@/lib/org-billing-admin';
 import { cn } from '@/lib/utils';
 import { COMPLIANCE_HEALTH_KEY } from '@/queries/compliance-health';
+import { useIstatCredentialsStatus, useSetIstatCredentials } from '@/queries/use-istat-credentials';
 import { PROPERTY_SENDER_KEY, useDeclareActivated, useSender, useSwitchSender, useTestConnection } from '@/queries/use-property-sender';
 import { useProperties } from '@/queries/use-properties';
 import { useSetQuesturaCredentials } from '@/queries/use-questura-credentials';
 import type { WizardDraft } from '@/lib/wizard-draft';
 import type { PropertySender } from '@/types';
 import type { ComplianceSenderType } from '@/types/checkin-wizard.types';
+import type { SetIstatCredentialsRequest } from '@/types/onboarding.types';
 import type { SetQuesturaCredentialsRequest } from '@/types/questura-credentials.types';
 import { SenderWizardDone } from './sender-wizard-done';
 import { SenderWizardExit } from './sender-wizard-exit';
@@ -152,13 +162,21 @@ function SenderWizard({ propertyId, read }: SenderWizardProps) {
   const testConnection = useTestConnection(propertyId);
   const declareActivated = useDeclareActivated(propertyId);
   const saveCredentials = useSetQuesturaCredentials(propertyId);
+  // The regional ISTAT credentials, under the police ones, while the activation of the channel manager is on (the endpoint answers 404 while its flag is off, so nothing is asked then).
+  const { flags } = useFeatureFlags();
+  const istatAvailable = flags.octorateOnboarding;
+  const istatStatus = useIstatCredentialsStatus(propertyId, { enabled: istatAvailable });
+  const saveIstat = useSetIstatCredentials(propertyId);
   // What the last button of a step was stopped by, to tell it in words (the shell shows the message of an error that has none of its own).
   const [blocked, setBlocked] = useState<StepProblemKind | null>(null);
   // The credentials of the portal as they are typed: in the state of the wizard and in no value of its form, so in no draft, no address and no cache; they leave with the save.
   const [typedCredentials, setTypedCredentials] = useState<SetQuesturaCredentialsRequest>(EMPTY_QUESTURA_CREDENTIALS);
   const [credentialErrors, setCredentialErrors] = useState<QuesturaCredentialsErrors>({});
+  // The same for the ISTAT ones.
+  const [typedIstat, setTypedIstat] = useState<SetIstatCredentialsRequest>(EMPTY_ISTAT_CREDENTIALS);
+  const [istatErrors, setIstatErrors] = useState<IstatCredentialsErrors>({});
   // Any request of the wizard in flight: none of its buttons can be pressed again meanwhile.
-  const busy = switchSender.isPending || testConnection.isPending || declareActivated.isPending || saveCredentials.isPending;
+  const busy = switchSender.isPending || testConnection.isPending || declareActivated.isPending || saveCredentials.isPending || saveIstat.isPending;
 
   // The automatic send of the guests starts untouched (`null`): the switch shows what the server holds now, never what an older read of another visit held, and sends nothing until it is touched.
   const [defaults] = useState<SenderWizardValues>(() => ({ ...SENDER_WIZARD_DEFAULTS, sender: defaultSenderChoice(read) }));
@@ -194,7 +212,8 @@ function SenderWizard({ propertyId, read }: SenderWizardProps) {
     }
   };
 
-  const typedCredentialsPending = hasTypedCredentials(typedCredentials);
+  const typedIstatPending = istatAvailable && hasTypedIstatCredentials(typedIstat);
+  const typedCredentialsPending = hasTypedCredentials(typedCredentials) || typedIstatPending;
 
   const changeCredential = (field: QuesturaCredentialsField, value: string) => {
     setTypedCredentials((current) => ({ ...current, [field]: value }));
@@ -222,18 +241,49 @@ function SenderWizard({ propertyId, read }: SenderWizardProps) {
     return 'saved';
   };
 
+  const changeIstat = (field: IstatCredentialsField, value: string) => {
+    setTypedIstat((current) => ({ ...current, [field]: value }));
+    setIstatErrors((current) => ({ ...current, [field]: undefined }));
+  };
+
+  /** Sends the ISTAT credentials that were typed (`PUT`), as `saveTypedCredentials` does for the police ones: the same three ends, and a save empties the fields. */
+  const saveTypedIstat = async (): Promise<'saved' | 'invalid' | 'refused'> => {
+    const found = validateIstatCredentials(typedIstat);
+    setIstatErrors(found);
+    if (Object.keys(found).length > 0) return 'invalid';
+    try {
+      await saveIstat.mutateAsync(typedIstat);
+    } catch {
+      saveIstat.reset();
+      return 'refused';
+    }
+    saveIstat.reset();
+    setTypedIstat(EMPTY_ISTAT_CREDENTIALS);
+    return 'saved';
+  };
+
   /**
-   * The main button of the credentials step: what was typed is saved before the step is left (nothing typed, nothing to save: the step is optional). A step that cannot save them stays, with
-   * the words of why, instead of going on and leaving them behind.
+   * The main button of the credentials step: what was typed is saved before the step is left, the police credentials and then the ISTAT ones (nothing typed, nothing to save: the step is
+   * optional). A step that cannot save them stays, with the words of why, instead of going on and leaving them behind.
    */
   const saveCredentialsBeforeNext = async () => {
     setBlocked(null);
-    if (!hasTypedCredentials(typedCredentials)) return;
-    const outcome = await saveTypedCredentials();
-    if (outcome === 'saved') return;
-    const kind = outcome === 'invalid' ? 'credentialsIncomplete' : 'credentialsNotSaved';
-    setBlocked(kind);
-    throw new SenderStepBlockedError(kind);
+    if (hasTypedCredentials(typedCredentials)) {
+      const outcome = await saveTypedCredentials();
+      if (outcome !== 'saved') {
+        const kind = outcome === 'invalid' ? 'credentialsIncomplete' : 'credentialsNotSaved';
+        setBlocked(kind);
+        throw new SenderStepBlockedError(kind);
+      }
+    }
+    if (typedIstatPending) {
+      const outcome = await saveTypedIstat();
+      if (outcome !== 'saved') {
+        const kind = outcome === 'invalid' ? 'istatIncomplete' : 'istatNotSaved';
+        setBlocked(kind);
+        throw new SenderStepBlockedError(kind);
+      }
+    }
   };
 
   // «Salva ed esci» keeps the answers of the wizard as its draft and nothing else: the credentials that were typed are not part of it, and the person is told.
@@ -288,6 +338,18 @@ function SenderWizard({ propertyId, read }: SenderWizardProps) {
               errors={credentialErrors}
               onChange={changeCredential}
               onSave={() => void saveTypedCredentials()}
+              istat={
+                istatAvailable
+                  ? {
+                      // Only what the last read said: a read that failed keeps the older answer in the query, and the step says nothing rather than say what may not be true any more.
+                      configured: istatStatus.isSuccess ? istatStatus.data.configured : null,
+                      values: typedIstat,
+                      errors: istatErrors,
+                      onChange: changeIstat,
+                      onSave: () => void saveTypedIstat(),
+                    }
+                  : undefined
+              }
             />
           ) : (
             <ConfirmFirst onGo={() => goTo(SENDER_STEP.summary)} />

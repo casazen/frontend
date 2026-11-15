@@ -13,15 +13,14 @@ import { isOnboardingPartKey, partTitleKey } from '@/lib/onboarding-parts';
 import type { StatusTone } from '@/lib/status-dictionary';
 import { formatRomeDateTime } from '@/lib/stay-dates';
 import type { AdminAssistRequest, AssistUpdateStatus } from '@/types/onboarding.types';
+import { assistRequestTitle } from '../lib/assist-request-title';
+import { AssistRequestDetailDialog } from '../onboarding-assist/assist-request-detail-dialog';
 
 /** The longest note the API accepts (`assist_note_invalid` above it). */
 const NOTE_MAX_LENGTH = 500;
 
 /** At least 44 px high on every device, and a long label wraps instead of pushing the page sideways. */
 const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading-tight';
-
-/** The contexts of a request this version has words for (backend `OnboardingAssistContexts`); anything else reads as a neutral word. */
-const CONTEXTS: ReadonlySet<string> = new Set(['panelPolice', 'panelIstat', 'panelChannelAccess', 'part']);
 
 /** How each status looks: a tone, an icon and (in the translations) its words, so that it is never told by color alone (UX-09). */
 const STATUS_VIEW: Record<string, { tone: StatusTone; Icon: LucideIcon; key: string }> = {
@@ -172,14 +171,9 @@ interface AssistRequestRowProps {
 export function AssistRequestRow({ request, now, busy, onUpdate }: AssistRequestRowProps) {
   const { t, i18n } = useTranslation();
   const [action, setAction] = useState<(typeof ACTIONS)[number] | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
   const view = STATUS_VIEW[request.status] ?? UNKNOWN_STATUS;
-  const context = CONTEXTS.has(request.context) ? request.context : 'unknown';
-  const contextWords = t(`onboardingPlan.assist.contexts.${context}`);
-  const title = request.propertyName
-    ? request.comune
-      ? t('onboardingPlan.assist.row.propertyComune', { context: contextWords, property: request.propertyName, comune: request.comune })
-      : t('onboardingPlan.assist.row.property', { context: contextWords, property: request.propertyName })
-    : t('onboardingPlan.assist.row.org', { context: contextWords });
+  const title = assistRequestTitle(request, t);
   const requestedAt = new Date(request.requestedAt);
   const valid = !Number.isNaN(requestedAt.getTime());
   const ago = valid ? formatRelative(requestedAt, new Date(now), i18n.language) : null;
@@ -205,6 +199,12 @@ export function AssistRequestRow({ request, now, busy, onUpdate }: AssistRequest
         {ago ? ` · ${ago}` : ''}
       </p>
 
+      {request.status === 'Done' && (request.outcome === 'verified' || request.outcome === 'declared') ? (
+        <p className="text-sm" data-testid="assist-row-outcome" data-outcome={request.outcome}>
+          {t(`onboardingPlan.assist.row.outcome.${request.outcome}`)}
+        </p>
+      ) : null}
+
       <div className="space-y-0.5 text-sm" data-testid="assist-row-ids">
         <IdLine label={t('onboardingPlan.assist.ids.request')} id={request.id} testId="assist-row-id-request" />
         <IdLine label={t('onboardingPlan.assist.ids.org')} id={request.orgId} testId="assist-row-id-org" />
@@ -224,25 +224,33 @@ export function AssistRequestRow({ request, now, busy, onUpdate }: AssistRequest
         </p>
       ) : null}
 
-      {actions.length > 0 ? (
-        <div className="flex flex-wrap gap-2" role="group" aria-label={t('onboardingPlan.assist.row.actions')}>
-          {actions.map((candidate) => (
-            <Button
-              key={candidate.status}
-              type="button"
-              variant={candidate.key === 'take' ? 'default' : 'outline'}
-              className={TOUCH_TARGET}
-              disabled={busy}
-              onClick={() => setAction(candidate)}
-              data-testid={`assist-row-${candidate.key}`}
-            >
-              {t(`onboardingPlan.assist.actions.${candidate.key}.label`)}
-            </Button>
-          ))}
-        </div>
+      {request.hostNote ? (
+        <p className="break-words rounded-md bg-muted p-2 text-sm" data-testid="assist-row-host-note">
+          <span className="font-medium">{t('onboardingPlan.assist.row.hostNote')}</span> {request.hostNote}
+        </p>
       ) : null}
 
+      <div className="flex flex-wrap gap-2" role="group" aria-label={t('onboardingPlan.assist.row.actions')}>
+        <Button type="button" variant="outline" className={TOUCH_TARGET} onClick={() => setDetailOpen(true)} data-testid="assist-row-open">
+          {t('onboardingPlan.assist.row.open')}
+        </Button>
+        {actions.map((candidate) => (
+          <Button
+            key={candidate.status}
+            type="button"
+            variant={candidate.key === 'take' ? 'default' : 'outline'}
+            className={TOUCH_TARGET}
+            disabled={busy}
+            onClick={() => setAction(candidate)}
+            data-testid={`assist-row-${candidate.key}`}
+          >
+            {t(`onboardingPlan.assist.actions.${candidate.key}.label`)}
+          </Button>
+        ))}
+      </div>
+
       {action ? <AssistActionDialog action={action} request={request} onClose={() => setAction(null)} onUpdate={onUpdate} /> : null}
+      {detailOpen ? <AssistRequestDetailDialog request={request} onClose={() => setDetailOpen(false)} /> : null}
     </li>
   );
 }
