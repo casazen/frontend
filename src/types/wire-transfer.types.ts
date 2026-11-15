@@ -1,8 +1,11 @@
 /**
  * The wire files that pay the owners (backend `api/wire-transfers`, ADR-017, E16): a batch is built from the confirmed payouts of the owner accounting, one transfer
  * for each payout and one file per currency. The API writes the state by name and the days as `yyyy-MM-dd`; the instants are UTC ISO strings. Nothing here holds an
- * IBAN or the file: the list of the batches has no member that could carry one.
+ * IBAN or the file: neither the list of the batches nor the payouts of the wire page have a member that could carry one.
  */
+
+/** The currencies a wire file exists for: the Swiss file for the franc, the SEPA file for the euro. The reads of the payable payouts take one of them and no other. */
+export type WireCurrency = 'CHF' | 'EUR';
 
 /** Where a batch is: the file is made, the file was handed out, the administrator marked it as paid. */
 export type WireBatchStatus = 'Generated' | 'Downloaded' | 'Paid';
@@ -40,13 +43,33 @@ export interface CreateBatchResponse {
   format?: string | null;
 }
 
+/** Where a payout of the wire page is: `Confirmed` can be paid, `Reversed` is a payout reversed after its batch was made (it stays in the batch and says so). */
+export type WirePayoutStatus = 'Confirmed' | 'Reversed';
+
 /**
- * An owner of the registry as the wire page keeps it: the name and the end of the bank account (`•••• 3456`), nothing else. The registry answer holds the e-mail and the
- * phone of the owner too; the page does not keep them.
+ * A payout on the wire page (`GET api/wire-transfers/payable-payouts?currency=` and `GET api/wire-transfers/batch/{id}/payouts`): who is paid (the owner by id and by the
+ * name they are paid under), the period of the statement it pays, how much (`amount`: the net, the amount of the transfer) in which currency, when it was confirmed, where it is
+ * and whether the owner has an IBAN now, **as a yes or a no**: the server never sends the IBAN, an address or the file, and the page keeps only these members.
  */
-export interface WireOwner {
-  id: string;
-  name: string;
-  /** The end of the IBAN, already masked; `null` when the owner has no IBAN. */
-  ibanEnd: string | null;
+export interface WirePayout {
+  payoutId: string;
+  ownerId: string;
+  /** The legal name of the owner, else the first and last name: the name the owner is paid under. */
+  ownerName: string;
+  periodYear: number;
+  /** 1 to 12. */
+  periodMonth: number;
+  /** The net amount, the amount of the transfer, as the server wrote it. */
+  amount: number;
+  currency: string;
+  confirmedAt: string;
+  status: WirePayoutStatus;
+  ownerHasIban: boolean;
+}
+
+/** `GET api/wire-transfers/batch/{id}/payouts`: the batch as the list of the batches shows it and the payouts it pays, in the order of the transfers of its file. */
+export interface WireBatchPayouts {
+  batch: WireBatch;
+  /** Empty for a batch made before the payouts (from statements). */
+  payouts: WirePayout[];
 }

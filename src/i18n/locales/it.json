@@ -30486,6 +30486,16 @@
       "notFound": "Questo file dei bonifici non esiste più o non è della tua organizzazione.",
       "paidComplete": "Segnato come pagato dall'amministratore. CasaZen non verifica che la banca abbia eseguito i bonifici.",
       "paidCompleteOn": "Segnato come pagato dall'amministratore il {{date}}. CasaZen non verifica che la banca abbia eseguito i bonifici.",
+      "payouts": {
+        "count_one": "{{count}} pagamento nel file",
+        "count_other": "{{count}} pagamenti nel file",
+        "empty": "Questo file non ha un elenco dei pagamenti: è stato creato prima che i file si facessero dai pagamenti confermati.",
+        "hide": "Nascondi i pagamenti del file",
+        "loadError": "Impossibile caricare i pagamenti di questo file",
+        "loading": "Caricamento dei pagamenti del file...",
+        "reversed": "Annullato dopo la creazione del file",
+        "show": "Mostra i pagamenti del file"
+      },
       "totalAmount": "Importo totale",
       "transferCount": "Numero di bonifici"
     },
@@ -30512,15 +30522,13 @@
     "createdTotal": "Totale:",
     "createError": "Impossibile creare il file in {{currency}}",
     "currencyGroup": "Pagamenti in {{currency}}",
-    "currencyGroupNone": "Pagamenti senza valuta",
     "currencyMissing": "(valuta non indicata)",
-    "currencyMissingGroup": "Questi pagamenti non indicano la valuta: non si possono pagare con un file finché non è indicata.",
-    "currencyNotSupported": "I bonifici si fanno solo in franchi svizzeri (CHF) o in euro (EUR): i pagamenti in {{currency}} non si pagano con questo file.",
     "description": "Crea il file per la banca (ISO 20022) che paga i proprietari: scegli i pagamenti confermati, indica il giorno di esecuzione e carica il file nella tua banca. CasaZen non esegue i bonifici.",
     "executionDate": "Giorno di esecuzione",
     "executionDateHint": "Il giorno in cui chiedi alla banca di eseguire i bonifici: oggi o più avanti.",
     "executionDateInvalid": "Scegli un giorno da oggi in poi.",
     "loadError": "Impossibile caricare i pagamenti ai proprietari",
+    "loadErrorCurrency": "Impossibile caricare i pagamenti in {{currency}}",
     "loading": "Caricamento bonifici...",
     "noPayouts": "Nessun pagamento da inviare in banca",
     "noPayoutsDescription": "I pagamenti compaiono qui quando li confermi nella chiusura mensile dei proprietari.",
@@ -30529,11 +30537,15 @@
     "notFoundPayout": "Non troviamo uno dei pagamenti scelti: l'elenco è stato aggiornato.",
     "openClose": "Vai alla chiusura mensile",
     "openOwner": "Apri i dati finanziari",
-    "payoutsHint": "I pagamenti confermati ai proprietari, per l'importo netto dopo la ritenuta. Un pagamento va in un solo file: se ne scegli uno già inserito in un file, CasaZen rifiuta tutto e non crea nulla.",
+    "payoutsHint": "I pagamenti confermati ai proprietari che non sono ancora in nessun file, per l'importo netto dopo la ritenuta. Un pagamento va in un solo file: quando lo inserisci in un file, esce da questo elenco.",
+    "refused": {
+      "description": "L'elenco riguarda i proprietari di tutta l'organizzazione e il server lo mostra solo con un accesso a tutte le strutture. Se il tuo accesso è limitato ad alcune strutture, chiedi a un amministratore di aprire questa pagina.",
+      "title": "Questi pagamenti non sono disponibili per il tuo accesso"
+    },
     "row": {
-      "iban": "IBAN {{end}}",
       "ibanMissing": "Manca l'IBAN del proprietario: non si può pagare finché non lo aggiungi.",
-      "paidOn": "Pagamento del {{date}}"
+      "ibanMissingBadge": "IBAN mancante",
+      "period": "Rendiconto di {{period}}"
     },
     "selectGroup": "Scegli tutti",
     "selectPayouts": "Pagamenti da inviare in banca",

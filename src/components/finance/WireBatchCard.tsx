@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle, Download } from 'lucide-react';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
@@ -9,6 +9,7 @@ import { batchReference, failureMessage } from '@/lib/agency-finance';
 import { useConfirmDownload, useConfirmPaid, useDownloadBatchFile } from '@/queries/wireTransfer';
 import type { WireBatch, WireBatchStatus } from '@/types';
 import { WireAmount } from './wire-amount';
+import { WireBatchPayouts } from './WireBatchPayouts';
 import { withoutIban } from './wire-model';
 
 interface WireBatchCardProps {
@@ -30,6 +31,7 @@ const isKnownStatus = (status: string): status is WireBatchStatus => status === 
  * the server accepted. «Paid» is the administrator's word: CasaZen does not know whether the bank executed the transfers, and the card says so. Marking it paid cannot be
  * undone, so it asks to be confirmed with the file, the amount and the currency. The card owns its requests: while any of them is on its way every button of the card waits,
  * and an answer of the server that contradicts what the card shows (already paid, never downloaded, a payout reversed since) is told in words, then the list corrects the step.
+ * The payouts the file pays are one button away: they are read from the server only when the person opens them, and read again after every request of the card.
  */
 export function WireBatchCard({ batch }: WireBatchCardProps) {
   const { t } = useTranslation();
@@ -37,8 +39,10 @@ export function WireBatchCard({ batch }: WireBatchCardProps) {
   const download = useDownloadBatchFile();
   const confirmDownload = useConfirmDownload();
   const confirmPaid = useConfirmPaid();
+  const payoutsPanelId = useId();
   const [failure, setFailure] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
+  const [showPayouts, setShowPayouts] = useState(false);
   // A request is on its way: the state of the mutation says it a moment later than the click, so a second one in between is stopped here.
   const sending = useRef(false);
 
@@ -176,7 +180,19 @@ export function WireBatchCard({ batch }: WireBatchCardProps) {
             {t('wire.batch.confirmPaid')}
           </Button>
         )}
+        <Button
+          variant="ghost"
+          onClick={() => setShowPayouts((shown) => !shown)}
+          disabled={busy}
+          aria-expanded={showPayouts}
+          aria-controls={showPayouts ? payoutsPanelId : undefined}
+          data-testid="wire-batch-payouts-toggle"
+        >
+          {showPayouts ? t('wire.batch.payouts.hide') : t('wire.batch.payouts.show')}
+        </Button>
       </div>
+
+      {showPayouts && <WireBatchPayouts batchId={batch.id} id={payoutsPanelId} />}
 
       <ConfirmationDialog
         open={confirming}
