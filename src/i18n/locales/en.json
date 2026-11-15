@@ -5535,6 +5535,7 @@
       "result": {
         "ok": {
           "codeEmail": "If your booking has an email address, we also sent the code there.",
+          "codeHeldTouristTax": "Your identity is verified. The access code will reach you after the tourist tax is paid.",
           "codeLabel": "Your access code",
           "noCode": "Your identity is verified. If your booking has an email address, we sent the access code there; otherwise your host will give you the access instructions.",
           "title": "You are verified"

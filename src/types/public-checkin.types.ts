@@ -341,6 +341,11 @@ export interface IdentitySelfieResponse {
   attemptsRemaining: number;
   operatorPathOpen: boolean;
   lockCode?: string | null;
+  /**
+   * Why an `ok` came with no code although the property has one (E25/F01/US01/T01): `tourist_tax_due` while the organization asks for the tourist tax before the lock code and the
+   * stay still owes one the guest can pay online. Absent otherwise.
+   */
+  lockCodeHeld?: string | null;
 }
 
 /** Answer of `POST /api/public/checkin/{token}/request-operator`: the guest asked for a person and the operators are told. */

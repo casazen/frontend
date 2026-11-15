@@ -317,6 +317,7 @@
       "result": {
         "ok": {
           "codeEmail": "Wenn Ihre Buchung eine E-Mail-Adresse hat, haben wir den Code auch dorthin gesendet.",
+          "codeHeldTouristTax": "Ihre Identität ist bestätigt. Den Zugangscode erhalten Sie, nachdem die Ortstaxe bezahlt ist.",
           "codeLabel": "Ihr Zugangscode",
           "noCode": "Ihre Identität ist bestätigt. Wenn Ihre Buchung eine E-Mail-Adresse hat, haben wir den Zugangscode dorthin gesendet; andernfalls teilt Ihr Gastgeber Ihnen die Zugangshinweise mit.",
           "title": "Sie sind bestätigt"

@@ -317,6 +317,7 @@
       "result": {
         "ok": {
           "codeEmail": "Si votre réservation comporte une adresse e-mail, nous y avons aussi envoyé le code.",
+          "codeHeldTouristTax": "Votre identité est vérifiée. Le code d'accès vous parviendra après le paiement de la taxe de séjour.",
           "codeLabel": "Votre code d'accès",
           "noCode": "Votre identité est vérifiée. Si votre réservation comporte une adresse e-mail, le code d'accès y a été envoyé ; sinon, votre hôte vous donnera les instructions d'accès.",
           "title": "Vous êtes vérifié"

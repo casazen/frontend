@@ -317,6 +317,7 @@
       "result": {
         "ok": {
           "codeEmail": "Si su reserva tiene una dirección de correo electrónico, también hemos enviado allí el código.",
+          "codeHeldTouristTax": "Su identidad está verificada. El código de acceso le llegará después de pagar la tasa turística.",
           "codeLabel": "Su código de acceso",
           "noCode": "Su identidad está verificada. Si su reserva tiene una dirección de correo electrónico, el código de acceso se envió allí; si no, su anfitrión le dará las instrucciones de acceso.",
           "title": "Está verificado"

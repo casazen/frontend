@@ -5535,6 +5535,7 @@
       "result": {
         "ok": {
           "codeEmail": "Se la tua prenotazione ha un indirizzo email, abbiamo inviato il codice anche lì.",
+          "codeHeldTouristTax": "La tua identità è verificata. Il codice di accesso ti arriverà dopo il pagamento della tassa di soggiorno.",
           "codeLabel": "Il tuo codice di accesso",
           "noCode": "La tua identità è verificata. Se la tua prenotazione ha un indirizzo email, il codice di accesso è stato inviato lì; altrimenti chi gestisce la struttura ti darà le istruzioni per entrare.",
           "title": "Sei verificato"
