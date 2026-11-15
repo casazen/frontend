@@ -16515,14 +16515,14 @@
       "count_one": "Riguarda {{count}} proprietario del mese.",
       "count_other": "Riguarda i {{count}} proprietari del mese.",
       "description": "Un passaggio del mese per tutti i proprietari in una volta. Ogni proprietario fa da sé: se uno non va avanti, gli altri sì, e ti diciamo quali.",
-      "leftRunning": "L'operazione continua: tra poco aggiorna la pagina per vedere a che punto è ogni proprietario.",
+      "leftRunning": "L'operazione continua: finché resti su questa pagina ti avvisiamo quando finisce.",
       "open": "Esegui per tutti",
       "progress": {
         "label": "Avanzamento",
         "notFound": "Non troviamo più questa esecuzione. Guarda l'elenco del mese: mostra a che punto è ogni proprietario.",
         "queued": "In attesa di partire…",
         "readError": "Non riusciamo a leggere a che punto è. Quello che era partito continua.",
-        "stay": "Resta qui finché finisce: poi vedi com'è andata per ogni proprietario.",
+        "stay": "Puoi chiudere questa finestra: finché resti su questa pagina ti avvisiamo quando finisce, e il risultato resta in «Esegui per tutti».",
         "text_one": "{{count}} proprietario su {{total}}",
         "text_other": "{{count}} proprietari su {{total}}"
       },
@@ -16531,6 +16531,7 @@
         "ownerCloseUnreconciled": "Il saldo non torna con i pagamenti, e da qui il mese non si chiude con una differenza. Chiudilo dalla riga del proprietario, con un motivo.",
         "ownerStatementVersionNotFound": "Non c'è ancora un rendiconto: preparalo prima."
       },
+      "reopen": "Apri",
       "result": {
         "another": "Esegui un altro passaggio",
         "failedTitle": "Non completati",

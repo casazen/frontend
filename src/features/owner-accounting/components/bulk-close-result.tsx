@@ -5,7 +5,7 @@ import { Alert, type AlertVariant } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { OwnerBulkOwnerResult, OwnerBulkRun } from '@/types';
-import { codeWords, figuresOf, fixTargetOf, rowKindOf, tallyOf, verdictOf, type BulkVerdict, type RowKind } from '../bulk-close-model';
+import { codeWords, figuresOf, fixTargetOf, headlineOf, rowKindOf, tallyOf, verdictOf, type BulkVerdict, type RowKind } from '../bulk-close-model';
 import type { Period } from '../owner-accounting-model';
 import { useOwnerFormat } from '../use-owner-format';
 import { Disclosure } from './disclosure';
@@ -46,30 +46,12 @@ export function BulkCloseResult({ run, period, nameOf }: BulkCloseResultProps) {
   if (verdict === 'running') return null;
 
   const tally = tallyOf(run);
-  const step = t(`ownerAccounting.bulk.step.${run.action}.label`);
   const rows = [...run.results].sort((a, b) => nameOf(a.ownerId).localeCompare(nameOf(b.ownerId)));
   const ofKind = (...kinds: RowKind[]) => rows.filter((row) => kinds.includes(rowKindOf(row)));
   const failed = ofKind('failed');
   const flagged = ofKind('flagged');
   const others = ofKind('done', 'unchanged');
   const exists = (key: string) => i18n.exists(key);
-
-  const headline = (): string => {
-    switch (verdict) {
-      case 'allDone':
-        return t('ownerAccounting.bulk.result.headline.allDone', { count: tally.total, step });
-      case 'doneWithFlags':
-        return t('ownerAccounting.bulk.result.headline.doneWithFlags', { count: tally.flagged, step });
-      case 'someNotDone':
-        return t('ownerAccounting.bulk.result.headline.someNotDone', { count: tally.failed, total: tally.total, step });
-      case 'incomplete':
-        return t('ownerAccounting.bulk.result.headline.incomplete', { count: tally.answered, total: tally.total, step });
-      case 'empty':
-        return t('ownerAccounting.bulk.result.headline.empty', { step });
-      case 'runFailed':
-        return t('ownerAccounting.bulk.result.headline.runFailed', { step });
-    }
-  };
 
   const counts: Array<[RowKind, number]> = [
     ['failed', tally.failed],
@@ -82,7 +64,7 @@ export function BulkCloseResult({ run, period, nameOf }: BulkCloseResultProps) {
     <div className="grid gap-4" data-testid="bulk-result" data-verdict={verdict}>
       <Alert variant={TONES[verdict]} data-testid="bulk-headline" aria-labelledby={titleId}>
         <p id={titleId} className="font-medium">
-          {headline()}
+          {headlineOf(run, t)}
         </p>
         {verdict === 'runFailed' && run.errorCode ? <p className="mt-1">{codeWords(run.errorCode, t, exists)}</p> : null}
       </Alert>

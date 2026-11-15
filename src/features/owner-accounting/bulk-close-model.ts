@@ -93,6 +93,31 @@ export function verdictOf(run: OwnerBulkRun): BulkVerdict {
   return 'allDone';
 }
 
+/**
+ * The line on top of the result of a run, in words: what it comes to from its rows ({@link verdictOf}). They are also the words of the toast that tells how a run went when the dialog
+ * was left while it went on, so the screen and the toast never say two different things about the same run.
+ */
+export function headlineOf(run: OwnerBulkRun, t: TFunction): string {
+  const tally = tallyOf(run);
+  const step = t(`ownerAccounting.bulk.step.${run.action}.label`);
+  switch (verdictOf(run)) {
+    case 'allDone':
+      return t('ownerAccounting.bulk.result.headline.allDone', { count: tally.total, step });
+    case 'doneWithFlags':
+      return t('ownerAccounting.bulk.result.headline.doneWithFlags', { count: tally.flagged, step });
+    case 'someNotDone':
+      return t('ownerAccounting.bulk.result.headline.someNotDone', { count: tally.failed, total: tally.total, step });
+    case 'incomplete':
+      return t('ownerAccounting.bulk.result.headline.incomplete', { count: tally.answered, total: tally.total, step });
+    case 'empty':
+      return t('ownerAccounting.bulk.result.headline.empty', { step });
+    case 'runFailed':
+      return t('ownerAccounting.bulk.result.headline.runFailed', { step });
+    case 'running':
+      return t('ownerAccounting.bulk.progress.text', { count: tally.answered, total: tally.total });
+  }
+}
+
 /** How far a run is, from 0 to 100: the owners answered out of the owners asked for. */
 export function progressPercent(run: Pick<OwnerBulkRun, 'total' | 'results'>): number {
   return run.total <= 0 ? 0 : Math.min(100, Math.round((run.results.length / run.total) * 100));

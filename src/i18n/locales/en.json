@@ -16515,14 +16515,14 @@
       "count_one": "It concerns {{count}} owner of the month.",
       "count_other": "It concerns the {{count}} owners of the month.",
       "description": "One step of the month-end for all the owners at once. Each owner stands on its own: if one does not go through, the others do, and we tell you which.",
-      "leftRunning": "The operation goes on: refresh the page in a moment to see where each owner stands.",
+      "leftRunning": "The operation goes on: as long as you stay on this page we will tell you when it ends.",
       "open": "Run for everyone",
       "progress": {
         "label": "Progress",
         "notFound": "We can no longer find this run. Look at the list of the month: it shows where each owner stands.",
         "queued": "Waiting to start…",
         "readError": "We cannot read how far it has gone. What had started goes on.",
-        "stay": "Stay here until it ends: then you see how it went for each owner.",
+        "stay": "You can close this window: as long as you stay on this page we will tell you when it ends, and the result stays in «Run for everyone».",
         "text_one": "{{count}} owner out of {{total}}",
         "text_other": "{{count}} owners out of {{total}}"
       },
@@ -16531,6 +16531,7 @@
         "ownerCloseUnreconciled": "The balance does not match the payments, and the month is not closed with a difference from here. Close it from the owner's row, with a reason.",
         "ownerStatementVersionNotFound": "There is no statement yet: prepare it first."
       },
+      "reopen": "Open",
       "result": {
         "another": "Run another step",
         "failedTitle": "Not completed",

@@ -50,10 +50,12 @@ const networkError = () => Object.assign(new Error('Network Error'), { isAxiosEr
 /** An answer settled from outside: the request that is on its way. */
 function deferred<T>() {
   let resolve!: (value: T) => void;
-  const promise = new Promise<T>((done) => {
+  let reject!: (reason: unknown) => void;
+  const promise = new Promise<T>((done, fail) => {
     resolve = done;
+    reject = fail;
   });
-  return { promise, resolve };
+  return { promise, resolve, reject };
 }
 
 /** Three owners with a draft each: the month asks for the approval. */
@@ -66,6 +68,7 @@ const MONTH_OF_THREE: OwnerCloseReadiness = readiness([
 function renderDialog(options: { monthOver?: boolean; pollMs?: number } = {}) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } } });
   const onOpenChange = vi.fn();
+  const onKeepChange = vi.fn();
   render(
     createElement(
       QueryClientProvider,
@@ -76,6 +79,7 @@ function renderDialog(options: { monthOver?: boolean; pollMs?: number } = {}) {
         createElement(BulkCloseDialog, {
           open: true,
           onOpenChange,
+          onKeepChange,
           period: { year: YEAR, month: MONTH },
           readiness: MONTH_OF_THREE,
           summary: summarize(MONTH_OF_THREE),
@@ -86,7 +90,7 @@ function renderDialog(options: { monthOver?: boolean; pollMs?: number } = {}) {
       ),
     ),
   );
-  return { onOpenChange };
+  return { onOpenChange, onKeepChange };
 }
 
 /** Starts the step that is chosen: the button is waited for until it can be pressed, never a fixed time. */
@@ -356,7 +360,7 @@ describe('«Esegui per tutti»: the result of the run, owner by owner (E13/F02/U
     const first = deferred<OwnerBulkRun>();
     api.runBulkStep.mockResolvedValue(run({ jobId: 'job-5', status: 'Queued', total: 3, results: [] }));
     api.getBulkRun.mockImplementation(() => first.promise);
-    const { onOpenChange } = renderDialog();
+    const { onOpenChange, onKeepChange } = renderDialog();
     await start();
 
     await screen.findByTestId('bulk-progress');
@@ -364,7 +368,23 @@ describe('«Esegui per tutti»: the result of the run, owner by owner (E13/F02/U
     await waitFor(() => expect(close).toBeEnabled());
     fireEvent.click(close);
 
+    // Told, and the page is asked to keep the dialog (closed): the run is still followed from there.
     expect(toast.warning).toHaveBeenCalledWith(text('ownerAccounting.bulk.leftRunning'));
+    expect(onKeepChange).toHaveBeenCalledWith(true);
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('BulkRun_LeavingAfterItEnded_IsToldNothing_AndNothingIsKept', async () => {
+    api.runBulkStep.mockResolvedValue(run({ total: 3, results: [row(OWNER_ID), row(OTHER_OWNER_ID), row(THIRD_OWNER_ID)] }));
+    const { onOpenChange, onKeepChange } = renderDialog();
+    await start();
+
+    const close = await screen.findByTestId('bulk-close');
+    await waitFor(() => expect(close).toBeEnabled());
+    fireEvent.click(close);
+
+    expect(toast.warning).not.toHaveBeenCalled();
+    expect(onKeepChange).toHaveBeenCalledWith(false);
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 });
@@ -418,5 +438,61 @@ describe('«Esegui per tutti» on the month-end page (E13/F02/US03/T01)', () => 
     expect(screen.queryByText(text('ownerAccounting.bulk.result.headline.allDone', { count: 2, step: stepLabel('Approve') }))).toBeNull();
     // The month behind the dialog is read again: what the run changed is on the page when the dialog is closed.
     await waitFor(() => expect(api.getReadiness.mock.calls.length).toBeGreaterThan(readings));
+  });
+
+  /** Starts the suggested step for the whole month (a queued run, whose first reading is `first`), then leaves the dialog while it goes on. */
+  async function startAndLeave(jobId: string, first: { promise: Promise<OwnerBulkRun> }) {
+    api.runBulkStep.mockResolvedValue(run({ jobId, status: 'Queued', total: 2, results: [] }));
+    api.getBulkRun.mockImplementationOnce(() => first.promise);
+    renderPage();
+
+    const open = await screen.findByTestId('bulk-open');
+    await waitFor(() => expect(open).toBeEnabled());
+    fireEvent.click(open);
+    await start();
+    await screen.findByTestId('bulk-progress');
+    const close = screen.getByTestId('bulk-close');
+    await waitFor(() => expect(close).toBeEnabled());
+    fireEvent.click(close);
+
+    expect(toast.warning).toHaveBeenCalledWith(text('ownerAccounting.bulk.leftRunning'));
+    await waitFor(() => expect(screen.queryByTestId('bulk-dialog')).toBeNull());
+  }
+
+  // Data: a run the person left while it went on is not lost. The month on the page is read again when it ends, nobody has to reload, and who failed is still to be seen.
+  it('MonthEndPage_ARunLeftWhileItGoesOn_IsFollowedToItsEnd_TheMonthIsReadAgain_AndWhoFailedIsStillToBeSeen', async () => {
+    const first = deferred<OwnerBulkRun>();
+    await startAndLeave('job-9', first);
+    const readings = api.getReadiness.mock.calls.length;
+
+    // The run ends while nobody looks at the dialog: the month is read again, and the person is told how it went, with the way back to the result.
+    first.resolve(run({ jobId: 'job-9', status: 'Completed', total: 2, results: [row(OWNER_ID), row(OTHER_OWNER_ID, { ok: false, code: 'owner_statement_flagged', issues: ['fx_missing'] })] }));
+    await waitFor(() => expect(api.getReadiness.mock.calls.length).toBeGreaterThan(readings));
+    const told = text('ownerAccounting.bulk.result.headline.someNotDone', { count: 1, total: 2, step: stepLabel('Approve') });
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(told, expect.objectContaining({ action: expect.objectContaining({ label: text('ownerAccounting.bulk.reopen') }) })));
+    expect(toast.success).not.toHaveBeenCalled();
+
+    // Coming back, the person finds the result owner by owner, and no question that would start a second run.
+    const open = screen.getByTestId('bulk-open');
+    await waitFor(() => expect(open).toBeEnabled());
+    fireEvent.click(open);
+    const failed = await screen.findByTestId('bulk-failed');
+    expect(within(failed).getByTestId('bulk-result-row')).toHaveTextContent('Luca Bianchi');
+    expect(screen.queryByTestId('bulk-start')).toBeNull();
+    expect(api.runBulkStep).toHaveBeenCalledTimes(1);
+  });
+
+  it('MonthEndPage_ARunLeftWhileItGoesOn_ThatTheServerHasForgotten_ReadsTheMonthAgainAndSaysSo_NeverDone', async () => {
+    const first = deferred<OwnerBulkRun>();
+    await startAndLeave('job-10', first);
+    const readings = api.getReadiness.mock.calls.length;
+
+    // The list of the month is where the person is sent to look: it is read again, and what is told is that the run cannot be found, not that it is done.
+    first.reject(problem(404, 'owner_bulk_job_not_found'));
+    await waitFor(() => expect(api.getReadiness.mock.calls.length).toBeGreaterThan(readings));
+    await waitFor(() =>
+      expect(toast.warning).toHaveBeenCalledWith(text('ownerAccounting.bulk.progress.notFound'), expect.objectContaining({ action: expect.objectContaining({ label: text('ownerAccounting.bulk.reopen') }) })),
+    );
+    expect(toast.success).not.toHaveBeenCalled();
   });
 });
