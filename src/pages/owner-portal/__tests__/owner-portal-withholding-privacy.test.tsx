@@ -166,3 +166,29 @@ describe('the withholding of the owner in the portal never shows what belongs to
     expect(screen.queryByTestId('owner-withholding-total')).toBeNull();
   });
 });
+
+describe('the withholding of the owner in the portal is written in the currency of its data (money)', () => {
+  it('OwnerPortalWithholding_Money_TheCurrencyIsTheOneOfTheAnswer_NeverOneOfTheCode', async () => {
+    client.get.mockResolvedValue(answer(2026, { currency: 'CHF' }));
+    renderSection(true);
+
+    const total = await screen.findByTestId('owner-withholding-total');
+    expect(total.textContent).toMatch(/210,00\s*CHF/);
+    expect(total.textContent).not.toMatch(/€/);
+    expect(within(screen.getByTestId('owner-cu')).getByTestId('owner-cu-withheld').textContent).toMatch(/210,00\s*CHF/);
+    expect(screen.queryByTestId('owner-withholding-currency-missing')).toBeNull();
+  });
+
+  it('OwnerPortalWithholding_Money_AnAnswerWithNoCurrencyIsWrittenWithoutASymbol_AndSaysSo', async () => {
+    client.get.mockResolvedValue(answer(2026, { currency: '' }));
+    renderSection(true);
+
+    // The plain figure, never a euro or a franc the code made up, and a sentence that says why there is no symbol.
+    const total = await screen.findByTestId('owner-withholding-total');
+    expect(total.textContent?.trim()).toBe('210,00');
+    const cu = screen.getByTestId('owner-cu');
+    expect(within(cu).getByTestId('owner-cu-base').textContent).not.toMatch(/€|EUR|CHF/);
+    expect(within(cu).getByTestId('owner-cu-withheld').textContent?.trim()).toBe('210,00');
+    expect(screen.getByTestId('owner-withholding-currency-missing')).toHaveTextContent(i18n.t('ownerPortal.withholding.currencyMissing'));
+  });
+});
