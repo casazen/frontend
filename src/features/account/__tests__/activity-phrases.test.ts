@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import i18n from '@/i18n/config';
 import type { OrgActivityEntry } from '@/types/org-team.types';
-import { activityPhrase } from '../activity-phrases';
+import { activityActor, activityPhrase } from '../activity-phrases';
 
 function entry(patch: Partial<OrgActivityEntry>): OrgActivityEntry {
   return {
@@ -54,8 +54,41 @@ describe('activityPhrase', () => {
       expect(activityPhrase(assist({ details: { status: 'cancelled' } }), context)).toBe('Il supporto CasaZen ha annullato la tua richiesta di aiuto');
     });
 
-    it('activityPhrase_TheHostAskedOrReopenedARequest_SaysItAskedForHelp', () => {
-      expect(activityPhrase(assist({ type: 'OnboardingAssistRequested', details: { status: 'requested' } }), context)).toBe('Hai chiesto aiuto al supporto CasaZen');
+    it('activityPhrase_TheHostAskedOrReopenedARequest_NamesTheMemberWhoAskedAndIsNeverInTheSecondPerson', () => {
+      // The whole team reads the line: it says who asked, whoever reads it.
+      const asked = assist({ type: 'OnboardingAssistRequested', actorUserId: 'auth0|anna', details: { status: 'requested' } });
+      expect(activityPhrase(asked, { t: i18n.t, memberName: (userId) => (userId === 'auth0|anna' ? 'Anna Rossi' : undefined) })).toBe('Anna Rossi ha chiesto aiuto al supporto CasaZen');
+      // A person who is not in the team any more is still told as such, not as nobody.
+      expect(activityPhrase(asked, context)).toBe('Ex membro ha chiesto aiuto al supporto CasaZen');
+    });
+
+    // The lines support writes have as their actor a person of platform support, who is not a member of the team: never «Ex membro», and no name of a person of support.
+    describe('who did it', () => {
+      const staff = 'auth0|staff-1';
+      const team = (userId: string) => (userId === 'auth0|anna' ? 'Anna Rossi' : undefined);
+
+      it.each([
+        ['a credential opened', { details: { credential: 'regionalIstat' } }],
+        ['a request taken', { details: { status: 'inProgress' } }],
+        ['a request closed', { details: { status: 'done' } }],
+      ])('activityActor_SupportDid_%s_IsCasaZenSupportNeverAFormerMember', async (_what, patch) => {
+        for (const [language, expected] of [['it', 'Supporto CasaZen'], ['en', 'CasaZen support']] as const) {
+          await i18n.changeLanguage(language);
+          const actor = activityActor(assist({ actorUserId: staff, ...patch }), { t: i18n.t, memberName: () => undefined });
+          expect(actor, language).toBe(expected);
+          expect(actor, language).not.toMatch(/ex membro|former member|auth0/i);
+        }
+      });
+
+      it('activityActor_APersonOfTheTeamDidIt_IsTheirNameAndAPersonWhoLeftIsAFormerMember', () => {
+        expect(activityActor(assist({ type: 'OnboardingAssistRequested', actorUserId: 'auth0|anna' }), { t: i18n.t, memberName: team })).toBe('Anna Rossi');
+        expect(activityActor(assist({ type: 'OnboardingAssistRequested', actorUserId: 'auth0|gone' }), { t: i18n.t, memberName: team })).toBe('Ex membro');
+        expect(activityActor(entry({ type: 'MemberInvited', actorUserId: 'auth0|gone' }), { t: i18n.t, memberName: team })).toBe('Ex membro');
+      });
+
+      it('activityActor_NobodyDidIt_IsTheSystem', () => {
+        expect(activityActor(entry({ type: 'PlanChanged', actorUserId: null }), { t: i18n.t, memberName: team })).toBe('Sistema');
+      });
     });
 
     it('activityPhrase_ACredentialOrStatusThisPageDoesNotKnow_IsTheGenericSentenceNeverARawCode', () => {

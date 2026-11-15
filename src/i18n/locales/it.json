@@ -43,7 +43,7 @@
         "police": "Il supporto CasaZen ha usato le credenziali di Alloggiati Web per fare il collegamento che avevi chiesto",
         "regionalIstat": "Il supporto CasaZen ha usato le credenziali ISTAT per fare il collegamento che avevi chiesto"
       },
-      "assistRequested": "Hai chiesto aiuto al supporto CasaZen",
+      "assistRequested": "{{member}} ha chiesto aiuto al supporto CasaZen",
       "assistStatus": {
         "cancelled": "Il supporto CasaZen ha annullato la tua richiesta di aiuto",
         "done": "Il supporto CasaZen ha chiuso la tua richiesta di aiuto: dice di averla fatta",
@@ -68,6 +68,7 @@
         "documents_safety": "i documenti e la scheda di sicurezza",
         "safety": "la scheda di sicurezza"
       },
+      "supportActor": "Supporto CasaZen",
       "system": "Sistema"
     },
     "home": {

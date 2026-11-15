@@ -7,10 +7,23 @@ import { orgRoleLabel } from './account-roles';
 const ASSIST_CREDENTIALS: ReadonlySet<string> = new Set(['panel', 'police', 'regionalIstat']);
 const ASSIST_STATUSES: ReadonlySet<string> = new Set(['inProgress', 'done', 'cancelled']);
 
+/** The types of line that CasaZen support writes: its actor is a platform administrator, never a member of the team. */
+const SUPPORT_ACTOR_TYPES: ReadonlySet<string> = new Set(['OnboardingAssistUpdated']);
+
 export interface PhraseContext {
   t: TFunction;
   /** The name of the member with this account id, or `undefined` when the person is not (any more) in the team. */
   memberName: (userId: string) => string | undefined;
+}
+
+/**
+ * Who did it, as the list shows it under the sentence: the member, «Sistema» when nobody did it, and «Supporto CasaZen» for what support did (taking a request, closing it, opening
+ * a credential of the vault, E20/F03/US01): its person is not one of the team, so the team never reads it as «Ex membro», and no name of a person of support reaches the host.
+ */
+export function activityActor(entry: OrgActivityEntry, { t, memberName }: PhraseContext): string {
+  if (SUPPORT_ACTOR_TYPES.has(entry.type)) return t('account.activity.supportActor');
+  if (!entry.actorUserId) return t('account.activity.system');
+  return memberName(entry.actorUserId) ?? t('account.activity.formerMember');
 }
 
 /**
@@ -59,7 +72,8 @@ export function activityPhrase(entry: OrgActivityEntry, { t, memberName }: Phras
       return t('leaseRound.activity.adminGrantedGift');
     case 'OnboardingAssistRequested':
       // The host asked CasaZen support to do a step, or reopened a request support had closed («Non funziona», E20/F03/US01/T02): the line holds the part and the context, never the note.
-      return t('account.activity.assistRequested');
+      // The whole team reads it, so it names the member who asked (the actor of the line) and is never in the second person.
+      return t('account.activity.assistRequested', { member: (entry.actorUserId ? memberName(entry.actorUserId) : undefined) ?? t('account.activity.formerMember') });
     case 'OnboardingAssistUpdated': {
       // Support took, closed or cancelled a request, or OPENED A CREDENTIAL of the support vault for it (E20/F03/US01/T01): the host reads which one was used, never its value or the reason.
       const credential = details.credential ?? '';

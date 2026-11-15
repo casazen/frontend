@@ -43,7 +43,7 @@
         "police": "CasaZen support used the Alloggiati Web credentials to make the connection you asked for",
         "regionalIstat": "CasaZen support used the ISTAT credentials to make the connection you asked for"
       },
-      "assistRequested": "You asked CasaZen support for help",
+      "assistRequested": "{{member}} asked CasaZen support for help",
       "assistStatus": {
         "cancelled": "CasaZen support cancelled your request for help",
         "done": "CasaZen support closed your request for help: it says it did it",
@@ -68,6 +68,7 @@
         "documents_safety": "the documents and the safety sheet",
         "safety": "the safety sheet"
       },
+      "supportActor": "CasaZen support",
       "system": "System"
     },
     "home": {
