@@ -1598,7 +1598,14 @@
     "forbidden": "You do not have permission to perform this action.",
     "tooManyRequests": "Too many requests in a short time. Try again in a moment.",
     "codes": {
+      "accountantPackageContentsInvalid": "Choose at least one folder of the package, each one only once.",
       "accountantPackageInvalidPeriod": "The period you chose is not valid: it has to be a month or a year.",
+      "accountantPackageNotSent": "The package did not go out: nothing was sent. Try again in a moment; if it happens again, write to support.",
+      "accountantPackageOwnerAccountingRequired": "The folders with the owners’ accounting need the permission to see the owner statements.",
+      "accountantPackageRecipientInvalid": "The accountant’s address is not valid: write a plain address, with no name and no spaces.",
+      "accountantPackageRecipientMissing": "The accountant’s address is missing.",
+      "accountantPackageSendDayInvalid": "The day of the send goes from 1 to 28.",
+      "accountantPackageSettingsInvalid": "The settings of the send are not complete: check them and try again.",
       "accountantPackageTooLarge": "The package would be too large. Choose a shorter period.",
       "archiveDocumentHasNoFile": "This document has no file to download.",
       "archiveDocumentNotFound": "We can no longer find this document, or it is not among the properties you have access to. The list has been refreshed.",
@@ -2857,6 +2864,93 @@
     }
   },
   "billingWizard": {
+    "accountant": {
+      "contents": {
+        "folders": {
+          "agencySummary": {
+            "description": "Commissions, invoices to owners, payouts and wire transfers of the month.",
+            "title": "Agency summary"
+          },
+          "collections": {
+            "description": "Collections, balances still to collect and the costs of the portals.",
+            "title": "Collections"
+          },
+          "guestDocuments": {
+            "description": "Invoices, receipts and credit notes issued to guests.",
+            "title": "Documents to guests"
+          },
+          "ownerInvoices": {
+            "description": "The invoices the agency issues to the owners.",
+            "title": "Invoices to owners"
+          },
+          "statements": {
+            "description": "The owner statements that were published.",
+            "title": "Owner statements"
+          },
+          "touristTax": {
+            "description": "The tourist tax owed and the tourist tax paid.",
+            "title": "Tourist tax"
+          },
+          "vat": {
+            "description": "VAT by rate and by whoever issued the document.",
+            "title": "VAT"
+          },
+          "withholding": {
+            "description": "Withholding tax, F24 and data for the Certificazione Unica.",
+            "title": "Withholding tax"
+          }
+        },
+        "hint": "Choose the folders of the monthly e-mail: at least one. The package you download yourself from the “Accountant” page always has all of them. The owner folders are for agencies.",
+        "hintNoOwnerFolders": "Choose the folders of the monthly e-mail: at least one. The package you download yourself from the “Accountant” page always has all of them. The folders with the owners’ accounting belong to agencies and are chosen by whoever administers the organization: they do not appear here.",
+        "legend": "What the package holds"
+      },
+      "day": {
+        "hint": "From the day you choose, every morning CasaZen tries to send the package of the month that just ended, until it has gone. You can choose up to the 28th, so the day exists in every month.",
+        "label": "Day of the month"
+      },
+      "email": {
+        "hint": "They get an e-mail with the link to download the package, valid for 30 days: no attachments. The accountant issues nothing and only receives these files.",
+        "label": "Accountant’s e-mail"
+      },
+      "intro": "The accountant issues nothing and only receives the data. Here you say to which address to send it and whether CasaZen should do it by itself every month. The step is optional: you can go on without changing anything.",
+      "lastSend": {
+        "errors": {
+          "emailNotConfigured": "CasaZen’s mail service is not active yet: write to support.",
+          "emailNotQueued": "The mail service did not take the e-mail in charge.",
+          "linkNotConfigured": "A CasaZen setting is missing to create the download link: write to support.",
+          "packageFailed": "We could not prepare the package.",
+          "packageTooLarge": "The package was too large: take out some folders.",
+          "storageFailed": "We could not keep the package for the link.",
+          "unknown": "There was a technical problem."
+        },
+        "failed": "Last attempt: package of {{period}}, not sent on {{when}}. {{reason}} {{retry}}",
+        "none": "No send has gone out yet.",
+        "retryOff": "The monthly send is off: we do not try again by ourselves.",
+        "retryOn": "We try again every morning until it goes.",
+        "sent": "Last send: package of {{period}}, e-mail with the link handed over for sending on {{when}}."
+      },
+      "loadError": "We cannot read the settings of the send to the accountant.",
+      "loading": "Reading the settings of the send to the accountant",
+      "monthly": {
+        "legend": "Send every month",
+        "off": "The package does not go out by itself: you download it when you need it.",
+        "on": "From the day you choose, CasaZen sends the accountant the package of the month that just ended, once per month.",
+        "title": "Send the package every month"
+      },
+      "noAccess": "The settings of the send to the accountant belong to the whole organization: your access covers only some properties, so you cannot see or change them.",
+      "test": {
+        "button": "Send a test",
+        "description": "Sends the accountant the package of {{period}}, last month, right now, with the folders chosen above; if you changed anything, it is saved first. It counts as the send of that month: it does not go out a second time by itself.",
+        "failed": "We could not confirm that the test went out. Look at the last send above before you try again.",
+        "ownerAccounting": "This organization is an agency: the test package holds the owners’ accounting, and only whoever can see the owner statements can send it. Ask whoever administers the organization.",
+        "preparing": "Preparing the package: it can take a few minutes. Do not leave this page.",
+        "queued": "Test queued: the e-mail with the package of {{period}} goes out shortly to the address written above, and the link works until {{until}}. If it does not arrive, check the address.",
+        "title": "Try the send",
+        "tooLarge": "Last month’s package is too large to be sent: take out some folders and try again.",
+        "tooLargeCount": "Last month’s package would have {{files}} files, but a package holds {{max}} at most: take out some folders and try again."
+      },
+      "unavailable": "Sending the package to the accountant is not active yet: there is nothing to set up here for now."
+    },
     "card": {
       "action": "Set up invoicing",
       "description": "Who issues, VAT, numbering, tourist tax and how your documents are issued, in guided steps.",
@@ -2945,6 +3039,12 @@
       "toPlan": "Back to the guide"
     },
     "errors": {
+      "accountantContents": "Choose at least one folder of the package.",
+      "accountantDay": "Choose a day from 1 to 28.",
+      "accountantEmail": "Write a plain e-mail address, with no name and no spaces, for example firm@example.com.",
+      "accountantEmailMissing": "Write the accountant’s address: without it the monthly send cannot stay on.",
+      "accountantEmailNeeded": "Write the address of the accountant the test goes to.",
+      "accountantOwnerAccounting": "Some folders hold the owners’ accounting (invoices to owners, statements, withholding tax, agency summary, VAT). To choose them you need the permission to see the owner statements: ask whoever administers the organization, or take them out.",
       "addressCivic": "The street number is too long (20 characters at most).",
       "addressStreet": "Write the street, 200 characters at most.",
       "amount": "Write an amount with two decimals at most.",
@@ -2978,6 +3078,7 @@
     },
     "finishLabel": "Done",
     "help": {
+      "accountant": "The accountant issues nothing: they receive the package with the data. Write their address and choose whether CasaZen should send it to them every month. “Send a test” sends them last month’s right away. The step is optional.",
       "button": "Help",
       "channels": "The portal accounts can be the owner’s or the agency’s: who receives the portal’s invoice depends on it. For each portal write the percentage it keeps when it does not state the commission.",
       "issuer": "CasaZen issues every document in the name of your organization. Choose the country, write the name as it must appear on the documents and the full address.",
@@ -3196,6 +3297,11 @@
     },
     "saveFailed": "We could not save. What you wrote is still here: try again.",
     "steps": {
+      "accountant": {
+        "label": "Accountant",
+        "purpose": "Optional: whom to send the package of data to every month.",
+        "title": "Package for the accountant"
+      },
       "channels": {
         "label": "Channel commissions",
         "purpose": "Whose the portal accounts are and how much they keep.",
@@ -3243,6 +3349,10 @@
       }
     },
     "summary": {
+      "accountant": {
+        "monthly": "Every month, from day {{day}}",
+        "none": "No automatic send"
+      },
       "automatic": "issued automatically",
       "complete": {
         "text": "Nothing is missing: CasaZen can issue your documents.",
@@ -3270,6 +3380,7 @@
       },
       "issuing": "{{auto}}, {{email}}",
       "items": {
+        "accountant": "Accountant",
         "address": "Address",
         "channels": "Portal accounts",
         "country": "Country",

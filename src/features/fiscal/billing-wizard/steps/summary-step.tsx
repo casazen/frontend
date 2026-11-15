@@ -6,7 +6,7 @@ import { useOptionalWizard } from '@/components/shared/wizard/wizard-context';
 import { WizardSummary, type WizardSummaryItem } from '@/components/shared/wizard/wizard-summary';
 import { Alert } from '@/components/ui/alert';
 import { billingItemTextKey, billingStepOfItem } from '@/lib/onboarding-billing';
-import type { BillingSetup, FiscalIssuerPreview } from '@/types';
+import type { AccountantPackageSettings, BillingSetup, FiscalIssuerPreview } from '@/types';
 import { BILLING_STEPS, type BillingStepId } from '../billing-wizard-ids';
 import { addressLine, currencyOfCountry, missingItemsOf, regimeOfValues } from '../billing-wizard-model';
 import { PORTAL_SOURCES, type BillingWizardValues } from '../billing-wizard-schema';
@@ -21,6 +21,11 @@ interface SummaryStepProps {
   steps: readonly BillingStepId[];
   /** The tax rule in force, for the example. */
   preview: Pick<UseQueryResult<FiscalIssuerPreview>, 'data' | 'isPending' | 'isError'>;
+  /**
+   * The settings of the send to the accountant as the server has them now, `null` while they cannot be read: the row of the step «Commercialista» says what is SAVED (the monthly send only
+   * happens if it is), and never writes the address of a third party on the page.
+   */
+  accountant?: AccountantPackageSettings | null;
 }
 
 /**
@@ -28,7 +33,7 @@ interface SummaryStepProps {
  * example document with the rates in force in the currency of the issuer. Nothing is saved here: «Fatto» closes the wizard, and the part «Fatturazione» of the guide is done
  * only when the server says nothing is missing, so a wizard closed with something left is never told as done.
  */
-export function SummaryStep({ setup, values, steps, preview }: SummaryStepProps) {
+export function SummaryStep({ setup, values, steps, preview, accountant }: SummaryStepProps) {
   const { t } = useTranslation();
   const wizard = useOptionalWizard();
   const missing = missingItemsOf(setup);
@@ -76,6 +81,15 @@ export function SummaryStep({ setup, values, steps, preview }: SummaryStepProps)
     }),
     stepId: BILLING_STEPS.issuing,
   });
+  // The optional step of the accountant: a row only where the step exists. «Nessun invio automatico» is an answer too (the step may be left as it is); a setting that cannot be read is not.
+  if (has(BILLING_STEPS.accountant)) {
+    items.push({
+      id: 'accountant',
+      label: t('billingWizard.summary.items.accountant'),
+      value: accountant ? (accountant.enabled ? t('billingWizard.summary.accountant.monthly', { day: accountant.sendDay }) : t('billingWizard.summary.accountant.none')) : null,
+      stepId: BILLING_STEPS.accountant,
+    });
+  }
   // A row has a link to its step only where the person has the step.
   const rows = items.map((item) => ({ ...item, stepId: item.stepId && has(item.stepId as BillingStepId) ? item.stepId : undefined }));
 

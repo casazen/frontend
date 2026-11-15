@@ -1,10 +1,12 @@
 import { isAxiosError } from 'axios';
 import type { FiscalTaxProfileUpdate } from '@/api/fiscal.api';
+import { defaultPeriod, periodParam } from '@/features/owner-accounting/owner-accounting-model';
 import { compactIdentifier } from '@/features/fiscal/tax-profile-changes';
 import { getProblemCode } from '@/lib/api-errors';
 import { billingStepOfItem } from '@/lib/onboarding-billing';
 import { addDays } from '@/lib/stay-dates';
 import type {
+  AccountantPackageSettings,
   BillingSetup,
   BillingSetupField,
   BillingSetupItem,
@@ -20,6 +22,7 @@ import type {
   FiscalTaxRule,
   OwnerMandateTemplate,
   PortalAccountHolder,
+  SaveAccountantPackageSettingsRequest,
   SaveBillingSetupSectionRequest,
 } from '@/types';
 import { BILLING_STEPS, BILLING_STEP_ORDER, type BillingStepId } from './billing-wizard-ids';
@@ -27,7 +30,12 @@ import {
   BILLING_ERROR_KEYS,
   ITALIAN_REGIMES,
   PORTAL_SOURCES,
+  accountantAnswersOf,
+  accountantProblems,
+  accountantUntouched,
   channelsStepSchema,
+  isPlainEmail,
+  isSendDay,
   issuerStepSchema,
   italyStepSchema,
   mandateTemplateProblems,
@@ -35,6 +43,7 @@ import {
   parseDecimal,
   touristTaxStepSchema,
   vatStepSchema,
+  type AccountantAnswers,
   type BillingCountry,
   type BillingIdentityOnRecord,
   type BillingWizardValues,
@@ -173,6 +182,11 @@ export function initialValues(setup: BillingSetup, context: { organizationName: 
     conservationAgreementConfirmed: flagOf(italy, 'conservationAgreementConfirmed'),
     virtualStampConfirmed: flagOf(italy, 'virtualStampConfirmed'),
     stampDutyReference: textOf(italy, 'stampDutyReference'),
+    // The settings of the send to the accountant are not part of the setup: they are read on their own, and the step shows them until the person changes one.
+    accountantEmail: null,
+    accountantMonthly: null,
+    accountantDay: null,
+    accountantContents: null,
   };
 }
 
@@ -182,12 +196,14 @@ export function initialValues(setup: BillingSetup, context: { organizationName: 
 
 /**
  * The steps of the wizard for what is known: «Commissioni dei canali» and «Mandato standard» only for an agency, «Italia» only for an Italian issuer (it follows the first
- * answer, so a person who has not chosen the country yet does not see it). The others are always there.
+ * answer, so a person who has not chosen the country yet does not see it), «Commercialista» only while the package of the accountant is on (`accountant`, the flag `accountantPackage`:
+ * with it off the wizard is the one it was). The others are always there.
  */
-export function stepIdsFor(country: string, agency: boolean): BillingStepId[] {
+export function stepIdsFor(country: string, agency: boolean, accountant = false): BillingStepId[] {
   return BILLING_STEP_ORDER.filter((id) => {
     if (id === BILLING_STEPS.channels || id === BILLING_STEPS.mandate) return agency;
     if (id === BILLING_STEPS.italy) return country === 'IT';
+    if (id === BILLING_STEPS.accountant) return accountant;
     return true;
   });
 }
@@ -341,15 +357,21 @@ const MANDATE_FIELDS = [
  * What the person wrote in the step on screen that a draft («Salva ed esci») does NOT keep, by the names of the fields: an answer that is not valid (a draft keeps what is valid and
  * leaves the rest out), the percents of the portals that are not percents, and every term of the standard mandate that was changed (the step saves none of them: they are
  * applied by their own action). A field the person left as it started, or left empty, is not something they wrote. The page says so when it is not empty, so that a draft with
- * part of the input left out is never told as «saved».
+ * part of the input left out is never told as «saved». For the step «Commercialista» `options.accountant` is the settings of the send the server has (`null` when it cannot be read): the
+ * answers a draft keeps are the ones that hold together with them (`accountantChange`).
  */
-export function draftLeftOut(step: BillingStepId, values: BillingWizardValues, options: { initial: BillingWizardValues; onRecord: BillingIdentityOnRecord }): string[] {
+export function draftLeftOut(
+  step: BillingStepId,
+  values: BillingWizardValues,
+  options: { initial: BillingWizardValues; onRecord: BillingIdentityOnRecord; accountant?: AccountantPackageSettings | null },
+): string[] {
   const written = (field: keyof BillingWizardValues): boolean => {
     const value = values[field];
     if (typeof value === 'string' && value.trim() === '') return false;
     return !sameAnswer(value, options.initial[field]);
   };
 
+  if (step === BILLING_STEPS.accountant) return accountantChange(options.accountant, values, 'draft').leftOut;
   if (step === BILLING_STEPS.mandate) return MANDATE_FIELDS.filter(written);
   if (step === BILLING_STEPS.channels) {
     const result = channelsStepSchema.safeParse(values);
@@ -523,6 +545,145 @@ export function mandateTemplateOf(values: BillingWizardValues): OwnerMandateTemp
     ...(linen === null ? {} : { linenFlatRate: linen }),
     passthroughPaymentFees: values.mandatePassthroughPaymentFees,
   };
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// The step «Commercialista»
+// ---------------------------------------------------------------------------------------------------------------------
+
+/** A setting of the send to the accountant, by the field of the form that holds the person's answer to it. */
+export type AccountantField = 'accountantEmail' | 'accountantMonthly' | 'accountantDay' | 'accountantContents';
+
+/** What a save of the step does with the answers of the person. */
+export interface AccountantChange {
+  /** The whole settings to send (`PUT api/accountant-package/settings` takes them as a whole), or `null` when there is nothing to save: nothing was touched, or what is on screen is what the server has. */
+  request: SaveAccountantPackageSettingsRequest | null;
+  /** The settings the person changed that this save does NOT keep. Only a draft leaves any out (a whole save is checked first, and refuses). */
+  leftOut: AccountantField[];
+}
+
+/** Every answer of the step «not touched»: the server's settings, as they are. */
+const ACCOUNTANT_UNTOUCHED = { accountantEmail: null, accountantMonthly: null, accountantDay: null, accountantContents: null } as const;
+
+/** The settings as the server takes them: the address cut at its ends, and none (`null`) when it is empty. */
+function accountantRequestOf(answers: AccountantAnswers): SaveAccountantPackageSettingsRequest {
+  const email = answers.email.trim();
+  return { enabled: answers.enabled, email: email === '' ? null : email, sendDay: answers.sendDay, contents: [...answers.contents] };
+}
+
+/** Whether a request would leave the settings as the server has them: the address does not count its capitals (the server keeps it in lower case) and the folders do not count their order. */
+function accountantUnchanged(current: AccountantPackageSettings, request: SaveAccountantPackageSettingsRequest): boolean {
+  return (
+    (current.email ?? '').toLowerCase() === (request.email ?? '').toLowerCase() &&
+    current.enabled === request.enabled &&
+    current.sendDay === request.sendDay &&
+    current.contents.length === request.contents.length &&
+    request.contents.every((folder) => current.contents.includes(folder))
+  );
+}
+
+/**
+ * What a save of the step sends. The settings go to the server as a whole, so the person's answers are laid over what the server has (`current`) and the result is sent; nothing is sent when it
+ * is what the server already has, or when the person touched nothing (the step is optional: it is left as it is, never saved as an answer). A WHOLE save (the step was checked, «Continua») sends
+ * what the form says, and refuses what does not hold together (the problems come back as `leftOut`, with no request): the page checks the step first, so that never happens there. A DRAFT
+ * («Salva ed esci») keeps what holds together and leaves out the rest: an address that is not a plain one, a day outside 1 to 28, no folder at all, and, because the monthly send cannot be on with
+ * no address, the «on» asked with none (or the address emptied while the send stays on). `current` is `null` while the settings cannot be read: nothing is saved then.
+ */
+export function accountantChange(current: AccountantPackageSettings | null | undefined, values: BillingWizardValues, mode: 'whole' | 'draft'): AccountantChange {
+  if (!current || accountantUntouched(values)) return { request: null, leftOut: [] };
+
+  if (mode === 'whole') {
+    const answers = accountantAnswersOf(current, values);
+    const problems = accountantProblems(answers);
+    if (problems.length > 0) return { request: null, leftOut: problems.map((problem) => problem.field) };
+    const request = accountantRequestOf(answers);
+    return { request: accountantUnchanged(current, request) ? null : request, leftOut: [] };
+  }
+
+  const kept = accountantAnswersOf(current, ACCOUNTANT_UNTOUCHED);
+  const leftOut: AccountantField[] = [];
+  const typedEmail = values.accountantEmail;
+  if (typedEmail !== null) {
+    // An address emptied is an answer (no address); one that is not a plain address is not kept.
+    if (typedEmail.trim() === '' || isPlainEmail(typedEmail)) kept.email = typedEmail.trim();
+    else leftOut.push('accountantEmail');
+  }
+  if (values.accountantDay !== null) {
+    if (isSendDay(values.accountantDay)) kept.sendDay = values.accountantDay;
+    else leftOut.push('accountantDay');
+  }
+  if (values.accountantContents !== null) {
+    if (values.accountantContents.length > 0) kept.contents = values.accountantContents;
+    else leftOut.push('accountantContents');
+  }
+  if (values.accountantMonthly !== null) kept.enabled = values.accountantMonthly;
+  // The monthly send cannot be on with no address to send it to: whichever answer would leave it so is not kept.
+  if (kept.enabled && kept.email.trim() === '') {
+    if (values.accountantMonthly === true) {
+      kept.enabled = current.enabled;
+      leftOut.push('accountantMonthly');
+    } else {
+      kept.email = current.email ?? '';
+      leftOut.push('accountantEmail');
+    }
+  }
+  // The folders this person sees can be none (the settings hold only folders they may not choose: `accountantSettingsFor`), and a list with no folder is refused by the server: nothing is sent
+  // until they choose one, and the draft says it left that out.
+  if (kept.contents.length === 0) return { request: null, leftOut: leftOut.includes('accountantContents') ? leftOut : [...leftOut, 'accountantContents'] };
+  const request = accountantRequestOf(kept);
+  return { request: accountantUnchanged(current, request) ? null : request, leftOut };
+}
+
+/** The 422 codes of the settings of the send that name a field of the form, with the words that say what the field wants (`accountant_package_settings_invalid` names none). */
+const ACCOUNTANT_PROBLEM_CODES: ReadonlyMap<string, FormProblem> = new Map([
+  ['accountant_package_recipient_invalid', { name: 'accountantEmail', messageKey: BILLING_ERROR_KEYS.accountantEmail }],
+  ['accountant_package_recipient_missing', { name: 'accountantEmail', messageKey: BILLING_ERROR_KEYS.accountantEmailMissing }],
+  ['accountant_package_send_day_invalid', { name: 'accountantDay', messageKey: BILLING_ERROR_KEYS.accountantDay }],
+  ['accountant_package_contents_invalid', { name: 'accountantContents', messageKey: BILLING_ERROR_KEYS.accountantContents }],
+  ['accountant_package_owner_accounting_required', { name: 'accountantContents', messageKey: BILLING_ERROR_KEYS.accountantOwnerAccounting }],
+]);
+
+/**
+ * The field of the form a refused save of the settings of the send names: the server refuses an address that is not a plain one, a send turned on with no address, a day outside 1 to 28, no folder
+ * and, from a caller who may not read the owner accounting, the folders that carry it. Any other answer names no field: its words are the message of the whole save.
+ */
+export function accountantProblemsOf(error: unknown): FormProblem[] {
+  if (!isAxiosError(error) || error.response?.status !== 422) return [];
+  const code = getProblemCode(error.response.data);
+  const problem = code === undefined ? undefined : ACCOUNTANT_PROBLEM_CODES.get(code);
+  return problem ? [problem] : [];
+}
+
+/** The 403 the settings of the send answer to a caller whose role does not allow them or whose reach is only some of the properties: they are the whole organization's. */
+export function isAccountantRefused(error: unknown): boolean {
+  return isAxiosError(error) && error.response?.status === 403;
+}
+
+/** The month a test send is about: the one that is over (the month before today, Europe/Rome), as `yyyy-MM` — the very month the server makes the package of. */
+export function lastMonthOf(today: string): string {
+  return periodParam(defaultPeriod(today));
+}
+
+/** A month `yyyy-MM` as «ottobre 2026» in the locale given, or the text as it came when it is not a month. */
+export function periodLabel(period: string, locale: string): string {
+  const match = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(period);
+  if (!match) return period;
+  return new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, 1)));
+}
+
+/** The words of each code a failed send is recorded with (`lastSend.error`): the keys are written out so that a missing translation is found. */
+const LAST_SEND_ERROR_KEYS: ReadonlyMap<string, string> = new Map([
+  ['package_too_large', 'billingWizard.accountant.lastSend.errors.packageTooLarge'],
+  ['package_failed', 'billingWizard.accountant.lastSend.errors.packageFailed'],
+  ['storage_failed', 'billingWizard.accountant.lastSend.errors.storageFailed'],
+  ['link_not_configured', 'billingWizard.accountant.lastSend.errors.linkNotConfigured'],
+  ['email_not_configured', 'billingWizard.accountant.lastSend.errors.emailNotConfigured'],
+  ['email_not_queued', 'billingWizard.accountant.lastSend.errors.emailNotQueued'],
+]);
+
+/** The key of the sentence that says why the last send failed; a code the app does not know (the server is newer) reads as a neutral line, never as the code itself. */
+export function lastSendErrorKey(code: string | null | undefined): string {
+  return (code ? LAST_SEND_ERROR_KEYS.get(code) : undefined) ?? 'billingWizard.accountant.lastSend.errors.unknown';
 }
 
 // ---------------------------------------------------------------------------------------------------------------------

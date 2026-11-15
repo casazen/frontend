@@ -18,6 +18,7 @@ import { ONBOARDING_PLAN_PATH } from '@/lib/onboarding-parts';
 import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { todayInRome } from '@/lib/stay-dates';
 import { cn } from '@/lib/utils';
+import { useAccountantPackageSettings, useSaveAccountantPackageSettings, useSendAccountantPackageTest } from '@/queries/use-accountant-package';
 import {
   useApplyMandateTemplate,
   useBillingAccess,
@@ -39,6 +40,8 @@ import { BillingWizardDone } from './billing-wizard-done';
 import { BillingWizardExit } from './billing-wizard-exit';
 import { AREA_HOME_PATH, BILLING_STEPS, FISCAL_PATH, type BillingStepId } from './billing-wizard-ids';
 import {
+  accountantChange,
+  accountantProblemsOf,
   commissionRulesRequest,
   currencyOfCountry,
   draftLeftOut,
@@ -46,7 +49,9 @@ import {
   holderChangesRequest,
   identityOnRecord,
   initialValues,
+  isAccountantRefused,
   isNeedsWholeOrg,
+  lastMonthOf,
   missingItemsOf,
   portalSettingsChanged,
   problemsOf,
@@ -59,6 +64,8 @@ import {
 } from './billing-wizard-model';
 import {
   BILLING_WIZARD_ID,
+  accountantSettingsFor,
+  accountantStepSchema,
   channelsStepSchema,
   issuerStepSchema,
   italyStepSchema,
@@ -68,6 +75,7 @@ import {
   vatStepSchema,
   type BillingWizardValues,
 } from './billing-wizard-schema';
+import { AccountantStep } from './steps/accountant-step';
 import { ChannelsStep } from './steps/channels-step';
 import { IssuerStep } from './steps/issuer-step';
 import { IssuingStep } from './steps/issuing-step';
@@ -90,8 +98,9 @@ interface BillingWizardProps {
 
 /**
  * The wizard once the setup is known (`WizardShell`, like the other guided flows): the steps follow the answers (the Italian step only for an Italian issuer, the steps of the
- * portals and of the mandate only for an agency). Every step has «Aiuto» and «Salva ed esci» and saves on the server with «Continua» (`PUT api/billing-setup/{section}`, a
- * partial payload being a draft), so the answers are not kept in the browser: the setup is the draft, and the wizard reopens at the step that is missing, on any device.
+ * portals and of the mandate only for an agency, the optional step «Commercialista» only while the package of the accountant is on). Every step has «Aiuto» and «Salva ed esci» and
+ * saves on the server with «Continua» (`PUT api/billing-setup/{section}`, a partial payload being a draft; the settings of the send to the accountant have their own endpoint and are
+ * saved as a whole, only when changed), so the answers are not kept in the browser: the setup is the draft, and the wizard reopens at the step that is missing, on any device.
  * A person who may read and not change the setup (no `property.write`, or an access to only some of the properties) sees the same steps with every field switched off, and the
  * reason; nothing is sent for them.
  */
@@ -122,9 +131,26 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
   const properties = useProperties({ mode: 'short' }, { enabled: agency, fresh: true });
   const holders = useChannelAccountHolders(agency && flags.ownerInvoicing);
   const rules = useChannelCommissionRules(agency);
-  // No button of the wizard takes a second press while a request of the person is on its way: the save of a step, the application of the mandate, the way out.
+  // The step «Commercialista» (E15/F02/US02/T01) exists only while the package of the accountant is on: with the flag off nothing is asked of the server and the wizard is the one it was.
+  const accountantOn = flags.accountantPackage;
+  const accountant = useAccountantPackageSettings(accountantOn);
+  const saveAccountant = useSaveAccountantPackageSettings();
+  const sendAccountant = useSendAccountantPackageTest();
+  // The settings the wizard works with: none while they cannot be read (`null`: refused to this person, or still on their way) and none when the server says the module is off (a 404 is that even
+  // when the query still holds the answer it had: a failed read keeps its data), so that nothing is ever saved over a module that is not there. They are the settings as THIS person sees them:
+  // the folders that carry the owner accounting are the agency's, and only the administrator of an organization on the agency plan (`agency`) may choose them (`accountantSettingsFor`).
+  const accountantSettings = accountantSettingsFor(accountant.isError && getHttpStatus(accountant.error) === 404 ? null : accountant.data, agency);
+  // No button of the wizard takes a second press while a request of the person is on its way: the save of a step, the application of the mandate, the test send, the way out.
   const [leaving, setLeaving] = useState(false);
-  const saving = save.isPending || saveTaxIdentity.isPending || savePortalSettings.isPending || saveHolders.isPending || saveRules.isPending || apply.isPending;
+  const saving =
+    save.isPending ||
+    saveTaxIdentity.isPending ||
+    savePortalSettings.isPending ||
+    saveHolders.isPending ||
+    saveRules.isPending ||
+    apply.isPending ||
+    saveAccountant.isPending ||
+    sendAccountant.isPending;
 
   // The wizard starts from the setup as it was when the page opened: a later read of it (the window comes back, a save) does not change the answers under the person's hands.
   const [today] = useState(() => todayInRome());
@@ -175,6 +201,15 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
         }
         return { sent };
       }
+      if (id === BILLING_STEPS.accountant) {
+        // The settings of the send go as a whole, to their own endpoint: what the person did not touch is not sent again, and nothing is sent when they touched nothing (the step is optional).
+        const { request } = accountantChange(accountantSettings, values, draft ? 'draft' : 'whole');
+        if (request) {
+          await saveAccountant.mutateAsync(request);
+          sent = true;
+        }
+        return { sent };
+      }
       const step = stepSave(id, values, { draft, onRecord, initial: defaults });
       if (step && Object.keys(step.request).length > 0) {
         await save.mutateAsync(step);
@@ -182,8 +217,9 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
       }
       return { sent };
     } catch (error) {
-      if (isNeedsWholeOrg(error)) setRefused(true);
-      setProblems(problemsOf(error, values.countryCode));
+      // The settings of the send are the organization's too: a refusal of the role or of the reach turns the wizard read-only, as for the rest of the setup.
+      if (isNeedsWholeOrg(error) || (id === BILLING_STEPS.accountant && isAccountantRefused(error))) setRefused(true);
+      setProblems([...problemsOf(error, values.countryCode), ...accountantProblemsOf(error)]);
       throw error;
     }
   };
@@ -195,7 +231,7 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
         try {
           const { sent } = await saveStep(stepId as BillingStepId, values, true);
           // «Salvato» only for what is true: part of what was written may have been left out (not valid, or terms the step never saves), and a draft may have had nothing to send.
-          const left = draftLeftOut(stepId as BillingStepId, values, { initial: defaults, onRecord });
+          const left = draftLeftOut(stepId as BillingStepId, values, { initial: defaults, onRecord, accountant: accountantSettings });
           if (left.length === 0) toast.success(t(sent ? 'billingWizard.exit.saved' : 'billingWizard.exit.nothingNew'));
           else if (stepId === BILLING_STEPS.mandate) toast.warning(t('billingWizard.exit.mandateNotSaved'));
           else toast.warning(t(sent ? 'billingWizard.exit.savedPartly' : 'billingWizard.exit.notSaved'));
@@ -267,19 +303,42 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
         return { ...base, render: () => frame(id, <IssuingStep />) };
       case BILLING_STEPS.italy:
         return { ...base, schema: checked(italyStepSchema), render: () => frame(id, <ItalyStep />) };
+      case BILLING_STEPS.accountant:
+        return {
+          ...base,
+          schema: checked(accountantStepSchema(accountantSettings)),
+          // The step is optional and has its own actions: «Continua» waits for them as they wait for it, so that no second request starts while one is on its way.
+          nextDisabled: leaving || saveAccountant.isPending || sendAccountant.isPending,
+          render: () =>
+            frame(
+              id,
+              <AccountantStep
+                settings={accountant}
+                save={saveAccountant}
+                send={sendAccountant}
+                lastMonth={lastMonthOf(today)}
+                busy={saving || leaving}
+                ownerAccounting={agency}
+                onRefused={() => setRefused(true)}
+              />,
+            ),
+        };
       case BILLING_STEPS.summary:
         return {
           ...base,
           render: ({ form }) => {
             const current = form.getValues();
-            return frame(id, <SummaryStep setup={setup} values={current} steps={stepIdsFor(current.countryCode, agency)} preview={preview} />);
+            return frame(
+              id,
+              <SummaryStep setup={setup} values={current} steps={stepIdsFor(current.countryCode, agency, accountantOn)} preview={preview} accountant={accountantSettings} />,
+            );
           },
         };
     }
   };
 
-  const stepsFor = (values: BillingWizardValues) => stepIdsFor(values.countryCode, agency).map((id) => definition(id, values));
-  const openOn = firstMissingStep(setup, stepIdsFor(defaults.countryCode, agency)) ?? BILLING_STEPS.summary;
+  const stepsFor = (values: BillingWizardValues) => stepIdsFor(values.countryCode, agency, accountantOn).map((id) => definition(id, values));
+  const openOn = firstMissingStep(setup, stepIdsFor(defaults.countryCode, agency, accountantOn)) ?? BILLING_STEPS.summary;
 
   // The reach of the person is read before the first step: nobody is offered a field they could not fill, not even for the time of the question.
   if (canWrite && access.isPending) {
@@ -305,7 +364,8 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
         defaultValues={defaults}
         // The answers are on the server, step by step: nothing is kept in the browser, and no old draft of this tab can be laid over what the server has.
         draft={false}
-        navigationDisabled={leaving}
+        // The test send of the step «Commercialista» takes minutes and its answer lives in the step: while it is on its way the way between the steps is shut too, so that the answer is not lost.
+        navigationDisabled={leaving || saveAccountant.isPending || sendAccountant.isPending}
         finishLabel={t('billingWizard.finishLabel')}
         finishFailedMessage={t('billingWizard.saveFailed')}
         // Nothing is saved at the last button: every step saved itself. It only closes the wizard, and the confirmation says what the server says is still missing.
