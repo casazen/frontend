@@ -313,7 +313,7 @@ describe('the receipt covers the flats the host chose', () => {
 
     fireEvent.click(screen.getByTestId(`proof-upload-flat-${D}`));
 
-    expect(screen.queryByTestId('proof-upload-error')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByTestId('proof-upload-error')).not.toBeInTheDocument());
     expect(screen.getByTestId('proof-upload-submit')).toBeEnabled();
     fireEvent.click(screen.getByTestId('proof-upload-submit'));
     expect(await screen.findByTestId('proof-upload-outcome')).toBeInTheDocument();
@@ -357,7 +357,7 @@ describe('the receipt covers the flats the host chose', () => {
 
   // The summary is a GET that carries the id of every flat in its address (about 49 characters each) and the server reads a request line of at most 8 KB, which is about 160 flats: the dialog lets
   // a receipt name at most 100, says so, and the question about 100 flats still fits the request line.
-  it('dialog_MoreFlatsThanASummaryCanCarry_CannotBeTickedAndTheLimitIsSaid', async () => {
+  it('dialog_MoreFlatsThanASummaryCanCarry_CannotBeTickedAndTheLimitIsSaid', { timeout: 30_000 }, async () => {
     const many: ProofUploadProperty[] = Array.from({ length: 102 }, (_, index) => ({
       id: `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`,
       name: `Casa ${index}`,
@@ -383,7 +383,7 @@ describe('the receipt covers the flats the host chose', () => {
     fireEvent.click(screen.getByTestId(`proof-upload-flat-${many[99].id}`));
     await waitFor(() => expect(screen.queryByTestId('proof-upload-flats-limit')).not.toBeInTheDocument());
     expect(screen.getByTestId(`proof-upload-flat-${many[100].id}`)).toBeEnabled();
-  }, 30_000);
+  });
 
   it('dialog_FileDroppedOnTheStep_IsTheFileOfTheReceipt', async () => {
     renderDialog();
