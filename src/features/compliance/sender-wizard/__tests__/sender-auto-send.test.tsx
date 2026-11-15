@@ -15,6 +15,7 @@ import { PROPERTY_SENDER_KEY } from '@/queries/use-property-sender';
 import type { Property, PropertySender } from '@/types';
 import { SENDER_DRAFT_EXCLUDE, SENDER_WIZARD_DEFAULTS, autoSendRefused, toSwitchRequest, type SenderWizardValues } from '../sender-wizard-model';
 import { SenderWizardPage } from '../sender-wizard';
+import { SenderWizardDone } from '../sender-wizard-done';
 import { SenderSummaryStep } from '../steps/sender-summary-step';
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
@@ -221,6 +222,39 @@ describe('SenderSummaryStep: the setting «Invia gli ospiti da solo…»', () =>
 
     expect(screen.queryByTestId('sender-auto-send')).not.toBeInTheDocument();
     expect(screen.queryByRole('switch')).not.toBeInTheDocument();
+  });
+});
+
+// The result says what the setting is now, from what the server holds; the green check is for a result that is done, never for one that is not complete.
+describe('SenderWizardDone: the line about the automatic send', () => {
+  function renderDone(sender: PropertySender) {
+    vi.mocked(propertySenderApi.get).mockResolvedValue(sender);
+    vi.mocked(propertiesApi.getById).mockResolvedValue({ id: PROPERTY_ID, name: 'Casa Como' } as Property);
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    return render(createElement(QueryClientProvider, { client }, createElement(MemoryRouter, null, createElement(SenderWizardDone, { propertyId: PROPERTY_ID }))));
+  }
+
+  it('done_SenderTheServerVerified_PutsTheGreenCheckOnTheLine', async () => {
+    renderDone(senderOf({ state: 'Active', verification: 'Verified', autoSendGuestsToOctorate: true }));
+
+    const line = await screen.findByTestId('sender-done-auto-send', undefined, WAIT);
+    expect(line).toHaveAttribute('data-tone', 'done');
+    expect(line).toHaveTextContent('senza che tu confermi il check-in');
+    expect(line.querySelector('svg')?.getAttribute('class') ?? '').toMatch(/text-success-foreground/);
+  });
+
+  it.each([
+    ['the host word', senderOf({ state: 'Declared', verification: 'UserDeclared', autoSendGuestsToOctorate: true })],
+    ['a sender that cannot be told', senderOf({ state: 'Unverified', verification: 'Unverifiable', autoSendGuestsToOctorate: false })],
+    ['a sender that does not send', senderOf({ state: 'Inactive', verification: 'Unverifiable', autoSendGuestsToOctorate: true })],
+  ])('done_ResultThatIsNotComplete_%s_NeverGivesTheLineTheGreenCheck', async (_name, sender) => {
+    renderDone(sender);
+
+    const line = await screen.findByTestId('sender-done-auto-send', undefined, WAIT);
+    expect(line).not.toHaveAttribute('data-tone', 'done');
+    const sign = line.querySelector('svg')?.getAttribute('class') ?? '';
+    expect(sign).not.toMatch(/success/);
+    expect(sign).toMatch(/text-muted-foreground/);
   });
 });
 

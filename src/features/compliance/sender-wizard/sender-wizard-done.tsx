@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { AlertTriangle, Check, CheckCircle2, XCircle, type LucideIcon } from 'lucide-react';
+import { AlertTriangle, Check, CheckCircle2, Info, XCircle, type LucideIcon } from 'lucide-react';
 import { ErrorState } from '@/components/shared/error-state';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -84,6 +84,9 @@ export function SenderWizardDone({ propertyId }: { propertyId: string }) {
   const stateAddress = `${propertyPage}?${new URLSearchParams({ section: CONNECTION_HEALTH_SECTION }).toString()}`;
   // With the channel manager as the sender the result also says what happens to the guests of a stay, as the server holds the setting now (E20/F01/US02): never from the form.
   const autoSend = sender.data.sender === 'ChannelManager' && typeof sender.data.autoSendGuestsToOctorate === 'boolean' ? (sender.data.autoSendGuestsToOctorate ? 'on' : 'off') : null;
+  // The line only says what the setting is: with a result that is done (a sender the server verified) it is part of it and has the green check; while the result is not complete (the host's word,
+  // not verified, off) it is information with a neutral sign, never the green check of something done.
+  const AutoSendIcon = settled ? Check : Info;
   const primary = settled
     ? { label: t('compliance.sender.done.toCompliance'), to: COMPLIANCE_PATH }
     : { label: t('compliance.sender.done.toState'), to: stateAddress };
@@ -123,8 +126,8 @@ export function SenderWizardDone({ propertyId }: { propertyId: string }) {
             );
           })}
           {autoSend ? (
-            <li className="flex min-w-0 items-start gap-2 text-sm" data-tone="done" data-testid="sender-done-auto-send" data-state={autoSend}>
-              <Check aria-hidden="true" className={cn('mt-0.5 size-4 shrink-0', POINT_ICON.done.className)} />
+            <li className="flex min-w-0 items-start gap-2 text-sm" data-tone={settled ? 'done' : 'info'} data-testid="sender-done-auto-send" data-state={autoSend}>
+              <AutoSendIcon aria-hidden="true" className={cn('mt-0.5 size-4 shrink-0', settled ? POINT_ICON.done.className : 'text-muted-foreground')} />
               <span className="min-w-0 break-words">{t(`compliance.sender.autoSend.consequence.${autoSend}`)}</span>
             </li>
           ) : null}
