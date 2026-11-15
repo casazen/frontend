@@ -507,17 +507,20 @@ const NO_WRITE_ACTIONS: DocumentWriteActions = { issue: false, refresh: false, d
  * What can be changed in a document. `canWrite` is the right to write payments (`payment.write`) AND the flag of the issuance of CasaZen: without either of them nothing can be
  * changed, whatever the document is. Only a document CasaZen issues can be changed (an imported one is read-only). A draft is issued, dropped or, when it is made from a booking, made
  * again (a credit note that is still a draft is the amounts of the document it credits: there is nothing to make it again from). An invoice or a receipt that was issued is credited;
- * a credit note and a proforma never are.
+ * a credit note and a proforma never are. Two documents are the exception, because the server refuses the action for them every time: an invoice the SDI rejected never was issued, so it is corrected (from its panel
+ * of the SDI) and never credited (422 `document_rejected_use_correction`); the draft that replaces it holds its number, so it is issued and never dropped (422 `document_replacement_holds_number`).
  */
-export function documentWriteActionsOf(document: Pick<FiscalDocumentEntry, 'source' | 'status' | 'kind' | 'purpose'>, canWrite: boolean): DocumentWriteActions {
+export function documentWriteActionsOf(document: Pick<FiscalDocumentEntry, 'source' | 'status' | 'kind' | 'purpose' | 'sdiStatus' | 'replacesDocumentId'>, canWrite: boolean): DocumentWriteActions {
   // An invoice of the property manager to an owner and a self-billed invoice are never changed with the endpoints of the guest documents (the server refuses with 422): their own pages change them.
   if (!canWrite || document.source !== 'CasaZen' || !isGuestPurpose(document.purpose)) return NO_WRITE_ACTIONS;
   const draft = document.status === 'Draft';
+  const rejected = document.sdiStatus === 'rejected';
+  const holdsANumber = Boolean(document.replacesDocumentId);
   return {
     issue: draft,
     refresh: draft && document.kind !== 'CreditNote',
-    discard: draft,
-    credit: document.status === 'Issued' && (document.kind === 'Invoice' || document.kind === 'Receipt'),
+    discard: draft && !holdsANumber,
+    credit: document.status === 'Issued' && (document.kind === 'Invoice' || document.kind === 'Receipt') && !rejected,
   };
 }
 
