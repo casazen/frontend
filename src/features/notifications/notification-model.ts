@@ -1,18 +1,28 @@
 import { AlertTriangle, BedDouble, Bell, CalendarClock, ClipboardCheck, Coins, LifeBuoy, LogOut, MessageSquare, ShieldAlert, ShieldCheck, UserCheck, Wrench, type LucideIcon } from 'lucide-react';
 import type { InAppNotification } from '@/api/notifications.api';
-import type { AppContextKey } from '@/config/route-manifest';
+import type { AppContextKey, PermissionPredicate } from '@/config/route-manifest';
 
 interface NotificationKind {
   icon: LucideIcon;
   /** Sentence in the language of the user (`notifications.types.*`). */
   textKey: string;
-  /** Where a click goes, given the id of the entity (a booking, a service request for `service-request-*`, a request of help for `assist-requested`). */
-  route: (entityId: string, context: AppContextKey | null) => string;
+  /**
+   * Where a click goes, given the id of the entity (a booking, a service request for `service-request-*`, a request of help for `assist-requested`) and, when the caller knows it, what the
+   * person may do: a page that needs a permission falls back to one the person can open.
+   */
+  route: (entityId: string, context: AppContextKey | null, hasPermission?: PermissionPredicate) => string;
 }
 
 const BOOKINGS = '/app/short-rent/bookings';
 const bookingRoute = (id: string) => `${BOOKINGS}/${encodeURIComponent(id)}`;
 const bookingTab = (tab: string) => (id: string) => `${bookingRoute(id)}?tab=${tab}`;
+
+/**
+ * The tax step of the host wizard of the booking (`/check-in?step=tax`, E25/F01/US02/T01): where the collection of the tourist tax and what is owed back to the guest are told (the page
+ * of the booking tells neither). The wizard needs `booking.write`: whoever may not write the booking goes to the page of the booking, as before.
+ */
+const bookingTaxStep = (id: string, _context: AppContextKey | null, hasPermission?: PermissionPredicate) =>
+  hasPermission && !hasPermission('short-rent', 'booking.write') ? bookingRoute(id) : `${bookingRoute(id)}/check-in?step=tax`;
 
 /** A service request: the supplier opens it in the inbox; the host finds it in «Le tue richieste» of «Le mie app» of the marketplace. */
 const serviceRequestRoute = (id: string, context: AppContextKey | null) =>
@@ -44,8 +54,9 @@ const KINDS: Record<string, NotificationKind> = {
   'alloggiati-overdue': { icon: ShieldAlert, textKey: 'notifications.types.alloggiatiOverdue', route: bookingTab('alloggiati') },
   'alloggiati-failed': { icon: AlertTriangle, textKey: 'notifications.types.alloggiatiFailed', route: bookingTab('alloggiati') },
   'checkout-reminder': { icon: LogOut, textKey: 'notifications.types.checkoutReminder', route: bookingRoute },
-  // E25/F01/US01/T01: a guest paid the tourist tax of a stay online; the entity is the booking, which the pages that show the state of the collection read again.
-  'tourist-tax-paid': { icon: Coins, textKey: 'notifications.types.touristTaxPaid', route: bookingRoute },
+  // E25/F01/US01/T01: a guest paid the tourist tax of a stay online; the entity is the booking, which the pages that show the state of the collection read again. The state is in the tax
+  // step of the check-in wizard of the booking, so the click opens it there.
+  'tourist-tax-paid': { icon: Coins, textKey: 'notifications.types.touristTaxPaid', route: bookingTaxStep },
   'ota-stay-review': { icon: AlertTriangle, textKey: 'notifications.types.otaStayReview', route: bookingRoute },
   'service-request-created': serviceRequest('notifications.types.serviceRequestCreated'),
   'service-request-auto-accepted': serviceRequest('notifications.types.serviceRequestAutoAccepted'),
@@ -80,11 +91,15 @@ export function notificationKind(type: string): { icon: LucideIcon; textKey: str
   return KINDS[type] ?? GENERIC_KIND;
 }
 
-/** Where a click on the notification goes; `null` when it has nowhere to go (unknown type, or no entity). */
-export function notificationRoute(notification: Pick<InAppNotification, 'type' | 'entityId'>, context: AppContextKey | null): string | null {
+/** Where a click on the notification goes; `null` when it has nowhere to go (unknown type, or no entity). `hasPermission` is what the person may do, when the caller knows it. */
+export function notificationRoute(
+  notification: Pick<InAppNotification, 'type' | 'entityId'>,
+  context: AppContextKey | null,
+  hasPermission?: PermissionPredicate,
+): string | null {
   const kind = KINDS[notification.type];
   if (!kind || !notification.entityId) return null;
-  return kind.route(notification.entityId, context);
+  return kind.route(notification.entityId, context, hasPermission);
 }
 
 export const KNOWN_NOTIFICATION_TYPES: readonly string[] = Object.keys(KINDS);

@@ -14,7 +14,8 @@ import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { publicCheckinApi } from '@/api/checkin.api';
 import { checkInWizardApi } from '@/api/checkin-wizard.api';
 import { applyNotificationsChange } from '@/features/notifications/use-notifications-realtime';
-import { notificationKind } from '@/features/notifications/notification-model';
+import { notificationKind, notificationRoute } from '@/features/notifications/notification-model';
+import { todoActionRoute } from '@/features/todo/activity-card';
 import { TOURIST_TAX_KEY } from '@/queries/use-checkin-wizard';
 import type { CheckInWizardState, StayTouristTax, TouristTaxCollection } from '@/types/checkin-wizard.types';
 import type { PublicCheckInContextDto, PublicCheckInGuestPrefill, PublicTouristTax, TouristTaxPaymentIntent } from '@/types/public-checkin.types';
@@ -937,6 +938,27 @@ describe('the live refresh of a tax paid online', () => {
 
     const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
     expect(keys.some((key) => key[0] === TOURIST_TAX_KEY)).toBe(false);
+  });
+
+  it('notificationRoute_TouristTaxPaid_OpensTheTaxStepOfTheWizard_AndTheBookingForWhoMayNotWriteIt', () => {
+    const paid = { type: 'tourist-tax-paid', entityId: 'b-1' };
+    // The state of the collection is in the tax step of the wizard of the booking, not on the page of the booking.
+    expect(notificationRoute(paid, 'short-rent')).toBe('/app/short-rent/bookings/b-1/check-in?step=tax');
+    expect(notificationRoute(paid, 'short-rent', (_context, permission) => permission === 'booking.write')).toBe('/app/short-rent/bookings/b-1/check-in?step=tax');
+    // The wizard needs `booking.write`: whoever lacks it is not sent to a page that answers «no access».
+    expect(notificationRoute(paid, 'short-rent', () => false)).toBe('/app/short-rent/bookings/b-1');
+  });
+
+  it('todoActionRoute_TouristTaxRefundDue_OpensTheTaxStepOfTheWizard_AnyOtherReviewBookingKeepsTheBooking', () => {
+    const bookingId = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
+    const refund = { action: 'ReviewBooking', activityType: 'TouristTaxRefundDue', entityType: 'Booking', entityId: bookingId, propertyId: 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee' };
+    expect(todoActionRoute(refund)).toBe(`/app/short-rent/bookings/${bookingId}/check-in?step=tax`);
+    expect(todoActionRoute(refund, (_context, permission) => permission === 'booking.read' || permission === 'booking.write')).toBe(
+      `/app/short-rent/bookings/${bookingId}/check-in?step=tax`,
+    );
+    // Who may only read the booking gets the page of the booking (the action's own entry), never a page that answers «no access».
+    expect(todoActionRoute(refund, (_context, permission) => permission === 'booking.read')).toBe(`/app/short-rent/bookings/${bookingId}`);
+    expect(todoActionRoute({ ...refund, activityType: 'SomethingElse' })).toBe(`/app/short-rent/bookings/${bookingId}`);
   });
 
   it('notificationKind_TouristTaxPaid_HasItsOwnSentenceInBothLanguages', () => {
