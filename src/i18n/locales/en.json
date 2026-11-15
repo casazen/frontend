@@ -800,6 +800,10 @@
           "title": "Reconnect the channel manager",
           "why": "The connection with the channel manager was lost."
         },
+        "RoutineTask": {
+          "title": "Task made by a routine",
+          "why": "A routine you set up asks you to take care of this booking."
+        },
         "TouristTaxDeadline": {
           "title": "Tourist tax due",
           "why": "The tax of the period has to be declared and paid, with the receipts archived."
@@ -1633,6 +1637,10 @@
       "ownerMandateOwnersEmpty": "There is no owner to apply the mandate to.",
       "reportInvalidPeriod": "The period is not valid: check the dates.",
       "reportPeriodTooLong": "The period is too long: choose one of at most 24 months.",
+      "routineActionNotAvailable": "This routine holds actions that are not available yet: it cannot be switched on, but you can try it in test mode.",
+      "routineEventNotAvailable": "Nothing starts a routine on this event yet: choose another one.",
+      "routineLimitReached": "You have reached the maximum number of routines (50): delete one to create another.",
+      "routinesNeedOrgScope": "Routines apply to every property of the organization: to change them you need to see all of the properties.",
       "archiveInvalidPage": "The requested page is not valid.",
       "archiveInvalidPeriod": "The days chosen are not valid: the first cannot be after the last, and they must be between 2000 and 2100.",
       "archiveInvalidType": "This type of document does not exist.",
@@ -14663,6 +14671,7 @@
     "activities": "Activities",
     "inviteQr": "Invite QR codes",
     "reviews": "Reviews",
+    "routines": "Automations",
     "channels": "Channels and calendars",
     "verifications": "Verifications",
     "wireTransfers": "Owner Wire Transfers",
@@ -22607,11 +22616,13 @@
     "None": "Not activated"
   },
   "routines": {
-    "activatedSuccess": "Routine activated",
-    "active": "Active",
-    "activeBadge": "Active",
-    "activeDescription": "Active routines are executed when configured events occur",
-    "activeTab": "Active",
+    "action": {
+      "activeBlocked": "This routine holds actions that are not available yet: remove them to switch it on, or try it in test mode.",
+      "notAvailableNamed": "It cannot be switched on: it holds actions that are not available yet ({{actions}}). You can try it in test mode.",
+      "unavailable": "Not available yet",
+      "unavailableHint": "Actions that are not available yet cannot be chosen: a routine that holds one cannot be switched on, only tried in test mode."
+    },
+    "actionOf": "Action {{position}}",
     "actions": "Actions",
     "actionTypes": {
       "addTag": "Add tag",
@@ -22624,24 +22635,82 @@
       "sendAccessCode": "Send access code",
       "wait": "Wait"
     },
+    "activatedSuccess": "Routine activated",
+    "active": "Active",
+    "activeBadge": "Active",
+    "activeDescription": "Active routines are executed when configured events occur",
+    "activeTab": "Active",
+    "activityDue": "Deadline in days (optional)",
+    "activityText": "Text of the task",
+    "activityTextPlaceholder": "E.g.: Check the apartment after departure",
     "addAction": "Add action",
+    "card": {
+      "delete": "Delete {{name}}",
+      "edit": "Edit {{name}}",
+      "log": "Log of {{name}}",
+      "unavailableNote": "It holds actions that are not available yet ({{actions}}): until they are, it only works in test mode."
+    },
     "completed": "Completed",
+    "condition": {
+      "add": "Add a condition",
+      "chooseChannel": "Choose a channel",
+      "fieldOf": "Field of condition {{position}}",
+      "fields": {
+        "bookingLeadTime": "Days between booking and arrival",
+        "channel": "Booking channel",
+        "guestCount": "Number of guests",
+        "propertyId": "Property",
+        "stayDuration": "Nights of the stay"
+      },
+      "from": "From",
+      "match": "The routine runs when",
+      "matchAll": "all the conditions are true",
+      "matchAny": "at least one condition is true",
+      "none": "No condition: the routine runs for every booking.",
+      "operatorOf": "Comparison of condition {{position}}",
+      "operators": {
+        "between": "is between",
+        "equals": "equals",
+        "greaterThan": "is more than",
+        "in": "is one of",
+        "lessThan": "is less than",
+        "notEquals": "is not",
+        "notIn": "is none of"
+      },
+      "propertiesError": "We cannot load your properties.",
+      "propertiesLoading": "Loading your properties…",
+      "removeRule": "Remove condition {{position}}",
+      "to": "To",
+      "unit": {
+        "bookingLeadTime": "Days",
+        "guestCount": "Guests",
+        "stayDuration": "Nights"
+      },
+      "unknownProperty": "Property no longer available",
+      "unsupported": "This condition has a shape that cannot be changed here: it stays as it is.",
+      "valueOf": "Value of condition {{position}}"
+    },
     "conditions": "Conditions",
-    "conditionsHint": "JSON format ADR-014. Leave {} to always execute.",
-    "conditionsPlaceholder": "{\"operator\": \"and\", \"rules\": []}",
+    "conditionsHint": "Without conditions the routine runs for every booking. Add some to narrow it down.",
     "create": "Create routine",
     "createError": "Cannot create routine",
     "createSuccess": "Routine created successfully",
     "createTitle": "New routine",
     "days": "days",
     "deactivatedSuccess": "Routine deactivated",
-    "deleteConfirm": "Are you sure you want to delete this routine?",
+    "delete": "Delete",
+    "deleteConfirm": "Do you want to delete the routine «{{name}}»? This cannot be undone.",
     "deleteError": "Cannot delete routine",
+    "deleteLogGoes": "The log of its runs is deleted too.",
     "deleteSuccess": "Routine deleted",
-    "description": "Automate recurring actions like guest messages, cleaning activities, and reminders",
-    "editTitle": "Edit routine",
+    "deleteTitle": "Delete the routine?",
+    "description": "A routine does something by itself when something happens to a stay: for example, after check-out it adds a task for you.",
     "editorDescription": "Configure the event that triggers the routine, conditions, and actions to execute",
-    "eventType": "Event type",
+    "editTitle": "Edit routine",
+    "empty": {
+      "description": "Start from a ready routine in the library, or create your own.",
+      "title": "No routines yet"
+    },
     "events": {
       "activityCompleted": "Activity completed",
       "afterCheckin": "After check-in",
@@ -22651,35 +22720,78 @@
       "beforeCheckout": "Before check-out",
       "bookingCanceled": "Booking canceled",
       "bookingConfirmed": "Booking confirmed",
+      "bookingModified": "Booking changed",
       "bookingNew": "New booking",
       "checkinOccurred": "Check-in occurred",
       "checkoutOccurred": "Check-out occurred",
       "guestMessageReceived": "Guest message received",
       "idVerificationCompleted": "ID verification completed",
+      "onlineCheckinCompleted": "Online check-in completed",
       "paymentFailed": "Payment failed",
       "paymentSucceeded": "Payment succeeded",
       "reviewReceived": "Review received",
       "weeklyRecurrence": "Weekly recurrence"
     },
+    "eventType": "Event type",
     "executionLog": "Execution log",
+    "filterLabel": "State of the routines",
     "hours": "hours",
     "inactiveTab": "Inactive",
     "library": {
       "activate": "Activate",
-      "activating": "Activating…",
-      "cleaningDescription": "Automatically create a cleaning activity when guest checks out",
+      "activating": "Creating…",
+      "cleaningDescription": "When the guest checks out it adds a task to your To do list to arrange the cleaning",
+      "cleaningTaskText": "Arrange the cleaning of the property after check-out",
       "cleaningTitle": "Cleaning at check-out",
-      "description": "Activate a predefined routine with one click. You can edit it after activation.",
-      "documentReminderDescription": "Send a reminder 3 days before check-in if documents are not uploaded",
-      "documentReminderTitle": "Missing document reminder",
+      "createInTestMode": "Create in test mode",
+      "description": "Start from a ready routine: you can edit it after creating it.",
+      "documentReminderDescription": "Reminds your guests to send their documents 3 days before check-in. It goes to every guest, also to those who already sent them: routines do not read the state of the documents yet.",
+      "documentReminderTitle": "Documents reminder before arrival",
       "instructionsDescription": "Send instructions 2 days before check-in",
       "instructionsTitle": "Instructions before arrival",
+      "open": "Open the library",
       "reviewDescription": "Request a review 1 day after check-out",
       "reviewTitle": "Review request after departure",
-      "title": "Routine library"
+      "title": "Routine library",
+      "unavailableNote": "It holds actions that are not available yet: you can only create it in test mode, where it is simulated and nothing is sent."
     },
     "loadError": "Cannot load routines",
     "loading": "Loading routines…",
+    "log": {
+      "action": {
+        "blocked": "Blocked",
+        "done": "Done",
+        "failed": "Failed",
+        "simulated": "Simulated: nothing was done",
+        "waiting": "Waiting"
+      },
+      "code": {
+        "accessCodeNeedsIdVerification": "The access code goes out only after the guest's identity is verified.",
+        "actionError": "An action failed because of a problem on our side: CasaZen tries again by itself.",
+        "actionNotAvailable": "The action is not available yet: it did nothing.",
+        "actionsInvalid": "The actions of the routine cannot be read: it did not run.",
+        "activityNeedsBooking": "The task is made for a booking and this event has none.",
+        "airbnbNotConfirmed": "An Airbnb guest is not contacted before the booking is confirmed.",
+        "bookingNotActive": "The booking was cancelled or the guest did not show up: the actions after the wait did not run.",
+        "campaignNeedsConsent": "A campaign goes only to a guest who consented to marketing.",
+        "conditionInvalid": "The condition of the routine is not valid: it did not run.",
+        "inactive": "The routine was switched off while it waited: it did not go on.",
+        "waitNotScheduled": "We could not schedule the wait: the routine stopped."
+      },
+      "description": "The latest runs of the routine, the newest first.",
+      "latest": "The latest {{max}} runs are shown.",
+      "loadError": "We cannot load the log.",
+      "outcome": {
+        "failed": "Failed",
+        "pending": "To start",
+        "running": "Running",
+        "success": "Completed",
+        "unknown": "Unknown outcome",
+        "waiting": "Waiting"
+      },
+      "resumesAt": "Continues on {{when}}",
+      "unknownAction": "Unknown action"
+    },
     "messageTemplate": "Message template",
     "messageTemplatePlaceholder": "Template ID or text",
     "name": "Name",
@@ -22689,6 +22801,14 @@
     "noExecutions": "No executions recorded",
     "noInactiveRoutines": "You have no inactive routines",
     "noTestRoutines": "You have no routines in test mode",
+    "problem": {
+      "activityDue": "The deadline is a whole number of days, from 0 to 60.",
+      "activityText": "Write the text of the task (140 characters at most).",
+      "condition": "Complete the value of every condition.",
+      "timing": "Days from 0 to 365 and hours from 0 to 23, in whole numbers.",
+      "wait": "The wait has to last from 1 hour to 365 days."
+    },
+    "removeAction": "Remove action {{position}}",
     "simulateError": "Cannot simulate routine",
     "testMode": "Test mode",
     "testModeBadge": "Test",
@@ -22700,9 +22820,14 @@
     "title": "Automation routines",
     "toggleActiveError": "Cannot change routine status",
     "toggleTestModeError": "Cannot change test mode",
+    "unavailable": {
+      "description": "There is nothing for you to do: try again later.",
+      "title": "Automations are not available right now"
+    },
     "updateError": "Cannot update routine",
     "updateSuccess": "Routine updated",
-    "waitDays": "Days to wait"
+    "waitDays": "Days to wait",
+    "waitHours": "Hours to wait"
   },
   "serviceCategories": {
     "loading": "Loading categories…",

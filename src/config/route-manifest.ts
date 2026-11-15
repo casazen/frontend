@@ -579,6 +579,23 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/assistant/assistant-settings-page')).AssistantSettingsPage }),
   },
   {
+    // The automation routines of the host (E01/F04/US02/T01, NF-21, DEB-06): what the host wants done by itself when something happens at a stay, with the library of ready ones,
+    // the log of each and a test mode. «Automazioni», a tab of «Impostazioni» after the integration and the assistant: it is set once, apart from the daily work. Only with the flag
+    // `routines` (backend `Routines`, off by default): while it is off the tab is not there, the address leads to the home of the area and the server answers 404 to every
+    // endpoint of the routines. It asks `property.write`, the permission the changes of the routines ask on the server (which also needs a reach over the whole organization:
+    // a collaborator limited to some properties is told so by the answer, `routines_need_org_scope`). Who may write the properties but not open «Impostazioni» (not the
+    // organization administrator) finds it in "Altro", as every page whose section is closed to its user.
+    path: '/app/short-rent/automations',
+    context: 'short-rent',
+    requiredPermissions: ['property.write'],
+    featureFlag: 'routines',
+    navKey: 'nav.routines',
+    navParent: '/app/short-rent/settings/organization',
+    navOrder: 3,
+    icon: 'Repeat',
+    component: async () => ({ default: (await import('@/pages/RoutinesPage')).RoutinesPage }),
+  },
+  {
     path: '/app/short-rent/bookings',
     context: 'short-rent',
     requiredPermissions: ['booking.read'],

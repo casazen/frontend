@@ -1,0 +1,29 @@
+import { isAxiosError } from 'axios';
+import type { TFunction } from 'i18next';
+import { getHttpStatus, getProblemCode, getProblemMessage } from '@/lib/api-errors';
+import { actionLabelKey } from '@/lib/routine-model';
+
+/** The code the API answers with (422) when a routine that runs for real holds an action that cannot run yet (`RoutineCodes.ActionNotAvailable`). */
+const ROUTINE_ACTION_NOT_AVAILABLE = 'routine_action_not_available';
+
+/** The names, as the host reads them, of the actions a 422 `routine_action_not_available` lists in its `actions` (the types, by their name in the API). */
+function listedActions(data: unknown, t: TFunction): string[] {
+  const listed = typeof data === 'object' && data !== null ? (data as { actions?: unknown }).actions : undefined;
+  if (!Array.isArray(listed)) return [];
+  return listed.flatMap((type) => {
+    const key = typeof type === 'string' ? actionLabelKey(type) : undefined;
+    return key ? [t(key)] : [];
+  });
+}
+
+/**
+ * The words for a failed call of the routines API. The same as every other call (`getProblemMessage`: the text of the code, else the message of the server), with one more
+ * thing for the answer the page waits for most: when a routine cannot be switched on because of its actions, it says which ones, by the names the editor gives them.
+ */
+export function describeRoutineError(error: unknown, t: TFunction): string | undefined {
+  if (isAxiosError(error) && getHttpStatus(error) === 422 && getProblemCode(error.response?.data) === ROUTINE_ACTION_NOT_AVAILABLE) {
+    const names = listedActions(error.response?.data, t);
+    if (names.length > 0) return t('routines.action.notAvailableNamed', { actions: names.join(', ') });
+  }
+  return getProblemMessage(error, t);
+}

@@ -61,6 +61,8 @@ const TYPE_KEYS: Record<string, TypeKeys> = {
   OwnerStayToReview: { titleKey: 'activity.todo.type.OwnerStayToReview.title', whyKey: 'activity.todo.type.OwnerStayToReview.why' },
   OwnerStaySyncFailed: { titleKey: 'activity.todo.type.OwnerStaySyncFailed.title', whyKey: 'activity.todo.type.OwnerStaySyncFailed.why' },
   OwnerDocumentExpiring: { titleKey: 'activity.todo.type.OwnerDocumentExpiring.title', whyKey: 'activity.todo.type.OwnerDocumentExpiring.why' },
+  // The To do that the action «Crea attività» of a routine of the host makes (E01/F04/US01/T02, NF-21): about a booking, with the words the host wrote in the routine as its reason.
+  RoutineTask: { titleKey: 'activity.todo.type.RoutineTask.title', whyKey: 'activity.todo.type.RoutineTask.why' },
 };
 
 const UNKNOWN_TYPE_KEYS: TypeKeys = { titleKey: 'activity.todo.type.unknown.title', whyKey: 'activity.todo.type.unknown.why' };

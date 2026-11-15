@@ -800,6 +800,10 @@
           "title": "Riconnetti il gestionale dei canali",
           "why": "Il collegamento con il gestionale dei canali si è interrotto."
         },
+        "RoutineTask": {
+          "title": "Attività creata da una routine",
+          "why": "Una routine che hai impostato ti chiede di occuparti di questa prenotazione."
+        },
         "TouristTaxDeadline": {
           "title": "Imposta di soggiorno in scadenza",
           "why": "L'imposta del periodo va dichiarata e pagata, con le ricevute archiviate."
@@ -1633,6 +1637,10 @@
       "ownerMandateOwnersEmpty": "Non c’è nessun proprietario a cui applicare il mandato.",
       "reportInvalidPeriod": "Il periodo non è valido: controlla le date.",
       "reportPeriodTooLong": "Il periodo è troppo lungo: scegline uno di al massimo 24 mesi.",
+      "routineActionNotAvailable": "Questa routine contiene azioni non ancora disponibili: non si può attivare, ma puoi provarla in modalità test.",
+      "routineEventNotAvailable": "Questo evento non fa ancora partire nessuna routine: scegline un altro.",
+      "routineLimitReached": "Hai raggiunto il numero massimo di routine (50): elimina una routine per crearne un’altra.",
+      "routinesNeedOrgScope": "Le routine valgono per tutti gli immobili dell’organizzazione: per cambiarle serve poterli vedere tutti.",
       "archiveInvalidPage": "La pagina richiesta non è valida.",
       "archiveInvalidPeriod": "I giorni scelti non sono validi: il primo non può essere dopo l'ultimo e servono giorni tra il 2000 e il 2100.",
       "archiveInvalidType": "Questo tipo di documento non esiste.",
@@ -14663,6 +14671,7 @@
     "activities": "Attività",
     "inviteQr": "QR di invito",
     "reviews": "Recensioni",
+    "routines": "Automazioni",
     "channels": "Canali e calendari",
     "verifications": "Verifiche",
     "wireTransfers": "Bonifici proprietari",
@@ -22607,11 +22616,13 @@
     "None": "Da attivare"
   },
   "routines": {
-    "activatedSuccess": "Routine attivata",
-    "active": "Attiva",
-    "activeBadge": "Attiva",
-    "activeDescription": "Le routine attive vengono eseguite quando si verificano gli eventi configurati",
-    "activeTab": "Attive",
+    "action": {
+      "activeBlocked": "Questa routine contiene azioni non ancora disponibili: per attivarla toglile, oppure provala in modalità test.",
+      "notAvailableNamed": "Non si può attivare: contiene azioni non ancora disponibili ({{actions}}). Puoi provarla in modalità test.",
+      "unavailable": "Non ancora disponibile",
+      "unavailableHint": "Le azioni non ancora disponibili non si possono scegliere: una routine che ne contiene una non si può attivare, solo provare in modalità test."
+    },
+    "actionOf": "Azione {{position}}",
     "actions": "Azioni",
     "actionTypes": {
       "addTag": "Aggiungi tag",
@@ -22624,24 +22635,82 @@
       "sendAccessCode": "Invia codice di accesso",
       "wait": "Attendi"
     },
+    "activatedSuccess": "Routine attivata",
+    "active": "Attiva",
+    "activeBadge": "Attiva",
+    "activeDescription": "Le routine attive vengono eseguite quando si verificano gli eventi configurati",
+    "activeTab": "Attive",
+    "activityDue": "Scadenza in giorni (facoltativa)",
+    "activityText": "Testo dell'attività",
+    "activityTextPlaceholder": "Es: Controlla l'appartamento dopo la partenza",
     "addAction": "Aggiungi azione",
+    "card": {
+      "delete": "Elimina {{name}}",
+      "edit": "Modifica {{name}}",
+      "log": "Registro di {{name}}",
+      "unavailableNote": "Contiene azioni non ancora disponibili ({{actions}}): finché non lo sono, funziona solo in modalità test."
+    },
     "completed": "Completata",
+    "condition": {
+      "add": "Aggiungi una condizione",
+      "chooseChannel": "Scegli un canale",
+      "fieldOf": "Campo della condizione {{position}}",
+      "fields": {
+        "bookingLeadTime": "Giorni tra la prenotazione e l'arrivo",
+        "channel": "Canale della prenotazione",
+        "guestCount": "Numero di ospiti",
+        "propertyId": "Immobile",
+        "stayDuration": "Notti del soggiorno"
+      },
+      "from": "Da",
+      "match": "La routine parte quando",
+      "matchAll": "tutte le condizioni sono vere",
+      "matchAny": "almeno una condizione è vera",
+      "none": "Nessuna condizione: la routine parte per ogni prenotazione.",
+      "operatorOf": "Confronto della condizione {{position}}",
+      "operators": {
+        "between": "è compreso tra",
+        "equals": "è uguale a",
+        "greaterThan": "è più di",
+        "in": "è uno tra",
+        "lessThan": "è meno di",
+        "notEquals": "è diverso da",
+        "notIn": "non è tra"
+      },
+      "propertiesError": "Non riusciamo a caricare i tuoi immobili.",
+      "propertiesLoading": "Carico i tuoi immobili…",
+      "removeRule": "Togli la condizione {{position}}",
+      "to": "A",
+      "unit": {
+        "bookingLeadTime": "Giorni",
+        "guestCount": "Ospiti",
+        "stayDuration": "Notti"
+      },
+      "unknownProperty": "Immobile non più disponibile",
+      "unsupported": "Questa condizione ha una forma che qui non si può modificare: resta com'è.",
+      "valueOf": "Valore della condizione {{position}}"
+    },
     "conditions": "Condizioni",
-    "conditionsHint": "Formato JSON ADR-014. Lascia {} per eseguire sempre.",
-    "conditionsPlaceholder": "{\"operator\": \"and\", \"rules\": []}",
+    "conditionsHint": "Senza condizioni la routine parte per ogni prenotazione. Aggiungine per limitarla.",
     "create": "Crea routine",
     "createError": "Impossibile creare la routine",
     "createSuccess": "Routine creata con successo",
     "createTitle": "Nuova routine",
     "days": "giorni",
     "deactivatedSuccess": "Routine disattivata",
-    "deleteConfirm": "Sei sicuro di voler eliminare questa routine?",
+    "delete": "Elimina",
+    "deleteConfirm": "Vuoi eliminare la routine «{{name}}»? Non si può annullare.",
     "deleteError": "Impossibile eliminare la routine",
+    "deleteLogGoes": "Si cancella anche il registro delle sue esecuzioni.",
     "deleteSuccess": "Routine eliminata",
-    "description": "Automatizza le azioni ricorrenti come messaggi agli ospiti, attività di pulizia e promemoria",
-    "editTitle": "Modifica routine",
+    "deleteTitle": "Eliminare la routine?",
+    "description": "Una routine fa partire da sola un'azione quando succede qualcosa a un soggiorno: per esempio, dopo il check-out ti crea un'attività da fare.",
     "editorDescription": "Configura l'evento che attiva la routine, le condizioni e le azioni da eseguire",
-    "eventType": "Tipo di evento",
+    "editTitle": "Modifica routine",
+    "empty": {
+      "description": "Parti da una routine pronta della libreria, oppure creane una tua.",
+      "title": "Nessuna routine per ora"
+    },
     "events": {
       "activityCompleted": "Attività completata",
       "afterCheckin": "Dopo il check-in",
@@ -22651,35 +22720,78 @@
       "beforeCheckout": "Prima del check-out",
       "bookingCanceled": "Prenotazione annullata",
       "bookingConfirmed": "Prenotazione confermata",
+      "bookingModified": "Prenotazione modificata",
       "bookingNew": "Nuova prenotazione",
       "checkinOccurred": "Check-in effettuato",
       "checkoutOccurred": "Check-out effettuato",
       "guestMessageReceived": "Messaggio ospite ricevuto",
       "idVerificationCompleted": "Verifica identità completata",
+      "onlineCheckinCompleted": "Check-in online completato",
       "paymentFailed": "Pagamento fallito",
       "paymentSucceeded": "Pagamento riuscito",
       "reviewReceived": "Recensione ricevuta",
       "weeklyRecurrence": "Ricorrenza settimanale"
     },
+    "eventType": "Tipo di evento",
     "executionLog": "Registro esecuzioni",
+    "filterLabel": "Stato delle routine",
     "hours": "ore",
     "inactiveTab": "Inattive",
     "library": {
       "activate": "Attiva",
-      "activating": "Attivazione…",
-      "cleaningDescription": "Crea automaticamente un'attività di pulizia quando l'ospite fa il check-out",
+      "activating": "Creazione…",
+      "cleaningDescription": "Quando l'ospite fa il check-out aggiunge un'attività alla tua lista «Da fare» per organizzare la pulizia",
+      "cleaningTaskText": "Organizza la pulizia dell'immobile dopo il check-out",
       "cleaningTitle": "Pulizia al check-out",
-      "description": "Attiva una routine predefinita con un clic. Puoi modificarla dopo l'attivazione.",
-      "documentReminderDescription": "Invia un promemoria 3 giorni prima del check-in se i documenti non sono stati caricati",
-      "documentReminderTitle": "Promemoria documenti mancanti",
+      "createInTestMode": "Crea in modalità test",
+      "description": "Parti da una routine pronta: puoi modificarla dopo averla creata.",
+      "documentReminderDescription": "Ricorda ai tuoi ospiti di mandare i documenti 3 giorni prima del check-in. Arriva a tutti, anche a chi li ha già mandati: le routine non leggono ancora lo stato dei documenti.",
+      "documentReminderTitle": "Promemoria documenti prima dell'arrivo",
       "instructionsDescription": "Invia le istruzioni 2 giorni prima del check-in",
       "instructionsTitle": "Istruzioni prima dell'arrivo",
+      "open": "Apri la libreria",
       "reviewDescription": "Richiedi una recensione 1 giorno dopo il check-out",
       "reviewTitle": "Richiesta recensione dopo la partenza",
-      "title": "Libreria routine"
+      "title": "Libreria routine",
+      "unavailableNote": "Contiene azioni non ancora disponibili: puoi crearla solo in modalità test, dove si simula senza inviare nulla."
     },
     "loadError": "Impossibile caricare le routine",
     "loading": "Caricamento routine…",
+    "log": {
+      "action": {
+        "blocked": "Bloccata",
+        "done": "Eseguita",
+        "failed": "Non riuscita",
+        "simulated": "Simulata: non è stato fatto nulla",
+        "waiting": "In attesa"
+      },
+      "code": {
+        "accessCodeNeedsIdVerification": "Il codice di accesso parte solo dopo la verifica dell'identità dell'ospite.",
+        "actionError": "Un'azione non è riuscita per un problema nostro: CasaZen riprova da solo.",
+        "actionNotAvailable": "L'azione non è ancora disponibile: non ha fatto nulla.",
+        "actionsInvalid": "Le azioni della routine non si possono leggere: non è partita.",
+        "activityNeedsBooking": "L'attività si crea per una prenotazione e questo evento non ne ha una.",
+        "airbnbNotConfirmed": "Un ospite di Airbnb non si contatta prima che la prenotazione sia confermata.",
+        "bookingNotActive": "La prenotazione è stata annullata o l'ospite non è arrivato: le azioni dopo l'attesa non sono partite.",
+        "campaignNeedsConsent": "Una campagna parte solo verso chi ha dato il consenso al marketing.",
+        "conditionInvalid": "La condizione della routine non è valida: non è partita.",
+        "inactive": "La routine è stata disattivata mentre aspettava: non è andata avanti.",
+        "waitNotScheduled": "Non siamo riusciti a programmare l'attesa: la routine si è fermata."
+      },
+      "description": "Le ultime esecuzioni della routine, dalla più recente.",
+      "latest": "Sono mostrate le ultime {{max}} esecuzioni.",
+      "loadError": "Non riusciamo a caricare il registro.",
+      "outcome": {
+        "failed": "Non riuscita",
+        "pending": "Da avviare",
+        "running": "In corso",
+        "success": "Completata",
+        "unknown": "Esito sconosciuto",
+        "waiting": "In attesa"
+      },
+      "resumesAt": "Riprende il {{when}}",
+      "unknownAction": "Azione sconosciuta"
+    },
     "messageTemplate": "Modello messaggio",
     "messageTemplatePlaceholder": "ID del modello o testo",
     "name": "Nome",
@@ -22689,6 +22801,14 @@
     "noExecutions": "Nessuna esecuzione registrata",
     "noInactiveRoutines": "Non hai routine inattive",
     "noTestRoutines": "Non hai routine in modalità test",
+    "problem": {
+      "activityDue": "La scadenza è un numero intero di giorni, da 0 a 60.",
+      "activityText": "Scrivi il testo dell'attività (al massimo 140 caratteri).",
+      "condition": "Completa il valore di ogni condizione.",
+      "timing": "Giorni da 0 a 365 e ore da 0 a 23, in numeri interi.",
+      "wait": "L'attesa deve durare da 1 ora a 365 giorni."
+    },
+    "removeAction": "Togli l'azione {{position}}",
     "simulateError": "Impossibile simulare la routine",
     "testMode": "Modalità test",
     "testModeBadge": "Test",
@@ -22700,9 +22820,14 @@
     "title": "Routine di automazione",
     "toggleActiveError": "Impossibile modificare lo stato della routine",
     "toggleTestModeError": "Impossibile modificare la modalità test",
+    "unavailable": {
+      "description": "Non c'è niente da fare da parte tua: riprova più tardi.",
+      "title": "Le automazioni non sono disponibili in questo momento"
+    },
     "updateError": "Impossibile aggiornare la routine",
     "updateSuccess": "Routine aggiornata",
-    "waitDays": "Giorni di attesa"
+    "waitDays": "Giorni di attesa",
+    "waitHours": "Ore di attesa"
   },
   "serviceCategories": {
     "loading": "Caricamento categorie…",

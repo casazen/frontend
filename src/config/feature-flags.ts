@@ -20,7 +20,8 @@ export type FeatureFlagKey =
   | 'fiscalDocumentIssuance'
   | 'octorateDocumentImport'
   | 'ownerInvoicing'
-  | 'accountantPackage';
+  | 'accountantPackage'
+  | 'routines';
 
 export type FeatureFlags = Record<FeatureFlagKey, boolean>;
 
@@ -147,6 +148,13 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * nothing asks the server and the backend answers 404 to both endpoints of the package.
    */
   accountantPackage: false,
+  /**
+   * The automation routines of the host (backend `Routines`, E01/F04, NF-21, DEB-06, ADR-022), off until the product owner turns it on in the test environment: the routines page
+   * (`/app/short-rent/automations`, a tab of «Impostazioni») and its entry. While it is off the tab is not there, the address leads to the home of the area, nothing asks the server
+   * and the backend answers 404 to every endpoint of `api/routines`, which no routine runs behind. Even with the flag on, only the actions the server lists as available can be
+   * switched on (`GET api/routines/actions`): the others can only run in test mode.
+   */
+  routines: false,
 };
 
 /** Known flags from the API response; anything but `true` is off. */

@@ -88,8 +88,8 @@ describe('route-manifest main menu (UI-04a)', () => {
 
   it('has no "Altro" in short-rent for who may open every section: the queues are tabs of the Cruscotto, the settings are at the foot', () => {
     // It held sixteen, then eight. Profilo is in the menu of the user, the queues (Da fare, Da approvare, Verifiche) are tabs of the Cruscotto,
-    // the integration and the assistant tabs of «Impostazioni», and «Inizia con CasaZen» is the welcome of the first access and the guide.
-    const flags: Partial<FeatureFlags> = { otaPartnerApi: true, octorateOnboarding: true, messageAssistant: true };
+    // the integration, the assistant and the automations tabs of «Impostazioni», and «Inizia con CasaZen» is the welcome of the first access and the guide.
+    const flags: Partial<FeatureFlags> = { otaPartnerApi: true, octorateOnboarding: true, messageAssistant: true, routines: true };
     expect(paths(getSecondaryNavEntries('short-rent', allowAll))).toEqual([]);
     expect(paths(getSecondaryNavEntries('short-rent', allowAll, flags))).toEqual([]);
     expect(paths(getFooterNavEntries('short-rent', allowAll, flags))).toEqual([
@@ -408,8 +408,12 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
   const SECTIONS: Record<string, string[]> = {
     // What waits for the host: the «Da fare» list, the approvals and the verifications of the guests are the tabs of the Cruscotto.
     '/app/short-rent': ['/app/short-rent/activities', '/app/short-rent/approval-queue', '/app/short-rent/verifications'],
-    // «Impostazioni»: the organization, then the integration and the assistant (each behind its flag).
-    '/app/short-rent/settings/organization': ['/app/short-rent/settings/integration', '/app/short-rent/settings/assistant'],
+    // «Impostazioni»: the organization, then the integration, the assistant and the automations (each behind its flag).
+    '/app/short-rent/settings/organization': [
+      '/app/short-rent/settings/integration',
+      '/app/short-rent/settings/assistant',
+      '/app/short-rent/automations',
+    ],
     // The month of the owners of an agency, in the order of its steps.
     // The invoices to the owners (E13/F02/US01/T03, behind their flag) come right after the statements they are made from, at 1.5.
     '/app/account/owner-close': ['/app/account/statements', '/app/account/owner-invoices', '/app/account/withholding', '/app/account/wire-transfers'],
@@ -465,6 +469,7 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
     messageAssistant: true,
     ownerInvoicing: true,
     accountantPackage: true,
+    routines: true,
   };
 
   it('lists the pages of each section in tab order, and no other page hangs', () => {
@@ -607,7 +612,7 @@ describe('route-manifest sections as tabs (UI-04a)', () => {
     for (const pathname of [
       '/app/short-rent/bookings/calendar',
       '/app/short-rent/marketplace',
-      '/app/short-rent/settings/organization', // the integration and the assistant are behind their flags, off here
+      '/app/short-rent/settings/organization', // the integration, the assistant and the automations are behind their flags, off here
       '/app/short-rent/bookings/create',
       '/app/short-rent/payments/6f1c9a52-1111-4222-8333-944455556666',
       '/app/long-rent/properties',
@@ -668,6 +673,7 @@ describe('route-manifest sections as tabs (UI-04a)', () => {
       messageAssistant: true,
       ownerInvoicing: true,
       accountantPackage: true,
+      routines: true,
     };
     for (const entry of ROUTE_MANIFEST.filter((candidate) => candidate.navParent)) {
       const tabs = paths(getNavSection(entry.path, allowAll, flags));
