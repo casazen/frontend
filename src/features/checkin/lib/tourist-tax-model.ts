@@ -16,7 +16,7 @@ import type { PublicTouristTax, PublicTouristTaxGuest, TouristTaxPaymentIntent }
 export const TOURIST_TAX_IN_PROGRESS_CODE = 'tourist_tax_payment_in_progress';
 
 /** Problem code of `POST …/tourist-tax/payment-intent` while the payment is not offered (the organization does not offer it, or its account or the platform key is not ready). */
-export const TOURIST_TAX_NOT_AVAILABLE_CODE = 'tourist_tax_payment_not_available';
+const TOURIST_TAX_NOT_AVAILABLE_CODE = 'tourist_tax_payment_not_available';
 
 /** How many times the guest page asks again, with backoff, for a payment the guest has made: after them it offers «Aggiorna lo stato» instead of asking for ever. */
 export const TOURIST_TAX_MAX_POLLS = 10;
