@@ -96,7 +96,12 @@ function OwnerIssuerRow({ owner }: { owner: PropertyOwnerSummary }) {
   const [editing, setEditing] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
   const name = nameOf(owner, (id) => t('ownerAccounting.owner.unnamed', { id }));
-  const data = profile.data;
+  const gone = getHttpStatus(profile.error) === 404;
+  // What the row draws and offers comes from the last answer only while it is a good one: a query keeps its old answer when a later read fails, and a profile that is not found (404: the owner is not among the owners any
+  // more) or that could not be read is not one whose old data are still there to be shown, completed or created over.
+  const data = profile.isError ? undefined : profile.data;
+  // The form in the layer follows the last answer that was read, even if a later read failed (a read that fails does not take the form from under the person's hands), but never the one of a profile that is not found.
+  const editable = gone ? undefined : profile.data;
   const state = data ? issuerStateOf(data) : null;
   // What the profile misses, by the fields this client has words for: a field it has none for is not shown as a key.
   const missingFields = data ? missingFieldsOf(data) : [];
@@ -112,7 +117,7 @@ function OwnerIssuerRow({ owner }: { owner: PropertyOwnerSummary }) {
   };
 
   let status;
-  if (getHttpStatus(profile.error) === 404) {
+  if (gone) {
     status = <span data-testid="billing-owner-issuer-gone">{t('billingWizard.ownerIssuers.row.gone')}</span>;
   } else if (profile.isPending) {
     status = <span>{t('billingWizard.ownerIssuers.row.loading')}</span>;
@@ -172,7 +177,7 @@ function OwnerIssuerRow({ owner }: { owner: PropertyOwnerSummary }) {
           </Button>
         </div>
       ) : null}
-      {editing && data ? <OwnerIssuerDialog ownerId={owner.id} ownerName={name} profile={data} onClose={() => setEditing(false)} /> : null}
+      {editing && editable ? <OwnerIssuerDialog ownerId={owner.id} ownerName={name} profile={editable} onClose={() => setEditing(false)} /> : null}
     </li>
   );
 }

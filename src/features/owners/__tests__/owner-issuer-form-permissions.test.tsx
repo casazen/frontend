@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { createElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios';
 import * as api from '@/api/owner-issuer-profiles.api';
 import { ownerAccountingApi } from '@/api/owner-accounting.api';
 import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
@@ -68,6 +69,12 @@ const owners = vi.mocked(ownerAccountingApi.listOwners);
 function renderInto(element: ReturnType<typeof createElement>) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return { ...render(createElement(QueryClientProvider, { client }, element)), client };
+}
+
+/** A call the server answers with `status`. */
+function httpFailure(status: number): AxiosError {
+  const config = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig;
+  return new AxiosError('Request failed', AxiosError.ERR_BAD_RESPONSE, config, {}, { status, data: { status }, statusText: '', headers: {}, config });
 }
 
 /** What the server answers for an owner that has no profile yet (an empty one, in clear for a caller who may change it). */
@@ -238,5 +245,43 @@ describe('the issuer profile of an owner follows the permissions of the server (
 
     expect(await screen.findAllByTestId('billing-owner-issuer-problem')).not.toHaveLength(0);
     expect(write).not.toHaveBeenCalled();
+  });
+
+  it('OwnerIssuersStep_WhenTheProfileOfARowIsNotFoundAnyMore_NothingOfTheOldAnswerIsDrawnOrOffered', async () => {
+    owners.mockResolvedValue([{ id: OWNER_ID, firstName: 'Marta', lastName: 'Rossi' }]);
+    read.mockResolvedValue(profile({ exists: true, canIssue: false, regime: null, missingFields: ['regime'] }));
+    const { client } = renderInto(createElement(OwnerIssuersStep, { missing: 1 }));
+
+    const row = await screen.findByTestId('billing-owner-issuer-row');
+    expect(await within(row).findByTestId('billing-owner-issuer-open')).toBeInTheDocument();
+    expect(within(row).getByTestId('billing-owner-issuer-missing-fields')).toBeInTheDocument();
+
+    // The next read finds the profile gone (404: the owner is not among the owners any more).
+    read.mockRejectedValue(httpFailure(404));
+    await readAgain(client);
+
+    expect(await within(row).findByTestId('billing-owner-issuer-gone')).toBeInTheDocument();
+    // A 404 is «not found» whatever the query still holds: the old answer is neither drawn nor offered to be changed.
+    expect(within(row).queryByTestId('billing-owner-issuer-open')).toBeNull();
+    expect(within(row).queryByTestId('billing-owner-issuer-create')).toBeNull();
+    expect(within(row).queryByTestId('billing-owner-issuer-missing-fields')).toBeNull();
+    expect(write).not.toHaveBeenCalled();
+  });
+
+  it('OwnerIssuersStep_WhenAReadFailsWhileTheFormIsOpen_TheFormStaysUnderThePersonsHandsAndTheRowSaysItCouldNotBeRead', async () => {
+    owners.mockResolvedValue([{ id: OWNER_ID, firstName: 'Marta', lastName: 'Rossi' }]);
+    read.mockResolvedValue(NO_PROFILE());
+    const { client } = renderInto(createElement(OwnerIssuersStep, { missing: 1 }));
+
+    fireEvent.click(await screen.findByTestId('billing-owner-issuer-open'));
+    const dialog = await screen.findByTestId('billing-owner-issuer-dialog');
+    fireEvent.change(within(dialog).getByTestId('owner-issuer-legal-name'), { target: { value: 'Casa Mia Srl' } });
+
+    // A later read fails (no answer, a server error): what is typed is not taken away, and the row behind says it could not be read.
+    read.mockRejectedValue(httpFailure(500));
+    await readAgain(client);
+
+    expect(await screen.findByTestId('billing-owner-issuer-error')).toBeInTheDocument();
+    expect(within(screen.getByTestId('billing-owner-issuer-dialog')).getByTestId('owner-issuer-legal-name')).toHaveValue('Casa Mia Srl');
   });
 });
