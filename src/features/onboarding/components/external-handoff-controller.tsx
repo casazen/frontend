@@ -50,6 +50,11 @@ interface ExternalHandoffControllerProps {
    * it is instead of «CasaZen ha verificato il collegamento».
    */
   declaredBySupport?: boolean;
+  /**
+   * The step is done but how it was closed is not known (the request support closed for it is being read, or could not be): the screen says neither «CasaZen ha verificato» nor that
+   * support declared it (`recoveredUnknown`), and «Continua» is there all the same.
+   */
+  outcomeUnknown?: boolean;
 }
 
 /** Whole minutes since an instant, never negative. */
@@ -66,7 +71,7 @@ function minutesSince(instant: string | null | undefined, now: number): number |
  * - `started`: stored but not opened (the browser blocked the window): «Consenti l'apertura e riprova»;
  * - `waiting`: «Sto aspettando il collegamento»: the wizard stays visible with where it is, «Riapri il pannello», «Salva ed esci» and «Fallo per me»;
  * - `recovered`: CasaZen saw the connection: it goes on by itself, with no «Controlla ora» to press (when support declared it done and CasaZen could not see it, the same
- *   state says so in words of its own: `declaredBySupport`);
+ *   state says so in words of its own, `declaredBySupport`, and the person is not taken on by itself; while it is not known how the step was closed, `outcomeUnknown`, it says neither);
  * - `unverifiable`: only after a check that could not tell and with the person back from the panel: «Hai completato il collegamento e visto lo stato
  *   Attivata?», «Sì, continua» (never the default path), «No, riapri» and «Mi serve aiuto»;
  * - `notValid`: the check found it not valid: what to look at, and the panel again.
@@ -92,14 +97,18 @@ export function ExternalHandoffController({
   help,
   assistFirst = false,
   declaredBySupport = false,
+  outcomeUnknown = false,
 }: ExternalHandoffControllerProps) {
   const { t } = useTranslation();
   const headingId = useId();
   const now = useNow(30_000);
   const minutes = minutesSince(startedAt, now);
 
-  // The texts of a state: a step that support declared done has its own, because «CasaZen ha verificato» would be a check that nobody made.
-  const texts = phase === 'recovered' && declaredBySupport ? 'recoveredDeclared' : phase;
+  // The texts of a state: a step that support declared done has its own, because «CasaZen ha verificato» would be a check that nobody made, and while it is not known how the step was
+  // closed neither is said.
+  const unknown = phase === 'recovered' && outcomeUnknown;
+  const declared = phase === 'recovered' && declaredBySupport && !outcomeUnknown;
+  const texts = unknown ? 'recoveredUnknown' : declared ? 'recoveredDeclared' : phase;
   const title = t(`onboardingPlan.panel.state.${texts}.title`);
   const showInstructions = phase === 'explain' || phase === 'started' || phase === 'waiting' || phase === 'notValid';
   const openLabel = t(phase === 'explain' ? 'onboardingPlan.panel.actions.open' : phase === 'started' ? 'onboardingPlan.panel.actions.retryOpen' : 'onboardingPlan.panel.actions.reopen');
@@ -116,8 +125,8 @@ export function ExternalHandoffController({
 
       <div className="min-w-0 space-y-1.5">
         <h2 id={headingId} className="flex items-center gap-2 break-words text-lg font-semibold leading-snug">
-          {phase === 'recovered' && !declaredBySupport ? <CheckCircle2 aria-hidden="true" className="size-5 shrink-0 text-success-foreground" /> : null}
-          {phase === 'recovered' && declaredBySupport ? <LifeBuoy aria-hidden="true" className="size-5 shrink-0 text-foreground/70" /> : null}
+          {phase === 'recovered' && !declared && !unknown ? <CheckCircle2 aria-hidden="true" className="size-5 shrink-0 text-success-foreground" /> : null}
+          {declared ? <LifeBuoy aria-hidden="true" className="size-5 shrink-0 text-foreground/70" /> : null}
           {phase === 'waiting' ? <Hourglass aria-hidden="true" className="size-5 shrink-0 text-foreground/70 motion-safe:animate-pulse" /> : null}
           {title}
         </h2>

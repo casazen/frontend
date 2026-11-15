@@ -7,6 +7,7 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { onboardingApi } from '@/api/onboarding.api';
+import { applyNotificationsChange } from '@/features/notifications/use-notifications-realtime';
 import { partPath } from '@/lib/onboarding-parts';
 import { expectNoAxeViolations } from '@/test/axe';
 import type { AssistRequest, PanelStep, StartedPanelStep } from '@/types/onboarding.types';
@@ -103,7 +104,7 @@ function Arrived() {
 
 function renderPage(entry = `/app/short-rent/onboarding/panel/police?propertyId=${PROPERTY_ID}`, { kindPage = true }: { kindPage?: boolean } = {}) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
-  return render(
+  const view = render(
     <I18nextProvider i18n={i18n}>
       <QueryClientProvider client={client}>
         <MemoryRouter initialEntries={[entry]}>
@@ -116,6 +117,7 @@ function renderPage(entry = `/app/short-rent/onboarding/panel/police?propertyId=
       </QueryClientProvider>
     </I18nextProvider>,
   );
+  return { ...view, client };
 }
 
 const phase = () => screen.getByTestId('panel-step').getAttribute('data-phase');
@@ -182,11 +184,11 @@ async function openPanel() {
     events.push('open');
     return win as unknown as Window;
   });
-  renderPage();
+  const { client } = renderPage();
   await screen.findByTestId('panel-step-open');
   press('panel-step-open');
   await waitFor(() => expect(phase()).toBe('waiting'));
-  return { win, navigated };
+  return { win, navigated, client };
 }
 
 describe('OctoratePanelStep, the guided passage to the panel of the channel manager (NF-107)', () => {
@@ -620,10 +622,97 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
       vi.mocked(onboardingApi.listPanelSteps).mockResolvedValue([server]);
       renderPage();
 
-      await waitFor(() => expect(phase()).toBe('recovered'));
+      // The words of a step somebody confirmed wait for the list of the requests: none of them is a request support closed.
+      await waitFor(() => expect(screen.getByTestId('panel-step')).toHaveTextContent(i18n.t('onboardingPlan.panel.state.recovered.title')));
 
-      expect(screen.getByTestId('panel-step')).toHaveTextContent(i18n.t('onboardingPlan.panel.state.recovered.title'));
+      expect(phase()).toBe('recovered');
       expect(screen.queryByTestId('assist-outcome')).not.toBeInTheDocument();
+    });
+
+    // The live notice reads the steps and the requests at the same time, and the page stays open while support closes the request.
+    it('OctoratePanelStep_SupportDeclaresTheStepWhileThePageIsOpen_PopUpSaysItIsTheWordOfSupportAndThePageDoesNotGoOnByItself', async () => {
+      const { win, client } = await openPanel();
+
+      // Support closes the request on its word (the panel could not be read): the step is confirmed, the request is done and declared.
+      server = panelStep({ status: 'confirmed', lastVerificationOutcome: 'unverifiable', completedAt: doneAt, activityId: null });
+      vi.mocked(onboardingApi.listAssistRequests).mockResolvedValue([assistRequest({ status: 'Done', completedAt: doneAt, outcome: 'declared' })]);
+      act(() => applyNotificationsChange(client, { unreadCount: 1, type: 'assist-declared', entityId: 'r1' }));
+
+      const outcome = await screen.findByTestId('assist-outcome');
+      await waitFor(() => expect(screen.getByTestId('panel-step')).toHaveTextContent(i18n.t('onboardingPlan.panel.state.recoveredDeclared.title')));
+      expect(phase()).toBe('recovered');
+      expect(outcome).toHaveAttribute('data-outcome', 'declared');
+      // The pop-up says whose word it is and never «verificato»; the window the page opened is closed; the page is not left by itself, so «Non funziona» can be read.
+      await waitFor(() => expect(toast.success).toHaveBeenCalledWith(i18n.t('onboardingPlan.panel.state.recoveredDeclared.toast')));
+      expect(toast.success).toHaveBeenCalledTimes(1);
+      expect(toast.success).not.toHaveBeenCalledWith(i18n.t('onboardingPlan.panel.state.recovered.toast'));
+      expect(win.close).toHaveBeenCalled();
+      expect(screen.queryByTestId('arrived')).not.toBeInTheDocument();
+      expect(within(outcome).getByTestId('assist-reopen')).toBeInTheDocument();
+      // «Continua» goes on when the person has read it.
+      press('panel-step-continue');
+      expect(await screen.findByTestId('arrived')).toHaveTextContent(partPath('compliance'));
+    });
+
+    it('OctoratePanelStep_TheStepArrivesBeforeTheRequestSupportClosed_SaysNothingOfHowItWasClosedAndSaysNoPopUpUntilTheRequestIsRead', async () => {
+      const { client } = await openPanel();
+      // The request is still on its way when the step is already confirmed: the list of the requests is held until the test lets it go.
+      const releases: Array<(requests: AssistRequest[]) => void> = [];
+      vi.mocked(onboardingApi.listAssistRequests).mockImplementation(
+        () =>
+          new Promise<AssistRequest[]>((resolve) => {
+            releases.push(resolve);
+          }),
+      );
+      server = panelStep({ status: 'confirmed', lastVerificationOutcome: 'unverifiable', completedAt: doneAt, activityId: null });
+      act(() => applyNotificationsChange(client, { unreadCount: 1, type: 'assist-declared', entityId: 'r1' }));
+
+      // The step is done and the request that says how is not read yet: neither «CasaZen ha verificato» nor «dichiarato dal supporto», and no pop-up.
+      await waitFor(() => expect(screen.getByTestId('panel-step')).toHaveTextContent(i18n.t('onboardingPlan.panel.state.recoveredUnknown.title')));
+      expect(phase()).toBe('recovered');
+      expect(screen.getByTestId('panel-step')).not.toHaveTextContent(i18n.t('onboardingPlan.panel.state.recovered.title'));
+      expect(screen.getByTestId('panel-step')).not.toHaveTextContent(i18n.t('onboardingPlan.panel.state.recoveredDeclared.title'));
+      expect(toast.success).not.toHaveBeenCalled();
+      expect(screen.queryByTestId('arrived')).not.toBeInTheDocument();
+
+      // The request arrives, declared: now it is said, once.
+      act(() => {
+        for (const release of releases) release([assistRequest({ status: 'Done', completedAt: doneAt, outcome: 'declared' })]);
+      });
+      await waitFor(() => expect(screen.getByTestId('panel-step')).toHaveTextContent(i18n.t('onboardingPlan.panel.state.recoveredDeclared.title')));
+      await waitFor(() => expect(toast.success).toHaveBeenCalledWith(i18n.t('onboardingPlan.panel.state.recoveredDeclared.toast')));
+      expect(toast.success).toHaveBeenCalledTimes(1);
+      expect(toast.success).not.toHaveBeenCalledWith(i18n.t('onboardingPlan.panel.state.recovered.toast'));
+      expect(screen.queryByTestId('arrived')).not.toBeInTheDocument();
+    });
+
+    it('OctoratePanelStep_TheRequestsCannotBeRead_AStepSomebodyConfirmedIsToldNeitherCheckedNorDeclaredAndTheWindowIsNotLeftByItself', async () => {
+      const { client } = await openPanel();
+      vi.mocked(onboardingApi.listAssistRequests).mockRejectedValue(problemError(500, {}));
+      server = panelStep({ status: 'confirmed', lastVerificationOutcome: 'unverifiable', completedAt: doneAt, activityId: null });
+      act(() => applyNotificationsChange(client, { unreadCount: 1, type: 'assist-declared', entityId: 'r1' }));
+
+      // Nobody can say how it was closed: the words say only that it is done, no pop-up claims a check, and «Continua» is there for the person to go on.
+      await waitFor(() => expect(screen.getByTestId('panel-step')).toHaveTextContent(i18n.t('onboardingPlan.panel.state.recoveredUnknown.title')));
+      expect(screen.getByTestId('panel-step')).not.toHaveTextContent(i18n.t('onboardingPlan.panel.state.recovered.title'));
+      expect(screen.getByTestId('panel-step-continue')).toBeEnabled();
+      expect(toast.success).not.toHaveBeenCalled();
+      expect(screen.queryByTestId('arrived')).not.toBeInTheDocument();
+    });
+
+    it('OctoratePanelStep_ConfirmedByThePersonWhileThePageIsOpen_GoesOnByItselfWithTheWordsOfACheckOnceTheRequestsAreRead', async () => {
+      const { win } = await openPanel();
+
+      // A check that could not tell, and the person who is back from the panel confirms: no request of support closed it, so the page goes on as it always did.
+      server = panelStep({ status: 'confirmed', lastVerificationOutcome: 'unverifiable', completedAt: doneAt, activityId: null });
+      act(() => {
+        window.dispatchEvent(new Event('focus'));
+      });
+
+      expect(await screen.findByTestId('arrived')).toHaveTextContent(partPath('compliance'));
+      expect(win.close).toHaveBeenCalled();
+      expect(toast.success).toHaveBeenCalledWith(i18n.t('onboardingPlan.panel.state.recovered.toast'));
+      expect(toast.success).not.toHaveBeenCalledWith(i18n.t('onboardingPlan.panel.state.recoveredDeclared.toast'));
     });
 
     it('AssistRequestButton_RequestClosedForAStepThatIsNotDoneAnyMore_TellsNothingOfThePast', async () => {

@@ -16356,7 +16356,12 @@
         },
         "recoveredDeclared": {
           "body": "Il supporto di CasaZen dichiara di aver fatto il collegamento: da qui non riusciamo a controllarlo. Se qualcosa non funziona, dillo qui sotto.",
-          "title": "Collegamento fatto dal supporto"
+          "title": "Collegamento fatto dal supporto",
+          "toast": "Il supporto dichiara di aver fatto il collegamento"
+        },
+        "recoveredUnknown": {
+          "body": "Il collegamento risulta fatto: puoi continuare.",
+          "title": "Collegamento fatto"
         },
         "started": {
           "body": "Il tuo avanzamento è salvato, ma il pannello non si è aperto.",

@@ -16356,7 +16356,12 @@
         },
         "recoveredDeclared": {
           "body": "CasaZen support says it made the connection: from here we cannot check it. If something does not work, say so below.",
-          "title": "Connection made by support"
+          "title": "Connection made by support",
+          "toast": "Support says it made the connection"
+        },
+        "recoveredUnknown": {
+          "body": "The connection shows as done: you can go on.",
+          "title": "Connection done"
         },
         "started": {
           "body": "Your progress is saved, but the panel did not open.",
