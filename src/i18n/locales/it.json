@@ -15751,6 +15751,10 @@
         "note": "Nota:",
         "open": "Apri la richiesta",
         "org": "{{context}}: tutta l'organizzazione",
+        "outcome": {
+          "declared": "Esito: dichiarato dal supporto, CasaZen non ha potuto verificarlo",
+          "verified": "Esito: verificato, CasaZen ha letto il collegamento sul pannello"
+        },
         "part": "Passo: {{part}}",
         "partUnknown": "Passo non riconosciuto",
         "property": "{{context}}: struttura {{property}}",

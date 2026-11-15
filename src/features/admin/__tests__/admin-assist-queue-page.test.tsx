@@ -7,12 +7,14 @@ import { MemoryRouter } from 'react-router-dom';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { onboardingApi } from '@/api/onboarding.api';
+import { onboardingAssistApi } from '@/api/onboarding-assist.api';
 import { problemError } from '@/features/onboarding/__tests__/onboarding-fixtures';
 import { expectNoAxeViolations } from '@/test/axe';
 import type { AdminAssistRequest, AssistQueueQuery, AssistRequestStatus, PagedAssistRequests } from '@/types/onboarding.types';
 import { AdminAssistQueuePage } from '../admin-assist-queue-page';
 
 vi.mock('@/api/onboarding.api', () => ({ onboardingApi: { listAssistQueue: vi.fn(), updateAssistRequest: vi.fn() } }));
+vi.mock('@/api/onboarding-assist.api', () => ({ onboardingAssistApi: { getRequestDetail: vi.fn(), revealSecret: vi.fn(), storeVaultSecret: vi.fn() } }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('@/components/layout/page-header', () => ({
   PageHeader: ({ title, description }: { title: string; description?: string }) =>
@@ -83,6 +85,8 @@ beforeEach(async () => {
   workspace.hasPermission = () => true;
   answerQueue({ Requested: page([request(R1, 'Requested')]), InProgress: page([request(R2, 'InProgress', { assignedToUserId: STAFF, staffNote: 'Ho chiamato il titolare.' })]) });
   vi.mocked(onboardingApi.updateAssistRequest).mockReset();
+  vi.mocked(onboardingAssistApi.getRequestDetail).mockReset();
+  vi.mocked(onboardingAssistApi.revealSecret).mockReset();
   vi.mocked(toast.success).mockReset();
   vi.mocked(toast.error).mockReset();
 });
@@ -222,6 +226,110 @@ describe('AdminAssistQueuePage, the staff queue of the «Fallo per me» requests
     expect(within(row).queryByRole('button', { name: i18n.t('onboardingPlan.assist.actions.take.label') })).not.toBeInTheDocument();
     expect(within(row).queryByTestId('assist-row-done')).not.toBeInTheDocument();
     expect(within(row).queryByTestId('assist-row-cancel')).not.toBeInTheDocument();
+  });
+
+  it('AssistRequestRow_ADoneRequest_SaysHowItWasClosedAndOneWithNoOutcomeRecordedDoesNotGuess', async () => {
+    // «Fatto» records verified (CasaZen read the connection on the panel) or declared (it could not): staff reads which, never a silent success (E20/F03/US01/T02).
+    answerQueue({
+      Done: page([
+        request(R1, 'Done', { outcome: 'verified', completedAt: '2026-11-12T09:00:00Z' }),
+        request(R2, 'Done', { outcome: 'declared', completedAt: '2026-11-12T09:00:00Z' }),
+        request(R3, 'Done', { completedAt: '2026-11-12T09:00:00Z' }),
+      ]),
+    });
+    renderPage();
+    await screen.findByTestId('assist-requested');
+
+    fireEvent.change(screen.getByTestId('assist-filter'), { target: { value: 'done' } });
+
+    const rows = await screen.findByTestId('assist-list-rows');
+    expect(within(within(rows).getByTestId(`assist-row-${R1}`)).getByTestId('assist-row-outcome')).toHaveTextContent(i18n.t('onboardingPlan.assist.row.outcome.verified'));
+    expect(within(within(rows).getByTestId(`assist-row-${R2}`)).getByTestId('assist-row-outcome')).toHaveTextContent(i18n.t('onboardingPlan.assist.row.outcome.declared'));
+    expect(within(within(rows).getByTestId(`assist-row-${R3}`)).queryByTestId('assist-row-outcome')).not.toBeInTheDocument();
+  });
+
+  it('AssistRequestRow_AnOpenRequestTheHostReopened_ShowsWhatTheHostWroteAndOffersTheChecklist', async () => {
+    answerQueue({
+      Requested: page([request(R1, 'Requested', { hostNote: 'Il portale dice ancora che manca il collegamento.', reopenedAt: '2026-11-13T09:00:00Z' })]),
+    });
+    renderPage();
+
+    const row = await screen.findByTestId(`assist-row-${R1}`);
+    expect(within(row).getByTestId('assist-row-host-note')).toHaveTextContent('Il portale dice ancora che manca il collegamento.');
+    // The button of the checklist is on every row, and does not say a word about credentials: the credentials are in the dialog it opens.
+    expect(within(row).getByTestId('assist-row-open')).toHaveTextContent(i18n.t('onboardingPlan.assist.row.open'));
+    expect(row.textContent ?? '').not.toMatch(/password|token|secret|credenzial/i);
+  });
+
+  describe('the checklist of a request (E20/F03/US02/T01)', () => {
+    const detailOf = (status: AssistRequestStatus = 'Requested') => ({
+      request: request(R1, status),
+      checklist: [
+        {
+          propertyId: '77777777-0000-4000-8000-000000000001',
+          propertyName: 'Casa del Mare',
+          comune: 'Rimini',
+          panelUser: { present: true, updatedAt: '2026-11-10T09:00:00Z' },
+          policeCredentials: { present: true, updatedAt: '2026-11-11T09:00:00Z' },
+          istatCredentials: { present: false, updatedAt: null, requirement: 'toVerify' as const },
+          sender: { sender: 'ChannelManager' as const, changedAt: '2026-11-09T09:00:00Z', activationDeclared: false },
+          steps: [{ kind: 'policeConnection' as const, channelCode: null, instructionsKey: 'panelPolice' as const, state: 'notStarted' as const, lastVerificationOutcome: null, completedAt: null }],
+        },
+      ],
+    });
+
+    it('AssistRequestRow_OpenTheRequest_ReadsItsChecklistFromTheServerAndOpensNoCredentialBeforeAReason', async () => {
+      vi.mocked(onboardingAssistApi.getRequestDetail).mockResolvedValue(detailOf());
+      renderPage();
+
+      fireEvent.click(within(await screen.findByTestId(`assist-row-${R1}`)).getByTestId('assist-row-open'));
+
+      const dialog = await screen.findByTestId('assist-detail-dialog');
+      expect(await within(dialog).findByTestId('assist-checklist')).toBeInTheDocument();
+      expect(onboardingAssistApi.getRequestDetail).toHaveBeenCalledWith(R1);
+      expect(within(dialog).getByTestId('assist-checklist-police')).toHaveTextContent(i18n.t('onboardingPlan.assist.checklist.presence.presentSince', { date: '11 novembre 2026' }));
+      // «Apri credenziali» asks for the reason first: the server is not asked for a value until it is given.
+      fireEvent.click(within(dialog).getByTestId('assist-reveal-open-Police'));
+      expect(await screen.findByTestId('assist-reveal-dialog')).toHaveTextContent(i18n.t('onboardingPlan.assist.reveal.kinds.Police'));
+      expect(onboardingAssistApi.revealSecret).not.toHaveBeenCalled();
+    });
+
+    it('AssistRequestRow_TheChecklistCannotBeRead_SaysSoWithARetryNeverAnEmptyChecklist', async () => {
+      vi.mocked(onboardingAssistApi.getRequestDetail).mockRejectedValue(problemError(500, {}));
+      renderPage();
+
+      fireEvent.click(within(await screen.findByTestId(`assist-row-${R1}`)).getByTestId('assist-row-open'));
+
+      const error = await screen.findByTestId('assist-detail-error');
+      expect(error).toHaveTextContent(i18n.t('onboardingPlan.assist.detail.loadError'));
+      expect(screen.queryByTestId('assist-checklist')).not.toBeInTheDocument();
+      // A retry reads it again.
+      vi.mocked(onboardingAssistApi.getRequestDetail).mockResolvedValue(detailOf());
+      fireEvent.click(within(error).getByRole('button', { name: i18n.t('shared.errorState.retry') }));
+      expect(await screen.findByTestId('assist-checklist')).toBeInTheDocument();
+    });
+
+    it('AssistRequestRow_TheRequestIsNotThereAnyMore_IsNotFoundWhateverTheCacheStillHolds', async () => {
+      vi.mocked(onboardingAssistApi.getRequestDetail).mockRejectedValue(problemError(404, { code: 'assist_request_not_found' }));
+      renderPage();
+
+      fireEvent.click(within(await screen.findByTestId(`assist-row-${R1}`)).getByTestId('assist-row-open'));
+
+      expect(await screen.findByTestId('assist-detail-error')).toHaveTextContent(i18n.t('onboardingPlan.assist.detail.notFound'));
+      expect(screen.queryByTestId('assist-checklist')).not.toBeInTheDocument();
+    });
+
+    it('AssistRequestRow_TheServerSaysTheRequestIsClosedNow_OffersNoOpeningWhateverTheRowSaid', async () => {
+      // The row was read while the request was open; somebody closed it since: the dialog decides from the answer it reads, not from the row.
+      vi.mocked(onboardingAssistApi.getRequestDetail).mockResolvedValue(detailOf('Done'));
+      renderPage();
+
+      fireEvent.click(within(await screen.findByTestId(`assist-row-${R1}`)).getByTestId('assist-row-open'));
+
+      const dialog = await screen.findByTestId('assist-detail-dialog');
+      expect(await within(dialog).findByTestId('assist-checklist-closed')).toBeInTheDocument();
+      expect(within(dialog).queryByTestId('assist-reveal-open-Police')).not.toBeInTheDocument();
+    });
   });
 
   it('AdminAssistQueuePage_AStatusThisVersionDoesNotKnow_IsShownAsNotUnderstoodAndHasNoAction', async () => {

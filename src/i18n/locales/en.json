@@ -15751,6 +15751,10 @@
         "note": "Note:",
         "open": "Open the request",
         "org": "{{context}}: the whole organization",
+        "outcome": {
+          "declared": "Outcome: declared by support, CasaZen could not check it",
+          "verified": "Outcome: verified, CasaZen read the connection on the panel"
+        },
         "part": "Step: {{part}}",
         "partUnknown": "Step not recognised",
         "property": "{{context}}: property {{property}}",

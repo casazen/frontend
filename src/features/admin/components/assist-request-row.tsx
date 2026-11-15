@@ -199,6 +199,12 @@ export function AssistRequestRow({ request, now, busy, onUpdate }: AssistRequest
         {ago ? ` · ${ago}` : ''}
       </p>
 
+      {request.status === 'Done' && (request.outcome === 'verified' || request.outcome === 'declared') ? (
+        <p className="text-sm" data-testid="assist-row-outcome" data-outcome={request.outcome}>
+          {t(`onboardingPlan.assist.row.outcome.${request.outcome}`)}
+        </p>
+      ) : null}
+
       <div className="space-y-0.5 text-sm" data-testid="assist-row-ids">
         <IdLine label={t('onboardingPlan.assist.ids.request')} id={request.id} testId="assist-row-id-request" />
         <IdLine label={t('onboardingPlan.assist.ids.org')} id={request.orgId} testId="assist-row-id-org" />
