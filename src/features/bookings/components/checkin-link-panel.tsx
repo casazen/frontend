@@ -133,15 +133,19 @@ function DeliveryState({ delivery, line, link, copied, busy, onCopy }: DeliveryS
  * email (also the reminder) or generated to copy. The API returns the link whatever happens to the email, so a wrong
  * address or a provider error never leaves the host without a way to reach the guest.
  *
- * With the flags of the check-in link for portal bookings on (`portalChatCheckInLink`, `guestContactInfo`, E23/F01, NF-122) it also says where the link
- * stands on its way to a guest who has no e-mail address: sent in the chat of the portal, waiting for the chat, for the conversation or for the IP
- * addresses, or failed, and offers «Copia link» to who may copy a link (`booking.write`). With both off it reads and shows nothing of it.
+ * With the connector of the channel manager (`octorateConnector`) and one of the flags of the check-in link for portal bookings on (`portalChatCheckInLink`,
+ * `guestContactInfo`, E23/F01, NF-122) it also says where the link stands on its way to a guest who has no e-mail address: sent in the chat of the portal,
+ * waiting for the chat, for the conversation or for the IP addresses, or failed, and offers «Copia link» to who may copy a link (`booking.write`). With the
+ * connector off, or both flags off, it reads and shows nothing of it.
  */
 export function CheckInLinkPanel({ bookingId, canWrite }: CheckInLinkPanelProps) {
   const { t } = useTranslation();
   const { flags } = useFeatureFlags();
   const { data: session, isLoading, isError, refetch } = useBookingCheckInSession(bookingId);
-  const delivery = useCheckInLinkDelivery(bookingId, flags.portalChatCheckInLink || flags.guestContactInfo);
+  // The delivery runs in the backend only while the connector of the channel manager is on AND one of the two flags is (`ChatOn`, `ContactOn` of `CheckInLinkDeliveryService`). With the
+  // connector off what the server still records is not for a screen: nothing is asked and nothing is drawn, and the panel is what it was.
+  const deliveryOn = flags.octorateConnector && (flags.portalChatCheckInLink || flags.guestContactInfo);
+  const delivery = useCheckInLinkDelivery(bookingId, deliveryOn);
   const resend = useResendCheckInLink(bookingId);
   const create = useCreateCheckInLink(bookingId);
   const [issued, setIssued] = useState<CheckInLinkResponse | null>(null);

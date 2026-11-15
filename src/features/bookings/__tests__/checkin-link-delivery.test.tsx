@@ -46,7 +46,7 @@ function delivery(overrides: Partial<CheckInLinkDelivery> = {}): CheckInLinkDeli
 
 function renderPanel({ canWrite = true, flags = {} as Partial<FeatureFlags> } = {}) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
-  const value = { flags: { ...DEFAULT_FEATURE_FLAGS, portalChatCheckInLink: true, ...flags }, isLoading: false };
+  const value = { flags: { ...DEFAULT_FEATURE_FLAGS, octorateConnector: true, portalChatCheckInLink: true, ...flags }, isLoading: false };
   const view = render(
     createElement(
       QueryClientProvider,
@@ -309,6 +309,23 @@ describe('CheckInLinkPanel: where the check-in link of a portal booking stands (
     expect(await screen.findByTestId('checkin-link-email')).toHaveTextContent('Email non inviata');
     expect(checkinLinkApi.getDelivery).not.toHaveBeenCalled();
     expect(screen.queryByTestId('checkin-delivery')).not.toBeInTheDocument();
+  });
+
+  // The backend works the delivery only while the connector of the channel manager is on too: with it off, whatever the flags say, the panel asks nothing and draws nothing of the delivery
+  // (the server still records a row then, which is not for a screen), and the line of the e-mail is the one that tells.
+  it.each([
+    ['portalChatCheckInLink', { portalChatCheckInLink: true, guestContactInfo: false }],
+    ['guestContactInfo', { portalChatCheckInLink: false, guestContactInfo: true }],
+    ['both', { portalChatCheckInLink: true, guestContactInfo: true }],
+  ] as const)('panel_ConnectorOffAndFlag_%s_On_AsksNothingAndShowsNothingOfTheDelivery', async (_flag, flags) => {
+    vi.mocked(bookingsApi.getCheckInSession).mockResolvedValue(NO_RECIPIENT);
+    vi.mocked(checkinLinkApi.getDelivery).mockResolvedValue(delivery({ channel: 'Manual', state: 'WaitingContact', lastErrorCode: null, checkInLink: null }));
+    renderPanel({ flags: { octorateConnector: false, ...flags } });
+
+    expect(await screen.findByTestId('checkin-link-email')).toHaveTextContent('Email non inviata');
+    expect(checkinLinkApi.getDelivery).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('checkin-delivery')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('checkin-delivery-error')).not.toBeInTheDocument();
   });
 
   it('panel_OnlyTheFlagOfTheContactOfTheGuest_StillReadsTheDelivery', async () => {
