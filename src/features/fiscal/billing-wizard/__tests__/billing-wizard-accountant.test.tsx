@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import { createElement, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import * as api from '@/api/billing-setup.api';
@@ -95,6 +95,17 @@ function refusal(status: number, data: unknown, sent?: unknown): AxiosError {
   return new AxiosError('failed', 'ERR_BAD_REQUEST', config, undefined, { status, statusText: '', headers: {}, config, data });
 }
 
+/**
+ * The address of the page as the router has it. Under a `MemoryRouter` `window.location` never moves, so it proves nothing about the address: the rule «no personal data in the address of the
+ * page» is checked against this.
+ */
+function LocationProbe() {
+  const location = useLocation();
+  return createElement('div', { 'data-testid': 'router-location' }, `${location.pathname}${location.search}${location.hash}`);
+}
+
+const routerAddress = () => decodeURIComponent(screen.getByTestId('router-location').textContent ?? '');
+
 function renderWizard(step = 'accountant') {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   render(
@@ -110,6 +121,7 @@ function renderWizard(step = 'accountant') {
           createElement(Route, { path: BILLING_SETUP_PATH, element: createElement(BillingWizardPage) }),
           createElement(Route, { path: FISCAL_PATH, element: createElement('div', { 'data-testid': 'fiscal-home' }) }),
         ),
+        createElement(LocationProbe),
       ),
     ),
   );
@@ -219,6 +231,9 @@ describe('the step «Commercialista» of the wizard «Fatturazione» (E15/F02/US
     expect(within(screen.getByTestId('billing-step-summary')).getByText(text('billingWizard.summary.accountant.monthly', { day: 10 }))).toBeInTheDocument();
     // Nothing of the settings of the send is saved as a section of the billing setup.
     expect(api.saveBillingSetupSection).not.toHaveBeenCalledWith('accountant', expect.anything());
+    // The way on moves the step in the address of the page and nothing else: the address of the accountant is not in it.
+    expect(routerAddress()).toContain('step=summary');
+    expect(routerAddress()).not.toContain('studio');
   });
 
   it('AccountantStep_TheMonthlySendWithNoAddress_StopsOnTheFieldAndSendsNothingUntilThereIsOne', async () => {
@@ -283,8 +298,10 @@ describe('the step «Commercialista» of the wizard «Fatturazione» (E15/F02/US
       expect((error as AxiosError).response?.status).toBe(422);
       expect(JSON.stringify(error)).not.toContain(ADDRESS);
     }
-    // The address is in the form of the page and nowhere else: not in the address of the page, not in the browser's storage.
-    expect(window.location.href).not.toContain('studio');
+    // The address is in the form of the page and nowhere else: not in the address of the page (the router's: the step is there, so the check is not looking at an empty address), not in the browser's storage.
+    expect(routerAddress()).toContain('step=accountant');
+    expect(routerAddress()).not.toContain('studio');
+    expect(routerAddress()).not.toContain(ADDRESS);
     expect(JSON.stringify({ ...localStorage })).not.toContain(ADDRESS);
     expect(JSON.stringify({ ...sessionStorage })).not.toContain(ADDRESS);
 
