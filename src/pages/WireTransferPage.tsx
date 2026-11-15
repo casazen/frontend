@@ -5,9 +5,10 @@ import { AlertCircle } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import { AgencyAccessRefused, AgencyFinanceGate } from '@/components/finance/agency-finance-gate';
 import { StaleReadNotice } from '@/components/finance/stale-read-notice';
+import { WireAccessLimited } from '@/components/finance/wire-access-limited';
 import { WireAmount } from '@/components/finance/wire-amount';
 import { WireBatchCard } from '@/components/finance/WireBatchCard';
-import { groupByCurrency, isPayable, isWireCurrency, ownerIdsOf, payableRows, withoutIban, type PayableRow } from '@/components/finance/wire-model';
+import { isPayable, ownerIdsOf, payableRows, readStateOf, WIRE_CURRENCIES, withoutIban, type PayableRow } from '@/components/finance/wire-model';
 import { PlainSection } from '@/components/shared/calm';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import { ErrorState } from '@/components/shared/error-state';
@@ -21,47 +22,35 @@ import { useOwnerFormat } from '@/features/owner-accounting/use-owner-format';
 import { failureMessage, problemCodeOf } from '@/lib/agency-finance';
 import { getHttpStatus } from '@/lib/api-errors';
 import { isStayDate, todayInRome } from '@/lib/stay-dates';
-import { useCreateBatch, useWireBatches, useWireOwners, useWirePayouts } from '@/queries/wireTransfer';
-import type { CreateBatchResponse, OwnerPayout, WireBatch, WireOwner } from '@/types';
+import { useCreateBatch, usePayablePayouts, useWireBatches } from '@/queries/wireTransfer';
+import type { CreateBatchResponse, WireBatch, WireCurrency } from '@/types';
 
-const NO_PAYOUTS: readonly OwnerPayout[] = [];
-const NO_OWNERS: readonly WireOwner[] = [];
 const NO_BATCHES: readonly WireBatch[] = [];
 
-/** What one request of the last attempt came to: the file the server made for a currency, or its refusal in words (and the owners it lists, by id). */
+/** What one request of the last attempt came to: the file the server made for a currency, or its refusal in words (and the owners it lists, by id and name). */
 interface Attempt {
-  currency: string;
+  currency: WireCurrency;
   /** The batch as the server answered it; `null` when the server refused. */
   batch: CreateBatchResponse | null;
   message: string;
   code: string | undefined;
-  ownerIds: string[];
+  /** The owners the refusal lists: the server sends their ids, the names are the ones the page had for them when the request was made. */
+  owners: ReadonlyArray<{ id: string; name: string }>;
 }
 
-interface ReadResult {
-  data: unknown;
-  isPending: boolean;
-  isError: boolean;
-  error: unknown;
-}
-
-/**
- * Where a part of the page stands, from the reads it needs. A 404 is «not found» whatever the cache still holds (a failed read keeps the last answer); any other failure
- * with nothing to show is an error with a retry; a failure with the last answer in memory is the stale notice, decided by the caller.
- */
-function readStateOf(...reads: ReadResult[]): 'loading' | 'notFound' | 'error' | 'ready' {
-  if (reads.some((read) => read.isError && getHttpStatus(read.error) === 404)) return 'notFound';
-  if (reads.some((read) => read.isError && !read.data)) return 'error';
-  if (reads.some((read) => read.isPending)) return 'loading';
-  return 'ready';
-}
+/** Where the list of the payable payouts of one currency stands: the states of a read, and the refusal of the server (403) as a state of its own. */
+type PayableState = 'loading' | 'notFound' | 'error' | 'refused' | 'ready';
 
 /**
  * «Bonifici proprietari» of the Amministrazione (ADR-017, E16/F02/US01/T01): the bank file («file per la banca», ISO 20022) that pays the owners from their CONFIRMED
  * PAYOUTS (the net after the withholding), one file per currency, and the list of the files with their steps. The backend gives it only to the owner and the administrators
  * of an org on the agency plan (`agency.wire.manage`), so the role and the plan are checked before anything is read (`AgencyFinanceGate`). CasaZen makes the file and
  * records what the administrator says; it does not move money and does not know whether the bank executed the transfers. The debit account is the one of the issuer profile
- * of the org (the «Fatturazione» setup): the page never asks for an account and never shows one in full.
+ * of the org (the «Fatturazione» setup): the page never asks for an account and never shows one.
+ *
+ * What can be chosen comes from the server, one list for each currency (`payable-payouts?currency=CHF` and `...=EUR`, never mixed): the payouts that are confirmed, published
+ * to the owner and in no file yet. A payout that went into a file leaves the list at once and does not come back after a reload; the refusals of the server stay as the second
+ * line of defence. The server says only whether an owner has an IBAN, as a yes or a no: a payout of an owner without one is shown, blocked, with the reason.
  */
 export function WireTransferPage() {
   const { t } = useTranslation();
@@ -76,34 +65,38 @@ function WireTransferBody() {
   const { t } = useTranslation();
   const format = useOwnerFormat();
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
-  // The payouts that went into a file in this visit: the server has no read of «the payouts not yet in a batch», so the page keeps them off the choice (the server refuses
-  // them anyway, `payouts_already_in_batch`, also for the ones another visit or person put in a file).
+  // The payouts that went into a file in this visit: the page keeps them off the choice even when the list it read again has not come back yet (the server leaves them out
+  // of its list as soon as the file exists, and refuses them anyway, `payouts_already_in_batch`, also for the ones another visit or person put in a file).
   const [batchedIds, setBatchedIds] = useState<ReadonlySet<string>>(new Set());
   const [executionDate, setExecutionDate] = useState(() => todayInRome());
   const [confirming, setConfirming] = useState(false);
   // What the person is asked to confirm, as it was when the confirmation opened: the files (one for each currency) and the payouts of each. What they confirm is what is sent,
   // whatever the list does meanwhile, and the dialog does not change under them while the files are made.
-  const [planned, setPlanned] = useState<ReadonlyArray<readonly [string, readonly string[]]>>([]);
+  const [planned, setPlanned] = useState<ReadonlyArray<readonly [WireCurrency, readonly string[]]>>([]);
   const [running, setRunning] = useState(false);
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   // A request is on its way: the state of the mutation says it a moment later than the click, so a second one in between is stopped here.
   const sending = useRef(false);
 
-  const payoutsQuery = useWirePayouts();
-  const ownersQuery = useWireOwners();
+  // One read for each currency: the franc page of the list never holds a euro payout, and the other way round.
+  const chfQuery = usePayablePayouts('CHF');
+  const eurQuery = usePayablePayouts('EUR');
   const batchesQuery = useWireBatches();
   const createBatch = useCreateBatch();
+  const payableReads = { CHF: chfQuery, EUR: eurQuery };
 
-  const owners = ownersQuery.data ?? NO_OWNERS;
   const batches = batchesQuery.data ?? NO_BATCHES;
-  const rows = useMemo(() => payableRows(payoutsQuery.data ?? NO_PAYOUTS, owners, batchedIds), [payoutsQuery.data, owners, batchedIds]);
-  const groups = useMemo(() => groupByCurrency(rows), [rows]);
-  const ownerNames = useMemo(() => new Map(owners.map((owner) => [owner.id, owner.name] as const)), [owners]);
-  const ownerName = (ownerId: string) => ownerNames.get(ownerId) || t('ownerAccounting.owner.unnamed', { id: shortId(ownerId) });
+  const chfRows = useMemo(() => payableRows(chfQuery.data, 'CHF', batchedIds), [chfQuery.data, batchedIds]);
+  const eurRows = useMemo(() => payableRows(eurQuery.data, 'EUR', batchedIds), [eurQuery.data, batchedIds]);
+  const groups = useMemo(() => {
+    const byCurrency: Record<WireCurrency, PayableRow[]> = { CHF: chfRows, EUR: eurRows };
+    return WIRE_CURRENCIES.map((currency): [WireCurrency, PayableRow[]] => [currency, byCurrency[currency]]);
+  }, [chfRows, eurRows]);
+  const ownerName = (ownerId: string, name: string) => name || t('ownerAccounting.owner.unnamed', { id: shortId(ownerId) });
 
   // What is chosen, by currency: only what a file can pay, and only what is still on the list (a read that took a payout away drops it from the choice).
   const chosenByCurrency = useMemo(() => {
-    const byCurrency = new Map<string, string[]>();
+    const byCurrency = new Map<WireCurrency, string[]>();
     for (const [currency, items] of groups) {
       const ids = items.filter((row) => isPayable(row) && selected.has(row.id)).map((row) => row.id);
       if (ids.length > 0) byCurrency.set(currency, ids);
@@ -145,7 +138,8 @@ function WireTransferBody() {
   /**
    * One file for each currency of the choice, in turn, once the person has confirmed. Each request is the server's to accept or refuse as a whole (nothing is saved on a
    * refusal), so a refusal of one currency never stops the other, and what the page tells is only what the server answered: the file it made (never a success it did not
-   * confirm) or the refusal in words, with the owners it lists. The payouts of a file the server made leave the choice and the list.
+   * confirm) or the refusal in words, with the owners it lists. The payouts of a file the server made leave the choice and the list; after every request, made or refused, the
+   * mutation reads the lists again.
    */
   const create = async () => {
     if (sending.current || busy || planned.length === 0 || !dateOk) return;
@@ -153,11 +147,13 @@ function WireTransferBody() {
     setRunning(true);
     setAttempts([]);
     const results: Attempt[] = [];
+    // The names of the owners as the page has them now: a refusal lists only their ids.
+    const namesById = new Map(groups.flatMap(([, items]) => items.map((row) => [row.ownerId, ownerName(row.ownerId, row.ownerName)] as const)));
     try {
       for (const [currency, ids] of planned) {
         try {
           const batch = await createBatch.mutateAsync({ payoutIds: [...ids], executionDate });
-          results.push({ currency, batch, message: '', code: undefined, ownerIds: [] });
+          results.push({ currency, batch, message: '', code: undefined, owners: [] });
           setBatchedIds((current) => new Set([...current, ...ids]));
           setSelected((current) => {
             const next = new Set(current);
@@ -170,7 +166,7 @@ function WireTransferBody() {
             batch: null,
             message: withoutIban(failureMessage(error, t, t('wire.createError', { currency }), t('wire.notFoundPayout'))),
             code: problemCodeOf(error),
-            ownerIds: ownerIdsOf(error),
+            owners: ownerIdsOf(error).map((id) => ({ id, name: namesById.get(id) ?? ownerName(id, '') })),
           });
         } finally {
           createBatch.reset();
@@ -194,10 +190,9 @@ function WireTransferBody() {
   };
 
   const header = <PageHeader title={t('wire.title')} description={t('wire.description')} crumbs="auto" />;
-  const reads = [payoutsQuery, ownersQuery, batchesQuery];
 
-  // The server refuses a read (a 403 the reads accept, so that the app stays here): the access is not there, and nothing of the page is offered.
-  if (payoutsQuery.data === null || ownersQuery.data === null || batchesQuery.data === null) {
+  // The server refuses the list of the files (a 403 the read accepts, so that the app stays here): the access is not there, and nothing of the page is offered.
+  if (batchesQuery.data === null) {
     return (
       <div className="space-y-6" data-testid="wire-transfer-page">
         {header}
@@ -206,32 +201,66 @@ function WireTransferBody() {
     );
   }
 
-  const composeState = readStateOf(payoutsQuery, ownersQuery);
+  /**
+   * Where the list of one currency stands. A refusal (403) is a state of its own and is never an empty list; a 404 is «not found» whatever the cache holds (a failed read keeps
+   * the last answer); and a list that failed to refresh and has nothing to show is a failure, never «no payments to make».
+   */
+  const payableStateOf = (currency: WireCurrency, rows: readonly PayableRow[]): PayableState => {
+    const read = payableReads[currency];
+    const state = readStateOf(read);
+    if (state !== 'ready') return state;
+    if (read.data === null) return 'refused';
+    return read.isError && rows.length === 0 ? 'error' : 'ready';
+  };
+  const payableStates: Record<WireCurrency, PayableState> = {
+    CHF: payableStateOf('CHF', chfRows),
+    EUR: payableStateOf('EUR', eurRows),
+  };
   const batchesState = readStateOf(batchesQuery);
   const retryFailed = () => {
-    for (const read of reads) if (read.isError) void read.refetch();
+    for (const read of [chfQuery, eurQuery, batchesQuery]) if (read.isError) void read.refetch();
   };
   // A failed read with the last answer in memory (a 404 or nothing to show is told in its part): the figures may be out of date.
-  const stale = reads.some((read) => read.isError && Boolean(read.data) && getHttpStatus(read.error) !== 404);
+  const stale =
+    WIRE_CURRENCIES.some((currency) => payableStates[currency] === 'ready' && payableReads[currency].isError) ||
+    (batchesQuery.isError && Boolean(batchesQuery.data) && getHttpStatus(batchesQuery.error) !== 404);
 
   const chosenSummary = [...chosenByCurrency.entries()].map(([currency, ids]) => t('wire.chosenCount', { count: ids.length, currency })).join(' · ');
 
   const composeBody = () => {
-    if (composeState === 'loading') return <SkeletonCard lines={4} label={t('wire.loading')} />;
-    if (composeState === 'notFound' || composeState === 'error') {
-      const notFound = composeState === 'notFound';
-      const failed = [payoutsQuery, ownersQuery].find((read) => read.isError);
-      return (
+    const states = WIRE_CURRENCIES.map((currency) => payableStates[currency]);
+    // The server refuses the payouts (403: the caller reaches only some properties): told where the payouts would be, not an empty list and not the page of no access.
+    if (states.includes('refused')) return <WireAccessLimited testId="wire-payouts-refused" />;
+    if (states.includes('notFound')) return <ErrorState title={t('wire.notFound')} onRetry={retryFailed} />;
+    if (states.includes('loading')) return <SkeletonCard lines={4} label={t('wire.loading')} />;
+
+    // A list that could not be read is told, with a way to read it again, never as «no payments to make»: for its own currency when only one failed (the other is still
+    // offered), and once for the page when both did.
+    const failed = WIRE_CURRENCIES.filter((currency) => payableStates[currency] === 'error');
+    const failures =
+      failed.length === WIRE_CURRENCIES.length ? (
         <ErrorState
-          title={notFound ? t('wire.notFound') : t('wire.loadError')}
-          error={notFound ? undefined : failed?.error}
+          testId="wire-load-error"
+          title={t('wire.loadError')}
+          error={payableReads[failed[0]].error}
           onRetry={() => {
-            for (const read of [payoutsQuery, ownersQuery]) if (read.isError) void read.refetch();
+            for (const currency of failed) void payableReads[currency].refetch();
           }}
         />
+      ) : (
+        failed.map((currency) => (
+          <ErrorState
+            key={currency}
+            testId={`wire-load-error-${currency}`}
+            title={t('wire.loadErrorCurrency', { currency })}
+            error={payableReads[currency].error}
+            onRetry={() => void payableReads[currency].refetch()}
+          />
+        ))
       );
-    }
-    if (rows.length === 0) {
+    const shown = groups.filter(([, items]) => items.length > 0);
+    if (shown.length === 0) {
+      if (failed.length > 0) return <div className="space-y-3">{failures}</div>;
       return (
         <Alert
           variant="info"
@@ -250,63 +279,61 @@ function WireTransferBody() {
     return (
       <div className="space-y-6">
         <p className="text-sm text-muted-foreground">{t('wire.payoutsHint')}</p>
-        {groups.map(([currency, items]) => {
-          const supported = isWireCurrency(currency);
+        {failures}
+        {shown.map(([currency, items]) => {
           const payable = items.filter(isPayable);
           const allChosen = payable.length > 0 && payable.every((row) => selected.has(row.id));
           return (
-            <div key={currency || 'none'} className="space-y-3" data-testid={`wire-group-${currency || 'none'}`}>
+            <div key={currency} className="space-y-3" data-testid={`wire-group-${currency}`}>
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="text-base font-semibold">{currency ? t('wire.currencyGroup', { currency }) : t('wire.currencyGroupNone')}</h3>
+                <h3 className="text-base font-semibold">{t('wire.currencyGroup', { currency })}</h3>
                 {payable.length > 0 && (
                   <Button variant="ghost" size="sm" onClick={() => toggleGroup(items)} disabled={busy} data-testid={`wire-select-group-${currency}`}>
                     {allChosen ? t('wire.clearGroup') : t('wire.selectGroup')}
                   </Button>
                 )}
               </div>
-              {!supported && (
-                <p className="text-sm text-muted-foreground">{currency ? t('wire.currencyNotSupported', { currency }) : t('wire.currencyMissingGroup')}</p>
-              )}
               <ul role="list" className="space-y-2">
                 {items.map((row) => {
                   const payableRow = isPayable(row);
                   const chosen = selected.has(row.id);
+                  const reasonId = `wire-payout-${row.id}-reason`;
                   return (
                     <li
                       key={row.id}
                       data-testid={`wire-payout-${row.id}`}
-                      className={`rounded-lg border p-3 transition-colors ${chosen ? 'border-primary bg-muted/40' : ''}`}
+                      className={`rounded-lg border p-3 transition-colors ${chosen && payableRow ? 'border-primary bg-muted/40' : ''}`}
                     >
                       <label className={`flex items-start gap-3 ${payableRow && !busy ? 'cursor-pointer' : 'opacity-70'}`}>
                         <input
                           type="checkbox"
                           checked={chosen && payableRow}
                           disabled={busy || !payableRow}
+                          aria-describedby={payableRow ? undefined : reasonId}
                           onChange={() => toggle(row.id)}
                           className="mt-1 size-4"
                         />
-                        <span className="grid min-w-0 flex-1 gap-1 sm:grid-cols-[1fr_auto] sm:gap-x-6">
+                        <span className="grid min-w-0 flex-1 gap-1 sm:grid-cols-[1fr_auto] sm:gap-x-6 sm:gap-y-0">
                           <span className="min-w-0">
                             <span className="block break-words font-medium" data-testid="wire-payout-owner">
-                              {ownerName(row.ownerId)}
+                              {ownerName(row.ownerId, row.ownerName)}
                             </span>
-                            <span className="block text-sm text-muted-foreground">
-                              {t('wire.row.paidOn', { date: format.date(row.paidOn) })}
-                              {row.reference ? ` · ${row.reference}` : ''}
+                            <span className="block text-sm text-muted-foreground" data-testid="wire-payout-period">
+                              {t('wire.row.period', { period: format.month(row.periodYear, row.periodMonth) })}
                             </span>
                           </span>
                           <span className="min-w-0 sm:text-right">
-                            <WireAmount amount={row.netAmount} currency={row.currency} className="block font-semibold" testId="wire-payout-amount" />
-                            {row.ibanEnd && (
-                              <span className="block text-sm text-muted-foreground" data-testid="wire-payout-iban">
-                                {t('wire.row.iban', { end: row.ibanEnd })}
+                            <WireAmount amount={row.amount} currency={row.currency} className="block font-semibold" testId="wire-payout-amount" />
+                            {!row.hasIban && (
+                              <span className="block text-sm font-medium text-destructive" data-testid="wire-payout-iban-badge">
+                                {t('wire.row.ibanMissingBadge')}
                               </span>
                             )}
                           </span>
                         </span>
                       </label>
-                      {row.ibanEnd === null && (
-                        <p className="mt-2 pl-7 text-sm" data-testid="wire-payout-iban-missing">
+                      {!row.hasIban && (
+                        <p id={reasonId} className="mt-2 pl-7 text-sm" data-testid="wire-payout-iban-missing">
                           {t('wire.row.ibanMissing')}{' '}
                           <Link to={ownerFinancialPath(row.ownerId)} className="font-medium underline">
                             {t('wire.openOwner')}
@@ -405,12 +432,12 @@ function WireTransferBody() {
                   data-testid={`wire-refused-${attempt.currency}`}
                 >
                   <p>{attempt.message}</p>
-                  {attempt.ownerIds.length > 0 && (
+                  {attempt.owners.length > 0 && (
                     <ul role="list" className="mt-2 space-y-1" data-testid="wire-owner-problems">
-                      {attempt.ownerIds.map((ownerId) => (
-                        <li key={ownerId} data-testid={`wire-owner-problem-${ownerId}`}>
-                          <span className="font-medium">{ownerName(ownerId)}</span>{' '}
-                          <Link to={ownerFinancialPath(ownerId)} className="underline">
+                      {attempt.owners.map((owner) => (
+                        <li key={owner.id} data-testid={`wire-owner-problem-${owner.id}`}>
+                          <span className="font-medium">{owner.name}</span>{' '}
+                          <Link to={ownerFinancialPath(owner.id)} className="underline">
                             {t('wire.openOwner')}
                           </Link>
                         </li>

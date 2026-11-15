@@ -6,7 +6,7 @@ import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import axios from '@/lib/axios';
 import i18n from '@/i18n/config';
 import { WireTransferPage } from '../WireTransferPage';
-import { payout, problem, wireBatch } from './agency-money-fixtures';
+import { problem, wireBatch, wirePayout } from './agency-money-fixtures';
 
 // The real wire API runs on top of a mocked client: what the server answers is what the page gets, so the proof covers the whole way an account could take to the screen.
 vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), post: vi.fn() } }));
@@ -18,8 +18,8 @@ vi.setConfig({ testTimeout: 30_000 });
 
 const OWNER_1 = 'a0000000-0000-4000-8000-0000000000a1';
 const OWNER_2 = 'b0000000-0000-4000-8000-0000000000b1';
-const PAYOUT_1 = payout({ id: 'c0000000-0000-4000-8000-000000000001', ownerId: OWNER_1, currency: 'CHF', netAmount: 1234.5 });
-const PAYOUT_2 = payout({ id: 'c0000000-0000-4000-8000-000000000002', ownerId: OWNER_2, currency: 'CHF', netAmount: 800 });
+const PAYOUT_1 = wirePayout({ payoutId: 'c0000000-0000-4000-8000-000000000001', ownerId: OWNER_1, ownerName: 'Marta Rossi', currency: 'CHF', amount: 1234.5 });
+const PAYOUT_2 = wirePayout({ payoutId: 'c0000000-0000-4000-8000-000000000002', ownerId: OWNER_2, ownerName: 'Luca Bianchi', currency: 'CHF', amount: 800 });
 const BATCH = wireBatch({ id: 'c1c1c1c1-0000-4000-8000-000000000001', status: 'Downloaded', transferCount: 2, totalAmount: 2034.5 });
 
 /** An account in full, in its compact form and with the groups of its print. */
@@ -28,14 +28,13 @@ const PRINTED_IBAN = 'CH93 0076 2011 6238 5295 7';
 /** Whatever looks like an account in full once the spaces are gone: two letters, two digits and at least eleven more characters. */
 const ACCOUNT_SHAPE = /[A-Z]{2}\d{2}[A-Z0-9]{11,30}/;
 
+/** A server that wrote more than the contract by mistake: the account of the owner in full, in two forms, and the address and the e-mail of the owner. */
+const withExtras = <T extends object>(item: T) => ({ ...item, iban: FULL_IBAN, ownerIban: PRINTED_IBAN, street: 'Via Roma 1', email: 'marta.rossi@example.com' });
+
+let payableAnswers: Record<string, unknown>;
 const answers: Record<string, unknown> = {
-  '/owner-accounting/payouts': [PAYOUT_1, PAYOUT_2],
   '/wire-transfers/batches': [BATCH],
-  // The registry answers the IBAN masked, with the e-mail and the phone of the owner. The second answer is a server that wrote the account in full by mistake.
-  '/owners': [
-    { id: OWNER_1, firstName: 'Marta', lastName: 'Rossi', email: 'marta.rossi@example.com', phone: '+41790000001', taxRegime: 'Private', ibanMasked: '****3456', createdAt: '2026-10-01T09:00:00Z' },
-    { id: OWNER_2, firstName: 'Luca', lastName: 'Bianchi', email: 'luca.bianchi@example.com', phone: null, taxRegime: 'Private', ibanMasked: FULL_IBAN, createdAt: '2026-10-01T09:00:00Z' },
-  ],
+  [`/wire-transfers/batch/${BATCH.id}/payouts`]: { batch: BATCH, payouts: [withExtras(PAYOUT_1), withExtras(PAYOUT_2)] },
 };
 
 function renderPage() {
@@ -59,40 +58,39 @@ beforeEach(async () => {
   localStorage.clear();
   sessionStorage.clear();
   await i18n.changeLanguage('it');
-  vi.mocked(axios.get).mockImplementation(async (url: string) => ({ status: 200, data: answers[url] }));
+  payableAnswers = { CHF: [withExtras(PAYOUT_1), withExtras(PAYOUT_2)], EUR: [] };
+  vi.mocked(axios.get).mockImplementation(async (url: string, config?: { params?: { currency?: string } }) => ({
+    status: 200,
+    data: url === '/wire-transfers/payable-payouts' ? payableAnswers[config?.params?.currency ?? ''] : answers[url],
+  }));
 });
 
 afterEach(() => cleanup());
 
-describe('the wire page never shows an IBAN in full (privacy: the account of an owner is the end of it and nothing else)', () => {
-  it('WirePage_Payouts_ShowOnlyTheEndOfEachAccount_EvenFromAServerThatSentItInFull_AndKeepNothingElse', async () => {
+describe('the wire page never shows or keeps an IBAN (privacy: the server says only whether an owner has one, and the page keeps no more than that)', () => {
+  it('WirePage_AnswersThatCarryMoreThanTheContract_AreCutToItsMembers_AndNoAccountAnAddressOrAnEmailIsKeptOrDrawn', async () => {
     const client = renderPage();
 
-    const first = await screen.findByTestId(`wire-payout-${PAYOUT_1.id}`);
-    const second = screen.getByTestId(`wire-payout-${PAYOUT_2.id}`);
-    expect(within(first).getByTestId('wire-payout-iban')).toHaveTextContent('IBAN •••• 3456');
-    // The account that came in full is cut to its last four characters before it is kept or drawn.
-    expect(within(second).getByTestId('wire-payout-iban')).toHaveTextContent('IBAN •••• 2957');
+    await screen.findByTestId(`wire-payout-${PAYOUT_1.payoutId}`);
     await screen.findByTestId(`wire-batch-${BATCH.id}`);
+    // The payouts of the file are read too, from an answer that carries the same extras.
+    fireEvent.click(within(screen.getByTestId(`wire-batch-${BATCH.id}`)).getByTestId('wire-batch-payouts-toggle'));
+    await screen.findByTestId(`wire-batch-payout-${PAYOUT_2.payoutId}`);
 
     const kept = everythingKept(client);
     expect(kept).not.toContain(FULL_IBAN);
+    expect(kept).not.toContain(PRINTED_IBAN);
     expect(kept.replace(/\s/g, '')).not.toMatch(ACCOUNT_SHAPE);
-    // The registry also answers the e-mail and the phone of the owners: the page does not keep them.
+    expect(kept).not.toContain('Via Roma');
     expect(kept).not.toContain('marta.rossi@example.com');
-    expect(kept).not.toContain('+41790000001');
-    // What the cache holds of the owners is the name and the end of the account.
-    expect(JSON.stringify(client.getQueryCache().find({ queryKey: ['wire-transfers', 'owners'] })?.state.data)).toBe(
-      JSON.stringify([
-        { id: OWNER_1, name: 'Marta Rossi', ibanEnd: '•••• 3456' },
-        { id: OWNER_2, name: 'Luca Bianchi', ibanEnd: '•••• 2957' },
-      ]),
-    );
+    // What the cache holds of the payouts is the members of the contract and nothing else, in the list of the currency and in the payouts of the file.
+    expect(client.getQueryCache().find({ queryKey: ['wire-transfers', 'payable', 'CHF'] })?.state.data).toEqual([PAYOUT_1, PAYOUT_2]);
+    expect(client.getQueryCache().find({ queryKey: ['wire-transfers', 'batch-payouts', BATCH.id] })?.state.data).toEqual({ batch: BATCH, payouts: [PAYOUT_1, PAYOUT_2] });
   });
 
   it('WirePage_RefusalThatQuotesAnAccount_IsToldWithTheAccountCut_AndTheOwnersAreNamedWithoutTheirAccount', async () => {
     const client = renderPage();
-    await screen.findByTestId(`wire-payout-${PAYOUT_1.id}`);
+    await screen.findByTestId(`wire-payout-${PAYOUT_1.payoutId}`);
     fireEvent.click(screen.getByTestId('wire-select-group-CHF'));
     await waitFor(() => expect(screen.getByTestId('wire-create')).toBeEnabled());
 
@@ -122,5 +120,22 @@ describe('the wire page never shows an IBAN in full (privacy: the account of an 
     expect(kept.replace(/\s/g, '')).not.toMatch(ACCOUNT_SHAPE);
     // The mutations that carried the payouts are dropped: nothing of a request is kept.
     await waitFor(() => expect(client.getMutationCache().getAll()).toHaveLength(0));
+  });
+
+  it('WirePage_OwnerWithoutAnIban_IsToldAsAYesOrANoOnly_AndAnUnknownAnswerBlocksTheChoice', async () => {
+    // The server says «no» for the first owner and sends nothing at all for the second (a server that does not know the member): neither can be chosen, and nothing of an account is drawn.
+    const withoutTheMember: Partial<typeof PAYOUT_2> = { ...PAYOUT_2 };
+    delete withoutTheMember.ownerHasIban;
+    payableAnswers.CHF = [{ ...PAYOUT_1, ownerHasIban: false }, withoutTheMember];
+
+    const client = renderPage();
+    await screen.findByTestId(`wire-payout-${PAYOUT_1.payoutId}`);
+
+    for (const item of [PAYOUT_1, PAYOUT_2]) {
+      const row = screen.getByTestId(`wire-payout-${item.payoutId}`);
+      expect(row.querySelector('input[type="checkbox"]')).toBeDisabled();
+      expect(within(row).getByTestId('wire-payout-iban-badge')).toHaveTextContent('IBAN mancante');
+    }
+    expect(everythingKept(client).replace(/\s/g, '')).not.toMatch(ACCOUNT_SHAPE);
   });
 });

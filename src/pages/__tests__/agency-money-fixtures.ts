@@ -1,32 +1,23 @@
-import type { OwnerPayout, OwnerStatement, WireBatch, WireOwner } from '@/types';
+import type { OwnerStatement, WireBatch, WirePayout } from '@/types';
 
-/** A confirmed payout as `GET api/owner-accounting/payouts` answers it (without its evidence): the net is what a wire file pays. */
-export function payout(overrides: Partial<OwnerPayout> = {}): OwnerPayout {
+/**
+ * A payout of the wire page as `GET api/wire-transfers/payable-payouts` and `GET api/wire-transfers/batch/{id}/payouts` answer it: the owner by id and name, the period of
+ * the statement it pays, the net amount of the transfer and whether the owner has an IBAN (a yes or a no, never the account).
+ */
+export function wirePayout(overrides: Partial<WirePayout> = {}): WirePayout {
   return {
-    id: 'dddddddd-0000-4000-8000-000000000001',
+    payoutId: 'dddddddd-0000-4000-8000-000000000001',
     ownerId: 'bbbbbbbb-0000-4000-8000-000000000001',
-    statementVersionId: 'eeeeeeee-0000-4000-8000-000000000001',
-    idempotencyKey: 'payout-key-1',
-    reference: null,
-    paidOn: '2026-11-10',
+    ownerName: 'Marta Rossi',
+    periodYear: 2026,
+    periodMonth: 10,
+    amount: 1234.5,
     currency: 'CHF',
-    grossAmount: 1300,
-    withholdingAmount: 0,
-    netAmount: 1234.5,
-    agencyCollected: null,
-    qualifyingShortLet: null,
-    status: 'Confirmed',
     confirmedAt: '2026-11-10T09:00:00Z',
-    reversedAt: null,
-    reversalReason: null,
-    evidence: [],
+    status: 'Confirmed',
+    ownerHasIban: true,
     ...overrides,
   };
-}
-
-/** An owner of the registry as the wire page keeps it: the name and the end of the IBAN. */
-export function wireOwner(overrides: Partial<WireOwner> = {}): WireOwner {
-  return { id: 'bbbbbbbb-0000-4000-8000-000000000001', name: 'Marta Rossi', ibanEnd: '•••• 3456', ...overrides };
 }
 
 /** A batch of `GET api/wire-transfers/batches`. */

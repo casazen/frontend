@@ -1,17 +1,45 @@
 import axios from '@/lib/axios';
-import { ibanEnd } from '@/lib/iban';
+import { UnexpectedApiResponseError } from '@/lib/api-errors';
 import { ApiClient } from './client';
 import { acceptsRefusal } from './accept-refusal';
 import { fileApi, type DownloadedFile } from './file.api';
-import type { CreateBatchRequest, CreateBatchResponse, OwnerPayout, PropertyOwnerSummary, WireBatch, WireOwner } from '@/types';
+import type { CreateBatchRequest, CreateBatchResponse, WireBatch, WireBatchPayouts, WireCurrency, WirePayout } from '@/types';
 
 /**
  * A read that takes a refusal (403) as an answer: `null`. The shared client sends the whole app to the page of no access on a 403 for a read, and the wire page only has
- * to say that the access is not there (a role or a plan that changed since the page was drawn).
+ * to say that the access is not there (a role or a plan that changed since the page was drawn, or a person whose access is limited to some properties). An answer with no
+ * body is a failed read, never this `null`: the page must not tell a broken answer as a refusal.
  */
-async function readOrNull<T>(path: string): Promise<T | null> {
-  const response = await axios.get<T>(path, { validateStatus: acceptsRefusal });
-  return response.status === 403 ? null : response.data;
+async function readOrNull<T>(path: string, params?: Record<string, string>): Promise<T | null> {
+  const response = await axios.get<T | null | undefined>(path, { params, validateStatus: acceptsRefusal });
+  if (response.status === 403) return null;
+  if (response.data === null || response.data === undefined) throw new UnexpectedApiResponseError(path);
+  return response.data;
+}
+
+/**
+ * A payout of the wire page cut to the members of the contract, and nothing else: whatever else an answer carried (an account written by mistake, an address) never reaches
+ * the cache or the screen. `ownerHasIban` is a yes only when the server said yes: anything else blocks the payout, never offers it.
+ */
+function toWirePayout(raw: WirePayout): WirePayout {
+  return {
+    payoutId: raw.payoutId,
+    ownerId: raw.ownerId,
+    ownerName: typeof raw.ownerName === 'string' ? raw.ownerName : '',
+    periodYear: raw.periodYear,
+    periodMonth: raw.periodMonth,
+    amount: raw.amount,
+    currency: raw.currency,
+    confirmedAt: raw.confirmedAt,
+    status: raw.status,
+    ownerHasIban: raw.ownerHasIban === true,
+  };
+}
+
+/** The payouts of an answer, each cut to its members; an answer that is not a list (a page of the app served in place of the API) is a failed read, never an empty list. */
+function payoutsOf(data: unknown, path: string): WirePayout[] {
+  if (!Array.isArray(data)) throw new UnexpectedApiResponseError(path);
+  return (data as WirePayout[]).map(toWirePayout);
 }
 
 /**
@@ -24,20 +52,27 @@ export const wireTransferApi = {
   listBatches: () => readOrNull<WireBatch[]>('/wire-transfers/batches'),
 
   /**
-   * The payouts of the org, the newest first (`api/owner-accounting/payouts`): the page keeps the confirmed ones. The server has no read of «the payouts not yet in a
-   * batch», so the ones already in a file are refused by the server when they are chosen (`payouts_already_in_batch`). `null` on a 403.
+   * The payouts a wire file of ONE currency can still pay (`api/wire-transfers/payable-payouts?currency=`): confirmed, of a statement published to the owner, in no batch
+   * yet, the oldest first (the server gives at most 1000). One list per currency, CHF or EUR, never both. Each one says whether the owner has an IBAN as a yes or a no. `null`
+   * when the server refuses it (403: the caller reaches only some properties of the org).
    */
-  listPayouts: () => readOrNull<OwnerPayout[]>('/owner-accounting/payouts'),
+  listPayablePayouts: async (currency: WireCurrency): Promise<WirePayout[] | null> => {
+    const path = '/wire-transfers/payable-payouts';
+    const data = await readOrNull<unknown>(path, { currency });
+    return data === null ? null : payoutsOf(data, path);
+  },
 
   /**
-   * The owners of the registry, reduced to what the page shows: the name and the end of the IBAN (the registry answers it masked, and it is cut to its last four characters
-   * again here). The e-mail, the phone and the tax regime of the answer are not kept. `null` on a 403.
+   * A batch of the org and the payouts it pays (`api/wire-transfers/batch/{id}/payouts`), in the order of the transfers of its file. A payout reversed after the batch was
+   * made is in it and says so; a batch made before the payouts has none. 404 for a batch that is not the org's; `null` on a 403.
    */
-  listOwners: async (): Promise<WireOwner[] | null> => {
-    const owners = await readOrNull<PropertyOwnerSummary[]>('/owners');
-    return owners === null
-      ? null
-      : owners.map((owner) => ({ id: owner.id, name: `${owner.firstName} ${owner.lastName}`.trim(), ibanEnd: ibanEnd(owner.ibanMasked) }));
+  getBatchPayouts: async (batchId: string): Promise<WireBatchPayouts | null> => {
+    const path = `/wire-transfers/batch/${batchId}/payouts`;
+    const data = await readOrNull<unknown>(path);
+    if (data === null) return null;
+    const answer = (typeof data === 'object' ? data : {}) as { batch?: WireBatch | null; payouts?: unknown };
+    if (!answer.batch) throw new UnexpectedApiResponseError(path);
+    return { batch: answer.batch, payouts: payoutsOf(answer.payouts, path) };
   },
 
   /**

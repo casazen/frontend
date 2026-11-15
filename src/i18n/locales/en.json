@@ -30284,6 +30284,16 @@
       "notFound": "This wire file no longer exists or is not your organization's.",
       "paidComplete": "Marked as paid by the administrator. CasaZen does not check that the bank carried out the transfers.",
       "paidCompleteOn": "Marked as paid by the administrator on {{date}}. CasaZen does not check that the bank carried out the transfers.",
+      "payouts": {
+        "count_one": "{{count}} payment in the file",
+        "count_other": "{{count}} payments in the file",
+        "empty": "This file has no list of payments: it was created before files were made from confirmed payments.",
+        "hide": "Hide the payments of the file",
+        "loadError": "Could not load the payments of this file",
+        "loading": "Loading the payments of the file...",
+        "reversed": "Cancelled after the file was created",
+        "show": "Show the payments of the file"
+      },
       "totalAmount": "Total amount",
       "transferCount": "Number of transfers"
     },
@@ -30310,15 +30320,13 @@
     "createdTotal": "Total:",
     "createError": "Could not create the {{currency}} file",
     "currencyGroup": "Payments in {{currency}}",
-    "currencyGroupNone": "Payments with no currency",
     "currencyMissing": "(currency not given)",
-    "currencyMissingGroup": "These payments do not give their currency: they cannot be paid with a file until it is given.",
-    "currencyNotSupported": "Wire transfers are only made in Swiss francs (CHF) or euro (EUR): payments in {{currency}} cannot be paid with this file.",
     "description": "Create the bank file (ISO 20022) that pays the owners: choose the confirmed payments, give the execution day and upload the file to your bank. CasaZen does not make the transfers.",
     "executionDate": "Execution day",
     "executionDateHint": "The day you ask the bank to carry out the transfers: today or later.",
     "executionDateInvalid": "Choose a day from today on.",
     "loadError": "Could not load the payments to the owners",
+    "loadErrorCurrency": "Could not load the payments in {{currency}}",
     "loading": "Loading wire transfers...",
     "noPayouts": "No payments to send to the bank",
     "noPayoutsDescription": "Payments appear here once you confirm them in the month-end close of the owners.",
@@ -30327,11 +30335,15 @@
     "notFoundPayout": "We cannot find one of the chosen payments: the list has been updated.",
     "openClose": "Go to the month-end close",
     "openOwner": "Open the financial details",
-    "payoutsHint": "The confirmed payments to the owners, for the net amount after the withholding. A payment goes into one file only: if you choose one that is already in a file, CasaZen refuses everything and creates nothing.",
+    "payoutsHint": "The confirmed payments to the owners that are not in any file yet, for the net amount after the withholding. A payment goes into one file only: once you put it in a file, it leaves this list.",
+    "refused": {
+      "description": "The list covers the owners of the whole organization and the server only shows it with access to every property. If your access is limited to some properties, ask an administrator to open this page.",
+      "title": "These payments are not available to your access"
+    },
     "row": {
-      "iban": "IBAN {{end}}",
       "ibanMissing": "The owner has no IBAN: the payment cannot be made until you add it.",
-      "paidOn": "Payment of {{date}}"
+      "ibanMissingBadge": "IBAN missing",
+      "period": "Statement of {{period}}"
     },
     "selectGroup": "Choose all",
     "selectPayouts": "Payments to send to the bank",
