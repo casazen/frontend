@@ -183,6 +183,55 @@ describe('RevealSecretDialog, the controlled opening of a credential of the supp
     expect(onClosed).not.toHaveBeenCalled();
   });
 
+  // The minute does not depend on one clock being right: the timer of the minute counts its own time, the clock of the page can be ahead of it (a machine that slept, a clock that
+  // was set) or behind it (a timer that fires a hair early), and the values must not stay on screen past the minute whichever it is.
+  it('RevealSecretDialog_TheClockOfThePageIsAheadOfTheTimer_HidesTheValuesWithTheNextTickAndNotAMinuteLater', async () => {
+    renderDialog();
+    await openWithReason();
+    expect(valuesOnScreen()).toBeInTheDocument();
+
+    // The clock jumps past the minute while the timer of the minute still has all its time to run: nothing fires by itself, the countdown reads zero at its next tick.
+    act(() => {
+      vi.setSystemTime(Date.now() + 61_000);
+    });
+    await advance(1_000);
+
+    expect(valuesOnScreen()).not.toBeInTheDocument();
+    for (const secret of SECRETS) expect(document.body.textContent).not.toContain(secret);
+    expect(screen.getByTestId('assist-reveal-hidden')).toBeInTheDocument();
+  });
+
+  it('RevealSecretDialog_TheTimerFiresBeforeTheClockSaysTheMinuteIsOver_WaitsForWhatIsLeftInsteadOfGivingUp', async () => {
+    renderDialog();
+    await openWithReason();
+
+    // The clock of the page is half a second behind the timer: when the minute of the timer is over, the clock says it is not.
+    act(() => {
+      vi.setSystemTime(Date.now() - 500);
+    });
+    await advance(60_000);
+    expect(valuesOnScreen()).toBeInTheDocument();
+    await advance(1_000);
+
+    expect(valuesOnScreen()).not.toBeInTheDocument();
+    for (const secret of SECRETS) expect(document.body.textContent).not.toContain(secret);
+  });
+
+  it('RevealSecretDialog_TheTabComesBackAfterTheMinute_HidesTheValuesAtOnce', async () => {
+    renderDialog();
+    await openWithReason();
+
+    // A hidden tab runs no timer: the clock is past the minute when the tab is shown again, and the values go before the next tick.
+    act(() => {
+      vi.setSystemTime(Date.now() + 61_000);
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    await settle();
+
+    expect(valuesOnScreen()).not.toBeInTheDocument();
+    for (const secret of SECRETS) expect(document.body.textContent).not.toContain(secret);
+  });
+
   it('RevealSecretDialog_TheServerSaysAShorterSpan_HidesThemWhenThatSpanIsOver', async () => {
     vi.mocked(onboardingAssistApi.revealSecret).mockResolvedValue(opened({ visibleUntil: '2026-11-15T10:00:20Z' }));
     renderDialog();

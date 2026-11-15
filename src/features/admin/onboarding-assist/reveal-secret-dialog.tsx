@@ -31,19 +31,30 @@ interface RevealedValuesProps {
 
 /**
  * The values of an opening, for as long as they are meant to stay: each one with a button that copies it, and the seconds that are left. They are not in an input and they
- * are not announced by the countdown (it is `aria-live="off"`: a tick a second would read out for a minute). When the minute is over (`endsAt`, a timer and a check when the tab
- * comes back to the front, since a hidden tab may run its timers late) the caller drops them.
+ * are not announced by the countdown (it is `aria-live="off"`: a tick a second would read out for a minute). When the minute is over (`endsAt`) the caller drops them, and it does not
+ * depend on one clock being right: whichever says so first, in a second at most, ends it. The timer of the minute (set again for what is left if it fires early, against the clock
+ * of the page, and it fires late on a machine that slept), the tick that draws the countdown, and the tab coming back to the front (a hidden tab may run its timers late).
  */
 function RevealedValues({ values, endsAt, onEnd }: RevealedValuesProps) {
   const { t } = useTranslation();
   const now = useNow(1000);
   const seconds = Math.max(0, Math.ceil((endsAt - now) / 1000));
 
+  // The countdown reached zero: the values go with it, even if the timer of the minute is still to fire (it counts its own time, not the one of the clock).
   useEffect(() => {
+    if (now >= endsAt) onEnd();
+  }, [now, endsAt, onEnd]);
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
     const check = () => {
-      if (Date.now() >= endsAt) onEnd();
+      clearTimeout(timer);
+      const left = endsAt - Date.now();
+      if (left <= 0) onEnd();
+      // Early, or asked by a tab that came back too soon: the rest of the minute is waited for, never given up.
+      else timer = setTimeout(check, left);
     };
-    const timer = setTimeout(check, Math.max(0, endsAt - Date.now()));
+    timer = setTimeout(check, Math.max(0, endsAt - Date.now()));
     document.addEventListener('visibilitychange', check);
     return () => {
       clearTimeout(timer);
