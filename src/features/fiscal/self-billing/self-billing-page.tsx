@@ -303,7 +303,11 @@ function DrawerBody({ id, onClose }: { id: string; onClose: () => void }) {
   const busy = useSelfBillingBusy([id]);
   const [dialog, setDialog] = useState<'issue' | 'discard' | null>(null);
   const detail = getHttpStatus(query.error) === 404 || query.isError ? undefined : query.data;
-  const canWriteDocuments = hasPermission('short-rent', 'payment.write') && isFeatureEnabled(flags, 'fiscalDocumentIssuance');
+  // What the API asks. The TD17 themselves (the issue, the discard) are behind `agency.invoice.manage`, which is the role that opens this page (`AgencyFinanceGate`: the owner and the administrators), and the flag of the
+  // issuance: nothing of the rental areas is asked of them (an administrator of the account may hold no membership of those). The sending of an issued TD17 to the SDI is on the endpoints of the fiscal documents, which
+  // ask `payment.write`: the panel offers it only to who holds it.
+  const canManage = isFeatureEnabled(flags, 'fiscalDocumentIssuance');
+  const canSend = canManage && hasPermission('short-rent', 'payment.write');
 
   let content;
   if (getHttpStatus(query.error) === 404) {
@@ -377,7 +381,7 @@ function DrawerBody({ id, onClose }: { id: string; onClose: () => void }) {
         {detail.ruleVersion ? <p className="text-xs text-foreground/70">{t('selfBilling.detail.rule', { version: detail.ruleVersion })}</p> : null}
 
         <div className="flex flex-wrap items-center gap-2" data-testid="self-billing-actions">
-          {draft && canWriteDocuments ? (
+          {draft && canManage ? (
             <>
               <Button type="button" size="sm" disabled={busy} onClick={() => setDialog('issue')} data-testid="self-billing-issue">
                 {t('selfBilling.detail.issue.button')}
@@ -405,7 +409,7 @@ function DrawerBody({ id, onClose }: { id: string; onClose: () => void }) {
           <DocumentSdiPanel
             document={{ id: invoice.id, source: 'CasaZen', status: invoice.status, sdiStatus: invoice.sdiStatus, purpose: 'SelfBilling', kind: 'Invoice', number: invoice.number, issueDate: invoice.issueDate }}
             flags={flags}
-            canWrite={canWriteDocuments}
+            canWrite={canSend}
             onCorrect={() => undefined}
           />
         ) : null}

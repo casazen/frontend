@@ -3,18 +3,29 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import { createElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
+import * as fiscalApi from '@/api/fiscal-documents.api';
 import * as api from '@/api/self-billing.api';
 import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import i18n from '@/i18n/config';
-import type { SelfBillingDetail, SelfBillingGeneration, SelfBillingListItem } from '@/types';
+import type { FiscalDocumentSdiState, SelfBillingDetail, SelfBillingGeneration, SelfBillingListItem } from '@/types';
 import { SelfBillingPage } from '../self-billing-page';
 
-const env = vi.hoisted(() => ({ contexts: [] as { contextKey: string; roleKey: string }[] }));
+const env = vi.hoisted(() => ({ contexts: [] as { contextKey: string; roleKey: string; permissions?: string[] }[], flags: {} as Record<string, boolean> }));
 
 vi.mock('@/api/self-billing.api', () => ({ listSelfBilling: vi.fn(), getSelfBilling: vi.fn(), createSelfBillingDrafts: vi.fn(), issueSelfBilling: vi.fn(), discardSelfBilling: vi.fn() }));
-vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ contexts: env.contexts, hasPermission: () => true }) }));
+vi.mock('@/api/fiscal-documents.api', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/api/fiscal-documents.api')>();
+  return { ...actual, getDocumentSdi: vi.fn() };
+});
+// As the provider of the workspace answers: a permission is held only in a context the person has, and only if its role carries it (no context, no permission). No hasPermission that says yes to everything.
+vi.mock('@/hooks/use-workspace', () => ({
+  useWorkspace: () => ({
+    contexts: env.contexts,
+    hasPermission: (contextKey: string, permission: string) => env.contexts.find((context) => context.contextKey === contextKey)?.permissions?.includes(permission) === true,
+  }),
+}));
 vi.mock('@/hooks/use-agency-plan', () => ({ useAgencyPlan: () => ({ isAgency: true, isLoading: false, failed: false, retry: vi.fn() }) }));
-vi.mock('@/hooks/use-feature-flags', () => ({ useFeatureFlags: () => ({ flags: { ...DEFAULT_FEATURE_FLAGS, fiscalDocumentIssuance: true }, isLoading: false }) }));
+vi.mock('@/hooks/use-feature-flags', () => ({ useFeatureFlags: () => ({ flags: { ...DEFAULT_FEATURE_FLAGS, fiscalDocumentIssuance: true, ...env.flags }, isLoading: false }) }));
 vi.mock('@/components/layout/page-header', () => ({ PageHeader: ({ title }: { title: string }) => createElement('h1', null, title) }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
 
@@ -24,6 +35,7 @@ const list = vi.mocked(api.listSelfBilling);
 const read = vi.mocked(api.getSelfBilling);
 const prepare = vi.mocked(api.createSelfBillingDrafts);
 const issue = vi.mocked(api.issueSelfBilling);
+const sdi = vi.mocked(fiscalApi.getDocumentSdi);
 
 /** Intl writes a no-break space between a figure and its currency: the page text is compared with plain spaces. */
 const plain = (value: string) => value.replace(/\s/g, ' ');
@@ -60,6 +72,19 @@ const detail = (overrides: Partial<SelfBillingDetail> = {}): SelfBillingDetail =
   ...overrides,
 });
 
+/** The state towards the SDI the server answers for an issued TD17 that waits to be sent. */
+const sdiState = (documentId: string): FiscalDocumentSdiState => ({
+  documentId,
+  status: 'to_send',
+  errorCode: null,
+  reason: null,
+  statusUpdatedAt: null,
+  providerConfigured: true,
+  canSubmit: true,
+  canDeclare: true,
+  canCorrect: false,
+});
+
 const generation = (overrides: Partial<SelfBillingGeneration> = {}): SelfBillingGeneration => ({
   year: 2026,
   month: 10,
@@ -81,7 +106,9 @@ function renderPage() {
 
 beforeEach(async () => {
   vi.resetAllMocks();
+  // The administrator of the account, with no membership of the rental areas: the person the page is for.
   env.contexts = [{ contextKey: 'account', roleKey: 'org_admin' }];
+  env.flags = {};
   await i18n.changeLanguage('it');
   list.mockResolvedValue([item()]);
 });
@@ -177,5 +204,43 @@ describe('the self-billed invoices (TD17) follow the role, the money and the con
     expect(within(report).getByTestId('self-billing-report-failed')).toHaveTextContent('Portale Due Ltd');
     expect(prepare).toHaveBeenCalledTimes(1);
     expect(prepare.mock.calls[0][0]).toMatch(/^\d{4}-\d{2}$/);
+  });
+
+  it('SelfBillingPage_AnAdministratorOfTheAccountWithNoRentalMembership_CanIssueAndDiscardADraft', async () => {
+    // The door of the page is the role (the owner or an administrator of the organization), and the API asks `agency.invoice.manage` for the TD17: nothing of the rental areas.
+    read.mockResolvedValue(detail());
+    renderPage();
+
+    fireEvent.click(await screen.findByTestId('self-billing-row-open'));
+
+    expect(await screen.findByTestId('self-billing-issue')).toBeEnabled();
+    expect(screen.getByTestId('self-billing-discard')).toBeEnabled();
+  });
+
+  it('SelfBillingPage_TheSendingOfAnIssuedInvoiceToTheSdi_IsOfferedOnlyToWhoMayWritePayments', async () => {
+    env.flags = { sdiSubmission: true };
+    const issued = item({ status: 'Issued', number: 'AF-2026/1', issueDate: '2026-11-10', sdiStatus: 'to_send' });
+    read.mockResolvedValue(detail({ invoice: issued, hasXml: true }));
+    sdi.mockResolvedValue(sdiState(issued.id));
+
+    // An administrator of the account with no rental membership reads the state and cannot send or declare: the endpoints of the sending ask `payment.write`.
+    renderPage();
+    fireEvent.click(await screen.findByTestId('self-billing-row-open'));
+    const panel = await screen.findByTestId('fiscal-document-sdi');
+    expect(await within(panel).findByTestId('fiscal-document-sdi-state')).toHaveAttribute('data-state', 'toSend');
+    expect(within(panel).queryByTestId('fiscal-document-sdi-submit')).toBeNull();
+    expect(within(panel).queryByTestId('fiscal-document-sdi-declare')).toBeNull();
+    cleanup();
+
+    // The same person, with the right to write payments in a rental area, is offered both.
+    env.contexts = [
+      { contextKey: 'account', roleKey: 'org_admin' },
+      { contextKey: 'short-rent', roleKey: 'property_manager', permissions: ['payment.read', 'payment.write'] },
+    ];
+    renderPage();
+    fireEvent.click(await screen.findByTestId('self-billing-row-open'));
+    const writer = await screen.findByTestId('fiscal-document-sdi');
+    expect(await within(writer).findByTestId('fiscal-document-sdi-submit')).toBeEnabled();
+    expect(within(writer).getByTestId('fiscal-document-sdi-declare')).toBeEnabled();
   });
 });
