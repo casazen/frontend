@@ -153,8 +153,13 @@ export function OctoratePanelStep({ kind, propertyId, channelCode, channelName, 
 
   const advanced = useRef(false);
   useEffect(() => {
+    // The step is not done (any more): a request support closed was reopened («Non funziona»), and its next closing is told and followed again.
+    if (phase !== 'recovered') {
+      advanced.current = false;
+      return;
+    }
     // How the step was closed decides what is said (`outcomeUnknown`): nothing happens until it is known.
-    if (phase !== 'recovered' || advanced.current || !sawOpen.current || outcomeUnknown) return;
+    if (advanced.current || !sawOpen.current || outcomeUnknown) return;
     advanced.current = true;
     // The window CasaZen opened has done its job, however the step was closed.
     closeWindow();

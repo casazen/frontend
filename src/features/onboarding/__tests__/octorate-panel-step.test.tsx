@@ -700,6 +700,30 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
       expect(screen.queryByTestId('arrived')).not.toBeInTheDocument();
     });
 
+    it('OctoratePanelStep_AStepSupportDeclaredIsReopenedAndThenVerified_IsToldAndFollowedAgainAndGoesOnByItself', async () => {
+      const { client } = await openPanel();
+      server = panelStep({ status: 'confirmed', lastVerificationOutcome: 'unverifiable', completedAt: doneAt, activityId: null });
+      vi.mocked(onboardingApi.listAssistRequests).mockResolvedValue([assistRequest({ status: 'Done', completedAt: doneAt, outcome: 'declared' })]);
+      act(() => applyNotificationsChange(client, { unreadCount: 1, type: 'assist-declared', entityId: 'r1' }));
+      await waitFor(() => expect(toast.success).toHaveBeenCalledWith(i18n.t('onboardingPlan.panel.state.recoveredDeclared.toast')));
+
+      // «Non funziona»: the request is open again and the step is back with support.
+      server = panelStep({ status: 'assistRequested', lastVerificationOutcome: 'unverifiable', activityId: 'a1' });
+      vi.mocked(onboardingApi.listAssistRequests).mockResolvedValue([assistRequest({ status: 'Requested', hostNote: 'Il portale dice ancora che manca il collegamento.', reopenedAt: doneAt })]);
+      act(() => {
+        void client.invalidateQueries({ queryKey: ['onboarding'] });
+      });
+      await waitFor(() => expect(phase()).toBe('assist'));
+
+      // Support closes it again and this time CasaZen reads the connection: the closing is told and followed again, so the page goes on by itself as for any step CasaZen saw.
+      server = panelStep({ status: 'verified', lastVerificationOutcome: 'verified', completedAt: doneAt, activityId: null });
+      vi.mocked(onboardingApi.listAssistRequests).mockResolvedValue([assistRequest({ status: 'Done', completedAt: doneAt, outcome: 'verified' })]);
+      act(() => applyNotificationsChange(client, { unreadCount: 2, type: 'assist-verified', entityId: 'r1' }));
+
+      expect(await screen.findByTestId('arrived')).toHaveTextContent(partPath('compliance'));
+      expect(toast.success).toHaveBeenCalledWith(i18n.t('onboardingPlan.panel.state.recovered.toast'));
+    });
+
     it('OctoratePanelStep_ConfirmedByThePersonWhileThePageIsOpen_GoesOnByItselfWithTheWordsOfACheckOnceTheRequestsAreRead', async () => {
       const { win } = await openPanel();
 
