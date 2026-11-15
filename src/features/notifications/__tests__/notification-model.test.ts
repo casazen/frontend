@@ -35,6 +35,8 @@ describe('notification model', () => {
       'verification-required',
       // E10/F03/US03/T03: a host asked CasaZen support to do a step («Fallo per me»).
       'assist-requested',
+      // E20/F03/US01/T02: the host reopened a request support closed («Non funziona»), and support closed one of the host's (verified, or declared).
+      'assist-reopened', 'assist-verified', 'assist-declared',
     ];
     for (const type of backend) expect(notificationKind(type).textKey, type).not.toBe('notifications.types.generic');
   });
@@ -70,6 +72,23 @@ describe('notification model', () => {
     expect(notificationKind('assist-requested').textKey).toBe('notifications.types.assistRequested');
     expect(lookup(it_, 'notifications.types.assistRequested')).toContain('«Fallo per me»');
     expect(lookup(en, 'notifications.types.assistRequested')).toContain('«Do it for me»');
+  });
+
+  it('notificationRoute_AssistOutcome_OpensThePlanOfTheActivationForTheHostAndTheQueueWhenTheHostReopens', () => {
+    // The push of «Fatto» is for the administrators of the org: the entity is the request (no property, no person), so the click opens the plan, where the part shows where it stands.
+    for (const type of ['assist-verified', 'assist-declared']) {
+      expect(notificationRoute({ type, entityId: 'ar-1' }, 'short-rent'), type).toBe('/app/short-rent/onboarding');
+    }
+    expect(ONBOARDING_ROUTES.find((route) => route.path === '/app/short-rent/onboarding')?.context).toBe('short-rent');
+    // «Non funziona» is for the platform staff: the queue, as for a new request.
+    expect(notificationRoute({ type: 'assist-reopened', entityId: 'ar-1' }, 'admin')).toBe('/app/admin/onboarding-assist');
+    // The sentences are in both languages, say what happened, and never name the supplier of the channel manager.
+    for (const [type, key] of [['assist-verified', 'assistVerified'], ['assist-declared', 'assistDeclared'], ['assist-reopened', 'assistReopened']] as const) {
+      expect(notificationKind(type).textKey).toBe(`notifications.types.${key}`);
+      for (const locale of [it_, en]) expect(String(lookup(locale, `notifications.types.${key}`)), `${type}`).not.toMatch(/octorate/i);
+    }
+    expect(lookup(it_, 'notifications.types.assistDeclared')).toMatch(/dichiara/i);
+    expect(lookup(it_, 'notifications.types.assistVerified')).toMatch(/verificato/i);
   });
 
   it('notificationRoute_ServiceRequest_GoesToTheInboxForASupplierAndToMyAppsOfTheMarketplaceForAHost', () => {

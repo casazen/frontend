@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Bell, CheckCheck, Loader2 } from 'lucide-react';
@@ -9,6 +9,7 @@ import { formatAbsolute, formatRelative } from '@/components/shared/timeline/tim
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { isDemoMode } from '@/config/demo.config';
+import { WorkspaceContext } from '@/contexts/workspace-context';
 import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
 import {
@@ -91,13 +92,15 @@ function LiveNotificationBell({ userId, getAccessToken }: { userId: string; getA
   const { t } = useTranslation();
   const navigate = useNavigate();
   const shell = useAppShell();
+  // What the person may do, when the workspace is there: a click that leads to a page that needs a permission falls back to one they can open (the tax paid online opens the wizard of the booking).
+  const hasPermission = useContext(WorkspaceContext)?.hasPermission;
   const [open, setOpen] = useState(false);
 
   // A new notification is told on screen as it arrives, with the way to open what it is about: a host with the app open must not
   // find out from the badge alone. The same event (type and entity) is one pop-up however many times it is sent.
   const announceNew = (change: NotificationsChange) => {
     if (change.type === null) return;
-    const route = notificationRoute({ type: change.type, entityId: change.entityId }, shell?.contextKey ?? null);
+    const route = notificationRoute({ type: change.type, entityId: change.entityId }, shell?.contextKey ?? null, hasPermission);
     toast(t(notificationKind(change.type).textKey), {
       id: `notification:${change.type}:${change.entityId ?? ''}`,
       duration: NEW_NOTIFICATION_TOAST_MS,
@@ -126,7 +129,7 @@ function LiveNotificationBell({ userId, getAccessToken }: { userId: string; getA
   const openNotification = (notification: InAppNotification) => {
     if (notification.readAt === null) markRead.mutate(notification.id);
     setOpen(false);
-    const route = notificationRoute(notification, shell?.contextKey ?? null);
+    const route = notificationRoute(notification, shell?.contextKey ?? null, hasPermission);
     if (route) void navigate(route);
   };
 

@@ -14,7 +14,8 @@ import type {
 import type { StayGuestSubmit } from '@/types/public-checkin.types';
 
 const WIZARD_KEY = 'checkin-wizard';
-const TOURIST_TAX_KEY = 'stay-tourist-tax';
+/** The tourist tax of a stay (`[TOURIST_TAX_KEY, bookingId]`): the live refresh of a tax paid online reads it again (`tourist-tax-paid`). */
+export const TOURIST_TAX_KEY = 'stay-tourist-tax';
 const MUNICIPALITY_RATE_KEY = 'municipality-tourist-tax-rate';
 
 /**
@@ -121,12 +122,19 @@ export function useStayTouristTax(bookingId: string, enabled = true) {
   });
 }
 
-/** Writes the answer of a change of the tax (exemptions, collector, rate) in the caches that show it. */
+/**
+ * Writes the answer of a change of the tax (exemptions, collector, rate) in the caches that show it. The answer of a write has no `collection` block (the server sends it only on the
+ * read), so the block already on screen stays until the tax is read again: a change of an exemption or of the collector moves what is still to collect, so when there is a block the
+ * tax is read again at once. With the flag of the collection off there is no block and nothing more is asked.
+ */
 function useApplyTax(bookingId: string) {
   const queryClient = useQueryClient();
   return (tax: StayTouristTax) => {
-    queryClient.setQueryData<StayTouristTax>([TOURIST_TAX_KEY, bookingId], tax);
+    const key = [TOURIST_TAX_KEY, bookingId];
+    const collection = tax.collection ?? queryClient.getQueryData<StayTouristTax>(key)?.collection;
+    queryClient.setQueryData<StayTouristTax>(key, collection ? { ...tax, collection } : tax);
     queryClient.setQueryData<CheckInWizardState | undefined>([WIZARD_KEY, bookingId], (state) => (state ? { ...state, tax } : state));
+    if (collection) void queryClient.invalidateQueries({ queryKey: key });
   };
 }
 
@@ -147,6 +155,22 @@ export function useSetTouristTaxCollector(bookingId: string) {
   return useMutation({
     mutationFn: (collector: TouristTaxCollector | null) => checkInWizardApi.setCollector(bookingId, collector),
     onSuccess: apply,
+  });
+}
+
+/**
+ * «Pagata in struttura» (E25/F01/US01/T01): the host records that the guest paid the tourist tax at the property, so the guest can no longer pay it online too (the open payment of the
+ * stay is cancelled by the server). The answer is the new collection block, written into the tax of the booking, which is then read again.
+ */
+export function useRecordTouristTaxPaidAtProperty(bookingId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => checkInWizardApi.recordTouristTaxPaidAtProperty(bookingId),
+    onSuccess: (collection) => {
+      queryClient.setQueryData<StayTouristTax>([TOURIST_TAX_KEY, bookingId], (tax) => (tax ? { ...tax, collection } : tax));
+      void queryClient.invalidateQueries({ queryKey: [TOURIST_TAX_KEY, bookingId] });
+    },
   });
 }
 

@@ -1,5 +1,6 @@
 import { ONBOARDING_PLAN_PATH } from '@/lib/onboarding-parts';
 import type {
+  AssistOutcome,
   AssistRequest,
   AssistRequestContext,
   OnboardingNeedCode,
@@ -279,4 +280,40 @@ export function findOpenAssist(
       (request.channelCode ?? null) === (channelCode ?? null) &&
       (request.status === 'Requested' || request.status === 'InProgress'),
   );
+}
+
+/** The instant a request was closed, or `0` when it has none the page can read: what the most recent one of a step is told by. */
+function closedAt(request: Pick<AssistRequest, 'completedAt' | 'updatedAt'>): number {
+  const at = Date.parse(request.completedAt ?? request.updatedAt);
+  return Number.isFinite(at) ? at : 0;
+}
+
+/**
+ * The request of the «Do it for me» that support marked done for a step (E20/F03/US01/T02): the most recent one when there are several, as a step can be asked, closed, reopened
+ * and closed again. A step is the context, the property and the channel, as for {@link findOpenAssist}. A request that was cancelled is no outcome and is never returned.
+ */
+export function findDoneAssist(
+  requests: readonly AssistRequest[] | undefined,
+  context: AssistRequestContext,
+  propertyId?: string | null,
+  channelCode?: string | null,
+): AssistRequest | undefined {
+  return requests
+    ?.filter(
+      (request) =>
+        request.context === context &&
+        (request.propertyId ?? null) === (propertyId ?? null) &&
+        (request.channelCode ?? null) === (channelCode ?? null) &&
+        request.status === 'Done',
+    )
+    .sort((first, second) => closedAt(second) - closedAt(first))[0];
+}
+
+/**
+ * What a request that is done tells the host: `verified` only when the server says CasaZen read the connection on the panel. Anything else (`declared`, a request closed before
+ * the outcome was recorded, a word this version does not know) is the support's word and is shown as that, never as a check CasaZen did: a state that is not checked is never
+ * shown as checked.
+ */
+export function assistOutcomeOf(request: Pick<AssistRequest, 'outcome'>): AssistOutcome {
+  return request.outcome === 'verified' ? 'verified' : 'declared';
 }

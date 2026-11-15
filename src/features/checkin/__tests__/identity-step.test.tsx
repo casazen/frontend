@@ -453,6 +453,26 @@ describe('IdentityStep: the selfie (AC-NF50-1, ADR-013-R11, R12)', () => {
     expect(screen.queryByTestId('identity-code-email')).not.toBeInTheDocument();
   });
 
+  it('IdentityStep_PassedWithTheCodeHeldBackForTheTouristTax_SaysTheCodeComesAfterThePaymentAndNeverThatItWasSent', async () => {
+    stubCamera();
+    vi.mocked(publicCheckinApi.postSelfie).mockResolvedValue({
+      result: 'ok',
+      guidanceCodes: [],
+      attemptsRemaining: 2,
+      operatorPathOpen: true,
+      lockCode: null,
+      lockCodeHeld: 'tourist_tax_due',
+    });
+    renderStep(selfieState);
+
+    await takeAndSendSelfie();
+
+    expect(await screen.findByTestId('identity-code-held')).toHaveTextContent(i18n.t('checkin.identity.result.ok.codeHeldTouristTax'));
+    expect(screen.queryByTestId('identity-no-code')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('identity-lock-code')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('identity-code-email')).not.toBeInTheDocument();
+  });
+
   it('IdentityStep_PassedAndTheLinkOpenedAgain_SaysVerifiedWithoutACode', () => {
     renderStep(state({ step: 'done', result: 'ok' }));
 

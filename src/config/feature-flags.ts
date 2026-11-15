@@ -23,7 +23,8 @@ export type FeatureFlagKey =
   | 'accountantPackage'
   | 'sdiSubmission'
   | 'routines'
-  | 'purgeDocumentsAfterReceipt';
+  | 'purgeDocumentsAfterReceipt'
+  | 'touristTaxOnlinePayment';
 
 export type FeatureFlags = Record<FeatureFlagKey, boolean>;
 
@@ -172,6 +173,14 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * touched by it. While it is off nothing changes: the dialog of the receipt says nothing about a deletion.
    */
   purgeDocumentsAfterReceipt: false,
+  /**
+   * The tourist tax paid online in the guest check-in (backend `TouristTaxOnlinePayment`, E25/F01, NF-119, decision O12), off until the product owner turns it on in the test
+   * environment. It decides whether the guest page asks for the tax of the stay (`GET api/public/checkin/{token}/tourist-tax`) and may show the step «Tassa di soggiorno»; the backend
+   * adds that a guest pays only where the organization turned its own setting on and its account takes payments (409 otherwise: the page then has no such step). While it is off the guest page
+   * is the page it always was, nothing asks the server about the tax, and the backend answers 404 to its endpoints and sends no `collection` block to the host (the tax step of the host
+   * wizard then shows no state of the collection).
+   */
+  touristTaxOnlinePayment: false,
 };
 
 /** Known flags from the API response; anything but `true` is off. */

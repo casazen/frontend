@@ -103,6 +103,11 @@ export async function guestCompletesCheckIn(page: Page, link: string): Promise<v
   // Place of issue searches comuni and states. The golden-journey seed has Stati, not Comuni, so the official row is Italia.
   await chooseOfficialCode(page, 'guest-0-documentIssuePlaceName', 'ITALIA', /^ITALIA\b/i, undefined, seenCodes);
   await page.getByRole('button', { name: 'Avanti' }).click();
+  // An organization that offers the tourist tax online (its own setting, flag `touristTaxOnlinePayment`) has the step «Tassa di soggiorno» here, between the document and the invoice:
+  // the guest goes on without paying (the organization does not ask for the tax before the lock code in this journey), so turning the setting on for the test organization breaks nothing.
+  const taxStep = page.getByTestId('checkin-tourist-tax-step');
+  await expect(taxStep.or(page.getByTestId('checkin-invoice-step'))).toBeVisible();
+  if (await taxStep.isVisible()) await page.getByRole('button', { name: 'Avanti' }).click();
   // Step 4 is «Ti serve la fattura?» (FIS-01): optional, so the guest goes on without an answer and nothing about the invoice is sent.
   await expect(page.getByTestId('checkin-invoice-step')).toBeVisible();
   await page.getByRole('button', { name: 'Avanti' }).click();

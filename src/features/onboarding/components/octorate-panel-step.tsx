@@ -1,15 +1,22 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
+import { useWorkspace } from '@/hooks/use-workspace';
 import { getProblemMessage } from '@/lib/api-errors';
 import {
+  assistOutcomeOf,
+  findDoneAssist,
   handoffPhase,
+  isPanelStepDone,
   isPanelStepOpen,
   panelAssistContext,
   panelPartOf,
   panelTextKind,
   findPanelStep,
 } from '@/lib/onboarding-panel';
+import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
+import { useAssistRequests } from '@/queries/use-onboarding-assist';
 import { useProperty } from '@/queries/use-properties';
 import {
   useConfirmPanelStep,
@@ -101,6 +108,22 @@ export function OctoratePanelStep({ kind, propertyId, channelCode, channelName, 
   const followed = usePanelStepStatus(stepId);
   const step: PanelStep | undefined = followed.data ?? existing;
   const open = isPanelStepOpen(step);
+  const stepDone = isPanelStepDone(step);
+
+  // A step that is done because support said so is not one CasaZen saw: the request support closed for it is `declared` (E20/F03/US02/T01). The list is the one «Fallo per me» reads
+  // (same key, one request), and is asked only where that button is there at all (the flag, the organization administrator).
+  const { contexts } = useWorkspace();
+  const { flags } = useFeatureFlags();
+  const assistsAsked = flags.octorateOnboarding && isOrgBillingAdmin(contexts);
+  const assists = useAssistRequests({ enabled: assistsAsked });
+  // A step is done in two ways: CasaZen read the connection (`verified`, nothing to ask), or somebody said it is done (`confirmed`: the person after a check that could not tell, or
+  // support, whose request is then `declared`). Only the second needs that request, so only then the words and the pop-up wait until the list has been read and is not being read again
+  // (the live notice reads the steps and the requests at the same time, and the steps may arrive first, when the request still says «in progress»). A list that cannot be read leaves
+  // it unknown: the screen then says neither that CasaZen checked nor that support declared it, and the person goes on with «Continua».
+  const confirmed = step?.status === 'confirmed';
+  const outcomeUnknown = confirmed && assistsAsked && !(assists.isSuccess && !assists.isFetching);
+  const closedAssist = confirmed && !outcomeUnknown ? findDoneAssist(assists.data, panelAssistContext(kind), propertyId, channelCode) : undefined;
+  const declaredBySupport = closedAssist !== undefined && assistOutcomeOf(closedAssist) === 'declared';
 
   const handoff = useExternalHandoff({
     start: async () => {
@@ -130,13 +153,26 @@ export function OctoratePanelStep({ kind, propertyId, channelCode, channelName, 
 
   const advanced = useRef(false);
   useEffect(() => {
-    if (phase !== 'recovered' || advanced.current || !sawOpen.current) return;
+    // The step is not done (any more): a request support closed was reopened («Non funziona»), and its next closing is told and followed again.
+    if (phase !== 'recovered') {
+      advanced.current = false;
+      return;
+    }
+    // How the step was closed decides what is said (`outcomeUnknown`): nothing happens until it is known.
+    if (advanced.current || !sawOpen.current || outcomeUnknown) return;
     advanced.current = true;
-    // CasaZen saw the connection: the window it opened has done its job, and the person is taken on, with nothing to press.
+    // The window CasaZen opened has done its job, however the step was closed.
     closeWindow();
+    if (declaredBySupport) {
+      // Support said it is done and CasaZen could not check: the pop-up says that and never «verificato», and the person is not taken on by itself: the page tells whose word it is,
+      // with «Non funziona» under it, and «Continua» goes on when the person has read it.
+      toast.success(t('onboardingPlan.panel.state.recoveredDeclared.toast'));
+      return;
+    }
+    // CasaZen saw the connection: the person is taken on, with nothing to press.
     toast.success(t('onboardingPlan.panel.state.recovered.toast'));
     onRecovered?.(step);
-  }, [phase, closeWindow, onRecovered, step, t]);
+  }, [phase, outcomeUnknown, declaredBySupport, closeWindow, onRecovered, step, t]);
 
   const openError = handoff.error ? (getProblemMessage(handoff.error, t) ?? t('onboardingPlan.panel.errors.open')) : null;
   const confirmError = confirmStep.isError ? (getProblemMessage(confirmStep.error, t) ?? t('onboardingPlan.panel.errors.confirm')) : null;
@@ -160,7 +196,18 @@ export function OctoratePanelStep({ kind, propertyId, channelCode, channelName, 
       onContinue={() => onRecovered?.(step)}
       onSaveAndExit={onSaveAndExit}
       assistFirst={assistFirst}
-      assist={<AssistRequestButton part={panelPartOf(kind)} context={panelAssistContext(kind)} propertyId={propertyId} channelCode={channelCode} primary={assistFirst} />}
+      declaredBySupport={declaredBySupport}
+      outcomeUnknown={outcomeUnknown}
+      assist={
+        <AssistRequestButton
+          part={panelPartOf(kind)}
+          context={panelAssistContext(kind)}
+          propertyId={propertyId}
+          channelCode={channelCode}
+          primary={assistFirst}
+          stepDone={stepDone}
+        />
+      }
       help={
         <AssistRequestButton
           part={panelPartOf(kind)}
