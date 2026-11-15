@@ -1661,6 +1661,7 @@
       "channelCommissionRulesInvalid": "Una delle percentuali dei portali non è valida. Controlla e riprova.",
       "complianceBookingNotFound": "Non troviamo questo soggiorno.",
       "complianceExportTooLarge": "Nel periodo ci sono più prove di quante ne entrino in un archivio: scegli un periodo più breve.",
+      "complianceProofCoverageInvalid": "Una ricevuta può valere per più immobili solo se sono tutti in Italia, al massimo 500. Togli quelli che non vanno e riprova.",
       "complianceProofDayInvalid": "Il giorno della prova non è valido: scegli un giorno passato.",
       "complianceProofFileInvalid": "Scegli il file della prova: quello che hai caricato è vuoto o non c'è.",
       "complianceProofNotFound": "Non troviamo questa prova: forse non esiste più o non puoi vederla.",
@@ -6952,7 +6953,9 @@
       "retry": "Riprova",
       "section": {
         "body": "Controlla nell'area collegata l'esito dell'invio di questo soggiorno: ti diciamo dove andare e cosa guardare.",
-        "title": "Cassetto Compliance"
+        "thisProperty": "Questo immobile",
+        "title": "Cassetto Compliance",
+        "uploadReceipt": "Carica la ricevuta"
       },
       "target": {
         "booking": "Prenotazione",
@@ -7359,8 +7362,10 @@
       "loadError": "Non riusciamo a caricare le prove e il registro degli invii di questo soggiorno.",
       "loading": "Carico le prove e gli invii…",
       "log": {
+        "doneByCasaZen": "Fatto da CasaZen",
         "kind": {
           "AlloggiatiGuests": "Ospiti alla Questura",
+          "DocumentsDeleted": "Documenti cancellati dopo la ricevuta",
           "IstatPeriod": "Comunicazione ISTAT del periodo",
           "other": "Invio",
           "TouristTaxPeriod": "Imposta di soggiorno del periodo"
@@ -7501,22 +7506,64 @@
       "cancel": "Annulla",
       "chooseMonth": "Scegli il mese",
       "chooseProperty": "Scegli l'immobile",
+      "coverage": {
+        "failed": "Non riusciamo a contare i soggiorni che diventano in regola. Puoi salvare la ricevuta lo stesso.",
+        "failedPurge": "Non riusciamo a contare i soggiorni che diventano in regola. Prima di salvare serve saperlo, perché dopo il salvataggio si cancellano le foto dei documenti degli ospiti: riprova.",
+        "flatLine_one": "{{name}}: {{count}} soggiorno",
+        "flatLine_other": "{{name}}: {{count}} soggiorni",
+        "loading": "Conto i soggiorni che diventano in regola…",
+        "none": "Con questa ricevuta non diventa in regola nessun soggiorno.",
+        "noneHint": "Nel giorno e negli immobili scelti non c'è nessun soggiorno da mettere in regola, oppure il loro invio non è completo. La ricevuta si può salvare lo stesso.",
+        "notFound": "Non troviamo uno degli immobili scelti: potrebbe non esistere più o non essere tuo.",
+        "perFlat": "Soggiorni per immobile",
+        "purge": "Dopo il salvataggio CasaZen cancella le foto dei documenti degli ospiti di questi soggiorni. Non si può annullare. I dati degli ospiti restano.",
+        "retry": "Riprova",
+        "summary_one": "Diventa in regola: {{count}} soggiorno",
+        "summary_other": "Diventano in regola: {{count}} soggiorni"
+      },
       "day": "Giorno della comunicazione",
       "dayHint": "Il giorno in cui è stata inviata, non nel futuro.",
       "dayInvalid": "Scegli un giorno passato, non nel futuro.",
       "description": "PDF, JPG o PNG: il file resta nel tuo archivio privato per cinque anni.",
       "done": "Prova caricata nell'archivio.",
       "failed": "Non siamo riusciti a caricare la prova. Riprova.",
-      "file": "File",
+      "fileChoose": "Scegli il file",
+      "fileChooseAnother": "Scegli un altro file",
+      "fileChosen": "File scelto: {{name}}",
+      "fileDrop": "Trascina qui il file",
       "fileHint": "PDF, JPG o PNG.",
       "fileInvalid": "Il file deve essere un PDF, un JPG o un PNG.",
+      "flats": {
+        "all": "Tutti gli immobili",
+        "current": "{{name}} (questo immobile)",
+        "hint": "Se usi un solo account del portale per più immobili, la ricevuta del giorno li comprende tutti. Solo immobili in Italia.",
+        "legend": "Questa ricevuta vale per",
+        "onlyThis": "Solo questo immobile"
+      },
       "kind": "Cosa dimostra",
       "month": "Mese",
       "open": "Carica una prova",
-      "portalBody": "Entra nel portale, scarica la ricevuta della comunicazione e poi caricala qui sotto.",
+      "outcome": {
+        "close": "Chiudi",
+        "description": "La ricevuta del {{day}} resta nel tuo archivio privato per cinque anni.",
+        "flats": "Vale per",
+        "purge": "CasaZen cancella a breve le foto dei documenti degli ospiti di questi soggiorni. Non si può annullare. I dati degli ospiti restano.",
+        "stays_one": "{{count}} soggiorno è ora in regola.",
+        "stays_other": "{{count}} soggiorni sono ora in regola.",
+        "staysNone": "Nessun soggiorno risulta in regola con questa ricevuta.",
+        "title": "Ricevuta salvata"
+      },
+      "portalBody": "Entra nel portale con il tuo account e cerca la ricevuta: è pronta dal giorno dopo l'invio e resta scaricabile per 30 giorni. Scaricala come PDF.",
       "portalLink": "Apri il portale Alloggiati Web",
       "portalTitle": "Prima prendi la ricevuta",
       "property": "Immobile",
+      "recovery": {
+        "dayBody": "Nel portale scegli il giorno della comunicazione: {{day}}. La ricevuta è una sola per giorno e per account, anche se hai più immobili.",
+        "dayBodyNoDay": "Nel portale scegli il giorno della comunicazione. La ricevuta è una sola per giorno e per account, anche se hai più immobili.",
+        "dayTitle": "Poi scegli il giorno",
+        "fileTitle": "Infine carica il file",
+        "title": "Recupera la ricevuta"
+      },
       "submit": "Carica la prova",
       "title": "Carica una prova"
     }

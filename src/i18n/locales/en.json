@@ -1661,6 +1661,7 @@
       "channelCommissionRulesInvalid": "One of the percentages of the portals is not valid. Check it and try again.",
       "complianceBookingNotFound": "We can't find this stay.",
       "complianceExportTooLarge": "The period holds more proofs than one archive can carry: choose a shorter period.",
+      "complianceProofCoverageInvalid": "A receipt can cover several properties only if they are all in Italy, up to 500. Remove the ones that don't fit and try again.",
       "complianceProofDayInvalid": "The day of the proof is not valid: choose a day in the past.",
       "complianceProofFileInvalid": "Choose the file of the proof: the one you sent is empty or missing.",
       "complianceProofNotFound": "We can't find this proof: it may no longer exist or you may not be able to see it.",
@@ -6952,7 +6953,9 @@
       "retry": "Try again",
       "section": {
         "body": "Check the outcome of this stay's communication in the connected area: we tell you where to go and what to look at.",
-        "title": "Cassetto Compliance"
+        "thisProperty": "This property",
+        "title": "Cassetto Compliance",
+        "uploadReceipt": "Upload the receipt"
       },
       "target": {
         "booking": "Booking",
@@ -7359,8 +7362,10 @@
       "loadError": "We cannot load the proofs and the send log of this stay.",
       "loading": "Loading the proofs and the sends…",
       "log": {
+        "doneByCasaZen": "Done by CasaZen",
         "kind": {
           "AlloggiatiGuests": "Guests to the police",
+          "DocumentsDeleted": "Documents deleted after the receipt",
           "IstatPeriod": "ISTAT communication of the period",
           "other": "Send",
           "TouristTaxPeriod": "Tourist tax of the period"
@@ -7501,22 +7506,64 @@
       "cancel": "Cancel",
       "chooseMonth": "Choose the month",
       "chooseProperty": "Choose the property",
+      "coverage": {
+        "failed": "We couldn't count the stays that become in order. You can still save the receipt.",
+        "failedPurge": "We couldn't count the stays that become in order. We need to know before saving, because the photos of the guests' documents are deleted afterwards: try again.",
+        "flatLine_one": "{{name}}: {{count}} stay",
+        "flatLine_other": "{{name}}: {{count}} stays",
+        "loading": "Counting the stays that become in order…",
+        "none": "No stay becomes in order with this receipt.",
+        "noneHint": "On that day, in the properties you chose, there is no stay to put in order, or their send is not complete. You can still save the receipt.",
+        "notFound": "We can't find one of the properties you chose: it may no longer exist or may not be yours.",
+        "perFlat": "Stays by property",
+        "purge": "After saving, CasaZen deletes the photos of the guests' documents of these stays. This cannot be undone. The guests' data stay.",
+        "retry": "Try again",
+        "summary_one": "{{count}} stay will be in order",
+        "summary_other": "{{count}} stays will be in order"
+      },
       "day": "Day of the communication",
       "dayHint": "The day it was sent, not in the future.",
       "dayInvalid": "Choose a day in the past, not in the future.",
       "description": "PDF, JPG or PNG: the file stays in your private archive for five years.",
       "done": "Proof uploaded to the archive.",
       "failed": "We couldn't upload the proof. Try again.",
-      "file": "File",
+      "fileChoose": "Choose the file",
+      "fileChooseAnother": "Choose another file",
+      "fileChosen": "File chosen: {{name}}",
+      "fileDrop": "Drag the file here",
       "fileHint": "PDF, JPG or PNG.",
       "fileInvalid": "The file must be a PDF, a JPG or a PNG.",
+      "flats": {
+        "all": "All properties",
+        "current": "{{name}} (this property)",
+        "hint": "If you use one portal account for several properties, the receipt of the day covers all of them. Properties in Italy only.",
+        "legend": "This receipt covers",
+        "onlyThis": "Only this property"
+      },
       "kind": "What it proves",
       "month": "Month",
       "open": "Upload a proof",
-      "portalBody": "Sign in to the portal, download the receipt of the communication and then upload it below.",
+      "outcome": {
+        "close": "Close",
+        "description": "The receipt of {{day}} stays in your private archive for five years.",
+        "flats": "It covers",
+        "purge": "CasaZen deletes the photos of the guests' documents of these stays shortly. This cannot be undone. The guests' data stay.",
+        "stays_one": "{{count}} stay is now in order.",
+        "stays_other": "{{count}} stays are now in order.",
+        "staysNone": "No stay is in order with this receipt.",
+        "title": "Receipt saved"
+      },
+      "portalBody": "Sign in to the portal with your account and look for the receipt: it is ready the day after the send and can be downloaded for 30 days. Download it as a PDF.",
       "portalLink": "Open the Alloggiati Web portal",
       "portalTitle": "First get the receipt",
       "property": "Property",
+      "recovery": {
+        "dayBody": "In the portal choose the day of the communication: {{day}}. There is one receipt for each day and each account, even when you have several properties.",
+        "dayBodyNoDay": "In the portal choose the day of the communication. There is one receipt for each day and each account, even when you have several properties.",
+        "dayTitle": "Then choose the day",
+        "fileTitle": "Finally upload the file",
+        "title": "Retrieve the receipt"
+      },
       "submit": "Upload the proof",
       "title": "Upload a proof"
     }

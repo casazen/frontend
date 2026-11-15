@@ -13,6 +13,12 @@ export type ComplianceProofKind = 'AlloggiatiReceipt' | 'IstatProof' | 'TouristT
 /** The kinds of proof, in the order the page offers them. */
 export const COMPLIANCE_PROOF_KINDS: readonly ComplianceProofKind[] = ['AlloggiatiReceipt', 'IstatProof', 'TouristTaxDeclaration', 'TouristTaxPayment'];
 
+/** A flat a receipt covers (`ComplianceCoveredPropertyDto`): its id and its name. */
+export interface ComplianceCoveredProperty {
+  id: string;
+  name: string;
+}
+
 /** One proof CasaZen holds (`GET /api/compliance/archive`). It names no guest: a property, a kind, a day or a month, where it comes from, until when it is kept. */
 export interface ComplianceArchiveEntry {
   id: string;
@@ -31,6 +37,13 @@ export interface ComplianceArchiveEntry {
   contentType: string;
   /** The path of the API a proof is downloaded from: it needs the token of the caller, so it is never opened as a link. */
   downloadPath: string;
+  /**
+   * The flats the proof covers (E20/F02/US01/T01): the one it was filed under first, then the others by name. `null` only where the server did not read them, and
+   * absent from a server that does not send them yet.
+   */
+  coveredProperties?: ComplianceCoveredProperty[] | null;
+  /** Only in the answer of the upload of an Alloggiati receipt: how many stays of those flats that arrived that day it proves. `null` or absent elsewhere. */
+  coveredStays?: number | null;
 }
 
 /** One page of the archive, newest first. */
@@ -53,8 +66,11 @@ export interface ComplianceArchiveFilters {
   pageSize?: number;
 }
 
-/** What was sent (`ComplianceSendKind`). */
-export type ComplianceSendKind = 'AlloggiatiGuests' | 'IstatPeriod' | 'TouristTaxPeriod';
+/**
+ * What the log of a stay says (`ComplianceSendKind`): three kinds of send and, since E20/F02/US01/T02, `DocumentsDeleted`: not a send but the line that tells CasaZen deleted the
+ * photos of the guests' documents of the stay because an archived receipt covers it (written by CasaZen, with the date and no reference).
+ */
+export type ComplianceSendKind = 'AlloggiatiGuests' | 'IstatPeriod' | 'TouristTaxPeriod' | 'DocumentsDeleted';
 
 /** Who sent it, as the log keeps it: CasaZen, the channel manager, or the host by hand (`ComplianceSender`). */
 export type SendLogSender = 'CasaZen' | 'ChannelManager' | 'Manual';
@@ -141,6 +157,27 @@ export interface ComplianceReportFilters {
 
 export type ComplianceReportFormat = 'pdf' | 'csv';
 
+/** What a receipt of one day would prove for one flat (`ComplianceReceiptCoveragePropertyDto`): the stays of that flat that arrived that day, zero when none did. */
+export interface ReceiptCoverageProperty {
+  propertyId: string;
+  propertyName: string;
+  stays: number;
+}
+
+/**
+ * What a receipt of the Alloggiati communication of a day would prove for the flats asked for (`GET /api/compliance/archive/proofs/coverage`): the stays of those flats that
+ * arrived that day, owe the communication and that the receipt turns green. The count is the one of the traffic light: a stay whose communication failed or was only partly
+ * accepted is not in it. Nothing is stored by asking.
+ */
+export interface ReceiptCoverage {
+  /** `yyyy-MM-dd`. */
+  day: string;
+  /** The stays that become proven, all flats together. */
+  stays: number;
+  /** The flats, in the order they were asked for, each with its stays. */
+  properties: ReceiptCoverageProperty[];
+}
+
 /** What an upload of a proof sends: the property, what the file proves, the day it is about (any day of the month for a month kind) and the file. */
 export interface UploadComplianceProofInput {
   propertyId: string;
@@ -148,4 +185,9 @@ export interface UploadComplianceProofInput {
   /** `yyyy-MM-dd`, not in the future. */
   day: string;
   file: File;
+  /**
+   * The flats an Alloggiati receipt covers, the flat of the request included: `propertyIds` repeated. Only for a receipt that covers more than that flat (the server reads no list,
+   * or an empty one, as that flat alone and never as every flat); at most 500, all in Italy.
+   */
+  propertyIds?: readonly string[];
 }
