@@ -19,7 +19,7 @@ import { translateValidationMessage } from '@/i18n/validation-message';
 import { getHttpStatus, getProblemCode, getProblemMessage } from '@/lib/api-errors';
 import { formatRomeDateTime } from '@/lib/stay-dates';
 import { ACCOUNTANT_SEND_DAYS, type AccountantPackageEmailQueued, type AccountantPackageSettings, type SaveAccountantPackageSettingsRequest } from '@/types';
-import { accountantChange, accountantProblemsOf, amountLocale, lastSendErrorKey, periodLabel, type AccountantField } from '../billing-wizard-model';
+import { accountantChange, accountantProblemsOf, amountLocale, isAccountantRefused, lastSendErrorKey, periodLabel, type AccountantField } from '../billing-wizard-model';
 import {
   ACCOUNTANT_EMAIL_MAX,
   BILLING_ERROR_KEYS,
@@ -51,6 +51,8 @@ interface AccountantStepProps {
    * For anyone else those folders are not offered and are never sent: the backend refuses them (422 `accountant_package_owner_accounting_required`) on an agency's organization.
    */
   ownerAccounting: boolean;
+  /** The server refused the save or the test with a 403 (the role or the reach of the person is not what the settings need): the wizard turns read-only, as at a save of the step. */
+  onRefused: () => void;
 }
 
 /** The fields of the step a problem can sit on: when one shows, they are all checked again at each change, so that its message goes as soon as the answer is fixed. */
@@ -94,7 +96,7 @@ function testProblem(error: unknown, t: TFunction): string {
  * once, and only when something changed. The test goes to the address that is SAVED, never to one that comes with the request: so «Invia una prova» saves what is on screen first (when it is valid
  * and different), and the e-mail goes where the person sees it going. The answer says «queued» and nothing more: delivery is not something the server can promise, and neither does the page.
  */
-export function AccountantStep({ settings, save, send, lastMonth, busy, ownerAccounting }: AccountantStepProps) {
+export function AccountantStep({ settings, save, send, lastMonth, busy, ownerAccounting, onRefused }: AccountantStepProps) {
   const { t } = useTranslation();
   // A 404 is the module being off at the server: it is that even when the query still holds the answer it had (a read that fails keeps the data it had), and it is said, never a form.
   const notFound = settings.isError && getHttpStatus(settings.error) === 404;
@@ -108,7 +110,15 @@ export function AccountantStep({ settings, save, send, lastMonth, busy, ownerAcc
         </Alert>
       ) : settings.data ? (
         // A read that fails after the settings are on screen (a transient error when the window comes back) does not take the form from under the person's hands.
-        <AccountantSettingsForm current={accountantSettingsFor(settings.data, ownerAccounting)} save={save} send={send} lastMonth={lastMonth} busy={busy} ownerAccounting={ownerAccounting} />
+        <AccountantSettingsForm
+          current={accountantSettingsFor(settings.data, ownerAccounting)}
+          save={save}
+          send={send}
+          lastMonth={lastMonth}
+          busy={busy}
+          ownerAccounting={ownerAccounting}
+          onRefused={onRefused}
+        />
       ) : settings.data === null ? (
         <Alert variant="info" data-testid="billing-accountant-no-access">
           {t('billingWizard.accountant.noAccess')}
@@ -130,9 +140,10 @@ interface AccountantSettingsFormProps {
   lastMonth: string;
   busy: boolean;
   ownerAccounting: boolean;
+  onRefused: () => void;
 }
 
-function AccountantSettingsForm({ current, save, send, lastMonth, busy, ownerAccounting }: AccountantSettingsFormProps) {
+function AccountantSettingsForm({ current, save, send, lastMonth, busy, ownerAccounting, onRefused }: AccountantSettingsFormProps) {
   const { t, i18n } = useTranslation();
   const {
     control,
@@ -201,6 +212,8 @@ function AccountantSettingsForm({ current, save, send, lastMonth, busy, ownerAcc
       setQueued(await send.mutateAsync());
     } catch (error) {
       if (saving) for (const problem of accountantProblemsOf(error)) setError(problem.name as AccountantField, { type: 'server', message: problem.messageKey });
+      // The settings are the organization's: a refusal of the role or of the reach, of the save or of the test, turns the wizard read-only, as at a save of the step.
+      if (isAccountantRefused(error)) onRefused();
       setFailure(error);
     } finally {
       setRunning(false);

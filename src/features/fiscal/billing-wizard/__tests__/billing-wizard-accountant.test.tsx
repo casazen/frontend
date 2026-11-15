@@ -454,6 +454,29 @@ describe('who sees the step, and when (E15/F02/US02/T01)', () => {
     expect(sendTest).not.toHaveBeenCalled();
   });
 
+  // Permission rule: a refusal (403) of the test, or of the save that goes before it, means the role or the reach of the person is not what the settings need: the whole wizard turns read-only, as a
+  // refused save of «Continua» does, and nothing else of the step can be pressed.
+  it.each<[string, 'send' | 'save']>([
+    ['TheTest', 'send'],
+    ['TheSaveThatGoesBeforeTheTest', 'save'],
+  ])('AccountantTest_A403On%s_TurnsTheWholeWizardReadOnly', async (_name, where) => {
+    getSettings.mockResolvedValue(where === 'send' ? SAVED : NOTHING_SAVED);
+    if (where === 'send') sendTest.mockRejectedValue(refusal(403, { code: 'forbidden' }));
+    else updateSettings.mockRejectedValue(refusal(403, { code: 'forbidden' }, { email: ADDRESS }));
+    renderWizard();
+    await formOpen();
+    if (where === 'save') write(ADDRESS);
+
+    await pressTest();
+    await screen.findByTestId('billing-accountant-test-failure', undefined, WAIT);
+    expect(await screen.findByTestId('billing-read-only', undefined, WAIT)).toHaveTextContent(text('billingWizard.readOnly.partialScope'));
+    const controls = Array.from(screen.getByTestId('billing-step-accountant').querySelectorAll<HTMLElement>('input, select, textarea, button'));
+    expect(controls.length).toBeGreaterThanOrEqual(6);
+    for (const control of controls) expect(control, control.getAttribute('data-testid') ?? control.tagName).toBeDisabled();
+    // The test is asked only when the save that goes before it went through.
+    expect(sendTest).toHaveBeenCalledTimes(where === 'send' ? 1 : 0);
+  });
+
   // Flag rule: with the package of the accountant off the wizard is the one it was, and nothing of the settings is asked of the server.
   it('AccountantStep_FlagOff_HasNoStepNoLabelAndAsksNothingOfTheServer', async () => {
     env.flags = {};

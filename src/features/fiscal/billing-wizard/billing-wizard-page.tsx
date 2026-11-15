@@ -310,7 +310,18 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
           // The step is optional and has its own actions: «Continua» waits for them as they wait for it, so that no second request starts while one is on its way.
           nextDisabled: leaving || saveAccountant.isPending || sendAccountant.isPending,
           render: () =>
-            frame(id, <AccountantStep settings={accountant} save={saveAccountant} send={sendAccountant} lastMonth={lastMonthOf(today)} busy={saving || leaving} ownerAccounting={agency} />),
+            frame(
+              id,
+              <AccountantStep
+                settings={accountant}
+                save={saveAccountant}
+                send={sendAccountant}
+                lastMonth={lastMonthOf(today)}
+                busy={saving || leaving}
+                ownerAccounting={agency}
+                onRefused={() => setRefused(true)}
+              />,
+            ),
         };
       case BILLING_STEPS.summary:
         return {
