@@ -64,8 +64,8 @@ interface OwnerIssuerProfileFormProps {
 }
 
 /**
- * The form of the issuer profile of an Italian owner (E17/F03/US01/T01, NF-116, NF-118): who issues the documents of the stays of the owner, a private person (a receipt, with the stamp duty over 77.47 EUR)
- * or a company or a professional (a FatturaPA), with its data, its sezionale (the series of its numbers), the VAT of the stay (⚖ I1) and the reference of the stamp duty (⚖ I4). The choices marked ⚖
+ * The form of the issuer profile of an Italian owner (E17/F03/US01/T01, NF-116, NF-118): who issues the documents of the stays of the owner, a private person (a receipt, with the stamp duty when it is due: the
+ * threshold and the amount are the rule in force, never a figure written in the form) or a company or a professional (a FatturaPA), with its data, its sezionale (the series of its numbers), the VAT of the stay (⚖ I1) and the reference of the stamp duty (⚖ I4). The choices marked ⚖
  * are prudent defaults that the accountant confirms: the form says so next to them and writes nothing the person did not choose. It saves the profile as a whole (the server clears what is left out), a
  * profile that misses something is saved and says what (the state above the form), and a value the server refuses is shown on its field with the sentence of the code. The caller who may not change the
  * profile never gets this form: the server masks the data for them (`OwnerIssuerProfileFacts`).

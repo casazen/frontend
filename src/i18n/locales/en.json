@@ -30469,7 +30469,7 @@
     "refused": "This value is not valid.",
     "regime": {
       "PrivatePerson": {
-        "description": "A private person without a VAT number: CasaZen issues a receipt in its name, with the stamp duty above 77.47 EUR.",
+        "description": "A private person without a VAT number: CasaZen issues a receipt in its name, with the stamp duty when it is due.",
         "title": "Private person"
       },
       "VatFlatRate": {

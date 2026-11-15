@@ -30469,7 +30469,7 @@
     "refused": "Questo dato non è valido.",
     "regime": {
       "PrivatePerson": {
-        "description": "Un privato senza partita IVA: CasaZen emette una ricevuta a suo nome, con il bollo sopra 77,47 €.",
+        "description": "Un privato senza partita IVA: CasaZen emette una ricevuta a suo nome, con il bollo quando serve.",
         "title": "Persona fisica"
       },
       "VatFlatRate": {

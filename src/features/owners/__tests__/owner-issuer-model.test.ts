@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios';
+import it_ from '@/i18n/locales/it.json';
+import en from '@/i18n/locales/en.json';
 import type { OwnerAddress, OwnerFiscalProfile, OwnerIssuerProfile } from '@/types';
 import { followedForm, formOf, isChanged, issuerRequestFromOwnerData, issuerStateOf, refusedFieldsOf, requestOf } from '../owner-issuer-model';
 
@@ -107,6 +109,26 @@ describe('the issuer profile of an owner as the form holds it (E17/F03/US01/T01)
     expect(refusedFieldsOf(refusal(422, { code: 'issuer_field_invalid', field: 'regime' }))).toEqual(['regime']);
     expect(refusedFieldsOf(refusal(403, { code: 'fiscal_settings_need_whole_org' }))).toEqual([]);
     expect(refusedFieldsOf(new Error('x'))).toEqual([]);
+  });
+});
+
+/** Every text of a branch of a locale file. */
+function textsOf(node: unknown): string[] {
+  if (typeof node === 'string') return [node];
+  if (node !== null && typeof node === 'object') return Object.values(node).flatMap(textsOf);
+  return [];
+}
+
+describe('the texts of the issuer profile of an owner (E17/F03/US01/T01)', () => {
+  it.each([
+    ['it', it_],
+    ['en', en],
+  ] as const)('%s.json: no text of the profile writes an amount or a currency: the stamp duty is the rule in force, shown from the data', (_language, locale) => {
+    // The threshold and the amount of the stamp duty are a rule set by CasaZen (⚖ I4): a figure or a symbol written in a text would go on saying it after the rule changed.
+    const texts = textsOf(locale.ownerIssuer);
+    expect(texts.length).toBeGreaterThan(40);
+
+    expect(texts.filter((text) => /€|\bEUR\b|\bCHF\b|\d+[.,]\d{2}\b/.test(text))).toEqual([]);
   });
 });
 
