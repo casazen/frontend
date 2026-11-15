@@ -472,6 +472,7 @@
       "payNowLabel": "A pagar ahora",
       "paying": "Pago en curso…",
       "paymentFailed": "El pago no se ha completado. Revise los datos de su tarjeta e inténtelo de nuevo.",
+      "paymentUnavailable": "El pago en línea de la tasa turística no está disponible en este momento. Puede continuar: la pagará a su anfitrión en el alojamiento.",
       "preparing": "Preparando el pago…",
       "processingText": "Estamos confirmando el pago; tarda unos instantes. No hace falta pagar de nuevo.",
       "processingTitle": "Pago en confirmación",

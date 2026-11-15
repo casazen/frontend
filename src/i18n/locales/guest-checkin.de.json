@@ -472,6 +472,7 @@
       "payNowLabel": "Jetzt zu zahlen",
       "paying": "Zahlung läuft …",
       "paymentFailed": "Die Zahlung ist nicht durchgegangen. Prüfen Sie Ihre Kartendaten und versuchen Sie es erneut.",
+      "paymentUnavailable": "Die Online-Zahlung der Ortstaxe ist im Moment nicht verfügbar. Sie können fortfahren: Sie zahlen sie vor Ort an Ihren Gastgeber.",
       "preparing": "Zahlung wird vorbereitet …",
       "processingText": "Wir bestätigen die Zahlung, das dauert einen Moment. Sie müssen nicht erneut zahlen.",
       "processingTitle": "Zahlung wird bestätigt",

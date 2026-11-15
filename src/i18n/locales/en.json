@@ -5690,6 +5690,7 @@
       "payNowLabel": "To pay now",
       "paying": "Payment in progress...",
       "paymentFailed": "The payment did not go through. Check your card details and try again.",
+      "paymentUnavailable": "Paying the tourist tax online is not available right now. You can go on: you will pay it to your host at the property.",
       "preparing": "Preparing the payment...",
       "processingText": "We are confirming the payment: it takes a few moments. You do not need to pay again.",
       "processingTitle": "Payment being confirmed",

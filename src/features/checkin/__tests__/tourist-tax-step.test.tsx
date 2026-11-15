@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form';
 import { AxiosError, AxiosHeaders } from 'axios';
 import type { InternalAxiosRequestConfig } from 'axios';
 import i18n from '@/i18n/config';
+import { UnexpectedApiResponseError } from '@/lib/api-errors';
 import { DEFAULT_FEATURE_FLAGS, type FeatureFlags } from '@/config/feature-flags';
 import { WorkspaceContext, type WorkspaceContextValue } from '@/contexts/workspace-context';
 import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
@@ -25,6 +26,7 @@ import { TaxCollection } from '../wizard/steps/tax-collection';
 import { TaxStep } from '../wizard/steps/tax-step';
 import {
   guestTaxAvailability,
+  paymentCannotBeMade,
   readPublicTouristTax,
   readTouristTaxPaymentIntent,
   refusalLeavesPaymentOpen,
@@ -112,14 +114,24 @@ function queryClientOf() {
 /** What a new read of the tax answers: the tax as the server says it now, or the failure of the read. */
 type TaxReadResult = { data?: PublicTouristTax; isError?: boolean };
 
-function renderStep(view: PublicTouristTax | null, props: { refetch?: () => Promise<TaxReadResult | undefined>; completed?: boolean } = {}) {
+function renderStep(
+  view: PublicTouristTax | null,
+  props: { refetch?: () => Promise<TaxReadResult | undefined>; completed?: boolean; onCannotPayChange?: (cannotPay: boolean) => void } = {},
+) {
   const client = queryClientOf();
   const refetch = props.refetch ?? vi.fn().mockResolvedValue(undefined);
   const element = (current: PublicTouristTax | null) =>
     createElement(
       QueryClientProvider,
       { client },
-      createElement(TouristTaxStep, { token: TOKEN, view: current, refetch, fetching: false, completed: props.completed }),
+      createElement(TouristTaxStep, {
+        token: TOKEN,
+        view: current,
+        refetch,
+        fetching: false,
+        completed: props.completed,
+        onCannotPayChange: props.onCannotPayChange,
+      }),
     );
   const rendered = render(element(view));
   return { ...rendered, refetch, readAgain: (next: PublicTouristTax | null) => rendered.rerender(element(next)) };
@@ -364,6 +376,30 @@ describe('TouristTaxStep: back to what the server says after an outcome that is 
     await waitFor(() => expect(refetch).toHaveBeenCalled());
   });
 
+  it('intentNotAvailable409_TheGuestIsToldAndThePageIsToldToLetAvantiGo', async () => {
+    // The platform key is not there: the read of the tax does not see it, the intent answers 409 not available, and the backend does not hold the lock code for a payment that cannot be made.
+    vi.mocked(publicCheckinApi.createTouristTaxPaymentIntent).mockRejectedValue(httpError(409, { code: 'tourist_tax_payment_not_available' }));
+    const onCannotPayChange = vi.fn();
+    renderStep(taxView({ requiredBeforeAccessCode: true }), { onCannotPayChange });
+
+    expect(await screen.findByTestId('tourist-tax-payment-unavailable')).toHaveTextContent('non è disponibile');
+    await waitFor(() => expect(onCannotPayChange).toHaveBeenLastCalledWith(true));
+    // The sentence that asks to pay before going on, and the retry, are gone: the tax is paid at the property.
+    expect(screen.queryByTestId('tourist-tax-required')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('tourist-tax-retry')).not.toBeInTheDocument();
+  });
+
+  it('intentFailedForAReasonThatMayPass_TheGuestIsNotLetGoAndCanTryAgain', async () => {
+    vi.mocked(publicCheckinApi.createTouristTaxPaymentIntent).mockRejectedValue(httpError(503));
+    const onCannotPayChange = vi.fn();
+    renderStep(taxView({ requiredBeforeAccessCode: true }), { onCannotPayChange });
+
+    await screen.findByTestId('tourist-tax-session-failed');
+    expect(onCannotPayChange).not.toHaveBeenCalledWith(true);
+    expect(screen.getByTestId('tourist-tax-required')).toBeInTheDocument();
+    expect(screen.getByTestId('tourist-tax-retry')).toBeInTheDocument();
+  });
+
   it('retry_ReadsTheTaxFirst_AndATaxThatIsPaidGetsNoIntent', async () => {
     vi.mocked(publicCheckinApi.createTouristTaxPaymentIntent).mockRejectedValueOnce(httpError(503));
     const refetch = vi.fn().mockResolvedValue({ data: taxView({ status: 'PaidOnline', reason: 'NothingDue', payable: 0, collectedAmount: 9 }), isError: false });
@@ -378,6 +414,17 @@ describe('TouristTaxStep: back to what the server says after an outcome that is 
 });
 
 describe('the answers of the API', () => {
+  it('paymentCannotBeMade_OnlyWhenTheServerWillNeverGiveAnIntent', () => {
+    expect(paymentCannotBeMade(httpError(409, { code: 'tourist_tax_payment_not_available' }))).toBe(true);
+    expect(paymentCannotBeMade(new UnexpectedApiResponseError('/public/checkin/{token}/tourist-tax/payment-intent'))).toBe(true);
+    // A failure that may pass, a payment under way and a tax with nothing left to pay are not «cannot be made».
+    expect(paymentCannotBeMade(httpError(503))).toBe(false);
+    expect(paymentCannotBeMade(httpError(429))).toBe(false);
+    expect(paymentCannotBeMade(httpError(409, { code: 'tourist_tax_payment_in_progress' }))).toBe(false);
+    expect(paymentCannotBeMade(httpError(409, { code: 'tourist_tax_nothing_to_pay' }))).toBe(false);
+    expect(paymentCannotBeMade(null)).toBe(false);
+  });
+
   it('refusalLeavesPaymentOpen_ADeclinedCardOrAnIncompleteFormDoNot_AnyOtherRefusalDoes', () => {
     expect(refusalLeavesPaymentOpen({ type: 'card_error', code: 'card_declined' })).toBe(false);
     expect(refusalLeavesPaymentOpen({ type: 'validation_error' })).toBe(false);

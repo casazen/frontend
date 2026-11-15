@@ -1,7 +1,7 @@
 import { isAxiosError } from 'axios';
 import type { StripeElementLocale } from '@stripe/stripe-js';
 import type { PaymentRefusal } from '@/features/public-booking/components/stripe-intent-payment';
-import { getHttpStatus, getProblemCode } from '@/lib/api-errors';
+import { UnexpectedApiResponseError, getHttpStatus, getProblemCode } from '@/lib/api-errors';
 import { formatCurrency } from '@/lib/utils';
 import type { TouristTaxCollection } from '@/types/checkin-wizard.types';
 import type { PublicTouristTax, PublicTouristTaxGuest, TouristTaxPaymentIntent } from '@/types/public-checkin.types';
@@ -14,6 +14,9 @@ import type { PublicTouristTax, PublicTouristTaxGuest, TouristTaxPaymentIntent }
 
 /** Problem code of `POST …/tourist-tax/payment-intent` while a payment of the stay is under way: the page waits for it to be recorded instead of asking for another. */
 export const TOURIST_TAX_IN_PROGRESS_CODE = 'tourist_tax_payment_in_progress';
+
+/** Problem code of `POST …/tourist-tax/payment-intent` while the payment is not offered (the organization does not offer it, or its account or the platform key is not ready). */
+export const TOURIST_TAX_NOT_AVAILABLE_CODE = 'tourist_tax_payment_not_available';
 
 /** How many times the guest page asks again, with backoff, for a payment the guest has made: after them it offers «Aggiorna lo stato» instead of asking for ever. */
 export const TOURIST_TAX_MAX_POLLS = 10;
@@ -89,6 +92,15 @@ export function problemCodeOf(error: unknown): string | undefined {
  */
 export function refusalLeavesPaymentOpen(refusal: PaymentRefusal | undefined): boolean {
   return refusal?.type !== 'card_error' && refusal?.type !== 'validation_error';
+}
+
+/**
+ * The server will not give an intent however often it is asked: the payment is not offered (409 `tourist_tax_payment_not_available`, e.g. the platform key is not there, which the read of
+ * the tax does not see and the lock code does not wait for), or what it answered is no intent. A failure that may pass (connection, 5xx, 429) is not that: the guest tries again. The
+ * backend never keeps a guest out for a payment that cannot be made, so the page does not either: «Avanti» is let go and the guest is told the tax is paid at the property.
+ */
+export function paymentCannotBeMade(error: unknown): boolean {
+  return error instanceof UnexpectedApiResponseError || problemCodeOf(error) === TOURIST_TAX_NOT_AVAILABLE_CODE;
 }
 
 /**

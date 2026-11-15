@@ -5690,6 +5690,7 @@
       "payNowLabel": "Da pagare ora",
       "paying": "Pagamento in corso...",
       "paymentFailed": "Il pagamento non è andato a buon fine. Controlla i dati della carta e riprova.",
+      "paymentUnavailable": "Il pagamento online della tassa non è disponibile in questo momento. Puoi andare avanti: la pagherai all'host in struttura.",
       "preparing": "Preparo il pagamento...",
       "processingText": "Stiamo confermando il pagamento: ci vuole qualche istante. Non occorre pagare di nuovo.",
       "processingTitle": "Pagamento in conferma",

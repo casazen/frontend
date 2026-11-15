@@ -17,6 +17,7 @@ import {
   hasTaxCurrency,
   isShownOnCompletedCheckIn,
   moneyLocaleOf,
+  paymentCannotBeMade,
   paymentElementLocaleOf,
   paymentReturnUrlOf,
   problemCodeOf,
@@ -48,6 +49,11 @@ interface TouristTaxStepProps {
   completed?: boolean;
   /** Told when the guest's confirmation of the payment starts and ends: the page holds its own buttons («Indietro», «Avanti») while the money moves. */
   onPayingChange?: (paying: boolean) => void;
+  /**
+   * Told when the payment turns out not to be possible however often it is asked (the server answers that it is not offered): the page lets «Avanti» go even when the organization asks for the
+   * tax before the lock code, as the backend does not hold the code for a payment that cannot be made.
+   */
+  onCannotPayChange?: (cannotPay: boolean) => void;
 }
 
 /** The tax of each guest by position (no name, never why one is exempt) and what is paid now: the figures are the API's, nothing is added up or taken away here. */
@@ -106,6 +112,7 @@ interface PaymentAreaProps {
   refetch: () => Promise<TaxRead | undefined>;
   fetching: boolean;
   onPayingChange?: (paying: boolean) => void;
+  onCannotPayChange?: (cannotPay: boolean) => void;
 }
 
 /**
@@ -115,7 +122,7 @@ interface PaymentAreaProps {
  * so the guest cannot pay twice. An outcome the page cannot be sure of (a refusal that leaves the payment open, a payment not confirmed for long, an intent that could not be had) is
  * settled with the server (`settle`): the tax is read again and only a tax that still has something to pay asks for the intent once more.
  */
-function PaymentArea({ token, view, refetch, fetching, onPayingChange }: PaymentAreaProps) {
+function PaymentArea({ token, view, refetch, fetching, onPayingChange, onCannotPayChange }: PaymentAreaProps) {
   const { t, i18n } = useTranslation();
   const intent = useCreateTouristTaxPaymentIntent(token);
   const { mutate } = intent;
@@ -129,6 +136,12 @@ function PaymentArea({ token, view, refetch, fetching, onPayingChange }: Payment
   // A payment is under way when the guest confirmed one, or the server says one of the stay is (another tab, a method that redirected the guest and brought them back).
   const awaiting = clientStatus === 'succeeded' || clientStatus === 'processing' || problemCodeOf(failure) === TOURIST_TAX_IN_PROGRESS_CODE;
   const stopped = awaiting && attempt >= TOURIST_TAX_MAX_POLLS;
+  // The server will not give an intent (the payment is not offered): the guest is told, and the page lets «Avanti» go (the tax is paid at the property).
+  const cannotPay = failure !== null && paymentCannotBeMade(failure);
+  useEffect(() => {
+    onCannotPayChange?.(cannotPay);
+    return () => onCannotPayChange?.(false);
+  }, [cannotPay, onCannotPayChange]);
 
   // The intent is asked for once for each amount the server says can be paid now (a different amount is a new intent: the server cancels the old one).
   const asked = useRef<string | null>(null);
@@ -204,6 +217,14 @@ function PaymentArea({ token, view, refetch, fetching, onPayingChange }: Payment
           </Button>
         )}
       </div>
+    );
+  }
+
+  if (intent.isError && cannotPay) {
+    return (
+      <Alert variant="info" data-testid="tourist-tax-payment-unavailable">
+        {t('checkin.touristTax.paymentUnavailable')}
+      </Alert>
     );
   }
 
@@ -295,8 +316,17 @@ function OutcomeNotice({ outlook, view, money }: { outlook: Exclude<GuestTaxOutl
   );
 }
 
-function TouristTaxContent({ token, view, refetch, fetching, completed = false, onPayingChange }: TouristTaxStepProps & { view: PublicTouristTax }) {
+function TouristTaxContent({ token, view, refetch, fetching, completed = false, onPayingChange, onCannotPayChange }: TouristTaxStepProps & { view: PublicTouristTax }) {
   const { t, i18n } = useTranslation();
+  // The payment cannot be made (the server says it is not offered): the sentence that asks to pay before going on is dropped, and the page is told to let «Avanti» go.
+  const [cannotPay, setCannotPay] = useState(false);
+  const reportCannotPay = useCallback(
+    (value: boolean) => {
+      setCannotPay(value);
+      onCannotPayChange?.(value);
+    },
+    [onCannotPayChange],
+  );
   const money: Money = (amount) => formatTaxMoney(amount, view.currency, moneyLocaleOf(i18n.language));
   const outlook = guestTaxOutlook(view);
   if (completed && !isShownOnCompletedCheckIn(outlook)) return null;
@@ -307,12 +337,19 @@ function TouristTaxContent({ token, view, refetch, fetching, completed = false, 
         <>
           <p className="text-sm text-muted-foreground">{t('checkin.touristTax.intro')}</p>
           <TaxFigures view={view} money={money} />
-          {blocksNextStep(view) && (
+          {blocksNextStep(view) && !cannotPay && (
             <Alert variant="warning" data-testid="tourist-tax-required">
               {t('checkin.touristTax.requiredBeforeCode')}
             </Alert>
           )}
-          <PaymentArea token={token} view={view} refetch={refetch} fetching={fetching} onPayingChange={onPayingChange} />
+          <PaymentArea
+            token={token}
+            view={view}
+            refetch={refetch}
+            fetching={fetching}
+            onPayingChange={onPayingChange}
+            onCannotPayChange={reportCannotPay}
+          />
         </>
       ) : (
         <OutcomeNotice outlook={outlook} view={view} money={money} />
@@ -328,7 +365,7 @@ function TouristTaxContent({ token, view, refetch, fetching, completed = false, 
  * says. The guest may leave it without paying, except when the organization asks for the tax before the lock code (`requiredBeforeAccessCode`): the page then keeps the step until the
  * server records the payment.
  */
-export function TouristTaxStep({ token, view, refetch, fetching, completed = false, onPayingChange }: TouristTaxStepProps) {
+export function TouristTaxStep({ token, view, refetch, fetching, completed = false, onPayingChange, onCannotPayChange }: TouristTaxStepProps) {
   const { t } = useTranslation();
 
   if (!view) {
@@ -344,5 +381,15 @@ export function TouristTaxStep({ token, view, refetch, fetching, completed = fal
     );
   }
 
-  return <TouristTaxContent token={token} view={view} refetch={refetch} fetching={fetching} completed={completed} onPayingChange={onPayingChange} />;
+  return (
+    <TouristTaxContent
+      token={token}
+      view={view}
+      refetch={refetch}
+      fetching={fetching}
+      completed={completed}
+      onPayingChange={onPayingChange}
+      onCannotPayChange={onCannotPayChange}
+    />
+  );
 }

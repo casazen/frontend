@@ -198,8 +198,10 @@ export function CheckInPage() {
   const [step, setStep] = useState<number>(STEP_SCAN);
   // A step that went away (the verification or the tax payment was switched off while the page was open) leaves the guest at the step that follows it.
   const current = steps.includes(step) ? step : stepAfterGone(step, steps);
+  // The payment cannot be made (the server says it is not offered, e.g. the platform key is not there): the backend then does not hold the lock code either, so the guest is never kept out.
+  const [taxCannotPay, setTaxCannotPay] = useState(false);
   // The organization asks for the tax before the lock code and something can still be paid: the guest stays at the step until the server records the payment.
-  const taxBlocksNext = current === STEP_TAX && taxView !== null && blocksNextStep(taxView);
+  const taxBlocksNext = current === STEP_TAX && taxView !== null && blocksNextStep(taxView) && !taxCannotPay;
   // The guest's confirmation of the payment is under way: «Indietro» and «Avanti» wait for it, so the step is not left while the money moves.
   const [taxPaying, setTaxPaying] = useState(false);
   const stepIndex = steps.indexOf(current);
@@ -614,7 +616,14 @@ export function CheckInPage() {
                   </div>
                 )}
                 {current === STEP_TAX && (
-                  <TouristTaxStep token={token} view={taxView} refetch={taxRead.refetch} fetching={taxRead.isFetching} onPayingChange={setTaxPaying} />
+                  <TouristTaxStep
+                    token={token}
+                    view={taxView}
+                    refetch={taxRead.refetch}
+                    fetching={taxRead.isFetching}
+                    onPayingChange={setTaxPaying}
+                    onCannotPayChange={setTaxCannotPay}
+                  />
                 )}
                 {current === STEP_IDENTITY && <IdentityStep identity={identity} />}
                 {current === STEP_INVOICE && <InvoiceStep hasInvoiceData={context.hasInvoiceData === true} />}

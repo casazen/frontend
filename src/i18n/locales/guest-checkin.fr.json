@@ -472,6 +472,7 @@
       "payNowLabel": "À payer maintenant",
       "paying": "Paiement en cours…",
       "paymentFailed": "Le paiement n'a pas abouti. Vérifiez les données de votre carte et réessayez.",
+      "paymentUnavailable": "Le paiement en ligne de la taxe de séjour n'est pas disponible pour le moment. Vous pouvez continuer : vous la paierez à votre hôte sur place.",
       "preparing": "Préparation du paiement…",
       "processingText": "Nous confirmons le paiement, cela prend quelques instants. Inutile de payer à nouveau.",
       "processingTitle": "Paiement en cours de confirmation",
