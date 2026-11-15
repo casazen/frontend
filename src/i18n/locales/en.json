@@ -22663,6 +22663,7 @@
         "stayDuration": "Nights of the stay"
       },
       "from": "From",
+      "leadTimeNote": "It does not apply to bookings from the portals (Airbnb, Booking.com): for those the figure is not known and the rule never triggers.",
       "match": "The routine runs when",
       "matchAll": "all the conditions are true",
       "matchAny": "at least one condition is true",

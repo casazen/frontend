@@ -369,6 +369,35 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       expect(screen.getByTestId('condition-problem')).toHaveTextContent('Completa il valore di ogni condizione.');
     });
 
+    it('RoutineEditor_LeadTimeRule_SaysItDoesNotApplyToTheBookingsOfThePortals', async () => {
+      renderPage();
+      await openCreateEditor();
+      fireEvent.click(screen.getByTestId('add-condition-button'));
+
+      // A rule on the channel, the field a new rule starts from, needs no such note.
+      expect(screen.queryByTestId('condition-lead-time-note-0')).not.toBeInTheDocument();
+
+      // The server knows the lead time only of the bookings CasaZen takes itself: the person is told before relying on it.
+      fireEvent.change(screen.getByTestId('condition-field-0'), { target: { value: 'bookingLeadTime' } });
+      expect(screen.getByTestId('condition-lead-time-note-0')).toHaveTextContent(
+        'Non vale per le prenotazioni dei portali (Airbnb, Booking.com): per quelle il dato non è noto e la regola non scatta mai.',
+      );
+      expect(screen.getByTestId('condition-field-0')).toHaveValue('bookingLeadTime');
+
+      // The note follows the field of the rule: another field takes it away.
+      fireEvent.change(screen.getByTestId('condition-field-0'), { target: { value: 'guestCount' } });
+      expect(screen.queryByTestId('condition-lead-time-note-0')).not.toBeInTheDocument();
+
+      // And it is told in the language of the page.
+      fireEvent.change(screen.getByTestId('condition-field-0'), { target: { value: 'bookingLeadTime' } });
+      await i18n.changeLanguage('en');
+      await waitFor(() =>
+        expect(screen.getByTestId('condition-lead-time-note-0')).toHaveTextContent(
+          'It does not apply to bookings from the portals (Airbnb, Booking.com): for those the figure is not known and the rule never triggers.',
+        ),
+      );
+    });
+
     it('RoutineEditor_WaitAndTimeOfAnEvent_AreSentAsNumbers', async () => {
       vi.mocked(routinesApi.create).mockResolvedValue(CLEANING);
       renderPage();

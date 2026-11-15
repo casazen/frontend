@@ -226,6 +226,13 @@ export function RoutineConditionEditor({ value, onChange, properties, properties
                     </div>
                   </div>
                 )}
+
+                {/* The server knows the lead time only of the bookings CasaZen takes itself: for a booking of a portal it is not known and a rule on it is never met. */}
+                {rule.fieldId === 'bookingLeadTime' && (
+                  <p className="text-sm text-muted-foreground" data-testid={`condition-lead-time-note-${index}`}>
+                    {t('routines.condition.leadTimeNote')}
+                  </p>
+                )}
               </li>
             );
           })}

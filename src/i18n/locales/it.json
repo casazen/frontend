@@ -22663,6 +22663,7 @@
         "stayDuration": "Notti del soggiorno"
       },
       "from": "Da",
+      "leadTimeNote": "Non vale per le prenotazioni dei portali (Airbnb, Booking.com): per quelle il dato non è noto e la regola non scatta mai.",
       "match": "La routine parte quando",
       "matchAll": "tutte le condizioni sono vere",
       "matchAny": "almeno una condizione è vera",
