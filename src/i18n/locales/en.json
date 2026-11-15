@@ -808,6 +808,10 @@
           "title": "Tourist tax due",
           "why": "The tax of the period has to be declared and paid, with the receipts archived."
         },
+        "TouristTaxRefundDue": {
+          "title": "Refund the difference of the tourist tax",
+          "why": "The guest is owed a refund of the tourist tax: the confirmed amount is lower than what they paid, the stay was cancelled after the arrival or the automatic refund failed. You give the difference back."
+        },
         "WizardResume": {
           "title": "Setup to resume",
           "why": "You left a setup half way: you can continue where you were."
@@ -1862,6 +1866,9 @@
       "supplierCommitmentConflict": "You cannot take this job: it overlaps another you already accepted. You may have more than one on the same day only when the times do not touch.",
       "supplierPaymentsNotReady": "Your account is not ready for this yet: finish the setup on Stripe first.",
       "touristTaxChildAgesRequired": "Enter the age of every minor: it is needed to calculate the tourist tax.",
+      "touristTaxCollectionNotApplicable": "The tourist tax cannot be recorded as paid for this stay: the stay is cancelled or the portal collects the tax.",
+      "touristTaxPaidOnline": "The guest already paid the tourist tax online: it cannot be recorded as paid at the property.",
+      "touristTaxPaymentInProgress": "A tourist tax payment is under way: wait for it to be confirmed and try again.",
       "touristTaxQuoteInvalid": "Invalid calculation data: check the dates, guests, ages of the minors and price.",
       "consentsRequired": "To create your organization you must accept the required legal documents.",
       "orgSlugTaken": "This web address is already used, or was used, by another organization.",
@@ -5661,6 +5668,40 @@
       "label": "Purpose of the trip *",
       "other": "Other"
     },
+    "touristTax": {
+      "amountDue": "Tax for the stay",
+      "atProperty": "You will pay this tax to your host at the property.",
+      "channelCollects": "The tourist tax is collected by the portal you booked on: you pay nothing here.",
+      "currencyMissing": "The amount is shown without a currency because we were not told which one.",
+      "exempt": "Exempt",
+      "guestLine_one": "Guest {{index}} · {{count}} night",
+      "guestLine_other": "Guest {{index}} · {{count}} nights",
+      "hostWillTell": "Your host will tell you the tourist tax.",
+      "included": "The tourist tax is already included in the payment of your booking: you pay nothing more here.",
+      "intro": "This is the tax the municipality charges for each night of your stay. You can pay it now by card.",
+      "loadFailed": "We cannot load the tourist tax. Please try again: if you prefer, you will pay it to your host at the property.",
+      "nothingDue": "There is no tourist tax to pay for this stay.",
+      "paidAtProperty": "Your host recorded that the tourist tax was already paid at the property.",
+      "paidPartly": "You have already paid {{amount}} online. You will pay the rest of the tax to your host at the property.",
+      "paidText": "We received your payment of {{amount}}. Thank you!",
+      "paidTitle": "Tourist tax paid",
+      "partIncluded": "Part of it is already included in the payment of your booking.",
+      "payAmount": "Pay {{amount}}",
+      "payNowLabel": "To pay now",
+      "paying": "Payment in progress...",
+      "paymentFailed": "The payment did not go through. Check your card details and try again.",
+      "preparing": "Preparing the payment...",
+      "processingText": "We are confirming the payment: it takes a few moments. You do not need to pay again.",
+      "processingTitle": "Payment being confirmed",
+      "refresh": "Refresh the status",
+      "requiredBeforeCode": "Your host gives you the access code after you pay the tourist tax: to go on, pay here.",
+      "retry": "Try again",
+      "sessionFailed": "We cannot open the payment. Please try again shortly.",
+      "stalledText": "The payment is not confirmed yet. If you have already paid, do not pay again: refresh the status in a few minutes.",
+      "stalledTitle": "Payment not confirmed yet",
+      "title": "Tourist tax",
+      "total": "Total"
+    },
     "travelWay": {
       "bus": "Bus",
       "car": "Car",
@@ -5912,6 +5953,38 @@
         "breakdownTitle": "Summary of the stay",
         "channelCollectedText": "The channel has already collected the tax ({{total}}) and pays it to the municipality: you must not collect it again.",
         "channelCollectedTitle": "The channel collected it: nothing to collect",
+        "collection": {
+          "currencyMissing": "The amounts are shown without a currency because we were not told which one.",
+          "detail": {
+            "amountUnknown": "We cannot yet say how much to collect: the amount is not calculated.",
+            "collectedByChannel": "The channel collects it and pays it to the municipality: you do not collect it.",
+            "includedInBooking": "The guest already paid it with the booking ({{amount}}): you do not collect it.",
+            "notDue": "There is nothing to collect for this stay.",
+            "paidAtProperty": "You recorded that the guest paid it at the property.",
+            "paidAtPropertyOn": "On {{date}} you recorded that the guest paid it at the property.",
+            "paidOnline": "The guest paid {{amount}} by card: you do not collect it.",
+            "paidOnlinePartly": "The guest paid {{paid}} online. {{rest}} is left to collect at the property.",
+            "toCollect": "Amount to collect: {{amount}}."
+          },
+          "guestMayPay": "The guest can pay {{amount}} online in the check-in. If they pay at the property instead, record it below.",
+          "markPaid": "Mark as paid at the property",
+          "markPaidFailed": "We could not record the payment. Please try again.",
+          "markPaidHint": "The guest will no longer be able to pay it online, so it is never paid twice.",
+          "refundDue": "To give back to the guest: {{amount}}. We do not do it automatically: you will find the task to complete in your list.",
+          "refundDueTitle": "To give back to the guest",
+          "refunded": "Refunded to the guest: {{amount}}.",
+          "state": {
+            "collectedByChannel": "Collected by the portal",
+            "includedInBooking": "Included in the booking payment",
+            "notDue": "Not due",
+            "paidAtProperty": "Paid at the property",
+            "paidOnline": "Paid online on {{date}}",
+            "paidOnlineNoDate": "Paid online",
+            "paidOnlinePartly": "Partly paid online",
+            "toCollect": "To collect"
+          },
+          "title": "Collection of the tourist tax"
+        },
         "collectorChannel": "The channel collected it",
         "collectorFailed": "We could not save your answer. Please try again.",
         "collectorHost": "I collect it at the property",
@@ -14915,7 +14988,8 @@
       "serviceRequestBackupWon": "The job of a request has passed to you.",
       "serviceRequestBackupClosed": "A request you were a backup for was closed.",
       "verificationRequired": "A guest's identity is waiting for you to verify it.",
-      "assistRequested": "New «Do it for me» request to handle."
+      "assistRequested": "New «Do it for me» request to handle.",
+      "touristTaxPaid": "A guest paid the tourist tax online."
     }
   },
   "octorate": {

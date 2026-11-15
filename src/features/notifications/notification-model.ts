@@ -1,4 +1,4 @@
-import { AlertTriangle, BedDouble, Bell, CalendarClock, ClipboardCheck, LifeBuoy, LogOut, MessageSquare, ShieldAlert, ShieldCheck, UserCheck, Wrench, type LucideIcon } from 'lucide-react';
+import { AlertTriangle, BedDouble, Bell, CalendarClock, ClipboardCheck, Coins, LifeBuoy, LogOut, MessageSquare, ShieldAlert, ShieldCheck, UserCheck, Wrench, type LucideIcon } from 'lucide-react';
 import type { InAppNotification } from '@/api/notifications.api';
 import type { AppContextKey } from '@/config/route-manifest';
 
@@ -44,6 +44,8 @@ const KINDS: Record<string, NotificationKind> = {
   'alloggiati-overdue': { icon: ShieldAlert, textKey: 'notifications.types.alloggiatiOverdue', route: bookingTab('alloggiati') },
   'alloggiati-failed': { icon: AlertTriangle, textKey: 'notifications.types.alloggiatiFailed', route: bookingTab('alloggiati') },
   'checkout-reminder': { icon: LogOut, textKey: 'notifications.types.checkoutReminder', route: bookingRoute },
+  // E25/F01/US01/T01: a guest paid the tourist tax of a stay online; the entity is the booking, which the pages that show the state of the collection read again.
+  'tourist-tax-paid': { icon: Coins, textKey: 'notifications.types.touristTaxPaid', route: bookingRoute },
   'ota-stay-review': { icon: AlertTriangle, textKey: 'notifications.types.otaStayReview', route: bookingRoute },
   'service-request-created': serviceRequest('notifications.types.serviceRequestCreated'),
   'service-request-auto-accepted': serviceRequest('notifications.types.serviceRequestAutoAccepted'),

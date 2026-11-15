@@ -8,6 +8,7 @@ import { ALLOGGIATI_KEY } from '@/queries/use-alloggiati';
 import { BOOKING_THREAD_QUERY, HOST_THREADS_QUERY, UNREAD_MESSAGES_QUERY } from '@/queries/use-booking-messages';
 import { BOOKINGS_KEY } from '@/queries/use-bookings';
 import { CHECKIN_SESSION_KEY } from '@/queries/use-checkin';
+import { TOURIST_TAX_KEY } from '@/queries/use-checkin-wizard';
 import { DASHBOARD_KEY } from '@/queries/use-dashboard';
 import { INVOICE_DATA_KEY } from '@/queries/use-invoice-data';
 import { FISCAL_DOCUMENTS_KEY } from '@/queries/use-fiscal-documents';
@@ -133,6 +134,20 @@ function refreshFiscalDocuments(queryClient: QueryClient): void {
 }
 
 /**
+ * The guest paid the tourist tax of a stay online (`PushTypes.TouristTaxPaid`, E25/F01/US01/T01, sent to the hosts of the booking once the payment is recorded); its `entityId` is the booking.
+ * Neither the guest nor an amount is in it: the pages read what changed from the tax of the booking.
+ */
+const TOURIST_TAX_PAID = 'tourist-tax-paid';
+
+/**
+ * What a payment of the tourist tax changes on screen: the tax of the booking, whose `collection` block says what the guest paid online and what is still to collect (the step «Tassa di
+ * soggiorno» of the host wizard open in front of the host shows «Pagata online il …» without a reload). Without a booking, every tax that is open.
+ */
+function refreshTouristTax(queryClient: QueryClient, bookingId?: string | null): void {
+  void queryClient.invalidateQueries({ queryKey: bookingId ? [TOURIST_TAX_KEY, bookingId] : [TOURIST_TAX_KEY] });
+}
+
+/**
  * What a request of help from a host changes on screen: the staff queue of the «Fallo per me» requests (`ADMIN_ASSIST_KEY`, the list and its pages): the
  * page open in front of the staff shows the new request without a reload. The queries of anyone who has no such page do not exist, so nothing is read.
  */
@@ -163,6 +178,7 @@ export function applyNotificationsChange(queryClient: QueryClient, change: Notif
   if (change.type === VERIFICATION_REQUIRED) refreshVerifications(queryClient);
   if (change.type === ASSIST_REQUESTED) refreshAssistQueue(queryClient);
   if (change.type === FISCAL_DOCUMENT_ISSUED) refreshFiscalDocuments(queryClient);
+  if (change.type === TOURIST_TAX_PAID) refreshTouristTax(queryClient, change.entityId);
 }
 
 /** After a gap in the channel events may have been missed: everything the channel feeds is read again, the count included. */
@@ -178,6 +194,8 @@ export function refreshAfterGap(queryClient: QueryClient): void {
   refreshAssistQueue(queryClient);
   // And for a document issued while the channel was down.
   refreshFiscalDocuments(queryClient);
+  // And for a tourist tax paid while the channel was down.
+  refreshTouristTax(queryClient);
 }
 
 // One connection per tab: every user of the hook shares this client, and the channel closes with the last one.

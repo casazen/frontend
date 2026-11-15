@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { loadStripe, type Appearance, type StripeElementLocale } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
@@ -17,18 +17,24 @@ interface StripeIntentFormProps {
   /** The words of the button; left out, "Paga subito" / "Conferma" as the checkout has always said. A block that is not a charge says so here. */
   submitLabel?: string;
   busyLabel?: string;
+  /** Told when a confirmation starts and when it ends: a page with other buttons beside the form holds them while the money moves (the check-in page, in a step). */
+  onProcessingChange?: (processing: boolean) => void;
 }
 
-function StripeIntentForm({ mode, returnUrl, onSubmitted, onError, submitLabel, busyLabel: busyText }: StripeIntentFormProps) {
+function StripeIntentForm({ mode, returnUrl, onSubmitted, onError, submitLabel, busyLabel: busyText, onProcessingChange }: StripeIntentFormProps) {
   const { t } = useTranslation();
   const stripe = useStripe();
   const elements = useElements();
   const [processing, setProcessing] = useState(false);
+  // One confirmation at a time: the button is disabled while it runs, and a second click that comes before the page has drawn that is ignored here too (money: never two charges).
+  const confirming = useRef(false);
 
   const submit = async () => {
-    if (!stripe || !elements) return;
+    if (!stripe || !elements || confirming.current) return;
 
+    confirming.current = true;
     setProcessing(true);
+    onProcessingChange?.(true);
     try {
       if (mode === 'payment') {
         const { error, paymentIntent } = await stripe.confirmPayment({
@@ -54,7 +60,9 @@ function StripeIntentForm({ mode, returnUrl, onSubmitted, onError, submitLabel, 
         onSubmitted(clientStatusFromIntent(setupIntent?.status) ?? 'processing');
       }
     } finally {
+      confirming.current = false;
       setProcessing(false);
+      onProcessingChange?.(false);
     }
   };
 
@@ -64,7 +72,8 @@ function StripeIntentForm({ mode, returnUrl, onSubmitted, onError, submitLabel, 
   return (
     <div className="space-y-4" data-testid={mode === 'payment' ? 'checkout-payment-step' : 'checkout-setup-step'}>
       <PaymentElement />
-      <Button className="w-full" onClick={() => void submit()} disabled={processing || !stripe || !elements}>
+      {/* `type="button"`: the element sits inside the form of the check-in page, where a button with no type would send the whole check-in. */}
+      <Button type="button" className="w-full" onClick={() => void submit()} disabled={processing || !stripe || !elements}>
         {processing ? busyLabel : idleLabel}
       </Button>
     </div>
