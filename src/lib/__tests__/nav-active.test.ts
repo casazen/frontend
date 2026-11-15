@@ -162,6 +162,7 @@ describe('isNavEntryActive on the route manifest', () => {
     ['admin', '/app/admin', '/app/admin'],
     ['admin', '/app/admin/compliance/tax-rates', '/app/admin/cin'],
     ['admin', '/app/admin/compliance/ltr-reference-data', '/app/admin/cin'],
+    ['admin', '/app/admin/compliance/istat-regions', '/app/admin/cin'],
     // The invites are a tab of Fornitori.
     ['admin', '/app/admin/suppliers/invite', '/app/admin/suppliers'],
     ['admin', '/app/admin/marketing', '/app/admin/seo'],

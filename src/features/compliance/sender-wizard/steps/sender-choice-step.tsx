@@ -4,6 +4,7 @@ import { Alert } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ChoiceCard, ChoiceGroup } from '@/components/ui/choice-card';
 import { Label } from '@/components/ui/label';
+import { IstatCoverageNotice } from '@/features/compliance/components/istat-coverage-notice';
 import type { PropertySender } from '@/types';
 import { SenderStateBadge } from '../sender-state-badge';
 import { delegationTextKey, isAutomaticSender, outcomeOfSender, senderOptions, type SenderWizardValues } from '../sender-wizard-model';
@@ -75,6 +76,9 @@ export function SenderChoiceStep({ read }: SenderChoiceStepProps) {
 
   return (
     <div className="flex flex-col gap-6" data-testid="sender-choice-step">
+      {/* Whether the channel manager sends the ISTAT of the region of the property, said at once, before anything is asked (CHK-05 point 3). Behind the flag of the activation: with it off nothing is drawn. */}
+      <IstatCoverageNotice propertyId={read.propertyId} />
+
       <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 text-sm" data-testid="sender-current">
         <span className="text-foreground/70">
           {t('compliance.sender.choice.now', { sender: t(`compliance.sender.choice.options.${read.sender}.title`) })}

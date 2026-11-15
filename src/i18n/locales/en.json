@@ -1767,6 +1767,11 @@
       "inventoryScenarioInvalid": "This situation does not exist.",
       "issuerFieldInvalid": "One of the issuer’s details is not valid. Check the fields and try again.",
       "issuerProfileIncomplete": "Some details are missing for CasaZen to issue the documents. Check the steps and try again.",
+      "istatRegionDeadlineInvalid": "The deadline is not valid: a monthly deadline needs a day from 1 to 31, the others have none.",
+      "istatRegionFieldsInvalid": "One of the statistical fields does not exist: choose among type of tourism, means of transport and level of education.",
+      "istatRegionNotFound": "This region is not in the table.",
+      "istatRegionPortalInvalid": "The address of the portal must be a full address that starts with https://.",
+      "istatRegionSourceInvalid": "The source must be a full address that starts with https://.",
       "mappingRefreshConflict": "We were already reading the listings: try again in a moment.",
       "marketingConfirmationUnavailable": "We cannot queue the confirmation e-mail. Try again in a few moments.",
       "notificationChannelUnavailable": "This channel is not available yet: choose between phone, email and the bell.",
@@ -10308,6 +10313,43 @@
       "title": "Who to invoice"
     }
   },
+  "istatCoverage": {
+    "action": {
+      "newTab": "(opens in a new tab)",
+      "panelStep": "Connect the ISTAT in the panel",
+      "portalGuide": "Open the portal of your region",
+      "supportAdminOnly": "Only the administrator of the organization can ask support for help."
+    },
+    "deadline": {
+      "daily": "Deadline: the data is sent every day.",
+      "monthly": "Deadline: by day {{day}} of the following month.",
+      "toVerify": "Deadline: to be verified."
+    },
+    "detail": {
+      "covered": "Your channel manager sends the ISTAT data of this region, once you have connected it in its panel.",
+      "notCovered": "Your channel manager does not send the ISTAT data of this region: you send it yourself from the regional portal.",
+      "toVerify": "We do not know yet whether your channel manager sends the ISTAT data of this region: until it is verified we do not take it for granted."
+    },
+    "loadError": "We cannot read whether your channel manager sends the ISTAT for your region: for now it is to be verified.",
+    "loading": "Reading the ISTAT of your region…",
+    "portalMissing": "The address of the portal of your region is not stated yet.",
+    "proof": {
+      "action": "Upload the ISTAT proof of {{month}}",
+      "lead": "Each month the proof that the data was sent is kept."
+    },
+    "region": {
+      "named": "Your region ({{region}}) uses {{system}}.",
+      "noSystem": "For your region ({{region}}) it is not stated yet which portal to use.",
+      "unknown": "We do not know yet which region this property is in."
+    },
+    "retry": "Try again",
+    "title": {
+      "covered": "ISTAT: your channel manager sends it",
+      "notCovered": "ISTAT: your channel manager does not send it",
+      "toVerify": "ISTAT: to be verified"
+    },
+    "unverified": "This data comes from our list and is not verified yet."
+  },
   "istatCredentials": {
     "assist": {
       "description": "If you prefer, CasaZen support links the ISTAT in your channel manager for you, with the credentials you saved here. Here you see where it stands."
@@ -10344,6 +10386,94 @@
     "saveFailed": "Could not save the ISTAT credentials.",
     "title": "ISTAT credentials",
     "writeOnlyHint": "The credentials are encrypted and are not visible after saving: to change them, enter them again. Only CasaZen support opens them, on a request of yours and with a reason, to link the ISTAT in the panel of your channel manager: you find every opening in the activity log."
+  },
+  "istatRegions": {
+    "cancel": "Cancel",
+    "columns": {
+      "actions": "Actions",
+      "coverage": "Channel manager",
+      "deadline": "Deadline",
+      "region": "Region",
+      "source": "Source",
+      "system": "System and portal",
+      "verified": "Checked on"
+    },
+    "coverage": {
+      "Covered": "Sends it",
+      "NotCovered": "Does not send it",
+      "Unknown": "To be verified"
+    },
+    "deadline": {
+      "daily": "Every day",
+      "monthly": "By day {{day}} of the next month",
+      "toVerify": "To be verified"
+    },
+    "deadlineKinds": {
+      "Daily": "Every day",
+      "Monthly": "Once a month",
+      "Unknown": "To be verified"
+    },
+    "description": "For each region: the system of its portal, the deadline, the statistical data asked of the guests and whether the channel manager sends the ISTAT. Hosts read this table in the sender wizard and on the page of their property: whatever you have not verified stays «to be verified».",
+    "dialog": {
+      "description": "By saving you say you read the row against its source: the date of the check is updated and a line stays in the log of changes. What you write here is what the hosts see.",
+      "title": "Edit {{region}}"
+    },
+    "edit": "Edit",
+    "empty": "The table has no rows.",
+    "errors": {
+      "dayInvalid": "Enter a day of the month from 1 to 31.",
+      "fieldsNeeded": "Pick at least one field, or choose «None required» or «To be verified».",
+      "portalHttps": "The address of the portal must start with https://.",
+      "sourceHttps": "The source must be an address that starts with https://.",
+      "sourceRequired": "Enter the source you read the values from.",
+      "verifiedAtInvalid": "Enter the day you checked the row: it cannot be in the future."
+    },
+    "fieldsModeHints": {
+      "none": "You checked that this region requires no statistical field: guests are asked nothing.",
+      "some": "Guests are asked only the fields you pick below.",
+      "toVerify": "Not verified: guests are asked no statistical field."
+    },
+    "fieldsModes": {
+      "none": "None required",
+      "some": "Only some",
+      "toVerify": "To be verified"
+    },
+    "form": {
+      "coverage": "Does the channel manager send the ISTAT of this region?",
+      "coverageHint": "Hosts see «sends it» or «does not send it» only once you have verified it.",
+      "deadlineDay": "Day of the following month",
+      "deadlineDayHint": "From 1 to 31: the deadline is by that day of the next month.",
+      "deadlineKind": "Deadline",
+      "fields": "Required fields",
+      "fieldsMode": "Statistical data asked of the guests",
+      "notes": "Notes",
+      "portalUrl": "Address of the portal or of its guide",
+      "portalUrlHint": "Starts with https://. Hosts open it from here.",
+      "sourceUrl": "Source",
+      "sourceUrlHint": "The official page or act you read these values from (https://).",
+      "system": "System of the portal",
+      "verifiedAt": "Checked on",
+      "verifiedAtHint": "The day you checked the row against the source."
+    },
+    "guestFields": {
+      "EducationLevel": "Level of education",
+      "TourismType": "Type of tourism",
+      "TravelWay": "Means of transport"
+    },
+    "loadError": "We cannot read the table of the regions.",
+    "loading": "Reading the table of the regions…",
+    "neverVerified": "Never checked",
+    "newTab": "(opens in a new tab)",
+    "notStated": "Not stated",
+    "portal": "Portal",
+    "save": "Save",
+    "source": "Source",
+    "summary": "To be verified: {{pending}} of {{total}}.",
+    "title": "ISTAT regions",
+    "toast": {
+      "saved": "{{region}}: row saved.",
+      "saveFailed": "We could not save the row."
+    }
   },
   "language": {
     "switchToItalian": "Switch to Italian",
@@ -15323,6 +15453,7 @@
       "system": "System",
       "work": "Work"
     },
+    "istatRegions": "ISTAT regions",
     "ltrReferenceData": "LTR reference data",
     "siteAppearance": "Site appearance",
     "siteDocuments": "Site documents",
@@ -16730,6 +16861,7 @@
       "adminOnly": "The organization administrator does this step.",
       "assist": {
         "action": {
+          "askSupport": "Ask support",
           "doItForMe": "Do it for me",
           "needHelp": "I need help"
         },

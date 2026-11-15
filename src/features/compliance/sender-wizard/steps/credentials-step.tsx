@@ -1,27 +1,13 @@
-import { useId, type KeyboardEvent } from 'react';
+import type { KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { KeyRound, ShieldCheck } from 'lucide-react';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { IstatCredentialsFields } from '@/features/compliance/components/istat-credentials-fields';
-import type { IstatCredentialsErrors, IstatCredentialsField } from '@/features/compliance/components/istat-credentials-form';
 import { QuesturaCredentialsFields } from '@/features/properties/components/questura-credentials-fields';
 import type { QuesturaCredentialsErrors, QuesturaCredentialsField } from '@/features/properties/components/questura-credentials-form';
 import type { PropertySender } from '@/types';
-import type { SetIstatCredentialsRequest } from '@/types/onboarding.types';
 import type { SetQuesturaCredentialsRequest } from '@/types/questura-credentials.types';
-
-/** What the step needs to show the regional ISTAT credentials: they are the same kind of thing as the police ones, and are held by the wizard in the same way. */
-export interface IstatCredentialsStepProps {
-  /** Whether the property has them: `null` while that is read, or when the read failed (the step then says nothing about it). */
-  configured: boolean | null;
-  /** What was typed: it lives in the wizard, like the police credentials, so that the main button of the wizard can save it and a change of step does not lose it. */
-  values: SetIstatCredentialsRequest;
-  errors: IstatCredentialsErrors;
-  onChange: (field: IstatCredentialsField, value: string) => void;
-  /** Sends the typed ISTAT credentials once (`PUT /properties/{id}/istat-credentials`): the button of the block and the Enter key. */
-  onSave: () => void;
-}
+import { IstatStep, type IstatCredentialsStepProps } from './istat-step';
 
 interface CredentialsStepProps {
   read: PropertySender;
@@ -47,7 +33,6 @@ interface CredentialsStepProps {
  */
 export function CredentialsStep({ read, values, errors, onChange, onSave, busy, istat }: CredentialsStepProps) {
   const { t } = useTranslation();
-  const istatTitleId = useId();
   const forCasaZen = read.sender === 'CasaZen';
 
   const saveOnEnter = (save: () => void) => (event: KeyboardEvent<HTMLElement>) => {
@@ -86,40 +71,7 @@ export function CredentialsStep({ read, values, errors, onChange, onSave, busy, 
         </Button>
       </div>
 
-      {istat ? (
-        <section aria-labelledby={istatTitleId} className="flex flex-col gap-4 border-t pt-4" data-testid="sender-istat-credentials">
-          <div className="space-y-1">
-            <h3 id={istatTitleId} className="text-base font-semibold">
-              {t('compliance.sender.credentials.istat.title')}
-            </h3>
-            <p className="text-sm text-foreground/70">{t('compliance.sender.credentials.istat.why')}</p>
-          </div>
-
-          {istat.configured !== null ? (
-            <p className="flex items-center gap-2 text-sm" data-testid="sender-istat-status" data-configured={istat.configured}>
-              {istat.configured ? (
-                <>
-                  <ShieldCheck aria-hidden="true" className="size-4 shrink-0 text-success-foreground" />
-                  {t('compliance.sender.credentials.istat.saved')}
-                </>
-              ) : (
-                <>
-                  <KeyRound aria-hidden="true" className="size-4 shrink-0" />
-                  {t('compliance.sender.credentials.istat.notSaved')}
-                </>
-              )}
-            </p>
-          ) : null}
-
-          <div className="max-w-md space-y-3" data-testid="sender-istat-fields" onKeyDown={saveOnEnter(istat.onSave)}>
-            <IstatCredentialsFields values={istat.values} errors={istat.errors} onChange={istat.onChange} disabled={busy} />
-            <p className="text-xs text-muted-foreground">{t('istatCredentials.writeOnlyHint')}</p>
-            <Button type="button" variant="outline" disabled={busy} onClick={istat.onSave} data-testid="sender-istat-save">
-              {istat.configured ? t('istatCredentials.replace') : t('istatCredentials.save')}
-            </Button>
-          </div>
-        </section>
-      ) : null}
+      {istat ? <IstatStep propertyId={read.propertyId} istat={istat} busy={busy} onKeyDown={saveOnEnter(istat.onSave)} /> : null}
     </div>
   );
 }

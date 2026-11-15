@@ -1717,6 +1717,19 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
       default: (await import('@/features/admin/admin-ltr-reference-data-page')).AdminLtrReferenceDataPage,
     }),
   },
+  // Admin ISTAT regions (E21/F01/US02/T01, NF-44, NF-52): the table the staff keeps of the ISTAT communication of each region (its system, deadline, required guest fields, whether the channel
+  // manager sends it, the source and the day it was checked), which the hosts read from the sender wizard and the page of their property. The third tab of «Conformità», after the tax rates and the
+  // LTR reference data. The platform administrator's only: the endpoints answer 403 to anyone else, and no flag stands in front of it (it is platform data).
+  {
+    path: '/app/admin/compliance/istat-regions',
+    context: 'admin',
+    requiredPermissions: ['admin.cin.read'],
+    navKey: 'nav.istatRegions',
+    navParent: '/app/admin/cin',
+    navOrder: 3,
+    icon: 'FileCheck',
+    component: async () => ({ default: (await import('@/pages/admin/IstatRegionsPage')).IstatRegionsPage }),
+  },
   {
     path: '/app/admin/demo',
     context: 'admin',

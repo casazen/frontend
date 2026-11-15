@@ -51,7 +51,7 @@ describe('NavChildLinks (UI-04a)', () => {
     renderLinks('/app/admin/cin');
 
     expect(screen.getByRole('group', { name: 'Related pages' })).toBeInTheDocument();
-    expect(screen.getAllByRole('link').map((link) => link.textContent)).toEqual(['Tourist Tax', 'LTR reference data']);
+    expect(screen.getAllByRole('link').map((link) => link.textContent)).toEqual(['Tourist Tax', 'LTR reference data', 'ISTAT regions']);
   });
 
   it('NavChildLinks_UserWhoMayOpenOnlySomeChildren_ListsOnlyThose', () => {

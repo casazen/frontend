@@ -469,7 +469,8 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
     ],
     // Profilo is in no menu (the menu of the user leads to it): Notifiche is its second tab.
     '/app/short-rent/profile': ['/app/short-rent/profile/notifications'],
-    '/app/admin/cin': ['/app/admin/compliance/tax-rates', '/app/admin/compliance/ltr-reference-data'],
+    // The ISTAT regions (E21/F01/US02/T01) are the third tab of «Conformità», after the tax rates and the LTR reference data.
+    '/app/admin/cin': ['/app/admin/compliance/tax-rates', '/app/admin/compliance/ltr-reference-data', '/app/admin/compliance/istat-regions'],
     '/app/supplier/availability': ['/app/supplier/calendar'],
     '/app/supplier/settings': ['/app/supplier/earnings'],
   };
@@ -1011,12 +1012,32 @@ describe('route-manifest nav helpers', () => {
     expect(claimants).toEqual(['/app/admin/cin']);
   });
 
-  it('groups the three compliance pages of the staff console in one entry', () => {
+  it('groups the compliance pages of the staff console in one entry', () => {
     expect(paths(getNavChildren('/app/admin/cin', allowAll))).toEqual([
       '/app/admin/compliance/tax-rates',
       '/app/admin/compliance/ltr-reference-data',
+      '/app/admin/compliance/istat-regions',
     ]);
     expect(paths(getVisibleNavEntries('admin', allowAll))).not.toContain('/app/admin/compliance/tax-rates');
+    expect(paths(getVisibleNavEntries('admin', allowAll))).not.toContain('/app/admin/compliance/istat-regions');
+  });
+
+  // E21/F01/US02/T01 (permission): the ISTAT region table is platform data that only the platform administrator edits. The page is in the staff console and in no other area, it asks the
+  // permission of the compliance pages of the staff (which only the `platform_admin` role has) and hangs from «Conformità»: a person who lacks it does not see the tab, a host does not see it
+  // in any menu of the rental areas, and no flag decides who reaches it (the server answers 403 to anyone but the administrator).
+  it('keeps the ISTAT region table of the staff in the staff console, for who holds the compliance permission only', () => {
+    const entry = entryOf('/app/admin/compliance/istat-regions');
+    expect(entry.context).toBe('admin');
+    expect(entry.requiredPermissions).toEqual(['admin.cin.read']);
+    expect(entry.navParent).toBe('/app/admin/cin');
+    expect(entry.featureFlag).toBeUndefined();
+    expect(entry.orgBillingAdmin).toBeUndefined();
+
+    const withoutCinRead = (_ctx: string, permission: string) => permission !== 'admin.cin.read';
+    expect(paths(getNavChildren('/app/admin/cin', withoutCinRead))).not.toContain(entry.path);
+    for (const context of ['short-rent', 'long-rent', 'supplier'] as const) {
+      expect(paths(getNavMatchEntries(context, allowAll, { agencyTier: true, octorateOnboarding: true }))).not.toContain(entry.path);
+    }
   });
 
   // SU-16 (A4-32, #327-AC2/AC4): the iCal help page lives inside the supplier console, with its own sidebar entry.

@@ -1767,6 +1767,11 @@
       "inventoryScenarioInvalid": "Questa situazione non esiste.",
       "issuerFieldInvalid": "Uno dei dati di chi emette non è valido. Controlla i campi e riprova.",
       "issuerProfileIncomplete": "Per far emettere i documenti a CasaZen mancano alcuni dati. Controlla i passaggi e riprova.",
+      "istatRegionDeadlineInvalid": "La scadenza non è valida: una scadenza mensile vuole un giorno da 1 a 31, le altre non ne hanno.",
+      "istatRegionFieldsInvalid": "Uno dei campi statistici indicati non esiste: scegli tra tipo di turismo, mezzo di trasporto e titolo di studio.",
+      "istatRegionNotFound": "Questa regione non è nella tabella.",
+      "istatRegionPortalInvalid": "L'indirizzo del portale deve essere un indirizzo completo che comincia con https://.",
+      "istatRegionSourceInvalid": "La fonte deve essere un indirizzo completo che comincia con https://.",
       "mappingRefreshConflict": "Stavamo già leggendo gli annunci: riprova tra un momento.",
       "marketingConfirmationUnavailable": "Non riusciamo a mettere in coda l'e-mail di conferma. Riprova tra qualche istante.",
       "notificationChannelUnavailable": "Questo canale non è ancora disponibile: scegli tra telefono, email e campanella.",
@@ -10308,6 +10313,43 @@
       "title": "A chi intestare la fattura"
     }
   },
+  "istatCoverage": {
+    "action": {
+      "newTab": "(si apre in una nuova scheda)",
+      "panelStep": "Collega l'ISTAT nel pannello",
+      "portalGuide": "Apri il portale della tua regione",
+      "supportAdminOnly": "Per chiedere aiuto al supporto serve l'amministratore dell'organizzazione."
+    },
+    "deadline": {
+      "daily": "Scadenza: i dati si comunicano ogni giorno.",
+      "monthly": "Scadenza: entro il giorno {{day}} del mese successivo.",
+      "toVerify": "Scadenza: da verificare."
+    },
+    "detail": {
+      "covered": "Il tuo channel manager invia i dati ISTAT di questa regione, dopo che lo hai collegato nel suo pannello.",
+      "notCovered": "I dati ISTAT di questa regione non li invia il tuo channel manager: li comunichi tu dal portale regionale.",
+      "toVerify": "Non sappiamo ancora se il tuo channel manager invia i dati ISTAT di questa regione: finché non è verificato non lo diamo per scontato."
+    },
+    "loadError": "Non riusciamo a leggere se il tuo channel manager invia l'ISTAT per la tua regione: per ora è da verificare.",
+    "loading": "Leggo l'ISTAT della tua regione…",
+    "portalMissing": "L'indirizzo del portale della tua regione non è ancora indicato.",
+    "proof": {
+      "action": "Carica la prova ISTAT di {{month}}",
+      "lead": "Ogni mese si conserva la prova che i dati sono stati comunicati."
+    },
+    "region": {
+      "named": "La tua regione ({{region}}) usa {{system}}.",
+      "noSystem": "Per la tua regione ({{region}}) non è ancora indicato quale portale si usa.",
+      "unknown": "Non sappiamo ancora a quale regione appartiene questo immobile."
+    },
+    "retry": "Riprova",
+    "title": {
+      "covered": "ISTAT: lo invia il tuo channel manager",
+      "notCovered": "ISTAT: non lo invia il tuo channel manager",
+      "toVerify": "ISTAT: da verificare"
+    },
+    "unverified": "Questi dati vengono dal nostro elenco e non sono ancora verificati."
+  },
   "istatCredentials": {
     "assist": {
       "description": "Se preferisci, il supporto di CasaZen collega l'ISTAT al tuo channel manager per te, con le credenziali che hai salvato qui. Qui vedi a che punto è."
@@ -10344,6 +10386,94 @@
     "saveFailed": "Impossibile salvare le credenziali ISTAT.",
     "title": "Credenziali ISTAT",
     "writeOnlyHint": "Le credenziali vengono cifrate e non sono più visibili dopo il salvataggio: per cambiarle inseriscile di nuovo. Le apre solo il supporto di CasaZen, su una tua richiesta e con un motivo, per collegare l'ISTAT nel pannello del tuo channel manager: ogni apertura la trovi nel registro delle attività."
+  },
+  "istatRegions": {
+    "cancel": "Annulla",
+    "columns": {
+      "actions": "Azioni",
+      "coverage": "Il channel manager",
+      "deadline": "Scadenza",
+      "region": "Regione",
+      "source": "Fonte",
+      "system": "Sistema e portale",
+      "verified": "Verificata il"
+    },
+    "coverage": {
+      "Covered": "Lo invia",
+      "NotCovered": "Non lo invia",
+      "Unknown": "Da verificare"
+    },
+    "deadline": {
+      "daily": "Ogni giorno",
+      "monthly": "Entro il giorno {{day}} del mese dopo",
+      "toVerify": "Da verificare"
+    },
+    "deadlineKinds": {
+      "Daily": "Ogni giorno",
+      "Monthly": "Una volta al mese",
+      "Unknown": "Da verificare"
+    },
+    "description": "Per ogni regione: il sistema del suo portale, la scadenza, i dati statistici richiesti agli ospiti e se il channel manager invia l'ISTAT. Gli host leggono questa tabella nel wizard dell'invio e nella pagina del loro immobile: quello che non hai verificato resta «da verificare».",
+    "dialog": {
+      "description": "Salvando dici di aver letto la riga sulla sua fonte: la data di verifica si aggiorna e resta una riga nel registro delle modifiche. Quello che scrivi è ciò che vedono gli host.",
+      "title": "Modifica {{region}}"
+    },
+    "edit": "Modifica",
+    "empty": "La tabella non ha righe.",
+    "errors": {
+      "dayInvalid": "Indica un giorno del mese da 1 a 31.",
+      "fieldsNeeded": "Scegli almeno un campo, oppure indica «Nessuno richiesto» o «Da verificare».",
+      "portalHttps": "L'indirizzo del portale deve cominciare con https://.",
+      "sourceHttps": "La fonte deve essere un indirizzo che comincia con https://.",
+      "sourceRequired": "Indica la fonte da cui hai letto i valori.",
+      "verifiedAtInvalid": "Indica il giorno in cui hai verificato la riga: non può essere nel futuro."
+    },
+    "fieldsModeHints": {
+      "none": "Hai verificato che questa regione non richiede nessun campo statistico: agli ospiti non si chiede nulla.",
+      "some": "Agli ospiti si chiedono solo i campi che scegli qui sotto.",
+      "toVerify": "Non verificato: agli ospiti non si chiede nessun campo statistico."
+    },
+    "fieldsModes": {
+      "none": "Nessuno richiesto",
+      "some": "Solo alcuni",
+      "toVerify": "Da verificare"
+    },
+    "form": {
+      "coverage": "Il channel manager invia l'ISTAT di questa regione?",
+      "coverageHint": "Gli host vedono «lo invia» o «non lo invia» solo dopo che l'hai verificato.",
+      "deadlineDay": "Giorno del mese successivo",
+      "deadlineDayHint": "Da 1 a 31: la scadenza è entro quel giorno del mese dopo.",
+      "deadlineKind": "Scadenza",
+      "fields": "Campi richiesti",
+      "fieldsMode": "Dati statistici richiesti agli ospiti",
+      "notes": "Note",
+      "portalUrl": "Indirizzo del portale o della sua guida",
+      "portalUrlHint": "Comincia con https://. Gli host lo aprono da qui.",
+      "sourceUrl": "Fonte",
+      "sourceUrlHint": "La pagina o l'atto ufficiale da cui hai letto questi valori (https://).",
+      "system": "Sistema del portale",
+      "verifiedAt": "Verificata il",
+      "verifiedAtHint": "Il giorno in cui hai controllato la riga sulla fonte."
+    },
+    "guestFields": {
+      "EducationLevel": "Titolo di studio",
+      "TourismType": "Tipo di turismo",
+      "TravelWay": "Mezzo di trasporto"
+    },
+    "loadError": "Non riusciamo a leggere la tabella delle regioni.",
+    "loading": "Leggo la tabella delle regioni…",
+    "neverVerified": "Mai verificata",
+    "newTab": "(si apre in una nuova scheda)",
+    "notStated": "Non indicato",
+    "portal": "Portale",
+    "save": "Salva",
+    "source": "Fonte",
+    "summary": "Da verificare: {{pending}} su {{total}}.",
+    "title": "Regioni ISTAT",
+    "toast": {
+      "saved": "{{region}}: riga salvata.",
+      "saveFailed": "Non siamo riusciti a salvare la riga."
+    }
   },
   "language": {
     "switchToItalian": "Passa all'italiano",
@@ -15323,6 +15453,7 @@
       "system": "Sistema",
       "work": "Lavoro"
     },
+    "istatRegions": "Regioni ISTAT",
     "ltrReferenceData": "Dati normativi LTR",
     "siteAppearance": "Aspetto sito",
     "siteDocuments": "Documenti sito",
@@ -16730,6 +16861,7 @@
       "adminOnly": "Questo passaggio lo fa l'amministratore dell'organizzazione.",
       "assist": {
         "action": {
+          "askSupport": "Chiedi al supporto",
           "doItForMe": "Fallo per me",
           "needHelp": "Mi serve aiuto"
         },
