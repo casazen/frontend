@@ -198,7 +198,10 @@ export function TaxExportsSection({ year, month, dataset, datasetError, busy = f
   const { flags } = useFeatureFlags();
   const tax = isFeatureEnabled(flags, 'taxReportingExports');
   const download = useDownloadTaxFile();
-  const [failure, setFailure] = useState<{ row: string; message: string } | null>(null);
+  // A failure belongs to the period it was asked for (`scope`): the month or the year changes under the same section, and the refusal of one (nothing withheld, no annual data yet) is never told under the file of another.
+  const scope = `${year}-${month ?? 'none'}`;
+  const [asked, setFailure] = useState<{ row: string; message: string; scope: string } | null>(null);
+  const failure = asked?.scope === scope ? asked : null;
   // A request is on its way: the state of the mutation says it a moment later than the click, so a second one in between is stopped here.
   const sending = useRef(false);
   const working = busy || download.isPending;
@@ -213,7 +216,7 @@ export function TaxExportsSection({ year, month, dataset, datasetError, busy = f
     try {
       await download.mutateAsync(request);
     } catch (error) {
-      setFailure({ row: rowOf(request), message: exportProblemOf(error, t) });
+      setFailure({ row: rowOf(request), message: exportProblemOf(error, t), scope });
     } finally {
       sending.current = false;
     }

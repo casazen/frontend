@@ -147,6 +147,25 @@ describe('a file is made once and told in words when it fails', () => {
 
     expect(await screen.findByTestId('tax-export-tax770-failure')).toHaveTextContent(i18n.t('apiErrors.codes.taxNoObligations'));
   });
+
+  it('TaxExports_AFailureIsToldOnlyForThePeriodItWasAskedFor_NotUnderTheFileOfAnotherMonth', async () => {
+    api.downloadF24Data.mockRejectedValue(Object.assign(new Error('refused'), { isAxiosError: true, response: { status: 422, data: { code: 'tax_no_obligations' } } }));
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } } });
+    const tree = (month: number) =>
+      createElement(
+        FeatureFlagsContext.Provider,
+        { value: { flags: { ...DEFAULT_FEATURE_FLAGS, taxReportingExports: true }, isLoading: false } },
+        createElement(QueryClientProvider, { client }, createElement(MemoryRouter, null, createElement(TaxExportsSection, { year: 2026, month, dataset: dataset({ year: 2026 }) }))),
+      );
+    const view = render(tree(11));
+
+    fireEvent.click(screen.getByTestId('tax-export-f24-csv'));
+    expect(await screen.findByTestId('tax-export-f24-failure')).toHaveTextContent(i18n.t('apiErrors.codes.taxNoObligations'));
+
+    // The month of the page changes under the same section: the refusal of November is not told under the F24 of October.
+    view.rerender(tree(10));
+    expect(screen.queryByTestId('tax-export-f24-failure')).toBeNull();
+  });
 });
 
 describe('the CU needs the annual data, and its prospects are one for each owner of them', () => {
