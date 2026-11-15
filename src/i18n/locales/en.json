@@ -17637,6 +17637,7 @@
     },
     "facts": {
       "baseAmount": "Base of the withholding: {{amount}}.",
+      "blockedNoStays": "While the payout is blocked there is no telling whether there are stays to evaluate: fix what is missing above and open this window again.",
       "collection": {
         "casazenPayment": "The agency collected with a payment in CasaZen.",
         "collectedAtProperty": "The guest paid at the property: the agency did not collect.",
@@ -17728,6 +17729,7 @@
       "source": "source",
       "sourceSha256": "source fingerprint",
       "sourceUrl": "source address",
+      "stays": "a stay that cannot be judged",
       "street": "street",
       "town": "town",
       "units": "apartments outside the agency",

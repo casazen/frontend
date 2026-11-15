@@ -17637,6 +17637,7 @@
     },
     "facts": {
       "baseAmount": "Base della ritenuta: {{amount}}.",
+      "blockedNoStays": "Finché il pagamento è bloccato non si può dire se ci sono soggiorni da valutare: risolvi quello che manca qui sopra e riapri questa finestra.",
       "collection": {
         "casazenPayment": "L'agenzia ha incassato con un pagamento in CasaZen.",
         "collectedAtProperty": "L'ospite ha pagato in struttura: l'agenzia non ha incassato.",
@@ -17728,6 +17729,7 @@
       "source": "fonte",
       "sourceSha256": "impronta della fonte",
       "sourceUrl": "indirizzo della fonte",
+      "stays": "un soggiorno che non si riesce a valutare",
       "street": "via",
       "town": "località",
       "units": "appartamenti fuori dall'agenzia",

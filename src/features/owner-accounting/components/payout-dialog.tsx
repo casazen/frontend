@@ -255,7 +255,8 @@ export function PayoutDialog({ open, onOpenChange, ctx }: PayoutDialogProps) {
                     {t('ownerAccounting.payout.facts')}
                   </h3>
                   <p className="break-words text-sm text-foreground/70">{t('ownerAccounting.payout.factsHint')}</p>
-                  <PayoutFactsView facts={preview.facts} propertyNames={propertyNames} />
+                  {/* A blocked preview can come with no stay at all because the server could not read them: «no stay to evaluate» is said only when nothing blocks (or when nothing is left to pay). */}
+                  <PayoutFactsView facts={preview.facts} propertyNames={propertyNames} whenNoStays={block !== null && block.kind !== 'nothingLeft' ? 'blocked' : 'none'} />
                 </section>
                 {preview.decision !== null ? <DecisionSummary preview={preview} /> : null}
               </>

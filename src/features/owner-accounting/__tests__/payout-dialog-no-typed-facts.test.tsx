@@ -137,4 +137,41 @@ describe('the payout dialog and the facts of the withholding (money)', () => {
     fireEvent.submit(screen.getByTestId('payout-form'));
     expect(api.confirmPayout).not.toHaveBeenCalled();
   });
+
+  it('PayoutDialog_WhenTheServerCouldNotReadTheFacts_NeverSaysThereIsNoStayToEvaluate', async () => {
+    // A stay the server cannot judge (its booking is gone, no rate of the day) makes it answer an empty list of stays with the code that refuses: that is not «no stay», and the field it names has words.
+    api.getPayoutPreview.mockResolvedValue(
+      payoutPreview({
+        facts: payoutFacts({ stays: [], stayIds: [], components: {}, decidedEntryIds: null, agencyCollected: null, qualifyingShortLet: null }),
+        decision: null,
+        reasonCode: null,
+        grossBase: null,
+        ratePercent: null,
+        rounding: null,
+        withholdingInEuro: null,
+        taxCode: null,
+        withholdingAmount: null,
+        netAmount: null,
+        blockingCode: 'tax_applicability_unresolved',
+        blockingField: 'stays',
+      }),
+    );
+    renderDialog();
+
+    const blocked = await screen.findByTestId('payout-unresolved');
+    expect(blocked).toHaveTextContent(i18n.t('ownerAccounting.fields.stays'));
+    expect(blocked.textContent).not.toMatch(/:\s*stays\./);
+    expect(await screen.findByTestId('payout-facts-unknown')).toHaveTextContent(i18n.t('ownerAccounting.facts.blockedNoStays'));
+    expect(screen.queryByTestId('payout-facts-none')).toBeNull();
+    expect(screen.getByTestId('payout-confirm')).toBeDisabled();
+  });
+
+  it('PayoutDialog_WithNothingBlockingAndNoStay_SaysThereIsNoStayToEvaluate', async () => {
+    // The facts were read and there is none: this is the one case in which the empty list is told as it is.
+    api.getPayoutPreview.mockResolvedValue(payoutPreview({ facts: payoutFacts({ stays: [], stayIds: [], components: {} }) }));
+    renderDialog();
+
+    expect(await screen.findByTestId('payout-facts-none')).toHaveTextContent(i18n.t('ownerAccounting.facts.none'));
+    expect(screen.queryByTestId('payout-facts-unknown')).toBeNull();
+  });
 });

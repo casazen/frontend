@@ -68,6 +68,11 @@ interface PayoutFactsViewProps {
   facts: PayoutFacts;
   /** The names of the properties of the agency, by id: a stay carries the id only. */
   propertyNames: ReadonlyMap<string, string>;
+  /**
+   * What an empty list of stays says. `none`: the facts were read and there is no stay to evaluate. `blocked`: the payout is blocked, and a server that could not read the facts (a stay it cannot judge, no
+   * rate of the day) answers the same empty list, so «no stay» is not a thing to say: it says that it cannot be told.
+   */
+  whenNoStays?: 'none' | 'blocked';
 }
 
 /**
@@ -75,7 +80,7 @@ interface PayoutFactsViewProps {
  * whether it is a qualifying short let and why, who collected the money, whether its portal already withheld, and whether it enters the base. Nothing here is typed and nothing can be changed: what is not right is put
  * right in the ledger (a payment to record, a decision about a company tenant) and the facts are read again. For an owner paid in another currency it says at which rate of the day the withholding, decided in euro, is kept.
  */
-export function PayoutFactsView({ facts, propertyNames }: PayoutFactsViewProps) {
+export function PayoutFactsView({ facts, propertyNames, whenNoStays = 'none' }: PayoutFactsViewProps) {
   const { t } = useTranslation();
   const { date, locale } = useOwnerFormat();
   const { flags } = useFeatureFlags();
@@ -84,9 +89,15 @@ export function PayoutFactsView({ facts, propertyNames }: PayoutFactsViewProps) 
   return (
     <div className="min-w-0 space-y-2" data-testid="payout-facts-view">
       {facts.stays.length === 0 ? (
-        <p className="break-words text-sm text-foreground/70" data-testid="payout-facts-none">
-          {t('ownerAccounting.facts.none')}
-        </p>
+        whenNoStays === 'blocked' ? (
+          <p className="break-words text-sm text-foreground/70" data-testid="payout-facts-unknown">
+            {t('ownerAccounting.facts.blockedNoStays')}
+          </p>
+        ) : (
+          <p className="break-words text-sm text-foreground/70" data-testid="payout-facts-none">
+            {t('ownerAccounting.facts.none')}
+          </p>
+        )
       ) : (
         <ul role="list" className="space-y-2">
           {facts.stays.map((stay) => (
