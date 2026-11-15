@@ -14,22 +14,41 @@ interface RoutineLibraryProps {
   onCreate: (template: RoutineLibraryTemplate, options: { testMode: boolean }) => void;
   /** A routine is being created: every button of the library waits for it. */
   isCreating?: boolean;
+  /**
+   * Opens the layer that says who cleans for many properties at once. The ready cleaning routine acts on every property that has a cleaner (a property with none is left as it is), so its card
+   * offers it: with it the agency sets the cleaner of its properties and switches the routine on in one go. Not offered when it is not given.
+   */
+  onSetupCleaners?: () => void;
+}
+
+interface LibraryEntry {
+  template: RoutineLibraryTemplate;
+  icon: LucideIcon;
+  /** What the card says besides its description, when the template needs the host to set something first. */
+  noteKey?: string;
+  /** The card offers «Imposta chi pulisce» (the cleaner of the properties, for many at once). */
+  setsCleaners?: boolean;
 }
 
 /**
  * The ready routines (AC-NF26-12, AC-NF26-13). Each one is a valid routine of the API as it stands: the configuration of every action is the one its type takes
- * (`RoutineActionRules`) and the condition, when it has one, is on a field a routine reads. The To do of the cleaning is the one the action `CreateActivity` makes; the
- * messages need an action that cannot run yet, so they are created in test mode until it can.
+ * (`RoutineActionRules`) and the condition, when it has one, is on a field a routine reads. The cleaning is the action `CreateCleaningRequest` (E24/F01/US01/T02): at the time of the check-out it makes the
+ * cleaning for whoever cleans the property (a supplier at the agreed price, or a member of the staff), once for each stay; a property with no cleaner is left as it is. The review is the action
+ * `RequestReview` (E26/F01/US01/T01): a day after the check-out, once for each direct booking. The messages need an action that cannot run yet, so they are created in test mode until it can.
  */
-function buildTemplates(t: TFunction): Array<{ template: RoutineLibraryTemplate; icon: LucideIcon }> {
+function buildTemplates(t: TFunction): LibraryEntry[] {
   return [
     {
       icon: BookCheck,
+      noteKey: 'routines.library.cleaningNote',
+      setsCleaners: true,
       template: {
         name: t('routines.library.cleaningTitle'),
         description: t('routines.library.cleaningDescription'),
-        eventType: 'CheckoutOccurred',
-        actions: [{ type: 'CreateActivity', config: { text: t('routines.library.cleaningTaskText') } }],
+        eventType: 'AfterCheckout',
+        // No delay: the cleaning is made at the time of the check-out of the property, as the server expects the ready routine (`{ hours: 0 }`).
+        eventConfig: { days: 0, hours: 0 },
+        actions: [{ type: 'CreateCleaningRequest', config: {} }],
       },
     },
     {
@@ -49,7 +68,7 @@ function buildTemplates(t: TFunction): Array<{ template: RoutineLibraryTemplate;
         description: t('routines.library.reviewDescription'),
         eventType: 'AfterCheckout',
         eventConfig: { days: 1, hours: 0 },
-        actions: [{ type: 'MessageToGuest', config: { channel: 'email' } }],
+        actions: [{ type: 'RequestReview', config: {} }],
       },
     },
     {
@@ -67,14 +86,23 @@ function buildTemplates(t: TFunction): Array<{ template: RoutineLibraryTemplate;
   ];
 }
 
-export function RoutineLibrary({ availability, onCreate, isCreating }: RoutineLibraryProps) {
+/** The delay of a time event in words: «1 giorno», «2 ore», or «all'ora dell'evento» when there is none. */
+function offsetText(t: TFunction, days: number, hours: number): string {
+  const parts = [
+    ...(days > 0 ? [t('routines.library.daysCount', { count: days })] : []),
+    ...(hours > 0 ? [t('routines.library.hoursCount', { count: hours })] : []),
+  ];
+  return parts.length > 0 ? parts.join(' ') : t('routines.library.atTheTime');
+}
+
+export function RoutineLibrary({ availability, onCreate, isCreating, onSetupCleaners }: RoutineLibraryProps) {
   const { t } = useTranslation();
   const templates = buildTemplates(t);
 
   return (
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2">
-        {templates.map(({ template, icon: Icon }, index) => {
+        {templates.map(({ template, icon: Icon, noteKey, setsCleaners }, index) => {
           const cannotRun = unavailableActionTypes(availability, template.actions).length > 0;
           return (
             <Card key={template.name} data-testid={`library-template-${index}`}>
@@ -97,13 +125,32 @@ export function RoutineLibrary({ availability, onCreate, isCreating }: RoutineLi
                     </p>
                     {template.eventConfig && (
                       <p>
-                        <span className="font-medium">{t('routines.timing')}:</span> {template.eventConfig.days} {t('routines.days')}
+                        <span className="font-medium">{t('routines.timing')}:</span> {offsetText(t, template.eventConfig.days ?? 0, template.eventConfig.hours ?? 0)}
                       </p>
                     )}
                     <p>
                       <span className="font-medium">{t('routines.actions')}:</span> {template.actions.length}
                     </p>
                   </div>
+
+                  {noteKey ? (
+                    <p className="text-xs text-muted-foreground" data-testid={`template-note-${index}`}>
+                      {t(noteKey)}
+                    </p>
+                  ) : null}
+
+                  {setsCleaners && onSetupCleaners ? (
+                    <Button
+                      variant="soft"
+                      size="sm"
+                      className="w-full"
+                      onClick={onSetupCleaners}
+                      disabled={isCreating}
+                      data-testid={`setup-cleaners-${index}`}
+                    >
+                      {t('routines.library.setupCleaners')}
+                    </Button>
+                  ) : null}
 
                   {cannotRun ? (
                     <>

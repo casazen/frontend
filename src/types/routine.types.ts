@@ -33,7 +33,9 @@ export type RoutineActionType =
   | 'SendAccessCode'
   | 'RequestReview'
   | 'AddTag'
-  | 'Wait';
+  | 'Wait'
+  // The cleaning of a stay at check-out for the default cleaner of its property (a trusted supplier or a member of the staff), with the agreed price (E24/F01/US01/T02). It takes no configuration.
+  | 'CreateCleaningRequest';
 
 /** `{ days, hours }`: whole numbers 0 to 365, for the time events (before / after the check-in / check-out); an empty object for the others. */
 export interface RoutineEventConfig {
@@ -130,14 +132,17 @@ export interface RoutineExecution {
   resultJson: string;
 }
 
-/** How one action of an execution ended (`RoutineActionOutcomes`). */
-export type RoutineActionOutcome = 'done' | 'simulated' | 'blocked' | 'failed' | 'waiting';
+/**
+ * How one action of an execution ended (`RoutineActionOutcomes`). `skipped` is an action that had nothing to do for this stay (E26/F01/US01/T01): it is not a failure and nothing was asked of
+ * anybody, and its `code` is the reason (`not_direct`, `not_confirmed`, `no_show`, `too_early`, `too_late`, `no_email`, `already_reviewed`, `already_invited`).
+ */
+export type RoutineActionOutcome = 'done' | 'simulated' | 'blocked' | 'skipped' | 'failed' | 'waiting';
 
 export interface RoutineExecutionActionResult {
   index: number;
   type: RoutineActionType;
   outcome: RoutineActionOutcome;
-  /** Why: the guardrail of a blocked action or the stable code of a failed one. */
+  /** Why: the guardrail of a blocked action, the reason of a skipped one or the stable code of a failed one. */
   code?: string;
 }
 

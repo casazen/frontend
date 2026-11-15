@@ -75,6 +75,7 @@ export const ACTION_TYPES: ReadonlyArray<{ type: RoutineActionType; labelKey: st
   { type: 'NotifyStaff', labelKey: 'routines.actionTypes.notifyStaff' },
   { type: 'NotifyTeam', labelKey: 'routines.actionTypes.notifyTeam' },
   { type: 'CreateActivity', labelKey: 'routines.actionTypes.createActivity' },
+  { type: 'CreateCleaningRequest', labelKey: 'routines.actionTypes.createCleaningRequest' },
   { type: 'SendAccessCode', labelKey: 'routines.actionTypes.sendAccessCode' },
   { type: 'RequestReview', labelKey: 'routines.actionTypes.requestReview' },
   { type: 'AddTag', labelKey: 'routines.actionTypes.addTag' },
@@ -423,13 +424,14 @@ export function readCondition(conditionJson: string | undefined): ConditionRead 
 
 // ─── The log of a routine ───────────────────────────────────────────────────────────────────────────────
 
-const ACTION_OUTCOMES: readonly RoutineActionOutcome[] = ['done', 'simulated', 'blocked', 'failed', 'waiting'];
+const ACTION_OUTCOMES: readonly RoutineActionOutcome[] = ['done', 'simulated', 'blocked', 'skipped', 'failed', 'waiting'];
 
-/** The words of how an action of an execution ended. `simulated` is told as what it is: nothing ran. */
+/** The words of how an action of an execution ended. `simulated` is told as what it is: nothing ran, and `skipped` as an action that had nothing to do (the reason follows). */
 export const ACTION_OUTCOME_KEYS: Record<RoutineActionOutcome, string> = {
   done: 'routines.log.action.done',
   simulated: 'routines.log.action.simulated',
   blocked: 'routines.log.action.blocked',
+  skipped: 'routines.log.action.skipped',
   failed: 'routines.log.action.failed',
   waiting: 'routines.log.action.waiting',
 };
@@ -447,9 +449,10 @@ export const EXECUTION_OUTCOMES: ReadonlyArray<{ outcome: string; labelKey: stri
 
 /**
  * The headline of an execution in the log: how it ended and the look of its badge. The server calls an execution `Success` when every action ended done, simulated or blocked, so the
- * word alone says too much: «Completata», in green, is for a run in which at least one action was really done. A run whose actions were only simulated (a routine in test mode) or only
- * blocked (a guardrail, a stay that did not happen) did nothing for real, and says so in neutral: «Simulata» (a simulation that has a blocked action in it is still a simulation) or
- * «Bloccata». Every other outcome keeps its own words and tone, and one this version does not know is said as unknown.
+ * word alone says too much: «Completata», in green, is for a run in which at least one action was really done. A run whose actions were only simulated (a routine in test mode), only
+ * blocked (a guardrail, a stay that did not happen) or only skipped (an action that had nothing to do for the stay: a booking of a portal, a guest with no address…) did nothing for real, and says
+ * so in neutral: «Simulata» (a simulation that has a blocked action in it is still a simulation), «Bloccata» or «Nulla da fare». Every other outcome keeps its own words and tone, and one this
+ * version does not know is said as unknown.
  */
 export function executionHeadline(outcome: string, actions: ReadonlyArray<Pick<RoutineExecutionActionResult, 'outcome'>>): { labelKey: string; tone: ExecutionTone } {
   const known = EXECUTION_OUTCOMES.find((candidate) => candidate.outcome === outcome);
@@ -459,7 +462,9 @@ export function executionHeadline(outcome: string, actions: ReadonlyArray<Pick<R
       ? 'routines.log.outcome.simulated'
       : actions.some((action) => action.outcome === 'blocked')
         ? 'routines.log.outcome.blocked'
-        : known.labelKey;
+        : actions.some((action) => action.outcome === 'skipped')
+          ? 'routines.log.outcome.skipped'
+          : known.labelKey;
     return { labelKey: nothingForReal, tone: 'neutral' };
   }
   return { labelKey: known.labelKey, tone: known.tone };
@@ -474,6 +479,22 @@ const EXECUTION_CODES: ReadonlyArray<{ code: string; labelKey: string }> = [
   { code: 'routine_action_error', labelKey: 'routines.log.code.actionError' },
   { code: 'routine_wait_not_scheduled', labelKey: 'routines.log.code.waitNotScheduled' },
   { code: 'routine_activity_needs_booking', labelKey: 'routines.log.code.activityNeedsBooking' },
+  { code: 'routine_cleaning_needs_booking', labelKey: 'routines.log.code.cleaningNeedsBooking' },
+  { code: 'routine_cleaning_not_configured', labelKey: 'routines.log.code.cleaningNotConfigured' },
+  { code: 'cleaning_staff_unavailable', labelKey: 'routines.log.code.cleaningStaffUnavailable' },
+  { code: 'cleaning_setup_invalid', labelKey: 'routines.log.code.cleaningSetupInvalid' },
+  { code: 'cleaning_supplier_currency_unsupported', labelKey: 'routines.log.code.cleaningSupplierCurrency' },
+  { code: 'routine_review_needs_booking', labelKey: 'routines.log.code.reviewNeedsBooking' },
+  { code: 'review_invite_not_sent', labelKey: 'routines.log.code.reviewInviteNotSent' },
+  // Why an action skipped a booking (`ReviewInviteSkipReasons`, E26/F01/US01/T01): nothing was asked of the guest.
+  { code: 'not_direct', labelKey: 'routines.log.code.notDirect' },
+  { code: 'not_confirmed', labelKey: 'routines.log.code.notConfirmed' },
+  { code: 'no_show', labelKey: 'routines.log.code.noShow' },
+  { code: 'too_early', labelKey: 'routines.log.code.tooEarly' },
+  { code: 'too_late', labelKey: 'routines.log.code.tooLate' },
+  { code: 'no_email', labelKey: 'routines.log.code.noEmail' },
+  { code: 'already_reviewed', labelKey: 'routines.log.code.alreadyReviewed' },
+  { code: 'already_invited', labelKey: 'routines.log.code.alreadyInvited' },
   { code: 'routine_booking_not_active', labelKey: 'routines.log.code.bookingNotActive' },
   { code: 'access_code_needs_id_verification', labelKey: 'routines.log.code.accessCodeNeedsIdVerification' },
   { code: 'airbnb_not_confirmed', labelKey: 'routines.log.code.airbnbNotConfirmed' },
@@ -482,6 +503,17 @@ const EXECUTION_CODES: ReadonlyArray<{ code: string; labelKey: string }> = [
 
 export function executionCodeKey(code: string | undefined): string | undefined {
   return EXECUTION_CODES.find((known) => known.code === code)?.labelKey;
+}
+
+/**
+ * The sentence that tells why an action of an execution ended as it did: the one of its code when this version knows the code. A cleaning that could not be made for a reason that is not listed
+ * (the rules of a request to a supplier: a supplier that is suspended, one that does not cover the comune…) says what always happens then: nothing was created, and the stay is left with the item «Pulizia
+ * da richiedere» in the list of what is to do. Never a raw code.
+ */
+export function actionReasonKey(action: Pick<RoutineExecutionActionResult, 'type' | 'outcome' | 'code'>): string | undefined {
+  const known = executionCodeKey(action.code);
+  if (known) return known;
+  return action.type === 'CreateCleaningRequest' && action.outcome === 'failed' ? 'routines.log.code.cleaningFailed' : undefined;
 }
 
 const TIME_ZONE_DESIGNATOR = /(?:Z|[+-]\d{2}(?::?\d{2})?)$/i;

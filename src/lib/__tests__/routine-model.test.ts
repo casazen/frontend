@@ -2,14 +2,18 @@ import { describe, expect, it } from 'vitest';
 import { AxiosError } from 'axios';
 import i18n from '@/i18n/config';
 import {
+  ACTION_TYPES,
   CONDITION_FIELDS,
   EDITOR_EVENT_TYPES,
+  actionLabelKey,
   actionProblemKey,
+  actionReasonKey,
   actionToDraft,
   conditionFromRules,
   defaultActionType,
   draftToAction,
   eventOptionsFor,
+  executionCodeKey,
   executionHeadline,
   isActionUnavailable,
   newActionDraft,
@@ -225,6 +229,16 @@ describe('the actions of a routine', () => {
   });
 });
 
+describe('the actions the editor lists', () => {
+  it.each(['CreateCleaningRequest', 'RequestReview'] as const)('ACTION_TYPES_%s_IsListedWithItsNameInBothLanguages', (type) => {
+    const key = actionLabelKey(type);
+
+    expect(ACTION_TYPES.map((action) => action.type)).toContain(type);
+    expect(key).toBeDefined();
+    for (const lng of ['it', 'en'] as const) expect(i18n.exists(key!, { lng })).toBe(true);
+  });
+});
+
 describe('what the catalog says of the actions', () => {
   const catalog = toAvailability([
     { type: 'Wait', available: true, code: null },
@@ -251,7 +265,7 @@ describe('what the catalog says of the actions', () => {
     expect(defaultActionType(undefined)).toBe('CreateActivity');
     // Were the To do not to run, the first action of the editor that does, and the wait last of all.
     expect(defaultActionType(toAvailability([{ type: 'CreateActivity', available: false, code: 'x' }, { type: 'MessageToGuest', available: false, code: 'x' }, { type: 'NotifyOwner', available: true, code: null }]))).toBe('NotifyOwner');
-    expect(defaultActionType(toAvailability(['CreateActivity', 'MessageToGuest', 'NotifyOwner', 'NotifyStaff', 'NotifyTeam', 'SendAccessCode', 'RequestReview', 'AddTag'].map((type) => ({ type: type as 'AddTag', available: false, code: 'x' }))))).toBe('Wait');
+    expect(defaultActionType(toAvailability(['CreateActivity', 'CreateCleaningRequest', 'MessageToGuest', 'NotifyOwner', 'NotifyStaff', 'NotifyTeam', 'SendAccessCode', 'RequestReview', 'AddTag'].map((type) => ({ type: type as 'AddTag', available: false, code: 'x' }))))).toBe('Wait');
   });
 });
 
@@ -288,7 +302,7 @@ describe('the log of an execution', () => {
   });
 
   describe('executionHeadline', () => {
-    const actionsOf = (...outcomes: Array<'done' | 'simulated' | 'blocked' | 'failed' | 'waiting'>) => outcomes.map((outcome) => ({ outcome }));
+    const actionsOf = (...outcomes: Array<'done' | 'simulated' | 'blocked' | 'skipped' | 'failed' | 'waiting'>) => outcomes.map((outcome) => ({ outcome }));
 
     it('executionHeadline_SuccessWithAnActionReallyDone_IsAGreenCompleted', () => {
       expect(executionHeadline('Success', actionsOf('done'))).toEqual({ labelKey: 'routines.log.outcome.success', tone: 'success' });
@@ -303,6 +317,15 @@ describe('the log of an execution', () => {
 
     it('executionHeadline_SuccessWhoseActionsWereOnlyBlocked_IsBlockedInNeutral', () => {
       expect(executionHeadline('Success', actionsOf('blocked'))).toEqual({ labelKey: 'routines.log.outcome.blocked', tone: 'neutral' });
+    });
+
+    it('executionHeadline_SuccessWhoseActionsWereOnlySkipped_IsNothingToDoInNeutral_NeverAGreenCompleted', () => {
+      // An action that had nothing to do for the stay (a booking of a portal, a guest with no address) did nothing for real: not a success shown as one.
+      expect(executionHeadline('Success', actionsOf('skipped'))).toEqual({ labelKey: 'routines.log.outcome.skipped', tone: 'neutral' });
+      expect(executionHeadline('Success', actionsOf('skipped', 'skipped'))).toEqual({ labelKey: 'routines.log.outcome.skipped', tone: 'neutral' });
+      // Blocked and simulated come first; an action really done makes it a completed run.
+      expect(executionHeadline('Success', actionsOf('skipped', 'blocked'))).toEqual({ labelKey: 'routines.log.outcome.blocked', tone: 'neutral' });
+      expect(executionHeadline('Success', actionsOf('skipped', 'done'))).toEqual({ labelKey: 'routines.log.outcome.success', tone: 'success' });
     });
 
     it('executionHeadline_SuccessWithNoActionToTell_IsNeverGreen', () => {
@@ -321,10 +344,56 @@ describe('the log of an execution', () => {
 
     it.each(['it', 'en'] as const)('executionHeadline_EveryLabel_HasItsWordsIn_%s', (lng) => {
       const outcomes = ['Success', 'Failed', 'Waiting', 'Running', 'Pending', 'SomethingNew'];
-      const runs = [actionsOf('done'), actionsOf('simulated'), actionsOf('blocked'), []];
+      const runs = [actionsOf('done'), actionsOf('simulated'), actionsOf('blocked'), actionsOf('skipped'), []];
       const keys = new Set(outcomes.flatMap((outcome) => runs.map((actions) => executionHeadline(outcome, actions).labelKey)));
 
       for (const key of keys) expect(i18n.exists(key, { lng }), key).toBe(true);
+    });
+  });
+
+  it('parseExecutionResult_ActionSkippedWithItsReason_IsReadWithItsReason', () => {
+    expect(
+      parseExecutionResult(JSON.stringify({ actions: [{ index: 0, type: 'RequestReview', outcome: 'skipped', code: 'not_direct' }], nextActionIndex: 1 })).actions,
+    ).toEqual([{ index: 0, type: 'RequestReview', outcome: 'skipped', code: 'not_direct' }]);
+  });
+
+  describe('the reasons the log tells (E24/F01/US02/T01)', () => {
+    // The codes of the backend (`ReviewInviteSkipReasons`, `RoutineCodes`, `CleaningAutomationCodes`): each has its sentence, in both languages, and none is shown raw.
+    const CODES = [
+      'not_direct',
+      'not_confirmed',
+      'no_show',
+      'too_early',
+      'too_late',
+      'no_email',
+      'already_reviewed',
+      'already_invited',
+      'review_invite_not_sent',
+      'routine_review_needs_booking',
+      'routine_cleaning_needs_booking',
+      'routine_cleaning_not_configured',
+      'cleaning_staff_unavailable',
+      'cleaning_setup_invalid',
+      'cleaning_supplier_currency_unsupported',
+    ];
+
+    it.each(CODES)('executionCodeKey_%s_HasItsSentenceInBothLanguages', (code) => {
+      const key = executionCodeKey(code);
+
+      expect(key, code).toBeDefined();
+      for (const lng of ['it', 'en'] as const) {
+        expect(i18n.exists(key!, { lng }), `${key} in ${lng}`).toBe(true);
+        expect(i18n.getFixedT(lng)(key!)).not.toMatch(/_/);
+      }
+    });
+
+    it('actionReasonKey_ACleaningThatFailedForARuleOfTheRequestToASupplier_SaysWhatHappensThen', () => {
+      // A code this version does not list (`service_request_supplier_inactive`…) is not shown raw: the cleaning says what always follows, the item «Pulizia da richiedere».
+      expect(actionReasonKey({ type: 'CreateCleaningRequest', outcome: 'failed', code: 'service_request_supplier_inactive' })).toBe('routines.log.code.cleaningFailed');
+      expect(actionReasonKey({ type: 'CreateCleaningRequest', outcome: 'failed', code: 'cleaning_staff_unavailable' })).toBe('routines.log.code.cleaningStaffUnavailable');
+      // Only a cleaning that failed: another action with a code nobody knows says nothing.
+      expect(actionReasonKey({ type: 'RequestReview', outcome: 'failed', code: 'something_new' })).toBeUndefined();
+      expect(actionReasonKey({ type: 'CreateCleaningRequest', outcome: 'done' })).toBeUndefined();
     });
   });
 

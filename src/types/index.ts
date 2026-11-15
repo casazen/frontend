@@ -69,4 +69,5 @@ export * from './compliance-health.types';
 export * from './compliance-archive.types';
 export * from './marketplace';
 export * from './property-sender.types';
+export * from './property-cleaning.types';
 export * from './accountant-package.types';

@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Plus } from 'lucide-react';
+import { Plus, Sparkles } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import { ListView } from '@/components/shared/list-view/list-view';
@@ -16,6 +16,7 @@ import { useListingStatusSummary } from '@/queries/use-listing-status';
 import { useActivateProperty, useDeleteProperty, usePauseProperty, useProperties } from '@/queries/use-properties';
 import { useEntitlement } from '@/queries/use-users';
 import type { Property } from '@/types';
+import { BulkCleaningDialog } from './components/bulk-cleaning-dialog';
 import { usePropertiesList } from './properties-list';
 import { PROPERTY_CREATE_PATH } from './properties-paths';
 
@@ -72,6 +73,10 @@ export function PropertiesPage() {
   const viewsScope = useListViewsScope();
   const canWrite = hasPermission('short-rent', 'property.write');
   const [propertyToDelete, setPropertyToDelete] = useState<Property | null>(null);
+  // Who cleans, for many properties at once (E24/F01/US02/T01): behind the flag of the routines, which is what makes the cleaning at check-out run, and for who may write the properties.
+  const routinesOn = useFeatureFlags().flags.routines;
+  const [cleanersOpen, setCleanersOpen] = useState(false);
+  const canSetCleaners = canWrite && routinesOn;
   // The state of each property on the channels (E02/F03/US01/T04): only where the channel manager is connected, the endpoint answers 404 otherwise.
   const connectorOn = useFeatureFlags().flags.octorateConnector;
   const summaries = useListingStatusSummary(connectorOn);
@@ -117,6 +122,11 @@ export function PropertiesPage() {
         description={t('property.page.description')}
         crumbs="auto"
         primary={canWrite ? { label: t('property.page.addButton'), icon: Plus, to: PROPERTY_CREATE_PATH, testId: 'property-add' } : undefined}
+        secondary={
+          canSetCleaners
+            ? [{ label: t('propertyCleaning.bulk.open'), icon: Sparkles, onClick: () => setCleanersOpen(true), testId: 'property-cleaning-bulk-open' }]
+            : undefined
+        }
       />
 
       <ListView
@@ -132,6 +142,8 @@ export function PropertiesPage() {
       />
 
       <PlanUsageNote />
+
+      {canSetCleaners ? <BulkCleaningDialog open={cleanersOpen} onOpenChange={setCleanersOpen} /> : null}
 
       <ConfirmationDialog
         open={propertyToDelete !== null}
