@@ -17,6 +17,7 @@ import { useBooking } from '@/queries/use-bookings';
 import { useRefreshDashboard } from '@/queries/use-dashboard';
 import type { Booking } from '@/types';
 import { BookingMessagesSection } from './components/booking-messages-section';
+import { BookingOriginBadge } from './components/booking-origin-badge';
 import { BookingTimelineSection } from './components/booking-timeline-section';
 import { CheckInDialog } from './components/check-in-dialog';
 import { bookingHasMessages } from './lib/booking-messages';
@@ -136,7 +137,10 @@ export function BookingDrawerContent({ id }: DetailContentProps) {
         {booking.source ? (
           <>
             <dt className="text-foreground/70">{t('booking.detailPage.source')}</dt>
-            <dd className="font-medium">{getBookingSourceLabel(booking.source, t)}</dd>
+            <dd className="font-medium">
+              {getBookingSourceLabel(booking.source, t)}
+              <BookingOriginBadge booking={booking} className="mt-1 flex w-fit" />
+            </dd>
           </>
         ) : null}
       </dl>

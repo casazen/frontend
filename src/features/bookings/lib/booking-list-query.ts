@@ -25,6 +25,8 @@ export function bookingFilterParams(state: Pick<ListState, 'q' | 'filters'>): Bo
     q: state.q.trim() || undefined,
     propertyId: state.filters.property || undefined,
     channel: state.filters.channel || undefined,
+    // The state of the list holds only the origins the filter offers, so the API is never asked for a word it refuses (400 `booking_list_invalid_origin`).
+    origin: state.filters.origin || undefined,
     checkInStatus: CHECK_IN_STATES[state.filters.checkin ?? ''],
     arrivalFrom: from,
     arrivalTo: to,

@@ -6,6 +6,7 @@ import i18n from '@/i18n/config';
 import { publicOrgApi } from '@/api/public-org.api';
 import { publicBookingApi } from '@/api/public-booking.api';
 import { freezeClock } from '@/test/clock';
+import { writeConsentChoice } from '@/lib/cookie-consent';
 import { addDays } from '@/lib/stay-dates';
 import { CheckoutPage } from '../checkout-page';
 import type { CreateDirectBookingPayload, DirectBookingQuote, DirectBookingResponse, PublicCalendarDto, PublicOrgDto, PublicPropertyDetailDto } from '@/types';
@@ -204,6 +205,72 @@ describe('CheckoutPage', () => {
     // Now the booking exists: the hold is real, the Payment Element is there, and the guest is not asked for the card twice.
     expect(screen.getByText(/30 minuti/)).toBeInTheDocument();
     expect(screen.getByTestId('stripe-element')).toBeInTheDocument();
+  });
+
+  it('CheckoutPage_LinkOfTheAgency_SendsWhereTheGuestCameFromWithTheBookingAndKeepsItOffTheDevice', async () => {
+    // The agency copied the link from CasaZen (NF-123): its `utm_*` are in the address, and the guest came from a page of the agency's own site.
+    Object.defineProperty(document, 'referrer', { value: 'https://www.agenzia.it/case/villa-mare?token=abc', configurable: true });
+    try {
+      window.localStorage.clear();
+      window.sessionStorage.clear();
+      renderCheckout('?checkin=2026-10-16&checkout=2026-10-19&guests=2&utm_source=agency-site&utm_medium=link&utm_campaign=estate-2026');
+      await goToDetails();
+      await fillDetailsAndGoToPayment();
+      fireEvent.click(document.getElementById('data-consent') as HTMLElement);
+      await waitFor(() => expect(screen.getByTestId('checkout-submit')).not.toHaveAttribute('aria-disabled'));
+
+      fireEvent.click(screen.getByTestId('checkout-submit'));
+
+      await screen.findByTestId('checkout-payment');
+      const payload = vi.mocked(publicBookingApi.createDirectBooking).mock.calls[0][0] as CreateDirectBookingPayload;
+      // The source of the link and the host of the page, not the page: no path, no query, nothing of the guest.
+      expect(payload.attribution).toEqual({ source: 'agency-site', medium: 'link', campaign: 'estate-2026', referrer: 'www.agenzia.it' });
+      expect(JSON.stringify(payload.attribution).toLowerCase()).not.toMatch(/mario|rossi|example|token|abc/);
+      // It was read from the address and sent: nothing of it is kept on the device.
+      expect(JSON.stringify({ ...window.localStorage, ...window.sessionStorage })).not.toMatch(/agency-site|estate-2026|agenzia/);
+    } finally {
+      delete (document as { referrer?: string }).referrer;
+    }
+  });
+
+  it('CheckoutPage_VisitWithNoSource_SendsNoAttributionAtAll', async () => {
+    renderCheckout();
+    await goToDetails();
+    await fillDetailsAndGoToPayment();
+    fireEvent.click(document.getElementById('data-consent') as HTMLElement);
+    await waitFor(() => expect(screen.getByTestId('checkout-submit')).not.toHaveAttribute('aria-disabled'));
+
+    fireEvent.click(screen.getByTestId('checkout-submit'));
+
+    await screen.findByTestId('checkout-payment');
+    // A booking of the site of CasaZen itself: the API reads no attribution as «Sito CasaZen».
+    expect(vi.mocked(publicBookingApi.createDirectBooking).mock.calls[0][0]).not.toHaveProperty('attribution');
+  });
+
+  it.each([
+    [false, undefined],
+    [true, { referrer: 'www.google.com' }],
+  ] as const)('CheckoutPage_VisitFromASearchEngineWithNoLink_SendsTheHostOnlyWithTheConsentToStatistics (consent: %s)', async (consent, attribution) => {
+    // No `utm_*` in the address: the site the guest came from is a fact about the visitor, which the site keeps only with the consent to statistics (DB-02b).
+    Object.defineProperty(document, 'referrer', { value: 'https://www.google.com/search?q=villa+mare', configurable: true });
+    try {
+      window.localStorage.clear();
+      if (consent) writeConsentChoice('accepted');
+      renderCheckout();
+      await goToDetails();
+      await fillDetailsAndGoToPayment();
+      fireEvent.click(document.getElementById('data-consent') as HTMLElement);
+      await waitFor(() => expect(screen.getByTestId('checkout-submit')).not.toHaveAttribute('aria-disabled'));
+
+      fireEvent.click(screen.getByTestId('checkout-submit'));
+
+      await screen.findByTestId('checkout-payment');
+      const payload = vi.mocked(publicBookingApi.createDirectBooking).mock.calls[0][0] as CreateDirectBookingPayload;
+      expect(payload.attribution).toEqual(attribution);
+    } finally {
+      delete (document as { referrer?: string }).referrer;
+      window.localStorage.clear();
+    }
   });
 
   it('CheckoutPage_WithoutTheConsent_DoesNotMakeTheBooking', async () => {

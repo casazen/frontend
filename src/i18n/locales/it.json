@@ -4210,6 +4210,7 @@
           "toSend": "Link da inviare",
           "waiting": "In attesa dell'ospite"
         },
+        "origin": "Origine",
         "property": "Immobile"
       },
       "guestCount_one": "{{count}} ospite",
@@ -4866,6 +4867,13 @@
       "Other": "Altri canali",
       "TripAdvisor": "Tripadvisor",
       "Vrbo": "Vrbo"
+    },
+    "origin": {
+      "AgencySite": "Sito dell'agenzia",
+      "CasaZenSite": "Sito CasaZen",
+      "Manual": "Manuale",
+      "Portal": "Portale",
+      "PortalNamed": "Portale {{name}}"
     },
     "requests": {
       "title": "Richieste da approvare",
@@ -8566,7 +8574,42 @@
     "copyPropertyUrl": "Copia URL struttura",
     "openPropertyPage": "Apri pagina struttura",
     "orgUrlSectionTitle": "URL organizzazione",
-    "selectPropertyHint": "Seleziona una struttura per vedere l'anteprima della pagina di prenotazione."
+    "selectPropertyHint": "Seleziona una struttura per vedere l'anteprima della pagina di prenotazione.",
+    "siteAddress": {
+      "copiedFailed": "URL copiato, ma è l'indirizzo di CasaZen: non riusciamo a leggere quello del tuo sito.",
+      "copiedRestricted": "URL copiato, ma è l'indirizzo di CasaZen: quello del tuo sito lo vede solo chi amministra l'account.",
+      "failed": "Non riusciamo a leggere l'indirizzo del tuo sito: questo è l'indirizzo di CasaZen.",
+      "restricted": "Questo è l'indirizzo di CasaZen: quello del tuo sito lo vede solo chi amministra l'account."
+    },
+    "bookingLink": {
+      "campaign": "Nome della campagna",
+      "campaignHint": "Serve a riconoscere da dove arrivano le prenotazioni, per esempio «estate-2026». Non scrivere nomi di persone, e-mail o numeri di telefono.",
+      "campaignPlaceholder": "estate-2026",
+      "campaignPreview": "Nel link sarà scritto: {{value}}",
+      "campaignRefused": "Questo nome non si può usare nel link: togli indirizzi e-mail, numeri di telefono e codici fiscali.",
+      "checkIn": "Arrivo",
+      "checkInPast": "L'arrivo non può essere nel passato.",
+      "checkOut": "Partenza",
+      "checkOutNotAfter": "La partenza deve essere dopo l'arrivo.",
+      "copied": "Link copiato",
+      "copy": "Copia link",
+      "datesHint": "Se scegli arrivo e partenza, l'ospite trova già le date nel calendario. Vanno nel link solo insieme.",
+      "description": "Il link alla pagina di {{name}} da mettere sul sito della tua agenzia. L'ospite prenota qui e la prenotazione risulta «Sito dell'agenzia».",
+      "guests": "Ospiti",
+      "language": "Lingua della pagina",
+      "linkLabel": "Il tuo link",
+      "notPublished": "Questa casa non è ancora pubblicata sul sito: il link funzionerà quando lo sarà.",
+      "open": "Link per il sito dell'agenzia: {{name}}",
+      "popupBlocked": "Il browser ha bloccato la finestra di stampa. Consentila e riprova.",
+      "print": "Stampa il QR",
+      "printLine": "Inquadra il codice per prenotare",
+      "qrAlt": "Codice QR del link per {{name}}",
+      "siteFailed": "Non riusciamo a leggere l'indirizzo del tuo sito: il link usa l'indirizzo di CasaZen.",
+      "siteLoading": "Leggiamo l'indirizzo del tuo sito…",
+      "siteRestricted": "Il link usa l'indirizzo di CasaZen: l'indirizzo del tuo sito lo vede solo chi amministra l'account.",
+      "siteRetry": "Riprova",
+      "title": "Link per il sito dell'agenzia"
+    }
   },
   "documentArchive": {
     "booking": "Prenotazione",
