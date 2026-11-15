@@ -19,8 +19,11 @@ export type MessageHubThreadKind = 'Reservation' | 'Request';
 /** Whether the conversation is still being worked on. */
 export type MessageHubThreadState = 'Open' | 'Closed' | 'Archived';
 
-/** Who wrote a message: the guest, a person of the host side, or the assistant of CasaZen. */
-export type MessageHubOrigin = 'Guest' | 'Person' | 'Assistant';
+/**
+ * Who wrote a message: the guest, a person of the host side, the assistant of CasaZen, or an automatic message of CasaZen that no person wrote
+ * (`Automation`: the check-in link in the chat of the portal). An automatic message is never shown as a person's and never counts as an answer.
+ */
+export type MessageHubOrigin = 'Guest' | 'Person' | 'Assistant' | 'Automation';
 
 /**
  * One conversation of the list (`GET /api/messages?includeOta=true`). `threadKey` is the opaque key every other call takes: the client
@@ -158,7 +161,7 @@ export interface MessageThreadActions {
   contactDetailsAllowed: boolean;
   attachmentsAllowed: boolean;
   autoReplyAllowed: boolean;
-  /** `mapping_not_confirmed` or `thread_closed` when nothing is allowed. */
+  /** `mapping_not_confirmed`, `thread_closed` or `chat_not_licensed` (the chat of the portal is not active for the listing yet) when nothing is allowed. */
   reason?: string | null;
 }
 
@@ -223,6 +226,26 @@ export interface MessageContactOptions {
   reason?: string | null;
   emailAvailable: boolean;
   phoneAvailable: boolean;
+}
+
+/**
+ * Whether the chat of a listing works (E23/F01/US01/T03): `available`, `waiting_permission` (the chat is not in the license of the listing yet, so its
+ * messages cannot be read and the host cannot answer in it) or `error` (the last pass of the copy failed for another reason).
+ */
+export type MessageChannelStatusCode = 'available' | 'waiting_permission' | 'error';
+
+/** The chat of one listing with a confirmed link to a property (`GET /api/messages/channel-status`). Never a name of a guest or an address. */
+export interface MessageChannelStatusItem {
+  propertyId: string;
+  propertyName: string;
+  status: MessageChannelStatusCode;
+  /** UTC instant of the last pass that reached the listing; `null` while none did. */
+  lastCheckedAt?: string | null;
+}
+
+/** `GET /api/messages/channel-status`: one item per listing the caller reaches, ordered by property name. */
+export interface MessageChannelStatus {
+  items: MessageChannelStatusItem[];
 }
 
 /** A template of the host (`api/message-templates`): the text with its variables, in the language it is written in. */

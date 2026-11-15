@@ -16,15 +16,19 @@ export interface SenderLabels {
   guest: string;
   you: string;
   assistant: string;
+  /** An automatic message of CasaZen that no person wrote (the check-in link in the chat of the portal). */
+  automation: string;
 }
 
 /**
- * Who wrote a message, as the reader sees it: the guest by name, the assistant of CasaZen, a person of the host side by the name the
- * channel gives (a colleague, or the host writing on the channel itself), and «Tu» for what was written in CasaZen, which carries no name.
+ * Who wrote a message, as the reader sees it: the guest by name, the assistant of CasaZen, an automatic message of CasaZen (never a person's, whatever
+ * name the channel puts on it), a person of the host side by the name the channel gives (a colleague, or the host writing on the channel itself), and
+ * «Tu» for what was written in CasaZen, which carries no name.
  */
 export function senderOf(message: MessageHubMessage, guestName: string | null | undefined, labels: SenderLabels): string {
   if (message.direction === 'Inbound') return guestName?.trim() || labels.guest;
   if (message.origin === 'Assistant') return labels.assistant;
+  if (message.origin === 'Automation') return labels.automation;
   return message.senderName?.trim() || labels.you;
 }
 

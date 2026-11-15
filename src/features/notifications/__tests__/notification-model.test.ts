@@ -35,6 +35,8 @@ describe('notification model', () => {
       'verification-required',
       // E10/F03/US03/T03: a host asked CasaZen support to do a step («Fallo per me»).
       'assist-requested',
+      // E23/F01/US01/T01: the check-in link of a stay from a portal did not reach the guest.
+      'checkin-link-failed',
       // E20/F03/US01/T02: the host reopened a request support closed («Non funziona»), and support closed one of the host's (verified, or declared).
       'assist-reopened', 'assist-verified', 'assist-declared',
     ];
@@ -50,9 +52,20 @@ describe('notification model', () => {
     ['checkout-reminder', '/app/short-rent/bookings/b-1'],
     ['guest-data-missing', '/app/short-rent/bookings/b-1?tab=guest'],
     ['guest-checkin-completed', '/app/short-rent/bookings/b-1?tab=guest'],
+    // The guest tab is where the panel of the link says why it did not arrive and has «Copia link».
+    ['checkin-link-failed', '/app/short-rent/bookings/b-1?tab=guest'],
     ['alloggiati-failed', '/app/short-rent/bookings/b-1?tab=alloggiati'],
   ])('notificationRoute_%s_OpensTheBooking', (type, expected) => {
     expect(notificationRoute({ type, entityId: 'b-1' }, 'short-rent')).toBe(expected);
+  });
+
+  it('notificationKind_CheckInLinkFailed_SaysItInBothLanguagesWithoutTheNameOfTheChannelManager', () => {
+    expect(notificationKind('checkin-link-failed').textKey).toBe('notifications.types.checkinLinkFailed');
+    for (const locale of [it_, en]) {
+      const sentence = lookup(locale, 'notifications.types.checkinLinkFailed');
+      expect(typeof sentence).toBe('string');
+      expect(sentence as string).not.toMatch(/octorate/i);
+    }
   });
 
   it('notificationRoute_VerificationRequired_OpensTheConsoleOfTheVerifications', () => {
