@@ -125,7 +125,26 @@ describe('VaultSecretForm, the user of the panel of a structure for the support 
 
     expect(await screen.findByTestId('assist-vault-error')).toHaveTextContent(i18n.t('apiErrors.codes.supportVaultValueInvalid'));
     expect(screen.getByTestId('assist-vault-username')).toHaveValue(USERNAME);
+    expect(screen.getByTestId('assist-vault-password')).toHaveValue(PASSWORD);
     expect(screen.getByTestId('assist-vault-save')).toBeEnabled();
     expect(toast.success).not.toHaveBeenCalled();
+    // The password is in the field, to be corrected, and in no cache: a mutation that is watched keeps what it was asked until it is reset, and a refusal resets it too.
+    await waitFor(() => expect(JSON.stringify(client.getMutationCache().getAll().map((mutation) => mutation.state))).not.toContain(PASSWORD));
+    expect(JSON.stringify(client.getQueryCache().getAll().map((query) => query.state))).not.toContain(PASSWORD);
+    // The refusal stays said while the values are corrected, and a new try clears it.
+    fill('assist-vault-password', `${PASSWORD}!`);
+    expect(screen.getByTestId('assist-vault-error')).toBeInTheDocument();
+    vi.mocked(onboardingAssistApi.storeVaultSecret).mockResolvedValueOnce({
+      id: 's1',
+      orgId: ORG,
+      propertyId: PROPERTY,
+      kind: 'OctoratePanel',
+      createdAt: '2026-11-15T10:00:00Z',
+      updatedAt: '2026-11-15T10:00:00Z',
+      updatedByUserId: 'auth0|staff',
+    });
+    fireEvent.click(screen.getByTestId('assist-vault-save'));
+    await waitFor(() => expect(screen.queryByTestId('assist-vault-form')).not.toBeInTheDocument());
+    expect(toast.success).toHaveBeenCalledWith(i18n.t('onboardingPlan.assist.vault.saved'));
   });
 });

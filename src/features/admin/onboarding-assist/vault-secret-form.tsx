@@ -53,11 +53,14 @@ export function VaultSecretForm({ orgId, propertyId, present }: VaultSecretFormP
   const [open, setOpen] = useState(false);
   const [values, setValues] = useState<Values>(EMPTY);
   const [errors, setErrors] = useState<Errors>({});
+  // The refusal of the server, kept here and not in the mutation: a mutation that is watched keeps what it was asked (the password) until it is reset.
+  const [failure, setFailure] = useState<unknown>(null);
 
   function close() {
     setOpen(false);
     setValues(EMPTY);
     setErrors({});
+    setFailure(null);
     store.reset();
   }
 
@@ -67,10 +70,17 @@ export function VaultSecretForm({ orgId, propertyId, present }: VaultSecretFormP
     const found = validate(values);
     setErrors(found);
     if (Object.keys(found).length > 0) return;
+    setFailure(null);
     store.mutate(
       { orgId, ...(propertyId ? { propertyId } : {}), kind: 'OctoratePanel', username: values.username, password: values.password },
-      // Write-only: the values leave the page as soon as the server has them.
-      { onSuccess: close },
+      {
+        // Write-only: the values leave the page as soon as the server has them.
+        onSuccess: close,
+        // A refusal keeps the values in the fields, to be corrected, and says why under them.
+        onError: setFailure,
+        // Whatever the end, the mutation is reset: it holds nothing of the request, not even after a refusal (the cache of the mutations never has the password).
+        onSettled: () => store.reset(),
+      },
     );
   }
 
@@ -109,9 +119,9 @@ export function VaultSecretForm({ orgId, propertyId, present }: VaultSecretFormP
           </div>
         );
       })}
-      {store.isError ? (
+      {failure !== null ? (
         <p role="alert" className="text-sm text-danger-foreground" data-testid="assist-vault-error">
-          {getProblemMessage(store.error, t) ?? t('onboardingPlan.assist.vault.error')}
+          {getProblemMessage(failure, t) ?? t('onboardingPlan.assist.vault.error')}
         </p>
       ) : null}
       <div className="flex flex-wrap gap-2">
