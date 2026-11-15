@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Skeleton } from '@/components/ui/skeleton';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getProblemMessage, translateErrorCode } from '@/lib/api-errors';
-import { useCleaningSuppliers, useSaveBulkCleaningSetup } from '@/queries/property-cleaning';
+import { useCleaningSuppliers, usePropertyCleaningSetups, useSaveBulkCleaningSetup } from '@/queries/property-cleaning';
 import { useProperties } from '@/queries/use-properties';
 import { useOrgMembers } from '@/queries/use-org-team';
 import type { CleaningSetupBulkResponse, Property } from '@/types';
@@ -20,12 +20,14 @@ import {
   cleaningDtoOf,
   cleaningProblems,
   cleaningPropertiesOf,
+  cleaningReadOf,
   cleaningStaffOf,
   emptyCleaningForm,
   groupByComune,
   memberName,
   supplierChoicesOf,
   type CleaningForm,
+  type CleaningRead,
 } from '../lib/property-cleaning-model';
 import { AUTOMATIONS_PATH } from '../properties-paths';
 import { PropertyCleaningFields, type StaffChoice } from './property-cleaning-fields';
@@ -39,8 +41,8 @@ interface BulkCleaningDialogProps {
 
 /**
  * «Chi pulisce, per più immobili» (E24/F01/US02/T01): the same cleaner, price and time for many properties of Affitti brevi at once, as a layer over the page it was opened from. The properties are the ones
- * of the list; the dialog takes one currency at a time (the price is in the currency of the property, and the suppliers work in euro). The answer is one line for each property: the ones that were saved and,
- * with the reason, the ones that were not: never «all saved» while one was not.
+ * of the list; the dialog takes one currency at a time (the price is in the currency of the property, which the setup of each property says: the list does not, and the suppliers work in euro). The
+ * answer is one line for each property: the ones that were saved and, with the reason, the ones that were not: never «all saved» while one was not.
  */
 export function BulkCleaningDialog({ open, onOpenChange, routineLink = true }: BulkCleaningDialogProps) {
   const { t } = useTranslation();
@@ -76,21 +78,32 @@ function BulkCleaningBody({ onClose, routineLink }: { onClose: () => void; routi
   const properties = useMemo(() => cleaningPropertiesOf(list.isError ? undefined : list.data), [list.data, list.isError]);
   const byId = useMemo(() => new Map(properties.map((property) => [property.id, property])), [properties]);
   const chosen = useMemo(() => selected.flatMap((id) => byId.get(id) ?? []), [selected, byId]);
-  // One currency at a time: the price is in the currency of the property, and a number is never applied to a currency the person did not state.
-  const currency = chosen[0]?.currency ?? null;
+
+  // The currency of each property is what its setup says (the list of the properties carries none): one read for each property, and a read that fails is «currency not read», never the old answer.
+  const reads = usePropertyCleaningSetups(properties.map((property) => property.id));
+  const readsById = new Map<string, CleaningRead>(properties.map((property, index) => [property.id, cleaningReadOf({ isError: reads[index].isError, data: reads[index].data })]));
+  const readOf = (propertyId: string): CleaningRead => readsById.get(propertyId) ?? { state: 'unread' };
+
+  // One currency at a time: the price is in the currency of the property, and a number is never applied to a currency the person did not state or the server did not say.
+  const chosenReads = chosen.map((property) => readOf(property.id));
+  const chosenUnread = chosenReads.some((read) => read.state === 'unread');
+  const first = chosenReads[0];
+  const lockCurrency = first?.state === 'known' ? first.currency : null;
+  const ready = chosenReads.length > 0 && chosenReads.every((read) => read.state === 'known');
+  const currency = ready ? lockCurrency : null;
   // The suppliers work in euro: for a property in another currency a member of the staff cleans, whatever was chosen before.
   const form: CleaningForm = currency !== null && currency !== SUPPLIER_CURRENCY && draft.kind === 'Supplier' ? { ...draft, kind: 'Staff' } : draft;
 
   const groups = useMemo(() => groupByComune(chosen), [chosen]);
   const supplierReads = useCleaningSuppliers(
     groups.map((group) => group[0].id),
-    form.kind === 'Supplier' && chosen.length > 0,
+    form.kind === 'Supplier' && ready,
   );
   const supplierChoices = supplierChoicesOf(
     groups.map((group, index) => ({ size: group.length, suppliers: supplierReads[index]?.data?.items ?? [] })),
     false,
   );
-  const members = useOrgMembers(canListTeam && form.kind === 'Staff' && chosen.length > 0);
+  const members = useOrgMembers(canListTeam && form.kind === 'Staff' && ready);
   const staffChoices = useMemo<StaffChoice[]>(
     () => (members.isError ? [] : cleaningStaffOf(members.data?.items)).map((member) => ({ userId: member.userId, name: memberName(member) })),
     [members.data, members.isError],
@@ -103,18 +116,29 @@ function BulkCleaningBody({ onClose, routineLink }: { onClose: () => void; routi
     });
   };
 
-  const lockedCurrency = currency ?? properties[0]?.currency ?? null;
-  const selectable = properties.filter((property) => property.currency === lockedCurrency).slice(0, MAX_BULK_PROPERTIES);
+  const reading = properties.some((property) => readOf(property.id).state === 'reading');
+  const unreadCount = properties.filter((property) => readOf(property.id).state === 'unread').length;
+  const firstKnown = properties.map((property) => readOf(property.id)).find((read) => read.state === 'known');
+  const lockedCurrency = lockCurrency ?? (firstKnown?.state === 'known' ? firstKnown.currency : null);
+  const selectable =
+    lockedCurrency === null
+      ? []
+      : properties
+          .filter((property) => {
+            const read = readOf(property.id);
+            return read.state === 'known' && read.currency === lockedCurrency;
+          })
+          .slice(0, MAX_BULK_PROPERTIES);
   const allSelected = selectable.length > 0 && selectable.every((property) => selected.includes(property.id));
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    if (save.isPending || currency === null || selected.length === 0) return;
+    if (save.isPending || currency === null) return;
     setAttempted(true);
     if (Object.keys(cleaningProblems(form)).length > 0) return;
     setError(null);
     try {
-      setResult(await save.mutateAsync({ ...cleaningDtoOf(form, currency), propertyIds: selected }));
+      setResult(await save.mutateAsync({ ...cleaningDtoOf(form, currency), propertyIds: chosen.map((property) => property.id) }));
     } catch (failure) {
       setError(getProblemMessage(failure, t) ?? t('propertyCleaning.bulk.saveError'));
     }
@@ -216,40 +240,70 @@ function BulkCleaningBody({ onClose, routineLink }: { onClose: () => void; routi
             type="button"
             variant="ghost"
             size="sm"
-            disabled={save.isPending}
+            disabled={save.isPending || (!allSelected && (reading || selectable.length === 0))}
             onClick={() => setSelected(allSelected ? [] : selectable.map((property) => property.id))}
             data-testid="bulk-cleaning-select-all"
           >
             {allSelected ? t('propertyCleaning.bulk.selectNone') : t('propertyCleaning.bulk.selectAll')}
           </Button>
         </div>
+        {unreadCount > 0 ? (
+          <Alert
+            variant="warning"
+            data-testid="bulk-cleaning-currency-unread"
+            action={
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  reads.forEach((read) => {
+                    if (read.isError) void read.refetch();
+                  })
+                }
+              >
+                {t('propertyCleaning.retry')}
+              </Button>
+            }
+          >
+            {t('propertyCleaning.bulk.currencyUnreadAlert', { count: unreadCount })}
+          </Alert>
+        ) : null}
         <ul className="max-h-56 divide-y overflow-y-auto rounded-md border" data-testid="bulk-cleaning-properties">
           {properties.map((property) => {
-            const otherCurrency = currency !== null && property.currency !== currency;
+            const read = readOf(property.id);
+            const otherCurrency = lockCurrency !== null && read.state === 'known' && read.currency !== lockCurrency;
             const checked = selected.includes(property.id);
             const id = `bulk-cleaning-${property.id}`;
+            const note =
+              read.state === 'reading'
+                ? t('propertyCleaning.bulk.currencyReading')
+                : read.state === 'unread'
+                  ? t('propertyCleaning.bulk.currencyUnread')
+                  : otherCurrency
+                    ? t('propertyCleaning.bulk.otherCurrency', { currency: read.currency })
+                    : null;
             return (
               <li key={property.id} className="flex items-center gap-3 px-3 py-2">
                 <Checkbox
                   id={id}
                   checked={checked}
-                  disabled={save.isPending || otherCurrency}
+                  // A property already chosen can always be taken out again, whatever its read says now.
+                  disabled={save.isPending || (!checked && (read.state !== 'known' || otherCurrency))}
                   onCheckedChange={(value) => toggle(property, value === true)}
                   data-testid={`bulk-cleaning-property-${property.id}`}
                 />
                 <label htmlFor={id} className="min-w-0 flex-1 cursor-pointer text-sm">
                   <span className="block break-words font-medium">{property.name}</span>
-                  <span className="block break-words text-foreground/70">
-                    {[property.city, otherCurrency ? t('propertyCleaning.bulk.otherCurrency', { currency: property.currency }) : null].filter(Boolean).join(' · ')}
-                  </span>
+                  <span className="block break-words text-foreground/70">{[property.city, note].filter(Boolean).join(' · ')}</span>
                 </label>
               </li>
             );
           })}
         </ul>
         <p className="text-sm text-foreground/70" aria-live="polite" data-testid="bulk-cleaning-count">
-          {t('propertyCleaning.bulk.selected', { count: selected.length })}
-          {selected.length >= MAX_BULK_PROPERTIES ? ` ${t('propertyCleaning.bulk.limit', { max: MAX_BULK_PROPERTIES })}` : ''}
+          {t('propertyCleaning.bulk.selected', { count: chosen.length })}
+          {chosen.length >= MAX_BULK_PROPERTIES ? ` ${t('propertyCleaning.bulk.limit', { max: MAX_BULK_PROPERTIES })}` : ''}
         </p>
       </fieldset>
     );
@@ -284,6 +338,11 @@ function BulkCleaningBody({ onClose, routineLink }: { onClose: () => void; routi
           checkOutTime={null}
           disabled={save.isPending}
         />
+      ) : chosen.length > 0 ? (
+        // Nothing is asked about the price until the server has said the currency of every property chosen.
+        <p className="text-sm text-foreground/70" role={chosenUnread ? undefined : 'status'} data-testid="bulk-cleaning-currency-state">
+          {chosenUnread ? t('propertyCleaning.bulk.currencyBlocked') : t('propertyCleaning.bulk.currencyWaiting')}
+        </p>
       ) : list.isSuccess && properties.length > 0 ? (
         <p className="text-sm text-foreground/70" data-testid="bulk-cleaning-choose-first">
           {t('propertyCleaning.bulk.chooseFirst')}
@@ -300,8 +359,8 @@ function BulkCleaningBody({ onClose, routineLink }: { onClose: () => void; routi
         <Button type="button" variant="ghost" onClick={onClose} disabled={save.isPending} data-testid="bulk-cleaning-cancel">
           {t('propertyCleaning.cancel')}
         </Button>
-        <Button type="submit" loading={save.isPending} disabled={selected.length === 0} data-testid="bulk-cleaning-save">
-          {selected.length === 0 ? t('propertyCleaning.save') : t('propertyCleaning.bulk.save', { count: selected.length })}
+        <Button type="submit" loading={save.isPending} disabled={!ready} data-testid="bulk-cleaning-save">
+          {chosen.length === 0 ? t('propertyCleaning.save') : t('propertyCleaning.bulk.save', { count: chosen.length })}
         </Button>
       </DialogFooter>
     </form>

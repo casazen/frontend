@@ -160,6 +160,22 @@ export function cleaningStaffOf(members: readonly OrgMember[] | undefined): OrgM
     .sort((left, right) => memberName(left).localeCompare(memberName(right)));
 }
 
+/**
+ * What the dialog for many properties knows of one property from the read of its setup: the read is on its way, it failed (the currency is not read), or it says the currency of the property and
+ * whether a setup is saved already. The list of the properties carries no currency, so this read is the only source of it.
+ */
+export type CleaningRead = { state: 'reading' } | { state: 'unread' } | { state: 'known'; currency: string; configured: boolean };
+
+/**
+ * The read of a setup as the dialog uses it. A read that failed is never the answer it gave before (the query keeps the old data on an error): the currency is «not read», and nothing is
+ * guessed from the old data or from a default. A currency that is not a code of three letters is not read either.
+ */
+export function cleaningReadOf(read: { isError: boolean; data: PropertyCleaningSetup | undefined }): CleaningRead {
+  if (read.isError) return { state: 'unread' };
+  if (read.data === undefined) return { state: 'reading' };
+  return /^[A-Z]{3}$/.test(read.data.currency) ? { state: 'known', currency: read.data.currency, configured: read.data.configured } : { state: 'unread' };
+}
+
 /** The properties that can be set for many at once: the ones the list holds, in the order of their names. */
 export function cleaningPropertiesOf(properties: readonly Property[] | undefined): Property[] {
   return [...(properties ?? [])].sort((left, right) => left.name.localeCompare(right.name));

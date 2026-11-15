@@ -11,18 +11,31 @@ const PROPERTY_CLEANING_KEY = 'property-cleaning';
 /** How long the setup of a property is fresh: it changes by what the host does, here, in the bulk dialog and in the routines page, so a card that opens reads it again. */
 const SETUP_STALE_TIME = 30 * 1000;
 
+/** The read of the setup of one property: the card and the dialog for many properties ask for it with the same key, so what one reads the other finds. */
+function setupQuery(propertyId: string) {
+  return {
+    queryKey: [PROPERTY_CLEANING_KEY, propertyId],
+    queryFn: () => propertyCleaningApi.get(propertyId),
+    staleTime: SETUP_STALE_TIME,
+    refetchOnMount: 'always' as const,
+  };
+}
+
 /**
  * The cleaner of one property (`GET api/properties/{id}/cleaning-setup`). It holds a price, so it asks for `property.write`: the card that reads it is shown only to who holds it.
  * Read again every time the card opens (`refetchOnMount: 'always'`), and a read that fails is not the old answer: the card says it does not know.
  */
 export function usePropertyCleaningSetup(propertyId: string) {
-  return useQuery({
-    queryKey: [PROPERTY_CLEANING_KEY, propertyId],
-    queryFn: () => propertyCleaningApi.get(propertyId),
-    enabled: propertyId !== '',
-    staleTime: SETUP_STALE_TIME,
-    refetchOnMount: 'always',
-  });
+  return useQuery({ ...setupQuery(propertyId), enabled: propertyId !== '' });
+}
+
+/**
+ * The setup of each property given (`GET api/properties/{id}/cleaning-setup`, one read for each): the dialog for many properties takes the currency of every property from here. The list of the
+ * properties does not carry one (`PropertyResponse` has no currency), and the setup is where the server says the currency of the property, the one a price is in. The same key and the same
+ * freshness as the card's read.
+ */
+export function usePropertyCleaningSetups(propertyIds: readonly string[]) {
+  return useQueries({ queries: propertyIds.map((propertyId) => setupQuery(propertyId)) });
 }
 
 /**

@@ -6,6 +6,7 @@ import { AxiosError } from 'axios';
 import { toast } from 'sonner';
 import type { ContextBootstrapDto } from '@/api/contexts';
 import { propertiesApi } from '@/api/properties.api';
+import { propertyCleaningApi } from '@/api/property-cleaning.api';
 import { routinesApi } from '@/api/routines.api';
 import { ContextRouteGuard } from '@/components/auth/context-route-guard';
 import { DEFAULT_FEATURE_FLAGS, isFeatureEnabled, parseFeatureFlags } from '@/config/feature-flags';
@@ -39,6 +40,7 @@ vi.mock('@/api/routines.api', () => ({
   },
 }));
 vi.mock('@/api/properties.api', () => ({ propertiesApi: { getAll: vi.fn() } }));
+vi.mock('@/api/property-cleaning.api', () => ({ propertyCleaningApi: { get: vi.fn(), save: vi.fn(), saveBulk: vi.fn() } }));
 vi.mock('@/hooks/use-empty-workspace-recovery', () => ({ useEmptyWorkspaceRecovery: () => false }));
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: vi.fn() }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
@@ -129,6 +131,24 @@ describe('the routines page (E01/F04/US02/T01)', () => {
     vi.mocked(routinesApi.getActionCatalog).mockResolvedValue(CATALOG);
     vi.mocked(routinesApi.getExecutions).mockResolvedValue([]);
     vi.mocked(propertiesApi.getAll).mockResolvedValue([{ id: 'p1', name: 'Casa Mare' }, { id: 'p2', name: 'Casa Monti' }] as Property[]);
+    // The list of the properties carries no currency: the layer for many properties asks the setup of each one for it.
+    vi.mocked(propertyCleaningApi.get).mockImplementation(async (propertyId) => ({
+      propertyId,
+      configured: false,
+      cleanerKind: null,
+      supplierOrgId: null,
+      supplierName: null,
+      supplierIsTrusted: false,
+      staffUserId: null,
+      priceCents: null,
+      currency: 'EUR',
+      startTime: null,
+      effectiveStartTime: '10:00:00',
+      durationMinutes: null,
+      effectiveDurationMinutes: 120,
+      active: false,
+      updatedAt: null,
+    }));
     await i18n.changeLanguage('it');
   });
 
