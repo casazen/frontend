@@ -730,6 +730,42 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       }
     });
 
+    it('ExecutionLog_RunThatDidNothingForReal_IsNotAGreenCompleted', async () => {
+      // The server calls a run `Success` when every action ended done, simulated or blocked: only a run with an action really done is a green «Completata».
+      const run = (id: string, actions: Array<{ type: string; outcome: string; code?: string }>): RoutineExecution => ({
+        id,
+        orgId: 'org-1',
+        routineId: 'r1',
+        eventId: `ev-${id}`,
+        startedAt: '2026-11-09T08:00:00Z',
+        completedAt: '2026-11-09T08:00:01Z',
+        outcome: 'Success',
+        resumeAt: null,
+        resultJson: JSON.stringify({ actions: actions.map((action, index) => ({ index, ...action })), nextActionIndex: actions.length }),
+      });
+      vi.mocked(routinesApi.getExecutions).mockResolvedValue([
+        run('d1', [{ type: 'CreateActivity', outcome: 'done' }]),
+        run('s1', [{ type: 'CreateActivity', outcome: 'simulated' }]),
+        run('b1', [{ type: 'MessageToGuest', outcome: 'blocked', code: 'airbnb_not_confirmed' }]),
+      ]);
+      renderPage();
+
+      fireEvent.click(await screen.findByTestId('show-log-r1'));
+
+      const done = await screen.findByTestId('execution-outcome-d1');
+      expect(done).toHaveTextContent('Completata');
+      expect(done).toHaveAttribute('data-tone', 'success');
+      // Nothing ran for real: neutral, and told as what it was.
+      const simulated = screen.getByTestId('execution-outcome-s1');
+      expect(simulated).toHaveTextContent('Simulata');
+      expect(simulated).not.toHaveTextContent('Completata');
+      expect(simulated).toHaveAttribute('data-tone', 'neutral');
+      const blocked = screen.getByTestId('execution-outcome-b1');
+      expect(blocked).toHaveTextContent('Bloccata');
+      expect(blocked).not.toHaveTextContent('Completata');
+      expect(blocked).toHaveAttribute('data-tone', 'neutral');
+    });
+
     it('RoutinesPage_DeleteAfterConfirming_DeletesTheRoutineAndSaysThatItsLogGoesToo', async () => {
       vi.mocked(routinesApi.delete).mockResolvedValue(undefined);
       renderPage();

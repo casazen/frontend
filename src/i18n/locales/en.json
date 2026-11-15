@@ -22782,9 +22782,11 @@
       "latest": "The latest {{max}} runs are shown.",
       "loadError": "We cannot load the log.",
       "outcome": {
+        "blocked": "Blocked",
         "failed": "Failed",
         "pending": "To start",
         "running": "Running",
+        "simulated": "Simulated",
         "success": "Completed",
         "unknown": "Unknown outcome",
         "waiting": "Waiting"

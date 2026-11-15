@@ -22782,9 +22782,11 @@
       "latest": "Sono mostrate le ultime {{max}} esecuzioni.",
       "loadError": "Non riusciamo a caricare il registro.",
       "outcome": {
+        "blocked": "Bloccata",
         "failed": "Non riuscita",
         "pending": "Da avviare",
         "running": "In corso",
+        "simulated": "Simulata",
         "success": "Completata",
         "unknown": "Esito sconosciuto",
         "waiting": "In attesa"

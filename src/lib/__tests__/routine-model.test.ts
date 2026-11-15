@@ -10,6 +10,7 @@ import {
   defaultActionType,
   draftToAction,
   eventOptionsFor,
+  executionHeadline,
   isActionUnavailable,
   newActionDraft,
   newRuleDraft,
@@ -284,6 +285,47 @@ describe('the log of an execution', () => {
     expect(parseExecutionResult(JSON.stringify({ actions: [{ index: 0, type: 'Wait', outcome: 'exploded' }, { index: 1, type: 'Wait', outcome: 'done' }] })).actions).toEqual([
       { index: 1, type: 'Wait', outcome: 'done' },
     ]);
+  });
+
+  describe('executionHeadline', () => {
+    const actionsOf = (...outcomes: Array<'done' | 'simulated' | 'blocked' | 'failed' | 'waiting'>) => outcomes.map((outcome) => ({ outcome }));
+
+    it('executionHeadline_SuccessWithAnActionReallyDone_IsAGreenCompleted', () => {
+      expect(executionHeadline('Success', actionsOf('done'))).toEqual({ labelKey: 'routines.log.outcome.success', tone: 'success' });
+      expect(executionHeadline('Success', actionsOf('done', 'blocked'))).toEqual({ labelKey: 'routines.log.outcome.success', tone: 'success' });
+    });
+
+    it('executionHeadline_SuccessWhoseActionsWereOnlySimulated_IsASimulationInNeutral', () => {
+      expect(executionHeadline('Success', actionsOf('simulated', 'simulated'))).toEqual({ labelKey: 'routines.log.outcome.simulated', tone: 'neutral' });
+      // A simulation with an action that a guardrail would have stopped is still a simulation.
+      expect(executionHeadline('Success', actionsOf('blocked', 'simulated'))).toEqual({ labelKey: 'routines.log.outcome.simulated', tone: 'neutral' });
+    });
+
+    it('executionHeadline_SuccessWhoseActionsWereOnlyBlocked_IsBlockedInNeutral', () => {
+      expect(executionHeadline('Success', actionsOf('blocked'))).toEqual({ labelKey: 'routines.log.outcome.blocked', tone: 'neutral' });
+    });
+
+    it('executionHeadline_SuccessWithNoActionToTell_IsNeverGreen', () => {
+      expect(executionHeadline('Success', [])).toEqual({ labelKey: 'routines.log.outcome.success', tone: 'neutral' });
+    });
+
+    it('executionHeadline_OtherOutcomes_KeepTheirOwnWordsAndTone', () => {
+      expect(executionHeadline('Failed', actionsOf('failed'))).toEqual({ labelKey: 'routines.log.outcome.failed', tone: 'danger' });
+      // Actions that were only simulated or blocked do not soften a run that failed.
+      expect(executionHeadline('Failed', actionsOf('simulated'))).toEqual({ labelKey: 'routines.log.outcome.failed', tone: 'danger' });
+      expect(executionHeadline('Waiting', actionsOf('waiting'))).toEqual({ labelKey: 'routines.log.outcome.waiting', tone: 'neutral' });
+      expect(executionHeadline('Running', [])).toEqual({ labelKey: 'routines.log.outcome.running', tone: 'neutral' });
+      expect(executionHeadline('Pending', [])).toEqual({ labelKey: 'routines.log.outcome.pending', tone: 'neutral' });
+      expect(executionHeadline('SomethingNew', actionsOf('done'))).toEqual({ labelKey: 'routines.log.outcome.unknown', tone: 'neutral' });
+    });
+
+    it.each(['it', 'en'] as const)('executionHeadline_EveryLabel_HasItsWordsIn_%s', (lng) => {
+      const outcomes = ['Success', 'Failed', 'Waiting', 'Running', 'Pending', 'SomethingNew'];
+      const runs = [actionsOf('done'), actionsOf('simulated'), actionsOf('blocked'), []];
+      const keys = new Set(outcomes.flatMap((outcome) => runs.map((actions) => executionHeadline(outcome, actions).labelKey)));
+
+      for (const key of keys) expect(i18n.exists(key, { lng }), key).toBe(true);
+    });
   });
 
   it('utcInstant_InstantWithNoZone_IsUtcLikeEveryInstantOfTheApi', () => {

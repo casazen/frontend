@@ -434,14 +434,36 @@ export const ACTION_OUTCOME_KEYS: Record<RoutineActionOutcome, string> = {
   waiting: 'routines.log.action.waiting',
 };
 
+export type ExecutionTone = 'success' | 'neutral' | 'danger';
+
 /** The words of how an execution ended (`RoutineExecutionOutcomes`) and the look of its badge: only `Failed` is red, what is not finished is not a failure. */
-export const EXECUTION_OUTCOMES: ReadonlyArray<{ outcome: string; labelKey: string; tone: 'success' | 'neutral' | 'danger' }> = [
+export const EXECUTION_OUTCOMES: ReadonlyArray<{ outcome: string; labelKey: string; tone: ExecutionTone }> = [
   { outcome: 'Success', labelKey: 'routines.log.outcome.success', tone: 'success' },
   { outcome: 'Failed', labelKey: 'routines.log.outcome.failed', tone: 'danger' },
   { outcome: 'Waiting', labelKey: 'routines.log.outcome.waiting', tone: 'neutral' },
   { outcome: 'Running', labelKey: 'routines.log.outcome.running', tone: 'neutral' },
   { outcome: 'Pending', labelKey: 'routines.log.outcome.pending', tone: 'neutral' },
 ];
+
+/**
+ * The headline of an execution in the log: how it ended and the look of its badge. The server calls an execution `Success` when every action ended done, simulated or blocked, so the
+ * word alone says too much: «Completata», in green, is for a run in which at least one action was really done. A run whose actions were only simulated (a routine in test mode) or only
+ * blocked (a guardrail, a stay that did not happen) did nothing for real, and says so in neutral: «Simulata» (a simulation that has a blocked action in it is still a simulation) or
+ * «Bloccata». Every other outcome keeps its own words and tone, and one this version does not know is said as unknown.
+ */
+export function executionHeadline(outcome: string, actions: ReadonlyArray<Pick<RoutineExecutionActionResult, 'outcome'>>): { labelKey: string; tone: ExecutionTone } {
+  const known = EXECUTION_OUTCOMES.find((candidate) => candidate.outcome === outcome);
+  if (!known) return { labelKey: 'routines.log.outcome.unknown', tone: 'neutral' };
+  if (outcome === 'Success' && !actions.some((action) => action.outcome === 'done')) {
+    const nothingForReal = actions.some((action) => action.outcome === 'simulated')
+      ? 'routines.log.outcome.simulated'
+      : actions.some((action) => action.outcome === 'blocked')
+        ? 'routines.log.outcome.blocked'
+        : known.labelKey;
+    return { labelKey: nothingForReal, tone: 'neutral' };
+  }
+  return { labelKey: known.labelKey, tone: known.tone };
+}
 
 /** The stable codes an execution or one of its actions carries (`RoutineCodes`) and the sentence that tells each. A code that is not here is not shown: never a raw code. */
 const EXECUTION_CODES: ReadonlyArray<{ code: string; labelKey: string }> = [

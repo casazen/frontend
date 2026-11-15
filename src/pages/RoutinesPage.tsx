@@ -19,11 +19,11 @@ import { RoutineLibrary } from '@/components/routines/RoutineLibrary';
 import { getHttpStatus } from '@/lib/api-errors';
 import { formatRomeDateTime } from '@/lib/stay-dates';
 import {
-  EXECUTION_OUTCOMES,
   ACTION_OUTCOME_KEYS,
   actionLabelKey,
   eventLabelKey,
   executionCodeKey,
+  executionHeadline,
   parseActions,
   parseExecutionResult,
   toAvailability,
@@ -434,8 +434,8 @@ function ExecutionLog({ routineId }: { routineId: string | undefined }) {
 
 function ExecutionRow({ execution, when }: { execution: RoutineExecution; when: (instant: string) => string }) {
   const { t } = useTranslation();
-  const outcome = EXECUTION_OUTCOMES.find((known) => known.outcome === execution.outcome);
   const result = parseExecutionResult(execution.resultJson);
+  const headline = executionHeadline(execution.outcome, result.actions);
   const codeKey = executionCodeKey(result.code);
 
   return (
@@ -453,8 +453,12 @@ function ExecutionRow({ execution, when }: { execution: RoutineExecution; when: 
               <p className="text-xs text-muted-foreground">{t('routines.log.resumesAt', { when: when(execution.resumeAt) })}</p>
             )}
           </div>
-          <Badge variant={outcome?.tone === 'success' ? 'success' : outcome?.tone === 'danger' ? 'destructive' : 'secondary'}>
-            {t(outcome?.labelKey ?? 'routines.log.outcome.unknown')}
+          <Badge
+            variant={headline.tone === 'success' ? 'success' : headline.tone === 'danger' ? 'destructive' : 'secondary'}
+            data-testid={`execution-outcome-${execution.id}`}
+            data-tone={headline.tone}
+          >
+            {t(headline.labelKey)}
           </Badge>
         </div>
 
