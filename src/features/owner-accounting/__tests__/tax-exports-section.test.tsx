@@ -165,6 +165,19 @@ describe('the CU needs the annual data, and its prospects are one for each owner
     renderSection({ dataset: undefined });
     expect(screen.getByTestId('tax-export-cu-csv')).toBeDisabled();
     expect(screen.queryByTestId('tax-export-cu-none')).toBeNull();
+    expect(screen.queryByTestId('tax-export-cu-load-error')).toBeNull();
+  });
+
+  it('TaxExports_WhenTheAnnualDataCannotBeRead_TheCuSaysSo_AndOffersToReadThemAgain', () => {
+    const onRetry = vi.fn();
+    renderSection({ dataset: undefined, datasetError: { error: new Error('Network Error'), onRetry } });
+
+    // Not a wait that never ends: the failure is told with the way to try again, and no file of the CU is asked meanwhile.
+    const failure = screen.getByTestId('tax-export-cu-load-error');
+    expect(screen.getByTestId('tax-export-cu-csv')).toBeDisabled();
+    expect(screen.getByTestId('tax-export-cu-xlsx')).toBeDisabled();
+    fireEvent.click(within(failure).getByRole('button', { name: i18n.t('shared.errorState.retry') }));
+    expect(onRetry).toHaveBeenCalledTimes(1);
   });
 
   it('TaxExports_TheProspectOfAnOwner_IsAskedForThatOwnerOnly_WithItsNameNotItsId', async () => {

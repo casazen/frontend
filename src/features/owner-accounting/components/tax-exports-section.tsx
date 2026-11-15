@@ -5,6 +5,7 @@ import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { ReportAccessDeniedError, type ReportFileFormat } from '@/api/report-files';
 import { PlainSection } from '@/components/shared/calm';
+import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { isFeatureEnabled } from '@/config/feature-flags';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
@@ -12,7 +13,7 @@ import { getProblemMessage } from '@/lib/api-errors';
 import { useOwnerNames } from '@/queries/use-owner-accounting';
 import { useDownloadTaxFile } from '@/queries/withholding';
 import type { TaxReportingDataset } from '@/types';
-import { shortId } from '../owner-accounting-model';
+import { messageOf, shortId } from '../owner-accounting-model';
 import { cuOwnerIdsOf, type TaxExportRequest } from '../tax-exports-model';
 import { useOwnerFormat } from '../use-owner-format';
 import { FilingStatus } from './filing-status';
@@ -168,6 +169,8 @@ interface TaxExportsSectionProps {
   month: number | null;
   /** The annual data of the year: `undefined` while they are read (or the read failed), `null` when they were never generated, then there is no CU to export. */
   dataset: TaxReportingDataset | null | undefined;
+  /** The read of the annual data failed: the CU says so, with the way to read them again, instead of waiting for data that is not coming. */
+  datasetError?: { error: unknown; onRetry: () => void };
   /** A file of the page is being made again (the F24, the annual data): the files read the same data, so none is asked until it is made. */
   busy?: boolean;
   /** Where the annual data are generated when there are none: the month-end close of the month. */
@@ -189,7 +192,7 @@ function rowOf(request: TaxExportRequest): string {
  * Every file is made on request, saved and let go (nothing keeps it), through the authenticated client. While one is on its way no other is asked, a second click does nothing, and a failure is told under the file it
  * belongs to in words (a role that may not read it, no annual data yet, nothing withheld in the period), never as a file that is empty.
  */
-export function TaxExportsSection({ year, month, dataset, busy = false, closeHref, nested = false }: TaxExportsSectionProps) {
+export function TaxExportsSection({ year, month, dataset, datasetError, busy = false, closeHref, nested = false }: TaxExportsSectionProps) {
   const { t } = useTranslation();
   const { month: monthName } = useOwnerFormat();
   const { flags } = useFeatureFlags();
@@ -260,6 +263,19 @@ export function TaxExportsSection({ year, month, dataset, busy = false, closeHre
                     </>
                   ) : null}
                 </p>
+              ) : null}
+              {datasetError ? (
+                <Alert
+                  variant="danger"
+                  action={
+                    <Button type="button" size="sm" variant="outline" onClick={datasetError.onRetry}>
+                      {t('shared.errorState.retry')}
+                    </Button>
+                  }
+                  data-testid="tax-export-cu-load-error"
+                >
+                  {messageOf(datasetError.error, t)}
+                </Alert>
               ) : null}
               {/* On a page of its own the CU says where it stands (the panel of the month-end has the state of the file above). */}
               {cuReady && !nested ? <FilingStatus file={dataset} /> : null}

@@ -225,6 +225,7 @@ function WithholdingBody() {
         year={selectedYear}
         month={owners.length > 0 || hasF24 ? selectedMonth : null}
         dataset={annual.isPending || annual.isError ? undefined : (annual.data ?? null)}
+        datasetError={annual.isError ? { error: annual.error, onRetry: () => void annual.refetch() } : undefined}
         closeHref={closePath(selectedYear, selectedMonth)}
       />
 
