@@ -14,6 +14,7 @@ import type { ConnectionHealthLine, ConnectionHealthState } from '@/types';
 import type { ComplianceHandoffTopic } from '@/types/compliance-handoff.types';
 import { ComplianceDrawerButton } from '../compliance-drawer/compliance-drawer-button';
 import { CONNECTION_HEALTH_SECTION, describeHealthLine, formatRunTime, healthDetailKey, healthInstructionsKey, senderWizardPath } from '../lib/connection-health-model';
+import { IstatCoverageNotice } from './istat-coverage-notice';
 
 /** The look of a state: an icon, a word and a colour together (the colour is never the only sign). The tones are the semantic tokens, with an AA fallback. */
 const STATE_LOOK: Record<ConnectionHealthState, { Icon: LucideIcon; tone: string }> = {
@@ -180,6 +181,8 @@ export function ConnectionHealthPanel({ propertyId, timeZone }: ConnectionHealth
           <HealthRow topic="Alloggiati" line={data.alloggiati} applies={data.applies} propertyId={propertyId} timeZone={timeZone} wizardPath={wizardPath} />
           <HealthRow topic="Istat" line={data.istat} applies={data.applies} propertyId={propertyId} timeZone={timeZone} wizardPath={wizardPath} />
         </ul>
+        {/* What the region table says of the ISTAT of this property (E21/F01/US02/T01): whether the channel manager sends it, the deadline, the one thing to do next and the upload of the proof of the month. Behind the flag of the activation. */}
+        {data.applies ? <IstatCoverageNotice propertyId={propertyId} showProof /> : null}
         {data.applies ? <CredentialsLine stored={data.credentialsInCasaZen} usable={data.credentialsUsable} archivePath={archivePath} /> : null}
         <div>
           <Button type="button" variant="outline" size="sm" className="min-h-11" onClick={() => void health.refetch()} disabled={health.isFetching} data-testid="connection-health-refresh">

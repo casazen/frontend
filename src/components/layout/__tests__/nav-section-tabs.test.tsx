@@ -184,7 +184,7 @@ describe('NavSectionTabs (UI-04a)', () => {
 
   it('NavSectionTabs_StaffConsoleAndAmministrazione_HaveTabsTooAndTheSupplierAreaKeepsItsLinks', () => {
     renderAt('/app/admin/cin');
-    expect(labelsOf('Sezioni di Conformità')).toEqual(['Conformità', 'Tassa di Soggiorno', 'Dati normativi LTR']);
+    expect(labelsOf('Sezioni di Conformità')).toEqual(['Conformità', 'Tassa di Soggiorno', 'Dati normativi LTR', 'Regioni ISTAT']);
     cleanup();
 
     renderAt('/app/account/statements', { flags: { agencyTier: true } });

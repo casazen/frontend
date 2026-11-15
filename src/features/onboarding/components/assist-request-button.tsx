@@ -30,8 +30,11 @@ interface AssistRequestButtonProps {
   propertyId?: string | null;
   /** The channel of a channel access. */
   channelCode?: string | null;
-  /** `needHelp` is the same request under the words of the fallback of a result CasaZen cannot read («Mi serve aiuto»). */
-  label?: 'doItForMe' | 'needHelp';
+  /**
+   * `needHelp` is the same request under the words of the fallback of a result CasaZen cannot read («Mi serve aiuto»); `askSupport` is the same request under the words of a notice that
+   * says something is not verified yet, such as the coverage of the ISTAT of a region («Chiedi al supporto»).
+   */
+  label?: 'doItForMe' | 'needHelp' | 'askSupport';
   /** The line that says where the request stands and the link to «Da fare»: one on a page is enough. */
   showStatus?: boolean;
   /** «Fallo per me» is the default action of the screen (a host with new properties: CasaZen support does the step, PO-19). */

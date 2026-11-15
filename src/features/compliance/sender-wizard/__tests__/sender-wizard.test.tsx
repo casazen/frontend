@@ -7,11 +7,13 @@ import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { propertiesApi } from '@/api/properties.api';
+import { istatApi } from '@/api/istat.api';
 import { onboardingAssistApi } from '@/api/onboarding-assist.api';
 import { propertySenderApi } from '@/api/property-sender.api';
 import { questuraCredentialsApi } from '@/api/questura-credentials.api';
 import { wizardDraftApi } from '@/api/wizard-draft.api';
 import type { Property, PropertySender, SenderConnectionTest } from '@/types';
+import type { PropertyIstatCoverage } from '@/types/istat.types';
 import { SenderWizardPage } from '../sender-wizard';
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
@@ -26,6 +28,8 @@ vi.mock('@/api/properties.api', async (importOriginal) => {
 vi.mock('@/api/property-sender.api', () => ({ propertySenderApi: { get: vi.fn(), switch: vi.fn(), testConnection: vi.fn(), declareActivated: vi.fn() } }));
 vi.mock('@/api/questura-credentials.api', () => ({ questuraCredentialsApi: { getStatus: vi.fn(), set: vi.fn(), remove: vi.fn() } }));
 vi.mock('@/api/onboarding-assist.api', () => ({ onboardingAssistApi: { getIstatCredentialsStatus: vi.fn(), setIstatCredentials: vi.fn() } }));
+// What the region table says of the ISTAT of the property (E21/F01/US02/T01): asked only while the activation of the channel manager is on.
+vi.mock('@/api/istat.api', () => ({ istatApi: { getCoverage: vi.fn() } }));
 // The activation of the channel manager is behind a flag (off unless a test turns it on): the regional ISTAT credentials of the credentials step are drawn only while it is on.
 const featureFlags = vi.hoisted(() => ({ octorateOnboarding: false }));
 vi.mock('@/hooks/use-feature-flags', () => ({ useFeatureFlags: () => ({ flags: featureFlags, isLoading: false }) }));
@@ -80,6 +84,31 @@ function senderOf(change: Partial<PropertySender> = {}): PropertySender {
     delegationTextVersion: VERSION,
     declaredAt: null,
     lastChangedAt: null,
+    ...change,
+  };
+}
+
+/** What the region table says of the ISTAT of the property: a region the staff verified, which the channel manager covers. */
+function coverageOf(change: Partial<PropertyIstatCoverage> = {}): PropertyIstatCoverage {
+  return {
+    propertyId: PROPERTY_ID,
+    applies: true,
+    regionKnown: true,
+    regionIstatCode: '03',
+    provinceCode: null,
+    regionName: 'Lombardia',
+    system: 'Ross1000',
+    portalUrl: 'https://portale.example.com/guida',
+    deadlineKind: 'Monthly',
+    deadlineDay: 5,
+    requiredGuestFields: [],
+    requiredGuestFieldsKnown: true,
+    coverage: 'Covered',
+    istatSender: 'ChannelManager',
+    nextStep: 'ConnectInPanel',
+    assistContext: null,
+    sourceUrl: 'https://fonte.example.com/regioni',
+    verifiedAt: '2026-11-10T09:00:00Z',
     ...change,
   };
 }
@@ -800,6 +829,7 @@ describe('SenderWizardPage: the regional ISTAT credentials of the credentials st
     featureFlags.octorateOnboarding = true;
     vi.mocked(onboardingAssistApi.getIstatCredentialsStatus).mockReset().mockResolvedValue({ configured: false, configuredAt: null });
     vi.mocked(onboardingAssistApi.setIstatCredentials).mockReset().mockResolvedValue({ configured: true, configuredAt: '2026-11-15T10:06:00Z' });
+    vi.mocked(istatApi.getCoverage).mockReset().mockResolvedValue(coverageOf());
   });
 
   afterEach(() => {
@@ -814,6 +844,36 @@ describe('SenderWizardPage: the regional ISTAT credentials of the credentials st
     expect(screen.getByTestId('sender-credentials-step')).toBeInTheDocument();
     expect(screen.queryByTestId('sender-istat-credentials')).not.toBeInTheDocument();
     expect(onboardingAssistApi.getIstatCredentialsStatus).not.toHaveBeenCalled();
+    // With the flag off nothing of the ISTAT coverage is drawn or asked: the wizard is what it was.
+    expect(screen.queryByTestId('istat-coverage-notice')).not.toBeInTheDocument();
+    expect(istatApi.getCoverage).not.toHaveBeenCalled();
+  });
+
+  // E21/F01/US02/T01 (CHK-05 point 3): the wizard says at once whether the channel manager sends the ISTAT of the region, before anything is asked.
+  it('SenderWizardPage_ActivationFlagOn_SaysAtOnceWhetherTheRegionIsCoveredAsTheFirstThingOfTheFirstStep', async () => {
+    await open();
+
+    const notice = await screen.findByTestId('istat-coverage-notice', undefined, WAIT);
+    expect(notice).toHaveAttribute('data-coverage', 'covered');
+    expect(screen.getByTestId('sender-choice-step').firstElementChild).toBe(notice);
+    expect(notice).toHaveTextContent('Lombardia');
+    expect(notice).toHaveTextContent('Ross1000');
+    expect(istatApi.getCoverage).toHaveBeenCalledWith(PROPERTY_ID);
+    // The channel manager is never named.
+    expect(wizard().textContent ?? '').not.toMatch(/octorate/i);
+  });
+
+  it('SenderWizardPage_RegionNotVerified_SaysToVerifyAtTheStartOfTheIstatBlockBeforeTheCredentialsAreAsked', async () => {
+    vi.mocked(istatApi.getCoverage).mockResolvedValue(coverageOf({ coverage: 'Unknown', nextStep: 'AskSupport', verifiedAt: null }));
+    await open();
+    await toTheCredentials();
+
+    const block = await screen.findByTestId('sender-istat-credentials');
+    const notice = await within(block).findByTestId('istat-coverage-notice', undefined, WAIT);
+    expect(notice).toHaveAttribute('data-coverage', 'toVerify');
+    // It comes before the fields where the credentials are typed, and the region is not said to be covered.
+    expect(notice.compareDocumentPosition(within(block).getByTestId('sender-istat-fields')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(notice).not.toHaveTextContent(text('istatCoverage.title.covered'));
   });
 
   it('SenderWizardPage_ActivationFlagOn_ShowsTheIstatBlockWriteOnlyUnderThePoliceCredentials', async () => {
