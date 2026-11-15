@@ -9,7 +9,7 @@ import { propertyCleaningApi } from '@/api/property-cleaning.api';
 import { fetchSuppliersByProperty } from '@/api/service-requests.api';
 import i18n from '@/i18n/config';
 import type { OrgMember } from '@/types/org-team.types';
-import type { Property, PropertyCleaningSetup } from '@/types';
+import type { CleaningSetupBulkResponse, Property, PropertyCleaningSetup } from '@/types';
 import { BulkCleaningDialog } from '../components/bulk-cleaning-dialog';
 
 vi.mock('@/api/properties.api', () => ({ propertiesApi: { getAll: vi.fn() } }));
@@ -73,6 +73,14 @@ const MEMBER: OrgMember = {
 
 function httpError(status: number, data: Record<string, unknown> = {}): AxiosError {
   return new AxiosError('failed', String(status), undefined, undefined, { status, data, statusText: '', headers: {}, config: {} as never });
+}
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((done) => {
+    resolve = done;
+  });
+  return { promise, resolve };
 }
 
 function renderDialog(props: { routineLink?: boolean } = {}) {
@@ -368,6 +376,46 @@ describe('who cleans, for many properties (E24/F01/US02/T01)', () => {
       await waitFor(() => expect(fetchSuppliersByProperty).toHaveBeenCalledTimes(2));
       expect(fetchSuppliersByProperty).toHaveBeenCalledWith('p3', 'cleaning');
       expect(fetchSuppliersByProperty).toHaveBeenCalledWith('p5', 'cleaning');
+    });
+  });
+
+  describe('closing the layer', () => {
+    it('BulkCleaningDialog_SaveOnItsWay_DoesNotCloseWithEscOrTheXAndTheResultIsStillTold', async () => {
+      const pending = deferred<CleaningSetupBulkResponse>();
+      vi.mocked(propertyCleaningApi.saveBulk).mockReturnValue(pending.promise);
+      const { onOpenChange } = renderDialog();
+
+      await fillTheForm();
+      fireEvent.click(screen.getByTestId('bulk-cleaning-save'));
+      await waitFor(() => expect(screen.getByTestId('bulk-cleaning-cancel')).toBeDisabled());
+
+      // Esc and the X ask to close: nothing closes while the save is on its way.
+      fireEvent.keyDown(screen.getByTestId('bulk-cleaning-dialog'), { key: 'Escape' });
+      fireEvent.click(screen.getByRole('button', { name: 'Chiudi' }));
+      expect(onOpenChange).not.toHaveBeenCalled();
+
+      pending.resolve({
+        results: [
+          { propertyId: 'p1', saved: true, code: null, message: null },
+          { propertyId: 'p2', saved: false, code: 'cleaning_setup_staff_invalid', message: null },
+        ],
+        saved: 1,
+        failed: 1,
+      });
+
+      // What was done for each property is there to be read, and from now on the layer closes as it always did.
+      expect(await screen.findByTestId('bulk-cleaning-some-failed')).toBeInTheDocument();
+      fireEvent.keyDown(screen.getByTestId('bulk-cleaning-dialog'), { key: 'Escape' });
+      await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
+    });
+
+    it('BulkCleaningDialog_NothingOnItsWay_ClosesWithTheXAsAlways', async () => {
+      const { onOpenChange } = renderDialog();
+
+      await screen.findByTestId('bulk-cleaning-choose-first');
+      fireEvent.click(screen.getByRole('button', { name: 'Chiudi' }));
+
+      expect(onOpenChange).toHaveBeenCalledWith(false);
     });
   });
 });

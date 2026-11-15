@@ -44,30 +44,39 @@ interface BulkCleaningDialogProps {
  * of the list; the dialog takes one currency at a time (the price is in the currency of the property, which the setup of each property says: the list does not, and the suppliers work in euro). The
  * answer is one line for each property: the ones that were saved and, with the reason, the ones that were not: never «all saved» while one was not.
  */
+type BulkSave = ReturnType<typeof useSaveBulkCleaningSetup>;
+
 export function BulkCleaningDialog({ open, onOpenChange, routineLink = true }: BulkCleaningDialogProps) {
   const { t } = useTranslation();
+  // The save is kept here, above the content that comes and goes with the layer: while it is on its way the layer does not close (Esc, the X, the grip of a phone and a click outside all come
+  // through `onOpenChange`), because what the person has to read is what was done for each property, and a layer that closed would lose it. Closed, nothing of the request is kept.
+  const save = useSaveBulkCleaningSetup();
+  const handleOpenChange = (next: boolean) => {
+    if (!next && save.isPending) return;
+    if (!next) save.reset();
+    onOpenChange(next);
+  };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto" data-testid="bulk-cleaning-dialog">
         <DialogHeader>
           <DialogTitle>{t('propertyCleaning.bulk.title')}</DialogTitle>
           <DialogDescription>{t('propertyCleaning.bulk.description')}</DialogDescription>
         </DialogHeader>
         {/* Its own component, mounted with the dialog: what was chosen is forgotten when the dialog closes. */}
-        <BulkCleaningBody onClose={() => onOpenChange(false)} routineLink={routineLink} />
+        <BulkCleaningBody save={save} onClose={() => handleOpenChange(false)} routineLink={routineLink} />
       </DialogContent>
     </Dialog>
   );
 }
 
-function BulkCleaningBody({ onClose, routineLink }: { onClose: () => void; routineLink: boolean }) {
+function BulkCleaningBody({ save, onClose, routineLink }: { save: BulkSave; onClose: () => void; routineLink: boolean }) {
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();
   const canListTeam = hasPermission('account', 'org.members.manage');
 
   const list = useProperties({ mode: 'short' }, { fresh: true });
-  const save = useSaveBulkCleaningSetup();
   const [selected, setSelected] = useState<string[]>([]);
   const [draft, setDraft] = useState<CleaningForm>(() => emptyCleaningForm(SUPPLIER_CURRENCY));
   const [attempted, setAttempted] = useState(false);
