@@ -8,6 +8,7 @@ import { checkinLinkApi } from '@/api/checkin-link.api';
 import { DEFAULT_FEATURE_FLAGS, type FeatureFlags } from '@/config/feature-flags';
 import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { copyTextToClipboard } from '@/lib/utils';
+import { CHECKIN_LINK_DELIVERY_KEY } from '@/queries/use-checkin-link-delivery';
 import type { CheckInLinkDelivery } from '@/types/checkin-link.types';
 import type { CheckInSessionStatusDto } from '@/types/public-checkin.types';
 import { CheckInLinkPanel } from '../components/checkin-link-panel';
@@ -46,13 +47,14 @@ function delivery(overrides: Partial<CheckInLinkDelivery> = {}): CheckInLinkDeli
 function renderPanel({ canWrite = true, flags = {} as Partial<FeatureFlags> } = {}) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const value = { flags: { ...DEFAULT_FEATURE_FLAGS, portalChatCheckInLink: true, ...flags }, isLoading: false };
-  return render(
+  const view = render(
     createElement(
       QueryClientProvider,
       { client },
       createElement(FeatureFlagsContext.Provider, { value }, createElement(CheckInLinkPanel, { bookingId: BOOKING_ID, canWrite })),
     ),
   );
+  return { ...view, client };
 }
 
 beforeAll(async () => {
@@ -268,6 +270,34 @@ describe('CheckInLinkPanel: where the check-in link of a portal booking stands (
 
     expect(await screen.findByTestId('checkin-delivery-error')).toHaveTextContent("Non riesco a leggere come sta andando l'invio del link.");
     expect(screen.queryByTestId('checkin-delivery-state')).not.toBeInTheDocument();
+  });
+
+  // The query keeps the last answer when a read fails, and an error says nothing about what the answer was: the old state and its «Copia link» are not shown as the present one. The panel
+  // says it cannot read where the link stands, and the state comes back when a read works again.
+  it('panel_ReadThatFailsAfterAnAnswer_SaysItCannotReadAndNeverKeepsTheOldStateNorItsLink', async () => {
+    vi.mocked(bookingsApi.getCheckInSession).mockResolvedValue(NO_RECIPIENT);
+    vi.mocked(checkinLinkApi.getDelivery)
+      .mockResolvedValueOnce(delivery())
+      .mockRejectedValueOnce(new Error('boom'))
+      .mockResolvedValue(delivery({ state: 'WaitingThread', lastErrorCode: 'no_conversation' }));
+    const { client, container } = renderPanel();
+    expect(await screen.findByTestId('checkin-delivery-copy')).toBeInTheDocument();
+
+    // The page reads it again (return to the window, the bell, the poll of every minute) and the read fails.
+    await act(async () => {
+      await client.invalidateQueries({ queryKey: [CHECKIN_LINK_DELIVERY_KEY, BOOKING_ID] });
+    });
+
+    const error = await screen.findByTestId('checkin-delivery-error');
+    expect(error).toHaveTextContent("Non riesco a leggere come sta andando l'invio del link.");
+    expect(screen.queryByTestId('checkin-delivery-state')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('checkin-delivery-copy')).not.toBeInTheDocument();
+    expect(everythingShown(container)).not.toContain('secret-token-123');
+
+    // «Riprova»: the next read works and the state it gives is the one shown.
+    fireEvent.click(screen.getByRole('button', { name: 'Riprova' }));
+    expect(await screen.findByTestId('checkin-delivery-state')).toHaveTextContent('In attesa che il portale apra la conversazione');
+    expect(screen.queryByTestId('checkin-delivery-error')).not.toBeInTheDocument();
   });
 
   // With both flags off nothing changes: nothing is asked and the panel is what it was.

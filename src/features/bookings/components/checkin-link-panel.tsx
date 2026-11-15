@@ -172,10 +172,11 @@ export function CheckInLinkPanel({ bookingId, canWrite }: CheckInLinkPanelProps)
   const hasLink = status !== null && !completed;
   const busy = resend.isPending || create.isPending;
 
-  // A booking that is gone (404) has no delivery, whatever the query still holds of it; any other failure is told, never taken for «nothing to say».
+  // The query keeps the last answer when a read fails, so an error says nothing about what the answer was: a booking that is gone (404) has no delivery, and any other failure
+  // leaves where the link stands UNKNOWN. Both leave the old answer out: its state and its «Copia link» are never shown as the present one. Only the unknown state is told.
   const deliveryGone = delivery.isError && getHttpStatus(delivery.error) === 404;
-  const deliveryData = deliveryGone ? undefined : delivery.data;
-  const deliveryUnreadable = delivery.isError && !deliveryGone && !delivery.data;
+  const deliveryUnreadable = delivery.isError && !deliveryGone;
+  const deliveryData = delivery.isError ? undefined : delivery.data;
   const deliveryLine = describeDelivery(deliveryData, { emailStatus: session.emailStatus, linkClosed: completed || status === 'Scaduto' });
   const deliveryLink = linkToCopy(deliveryData, deliveryLine, canWrite);
   // The line of the e-mail stays where it adds the real outcome of an e-mail the delivery handed to the queue (sent, still queued, refused by the provider); beside a link that

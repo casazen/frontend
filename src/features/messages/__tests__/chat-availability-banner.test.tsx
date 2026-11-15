@@ -7,6 +7,7 @@ import i18n from '@/i18n/config';
 import { messageHubApi } from '@/api/message-hub.api';
 import { DEFAULT_FEATURE_FLAGS, type FeatureFlags } from '@/config/feature-flags';
 import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
+import { MESSAGE_HUB_QUERY } from '@/queries/use-message-hub';
 import type { MessageChannelStatus, MessageChannelStatusItem, MessageHubPage } from '@/types';
 import { InboxPage } from '../inbox-page';
 
@@ -28,7 +29,7 @@ function listing(propertyName: string, status: MessageChannelStatusItem['status'
 function renderInbox(flags: Partial<FeatureFlags> = { octorateConnector: true }) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const value = { flags: { ...DEFAULT_FEATURE_FLAGS, ...flags }, isLoading: false };
-  return render(
+  const view = render(
     <QueryClientProvider client={client}>
       <FeatureFlagsContext.Provider value={value}>
         <MemoryRouter initialEntries={['/app/short-rent/messages']}>
@@ -37,6 +38,7 @@ function renderInbox(flags: Partial<FeatureFlags> = { octorateConnector: true })
       </FeatureFlagsContext.Provider>
     </QueryClientProvider>,
   );
+  return { ...view, client };
 }
 
 /** The list is drawn and the state of the chats has been answered and drawn: what is not on the page now is not coming (no window of time). */
@@ -110,6 +112,26 @@ describe('InboxPage: the listings whose chat is not active yet (E23/F01/US02, NF
     await statusDrawn();
     expect(screen.queryByTestId('chat-availability-banner')).not.toBeInTheDocument();
     expect(await screen.findByText('Nessun messaggio a cui rispondere')).toBeInTheDocument();
+  });
+
+  // The query keeps the last answer when a read fails: it is not the state of the chats now, so the banner is taken away until a read works again, not kept as if it were current.
+  it('InboxPage_StateOfTheChatsFailsToBeReadAfterAnAnswer_TakesTheBannerAwayAndShowsItAgainWhenAReadWorks', async () => {
+    vi.mocked(messageHubApi.getChannelStatus)
+      .mockResolvedValueOnce({ items: [listing('Casa Mare', 'waiting_permission', 1)] })
+      .mockRejectedValueOnce(new Error('boom'))
+      .mockResolvedValue({ items: [listing('Casa Mare', 'waiting_permission', 1)] });
+    const { client } = renderInbox();
+    expect(await screen.findByTestId('chat-availability-banner')).toBeInTheDocument();
+
+    await act(async () => {
+      await client.invalidateQueries({ queryKey: [MESSAGE_HUB_QUERY, 'channel-status'] });
+    });
+    await waitFor(() => expect(screen.queryByTestId('chat-availability-banner')).not.toBeInTheDocument());
+
+    await act(async () => {
+      await client.invalidateQueries({ queryKey: [MESSAGE_HUB_QUERY, 'channel-status'] });
+    });
+    expect(await screen.findByTestId('chat-availability-banner')).toBeInTheDocument();
   });
 
   // Without a connection to the channels there is no chat to be waiting for: nothing is asked and the inbox is what it was.

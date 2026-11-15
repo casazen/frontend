@@ -24,7 +24,8 @@ export function ChatAvailabilityBanner() {
   const { t } = useTranslation();
   const { flags } = useFeatureFlags();
   const status = useMessageChannelStatus(flags.octorateConnector);
-  const waiting = listingsWaitingForTheChat(status.data);
+  // A failed read leaves the last answer in the query: it is not the state of the chats now, so the banner says nothing until a read works again.
+  const waiting = status.isError ? [] : listingsWaitingForTheChat(status.data);
   if (waiting.length === 0) return null;
 
   return (
