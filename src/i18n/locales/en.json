@@ -2221,6 +2221,8 @@
       "noPayoutsProvided": "Choose at least one payment.",
       "noStatementsProvided": "Choose at least one statement.",
       "ownerInvalidIban": "The IBAN of an owner of the chosen payments is not valid: correct it before creating the file.",
+      "ownerIssuedDocumentNotFound": "We cannot find this document among the ones issued in your name.",
+      "ownerIssuedDocumentsNotAvailable": "The documents issued in your name are not open yet, or you have no active property.",
       "ownerMissingIban": "An owner of the chosen statements has no IBAN: add it before creating the file.",
       "payoutsAlreadyInBatch": "At least one of the chosen payments is already in a bank file: a payment is made only once. Take the ones already in a file off the choice and try again.",
       "payoutsNotFoundOrNotOwned": "One of the chosen payments no longer exists: the list has been updated.",
@@ -18519,6 +18521,40 @@
         "StatementVersion": "Statement"
       }
     },
+    "issued": {
+      "cardTitle": "{{kind}} {{number}} of {{date}}",
+      "currencyMissing": "This document has no currency: the amount is written without a symbol.",
+      "description": "The receipts and invoices CasaZen issued in your name for your stays, with their credit notes if any.",
+      "empty": "No documents were issued in your name yet.",
+      "error": "The documents issued in your name could not be loaded.",
+      "export": {
+        "download": "Download for your accountant",
+        "failed": "We could not download the file. Try again in a moment.",
+        "title": "Download for your accountant",
+        "unavailable": "This part of the portal is not open yet."
+      },
+      "file": "document",
+      "listTitle": "Your documents",
+      "loading": "Loading the documents…",
+      "pdf": "Download the PDF",
+      "pdfAria": "Download the PDF of {{title}}",
+      "privacy": "You only find the documents here: no data of the guests appear.",
+      "sdi": {
+        "delivered": "Delivered by the SDI",
+        "manual_declared": "Sent by the agency (declared)",
+        "not_applicable": "Does not go to the SDI",
+        "other": "SDI state: {{code}}",
+        "rejected": "Rejected by the SDI: the agency corrects it",
+        "submitted": "Sent to the SDI",
+        "to_send": "To send to the SDI"
+      },
+      "showAll": "Show all ({{count}})",
+      "showLess": "Show fewer",
+      "title": "Documents issued in your name",
+      "total": "Total",
+      "xml": "Download the XML",
+      "xmlAria": "Download the XML of {{title}}"
+    },
     "properties": {
       "backToDashboard": "Back to the overview",
       "channel": "Channel",
@@ -18539,6 +18575,7 @@
         "contacts": "Contacts",
         "documents": "Documents",
         "home": "Overview",
+        "issuedDocuments": "Issued documents",
         "label": "Owner portal",
         "messages": "Messages"
       },
@@ -30137,6 +30174,24 @@
     "bankFile": "Bank statement (Excel or CSV)",
     "confirmBank": "Confirm selected payments",
     "imported": "Recorded"
+  },
+  "issuedDocuments": {
+    "agency": {
+      "download": "Download for the owner’s accountant",
+      "title": "Documents issued in the name of the owner"
+    },
+    "export": {
+      "description": "One ZIP file with the PDF and the XML of the documents issued in the name of the owner in the period, their register (CSV and Excel) and the index with the fingerprint of every file: it is what its accountant needs.",
+      "done": "File downloaded.",
+      "failed": "We could not download the file. Try again in a moment.",
+      "forbidden": "You are not allowed to download these documents.",
+      "months": "Months",
+      "period": "Period",
+      "preparing": "Preparing the file: it may take a while.",
+      "unavailable": "This part is not open, or the owner is no longer there.",
+      "year": "Year {{year}}",
+      "years": "Years"
+    }
   },
   "ownerIssuer": {
     "confirmNote": "The choices «to confirm» are prudent values: the accountant confirms them, and you can change them whenever you want.",

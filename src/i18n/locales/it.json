@@ -2221,6 +2221,8 @@
       "noPayoutsProvided": "Scegli almeno un pagamento.",
       "noStatementsProvided": "Scegli almeno un rendiconto.",
       "ownerInvalidIban": "L'IBAN di un proprietario dei pagamenti scelti non è valido: correggilo prima di creare il file.",
+      "ownerIssuedDocumentNotFound": "Non troviamo questo documento tra quelli emessi a tuo nome.",
+      "ownerIssuedDocumentsNotAvailable": "I documenti emessi a tuo nome non sono ancora aperti, oppure non hai una proprietà attiva.",
       "ownerMissingIban": "Manca l'IBAN di un proprietario dei rendiconti scelti: aggiungilo prima di creare il file.",
       "payoutsAlreadyInBatch": "Almeno uno dei pagamenti scelti è già in un file per la banca: un pagamento si paga una volta sola. Togli dalla scelta quelli già inseriti in un file e riprova.",
       "payoutsNotFoundOrNotOwned": "Uno dei pagamenti scelti non esiste più: l'elenco è stato aggiornato.",
@@ -18519,6 +18521,40 @@
         "StatementVersion": "Rendiconto"
       }
     },
+    "issued": {
+      "cardTitle": "{{kind}} {{number}} del {{date}}",
+      "currencyMissing": "Per questo documento non c’è la valuta: l’importo è scritto senza simbolo.",
+      "description": "Le ricevute e le fatture che CasaZen ha emesso a tuo nome per i tuoi soggiorni, con le eventuali note di credito.",
+      "empty": "Non ci sono ancora documenti emessi a tuo nome.",
+      "error": "Impossibile caricare i documenti emessi a tuo nome.",
+      "export": {
+        "download": "Scarica per il tuo commercialista",
+        "failed": "Non siamo riusciti a scaricare il file. Riprova tra poco.",
+        "title": "Scarica per il tuo commercialista",
+        "unavailable": "Questa parte del portale non è ancora aperta."
+      },
+      "file": "documento",
+      "listTitle": "I tuoi documenti",
+      "loading": "Carico i documenti…",
+      "pdf": "Scarica il PDF",
+      "pdfAria": "Scarica il PDF di {{title}}",
+      "privacy": "Qui trovi solo i documenti: non compare nessun dato degli ospiti.",
+      "sdi": {
+        "delivered": "Consegnata dallo SDI",
+        "manual_declared": "Inviata dall’agenzia (dichiarata)",
+        "not_applicable": "Non va allo SDI",
+        "other": "Stato dello SDI: {{code}}",
+        "rejected": "Scartata dallo SDI: l’agenzia la corregge",
+        "submitted": "Inviata allo SDI",
+        "to_send": "Da inviare allo SDI"
+      },
+      "showAll": "Mostra tutti ({{count}})",
+      "showLess": "Mostra meno",
+      "title": "Documenti emessi a tuo nome",
+      "total": "Totale",
+      "xml": "Scarica l’XML",
+      "xmlAria": "Scarica l’XML di {{title}}"
+    },
     "properties": {
       "backToDashboard": "Torna alla panoramica",
       "channel": "Canale",
@@ -18539,6 +18575,7 @@
         "contacts": "Contatti",
         "documents": "Documenti",
         "home": "Panoramica",
+        "issuedDocuments": "Documenti emessi",
         "label": "Portale proprietari",
         "messages": "Messaggi"
       },
@@ -30137,6 +30174,24 @@
     "bankFile": "Estratto conto (Excel o CSV)",
     "confirmBank": "Conferma i versamenti selezionati",
     "imported": "Registrato"
+  },
+  "issuedDocuments": {
+    "agency": {
+      "download": "Scarica per il commercialista del proprietario",
+      "title": "Documenti emessi a nome del proprietario"
+    },
+    "export": {
+      "description": "Un solo file ZIP con i PDF e gli XML dei documenti emessi a nome del proprietario nel periodo, il loro elenco (CSV ed Excel) e l’indice con l’impronta di ogni file: è quello che serve al suo commercialista.",
+      "done": "File scaricato.",
+      "failed": "Non siamo riusciti a scaricare il file. Riprova tra poco.",
+      "forbidden": "Non hai il permesso di scaricare questi documenti.",
+      "months": "Mesi",
+      "period": "Periodo",
+      "preparing": "Preparo il file: può volerci un po’.",
+      "unavailable": "Questa parte non è aperta, oppure il proprietario non c’è più.",
+      "year": "Anno {{year}}",
+      "years": "Anni"
+    }
   },
   "ownerIssuer": {
     "confirmNote": "Le scelte «da confermare» sono valori prudenti: li conferma il commercialista e li puoi cambiare quando vuoi.",

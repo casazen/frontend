@@ -121,3 +121,25 @@ export interface OwnerPortalInvoice {
   /** True when credit notes credited the whole of it. */
   creditedInFull: boolean;
 }
+
+/**
+ * `GET api/owner-portal/issued-documents` (E17/F02/US01/T01, E17/F03/US01/T03, NF-116): a document CasaZen issued in the name of the owner (the receipt of a private owner, the invoice of a company, their credit
+ * notes): its number, its day, its kind, its total in its own currency and where it stands with the SDI. NOTHING of a guest is in it, not even its name: the PDF and the XML hold what the document says. The PDF is
+ * at `issued-documents/{id}/pdf`, the XML (when `hasXml`) at `issued-documents/{id}/xml`.
+ */
+export interface OwnerPortalIssuedDocument {
+  documentId: string;
+  agencyId: string;
+  agencyName: string;
+  number: string;
+  issueDate: string;
+  kind: string;
+  total: number;
+  currency: string;
+  /**
+   * The state towards the SDI by the code the server writes (backend `FiscalDocumentSdiStatuses`): `not_applicable` (a receipt), `to_send`, `submitted`, `delivered`, `rejected` or `manual_declared`. The words
+   * are written for these codes; any other one is shown as it came.
+   */
+  sdiStatus: string;
+  hasXml: boolean;
+}
