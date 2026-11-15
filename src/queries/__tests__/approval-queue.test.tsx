@@ -304,7 +304,7 @@ describe('the hooks of the approval queue (NF-68)', () => {
       });
 
       expect(toast.error).toHaveBeenCalledWith("Non è stato possibile completare l'approvazione: l'elemento resta in attesa.", {
-        description: 'Il tuo channel manager non ha accettato il messaggio.',
+        description: 'Il channel manager ha rifiutato la richiesta.',
       });
     });
   });
