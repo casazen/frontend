@@ -1348,6 +1348,22 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/pages/WireTransferPage')).WireTransferPage }),
   },
   {
+    // «Commissioni dei canali» (E13/F02/US03/T01, NF-115, ⚖ R2): what each portal keeps when its reservation carries no commission, the same editor as the step of the wizard «Fatturazione» for the
+    // changes made after the setup. It reads the rules of the owner ledger (`agency.statement.view`) and writes them (`agency.owner.financial.manage`, the whole organization), which only the
+    // owner and the administrators hold and which are not among the context permissions of `/me/contexts`: like the other pages of the agency's money, it is behind the plan (`agencyTier`) and for the org
+    // billing administrator, and the page checks the role and the plan before it reads anything. A tab of «Chiusura mensile», after the transfers: the stays held back for a missing commission are found there.
+    path: '/app/account/channel-commissions',
+    context: 'account',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    featureFlag: 'agencyTier',
+    navKey: 'nav.channelCommissions',
+    navParent: '/app/account/owner-close',
+    navOrder: 4,
+    icon: 'Coins',
+    component: async () => ({ default: (await import('@/features/owner-accounting/channel-commission-rules-page')).ChannelCommissionRulesPage }),
+  },
+  {
     // «Chiusura mensile» (E06/F05/US02/T04, NF-110): the month of the agency's owners in four groups (to prepare, to check, approved, published) with
     // its readiness and the next step of each owner: check, approve, publish, pay, close. It reads the endpoints of the owner accounting, which need
     // the finance permissions of the owner and the administrators and the whole reach of the org, so it is behind the plan (`agencyTier`) and for the

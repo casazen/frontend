@@ -570,3 +570,51 @@ export interface OwnerAddressCommand {
   province?: string;
   country: string;
 }
+
+// ── The month-end for every owner at once (E13/F01/US03/T01, E13/F02/US03/T01, NF-110) ─────────────────────────────────────
+
+/** The steps of the month-end that run for many owners in one call (backend `OwnerBulkAction`, written and read by name), in the order of the month-end. */
+export const OWNER_BULK_ACTIONS = ['Post', 'Generate', 'Approve', 'Publish', 'Close'] as const;
+export type OwnerBulkAction = (typeof OWNER_BULK_ACTIONS)[number];
+
+/**
+ * How far a bulk run is (backend `OwnerBulkRunStatus`, by name). `Completed` says that every owner was answered, never that every owner is done: a row can still be a failure.
+ * `Failed` is the run itself failing (not one of its owners): what it did before is in its rows.
+ */
+export type OwnerBulkRunStatus = 'Queued' | 'Running' | 'Completed' | 'Failed';
+
+/**
+ * What a bulk step did for one owner. `ok` is the truth: the owner is where the step leads, done now or already so (`unchanged`). `code` is the stable code of the reason: why the step was not
+ * done (`ok` false), or a note on a row that is `ok` (`owner_period_closed`; `owner_statement_flagged` for a version that was made with anomalies). `issues` are the blocking issue codes behind
+ * it and `details` the facts a person needs to act on it (`due`, `paid` and `difference` of a close that does not reconcile: amounts with no currency). Never a name, an address or a ledger line.
+ */
+export interface OwnerBulkOwnerResult {
+  ownerId: string;
+  ok: boolean;
+  code: string | null;
+  unchanged: boolean;
+  issues: string[] | null;
+  details: Record<string, unknown> | null;
+}
+
+/**
+ * A bulk run (`POST api/owner-accounting/periods/{year}/{month}/bulk`, and `GET …/bulk/{jobId}` while a queued one goes on): asked for `total` owners, answered for the `results` it has so far.
+ * Up to a few owners the answer is the finished run (`jobId` null); for more it is queued (`Queued`, no rows yet) and its `jobId` is read until it ends. The run also carries counts and an
+ * `allDone` of its own, which the page never reads: it counts the rows itself, so that «tutti fatti» is never said while a row says otherwise.
+ */
+export interface OwnerBulkRun {
+  jobId: string | null;
+  action: OwnerBulkAction;
+  year: number;
+  month: number;
+  status: OwnerBulkRunStatus;
+  total: number;
+  results: OwnerBulkOwnerResult[];
+  errorCode: string | null;
+}
+
+/** What starts a bulk run: the step, and the owners it is for (left out = every owner of the month; an empty list is refused, never «everyone»). */
+export interface OwnerBulkCommand {
+  action: OwnerBulkAction;
+  ownerIds?: string[];
+}
