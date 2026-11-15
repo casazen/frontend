@@ -215,7 +215,7 @@ export function PayoutDialog({ open, onOpenChange, ctx }: PayoutDialogProps) {
               })}
             </Alert>
             {done.evidence.map((evidence) => (
-              <TaxEvidenceView key={evidence.id} evidence={evidence} propertyNames={propertyNames} />
+              <TaxEvidenceView key={evidence.id} evidence={evidence} payoutCurrency={done.currency} propertyNames={propertyNames} />
             ))}
             <DialogFooter>
               <Button type="button" onClick={() => onOpenChange(false)}>

@@ -18231,6 +18231,7 @@
       "applicable": "Withholding applies",
       "base": "Gross base",
       "calculated": "Withholdings calculated: {{amount}} to pay with an F24. The F24 file has not been generated yet.",
+      "currencyMissing": "The currency of this decision is not given: the amounts are written without a currency symbol.",
       "downloadData": "Download the data",
       "downloadPdf": "Download the PDF",
       "dueDate": "Due date",

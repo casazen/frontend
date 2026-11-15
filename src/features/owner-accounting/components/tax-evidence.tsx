@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
-import { F24_CURRENCY } from '@/lib/agency-finance';
 import type { TaxObligationEvidence } from '@/types';
 import { decisionReasonWords } from '../payout-facts-model';
 import { useOwnerFormat } from '../use-owner-format';
@@ -10,6 +9,11 @@ const NO_NAMES: ReadonlyMap<string, string> = new Map();
 
 interface TaxEvidenceViewProps {
   evidence: TaxObligationEvidence;
+  /**
+   * The currency of the payout the decision belongs to. A decision that carries its facts says its own currency (the euro of the F24); one of before the facts were read from the ledger does not, and the service of
+   * the time recorded its base and its amount in the currency of the payout, which is the one they are written in. With neither, the figures have no symbol and the page says so.
+   */
+  payoutCurrency?: string | null;
   /** The names of the properties of the agency, by id: the facts of a stay carry the id only. */
   propertyNames?: ReadonlyMap<string, string>;
 }
@@ -17,14 +21,15 @@ interface TaxEvidenceViewProps {
 /**
  * The evidence of a withholding decision (AC-NF110-4, AC-NF110-5): applicable or not, why, on which base and rule, and the facts of the ledger it was taken on. The figures are the ones the server recorded when the
  * payout was confirmed; the page never computes a withholding of its own. A decision that is not applicable shows no amount: it is a decision with its reason, not a zero. The base and the amount are in euro,
- * the currency of the F24, whatever the currency the owner is paid in (the facts say it; a decision of before the facts were read from the ledger is in euro too): the amount kept from a payout in another currency
- * is on the payout, in its own currency.
+ * the currency of the F24, whatever the currency the owner is paid in (the facts say it): the amount kept from a payout in another currency is on the payout, in its own currency. A decision of before the facts
+ * were read from the ledger has no currency of its own: it is written in the one of its payout, and without that one it is written with no symbol, with a sentence that says so.
  */
-export function TaxEvidenceView({ evidence, propertyNames = NO_NAMES }: TaxEvidenceViewProps) {
+export function TaxEvidenceView({ evidence, payoutCurrency = null, propertyNames = NO_NAMES }: TaxEvidenceViewProps) {
   const { t } = useTranslation();
-  const { money, date, percent } = useOwnerFormat();
+  const { money, amount, date, percent } = useOwnerFormat();
   const applicable = evidence.decision === 'Applicable';
-  const currency = evidence.facts?.withholdingCurrency || F24_CURRENCY;
+  const currency = evidence.facts?.withholdingCurrency || payoutCurrency || null;
+  const write = (value: number) => (currency ? money(value, currency) : amount(value));
   const facts = evidence.facts && evidence.facts.stays.length > 0 ? evidence.facts : null;
 
   return (
@@ -38,7 +43,7 @@ export function TaxEvidenceView({ evidence, propertyNames = NO_NAMES }: TaxEvide
         <dl className="grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-4">
           <div>
             <dt className="text-foreground/70">{t('ownerAccounting.tax.base')}</dt>
-            <dd className="tabular-nums">{evidence.grossBase !== null ? money(evidence.grossBase, currency) : '—'}</dd>
+            <dd className="tabular-nums">{evidence.grossBase !== null ? write(evidence.grossBase) : '—'}</dd>
           </div>
           <div>
             <dt className="text-foreground/70">{t('ownerAccounting.tax.rate')}</dt>
@@ -47,7 +52,7 @@ export function TaxEvidenceView({ evidence, propertyNames = NO_NAMES }: TaxEvide
           <div>
             <dt className="text-foreground/70">{t('ownerAccounting.tax.amount')}</dt>
             <dd className="tabular-nums" data-testid="tax-evidence-amount">
-              {money(evidence.amount, currency)}
+              {write(evidence.amount)}
             </dd>
           </div>
           <div>
@@ -55,6 +60,11 @@ export function TaxEvidenceView({ evidence, propertyNames = NO_NAMES }: TaxEvide
             <dd>{evidence.taxCode ?? '—'}</dd>
           </div>
         </dl>
+      ) : null}
+      {currency === null && applicable && evidence.amount !== null ? (
+        <p className="break-words text-foreground/70" data-testid="tax-evidence-currency-missing">
+          {t('ownerAccounting.tax.currencyMissing')}
+        </p>
       ) : null}
       <p className="break-words text-foreground/70">
         {t('ownerAccounting.tax.rule', { rule: evidence.ruleCode, version: evidence.ruleVersion, jurisdiction: evidence.jurisdiction })}

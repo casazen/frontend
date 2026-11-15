@@ -18231,6 +18231,7 @@
       "applicable": "Ritenuta applicabile",
       "base": "Base lorda",
       "calculated": "Ritenute calcolate: {{amount}} da versare con F24. Il file F24 non è ancora stato generato.",
+      "currencyMissing": "La valuta di questa decisione non è indicata: gli importi sono scritti senza simbolo di valuta.",
       "downloadData": "Scarica i dati",
       "downloadPdf": "Scarica il PDF",
       "dueDate": "Scadenza",

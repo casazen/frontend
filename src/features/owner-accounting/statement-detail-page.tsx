@@ -457,7 +457,7 @@ function PayoutEvidence({ payout, propertyNames }: { payout: OwnerPayout; proper
       ) : detail.data.evidence.length === 0 ? (
         <p className="break-words text-sm text-foreground/70">{t('ownerAccounting.payments.noEvidence')}</p>
       ) : (
-        detail.data.evidence.map((evidence) => <TaxEvidenceView key={evidence.id} evidence={evidence} propertyNames={propertyNames} />)
+        detail.data.evidence.map((evidence) => <TaxEvidenceView key={evidence.id} evidence={evidence} payoutCurrency={payout.currency} propertyNames={propertyNames} />)
       )}
     </div>
   );
