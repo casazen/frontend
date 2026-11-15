@@ -19,6 +19,8 @@ const HELP: Readonly<Record<string, string>> = {
   [BILLING_STEPS.mandate]: 'billingWizard.help.mandate',
   [BILLING_STEPS.issuing]: 'billingWizard.help.issuing',
   [BILLING_STEPS.italy]: 'billingWizard.help.italy',
+  [BILLING_STEPS.ownerIssuers]: 'billingWizard.help.ownerIssuers',
+  [BILLING_STEPS.sdi]: 'billingWizard.help.sdi',
   [BILLING_STEPS.accountant]: 'billingWizard.help.accountant',
   [BILLING_STEPS.summary]: 'billingWizard.help.summary',
 };

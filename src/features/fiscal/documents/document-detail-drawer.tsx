@@ -1,17 +1,20 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ErrorState } from '@/components/shared/error-state';
+import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import type { FeatureFlags } from '@/config/feature-flags';
+import { isFeatureEnabled, type FeatureFlags } from '@/config/feature-flags';
 import { getHttpStatus } from '@/lib/api-errors';
 import { cn } from '@/lib/utils';
 import { useFiscalDocument } from '@/queries/use-fiscal-documents';
 import type { FiscalDocumentDetail } from '@/types';
 import { DocumentActionBar, type DocumentChange } from './document-actions';
+import { DocumentCorrectionStep } from './document-correction-step';
 import {
   bookingLinkOf,
   documentNameOf,
+  documentPurposeKey,
   documentsReadOf,
   documentSourceKey,
   formatDocumentAmount,
@@ -20,7 +23,9 @@ import {
   lineTypeKey,
   paymentWordsOf,
   vatSummaryOf,
+  type DocumentIntent,
 } from './document-model';
+import { DocumentSdiPanel } from './document-sdi-panel';
 import { DocumentStateBadge, StatePill } from './document-state-badge';
 
 const LINK = 'rounded-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
@@ -224,20 +229,53 @@ interface DrawerBodyProps {
   flags: Partial<FeatureFlags>;
   canWrite: boolean;
   canReadBookings: boolean;
+  /** What the person came for (the address of a «Da fare» item, `?step=correct`): the guided correction opens at once when it is asked and the person may do it. */
+  intent?: DocumentIntent;
   onClose: () => void;
   onChanged?: (id: string, change: DocumentChange) => void;
+  /** Goes on in another document (the invoice a correction issued) without leaving the page. */
+  onOpenDocument?: (id: string) => void;
 }
 
+/** What the guided correction is about: the invoice the SDI rejected (it starts from it) or the draft a correction made of it (it goes on from there). */
+type Correction = 'rejected' | 'replacement';
+
 /** What the drawer shows for one document: the answer of the server as it is, a failed read as a failed read with a retry, and a 404 as «not found» whatever the query still holds. */
-function DrawerBody({ documentId, flags, canWrite, canReadBookings, onClose, onChanged }: DrawerBodyProps) {
+function DrawerBody({ documentId, flags, canWrite, canReadBookings, intent, onClose, onChanged, onOpenDocument }: DrawerBodyProps) {
   const { t, i18n } = useTranslation();
   const language = i18n.language;
   const query = useFiscalDocument(documentId);
   const read = documentsReadOf({ enabled: true, isError: query.isError, status: getHttpStatus(query.error), hasData: query.data !== undefined });
   const detail = read === 'ok' ? query.data : undefined;
   const sourceKey = detail ? documentSourceKey(detail.source) : null;
+  const purposeKey = detail ? documentPurposeKey(detail.purpose) : null;
   const payment = detail ? paymentWordsOf(detail) : null;
   const bookingHref = detail ? bookingLinkOf(detail, canReadBookings) : null;
+  // The guided correction exists only while the sending to the SDI is on and the person may change the documents of the guests.
+  const canCorrect = canWrite && isFeatureEnabled(flags, 'sdiSubmission');
+  const [correcting, setCorrecting] = useState<Correction | null>(() => (intent === 'correct' && canCorrect ? 'rejected' : null));
+
+  if (correcting !== null && canCorrect) {
+    return (
+      <div className="space-y-5 pb-6" data-testid="fiscal-document-detail" data-correcting={correcting}>
+        <SheetHeader>
+          <SheetTitle>{detail ? documentNameOf(t, detail) : t('fiscalDocuments.detail.title')}</SheetTitle>
+          <SheetDescription>{t('fiscalDocuments.correction.description')}</SheetDescription>
+        </SheetHeader>
+        <div className="px-6">
+          <DocumentCorrectionStep
+            documentId={documentId}
+            mode={correcting}
+            onClose={() => setCorrecting(null)}
+            onOpenDocument={(id) => {
+              setCorrecting(null);
+              onOpenDocument?.(id);
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5 pb-6" data-testid="fiscal-document-detail">
@@ -245,7 +283,9 @@ function DrawerBody({ documentId, flags, canWrite, canReadBookings, onClose, onC
         <SheetTitle>{detail ? documentNameOf(t, detail) : t('fiscalDocuments.detail.title')}</SheetTitle>
         <SheetDescription>
           {detail
-            ? [sourceKey ? t(sourceKey) : detail.source, detail.issueDate ? formatDocumentDay(detail.issueDate, language) : t('fiscalDocuments.list.noDate')].join(' · ')
+            ? [purposeKey ? t(purposeKey) : null, sourceKey ? t(sourceKey) : detail.source, detail.issueDate ? formatDocumentDay(detail.issueDate, language) : t('fiscalDocuments.list.noDate')]
+                .filter((part) => part !== null)
+                .join(' · ')
             : t('fiscalDocuments.detail.description')}
         </SheetDescription>
       </SheetHeader>
@@ -296,6 +336,18 @@ function DrawerBody({ documentId, flags, canWrite, canReadBookings, onClose, onC
 
             <IssuerBlock detail={detail} />
 
+            {/* The draft a correction made of an invoice the SDI rejected: it keeps the number of that invoice, so it is issued and never discarded, and the person finds the step again here. */}
+            {detail.status === 'Draft' && detail.replacesDocumentId && canCorrect ? (
+              <Block title={t('fiscalDocuments.correction.replacement.title')} testId="fiscal-document-replacement">
+                <p className="text-sm text-foreground/70">{t('fiscalDocuments.correction.replacement.body')}</p>
+                <Button type="button" size="sm" onClick={() => setCorrecting('replacement')} data-testid="fiscal-document-continue-correction">
+                  {t('fiscalDocuments.correction.replacement.continue')}
+                </Button>
+              </Block>
+            ) : null}
+
+            <DocumentSdiPanel document={detail} flags={flags} canWrite={canWrite} onCorrect={() => setCorrecting('rejected')} />
+
             <DocumentActionBar
               document={detail}
               flags={flags}
@@ -322,7 +374,11 @@ interface DocumentDetailDrawerProps {
   /** The person may change documents: `payment.write` and the flag of the issuance of CasaZen. */
   canWrite: boolean;
   canReadBookings: boolean;
+  /** What the person came for (`?step=correct` of the address a «Da fare» item opens): the guided correction opens at once when it is asked and the person may do it. */
+  intent?: DocumentIntent;
   onChanged?: (id: string, change: DocumentChange) => void;
+  /** Goes on in another document without leaving the page (the invoice a correction issued). */
+  onOpenDocument?: (id: string) => void;
 }
 
 /**
@@ -331,12 +387,22 @@ interface DocumentDetailDrawerProps {
  * XML only when CasaZen holds one). It reads the document again whenever it opens and shows nothing it did not read: a failed read is a failed read, a 404 is «not found» whatever was in the cache.
  * A document drawn here is read, never edited: what can be changed goes through the dialogs of its actions.
  */
-export function DocumentDetailDrawer({ documentId, onClose, flags, canWrite, canReadBookings, onChanged }: DocumentDetailDrawerProps) {
+export function DocumentDetailDrawer({ documentId, onClose, flags, canWrite, canReadBookings, intent, onChanged, onOpenDocument }: DocumentDetailDrawerProps) {
   return (
     <Sheet open={documentId !== null} onOpenChange={(open) => !open && onClose()}>
       <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-xl" data-testid="fiscal-document-drawer">
         {documentId !== null ? (
-          <DrawerBody key={documentId} documentId={documentId} flags={flags} canWrite={canWrite} canReadBookings={canReadBookings} onClose={onClose} onChanged={onChanged} />
+          <DrawerBody
+            key={documentId}
+            documentId={documentId}
+            flags={flags}
+            canWrite={canWrite}
+            canReadBookings={canReadBookings}
+            intent={intent}
+            onClose={onClose}
+            onChanged={onChanged}
+            onOpenDocument={onOpenDocument}
+          />
         ) : null}
       </SheetContent>
     </Sheet>

@@ -21,6 +21,7 @@ export type FeatureFlagKey =
   | 'octorateDocumentImport'
   | 'ownerInvoicing'
   | 'accountantPackage'
+  | 'sdiSubmission'
   | 'routines'
   | 'touristTaxOnlinePayment';
 
@@ -150,6 +151,13 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * send and the test send, E15/F02/US02/T01) is behind it too: off, the wizard has no such step and does not read the settings of the send.
    */
   accountantPackage: false,
+  /**
+   * The sending of the Italian electronic invoices to the SDI through the channel CasaZen has (backend `SdiSubmission`, E17/F01/US02, E17/F03/US01/T02, NF-116, NF-86, D13, D15), off until the product owner turns it on in the test
+   * environment together with the credentials of the channel. While it is off nothing changes: the SDI panel of the detail of a document (the state, «Invia», «Dichiara inviato a mano», the reason of a rejection and the guided
+   * correction) and the step «Invio allo SDI» of the wizard «Fatturazione» do not exist, and the backend answers 404 to the submission, the declaration and the correction. The state of a document towards the SDI
+   * is still the one the list always showed. The self-billed invoices (TD17) do not depend on it: they are behind `fiscalDocumentIssuance`.
+   */
+  sdiSubmission: false,
   /**
    * The automation routines of the host (backend `Routines`, E01/F04, NF-21, DEB-06, ADR-022), off until the product owner turns it on in the test environment: the routines page
    * (`/app/short-rent/automations`, a tab of «Impostazioni») and its entry. While it is off the tab is not there, the address leads to the home of the area, nothing asks the server

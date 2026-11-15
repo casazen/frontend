@@ -163,6 +163,7 @@ export function otherVersions(document: Pick<OwnerDocument, 'versions'>): OwnerD
 
 const EXTENSION_OF_TYPE: Record<string, string> = {
   'application/pdf': 'pdf',
+  'application/xml': 'xml',
   'image/jpeg': 'jpg',
   'image/png': 'png',
 };

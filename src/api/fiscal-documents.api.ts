@@ -16,7 +16,13 @@ import type {
   FiscalDocumentIssuer,
   FiscalDocumentLine,
   FiscalDocumentPage,
+  FiscalDocumentSdiState,
   FiscalDocumentsContext,
+  SdiDeclaration,
+  SdiIssuerRegistration,
+  SdiIssuers,
+  SdiScope,
+  SdiSubmitResult,
 } from '@/types';
 
 const PATH = '/fiscal/documents';
@@ -116,7 +122,10 @@ function entryOf(value: unknown): FiscalDocumentEntry | null {
     !isOptionalText(value.number) ||
     !isOptionalText(value.issueDate) ||
     !isOptionalText(value.recipientName) ||
-    !isOptionalText(value.sdiErrorCode)
+    !isOptionalText(value.sdiErrorCode) ||
+    !isOptionalText(value.purpose) ||
+    !isOptionalText(value.replacesDocumentId) ||
+    !isOptionalText(value.issuerName)
   ) {
     return null;
   }
@@ -138,6 +147,10 @@ function entryOf(value: unknown): FiscalDocumentEntry | null {
     sdiErrorCode: textOf(value.sdiErrorCode),
     hasXml: value.hasXml === true,
     octoratePdfAvailable: value.octoratePdfAvailable === true,
+    // What the document is for, the rejected document it replaces and who issued it: only when the server says them (an older server says none, and nothing is made up).
+    purpose: textOf(value.purpose) ?? undefined,
+    replacesDocumentId: textOf(value.replacesDocumentId) ?? undefined,
+    issuerName: textOf(value.issuerName) ?? undefined,
   };
 }
 
@@ -458,4 +471,122 @@ export async function listBookingDocuments(bookingId: string): Promise<BookingFi
   const documents = Array.isArray(response.data) ? response.data.map(bookingDocumentOf) : null;
   if (documents === null || documents.some((document) => document === null)) throw new UnexpectedApiResponseError(path);
   return documents as BookingFiscalDocument[];
+}
+
+// ---------------------------------------------------------------------------------------------------------------------------------
+// The SDI: state, submission, declaration, correction (E17/F01/US02, E17/F03/US01/T02, NF-116, NF-86)
+
+const SDI_ISSUERS_PATH = '/fiscal/sdi/issuers';
+
+/** The address of the SDI state of a document: the guest documents and the self-billed invoices are on the fiscal documents, an owner invoice on its own endpoints (the first answers 422 `document_owner_invoice`). */
+function sdiPathOf(id: string, scope: SdiScope): string {
+  const encoded = encodeURIComponent(id);
+  return scope === 'owner' ? `/owner-invoices/${encoded}/sdi` : `${PATH}/${encoded}/sdi`;
+}
+
+/**
+ * The state of a document the screens can draw without guessing: the state, the three things that can be done and whether a channel is connected are there and are of the right type. A body that is not one
+ * (the `index.html` of a wrong rewrite) is a load error, never «nothing to do»: the buttons of the panel come from `canSubmit`, `canDeclare` and `canCorrect`, so a made-up state would offer an action the server would refuse.
+ */
+function sdiStateFrom(value: unknown): FiscalDocumentSdiState | null {
+  if (
+    !isRecord(value) ||
+    typeof value.documentId !== 'string' ||
+    typeof value.status !== 'string' ||
+    typeof value.providerConfigured !== 'boolean' ||
+    typeof value.canSubmit !== 'boolean' ||
+    typeof value.canDeclare !== 'boolean' ||
+    typeof value.canCorrect !== 'boolean' ||
+    !isOptionalText(value.errorCode) ||
+    !isOptionalText(value.reason) ||
+    !isOptionalText(value.statusUpdatedAt)
+  ) {
+    return null;
+  }
+  return {
+    documentId: value.documentId,
+    status: value.status,
+    errorCode: textOf(value.errorCode),
+    reason: textOf(value.reason),
+    statusUpdatedAt: textOf(value.statusUpdatedAt),
+    providerConfigured: value.providerConfigured,
+    canSubmit: value.canSubmit,
+    canDeclare: value.canDeclare,
+    canCorrect: value.canCorrect,
+  };
+}
+
+function ensureSdiState(data: unknown, path: string): FiscalDocumentSdiState {
+  const state = sdiStateFrom(data);
+  if (state === null) throw new UnexpectedApiResponseError(path);
+  return state;
+}
+
+/**
+ * Where a document stands with the SDI (`GET .../sdi`, `payment.read` for a guest document, `agency.statement.view` for an owner invoice): the state, the reason of a refusal in plain words (in the language of
+ * the request, never naming the channel) and what can be done now. It is a read and is not behind the flag of the sending. A 403 is thrown as the refusal it is (no redirect to the no-access page), a document of
+ * another organization, one out of the reach of the caller and a missing one are all a 404.
+ */
+export async function getDocumentSdi(id: string, scope: SdiScope): Promise<FiscalDocumentSdiState> {
+  const path = sdiPathOf(id, scope);
+  const response = await axios.get<unknown>(path, { validateStatus: acceptsRefusal });
+  if (response.status === 403) throw refusalOf(response);
+  return ensureSdiState(response.data, path);
+}
+
+/**
+ * «Invia»: the document is submitted to the SDI through the channel (`POST .../sdi/submit`, behind the flag of the sending, `payment.write` or `agency.statement.manage`). The answer says what the submission did
+ * (`outcome`) and the state the document is in NOW: only `Submitted` says the channel took the file, and the screens read the state from the answer and never assume it. 404 `fiscal_document_not_found`; 422
+ * `document_read_only`, `sdi_not_electronic`; 409 `sdi_not_to_send`.
+ */
+export async function submitDocumentSdi(id: string, scope: SdiScope): Promise<SdiSubmitResult> {
+  const path = `${sdiPathOf(id, scope)}/submit`;
+  const response = await axios.post<unknown>(path);
+  const data = response.data;
+  const state = isRecord(data) ? sdiStateFrom(data.state) : null;
+  if (!isRecord(data) || typeof data.outcome !== 'string' || state === null) throw new UnexpectedApiResponseError(path);
+  return { outcome: data.outcome, state };
+}
+
+/**
+ * The issuer sent the file through its own channel (`POST .../sdi/declare`, behind the flag of the sending): the day and the reference of the sending (the document becomes `manual_declared`), or the code and the text of the
+ * notification of rejection the SDI sent. It works with no channel connected, and answers the state. 422 `sdi_declaration_invalid` (the `fields` that are not valid: `date`, `reference`, `errorCode`), `document_read_only`,
+ * `sdi_not_electronic`; 409 `sdi_state_final` (the SDI answered already), `sdi_not_to_send` (submitted through the channel: its answer decides).
+ */
+export async function declareDocumentSdi(id: string, scope: SdiScope, declaration: SdiDeclaration): Promise<FiscalDocumentSdiState> {
+  const path = `${sdiPathOf(id, scope)}/declare`;
+  const body =
+    declaration.kind === 'Sent'
+      ? { kind: declaration.kind, date: declaration.date, reference: declaration.reference }
+      : { kind: declaration.kind, errorCode: declaration.errorCode, ...(declaration.errorText ? { errorText: declaration.errorText } : {}) };
+  const response = await axios.post<unknown>(path, body);
+  return ensureSdiState(response.data, path);
+}
+
+/**
+ * Starts the correction of an invoice the SDI rejected (`POST api/fiscal/documents/{id}/sdi/correct`, behind the flag of the sending, `payment.write`): the rejected document is replaced by a draft with the same lines and
+ * recipient that KEEPS ITS NUMBER, to be fixed and issued; a second start answers the same draft. The answer is the replacement draft and its id. 422 `document_not_rejected` (a delivered document is corrected with
+ * a credit note), `document_not_correctable` (it has credit notes), `document_read_only`, `document_owner_invoice`.
+ */
+export async function startDocumentCorrection(id: string): Promise<FiscalDocumentChange | null> {
+  const response = await axios.post<unknown>(`${sdiPathOf(id, 'guest')}/correct`);
+  return changeOf(response.data);
+}
+
+/**
+ * The channel to the SDI and the issuers that send through it (`GET api/fiscal/sdi/issuers`): whether a channel is connected and, for the organization and for each owner who issues, where its VAT number stands at
+ * the channel (`registered`, `pending`, `unknown`). Derived from the documents: it asks the channel nothing. A caller who reaches only some properties sees only the issuers that have a document on them.
+ */
+export async function getSdiIssuers(): Promise<SdiIssuers> {
+  const response = await axios.get<unknown>(SDI_ISSUERS_PATH);
+  const data = response.data;
+  if (!isRecord(data) || typeof data.providerConfigured !== 'boolean' || !Array.isArray(data.issuers)) throw new UnexpectedApiResponseError(SDI_ISSUERS_PATH);
+  const issuers = data.issuers.map((item): SdiIssuerRegistration | null =>
+    isRecord(item) && typeof item.issuerProfileId === 'string' && typeof item.state === 'string' && isOptionalText(item.propertyOwnerId)
+      ? { issuerProfileId: item.issuerProfileId, propertyOwnerId: textOf(item.propertyOwnerId), state: item.state }
+      : null,
+  );
+  // An issuer that is not one is a load error for the whole answer, never a row left out: a list that silently misses an issuer could be read as one that is in order.
+  if (issuers.some((issuer) => issuer === null)) throw new UnexpectedApiResponseError(SDI_ISSUERS_PATH);
+  return { providerConfigured: data.providerConfigured, issuers: issuers as SdiIssuerRegistration[] };
 }

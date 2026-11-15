@@ -15,6 +15,8 @@ export const ownerPortalPaths = {
   /** One published statement: the id of its version, nothing else (no amount, no name). */
   statement: (statementId: string) => `${OWNER_PORTAL_ROOT}/contabilita/${encodeURIComponent(statementId)}`,
   documents: `${OWNER_PORTAL_ROOT}/documenti`,
+  /** The documents CasaZen issued in the name of the owner (E17/F03/US01/T03): the page and the ZIP for its accountant. */
+  issuedDocuments: `${OWNER_PORTAL_ROOT}/documenti-emessi`,
   messages: `${OWNER_PORTAL_ROOT}/messaggi`,
   conversation: (conversationId: string) => `${OWNER_PORTAL_ROOT}/messaggi/${encodeURIComponent(conversationId)}`,
   contacts: `${OWNER_PORTAL_ROOT}/contatti`,

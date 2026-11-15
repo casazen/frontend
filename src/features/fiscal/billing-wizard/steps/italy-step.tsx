@@ -4,6 +4,7 @@ import { Alert } from '@/components/ui/alert';
 import { ChoiceCard, ChoiceGroup } from '@/components/ui/choice-card';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useFiscalDocumentsContext } from '@/queries/use-fiscal-documents';
 import type { BillingWizardValues } from '../billing-wizard-schema';
 
@@ -11,11 +12,12 @@ import type { BillingWizardValues } from '../billing-wizard-schema';
  * Step 8, «Italia» (an Italian issuer only): two reminders, with the box to tick when it is done. The free agreement for the electronic conservation of the documents on the
  * portal of the tax agency, and the stamp duty: the number of the authorization of the virtual stamp, or the reference of the physical one (⚖ I4), or the tick that the virtual
  * stamp is authorized. CasaZen cannot check any of them on the portal of the agency, so they are what the person says, and the step says that. The state of the connection to
- * the SDI is read-only: it is what the server has, and the step that sets it comes with E17.
+ * the SDI is read-only: it is what the server has. While the sending to the SDI is on, the step «Invio allo SDI» tells it (and the state of each issuer), so this note is not drawn twice.
  */
 export function ItalyStep() {
   const { t } = useTranslation();
   // Whether CasaZen has a channel to the SDI in this environment: read as it is, `null` while it is not known (no claim is made then).
+  const { flags } = useFeatureFlags();
   const context = useFiscalDocumentsContext();
   const sdiConfigured = context.data ? context.data.sdiProviderConfigured : null;
   const {
@@ -53,9 +55,11 @@ export function ItalyStep() {
       </Field>
       <p className="text-sm text-foreground/70">{t('billingWizard.italy.note')}</p>
 
-      <Alert variant="info" title={t('billingWizard.italy.sdi.title')} data-testid="billing-sdi-state">
-        {sdiConfigured === null ? t('billingWizard.italy.sdi.unknown') : sdiConfigured ? t('billingWizard.italy.sdi.configured') : t('billingWizard.italy.sdi.notConfigured')}
-      </Alert>
+      {flags.sdiSubmission ? null : (
+        <Alert variant="info" title={t('billingWizard.italy.sdi.title')} data-testid="billing-sdi-state">
+          {sdiConfigured === null ? t('billingWizard.italy.sdi.unknown') : sdiConfigured ? t('billingWizard.italy.sdi.configured') : t('billingWizard.italy.sdi.notConfigured')}
+        </Alert>
+      )}
     </>
   );
 }

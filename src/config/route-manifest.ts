@@ -1336,6 +1336,22 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/owner-invoices/owner-invoices-page')).OwnerInvoicesPage }),
   },
   {
+    // «Autofatture (TD17)» (E17/F03/US01/T02, NF-116): the invoices CasaZen makes for an Italian account holder when a foreign portal charges it a commission with no VAT: the drafts of the month, their review and their issue.
+    // A tab of «Chiusura mensile» right after the invoices to the owners (the order asks for 1.6: the withholding and the transfers keep theirs): the drafts are made from the owner ledger of the month. It asks what the API asks at
+    // its door, `agency.invoice.manage` (the owner and the administrators of the organization, whole organization only, on the agency plan: the page checks the role and the plan before it reads anything), and it exists only
+    // while the issuance of fiscal documents is on (off: no entry, the address leads to the home of the area, and the backend answers 404).
+    path: '/app/account/self-billing',
+    context: 'account',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    featureFlag: 'fiscalDocumentIssuance',
+    navKey: 'nav.selfBilling',
+    navParent: '/app/account/owner-close',
+    navOrder: 1.6,
+    icon: 'Receipt',
+    component: async () => ({ default: (await import('@/features/fiscal/self-billing/self-billing-page')).SelfBillingPage }),
+  },
+  {
     // Withholding tax management (ADR-018): the withholding of the month by owner, the F24 with its PDF and the registration of its payment. For the
     // org billing administrator, who holds `agency.withholding.manage` as the owner or an administrator. Agency plan only (`agencyTier`).
     path: '/app/account/withholding',
