@@ -3,6 +3,7 @@ import { matchPath } from 'react-router-dom';
 import { ROUTE_MANIFEST, type AppContextKey } from '@/config/route-manifest';
 import { BOOKING_TABS } from '@/features/bookings/lib/booking-tabs';
 import { COMPLIANCE_ACTION_TARGETS } from '@/lib/compliance-routes';
+import { ORG_BILLING_ADMIN_PERMISSION } from '@/lib/org-billing-admin';
 import { ACTION_ROUTE_MAP, todoActionRoute } from '../activity-card';
 
 const BOOKING_ID = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
@@ -345,6 +346,39 @@ describe('ACTION_ROUTE_MAP: the check-in link of a portal booking', () => {
     expect(todoActionRoute(item, permissions(['property.read']))).toBeNull();
     expect(todoActionRoute({ ...item, entityType: 'Property' })).toBeNull();
     expect(todoActionRoute({ ...item, entityId: NO_ID })).toBeNull();
+  });
+});
+
+// E18/F02/US01/T01 (NF-117, ⚖ I7): the stay of a company tenant in the property of a private owner waits for a decision. The item is about the booking with the action `ReviewBooking`, and
+// «Fallo ora» opens the page of the withholding with the dialog of the decision on that stay, not the page of the booking, which decides nothing.
+describe('ROUTE_MAP_BY_TYPE: the decision about a company tenant', () => {
+  const item = { action: 'ReviewBooking', activityType: 'CompanyTenantDecision', entityType: 'Booking', entityId: BOOKING_ID, propertyId: PROPERTY_ID as string | null };
+
+  it('todoActionRoute_CompanyTenantDecision_OpensTheDialogOfTheDecisionOnThePageOfTheWithholding', () => {
+    expect(todoActionRoute(item)).toBe(`/app/account/withholding?decision=${BOOKING_ID}`);
+    // Another «Da fare» of the same action keeps the page of the booking.
+    expect(todoActionRoute({ ...item, activityType: 'BookingSpecialRequest' })).toBe(`/app/short-rent/bookings/${BOOKING_ID}`);
+  });
+
+  it('todoActionRoute_CompanyTenantDecision_NeverOffersTheIdOfSomethingThatIsNotABookingOrNoId', () => {
+    expect(todoActionRoute({ ...item, entityType: 'Property' })).toBeNull();
+    expect(todoActionRoute({ ...item, entityId: NO_ID })).toBeNull();
+  });
+
+  // The page of the withholding is the one of the organization administrator (`orgBillingAdmin`, no other permission): the predicates here are the ones of a role, not of everybody. The administrator one answers the
+  // pseudo-permission whatever the area asks, as the workspace does; the other holds the permissions of the area of the host and is not an administrator.
+  const administrator =
+    (granted: string[]) =>
+    (contextKey: AppContextKey, permission: string): boolean =>
+      permission === ORG_BILLING_ADMIN_PERMISSION || permissions(granted)(contextKey, permission);
+
+  it('todoActionRoute_CompanyTenantDecision_OnlyTheAdministratorIsSentToThePageOfTheWithholding_AnyoneElseKeepsTheBooking', () => {
+    expect(todoActionRoute(item, administrator([]))).toBe(`/app/account/withholding?decision=${BOOKING_ID}`);
+    expect(todoActionRoute(item, administrator(['booking.read']))).toBe(`/app/account/withholding?decision=${BOOKING_ID}`);
+    // A role of the host that is not the administrator is never sent to a page that tells it to ask one: it gets the page of the booking.
+    expect(todoActionRoute(item, permissions(['booking.read', 'property.read', 'property.write']))).toBe(`/app/short-rent/bookings/${BOOKING_ID}`);
+    // And a role that can open neither page gets no button at all.
+    expect(todoActionRoute(item, permissions(['property.read']))).toBeNull();
   });
 });
 

@@ -221,7 +221,10 @@ export interface OwnerExternalDocument {
   createdByUserId: string | null;
 }
 
-/** A withholding decision of a payout, with the rule it was taken on. */
+/**
+ * A withholding decision of a payout, with the rule it was taken on. The base and the amount are in euro, the currency of the F24 (`facts.withholdingCurrency` says it), whatever the currency of the payout.
+ * `facts` are the facts of the owner ledger the decision was taken on; they are absent in the decision of a payout made before they were read from the ledger (E18/F01/US01), whose facts were typed.
+ */
 export interface TaxObligationEvidence {
   id: string;
   decision: TaxDecision;
@@ -239,6 +242,88 @@ export interface TaxObligationEvidence {
   periodMonth: number;
   reversesEvidenceId: string | null;
   createdAt: string;
+  facts?: PayoutFacts | null;
+}
+
+/**
+ * One stay of a payout with the facts its withholding is decided on (backend `PayoutStayFact`, E18/F01/US01/T01): the owner's gross of it without the tourist tax, the tourist tax that was left out, how the ledger
+ * posted it, whether it is a qualifying short let and why, whether the agency collected or handled the money and how, whether its portal already withheld, and whether it is in the base and why. The codes are
+ * those of the backend (`PayoutStayReasons`, `ShortLetTreatmentReasons`, `OwnerWithholdingRules`); a code this version does not know is shown as it came. `propertyId` is `null` for a stay with no property.
+ */
+export interface PayoutStayFact {
+  bookingId: string;
+  propertyId: string | null;
+  channel: string;
+  checkIn: string;
+  checkOut: string;
+  nights: number;
+  sharePercent: number;
+  grossCurrency: string;
+  gross: number;
+  touristTax: number;
+  revenuePath: string;
+  qualifying: boolean;
+  qualifyingReason: string;
+  companyTenantDecisionPending: boolean;
+  collectedByAgency: boolean;
+  collection: string;
+  withheldByPortal: boolean;
+  portalWithholding: string | null;
+  inBase: boolean;
+  baseAmount: number | null;
+  reason: string;
+}
+
+/** The agency's rate of the payout day, from the currency of the withholding to the one of the payout: one unit of `from` is `rate` units of `to`. */
+export interface PayoutFx {
+  from: string;
+  to: string;
+  rate: number;
+  source: string | null;
+  day: string | null;
+}
+
+/**
+ * The facts of a payout, read from the owner ledger of the version it pays and never typed (backend `PayoutFacts`): the stays with their facts, the balance, the currency of the payout and the one of the withholding (euro),
+ * the rate of the day for an owner paid in another currency. Shown read only.
+ */
+export interface PayoutFacts {
+  source: string;
+  currency: string;
+  grossAmount: number;
+  balance: number;
+  withholdingCurrency: string;
+  agencyCollected: boolean | null;
+  qualifyingShortLet: boolean | null;
+  components: Record<string, number>;
+  stayIds: string[];
+  decidedEntryIds: string[] | null;
+  stays: PayoutStayFact[];
+  portalsWithholding: string[];
+  fx: PayoutFx | null;
+  parameters: OwnerAccountingRuleParameters | null;
+}
+
+/**
+ * What a payout of a version on a day would be (`GET api/owner-accounting/payouts/preview?statementVersionId=&paidOn=`), read only: the facts of the ledger, the balance still unpaid (what a payout pays, in `currency`), the
+ * decision of the approved rule in force that day (its base, rate, rounding and tax code, the withholding in euro and the one kept from the payout in `currency`, the net), or `blockingCode` (and `blockingField`), the code
+ * the confirmation would answer, and then no decision. Nothing of it is typed by a person.
+ */
+export interface OwnerPayoutPreview {
+  facts: PayoutFacts;
+  balance: number;
+  currency: string;
+  decision: TaxDecision | null;
+  reasonCode: string | null;
+  grossBase: number | null;
+  ratePercent: number | null;
+  rounding: string | null;
+  withholdingInEuro: number | null;
+  taxCode: string | null;
+  withholdingAmount: number | null;
+  netAmount: number | null;
+  blockingCode: string | null;
+  blockingField: string | null;
 }
 
 /** A payout to an owner with its withholding evidence (the list leaves the evidence empty, `GET …/payouts/{id}` carries it). */
@@ -262,18 +347,17 @@ export interface OwnerPayout {
   evidence: TaxObligationEvidence[];
 }
 
-/** The payout to confirm, with the facts the withholding is decided on (`POST api/owner-accounting/payouts`). */
+/**
+ * The payout to confirm (`POST api/owner-accounting/payouts`): who is paid, on which version of the statement, on which day. It carries no amount and no fact of the withholding (E18/F01/US01/T01): what is paid is the
+ * balance the version still owes, and the stays, their collection and their qualifying short let are read by the server from the owner ledger. A body that sent them would have them ignored.
+ */
 export interface OwnerPayoutCommand {
   idempotencyKey: string;
   ownerId: string;
   statementVersionId: string;
-  grossAmount: number;
   currency: string;
   paidOn: string;
   reference?: string;
-  agencyCollected: boolean | null;
-  qualifyingShortLet: boolean | null;
-  components?: Record<string, number>;
 }
 
 /** An F24 with its filing state: generated and reviewed are never filed; submitted carries the handoff, accepted the receipt. */
@@ -372,20 +456,6 @@ export interface OwnerFiscalProfile {
   masked: boolean;
 }
 
-/**
- * `GET api/owners/{id}/fiscal-profiles/readiness?date=`: the profile and the approved rule set that apply to the owner on a day, by their ids and codes only. It holds no
- * value of the profile (no identifier, no address, no bank account): it is what a payout asks to choose its rule without reading the profile itself. The refusal is a 422
- * with the code of what blocks (`owner_fiscal_profile_missing`, `owner_fiscal_profile_incomplete`, `owner_fiscal_policy_*`).
- */
-export interface OwnerFiscalReadiness {
-  ready: boolean;
-  profileId: string;
-  policyId: string;
-  ruleCode: string;
-  ruleVersion: string;
-  jurisdiction: string;
-}
-
 /** The new profile of an owner (`POST api/owners/{id}/fiscal-profiles`): effective from `validFrom`. */
 export interface OwnerFiscalProfileCommand {
   validFrom: string;
@@ -469,12 +539,25 @@ export interface OwnerOnboardingReason {
   propertyId: string | null;
 }
 
-/** An owner of `GET api/onboarding/owners/readiness`. */
+/**
+ * A warning of an owner (E18/F01/US03/T01): it says what the agency should know and never stops the accounting. `short_let_business_presumed`: the apartments the agency manages for the owner and the ones it
+ * declared outside the agency are more than the limit of a private person (`maxUnits`), so the owner is presumed to run a business, and `suggestion` (`issuer_profile`) says what to do about it.
+ */
+export interface OwnerOnboardingWarning {
+  code: string;
+  managedUnits: number;
+  externalUnits: number;
+  maxUnits: number;
+  suggestion: string | null;
+}
+
+/** An owner of `GET api/onboarding/owners/readiness`. `warnings` are empty unless the exports and checks of the Italian withholding are on (`taxReportingExports`). */
 export interface OwnerOnboardingOwner {
   ownerId: string;
   displayName: string;
   accountingReady: boolean;
   reasons: OwnerOnboardingReason[];
+  warnings?: OwnerOnboardingWarning[];
 }
 
 /** A stretch of days where the shares of a property are wrong. */

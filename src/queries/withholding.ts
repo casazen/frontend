@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { DownloadedFile } from '@/api/file.api';
 import { withholdingApi } from '@/api/withholding.api';
 import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
+import { taxExportFallbackName, type TaxExportRequest } from '@/features/owner-accounting/tax-exports-model';
 import { saveDownload } from './save-download';
 import type { RecordPaymentRequest } from '@/types';
 
@@ -26,6 +28,34 @@ export function useDownloadF24() {
   return useMutation({
     mutationFn: ({ month, year, fallbackName }: { month: number; year: number; fallbackName: string }) =>
       saveDownload(withholdingApi.downloadF24Pdf(month, year), fallbackName),
+    gcTime: 0,
+  });
+}
+
+function taxFileOf(request: TaxExportRequest): Promise<DownloadedFile> {
+  switch (request.kind) {
+    case 'f24':
+      return withholdingApi.downloadF24Data(request.year, request.month, request.format);
+    case 'cu':
+      return withholdingApi.downloadCuData(request.year, request.format);
+    case 'cuProspect':
+      return withholdingApi.downloadCuProspect(request.year, request.ownerId);
+    case 'tax770':
+      return withholdingApi.download770Data(request.year, request.format);
+    case 'contracts':
+      return withholdingApi.downloadContractsCommunication(request.year, request.format);
+  }
+}
+
+/**
+ * Saves one of the files of the Italian withholding that the agency hands to its accountant (the data of an F24, the CU, a draft prospect of an owner, the 770, the communication of the contracts) under the name the server
+ * gave it, or under the one of `taxExportFallbackName` when the page cannot read it. They name fiscal codes and addresses of the owners, so nothing is kept: the bytes go to the disk inside the function, the mutation
+ * is dropped as soon as nothing watches it (`gcTime: 0`) and a failure keeps only the answer of the server (`saveDownload`). The refusal of a role that may not read it is a `ReportAccessDeniedError`, not a trip to the
+ * page of no access. CasaZen files nothing: these are the data to fill the forms with.
+ */
+export function useDownloadTaxFile() {
+  return useMutation({
+    mutationFn: (request: TaxExportRequest) => saveDownload(taxFileOf(request), taxExportFallbackName(request)),
     gcTime: 0,
   });
 }

@@ -752,6 +752,10 @@
           "title": "Pulizia da richiedere",
           "why": "Il soggiorno è finito e nessuno ha chiesto la pulizia: dichiara l'immobile pronto o richiedila prima del prossimo arrivo."
         },
+        "CompanyTenantDecision": {
+          "title": "Conduttore società da decidere",
+          "why": "Il conduttore è una società e l'immobile è di un proprietario privato: decidi se il soggiorno resta una locazione breve, con la ritenuta, oppure no."
+        },
         "ConfirmChannelMapping": {
           "title": "Annuncio da collegare a un immobile",
           "why": "Un annuncio trovato sul gestionale dei canali potrebbe corrispondere a più immobili, o a nessuno: conferma o rifiuta il collegamento."
@@ -2335,7 +2339,14 @@
       "wireOwnerIbanNotSwiss": "In franchi (CHF) si pagano solo IBAN svizzeri o del Liechtenstein: l'IBAN di questi proprietari è di un altro paese.",
       "wireOwnerQrIban": "Per questi proprietari c'è un QR-IBAN, che è il conto di una QR-fattura e non si usa per un bonifico normale: serve l'IBAN normale del conto.",
       "wirePayoutsNotConfirmed": "Uno dei pagamenti scelti è stato annullato: l'elenco è stato aggiornato.",
-      "wirePayoutsNotPublished": "Si paga solo dopo la pubblicazione del rendiconto: pubblica prima il rendiconto di tutti i pagamenti scelti."
+      "wirePayoutsNotPublished": "Si paga solo dopo la pubblicazione del rendiconto: pubblica prima il rendiconto di tutti i pagamenti scelti.",
+      "ownerExternalUnitsInvalid": "Scrivi quanti appartamenti il proprietario affitta fuori dall'agenzia: un numero intero da 0 a 1000.",
+      "ownerPayoutExceedsBalance": "Il saldo del rendiconto è cambiato o è già stato pagato: ricontrolla quello che vedi qui sopra.",
+      "ownerTaxDecisionInvalid": "La decisione non è completa: servono il regime e il motivo.",
+      "ownerTaxDecisionNotApplicable": "Questo soggiorno non ha bisogno di una decisione: non è più il caso di un conduttore società.",
+      "taxCuDatasetOutdated": "I dati annuali sono stati generati prima che CasaZen salvasse i destinatari: rigenerali dalla chiusura mensile e riprova.",
+      "taxCuRecordNotFound": "Nei dati annuali non c'è un record per questo proprietario.",
+      "taxDatasetNotFound": "I dati annuali di quest'anno non sono ancora stati generati: generali dalla chiusura mensile."
     }
   },
   "appShell": {
@@ -17540,6 +17551,42 @@
       "generic": "Non è andata a buon fine. Riprova tra poco.",
       "withField": "{{message}} (campo: {{field}})"
     },
+    "exports": {
+      "contracts": {
+        "description": "I contratti di locazione breve che l'agenzia ha gestito senza trattenere la ritenuta, da comunicare entro il 30 giugno {{deadlineYear}}.",
+        "title": "Comunicazione dei contratti di locazione breve {{year}}"
+      },
+      "cu": {
+        "description": "I dati per compilare la Certificazione Unica: una riga per ogni destinatario, poi i suoi soggiorni.",
+        "none": "I dati annuali di quest'anno non sono ancora stati generati: senza, non c'è niente da esportare.",
+        "openClose": "Apri la chiusura mensile",
+        "prospectFor": "Prospetto in PDF di {{owner}}",
+        "prospectPdf": "Prospetto PDF",
+        "prospectsHint": "Una bozza in PDF per ogni proprietario con una Certificazione Unica {{year}}, con la filigrana «bozza»: non è la Certificazione Unica.",
+        "prospectsNone": "Nei dati annuali non c'è nessun proprietario.",
+        "prospectsTitle_one": "Prospetto per proprietario ({{count}})",
+        "prospectsTitle_other": "Prospetti per proprietario ({{count}})",
+        "prospectsUnreadable": "Non riusciamo a leggere l'elenco dei proprietari dai dati annuali: rigenerali dalla chiusura mensile.",
+        "title": "Certificazione Unica {{year}}"
+      },
+      "f24": {
+        "description": "I dati per compilare e versare l'F24, con il dettaglio per proprietario e pagamento.",
+        "title": "Dati dell'F24 di {{period}}"
+      },
+      "failed": "Non è stato possibile preparare il file. Riprova.",
+      "format": {
+        "csv": "Scarica CSV",
+        "xlsx": "Scarica Excel"
+      },
+      "formatFor": "{{format}}: {{title}}",
+      "noAccess": "Il tuo ruolo non può scaricare questo file: i dati dei destinatari li legge chi gestisce le finanze dei proprietari.",
+      "note": "CasaZen prepara i dati e non trasmette niente: la compilazione e l'invio li fa il tuo commercialista.",
+      "tax770": {
+        "description": "Per ogni mese e codice tributo, la ritenuta operata e l'F24 con cui è stata versata.",
+        "title": "Dati del modello 770 {{year}}"
+      },
+      "title": "Dati per il commercialista"
+    },
     "external": {
       "add": "Collega una fattura",
       "added": "Fattura collegata.",
@@ -17588,12 +17635,60 @@
       "verifiedDone": "Collegamento segnato come controllato.",
       "verify": "Segna come controllata"
     },
+    "facts": {
+      "baseAmount": "Base della ritenuta: {{amount}}.",
+      "blockedNoStays": "Finché il pagamento è bloccato non si può dire se ci sono soggiorni da valutare: risolvi quello che manca qui sopra e riapri questa finestra.",
+      "collection": {
+        "casazenPayment": "L'agenzia ha incassato con un pagamento in CasaZen.",
+        "collectedAtProperty": "L'ospite ha pagato in struttura: l'agenzia non ha incassato.",
+        "paymentNotRecorded": "Nessun pagamento registrato: finché l'agenzia non lo registra, non risulta aver incassato.",
+        "portalPaysAgency": "Il portale paga l'agenzia, che ha l'account del portale.",
+        "portalPaysOwner": "Il portale paga direttamente il proprietario: l'agenzia non incassa.",
+        "recordedPayment": "L'agenzia ha incassato: pagamento registrato a mano."
+      },
+      "decide": "Decidi",
+      "decisionPending": "Il conduttore è una società e nessuno ha ancora deciso il regime: finché non si decide, il soggiorno resta una locazione breve.",
+      "fx": "Il proprietario è pagato in {{to}}: la ritenuta, decisa in {{from}}, si trattiene al cambio dell'agenzia (1 {{from}} = {{rate}} {{to}}, {{day}}).",
+      "fxNoDay": "del giorno del pagamento",
+      "gross": "Lordo del proprietario, senza tassa di soggiorno: {{amount}}",
+      "inBase": "Nella base",
+      "none": "In questo pagamento non c'è nessun soggiorno da valutare: il saldo è fatto di addebiti, rettifiche o soggiorni già valutati da un altro pagamento.",
+      "otherCode": "Motivo non riconosciuto da questa versione: {{code}}",
+      "outOfBase": "Fuori dalla base",
+      "portalWithholding": {
+        "payment": "Il pagamento del portale porta già la ritenuta.",
+        "portalRule": "Il portale trattiene da solo la ritenuta per gli host privati italiani."
+      },
+      "qualifying": {
+        "companyTenantNotShortLet": "Conduttore società: la decisione registrata dice che non è una locazione breve.",
+        "companyTenantShortLet": "Conduttore società: la decisione registrata dice che resta una locazione breve.",
+        "ownerNotPrivate": "Il proprietario non è una persona fisica senza partita IVA: non è una locazione breve.",
+        "ownerPresumedBusiness": "Il proprietario ha più appartamenti di quelli che una persona fisica può affittare: è presunto imprenditore e non è una locazione breve.",
+        "propertyNotItalian": "L'immobile non è in Italia: non è una locazione breve.",
+        "shortLet": "È una locazione breve.",
+        "stayLengthOutOfRange": "La durata non rientra nei limiti della locazione breve.",
+        "stayNotActive": "Il soggiorno non è attivo (annullato, non presentato o in attesa)."
+      },
+      "share": "quota del proprietario {{percent}}",
+      "stayDays_one": "Dal {{checkIn}} al {{checkOut}} ({{count}} notte)",
+      "stayDays_other": "Dal {{checkIn}} al {{checkOut}} ({{count}} notti)",
+      "summary_one": "Fatti letti dal registro ({{count}} soggiorno)",
+      "summary_other": "Fatti letti dal registro ({{count}} soggiorni)",
+      "touristTax": "tassa di soggiorno lasciata fuori: {{amount}}",
+      "verdict": {
+        "alreadyWithheldByPortal": "La ritenuta l'ha già trattenuta il portale: l'agenzia non la trattiene due volte.",
+        "inBase": "Entra nella base della ritenuta.",
+        "noCollectionOrIntervention": "L'agenzia non ha incassato né è intervenuta nel pagamento: niente ritenuta.",
+        "notQualifyingShortLet": "Non è una locazione breve: niente ritenuta."
+      }
+    },
     "fields": {
       "agencyCollected": "incasso dell'agenzia",
       "amount": "importo",
       "approvedByName": "nome di chi approva",
       "attachmentReference": "allegato",
       "baseCurrency": "valuta di partenza",
+      "bookingId": "prenotazione",
       "buildingNumber": "numero civico",
       "cleaningFlatRate": "forfait pulizie",
       "commissionBase": "base della provvigione",
@@ -17609,6 +17704,7 @@
       "externalDate": "data della fattura",
       "externalId": "identificativo nel sistema",
       "externalNumber": "numero della fattura",
+      "fxRate": "cambio del giorno del pagamento",
       "grossAmount": "importo lordo",
       "grossBaseComponents": "voci della base lorda",
       "handoffReference": "chi l'ha trasmesso e come",
@@ -17626,14 +17722,17 @@
       "reason": "motivo",
       "receiptReference": "ricevuta",
       "reference": "riferimento",
+      "regime": "regime",
       "retentionYears": "anni di conservazione",
       "rounding": "arrotondamento",
       "ruleCode": "codice della regola",
       "source": "fonte",
       "sourceSha256": "impronta della fonte",
       "sourceUrl": "indirizzo della fonte",
+      "stays": "un soggiorno che non si riesce a valutare",
       "street": "via",
       "town": "località",
+      "units": "appartamenti fuori dall'agenzia",
       "validFrom": "valida dal",
       "validTo": "valida fino al",
       "version": "versione",
@@ -17829,6 +17928,10 @@
         "how": "Prepara una nuova versione: quella attuale non si può più approvare né pubblicare.",
         "title": "Il registro è cambiato dopo l'ultima versione"
       },
+      "shortLetBusinessPresumed": {
+        "how": "Ha più appartamenti in locazione breve di quelli che una persona fisica può affittare, contando anche quelli fuori dall'agenzia: il rendiconto è giusto, ma i suoi soggiorni non hanno la ritenuta delle locazioni brevi. Controlla i suoi dati finanziari.",
+        "title": "Il proprietario è presunto un imprenditore"
+      },
       "sourceAmountMissing": {
         "how": "Apri il pagamento e completa l'importo: senza, la riga non entra nel rendiconto.",
         "title": "Un incasso non ha l'importo"
@@ -17946,8 +18049,9 @@
       "withholdingOfAnotherVersion": "Le ritenute di questo rendiconto vengono da pagamenti registrati su un'altra versione del mese."
     },
     "payout": {
-      "agencyCollected": "L'agenzia ha incassato l'affitto o è intervenuta nel pagamento?",
+      "balance": "Si paga il saldo del rendiconto: {{amount}}.",
       "blocked": {
+        "other": "Il pagamento non si può registrare adesso ({{code}}).",
         "policy_jurisdiction_mismatch": "La regola scelta è di un'altra giurisdizione rispetto al profilo.",
         "policy_missing": "Il profilo non ha una regola fiscale.",
         "policy_not_approved": "La regola fiscale non è ancora approvata dal commercialista.",
@@ -17955,42 +18059,36 @@
         "profile_incomplete": "Il profilo del proprietario è incompleto per il giorno del pagamento: completalo prima.",
         "profile_missing": "Non c'è un profilo del proprietario valido nel giorno del pagamento."
       },
-      "checking": "Controllo la regola fiscale per questo giorno…",
-      "choose": "Scegli…",
-      "component": "Importo della voce «{{component}}»",
+      "checking": "Rileggo i fatti e la ritenuta per questo giorno…",
       "confirm": "Registra il pagamento",
+      "decision": {
+        "applicable": "La ritenuta si applica a questo pagamento.",
+        "inEuro": "Ritenuta, per l'F24",
+        "kept": "Dal bonifico si trattengono {{amount}}, al cambio dell'agenzia.",
+        "net": "Netto da bonificare: {{amount}}",
+        "notApplicable": "Su questo pagamento non c'è ritenuta."
+      },
       "description": "Registra il bonifico pagato a {{owner}}. La ritenuta, se la regola approvata la prevede, la decide CasaZen al momento della conferma.",
       "done": "Pagamento a {{owner}} registrato.",
       "errors": {
-        "answer": "Scegli una risposta: senza, CasaZen non può decidere.",
-        "components": "Scrivi un importo per ogni voce (anche 0).",
-        "gross": "Scrivi un importo maggiore di zero, con al massimo due decimali.",
         "paidOn": "Scegli la data del pagamento.",
         "reference": "Al massimo 100 caratteri."
       },
-      "facts": "Che cosa serve alla regola",
-      "factsHint": "Sono i fatti che la regola approvata chiede per decidere se c'è una ritenuta. Se non li sai ancora, non registrare il pagamento.",
-      "gross": "Importo lordo pagato ({{currency}})",
-      "left": "Residuo da pagare: {{amount}}",
-      "loading": "Leggo la regola fiscale del proprietario…",
-      "no": "No",
+      "facts": "Fatti letti dal registro del proprietario",
+      "factsHint": "Li legge CasaZen dal registro: non si scrivono a mano e qui non si cambiano. Se qualcosa non torna, correggilo nel registro (un pagamento da registrare, una decisione sul conduttore) e riapri questa finestra.",
+      "loading": "Leggo i fatti del pagamento dal registro del proprietario…",
       "noVersion": "Prima prepara e approva il rendiconto.",
-      "nothingLeft": "Non resta niente da pagare: i pagamenti coprono già il saldo. Registrane un altro solo se sei sicuro.",
+      "nothingLeft": "Non resta niente da pagare: i pagamenti coprono già il saldo del rendiconto.",
       "openProfile": "Apri i dati del proprietario",
-      "overLeft": "L'importo supera quello che resta da pagare ({{amount}}). Controllalo prima di registrare.",
       "paidOn": "Data del pagamento",
-      "qualifyingShortLet": "I soggiorni rientrano in una locazione breve secondo la regola?",
+      "previewError": "Non riusciamo a leggere i fatti del pagamento",
       "recorded": "Pagamento registrato",
       "recordedBody": "Lordo {{gross}}, ritenuta {{withheld}}, netto {{net}}.",
       "reference": "Riferimento del bonifico",
-      "rule": "Regola applicata: {{rule}} versione {{version}} ({{jurisdiction}}), approvata da {{approver}} il {{date}}.",
       "ruleBlocked": "Non si può ancora registrare un pagamento",
-      "ruleError": "Non riusciamo a leggere la regola fiscale del proprietario",
       "title": "Registra un pagamento",
       "unresolved": "Manca un'informazione per decidere la ritenuta: {{field}}.",
-      "useLeft": "Usa il residuo",
-      "withholdingNote": "CasaZen non calcola la ritenuta in anticipo: la decide alla conferma, con la regola approvata in vigore il giorno del pagamento, e ne conserva la prova.",
-      "yes": "Sì"
+      "withholdingNote": "La ritenuta la decide CasaZen al momento della conferma, con la regola approvata in vigore il giorno del pagamento, e ne conserva la prova. Qui la vedi in anteprima: non si scrive a mano."
     },
     "period": {
       "backToSuggested": "Torna a {{period}}",
@@ -18133,6 +18231,7 @@
       "applicable": "Ritenuta applicabile",
       "base": "Base lorda",
       "calculated": "Ritenute calcolate: {{amount}} da versare con F24. Il file F24 non è ancora stato generato.",
+      "currencyMissing": "La valuta di questa decisione non è indicata: gli importi sono scritti senza simbolo di valuta.",
       "downloadData": "Scarica i dati",
       "downloadPdf": "Scarica il PDF",
       "dueDate": "Scadenza",
@@ -18155,8 +18254,10 @@
       "payment": "Pagamento",
       "rate": "Aliquota",
       "reason": {
+        "alreadyWithheldByPortal": "La ritenuta l'ha già trattenuta il portale: l'agenzia non la trattiene due volte.",
         "applicable": "Ritenuta applicabile secondo la regola approvata.",
         "noCollectionOrIntervention": "L'agenzia non ha incassato né è intervenuta nel pagamento: la regola non prevede ritenuta.",
+        "noStaysToDecide": "In questo pagamento non c'è nessun soggiorno nuovo da valutare: nessuna ritenuta.",
         "notQualifyingShortLet": "I soggiorni non rientrano in una locazione breve secondo la regola: nessuna ritenuta.",
         "other": "Motivo: {{code}}",
         "ruleWithoutWithholding": "La regola approvata non prevede ritenuta."
@@ -18178,6 +18279,41 @@
       "yearF24MonthLine": "{{month}}: ritenute {{obligations}}, F24 {{f24}}",
       "yearF24NotGenerated": "{{month}}: ritenute {{obligations}}, F24 non ancora generato",
       "yearReconciled": "Nel {{year}} le ritenute ({{amount}}) coincidono con gli F24 e con i dati annuali."
+    },
+    "tenantDecision": {
+      "change": "Cambia la decisione",
+      "confirm": "Registra la decisione",
+      "current": "Decisione in vigore: «{{regime}}», registrata il {{date}}. Una nuova decisione prende il suo posto; la precedente resta nello storico.",
+      "days": "Dal {{checkIn}} al {{checkOut}}",
+      "decide": "Decidi",
+      "description": "Il conduttore è una società e l'immobile è di un proprietario privato.",
+      "done": "Decisione registrata.",
+      "gone": "Questo soggiorno non ha più bisogno di una decisione: è già stata presa, o il conduttore non è più una società, o l'immobile non è tra quelli a cui hai accesso.",
+      "legend": "Che regime applichi a questo soggiorno?",
+      "loading": "Leggo i soggiorni da decidere…",
+      "noAccess": "Il tuo ruolo non può vedere né registrare queste decisioni: servono i permessi di chi gestisce le finanze dei proprietari.",
+      "pending": "Da decidere",
+      "readings": {
+        "advice": "Sentito il commercialista, registra la decisione. CasaZen non cambia mai il regime da sola: finché nessuno decide, il soggiorno resta una locazione breve.",
+        "agency": "Per l'Agenzia delle Entrate (circolare 24/E del 2017), con una società come conduttore il regime delle locazioni brevi non vale.",
+        "cassation": "Per la Cassazione (sentenza 12395/2024) conta solo chi affitta, se l'uso è abitativo."
+      },
+      "reason": "Perché hai deciso così",
+      "reasonHint": "Una nota per chi controllerà, per esempio «sentito il commercialista il 12/11». Non scrivere dati del conduttore.",
+      "regime": {
+        "NotShortLet": {
+          "description": "Nessuna ritenuta su questo soggiorno.",
+          "title": "Non è una locazione breve"
+        },
+        "ShortLet": {
+          "description": "L'agenzia trattiene la ritenuta, come per gli altri soggiorni.",
+          "title": "Resta una locazione breve"
+        }
+      },
+      "sectionHint": "Il conduttore è una società e l'immobile è di un proprietario privato: se vale il regime delle locazioni brevi è dubbio e lo decidi tu. La decisione vale per il soggiorno e per tutti i proprietari dell'immobile.",
+      "sectionTitle": "Conduttori società",
+      "stay": "Prenotazione {{code}} · {{property}}",
+      "title": "Conduttore società: che regime applichiamo?"
     },
     "title": "Chiusura mensile",
     "version": {
@@ -19365,6 +19501,39 @@
       },
       "submit": "Invia la richiesta",
       "submitting": "Invio in corso"
+    },
+    "withholding": {
+      "cu": {
+        "attribution": {
+          "owner": "Dati intestati a te.",
+          "share": "Riguarda la tua quota dell'immobile.",
+          "signatory": "Dati intestati a te come firmatario: comprendono anche la parte di altri titolari dell'immobile."
+        },
+        "base": "Base",
+        "none": "L'agenzia non ha ancora verificato i dati della Certificazione Unica {{year}}: li vedrai qui quando li avrà verificati.",
+        "state": {
+          "accepted": "L'agenzia ha registrato la ricevuta",
+          "other": "In lavorazione presso l'agenzia",
+          "preparing": "In preparazione",
+          "rejected": "In correzione presso l'agenzia",
+          "reviewed": "Verificata dall'agenzia",
+          "submitted": "L'agenzia ha registrato l'invio"
+        },
+        "taxCode": "Codice tributo",
+        "title": "Certificazione Unica {{year}}",
+        "withheld": "Ritenuta"
+      },
+      "currencyMissing": "La valuta di queste ritenute non è indicata: gli importi sono mostrati senza simbolo di valuta.",
+      "detail": {
+        "line": "Base {{base}} · ritenuta {{withheld}}"
+      },
+      "empty": "Nel {{year}} non risultano ritenute sui tuoi pagamenti.",
+      "error": "Impossibile caricare le ritenute",
+      "loading": "Carico le ritenute…",
+      "note": "Sono i dati che l'agenzia ha registrato, in euro. La Certificazione Unica ufficiale la prepara e la trasmette l'agenzia o il suo commercialista: qui vedi i dati con cui la compila.",
+      "title": "Ritenute e Certificazione Unica",
+      "total": "Ritenute del {{year}}",
+      "year": "Anno"
     }
   },
   "ownerProfile": {
@@ -19618,7 +19787,40 @@
       "vatNumberInvalid": "La partita IVA non è valida."
     },
     "title": "Dati finanziari di {{owner}}",
-    "titleGeneric": "Dati finanziari del proprietario"
+    "titleGeneric": "Dati finanziari del proprietario",
+    "units": {
+      "count": "Appartamenti in affitto breve: {{managed}} gestiti dall'agenzia, {{external}} dichiarati fuori dall'agenzia, {{total}} in tutto.",
+      "description": "Una persona fisica senza partita IVA può affittare in locazione breve un numero limitato di appartamenti; oltre, l'attività è presunta d'impresa. Contano anche quelli che il proprietario affitta senza passare dall'agenzia.",
+      "errors": {
+        "units": "Scrivi un numero intero da 0 a {{max}}: 0 se non ne ha."
+      },
+      "hint": "Da 0 a 1000. Scrivi 0 se non ne ha: lasciare vuoto non vale.",
+      "label": "Appartamenti che affitta fuori dall'agenzia",
+      "loadError": "Non riusciamo a leggere il limite degli appartamenti",
+      "loading": "Leggo il limite degli appartamenti…",
+      "notApplicable": "Il limite riguarda le persone fisiche senza partita IVA: questo proprietario è già un'impresa e non c'è niente da dichiarare.",
+      "notForYou": "Non hai accesso a questi dati.",
+      "notFound": "Proprietario non trovato.",
+      "pastLimit": "Oltre il limite di {{max}} appartamenti: il proprietario è presunto un imprenditore e i suoi soggiorni non hanno la ritenuta delle locazioni brevi.",
+      "readOnly": "Il numero dichiarato lo cambia chi gestisce le finanze dei proprietari.",
+      "save": "Salva il numero",
+      "saved": "Numero salvato.",
+      "title": "Affitti brevi fuori dall'agenzia",
+      "withinLimit": "Entro il limite di {{max}} appartamenti per una persona fisica."
+    },
+    "warning": {
+      "other": {
+        "body": "L'attivazione segnala un avviso che questa versione non conosce ({{code}}): non blocca niente.",
+        "title": "Avviso"
+      },
+      "shortLetBusinessPresumed": {
+        "body": "Il proprietario ha più appartamenti in locazione breve di quelli che una persona fisica può affittare: {{managed}} gestiti dall'agenzia e {{external}} dichiarati fuori, con un limite di {{max}}. I suoi soggiorni non hanno la ritenuta delle locazioni brevi.",
+        "title": "Impresa presunta"
+      },
+      "suggestion": {
+        "issuerProfile": "Valuta di dargli un profilo emittente d'impresa, qui sotto."
+      }
+    }
   },
   "owners": {
     "description": "I proprietari degli immobili che gestisci, con il mandato in vigore di ognuno.",

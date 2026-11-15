@@ -7,7 +7,7 @@ import type { ActivityUrgency, TodoActivity } from '@/api/internal-activities.ap
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { getManifestEntry, type PermissionPredicate } from '@/config/route-manifest';
+import { getManifestEntry, hasEntryPermission, type PermissionPredicate } from '@/config/route-manifest';
 import type { BookingTab } from '@/features/bookings/lib/booking-tabs';
 import { CONNECTION_HEALTH_SECTION } from '@/features/compliance/lib/connection-health-model';
 import { messageThreadPath } from '@/lib/message-hub-routes';
@@ -203,10 +203,15 @@ export const ACTION_ROUTE_MAP = {
  * fallback for who cannot open it.
  * - `TouristTaxRefundDue` (E25/F01/US01/T01, action `ReviewBooking`): the tax step of the check-in wizard of the booking, where the collection and the amount to give back to the guest are
  *   told (the page of the booking tells neither); for who may not write the booking, the page of the booking.
+ * - `CompanyTenantDecision` (E18/F02/US01/T01, action `ReviewBooking`): the page of the withholding with the dialog of the decision about the stay open on it (`?decision=<booking>`), where the two readings of the
+ *   rule are told and the regime is recorded (the page of the booking decides nothing); for an item that names no booking, the page of the booking is the fallback of its action.
  */
 const ROUTE_MAP_BY_TYPE = {
   TouristTaxRefundDue: {
     route: { path: '/app/short-rent/bookings/:id/check-in', target: 'entity', entityType: BOOKING, search: { step: 'tax' } },
+  },
+  CompanyTenantDecision: {
+    route: { path: '/app/account/withholding', onlyFor: [BOOKING], entityParam: 'decision' },
   },
 } satisfies Record<string, TodoActionTarget>;
 
@@ -238,7 +243,9 @@ function buildRoute(route: TodoRoute, activity: TodoRouteSubject, hasPermission?
   if (route.onlyFor && !route.onlyFor.includes(activity.entityType)) return null;
   const entry = getManifestEntry(route.path);
   if (!entry) return null;
-  if (hasPermission && !entry.requiredPermissions.every((permission) => hasPermission(entry.context, permission))) return null;
+  // The same test the menu and the route use: the permissions of the page and, for the page of the organization administrator (`orgBillingAdmin`, like the withholding), being one. A person who is not is sent
+  // to the next page of the item (the booking), never to a page that tells them to ask an administrator.
+  if (hasPermission && !hasEntryPermission(entry, hasPermission)) return null;
 
   let path = entry.path;
   if (route.target === 'thread') {
