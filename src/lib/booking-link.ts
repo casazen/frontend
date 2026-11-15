@@ -196,11 +196,18 @@ function isReferrerHostOnTheInternet(host: string): boolean {
  * The attribution a checkout sends with its booking: the `utm_*` of the address (`carryLinkAttribution`) and the host name of the site the guest came from, from the
  * `referrer` of the page (the host only: never the page, its path or its query, and only a host the API keeps). `undefined` when there is none of either, and a referrer of the
  * site itself is none.
+ *
+ * The site a visitor came from is a fact about the visitor, which the rest of the site keeps only with the consent to statistics (DB-02b, `recordLandingTouch`). So it goes
+ * with the booking when the link says where the guest comes from (at least one of the `utm_*` the booking keeps: the agency's link, whose own site is what the host wants to read),
+ * or when the visitor allows statistics (`statisticsAllowed`); a visitor who came from a search engine or a social network and refused them sends no referrer.
  */
-export function bookingAttributionOf(search: URLSearchParams, referrer: string, appOrigin: string): DirectBookingAttributionPayload | undefined {
+export function bookingAttributionOf(search: URLSearchParams, referrer: string, appOrigin: string, statisticsAllowed: boolean): DirectBookingAttributionPayload | undefined {
   const attribution: DirectBookingAttributionPayload = {};
-  for (const [field, token] of readLinkAttribution(search)) attribution[field] = token;
-  const host = externalReferrerHost(referrer, appOrigin);
-  if (host && isReferrerHostOnTheInternet(host)) attribution.referrer = host;
+  const fromLink = readLinkAttribution(search);
+  for (const [field, token] of fromLink) attribution[field] = token;
+  if (fromLink.length > 0 || statisticsAllowed) {
+    const host = externalReferrerHost(referrer, appOrigin);
+    if (host && isReferrerHostOnTheInternet(host)) attribution.referrer = host;
+  }
   return Object.keys(attribution).length > 0 ? attribution : undefined;
 }

@@ -280,35 +280,47 @@ describe('carryLinkAttribution', () => {
 describe('bookingAttributionOf', () => {
   const APP_ORIGIN = 'https://www.agenzia.it';
 
-  it('bookingAttributionOf_LinkOfTheAgencyFromItsOwnPage_IsTheSourceAndTheHostOnly', () => {
+  it('bookingAttributionOf_LinkOfTheAgencyFromItsOwnPage_IsTheSourceAndTheHostOnlyEvenWithoutTheConsentToStatistics', () => {
     const attribution = bookingAttributionOf(
       new URLSearchParams('checkin=2026-12-01&utm_source=agency-site&utm_medium=link&utm_campaign=estate-2026'),
       'https://www.agenzia.it/case/casa-mare?token=abc&email=mario@example.com',
       'https://prenota.example.test',
+      false,
     );
 
-    // The host of the page the guest came from, never the page, its path or its query.
+    // The host of the page the guest came from, never the page, its path or its query; the link that says where the guest comes from is what carries it.
     expect(attribution).toEqual({ source: 'agency-site', medium: 'link', campaign: 'estate-2026', referrer: 'www.agenzia.it' });
   });
 
   it('bookingAttributionOf_NoSourceAndNoReferrer_IsNothing', () => {
-    expect(bookingAttributionOf(new URLSearchParams('checkin=2026-12-01&guests=2'), '', APP_ORIGIN)).toBeUndefined();
+    expect(bookingAttributionOf(new URLSearchParams('checkin=2026-12-01&guests=2'), '', APP_ORIGIN, true)).toBeUndefined();
   });
 
   it('bookingAttributionOf_ReferrerOfTheSiteItself_IsNotAReferrer', () => {
-    expect(bookingAttributionOf(new URLSearchParams(''), 'https://www.agenzia.it/property/casa-mare', APP_ORIGIN)).toBeUndefined();
+    expect(bookingAttributionOf(new URLSearchParams(''), 'https://www.agenzia.it/property/casa-mare', APP_ORIGIN, true)).toBeUndefined();
   });
 
-  it('bookingAttributionOf_OnlyTheReferrer_IsJustTheHost', () => {
-    expect(bookingAttributionOf(new URLSearchParams(''), 'https://www.google.com/search?q=casa+mare', APP_ORIGIN)).toEqual({ referrer: 'www.google.com' });
+  it('bookingAttributionOf_VisitorWhoAllowsStatistics_SendsJustTheHostOfTheReferrer', () => {
+    expect(bookingAttributionOf(new URLSearchParams(''), 'https://www.google.com/search?q=casa+mare', APP_ORIGIN, true)).toEqual({ referrer: 'www.google.com' });
+  });
+
+  it('bookingAttributionOf_VisitorWhoDoesNotAllowStatisticsAndFollowsNoLink_SendsNoReferrer', () => {
+    // The site a visitor came from is kept only with the consent to statistics (DB-02b): a search engine or a social network is not sent without it.
+    expect(bookingAttributionOf(new URLSearchParams('checkin=2026-12-01&guests=2'), 'https://www.google.com/search?q=casa+mare', APP_ORIGIN, false)).toBeUndefined();
+    expect(bookingAttributionOf(new URLSearchParams('utm_term=casa&utm_content=banner'), 'https://l.facebook.com/l.php?u=x', APP_ORIGIN, false)).toBeUndefined();
+  });
+
+  it('bookingAttributionOf_LinkWithAValueTheBookingDoesNotKeep_DoesNotCarryTheReferrerWithoutTheConsent', () => {
+    // Only a value the booking keeps says where the guest comes from: a source that is not a token is dropped, and the referrer with it.
+    expect(bookingAttributionOf(new URLSearchParams('utm_source=agency%20site'), 'https://www.google.com/', APP_ORIGIN, false)).toBeUndefined();
   });
 
   it.each([['http://192.168.1.5/page?x=1'], ['http://10.0.0.7/'], ['http://mario-pc/inbox'], ['http://localhost:3000/'], ['http://[::1]/']])(
     'bookingAttributionOf_ReferrerThatIsNotAHostOfTheInternet_IsNeverSent (%s)',
     (referrer) => {
-      // A machine of a private network may be named after a person: the API keeps no such host (it needs a dot and no IP address), so it is not even sent.
-      expect(bookingAttributionOf(new URLSearchParams(''), referrer, APP_ORIGIN)).toBeUndefined();
-      expect(bookingAttributionOf(new URLSearchParams('utm_source=agency-site'), referrer, APP_ORIGIN)).toEqual({ source: 'agency-site' });
+      // A machine of a private network may be named after a person: the API keeps no such host (it needs a dot and no IP address), so it is not even sent, consent or not.
+      expect(bookingAttributionOf(new URLSearchParams(''), referrer, APP_ORIGIN, true)).toBeUndefined();
+      expect(bookingAttributionOf(new URLSearchParams('utm_source=agency-site'), referrer, APP_ORIGIN, true)).toEqual({ source: 'agency-site' });
     },
   );
 
@@ -317,6 +329,7 @@ describe('bookingAttributionOf', () => {
       new URLSearchParams('utm_source=agency-site&utm_medium=a%20b&utm_campaign=3331234567'),
       'mailto:mario@example.com',
       APP_ORIGIN,
+      true,
     );
 
     expect(attribution).toEqual({ source: 'agency-site' });

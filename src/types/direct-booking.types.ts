@@ -17,8 +17,9 @@ export type PaymentOption = 'Immediate' | 'OnCancellationDeadline' | 'OnSite';
 
 /**
  * Where the guest of a checkout came from (`attribution` of `POST /api/public/bookings`, E27/F01/US01/T01, NF-123): the `utm_*` of the link they followed and the
- * host name of the site they came from (`referrer`, written with two r like the API). Every field is optional, and only what is a lower-case token (or a host name)
- * is sent: the API drops the rest without refusing the booking, and keeps nothing that is the guest's. No address of a page, no e-mail, no phone number.
+ * host name of the site they came from (`referrer`, written with two r like the API: a name on the internet with a dot in it, never an IP address or a machine of a private
+ * network, and only with such a link or with the consent to statistics). Every field is optional, and only what is a lower-case token (or a host name) is sent: the API drops
+ * the rest without refusing the booking, and keeps nothing that is the guest's. No address of a page, no e-mail, no phone number.
  */
 export interface DirectBookingAttributionPayload {
   source?: string;

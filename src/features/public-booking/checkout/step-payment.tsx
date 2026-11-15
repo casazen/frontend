@@ -17,6 +17,7 @@ import { formatDayMonth, formatPrice } from '@/features/public-site/stay/stay-fo
 import { getProblemCode, getProblemMessage } from '@/lib/api-errors';
 import { bookingAttributionOf } from '@/lib/booking-link';
 import { buildCheckoutOutcomePath } from '@/lib/booking-url';
+import { hasConsent } from '@/lib/cookie-consent';
 import { findPendingCheckout, savePendingCheckout, type PendingCheckout } from '@/lib/pending-checkout';
 import { siteLocale } from '@/lib/site-language';
 import { completeChildrenAges } from '@/lib/tourist-tax';
@@ -104,8 +105,9 @@ export function StepPayment({ org, orgSlug, draft, onDraft, ages, onBack, onEdit
           draft: { ...draft, pay },
           marketingConsentVersion: org.marketingConsentVersion,
           softOptInNoticeVersion: org.softOptInNoticeVersion,
-          // Where the guest came from: the `utm_*` of the address (a link the agency copied) and the host of the site they came from. Read now, kept nowhere.
-          attribution: bookingAttributionOf(searchParams, document.referrer, window.location.origin),
+          // Where the guest came from: the `utm_*` of the address (a link the agency copied) and, with them or with the consent to statistics (DB-02b), the host of the site they
+          // came from. Read now, kept nowhere.
+          attribution: bookingAttributionOf(searchParams, document.referrer, window.location.origin, hasConsent('statistics')),
         }),
       );
       savePendingCheckout({
