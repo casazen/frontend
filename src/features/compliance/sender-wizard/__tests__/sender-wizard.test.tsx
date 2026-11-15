@@ -7,6 +7,7 @@ import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { propertiesApi } from '@/api/properties.api';
+import { onboardingAssistApi } from '@/api/onboarding-assist.api';
 import { propertySenderApi } from '@/api/property-sender.api';
 import { questuraCredentialsApi } from '@/api/questura-credentials.api';
 import { wizardDraftApi } from '@/api/wizard-draft.api';
@@ -24,6 +25,10 @@ vi.mock('@/api/properties.api', async (importOriginal) => {
 });
 vi.mock('@/api/property-sender.api', () => ({ propertySenderApi: { get: vi.fn(), switch: vi.fn(), testConnection: vi.fn(), declareActivated: vi.fn() } }));
 vi.mock('@/api/questura-credentials.api', () => ({ questuraCredentialsApi: { getStatus: vi.fn(), set: vi.fn(), remove: vi.fn() } }));
+vi.mock('@/api/onboarding-assist.api', () => ({ onboardingAssistApi: { getIstatCredentialsStatus: vi.fn(), setIstatCredentials: vi.fn() } }));
+// The activation of the channel manager is behind a flag (off unless a test turns it on): the regional ISTAT credentials of the credentials step are drawn only while it is on.
+const featureFlags = vi.hoisted(() => ({ octorateOnboarding: false }));
+vi.mock('@/hooks/use-feature-flags', () => ({ useFeatureFlags: () => ({ flags: featureFlags, isLoading: false }) }));
 vi.mock('@/api/wizard-draft.api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/api/wizard-draft.api')>()),
   wizardDraftApi: { get: vi.fn(), save: vi.fn(), remove: vi.fn() },
@@ -778,6 +783,166 @@ describe('SenderWizardPage: the credentials that were typed are never lost in si
 
     await onStep('panel');
     expect(questuraCredentialsApi.set).not.toHaveBeenCalled();
+  });
+});
+
+// E20/F03/US02/T01: while the activation of the channel manager is on, the credentials step also holds the regional ISTAT credentials, held and saved as the police ones are.
+describe('SenderWizardPage: the regional ISTAT credentials of the credentials step', () => {
+  const ISTAT_TYPED = { username: 'istat-user-77', password: SECRET, structureCode: '' };
+
+  function typeIstat({ username = ISTAT_TYPED.username, password = ISTAT_TYPED.password, structureCode = ISTAT_TYPED.structureCode } = {}) {
+    fireEvent.change(screen.getByLabelText(text('istatCredentials.fields.username')), { target: { value: username } });
+    fireEvent.change(screen.getByLabelText(text('istatCredentials.fields.password')), { target: { value: password } });
+    fireEvent.change(screen.getByLabelText(text('istatCredentials.fields.structureCode')), { target: { value: structureCode } });
+  }
+
+  beforeEach(() => {
+    featureFlags.octorateOnboarding = true;
+    vi.mocked(onboardingAssistApi.getIstatCredentialsStatus).mockReset().mockResolvedValue({ configured: false, configuredAt: null });
+    vi.mocked(onboardingAssistApi.setIstatCredentials).mockReset().mockResolvedValue({ configured: true, configuredAt: '2026-11-15T10:06:00Z' });
+  });
+
+  afterEach(() => {
+    featureFlags.octorateOnboarding = false;
+  });
+
+  it('SenderWizardPage_ActivationFlagOff_DrawsNoIstatBlockAndAsksNothingOfTheEndpoint', async () => {
+    featureFlags.octorateOnboarding = false;
+    await open();
+    await toTheCredentials();
+
+    expect(screen.getByTestId('sender-credentials-step')).toBeInTheDocument();
+    expect(screen.queryByTestId('sender-istat-credentials')).not.toBeInTheDocument();
+    expect(onboardingAssistApi.getIstatCredentialsStatus).not.toHaveBeenCalled();
+  });
+
+  it('SenderWizardPage_ActivationFlagOn_ShowsTheIstatBlockWriteOnlyUnderThePoliceCredentials', async () => {
+    vi.mocked(onboardingAssistApi.getIstatCredentialsStatus).mockResolvedValue({ configured: true, configuredAt: '2026-11-10T10:30:00Z' });
+    await open();
+    await toTheCredentials();
+
+    const block = await screen.findByTestId('sender-istat-credentials');
+    await waitFor(() => expect(within(block).getByTestId('sender-istat-status')).toHaveAttribute('data-configured', 'true'), WAIT);
+    // Write-only: the fields are empty whatever is stored, the password is a password field, and nothing offers to remember it.
+    expect(screen.getByLabelText(text('istatCredentials.fields.password'))).toHaveAttribute('type', 'password');
+    expect(screen.getByLabelText(text('istatCredentials.fields.password'))).toHaveAttribute('autocomplete', 'off');
+    expect(screen.getByLabelText(text('istatCredentials.fields.username'))).toHaveValue('');
+    expect(within(block).getByTestId('sender-istat-save')).toHaveTextContent(text('istatCredentials.replace'));
+    // The step is the same one: the police credentials are still there and the supplier of the channel manager is still not named.
+    expect(screen.getByLabelText(text('questuraCredentials.fields.wsKey'))).toBeInTheDocument();
+    expect(wizard().textContent ?? '').not.toMatch(/octorate/i);
+  });
+
+  it('SenderWizardPage_IstatTypedAndTheMainButton_SavesThemBeforeTheStepIsLeftAndLeavesNothingBehind', async () => {
+    const { client } = await open();
+    await toTheCredentials();
+    await screen.findByTestId('sender-istat-credentials');
+    typeIstat();
+
+    // The main button says what it does, and the police credentials, which nobody typed, are not sent.
+    expect(primary()).toHaveTextContent(text('compliance.sender.steps.credentials.saveAndNext'));
+    fireEvent.click(primary());
+
+    await waitFor(() => expect(onboardingAssistApi.setIstatCredentials).toHaveBeenCalledWith(PROPERTY_ID, ISTAT_TYPED), WAIT);
+    await onStep('panel');
+    expect(onboardingAssistApi.setIstatCredentials).toHaveBeenCalledTimes(1);
+    expect(questuraCredentialsApi.set).not.toHaveBeenCalled();
+    // They left with the save: no field, no mutation, no draft and no storage holds them.
+    expect(document.body.innerHTML).not.toContain(SECRET);
+    await waitFor(() => expect(client.getMutationCache().getAll().filter((mutation) => JSON.stringify(mutation.state.variables ?? null).includes(SECRET))).toEqual([]), WAIT);
+    expect(JSON.stringify(vi.mocked(wizardDraftApi.save).mock.calls)).not.toContain(SECRET);
+    expect(JSON.stringify(vi.mocked(wizardDraftApi.save).mock.calls)).not.toContain('istat-user-77');
+    expect(JSON.stringify([...Array(sessionStorage.length).keys()].map((index) => sessionStorage.getItem(sessionStorage.key(index) ?? '')))).not.toContain(SECRET);
+  });
+
+  it('SenderWizardPage_BothTyped_TheMainButtonSavesThePoliceCredentialsFirstAndThenTheIstatOnes', async () => {
+    await open();
+    await toTheCredentials();
+    await screen.findByTestId('sender-istat-credentials');
+    typeCredentials();
+    typeIstat();
+
+    fireEvent.click(primary());
+
+    await onStep('panel');
+    expect(questuraCredentialsApi.set).toHaveBeenCalledTimes(1);
+    expect(onboardingAssistApi.setIstatCredentials).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(questuraCredentialsApi.set).mock.invocationCallOrder[0]).toBeLessThan(vi.mocked(onboardingAssistApi.setIstatCredentials).mock.invocationCallOrder[0]);
+  });
+
+  it('SenderWizardPage_IstatTypedButIncomplete_TheMainButtonStaysOnTheStepAndSaysWhy', async () => {
+    await open();
+    await toTheCredentials();
+    await screen.findByTestId('sender-istat-credentials');
+    typeIstat({ password: '' });
+
+    fireEvent.click(primary());
+
+    expect(await screen.findByTestId('sender-finish-error')).toHaveTextContent(text('compliance.sender.errors.istatIncomplete'));
+    expect(wizard()).toHaveAttribute('data-step', 'credentials');
+    expect(screen.getByLabelText(text('istatCredentials.fields.password'))).toHaveAttribute('aria-invalid', 'true');
+    expect(onboardingAssistApi.setIstatCredentials).not.toHaveBeenCalled();
+    // What was typed is still in its field, to be completed.
+    expect(screen.getByLabelText(text('istatCredentials.fields.username'))).toHaveValue('istat-user-77');
+  });
+
+  it('SenderWizardPage_IstatRefusedByTheServer_TheMainButtonStaysOnTheStepKeepsTheFieldsAndForgetsTheRequest', async () => {
+    vi.mocked(onboardingAssistApi.setIstatCredentials).mockRejectedValue(
+      Object.assign(problem(422, { code: 'istat_credentials_invalid' }), { config: { headers: new AxiosHeaders(), data: JSON.stringify({ password: SECRET }) } }),
+    );
+    const { client } = await open();
+    await toTheCredentials();
+    await screen.findByTestId('sender-istat-credentials');
+    typeIstat();
+
+    fireEvent.click(primary());
+
+    expect(await screen.findByTestId('sender-finish-error')).toHaveTextContent(text('compliance.sender.errors.istatNotSaved'));
+    expect(toast.error).toHaveBeenCalled();
+    expect(wizard()).toHaveAttribute('data-step', 'credentials');
+    expect(screen.getByLabelText(text('istatCredentials.fields.password'))).toHaveValue(SECRET);
+    await waitFor(
+      () =>
+        expect(
+          client
+            .getMutationCache()
+            .getAll()
+            .filter((mutation) => JSON.stringify(mutation.state.variables ?? null).includes(SECRET) || JSON.stringify((mutation.state.error as AxiosError | null)?.config?.data ?? null).includes(SECRET)),
+        ).toEqual([]),
+      WAIT,
+    );
+  });
+
+  it('SenderWizardPage_EnterInAnIstatField_SavesTheIstatCredentialsOnlyAndNeverGoesOnToTheNextStep', async () => {
+    await open();
+    await toTheCredentials();
+    await screen.findByTestId('sender-istat-credentials');
+    typeIstat();
+
+    const notPrevented = fireEvent.keyDown(screen.getByLabelText(text('istatCredentials.fields.password')), { key: 'Enter', code: 'Enter' });
+
+    expect(notPrevented).toBe(false);
+    await waitFor(() => expect(onboardingAssistApi.setIstatCredentials).toHaveBeenCalledWith(PROPERTY_ID, ISTAT_TYPED), WAIT);
+    await waitFor(() => expect(screen.getByLabelText(text('istatCredentials.fields.password'))).toHaveValue(''), WAIT);
+    expect(onboardingAssistApi.setIstatCredentials).toHaveBeenCalledTimes(1);
+    expect(questuraCredentialsApi.set).not.toHaveBeenCalled();
+    expect(wizard()).toHaveAttribute('data-step', 'credentials');
+  });
+
+  it('SenderWizardPage_SaveAndExitWithIstatTyped_SaysTheyWereNotKeptAndKeepsNothingOfThem', async () => {
+    await open();
+    await toTheCredentials();
+    await screen.findByTestId('sender-istat-credentials');
+    typeIstat();
+
+    click('sender-wizard-save-exit');
+
+    await waitFor(() => expect(screen.getByTestId('property-page')).toBeInTheDocument(), WAIT);
+    expect(toast.warning).toHaveBeenCalledWith(text('compliance.sender.exit.savedWithoutCredentials'));
+    expect(onboardingAssistApi.setIstatCredentials).not.toHaveBeenCalled();
+    await waitFor(() => expect(wizardDraftApi.save).toHaveBeenCalled(), WAIT);
+    expect(JSON.stringify(vi.mocked(wizardDraftApi.save).mock.calls)).not.toContain(SECRET);
+    expect(JSON.stringify(vi.mocked(wizardDraftApi.save).mock.calls)).not.toContain('istat-user-77');
   });
 });
 

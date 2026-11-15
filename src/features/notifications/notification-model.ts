@@ -1,6 +1,7 @@
 import { AlertTriangle, BedDouble, Bell, CalendarClock, ClipboardCheck, LifeBuoy, LogOut, MessageSquare, ShieldAlert, ShieldCheck, UserCheck, Wrench, type LucideIcon } from 'lucide-react';
 import type { InAppNotification } from '@/api/notifications.api';
 import type { AppContextKey } from '@/config/route-manifest';
+import { ONBOARDING_PLAN_PATH } from '@/lib/onboarding-parts';
 
 interface NotificationKind {
   icon: LucideIcon;
@@ -40,6 +41,12 @@ const KINDS: Record<string, NotificationKind> = {
   'verification-required': { icon: ShieldCheck, textKey: 'notifications.types.verificationRequired', route: () => VERIFICATIONS_ROUTE },
   // E10/F03/US03/T03: a host asked CasaZen support to do a step («Fallo per me»); the entity is the request, and the staff open the queue of the requests.
   'assist-requested': { icon: LifeBuoy, textKey: 'notifications.types.assistRequested', route: () => ASSIST_QUEUE_ROUTE },
+  // E20/F03/US01/T02: the host reopened a request support had closed («Non funziona»); the entity is the request, and the staff open the same queue.
+  'assist-reopened': { icon: LifeBuoy, textKey: 'notifications.types.assistReopened', route: () => ASSIST_QUEUE_ROUTE },
+  // E20/F03/US01/T02: support closed a request of the host: «Il collegamento è attivo» (CasaZen read it on the panel) or «Il supporto dichiara di aver collegato ...» (it could not). The
+  // entity is the request, which carries neither the property nor the person, so the click opens the plan of the activation, where the part shows where it stands.
+  'assist-verified': { icon: ShieldCheck, textKey: 'notifications.types.assistVerified', route: () => ONBOARDING_PLAN_PATH },
+  'assist-declared': { icon: LifeBuoy, textKey: 'notifications.types.assistDeclared', route: () => ONBOARDING_PLAN_PATH },
   'alloggiati-deadline': { icon: CalendarClock, textKey: 'notifications.types.alloggiatiDeadline', route: bookingTab('alloggiati') },
   'alloggiati-overdue': { icon: ShieldAlert, textKey: 'notifications.types.alloggiatiOverdue', route: bookingTab('alloggiati') },
   'alloggiati-failed': { icon: AlertTriangle, textKey: 'notifications.types.alloggiatiFailed', route: bookingTab('alloggiati') },

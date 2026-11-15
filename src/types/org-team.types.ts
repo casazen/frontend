@@ -192,6 +192,8 @@ export type OrgActivityType =
   | 'PropertyModeChangeCancelled'
   | 'PropertyModeChanged'
   | 'PropertyActivatedWithReminders'
+  | 'OnboardingAssistRequested'
+  | 'OnboardingAssistUpdated'
   | 'TrustedSupplierAdded'
   | 'TrustedSupplierRemoved'
   | 'AdminGrantedConcordatoFacileGift';

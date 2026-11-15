@@ -575,4 +575,76 @@ describe('OctoratePanelStep, the guided passage to the panel of the channel mana
       expect(screen.queryByTestId('assist-request-button')).not.toBeInTheDocument();
     });
   });
+
+  // E20/F03/US02/T01: how support closed the request, told on the step it was closed for.
+  describe('the outcome of a request support closed', () => {
+    const doneAt = '2026-11-13T09:00:00Z';
+
+    it('OctoratePanelStep_StepDoneBecauseSupportDeclaredIt_SaysWhoseWordItIsAndNeverThatCasaZenChecked', async () => {
+      server = panelStep({ status: 'confirmed', lastVerificationOutcome: 'unverifiable', completedAt: doneAt });
+      vi.mocked(onboardingApi.listPanelSteps).mockResolvedValue([server]);
+      vi.mocked(onboardingApi.listAssistRequests).mockResolvedValue([assistRequest({ status: 'Done', completedAt: doneAt, outcome: 'declared' })]);
+      renderPage();
+
+      const outcome = await screen.findByTestId('assist-outcome');
+      await waitFor(() => expect(phase()).toBe('recovered'));
+
+      // The step is done by the word of the support: the state says so, instead of «CasaZen ha verificato il collegamento».
+      const step = screen.getByTestId('panel-step');
+      expect(step).toHaveTextContent(i18n.t('onboardingPlan.panel.state.recoveredDeclared.title'));
+      expect(step).toHaveTextContent(i18n.t('onboardingPlan.panel.state.recoveredDeclared.body'));
+      expect(step).not.toHaveTextContent(i18n.t('onboardingPlan.panel.state.recovered.title'));
+      expect(step.textContent ?? '').not.toMatch(/octorate/i);
+      expect(outcome).toHaveAttribute('data-outcome', 'declared');
+      expect(outcome).toHaveTextContent(i18n.t('onboardingPlan.panel.assist.outcome.declared.title'));
+      expect(within(outcome).getByTestId('assist-reopen')).toHaveTextContent(i18n.t('onboardingPlan.panel.assist.notWorking.action'));
+    });
+
+    it('OctoratePanelStep_StepDoneBecauseCasaZenReadItOnThePanel_IsToldVerified', async () => {
+      server = panelStep({ status: 'verified', lastVerificationOutcome: 'verified', completedAt: doneAt });
+      vi.mocked(onboardingApi.listPanelSteps).mockResolvedValue([server]);
+      vi.mocked(onboardingApi.listAssistRequests).mockResolvedValue([assistRequest({ status: 'Done', completedAt: doneAt, outcome: 'verified' })]);
+      renderPage();
+
+      const outcome = await screen.findByTestId('assist-outcome');
+      await waitFor(() => expect(phase()).toBe('recovered'));
+
+      expect(outcome).toHaveAttribute('data-outcome', 'verified');
+      expect(outcome).toHaveTextContent(i18n.t('onboardingPlan.panel.assist.outcome.verified.title'));
+      expect(screen.getByTestId('panel-step')).toHaveTextContent(i18n.t('onboardingPlan.panel.state.recovered.title'));
+      expect(screen.getByTestId('panel-step')).not.toHaveTextContent(i18n.t('onboardingPlan.panel.state.recoveredDeclared.title'));
+    });
+
+    it('OctoratePanelStep_ConfirmedByThePersonWithNoRequestOfSupport_KeepsItsOwnWordsAndShowsNoOutcome', async () => {
+      server = panelStep({ status: 'confirmed', completedAt: doneAt });
+      vi.mocked(onboardingApi.listPanelSteps).mockResolvedValue([server]);
+      renderPage();
+
+      await waitFor(() => expect(phase()).toBe('recovered'));
+
+      expect(screen.getByTestId('panel-step')).toHaveTextContent(i18n.t('onboardingPlan.panel.state.recovered.title'));
+      expect(screen.queryByTestId('assist-outcome')).not.toBeInTheDocument();
+    });
+
+    it('AssistRequestButton_RequestClosedForAStepThatIsNotDoneAnyMore_TellsNothingOfThePast', async () => {
+      // The step was started again after support closed the request: the outcome of the past is not this step's.
+      server = panelStep({ status: 'started' });
+      vi.mocked(onboardingApi.listPanelSteps).mockResolvedValue([server]);
+      vi.mocked(onboardingApi.listAssistRequests).mockResolvedValue([assistRequest({ status: 'Done', completedAt: doneAt, outcome: 'verified' })]);
+      renderPage();
+
+      expect(await screen.findByTestId('assist-request-button')).toBeInTheDocument();
+      expect(screen.queryByTestId('assist-outcome')).not.toBeInTheDocument();
+    });
+
+    it('AssistRequestButton_RequestCancelledForADoneStep_IsNoOutcome', async () => {
+      server = panelStep({ status: 'confirmed', completedAt: doneAt });
+      vi.mocked(onboardingApi.listPanelSteps).mockResolvedValue([server]);
+      vi.mocked(onboardingApi.listAssistRequests).mockResolvedValue([assistRequest({ status: 'Cancelled', completedAt: doneAt })]);
+      renderPage();
+
+      await waitFor(() => expect(phase()).toBe('recovered'));
+      expect(screen.queryByTestId('assist-outcome')).not.toBeInTheDocument();
+    });
+  });
 });

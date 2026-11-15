@@ -38,6 +38,17 @@
   "account": {
     "activity": {
       "accessRequested": "Richiesta di accesso a un'area o a una pagina",
+      "assistCredential": {
+        "panel": "Il supporto CasaZen ha usato le credenziali del pannello del tuo channel manager per fare il collegamento che avevi chiesto",
+        "police": "Il supporto CasaZen ha usato le credenziali di Alloggiati Web per fare il collegamento che avevi chiesto",
+        "regionalIstat": "Il supporto CasaZen ha usato le credenziali ISTAT per fare il collegamento che avevi chiesto"
+      },
+      "assistRequested": "Hai chiesto aiuto al supporto CasaZen",
+      "assistStatus": {
+        "cancelled": "Il supporto CasaZen ha annullato la tua richiesta di aiuto",
+        "done": "Il supporto CasaZen ha chiuso la tua richiesta di aiuto: dice di averla fatta",
+        "inProgress": "Il supporto CasaZen ha preso in carico la tua richiesta di aiuto"
+      },
       "formerMember": "Ex membro",
       "invitationAccepted": "Invito accettato ({{role}})",
       "invitationRevoked": "Invito annullato ({{role}})",
@@ -1653,7 +1664,10 @@
       "archiveInvalidType": "Questo tipo di documento non esiste.",
       "archiveTypeForbidden": "Non hai accesso a questo tipo di documento.",
       "assistContextInvalid": "Questa richiesta di aiuto non riguarda un passaggio che possiamo fare per te.",
+      "assistDoneNotValid": "Il pannello legge questo collegamento come non valido: la richiesta non è stata chiusa.",
+      "assistReopenNoteRequired": "Scrivi cosa non funziona, in al massimo 500 caratteri e senza indirizzi email.",
       "assistRequestAlreadyOpen": "Hai già una richiesta aperta per questo passaggio: la trovi in Da fare.",
+      "assistRequestNotDone": "Questa richiesta non è chiusa: non c'è nulla da riaprire.",
       "assistStepAlreadyDone": "Questo passaggio è già stato fatto: non serve altro.",
       "channelAccessNotValid": "L'accesso al portale non è valido: riaprilo e riprova.",
       "channelConnectionNotFound": "L'accesso è dato ma non troviamo il collegamento del portale: controlla il pannello.",
@@ -1820,6 +1834,14 @@
       "propertyHasActiveLeases": "Non puoi eliminare l'immobile: ha locazioni attive. Concludile prima di eliminarlo.",
       "propertyResponsibleInvalid": "La persona scelta non può essere responsabile di questo immobile: deve essere un membro attivo che può già accedervi.",
       "seriesTooLong": "La serie dei numeri è troppo lunga: accorciala nella configurazione della fatturazione.",
+      "supportVaultKindInvalid": "Questo tipo di credenziale non esiste.",
+      "supportVaultKindNotForRequest": "Queste credenziali non servono per questa richiesta.",
+      "supportVaultOrgNotFound": "Non troviamo questa organizzazione.",
+      "supportVaultReasonInvalid": "Scrivi un motivo da 10 a 300 caratteri.",
+      "supportVaultRequestNotOpen": "La richiesta non è aperta: le credenziali si aprono solo per una richiesta aperta.",
+      "supportVaultSecretMissing": "Queste credenziali non ci sono ancora: salvale prima, oppure chiedile all'utente.",
+      "supportVaultTooManyOpenings": "Hai già aperto le credenziali 5 volte nell'ultima ora per questa richiesta: riprova più tardi.",
+      "supportVaultValueInvalid": "Utente e password sono obbligatori, al massimo 200 caratteri; il codice aggiuntivo al massimo 100.",
       "xlsxTooManyRows": "Troppe righe: un foglio di un file Excel può avere al massimo 10.000 righe. Scegli un periodo più breve e riprova.",
       "planLimitReached": "Hai raggiunto il limite del tuo piano",
       "planRequired": "Questa funzione richiede un piano superiore.",
@@ -6508,6 +6530,12 @@
         "text": "Prima conferma chi invia: questo passaggio lavora sull'invio in corso."
       },
       "credentials": {
+        "istat": {
+          "notSaved": "Credenziali ISTAT non ancora salvate.",
+          "saved": "Credenziali ISTAT salvate.",
+          "title": "Credenziali ISTAT (facoltativo)",
+          "why": "Servono se vuoi che il supporto di CasaZen colleghi per te l'ISTAT della tua regione nel pannello del tuo channel manager. Le apre solo su una tua richiesta, e ogni apertura la trovi nel registro delle attività."
+        },
         "notInDraft": "Le credenziali non vengono salvate nella bozza: se esci senza salvarle, dovrai riscriverle.",
         "notSaved": "Credenziali non ancora salvate.",
         "saved": "Credenziali salvate.",
@@ -6592,6 +6620,8 @@
         "credentialsNotSaved": "Non siamo riusciti a salvare le credenziali: sono ancora nei campi. Riprova, oppure salta questo passo per continuare senza salvarle.",
         "delegationOutdated": "Il testo della delega è cambiato: torna a «Chi invia», leggilo e conferma di nuovo.",
         "delegationRequired": "Per un invio automatico serve il consenso alla delega: torna a «Chi invia» e confermalo.",
+        "istatIncomplete": "Completa nome utente e password delle credenziali ISTAT, oppure svuota i campi per continuare senza salvarle.",
+        "istatNotSaved": "Non siamo riusciti a salvare le credenziali ISTAT: sono ancora nei campi. Riprova, oppure svuota i campi per continuare senza salvarle.",
         "notApplicable": "Per questo immobile non c'è un invio da scegliere.",
         "switchFailed": "Non è stato possibile cambiare chi invia: non è cambiato nulla. Riprova."
       },
@@ -9784,6 +9814,43 @@
       "saveFailed": "Non sono riuscito a salvare i dati. Riprova.",
       "title": "A chi intestare la fattura"
     }
+  },
+  "istatCredentials": {
+    "assist": {
+      "description": "Se preferisci, il supporto di CasaZen collega l'ISTAT al tuo channel manager per te, con le credenziali che hai salvato qui. Qui vedi a che punto è."
+    },
+    "cancel": "Annulla",
+    "configuredOn": "Configurate il {{date}}",
+    "description": "Nome utente, password e, se il portale della tua regione lo chiede, il codice della struttura per l'ISTAT di questo immobile.",
+    "errors": {
+      "passwordRequired": "Inserisci la password dell'ISTAT.",
+      "passwordTooLong": "La password può avere al massimo 200 caratteri.",
+      "structureCodeTooLong": "Il codice della struttura può avere al massimo 50 caratteri.",
+      "usernameRequired": "Inserisci il nome utente dell'ISTAT.",
+      "usernameTooLong": "Il nome utente può avere al massimo 100 caratteri."
+    },
+    "fields": {
+      "password": "Password ISTAT",
+      "structureCode": "Codice della struttura (facoltativo)",
+      "username": "Nome utente ISTAT"
+    },
+    "hints": {
+      "structureCode": "Il portale di alcune regioni lo chiede (CIR o CUSR): se il tuo no, lascia vuoto."
+    },
+    "loadFailed": "Impossibile verificare se le credenziali ISTAT sono configurate.",
+    "loading": "Caricamento dello stato delle credenziali ISTAT…",
+    "notConfigured": "Non configurate",
+    "remove": "Rimuovi credenziali",
+    "removeConfirm": "Conferma rimozione",
+    "removed": "Credenziali ISTAT rimosse.",
+    "removeFailed": "Impossibile rimuovere le credenziali ISTAT.",
+    "replace": "Sostituisci credenziali",
+    "retry": "Riprova",
+    "save": "Salva credenziali",
+    "saved": "Credenziali ISTAT salvate.",
+    "saveFailed": "Impossibile salvare le credenziali ISTAT.",
+    "title": "Credenziali ISTAT",
+    "writeOnlyHint": "Le credenziali vengono cifrate e non sono più visibili dopo il salvataggio: per cambiarle inseriscile di nuovo. Le apre solo il supporto di CasaZen, su una tua richiesta e con un motivo, per collegare l'ISTAT nel pannello del tuo channel manager: ogni apertura la trovi nel registro delle attività."
   },
   "language": {
     "switchToItalian": "Passa all'italiano",
@@ -14915,7 +14982,10 @@
       "serviceRequestBackupWon": "Il lavoro di una richiesta è passato a te.",
       "serviceRequestBackupClosed": "Una richiesta come riserva è stata chiusa.",
       "verificationRequired": "L'identità di un ospite aspetta la tua verifica.",
-      "assistRequested": "Nuova richiesta «Fallo per me» da gestire."
+      "assistRequested": "Nuova richiesta «Fallo per me» da gestire.",
+      "assistVerified": "Il collegamento che avevi chiesto è attivo: il supporto CasaZen l'ha fatto e abbiamo verificato che funziona.",
+      "assistDeclared": "Il supporto CasaZen dichiara di aver fatto il collegamento che avevi chiesto. Se qualcosa non funziona, riapri la richiesta.",
+      "assistReopened": "Un utente ha riaperto una richiesta «Fallo per me»: dice che non funziona."
     }
   },
   "octorate": {
@@ -15525,6 +15595,67 @@
         }
       },
       "askTheUser": "Per i dati che non vedi, chiedili all'utente dalla sua attività in Da fare.",
+      "checklist": {
+        "closed": "La richiesta è chiusa: le credenziali si aprono solo per una richiesta aperta.",
+        "description": "Vedi solo se una credenziale c'è e da quando. I valori si aprono uno alla volta, con un motivo, e si vedono per un minuto.",
+        "empty": "Per questa richiesta non c'è nulla da controllare.",
+        "items": {
+          "istat": "Credenziali ISTAT",
+          "panelUser": "Utente del pannello",
+          "police": "Credenziali Questura (Alloggiati Web)",
+          "sender": "Chi invia",
+          "steps": "Passaggi nel pannello"
+        },
+        "org": "Tutta l'organizzazione",
+        "presence": {
+          "missing": "Mancano",
+          "present": "Presenti",
+          "presentSince": "Presenti dal {{date}}"
+        },
+        "propertyComune": "{{property}}, {{comune}}",
+        "requirement": {
+          "notRequired": "Non servono: l'immobile non è in Italia.",
+          "required": "Servono per questa richiesta.",
+          "toVerify": "Da verificare: dipende dalla regione."
+        },
+        "sender": {
+          "activationDeclared": "L'host ha dichiarato attivo l'invio.",
+          "activationNotDeclared": "L'host non ha ancora dichiarato attivo l'invio.",
+          "CasaZen": "CasaZen",
+          "ChannelManager": "Il channel manager",
+          "default": "Nessuna scelta salvata: vale quella predefinita.",
+          "Manual": "L'host, a mano",
+          "since": "{{sender}}, dal {{date}}",
+          "unknown": "Un invio che questa versione non riconosce"
+        },
+        "steps": {
+          "channel": "canale {{channel}}",
+          "completedAt": "Completato il {{date}}",
+          "empty": "Nessun passaggio da fare in questa richiesta.",
+          "guide": "Mostra i passaggi nel pannello",
+          "kind": {
+            "channelAccess": "Accesso a un canale",
+            "istatConnection": "Collegamento ISTAT",
+            "policeConnection": "Collegamento Questura"
+          },
+          "kindUnknown": "Passaggio non riconosciuto",
+          "lastCheck": {
+            "notValid": "L'ultimo controllo l'ha trovato non valido.",
+            "unverifiable": "L'ultimo controllo non ha potuto leggerlo.",
+            "verified": "L'ultimo controllo l'ha trovato attivo."
+          },
+          "state": {
+            "assistRequested": "Affidato al supporto",
+            "confirmed": "Confermato",
+            "notStarted": "Non iniziato",
+            "notValid": "Non valido",
+            "started": "Iniziato",
+            "unknown": "Stato non riconosciuto",
+            "verified": "Verificato"
+          }
+        },
+        "title": "Cosa serve per questa richiesta"
+      },
       "contexts": {
         "panelChannelAccess": "Accesso a un canale",
         "panelIstat": "Collegamento ISTAT",
@@ -15537,6 +15668,13 @@
       "copyError": "Non è stato possibile copiare.",
       "copyLabel": "Copia {{what}}",
       "description": "Le richieste «Fallo per me» degli utenti: prendile in carico e chiudile con una nota.",
+      "detail": {
+        "description": "Cosa manca per questa richiesta e le credenziali da aprire.",
+        "loadError": "Non è stato possibile caricare la richiesta.",
+        "loading": "Carico la richiesta...",
+        "notFound": "Questa richiesta non c'è più.",
+        "stale": "Non siamo riusciti ad aggiornare la richiesta: potrebbe non essere aggiornata."
+      },
       "dialogCancel": "Chiudi senza cambiare",
       "empty": "Nessuna richiesta aperta",
       "emptyFiltered": "Nessuna richiesta con questo stato.",
@@ -15571,9 +15709,47 @@
         "label": "Nota (facoltativa)"
       },
       "pageEmpty": "Su questa pagina non ci sono più richieste: le altre sono in quelle precedenti.",
+      "reveal": {
+        "cancel": "Chiudi senza aprire",
+        "confirm": "Apri per un minuto",
+        "description": "Per {{subject}}. Ogni apertura è registrata e l'utente la vede nel registro delle attività.",
+        "error": "Non è stato possibile aprire le credenziali.",
+        "fields": {
+          "extraCode": "Codice aggiuntivo",
+          "password": "Password",
+          "username": "Nome utente"
+        },
+        "hidden": {
+          "text": "Per vederle ancora apri di nuovo: serve un nuovo motivo.",
+          "title": "Le credenziali sono nascoste"
+        },
+        "kinds": {
+          "OctoratePanel": "utente del pannello",
+          "Police": "Questura (Alloggiati Web)",
+          "RegionalIstat": "ISTAT"
+        },
+        "open": "Apri credenziali",
+        "openFor": "Apri credenziali: {{what}}",
+        "reason": {
+          "counter": "{{count}}/{{max}}",
+          "hint": "Da 10 a 300 caratteri. Resta nel registro delle aperture: l'utente non lo vede.",
+          "invalid": "Scrivi un motivo da 10 a 300 caratteri.",
+          "label": "Perché le apri?"
+        },
+        "title": "Apri le credenziali: {{what}}",
+        "visible": {
+          "close": "Chiudi",
+          "hideNow": "Nascondi ora",
+          "hint": "Copia e incolla subito: poi si nascondono.",
+          "remaining": "Si nascondono tra {{seconds}} s.",
+          "title": "Credenziali aperte"
+        }
+      },
       "row": {
         "actions": "Azioni sulla richiesta",
+        "hostNote": "Nota dell'utente:",
         "note": "Nota:",
+        "open": "Apri la richiesta",
         "org": "{{context}}: tutta l'organizzazione",
         "part": "Passo: {{part}}",
         "partUnknown": "Passo non riconosciuto",
@@ -15594,7 +15770,26 @@
         "unknown": "Stato non riconosciuto"
       },
       "title": "Richieste di aiuto",
-      "updated": "Richiesta aggiornata"
+      "updated": "Richiesta aggiornata",
+      "vault": {
+        "cancel": "Annulla",
+        "description": "L'utente del pannello arriva solo all'indirizzo di CasaZen dell'organizzazione: copialo qui e poi cancella il messaggio. Si salva cifrato e si rivede solo aprendolo da una richiesta, con un motivo.",
+        "error": "Non è stato possibile salvare le credenziali.",
+        "errors": {
+          "passwordRequired": "Inserisci la password del pannello.",
+          "passwordTooLong": "La password può avere al massimo 200 caratteri.",
+          "usernameRequired": "Inserisci l'utente del pannello.",
+          "usernameTooLong": "L'utente può avere al massimo 200 caratteri."
+        },
+        "fields": {
+          "password": "Password del pannello",
+          "username": "Utente del pannello"
+        },
+        "open": "Salva le credenziali del pannello",
+        "replace": "Sostituisci le credenziali del pannello",
+        "save": "Salva nel deposito",
+        "saved": "Credenziali salvate nel deposito."
+      }
     },
     "bulk": {
       "adminOnly": "Questa pagina la gestisce l'amministratore dell'organizzazione.",
@@ -16026,7 +16221,32 @@
           "needHelp": "Mi serve aiuto"
         },
         "error": "Non è stato possibile inviare la richiesta. Riprova tra poco.",
+        "hostNote": "Hai scritto: «{{note}}»",
         "note": "Se ne occupa il supporto di CasaZen: lo trovi anche in Da fare.",
+        "notWorking": {
+          "action": "Non funziona",
+          "cancel": "Chiudi senza riaprire",
+          "confirm": "Riapri la richiesta",
+          "counter": "{{count}}/{{max}}",
+          "description": "La richiesta torna al supporto di CasaZen, che la rivede. Scrivi in poche parole cosa non va.",
+          "error": "Non è stato possibile riaprire la richiesta. Riprova tra poco.",
+          "hint": "Non scrivere indirizzi email né password.",
+          "label": "Cosa non funziona",
+          "reopened": "Richiesta riaperta: se ne occupa di nuovo il supporto di CasaZen.",
+          "required": "Scrivi cosa non funziona.",
+          "title": "Cosa non funziona?"
+        },
+        "outcome": {
+          "declared": {
+            "text": "Il supporto di CasaZen dice di aver fatto il collegamento, ma da qui non riusciamo a controllarlo.",
+            "title": "Dichiarato dal supporto"
+          },
+          "verified": {
+            "text": "Il supporto di CasaZen ha fatto il collegamento e abbiamo controllato che è attivo.",
+            "title": "Verificato"
+          }
+        },
+        "staffNote": "Nota del supporto: «{{note}}»",
         "status": {
           "Cancelled": "Richiesta annullata",
           "Done": "Fatto: ci ha pensato il supporto di CasaZen",
@@ -16129,6 +16349,10 @@
           "body": "CasaZen ha verificato il collegamento: si continua da qui.",
           "title": "Collegamento riuscito",
           "toast": "Collegamento verificato"
+        },
+        "recoveredDeclared": {
+          "body": "Il supporto di CasaZen dichiara di aver fatto il collegamento: da qui non riusciamo a controllarlo. Se qualcosa non funziona, dillo qui sotto.",
+          "title": "Collegamento fatto dal supporto"
         },
         "started": {
           "body": "Il tuo avanzamento è salvato, ma il pannello non si è aperto.",

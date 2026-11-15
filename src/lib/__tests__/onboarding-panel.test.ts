@@ -6,6 +6,8 @@ import {
   PANEL_KIND_SLUGS,
   PANEL_STEP_PATH,
   PANEL_STEP_ROUTE,
+  assistOutcomeOf,
+  findDoneAssist,
   findOpenAssist,
   findPanelStep,
   handoffPhase,
@@ -198,5 +200,59 @@ describe('what the page opens and what it asks', () => {
     // And the other way: a request with no channel is not the request of a channel.
     expect(findOpenAssist([request(null)], 'panelChannelAccess', null, '142')).toBeUndefined();
     expect(findOpenAssist([request('274'), request('142')], 'panelChannelAccess', null, '142')?.channelCode).toBe('142');
+  });
+
+  // E20/F03/US02/T01: how support closed a request, for the step it was closed for.
+  describe('the outcome of a request that is done', () => {
+    const request = (overrides: Partial<AssistRequest>): AssistRequest => ({
+      id: 'r',
+      part: 'compliance',
+      propertyId: 'p1',
+      context: 'panelPolice',
+      status: 'Done',
+      requestedAt: '2026-11-10T09:00:00Z',
+      updatedAt: '2026-11-10T12:00:00Z',
+      completedAt: '2026-11-10T12:00:00Z',
+      staffNote: null,
+      activityId: null,
+      ...overrides,
+    });
+
+    it('findDoneAssist_OnlyARequestSupportClosedForTheSameStep_NeverOneThatIsOpenOrWasCancelled', () => {
+      expect(findDoneAssist([request({})], 'panelPolice', 'p1')?.id).toBe('r');
+      expect(findDoneAssist([request({ status: 'Requested', completedAt: null })], 'panelPolice', 'p1')).toBeUndefined();
+      expect(findDoneAssist([request({ status: 'InProgress', completedAt: null })], 'panelPolice', 'p1')).toBeUndefined();
+      expect(findDoneAssist([request({ status: 'Cancelled' })], 'panelPolice', 'p1')).toBeUndefined();
+      expect(findDoneAssist([request({})], 'panelIstat', 'p1')).toBeUndefined();
+      expect(findDoneAssist([request({})], 'panelPolice', 'p2')).toBeUndefined();
+      expect(findDoneAssist(undefined, 'panelPolice', 'p1')).toBeUndefined();
+    });
+
+    it('findDoneAssist_AStepAskedClosedReopenedAndClosedAgain_IsToldByTheMostRecentOne', () => {
+      const older = request({ id: 'older', completedAt: '2026-11-01T10:00:00Z', outcome: 'verified' });
+      const newer = request({ id: 'newer', completedAt: '2026-11-10T10:00:00Z', outcome: 'declared' });
+
+      expect(findDoneAssist([older, newer], 'panelPolice', 'p1')?.id).toBe('newer');
+      expect(findDoneAssist([newer, older], 'panelPolice', 'p1')?.id).toBe('newer');
+      // A request with no readable instant is the oldest, never the most recent.
+      expect(findDoneAssist([request({ id: 'unknown', completedAt: null, updatedAt: 'not a date' }), older], 'panelPolice', 'p1')?.id).toBe('older');
+    });
+
+    it('findDoneAssist_ARequestOfOneChannel_IsNeverTheRequestOfAnotherChannel', () => {
+      const channel = request({ part: 'channels', propertyId: null, context: 'panelChannelAccess', channelCode: '142' });
+
+      expect(findDoneAssist([channel], 'panelChannelAccess', null, '142')?.id).toBe('r');
+      expect(findDoneAssist([channel], 'panelChannelAccess', null, '274')).toBeUndefined();
+      expect(findDoneAssist([channel], 'panelChannelAccess', null, null)).toBeUndefined();
+    });
+
+    it('assistOutcomeOf_OnlyVerifiedIsVerified_AnythingElseIsTheWordOfTheSupport', () => {
+      expect(assistOutcomeOf({ outcome: 'verified' })).toBe('verified');
+      expect(assistOutcomeOf({ outcome: 'declared' })).toBe('declared');
+      // A request closed before the outcome was recorded, and a word this version does not know: never shown as a check that was made.
+      expect(assistOutcomeOf({ outcome: null })).toBe('declared');
+      expect(assistOutcomeOf({})).toBe('declared');
+      expect(assistOutcomeOf({ outcome: 'telepathy' as never })).toBe('declared');
+    });
   });
 });

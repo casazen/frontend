@@ -591,6 +591,12 @@ export interface CreateAssistRequest {
   channelCode?: string;
 }
 
+/**
+ * What «Fatto» recorded on a «Do it for me» request (backend `OnboardingAssistOutcomes`, E20/F03/US01/T02): `verified` (CasaZen read the connection on the panel and it is
+ * active) or `declared` (the panel could not be read: it is the word of the support, never a check of CasaZen).
+ */
+export type AssistOutcome = 'verified' | 'declared';
+
 /** A «Do it for me» request as the host reads it (`/onboarding/assist-requests`). `staffNote`: the note of CasaZen support, at most 500 characters. */
 export interface AssistRequest {
   id: string;
@@ -606,6 +612,12 @@ export interface AssistRequest {
   staffNote: string | null;
   /** The «Da fare» that stands for the request while it is open. */
   activityId: string | null;
+  /** What «Fatto» recorded: `null` while the request is open or after it was cancelled. An older server sends none. */
+  outcome?: AssistOutcome | null;
+  /** What the host wrote when it reopened the request («Non funziona»), at most 500 characters. */
+  hostNote?: string | null;
+  /** When the host last reopened the request. */
+  reopenedAt?: Instant | null;
 }
 
 /**
@@ -628,6 +640,12 @@ export interface AdminAssistRequest {
   staffNote: string | null;
   draftWizardType: WizardType | null;
   draftEntityId: string | null;
+  /** What «Fatto» recorded (`verified` or `declared`); `null` while the request is open or after a cancellation. An older server sends none. */
+  outcome?: AssistOutcome | null;
+  /** What the host wrote when it reopened the request («Non funziona»): at most 500 characters, no e-mail address. */
+  hostNote?: string | null;
+  /** When the host last reopened the request. */
+  reopenedAt?: Instant | null;
 }
 
 /** The statuses staff can move a request to (`PUT /admin/onboarding/assist-requests/{id}`). */
@@ -654,6 +672,145 @@ export interface PagedAssistRequests {
   page: number;
   pageSize: number;
 }
+
+/** The longest note of a reopening or of a staff action (`assist_reopen_note_required` and `assist_note_invalid` above it). */
+export const ASSIST_NOTE_MAX_LENGTH = 500;
+
+/** Body of `POST /onboarding/assist-requests/{id}/reopen` («Non funziona», E20/F03/US01/T02): what does not work, at most 500 characters, no e-mail address. Required. */
+export interface ReopenAssistRequest {
+  note: string;
+}
+
+/** Whether a credential is there and since when (`null` when it is not). Never a value. */
+export interface AssistPresence {
+  present: boolean;
+  updatedAt: Instant | null;
+}
+
+/** Whether the region of a property needs ISTAT credentials: `required`, `notRequired` (outside Italy) or `toVerify` (the table of the regions is not there yet). */
+export type AssistIstatRequirement = 'required' | 'notRequired' | 'toVerify';
+
+/** The ISTAT credentials of a property: whether they are there, since when, and whether the region needs them. */
+export interface AssistIstatPresence extends AssistPresence {
+  requirement: AssistIstatRequirement;
+}
+
+/** Who sends the police and ISTAT communications of a property, since when, and whether the host declared it active after that change. */
+export interface AssistSender {
+  sender: ComplianceSenderType;
+  changedAt: Instant;
+  activationDeclared: boolean;
+}
+
+/** Where a panel step of the checklist stands: the states of a step (`PanelStepStatus`) plus `notStarted`. */
+export type AssistChecklistStepState = 'notStarted' | PanelStepStatus;
+
+/** One panel step the request is about: its kind, the channel of a channel access, the guide to show (`instructionsKey`), where it stands and what its last check found. */
+export interface AssistChecklistStep {
+  kind: PanelStepKind;
+  channelCode: string | null;
+  instructionsKey: PanelStepInstructionsKey;
+  state: AssistChecklistStepState;
+  lastVerificationOutcome: PanelStepVerification | null;
+  completedAt: Instant | null;
+}
+
+/**
+ * What support needs for one property of a request, or for the org itself (`propertyId` null, E20/F03/US01/T02): `panelUser` is the user of the panel of the structure in the
+ * support vault; the police credentials, the ISTAT ones and the sender are `null` for the org itself (the sender also when nothing is stored: the default applies). Presence
+ * and dates only: never a credential.
+ */
+export interface AssistChecklistProperty {
+  propertyId: string | null;
+  propertyName: string | null;
+  comune: string | null;
+  panelUser: AssistPresence;
+  policeCredentials: AssistPresence | null;
+  istatCredentials: AssistIstatPresence | null;
+  sender: AssistSender | null;
+  steps: AssistChecklistStep[];
+}
+
+/** One request as staff reads it (`GET /admin/onboarding/assist-requests/{id}`): the request and its checklist, per property. */
+export interface AdminAssistRequestDetail {
+  request: AdminAssistRequest;
+  checklist: AssistChecklistProperty[];
+}
+
+/** What a controlled opening of the support vault opens (backend `SupportVaultCredentialKind`, E20/F03/US01/T01): the user of the panel, the police or the ISTAT credentials. */
+export type SupportVaultCredentialKind = 'OctoratePanel' | 'Police' | 'RegionalIstat';
+
+/** The least and the most characters of the reason of an opening (`support_vault_reason_invalid` outside them). */
+export const SUPPORT_VAULT_REASON_LENGTH = { min: 10, max: 300 } as const;
+
+/** Body of `POST /admin/onboarding/assist-requests/{id}/reveal`: which credential and why. The reason stays in the audit and is never shown to the host. */
+export interface RevealSupportVaultRequest {
+  kind: SupportVaultCredentialKind;
+  reason: string;
+}
+
+/**
+ * The answer of a controlled opening: the values in clear, once, with `Cache-Control: no-store`. `visibleUntil` is the end of the minute they are meant to stay on screen. They
+ * are shown, never stored: not in the cache of the queries, not in the storage of the browser, not in a log.
+ */
+export interface SupportVaultReveal {
+  kind: SupportVaultCredentialKind;
+  username: string;
+  password: string;
+  /** The further code (the web service key of the police credentials, the code of the structure of the ISTAT ones); `null` when there is none. */
+  extraCode: string | null;
+  openedAt: Instant;
+  visibleUntil: Instant;
+}
+
+/** What staff can store in the support vault (backend `SupportVaultSecretKind`): the user of the panel of a structure, or ISTAT credentials the host handed to support. */
+export type SupportVaultSecretKind = 'OctoratePanel' | 'RegionalIstat';
+
+/** The longest values the vault takes (`support_vault_value_invalid` above them). */
+export const SUPPORT_VAULT_VALUE_MAX_LENGTH = { username: 200, password: 200, extraCode: 100 } as const;
+
+/** Body of `PUT /admin/onboarding/support-vault`: a credential of an org (of one of its properties, or of the whole org). Write-only: the answer is the presence. */
+export interface StoreSupportVaultSecretRequest {
+  orgId: string;
+  /** The structure; left out for a credential of the whole org. */
+  propertyId?: string;
+  kind: SupportVaultSecretKind;
+  username: string;
+  password: string;
+  /** A further code (the code of the structure, a PIN); left out when there is none. */
+  extraCode?: string;
+}
+
+/** A credential of the vault as anybody reads it: that it is there, for what, since when and who stored it last. Never a value. */
+export interface SupportVaultSecret {
+  id: string;
+  orgId: string;
+  propertyId: string | null;
+  kind: SupportVaultSecretKind;
+  createdAt: Instant;
+  updatedAt: Instant;
+  updatedByUserId: string;
+}
+
+/**
+ * The regional ISTAT credentials of a property (`/properties/{id}/istat-credentials`, E20/F03/US01/T01): write-only, like the police ones. The API never returns a value, only
+ * whether they are configured and since when.
+ */
+export interface IstatCredentialsStatus {
+  configured: boolean;
+  /** When the credentials were last set (UTC); `null` when not configured. */
+  configuredAt: Instant | null;
+}
+
+/** Body of `PUT /properties/{id}/istat-credentials`: the user name and the password every time, the code of the structure when the portal asks for one (empty when it does not). */
+export interface SetIstatCredentialsRequest {
+  username: string;
+  password: string;
+  structureCode: string;
+}
+
+/** Maximum lengths accepted by the API (`PropertyIstatCredentials.Max*Length`). */
+export const ISTAT_CREDENTIALS_MAX_LENGTH = { username: 100, password: 200, structureCode: 50 } as const;
 
 /** Which properties a bulk call is about: all of them, a list, or a filter. What the kind does not use must be left out. */
 export const BULK_SELECTION_KINDS = ['all', 'ids', 'filter'] as const;
