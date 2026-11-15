@@ -150,13 +150,18 @@ describe('CheckInLinkPanel: where the check-in link of a portal booking stands (
     expect(screen.getByTestId('checkin-link-email')).toBeInTheDocument();
   });
 
-  it('panel_EmailThatTheProviderRefused_IsNeverToldAsSentByEmail', async () => {
-    vi.mocked(bookingsApi.getCheckInSession).mockResolvedValue({ ...NO_RECIPIENT, emailStatus: 'Failed', emailError: 'rejected' });
+  // The delivery only handed the e-mail to the queue: what the session says of the e-mail is the truth, and nothing contradicts it with «Inviato per email».
+  it.each([
+    ['Failed', 'Email non inviata'],
+    ['Queued', 'Email con il link in coda di invio'],
+    ['NotRequested', 'nessuna email inviata'],
+  ] as const)('panel_EmailThatTheSessionSays%s_IsNeverToldAsSentByEmail', async (emailStatus, expected) => {
+    vi.mocked(bookingsApi.getCheckInSession).mockResolvedValue({ ...NO_RECIPIENT, emailStatus, emailError: emailStatus === 'Failed' ? 'rejected' : null });
     vi.mocked(checkinLinkApi.getDelivery).mockResolvedValue(delivery({ channel: 'Email', state: 'Sent', lastErrorCode: null, checkInLink: null }));
     renderPanel();
 
-    expect(await screen.findByTestId('checkin-link-email')).toHaveTextContent('Email non inviata');
     await deliveryDrawn();
+    expect(await screen.findByTestId('checkin-link-email')).toHaveTextContent(expected);
     expect(screen.queryByTestId('checkin-delivery-state')).not.toBeInTheDocument();
   });
 

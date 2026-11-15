@@ -60,7 +60,8 @@ interface DeliveryContext {
 /**
  * The line the panel shows for the delivery of the link, or `null` when it says nothing (no delivery, a state this version does not know, a delivery that
  * ended, a link that is no longer usable). What did not happen is never told as done (UX-09):
- * - `Sent` by e-mail is told only while nothing contradicts it: an e-mail the provider refused or that is still in the queue is the business of the e-mail line;
+ * - `Sent` by e-mail is told only while nothing contradicts it: an e-mail the provider refused, that is still in the queue or that the session says was never asked
+ *   for is the business of the e-mail line;
  * - `Sending` is a message with the channel that has not left yet, so it is «in invio», never «inviato»;
  * - the waiting and failed states are told only while the link is still usable and the delivery is open.
  */
@@ -70,7 +71,7 @@ export function describeDelivery(delivery: CheckInLinkDelivery | null | undefine
 
   if (state === 'Sent') {
     if (delivery.channel === 'Email') {
-      if (context.emailStatus === 'Failed' || context.emailStatus === 'Queued') return null;
+      if (context.emailStatus === 'Failed' || context.emailStatus === 'Queued' || context.emailStatus === 'NotRequested') return null;
       return { tone: 'done', labelKey: 'checkin.link.delivery.sentEmail', hintKey: null, needsTheHost: false };
     }
     const labelKey = delivery.channel === 'PortalChat' ? 'checkin.link.delivery.sentPortalChat' : 'checkin.link.delivery.sent';
