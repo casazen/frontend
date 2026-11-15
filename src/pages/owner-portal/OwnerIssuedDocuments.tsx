@@ -69,6 +69,10 @@ function IssuedDocumentsBody() {
   // Drawn only while the last answer is good: after a refusal nothing of the answer before it stays under the notice.
   const list = currentData(documents) ?? [];
   const shown = showAll ? list : list.slice(0, VISIBLE);
+  // The part that says no (the permission the owner did not give, a part that is not open) offers no file either: the notice of the list says why, and a button that can only be refused is not drawn. A list that
+  // merely failed to load (no answer, a server error) leaves the export, which is a call of its own.
+  const refusal = documents.isError ? ownerReadStateOf(documents.error) : null;
+  const filesOpen = refusal === null || refusal === 'failed';
 
   return (
     <>
@@ -76,17 +80,19 @@ function IssuedDocumentsBody() {
         {t('ownerPortal.issued.privacy')}
       </p>
 
-      <section aria-labelledby="owner-issued-export-title" className="space-y-3">
-        <h2 id="owner-issued-export-title" className="text-xl font-semibold text-[#1f3a3d]">
-          {t('ownerPortal.issued.export.title')}
-        </h2>
-        <IssuedDocumentsExport
-          testId="owner-issued-export"
-          download={({ period, signal }) => exporter.mutateAsync({ period, signal })}
-          problemOf={(error) => exportProblemOf(error, t)}
-          downloadLabel={t('ownerPortal.issued.export.download')}
-        />
-      </section>
+      {filesOpen ? (
+        <section aria-labelledby="owner-issued-export-title" className="space-y-3">
+          <h2 id="owner-issued-export-title" className="text-xl font-semibold text-[#1f3a3d]">
+            {t('ownerPortal.issued.export.title')}
+          </h2>
+          <IssuedDocumentsExport
+            testId="owner-issued-export"
+            download={({ period, signal }) => exporter.mutateAsync({ period, signal })}
+            problemOf={(error) => exportProblemOf(error, t)}
+            downloadLabel={t('ownerPortal.issued.export.download')}
+          />
+        </section>
+      ) : null}
 
       <section aria-labelledby="owner-issued-list-title" className="space-y-3">
         <h2 id="owner-issued-list-title" className="text-xl font-semibold text-[#1f3a3d]">

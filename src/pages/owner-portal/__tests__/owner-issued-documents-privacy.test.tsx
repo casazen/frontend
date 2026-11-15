@@ -57,6 +57,15 @@ function refusal(status: number, code: string): AxiosError {
   return new AxiosError('refused', 'ERR_BAD_REQUEST', config, null, { status, statusText: '', headers: {}, config, data: { status, code } });
 }
 
+/** What the call hands over for a 403 of a file once it takes the refusal as an answer (`acceptsRefusal`): the response of the server, whose body is a Blob that holds the problem. */
+const refusedFile = (code: string) => ({
+  status: 403,
+  data: new Blob([JSON.stringify({ status: 403, code })], { type: 'application/problem+json' }),
+  headers: {},
+  config: {},
+  request: {},
+});
+
 function renderPage() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const view = render(createElement(QueryClientProvider, { client }, createElement(MemoryRouter, null, createElement(OwnerIssuedDocuments))));
@@ -127,6 +136,35 @@ describe('the documents issued in the name of the owner show nothing of a guest 
     expect(await screen.findByTestId('owner-issued-error')).toHaveAttribute('data-state', 'permission');
     expect(screen.queryByTestId('owner-issued-list')).toBeNull();
     expect(screen.queryByTestId('owner-issued-empty')).toBeNull();
+    // A button that can only be refused is not drawn.
+    expect(screen.queryByTestId('owner-issued-export-download')).toBeNull();
+  });
+
+  it('OwnerIssuedDocuments_WhenTheExportIsRefusedForThePermission_SaysSoInWordsAndTheCallTakesTheRefusalAsAnAnswer', async () => {
+    // The shared client sends the whole app to the page of no access on a 403 for a read whose body has no code, and the body of a file is a Blob: the call has to take the refusal as an answer.
+    getFile.mockResolvedValue(refusedFile('owner_portal_permission_missing'));
+    renderPage();
+
+    fireEvent.click(await screen.findByTestId('owner-issued-export-download'));
+
+    expect(await screen.findByTestId('owner-issued-export-problem')).toHaveTextContent(i18n.t('ownerPortal.states.permission.description'));
+    const [, config] = getFile.mock.calls[0] as [string, { validateStatus: (status: number) => boolean }];
+    expect(config.validateStatus(403)).toBe(true);
+    expect(config.validateStatus(404)).toBe(false);
+    expect(saveBlobAs).not.toHaveBeenCalled();
+  });
+
+  it('OwnerIssuedDocuments_WhenAFileIsRefusedForThePermission_TheCardSaysItCouldNotBeDownloadedAndSavesNothing', async () => {
+    getFile.mockResolvedValue(refusedFile('owner_portal_permission_missing'));
+    renderPage();
+
+    const [receipt] = await screen.findAllByTestId('owner-issued-document');
+    fireEvent.click(within(receipt).getByTestId('owner-issued-pdf'));
+
+    expect(await within(receipt).findByTestId('owner-issued-download-failed')).toBeInTheDocument();
+    const [, config] = getFile.mock.calls[0] as [string, { validateStatus: (status: number) => boolean }];
+    expect(config.validateStatus(403)).toBe(true);
+    expect(saveBlobAs).not.toHaveBeenCalled();
   });
 
   it('OwnerIssuedDocuments_WhileTheFlagsAreOff_AsksNothingAndSaysThePartIsNotOpen', async () => {
