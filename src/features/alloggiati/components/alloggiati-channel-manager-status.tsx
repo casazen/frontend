@@ -82,8 +82,10 @@ interface AlloggiatiChannelManagerStatusProps {
  *
  * - **Entrusted** (yellow): the channel manager has every guest and sends them; for CasaZen the communication is done only when the receipt is archived.
  * - **Receipt archived** (green): the server says an archived receipt covers the stay, and when it came.
- * - **Receipt missing** (red): entrusted, and the receipt did not come in time (the server's light).
- * - **To correct** (red): the guests the channel manager did not take, each by position with its reason in plain words. A place the channel manager does not know names the
+ * - **Receipt missing**: entrusted, and the server's light is red (the receipt is not in the archive in time). The brief and the dictionary of the states give it no tone of its own, so it
+ *   has the one a red line has everywhere else in the product (`withCompliance` of the next step of the booking): the warning tone, and the danger one once the term has passed
+ *   (`isOverdue` of the server). The badge keeps the tone of the status (yellow), with the red «Scadenza superata» next to it when the server says the term has passed.
+ * - **To correct** (red, the tone of its status): the guests the channel manager did not take, each by position with its reason in plain words. A place the channel manager does not know names the
  *   field and opens the guests of the stay in a layer over the page, so the host never leaves it; any other failure can be tried again with «Riprova». Saving the corrected guests sends
  *   nothing by itself (the guest goes with the confirmation of the check-in wizard, or alone when the organization turned the automatic send on): the block says so and leads to the wizard.
  *
@@ -125,7 +127,7 @@ export function AlloggiatiChannelManagerStatus({ bookingId, status, view }: Allo
       ) : null}
 
       {view === 'receiptMissing' ? (
-        <Alert variant="warning" data-testid="alloggiati-receipt-missing">
+        <Alert variant={status.isOverdue ? 'danger' : 'warning'} data-testid="alloggiati-receipt-missing">
           {t('alloggiati.channelManager.receiptMissing')}
         </Alert>
       ) : null}

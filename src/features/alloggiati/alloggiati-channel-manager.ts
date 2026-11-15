@@ -13,15 +13,15 @@ export const PLACE_NOT_RECOGNIZED = 'place_not_recognized';
 const RETRY_ACTION = 'RetryOctorateWrite';
 
 /**
- * How the stay is told once it is on the channel manager: entrusted and waiting for the receipt (yellow), the receipt archived (green), entrusted with the receipt still
- * missing after its term (red), or to correct (red: a guest could not be written).
+ * How the stay is told once it is on the channel manager: entrusted and waiting for the receipt (yellow), the receipt archived (green), entrusted with the receipt missing while the
+ * server's light is red (a notice in the tone a red line has in the product: warning, danger once the term has passed), or to correct (red: a guest could not be written).
  */
 export type StayChannelView = 'entrusted' | 'receiptArchived' | 'receiptMissing' | 'toCorrect';
 
 /**
  * The view of a stay, or `null` when the stay is not on the channel manager (any other status: the page tells it as it always did). `ChannelManagerWriteFailed` is to
- * correct whatever else exists; an entrusted stay is green only when the server says an archived receipt covers it, and red when the server says its light is red (the
- * receipt did not come in time). The client never works a light out.
+ * correct whatever else exists; an entrusted stay is green only when the server says an archived receipt covers it, and a receipt that is missing when the server says its light is
+ * red (the receipt did not come in time). The client never works a light out.
  */
 export function stayChannelViewOf(status: Pick<AlloggiatiStatusDto, 'status' | 'channelManager'>): StayChannelView | null {
   if (status.status === 'ChannelManagerWriteFailed') return 'toCorrect';

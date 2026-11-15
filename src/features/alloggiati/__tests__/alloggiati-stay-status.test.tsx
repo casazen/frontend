@@ -140,12 +140,24 @@ describe('AlloggiatiBookingPanel: a stay entrusted to the channel manager', () =
     expect(screen.queryByTestId('booking-alloggiati-deadline')).not.toBeInTheDocument();
   });
 
-  it('panel_EntrustedAndTheServerSaysRed_IsToldAsAReceiptThatDidNotComeNeverAsWaiting', async () => {
+  // The brief and the dictionary of the states give the receipt that is missing no tone of its own: it has the one a red line has in the product (warning, danger once the term passed).
+  it('panel_EntrustedAndTheServerSaysRed_IsToldAsAReceiptNotInTheArchiveInTheDangerToneOnceTheTermHasPassed', async () => {
     renderPanel(statusOf('EntrustedToChannelManager', block({ light: 'Red', reason: 'receipt_missing' }), { isOverdue: true }));
 
-    expect(await screen.findByTestId('alloggiati-receipt-missing', undefined, WAIT)).toHaveTextContent('la ricevuta non è ancora in archivio');
+    const notice = await screen.findByTestId('alloggiati-receipt-missing', undefined, WAIT);
+    expect(notice).toHaveTextContent('la ricevuta non è ancora in archivio');
+    expect(notice).toHaveAttribute('role', 'alert');
     expect(screen.queryByTestId('alloggiati-entrusted-notice')).not.toBeInTheDocument();
     expect((await badge()).className).not.toMatch(/green|success/);
+    expect(screen.getByTestId('alloggiati-overdue-badge')).toBeInTheDocument();
+  });
+
+  it('panel_EntrustedAndTheServerSaysRedBeforeTheTermHasPassed_IsTheWarningToneNotTheDangerOne', async () => {
+    renderPanel(statusOf('EntrustedToChannelManager', block({ light: 'Red', reason: 'receipt_missing' }), { isOverdue: false }));
+
+    const notice = await screen.findByTestId('alloggiati-receipt-missing', undefined, WAIT);
+    expect(notice).toHaveAttribute('role', 'status');
+    expect(screen.queryByTestId('alloggiati-overdue-badge')).not.toBeInTheDocument();
   });
 
   it('panel_StayNotOnTheChannelManager_ReadsAsItAlwaysDidWhateverTheBlockHolds', async () => {
