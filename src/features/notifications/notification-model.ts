@@ -1,4 +1,4 @@
-import { AlertTriangle, BedDouble, Bell, CalendarClock, ClipboardCheck, Coins, FileWarning, LifeBuoy, LogOut, MessageSquare, ShieldAlert, ShieldCheck, UserCheck, Wrench, type LucideIcon } from 'lucide-react';
+import { AlertTriangle, BedDouble, Bell, CalendarClock, ClipboardCheck, Coins, FileCheck, FileWarning, LifeBuoy, LogOut, MessageSquare, ShieldAlert, ShieldCheck, UserCheck, Wrench, type LucideIcon } from 'lucide-react';
 import type { InAppNotification } from '@/api/notifications.api';
 import type { AppContextKey, PermissionPredicate } from '@/config/route-manifest';
 import { ONBOARDING_PLAN_PATH } from '@/lib/onboarding-parts';
@@ -60,6 +60,9 @@ const KINDS: Record<string, NotificationKind> = {
   'alloggiati-deadline': { icon: CalendarClock, textKey: 'notifications.types.alloggiatiDeadline', route: bookingTab('alloggiati') },
   'alloggiati-overdue': { icon: ShieldAlert, textKey: 'notifications.types.alloggiatiOverdue', route: bookingTab('alloggiati') },
   'alloggiati-failed': { icon: AlertTriangle, textKey: 'notifications.types.alloggiatiFailed', route: bookingTab('alloggiati') },
+  // E12/F01/US01/T02: a fiscal document of the booking was issued (`PushTypes.FiscalDocumentIssued`, sent to the hosts of the booking; the entity is the booking, never the document); the booking's
+  // tab Pagamento holds its documents (the card of the booking), as for a document the SDI rejected. The pages that show it read it again as the push arrives (`use-notifications-realtime.ts`).
+  'fiscal-document-issued': { icon: FileCheck, textKey: 'notifications.types.fiscalDocumentIssued', route: bookingTab('payment') },
   // E17/F01/US02/T03: the SDI rejected an invoice of the booking; the booking's tab Pagamento holds its documents, and the «Da fare» item "Correggi la fattura" opens the correction from the documents page.
   'fiscal-document-sdi-rejected': { icon: FileWarning, textKey: 'notifications.types.fiscalDocumentSdiRejected', route: bookingTab('payment') },
   'checkout-reminder': { icon: LogOut, textKey: 'notifications.types.checkoutReminder', route: bookingRoute },

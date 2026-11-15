@@ -459,7 +459,7 @@ describe('ApprovalQueuePage (NF-68, NF-18)', () => {
       fireEvent.click(dialog.getByRole('button', { name: 'Salva e approva' }));
 
       await waitFor(() => expect(screen.queryByTestId('approval-edit-dialog')).toBeNull());
-      expect(await screen.findByTestId('approval-item-failure')).toHaveTextContent('Il tuo channel manager non ha accettato il messaggio.');
+      expect(await screen.findByTestId('approval-item-failure')).toHaveTextContent('Il channel manager ha rifiutato la richiesta.');
       expect(screen.getByTestId('approval-item-text')).toHaveTextContent('Dalle 16.');
       expect(screen.getByRole('button', { name: 'Riprova' })).toBeInTheDocument();
       expect(screen.queryByTestId('approval-decided')).toBeNull();
@@ -588,7 +588,7 @@ describe('ApprovalQueuePage (NF-68, NF-18)', () => {
         approval.reject(httpError(409, { code: 'approval_origin_action_failed', originActionError: 'octorate_request_rejected' }));
       });
 
-      expect(await screen.findByTestId('approval-item-failure')).toHaveTextContent('Il tuo channel manager non ha accettato il messaggio.');
+      expect(await screen.findByTestId('approval-item-failure')).toHaveTextContent('Il channel manager ha rifiutato la richiesta.');
       expect(screen.getByRole('button', { name: 'Riprova' })).toBeEnabled();
       expect(screen.queryByTestId('approval-decided')).toBeNull();
     });

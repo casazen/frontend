@@ -91,6 +91,24 @@ describe('notification model', () => {
     expect(lookup(it_, 'notifications.types.assistVerified')).toMatch(/verificato/i);
   });
 
+  it('notificationKind_FiscalDocumentIssued_HasItsOwnSentenceInBothLanguagesAndOpensTheTabPagamentoOfTheBooking', () => {
+    // The push of a document issued is for the hosts of the booking and its entity is the booking: the bell and the pop-up say what happened (not «Hai una nuova notifica») and a click opens the tab Pagamento,
+    // where the card of the documents of the booking is, as for a document the SDI rejected.
+    expect(KNOWN_NOTIFICATION_TYPES).toContain('fiscal-document-issued');
+    expect(notificationKind('fiscal-document-issued').textKey).toBe('notifications.types.fiscalDocumentIssued');
+    expect(notificationRoute({ type: 'fiscal-document-issued', entityId: 'b-1' }, 'short-rent')).toBe('/app/short-rent/bookings/b-1?tab=payment');
+    expect(notificationRoute({ type: 'fiscal-document-issued', entityId: 'b-1' }, 'short-rent')).toBe(notificationRoute({ type: 'fiscal-document-sdi-rejected', entityId: 'b-1' }, 'short-rent'));
+    expect(notificationRoute({ type: 'fiscal-document-issued', entityId: null }, 'short-rent')).toBeNull();
+    // Each language has its own words, none is the generic sentence, and neither names the supplier of any channel.
+    const [italian, english] = [it_, en].map((locale) => String(lookup(locale, 'notifications.types.fiscalDocumentIssued')));
+    expect(italian).toMatch(/documento fiscale/i);
+    expect(english).toMatch(/fiscal document/i);
+    expect(italian).not.toBe(english);
+    expect(italian).not.toBe(lookup(it_, 'notifications.types.generic'));
+    expect(english).not.toBe(lookup(en, 'notifications.types.generic'));
+    for (const text of [italian, english]) expect(text).not.toMatch(/octorate|concordato\s*facile/i);
+  });
+
   it('notificationRoute_ServiceRequest_GoesToTheInboxForASupplierAndToMyAppsOfTheMarketplaceForAHost', () => {
     expect(notificationRoute({ type: 'service-request-created', entityId: 'sr-1' }, 'supplier')).toBe('/app/supplier/inbox/sr-1');
     expect(notificationRoute({ type: 'service-request-taken', entityId: 'sr-1' }, 'short-rent')).toBe('/app/short-rent/marketplace/mine');
