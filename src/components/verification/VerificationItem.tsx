@@ -8,10 +8,14 @@ import { Badge } from '@/components/ui/badge';
 import type { PendingVerification, VerificationReason } from '@/types/verification.types';
 import { formatStayDate, parseStayDate } from '@/lib/stay-dates';
 import {
+  useProposeVideoCall,
   useRequestNewPhoto,
   useRecordVerification,
   useRejectVerification,
 } from '@/queries/verification';
+import { isFeatureEnabled } from '@/config/feature-flags';
+import { VideoCallAction } from '@/features/verification/components/video-call-dialog';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import {
   Dialog,
   DialogContent,
@@ -64,8 +68,12 @@ export function VerificationItem({ verification }: VerificationItemProps) {
   const requestNewPhoto = useRequestNewPhoto();
   const recordVerification = useRecordVerification();
   const rejectVerification = useRejectVerification();
+  const proposeVideoCall = useProposeVideoCall();
+  // The video call is offered while the identity verification is on (the flag): the words next to it say so, and with the flag off the card says what it always said.
+  const { flags } = useFeatureFlags();
+  const videoCallOffered = isFeatureEnabled(flags, 'checkInIdentityVerification');
   // One write of this card at a time: whatever is in flight, none of its buttons can start another.
-  const busy = requestNewPhoto.isPending || recordVerification.isPending || rejectVerification.isPending;
+  const busy = requestNewPhoto.isPending || recordVerification.isPending || rejectVerification.isPending || proposeVideoCall.isPending;
 
   const handleRequestPhoto = () => {
     if (busy) return;
@@ -204,7 +212,7 @@ export function VerificationItem({ verification }: VerificationItemProps) {
           )}
 
           <p className="text-sm text-muted-foreground" data-testid="verification-contact-hint">
-            {email ? t('verification.guest.contactHint') : t('verification.guest.noContact')}{' '}
+            {email ? t(videoCallOffered ? 'verification.guest.callHint' : 'verification.guest.contactHint') : t('verification.guest.noContact')}{' '}
             <Link
               className="inline-flex items-center gap-1 underline underline-offset-2"
               to={`/app/short-rent/bookings/${encodeURIComponent(verification.bookingId)}`}
@@ -223,6 +231,12 @@ export function VerificationItem({ verification }: VerificationItemProps) {
             >
               {t('verification.action.request_photo')}
             </Button>
+            <VideoCallAction
+              guestName={verification.guestName}
+              busy={busy}
+              pending={proposeVideoCall.isPending}
+              onSend={(url) => proposeVideoCall.mutateAsync({ bookingId: verification.bookingId, url })}
+            />
             <Button
               variant="default"
               onClick={() => setShowVerifyDialog(true)}
@@ -249,7 +263,7 @@ export function VerificationItem({ verification }: VerificationItemProps) {
           <DialogHeader>
             <DialogTitle>{t('verification.dialog.verifyTitle')}</DialogTitle>
             <DialogDescription>
-              {t('verification.dialog.verifyDescription')}
+              {t(videoCallOffered ? 'verification.dialog.verifyAfterCall' : 'verification.dialog.verifyDescription')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">

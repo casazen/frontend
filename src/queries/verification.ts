@@ -86,6 +86,32 @@ export function useRequestNewPhoto() {
 }
 
 /**
+ * Proposes a video call to the guest of a verification (E22/F02/US01/T02): the address of the meeting goes to the guest by e-mail, and the verification keeps waiting for the decision of the
+ * operator after the call. The address is in the variables of the call, so the mutation does not outlive the card (`gcTime: 0`) and what it keeps of a failure is the answer without the request
+ * (`withoutRequest`). Nothing is said here about a failure: the dialog tells why next to the field (an address that is refused, a guest with no e-mail, an e-mail that did not leave), and
+ * the queue is read again either way (a verification that another operator decided in the meantime is gone from it).
+ */
+export function useProposeVideoCall() {
+  const refresh = useRefreshAfterDecision();
+
+  return useMutation({
+    ...DECISION_MUTATION_OPTIONS,
+    mutationKey: [VERIFICATION_KEY, 'video-call'],
+    mutationFn: async ({ bookingId, url }: { bookingId: string; url: string }) => {
+      try {
+        return await verificationApi.proposeVideoCall(bookingId, { url });
+      } catch (error) {
+        throw withoutRequest(error);
+      }
+    },
+    onSuccess: () => {
+      toast.success(i18n.t('verification.videoCall.sent'));
+    },
+    onSettled: refresh,
+  });
+}
+
+/**
  * Record manual verification decision (AC-NF12-6). An approval releases the access code of the property to the guest and e-mails it (the server
  * sends nothing when the property has no code), and says so; a rejection releases and sends nothing.
  */

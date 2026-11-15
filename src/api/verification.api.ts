@@ -5,6 +5,8 @@ import type {
   VerificationMetrics,
   VerificationMetricsPeriod,
   VerificationRejectionRequest,
+  VideoCallProposed,
+  VideoCallRequest,
 } from '@/types/verification.types';
 
 /**
@@ -23,6 +25,14 @@ export const verificationApi = {
   /** Request a new selfie photo from the guest (AC-NF12-5). */
   requestNewPhoto: (bookingId: string) =>
     ApiClient.post<void>(`/verification/${bookingId}/request-photo`),
+
+  /**
+   * Proposes a video call to the guest (E22/F01/US01/T03): `url` is the address of the meeting the operator created, which goes to the guest by e-mail. 422 `video_call_url_invalid`, 404
+   * `no_pending_verification` (outside the scope of the caller, or not waiting for a person any more), 409 `guest_unreachable` (no e-mail address: nothing is sent) and `video_call_not_sent` (the
+   * e-mail could not be queued). Behind the flag `checkInIdentityVerification`.
+   */
+  proposeVideoCall: (bookingId: string, request: VideoCallRequest) =>
+    ApiClient.post<VideoCallProposed>(`/verification/${bookingId}/video-call`, request),
 
   /** Record manual verification decision (AC-NF12-6). */
   recordVerification: (bookingId: string, data: VerificationDecisionRequest) =>

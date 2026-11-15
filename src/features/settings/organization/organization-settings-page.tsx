@@ -20,6 +20,7 @@ import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { useCurrentUser } from '@/queries/use-users';
 import type { OrgLanguage, OrgSettings } from '@/types';
 import { ORG_NAME_FIELD_ID } from './org-profile';
+import { BiometricSettingsCard } from '../components/biometric-settings-card';
 import { ServiceRequestBackupsSetting } from './service-request-backups-setting';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -431,6 +432,10 @@ export function OrganizationSettings({ showSiteAppearanceLink = false }: { showS
       {/* In the first column, under the fields it is read with: a switch at the far end of a wide row would be far from its name. */}
       <div className={FIELD_COLUMNS}>
         <ServiceRequestBackupsSetting />
+      </div>
+      {/* The identity check of the guests (E22/F02/US01/T02): only while the identity verification is on; with it off the page has nothing more than it always had. */}
+      <div className={FIELD_COLUMNS}>
+        <BiometricSettingsCard />
       </div>
     </div>
   );

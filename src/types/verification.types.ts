@@ -43,6 +43,19 @@ export interface VerificationDecisionRequest {
   note?: string;
 }
 
+/**
+ * The meeting an operator created for a video call with the guest (`POST /api/verification/{bookingId}/video-call`, E22/F01/US01/T03): any provider, an absolute `https` address of at most 500
+ * characters, with no spaces and no credentials in it. It is never fetched; it goes to the guest by e-mail and is kept in no table of CasaZen.
+ */
+export interface VideoCallRequest {
+  url: string;
+}
+
+/** The only answer of a video call that was proposed: the e-mail with the link was queued for the guest. */
+export interface VideoCallProposed {
+  status: 'sent';
+}
+
 /** Request to reject a guest's check-in (AC-NF12-7). */
 export interface VerificationRejectionRequest {
   /** Reason for rejecting the verification. */
