@@ -1,11 +1,44 @@
 import axios from '@/lib/axios';
+import { UnexpectedApiResponseError } from '@/lib/api-errors';
+import { withJsonErrorBody } from '@/lib/file-download';
 import { ApiClient } from './client';
 import { acceptsRefusal } from './accept-refusal';
 import { fileApi, type DownloadedFile } from './file.api';
+import { ReportAccessDeniedError, type ReportFileFormat } from './report-files';
 import type {
   WithholdingSummary,
   RecordPaymentRequest,
 } from '@/types';
+
+/** A file answer that says it is a web page or a JSON body is not the file that was asked for (the `index.html` of a wrong rewrite). */
+const NOT_A_FILE = /^(text\/html|application\/(json|problem\+json))/i;
+
+/** The value of a header of an answer, whatever the case of its name, or `null` (a browser lets a page read only the headers that the API exposes). */
+function headerOf(headers: unknown, name: string): string | null {
+  if (typeof headers !== 'object' || headers === null) return null;
+  const wanted = name.toLowerCase();
+  for (const [key, value] of Object.entries(headers)) {
+    if (key.toLowerCase() === wanted && typeof value === 'string') return value;
+  }
+  return null;
+}
+
+/**
+ * A file of the tax exports of the agency, through the authenticated client and never kept: the caller saves the bytes and lets them go. The 403 is an answer of the call, not a failure of the app: the shared client
+ * sends the whole app to the page of no access on a 403 for a read whose body has no code, and an export that needs a permission the person does not hold (the CU, the communication of the contracts: the elevated
+ * finance permission) must tell it where the person is. So the refusal is taken as an answer and thrown again as a `ReportAccessDeniedError`. The body of a problem is a Blob until it is parsed: it is, so that its
+ * `code` (`tax_no_obligations`, `tax_dataset_not_found`, `tax_cu_dataset_outdated`...) can be told in words.
+ */
+async function getTaxFile(path: string, params?: Record<string, string>): Promise<DownloadedFile> {
+  try {
+    const response = await axios.get<Blob>(path, { params, responseType: 'blob', validateStatus: acceptsRefusal });
+    if (response.status === 403) throw new ReportAccessDeniedError(path);
+    if (!(response.data instanceof Blob) || NOT_A_FILE.test(response.data.type)) throw new UnexpectedApiResponseError(path);
+    return { blob: response.data, contentDisposition: headerOf(response.headers, 'content-disposition') };
+  } catch (error) {
+    throw await withJsonErrorBody(error);
+  }
+}
 
 /**
  * Withholding tax API (ADR-018, backend `api/withholding`): the owner and the administrators of an org on the agency plan (`agency.withholding.manage`).
@@ -34,4 +67,37 @@ export const withholdingApi = {
    */
   recordPayment: (request: RecordPaymentRequest) =>
     ApiClient.post<void>('/withholding/reconcile', request),
+
+  /**
+   * The data of the F24 of a month as a CSV or an Excel file (E18/F01/US01/T02, `agency.withholding.manage`): one line per tax code with the amount in euro and the due date, then the breakdown per owner and payout, from the
+   * evidence of the payouts paid in the month. It neither makes nor changes the F24 record, and it is not a telematic file: the payment and the filing stay with the agency or its accountant. 422 `tax_no_obligations` for a
+   * month without any decision. It is not behind the flag of the tax exports.
+   */
+  downloadF24Data: (year: number, month: number, format: ReportFileFormat): Promise<DownloadedFile> => getTaxFile(`/withholding/f24/${year}/${month}/export`, { format }),
+
+  /**
+   * The annual Certificazione Unica data of the year as a CSV or an Excel file (E18/F01/US02/T01, behind `taxReportingExports`, `agency.owner.financial.manage` on top: it names the fiscal code and the address of the
+   * owners): one row for each recipient, then its stays. It is the data the agency stored, never recomputed and never a telematic file. 404 `tax_dataset_not_found` while the annual data of the year was not generated,
+   * 422 `tax_cu_dataset_outdated` for data generated before the recipients were stored.
+   */
+  downloadCuData: (year: number, format: ReportFileFormat): Promise<DownloadedFile> => getTaxFile(`/withholding/annual/${year}/export`, { format }),
+
+  /**
+   * The draft «prospetto CU» of one owner for the year as a PDF (same permissions as the CU data), with the watermark that says it is a draft and not the Certificazione Unica. 404 `tax_dataset_not_found`,
+   * `tax_cu_record_not_found` (an owner with no record), 422 `tax_cu_dataset_outdated`.
+   */
+  downloadCuProspect: (year: number, ownerId: string): Promise<DownloadedFile> => getTaxFile(`/withholding/annual/${year}/owners/${encodeURIComponent(ownerId)}/pdf`),
+
+  /**
+   * The data of the 770 for the year as a CSV or an Excel file (E18/F01/US02/T02, behind `taxReportingExports`): for each month and tax code the withholding made and the F24 it was paid with. The data the accountant
+   * enters in the form, never the form. 422 `tax_no_obligations` for a year with no decision.
+   */
+  download770Data: (year: number, format: ReportFileFormat): Promise<DownloadedFile> => getTaxFile(`/withholding/770/${year}/export`, { format }),
+
+  /**
+   * The communication of the short-let contracts of the year as a CSV or an Excel file (E18/F01/US02/T02, behind `taxReportingExports`, `agency.owner.financial.manage` on top): every qualifying short let the agency
+   * handled and did not withhold on, with the lessor, the property and the consideration. Due by 30 June of the next year: nothing is sent by CasaZen.
+   */
+  downloadContractsCommunication: (year: number, format: ReportFileFormat): Promise<DownloadedFile> =>
+    getTaxFile(`/withholding/contracts-communication/${year}/export`, { format }),
 };

@@ -22,6 +22,7 @@ export type FeatureFlagKey =
   | 'ownerInvoicing'
   | 'accountantPackage'
   | 'sdiSubmission'
+  | 'taxReportingExports'
   | 'routines'
   | 'purgeDocumentsAfterReceipt'
   | 'portalChatCheckInLink'
@@ -161,6 +162,14 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * is still the one the list always showed. The self-billed invoices (TD17) do not depend on it: they are behind `fiscalDocumentIssuance`.
    */
   sdiSubmission: false,
+  /**
+   * The Italian tax exports and checks of the property manager as withholding agent (backend `TaxReportingExports`, E18/F01/US02, E18/F01/US03, NF-117, D15), off until the product owner turns it on in the test environment
+   * and the accountant has confirmed the ⚖ choices I6, I7, I8 and T2. While it is off nothing changes: the exports of the Certificazione Unica (CSV, Excel, the draft «prospetto» of each owner), of the 770 and of the
+   * communication of the short-let contracts, the section of the stays of a company tenant with its decision (and the button «Decidi» of that «Da fare»), the number of apartments an owner lets outside the agency with the
+   * warning «impresa presunta» on the owner's financial page, and the withholding and the CU of the year in the owner portal are not drawn, nothing asks the server and the backend answers 404 to every one of those endpoints
+   * (the owner portal answers its empty summary). The export of the F24 data of a month is not behind it (the backend does not gate it), and the payout dialog does not read it: the facts of a payout are always the ledger's.
+   */
+  taxReportingExports: false,
   /**
    * The automation routines of the host (backend `Routines`, E01/F04, NF-21, DEB-06, ADR-022), off until the product owner turns it on in the test environment: the routines page
    * (`/app/short-rent/automations`, a tab of «Impostazioni») and its entry. While it is off the tab is not there, the address leads to the home of the area, nothing asks the server

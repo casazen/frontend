@@ -12,7 +12,7 @@ import { getHttpStatus } from '@/lib/api-errors';
 import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { todayInRome } from '@/lib/stay-dates';
 import { useAccountingPolicies, useFiscalProfiles, useOwnerNames, useOwnerOnboardingReadiness } from '@/queries/use-owner-accounting';
-import type { OwnerAccountingPolicy, OwnerFiscalProfile, OwnerOnboardingProperty, OwnerOnboardingReason, OwnershipIssue } from '@/types';
+import type { OwnerAccountingPolicy, OwnerFiscalProfile, OwnerOnboardingProperty, OwnerOnboardingReason, OwnerOnboardingWarning, OwnershipIssue } from '@/types';
 import { FinanceAdminRequired, OwnerAccountingError } from '@/features/owner-accounting/components/owner-accounting-error';
 import {
   OWNER_CLOSE_PATH,
@@ -35,6 +35,7 @@ import { OwnerIssuedDocumentsSection } from './components/issued-documents-expor
 import { OwnerAddressSection } from './components/owner-address-form';
 import { OwnerIssuerProfileSection } from './components/owner-issuer-profile-form';
 import { OwnerMandateSection } from './components/owner-mandate-form';
+import { OwnerTaxChecksSection } from './components/owner-tax-checks-section';
 import { ApprovePolicyDialog, PolicyDialog } from './components/policy-dialog';
 import { ProfileDialog } from './components/profile-dialog';
 
@@ -78,7 +79,8 @@ const KNOWN_REASONS = [
  * receives the values in full, and even they see them masked until they ask: the page never asks for the full IBAN of the registry. The versions of the mandate and the
  * structured billing address of the owner (E13/F02/US01/T01) follow the same rule: they are written only by who manages the owners' finances, and read-only otherwise. While the issuance of fiscal documents is on,
  * the page also has the issuer profile of the owner (E17/F03/US01/T01: who issues the documents of its stays, with its sezionale) and the export for the accountant of the owner of the documents issued in its name
- * (E17/F03/US01/T03); the server says who may change the first and who may download the second.
+ * (E17/F03/US01/T03); the server says who may change the first and who may download the second. Behind the flag `taxReportingExports` it also has the apartments the owner lets short outside the agency, with the
+ * limit of a private person (E18/F02/US01/T01, `OwnerTaxChecksSection`), and the warning «impresa presunta» that the activation gives an owner past it (`OwnerWarnings`).
  */
 export function OwnerFinancialProfilePage() {
   const { t } = useTranslation();
@@ -164,6 +166,7 @@ function ProfileBody({ ownerId }: { ownerId: string }) {
     content = (
       <div className="space-y-8">
         <ReadinessFocus readiness={readiness} canEdit={canEdit} backTo={backTo} onEdit={() => setDialog('profile')} onApprove={setApproving} onNewPolicy={() => setDialog('policy')} />
+        <OwnerWarnings warnings={ownerEntry?.warnings ?? []} />
         {startsAfterTheMonth && readiness.ready ? (
           <MonthNotCovered from={readiness.from} period={period} />
         ) : null}
@@ -176,6 +179,7 @@ function ProfileBody({ ownerId }: { ownerId: string }) {
         <OwnerMandateSection ownerId={ownerId} currency={current?.settlementCurrency ?? null} canManage={canEdit} />
         <OwnerAddressSection ownerId={ownerId} canManage={canEdit} />
         <OwnerIssuerProfileSection ownerId={ownerId} />
+        <OwnerTaxChecksSection ownerId={ownerId} canManage={canEdit} />
         <OwnerIssuedDocumentsSection ownerId={ownerId} />
         <PolicyPanel policy={policyOfCurrent} all={policyList} canManage={canEdit} onApprove={setApproving} onNew={() => setDialog('policy')} />
         <OnboardingFacts loaded={onboarding.data !== undefined} available={onboarding.data !== null} reasons={ownerEntry?.reasons ?? []} properties={properties} />
@@ -267,6 +271,34 @@ function ReadinessFocus({ readiness, canEdit, backTo, onEdit, onApprove, onNewPo
       primary={primary}
       data-testid="profile-focus"
     />
+  );
+}
+
+/**
+ * What the activation says the agency should know about the owner without it stopping the accounting (`warnings` of `GET api/onboarding/owners/readiness`, E18/F01/US03/T01): today `short_let_business_presumed`, the
+ * owner lets more apartments than a private person may (the ones the agency manages and the ones it declared outside it), so it is presumed to run a business and its stays get no withholding of the short lets. The
+ * suggestion is a business issuer profile, which this page has just below. A warning is never red and never blocks: the statements and the payouts go on. A code this version does not know says so.
+ */
+function OwnerWarnings({ warnings }: { warnings: readonly OwnerOnboardingWarning[] }) {
+  const { t } = useTranslation();
+  if (warnings.length === 0) return null;
+  return (
+    <div className="space-y-2" data-testid="profile-warnings">
+      {warnings.map((warning) => (
+        <Alert
+          key={warning.code}
+          variant="warning"
+          title={warning.code === 'short_let_business_presumed' ? t('ownerProfile.warning.shortLetBusinessPresumed.title') : t('ownerProfile.warning.other.title')}
+          data-testid="profile-warning"
+          data-code={warning.code}
+        >
+          {warning.code === 'short_let_business_presumed'
+            ? t('ownerProfile.warning.shortLetBusinessPresumed.body', { managed: warning.managedUnits, external: warning.externalUnits, max: warning.maxUnits })
+            : t('ownerProfile.warning.other.body', { code: warning.code })}
+          {warning.suggestion === 'issuer_profile' ? ` ${t('ownerProfile.warning.suggestion.issuerProfile')}` : ''}
+        </Alert>
+      ))}
+    </div>
   );
 }
 

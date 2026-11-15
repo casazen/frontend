@@ -23,6 +23,8 @@ import {
   f24,
   ownerReadiness,
   payout,
+  payoutFacts,
+  payoutPreview,
   policy,
   profile,
   readiness,
@@ -48,7 +50,7 @@ const api = vi.hoisted(() => ({
   getPayout: vi.fn(),
   confirmPayout: vi.fn(),
   listFiscalProfiles: vi.fn(),
-  getFiscalReadiness: vi.fn(),
+  getPayoutPreview: vi.fn(),
   listPolicies: vi.fn(),
   getTaxReconciliation: vi.fn(),
   getF24: vi.fn(),
@@ -101,7 +103,6 @@ function deferred<T>() {
   return { promise, resolve };
 }
 
-const READINESS = { ready: true, profileId: 'a1000000-0000-4000-8000-000000000001', policyId: 'b1000000-0000-4000-8000-000000000001', ruleCode: 'IT-RULE', ruleVersion: '2025.1', jurisdiction: 'IT' };
 const LINK_ID = 'ee000000-0000-4000-8000-000000000001';
 const link = (overrides: Partial<OwnerExternalDocument> = {}): OwnerExternalDocument => ({
   id: LINK_ID,
@@ -135,7 +136,7 @@ beforeEach(async () => {
   forgetPayoutKeys();
   workspace.contexts = [{ contextKey: 'account', roleKey: 'org_owner' }];
   await i18n.changeLanguage('it');
-  api.getFiscalReadiness.mockResolvedValue(READINESS);
+  api.getPayoutPreview.mockResolvedValue(payoutPreview());
   api.listOwners.mockResolvedValue([
     { id: OWNER_ID, firstName: 'Marta', lastName: 'Rossi' },
     { id: OTHER_OWNER_ID, firstName: 'Luca', lastName: 'Bianchi' },
@@ -362,17 +363,12 @@ describe('the month-end close (E06/F05/US02/T04)', () => {
     await waitFor(() => expect(api.closeMonth).toHaveBeenCalledWith(YEAR, MONTH, OWNER_ID, undefined));
   });
 
-  it('MonthEndClose_Payout_AsksOnlyTheFactsTheApprovedRuleNeeds_AndNeverDecidesTheWithholding', async () => {
-    api.listPolicies.mockResolvedValue([
-      policy({
-        parameters: { withholdingApplies: true, withholdingRatePercent: 21, withholdingTaxCode: 'TC-1', requiresAgencyCollection: true, requiresQualifyingShortLet: false, grossBaseComponents: ['rent'], rounding: 'half_up', retentionYears: 10 },
-      }),
-    ]);
-    api.confirmPayout.mockImplementation(async (command: { grossAmount: number }) =>
+  it('MonthEndClose_Payout_ShowsTheFactsOfTheLedgerReadOnly_AndWhatTheRuleDecidesOnThem', async () => {
+    api.confirmPayout.mockImplementation(async () =>
       payout({
-        grossAmount: command.grossAmount,
-        withholdingAmount: 12,
-        netAmount: command.grossAmount - 12,
+        grossAmount: 800,
+        withholdingAmount: 168,
+        netAmount: 632,
         evidence: [
           {
             id: 'ev-1',
@@ -381,16 +377,17 @@ describe('the month-end close (E06/F05/US02/T04)', () => {
             jurisdiction: 'IT',
             ruleCode: 'IT-RULE',
             ruleVersion: '2025.1',
-            grossBase: 100,
-            ratePercent: 12,
+            grossBase: 800,
+            ratePercent: 21,
             rounding: 'half_up',
-            amount: 12,
-            taxCode: 'TC-1',
+            amount: 168,
+            taxCode: '1919',
             paidOn: '2025-02-05',
             periodYear: 2025,
             periodMonth: 2,
             reversesEvidenceId: null,
             createdAt: '2025-02-05T09:00:00Z',
+            facts: payoutFacts(),
           },
         ],
       }),
@@ -399,37 +396,34 @@ describe('the month-end close (E06/F05/US02/T04)', () => {
     fireEvent.click(await screen.findByTestId('statement-payout'));
 
     const dialog = await screen.findByTestId('payout-form');
-    // The rule asks whether the agency collected, and the amount of the rent: nothing about a short-term let, which this rule does not ask.
+    // What is paid is the balance of the statement, and the facts the withholding is decided on are the server's: shown, never asked.
     await within(dialog).findByTestId('payout-facts');
-    // The rule is the one the server names for the day: the profiles of the owner, which come with the identifiers and the bank account in full, are never read for a payment.
-    expect(api.getFiscalReadiness).toHaveBeenCalledWith(OWNER_ID, todayInRome());
+    expect(api.getPayoutPreview).toHaveBeenCalledWith(VERSION_ID, todayInRome());
+    expect(within(dialog).getByTestId('payout-balance')).toHaveTextContent('800,00');
+    expect(within(dialog).getByTestId('payout-fact-stay')).toHaveAttribute('data-in-base', 'true');
+    expect(within(dialog).getByTestId('payout-decision')).toHaveAttribute('data-decision', 'Applicable');
+    expect(within(dialog).getByTestId('payout-withholding-euro')).toHaveTextContent('168,00');
+    expect(within(dialog).getByTestId('payout-net')).toHaveTextContent('632,00');
+    // The profiles of the owner, which come with the identifiers and the bank account in full, are never read for a payment.
     expect(api.listFiscalProfiles).not.toHaveBeenCalled();
-    expect(within(dialog).getByTestId('payout-agency-collected')).toHaveValue('');
-    expect(within(dialog).queryByTestId('payout-qualifying')).toBeNull();
-    expect(within(dialog).getByTestId('payout-component-rent')).toBeInTheDocument();
 
-    // A question left unanswered is a refusal, never a «no» by default: nothing is sent.
-    fireEvent.change(within(dialog).getByTestId('payout-gross'), { target: { value: '800,00' } });
-    fireEvent.change(within(dialog).getByTestId('payout-component-rent'), { target: { value: '100' } });
-    fireEvent.click(within(dialog).getByTestId('payout-confirm'));
-    expect(api.confirmPayout).not.toHaveBeenCalled();
-
-    fireEvent.change(within(dialog).getByTestId('payout-agency-collected'), { target: { value: 'yes' } });
     fireEvent.click(within(dialog).getByTestId('payout-confirm'));
 
     await waitFor(() => expect(api.confirmPayout).toHaveBeenCalledTimes(1));
     const sent = api.confirmPayout.mock.calls[0][0] as Record<string, unknown>;
-    expect(sent).toMatchObject({ ownerId: OWNER_ID, statementVersionId: VERSION_ID, grossAmount: 800, currency: 'EUR', agencyCollected: true, qualifyingShortLet: null, components: { rent: 100 } });
-    // The page sends the facts and no withholding: the amount shown comes from the decision the server recorded.
-    expect(sent).not.toHaveProperty('withholdingAmount');
+    expect(sent).toMatchObject({ ownerId: OWNER_ID, statementVersionId: VERSION_ID, currency: 'EUR', paidOn: todayInRome() });
+    // The page sends neither an amount nor a fact nor a withholding: they are the ledger's and the server's.
+    for (const member of ['grossAmount', 'agencyCollected', 'qualifyingShortLet', 'components', 'withholdingAmount']) expect(sent).not.toHaveProperty(member);
     const evidence = await screen.findByTestId('tax-evidence');
     expect(evidence).toHaveAttribute('data-decision', 'Applicable');
-    expect(within(evidence).getByTestId('tax-evidence-amount')).toHaveTextContent('12,00');
+    expect(within(evidence).getByTestId('tax-evidence-amount')).toHaveTextContent('168,00');
   });
 
   it('MonthEndClose_Payout_WithoutAnApprovedRule_IsNotOffered', async () => {
-    // The server says what blocks the owner on the day: the payment is not offered, and the way out is the owner's data.
-    api.getFiscalReadiness.mockRejectedValue(problem(422, 'owner_fiscal_policy_not_approved'));
+    // The server says what blocks the owner on the day, in the preview of the payout: the payment is not offered, and the way out is the owner's data.
+    api.getPayoutPreview.mockResolvedValue(
+      payoutPreview({ decision: null, reasonCode: null, grossBase: null, ratePercent: null, rounding: null, withholdingInEuro: null, taxCode: null, withholdingAmount: null, netAmount: null, blockingCode: 'owner_fiscal_policy_not_approved' }),
+    );
     renderStatement();
     fireEvent.click(await screen.findByTestId('statement-payout'));
 
@@ -437,23 +431,25 @@ describe('the month-end close (E06/F05/US02/T04)', () => {
     expect(blocked).toHaveTextContent(text('ownerAccounting.payout.blocked.policy_not_approved'));
     expect(screen.getByTestId('payout-confirm')).toBeDisabled();
     expect(within(blocked).getByRole('link')).toHaveAttribute('href', `/app/account/owners/${OWNER_ID}/financial?period=${YEAR}-01`);
+    // A rule that does not decide leaves no withholding on the screen to read as decided.
+    expect(screen.queryByTestId('payout-decision')).toBeNull();
     expect(api.confirmPayout).not.toHaveBeenCalled();
   });
 
-  it('MonthEndClose_Payout_AFailureToReadTheRule_IsNotAVerdictOnTheOwner_AndCanBeTriedAgain', async () => {
-    api.getFiscalReadiness.mockRejectedValueOnce(networkError());
+  it('MonthEndClose_Payout_AFailureToReadThePreview_IsNotAVerdictOnTheOwner_AndCanBeTriedAgain', async () => {
+    api.getPayoutPreview.mockRejectedValueOnce(networkError());
     renderStatement();
     fireEvent.click(await screen.findByTestId('statement-payout'));
 
     // A network error says nothing of the owner: it is told as a failure to read, never as a rule that is missing.
-    const failed = await screen.findByTestId('payout-rule-error');
+    const failed = await screen.findByTestId('payout-preview-error');
     expect(screen.queryByTestId('payout-rule-blocked')).toBeNull();
     expect(screen.getByTestId('payout-confirm')).toBeDisabled();
 
     fireEvent.click(within(failed).getByRole('button', { name: text('shared.errorState.retry') }));
-    await screen.findByTestId('payout-rule');
-    expect(screen.queryByTestId('payout-rule-error')).toBeNull();
-    expect(screen.getByTestId('payout-confirm')).toBeEnabled();
+    await screen.findByTestId('payout-facts');
+    expect(screen.queryByTestId('payout-preview-error')).toBeNull();
+    await waitFor(() => expect(screen.getByTestId('payout-confirm')).toBeEnabled());
   });
 
   it('MonthEndClose_StatementDetail_ExplainsTheFormulaAndWhatChangedSinceThePreviousVersion', async () => {
@@ -606,13 +602,12 @@ describe('the controlled close, step by step (E06/F05/US02/T04)', () => {
   });
 });
 
-describe('what a payment asks, and the payment that was made once (E06/F05/US02/T04)', () => {
-  /** Opens the dialog of the payment on the statement and types the amount. */
-  async function openPayoutWith(gross: string) {
+describe('the payment that was made once (E06/F05/US02/T04)', () => {
+  /** Opens the dialog of the payment on the statement and waits for the preview of the server, which is what the person confirms. */
+  async function openPayout() {
     fireEvent.click(await screen.findByTestId('statement-payout'));
     const dialog = await screen.findByTestId('payout-form');
     await waitFor(() => expect(within(dialog).getByTestId('payout-confirm')).toBeEnabled());
-    fireEvent.change(within(dialog).getByTestId('payout-gross'), { target: { value: gross } });
     return dialog;
   }
   const keyOf = (call: number) => (api.confirmPayout.mock.calls[call][0] as { idempotencyKey: string }).idempotencyKey;
@@ -622,7 +617,7 @@ describe('what a payment asks, and the payment that was made once (E06/F05/US02/
     renderStatement();
 
     // The answer was lost: the person asks again in the same dialog, and the same request is sent.
-    let dialog = await openPayoutWith('800,00');
+    let dialog = await openPayout();
     fireEvent.click(within(dialog).getByTestId('payout-confirm'));
     await within(dialog).findByTestId('payout-error');
     fireEvent.click(within(dialog).getByTestId('payout-confirm'));
@@ -633,16 +628,16 @@ describe('what a payment asks, and the payment that was made once (E06/F05/US02/
     // The dialog is closed and opened again with the same facts: still the same request.
     fireEvent.click(within(dialog).getByRole('button', { name: text('shared.cancel') }));
     await waitFor(() => expect(screen.queryByTestId('payout-form')).toBeNull());
-    dialog = await openPayoutWith('800,00');
+    dialog = await openPayout();
     fireEvent.click(within(dialog).getByTestId('payout-confirm'));
     await screen.findByTestId('payout-done');
     expect(api.confirmPayout).toHaveBeenCalledTimes(3);
     expect(keyOf(2)).toBe(keyOf(0));
 
-    // Confirmed: the same amount on the same day is another payment, and it gets another key (the first one would answer with the payout that already exists).
+    // Confirmed: the same balance on the same day is another payment, and it gets another key (the first one would answer with the payout that already exists).
     fireEvent.click(within(screen.getByTestId('payout-done')).getByRole('button', { name: text('shared.close') }));
     await waitFor(() => expect(screen.queryByTestId('payout-done')).toBeNull());
-    dialog = await openPayoutWith('800,00');
+    dialog = await openPayout();
     fireEvent.click(within(dialog).getByTestId('payout-confirm'));
     await screen.findByTestId('payout-done');
     expect(api.confirmPayout).toHaveBeenCalledTimes(4);
@@ -654,7 +649,7 @@ describe('what a payment asks, and the payment that was made once (E06/F05/US02/
     api.confirmPayout.mockReturnValue(sent.promise);
     renderStatement();
 
-    const dialog = await openPayoutWith('800,00');
+    const dialog = await openPayout();
     // Two submits in the same tick (a click and the Enter of the form): the second is stopped before the state of the mutation says a request is on its way.
     fireEvent.submit(dialog);
     fireEvent.submit(dialog);
@@ -674,24 +669,29 @@ describe('what a payment asks, and the payment that was made once (E06/F05/US02/
     expect(api.confirmPayout).toHaveBeenCalledTimes(1);
   });
 
-  it('MonthEndClose_Payout_AnAmountOverWhatIsLeft_IsWarnedBeforeItIsRecorded', async () => {
-    // 800 owed, 500 paid: 300 left.
-    api.listPayouts.mockResolvedValue([payout({ grossAmount: 500 })]);
+  it('MonthEndClose_Payout_WhenNothingIsLeft_ThereIsNothingToConfirm', async () => {
+    api.getPayoutPreview.mockResolvedValue(
+      payoutPreview({ balance: 0, decision: null, reasonCode: null, grossBase: null, ratePercent: null, rounding: null, withholdingInEuro: null, taxCode: null, withholdingAmount: null, netAmount: null, blockingCode: 'owner_payout_exceeds_balance', facts: payoutFacts({ balance: 0, stays: [] }) }),
+    );
     renderStatement();
+    fireEvent.click(await screen.findByTestId('statement-payout'));
 
-    const dialog = await openPayoutWith('400,00');
-    const warning = await within(dialog).findByTestId('payout-over-left');
-    expect(warning).toHaveTextContent('300,00');
-    fireEvent.change(within(dialog).getByTestId('payout-gross'), { target: { value: '300,00' } });
-    expect(within(dialog).queryByTestId('payout-over-left')).toBeNull();
+    expect(await screen.findByTestId('payout-nothing-left')).toHaveTextContent(text('ownerAccounting.payout.nothingLeft'));
+    expect(screen.getByTestId('payout-confirm')).toBeDisabled();
+    expect(api.confirmPayout).not.toHaveBeenCalled();
   });
 
-  it('MonthEndClose_Payout_WhenTheBalanceIsAlreadyPaid_AnyAmountIsWarned', async () => {
-    api.listPayouts.mockResolvedValue([payout({ grossAmount: 800 })]);
+  it('MonthEndClose_Payout_WhenTheBalanceMovedMeanwhile_TheServerRefuses_AndThePreviewIsReadAgain', async () => {
+    api.confirmPayout.mockRejectedValueOnce(problem(422, 'owner_payout_exceeds_balance', { balance: 0, currency: 'EUR' }));
     renderStatement();
 
-    const dialog = await openPayoutWith('10,00');
-    expect(await within(dialog).findByTestId('payout-over-left')).toHaveTextContent(text('ownerAccounting.payout.nothingLeft'));
+    const dialog = await openPayout();
+    expect(api.getPayoutPreview).toHaveBeenCalledTimes(1);
+    fireEvent.click(within(dialog).getByTestId('payout-confirm'));
+
+    // What the person saw is not what the server has: it says so, and the facts are read again so the dialog tells what is true now.
+    expect(await within(dialog).findByTestId('payout-error')).toHaveTextContent(text('apiErrors.codes.ownerPayoutExceedsBalance'));
+    await waitFor(() => expect(api.getPayoutPreview.mock.calls.length).toBeGreaterThan(1));
   });
 });
 

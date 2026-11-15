@@ -11,6 +11,7 @@ import { ownerPortalPaths } from '@/features/owner-portal/paths';
 import { PortalLoading, PortalPageHeading, PortalReadProblem, StatusPill, TOUCH } from '@/features/owner-portal/portal-parts';
 import { MoneyNote, PdfButton, StatementNet, StatementTotalsList } from '@/features/owner-portal/statement-parts';
 import { useOwnerDownload } from '@/features/owner-portal/use-owner-download';
+import { OwnerWithholdingSection } from '@/features/owner-portal/withholding-section';
 import { formatStayDate, romeDateOf } from '@/lib/stay-dates';
 import { useOwnerDocuments, useOwnerExternalDocuments, useOwnerInvoices, useOwnerStatements } from '@/queries/ownerPortal';
 import type { OwnerPortalExternalDocument, OwnerPortalInvoice, OwnerPortalStatement } from '@/types';
@@ -238,7 +239,8 @@ function LinkedInvoicesSection({ statements }: { statements: readonly OwnerPorta
  * in the currency of the statement, the way to open its lines and to download its PDF, then the invoices of the property manager with their PDF, the links of the invoices
  * issued elsewhere (only for the owner that has some) and the accounting documents the agency shares. The amounts are the server's: the page writes them in the currency of the data (an
  * amount with no currency has no symbol, and the page says so) and never works one out. The portal has no payout state and no evidence of a payment or of a submission for the owner, so no
- * «paid», no «sent», no «accepted» appears here. Guests never appear: a statement tells its stays by property, days, channel and booking code.
+ * «paid», no «sent», no «accepted» appears here. Guests never appear: a statement tells its stays by property, days, channel and booking code. Behind the flag of the tax exports the page also has
+ * the withholding of the year and the data of the owner's Certificazione Unica (E18/F02/US01/T01), which tell only what the agency recorded and never the recipient data, the stays or the co-owners.
  */
 export function OwnerStatements() {
   const { t } = useTranslation();
@@ -299,6 +301,8 @@ export function OwnerStatements() {
       </section>
 
       <LinkedInvoicesSection statements={statementList} />
+
+      <OwnerWithholdingSection />
 
       <section aria-labelledby="owner-accounting-documents-title" className="space-y-3">
         <h2 id="owner-accounting-documents-title" className="text-xl font-semibold text-[#1f3a3d]">

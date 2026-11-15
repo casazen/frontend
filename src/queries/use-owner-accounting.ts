@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { keepPreviousData, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { ownerAccountingApi } from '@/api/owner-accounting.api';
 import { isRunOver } from '@/features/owner-accounting/bulk-close-model';
 import { profileFactsOf } from '@/features/owner-accounting/owner-accounting-model';
@@ -36,11 +36,11 @@ export const ownerAccountingKeys = {
   version: (versionId: string) => [OWNER_ACCOUNTING_KEY, 'version', versionId] as const,
   payouts: (ownerId: string | undefined) => [OWNER_ACCOUNTING_KEY, 'payouts', ownerId ?? 'all'] as const,
   payout: (payoutId: string) => [OWNER_ACCOUNTING_KEY, 'payout', payoutId] as const,
+  payoutPreview: (versionId: string, day: string) => [OWNER_ACCOUNTING_KEY, 'payout-preview', versionId, day] as const,
   externalDocuments: (versionId: string) => [OWNER_ACCOUNTING_KEY, 'external-documents', versionId] as const,
   evidence: (year: number, month: number, ownerId: string) => [OWNER_ACCOUNTING_KEY, 'evidence', year, month, ownerId] as const,
   fxRates: [OWNER_ACCOUNTING_KEY, 'fx-rates'] as const,
   profiles: (ownerId: string) => [OWNER_ACCOUNTING_KEY, 'profiles', ownerId] as const,
-  fiscalReadiness: (ownerId: string, day: string) => [OWNER_ACCOUNTING_KEY, 'fiscal-readiness', ownerId, day] as const,
   policies: [OWNER_ACCOUNTING_KEY, 'policies'] as const,
   taxReconciliation: (year: number) => [WITHHOLDING_KEY, 'reconciliation', year] as const,
   f24: (month: number, year: number) => [WITHHOLDING_KEY, 'f24-record', month, year] as const,
@@ -151,6 +151,22 @@ export function useOwnerPayouts(ownerId: string | undefined, enabled = true) {
   });
 }
 
+/**
+ * What a payout of a version on a day would be (E18/F01/US01/T01): the facts of the owner ledger, the balance still unpaid and the decision of the approved rule that day, or the code that would refuse it. It changes with
+ * the ledger (a correction posted), with another payout and with the day, so it is read again every time the dialog opens and again a moment after (`staleTime`), and the answer of a day is never shown for another (a new
+ * day is a new read, with no placeholder). It holds no personal data, and nothing of it is kept once the dialog is left (`gcTime: 0`). A failed read is the server's word, whatever an earlier answer left.
+ */
+export function usePayoutPreview(versionId: string | undefined, paidOn: string, enabled = true) {
+  return useQuery({
+    queryKey: ownerAccountingKeys.payoutPreview(versionId ?? '', paidOn),
+    queryFn: () => ownerAccountingApi.getPayoutPreview(versionId ?? '', paidOn),
+    enabled: enabled && Boolean(versionId) && /^\d{4}-\d{2}-\d{2}$/.test(paidOn),
+    refetchOnMount: 'always' as const,
+    staleTime: 0,
+    gcTime: 0,
+  });
+}
+
 /** A payout with its withholding evidence: a detail, read again every time it is shown (a reversal adds to its evidence). */
 export function useOwnerPayout(payoutId: string | undefined) {
   return useQuery({
@@ -199,20 +215,6 @@ export function useFiscalProfiles(ownerId: string | undefined) {
   });
 }
 
-/**
- * Which profile and approved rule set apply to the owner on a day, as the server decides it: ids and codes only, so a payout chooses its rule without reading the profiles.
- * A 422 is the verdict (what blocks), not a failure to retry. While the day changes the last answer stays on screen, marked as a placeholder.
- */
-export function useFiscalReadiness(ownerId: string | undefined, day: string) {
-  return useQuery({
-    queryKey: ownerAccountingKeys.fiscalReadiness(ownerId ?? '', day),
-    queryFn: () => ownerAccountingApi.getFiscalReadiness(ownerId ?? '', day),
-    enabled: Boolean(ownerId) && /^\d{4}-\d{2}-\d{2}$/.test(day),
-    refetchOnMount: 'always' as const,
-    placeholderData: keepPreviousData,
-  });
-}
-
 /** The rule sets of the agency. */
 export function useAccountingPolicies(enabled = true) {
   return useQuery({ queryKey: ownerAccountingKeys.policies, queryFn: () => ownerAccountingApi.listPolicies(), enabled, refetchOnMount: 'always' as const });
@@ -238,9 +240,9 @@ export function useF24Record(month: number, year: number, enabled: boolean) {
   });
 }
 
-/** The annual tax data of the year; `null` while there is none. */
-export function useAnnualDataset(year: number) {
-  return useQuery({ queryKey: ownerAccountingKeys.annual(year), queryFn: () => ownerAccountingApi.getAnnualDataset(year), refetchOnMount: 'always' as const });
+/** The annual tax data of the year; `null` while there is none. `enabled: false` for a page that has no use of it (the exports of the CU are off). */
+export function useAnnualDataset(year: number, enabled = true) {
+  return useQuery({ queryKey: ownerAccountingKeys.annual(year), queryFn: () => ownerAccountingApi.getAnnualDataset(year), enabled, refetchOnMount: 'always' as const });
 }
 
 // ── Writes: each is one explicit action of the person, none runs by itself ──────────────────────────────────────
@@ -355,10 +357,23 @@ export function usePostCorrection() {
   });
 }
 
-/** Confirms a payout: the only operation that decides a withholding. */
+/**
+ * Confirms a payout: the only operation that decides a withholding. The command holds the reference the agency wrote for the wire, so the mutation is dropped as soon as nothing watches it (`gcTime: 0`) and what it
+ * keeps of a failure is the failure without its request (`withoutRequest`): the status, the code and the body of the answer, which the dialog turns into words.
+ */
 export function useConfirmPayout() {
   const queryClient = useQueryClient();
-  return useMutation({ mutationFn: (command: OwnerPayoutCommand) => ownerAccountingApi.confirmPayout(command), onSuccess: () => invalidateAll(queryClient) });
+  return useMutation({
+    gcTime: 0,
+    mutationFn: async (command: OwnerPayoutCommand) => {
+      try {
+        return await ownerAccountingApi.confirmPayout(command);
+      } catch (error) {
+        throw withoutRequest(error);
+      }
+    },
+    onSuccess: () => invalidateAll(queryClient),
+  });
 }
 
 export function useReversePayout() {

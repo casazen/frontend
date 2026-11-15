@@ -348,6 +348,23 @@ describe('ACTION_ROUTE_MAP: the check-in link of a portal booking', () => {
   });
 });
 
+// E18/F02/US01/T01 (NF-117, ⚖ I7): the stay of a company tenant in the property of a private owner waits for a decision. The item is about the booking with the action `ReviewBooking`, and
+// «Fallo ora» opens the page of the withholding with the dialog of the decision on that stay, not the page of the booking, which decides nothing.
+describe('ROUTE_MAP_BY_TYPE: the decision about a company tenant', () => {
+  const item = { action: 'ReviewBooking', activityType: 'CompanyTenantDecision', entityType: 'Booking', entityId: BOOKING_ID, propertyId: PROPERTY_ID as string | null };
+
+  it('todoActionRoute_CompanyTenantDecision_OpensTheDialogOfTheDecisionOnThePageOfTheWithholding', () => {
+    expect(todoActionRoute(item)).toBe(`/app/account/withholding?decision=${BOOKING_ID}`);
+    // Another «Da fare» of the same action keeps the page of the booking.
+    expect(todoActionRoute({ ...item, activityType: 'BookingSpecialRequest' })).toBe(`/app/short-rent/bookings/${BOOKING_ID}`);
+  });
+
+  it('todoActionRoute_CompanyTenantDecision_NeverOffersTheIdOfSomethingThatIsNotABookingOrNoId', () => {
+    expect(todoActionRoute({ ...item, entityType: 'Property' })).toBeNull();
+    expect(todoActionRoute({ ...item, entityId: NO_ID })).toBeNull();
+  });
+});
+
 // Every `ActivityAction` of the backend (`Casazen.Core/Entities/Enums/ActivityAction.cs`, today 23 values): the map has an entry for each, or the action is
 // in the list of those whose page does not exist yet. An action that is in neither is a "To do" with no button that nobody noticed; the task that builds
 // the page adds the entry and takes the action out of the list (the test below fails until it does).

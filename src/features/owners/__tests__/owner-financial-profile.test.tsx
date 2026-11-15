@@ -197,6 +197,36 @@ describe('the financial profile of an owner (E06/F05/US02/T01, T04)', () => {
     expect(within(section).queryByTestId('profile-onboarding-link')).toBeNull();
   });
 
+  it('OwnerProfile_ThePresumedBusinessWarningOfTheActivation_IsToldInWords_AndBlocksNothing', async () => {
+    api.getOnboardingReadiness.mockResolvedValue({
+      asOf: '2026-11-12',
+      summary: { financialReady: true },
+      owners: [
+        {
+          ownerId: OWNER_ID,
+          displayName: 'Marta Rossi',
+          accountingReady: true,
+          reasons: [],
+          warnings: [
+            { code: 'short_let_business_presumed', managedUnits: 2, externalUnits: 1, maxUnits: 2, suggestion: 'issuer_profile' },
+            { code: 'something_new', managedUnits: 0, externalUnits: 0, maxUnits: 0, suggestion: null },
+          ],
+        },
+      ],
+      properties: [],
+    });
+    renderPage();
+
+    const warnings = await screen.findAllByTestId('profile-warning');
+    expect(warnings.map((warning) => warning.getAttribute('data-code'))).toEqual(['short_let_business_presumed', 'something_new']);
+    expect(warnings[0]).toHaveTextContent(text('ownerProfile.warning.shortLetBusinessPresumed.title'));
+    expect(warnings[0]).toHaveTextContent('2 gestiti dall\'agenzia e 1 dichiarati fuori, con un limite di 2');
+    expect(warnings[0]).toHaveTextContent(text('ownerProfile.warning.suggestion.issuerProfile'));
+    // A code this version does not know is told as a warning too, with the code, and nothing here stops the owner: the focus of the page is still the one of the readiness.
+    expect(warnings[1]).toHaveTextContent('something_new');
+    expect(screen.getByTestId('profile-focus')).toBeInTheDocument();
+  });
+
   it('OwnerProfile_NotTheFinanceAdministrator_IsToldWhoToAsk_AndNothingIsRead', async () => {
     // The protection of the page is the role, checked before anything is read: a refused read is taken by the global handler of the app, never by the page.
     workspace.contexts = [{ contextKey: 'account', roleKey: 'org_manager' }];

@@ -13,6 +13,7 @@ import type {
   OwnerConversation,
   OwnerInboxPreferences,
   OwnerMessage,
+  OwnerPortalCu,
   OwnerPortalDocuments,
   OwnerPortalExternalDocument,
   OwnerPortalInvoice,
@@ -23,6 +24,8 @@ import type {
   OwnerPortalStatement,
   OwnerPortalStatementDetail,
   OwnerPortalTrend,
+  OwnerPortalWithholding,
+  OwnerPortalWithholdingDetail,
   OwnerPortalPermission,
   OwnerStay,
   OwnerStayRequestBody,
@@ -128,6 +131,54 @@ function asIssuedDocuments(url: string, data: unknown): OwnerPortalIssuedDocumen
       hasXml: item.hasXml === true,
     };
   });
+}
+
+function finiteNumber(value: unknown, url: string): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) throw new UnexpectedApiResponseError(url);
+  return value;
+}
+
+function textOrEmpty(value: unknown): string {
+  return typeof value === 'string' ? value : '';
+}
+
+/**
+ * The withholding of the owner in a year and the CU of each agency that reviewed it (E18/F01/US02/T01, E18/F02/US01/T01), reduced to what the page shows. NOTHING that belongs to the agency is kept, whatever the
+ * answer carries: the recipient of the CU (name, fiscal code, address), the stays it is made of and the co-owners are not members below, so they never reach the state of the page, the cache of the queries or a log.
+ * A member that is not of the right type is a load error for the whole answer, never a line left out: a list that silently misses a withholding could be read as one that is in order. The currency is what the API
+ * says; one that is missing stays empty, and the page then writes the amounts without a symbol and says so.
+ */
+function asWithholding(url: string, data: unknown): OwnerPortalWithholding {
+  const answer = asReport<Record<string, unknown>>(url, data);
+  if (!Array.isArray(answer.details) || !Array.isArray(answer.cuStatements)) throw new UnexpectedApiResponseError(url);
+
+  const details = answer.details.map((item: unknown): OwnerPortalWithholdingDetail => {
+    if (!isRecord(item)) throw new UnexpectedApiResponseError(url);
+    return {
+      agencyId: textOrEmpty(item.agencyId),
+      agencyName: textOrEmpty(item.agencyName),
+      propertyId: textOrEmpty(item.propertyId),
+      propertyName: textOrEmpty(item.propertyName),
+      month: finiteNumber(item.month, url),
+      grossBase: finiteNumber(item.grossBase, url),
+      amountWithheld: finiteNumber(item.amountWithheld, url),
+    };
+  });
+  const cuStatements = answer.cuStatements.map((item: unknown): OwnerPortalCu => {
+    if (!isRecord(item) || typeof item.state !== 'string') throw new UnexpectedApiResponseError(url);
+    return {
+      agencyId: textOrEmpty(item.agencyId),
+      agencyName: textOrEmpty(item.agencyName),
+      year: finiteNumber(item.year, url),
+      state: item.state as OwnerPortalCu['state'],
+      generatedAt: textOrEmpty(item.generatedAt),
+      grossBase: finiteNumber(item.grossBase, url),
+      withheld: finiteNumber(item.withheld, url),
+      taxCode: typeof item.taxCode === 'string' && item.taxCode !== '' ? item.taxCode : null,
+      attribution: textOrEmpty(item.attribution),
+    };
+  });
+  return { year: finiteNumber(answer.year, url), currency: textOrEmpty(answer.currency), totalWithheld: finiteNumber(answer.totalWithheld, url), details, cuStatements };
 }
 
 /** The value of a header of an answer, whatever the case of its name, or `null` (a browser lets a page read only the headers that the API exposes). */
@@ -237,6 +288,15 @@ export const ownerPortalApi = {
 
   /** The invoices of the property manager to the owner, the latest first. */
   listInvoices: async () => asList<OwnerPortalInvoice>(`${BASE}/invoices`, await ApiClient.get<unknown>(`${BASE}/invoices`)),
+
+  /**
+   * The withholding of the owner in a year (euro, by agency, month and property) and the Certificazione Unica of the year once the agency reviewed it (needs `accounting.read`: 403 `owner_portal_permission_missing`
+   * for a contact the owner invited without it). The server answers an empty summary while the tax exports or the agency plan are off. Only the members the page shows are kept (see `asWithholding`).
+   */
+  getWithholding: async (year?: number) => {
+    const url = `${BASE}/withholding`;
+    return asWithholding(url, await ApiClient.get<unknown>(url, year === undefined ? undefined : { year }));
+  },
 
   /** The PDF of one invoice, made from the document as it was issued, in the language of the person (Italian unless it is English). */
   downloadInvoicePdf: (invoiceId: string, language: 'it' | 'en') => getFile(`${BASE}/invoices/${encodeURIComponent(invoiceId)}/pdf?lang=${language}`),

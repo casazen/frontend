@@ -7,7 +7,6 @@ import type {
   OwnerCloseReadiness,
   OwnerEntityKind,
   OwnerFiscalProfile,
-  OwnerFiscalReadiness,
   OwnerLedgerEntry,
   OwnerLedgerEntryType,
   OwnerMandate,
@@ -21,7 +20,6 @@ import type {
   TaxReconciliation,
 } from '@/types';
 import { getProblemMessage } from '@/lib/api-errors';
-import { parseEuroAmount } from '@/lib/euro-amount';
 import { addDays, endOfMonth, startOfMonth } from '@/lib/stay-dates';
 
 /** The path of the month-end close (E06/F05/US02/T04): a page of the Amministrazione. */
@@ -248,6 +246,7 @@ export const ISSUE_CODES = [
   'ownership_share_gap',
   'period_closed',
   'period_dirty',
+  'short_let_business_presumed',
   'source_amount_missing',
   'statement_missing',
   'statement_not_approved',
@@ -285,7 +284,10 @@ export function actionForIssue(issue: OwnerReadinessIssue): IssueAction {
     case 'late_source_after_close':
       return { kind: 'correction' };
     // `mandate_missing_for_stay`: no mandate of the owner covers the day of a stay (its revenue is posted, no commission is guessed): the mandate is written in the owner's financial data.
+    // `short_let_business_presumed` (E18/F01/US03/T01, never blocking): the owner lets more apartments than a private person may, the agency managed ones and the ones it declared outside it; the
+    // owner's financial data hold the number it declared and what to do about the business.
     case 'mandate_missing_for_stay':
+    case 'short_let_business_presumed':
     case 'currency_mixed':
     case 'owner_fiscal_profile_missing':
     case 'owner_fiscal_profile_incomplete':
@@ -412,11 +414,6 @@ export type RuleResolution =
   | { ok: true; profile: OwnerFiscalProfile; policy: OwnerAccountingPolicy; parameters: OwnerAccountingRuleParameters }
   | { ok: false; reason: RuleBlock };
 
-/** The rule a payout asks its facts from, as the server found it for the day (no profile: its values are not read for it). */
-export type PayoutRule =
-  | { ok: true; policy: OwnerAccountingPolicy; parameters: OwnerAccountingRuleParameters }
-  | { ok: false; reason: RuleBlock };
-
 const RULE_BLOCK_OF_CODE: Readonly<Record<string, RuleBlock>> = {
   owner_fiscal_profile_missing: 'profile_missing',
   owner_fiscal_profile_incomplete: 'profile_incomplete',
@@ -427,23 +424,11 @@ const RULE_BLOCK_OF_CODE: Readonly<Record<string, RuleBlock>> = {
 };
 
 /**
- * What the server says blocks the owner on a day: the `owner_fiscal_*` code of the 422 of `…/fiscal-profiles/readiness`. `null` for anything else (a network error, a 5xx, no
- * answer): that is not a verdict on the owner and is told as a failure to read, never as a rule that is missing.
+ * What the `owner_fiscal_*` code of a payout says blocks the owner on a day: the `blockingCode` of the preview of a payout, or the code of the refusal of its confirmation. `null` for any other code (the balance
+ * that is gone, a fact the rule could not resolve): that is not a rule that is missing and is told with its own words.
  */
-export function ruleBlockOf(error: unknown): RuleBlock | null {
-  const { status, code } = problemFacts(error);
-  return status === 422 && code !== undefined ? (RULE_BLOCK_OF_CODE[code] ?? null) : null;
-}
-
-/**
- * The rule set the server chose for the owner on the day, with its parameters from the rule sets of the agency. The decision is the server's (the profile, its missing facts, the
- * approval, the days it is in force, the jurisdiction): this only finds the parameters of the rule it named, to ask the facts the rule needs.
- */
-export function payoutRuleOf(found: Pick<OwnerFiscalReadiness, 'policyId'>, policies: readonly OwnerAccountingPolicy[]): PayoutRule {
-  const policy = policies.find((candidate) => candidate.id === found.policyId);
-  if (!policy) return { ok: false, reason: 'policy_missing' };
-  if (!policy.approved || !policy.parameters) return { ok: false, reason: 'policy_not_approved' };
-  return { ok: true, policy, parameters: policy.parameters };
+export function ruleBlockOfCode(code: string | null | undefined): RuleBlock | null {
+  return code ? (RULE_BLOCK_OF_CODE[code] ?? null) : null;
 }
 
 const inForce = (from: string, to: string | null, day: string) => from <= day && (to === null || to >= day);
@@ -523,22 +508,26 @@ export function maskValue(value: string | null): string | null {
   return value.length <= 4 ? '•'.repeat(value.length) : '•'.repeat(value.length - 4) + value.slice(-4);
 }
 
-/** What a payout is, for its key: who is paid, on which version of the statement, how much and on which day. */
+/**
+ * What a payout is, for its key: who is paid, on which version of the statement, how much (the balance the preview showed, in cents: it is never typed and never sent, the server pays what the version still owes)
+ * and on which day.
+ */
 export interface PayoutIntent {
   ownerId: string;
   statementVersionId: string;
-  grossAmount: number;
+  balance: number;
   paidOn: string;
 }
 
 const payoutKeys = new Map<string, string>();
 
-const intentKey = (intent: PayoutIntent): string => [intent.ownerId, intent.statementVersionId, toCents(intent.grossAmount), intent.paidOn].join('|');
+const intentKey = (intent: PayoutIntent): string => [intent.ownerId, intent.statementVersionId, toCents(intent.balance), intent.paidOn].join('|');
 
 /**
  * The key of the request that records a payout: a retry of the same request answers the same payout (the server keeps one payout per key). It belongs to what is asked (the owner,
- * the statement, the amount in cents, the day), not to the dialog that asks it: a retry after a failure, a second click, or the dialog closed and opened again with the same
- * facts send the same key, so a payout whose answer was lost is never recorded twice. It is kept until the server has confirmed the payout (`settlePayoutKey`).
+ * the statement, the balance in cents, the day), not to the dialog that asks it: a retry after a failure, a second click, or the dialog closed and opened again with the same
+ * facts send the same key, so a payout whose answer was lost is never recorded twice. It is kept until the server has confirmed the payout (`settlePayoutKey`). A balance that moved (a payout
+ * confirmed in between, a correction) is another payout and gets another key.
  */
 export function payoutKeyFor(intent: PayoutIntent): string {
   const known = payoutKeys.get(intentKey(intent));
@@ -558,69 +547,39 @@ export function forgetPayoutKeys(): void {
   payoutKeys.clear();
 }
 
-/** The amount is more than what is left to pay on the statement (`left`: the approved balance less the confirmed payouts; nothing left is 0). */
-export function exceedsWhatIsLeft(left: number | null, gross: number | null): boolean {
-  return left !== null && gross !== null && toCents(gross) > Math.max(toCents(left), 0);
-}
-
+/** What the person writes of a payout: the day it was paid and its reference. Nothing else: the amount and the facts of the withholding are the ledger's. */
 export interface PayoutForm {
-  gross: string;
   paidOn: string;
   reference: string;
-  agencyCollected: '' | 'yes' | 'no';
-  qualifyingShortLet: '' | 'yes' | 'no';
-  /** One amount for each component the rule counts in the gross base, by its code. */
-  components: Record<string, string>;
 }
 
-export type PayoutFormErrors = Partial<Record<'gross' | 'paidOn' | 'reference' | 'agencyCollected' | 'qualifyingShortLet' | 'components', string>>;
+export type PayoutFormErrors = Partial<Record<'paidOn' | 'reference', string>>;
 
 /**
- * The payout the form describes, or what is wrong with it (the keys of the texts). The facts the rule needs are asked and never defaulted: a
- * question left unanswered is an error, not «no». The withholding is not computed here: the server decides it, on the approved rule, when the
- * payout is confirmed.
+ * The payout the form describes, or what is wrong with it (the keys of the texts). The command carries no amount and no fact of the withholding (E18/F01/US01/T01): the server pays the
+ * balance the version still owes and reads the stays, their collection and their qualifying short let from the owner ledger. The withholding is not computed here either: the server
+ * decides it, on the approved rule in force on the day, when the payout is confirmed. `ctx.balance` is the balance of the preview the person saw: it only makes the key of the request.
  */
 export function buildPayoutCommand(
   form: PayoutForm,
-  ctx: Pick<ActionContext, 'ownerId'> & { versionId: string; currency: string },
-  parameters: OwnerAccountingRuleParameters,
-  /** The key of the request, or what makes it from the facts of the payout (`payoutKeyFor`): the amount is known only once the form is valid. */
+  ctx: Pick<ActionContext, 'ownerId'> & { versionId: string; currency: string; balance: number },
+  /** The key of the request, or what makes it from the payout (`payoutKeyFor`). */
   key: string | ((intent: PayoutIntent) => string),
 ): { command: OwnerPayoutCommand } | { errors: PayoutFormErrors } {
   const errors: PayoutFormErrors = {};
-  const gross = parseEuroAmount(form.gross);
-  if (gross === null || gross <= 0) errors.gross = 'ownerAccounting.payout.errors.gross';
   if (!/^\d{4}-\d{2}-\d{2}$/.test(form.paidOn)) errors.paidOn = 'ownerAccounting.payout.errors.paidOn';
   if (form.reference.trim().length > 100) errors.reference = 'ownerAccounting.payout.errors.reference';
+  if (Object.keys(errors).length > 0) return { errors };
 
-  const needsCollection = parameters.withholdingApplies && parameters.requiresAgencyCollection;
-  const needsContract = parameters.withholdingApplies && parameters.requiresQualifyingShortLet;
-  if (needsCollection && form.agencyCollected === '') errors.agencyCollected = 'ownerAccounting.payout.errors.answer';
-  if (needsContract && form.qualifyingShortLet === '') errors.qualifyingShortLet = 'ownerAccounting.payout.errors.answer';
-
-  const components: Record<string, number> = {};
-  if (parameters.withholdingApplies) {
-    for (const code of parameters.grossBaseComponents) {
-      const amount = parseEuroAmount(form.components[code] ?? '');
-      if (amount === null || amount < 0) errors.components = 'ownerAccounting.payout.errors.components';
-      else components[code] = amount;
-    }
-  }
-
-  if (Object.keys(errors).length > 0 || gross === null) return { errors };
-  const idempotencyKey = typeof key === 'string' ? key : key({ ownerId: ctx.ownerId, statementVersionId: ctx.versionId, grossAmount: gross, paidOn: form.paidOn });
+  const idempotencyKey = typeof key === 'string' ? key : key({ ownerId: ctx.ownerId, statementVersionId: ctx.versionId, balance: ctx.balance, paidOn: form.paidOn });
   return {
     command: {
       idempotencyKey,
       ownerId: ctx.ownerId,
       statementVersionId: ctx.versionId,
-      grossAmount: gross,
       currency: ctx.currency,
       paidOn: form.paidOn,
       reference: form.reference.trim() || undefined,
-      agencyCollected: needsCollection ? form.agencyCollected === 'yes' : null,
-      qualifyingShortLet: needsContract ? form.qualifyingShortLet === 'yes' : null,
-      components: parameters.withholdingApplies ? components : undefined,
     },
   };
 }
@@ -863,9 +822,15 @@ export function failureText(error: unknown, t: TFunction, exists: (key: string) 
   const message = messageOf(error, t);
   const field = problemFacts(error).field;
   if (!field) return message;
+  return t('ownerAccounting.errors.withField', { message, field: fieldNameOf(field, t, exists) });
+}
+
+/** The name of a field the server names (the `field` of a 422) in the words of the form, or as it came: the person can still tell which one the server means. */
+export function fieldNameOf(field: string | null | undefined, t: TFunction, exists: (key: string) => boolean): string {
+  if (!field) return '';
   const root = field.split('.')[0] ?? field;
   const key = `ownerAccounting.fields.${root}`;
-  return t('ownerAccounting.errors.withField', { message, field: exists(key) ? t(key) : field });
+  return exists(key) ? t(key) : field;
 }
 
 /** The key of a payout: a retry of the same request answers the same payout, so it is made once for the dialog and kept while it is open. */

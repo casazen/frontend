@@ -11,7 +11,6 @@ import {
   changesSince,
   checkTaxYear,
   defaultPeriod,
-  exceedsWhatIsLeft,
   filingLabelOf,
   forgetPayoutKeys,
   groupAnomalies,
@@ -26,12 +25,11 @@ import {
   ownerReadinessOn,
   parsePeriod,
   payoutKeyFor,
-  payoutRuleOf,
   previewReconciliation,
   primaryActionOf,
   problemFacts,
   resolveRule,
-  ruleBlockOf,
+  ruleBlockOfCode,
   settlePayoutKey,
   shiftPeriod,
   sourcePathOf,
@@ -311,40 +309,22 @@ describe('the rule that decides a payout', () => {
 });
 
 describe('buildPayoutCommand', () => {
-  const rule = (overrides: Partial<NonNullable<ReturnType<typeof policy>['parameters']>> = {}) => ({ ...policy().parameters!, ...overrides });
-  const form: PayoutForm = { gross: '1.234,50', paidOn: '2025-02-05', reference: ' CRO 9 ', agencyCollected: '', qualifyingShortLet: '', components: {} };
-  const ctx = { ownerId: OWNER_ID, versionId: VERSION_ID, currency: 'EUR' };
+  const form: PayoutForm = { paidOn: '2025-02-05', reference: ' CRO 9 ' };
+  const ctx = { ownerId: OWNER_ID, versionId: VERSION_ID, currency: 'EUR', balance: 1234.5 };
 
-  it('aRuleWithoutWithholdingAsksNothingAndSendsNoComponents', () => {
-    const built = buildPayoutCommand(form, ctx, rule(), 'key-1');
+  it('theCommandCarriesNoAmountAndNoFact_ThoseAreTheLedgers', () => {
+    const built = buildPayoutCommand(form, ctx, 'key-1');
     expect(built).toEqual({
-      command: {
-        idempotencyKey: 'key-1',
-        ownerId: OWNER_ID,
-        statementVersionId: VERSION_ID,
-        grossAmount: 1234.5,
-        currency: 'EUR',
-        paidOn: '2025-02-05',
-        reference: 'CRO 9',
-        agencyCollected: null,
-        qualifyingShortLet: null,
-        components: undefined,
-      },
+      command: { idempotencyKey: 'key-1', ownerId: OWNER_ID, statementVersionId: VERSION_ID, currency: 'EUR', paidOn: '2025-02-05', reference: 'CRO 9' },
     });
+    // Nothing a person could have typed about the money or about the withholding is in it, not even as an empty member.
+    expect('command' in built ? Object.keys(built.command).sort() : []).toEqual(['currency', 'idempotencyKey', 'ownerId', 'paidOn', 'reference', 'statementVersionId']);
   });
 
-  it('aWithholdingRuleNeverDefaultsAnAnswer', () => {
-    const withholding = rule({ withholdingApplies: true, withholdingRatePercent: 5, withholdingTaxCode: 'X', grossBaseComponents: ['rent', 'cleaning'] });
-    const refused = buildPayoutCommand(form, ctx, withholding, 'key-1');
-    expect(refused).toEqual({ errors: { agencyCollected: expect.any(String), qualifyingShortLet: expect.any(String), components: expect.any(String) } });
-
-    const answered = buildPayoutCommand({ ...form, agencyCollected: 'no', qualifyingShortLet: 'yes', components: { rent: '100', cleaning: '0' } }, ctx, withholding, 'key-1');
-    expect(answered).toMatchObject({ command: { agencyCollected: false, qualifyingShortLet: true, components: { rent: 100, cleaning: 0 } } });
-  });
-
-  it('anAmountThatIsNotPositiveOrHasTooManyDecimalsIsRefused', () => {
-    for (const gross of ['', '0', '-5', '12,345', 'abc']) expect(buildPayoutCommand({ ...form, gross }, ctx, rule(), 'k')).toHaveProperty('errors.gross');
-    expect(buildPayoutCommand({ ...form, paidOn: '' }, ctx, rule(), 'k')).toHaveProperty('errors.paidOn');
+  it('aDayThatIsNotADay_OrAReferenceThatIsTooLong_IsRefused', () => {
+    expect(buildPayoutCommand({ ...form, paidOn: '' }, ctx, 'k')).toEqual({ errors: { paidOn: 'ownerAccounting.payout.errors.paidOn' } });
+    expect(buildPayoutCommand({ ...form, reference: 'x'.repeat(101) }, ctx, 'k')).toEqual({ errors: { reference: 'ownerAccounting.payout.errors.reference' } });
+    expect(buildPayoutCommand({ ...form, reference: '   ' }, ctx, 'k')).toMatchObject({ command: { reference: undefined } });
   });
 });
 
@@ -385,37 +365,23 @@ describe('what the server says about a refusal', () => {
     expect(problemFacts(refused('<html>'))).toMatchObject({ code: undefined, figures: null });
   });
 
-  it('ruleBlockOf_OnlyTheVerdictOfTheServerOnTheOwnerIsARuleThatBlocks', () => {
-    expect(ruleBlockOf(refused({ code: 'owner_fiscal_profile_missing' }))).toBe('profile_missing');
-    expect(ruleBlockOf(refused({ code: 'owner_fiscal_profile_incomplete', fields: ['legalName'] }))).toBe('profile_incomplete');
-    expect(ruleBlockOf(refused({ code: 'owner_fiscal_policy_missing' }))).toBe('policy_missing');
-    expect(ruleBlockOf(refused({ code: 'owner_fiscal_policy_not_approved' }))).toBe('policy_not_approved');
-    expect(ruleBlockOf(refused({ code: 'owner_fiscal_policy_not_effective' }))).toBe('policy_not_effective');
-    expect(ruleBlockOf(refused({ code: 'owner_fiscal_policy_jurisdiction_mismatch' }))).toBe('policy_jurisdiction_mismatch');
-    // A failure that says nothing of the owner (the network, a 500, another 422) is no verdict: the owner is not told to have a rule missing.
-    expect(ruleBlockOf(refused({ code: 'owner_period_closed' }))).toBeNull();
-    expect(ruleBlockOf(refused({ code: 'owner_fiscal_policy_missing' }, 500))).toBeNull();
-    expect(ruleBlockOf(new Error('Network Error'))).toBeNull();
-  });
-});
-
-describe('the rule of a payout, as the server names it for the day', () => {
-  const found = { policyId: policy().id };
-
-  it('payoutRuleOf_TakesTheParametersOfTheRuleSetTheServerNamed', () => {
-    const withholding = policy({ parameters: { ...policy().parameters!, withholdingApplies: true, withholdingRatePercent: 5, withholdingTaxCode: 'X', grossBaseComponents: ['rent'] } });
-    expect(payoutRuleOf(found, [withholding])).toMatchObject({ ok: true, parameters: { withholdingApplies: true, grossBaseComponents: ['rent'] } });
-  });
-
-  it('payoutRuleOf_ARuleSetThatIsNotAmongTheOnesOfTheAgencyOrNotApprovedIsNotUsed', () => {
-    expect(payoutRuleOf(found, [])).toEqual({ ok: false, reason: 'policy_missing' });
-    expect(payoutRuleOf(found, [policy({ approved: false, approvedAt: null })])).toEqual({ ok: false, reason: 'policy_not_approved' });
-    expect(payoutRuleOf(found, [policy({ parameters: null })])).toEqual({ ok: false, reason: 'policy_not_approved' });
+  it('ruleBlockOfCode_OnlyTheVerdictOfTheServerOnTheOwnerIsARuleThatBlocks', () => {
+    expect(ruleBlockOfCode('owner_fiscal_profile_missing')).toBe('profile_missing');
+    expect(ruleBlockOfCode('owner_fiscal_profile_incomplete')).toBe('profile_incomplete');
+    expect(ruleBlockOfCode('owner_fiscal_policy_missing')).toBe('policy_missing');
+    expect(ruleBlockOfCode('owner_fiscal_policy_not_approved')).toBe('policy_not_approved');
+    expect(ruleBlockOfCode('owner_fiscal_policy_not_effective')).toBe('policy_not_effective');
+    expect(ruleBlockOfCode('owner_fiscal_policy_jurisdiction_mismatch')).toBe('policy_jurisdiction_mismatch');
+    // Any other code (the balance that is gone, a fact the rule could not resolve, a closed month) or none is no verdict on the owner: the owner is not told to have a rule missing.
+    expect(ruleBlockOfCode('owner_period_closed')).toBeNull();
+    expect(ruleBlockOfCode('owner_payout_exceeds_balance')).toBeNull();
+    expect(ruleBlockOfCode(null)).toBeNull();
+    expect(ruleBlockOfCode(undefined)).toBeNull();
   });
 });
 
 describe('the key of a payout belongs to what is asked', () => {
-  const intent = { ownerId: OWNER_ID, statementVersionId: VERSION_ID, grossAmount: 800, paidOn: '2025-02-05' };
+  const intent = { ownerId: OWNER_ID, statementVersionId: VERSION_ID, balance: 800, paidOn: '2025-02-05' };
 
   beforeEach(() => forgetPayoutKeys());
 
@@ -423,9 +389,9 @@ describe('the key of a payout belongs to what is asked', () => {
     const first = payoutKeyFor(intent);
     // A retry, a second click, the dialog opened again: the same request, so the same key.
     expect(payoutKeyFor({ ...intent })).toBe(first);
-    expect(payoutKeyFor({ ...intent, grossAmount: 800.0 })).toBe(first);
-    // Another amount, another day, another statement or another owner is another payout.
-    expect(payoutKeyFor({ ...intent, grossAmount: 800.01 })).not.toBe(first);
+    expect(payoutKeyFor({ ...intent, balance: 800.0 })).toBe(first);
+    // Another balance (a payout confirmed in between, a correction), another day, another statement or another owner is another payout.
+    expect(payoutKeyFor({ ...intent, balance: 800.01 })).not.toBe(first);
     expect(payoutKeyFor({ ...intent, paidOn: '2025-02-06' })).not.toBe(first);
     expect(payoutKeyFor({ ...intent, statementVersionId: 'other' })).not.toBe(first);
     expect(payoutKeyFor({ ...intent, ownerId: 'other' })).not.toBe(first);
@@ -435,24 +401,18 @@ describe('the key of a payout belongs to what is asked', () => {
     expect(payoutKeyFor(intent)).not.toBe(first);
   });
 
-  it('buildPayoutCommand_TakesTheKeyFromTheFactsOfThePayoutOnceTheAmountIsKnown', () => {
-    const form: PayoutForm = { gross: '800,00', paidOn: '2025-02-05', reference: '', agencyCollected: '', qualifyingShortLet: '', components: {} };
-    const ctx = { ownerId: OWNER_ID, versionId: VERSION_ID, currency: 'EUR' };
-    const first = buildPayoutCommand(form, ctx, policy().parameters!, payoutKeyFor);
-    const again = buildPayoutCommand({ ...form, gross: '800' }, ctx, policy().parameters!, payoutKeyFor);
+  it('buildPayoutCommand_TakesTheKeyFromTheFactsOfThePayout_AndARefusedFormMakesNone', () => {
+    const form: PayoutForm = { paidOn: '2025-02-05', reference: '' };
+    const ctx = { ownerId: OWNER_ID, versionId: VERSION_ID, currency: 'EUR', balance: 800 };
+    const first = buildPayoutCommand(form, ctx, payoutKeyFor);
+    const again = buildPayoutCommand({ ...form }, { ...ctx }, payoutKeyFor);
     expect(first).toHaveProperty('command.idempotencyKey');
     expect('command' in first && 'command' in again && first.command.idempotencyKey === again.command.idempotencyKey).toBe(true);
-    // An amount that is refused makes no key.
-    expect(buildPayoutCommand({ ...form, gross: '0' }, ctx, policy().parameters!, payoutKeyFor)).toHaveProperty('errors.gross');
-  });
-
-  it('exceedsWhatIsLeft_AnAmountOverTheResidue_OrAnyAmountWhenNothingIsLeft', () => {
-    expect(exceedsWhatIsLeft(300, 300)).toBe(false);
-    expect(exceedsWhatIsLeft(300, 300.01)).toBe(true);
-    expect(exceedsWhatIsLeft(0, 1)).toBe(true);
-    expect(exceedsWhatIsLeft(-50, 1)).toBe(true);
-    expect(exceedsWhatIsLeft(null, 1000)).toBe(false);
-    expect(exceedsWhatIsLeft(300, null)).toBe(false);
+    // The balance of the preview is what the key stands for: another balance is another payout.
+    const other = buildPayoutCommand(form, { ...ctx, balance: 801 }, payoutKeyFor);
+    expect('command' in first && 'command' in other && first.command.idempotencyKey !== other.command.idempotencyKey).toBe(true);
+    // A form that is refused makes no key.
+    expect(buildPayoutCommand({ ...form, paidOn: '' }, ctx, payoutKeyFor)).toHaveProperty('errors.paidOn');
   });
 });
 

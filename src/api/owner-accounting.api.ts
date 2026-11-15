@@ -17,7 +17,6 @@ import type {
   OwnerExternalDocument,
   OwnerFiscalProfile,
   OwnerFiscalProfileCommand,
-  OwnerFiscalReadiness,
   OwnerFxRate,
   OwnerLedgerEntry,
   OwnerMandate,
@@ -25,6 +24,7 @@ import type {
   OwnerOnboardingReadiness,
   OwnerPayout,
   OwnerPayoutCommand,
+  OwnerPayoutPreview,
   OwnerPostingResult,
   OwnerStatementVersion,
   OwnerStatementVersionDetail,
@@ -214,7 +214,17 @@ export const ownerAccountingApi = {
   /** A payout with its withholding evidence. */
   getPayout: (payoutId: string) => ApiClient.get<OwnerPayout>(`/owner-accounting/payouts/${payoutId}`),
 
-  /** Confirms a payout (a retry with the same key answers the same payout). The withholding is decided here, on the approved rule, and nowhere else. */
+  /**
+   * What a payout of the version on a day would be, read only (E18/F01/US01/T01, `agency.statement.view`, the whole organization): the facts of the owner ledger (each stay, whether it is in the base and why), the balance
+   * still unpaid, the decision of the approved rule in force that day with the withholding in euro and in the currency of the payout and the net, or the code that would refuse the confirmation (`blockingCode`). It
+   * writes nothing. 404 `owner_statement_version_not_found`; 422 `owner_payout_invalid`, `owner_statement_not_approved`.
+   */
+  getPayoutPreview: (statementVersionId: string, paidOn: string) => ApiClient.get<OwnerPayoutPreview>('/owner-accounting/payouts/preview', { statementVersionId, paidOn }),
+
+  /**
+   * Confirms a payout of the whole balance the version still owes (a retry with the same key answers the same payout). It sends no amount and no fact: the server reads them from the owner ledger. The withholding is
+   * decided here, on the approved rule in force on the day, and nowhere else. 422 `owner_payout_exceeds_balance` (with the `balance`: nothing is left to pay), `tax_applicability_unresolved` (with the `field`), `owner_fiscal_*`.
+   */
   confirmPayout: (command: OwnerPayoutCommand) => ApiClient.post<OwnerPayout>('/owner-accounting/payouts', command),
 
   reversePayout: (payoutId: string, reason: string) => ApiClient.post<OwnerPayout>(`/owner-accounting/payouts/${payoutId}/reverse`, { reason }),
@@ -225,12 +235,6 @@ export const ownerAccountingApi = {
   listFiscalProfiles: (ownerId: string) => ApiClient.get<OwnerFiscalProfile[]>(`/owners/${ownerId}/fiscal-profiles`),
 
   saveFiscalProfile: (ownerId: string, command: OwnerFiscalProfileCommand) => ApiClient.post<OwnerFiscalProfile>(`/owners/${ownerId}/fiscal-profiles`, command),
-
-  /**
-   * The profile and the approved rule set that apply to the owner on a day (`date`, `yyyy-MM-dd`), by their ids and codes: a payout reads this instead of the profiles, which
-   * come with the identifiers and the bank account in full. A 422 says what blocks (`owner_fiscal_*`).
-   */
-  getFiscalReadiness: (ownerId: string, date: string) => ApiClient.get<OwnerFiscalReadiness>(`/owners/${ownerId}/fiscal-profiles/readiness`, { date }),
 
   listPolicies: () => ApiClient.get<OwnerAccountingPolicy[]>('/owner-accounting/policies'),
 

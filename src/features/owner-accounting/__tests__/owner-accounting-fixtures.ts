@@ -4,8 +4,11 @@ import type {
   OwnerFiscalProfile,
   OwnerLedgerEntry,
   OwnerPayout,
+  OwnerPayoutPreview,
   OwnerPeriodReadiness,
   OwnerStatementVersion,
+  PayoutFacts,
+  PayoutStayFact,
   TaxF24Record,
   TaxReportingDataset,
 } from '@/types';
@@ -114,6 +117,79 @@ export function payout(overrides: Partial<OwnerPayout> = {}): OwnerPayout {
     reversedAt: null,
     reversalReason: null,
     evidence: [],
+    ...overrides,
+  };
+}
+
+/** One stay of the facts of a payout, read from the ledger: a stay of 4 nights in the property of the tests, collected by the agency in CasaZen, in the base. */
+export function stayFact(overrides: Partial<PayoutStayFact> = {}): PayoutStayFact {
+  return {
+    bookingId: BOOKING_ID,
+    propertyId: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
+    channel: 'Direct',
+    checkIn: '2025-01-10',
+    checkOut: '2025-01-14',
+    nights: 4,
+    sharePercent: 100,
+    grossCurrency: 'EUR',
+    gross: 800,
+    touristTax: 12,
+    revenuePath: 'payment',
+    qualifying: true,
+    qualifyingReason: 'short_let',
+    companyTenantDecisionPending: false,
+    collectedByAgency: true,
+    collection: 'casazen_payment',
+    withheldByPortal: false,
+    portalWithholding: null,
+    inBase: true,
+    baseAmount: 800,
+    reason: 'in_base',
+    ...overrides,
+  };
+}
+
+/** The facts of a payout as the server reads them: one stay in the base, in euro, with the rule of the tests (21%). */
+export function payoutFacts(overrides: Partial<PayoutFacts> = {}): PayoutFacts {
+  return {
+    source: 'ledger',
+    currency: 'EUR',
+    grossAmount: 0,
+    balance: 800,
+    withholdingCurrency: 'EUR',
+    agencyCollected: true,
+    qualifyingShortLet: true,
+    components: { stay_gross: 800 },
+    stayIds: [BOOKING_ID],
+    decidedEntryIds: ['e0000000-0000-4000-8000-000000000001'],
+    stays: [stayFact()],
+    portalsWithholding: ['Airbnb'],
+    fx: null,
+    parameters: null,
+    ...overrides,
+  };
+}
+
+/**
+ * What a payout of the version on a day would be (`GET api/owner-accounting/payouts/preview`): 800 owed, the withholding of 21% on the 800 of the stay (168 in euro), and the net after it. The figures are distinct from
+ * the ones of the other fixtures, so that a screen that works one out by itself is found out.
+ */
+export function payoutPreview(overrides: Partial<OwnerPayoutPreview> = {}): OwnerPayoutPreview {
+  return {
+    facts: payoutFacts(),
+    balance: 800,
+    currency: 'EUR',
+    decision: 'Applicable',
+    reasonCode: 'applicable',
+    grossBase: 800,
+    ratePercent: 21,
+    rounding: 'half_up',
+    withholdingInEuro: 168,
+    taxCode: '1919',
+    withholdingAmount: 168,
+    netAmount: 632,
+    blockingCode: null,
+    blockingField: null,
     ...overrides,
   };
 }

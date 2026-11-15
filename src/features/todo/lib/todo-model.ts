@@ -67,6 +67,9 @@ const TYPE_KEYS: Record<string, TypeKeys> = {
   RoutineTask: { titleKey: 'activity.todo.type.RoutineTask.title', whyKey: 'activity.todo.type.RoutineTask.why' },
   // The check-in link of a stay from a portal that has not reached the guest (E23/F01/US01/T01, NF-122): about the booking, with «Copia link» as its action.
   CheckInLinkToSend: { titleKey: 'activity.todo.type.CheckInLinkToSend.title', whyKey: 'activity.todo.type.CheckInLinkToSend.why' },
+  // The stay of a company tenant in the property of a private owner (E18/F01/US03/T01, NF-117, ⚖ I7): about the booking, and a person decides whether it stays a short let (the withholding) or not. The reason is the fixed
+  // sentence of the server with the two readings of the rule; «Fallo ora» opens the dialog of the decision.
+  CompanyTenantDecision: { titleKey: 'activity.todo.type.CompanyTenantDecision.title', whyKey: 'activity.todo.type.CompanyTenantDecision.why' },
 };
 
 const UNKNOWN_TYPE_KEYS: TypeKeys = { titleKey: 'activity.todo.type.unknown.title', whyKey: 'activity.todo.type.unknown.why' };

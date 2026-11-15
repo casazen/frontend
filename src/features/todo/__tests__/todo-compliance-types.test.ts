@@ -107,7 +107,7 @@ describe('describeTodo and the month of a property', () => {
   });
 });
 
-// Every `ActivityType` of the backend (`Casazen.Core/Entities/Enums/ActivityType.cs`, today 28 values) has its own words in both languages, not «Attività da completare».
+// Every `ActivityType` of the backend (`Casazen.Core/Entities/Enums/ActivityType.cs`, today 29 values) has its own words in both languages, not «Attività da completare».
 const BACKEND_TYPES = [
   'CheckInPending',
   'CheckOutPending',
@@ -137,6 +137,7 @@ const BACKEND_TYPES = [
   'OwnerDocumentExpiring',
   'RoutineTask',
   'CheckInLinkToSend',
+  'CompanyTenantDecision',
 ] as const;
 
 describe('describeTodo for every type of the backend', () => {

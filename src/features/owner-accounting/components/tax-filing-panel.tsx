@@ -20,9 +20,10 @@ import {
   useTaxReconciliation,
 } from '@/queries/use-owner-accounting';
 import type { TaxFilingCommand, TaxF24Record, TaxReconciliation, TaxReportingDataset } from '@/types';
-import { checkTaxYear, failureText, messageOf, nextFilingStates, taxYearVerdict, toCents, type Period } from '../owner-accounting-model';
+import { checkTaxYear, closePath, failureText, messageOf, nextFilingStates, taxYearVerdict, toCents, type Period } from '../owner-accounting-model';
 import { useOwnerFormat } from '../use-owner-format';
 import { FilingStatus } from './filing-status';
+import { TaxExportsSection } from './tax-exports-section';
 
 /** The currency of the withholding: it is declared on an F24 in euro (the server refuses any other). */
 const TAX_CURRENCY = 'EUR';
@@ -38,7 +39,8 @@ interface TaxFilingPanelProps {
  * The tax files of the withholding (E06/F05/US02/T04, AC-NF110-4, AC-NF110-5): the F24 of the month and the annual data of the year, each with
  * the word its proof allows, the evidence and the next step. The withholding is decided at the payout, never by a statement; a month with none
  * has no F24. CasaZen does not file anything with the Revenue Agency: a file is «inviato» only when the person records who sent it and how, and
- * «accettato» only with the receipt. Reading this panel creates nothing: the F24 is made by «Genera», on the person's click.
+ * «accettato» only with the receipt. Reading this panel creates nothing: the F24 is made by «Genera», on the person's click. The files for the accountant (E18/F02/US01/T01: the data of the F24
+ * of the month, and behind the flag `taxReportingExports` the CU, the 770 and the communication of the contracts of the year) are under the two files, `TaxExportsSection`; none is asked while one of the panel is being made.
  */
 export function TaxFilingPanel({ period }: TaxFilingPanelProps) {
   const { t } = useTranslation();
@@ -142,6 +144,15 @@ export function TaxFilingPanel({ period }: TaxFilingPanelProps) {
             </div>
           )}
         </div>
+
+        <TaxExportsSection
+          nested
+          year={period.year}
+          month={hasF24 || toCents(obligations) !== 0 ? period.month : null}
+          dataset={annual.isPending || annual.isError ? undefined : (annualDataset ?? null)}
+          busy={busy}
+          closeHref={closePath(period.year, period.month)}
+        />
 
         <YearCheck data={data} />
         <p className="break-words text-sm text-foreground/70">{t('ownerAccounting.tax.note')}</p>

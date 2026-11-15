@@ -12,12 +12,17 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { SkeletonCard } from '@/components/ui/skeleton';
+import { CompanyTenantCasesSection } from '@/features/owner-accounting/components/company-tenant-decision';
+import { TaxExportsSection } from '@/features/owner-accounting/components/tax-exports-section';
+import { closePath } from '@/features/owner-accounting/owner-accounting-model';
 import { useOwnerFormat } from '@/features/owner-accounting/use-owner-format';
+import { isFeatureEnabled } from '@/config/feature-flags';
 import { useExactMoney } from '@/hooks/use-exact-money';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { F24_CURRENCY } from '@/lib/agency-finance';
 import { getHttpStatus } from '@/lib/api-errors';
 import { todayInRome } from '@/lib/stay-dates';
-import { useF24Record, useTaxReconciliation } from '@/queries/use-owner-accounting';
+import { useAnnualDataset, useF24Record, useTaxReconciliation } from '@/queries/use-owner-accounting';
 import { useWithholdingSummary } from '@/queries/withholding';
 
 /**
@@ -25,6 +30,9 @@ import { useWithholdingSummary } from '@/queries/withholding';
  * The backend gives it only to the owner and the administrators of an org on the agency plan (`agency.withholding.manage`), so the role and the plan are checked
  * before anything is read (`AgencyFinanceGate`). Opening the page makes nothing: the F24 is read only for a month the reconciliation says has one (the server builds one when asked for a month without), and
  * a month without withholding says so instead of failing.
+ *
+ * Under the F24 the page has the files for the accountant (E18/F02/US01/T01: the data of the F24 of the month, and behind the flag `taxReportingExports` the CU, the 770 and the communication of the contracts of the
+ * year, `TaxExportsSection`) and, behind the same flag, the stays of a company tenant that wait for a decision (`CompanyTenantCasesSection`), whose dialog the «Da fare» of a stay opens with `?decision=<booking>`.
  */
 export function WithholdingPage() {
   const { t } = useTranslation();
@@ -51,6 +59,9 @@ function WithholdingBody() {
   const row = reconciliation.data?.months.find((candidate) => candidate.month === selectedMonth);
   const hasF24 = row?.f24 !== null && row?.f24 !== undefined;
   const f24Query = useF24Record(selectedMonth, selectedYear, hasF24);
+  // The annual data are read only for the CU export, which exists behind the flag of the tax exports (and, like the rest, once the summary came back).
+  const { flags } = useFeatureFlags();
+  const annual = useAnnualDataset(selectedYear, isFeatureEnabled(flags, 'taxReportingExports') && summary !== undefined && summary !== null);
 
   const currentYear = Number(today.slice(0, 4));
   const monthName = (month: number) => new Intl.DateTimeFormat(locale, { month: 'long', timeZone: 'UTC' }).format(new Date(Date.UTC(2000, month - 1, 1)));
@@ -209,6 +220,15 @@ function WithholdingBody() {
           <ErrorState title={t('withholding.error')} error={f24Query.error} onRetry={() => void f24Query.refetch()} />
         )}
       </PlainSection>
+
+      <TaxExportsSection
+        year={selectedYear}
+        month={owners.length > 0 || hasF24 ? selectedMonth : null}
+        dataset={annual.isPending || annual.isError ? undefined : (annual.data ?? null)}
+        closeHref={closePath(selectedYear, selectedMonth)}
+      />
+
+      <CompanyTenantCasesSection />
     </div>
   );
 }

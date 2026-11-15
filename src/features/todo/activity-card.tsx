@@ -203,10 +203,15 @@ export const ACTION_ROUTE_MAP = {
  * fallback for who cannot open it.
  * - `TouristTaxRefundDue` (E25/F01/US01/T01, action `ReviewBooking`): the tax step of the check-in wizard of the booking, where the collection and the amount to give back to the guest are
  *   told (the page of the booking tells neither); for who may not write the booking, the page of the booking.
+ * - `CompanyTenantDecision` (E18/F02/US01/T01, action `ReviewBooking`): the page of the withholding with the dialog of the decision about the stay open on it (`?decision=<booking>`), where the two readings of the
+ *   rule are told and the regime is recorded (the page of the booking decides nothing); for an item that names no booking, the page of the booking is the fallback of its action.
  */
 const ROUTE_MAP_BY_TYPE = {
   TouristTaxRefundDue: {
     route: { path: '/app/short-rent/bookings/:id/check-in', target: 'entity', entityType: BOOKING, search: { step: 'tax' } },
+  },
+  CompanyTenantDecision: {
+    route: { path: '/app/account/withholding', onlyFor: [BOOKING], entityParam: 'decision' },
   },
 } satisfies Record<string, TodoActionTarget>;
 

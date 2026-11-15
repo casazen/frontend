@@ -172,6 +172,19 @@ export function useOwnerStatements() {
   });
 }
 
+/**
+ * The withholding of the owner in a year and the Certificazione Unica the agency reviewed (E18/F02/US01/T01): read again at every visit, and gone from the cache when the person leaves the portal. It is not read while the
+ * tax exports are off (`enabled`): the server answers its empty summary then, which says nothing the page needs to show. One key for each year: the figures of a year are never shown under another.
+ */
+export function useOwnerWithholding(year: number, enabled: boolean) {
+  return useQuery({
+    queryKey: [OWNER_PORTAL_KEY, 'withholding', year],
+    queryFn: () => ownerPortalApi.getWithholding(year),
+    enabled,
+    ...PERSONAL,
+  });
+}
+
 /** One published statement with its lines and its tourist tax box. Not read without an id; a 404 is «not found» whatever an earlier answer left (the page asks `isError` first). */
 export function useOwnerStatement(statementId: string | undefined) {
   return useQuery({

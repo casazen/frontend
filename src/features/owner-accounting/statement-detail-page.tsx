@@ -375,7 +375,7 @@ function StatementContent({ version, entries }: { version: OwnerStatementVersion
           <div className="space-y-4">
             <PayoutReconciliationPanel currency={version.currency} preview={preview} payouts={payoutsOfMonth} />
             {payoutsOfVersion.map((payout) => (
-              <PayoutEvidence key={payout.id} payout={payout} />
+              <PayoutEvidence key={payout.id} payout={payout} propertyNames={propertyNames} />
             ))}
             {toCents(withheld) !== 0 && payoutsOfVersion.length === 0 ? <p className="break-words text-sm text-foreground/70">{t('ownerAccounting.payments.withholdingOfAnotherVersion')}</p> : null}
           </div>
@@ -437,7 +437,7 @@ function lineSummary(entry: OwnerLedgerEntry, t: ReturnType<typeof useTranslatio
 }
 
 /** The withholding decision of a payout, as recorded when it was confirmed: read when the statement is opened, never computed here. */
-function PayoutEvidence({ payout }: { payout: OwnerPayout }) {
+function PayoutEvidence({ payout, propertyNames }: { payout: OwnerPayout; propertyNames: ReadonlyMap<string, string> }) {
   const { t } = useTranslation();
   const { money, date } = useOwnerFormat();
   const detail = useOwnerPayout(payout.id);
@@ -457,7 +457,7 @@ function PayoutEvidence({ payout }: { payout: OwnerPayout }) {
       ) : detail.data.evidence.length === 0 ? (
         <p className="break-words text-sm text-foreground/70">{t('ownerAccounting.payments.noEvidence')}</p>
       ) : (
-        detail.data.evidence.map((evidence) => <TaxEvidenceView key={evidence.id} evidence={evidence} currency={payout.currency} />)
+        detail.data.evidence.map((evidence) => <TaxEvidenceView key={evidence.id} evidence={evidence} propertyNames={propertyNames} />)
       )}
     </div>
   );
