@@ -11,6 +11,7 @@ import type {
   ComplianceReportFilters,
   ComplianceReportFormat,
   CoverageReport,
+  ReceiptCoverage,
   UploadComplianceProofInput,
 } from '@/types';
 
@@ -30,6 +31,8 @@ export const COMPLIANCE_ARCHIVE_ERROR = {
   proofTooLarge: 'compliance_proof_too_large',
   /** 422: the day of the proof is in the future or before the first supported year. */
   proofDayInvalid: 'compliance_proof_day_invalid',
+  /** 422: the flats a receipt is asked to cover are not acceptable (a list for another kind of proof, a flat outside Italy among several, more than 500 flats, no flat where a list is asked for). */
+  proofCoverageInvalid: 'compliance_proof_coverage_invalid',
   /** 422: the period holds more proofs than one export carries. */
   exportTooLarge: 'compliance_export_too_large',
 } as const;
@@ -65,6 +68,19 @@ function headerOf(headers: unknown, name: string): string | null {
 /** What is empty is not sent: the API reads a missing parameter as «no limit», and an empty one as a mistake. */
 function clean<T extends object>(params: T): Partial<T> {
   return Object.fromEntries(Object.entries(params).filter(([, value]) => value !== undefined && value !== '')) as Partial<T>;
+}
+
+/**
+ * The query string of the question «what would this receipt prove?»: the day and the flats, `propertyIds` repeated (`propertyIds=a&propertyIds=b`), which is how the API reads a list.
+ * A list written with brackets, as axios does by default, would be no list at all for it. An empty list is a mistake of the caller, not «every flat»: the server answers it with a 422,
+ * and it is refused here before it is written.
+ */
+function receiptCoverageParams(day: string, propertyIds: readonly string[]): URLSearchParams {
+  if (propertyIds.length === 0) throw new RangeError('An empty list of flats is not "every flat": name the flats the receipt covers.');
+  const params = new URLSearchParams();
+  params.set('day', day);
+  for (const id of propertyIds) params.append('propertyIds', id);
+  return params;
 }
 
 /** A file the API sent back: its bytes and the name it gave it (`Content-Disposition`, when the page may read it). */
@@ -117,14 +133,24 @@ export const complianceArchiveApi = {
     download(`${PATH}/report/export`, clean({ ...filters, format }), EXPORT_TIMEOUT_MS),
 
   /**
+   * `GET /compliance/archive/proofs/coverage` (`booking.read`): what a receipt of the Alloggiati communication of `day` would prove for the flats `propertyIds`, in all and for each one:
+   * the stays that arrived that day and that the receipt turns green. The host reads it before saving («Diventano in regola: N soggiorni»). Nothing is stored by asking. 404 for a flat
+   * the caller does not reach, 422 for a day in the future or flats that are not acceptable.
+   */
+  getReceiptCoverage: (day: string, propertyIds: readonly string[], signal?: AbortSignal) =>
+    ApiClient.get<ReceiptCoverage>(`${PATH}/archive/proofs/coverage`, receiptCoverageParams(day, propertyIds), { signal }),
+
+  /**
    * `POST /compliance/archive/proofs`: uploads a proof (a PDF, a JPEG or a PNG, judged on its content by the server). The person who uploads it
-   * is the caller, never a field. 201 with the proof as the archive lists it.
+   * is the caller, never a field. 201 with the proof as the archive lists it and, for an Alloggiati receipt, the flats it covers and how many stays it proves.
+   * A receipt that covers more than its own flat names them all in `propertyIds` (repeated, the flat of the request included): the server reads no list as that flat alone.
    */
   uploadProof: async (input: UploadComplianceProofInput): Promise<ComplianceArchiveEntry> => {
     const body = new FormData();
     body.append('propertyId', input.propertyId);
     body.append('kind', input.kind);
     body.append('day', input.day);
+    for (const id of input.propertyIds ?? []) body.append('propertyIds', id);
     body.append('file', input.file);
     const response = await axios.post<ComplianceArchiveEntry>(`${PATH}/archive/proofs`, body, {
       headers: { 'Content-Type': 'multipart/form-data' },

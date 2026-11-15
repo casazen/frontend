@@ -23,6 +23,7 @@ export type FeatureFlagKey =
   | 'accountantPackage'
   | 'sdiSubmission'
   | 'routines'
+  | 'purgeDocumentsAfterReceipt'
   | 'portalChatCheckInLink'
   | 'guestContactInfo'
   | 'touristTaxOnlinePayment';
@@ -167,6 +168,13 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * switched on (`GET api/routines/actions`): the others can only run in test mode.
    */
   routines: false,
+  /**
+   * The deletion of the photos of the guests' documents once an archived Alloggiati receipt covers their stay (backend `PurgeDocumentsAfterReceipt`, E20/F02/US01/T02, NF-121, decision O4), off until
+   * the product owner turns it on in the test environment: the deletion cannot be undone, so it is switched on in production only after the test has shown it. It decides nothing about the receipt
+   * itself: this client only reads it to tell the host, before saving a receipt and after, that the photos of the documents of the stays it covers will be deleted. The data of the guests are never
+   * touched by it. While it is off nothing changes: the dialog of the receipt says nothing about a deletion.
+   */
+  purgeDocumentsAfterReceipt: false,
   /**
    * The check-in link of a stay from a portal that has no e-mail address goes to the guest in the reservation chat of the portal (backend `PortalChatCheckInLink`, E23/F01, NF-122,
    * decision O10), off until the product owner turns it on in the test environment: the chat of the channel manager needs a permission that is not given everywhere yet. Like the backend, it

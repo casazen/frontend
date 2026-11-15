@@ -139,6 +139,13 @@ export function isMonthKind(kind: ComplianceProofKind): boolean {
   return kind !== 'AlloggiatiReceipt';
 }
 
+/**
+ * The most flats the dialog lets one receipt name. The summary before saving is a GET that carries the id of every flat in its address (about 49 characters each) and the server reads a
+ * request line of at most 8 KB: with more than about 160 flats the summary would fail for good. The server itself takes up to 500 (`ComplianceArchiveLimits.MaxCoveredProperties`, a 422
+ * beyond), so this is the prudent one of the two limits; the text of the dialog says it.
+ */
+export const MAX_RECEIPT_FLATS = 100;
+
 /** The groups of the report, in the order they are told: what is missing first, then what only the channel manager can tell, then what is proven. */
 export const COVERAGE_GROUPS: readonly CoverageEvidenceClass[] = ['Missing', 'ExternalVerificationRequired', 'OfficialProof', 'NotApplicable'];
 
