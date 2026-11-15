@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { useDownloadAttachment, useMessageAttachment } from '@/queries/use-message-thread';
 import type { PendingThreadMessage } from '@/queries/use-thread-send';
 import type { MessageHubMessage } from '@/types';
+import { hideCheckInLink } from '../lib/automatic-message';
 import { canRetryReply, replyProblemMessage } from '../lib/reply-problems';
 import type { HubThreadItem } from '../lib/thread-items';
 import { formatMessageTime } from '../lib/thread-format';
@@ -121,14 +122,17 @@ function MessageAttachment({ messageId, contentType }: { messageId: string; cont
 function DeliveryProblem({ message, canWrite, resent, actions }: { message: MessageHubMessage; canWrite: boolean; resent: boolean; actions: BubbleActions }) {
   const { t } = useTranslation();
   if (message.deliveryState === 'Error') {
+    // An automatic message (the check-in link) is not sent again by hand: the host's copy would be a message of a person, which answers the guest's last
+    // question for good, and the link already waits in the «Da fare» list with «Copia link» (E23/F01/US01/T01).
+    const automatic = message.origin === 'Automation';
     return (
       <div className="max-w-[85%] space-y-1 px-1 text-xs text-destructive" role="alert" data-testid="delivery-error">
         <p className="flex items-center gap-1.5 font-semibold">
           <CircleAlert className="size-3.5 shrink-0" aria-hidden="true" />
           {t('messages.state.error')}
         </p>
-        <p>{t('messages.state.errorHint')}</p>
-        {canWrite && !resent ? (
+        <p>{t(automatic ? 'messages.state.automaticErrorHint' : 'messages.state.errorHint')}</p>
+        {canWrite && !resent && !automatic ? (
           <Button type="button" variant="outline" size="sm" onClick={() => actions.onResend(message)} data-testid="delivery-retry">
             {t('messages.state.retry')}
           </Button>
@@ -189,10 +193,20 @@ export function MessageBubble({ item, threadKey, hostLanguage, canWrite, resent,
   const { message, pending } = item;
   const sending = pending?.status === 'sending';
   const state = message?.deliveryState;
-  const hasText = item.text.trim().length > 0;
+  // An automatic message of CasaZen (the check-in link) is the host's side of the conversation but nobody's words: it is told apart by its name, and drawn neutral, not as the host's own.
+  const automatic = message?.origin === 'Automation';
+  // The text of that message holds the link to the page of the guest, a secret that the host gets only if it may copy it (`booking.write`, as in the guest panel of the booking): a reader
+  // who may not copy it reads the message without the link.
+  const text = automatic && !canWrite ? hideCheckInLink(item.text, t('messages.thread.linkHidden')) : item.text;
+  const hasText = text.trim().length > 0;
 
   return (
-    <div className={cn('flex flex-col gap-1', item.mine ? 'items-end' : 'items-start')} data-testid="message-bubble" data-direction={message?.direction ?? 'Outbound'}>
+    <div
+      className={cn('flex flex-col gap-1', item.mine ? 'items-end' : 'items-start')}
+      data-testid="message-bubble"
+      data-direction={message?.direction ?? 'Outbound'}
+      data-origin={message?.origin}
+    >
       <p className="flex flex-wrap items-center gap-x-1 px-1 text-xs text-muted-foreground">
         <span>{item.author}</span>
         {sending ? <span>{`· ${t('messageThread.sending')}`}</span> : item.at ? <span>{`· ${formatMessageTime(item.at, i18n.language)}`}</span> : null}
@@ -212,11 +226,11 @@ export function MessageBubble({ item, threadKey, hostLanguage, canWrite, resent,
         <div
           className={cn(
             'max-w-[85%] whitespace-pre-wrap rounded-2xl border px-3 py-2 text-sm [overflow-wrap:anywhere]',
-            item.mine ? 'border-transparent bg-primary text-primary-foreground' : 'bg-card',
+            automatic ? 'bg-muted text-foreground' : item.mine ? 'border-transparent bg-primary text-primary-foreground' : 'bg-card',
             sending && 'opacity-70',
           )}
         >
-          {item.text}
+          {text}
         </div>
       ) : null}
       {message?.attachment ? <MessageAttachment messageId={message.id} contentType={message.attachment.contentType} /> : null}

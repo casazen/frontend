@@ -22,11 +22,12 @@ export function invalidateMessageHubLists(queryClient: QueryClient): void {
 }
 
 /**
- * The parts of the hub that follow what a guest writes: the list (`threads`), the counters (`unread`) and the conversation that is open
- * (`thread`). The files of the messages, the templates and the ways to reach a guest do not change with a notification, and reading them
- * again costs a request to the channel each: they are left as they are.
+ * The parts of the hub that follow what a guest writes: the list (`threads`), the counters (`unread`), the conversation that is open
+ * (`thread`) and the state of the chat of each listing (`channel-status`: a message that arrives says the chat of its listing works; the server answers it
+ * from what it stored and asks the channel nothing). The files of the messages, the templates and the ways to reach a guest do not change with a
+ * notification, and reading them again costs a request to the channel each: they are left as they are.
  */
-const LIVE_PARTS: readonly string[] = ['threads', 'unread', 'thread'];
+const LIVE_PARTS: readonly string[] = ['threads', 'unread', 'thread', 'channel-status'];
 
 /**
  * A guest's message makes the in-app notifications change (the number on the bell, the pop-up), whether the real-time channel writes the
@@ -80,6 +81,25 @@ export function useMessageHubUnread(enabled: boolean = true) {
     queryKey: [MESSAGE_HUB_QUERY, 'unread'],
     queryFn: () => messageHubApi.unread(),
     enabled,
+    refetchInterval: MESSAGE_HUB_POLL_MS,
+    refetchOnWindowFocus: true,
+    staleTime: 30_000,
+    retry: retryTransientErrors(1),
+  });
+}
+
+/**
+ * Whether the chat of each listing works (`GET /api/messages/channel-status`, E23/F01/US02): the inbox tells with it which listings have no chat yet instead of
+ * showing an empty list. The server moves it at each pass of the copy of the conversations, so it is read again on every visit, every minute while the page is
+ * visible, on return to the window and when the in-app notifications change. `enabled` is false while there is no connection to the channels: nothing is asked then.
+ */
+export function useMessageChannelStatus(enabled: boolean = true) {
+  useRefetchOnNotificationsChange(enabled);
+  return useQuery({
+    queryKey: [MESSAGE_HUB_QUERY, 'channel-status'],
+    queryFn: () => messageHubApi.getChannelStatus(),
+    enabled,
+    refetchOnMount: 'always',
     refetchInterval: MESSAGE_HUB_POLL_MS,
     refetchOnWindowFocus: true,
     staleTime: 30_000,

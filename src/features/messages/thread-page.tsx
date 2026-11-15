@@ -36,6 +36,8 @@ const THREE_COLUMNS_QUERY = '(width >= 96rem)';
 function cannotReplyKey(reason: string | null | undefined): string {
   if (reason === 'mapping_not_confirmed') return 'messages.actions.mappingNotConfirmed';
   if (reason === 'thread_closed') return 'messages.actions.threadClosed';
+  // The chat of the listing is not in the license of the channel manager yet: a reply would be refused, so the box says it instead of failing (E23/F01/US01/T03).
+  if (reason === 'chat_not_licensed') return 'messages.actions.chatNotLicensed';
   return 'messages.actions.cannotReply';
 }
 
@@ -186,7 +188,14 @@ function ThreadView({ threadKey }: { threadKey: string }) {
       discard(item.key);
     },
   };
-  const items = data ? buildThreadItems(data, pending, { guest: t('messages.thread.sender.guest'), you: t('messages.thread.sender.you'), assistant: t('messages.thread.sender.assistant') }) : [];
+  const items = data
+    ? buildThreadItems(data, pending, {
+        guest: t('messages.thread.sender.guest'),
+        you: t('messages.thread.sender.you'),
+        assistant: t('messages.thread.sender.assistant'),
+        automation: t('messages.thread.sender.automation'),
+      })
+    : [];
 
   const title = data ? data.guestName?.trim() || data.booking?.guestName || (data.kind === 'Request' ? t('messages.thread.request') : t('messages.thread.title')) : t('messages.thread.title');
   const description = data ? [data.propertyName, channelLabel(data.channel, t)].filter(Boolean).join(' · ') : undefined;
@@ -212,7 +221,7 @@ function ThreadView({ threadKey }: { threadKey: string }) {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,18rem)] lg:items-start 2xl:grid-cols-[minmax(0,19rem)_minmax(0,1fr)_minmax(0,19rem)]">
         {withList ? (
           <aside aria-label={t('messages.inbox.title')} className="min-w-0">
-            <InboxPane selectedKey={threadKey} compact />
+            <InboxPane selectedKey={threadKey} compact canWrite={canWrite} />
           </aside>
         ) : null}
         <Conversation
