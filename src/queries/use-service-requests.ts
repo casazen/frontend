@@ -333,11 +333,16 @@ export function useLongRentSuppliers(propertyId?: string, category?: string) {
   });
 }
 
-export function useSuppliersByProperty(propertyId?: string, category?: string) {
+/**
+ * `fresh`: the list is read again every time a screen asks for it, also when it was read a moment ago and also when the query is switched on after the screen is there (the cleaner of a property
+ * asks for it only once the person starts to choose): a supplier is suspended or covers another comune, and a picker must not offer what was true minutes ago.
+ */
+export function useSuppliersByProperty(propertyId?: string, category?: string, options: { fresh?: boolean } = {}) {
   return useQuery({
     queryKey: ['suppliers', 'property', propertyId, category],
     queryFn: () => fetchSuppliersByProperty(propertyId!, category),
     enabled: !!propertyId,
+    ...(options.fresh ? { refetchOnMount: 'always' as const, staleTime: 0 } : {}),
   });
 }
 

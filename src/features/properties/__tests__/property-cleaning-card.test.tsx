@@ -103,8 +103,7 @@ function routine(overrides: Partial<Routine>): Routine {
   };
 }
 
-function renderCard() {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+function renderCard(client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })) {
   const view = render(
     <QueryClientProvider client={client}>
       <MemoryRouter>
@@ -410,6 +409,33 @@ describe('the cleaner of a property (E24/F01/US02/T01)', () => {
 
       pending.resolve(setupOf());
       await waitFor(() => expect(screen.queryByTestId('property-cleaning-form')).not.toBeInTheDocument());
+    });
+
+    it('PropertyCleaningCard_Team_IsReadAgainEveryTimeTheCardOpens', async () => {
+      const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+      const first = renderCard(client);
+      await screen.findByTestId('property-cleaning-summary');
+      await waitFor(() => expect(orgTeamApi.listMembers).toHaveBeenCalledTimes(1));
+      first.unmount();
+
+      // Opened again within the minutes the app keeps a list for: the team is read again, and not taken from the cache.
+      renderCard(client);
+      await screen.findByTestId('property-cleaning-summary');
+
+      await waitFor(() => expect(orgTeamApi.listMembers).toHaveBeenCalledTimes(2));
+    });
+
+    it('PropertyCleaningCard_SuppliersOfTheArea_AreReadAgainWhenTheChoiceStartsAgain', async () => {
+      vi.mocked(propertyCleaningApi.get).mockResolvedValue(withoutSetup('EUR'));
+      renderCard();
+
+      fireEvent.click(await screen.findByTestId('property-cleaning-set'));
+      await waitFor(() => expect(fetchSuppliersByProperty).toHaveBeenCalledTimes(1));
+      fireEvent.click(screen.getByTestId('property-cleaning-cancel'));
+      fireEvent.click(await screen.findByTestId('property-cleaning-set'));
+
+      // A supplier may have been suspended in the meantime: the list is not the one of a minute ago.
+      await waitFor(() => expect(fetchSuppliersByProperty).toHaveBeenCalledTimes(2));
     });
 
     it('PropertyCleaningCard_PersonWhoMayNotManageTheTeam_CannotChooseAMemberAndIsToldWhy', async () => {

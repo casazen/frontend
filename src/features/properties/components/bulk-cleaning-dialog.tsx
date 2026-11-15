@@ -108,11 +108,13 @@ function BulkCleaningBody({ save, onClose, routineLink }: { save: BulkSave; onCl
     groups.map((group) => group[0].id),
     form.kind === 'Supplier' && ready,
   );
+  // A list that failed to be read again is not used, as for one property: the old suppliers are never offered as if they were still there (the warning says they are not read).
   const supplierChoices = supplierChoicesOf(
-    groups.map((group, index) => ({ size: group.length, suppliers: supplierReads[index]?.data?.items ?? [] })),
+    groups.map((group, index) => ({ size: group.length, suppliers: supplierReads[index]?.isError ? [] : (supplierReads[index]?.data?.items ?? []) })),
     false,
   );
-  const members = useOrgMembers(canListTeam && form.kind === 'Staff' && ready);
+  // The team is read again every time the layer opens, and only by who may list it (the server answers 403 to the others, which sends the whole app to the page of no access).
+  const members = useOrgMembers(canListTeam, { fresh: true });
   const staffChoices = useMemo<StaffChoice[]>(
     () => (members.isError ? [] : cleaningStaffOf(members.data?.items)).map((member) => ({ userId: member.userId, name: memberName(member) })),
     [members.data, members.isError],

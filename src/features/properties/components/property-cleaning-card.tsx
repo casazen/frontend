@@ -61,9 +61,10 @@ export function PropertyCleaningCard({ propertyId }: PropertyCleaningCardProps) 
   const editing = form !== null;
 
   const wantsSuppliers = editing && form.kind === 'Supplier';
-  const suppliers = useSuppliersByProperty(wantsSuppliers ? propertyId : undefined, CLEANING_CATEGORY);
-  const wantsTeam = canListTeam && ((editing && form.kind === 'Staff') || setup?.cleanerKind === 'Staff');
-  const members = useOrgMembers(wantsTeam);
+  const suppliers = useSuppliersByProperty(wantsSuppliers ? propertyId : undefined, CLEANING_CATEGORY, { fresh: true });
+  // The team is read again every time the card opens (a person who left is not offered, a new one is), and only by who may list it: the server answers 403 to the others, which sends the whole app
+  // to the page of no access.
+  const members = useOrgMembers(canListTeam, { fresh: true });
   // Whether the routine is on: said only from a read that worked.
   const routines = useRoutines();
 
@@ -173,7 +174,8 @@ export function PropertyCleaningCard({ propertyId }: PropertyCleaningCardProps) 
     );
   } else if (setup) {
     const price = setup.priceCents === null ? null : formatCleaningPrice(setup.priceCents, setup.currency, i18n.language);
-    const staffName = setup.staffUserId ? members.data?.items.find((member) => member.userId === setup.staffUserId) : undefined;
+    // The name of the person is said only from a read of the team that worked: after a failed read the card says «a member of the staff», never a name from the old answer.
+    const staffName = setup.staffUserId && !members.isError ? members.data?.items.find((member) => member.userId === setup.staffUserId) : undefined;
     const startsAt = toClock(setup.effectiveStartTime);
     // The time of the setup as it is; when the setup leaves it empty, the time with where it comes from (said only when the card knows it).
     const startText =

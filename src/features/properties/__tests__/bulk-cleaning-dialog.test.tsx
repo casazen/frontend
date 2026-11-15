@@ -353,6 +353,21 @@ describe('who cleans, for many properties (E24/F01/US02/T01)', () => {
       expect(fetchSuppliersByProperty).toHaveBeenCalledWith('p3', 'cleaning');
     });
 
+    it('BulkCleaningDialog_SuppliersThatFailToBeReadAgain_AreNotOfferedAsIfTheyWereStillThere', async () => {
+      vi.mocked(fetchSuppliersByProperty).mockResolvedValue({ items: [{ orgId: 's-1', legalName: 'Pulizie Lago' }], totalCount: 1, page: 1, pageSize: 20 } as never);
+      const { client } = renderDialog();
+
+      await choose('p3');
+      await screen.findByRole('option', { name: 'Pulizie Lago (copre 1 immobile)' });
+
+      // The query keeps the old list on the error: the dialog must not offer it.
+      vi.mocked(fetchSuppliersByProperty).mockRejectedValue(httpError(500));
+      await client.refetchQueries({ queryKey: ['suppliers', 'property', 'p3', 'cleaning'] });
+
+      expect(await screen.findByTestId('bulk-cleaning-suppliers-error')).toBeInTheDocument();
+      expect(screen.queryByRole('option', { name: /Pulizie Lago/ })).not.toBeInTheDocument();
+    });
+
     it('BulkCleaningDialog_ThreePropertiesInTwoComuni_AsksOncePerComuneAndASupplierOfOneComuneCoversOneOfThree', async () => {
       // Roma (two of the properties) is served by one supplier, Milano (the third) by another: neither covers all three.
       vi.mocked(fetchSuppliersByProperty).mockImplementation(
