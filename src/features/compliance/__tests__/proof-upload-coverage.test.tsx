@@ -30,24 +30,26 @@ const A = '3f2b8c1e-5a4d-4e6f-9b7a-1c2d3e4f5a6b';
 const B = '9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d';
 const C = '5d1e2f3a-4b5c-4d6e-8f70-81920a1b2c3d';
 const D = '7e8f9a0b-1c2d-4e3f-9a4b-5c6d7e8f9a0b';
+const E = '2c3d4e5f-6a7b-4c8d-9e0f-a1b2c3d4e5f6';
 const BOOKING_ID = '11111111-1111-4111-8111-111111111111';
-const NAMES: Record<string, string> = { [A]: 'Casa Como', [B]: 'Villa Rosa', [C]: 'Attico Lecco', [D]: 'Chalet Lugano' };
+const NAMES: Record<string, string> = { [A]: 'Casa Como', [B]: 'Villa Rosa', [C]: 'Attico Lecco', [D]: 'Chalet Lugano', [E]: 'Villa Lunga' };
 /** The stays each flat has that a receipt of the day would put in order. */
 const STAYS: Record<string, number> = { [A]: 2, [B]: 1, [C]: 3, [D]: 0 };
 /**
- * The properties of the organization as the list of the API gives them: an id and a name, no country (the API does not send one). Three are in Italy and `D` is in Switzerland,
- * which only the server knows: it refuses `D` among several flats (see `serverSays`).
+ * The properties of the organization as the list of the API gives them: an id, a name and how the flat is let, no country (the API does not send one). Three are in Italy and `D` is in
+ * Switzerland, which only the server knows: it refuses `D` among several flats (see `serverSays`). `E` is let long-term: it owes no communication and is never offered.
  */
 const PROPERTIES: ProofUploadProperty[] = [
-  { id: A, name: NAMES[A] },
-  { id: B, name: NAMES[B] },
-  { id: C, name: NAMES[C] },
-  { id: D, name: NAMES[D] },
+  { id: A, name: NAMES[A], rentalMode: 'Short' },
+  { id: B, name: NAMES[B], rentalMode: 'Short' },
+  { id: C, name: NAMES[C], rentalMode: 'Short' },
+  { id: D, name: NAMES[D], rentalMode: 'Short' },
+  { id: E, name: NAMES[E], rentalMode: 'Long' },
 ];
 const DAY = '2026-11-14';
 const PORTAL = 'https://portal.example.test/ricevute/';
 
-const asked = { coverage: [] as URLSearchParams[] };
+const asked = { coverage: [] as URLSearchParams[], properties: [] as unknown[] };
 const onClose = vi.fn();
 
 function newClient() {
@@ -109,7 +111,11 @@ function answer({ coverage = serverSays, booking = archiveOf() }: Answers = {}) 
       asked.coverage.push(params);
       return { data: await coverage(params) };
     }
-    if (url === '/properties') return { data: PROPERTIES };
+    if (url === '/properties') {
+      // The list as the API would give it unfiltered: a page that does not ask for the short-rent flats gets the long-term one too.
+      asked.properties.push(config?.params);
+      return { data: PROPERTIES };
+    }
     if (url === '/compliance/archive') return { data: { items: [], page: 1, pageSize: 1, totalCount: 0, alloggiatiPortalUrl: PORTAL } };
     if (url === `/bookings/${BOOKING_ID}/compliance`) return { data: booking };
     throw new Error(`unexpected GET ${url}`);
@@ -150,6 +156,7 @@ const lastCoverage = () => asked.coverage[asked.coverage.length - 1];
 beforeEach(async () => {
   vi.clearAllMocks();
   asked.coverage.length = 0;
+  asked.properties.length = 0;
   freezeClock('2026-11-15T12:00:00Z');
   await i18n.changeLanguage('it');
   answer();
@@ -313,6 +320,23 @@ describe('the receipt covers the flats the host chose', () => {
     expect(screen.getByTestId(`proof-upload-flat-${A}`)).toHaveAttribute('aria-checked', 'false');
     fireEvent.click(screen.getByTestId(`proof-upload-flat-${A}`));
     await waitFor(() => expect(lastCoverage().getAll('propertyIds')).toEqual([B, A]));
+  });
+
+  // A flat let long-term owes no Alloggiati communication: it is not offered to cover, nor to file the receipt under, even when the list handed to the dialog is not filtered. (The backend
+  // hides a receipt from a collaborator who does not reach every flat it covers, so a flat that has no business there would take it away from the short-rent team.)
+  it('dialog_FlatLetLongTerm_IsNeverOfferedToCoverNorToFileTheReceiptUnder', async () => {
+    renderDialog();
+    await total();
+
+    expect(screen.queryByTestId(`proof-upload-flat-${E}`)).not.toBeInTheDocument();
+    expect(within(screen.getByTestId('proof-upload-property')).getAllByRole('option').map((option) => option.textContent)).toEqual([
+      "Scegli l'immobile",
+      NAMES[A],
+      NAMES[B],
+      NAMES[C],
+      NAMES[D],
+    ]);
+    expect(screen.getByTestId('proof-upload-flats')).not.toHaveTextContent(NAMES[E]);
   });
 
   it('dialog_FileDroppedOnTheStep_IsTheFileOfTheReceipt', async () => {
@@ -503,8 +527,10 @@ describe('the receipt from the page of a stay', () => {
     await waitFor(() => expect(within(dialog).getByTestId('proof-upload-portal-link')).toHaveAttribute('href', PORTAL));
     expect(await total()).toHaveTextContent('Diventano in regola: 2 soggiorni');
 
-    // The other flats arrive with the properties of the organization.
+    // The other flats arrive with the properties of the organization: the short-rent ones, asked for as such (the list is not unfiltered), and none let long-term.
     fireEvent.click(await within(dialog).findByTestId(`proof-upload-flat-${C}`));
+    expect(asked.properties).toEqual([{ mode: 'short' }]);
+    expect(within(dialog).queryByTestId(`proof-upload-flat-${E}`)).not.toBeInTheDocument();
     await waitFor(() => expect(screen.getByTestId('proof-upload-coverage-total')).toHaveTextContent('Diventano in regola: 5 soggiorni'));
     chooseFile();
     fireEvent.click(screen.getByTestId('proof-upload-submit'));

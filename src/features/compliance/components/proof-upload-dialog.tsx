@@ -27,10 +27,15 @@ export interface ProofUploadPrefill {
   period?: string;
 }
 
-/** What the dialog needs of a property: its id and its name (the `Property` of the list has both). The list of the API says nothing of the country of a flat, so none is asked for here. */
+/**
+ * What the dialog needs of a property: its id and its name (the `Property` of the list has both), and how it is let. The list of the API says nothing of the country of a flat, so none is
+ * asked for here.
+ */
 export interface ProofUploadProperty {
   id: string;
   name: string;
+  /** `Long` = let long-term: the Alloggiati communication is for short stays, so such a flat is never offered, neither to file a receipt under nor to cover. */
+  rentalMode?: 'Short' | 'Long';
 }
 
 const MONTH = /^\d{4}-\d{2}$/;
@@ -91,9 +96,11 @@ interface UploadFormProps extends Omit<ProofUploadDialogProps, 'open'> {
   upload: ReturnType<typeof useUploadProof>;
 }
 
-function UploadForm({ onClose, properties, kinds, prefill, alloggiatiPortalUrl, upload }: UploadFormProps) {
+function UploadForm({ onClose, properties: listed, kinds, prefill, alloggiatiPortalUrl, upload }: UploadFormProps) {
   const { t, i18n } = useTranslation();
   const { flags } = useFeatureFlags();
+  // The pages ask for the short-rent flats already; a list that was not filtered still never offers a flat let long-term (it owes no communication, and the receipt would be tied to it).
+  const properties = listed.filter((flat) => flat.rentalMode !== 'Long');
   const today = todayInRome();
   const pending = upload.isPending;
   // The deletion of the photos of the documents after a receipt cannot be undone: while its flag is on the host is told before saving, and after.

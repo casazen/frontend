@@ -90,7 +90,8 @@ interface BookingReceiptUploadProps {
  */
 function BookingReceiptUpload({ propertyId, propertyName, day, onClose }: BookingReceiptUploadProps) {
   const { t } = useTranslation();
-  const properties = useProperties({}, { fresh: true });
+  // The flats of the short-rent area only: the Alloggiati communication is for short stays, and a flat let long-term is never one a receipt covers.
+  const properties = useProperties({ mode: 'short' }, { fresh: true });
   const archive = useComplianceEvidence({ propertyId, pageSize: 1 });
   const known = Array.isArray(properties.data) ? properties.data : NO_PROPERTIES;
   // The flat of the stay is always among the choices, even before the list comes (or when it cannot be read): the receipt of this stay can always be filed.
