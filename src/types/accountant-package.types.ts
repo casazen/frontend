@@ -208,3 +208,68 @@ export interface AgencySummary {
   margin: AgencyMargin[];
   owners: AgencyOwnerRevenue[];
 }
+
+// ---------------------------------------------------------------------------------------------------------------------
+// How the package is sent to the accountant (E15/F01/US02/T01 and T02, E15/F02/US02/T01, NF-101, decision of 2026-11-14): `GET` and `PUT api/accountant-package/settings` and
+// `POST api/accountant-package/send` of the backend (`AccountantPackageController`, behind the flag `AccountantPackage`). The accountant only receives; the address is personal data of
+// a third party: read only by a caller whose reach is the whole organization, never put in an address, a log or the browser's storage.
+// ---------------------------------------------------------------------------------------------------------------------
+
+/**
+ * The folders of the package the monthly send can hold, by the keys of the contract (backend `AccountantPackageFolderRules.KeyOf`), in the order of the package. They are stable codes, never
+ * texts to show: the screen has its own words for each.
+ */
+export const ACCOUNTANT_PACKAGE_FOLDERS = ['guestDocuments', 'ownerInvoices', 'statements', 'agencySummary', 'vat', 'withholding', 'touristTax', 'collections'] as const;
+export type AccountantPackageFolder = (typeof ACCOUNTANT_PACKAGE_FOLDERS)[number];
+
+/** The first and the last day of the month the monthly send can be due on (`AccountantPackageSettings.MinSendDay`, `MaxSendDay`): every month has the 28th. */
+export const ACCOUNTANT_SEND_DAYS = { min: 1, max: 28 } as const;
+
+/**
+ * What the last attempt to send ended in: the month the package was of (`yyyy-MM`), when (UTC), `sent` (the e-mail with the link is in the queue of the e-mails, which delivers it and
+ * retries: it says nothing about its delivery) or `failed` (nothing went out; the next run tries again) and, for a failure, the stable code of why (`package_too_large`,
+ * `package_failed`, `storage_failed`, `link_not_configured`, `email_not_configured`, `email_not_queued`), never a text, an address or a name.
+ */
+export interface AccountantPackageLastSend {
+  period: string;
+  at: string;
+  result: 'sent' | 'failed';
+  error: string | null;
+}
+
+/**
+ * How the package is sent (`GET api/accountant-package/settings`): the address of the accountant (`null` when there is none), whether the package goes every month, the day of the month
+ * it is due (1 to 28, Europe/Rome), the folders by their keys, and the last attempt (`null` before the first). An organization that saved nothing has the defaults of the server: no address, the
+ * send off, the day 3 and every folder. `contents` are strings and not the union of the folders: the server may be newer than the app.
+ */
+export interface AccountantPackageSettings {
+  enabled: boolean;
+  email: string | null;
+  sendDay: number;
+  contents: string[];
+  lastSend: AccountantPackageLastSend | null;
+  /** When a person saved the settings last (UTC); `null` for an organization that saved none. */
+  updatedAt: string | null;
+}
+
+/**
+ * What a save takes (`PUT api/accountant-package/settings`): every setting, as a whole. A field that is missing is refused (422 `accountant_package_settings_invalid`), never taken for a
+ * value; an empty list of folders never means «all of them» (422 `accountant_package_contents_invalid`); `email` empty or `null` clears the address, and the monthly send cannot stay on
+ * without one (422 `accountant_package_recipient_missing`).
+ */
+export interface SaveAccountantPackageSettingsRequest {
+  enabled: boolean;
+  email: string | null;
+  sendDay: number;
+  contents: string[];
+}
+
+/**
+ * What a test send answers (`POST api/accountant-package/send`): the month of the package (the previous one) and the last instant (UTC) its link opens. The e-mail is in the queue of the
+ * e-mails, never that it was delivered; no address and no link are in the answer.
+ */
+export interface AccountantPackageEmailQueued {
+  period: string;
+  queued: true;
+  linkExpiresAt: string;
+}

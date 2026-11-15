@@ -145,7 +145,8 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
   /**
    * The package of the accountant and the summary of the agency (backend `AccountantPackage`, E15/F01/US01/T01, NF-101, NF-115), off until the product owner turns it on in the test environment.
    * While it is off the page «Commercialista» (`/app/short-rent/accountant`, a tab of Incassi next to Report) does not exist: the tab is not there, its address leads to the home of the area,
-   * nothing asks the server and the backend answers 404 to both endpoints of the package.
+   * nothing asks the server and the backend answers 404 to both endpoints of the package. The optional step «Commercialista» of the wizard «Fatturazione» (the address of the accountant, the monthly
+   * send and the test send, E15/F02/US02/T01) is behind it too: off, the wizard has no such step and does not read the settings of the send.
    */
   accountantPackage: false,
   /**

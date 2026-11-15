@@ -3,10 +3,12 @@ import type { FieldValues } from 'react-hook-form';
 import { PARTITA_IVA, compactIdentifier } from '@/features/fiscal/tax-profile-changes';
 import { isValidFiscalCode } from '@/lib/fiscal-code';
 import {
+  ACCOUNTANT_SEND_DAYS,
   CLEANING_FEE_TREATMENTS,
   COMMISSION_BASES,
   PORTAL_ACCOUNT_HOLDERS,
   STAY_VAT_TREATMENTS,
+  type AccountantPackageSettings,
   type CleaningFeeTreatment,
   type CommissionBase,
   type PortalAccountHolder,
@@ -84,6 +86,13 @@ export interface BillingWizardValues {
   conservationAgreementConfirmed: boolean;
   virtualStampConfirmed: boolean;
   stampDutyReference: string;
+  // 9 «Commercialista» (facoltativo): the settings of the send to the accountant, as far as the person changed them. `null` is «not touched»: the step then shows what the server has,
+  // and neither «Continua» nor a draft saves it again, so that nothing the person did not answer is ever saved as an answer. The address of a third party is only ever here, in the
+  // form: never in the address of the page or in the browser's storage.
+  accountantEmail: string | null;
+  accountantMonthly: boolean | null;
+  accountantDay: number | null;
+  accountantContents: string[] | null;
 }
 
 /** What of the tax profile the organization has already: the wizard asks only for what is missing. */
@@ -94,6 +103,12 @@ export interface BillingIdentityOnRecord {
 
 /** The messages of the checks are i18n keys, translated where they are shown (the shell and `Field` translate them). */
 export const BILLING_ERROR_KEYS = {
+  accountantContents: 'billingWizard.errors.accountantContents',
+  accountantDay: 'billingWizard.errors.accountantDay',
+  accountantEmail: 'billingWizard.errors.accountantEmail',
+  accountantEmailMissing: 'billingWizard.errors.accountantEmailMissing',
+  accountantEmailNeeded: 'billingWizard.errors.accountantEmailNeeded',
+  accountantOwnerAccounting: 'billingWizard.errors.accountantOwnerAccounting',
   country: 'billingWizard.errors.country',
   legalName: 'billingWizard.errors.legalName',
   addressStreet: 'billingWizard.errors.addressStreet',
@@ -301,6 +316,90 @@ export const italyStepSchema: StepSchema = z
   .superRefine((value, context) => {
     check(context, value.stampDutyReference.trim().length <= STAMP_REFERENCE_MAX, 'stampDutyReference', BILLING_ERROR_KEYS.stampDutyReference);
   });
+
+/** The longest address the server keeps (`AccountantPackageSettings.EmailMaxLength`). */
+export const ACCOUNTANT_EMAIL_MAX = 254;
+
+/**
+ * A plain address, as the server takes it (`CrmNormalizer.TryNormalizeEmail`): no name in front of it, no space, one `@` and a host with a dot. What the server would refuse is refused here in
+ * simple words, on the field, before the step is saved.
+ */
+const PLAIN_EMAIL = /^[^\s@<>(),;:"[\]\\]+@[^\s@<>(),;:"[\]\\]+\.[^\s@<>(),;:"[\]\\]+$/;
+
+/** Whether a text is a plain address of at most 254 characters (spaces around it do not count: they are cut off before it is saved). */
+export function isPlainEmail(value: string): boolean {
+  const text = value.trim();
+  return text.length > 0 && text.length <= ACCOUNTANT_EMAIL_MAX && PLAIN_EMAIL.test(text);
+}
+
+/** The settings of the send to the accountant as the step shows them and would save them: what the person changed, laid over what the server has. */
+export interface AccountantAnswers {
+  email: string;
+  enabled: boolean;
+  sendDay: number;
+  contents: string[];
+}
+
+type AccountantFields = Pick<BillingWizardValues, 'accountantEmail' | 'accountantMonthly' | 'accountantDay' | 'accountantContents'>;
+
+/** Whether the person has not touched any setting of the send: the step is then left as the server has it. */
+export function accountantUntouched(values: AccountantFields): boolean {
+  return values.accountantEmail === null && values.accountantMonthly === null && values.accountantDay === null && values.accountantContents === null;
+}
+
+/** The settings the step shows: a field the person changed shows their answer (an address emptied is an answer: no address), any other the server's. */
+export function accountantAnswersOf(current: Pick<AccountantPackageSettings, 'email' | 'enabled' | 'sendDay' | 'contents'>, values: AccountantFields): AccountantAnswers {
+  return {
+    email: values.accountantEmail ?? current.email ?? '',
+    enabled: values.accountantMonthly ?? current.enabled,
+    sendDay: values.accountantDay ?? current.sendDay,
+    contents: values.accountantContents ?? current.contents,
+  };
+}
+
+/** Whether a day is one the monthly send can be due on: a whole number from 1 to 28, so that every month has it. */
+export function isSendDay(day: number): boolean {
+  return Number.isInteger(day) && day >= ACCOUNTANT_SEND_DAYS.min && day <= ACCOUNTANT_SEND_DAYS.max;
+}
+
+/** A setting that is not right: the field of the form it belongs to, and the words (an i18n key) that say what is wanted. */
+export interface AccountantProblem {
+  field: 'accountantEmail' | 'accountantDay' | 'accountantContents';
+  messageKey: string;
+}
+
+/**
+ * What the server would refuse in the settings of the send (`accountant_package_recipient_invalid`, `..._recipient_missing`, `..._send_day_invalid`, `..._contents_invalid`), told before it is
+ * asked: an address that is not a plain one; the send every month turned on with no address to send it to (a blank address is no address, never a send that goes nowhere); a day outside 1 to 28; no
+ * folder at all (an empty list never means «all of them»). At most one problem for each field.
+ */
+export function accountantProblems(answers: AccountantAnswers): AccountantProblem[] {
+  const problems: AccountantProblem[] = [];
+  const email = answers.email.trim();
+  if (email !== '' && !isPlainEmail(email)) problems.push({ field: 'accountantEmail', messageKey: BILLING_ERROR_KEYS.accountantEmail });
+  else if (email === '' && answers.enabled) problems.push({ field: 'accountantEmail', messageKey: BILLING_ERROR_KEYS.accountantEmailMissing });
+  if (!isSendDay(answers.sendDay)) problems.push({ field: 'accountantDay', messageKey: BILLING_ERROR_KEYS.accountantDay });
+  if (answers.contents.length === 0) problems.push({ field: 'accountantContents', messageKey: BILLING_ERROR_KEYS.accountantContents });
+  return problems;
+}
+
+/**
+ * The ninth step «Commercialista» (optional): the settings the person changed must hold together with what the server has (`accountantProblems`). A step the person did not touch has nothing to
+ * check, and so has a step whose settings could not be read (`current` is `null` or not there yet): nothing can be saved then either.
+ */
+export function accountantStepSchema(current: AccountantPackageSettings | null | undefined): StepSchema {
+  return z
+    .object({
+      accountantEmail: z.string().nullable(),
+      accountantMonthly: z.boolean().nullable(),
+      accountantDay: z.number().nullable(),
+      accountantContents: z.array(z.string()).nullable(),
+    })
+    .superRefine((value, context) => {
+      if (!current || accountantUntouched(value)) return;
+      for (const problem of accountantProblems(accountantAnswersOf(current, value))) check(context, false, problem.field, problem.messageKey);
+    });
+}
 
 /** What the template of the mandate needs to be applied: the percent (from 0 to 100) and the day it is valid from. The flat fees are optional, but valid when written. */
 export function mandateTemplateProblems(values: Pick<BillingWizardValues, 'mandateCommissionPercent' | 'mandateValidFrom' | 'mandateCleaningFlatRate' | 'mandateLinenFlatRate'>): Array<

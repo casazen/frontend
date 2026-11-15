@@ -1598,7 +1598,14 @@
     "forbidden": "Non hai i permessi per eseguire questa operazione.",
     "tooManyRequests": "Troppe richieste in poco tempo. Riprova tra qualche istante.",
     "codes": {
+      "accountantPackageContentsInvalid": "Scegli almeno una cartella del pacchetto, ognuna una volta sola.",
       "accountantPackageInvalidPeriod": "Il periodo scelto non è valido: serve un mese o un anno.",
+      "accountantPackageNotSent": "Il pacchetto non è partito: non è stato inviato niente. Riprova tra poco; se succede ancora, scrivi all’assistenza.",
+      "accountantPackageOwnerAccountingRequired": "Per le cartelle con la contabilità dei proprietari serve il permesso di vedere i rendiconti dei proprietari.",
+      "accountantPackageRecipientInvalid": "L’indirizzo del commercialista non è valido: scrivilo semplice, senza nome e senza spazi.",
+      "accountantPackageRecipientMissing": "Manca l’indirizzo del commercialista.",
+      "accountantPackageSendDayInvalid": "Il giorno dell’invio va da 1 a 28.",
+      "accountantPackageSettingsInvalid": "Le impostazioni dell’invio non sono complete: controlla e riprova.",
       "accountantPackageTooLarge": "Il pacchetto sarebbe troppo grande. Scegli un periodo più breve.",
       "archiveDocumentHasNoFile": "Questo documento non ha un file da scaricare.",
       "archiveDocumentNotFound": "Non troviamo più questo documento, oppure non è tra gli immobili a cui hai accesso. L'elenco è stato aggiornato.",
@@ -2857,6 +2864,89 @@
     }
   },
   "billingWizard": {
+    "accountant": {
+      "contents": {
+        "folders": {
+          "agencySummary": {
+            "description": "Provvigioni, fatture ai proprietari, pagamenti e bonifici del mese.",
+            "title": "Riepilogo dell’agenzia"
+          },
+          "collections": {
+            "description": "Incassi, saldi ancora da incassare e costi dei portali.",
+            "title": "Incassi"
+          },
+          "guestDocuments": {
+            "description": "Fatture, ricevute e note di credito emesse agli ospiti.",
+            "title": "Documenti agli ospiti"
+          },
+          "ownerInvoices": {
+            "description": "Le fatture che l’agenzia emette ai proprietari.",
+            "title": "Fatture ai proprietari"
+          },
+          "statements": {
+            "description": "I rendiconti pubblicati ai proprietari.",
+            "title": "Rendiconti dei proprietari"
+          },
+          "touristTax": {
+            "description": "L’imposta di soggiorno dovuta e versata.",
+            "title": "Imposta di soggiorno"
+          },
+          "vat": {
+            "description": "L’IVA per aliquota e per chi ha emesso il documento.",
+            "title": "IVA"
+          },
+          "withholding": {
+            "description": "Ritenute, F24 e dati per la Certificazione Unica.",
+            "title": "Ritenute"
+          }
+        },
+        "hint": "Scegli le cartelle dell’e-mail mensile: ne serve almeno una. Il pacchetto che scarichi tu dalla pagina «Commercialista» le ha sempre tutte. Le cartelle dei proprietari valgono per le agenzie.",
+        "legend": "Che cosa contiene il pacchetto"
+      },
+      "day": {
+        "hint": "Dal giorno scelto, ogni mattina CasaZen prova a inviare il pacchetto del mese appena finito, finché non è partito. Si sceglie fino al 28, così il giorno c’è in ogni mese.",
+        "label": "Giorno del mese"
+      },
+      "email": {
+        "hint": "Riceve un’e-mail con il link per scaricare il pacchetto, valido 30 giorni: niente allegati. Il commercialista non emette niente, riceve soltanto questi file.",
+        "label": "E-mail del commercialista"
+      },
+      "intro": "Il commercialista non emette niente: riceve soltanto i dati. Qui dici a che indirizzo mandarli e se CasaZen deve farlo da sola ogni mese. Il passo è facoltativo: puoi andare avanti senza cambiare niente.",
+      "lastSend": {
+        "errors": {
+          "emailNotConfigured": "Il servizio di posta di CasaZen non è ancora attivo: scrivi all’assistenza.",
+          "emailNotQueued": "Il servizio di posta non ha preso in carico l’e-mail.",
+          "linkNotConfigured": "Manca una configurazione di CasaZen per creare il link di scarico: scrivi all’assistenza.",
+          "packageFailed": "Non siamo riusciti a preparare il pacchetto.",
+          "packageTooLarge": "Il pacchetto era troppo grande: togli qualche cartella.",
+          "storageFailed": "Non siamo riusciti a conservare il pacchetto per il link.",
+          "unknown": "C’è stato un problema tecnico."
+        },
+        "failed": "Ultimo tentativo: pacchetto di {{period}}, non inviato il {{when}}. {{reason}} Riproviamo ogni mattina finché non parte.",
+        "none": "Non è ancora partito nessun invio.",
+        "sent": "Ultimo invio: pacchetto di {{period}}, e-mail con il link messa in invio il {{when}}."
+      },
+      "loadError": "Non riusciamo a leggere le impostazioni dell’invio al commercialista.",
+      "loading": "Leggo le impostazioni dell’invio al commercialista",
+      "monthly": {
+        "legend": "Invio ogni mese",
+        "off": "Il pacchetto non parte da solo: lo scarichi tu quando ti serve.",
+        "on": "Dal giorno scelto, CasaZen manda al commercialista il pacchetto del mese appena finito, una volta sola per mese.",
+        "title": "Invia il pacchetto ogni mese"
+      },
+      "noAccess": "Le impostazioni dell’invio al commercialista sono di tutta l’organizzazione: il tuo accesso riguarda solo alcuni immobili, quindi non puoi vederle né cambiarle.",
+      "test": {
+        "button": "Invia una prova",
+        "description": "Manda subito al commercialista il pacchetto di {{period}}, il mese scorso, con le cartelle scelte qui sopra; se hai cambiato qualcosa, viene salvato prima. Vale come invio di quel mese: in automatico non parte una seconda volta.",
+        "failed": "Non siamo riusciti a confermare l’invio della prova. Guarda qui sopra l’ultimo invio prima di riprovare.",
+        "preparing": "Sto preparando il pacchetto: può volerci qualche minuto. Non lasciare questa pagina.",
+        "queued": "Prova messa in coda: l’e-mail con il pacchetto di {{period}} parte tra poco per l’indirizzo scritto qui sopra, e il link vale fino al {{until}}. Se non arriva, controlla l’indirizzo.",
+        "title": "Prova l’invio",
+        "tooLarge": "Il pacchetto del mese scorso è troppo grande per essere inviato: togli qualche cartella e riprova.",
+        "tooLargeCount": "Il pacchetto del mese scorso avrebbe {{files}} file, ma un pacchetto ne ammette al massimo {{max}}: togli qualche cartella e riprova."
+      },
+      "unavailable": "L’invio del pacchetto al commercialista non è ancora attivo: per ora qui non c’è niente da impostare."
+    },
     "card": {
       "action": "Imposta la fatturazione",
       "description": "Chi emette, IVA, numerazione, tassa di soggiorno ed emissione dei tuoi documenti, a passi guidati.",
@@ -2945,6 +3035,12 @@
       "toPlan": "Torna alla guida"
     },
     "errors": {
+      "accountantContents": "Scegli almeno una cartella del pacchetto.",
+      "accountantDay": "Scegli un giorno da 1 a 28.",
+      "accountantEmail": "Scrivi un indirizzo e-mail semplice, senza nome e senza spazi, per esempio studio@esempio.it.",
+      "accountantEmailMissing": "Scrivi l’indirizzo del commercialista: senza, l’invio ogni mese non può restare acceso.",
+      "accountantEmailNeeded": "Scrivi l’indirizzo del commercialista a cui mandare la prova.",
+      "accountantOwnerAccounting": "Alcune cartelle contengono la contabilità dei proprietari (fatture ai proprietari, rendiconti, ritenute, riepilogo dell’agenzia, IVA). Per sceglierle serve il permesso di vedere i rendiconti dei proprietari: chiedilo a chi amministra l’organizzazione, oppure toglile.",
       "addressCivic": "Il numero civico è troppo lungo (al massimo 20 caratteri).",
       "addressStreet": "Scrivi la via, al massimo 200 caratteri.",
       "amount": "Scrivi un importo, con al massimo due decimali.",
@@ -2978,6 +3074,7 @@
     },
     "finishLabel": "Fatto",
     "help": {
+      "accountant": "Il commercialista non emette niente: riceve il pacchetto con i dati. Scrivi il suo indirizzo e scegli se CasaZen deve mandarglielo ogni mese. «Invia una prova» gli manda subito quello del mese scorso. Il passo è facoltativo.",
       "button": "Aiuto",
       "channels": "Gli account dei portali possono essere del proprietario o dell’agenzia: da questo dipende chi riceve la fattura del portale. Per ogni portale scrivi la percentuale che trattiene quando non indica la commissione.",
       "issuer": "CasaZen emette ogni documento a nome della tua organizzazione. Scegli il paese, scrivi il nome come deve comparire sui documenti e l’indirizzo completo.",
@@ -3196,6 +3293,11 @@
     },
     "saveFailed": "Non siamo riusciti a salvare. Quello che hai scritto è ancora qui: riprova.",
     "steps": {
+      "accountant": {
+        "label": "Commercialista",
+        "purpose": "Facoltativo: a chi mandare ogni mese il pacchetto dei dati.",
+        "title": "Pacchetto per il commercialista"
+      },
       "channels": {
         "label": "Commissioni dei canali",
         "purpose": "Di chi sono gli account dei portali e quanto trattengono.",
@@ -3243,6 +3345,10 @@
       }
     },
     "summary": {
+      "accountant": {
+        "monthly": "Ogni mese, dal giorno {{day}}",
+        "none": "Nessun invio automatico"
+      },
       "automatic": "emissione automatica",
       "complete": {
         "text": "Non manca niente: CasaZen può emettere i tuoi documenti.",
@@ -3270,6 +3376,7 @@
       },
       "issuing": "{{auto}}, {{email}}",
       "items": {
+        "accountant": "Commercialista",
         "address": "Indirizzo",
         "channels": "Account dei portali",
         "country": "Paese",
