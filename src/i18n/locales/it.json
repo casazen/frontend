@@ -3086,6 +3086,7 @@
       "italy": "Sono due promemoria: l’adesione gratuita alla conservazione dei documenti sul portale dell’Agenzia delle Entrate e il bollo. Spunta quando l’hai fatto: CasaZen non può verificarlo per te.",
       "mandate": "Il mandato standard vale per i proprietari che non ne hanno uno: commissione, importi fissi e a carico di chi sono le spese dei pagamenti. Non cambia i mandati che esistono già.",
       "numbering": "I documenti si numerano di seguito, senza salti, per ogni serie. Controlla come comincia il numero: l’anno è già compreso.",
+      "ownerIssuers": "In Italia il documento del soggiorno lo emette il proprietario, con i suoi dati e il suo sezionale. Per ogni proprietario crea il profilo dai suoi dati e completa quello che manca: finché manca, CasaZen non prepara i suoi documenti.",
       "summary": "Qui controlli che cosa manca, ogni voce apre il suo passo, e vedi un documento di esempio con le aliquote in vigore.",
       "supportGeneric": "Se non sai che cosa rispondere, scrivi all’assistenza di CasaZen.",
       "supportWithEmail": "Se non sai che cosa rispondere, scrivi all’assistenza di CasaZen:",
@@ -3182,6 +3183,9 @@
       "fiscal_code_missing": "Manca il codice fiscale di chi emette.",
       "guest_series_unconfirmed": "Non hai ancora confermato la numerazione dei documenti agli ospiti.",
       "legal_name_missing": "Manca il nome di chi emette sui documenti.",
+      "owner_issuer_missing": "Ci sono proprietari senza profilo emittente.",
+      "owner_issuer_missing_one": "C’è 1 proprietario senza profilo emittente.",
+      "owner_issuer_missing_other": "Ci sono {{count}} proprietari senza profilo emittente.",
       "owner_series_unconfirmed": "Non hai ancora confermato la numerazione delle fatture ai proprietari.",
       "owners_without_mandate": "Ci sono proprietari senza mandato.",
       "owners_without_mandate_one": "C’è 1 proprietario senza mandato.",
@@ -3290,6 +3294,47 @@
       },
       "preview": "Esempio di numero: {{number}}"
     },
+    "ownerIssuers": {
+      "complete": "Tutti i proprietari hanno un profilo che può emettere.",
+      "dialog": {
+        "description": "Compila i dati: li usa CasaZen per emettere i documenti dei soggiorni a nome del proprietario.",
+        "title": "Profilo emittente di {{owner}}"
+      },
+      "empty": "Non ci sono ancora proprietari. Li aggiungi con l’attivazione dei proprietari.",
+      "intro": "In Italia il documento del soggiorno lo emette il proprietario, con i suoi dati e il suo sezionale: CasaZen lo emette a suo nome. Per ogni proprietario serve un profilo emittente completo.",
+      "loadError": "Impossibile caricare i proprietari.",
+      "loading": "Carico i proprietari…",
+      "missing_one": "Manca ancora il profilo emittente di 1 proprietario.",
+      "missing_other": "Mancano ancora i profili emittenti di {{count}} proprietari.",
+      "note": "Un profilo già completo si cambia da qui o dalla pagina dei dati finanziari del proprietario.",
+      "row": {
+        "complete": "Completa",
+        "completeLabel": "Completa il profilo emittente di {{owner}}",
+        "create": "Crea dai dati del proprietario",
+        "createFailed": "Non siamo riusciti a creare il profilo. Riprova tra poco.",
+        "createLabel": "Crea il profilo emittente di {{owner}} dai suoi dati",
+        "createdIncomplete": "Profilo di {{owner}} creato dai suoi dati: mancano ancora alcune cose.",
+        "createdReady": "Profilo di {{owner}} creato: è pronto per emettere.",
+        "edit": "Modifica",
+        "editLabel": "Modifica il profilo emittente di {{owner}}",
+        "error": "Non riesco a leggere il profilo.",
+        "fill": "Inserisci a mano",
+        "fillLabel": "Inserisci a mano il profilo emittente di {{owner}}",
+        "gone": "Non c’è più tra i tuoi proprietari.",
+        "loading": "Carico il profilo…",
+        "masked": "I dati del proprietario sono nascosti per te: non abbiamo da dove partire. Inseriscili a mano, oppure chiedi a chi gestisce la parte economica dei proprietari.",
+        "missing": "Mancano: {{fields}}.",
+        "missingUnknown": "Mancano ancora alcuni dati.",
+        "notForYou": "Il profilo non è per te.",
+        "state": {
+          "incomplete": "Da completare",
+          "none": "Senza profilo",
+          "ready": "Pronto"
+        }
+      },
+      "showAll": "Mostra tutti ({{count}})",
+      "showLess": "Mostra meno"
+    },
     "readOnly": {
       "noPermission": "Il tuo ruolo può vedere la fatturazione ma non cambiarla: chiedi a chi amministra l’organizzazione.",
       "partialScope": "Il tuo accesso riguarda solo alcuni immobili, e la fatturazione è di tutta l’organizzazione: puoi vederla ma non cambiarla.",
@@ -3331,6 +3376,11 @@
         "label": "Numerazione",
         "purpose": "Le serie dei documenti e delle fatture.",
         "title": "Numerazione dei documenti"
+      },
+      "ownerIssuers": {
+        "label": "Proprietari che emettono",
+        "purpose": "In Italia emette il proprietario: serve il suo profilo.",
+        "title": "Chi emette per i proprietari"
       },
       "summary": {
         "label": "Riepilogo",
@@ -3387,6 +3437,7 @@
         "issuing": "Emissione",
         "name": "Nome sui documenti",
         "numbering": "Numerazione",
+        "ownerIssuers": "Proprietari che emettono",
         "regime": "Regime",
         "touristTax": "Tassa di soggiorno"
       },
@@ -3399,6 +3450,9 @@
         "title_other": "Mancano ancora {{count}} cose"
       },
       "numbering": "Ospiti {{guest}}, proprietari {{owner}}",
+      "ownerIssuers": {
+        "ready": "Tutti pronti"
+      },
       "touristTax": {
         "none": "Nessun portale: la incassi tu",
         "portals": "La incassano i portali: {{portals}}"
@@ -30083,5 +30137,115 @@
     "bankFile": "Estratto conto (Excel o CSV)",
     "confirmBank": "Conferma i versamenti selezionati",
     "imported": "Registrato"
+  },
+  "ownerIssuer": {
+    "confirmNote": "Le scelte «da confermare» sono valori prudenti: li conferma il commercialista e li puoi cambiare quando vuoi.",
+    "description": "In Italia il documento del soggiorno lo emette il proprietario, con i suoi dati e il suo sezionale: CasaZen lo emette a suo nome. Qui dici chi emette per questo proprietario.",
+    "facts": {
+      "address": "Indirizzo",
+      "empty": "Non indicato",
+      "fiscalCode": "Codice fiscale",
+      "guestDocumentSeries": "Sezionale",
+      "legalName": "Nome",
+      "regime": "Chi emette",
+      "stampDutyReference": "Riferimento del bollo",
+      "vatNumber": "Partita IVA"
+    },
+    "fields": {
+      "addressCivic": {
+        "label": "Numero civico"
+      },
+      "addressStreet": {
+        "label": "Via o piazza"
+      },
+      "city": {
+        "label": "Comune"
+      },
+      "fatturaPaRegimeCode": {
+        "hint": "Lo dà il commercialista, per esempio RF01. Se lo lasci vuoto usiamo quello della regola in vigore.",
+        "hintCode": "Se lo lasci vuoto usiamo {{code}}, quello della regola in vigore.",
+        "label": "Regime fiscale della fattura (RF)"
+      },
+      "fiscalCode": {
+        "hint": "Di 16 caratteri per una persona, di 11 cifre per una società.",
+        "label": "Codice fiscale"
+      },
+      "guestDocumentSeries": {
+        "hint": "La serie dei suoi numeri. Lasciala vuota per usare l’anno: {{default}}.",
+        "label": "Sezionale"
+      },
+      "issuerPec": {
+        "label": "PEC"
+      },
+      "issuerSdiRecipientCode": {
+        "hint": "Di 7 caratteri: serve se il proprietario riceve le fatture dallo SDI con un codice suo.",
+        "label": "Codice destinatario"
+      },
+      "legalName": {
+        "label": "Nome e cognome",
+        "labelCompany": "Denominazione o nome"
+      },
+      "postalCode": {
+        "label": "CAP"
+      },
+      "province": {
+        "hint": "Due lettere, per esempio CO.",
+        "label": "Provincia"
+      },
+      "regime": {
+        "label": "Chi emette"
+      },
+      "stampDutyReference": {
+        "hint": "L’autorizzazione al bollo virtuale o il numero del contrassegno. Se lo lasci vuoto la ricevuta scrive «imposta di bollo da assolvere».",
+        "label": "Riferimento del bollo"
+      },
+      "stayVatTreatment": {
+        "ExemptArt10": "Esente IVA (art. 10 n. 8)",
+        "Standard": "Con IVA, secondo la regola in vigore",
+        "hint": "Da confermare con il commercialista: con IVA o esente.",
+        "hintRate": "In vigore oggi: {{percent}}%. Da confermare con il commercialista.",
+        "label": "IVA sul soggiorno"
+      },
+      "vatNumber": {
+        "hint": "11 cifre, senza «IT».",
+        "label": "Partita IVA"
+      }
+    },
+    "foreign": "Il profilo di questo proprietario è di un altro paese: questa scheda modifica solo i profili italiani.",
+    "loadError": "Impossibile caricare il profilo emittente di questo proprietario.",
+    "loading": "Carico il profilo emittente…",
+    "maskedNotice": "I dati del profilo sono nascosti: li legge e li scrive per intero solo chi gestisce la parte economica dei proprietari.",
+    "notFound": "Questo proprietario non c’è più tra i tuoi.",
+    "notForYou": "Il profilo emittente non è per te: lo vede chi può leggere i dati dei proprietari.",
+    "refused": "Questo dato non è valido.",
+    "regime": {
+      "PrivatePerson": {
+        "description": "Un privato senza partita IVA: CasaZen emette una ricevuta a suo nome, con il bollo sopra 77,47 €.",
+        "title": "Persona fisica"
+      },
+      "VatFlatRate": {
+        "description": "Con partita IVA in regime forfettario: fattura senza IVA, con il bollo quando serve.",
+        "title": "Regime forfettario"
+      },
+      "VatOrdinary": {
+        "description": "Con partita IVA in regime ordinario: CasaZen emette una fattura elettronica a suo nome, con il suo sezionale.",
+        "title": "Società o professionista"
+      },
+      "legend": "Chi emette il documento del soggiorno?"
+    },
+    "save": "Salva il profilo",
+    "saveFailed": "Non siamo riusciti a salvare il profilo. Riprova tra poco.",
+    "saved": {
+      "incomplete": "Profilo salvato. Mancano ancora alcuni dati.",
+      "ready": "Profilo salvato: CasaZen può emettere a nome del proprietario."
+    },
+    "state": {
+      "incomplete": "Profilo da completare",
+      "missing": "Mancano ancora: {{fields}}. Finché il profilo non è completo non si emette niente a suo nome.",
+      "missingUnknown": "Mancano ancora alcuni dati. Finché il profilo non è completo non si emette niente a suo nome.",
+      "none": "Questo proprietario non ha ancora un profilo emittente: finché manca, CasaZen non prepara i documenti dei suoi soggiorni.",
+      "ready": "Il profilo è completo: CasaZen può emettere i documenti dei soggiorni a nome del proprietario."
+    },
+    "title": "Emittente dei documenti dei soggiorni"
   }
 }

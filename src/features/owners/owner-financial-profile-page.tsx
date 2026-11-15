@@ -32,6 +32,7 @@ import {
 } from '@/features/owner-accounting/owner-accounting-model';
 import { useOwnerFormat } from '@/features/owner-accounting/use-owner-format';
 import { OwnerAddressSection } from './components/owner-address-form';
+import { OwnerIssuerProfileSection } from './components/owner-issuer-profile-form';
 import { OwnerMandateSection } from './components/owner-mandate-form';
 import { ApprovePolicyDialog, PolicyDialog } from './components/policy-dialog';
 import { ProfileDialog } from './components/profile-dialog';
@@ -74,7 +75,8 @@ const KNOWN_REASONS = [
  * account masked, the mandate, the settlement currency, how revenue and costs are recognized, the rule set that applies with the approval of the
  * accountant, and what is still missing in the activation, each fact with the place where it is completed. Only who manages the owners' finances
  * receives the values in full, and even they see them masked until they ask: the page never asks for the full IBAN of the registry. The versions of the mandate and the
- * structured billing address of the owner (E13/F02/US01/T01) follow the same rule: they are written only by who manages the owners' finances, and read-only otherwise.
+ * structured billing address of the owner (E13/F02/US01/T01) follow the same rule: they are written only by who manages the owners' finances, and read-only otherwise. While the issuance of fiscal documents is on,
+ * the page also has the issuer profile of the owner (E17/F03/US01/T01: who issues the documents of its stays, with its sezionale); the server says who may change it.
  */
 export function OwnerFinancialProfilePage() {
   const { t } = useTranslation();
@@ -171,6 +173,7 @@ function ProfileBody({ ownerId }: { ownerId: string }) {
         {current ? <ProfileFacts profile={current} policy={policyOfCurrent} /> : <p className="break-words text-sm text-foreground/70">{t('ownerProfile.noProfile')}</p>}
         <OwnerMandateSection ownerId={ownerId} currency={current?.settlementCurrency ?? null} canManage={canEdit} />
         <OwnerAddressSection ownerId={ownerId} canManage={canEdit} />
+        <OwnerIssuerProfileSection ownerId={ownerId} />
         <PolicyPanel policy={policyOfCurrent} all={policyList} canManage={canEdit} onApprove={setApproving} onNew={() => setDialog('policy')} />
         <OnboardingFacts loaded={onboarding.data !== undefined} available={onboarding.data !== null} reasons={ownerEntry?.reasons ?? []} properties={properties} />
         {profileList.length > 1 ? <History profiles={profileList} policies={policyList} currentId={current?.id} /> : null}

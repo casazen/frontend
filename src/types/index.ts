@@ -46,6 +46,7 @@ export * from './verification.types';
 export * from './statement.types';
 export * from './owner-accounting.types';
 export * from './owner-invoice.types';
+export * from './owner-issuer-profile.types';
 export * from './withholding.types';
 export * from './routine.types';
 export * from './wire-transfer.types';

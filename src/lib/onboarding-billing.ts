@@ -27,6 +27,7 @@ export const BILLING_ITEM_STEPS: Readonly<Record<BillingSetupItemKey, BillingSte
   auto_issue_unconfirmed: BILLING_STEPS.issuing,
   conservation_agreement_unconfirmed: BILLING_STEPS.italy,
   stamp_duty_unconfirmed: BILLING_STEPS.italy,
+  owner_issuer_missing: BILLING_STEPS.ownerIssuers,
 };
 
 /** The step of each section of the setup: where an item that the app does not know yet (an epic added it) is still opened, by the section it says it belongs to. */

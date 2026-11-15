@@ -32,6 +32,7 @@ export const BILLING_SETUP_ITEM_KEYS = [
   'auto_issue_unconfirmed',
   'conservation_agreement_unconfirmed',
   'stamp_duty_unconfirmed',
+  'owner_issuer_missing',
 ] as const;
 export type BillingSetupItemKey = (typeof BILLING_SETUP_ITEM_KEYS)[number];
 
