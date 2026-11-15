@@ -456,11 +456,14 @@ describe('«Invia una prova» (E15/F02/US02/T01)', () => {
     expect(screen.getByTestId('billing-accountant-test-button')).toBeDisabled();
     expect(screen.getByTestId('fiscal-billing-next')).toBeDisabled();
     expect(screen.getByTestId('billing-save-exit')).toBeDisabled();
+    // The way back is shut as well: the test takes minutes, and its answer lives in this step (leaving it would lose the answer).
+    expect(screen.getByTestId('fiscal-billing-back')).toBeDisabled();
     expect(sendTest).toHaveBeenCalledTimes(1);
 
     answer({ period: '2026-10', queued: true, linkExpiresAt: '2026-12-14T05:00:00Z' });
     await screen.findByTestId('billing-accountant-test-result', undefined, WAIT);
     await waitFor(() => expect(screen.getByTestId('fiscal-billing-next')).toBeEnabled(), WAIT);
+    expect(screen.getByTestId('fiscal-billing-back')).toBeEnabled();
     expect(sendTest).toHaveBeenCalledTimes(1);
   });
 });

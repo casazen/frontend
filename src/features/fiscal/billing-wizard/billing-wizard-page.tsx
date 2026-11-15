@@ -364,7 +364,8 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
         defaultValues={defaults}
         // The answers are on the server, step by step: nothing is kept in the browser, and no old draft of this tab can be laid over what the server has.
         draft={false}
-        navigationDisabled={leaving}
+        // The test send of the step «Commercialista» takes minutes and its answer lives in the step: while it is on its way the way between the steps is shut too, so that the answer is not lost.
+        navigationDisabled={leaving || saveAccountant.isPending || sendAccountant.isPending}
         finishLabel={t('billingWizard.finishLabel')}
         finishFailedMessage={t('billingWizard.saveFailed')}
         // Nothing is saved at the last button: every step saved itself. It only closes the wizard, and the confirmation says what the server says is still missing.
