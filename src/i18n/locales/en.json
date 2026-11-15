@@ -1677,7 +1677,7 @@
       "channelCommissionRulesInvalid": "One of the percentages of the portals is not valid. Check it and try again.",
       "complianceBookingNotFound": "We can't find this stay.",
       "complianceExportTooLarge": "The period holds more proofs than one archive can carry: choose a shorter period.",
-      "complianceProofCoverageInvalid": "A receipt can cover several properties only if they are all in Italy, up to 500. Remove the ones that don't fit and try again.",
+      "complianceProofCoverageInvalid": "A receipt can cover several properties only if they are all in Italy. Untick the properties that are not in Italy or, if it is the property chosen above that is not, untick all the others.",
       "complianceProofDayInvalid": "The day of the proof is not valid: choose a day in the past.",
       "complianceProofFileInvalid": "Choose the file of the proof: the one you sent is empty or missing.",
       "complianceProofNotFound": "We can't find this proof: it may no longer exist or you may not be able to see it.",
@@ -7640,11 +7640,9 @@
       "fileHint": "PDF, JPG or PNG.",
       "fileInvalid": "The file must be a PDF, a JPG or a PNG.",
       "flats": {
-        "all": "All properties",
         "current": "{{name}} (this property)",
-        "hint": "If you use one portal account for several properties, the receipt of the day covers all of them. Properties in Italy only.",
-        "legend": "This receipt covers",
-        "onlyThis": "Only this property"
+        "hint": "If you use one portal account for several properties, the receipt of the day covers all of them. A receipt can cover several properties only if they are all in Italy, up to {{max}}.",
+        "legend": "This receipt covers"
       },
       "kind": "What it proves",
       "month": "Month",

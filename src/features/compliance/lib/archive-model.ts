@@ -142,15 +142,6 @@ export function isMonthKind(kind: ComplianceProofKind): boolean {
 /** The most flats one receipt can name (`ComplianceArchiveLimits.MaxCoveredProperties`): the server refuses a longer list with a 422. */
 export const MAX_RECEIPT_FLATS = 500;
 
-/**
- * Whether a flat is in Italy, where the Alloggiati communication is made: a receipt that covers more than one flat covers only flats there (the server answers 422 otherwise). It reads
- * the country as the server does: no country at all (an old row) is Italy, and so is `IT` in any case.
- */
-export function isItalianFlat(flat: { country?: string | null }): boolean {
-  const country = flat.country?.trim();
-  return !country || country.toUpperCase() === 'IT';
-}
-
 /** The groups of the report, in the order they are told: what is missing first, then what only the channel manager can tell, then what is proven. */
 export const COVERAGE_GROUPS: readonly CoverageEvidenceClass[] = ['Missing', 'ExternalVerificationRequired', 'OfficialProof', 'NotApplicable'];
 

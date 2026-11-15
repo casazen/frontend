@@ -34,12 +34,15 @@ const BOOKING_ID = '11111111-1111-4111-8111-111111111111';
 const NAMES: Record<string, string> = { [A]: 'Casa Como', [B]: 'Villa Rosa', [C]: 'Attico Lecco', [D]: 'Chalet Lugano' };
 /** The stays each flat has that a receipt of the day would put in order. */
 const STAYS: Record<string, number> = { [A]: 2, [B]: 1, [C]: 3, [D]: 0 };
-/** The properties of the organization: three in Italy (one with no country, which the server reads as Italian) and one in Switzerland. */
+/**
+ * The properties of the organization as the list of the API gives them: an id and a name, no country (the API does not send one). Three are in Italy and `D` is in Switzerland,
+ * which only the server knows: it refuses `D` among several flats (see `serverSays`).
+ */
 const PROPERTIES: ProofUploadProperty[] = [
-  { id: A, name: NAMES[A], country: 'IT' },
-  { id: B, name: NAMES[B], country: 'IT' },
+  { id: A, name: NAMES[A] },
+  { id: B, name: NAMES[B] },
   { id: C, name: NAMES[C] },
-  { id: D, name: NAMES[D], country: 'CH' },
+  { id: D, name: NAMES[D] },
 ];
 const DAY = '2026-11-14';
 const PORTAL = 'https://portal.example.test/ricevute/';
@@ -51,9 +54,9 @@ function newClient() {
   return new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
 }
 
-function problem(status: number): AxiosError {
+function problem(status: number, code?: string): AxiosError {
   const config = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig;
-  return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, { status, data: {}, statusText: '', headers: {}, config });
+  return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, { status, data: code ? { code } : {}, statusText: '', headers: {}, config });
 }
 
 /** What the server says a receipt of `DAY` would prove for the flats asked for, in the order asked. */
@@ -61,6 +64,13 @@ function coverageOf(params: URLSearchParams): ReceiptCoverage {
   const ids = params.getAll('propertyIds');
   const properties = ids.map((id) => ({ propertyId: id, propertyName: NAMES[id], stays: STAYS[id] }));
   return { day: params.get('day') ?? '', stays: properties.reduce((sum, flat) => sum + flat.stays, 0), properties };
+}
+
+/** The server as it is: a flat outside Italy (here `D`) is refused among several flats (422), whatever the list of the API says of it. */
+function serverSays(params: URLSearchParams): ReceiptCoverage {
+  const ids = params.getAll('propertyIds');
+  if (ids.length > 1 && ids.includes(D)) throw problem(422, 'compliance_proof_coverage_invalid');
+  return coverageOf(params);
 }
 
 /** The answer of the upload of a receipt: the flats it covers and the stays it proves. */
@@ -92,7 +102,7 @@ interface Answers {
 }
 
 /** The GET calls of the page, answered by their address; `asked.coverage` keeps the query string of every question about a receipt. */
-function answer({ coverage = coverageOf, booking = archiveOf() }: Answers = {}) {
+function answer({ coverage = serverSays, booking = archiveOf() }: Answers = {}) {
   vi.mocked(axios.get).mockImplementation((async (url: string, config?: { params?: unknown }) => {
     if (url === '/compliance/archive/proofs/coverage') {
       const params = config?.params as URLSearchParams;
@@ -163,13 +173,15 @@ describe('the receipt covers the flats the host chose', () => {
     expect(asked.coverage[0].getAll('propertyIds')).toEqual([A]);
     expect([...new Set(asked.coverage[0].keys())]).toEqual(['day', 'propertyIds']);
 
-    // The flats offered are the Italian ones (the one with no country counts as Italian, as on the server), the one of the request first, ticked and fixed. The Swiss one is not there.
+    // The flats offered are the ones of the list, one by one, the one of the request first, ticked and fixed. The list says nothing of the country, so none is left out, and there is no
+    // button that ticks them all: a receipt covers the flats the host chose.
     const flats = screen.getByTestId('proof-upload-flats');
-    expect(within(flats).getAllByRole('checkbox').map((box) => box.getAttribute('data-testid'))).toEqual([`proof-upload-flat-${A}`, `proof-upload-flat-${B}`, `proof-upload-flat-${C}`]);
+    expect(within(flats).getAllByRole('checkbox').map((box) => box.getAttribute('data-testid'))).toEqual([`proof-upload-flat-${A}`, `proof-upload-flat-${B}`, `proof-upload-flat-${C}`, `proof-upload-flat-${D}`]);
     expect(screen.getByTestId(`proof-upload-flat-${A}`)).toBeDisabled();
     expect(screen.getByTestId(`proof-upload-flat-${A}`)).toHaveAttribute('aria-checked', 'true');
     expect(within(flats).getByText('Casa Como (questo immobile)')).toBeInTheDocument();
-    expect(screen.queryByTestId(`proof-upload-flat-${D}`)).not.toBeInTheDocument();
+    expect(screen.queryByTestId('proof-upload-flats-all')).not.toBeInTheDocument();
+    expect(within(flats).getByText(/solo se sono tutti in Italia/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId(`proof-upload-flat-${B}`));
 
@@ -214,8 +226,8 @@ describe('the receipt covers the flats the host chose', () => {
     expect(asked.coverage.every((params) => params.getAll('propertyIds').join() === A)).toBe(true);
   });
 
-  // The flats are a choice of the receipt of the Alloggiati communication only, and only among flats in Italy: the server refuses a list for another kind of proof or a flat outside Italy
-  // among several, so none is ever sent for them (a flat ticked and then left by changing the kind or the flat of the request is not sent either).
+  // The flats are a choice of the receipt of the Alloggiati communication only: the server refuses a list for another kind of proof, so none is ever sent for it (a flat ticked and then
+  // left by changing the kind or the flat of the request is not sent either).
   it('dialog_FlatsTickedThenTheKindChanged_AreNotSentWithAProofThatCoversOneFlat', async () => {
     renderDialog();
     await total();
@@ -238,18 +250,52 @@ describe('the receipt covers the flats the host chose', () => {
     await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
   });
 
-  it('dialog_FlatOfTheRequestOutsideItaly_OffersNoOtherFlatAndAsksAboutThatFlatAlone', async () => {
-    renderDialog({ prefill: { propertyId: D, kind: 'AlloggiatiReceipt', day: DAY } });
+  // The list of the API says nothing of the country of a flat, so a flat outside Italy (here `D`) is offered like the others and only the server knows it: it refuses it among several flats
+  // (422 `compliance_proof_coverage_invalid`). The summary then says plainly what a receipt can cover and how to take the flat off, with no «Riprova» (asking again would get the same), and
+  // the summary and the save come back as soon as the flat is off: nothing stays blocked.
+  it('dialog_FlatOutsideItalyTicked_SummaryRefusalSaysWhatAReceiptCoversAndHowToTakeTheFlatOffThenTheSaveComesBack', async () => {
+    renderDialog({ flags: { purgeDocumentsAfterReceipt: true } });
+    expect(await total()).toHaveTextContent('Diventano in regola: 2 soggiorni');
+    chooseFile();
 
-    expect(await total()).toHaveTextContent('Con questa ricevuta non diventa in regola nessun soggiorno.');
-    expect(screen.queryByTestId('proof-upload-flats')).not.toBeInTheDocument();
-    expect(lastCoverage().getAll('propertyIds')).toEqual([D]);
+    fireEvent.click(screen.getByTestId(`proof-upload-flat-${D}`));
 
+    const refusal = await screen.findByTestId('proof-upload-coverage-error', undefined, { timeout: 5000 });
+    expect(refusal).toHaveTextContent('Una ricevuta può valere per più immobili solo se sono tutti in Italia');
+    expect(refusal).toHaveTextContent('Togli la spunta agli immobili che non sono in Italia');
+    expect(within(refusal).queryByTestId('proof-upload-coverage-retry')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('proof-upload-coverage')).not.toBeInTheDocument();
+    expect(lastCoverage().getAll('propertyIds')).toEqual([A, D]);
+
+    fireEvent.click(screen.getByTestId(`proof-upload-flat-${D}`));
+
+    expect(await total()).toHaveTextContent('Diventano in regola: 2 soggiorni');
+    expect(screen.queryByTestId('proof-upload-coverage-error')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId('proof-upload-submit')).toBeEnabled());
+  });
+
+  // The same refusal can come with the save (the host went on without waiting for the summary): it is told in the same words, in the layer, and the flat can be taken off to save again.
+  it('dialog_UploadRefusedBecauseAFlatIsOutsideItaly_SaysSoAndTheHostCanTakeTheFlatOffAndSaveAgain', async () => {
+    vi.mocked(axios.post).mockRejectedValueOnce(problem(422, 'compliance_proof_coverage_invalid'));
+    renderDialog();
+    await total();
+    fireEvent.click(screen.getByTestId(`proof-upload-flat-${D}`));
     chooseFile();
     fireEvent.click(screen.getByTestId('proof-upload-submit'));
-    const form = await waitFor(() => posted());
-    expect(form.get('propertyId')).toBe(D);
-    expect(form.getAll('propertyIds')).toEqual([]);
+
+    const error = await screen.findByTestId('proof-upload-error');
+    expect(error).toHaveTextContent('Una ricevuta può valere per più immobili solo se sono tutti in Italia');
+    expect(error).toHaveTextContent('Togli la spunta agli immobili che non sono in Italia');
+    expect(screen.getByTestId('proof-upload-dialog')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId(`proof-upload-flat-${D}`));
+
+    expect(screen.queryByTestId('proof-upload-error')).not.toBeInTheDocument();
+    expect(screen.getByTestId('proof-upload-submit')).toBeEnabled();
+    fireEvent.click(screen.getByTestId('proof-upload-submit'));
+    expect(await screen.findByTestId('proof-upload-outcome')).toBeInTheDocument();
+    expect(vi.mocked(axios.post)).toHaveBeenCalledTimes(2);
+    expect((vi.mocked(axios.post).mock.calls[1][1] as FormData).getAll('propertyIds')).toEqual([]);
   });
 
   it('dialog_FlatOfTheRequestChanged_IsCoveredOnceAndTheOldOneIsOfferedAgain', async () => {

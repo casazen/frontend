@@ -1677,7 +1677,7 @@
       "channelCommissionRulesInvalid": "Una delle percentuali dei portali non è valida. Controlla e riprova.",
       "complianceBookingNotFound": "Non troviamo questo soggiorno.",
       "complianceExportTooLarge": "Nel periodo ci sono più prove di quante ne entrino in un archivio: scegli un periodo più breve.",
-      "complianceProofCoverageInvalid": "Una ricevuta può valere per più immobili solo se sono tutti in Italia, al massimo 500. Togli quelli che non vanno e riprova.",
+      "complianceProofCoverageInvalid": "Una ricevuta può valere per più immobili solo se sono tutti in Italia. Togli la spunta agli immobili che non sono in Italia oppure, se è l'immobile scelto sopra a non esserlo, a tutti gli altri.",
       "complianceProofDayInvalid": "Il giorno della prova non è valido: scegli un giorno passato.",
       "complianceProofFileInvalid": "Scegli il file della prova: quello che hai caricato è vuoto o non c'è.",
       "complianceProofNotFound": "Non troviamo questa prova: forse non esiste più o non puoi vederla.",
@@ -7640,11 +7640,9 @@
       "fileHint": "PDF, JPG o PNG.",
       "fileInvalid": "Il file deve essere un PDF, un JPG o un PNG.",
       "flats": {
-        "all": "Tutti gli immobili",
         "current": "{{name}} (questo immobile)",
-        "hint": "Se usi un solo account del portale per più immobili, la ricevuta del giorno li comprende tutti. Solo immobili in Italia.",
-        "legend": "Questa ricevuta vale per",
-        "onlyThis": "Solo questo immobile"
+        "hint": "Se usi un solo account del portale per più immobili, la ricevuta del giorno li comprende tutti. Una ricevuta può valere per più immobili solo se sono tutti in Italia, al massimo {{max}}.",
+        "legend": "Questa ricevuta vale per"
       },
       "kind": "Cosa dimostra",
       "month": "Mese",

@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
+import { COMPLIANCE_ARCHIVE_ERROR, complianceArchiveErrorCode } from '@/api/compliance-archive.api';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -13,7 +14,7 @@ import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import { formatStayDate, todayInRome } from '@/lib/stay-dates';
 import { useReceiptCoverage, useUploadProof } from '@/queries/compliance-archive';
 import type { ComplianceProofKind } from '@/types';
-import { MAX_RECEIPT_FLATS, formatPeriod, isItalianFlat, isMonthKind, listedMonths } from '../lib/archive-model';
+import { MAX_RECEIPT_FLATS, formatPeriod, isMonthKind, listedMonths } from '../lib/archive-model';
 import { ReceiptRecoverySteps } from './receipt-recovery-steps';
 
 /** What a dialog starts from: the property and the day or month the page is filtered to, or the row of the report it was opened from. */
@@ -26,12 +27,10 @@ export interface ProofUploadPrefill {
   period?: string;
 }
 
-/** What the dialog needs of a property: its name, and its country to know the flats a receipt may cover (the `Property` of the list has both). */
+/** What the dialog needs of a property: its id and its name (the `Property` of the list has both). The list of the API says nothing of the country of a flat, so none is asked for here. */
 export interface ProofUploadProperty {
   id: string;
   name: string;
-  /** ISO 3166-1 alpha-2 code. A flat with none is read as Italian, as the server reads it. */
-  country?: string | null;
 }
 
 const MONTH = /^\d{4}-\d{2}$/;
@@ -60,9 +59,12 @@ interface ProofUploadDialogProps {
  * it; a hook that stayed mounted with the page would keep watching it, and would show the refusal of an older upload again on reopening.
  *
  * The receipt of an Alloggiati communication is one for each day and for each account of the portal, whatever the number of flats (E20/F02/US02/T01, decision O3): after the
- * day the dialog asks which flats the receipt is for (the one it is filed under, always, and the other Italian flats of the organization), says before saving how many stays
+ * day the dialog asks which flats the receipt is for (the one it is filed under, always, and the others the host ticks one by one), says before saving how many stays
  * become in order with it («Diventano in regola: N soggiorni», UX-05) and tells the outcome after, in this same layer. It guides the host who has no receipt yet through
  * «Recupera la ricevuta» (the portal, the day, the file dragged here) without leaving the page.
+ *
+ * The list of the API carries no country, so the dialog cannot tell which flats are in Italy: it says that a receipt covers several flats only when they all are, and the server's
+ * refusal (422 `compliance_proof_coverage_invalid`, on the summary and on the upload) is told in plain words with how to take the flat off the receipt.
  */
 export function ProofUploadDialog({ open, ...dialog }: ProofUploadDialogProps) {
   return open ? <OpenProofUploadDialog {...dialog} /> : null;
@@ -114,12 +116,11 @@ function UploadForm({ onClose, properties, kinds, prefill, alloggiatiPortalUrl, 
   const when = monthKind ? month : day;
   const dayProblem = !monthKind && day !== '' && (day > today || day < FIRST_DAY);
 
-  // The flats a receipt may cover: the Italian ones, and only when the one it is filed under is Italian too (the server answers 422 for a flat outside Italy among several).
+  // The flats a receipt may cover: the flats of the list, one by one (the server answers 422 when one of several is outside Italy, which the list cannot tell: the host is told then).
   // With one flat only there is nothing to choose, and the receipt covers it.
   const primaryFlat = properties.find((flat) => flat.id === propertyId);
-  const italianFlats = properties.filter(isItalianFlat);
-  const flatsOffered = isReceipt && primaryFlat !== undefined && isItalianFlat(primaryFlat) && italianFlats.length > 1;
-  const addedFlats = flatsOffered ? italianFlats.filter((flat) => flat.id !== propertyId && others.includes(flat.id)).slice(0, MAX_RECEIPT_FLATS - 1) : [];
+  const flatsOffered = isReceipt && primaryFlat !== undefined && properties.length > 1;
+  const addedFlats = flatsOffered ? properties.filter((flat) => flat.id !== propertyId && others.includes(flat.id)).slice(0, MAX_RECEIPT_FLATS - 1) : [];
   // The flats the receipt covers, the one it is filed under first: exactly what the summary asks about and what the upload sends.
   const covered = propertyId === '' ? [] : [propertyId, ...addedFlats.map((flat) => flat.id)];
 
@@ -164,13 +165,6 @@ function UploadForm({ onClose, properties, kinds, prefill, alloggiatiPortalUrl, 
   const toggleFlat = (id: string, covers: boolean) => {
     upload.reset();
     setOthers((current) => (covers ? [...current.filter((other) => other !== id), id] : current.filter((other) => other !== id)));
-  };
-
-  const everyFlat = italianFlats.filter((flat) => flat.id !== propertyId).slice(0, MAX_RECEIPT_FLATS - 1);
-  const allChosen = everyFlat.length > 0 && everyFlat.every((flat) => others.includes(flat.id));
-  const chooseAllFlats = () => {
-    upload.reset();
-    setOthers(allChosen ? [] : everyFlat.map((flat) => flat.id));
   };
 
   if (outcome) {
@@ -323,14 +317,12 @@ function UploadForm({ onClose, properties, kinds, prefill, alloggiatiPortalUrl, 
 
         {flatsOffered ? (
           <FlatsChoice
-            flats={[...italianFlats.filter((flat) => flat.id === propertyId), ...italianFlats.filter((flat) => flat.id !== propertyId)]}
+            flats={[...properties.filter((flat) => flat.id === propertyId), ...properties.filter((flat) => flat.id !== propertyId)]}
             primaryId={propertyId}
             added={others}
             full={covered.length >= MAX_RECEIPT_FLATS}
-            allChosen={allChosen}
             disabled={pending}
             onToggle={toggleFlat}
-            onAll={chooseAllFlats}
           />
         ) : null}
 
@@ -364,33 +356,31 @@ function UploadForm({ onClose, properties, kinds, prefill, alloggiatiPortalUrl, 
 }
 
 interface FlatsChoiceProps {
-  /** The Italian flats the receipt may cover, the one it is filed under first. */
+  /** The flats the receipt may cover, the one it is filed under first. */
   flats: readonly ProofUploadProperty[];
   /** The flat the receipt is filed under: it is always covered, so it is ticked and cannot be unticked. */
   primaryId: string;
   /** The ids of the other flats the host ticked. */
   added: readonly string[];
-  /** The receipt names as many flats as the server takes: the ones not ticked wait. */
+  /** The receipt names as many flats as one summary can carry: the ones not ticked wait. */
   full: boolean;
-  /** Every other flat is ticked: the button then goes back to the flat alone. */
-  allChosen: boolean;
   disabled: boolean;
   onToggle: (id: string, covers: boolean) => void;
-  onAll: () => void;
 }
 
 /**
- * «Questa ricevuta vale per»: the Italian flats of the organization the receipt of the day covers, the one it is filed under first (the default, always covered). An agency with one
- * account on the police portal gets one receipt a day for all of its flats, so the others are ticked here. Nothing is ticked for the host: with no other flat ticked the receipt covers
- * the one it is filed under alone, never every flat.
+ * «Questa ricevuta vale per»: the flats of the organization the receipt of the day covers, the one it is filed under first (the default, always covered). An agency with one
+ * account on the police portal gets one receipt a day for all of its flats, so the others are ticked here, one by one. Nothing is ticked for the host: with no other flat ticked the
+ * receipt covers the one it is filed under alone, never every flat. The list of the API does not say which flats are in Italy, so the text says that a receipt covers several flats only
+ * when they all are.
  */
-function FlatsChoice({ flats, primaryId, added, full, allChosen, disabled, onToggle, onAll }: FlatsChoiceProps) {
+function FlatsChoice({ flats, primaryId, added, full, disabled, onToggle }: FlatsChoiceProps) {
   const { t } = useTranslation();
 
   return (
     <fieldset className="min-w-0 space-y-1" disabled={disabled} data-testid="proof-upload-flats">
       <legend className="text-sm font-medium leading-snug">{t('complianceArchive.upload.flats.legend')}</legend>
-      <p className="break-words text-sm text-muted-foreground">{t('complianceArchive.upload.flats.hint')}</p>
+      <p className="break-words text-sm text-muted-foreground">{t('complianceArchive.upload.flats.hint', { max: MAX_RECEIPT_FLATS })}</p>
       <div className="max-h-48 overflow-y-auto">
         {flats.map((flat) => {
           const isPrimary = flat.id === primaryId;
@@ -408,11 +398,18 @@ function FlatsChoice({ flats, primaryId, added, full, allChosen, disabled, onTog
           );
         })}
       </div>
-      <Button type="button" variant="ghost" size="sm" className="min-h-11" onClick={onAll} data-testid="proof-upload-flats-all">
-        {allChosen ? t('complianceArchive.upload.flats.onlyThis') : t('complianceArchive.upload.flats.all')}
-      </Button>
     </fieldset>
   );
+}
+
+/**
+ * What the server answered to the question about the receipt when the answer is about the question itself and asking again would get the same: a flat it does not find (404) or flats
+ * a receipt cannot cover (422 `compliance_proof_coverage_invalid`, a flat outside Italy among several). The host changes the flats, which asks a new question: no «Riprova» then.
+ * Any other failure is a failure to answer, which may pass.
+ */
+function summaryRefusal(error: unknown): 'notFound' | 'coverageInvalid' | undefined {
+  if (getHttpStatus(error) === 404) return 'notFound';
+  return complianceArchiveErrorCode(error) === COMPLIANCE_ARCHIVE_ERROR.proofCoverageInvalid ? 'coverageInvalid' : undefined;
 }
 
 interface CoverageSummaryProps {
@@ -433,21 +430,21 @@ function CoverageSummary({ coverage, purge, busy }: CoverageSummaryProps) {
   const { t } = useTranslation();
 
   if (coverage.isError) {
-    const notFound = getHttpStatus(coverage.error) === 404;
+    const refusal = summaryRefusal(coverage.error);
     const failed = getProblemMessage(coverage.error, t) ?? t(purge ? 'complianceArchive.upload.coverage.failedPurge' : 'complianceArchive.upload.coverage.failed');
     return (
       <Alert
         variant="warning"
         data-testid="proof-upload-coverage-error"
         action={
-          notFound ? undefined : (
+          refusal ? undefined : (
             <Button type="button" variant="outline" size="sm" className="min-h-11" disabled={busy} onClick={() => void coverage.refetch()} data-testid="proof-upload-coverage-retry">
               {t('complianceArchive.upload.coverage.retry')}
             </Button>
           )
         }
       >
-        {notFound ? t('complianceArchive.upload.coverage.notFound') : failed}
+        {refusal === 'notFound' ? t('complianceArchive.upload.coverage.notFound') : failed}
       </Alert>
     );
   }
