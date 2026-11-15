@@ -165,6 +165,29 @@ describe('the answers of the API', () => {
     expect(next.lockCode).toBeNull();
   });
 
+  it('afterSelfie_OkWithTheCodeHeldBack_KeepsWhyAndNoCode_AndACodeNeverComesWithIt', () => {
+    const held = afterSelfie(start({ step: 'selfie' }), {
+      result: 'ok',
+      guidanceCodes: [],
+      attemptsRemaining: 2,
+      operatorPathOpen: true,
+      lockCode: null,
+      lockCodeHeld: ' tourist_tax_due ',
+    });
+    expect(held.stage).toBe('done');
+    expect(held.lockCode).toBeNull();
+    expect(held.lockCodeHeld).toBe('tourist_tax_due');
+
+    // A code that came is what the guest sees: no «held» next to it.
+    const given = afterSelfie(start({ step: 'selfie' }), { result: 'ok', guidanceCodes: [], attemptsRemaining: 2, operatorPathOpen: true, lockCode: '4821', lockCodeHeld: 'tourist_tax_due' });
+    expect(given.lockCode).toBe('4821');
+    expect(given.lockCodeHeld).toBeNull();
+
+    // Neither a retry nor a person keeps it.
+    const retry = afterSelfie(start({ step: 'selfie' }), { result: 'retry', guidanceCodes: ['move_closer'], attemptsRemaining: 2, operatorPathOpen: true, lockCodeHeld: 'tourist_tax_due' });
+    expect(retry.lockCodeHeld).toBeNull();
+  });
+
   it('afterSelfie_RetryThatCarriesACode_NeverKeepsTheCode', () => {
     const next = afterSelfie(start({ step: 'selfie' }), { result: 'retry', guidanceCodes: ['move_closer'], attemptsRemaining: 2, operatorPathOpen: true, lockCode: '4821' });
 

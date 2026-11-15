@@ -192,13 +192,25 @@ export const ACTION_ROUTE_MAP = {
   },
 } satisfies Record<string, TodoActionTarget>;
 
+/**
+ * Where "Do now" leads for a kind of item (`activityType`) that has a page of its own though it shares its action with others: it wins over the entry of the action, which stays its
+ * fallback for who cannot open it.
+ * - `TouristTaxRefundDue` (E25/F01/US01/T01, action `ReviewBooking`): the tax step of the check-in wizard of the booking, where the collection and the amount to give back to the guest are
+ *   told (the page of the booking tells neither); for who may not write the booking, the page of the booking.
+ */
+const ROUTE_MAP_BY_TYPE = {
+  TouristTaxRefundDue: {
+    route: { path: '/app/short-rent/bookings/:id/check-in', target: 'entity', entityType: BOOKING, search: { step: 'tax' } },
+  },
+} satisfies Record<string, TodoActionTarget>;
+
 /** An action this version of the app opens. The server may send one it does not know yet: it has no button. */
 export type TodoAction = keyof typeof ACTION_ROUTE_MAP;
 
 /** The id a guid-valued field has when the server had nothing to put there. */
 const NO_ID = '00000000-0000-0000-0000-000000000000';
 
-type TodoRouteSubject = Pick<TodoActivity, 'action' | 'entityType' | 'entityId' | 'propertyId'>;
+type TodoRouteSubject = Pick<TodoActivity, 'action' | 'entityType' | 'entityId' | 'propertyId'> & Partial<Pick<TodoActivity, 'activityType'>>;
 
 function usable(id: string | null | undefined): id is string {
   return Boolean(id) && id !== NO_ID;
@@ -256,12 +268,18 @@ function buildRoute(route: TodoRoute, activity: TodoRouteSubject, hasPermission?
  * its read-only fallback. The button is then left out, and never sends the person to a page that answers "no access".
  */
 export function todoActionRoute(activity: TodoRouteSubject, hasPermission?: PermissionPredicate): string | null {
-  if (!Object.hasOwn(ACTION_ROUTE_MAP, activity.action)) return null;
-  const target: TodoActionTarget = ACTION_ROUTE_MAP[activity.action as TodoAction];
-  const fallbacks = target.fallback === undefined ? [] : Array.isArray(target.fallback) ? target.fallback : [target.fallback as TodoRoute];
-  for (const route of [target.route, ...fallbacks]) {
-    const address = buildRoute(route, activity, hasPermission);
-    if (address) return address;
+  const ofItsType: TodoActionTarget | undefined =
+    activity.activityType !== undefined && Object.hasOwn(ROUTE_MAP_BY_TYPE, activity.activityType)
+      ? ROUTE_MAP_BY_TYPE[activity.activityType as keyof typeof ROUTE_MAP_BY_TYPE]
+      : undefined;
+  const ofItsAction: TodoActionTarget | undefined = Object.hasOwn(ACTION_ROUTE_MAP, activity.action) ? ACTION_ROUTE_MAP[activity.action as TodoAction] : undefined;
+  for (const target of [ofItsType, ofItsAction]) {
+    if (!target) continue;
+    const fallbacks = target.fallback === undefined ? [] : Array.isArray(target.fallback) ? target.fallback : [target.fallback as TodoRoute];
+    for (const route of [target.route, ...fallbacks]) {
+      const address = buildRoute(route, activity, hasPermission);
+      if (address) return address;
+    }
   }
   return null;
 }

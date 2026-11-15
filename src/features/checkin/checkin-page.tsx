@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { FormProvider, useFieldArray, useForm, useWatch, type FieldErrors, type FieldPath } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { Button } from '@/components/ui/button';
+import { isFeatureEnabled } from '@/config/feature-flags';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { formatDate } from '@/lib/utils';
-import { useCheckInContext, useSetCheckInLanguage, useSubmitGuestCheckIn } from '@/queries/use-checkin';
+import { useCheckInContext, useGuestTouristTax, useSetCheckInLanguage, useSubmitGuestCheckIn } from '@/queries/use-checkin';
 import { publicCheckinApi } from '@/api/checkin.api';
 import {
   MAX_STAY_GUESTS,
@@ -41,6 +43,8 @@ import { INVOICE_DATA_FIELDS } from '@/types/invoice-data.types';
 import type { AlloggiatiCodeList, CheckInDocumentReadResult, StayGuestType } from '@/types/public-checkin.types';
 import { ConsentStep } from './ConsentStep';
 import { IdentityStep } from './identity-step';
+import { blocksNextStep, guestTaxAvailability, guestTaxOutlook, isShownOnCompletedCheckIn, withoutPaymentReturn } from './lib/tourist-tax-model';
+import { TouristTaxStep } from './tourist-tax-step';
 import { useIdentityVerification } from './use-identity-verification';
 
 type FormPath = FieldPath<PublicCheckInFormValues>;
@@ -48,10 +52,11 @@ type FormPath = FieldPath<PublicCheckInFormValues>;
 const COMPLETE_STATUSES = new Set(['Completo', 'AlloggiatiInviato']);
 
 /**
- * The steps of the page, in order: the photo of the document, the guests, the document, the identity check (E03/F04/US03/T01, only while the API
- * offers it), the invoice (FIS-01, optional) and the consents. The invoice step comes after everything the guests say about themselves and before the
- * privacy notice, which stays the last thing the guest reads before sending. A number is the name of a step, not its place: the place is its position
- * in `stepsOf`.
+ * The steps of the page, in order: the photo of the document, the guests, the document, the tourist tax (E25/F01/US02/T01, only while the API offers the
+ * payment), the identity check (E03/F04/US03/T01, only while the API offers it), the invoice (FIS-01, optional) and the consents. The tax comes after
+ * everything the guests say about themselves and before the identity check, which is where the lock code is given: an organization that asks for the tax
+ * before the code has it paid by then. The invoice step comes before the privacy notice, which stays the last thing the guest reads before sending. A number
+ * is the name of a step, not its place: the place is its position in `stepsOf`.
  */
 const STEP_SCAN = 1;
 const STEP_GUESTS = 2;
@@ -59,15 +64,23 @@ const STEP_DOCUMENT = 3;
 const STEP_INVOICE = 4;
 const STEP_CONSENTS = 5;
 const STEP_IDENTITY = 6;
+const STEP_TAX = 7;
+
+/** Every step in the order the page shows them: the steps that are not in `stepsOf` are skipped, and the step that follows one that went away is found here. */
+const STEP_ORDER: readonly number[] = [STEP_SCAN, STEP_GUESTS, STEP_DOCUMENT, STEP_TAX, STEP_IDENTITY, STEP_INVOICE, STEP_CONSENTS];
 
 /**
  * The steps of the page in order. The identity step is there only while the API offers the identity verification (`identityVerification` in the
- * context): with the verification off the page has the steps it has always had.
+ * context), the tax step only while it offers the tourist tax payment (the flag on, the organization offering it, its account ready): with both off the
+ * page has the steps it has always had.
  */
-function stepsOf(identity: boolean): readonly number[] {
-  return identity
-    ? [STEP_SCAN, STEP_GUESTS, STEP_DOCUMENT, STEP_IDENTITY, STEP_INVOICE, STEP_CONSENTS]
-    : [STEP_SCAN, STEP_GUESTS, STEP_DOCUMENT, STEP_INVOICE, STEP_CONSENTS];
+function stepsOf(identity: boolean, tax: boolean): readonly number[] {
+  return STEP_ORDER.filter((candidate) => (candidate === STEP_IDENTITY ? identity : candidate === STEP_TAX ? tax : true));
+}
+
+/** The step a guest is at when the one they were at went away while the page was open (the verification or the tax payment was switched off): the one that follows it. */
+function stepAfterGone(gone: number, steps: readonly number[]): number {
+  return STEP_ORDER.slice(STEP_ORDER.indexOf(gone) + 1).find((candidate) => steps.includes(candidate)) ?? STEP_INVOICE;
 }
 
 function scanReasonKey(reason?: string | null): string {
@@ -167,10 +180,30 @@ export function CheckInPage() {
   const saveLanguage = useSetCheckInLanguage(token);
   // The identity check (CHK-11): its state lives here, so that going back and forth between the steps keeps where the guest is in it.
   const identity = useIdentityVerification(token, context?.identityVerification);
-  const steps = stepsOf(identity.progress !== null);
+  // The tourist tax (E25/F01/US02/T01): asked only while the flag is on and the link is known; with the flag off nothing is asked and nothing changes on the page. The page has
+  // the step while the API offers the payment (a 404 or a 409 is «not offered», whatever an earlier answer left in the cache) or when it cannot be read and the guest may try again.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { flags } = useFeatureFlags();
+  const taxOffered = isFeatureEnabled(flags, 'touristTaxOnlinePayment');
+  const taxRead = useGuestTouristTax(token, taxOffered && Boolean(context));
+  const taxAvailability = guestTaxAvailability({
+    enabled: taxOffered,
+    isPending: taxRead.isPending,
+    isError: taxRead.isError,
+    error: taxRead.error,
+    hasData: taxRead.data !== undefined,
+  });
+  const taxView = taxAvailability === 'ready' ? (taxRead.data ?? null) : null;
+  const steps = stepsOf(identity.progress !== null, taxAvailability === 'ready' || taxAvailability === 'failed');
   const [step, setStep] = useState<number>(STEP_SCAN);
-  // An identity step that went away (the verification was switched off while the page was open) leaves the guest at the step that follows it.
-  const current = steps.includes(step) ? step : STEP_INVOICE;
+  // A step that went away (the verification or the tax payment was switched off while the page was open) leaves the guest at the step that follows it.
+  const current = steps.includes(step) ? step : stepAfterGone(step, steps);
+  // The payment cannot be made (the server says it is not offered, e.g. the platform key is not there): the backend then does not hold the lock code either, so the guest is never kept out.
+  const [taxCannotPay, setTaxCannotPay] = useState(false);
+  // The organization asks for the tax before the lock code and something can still be paid: the guest stays at the step until the server records the payment.
+  const taxBlocksNext = current === STEP_TAX && taxView !== null && blocksNextStep(taxView) && !taxCannotPay;
+  // The guest's confirmation of the payment is under way: «Indietro» and «Avanti» wait for it, so the step is not left while the money moves.
+  const [taxPaying, setTaxPaying] = useState(false);
   const stepIndex = steps.indexOf(current);
   const totalSteps = steps.length;
   const [submitted, setSubmitted] = useState(false);
@@ -231,6 +264,13 @@ export function CheckInPage() {
     formElement.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
   }, [focusRequest]);
 
+  // A payment method that redirects sends the guest back to this page with the secret of the intent in the address (E25/F01/US02/T01): the address is replaced by the one without
+  // it, so the secret stays neither in the address bar nor in the history. What the payment did is read from the server, never from these words.
+  useEffect(() => {
+    const cleaned = withoutPaymentReturn(searchParams);
+    if (cleaned) setSearchParams(cleaned, { replace: true });
+  }, [searchParams, setSearchParams]);
+
   const codeSource = useMemo<CodeTableSource>(
     () => ({
       scope: `checkin-${token}`,
@@ -279,6 +319,8 @@ export function CheckInPage() {
     }
     // The identity check goes on only when it is over: it passed, or a person was asked and has it (the way to a person is always open).
     if (current === STEP_IDENTITY && !identity.concluded) return;
+    // The tax the organization asks for before the lock code goes on only when the server has recorded it, and nothing goes on while the payment is being confirmed.
+    if (taxBlocksNext || taxPaying) return;
     // The official lists belong to the two steps of the guests; the invoice step has none (and is never in the way of the check-in without a reason).
     const extra =
       current === STEP_GUESTS || current === STEP_DOCUMENT
@@ -456,6 +498,8 @@ export function CheckInPage() {
   }
 
   if (submitted || context.completed || COMPLETE_STATUSES.has(context.status)) {
+    // A completed check-in still pays its tax (the server allows it): what can still be paid, and what was paid, is under the card, when the API offers the payment.
+    const taxStillToSay = taxView !== null && isShownOnCompletedCheckIn(guestTaxOutlook(taxView));
     return (
       <GuestPageFrame switcher={switcher} testId="checkin-success">
         <Card className="mx-auto w-full max-w-md text-center">
@@ -470,6 +514,16 @@ export function CheckInPage() {
             {context.propertyName && <p className="text-sm font-medium">{context.propertyName}</p>}
           </CardContent>
         </Card>
+        {taxStillToSay && (
+          <Card className="mx-auto w-full max-w-md" data-testid="checkin-completed-tourist-tax">
+            <CardHeader>
+              <CardTitle>{t('checkin.touristTax.title')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <TouristTaxStep token={token} view={taxView} refetch={taxRead.refetch} fetching={taxRead.isFetching} completed />
+            </CardContent>
+          </Card>
+        )}
       </GuestPageFrame>
     );
   }
@@ -502,6 +556,7 @@ export function CheckInPage() {
               {current === STEP_SCAN && t('checkin.stepScan')}
               {current === STEP_GUESTS && t('checkin.stepGuests')}
               {current === STEP_DOCUMENT && t('checkin.stepDocument')}
+              {current === STEP_TAX && t('checkin.touristTax.title')}
               {current === STEP_IDENTITY && t('checkin.stepIdentity')}
               {current === STEP_INVOICE && t('checkin.invoice.title')}
               {current === STEP_CONSENTS && t('checkin.stepConsents')}
@@ -560,6 +615,16 @@ export function CheckInPage() {
                     ))}
                   </div>
                 )}
+                {current === STEP_TAX && (
+                  <TouristTaxStep
+                    token={token}
+                    view={taxView}
+                    refetch={taxRead.refetch}
+                    fetching={taxRead.isFetching}
+                    onPayingChange={setTaxPaying}
+                    onCannotPayChange={setTaxCannotPay}
+                  />
+                )}
                 {current === STEP_IDENTITY && <IdentityStep identity={identity} />}
                 {current === STEP_INVOICE && <InvoiceStep hasInvoiceData={context.hasInvoiceData === true} />}
                 {current === STEP_CONSENTS && (
@@ -575,7 +640,7 @@ export function CheckInPage() {
                 )}
                 {current !== STEP_SCAN && (
                 <div className="flex justify-between pt-4">
-                  <Button type="button" variant="outline" onClick={() => setStep(steps[Math.max(0, stepIndex - 1)])} disabled={identity.busy}>
+                  <Button type="button" variant="outline" onClick={() => setStep(steps[Math.max(0, stepIndex - 1)])} disabled={identity.busy || taxPaying}>
                     <ChevronLeft className="mr-1 h-4 w-4" />{t('checkin.back')}
                   </Button>
                   {current !== STEP_CONSENTS ? (
@@ -585,7 +650,7 @@ export function CheckInPage() {
                       key="checkin-next"
                       type="button"
                       onClick={goNext}
-                      disabled={current === STEP_IDENTITY && (!identity.concluded || identity.busy)}
+                      disabled={(current === STEP_IDENTITY && (!identity.concluded || identity.busy)) || taxBlocksNext || taxPaying}
                       data-testid="checkin-next"
                     >
                       {t('checkin.next')}<ChevronRight className="ml-1 h-4 w-4" />

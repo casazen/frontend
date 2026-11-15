@@ -341,6 +341,11 @@ export interface IdentitySelfieResponse {
   attemptsRemaining: number;
   operatorPathOpen: boolean;
   lockCode?: string | null;
+  /**
+   * Why an `ok` came with no code although the property has one (E25/F01/US01/T01): `tourist_tax_due` while the organization asks for the tourist tax before the lock code and the
+   * stay still owes one the guest can pay online. Absent otherwise.
+   */
+  lockCodeHeld?: string | null;
 }
 
 /** Answer of `POST /api/public/checkin/{token}/request-operator`: the guest asked for a person and the operators are told. */
@@ -348,4 +353,71 @@ export interface IdentityOperatorResponse {
   result: string;
   operatorPathOpen: boolean;
   state: IdentityVerificationState;
+}
+
+/**
+ * Where the collection of the tourist tax of a stay stands (`TouristTaxCollectionStatus` of the API, E25/F01/US01/T01, NF-119). The guest page and the host's view of the tax
+ * read the same states: what is still to collect, what the guest paid online, what the channel or the price of the booking already covers.
+ */
+export type TouristTaxCollectionStatus =
+  | 'ToCollect'
+  | 'PaidOnline'
+  | 'PaidAtProperty'
+  | 'CollectedByChannel'
+  | 'IncludedInBookingPayment'
+  | 'NotDue';
+
+/** Why nothing can be paid online now (`TouristTaxNotPayableReason` of the API); `None` when there is something to pay. */
+export type TouristTaxNotPayableReason =
+  | 'None'
+  | 'StayNotActive'
+  | 'PaidAtProperty'
+  | 'ChannelCollects'
+  | 'CollectorUnknown'
+  | 'NotComputable'
+  | 'AwaitingConfirmation'
+  | 'NothingDue'
+  | 'AlreadyPaidOnline';
+
+/** The tax of one guest as the guest page shows it: a position of the stay, never a person, and never the reason of an exemption. */
+export interface PublicTouristTaxGuest {
+  position: number;
+  taxableNights: number;
+  /** Null when the tax of the stay is not calculated. */
+  amount: number | null;
+  exempt: boolean;
+}
+
+/**
+ * Answer of `GET /api/public/checkin/{token}/tourist-tax` (flag `touristTaxOnlinePayment`): what the guest can pay online now, in the currency of the property, and where the
+ * collection stands. Every amount is the API's: the page adds up nothing. 404 while the flag is off or for a link that reaches no stay; 409 `tourist_tax_payment_not_available`
+ * while the organization does not offer the payment or its account does not take payments.
+ */
+export interface PublicTouristTax {
+  status: TouristTaxCollectionStatus;
+  reason: TouristTaxNotPayableReason;
+  /** What the guest can pay online now (0 when nothing). */
+  payable: number;
+  /** The tax of the stay the host collects; null when it cannot be calculated (the host tells the amount). */
+  amountDue: number | null;
+  /** What the guest already paid online. */
+  collectedAmount: number;
+  /** `EUR` or `CHF`; empty when the API does not say: the amounts are then shown with no symbol. */
+  currency: string;
+  guests: PublicTouristTaxGuest[];
+  /** The organization asks for the tax before the lock code: the step cannot be left until it is paid. */
+  requiredBeforeAccessCode: boolean;
+}
+
+/**
+ * Answer of `POST /api/public/checkin/{token}/tourist-tax/payment-intent`: what the Payment Element needs. The intent is on the organization's connected account, so
+ * Stripe.js is opened with `stripeAccountId`. `amount` and `currency` are what will be charged (never a figure of the browser).
+ */
+export interface TouristTaxPaymentIntent {
+  paymentIntentId: string;
+  clientSecret: string;
+  publishableKey: string;
+  stripeAccountId: string;
+  amount: number;
+  currency: string;
 }

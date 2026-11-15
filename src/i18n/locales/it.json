@@ -820,6 +820,10 @@
           "title": "Imposta di soggiorno in scadenza",
           "why": "L'imposta del periodo va dichiarata e pagata, con le ricevute archiviate."
         },
+        "TouristTaxRefundDue": {
+          "title": "Rimborsa la differenza della tassa di soggiorno",
+          "why": "All'ospite spetta un rimborso della tassa di soggiorno: l'importo confermato è più basso di quanto ha pagato, il soggiorno è stato annullato dopo l'arrivo o il rimborso automatico non è riuscito. Restituisci la differenza tu."
+        },
         "WizardResume": {
           "title": "Procedura da riprendere",
           "why": "Hai lasciato una procedura a metà: puoi continuare da dove eri."
@@ -1929,6 +1933,9 @@
       "supplierCommitmentConflict": "Non puoi prendere in carico questo incarico: si sovrappone a un altro che hai già accettato. Nello stesso giorno puoi averne più di uno solo se gli orari non si toccano.",
       "supplierPaymentsNotReady": "Il conto non è ancora pronto per questa operazione: completa prima la configurazione su Stripe.",
       "touristTaxChildAgesRequired": "Indica l'età di ogni minore: serve per calcolare la tassa di soggiorno.",
+      "touristTaxCollectionNotApplicable": "Per questo soggiorno non si può registrare il pagamento della tassa di soggiorno: il soggiorno è annullato o la tassa la incassa il portale.",
+      "touristTaxPaidOnline": "L'ospite ha già pagato la tassa di soggiorno online: non si può segnare come pagata in struttura.",
+      "touristTaxPaymentInProgress": "Un pagamento della tassa di soggiorno è in corso: attendi che venga confermato e riprova.",
       "touristTaxQuoteInvalid": "Dati del calcolo non validi: controlla date, ospiti, età dei minori e prezzo.",
       "consentsRequired": "Per creare la tua organizzazione devi accettare i documenti legali obbligatori.",
       "orgSlugTaken": "Questo indirizzo web è già usato, o è stato usato, da un'altra organizzazione.",
@@ -5712,6 +5719,7 @@
       "result": {
         "ok": {
           "codeEmail": "Se la tua prenotazione ha un indirizzo email, abbiamo inviato il codice anche lì.",
+          "codeHeldTouristTax": "La tua identità è verificata. Il codice di accesso ti arriverà dopo il pagamento della tassa di soggiorno.",
           "codeLabel": "Il tuo codice di accesso",
           "noCode": "La tua identità è verificata. Se la tua prenotazione ha un indirizzo email, il codice di accesso è stato inviato lì; altrimenti chi gestisce la struttura ti darà le istruzioni per entrare.",
           "title": "Sei verificato"
@@ -5844,6 +5852,41 @@
       "holiday": "Vacanza",
       "label": "Motivo del viaggio *",
       "other": "Altro"
+    },
+    "touristTax": {
+      "amountDue": "Tassa del soggiorno",
+      "atProperty": "Questa tassa la pagherai all'host in struttura.",
+      "channelCollects": "La tassa di soggiorno la riscuote il portale su cui hai prenotato: qui non devi pagare nulla.",
+      "currencyMissing": "L'importo è mostrato senza valuta perché non ci è stata comunicata.",
+      "exempt": "Esente",
+      "guestLine_one": "Ospite {{index}} · {{count}} notte",
+      "guestLine_other": "Ospite {{index}} · {{count}} notti",
+      "hostWillTell": "La tassa te la comunicherà l'host.",
+      "included": "La tassa di soggiorno è già compresa nel pagamento della prenotazione: qui non devi pagare altro.",
+      "intro": "È la tassa che il comune chiede per ogni notte di soggiorno. Puoi pagarla ora con la carta.",
+      "loadFailed": "Non riusciamo a caricare la tassa di soggiorno. Riprova: se preferisci, la pagherai all'host in struttura.",
+      "nothingDue": "Per questo soggiorno non c'è nessuna tassa di soggiorno da pagare.",
+      "paidAtProperty": "L'host ha registrato che la tassa di soggiorno è già stata pagata in struttura.",
+      "paidPartly": "Hai già pagato online {{amount}}. Il resto della tassa lo pagherai all'host in struttura.",
+      "paidText": "Abbiamo ricevuto il tuo pagamento di {{amount}}. Grazie!",
+      "paidTitle": "Tassa di soggiorno pagata",
+      "partIncluded": "Una parte è già compresa nel pagamento della prenotazione.",
+      "payAmount": "Paga {{amount}}",
+      "payNowLabel": "Da pagare ora",
+      "paying": "Pagamento in corso...",
+      "paymentFailed": "Il pagamento non è andato a buon fine. Controlla i dati della carta e riprova.",
+      "paymentUnavailable": "Il pagamento online della tassa non è disponibile in questo momento. Puoi andare avanti: la pagherai all'host in struttura.",
+      "preparing": "Preparo il pagamento...",
+      "processingText": "Stiamo confermando il pagamento: ci vuole qualche istante. Non occorre pagare di nuovo.",
+      "processingTitle": "Pagamento in conferma",
+      "refresh": "Aggiorna lo stato",
+      "requiredBeforeCode": "L'host ti darà il codice di accesso dopo il pagamento della tassa di soggiorno: per andare avanti, paga qui.",
+      "retry": "Riprova",
+      "sessionFailed": "Non riusciamo ad aprire il pagamento. Riprova tra poco.",
+      "stalledText": "Il pagamento non risulta ancora confermato. Se hai già pagato, non pagare di nuovo: aggiorna lo stato tra qualche minuto.",
+      "stalledTitle": "Pagamento non ancora confermato",
+      "title": "Tassa di soggiorno",
+      "total": "Totale"
     },
     "travelWay": {
       "bus": "Autobus",
@@ -6096,6 +6139,38 @@
         "breakdownTitle": "Riepilogo del soggiorno",
         "channelCollectedText": "Il canale ha già incassato l'imposta ({{total}}) e la versa al comune: non devi incassarla di nuovo.",
         "channelCollectedTitle": "Il canale l'ha incassata: niente da incassare",
+        "collection": {
+          "currencyMissing": "Gli importi sono mostrati senza valuta perché non ci è stata comunicata.",
+          "detail": {
+            "amountUnknown": "Non possiamo ancora dire quanto incassare: l'importo non è calcolato.",
+            "collectedByChannel": "La incassa il portale e la versa al comune: non devi incassarla tu.",
+            "includedInBooking": "L'ospite l'ha già pagata con la prenotazione ({{amount}}): non devi incassarla.",
+            "notDue": "Per questo soggiorno non c'è nulla da incassare.",
+            "paidAtProperty": "Hai registrato che l'ospite l'ha pagata in struttura.",
+            "paidAtPropertyOn": "Il {{date}} hai registrato che l'ospite l'ha pagata in struttura.",
+            "paidOnline": "L'ospite ha pagato {{amount}} con la carta: non devi incassarla.",
+            "paidOnlinePartly": "L'ospite ha pagato {{paid}} online. Restano {{rest}} da incassare in struttura.",
+            "toCollect": "Importo da incassare: {{amount}}."
+          },
+          "guestMayPay": "L'ospite può pagare {{amount}} online nel check-in. Se invece paga in struttura, segnalalo qui sotto.",
+          "markPaid": "Segna come pagata in struttura",
+          "markPaidFailed": "Non siamo riusciti a registrare il pagamento. Riprova.",
+          "markPaidHint": "L'ospite non potrà più pagarla online: così non la paga due volte.",
+          "refundDue": "Da restituire all'ospite: {{amount}}. Non lo facciamo in automatico: trovi l'attività da completare nella tua lista.",
+          "refundDueTitle": "Da restituire all'ospite",
+          "refunded": "Rimborsati all'ospite: {{amount}}.",
+          "state": {
+            "collectedByChannel": "Incassata dal portale",
+            "includedInBooking": "Compresa nel pagamento della prenotazione",
+            "notDue": "Non dovuta",
+            "paidAtProperty": "Pagata in struttura",
+            "paidOnline": "Pagata online il {{date}}",
+            "paidOnlineNoDate": "Pagata online",
+            "paidOnlinePartly": "Pagata online in parte",
+            "toCollect": "Da incassare"
+          },
+          "title": "Incasso della tassa di soggiorno"
+        },
         "collectorChannel": "L'ha incassata il canale",
         "collectorFailed": "Non siamo riusciti a salvare la tua risposta. Riprova.",
         "collectorHost": "La incasso io in struttura",
@@ -15326,7 +15401,8 @@
       "assistVerified": "Il collegamento che avevi chiesto è attivo: il supporto CasaZen l'ha fatto e abbiamo verificato che funziona.",
       "assistDeclared": "Il supporto CasaZen dichiara di aver fatto il collegamento che avevi chiesto. Se qualcosa non funziona, riapri la richiesta.",
       "assistReopened": "Un utente ha riaperto una richiesta «Fallo per me»: dice che non funziona.",
-      "fiscalDocumentSdiRejected": "Lo SDI ha scartato una fattura: va corretta."
+      "fiscalDocumentSdiRejected": "Lo SDI ha scartato una fattura: va corretta.",
+      "touristTaxPaid": "Un ospite ha pagato online la tassa di soggiorno."
     }
   },
   "octorate": {

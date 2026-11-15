@@ -65,6 +65,7 @@ export function IdentityStep({ identity }: IdentityStepProps) {
         <IdentityResult
           kind={stage === 'done' ? 'ok' : stage}
           lockCode={progress.lockCode}
+          lockCodeHeld={progress.lockCodeHeld ?? null}
           guidanceCodes={progress.guidanceCodes}
           attemptsRemaining={progress.attemptsRemaining}
           operatorRequested={progress.operatorRequested}

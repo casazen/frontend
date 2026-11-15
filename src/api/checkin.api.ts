@@ -1,4 +1,6 @@
 import axios from '@/lib/axios';
+import { readPublicTouristTax, readTouristTaxPaymentIntent } from '@/features/checkin/lib/tourist-tax-model';
+import { UnexpectedApiResponseError } from '@/lib/api-errors';
 import { ApiClient, type ApiRequestOptions } from './client';
 import type {
   AlloggiatiCodeEntryDto,
@@ -85,4 +87,30 @@ export const publicCheckinApi = {
   /** The guest asks for a person, at any step, also after a retry or a failed attempt (GDPR art. 22, AC-NF51-11): the operators are told at once. */
   requestOperator: (token: string) =>
     ApiClient.post<IdentityOperatorResponse>(`/public/checkin/${token}/request-operator`, undefined, { public: true }),
+
+  /**
+   * The tourist tax of the stay of the link (E25/F01/US02/T01, NF-119): what the guest can pay online now, in the currency of the API, the tax guest by guest by position (no name,
+   * never the reason of an exemption) and where the collection stands. Behind the flag `touristTaxOnlinePayment`: 404 while it is off or for a link that reaches no stay, 409
+   * `tourist_tax_payment_not_available` while the organization does not offer the payment or its account does not take payments. An answer that is not the tax is an error, never a
+   * tax of 0.
+   */
+  getTouristTax: async (token: string) => {
+    const view = readPublicTouristTax(await ApiClient.get<unknown>(`/public/checkin/${token}/tourist-tax`, undefined, { public: true }));
+    if (!view) throw new UnexpectedApiResponseError('/public/checkin/{token}/tourist-tax');
+    return view;
+  },
+
+  /**
+   * The PaymentIntent of what the guest can pay online now, on the organization's connected account (one per stay and amount: asking again for the same amount gives the same one):
+   * the client secret, the platform's publishable key and the account the Payment Element is opened with, and the amount and the currency that will be charged. The payment is
+   * recorded by the server from what the payment provider says, never by this call. 409 `tourist_tax_nothing_to_pay`, `tourist_tax_payment_in_progress` or
+   * `tourist_tax_payment_not_available`.
+   */
+  createTouristTaxPaymentIntent: async (token: string) => {
+    const intent = readTouristTaxPaymentIntent(
+      await ApiClient.post<unknown>(`/public/checkin/${token}/tourist-tax/payment-intent`, undefined, { public: true }),
+    );
+    if (!intent) throw new UnexpectedApiResponseError('/public/checkin/{token}/tourist-tax/payment-intent');
+    return intent;
+  },
 };
