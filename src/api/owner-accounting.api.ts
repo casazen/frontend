@@ -2,7 +2,7 @@ import { ApiClient } from './client';
 import { acceptsRefusal } from './accept-refusal';
 import { fileApi, type DownloadedFile } from './file.api';
 import axios from '@/lib/axios';
-import { getHttpStatus } from '@/lib/api-errors';
+import { UnexpectedApiResponseError, getHttpStatus } from '@/lib/api-errors';
 import { withJsonErrorBody } from '@/lib/file-download';
 import type {
   OwnerAccountingEvidence,
@@ -10,6 +10,8 @@ import type {
   OwnerAccountingPolicyCommand,
   OwnerAddress,
   OwnerAddressCommand,
+  OwnerBulkCommand,
+  OwnerBulkRun,
   OwnerClosePeriod,
   OwnerCloseReadiness,
   OwnerExternalDocument,
@@ -48,6 +50,30 @@ async function orNull<T>(request: Promise<T>): Promise<T | null> {
 
 /** The query of a file in the language of the app: the server writes Italian unless it is asked for English (`lang=en`). */
 const fileLanguage = (language: string): { lang: string } | undefined => (language.startsWith('en') ? { lang: 'en' } : undefined);
+
+/** The path of the month-end steps for every owner of a month: `periods/{year}/{month}/bulk`. */
+const bulkPath = (year: number, month: number) => `/owner-accounting/periods/${year}/${month}/bulk`;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * A body that is not a bulk run (the `index.html` of the SPA behind a wrong rewrite, a run with a row that is not a row) is a failed call, never a run: a page that took it for one
+ * could say that a month was done for everybody on the strength of nothing.
+ */
+function ensureRun(data: unknown, path: string): OwnerBulkRun {
+  if (!isRecord(data) || !Array.isArray(data.results) || typeof data.total !== 'number' || typeof data.status !== 'string' || typeof data.action !== 'string') {
+    throw new UnexpectedApiResponseError(path);
+  }
+  for (const row of data.results as unknown[]) {
+    if (!isRecord(row) || typeof row.ownerId !== 'string' || typeof row.ok !== 'boolean') throw new UnexpectedApiResponseError(path);
+  }
+  // A run that goes on is read by its id: one that goes on and has none could never be followed, and would be waited for for ever.
+  const goesOn = data.status === 'Queued' || data.status === 'Running';
+  if (goesOn && (typeof data.jobId !== 'string' || data.jobId === '')) throw new UnexpectedApiResponseError(path);
+  return data as unknown as OwnerBulkRun;
+}
 
 /**
  * The owner accounting of an agency (E06/F05/US02). Paths are relative to the API base URL, which already ends in `/api`. Every write is an
@@ -101,6 +127,23 @@ export const ownerAccountingApi = {
   approveVersion: (versionId: string) => ApiClient.post<OwnerStatementVersion>(`/owner-accounting/versions/${versionId}/approve`),
 
   publishVersion: (versionId: string) => ApiClient.post<OwnerStatementVersion>(`/owner-accounting/versions/${versionId}/publish`),
+
+  /**
+   * One step of the month-end for every owner of the month, or the ones listed (`agency.statement.manage`; the publication needs `agency.statement.publish`; the whole organization). Each owner
+   * is its own transaction and its own row: an owner that fails never stops the others, a flagged version is never approved, the close never waives a difference, and a step run twice changes
+   * nothing more. Up to a few owners the answer is the finished run; for more it is a run that is queued (202, `jobId`, no rows yet) and {@link getBulkRun} tells how far it goes.
+   * 422 `owner_bulk_action_invalid`, `owner_bulk_owners_empty`, `owner_bulk_too_many_owners`, `owner_period_invalid`; 409 `owner_period_not_ended` (a close of a month that is not over).
+   */
+  runBulkStep: async (year: number, month: number, command: OwnerBulkCommand): Promise<OwnerBulkRun> => {
+    const path = bulkPath(year, month);
+    return ensureRun(await ApiClient.post<unknown>(path, command), path);
+  },
+
+  /** How far a queued run goes, with the rows it has so far. 404 `owner_bulk_job_not_found` for a run of another org or month, one that does not exist or one the server has forgotten. */
+  getBulkRun: async (year: number, month: number, jobId: string): Promise<OwnerBulkRun> => {
+    const path = `${bulkPath(year, month)}/${encodeURIComponent(jobId)}`;
+    return ensureRun(await ApiClient.get<unknown>(path), path);
+  },
 
   /** The published file of a version, as the owner received it. */
   downloadPublishedFile: async (versionId: string): Promise<Blob> => {

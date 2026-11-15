@@ -1,5 +1,7 @@
+import { useCallback } from 'react';
 import { keepPreviousData, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { ownerAccountingApi } from '@/api/owner-accounting.api';
+import { isRunOver } from '@/features/owner-accounting/bulk-close-model';
 import { profileFactsOf } from '@/features/owner-accounting/owner-accounting-model';
 import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
 import { saveBlobAs } from '@/lib/file-download';
@@ -7,6 +9,7 @@ import { todayInRome } from '@/lib/stay-dates';
 import type {
   OwnerAccountingPolicyCommand,
   OwnerAddressCommand,
+  OwnerBulkCommand,
   OwnerFiscalProfileCommand,
   OwnerMandateCommand,
   OwnerPayoutCommand,
@@ -17,6 +20,10 @@ import { saveDownload } from './save-download';
 /** Root of the query keys of the owner accounting: a write that changes the ledger invalidates everything under it. */
 export const OWNER_ACCOUNTING_KEY = 'owner-accounting';
 const WITHHOLDING_KEY = 'withholding';
+/** Root of the query key of a bulk run: apart from {@link OWNER_ACCOUNTING_KEY}, so that the read of the month which follows the end of a run never invalidates the run being read. */
+const OWNER_BULK_KEY = 'owner-bulk-run';
+/** How often a queued bulk run is asked how far it goes: 250 flats take a few minutes, and the answer is small. */
+const BULK_POLL_MS = 2_000;
 
 export const ownerAccountingKeys = {
   owners: [OWNER_ACCOUNTING_KEY, 'owners'] as const,
@@ -242,6 +249,53 @@ export function usePostPeriod() {
     mutationFn: ({ year, month }: { year: number; month: number }) => ownerAccountingApi.postPeriod(year, month),
     onSuccess: () => invalidateAll(queryClient),
   });
+}
+
+/**
+ * Starts one step of the month-end for every owner of the month (the person's own click: nothing starts by itself). The answer holds ids, codes and the figures of a close that does not
+ * reconcile, so the mutation is dropped as soon as nothing watches it (`gcTime: 0`) and what it keeps of a failure is the failure without its request (`withoutRequest`). Whatever the
+ * answer, the month is read again (`onSettled`, which runs even when the dialog that asked has been closed): a step that was started changed it, or may have.
+ */
+export function useStartBulkStep() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    gcTime: 0,
+    mutationFn: async ({ year, month, command }: { year: number; month: number; command: OwnerBulkCommand }) => {
+      try {
+        return await ownerAccountingApi.runBulkStep(year, month, command);
+      } catch (error) {
+        throw withoutRequest(error);
+      }
+    },
+    onSettled: () => {
+      void invalidateAll(queryClient);
+    },
+  });
+}
+
+/**
+ * How far a queued bulk run goes: asked every few seconds while the run is `Queued` or `Running`, never kept once the page that shows it is left (`gcTime: 0`), and never asked again after
+ * a failure (the page says it and offers «Riprova»: a 404 is the run that the server has forgotten, which is not «still running»). Without a `jobId` (a run that answered in the request) nothing is read.
+ */
+export function useBulkRun(year: number, month: number, jobId: string | null, pollMs: number = BULK_POLL_MS) {
+  return useQuery({
+    queryKey: [OWNER_BULK_KEY, year, month, jobId ?? ''] as const,
+    queryFn: () => ownerAccountingApi.getBulkRun(year, month, jobId ?? ''),
+    enabled: jobId !== null,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: 'always' as const,
+    refetchOnWindowFocus: false,
+    refetchInterval: (query) => (query.state.status === 'error' || (query.state.data !== undefined && isRunOver(query.state.data)) ? false : pollMs),
+  });
+}
+
+/** Reads again what a bulk run changed (the readiness of the month, the versions, the payouts, the tax files): for the page that follows a queued run to its end. */
+export function useRefreshOwnerAccounting() {
+  const queryClient = useQueryClient();
+  return useCallback(() => {
+    void invalidateAll(queryClient);
+  }, [queryClient]);
 }
 
 /** A new version of the owner's statement: the one it replaces is superseded and stays readable. */

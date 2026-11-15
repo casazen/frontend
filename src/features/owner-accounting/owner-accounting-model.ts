@@ -45,6 +45,9 @@ export const startOfPeriod = (period: Period): string => `${periodParam(period)}
 /** Where the facts of an owner that are missing (the registry, the shares, the mandate) are completed: «Inizia con CasaZen», short rent. */
 export const OWNER_ONBOARDING_PATH = '/app/short-rent/onboarding';
 
+/** What each portal keeps when its reservation carries no commission (E13/F02/US03/T01): a tab of the month-end close, where the stays held back for a missing commission are found. */
+export const CHANNEL_COMMISSIONS_PATH = '/app/account/channel-commissions';
+
 // ── Periods ───────────────────────────────────────────────────────────────────────────────────────────────────────
 
 export interface Period {
@@ -220,16 +223,19 @@ export type IssueAction =
   | { kind: 'correction' }
   | { kind: 'profile' }
   | { kind: 'onboarding' }
+  | { kind: 'channelRules' }
   | { kind: 'payment'; paymentId: string }
   | { kind: 'none' };
 
 /** Every code the API sends for the readiness of the month (besides the unknown ones of a later version, which say so in words of their own). */
 export const ISSUE_CODES = [
+  'channel_commission_missing',
   'duplicate_entry',
   'fx_missing',
   'currency_mixed',
   'ledger_statement_imbalance',
   'late_source_after_close',
+  'mandate_missing_for_stay',
   'negative_balance',
   'owner_fiscal_policy_jurisdiction_mismatch',
   'owner_fiscal_policy_missing',
@@ -278,6 +284,8 @@ export function actionForIssue(issue: OwnerReadinessIssue): IssueAction {
       return { kind: 'fx' };
     case 'late_source_after_close':
       return { kind: 'correction' };
+    // `mandate_missing_for_stay`: no mandate of the owner covers the day of a stay (its revenue is posted, no commission is guessed): the mandate is written in the owner's financial data.
+    case 'mandate_missing_for_stay':
     case 'currency_mixed':
     case 'owner_fiscal_profile_missing':
     case 'owner_fiscal_profile_incomplete':
@@ -289,6 +297,9 @@ export function actionForIssue(issue: OwnerReadinessIssue): IssueAction {
     case 'ownership_missing':
     case 'ownership_share_gap':
       return { kind: 'onboarding' };
+    // The portal's reservation brings no commission and the agency has no rule for it (the owners of the property are held back): the rule is written in the channel commissions.
+    case 'channel_commission_missing':
+      return { kind: 'channelRules' };
     case 'source_amount_missing':
       return issue.sourceId ? { kind: 'payment', paymentId: issue.sourceId } : { kind: 'none' };
     default:

@@ -1729,12 +1729,17 @@
       "octorateUnavailable": "Il tuo channel manager non risponde in questo momento. Riprova tra qualche minuto.",
       "octorateWrongEnvironment": "L'account del channel manager appartiene a un altro ambiente (prova o produzione): il collegamento non è stato attivato.",
       "onboardingNeedsWholeOrg": "Questo passaggio riguarda tutta l'organizzazione: serve poter vedere tutti gli immobili.",
+      "ownerBulkActionInvalid": "Questo passaggio del mese non esiste.",
+      "ownerBulkJobNotFound": "Non troviamo più questa esecuzione: guarda a che punto sono i proprietari nell'elenco del mese.",
+      "ownerBulkOwnersEmpty": "Non c'è nessun proprietario a cui applicarlo.",
+      "ownerBulkTooManyOwners": "Sono troppi proprietari in una volta: restringi la scelta.",
       "ownerCloseNotReady": "Il mese non si può chiudere: ci sono anomalie da risolvere.",
       "ownerCloseUnreconciled": "Il saldo non torna con i pagamenti: per chiudere serve un motivo.",
       "ownerCloseWaiverForbidden": "Chiudere con una differenza può farlo solo chi gestisce le finanze dei proprietari.",
       "ownerExternalDocumentDuplicate": "Questa fattura è già collegata a un rendiconto.",
       "ownerFiscalProfileOverlap": "Esiste già un profilo valido da quel giorno o dopo: scegli una data più recente.",
       "ownerFxRateExists": "Esiste già un cambio per queste valute in quel giorno.",
+      "ownerNotFound": "Questo proprietario non c'è più tra i tuoi.",
       "ownerPayoutKeyReused": "Questo pagamento è già stato registrato con dati diversi: ricomincia dal rendiconto.",
       "ownerPeriodClosed": "Il mese è chiuso: non si registra più niente.",
       "ownerPeriodDirty": "Il registro è cambiato dopo questa versione: prepara una nuova versione.",
@@ -14672,6 +14677,7 @@
     "inviteQr": "QR di invito",
     "reviews": "Recensioni",
     "routines": "Automazioni",
+    "channelCommissions": "Commissioni dei canali",
     "channels": "Canali e calendari",
     "verifications": "Verifiche",
     "wireTransfers": "Bonifici proprietari",
@@ -16492,6 +16498,7 @@
     },
     "anomalies": {
       "actions": {
+        "channelRules": "Imposta la commissione del canale",
         "correction": "Registra una rettifica",
         "fx": "Aggiungi il cambio",
         "onboarding": "Completa nell'attivazione",
@@ -16506,6 +16513,104 @@
       "times": "×{{count}}",
       "title": "Anomalie da risolvere",
       "wholeMonth": "Tutto il mese"
+    },
+    "bulk": {
+      "choose": {
+        "closedLater": "{{label}} (il mese non è ancora finito)",
+        "label": "Quale passaggio?",
+        "suggested": "{{label}} (consigliato)"
+      },
+      "confirm": "Esegui",
+      "count_one": "Riguarda {{count}} proprietario del mese.",
+      "count_other": "Riguarda i {{count}} proprietari del mese.",
+      "description": "Un passaggio del mese per tutti i proprietari in una volta. Ogni proprietario fa da sé: se uno non va avanti, gli altri sì, e ti diciamo quali.",
+      "leftRunning": "L'operazione continua: finché resti su questa pagina ti avvisiamo quando finisce.",
+      "open": "Esegui per tutti",
+      "progress": {
+        "label": "Avanzamento",
+        "notFound": "Non troviamo più questa esecuzione. Guarda l'elenco del mese: mostra a che punto è ogni proprietario.",
+        "queued": "In attesa di partire…",
+        "readError": "Non riusciamo a leggere a che punto è. Quello che era partito continua.",
+        "stay": "Puoi chiudere questa finestra: finché resti su questa pagina ti avvisiamo quando finisce, e il risultato resta in «Esegui per tutti».",
+        "text_one": "{{count}} proprietario su {{total}}",
+        "text_other": "{{count}} proprietari su {{total}}"
+      },
+      "reason": {
+        "ownerBulkFailed": "Non ci siamo riusciti per un problema nostro: non si è perso niente. Riprova.",
+        "ownerCloseUnreconciled": "Il saldo non torna con i pagamenti, e da qui il mese non si chiude con una differenza. Chiudilo dalla riga del proprietario, con un motivo.",
+        "ownerStatementVersionNotFound": "Non c'è ancora un rendiconto: preparalo prima."
+      },
+      "reopen": "Apri",
+      "result": {
+        "another": "Esegui un altro passaggio",
+        "failedTitle": "Non completati",
+        "figures": "Dovuto {{due}} · Pagato {{paid}} · Differenza {{difference}}",
+        "figuresNoCurrency": "Importi nella valuta del rendiconto, che qui non è indicata.",
+        "flaggedTitle": "Con anomalie",
+        "headline": {
+          "allDone_one": "{{step}}: fatto per {{count}} proprietario.",
+          "allDone_other": "{{step}}: fatto per tutti i {{count}} proprietari.",
+          "doneWithFlags_one": "{{step}}: fatto, ma {{count}} rendiconto ha delle anomalie.",
+          "doneWithFlags_other": "{{step}}: fatto, ma {{count}} rendiconti hanno delle anomalie.",
+          "empty": "{{step}}: in questo mese non c'è nessun proprietario da elaborare.",
+          "incomplete_one": "{{step}}: abbiamo la risposta per {{count}} proprietario su {{total}}. Per gli altri non sappiamo com'è andata: controlla l'elenco del mese.",
+          "incomplete_other": "{{step}}: abbiamo la risposta per {{count}} proprietari su {{total}}. Per gli altri non sappiamo com'è andata: controlla l'elenco del mese.",
+          "runFailed": "{{step}}: l'elaborazione si è interrotta. Quello che era già stato fatto resta fatto.",
+          "someNotDone_one": "{{step}}: {{count}} proprietario su {{total}} non è andato avanti.",
+          "someNotDone_other": "{{step}}: {{count}} proprietari su {{total}} non sono andati avanti."
+        },
+        "noReason": "Non è andata a buon fine e non sappiamo dire perché.",
+        "others": "Gli altri proprietari",
+        "status": {
+          "done": "Fatto",
+          "failed": "Non completato",
+          "flagged": "Con anomalie",
+          "unchanged": "Già a posto"
+        },
+        "tally": {
+          "done": "Fatti: {{count}}",
+          "failed": "Non completati: {{count}}",
+          "flagged": "Con anomalie: {{count}}",
+          "unchanged": "Già a posto: {{count}}"
+        },
+        "unanswered_one": "Per {{count}} proprietario su {{total}} non abbiamo la risposta: controlla l'elenco del mese.",
+        "unanswered_other": "Per {{count}} proprietari su {{total}} non abbiamo la risposta: controlla l'elenco del mese.",
+        "unknownCode": "Non è andata a buon fine (codice {{code}})."
+      },
+      "runDescription": "{{step}} per tutti i proprietari: il risultato è proprietario per proprietario.",
+      "step": {
+        "Approve": {
+          "consequence1": "Dopo l'approvazione una versione non si modifica: per cambiare qualcosa serve una nuova versione.",
+          "consequence2": "Non va ancora ai proprietari: lo fa la pubblicazione.",
+          "label": "Approva i rendiconti",
+          "summary": "Approva la versione in corso di ogni proprietario. Quelle con anomalie non si approvano: le trovi nell'elenco con il motivo."
+        },
+        "Close": {
+          "consequence1": "In un mese chiuso non si registra più niente: quello che arriva dopo va in una rettifica di un mese aperto.",
+          "consequence2": "Se il saldo non torna con i pagamenti, o è negativo, quel mese non si chiude da qui: serve un motivo e si fa dalla riga del proprietario.",
+          "label": "Chiudi il mese",
+          "summary": "Chiude il mese di ogni proprietario sul rendiconto approvato, dove il saldo torna con i pagamenti."
+        },
+        "Generate": {
+          "consequence1": "Le versioni sostituite restano consultabili con il loro file.",
+          "consequence2": "Un rendiconto con anomalie viene preparato lo stesso ma resta segnalato: non si approva finché non le risolvi.",
+          "label": "Prepara i rendiconti",
+          "summary": "Prepara una nuova versione del rendiconto di ogni proprietario dal registro di adesso, dove l'ultima non è già quella giusta."
+        },
+        "Post": {
+          "consequence1": "I movimenti già registrati non cambiano: si aggiungono solo quelli che mancano.",
+          "consequence2": "Se ripeti il passaggio non cambia più niente.",
+          "label": "Controlla e registra i movimenti",
+          "summary": "Registra nel registro i movimenti del mese di tutti i proprietari e segnala quelli che non si possono registrare."
+        },
+        "Publish": {
+          "consequence1": "Il file e la sua impronta si conservano e non cambiano più.",
+          "consequence2": "Per cambiare qualcosa dopo serve una nuova versione: questa resta com'è, consultabile.",
+          "label": "Pubblica i rendiconti",
+          "summary": "Pubblica ai proprietari le versioni approvate: da quel momento vedono il rendiconto e ricevono l'avviso."
+        }
+      },
+      "title": "Esegui per tutti: {{period}}"
     },
     "changes": {
       "added": "Righe registrate da allora: {{count}}",
@@ -16527,6 +16632,21 @@
       "none": "Rispetto alla versione {{version}} non è cambiato niente.",
       "title": "Cosa è cambiato dalla versione precedente",
       "versionLine": "Versione {{version}} · {{status}} · tagliata il {{cutoff}}"
+    },
+    "channelRules": {
+      "description": "Quanto trattiene ogni portale quando la sua prenotazione non porta la commissione. Le percentuali che scrivi valgono per i soggiorni che finiscono dal giorno che scegli in poi; i mesi già chiusi non si ricalcolano.",
+      "fromHint": "Il primo giorno di partenza (check-out) dei soggiorni a cui valgono le percentuali nuove. È già proposto il primo giorno del mese da chiudere, dove stanno i soggiorni fermi per una commissione che manca.",
+      "fromInvalid": "Scrivi da che giorno valgono le percentuali.",
+      "fromLabel": "Valide dal",
+      "fromOverlap": "Quel giorno cade su un'altra regola di questo portale: scegli un altro giorno.",
+      "fromTooEarly": "La regola in vigore di un portale parte il {{date}}: scegli quel giorno o uno dopo.",
+      "loadError": "Non riusciamo a leggere le commissioni dei canali.",
+      "loading": "Leggo le commissioni dei canali…",
+      "noChange": "Cambia una percentuale per poter salvare.",
+      "noChannels": "Non ci sono portali per cui impostare una commissione.",
+      "save": "Salva le commissioni",
+      "saved": "Commissioni salvate. Valgono per i soggiorni che finiscono dal {{date}} in poi.",
+      "title": "Commissioni dei canali"
     },
     "close": {
       "confirm": "Chiudi il mese",
@@ -16780,6 +16900,10 @@
       }
     },
     "issue": {
+      "channelCommissionMissing": {
+        "how": "Una prenotazione di un portale non porta la sua commissione e l'agenzia non ha una regola per quel portale: scrivila nelle commissioni dei canali. Finché manca, i proprietari di quell'immobile restano fermi.",
+        "title": "Manca la commissione di un portale"
+      },
       "currencyMixed": {
         "how": "Le righe del proprietario sono in valute diverse: scegli la valuta del suo pagamento nei dati finanziari.",
         "title": "Il rendiconto mescola più valute"
@@ -16799,6 +16923,10 @@
       "ledgerStatementImbalance": {
         "how": "Dopo la versione sono cambiate delle righe: prepara una nuova versione.",
         "title": "Il rendiconto non corrisponde al registro"
+      },
+      "mandateMissingForStay": {
+        "how": "Il proprietario non ha un mandato che copra il giorno di un soggiorno: il ricavo è registrato, la provvigione non si inventa. Scrivi il mandato nei dati finanziari del proprietario.",
+        "title": "Un soggiorno non ha un mandato in vigore"
       },
       "negativeBalance": {
         "how": "Si può chiudere solo con un motivo e con il permesso di chi gestisce le finanze dei proprietari.",

@@ -1,32 +1,31 @@
 import { useFormContext, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { Field } from '@/components/ui/field';
+import { Field, type FieldErrorInput } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import type { ChannelCommissionRuleSet } from '@/types';
 import { commissionPercentText } from '../billing-wizard-model';
 import type { BillingWizardValues } from '../billing-wizard-schema';
 
-interface CommissionPercentsProps {
+interface CommissionPercentsEditorProps {
   /** The rules of the portals and what applies today to each. */
   set: ChannelCommissionRuleSet;
+  /** What the person typed, by portal: a portal that is not in it shows the percent that applies today. */
+  typed: Record<string, string>;
+  onChange: (channel: string, value: string) => void;
+  /** What is wrong with the percent of a portal (a message or an i18n key), if anything. */
+  errorOf?: (channel: string) => FieldErrorInput;
+  disabled?: boolean;
 }
 
 /**
  * The percent each portal keeps when its reservation carries no commission (E13/F01/US01/T01, ⚖ R2), for the portals the server lists: the rule in force, or the default of
- * the configuration, which is said (`isDefault`) because nobody confirmed it yet. Accepting the percent that is shown is what confirms the step: «Continua» saves each percent
- * as the agency's own rule. A portal that has no rule and is left empty keeps none, and the stays of the portal without a commission are held back until it has one. A portal that
- * has a rule in force and is emptied keeps that rule (a rule is closed or changed by writing the new percent, never removed from here), and the field says so: an empty box is never
- * read as «no rule» while the server goes on applying one.
+ * the configuration, which is said (`isDefault`) because nobody confirmed it yet. The editor only shows and reports what is typed: the step of the wizard keeps it in its form («Continua» saves
+ * each percent as the agency's own rule) and the page of the channel commissions (E13/F02/US03/T01) keeps it in its own state, for the changes made after the setup. A portal that has no rule and
+ * is left empty keeps none, and the stays of the portal without a commission are held back until it has one. A portal that has a rule in force and is emptied keeps that rule (a rule is closed or
+ * changed by writing the new percent, never removed from here), and the field says so: an empty box is never read as «no rule» while the server goes on applying one.
  */
-export function CommissionPercents({ set }: CommissionPercentsProps) {
+export function CommissionPercentsEditor({ set, typed, onChange, errorOf, disabled }: CommissionPercentsEditorProps) {
   const { t, i18n } = useTranslation();
-  const {
-    control,
-    getValues,
-    setValue,
-    formState: { errors },
-  } = useFormContext<BillingWizardValues>();
-  const typed = useWatch({ control, name: 'commissionPercents' });
 
   return (
     <section className="flex min-w-0 flex-col gap-3" aria-labelledby="billing-commissions-title" data-testid="billing-commissions">
@@ -58,7 +57,7 @@ export function CommissionPercents({ set }: CommissionPercentsProps) {
                       ? t('billingWizard.channels.commissions.default')
                       : t('billingWizard.channels.commissions.inForce')
               }
-              error={errors.commissionPercents?.[row.channel]}
+              error={errorOf?.(row.channel)}
             >
               <Input
                 inputMode="decimal"
@@ -66,7 +65,8 @@ export function CommissionPercents({ set }: CommissionPercentsProps) {
                 maxLength={6}
                 placeholder="%"
                 value={commissionPercentText(row, typed)}
-                onChange={(event) => setValue('commissionPercents', { ...getValues('commissionPercents'), [row.channel]: event.target.value }, { shouldDirty: true })}
+                onChange={(event) => onChange(row.channel, event.target.value)}
+                disabled={disabled}
                 data-testid={`billing-commission-${row.channel}`}
               />
             </Field>
@@ -74,5 +74,30 @@ export function CommissionPercents({ set }: CommissionPercentsProps) {
         })}
       </div>
     </section>
+  );
+}
+
+interface CommissionPercentsProps {
+  /** The rules of the portals and what applies today to each. */
+  set: ChannelCommissionRuleSet;
+}
+
+/** The editor in the form of the wizard: what is typed is a field of the form (`commissionPercents`), saved by «Continua». */
+export function CommissionPercents({ set }: CommissionPercentsProps) {
+  const {
+    control,
+    getValues,
+    setValue,
+    formState: { errors },
+  } = useFormContext<BillingWizardValues>();
+  const typed = useWatch({ control, name: 'commissionPercents' });
+
+  return (
+    <CommissionPercentsEditor
+      set={set}
+      typed={typed}
+      onChange={(channel, value) => setValue('commissionPercents', { ...getValues('commissionPercents'), [channel]: value }, { shouldDirty: true })}
+      errorOf={(channel) => errors.commissionPercents?.[channel]}
+    />
   );
 }

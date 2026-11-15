@@ -440,13 +440,16 @@ export function commissionPercentText(row: Pick<ChannelCommissionInForce, 'chann
  * confirms the step); a rule in force that gets another percent is closed the day before `today`, or changed in place when it starts today; a portal with no percent gets no
  * rule. `null` when nothing differs from what is stored: nothing is sent. A DRAFT (what «Salva ed esci» keeps) takes only the percents the person typed: the ones that are
  * only shown (the default of the configuration, which nobody confirmed) are not saved as the agency's rules by leaving the step.
+ * The new percents start from `today`, as the wizard always did; `options.validFrom` is the first check-out day the page of the channel commissions lets the person choose instead, so that
+ * the stays of a month that is still open (the ones held back for a missing commission) are covered ({@link commissionStartTooEarly} says when a day cannot be used).
  */
 export function commissionRulesRequest(
   current: ChannelCommissionRuleSet,
   typed: Record<string, string>,
   today: string,
-  options: { draft?: boolean } = {},
+  options: { draft?: boolean; validFrom?: string } = {},
 ): ChannelCommissionRuleInput[] | null {
+  const start = options.validFrom ?? today;
   const rules: ChannelCommissionRuleInput[] = current.rules.map((rule) => ({
     channel: rule.channel,
     percent: rule.percent,
@@ -465,19 +468,35 @@ export function commissionRulesRequest(
     const stored = row.ruleId ? current.rules.findIndex((rule) => rule.id === row.ruleId) : -1;
     if (stored >= 0) {
       if (rules[stored].percent === percent) continue;
-      if (rules[stored].validFrom >= today) {
+      if (rules[stored].validFrom >= start) {
         rules[stored] = { ...rules[stored], percent };
       } else {
-        rules[stored] = { ...rules[stored], validTo: addDays(today, -1) };
-        rules.push({ channel: row.channel, percent, base: row.base ?? undefined, validFrom: today });
+        rules[stored] = { ...rules[stored], validTo: addDays(start, -1) };
+        rules.push({ channel: row.channel, percent, base: row.base ?? undefined, validFrom: start });
       }
     } else {
-      rules.push({ channel: row.channel, percent, base: row.base ?? undefined, validFrom: today });
+      rules.push({ channel: row.channel, percent, base: row.base ?? undefined, validFrom: start });
     }
     changed = true;
   }
 
   return changed ? rules : null;
+}
+
+/**
+ * The first day of the latest rule in force that starts AFTER `start`, among the portals whose percent the person changed, or `null` when none does. A rule that starts on or after the day the
+ * new percent is asked to start from is changed in place, and the days between `start` and its first day would stay without a rule: the day cannot be used, the person chooses that one or a later one.
+ */
+export function commissionStartTooEarly(current: ChannelCommissionRuleSet, typed: Record<string, string>, start: string): string | null {
+  let latest: string | null = null;
+  for (const row of current.channels) {
+    if (typed[row.channel] === undefined || !row.ruleId) continue;
+    const percent = parseDecimal(commissionPercentText(row, typed));
+    const rule = current.rules.find((candidate) => candidate.id === row.ruleId);
+    if (percent === null || !rule || rule.percent === percent || rule.validFrom <= start) continue;
+    if (latest === null || rule.validFrom > latest) latest = rule.validFrom;
+  }
+  return latest;
 }
 
 // ---------------------------------------------------------------------------------------------------------------------

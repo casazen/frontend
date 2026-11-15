@@ -4,6 +4,7 @@ import type { ChannelAccountHolder, ChannelCommissionRuleSet } from '@/types';
 import { BILLING_STEPS } from '../billing-wizard-ids';
 import {
   commissionRulesRequest,
+  commissionStartTooEarly,
   draftLeftOut,
   firstMissingStep,
   holderChangesRequest,
@@ -228,6 +229,36 @@ describe('the step «Commissioni dei canali»', () => {
     // A rule that starts today is changed in place: it is the same rule, with the same first day.
     const today: ChannelCommissionRuleSet = { rules: [{ ...set.rules[0], validFrom: TODAY }], channels: [{ ...set.channels[1], validFrom: TODAY }] };
     expect(commissionRulesRequest(today, { BookingCom: '12' }, TODAY)).toEqual([{ channel: 'BookingCom', percent: 12, base: 'GrossExclTouristTax', validFrom: TODAY, validTo: null }]);
+  });
+
+  it('CommissionRules_TheWizardStartsThemToday_AndThePageOfTheChannelCommissionsFromTheDayChosen', () => {
+    // Money rule: a rule applies by the day a stay checks out. The page of the channel commissions starts the new percents from a day of its own (a month that is still open, where the stays held
+    // back for a missing commission are); the wizard passes none and goes on starting them today.
+    expect(commissionRulesRequest(set, { BookingCom: '16', Vrbo: '8' }, TODAY, { draft: true, validFrom: '2026-11-01' })).toEqual([
+      { channel: 'BookingCom', percent: 15, base: 'GrossExclTouristTax', validFrom: '2026-01-01', validTo: '2026-10-31' },
+      { channel: 'BookingCom', percent: 16, base: 'GrossExclTouristTax', validFrom: '2026-11-01' },
+      { channel: 'Vrbo', percent: 8, validFrom: '2026-11-01' },
+    ]);
+    expect(commissionRulesRequest(set, { BookingCom: '16', Vrbo: '8' }, TODAY, { draft: true })).toEqual([
+      { channel: 'BookingCom', percent: 15, base: 'GrossExclTouristTax', validFrom: '2026-01-01', validTo: '2026-11-13' },
+      { channel: 'BookingCom', percent: 16, base: 'GrossExclTouristTax', validFrom: TODAY },
+      { channel: 'Vrbo', percent: 8, validFrom: TODAY },
+    ]);
+  });
+
+  it('CommissionStart_ARuleInForceThatStartsAfterTheDay_IsTooEarlyOnlyForAPercentThatChangesIt', () => {
+    const late: ChannelCommissionRuleSet = {
+      rules: [{ ...set.rules[0], validFrom: '2026-11-05' }],
+      channels: [set.channels[0], { ...set.channels[1], validFrom: '2026-11-05' }, set.channels[2]],
+    };
+    // The rule would be changed in place and 1-4 November would stay without one: the day to choose is the first day of the rule.
+    expect(commissionStartTooEarly(late, { BookingCom: '16' }, '2026-11-01')).toBe('2026-11-05');
+    expect(commissionStartTooEarly(late, { BookingCom: '16' }, '2026-11-05')).toBeNull();
+    expect(commissionStartTooEarly(late, { BookingCom: '16' }, '2026-11-20')).toBeNull();
+    // Nothing is in the way when the percent is the one in force, for a portal that has no rule, or when nothing was typed.
+    expect(commissionStartTooEarly(late, { BookingCom: '15' }, '2026-11-01')).toBeNull();
+    expect(commissionStartTooEarly(late, { Vrbo: '8' }, '2026-11-01')).toBeNull();
+    expect(commissionStartTooEarly(late, {}, '2026-11-01')).toBeNull();
   });
 
   it('CommissionRules_ATextThatIsNotAPercentIsLeftOutNeverSentAsZero', () => {

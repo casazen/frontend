@@ -1729,12 +1729,17 @@
       "octorateUnavailable": "Your channel manager is not answering right now. Try again in a few minutes.",
       "octorateWrongEnvironment": "The channel manager account belongs to another environment (test or production): the connection was not activated.",
       "onboardingNeedsWholeOrg": "This step concerns the whole organization: you need to be able to see all the properties.",
+      "ownerBulkActionInvalid": "This step of the month does not exist.",
+      "ownerBulkJobNotFound": "We can no longer find this run: look at where the owners stand in the list of the month.",
+      "ownerBulkOwnersEmpty": "There is no owner to apply it to.",
+      "ownerBulkTooManyOwners": "That is too many owners at once: narrow the choice.",
       "ownerCloseNotReady": "The month cannot be closed: there are anomalies to resolve.",
       "ownerCloseUnreconciled": "The balance does not match the payments: closing needs a reason.",
       "ownerCloseWaiverForbidden": "Only who manages the owners' finances can close with a difference.",
       "ownerExternalDocumentDuplicate": "This invoice is already linked to a statement.",
       "ownerFiscalProfileOverlap": "A profile already applies from that day or later: pick a later date.",
       "ownerFxRateExists": "A rate already exists for these currencies on that day.",
+      "ownerNotFound": "This owner is no longer among yours.",
       "ownerPayoutKeyReused": "This payment was already recorded with different data: start again from the statement.",
       "ownerPeriodClosed": "The month is closed: nothing is posted any more.",
       "ownerPeriodDirty": "The ledger changed after this version: make a new version.",
@@ -14672,6 +14677,7 @@
     "inviteQr": "Invite QR codes",
     "reviews": "Reviews",
     "routines": "Automations",
+    "channelCommissions": "Channel commissions",
     "channels": "Channels and calendars",
     "verifications": "Verifications",
     "wireTransfers": "Owner Wire Transfers",
@@ -16492,6 +16498,7 @@
     },
     "anomalies": {
       "actions": {
+        "channelRules": "Set the channel commission",
         "correction": "Record a correction",
         "fx": "Add the exchange rate",
         "onboarding": "Complete it in the activation",
@@ -16506,6 +16513,104 @@
       "times": "×{{count}}",
       "title": "Anomalies to resolve",
       "wholeMonth": "The whole month"
+    },
+    "bulk": {
+      "choose": {
+        "closedLater": "{{label}} (the month is not over yet)",
+        "label": "Which step?",
+        "suggested": "{{label}} (suggested)"
+      },
+      "confirm": "Run",
+      "count_one": "It concerns {{count}} owner of the month.",
+      "count_other": "It concerns the {{count}} owners of the month.",
+      "description": "One step of the month-end for all the owners at once. Each owner stands on its own: if one does not go through, the others do, and we tell you which.",
+      "leftRunning": "The operation goes on: as long as you stay on this page we will tell you when it ends.",
+      "open": "Run for everyone",
+      "progress": {
+        "label": "Progress",
+        "notFound": "We can no longer find this run. Look at the list of the month: it shows where each owner stands.",
+        "queued": "Waiting to start…",
+        "readError": "We cannot read how far it has gone. What had started goes on.",
+        "stay": "You can close this window: as long as you stay on this page we will tell you when it ends, and the result stays in «Run for everyone».",
+        "text_one": "{{count}} owner out of {{total}}",
+        "text_other": "{{count}} owners out of {{total}}"
+      },
+      "reason": {
+        "ownerBulkFailed": "We could not do it because of a problem on our side: nothing was lost. Try again.",
+        "ownerCloseUnreconciled": "The balance does not match the payments, and the month is not closed with a difference from here. Close it from the owner's row, with a reason.",
+        "ownerStatementVersionNotFound": "There is no statement yet: prepare it first."
+      },
+      "reopen": "Open",
+      "result": {
+        "another": "Run another step",
+        "failedTitle": "Not completed",
+        "figures": "Due {{due}} · Paid {{paid}} · Difference {{difference}}",
+        "figuresNoCurrency": "Amounts in the currency of the statement, which is not given here.",
+        "flaggedTitle": "With anomalies",
+        "headline": {
+          "allDone_one": "{{step}}: done for {{count}} owner.",
+          "allDone_other": "{{step}}: done for all {{count}} owners.",
+          "doneWithFlags_one": "{{step}}: done, but {{count}} statement has anomalies.",
+          "doneWithFlags_other": "{{step}}: done, but {{count}} statements have anomalies.",
+          "empty": "{{step}}: there is no owner to process in this month.",
+          "incomplete_one": "{{step}}: we have the answer for {{count}} owner out of {{total}}. For the others we do not know how it went: check the list of the month.",
+          "incomplete_other": "{{step}}: we have the answer for {{count}} owners out of {{total}}. For the others we do not know how it went: check the list of the month.",
+          "runFailed": "{{step}}: the run was interrupted. What was already done stays done.",
+          "someNotDone_one": "{{step}}: {{count}} owner out of {{total}} did not go through.",
+          "someNotDone_other": "{{step}}: {{count}} owners out of {{total}} did not go through."
+        },
+        "noReason": "It did not go through and we cannot say why.",
+        "others": "The other owners",
+        "status": {
+          "done": "Done",
+          "failed": "Not completed",
+          "flagged": "With anomalies",
+          "unchanged": "Already in order"
+        },
+        "tally": {
+          "done": "Done: {{count}}",
+          "failed": "Not completed: {{count}}",
+          "flagged": "With anomalies: {{count}}",
+          "unchanged": "Already in order: {{count}}"
+        },
+        "unanswered_one": "We have no answer for {{count}} owner out of {{total}}: check the list of the month.",
+        "unanswered_other": "We have no answer for {{count}} owners out of {{total}}: check the list of the month.",
+        "unknownCode": "It did not go through (code {{code}})."
+      },
+      "runDescription": "{{step}} for all the owners: the result is given owner by owner.",
+      "step": {
+        "Approve": {
+          "consequence1": "After approval a version is not changed: to change something a new version is needed.",
+          "consequence2": "It does not go to the owners yet: publishing does that.",
+          "label": "Approve the statements",
+          "summary": "Approves the version in progress of each owner. The ones with anomalies are not approved: you find them in the list with the reason."
+        },
+        "Close": {
+          "consequence1": "Nothing is posted in a closed month any more: what arrives afterwards goes into a correction of an open month.",
+          "consequence2": "If the balance does not match the payments, or is negative, that month is not closed from here: a reason is needed, and it is done from the owner's row.",
+          "label": "Close the month",
+          "summary": "Closes the month of each owner on its approved statement, where the balance matches the payments."
+        },
+        "Generate": {
+          "consequence1": "The versions that are replaced stay readable with their file.",
+          "consequence2": "A statement with anomalies is still prepared but stays flagged: it is not approved until you resolve them.",
+          "label": "Prepare the statements",
+          "summary": "Prepares a new version of each owner's statement from the ledger as it is now, where the last one is not already the right one."
+        },
+        "Post": {
+          "consequence1": "What is already posted does not change: only what is missing is added.",
+          "consequence2": "If you repeat the step nothing changes any more.",
+          "label": "Check and post the movements",
+          "summary": "Posts the movements of the month of all the owners to the ledger and flags the ones that cannot be posted."
+        },
+        "Publish": {
+          "consequence1": "The file and its fingerprint are kept and never change again.",
+          "consequence2": "To change something afterwards a new version is needed: this one stays as it is, readable.",
+          "label": "Publish the statements",
+          "summary": "Publishes the approved versions to the owners: from that moment they see the statement and receive the notice."
+        }
+      },
+      "title": "Run for everyone: {{period}}"
     },
     "changes": {
       "added": "Lines posted since then: {{count}}",
@@ -16527,6 +16632,21 @@
       "none": "Nothing changed since version {{version}}.",
       "title": "What changed since the previous version",
       "versionLine": "Version {{version}} · {{status}} · cut on {{cutoff}}"
+    },
+    "channelRules": {
+      "description": "What each portal keeps when its reservation carries no commission. The percentages you write apply to the stays that end from the day you choose on; the months that are already closed are not recalculated.",
+      "fromHint": "The first check-out day of the stays the new percentages are for. The first day of the month to close is already proposed: that is where the stays held back for a missing commission are.",
+      "fromInvalid": "Write the day the percentages apply from.",
+      "fromLabel": "Valid from",
+      "fromOverlap": "That day falls on another rule of this portal: choose another day.",
+      "fromTooEarly": "The rule in force of a portal starts on {{date}}: choose that day or a later one.",
+      "loadError": "We cannot read the commissions of the channels.",
+      "loading": "Reading the commissions of the channels…",
+      "noChange": "Change a percentage to be able to save.",
+      "noChannels": "There are no portals to set a commission for.",
+      "save": "Save the commissions",
+      "saved": "Commissions saved. They apply to the stays that end from {{date}} on.",
+      "title": "Channel commissions"
     },
     "close": {
       "confirm": "Close the month",
@@ -16780,6 +16900,10 @@
       }
     },
     "issue": {
+      "channelCommissionMissing": {
+        "how": "A portal reservation carries no commission and the agency has no rule for that portal: set it in the channel commissions. Until it is there, the owners of that property are held back.",
+        "title": "A portal's commission is missing"
+      },
       "currencyMixed": {
         "how": "The owner's lines are in different currencies: pick the currency he is paid in, in his financial data.",
         "title": "The statement mixes several currencies"
@@ -16799,6 +16923,10 @@
       "ledgerStatementImbalance": {
         "how": "Lines changed after the version: make a new version.",
         "title": "The statement does not match the ledger"
+      },
+      "mandateMissingForStay": {
+        "how": "The owner has no mandate that covers the day of a stay: the revenue is posted, the commission is not guessed. Write the mandate in the owner's financial data.",
+        "title": "A stay has no mandate in force"
       },
       "negativeBalance": {
         "how": "It can be closed only with a reason and the permission of who manages the owners' finances.",
