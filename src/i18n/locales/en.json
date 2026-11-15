@@ -1424,6 +1424,44 @@
     "bookings": "Bookings",
     "guest": "Guest",
     "property": "Property",
+    "channelManager": {
+      "entrusted": "The guests' data has been entrusted to your channel manager, which sends it to the police. For CasaZen the communication is done only when the receipt is archived.",
+      "field": {
+        "birthComune": "the municipality of birth",
+        "documentIssuePlace": "the place of issue of the document",
+        "residenceComune": "the municipality of residence",
+        "unknown": "the places indicated"
+      },
+      "fix": "Correct the guests' data",
+      "fixLayer": "Correct the place your channel manager does not recognize and save: CasaZen passes it on as soon as the guests are sent again.",
+      "guestsLabel": "Guests the channel manager did not take",
+      "lastAttempt": "Last attempt: {{when}}",
+      "needsPermission": "Trying again or correcting the guests needs the permission to send the guests' data: ask whoever manages the organization.",
+      "reason": {
+        "octorate_auth": "Your channel manager refused CasaZen's access: reconnect the account and try again.",
+        "octorate_conflict": "Your channel manager reports a conflict with its own data: try again.",
+        "octorate_guest_rejected": "Your channel manager did not accept this guest's data: check it and correct it.",
+        "octorate_not_found": "Your channel manager cannot find this booking: check the link of the property.",
+        "octorate_rate_limited": "Your channel manager received too many requests: try again in a few minutes.",
+        "octorate_server": "Your channel manager is not answering right now: try again in a few minutes.",
+        "place_not_recognized": "Your channel manager does not recognize a place of this guest: correct {{fields}}.",
+        "unknown": "Your channel manager did not take this guest. Try again; if it keeps happening, write to support."
+      },
+      "receiptArchived": "The receipt is archived in CasaZen: you find it below, among the proofs.",
+      "receiptArchivedLabel": "Receipt archived",
+      "receiptArchivedOn": "The receipt has been archived in CasaZen since {{date}}: you find it below, among the proofs.",
+      "receiptMissing": "The guests' data was entrusted to your channel manager, but the receipt is not in the archive yet: upload it in the Proof archive, or check the outcome in your Cassetto Compliance.",
+      "retry": "Retry",
+      "retryResult": {
+        "error": "We could not retry. Try again in a few minutes.",
+        "failed": "Your channel manager did not take the guests: see the reason above and try again later.",
+        "notApplicable": "This stay is not linked to your channel manager: there is nothing to try again.",
+        "nothingToSend": "There was nothing to try again: correct the data indicated above.",
+        "partlyFailed": "Some guests went to your channel manager and others did not: see the list above.",
+        "sent": "Done: the guests that had not gone are now with your channel manager."
+      },
+      "toCorrect": "Your channel manager did not take all the guests of this stay."
+    },
     "checkIn": "Check-in",
     "confirmationNumber": "Confirmation number",
     "error": {
@@ -1456,8 +1494,10 @@
       "sent_receipt_pending": "Sent, receipt pending"
     },
     "statusLabel": {
+      "ChannelManagerWriteFailed": "To correct",
       "DaInviare": "To send",
       "DaInviareManualmente": "To send manually",
+      "EntrustedToChannelManager": "Entrusted to the channel manager, waiting for the receipt",
       "InviatoManualmente": "Sent manually",
       "Inviato": "Sent (receipt)",
       "NotDue": "Not due",
@@ -1848,6 +1888,7 @@
       "alloggiatiFileNotReady": "The Alloggiati file cannot be generated: the guest data is incomplete or an official code is missing.",
       "alloggiatiFileStayDaysInvalid": "The Alloggiati file cannot be generated: one schedina accepts from 1 to 30 days of stay.",
       "alloggiatiFileNameNotRepresentable": "The Alloggiati file cannot be generated: the first or last name of a guest has characters the portal does not accept. Write them with letters of the Latin alphabet only, as on the document.",
+      "alloggiatiWriteInProgress": "The guests of this stay are already being passed to your channel manager: nothing was repeated. Try again in a moment.",
       "taxApplicabilityUnresolved": "A fact is missing to decide the withholding: CasaZen does not guess it.",
       "taxFileAlreadyFiled": "The file was already sent: it cannot be generated again.",
       "taxFilingReferenceRequired": "The reference is needed: who handed it over, the receipt or the reason.",
@@ -6483,6 +6524,23 @@
       "title": "Identification and access"
     },
     "sender": {
+      "autoSend": {
+        "adminOnly": "Only the owner or an administrator of the organization can change it.",
+        "consequence": {
+          "off": "The guests go to your channel manager only when you confirm the check-in.",
+          "on": "The guests go to your channel manager without you confirming the check-in, for every property of the organization."
+        },
+        "label": "Send the guests on its own when the data is complete and the identity is verified",
+        "onlySetting": "Who sends does not change: only this setting does.",
+        "readOnly": {
+          "off": "The automatic sending of the guests is off.",
+          "on": "The automatic sending of the guests is on."
+        },
+        "saved": {
+          "off": "Setting saved: the guests go only when you confirm the check-in.",
+          "on": "Setting saved: the guests go on their own when the data is complete and the identity is verified."
+        }
+      },
       "choice": {
         "istat": "The same sender also handles the regional statistics (ISTAT), where required.",
         "legend": "Who sends the guests' data to the police?",
@@ -6581,6 +6639,7 @@
         }
       },
       "errors": {
+        "autoSendNotAllowed": "Only the owner or an administrator of the organization can change the automatic sending of the guests: nothing was changed. Leave the switch as it was and try again.",
         "casaZenNotAvailable": "Sending with CasaZen is not available yet: choose another option.",
         "changedConcurrently": "Someone changed who sends while you were here: check the summary again.",
         "channelManagerNotAvailable": "Your channel manager cannot send for this property: connect it first, or choose another option.",
@@ -7176,6 +7235,34 @@
     }
   },
   "complianceArchive": {
+    "booking": {
+      "loadError": "We cannot load the proofs and the send log of this stay.",
+      "loading": "Loading the proofs and the sends…",
+      "log": {
+        "kind": {
+          "AlloggiatiGuests": "Guests to the police",
+          "IstatPeriod": "ISTAT communication of the period",
+          "other": "Send",
+          "TouristTaxPeriod": "Tourist tax of the period"
+        },
+        "reference": "ref. {{reference}}",
+        "sender": {
+          "CasaZen": "Sent by CasaZen",
+          "ChannelManager": "Entrusted to your channel manager",
+          "Manual": "Declared as sent by hand",
+          "ManualBy": "Declared as sent by hand by {{name}}",
+          "other": "Recorded in CasaZen"
+        }
+      },
+      "logEmpty": "No send is recorded for this stay yet.",
+      "logLabel": "Send log",
+      "logTitle": "Send log",
+      "notFound": "We cannot find the proofs of this stay: it may no longer exist or may not be yours.",
+      "proofsEmpty": "No receipt is archived for this stay yet.",
+      "proofsTitle": "Archived proofs",
+      "retry": "Retry",
+      "stale": "We could not refresh the list: what you see may be out of date."
+    },
     "coverage": {
       "counts": "{{proven}} with proof · {{toVerify}} to check · {{missing}} missing · {{notApplicable}} not applicable",
       "deadline": "Deadline: {{when}}",
@@ -25130,6 +25217,14 @@
       }
     },
     "alloggiati": {
+      "ChannelManagerWriteFailed": {
+        "label": "To correct",
+        "explain": "Your channel manager did not take all the guests: see the reason for each one, correct the data or retry.",
+        "need": [
+          "Correcting the data indicated, if a place is not recognized",
+          "Retrying to pass the guests to the channel manager"
+        ]
+      },
       "DaInviare": {
         "label": "To send",
         "explain": "Waiting for the arrival day: the portal does not accept a future arrival date."
@@ -25140,6 +25235,14 @@
         "need": [
           "Sending on the Alloggiati Web portal",
           "Recording the sending here, with the date"
+        ]
+      },
+      "EntrustedToChannelManager": {
+        "label": "Entrusted to the channel manager, waiting for the receipt",
+        "explain": "The guests were entrusted to your channel manager, which sends them to the police. For CasaZen the communication is done only when the receipt is archived.",
+        "need": [
+          "Your channel manager sends the guests to the police",
+          "Archiving the receipt in CasaZen"
         ]
       },
       "InviatoManualmente": {

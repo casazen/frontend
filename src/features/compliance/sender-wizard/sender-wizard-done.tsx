@@ -82,6 +82,8 @@ export function SenderWizardDone({ propertyId }: { propertyId: string }) {
   const settled = tone === 'done';
   const propertyPage = `${PROPERTIES_PATH}/${encodeURIComponent(propertyId)}`;
   const stateAddress = `${propertyPage}?${new URLSearchParams({ section: CONNECTION_HEALTH_SECTION }).toString()}`;
+  // With the channel manager as the sender the result also says what happens to the guests of a stay, as the server holds the setting now (E20/F01/US02): never from the form.
+  const autoSend = sender.data.sender === 'ChannelManager' && typeof sender.data.autoSendGuestsToOctorate === 'boolean' ? (sender.data.autoSendGuestsToOctorate ? 'on' : 'off') : null;
   const primary = settled
     ? { label: t('compliance.sender.done.toCompliance'), to: COMPLIANCE_PATH }
     : { label: t('compliance.sender.done.toState'), to: stateAddress };
@@ -120,6 +122,12 @@ export function SenderWizardDone({ propertyId }: { propertyId: string }) {
               </li>
             );
           })}
+          {autoSend ? (
+            <li className="flex min-w-0 items-start gap-2 text-sm" data-tone="done" data-testid="sender-done-auto-send" data-state={autoSend}>
+              <Check aria-hidden="true" className={cn('mt-0.5 size-4 shrink-0', POINT_ICON.done.className)} />
+              <span className="min-w-0 break-words">{t(`compliance.sender.autoSend.consequence.${autoSend}`)}</span>
+            </li>
+          ) : null}
         </ul>
       </section>
 

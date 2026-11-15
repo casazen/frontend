@@ -19,6 +19,7 @@ import { CONNECTION_HEALTH_SECTION } from '@/features/compliance/lib/connection-
 import { EMPTY_QUESTURA_CREDENTIALS, validateQuesturaCredentials, type QuesturaCredentialsErrors, type QuesturaCredentialsField } from '@/features/properties/components/questura-credentials-form';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getHttpStatus } from '@/lib/api-errors';
+import { ORG_BILLING_ADMIN_PERMISSION } from '@/lib/org-billing-admin';
 import { cn } from '@/lib/utils';
 import { COMPLIANCE_HEALTH_KEY } from '@/queries/compliance-health';
 import { PROPERTY_SENDER_KEY, useDeclareActivated, useSender, useSwitchSender, useTestConnection } from '@/queries/use-property-sender';
@@ -37,6 +38,8 @@ import {
   SENDER_WIZARD_DEFAULTS,
   SENDER_WRITE_PERMISSION,
   SenderStepBlockedError,
+  autoSendInForce,
+  autoSendRefused,
   defaultSenderChoice,
   delegationSettled,
   hasTypedCredentials,
@@ -143,6 +146,9 @@ function SenderWizard({ propertyId, read }: SenderWizardProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { hasPermission } = useWorkspace();
+  // The automatic send of the guests is a setting of the whole organization: only its administrator changes it (the server refuses anyone else), so only they are offered the switch.
+  const canChangeAutoSend = hasPermission('short-rent', ORG_BILLING_ADMIN_PERMISSION);
   const switchSender = useSwitchSender(propertyId);
   const testConnection = useTestConnection(propertyId);
   const declareActivated = useDeclareActivated(propertyId);
@@ -155,7 +161,7 @@ function SenderWizard({ propertyId, read }: SenderWizardProps) {
   // Any request of the wizard in flight: none of its buttons can be pressed again meanwhile.
   const busy = switchSender.isPending || testConnection.isPending || declareActivated.isPending || saveCredentials.isPending;
 
-  const [defaults] = useState<SenderWizardValues>(() => ({ ...SENDER_WIZARD_DEFAULTS, sender: defaultSenderChoice(read) }));
+  const [defaults] = useState<SenderWizardValues>(() => ({ ...SENDER_WIZARD_DEFAULTS, sender: defaultSenderChoice(read), autoSendGuests: autoSendInForce(read) }));
   const leaveTo = stateAddress(propertyId);
   const tested = testConnection.data !== undefined;
   const verified = read.state === 'Active' && read.verification === 'Verified';
@@ -166,15 +172,21 @@ function SenderWizard({ propertyId, read }: SenderWizardProps) {
   };
 
   /**
-   * The button of the summary: the sender is changed (`PUT`). The consent goes with the version of the text the host read and the confirmation only for the change they confirmed. A refusal that says what
+   * The button of the summary: the sender is changed (`PUT`). The consent goes with the version of the text the host read and the confirmation only for the change they confirmed; the automatic
+   * send of the guests goes with them when the administrator changed it, and its result is told in words from what the server answered (the wizard stays where it is). A refusal that says what
    * to do is told in words (and the sender is read again, so the screen shows what is true now); the wizard does not go on.
    */
   const applySwitch = async (values: SenderWizardValues) => {
     setBlocked(null);
+    const request = toSwitchRequest(values, read, { canChangeAutoSend });
     try {
-      await switchSender.mutateAsync(toSwitchRequest(values, read));
+      const answer = await switchSender.mutateAsync(request);
+      if (request.autoSendGuestsToOctorate !== undefined) {
+        const on = answer.autoSendGuestsToOctorate ?? request.autoSendGuestsToOctorate;
+        toast.success(t(on ? 'compliance.sender.autoSend.saved.on' : 'compliance.sender.autoSend.saved.off'));
+      }
     } catch (error) {
-      const kind = switchProblemOf(error);
+      const kind = switchProblemOf(error) ?? (autoSendRefused(error, request) ? 'autoSendNotAllowed' : null);
       if (kind === null) throw error;
       setBlocked(kind);
       refreshSender();
@@ -255,7 +267,7 @@ function SenderWizard({ propertyId, read }: SenderWizardProps) {
         nextLabel: t('compliance.sender.steps.summary.next'),
         nextDisabled: busy,
         beforeNext: applySwitch,
-        render: () => <SenderSummaryStep read={read} />,
+        render: () => <SenderSummaryStep read={read} canChangeAutoSend={canChangeAutoSend} />,
       },
       [SENDER_STEP.credentials]: {
         id: SENDER_STEP.credentials,
