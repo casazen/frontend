@@ -9,7 +9,7 @@ import { Dropzone } from '@/components/ui/dropzone';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
-import { useFeatureFlags } from '@/hooks/use-feature-flags';
+import { useFeatureFlagsReadAgain } from '@/hooks/use-feature-flags-read-again';
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import { formatStayDate, todayInRome } from '@/lib/stay-dates';
 import { useReceiptCoverage, useUploadProof } from '@/queries/compliance-archive';
@@ -98,7 +98,9 @@ interface UploadFormProps extends Omit<ProofUploadDialogProps, 'open'> {
 
 function UploadForm({ onClose, properties: listed, kinds, prefill, alloggiatiPortalUrl, upload }: UploadFormProps) {
   const { t, i18n } = useTranslation();
-  const { flags } = useFeatureFlags();
+  // The flags are read again from the server when the dialog opens: the provider reads them once a session, and the deletion cannot be undone, so a tab opened before the flag was switched
+  // on must not save a receipt on the old value. Until that read is over nothing is saved (`flagsRead`).
+  const { flags, settled: flagsRead } = useFeatureFlagsReadAgain();
   // The pages ask for the short-rent flats already; a list that was not filtered still never offers a flat let long-term (it owes no communication, and the receipt would be tied to it).
   const properties = listed.filter((flat) => flat.rentalMode !== 'Long');
   const today = todayInRome();
@@ -144,7 +146,7 @@ function UploadForm({ onClose, properties: listed, kinds, prefill, alloggiatiPor
   const mayGoOnWithoutSummary = summaryRequired && coverageAsked && coverage.isError && summaryRefusal(coverage.error) === undefined;
   const goesOnWithoutSummary = mayGoOnWithoutSummary && confirmedFor === question;
   const ready =
-    propertyId !== '' && kind !== '' && when !== '' && !dayProblem && file !== null && !fileProblem && (!summaryRequired || coverage.isSuccess || goesOnWithoutSummary);
+    flagsRead && propertyId !== '' && kind !== '' && when !== '' && !dayProblem && file !== null && !fileProblem && (!summaryRequired || coverage.isSuccess || goesOnWithoutSummary);
 
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();

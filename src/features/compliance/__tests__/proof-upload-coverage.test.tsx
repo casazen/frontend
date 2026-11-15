@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -6,6 +7,7 @@ import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios
 import axios from '@/lib/axios';
 import { DEFAULT_FEATURE_FLAGS, type FeatureFlags } from '@/config/feature-flags';
 import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
+import { FeatureFlagsProvider } from '@/contexts/feature-flags-provider';
 import { BookingComplianceSection } from '@/features/bookings/booking-compliance-section';
 import i18n from '@/i18n/config';
 import { COMPLIANCE_ARCHIVE_KEY } from '@/queries/compliance-archive';
@@ -50,6 +52,8 @@ const DAY = '2026-11-14';
 const PORTAL = 'https://portal.example.test/ricevute/';
 
 const asked = { coverage: [] as URLSearchParams[], properties: [] as unknown[] };
+/** What `GET /api/public/features` answers: the provider reads it once when the page opens and the dialog reads it again when it opens; a test says what the server answers by then. */
+const server = { flags: (): Promise<Record<string, boolean>> => Promise.resolve({}) };
 const onClose = vi.fn();
 
 function newClient() {
@@ -111,6 +115,7 @@ function answer({ coverage = serverSays, booking = archiveOf() }: Answers = {}) 
       asked.coverage.push(params);
       return { data: await coverage(params) };
     }
+    if (url === '/public/features') return { data: await server.flags() };
     if (url === '/properties') {
       // The list as the API would give it unfiltered: a page that does not ask for the short-rent flats gets the long-term one too.
       asked.properties.push(config?.params);
@@ -164,6 +169,7 @@ beforeEach(async () => {
   vi.clearAllMocks();
   asked.coverage.length = 0;
   asked.properties.length = 0;
+  server.flags = () => Promise.resolve({});
   freezeClock('2026-11-15T12:00:00Z');
   await i18n.changeLanguage('it');
   answer();
@@ -559,6 +565,79 @@ describe('what the host is told before saving and after', () => {
     // No stay, so nothing is deleted: no warning about a deletion.
     expect(screen.queryByTestId('proof-upload-purge-warning')).not.toBeInTheDocument();
     await waitFor(() => expect(screen.getByTestId('proof-upload-submit')).toBeEnabled());
+  });
+});
+
+/** A page that keeps the dialog closed until the host asks: the provider reads the flags when the page opens, the dialog reads them again when it opens. */
+function PageWithTheDialog() {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button type="button" data-testid="open-the-dialog" onClick={() => setOpen(true)}>
+        open
+      </button>
+      <ProofUploadDialog
+        open={open}
+        onClose={() => setOpen(false)}
+        properties={PROPERTIES}
+        kinds={['AlloggiatiReceipt', 'IstatProof']}
+        prefill={{ propertyId: A, kind: 'AlloggiatiReceipt', day: DAY }}
+        alloggiatiPortalUrl={PORTAL}
+      />
+    </>
+  );
+}
+
+/** A session that began with the deletion off: the provider has read the flags, and the dialog is still closed. */
+async function sessionThatBeganWithTheDeletionOff() {
+  const client = newClient();
+  render(
+    <QueryClientProvider client={client}>
+      <FeatureFlagsProvider>
+        <PageWithTheDialog />
+      </FeatureFlagsProvider>
+    </QueryClientProvider>,
+  );
+  await waitFor(() => expect(client.getQueryState(['feature-flags'])?.status).toBe('success'));
+}
+
+describe('the flags of the deletion are read again when the dialog opens', () => {
+  // The provider reads the flags once a session: a tab opened before the deletion was switched on still holds it off, and the server deletes all the same. The dialog reads them again when it
+  // opens and goes by what the server says now: nothing is saved while that read is on its way, and then the host is told before saving, as with the flag on from the start.
+  it('dialog_DeletionSwitchedOnAfterTheSessionBegan_IsReadWhenTheDialogOpensAndWarnsBeforeSaving', async () => {
+    await sessionThatBeganWithTheDeletionOff();
+    let answerNow!: (flags: Record<string, boolean>) => void;
+    server.flags = () =>
+      new Promise((resolve) => {
+        answerNow = resolve;
+      });
+
+    fireEvent.click(screen.getByTestId('open-the-dialog'));
+    chooseFile();
+
+    // The flags are being read again: nothing is saved on the old value, and nothing is warned on it either.
+    expect(await total()).toHaveTextContent('Diventano in regola: 2 soggiorni');
+    expect(screen.getByTestId('proof-upload-submit')).toBeDisabled();
+    expect(screen.queryByTestId('proof-upload-purge-warning')).not.toBeInTheDocument();
+
+    answerNow({ purgeDocumentsAfterReceipt: true });
+
+    expect(await screen.findByTestId('proof-upload-purge-warning')).toHaveTextContent('Non si può annullare');
+    await waitFor(() => expect(screen.getByTestId('proof-upload-submit')).toBeEnabled());
+    fireEvent.click(screen.getByTestId('proof-upload-submit'));
+    expect(await screen.findByTestId('proof-upload-outcome-purge')).toHaveTextContent('Non si può annullare');
+  });
+
+  // A read that fails leaves the host with the flags the session has, as before: the save is not held for ever on a read that will not come.
+  it('dialog_FlagsThatCannotBeReadAgain_AreTheOnesTheSessionHasAndTheSaveIsNotHeld', async () => {
+    await sessionThatBeganWithTheDeletionOff();
+    server.flags = () => Promise.reject(problem(500));
+
+    fireEvent.click(screen.getByTestId('open-the-dialog'));
+    chooseFile();
+
+    await waitFor(() => expect(screen.getByTestId('proof-upload-submit')).toBeEnabled());
+    expect(screen.queryByTestId('proof-upload-purge-warning')).not.toBeInTheDocument();
   });
 });
 
