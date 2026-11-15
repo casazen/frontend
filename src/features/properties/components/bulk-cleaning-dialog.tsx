@@ -39,13 +39,14 @@ interface BulkCleaningDialogProps {
   routineLink?: boolean;
 }
 
+/** The save of the dialog: kept above its content, so that the layer knows whether it is on its way (see `BulkCleaningDialog`). */
+type BulkSave = ReturnType<typeof useSaveBulkCleaningSetup>;
+
 /**
  * «Chi pulisce, per più immobili» (E24/F01/US02/T01): the same cleaner, price and time for many properties of Affitti brevi at once, as a layer over the page it was opened from. The properties are the ones
  * of the list; the dialog takes one currency at a time (the price is in the currency of the property, which the setup of each property says: the list does not, and the suppliers work in euro). The
  * answer is one line for each property: the ones that were saved and, with the reason, the ones that were not: never «all saved» while one was not.
  */
-type BulkSave = ReturnType<typeof useSaveBulkCleaningSetup>;
-
 export function BulkCleaningDialog({ open, onOpenChange, routineLink = true }: BulkCleaningDialogProps) {
   const { t } = useTranslation();
   // The save is kept here, above the content that comes and goes with the layer: while it is on its way the layer does not close (Esc, the X, the grip of a phone and a click outside all come
@@ -249,7 +250,7 @@ function BulkCleaningBody({ save, onClose, routineLink }: { save: BulkSave; onCl
           <Button type="button" variant="ghost" onClick={() => setConfirming(false)} disabled={save.isPending} data-testid="bulk-cleaning-replace-back">
             {t('propertyCleaning.bulk.replaceBack')}
           </Button>
-          <Button type="button" loading={save.isPending} onClick={() => void runSave()} data-testid="bulk-cleaning-replace-confirm">
+          <Button type="button" loading={save.isPending} disabled={!ready} onClick={() => void runSave()} data-testid="bulk-cleaning-replace-confirm">
             {t('propertyCleaning.bulk.replaceConfirm')}
           </Button>
         </DialogFooter>
