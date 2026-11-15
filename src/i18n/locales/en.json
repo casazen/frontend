@@ -30570,8 +30570,8 @@
     "loadError": "The issuer profile of this owner could not be loaded.",
     "loading": "Loading the issuer profile…",
     "maskedNotice": "The data of the profile are hidden: only whoever manages the finances of the owners reads and writes them in full.",
-    "notFound": "This owner is no longer among yours.",
     "notForYou": "The issuer profile is not for you: it is seen by whoever can read the data of the owners.",
+    "notFound": "This owner is no longer among yours.",
     "refused": "This value is not valid.",
     "regime": {
       "PrivatePerson": {

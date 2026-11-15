@@ -30570,8 +30570,8 @@
     "loadError": "Impossibile caricare il profilo emittente di questo proprietario.",
     "loading": "Carico il profilo emittente…",
     "maskedNotice": "I dati del profilo sono nascosti: li legge e li scrive per intero solo chi gestisce la parte economica dei proprietari.",
-    "notFound": "Questo proprietario non c’è più tra i tuoi.",
     "notForYou": "Il profilo emittente non è per te: lo vede chi può leggere i dati dei proprietari.",
+    "notFound": "Questo proprietario non c’è più tra i tuoi.",
     "refused": "Questo dato non è valido.",
     "regime": {
       "PrivatePerson": {
