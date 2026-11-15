@@ -11,6 +11,8 @@ interface SubflowProps {
   /** The panel is open. It is mounted only while it is, so each visit starts clean: nothing typed, nothing saved. */
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** What the layer says it is for, when the page that opens it is not the check-out wizard (the default speaks of the answers of the check-out). */
+  description?: string;
 }
 
 /**
@@ -19,14 +21,16 @@ interface SubflowProps {
  * check-in endpoints with its own "Save guests". "Done" and "Cancel" give back the same step of the wizard, whose answers were never touched (the layer is not
  * a page and not a form of the wizard); "Done" also asks for the Alloggiati status again, so the step shows the new state.
  *
+ * The page of a booking opens it too, to correct a guest the channel manager did not take (E20/F01/US02): the same layer over the page, with its own `description`.
+ *
  * It must be rendered next to the wizard and not inside its form: the editor has a form of its own and the events of a layer go up the tree of the page.
  */
-export function CheckoutGuestDataSubflow({ bookingId, open, onOpenChange }: SubflowProps) {
+export function CheckoutGuestDataSubflow({ bookingId, open, onOpenChange, description }: SubflowProps) {
   if (!open) return null;
-  return <SubflowLayer bookingId={bookingId} onClose={() => onOpenChange(false)} />;
+  return <SubflowLayer bookingId={bookingId} description={description} onClose={() => onOpenChange(false)} />;
 }
 
-function SubflowLayer({ bookingId, onClose }: { bookingId: string; onClose: () => void }) {
+function SubflowLayer({ bookingId, description, onClose }: { bookingId: string; description?: string; onClose: () => void }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [dirty, setDirty] = useState(false);
@@ -71,7 +75,7 @@ function SubflowLayer({ bookingId, onClose }: { bookingId: string; onClose: () =
       >
         <DialogHeader>
           <DialogTitle>{t('compliance.checkout.guestData.title')}</DialogTitle>
-          <DialogDescription>{t('compliance.checkout.guestData.description')}</DialogDescription>
+          <DialogDescription>{description ?? t('compliance.checkout.guestData.description')}</DialogDescription>
         </DialogHeader>
 
         <GuestsEditor
