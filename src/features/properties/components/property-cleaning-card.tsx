@@ -12,6 +12,7 @@ import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import { useRoutines } from '@/queries/routines';
 import { useSavePropertyCleaningSetup, usePropertyCleaningSetup } from '@/queries/property-cleaning';
 import { useOrgMembers } from '@/queries/use-org-team';
+import { useProperty } from '@/queries/use-properties';
 import { useSuppliersByProperty } from '@/queries/use-service-requests';
 import type { PropertyCleaningSetup } from '@/types';
 import {
@@ -21,6 +22,7 @@ import {
   cleaningProblems,
   cleaningRoutineStateOf,
   cleaningStaffOf,
+  cleaningTimeSourceOf,
   formatCleaningPrice,
   memberName,
   supplierChoicesOf,
@@ -48,6 +50,8 @@ export function PropertyCleaningCard({ propertyId }: PropertyCleaningCardProps) 
 
   const query = usePropertyCleaningSetup(propertyId);
   const save = useSavePropertyCleaningSetup(propertyId);
+  // The record of the property says whether it has a check-out time (`checkOutBy`): the page of the property has read it already, so this asks for nothing more. Said only from a read that worked.
+  const record = useProperty(propertyId);
   const [form, setForm] = useState<CleaningForm | null>(null);
   const [attempted, setAttempted] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -101,8 +105,8 @@ export function PropertyCleaningCard({ propertyId }: PropertyCleaningCardProps) 
   };
 
   const problems = form && attempted ? cleaningProblems(form) : {};
-  // What an empty time stands for: the check-out time of the property, which the server tells as the time a cleaning starts while the setup holds none.
-  const checkOut = setup && setup.startTime === null ? toClock(setup.effectiveStartTime) || null : null;
+  // What an empty time stands for: the check-out time of the property, or the default time of the server when the property has none (the server tells the time, not where it comes from).
+  const timeSource = setup ? cleaningTimeSourceOf(setup, record.data?.checkOutBy, !record.isError && record.data !== undefined) : null;
 
   let body: React.ReactNode;
   if (query.isPending) {
@@ -154,7 +158,7 @@ export function PropertyCleaningCard({ propertyId }: PropertyCleaningCardProps) 
             choices: staffChoices,
             onRetry: () => void members.refetch(),
           }}
-          checkOutTime={checkOut}
+          timeSource={timeSource}
           disabled={save.isPending}
         />
         <div className="flex flex-wrap items-center gap-2">
@@ -171,6 +175,11 @@ export function PropertyCleaningCard({ propertyId }: PropertyCleaningCardProps) 
     const price = setup.priceCents === null ? null : formatCleaningPrice(setup.priceCents, setup.currency, i18n.language);
     const staffName = setup.staffUserId ? members.data?.items.find((member) => member.userId === setup.staffUserId) : undefined;
     const startsAt = toClock(setup.effectiveStartTime);
+    // The time of the setup as it is; when the setup leaves it empty, the time with where it comes from (said only when the card knows it).
+    const startText =
+      setup.startTime === null && timeSource
+        ? t(timeSource.kind === 'property' ? 'propertyCleaning.summary.timeOfProperty' : 'propertyCleaning.summary.timeDefault', { time: startsAt })
+        : startsAt;
     body = !setup.configured ? (
       <div className="space-y-3" data-testid="property-cleaning-none">
         <p className="text-sm">{t('propertyCleaning.none')}</p>
@@ -204,9 +213,7 @@ export function PropertyCleaningCard({ propertyId }: PropertyCleaningCardProps) 
             )}
           </dd>
           <dt className="text-foreground/70">{t('propertyCleaning.summary.time')}</dt>
-          <dd data-testid="property-cleaning-time">
-            {setup.startTime === null ? t('propertyCleaning.summary.timeOfProperty', { time: startsAt }) : startsAt}
-          </dd>
+          <dd data-testid="property-cleaning-time">{startText}</dd>
           <dt className="text-foreground/70">{t('propertyCleaning.summary.duration')}</dt>
           <dd>{t('propertyCleaning.summary.minutes', { count: setup.effectiveDurationMinutes })}</dd>
           <dt className="text-foreground/70">{t('propertyCleaning.summary.state')}</dt>

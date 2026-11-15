@@ -15,6 +15,7 @@ import {
   SUPPLIER_CURRENCY,
   type CleaningForm,
   type CleaningProblems,
+  type CleaningTimeSource,
   type SupplierChoice,
 } from '../lib/property-cleaning-model';
 
@@ -38,8 +39,8 @@ interface PropertyCleaningFieldsProps {
   currency: string;
   suppliers: { state: ChoicesState; choices: SupplierChoice[]; /** The name of the supplier the setup holds, for the case it is not among the ones to choose from now. */ storedName: string | null; onRetry: () => void };
   staff: { state: ChoicesState; choices: StaffChoice[]; onRetry: () => void };
-  /** `HH:mm` of the check-out of the property, to say what the empty time stands for; `null` when it is not one property (the dialog) or not known. */
-  checkOutTime: string | null;
+  /** Where the time comes from when it is left empty (the check-out time of the property, or the default one when it has none); `null` when it is not one property (the dialog) or not known. */
+  timeSource: CleaningTimeSource | null;
   /** A save is on its way: nothing of the form can be changed. */
   disabled: boolean;
 }
@@ -48,7 +49,7 @@ interface PropertyCleaningFieldsProps {
  * The fields of the cleaner of a property, the same in the card of one property and in the dialog for many (E24/F01/US02/T01): who cleans (a supplier or a member of the staff), the price agreed
  * in the currency of the property, the time, the length and whether the automation uses it. The suppliers work in euro only: a property in another currency takes a member of the staff.
  */
-export function PropertyCleaningFields({ idPrefix, form, onChange, problems, currency, suppliers, staff, checkOutTime, disabled }: PropertyCleaningFieldsProps) {
+export function PropertyCleaningFields({ idPrefix, form, onChange, problems, currency, suppliers, staff, timeSource, disabled }: PropertyCleaningFieldsProps) {
   const { t } = useTranslation();
   const supplierWorks = currency === SUPPLIER_CURRENCY;
   const currencyKnown = /^[A-Z]{3}$/.test(currency);
@@ -177,7 +178,11 @@ export function PropertyCleaningFields({ idPrefix, form, onChange, problems, cur
           label={t('propertyCleaning.fields.time')}
           optional
           error={problems.time}
-          hint={checkOutTime ? t('propertyCleaning.hints.timeProperty', { time: checkOutTime }) : t('propertyCleaning.hints.time')}
+          hint={
+            timeSource
+              ? t(timeSource.kind === 'property' ? 'propertyCleaning.hints.timeProperty' : 'propertyCleaning.hints.timeDefault', { time: timeSource.time })
+              : t('propertyCleaning.hints.time')
+          }
         >
           <Input type="time" step={300} value={form.time} disabled={disabled} onChange={(event) => onChange({ time: event.target.value })} data-testid={`${idPrefix}-time`} />
         </Field>

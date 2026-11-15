@@ -174,6 +174,31 @@ export function cleaningStaffOf(members: readonly OrgMember[] | undefined): OrgM
     .sort((left, right) => memberName(left).localeCompare(memberName(right)));
 }
 
+/** Where the time a cleaning starts at comes from when the setup leaves it empty: the check-out time of the property, or the default time of the server when the property has none. */
+export interface CleaningTimeSource {
+  kind: 'property' | 'default';
+  /** `HH:mm`. */
+  time: string;
+}
+
+/**
+ * Where an empty time comes from. The server tells the time a cleaning really starts (`effectiveStartTime`) but not where it comes from: the check-out time of the property, or a default (10:00) when the
+ * property has none. The record of the property says which (`checkOutBy`, which may be missing): with a check-out time it is «the check-out time of the property», without one it is the default time the
+ * server told, and a record that was not read (`propertyRead` false: still on its way, or failed) says nothing, so the card never gives a source it does not know.
+ */
+export function cleaningTimeSourceOf(
+  setup: Pick<PropertyCleaningSetup, 'startTime' | 'effectiveStartTime'>,
+  checkOutBy: string | null | undefined,
+  propertyRead: boolean,
+): CleaningTimeSource | null {
+  if (!propertyRead) return null;
+  const checkOut = toClock(checkOutBy);
+  if (checkOut !== '') return { kind: 'property', time: checkOut };
+  // The default time is known only while the setup leaves the time empty: with a time of its own the effective one is that time, not the default.
+  const effective = toClock(setup.effectiveStartTime);
+  return setup.startTime === null && effective !== '' ? { kind: 'default', time: effective } : null;
+}
+
 /**
  * What the dialog for many properties knows of one property from the read of its setup: the read is on its way, it failed (the currency is not read), or it says the currency of the property and
  * whether a setup is saved already. The list of the properties carries no currency, so this read is the only source of it.

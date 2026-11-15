@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { AxiosError } from 'axios';
 import { toast } from 'sonner';
 import { orgTeamApi } from '@/api/org-team.api';
+import { propertiesApi } from '@/api/properties.api';
 import { propertyCleaningApi } from '@/api/property-cleaning.api';
 import { routinesApi } from '@/api/routines.api';
 import { fetchServiceRequests, fetchSuppliersByProperty } from '@/api/service-requests.api';
@@ -12,11 +13,15 @@ import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import i18n from '@/i18n/config';
 import type { OrgMember } from '@/types/org-team.types';
-import type { PropertyCleaningSetup, PropertyDetailDto, Routine } from '@/types';
+import type { Property, PropertyCleaningSetup, PropertyDetailDto, Routine } from '@/types';
 import { PropertyActivityTab } from '../components/property-activity-tab';
 import { PropertyCleaningCard } from '../components/property-cleaning-card';
 
 vi.mock('@/api/property-cleaning.api', () => ({ propertyCleaningApi: { get: vi.fn(), save: vi.fn(), saveBulk: vi.fn() } }));
+vi.mock('@/api/properties.api', async (importOriginal) => {
+  const original = await importOriginal<typeof import('@/api/properties.api')>();
+  return { ...original, propertiesApi: { ...original.propertiesApi, getById: vi.fn() } };
+});
 vi.mock('@/api/routines.api', () => ({ routinesApi: { getAll: vi.fn() } }));
 vi.mock('@/api/org-team.api', () => ({ orgTeamApi: { listMembers: vi.fn() } }));
 vi.mock('@/api/service-requests.api', async (importOriginal) => ({
@@ -115,6 +120,8 @@ describe('the cleaner of a property (E24/F01/US02/T01)', () => {
     vi.clearAllMocks();
     workspace.permissions = ['short-rent:property.write', 'account:org.members.manage'];
     vi.mocked(propertyCleaningApi.get).mockResolvedValue(setupOf());
+    // The record of the property: it has a check-out time (the page of the property has read it already).
+    vi.mocked(propertiesApi.getById).mockResolvedValue({ id: PROPERTY_ID, checkOutBy: '11:00:00' } as Property);
     vi.mocked(routinesApi.getAll).mockResolvedValue([]);
     vi.mocked(orgTeamApi.listMembers).mockResolvedValue({
       items: [MEMBER],
@@ -256,7 +263,45 @@ describe('the cleaner of a property (E24/F01/US02/T01)', () => {
     it('PropertyCleaningCard_TheTimeOfTheProperty_IsToldAsWhatItIs', async () => {
       renderCard();
 
-      expect(await screen.findByTestId('property-cleaning-time')).toHaveTextContent('11:00 (l\'ora del check-out dell\'immobile)');
+      // The record of the property says it has a check-out time: the empty time of the setup is that time.
+      await waitFor(() => expect(screen.getByTestId('property-cleaning-time')).toHaveTextContent('11:00 (l\'ora del check-out dell\'immobile)'));
+    });
+
+    it('PropertyCleaningCard_PropertyWithNoCheckOutTime_TellsTheDefaultTimeAndNeverCallsItTheCheckOut', async () => {
+      vi.mocked(propertiesApi.getById).mockResolvedValue({ id: PROPERTY_ID, checkOutBy: null } as Property);
+      vi.mocked(propertyCleaningApi.get).mockResolvedValue(setupOf({ effectiveStartTime: '10:00:00' }));
+      renderCard();
+
+      // The server tells 10:00, which is its default and not the check-out of a property that has none.
+      await waitFor(() => expect(screen.getByTestId('property-cleaning-time')).toHaveTextContent('10:00 (orario predefinito: l\'immobile non ha un\'ora di check-out)'));
+      expect(screen.getByTestId('property-cleaning-time')).not.toHaveTextContent('l\'ora del check-out dell\'immobile');
+    });
+
+    it('PropertyCleaningCard_RecordOfThePropertyThatCannotBeRead_TellsTheTimeWithoutSayingWhereItComesFrom', async () => {
+      vi.mocked(propertiesApi.getById).mockRejectedValue(httpError(500));
+      renderCard();
+
+      const time = await screen.findByTestId('property-cleaning-time');
+      await waitFor(() => expect(propertiesApi.getById).toHaveBeenCalled());
+      expect(time).toHaveTextContent(/^11:00$/);
+    });
+
+    it('PropertyCleaningCard_FormOfAPropertyWithNoCheckOutTime_SaysTheEmptyTimeIsTheDefaultOne', async () => {
+      vi.mocked(propertiesApi.getById).mockResolvedValue({ id: PROPERTY_ID, checkOutBy: null } as Property);
+      vi.mocked(propertyCleaningApi.get).mockResolvedValue(setupOf({ effectiveStartTime: '10:00:00' }));
+      renderCard();
+
+      fireEvent.click(await screen.findByTestId('property-cleaning-edit'));
+
+      expect(await screen.findByText('Se la lasci vuota, la pulizia parte alle 10:00: l\'immobile non ha un\'ora di check-out.')).toBeInTheDocument();
+    });
+
+    it('PropertyCleaningCard_FormOfAPropertyWithACheckOutTime_NamesIt', async () => {
+      renderCard();
+
+      fireEvent.click(await screen.findByTestId('property-cleaning-edit'));
+
+      expect(await screen.findByText('Se la lasci vuota, la pulizia parte all\'ora del check-out dell\'immobile (11:00).')).toBeInTheDocument();
     });
 
     it('PropertyCleaningCard_RoutineOn_SaysThatTheCleaningStartsByItself', async () => {
@@ -404,6 +449,7 @@ describe('the card in the tab «Prenotazioni e interventi» (flag and permission
     vi.clearAllMocks();
     workspace.permissions = ['short-rent:property.write'];
     vi.mocked(propertyCleaningApi.get).mockResolvedValue(setupOf());
+    vi.mocked(propertiesApi.getById).mockResolvedValue({ id: PROPERTY_ID, checkOutBy: '11:00:00' } as Property);
     vi.mocked(routinesApi.getAll).mockResolvedValue([]);
     vi.mocked(fetchServiceRequests).mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 50 } as never);
     await i18n.changeLanguage('it');

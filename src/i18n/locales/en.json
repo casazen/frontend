@@ -20894,7 +20894,8 @@
       "noCurrency": "The currency of the property is not stated: we cannot save a price.",
       "price": "What the cleaner asks for each cleaning, in {{currency}} (the currency of the property).",
       "priceStaff": "Optional: the cost of each cleaning, in {{currency}} (the currency of the property).",
-      "time": "If you leave it empty, the cleaning starts at the check-out time of the property.",
+      "time": "If you leave it empty, the cleaning starts at the check-out time of the property or, if the property has none, at a default time.",
+      "timeDefault": "If you leave it empty, the cleaning starts at {{time}}: the property has no check-out time.",
       "timeProperty": "If you leave it empty, the cleaning starts at the check-out time of the property ({{time}})."
     },
     "kind": {
@@ -20958,6 +20959,7 @@
       "state": "State",
       "supplierUnknown": "A supplier",
       "time": "Start time",
+      "timeDefault": "{{time}} (default time: the property has no check-out time)",
       "timeOfProperty": "{{time}} (the check-out time of the property)",
       "trusted": "Trusted"
     },

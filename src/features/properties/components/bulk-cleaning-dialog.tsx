@@ -344,7 +344,7 @@ function BulkCleaningBody({ save, onClose, routineLink }: { save: BulkSave; onCl
             choices: staffChoices,
             onRetry: () => void members.refetch(),
           }}
-          checkOutTime={null}
+          timeSource={null}
           disabled={save.isPending}
         />
       ) : chosen.length > 0 ? (

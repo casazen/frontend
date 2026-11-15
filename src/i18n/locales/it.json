@@ -20894,7 +20894,8 @@
       "noCurrency": "La valuta dell'immobile non è indicata: non possiamo salvare un prezzo.",
       "price": "Quanto chiede chi pulisce per ogni pulizia, in {{currency}} (la valuta dell'immobile).",
       "priceStaff": "Facoltativo: il costo di ogni pulizia, in {{currency}} (la valuta dell'immobile).",
-      "time": "Se la lasci vuota, la pulizia parte all'ora del check-out dell'immobile.",
+      "time": "Se la lasci vuota, la pulizia parte all'ora del check-out dell'immobile o, se l'immobile non ne ha una, a un'ora predefinita.",
+      "timeDefault": "Se la lasci vuota, la pulizia parte alle {{time}}: l'immobile non ha un'ora di check-out.",
       "timeProperty": "Se la lasci vuota, la pulizia parte all'ora del check-out dell'immobile ({{time}})."
     },
     "kind": {
@@ -20958,6 +20959,7 @@
       "state": "Stato",
       "supplierUnknown": "Un fornitore",
       "time": "Ora di inizio",
+      "timeDefault": "{{time}} (orario predefinito: l'immobile non ha un'ora di check-out)",
       "timeOfProperty": "{{time}} (l'ora del check-out dell'immobile)",
       "trusted": "Di fiducia"
     },
