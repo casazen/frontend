@@ -20925,7 +20925,8 @@
     "routine": {
       "link": "Vai alle automazioni",
       "off": "La routine «Pulizia al check-out» non è attiva: finché non la attivi non parte nessuna pulizia da sola.",
-      "on": "La routine «Pulizia al check-out» è attiva: la pulizia parte da sola al check-out."
+      "on": "La routine «Pulizia al check-out» è attiva: la pulizia parte da sola al check-out.",
+      "onNoCleaner": "La routine «Pulizia al check-out» è attiva, ma questo immobile non ha chi pulisce attivo: per questo immobile non parte nessuna pulizia."
     },
     "save": "Salva",
     "saved": "Chi pulisce è stato salvato",

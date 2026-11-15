@@ -263,7 +263,28 @@ describe('the cleaner of a property (E24/F01/US02/T01)', () => {
       vi.mocked(routinesApi.getAll).mockResolvedValue([routine({})]);
       renderCard();
 
-      expect(await screen.findByTestId('property-cleaning-routine')).toHaveTextContent('è attiva');
+      expect(await screen.findByTestId('property-cleaning-routine')).toHaveTextContent('è attiva: la pulizia parte da sola al check-out');
+    });
+
+    it('PropertyCleaningCard_RoutineOnButNoCleaner_SaysNothingStartsForThisProperty', async () => {
+      vi.mocked(routinesApi.getAll).mockResolvedValue([routine({})]);
+      vi.mocked(propertyCleaningApi.get).mockResolvedValue(withoutSetup('EUR'));
+      renderCard();
+
+      // The routine is on, but a property with no cleaner is blocked by it: the card never says that its cleaning starts by itself.
+      const line = await screen.findByTestId('property-cleaning-routine');
+      expect(line).toHaveTextContent('questo immobile non ha chi pulisce attivo');
+      expect(line).not.toHaveTextContent('parte da sola');
+    });
+
+    it('PropertyCleaningCard_RoutineOnButSetupSwitchedOff_SaysNothingStartsForThisProperty', async () => {
+      vi.mocked(routinesApi.getAll).mockResolvedValue([routine({})]);
+      vi.mocked(propertyCleaningApi.get).mockResolvedValue(setupOf({ active: false }));
+      renderCard();
+
+      const line = await screen.findByTestId('property-cleaning-routine');
+      expect(line).toHaveTextContent('questo immobile non ha chi pulisce attivo');
+      expect(line).not.toHaveTextContent('parte da sola');
     });
 
     it.each([

@@ -227,6 +227,8 @@ export function PropertyCleaningCard({ propertyId }: PropertyCleaningCardProps) 
   const routineOn = routines.isError || routines.data === undefined
     ? undefined
     : routines.data.some((routine) => routine.active && !routine.testMode && parseActions(routine.actionsJson).some((action) => action.type === 'CreateCleaningRequest'));
+  // The routine acts only on a property that has an active setup (without one the action is blocked, `routine_cleaning_not_configured`): «it starts by itself» is told only then.
+  const setupRuns = setup?.configured === true && setup.active;
 
   return (
     <PlainSection title={t('propertyCleaning.title')} data-testid="property-cleaning-card">
@@ -234,7 +236,7 @@ export function PropertyCleaningCard({ propertyId }: PropertyCleaningCardProps) 
       {body}
       {setup && !editing && routineOn !== undefined ? (
         <p className="text-sm text-foreground/70" data-testid="property-cleaning-routine">
-          {routineOn ? t('propertyCleaning.routine.on') : t('propertyCleaning.routine.off')}{' '}
+          {routineOn ? (setupRuns ? t('propertyCleaning.routine.on') : t('propertyCleaning.routine.onNoCleaner')) : t('propertyCleaning.routine.off')}{' '}
           <Link to={AUTOMATIONS_PATH} className="font-medium text-primary underline underline-offset-4">
             {t('propertyCleaning.routine.link')}
           </Link>
