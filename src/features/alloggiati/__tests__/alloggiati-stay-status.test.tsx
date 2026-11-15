@@ -2,6 +2,7 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MemoryRouter } from 'react-router-dom';
 import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios';
 import i18n from '@/i18n/config';
 import { alloggiatiApi } from '@/api/alloggiati.api';
@@ -83,9 +84,15 @@ function renderPanel(status: AlloggiatiStatusDto) {
   vi.mocked(alloggiatiApi.getStatus).mockResolvedValue(status);
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
-    createElement(QueryClientProvider, { client }, createElement(AlloggiatiBookingPanel, { bookingId: BOOKING_ID, checkInDate: '2026-11-15T00:00:00Z' })),
+    createElement(
+      QueryClientProvider,
+      { client },
+      createElement(MemoryRouter, null, createElement(AlloggiatiBookingPanel, { bookingId: BOOKING_ID, checkInDate: '2026-11-15T00:00:00Z' })),
+    ),
   );
 }
+
+const CHECK_IN_PATH = `/app/short-rent/bookings/${BOOKING_ID}/check-in`;
 
 const badge = () => screen.findByTestId('alloggiati-status-badge', undefined, WAIT);
 
@@ -180,9 +187,35 @@ describe('AlloggiatiBookingPanel: a guest the channel manager did not take', () 
 
     const layer = await screen.findByTestId('guests-layer');
     expect(layer).toHaveTextContent('il tuo channel manager non riconosce');
+    // Saving sends nothing by itself: the layer says what sends the corrected guest.
+    expect(layer).toHaveTextContent('Conferma e invia');
     expect(screen.getByTestId('booking-alloggiati-section')).toBeInTheDocument();
     // A place cannot be mended by asking again: the server offers no retry for it, and the page offers none.
     expect(screen.queryByTestId('alloggiati-retry-write')).not.toBeInTheDocument();
+  });
+
+  // With the automatic send of the organization off (the default) saving the corrected guest sends nothing: it goes with the confirmation of the check-in wizard.
+  it('panel_PlaceNotRecognized_SaysWhatSendsTheCorrectedGuestAndLeadsToTheCheckInWizard', async () => {
+    renderPanel(failedStatus([PLACE], []));
+
+    expect(await screen.findByTestId('alloggiati-next-step', undefined, WAIT)).toHaveTextContent('Conferma e invia');
+    expect(screen.getByTestId('alloggiati-open-check-in')).toHaveAttribute('href', CHECK_IN_PATH);
+  });
+
+  it('panel_PlaceNotRecognizedWithoutBookingWrite_SaysTheStepButOffersNoLinkToAPageItCannotOpen', async () => {
+    workspace.granted = ['booking.read', 'guest.read', 'alloggiati.submit'];
+    renderPanel(failedStatus([PLACE], []));
+
+    expect(await screen.findByTestId('alloggiati-next-step', undefined, WAIT)).toBeInTheDocument();
+    expect(screen.queryByTestId('alloggiati-open-check-in')).not.toBeInTheDocument();
+  });
+
+  it('panel_FailureThatIsNotAPlace_HasNoCheckInStepAndNoLink', async () => {
+    renderPanel(failedStatus([DOWN]));
+
+    expect(await screen.findByTestId('alloggiati-guest-error-2', undefined, WAIT)).toBeInTheDocument();
+    expect(screen.queryByTestId('alloggiati-next-step')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('alloggiati-open-check-in')).not.toBeInTheDocument();
   });
 
   // The permission rule of the task: only who may send the guests' data (`alloggiati.submit`, the permission of the endpoints) can ask again or correct.
@@ -195,6 +228,8 @@ describe('AlloggiatiBookingPanel: a guest the channel manager did not take', () 
     expect(screen.queryByTestId('alloggiati-retry-write')).not.toBeInTheDocument();
     expect(screen.queryByTestId('alloggiati-fix-guests')).not.toBeInTheDocument();
     expect(screen.getByTestId('alloggiati-retry-needs-permission')).toHaveTextContent('serve il permesso di inviare i dati degli ospiti');
+    expect(screen.queryByTestId('alloggiati-next-step')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('alloggiati-open-check-in')).not.toBeInTheDocument();
     expect(alloggiatiApi.retryOctorateWrite).not.toHaveBeenCalled();
   });
 
@@ -226,6 +261,8 @@ describe('AlloggiatiBookingPanel: a guest the channel manager did not take', () 
     await waitFor(() => expect(retry).toHaveAttribute('aria-busy', 'true'), WAIT);
     fireEvent.click(retry);
     expect(screen.getByTestId('alloggiati-fix-guests')).toBeDisabled();
+    // The way to the check-in wizard waits too: while the request is on its way it is a button that is off, not a link.
+    expect(screen.getByTestId('alloggiati-open-check-in')).toBeDisabled();
     expect(alloggiatiApi.retryOctorateWrite).toHaveBeenCalledTimes(1);
 
     refuse(problem(409, { code: 'alloggiati_write_in_progress' }));
@@ -233,6 +270,7 @@ describe('AlloggiatiBookingPanel: a guest the channel manager did not take', () 
     // Another send of the stay is running: nothing was tried, the host is told to ask again in a moment, and the buttons are back.
     expect(await screen.findByTestId('alloggiati-retry-error', undefined, WAIT)).toHaveTextContent('stanno già passando al tuo channel manager');
     await waitFor(() => expect(screen.getByTestId('alloggiati-fix-guests')).toBeEnabled(), WAIT);
+    await waitFor(() => expect(screen.getByTestId('alloggiati-open-check-in')).toHaveAttribute('href', CHECK_IN_PATH), WAIT);
     expect(screen.queryByTestId('alloggiati-retry-result')).not.toBeInTheDocument();
   });
 
@@ -313,6 +351,9 @@ describe('the words of the stay on the channel manager', () => {
       ...['sent', 'partlyFailed', 'failed', 'nothingToSend', 'notApplicable', 'error'].map((outcome) => `alloggiati.channelManager.retryResult.${outcome}`),
       ...['EntrustedToChannelManager', 'ChannelManagerWriteFailed'].map((status) => `alloggiati.statusLabel.${status}`),
       'alloggiati.channelManager.receiptArchivedLabel',
+      'alloggiati.channelManager.fixLayer',
+      'alloggiati.channelManager.nextStep',
+      'alloggiati.channelManager.reconfirm',
       'apiErrors.codes.alloggiatiWriteInProgress',
     ];
 

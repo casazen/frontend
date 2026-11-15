@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { checkInWizardPath } from '@/features/bookings/lib/stay-actions';
 import { CheckoutGuestDataSubflow } from '@/features/compliance/components/checkout-guest-data-subflow';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getProblemMessage } from '@/lib/api-errors';
@@ -24,6 +26,9 @@ const LONG_DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', y
 /** The permission of the endpoints the actions of this block call (the retry, and the save of the guests in the layer). */
 const SUBMIT_PERMISSION = 'alloggiati.submit';
 
+/** The permission the route of the check-in wizard asks: the link to it is offered only to who can open it. */
+const WIZARD_PERMISSION = 'booking.write';
+
 /** One guest the channel manager did not take: which one, why in plain words (a place names the field to correct) and when it was last tried. */
 function GuestError({ guest }: { guest: AlloggiatiChannelManagerGuestDto }) {
   const { t, i18n } = useTranslation();
@@ -41,6 +46,30 @@ function GuestError({ guest }: { guest: AlloggiatiChannelManagerGuestDto }) {
   );
 }
 
+/**
+ * The way to the step that sends a corrected guest: the guest check-in wizard, where «Conferma e invia» passes the guests to the channel manager (with the automatic send of the organization
+ * on, a corrected guest goes by itself). It is off while a request of the block is on its way, like the other buttons.
+ */
+function OpenCheckIn({ bookingId, busy }: { bookingId: string; busy: boolean }) {
+  const { t } = useTranslation();
+
+  if (busy) {
+    return (
+      <Button type="button" size="sm" variant="outline" className="min-h-11" disabled data-testid="alloggiati-open-check-in">
+        {t('alloggiati.channelManager.reconfirm')}
+      </Button>
+    );
+  }
+
+  return (
+    <Button asChild size="sm" variant="outline" className="min-h-11">
+      <Link to={checkInWizardPath(bookingId)} data-testid="alloggiati-open-check-in">
+        {t('alloggiati.channelManager.reconfirm')}
+      </Link>
+    </Button>
+  );
+}
+
 interface AlloggiatiChannelManagerStatusProps {
   bookingId: string;
   status: AlloggiatiStatusDto;
@@ -55,7 +84,8 @@ interface AlloggiatiChannelManagerStatusProps {
  * - **Receipt archived** (green): the server says an archived receipt covers the stay, and when it came.
  * - **Receipt missing** (red): entrusted, and the receipt did not come in time (the server's light).
  * - **To correct** (red): the guests the channel manager did not take, each by position with its reason in plain words. A place the channel manager does not know names the
- *   field and opens the guests of the stay in a layer over the page, so the host never leaves it; any other failure can be tried again with «Riprova».
+ *   field and opens the guests of the stay in a layer over the page, so the host never leaves it; any other failure can be tried again with «Riprova». Saving the corrected guests sends
+ *   nothing by itself (the guest goes with the confirmation of the check-in wizard, or alone when the organization turned the automatic send on): the block says so and leads to the wizard.
  *
  * Both actions are for who may send the guests' data (`alloggiati.submit`, the permission of the endpoints): without it the block only tells, and says whom to ask. They are
  * off while the retry is on its way, and what the retry did is told under them, never as a success the server did not confirm.
@@ -72,6 +102,8 @@ export function AlloggiatiChannelManagerStatus({ bookingId, status, view }: Allo
   const retryOffered = view === 'toCorrect' && canRetryWrite(status);
   const canFix = canSubmit && placeWrong;
   const canRetry = canSubmit && retryOffered;
+  // A corrected guest does not go by itself unless the organization turned the automatic send on: it goes with the confirmation of the check-in wizard, so the page says so and leads there.
+  const canOpenCheckIn = canFix && hasPermission('short-rent', WIZARD_PERMISSION);
   const busy = retry.isPending;
 
   const receipt = status.channelManager?.receiptCoverage;
@@ -108,6 +140,11 @@ export function AlloggiatiChannelManagerStatus({ bookingId, status, view }: Allo
               ))}
             </ul>
           ) : null}
+          {canFix ? (
+            <p className="text-sm text-foreground/70" data-testid="alloggiati-next-step">
+              {t('alloggiati.channelManager.nextStep')}
+            </p>
+          ) : null}
         </div>
       ) : null}
 
@@ -118,6 +155,7 @@ export function AlloggiatiChannelManagerStatus({ bookingId, status, view }: Allo
               {t('alloggiati.channelManager.fix')}
             </Button>
           ) : null}
+          {canOpenCheckIn ? <OpenCheckIn bookingId={bookingId} busy={busy} /> : null}
           {canRetry ? (
             <Button type="button" size="sm" className="min-h-11" loading={busy} onClick={() => retry.mutate()} data-testid="alloggiati-retry-write">
               {t('alloggiati.channelManager.retry')}

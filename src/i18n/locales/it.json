@@ -1433,10 +1433,11 @@
         "unknown": "i luoghi indicati"
       },
       "fix": "Correggi i dati degli ospiti",
-      "fixLayer": "Correggi il luogo che il tuo channel manager non riconosce e salva: CasaZen lo passa appena gli ospiti vengono inviati di nuovo.",
+      "fixLayer": "Correggi il luogo che il tuo channel manager non riconosce e salva. Poi apri il check-in degli ospiti e premi «Conferma e invia»: è lì che l'ospite corretto passa al tuo channel manager (con l'invio automatico acceso parte da solo).",
       "guestsLabel": "Ospiti che il channel manager non ha preso",
       "lastAttempt": "Ultimo tentativo: {{when}}",
       "needsPermission": "Per riprovare o correggere gli ospiti serve il permesso di inviare i dati degli ospiti: chiedilo a chi gestisce l'organizzazione.",
+      "nextStep": "Dopo aver corretto e salvato, apri il check-in degli ospiti e premi «Conferma e invia»: è lì che l'ospite corretto passa al tuo channel manager. Con l'invio automatico acceso parte da solo.",
       "reason": {
         "octorate_auth": "Il tuo channel manager ha rifiutato l'accesso di CasaZen: ricollega l'account e riprova.",
         "octorate_conflict": "Il tuo channel manager segnala un conflitto con i suoi dati: riprova.",
@@ -1451,6 +1452,7 @@
       "receiptArchivedLabel": "Ricevuta archiviata",
       "receiptArchivedOn": "La ricevuta è archiviata in CasaZen dal {{date}}: la trovi più sotto, tra le prove.",
       "receiptMissing": "I dati degli ospiti sono stati affidati al tuo channel manager, ma la ricevuta non è ancora in archivio: caricala nell'Archivio delle prove, oppure controlla l'esito nel tuo Cassetto Compliance.",
+      "reconfirm": "Apri il check-in degli ospiti",
       "retry": "Riprova",
       "retryResult": {
         "error": "Non siamo riusciti a riprovare. Riprova tra qualche minuto.",

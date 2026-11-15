@@ -1433,10 +1433,11 @@
         "unknown": "the places indicated"
       },
       "fix": "Correct the guests' data",
-      "fixLayer": "Correct the place your channel manager does not recognize and save: CasaZen passes it on as soon as the guests are sent again.",
+      "fixLayer": "Correct the place your channel manager does not recognize and save. Then open the guest check-in and press “Confirm and send”: that is where the corrected guest goes to your channel manager (with automatic sending on, it goes on its own).",
       "guestsLabel": "Guests the channel manager did not take",
       "lastAttempt": "Last attempt: {{when}}",
       "needsPermission": "Trying again or correcting the guests needs the permission to send the guests' data: ask whoever manages the organization.",
+      "nextStep": "After you correct and save, open the guest check-in and press “Confirm and send”: that is where the corrected guest goes to your channel manager. With automatic sending on, it goes on its own.",
       "reason": {
         "octorate_auth": "Your channel manager refused CasaZen's access: reconnect the account and try again.",
         "octorate_conflict": "Your channel manager reports a conflict with its own data: try again.",
@@ -1451,6 +1452,7 @@
       "receiptArchivedLabel": "Receipt archived",
       "receiptArchivedOn": "The receipt has been archived in CasaZen since {{date}}: you find it below, among the proofs.",
       "receiptMissing": "The guests' data was entrusted to your channel manager, but the receipt is not in the archive yet: upload it in the Proof archive, or check the outcome in your Cassetto Compliance.",
+      "reconfirm": "Open the guest check-in",
       "retry": "Retry",
       "retryResult": {
         "error": "We could not retry. Try again in a few minutes.",
