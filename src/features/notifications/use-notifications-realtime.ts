@@ -9,6 +9,7 @@ import { ALLOGGIATI_KEY } from '@/queries/use-alloggiati';
 import { BOOKING_THREAD_QUERY, HOST_THREADS_QUERY, UNREAD_MESSAGES_QUERY } from '@/queries/use-booking-messages';
 import { BOOKINGS_KEY } from '@/queries/use-bookings';
 import { CHECKIN_SESSION_KEY } from '@/queries/use-checkin';
+import { CHECKIN_LINK_DELIVERY_KEY } from '@/queries/use-checkin-link-delivery';
 import { TOURIST_TAX_KEY } from '@/queries/use-checkin-wizard';
 import { DASHBOARD_KEY } from '@/queries/use-dashboard';
 import { INVOICE_DATA_KEY } from '@/queries/use-invoice-data';
@@ -70,14 +71,22 @@ function isAssistType(type: string | null): boolean {
 const GUESTS_QUERY = 'guests';
 
 /**
+ * The automatic delivery of the check-in link of a booking failed for good (`PushTypes.CheckInLinkFailed`, E23/F01/US01/T01, NF-122: sent to the hosts of the
+ * booking, once for each link); its `entityId` is the booking.
+ */
+const CHECKIN_LINK_FAILED = 'checkin-link-failed';
+
+/**
  * What a completed check-in changes on screen, apart from the bell: the booking and its page, the link of the online check-in (the
- * step "Cosa succede ora" reads it), the guests of the stay and Alloggiati Web, the cockpit and the counter of the menu, the Home,
- * the guests of the organisation and the invoice data of the booking (the guest's «yes» to «Ti serve la fattura?» and what the guest wrote,
- * shown in «Dati di fatturazione» of the tab Pagamento). A page open in front of the host shows it without a reload.
+ * step "Cosa succede ora" reads it) and where it stands on its way to the guest (that delivery ends with the check-in), the guests of the stay and
+ * Alloggiati Web, the cockpit and the counter of the menu, the Home, the guests of the organisation and the invoice data of the booking (the guest's
+ * «yes» to «Ti serve la fattura?» and what the guest wrote, shown in «Dati di fatturazione» of the tab Pagamento). A page open in front of the host
+ * shows it without a reload.
  */
 const STALE_ON_CHECK_IN: readonly string[] = [
   BOOKINGS_KEY,
   CHECKIN_SESSION_KEY,
+  CHECKIN_LINK_DELIVERY_KEY,
   ALLOGGIATI_KEY,
   COMPLIANCE_KEY,
   DASHBOARD_KEY,
@@ -100,6 +109,15 @@ function refreshCheckInData(queryClient: QueryClient): void {
   void queryClient.invalidateQueries({ queryKey: [COMPLIANCE_ARCHIVE_KEY, 'report'] });
   // The guests of the stay go to the channel manager after their check-in: the section of the stay shows where they stand without a reload.
   refreshStayCompliance(queryClient);
+}
+
+/**
+ * What a link that did not reach the guest changes on screen, apart from the bell: where the link stands and the «Copia link» of the guest panel
+ * (`CHECKIN_LINK_DELIVERY_KEY`), the state of its session, the booking, and the «To do» that tells the host to carry the link (the list and the number of the nav).
+ * A booking page open in front of the host shows it without a reload.
+ */
+function refreshCheckInLinkDelivery(queryClient: QueryClient): void {
+  [CHECKIN_LINK_DELIVERY_KEY, CHECKIN_SESSION_KEY, BOOKINGS_KEY, INTERNAL_ACTIVITIES_KEY].forEach((root) => void queryClient.invalidateQueries({ queryKey: [root] }));
 }
 
 /**
@@ -212,7 +230,8 @@ function refreshAssistOutcome(queryClient: QueryClient): void {
  * What a change makes stale. The count is written as the server sent it (no extra request); the list, the threads of the Home and
  * the per-booking counters are read again; the thread of the booking in the change is read again too (an open tab shows the new
  * message at once). A change without an entity (read on another device, unknown type) refreshes every open thread. A completed
- * check-in also refreshes the data it changes (`STALE_ON_CHECK_IN`), a request of help from a host (or reopened by it) the staff queue, and a request support closed the requests of the host.
+ * check-in also refreshes the data it changes (`STALE_ON_CHECK_IN`), a link that did not reach the guest the guest panel and the «To do» list
+ * (`refreshCheckInLinkDelivery`), a request of help from a host (or reopened by it) the staff queue, and a request support closed the requests of the host.
  */
 export function applyNotificationsChange(queryClient: QueryClient, change: NotificationsChange): void {
   queryClient.setQueryData(UNREAD_COUNT_KEY, change.unreadCount);
@@ -227,6 +246,7 @@ export function applyNotificationsChange(queryClient: QueryClient, change: Notif
     void queryClient.invalidateQueries({ queryKey: [BOOKING_THREAD_QUERY] });
   }
   if (change.type === GUEST_CHECKIN_COMPLETED) refreshCheckInData(queryClient);
+  else if (change.type === CHECKIN_LINK_FAILED) refreshCheckInLinkDelivery(queryClient);
   else if (change.type !== null && COMPLIANCE_ALERT_TYPES.has(change.type)) refreshComplianceLights(queryClient, change.type);
   if (change.type === VERIFICATION_REQUIRED) refreshVerifications(queryClient);
   if (change.type === ASSIST_REQUESTED || change.type === ASSIST_REOPENED) refreshAssistQueue(queryClient);
@@ -243,6 +263,8 @@ export function refreshAfterGap(queryClient: QueryClient): void {
   void queryClient.invalidateQueries({ queryKey: [BOOKING_THREAD_QUERY] });
   // A check-in completed while the channel was down sent no message: the pages that show its data read it again.
   refreshCheckInData(queryClient);
+  // The same for a link that failed while it was down: the guest panel and the «To do» list.
+  refreshCheckInLinkDelivery(queryClient);
   // The same for a verification handed to an operator, for a request of help that reached the staff, and for a request support closed (or the host reopened) in the meantime.
   refreshVerifications(queryClient);
   refreshAssistQueue(queryClient);

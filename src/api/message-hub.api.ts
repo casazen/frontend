@@ -4,6 +4,7 @@ import { ApiClient } from './client';
 import type {
   ChannelMessageTemplate,
   HostMessageTemplate,
+  MessageChannelStatus,
   MessageContactOptions,
   MessageHubFilters,
   MessageHubPage,
@@ -45,6 +46,13 @@ export const messageHubApi = {
 
   /** `GET /api/messages/unread?includeOta=true`: the conversations with messages of the guest not read yet, counters only (at most 200 of each source). */
   unread: () => ApiClient.get<MessageHubUnread>('/messages/unread', { includeOta: true }),
+
+  /**
+   * `GET /api/messages/channel-status` (E23/F01/US01/T03): whether the chat of each listing the caller reaches works, `available`, `waiting_permission` (the chat is
+   * not in the license of the listing yet) or `error`. It reads what the copy of the conversations stored and asks the channel nothing; the inbox says with it why a
+   * listing has no conversation instead of showing an empty list.
+   */
+  getChannelStatus: () => ApiClient.get<MessageChannelStatus>('/messages/channel-status'),
 
   /** `GET /api/messages/threads/{threadKey}`: the latest messages oldest first, the booking card, the customer link and what the channel allows. 404 `thread_not_found`. */
   getThread: (threadKey: string) => ApiClient.get<MessageHubThreadDetail>(threadPath(threadKey)),

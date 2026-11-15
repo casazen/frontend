@@ -35,6 +35,8 @@ describe('notification model', () => {
       'verification-required',
       // E10/F03/US03/T03: a host asked CasaZen support to do a step («Fallo per me»).
       'assist-requested',
+      // E23/F01/US01/T01: the check-in link of a stay from a portal did not reach the guest.
+      'checkin-link-failed',
       // E20/F03/US01/T02: the host reopened a request support closed («Non funziona»), and support closed one of the host's (verified, or declared).
       'assist-reopened', 'assist-verified', 'assist-declared',
     ];
@@ -50,9 +52,20 @@ describe('notification model', () => {
     ['checkout-reminder', '/app/short-rent/bookings/b-1'],
     ['guest-data-missing', '/app/short-rent/bookings/b-1?tab=guest'],
     ['guest-checkin-completed', '/app/short-rent/bookings/b-1?tab=guest'],
+    // The guest tab is where the panel of the link says why it did not arrive and has «Copia link».
+    ['checkin-link-failed', '/app/short-rent/bookings/b-1?tab=guest'],
     ['alloggiati-failed', '/app/short-rent/bookings/b-1?tab=alloggiati'],
   ])('notificationRoute_%s_OpensTheBooking', (type, expected) => {
     expect(notificationRoute({ type, entityId: 'b-1' }, 'short-rent')).toBe(expected);
+  });
+
+  it('notificationKind_CheckInLinkFailed_SaysItInBothLanguagesWithoutTheNameOfTheChannelManager', () => {
+    expect(notificationKind('checkin-link-failed').textKey).toBe('notifications.types.checkinLinkFailed');
+    for (const locale of [it_, en]) {
+      const sentence = lookup(locale, 'notifications.types.checkinLinkFailed');
+      expect(typeof sentence).toBe('string');
+      expect(sentence as string).not.toMatch(/octorate/i);
+    }
   });
 
   it('notificationRoute_VerificationRequired_OpensTheConsoleOfTheVerifications', () => {
@@ -89,6 +102,24 @@ describe('notification model', () => {
     }
     expect(lookup(it_, 'notifications.types.assistDeclared')).toMatch(/dichiara/i);
     expect(lookup(it_, 'notifications.types.assistVerified')).toMatch(/verificato/i);
+  });
+
+  it('notificationKind_FiscalDocumentIssued_HasItsOwnSentenceInBothLanguagesAndOpensTheTabPagamentoOfTheBooking', () => {
+    // The push of a document issued is for the hosts of the booking and its entity is the booking: the bell and the pop-up say what happened (not «Hai una nuova notifica») and a click opens the tab Pagamento,
+    // where the card of the documents of the booking is, as for a document the SDI rejected.
+    expect(KNOWN_NOTIFICATION_TYPES).toContain('fiscal-document-issued');
+    expect(notificationKind('fiscal-document-issued').textKey).toBe('notifications.types.fiscalDocumentIssued');
+    expect(notificationRoute({ type: 'fiscal-document-issued', entityId: 'b-1' }, 'short-rent')).toBe('/app/short-rent/bookings/b-1?tab=payment');
+    expect(notificationRoute({ type: 'fiscal-document-issued', entityId: 'b-1' }, 'short-rent')).toBe(notificationRoute({ type: 'fiscal-document-sdi-rejected', entityId: 'b-1' }, 'short-rent'));
+    expect(notificationRoute({ type: 'fiscal-document-issued', entityId: null }, 'short-rent')).toBeNull();
+    // Each language has its own words, none is the generic sentence, and neither names the supplier of any channel.
+    const [italian, english] = [it_, en].map((locale) => String(lookup(locale, 'notifications.types.fiscalDocumentIssued')));
+    expect(italian).toMatch(/documento fiscale/i);
+    expect(english).toMatch(/fiscal document/i);
+    expect(italian).not.toBe(english);
+    expect(italian).not.toBe(lookup(it_, 'notifications.types.generic'));
+    expect(english).not.toBe(lookup(en, 'notifications.types.generic'));
+    for (const text of [italian, english]) expect(text).not.toMatch(/octorate|concordato\s*facile/i);
   });
 
   it('notificationRoute_ServiceRequest_GoesToTheInboxForASupplierAndToMyAppsOfTheMarketplaceForAHost', () => {
