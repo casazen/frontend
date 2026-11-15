@@ -267,6 +267,16 @@ describe('the folders this person may choose (accountantFoldersFor, accountantSe
     expect(view?.contents).toEqual([]);
     expect(accountantChange(view, values({ accountantDay: 9 }), 'whole')).toEqual({ request: null, leftOut: ['accountantContents'] });
     expect(accountantStepSchema(view).safeParse(values({ accountantDay: 9 })).success).toBe(false);
+    // A draft sends no list with no folder either (the server refuses it): it leaves everything out and says so, whether or not the person emptied the folders themselves.
+    expect(accountantChange(view, values({ accountantDay: 9 }), 'draft')).toEqual({ request: null, leftOut: ['accountantContents'] });
+    expect(accountantChange(view, values({ accountantDay: 9, accountantContents: [] }), 'draft')).toEqual({ request: null, leftOut: ['accountantContents'] });
+    // With a folder chosen the draft goes.
+    expect(accountantChange(view, values({ accountantDay: 9, accountantContents: ['collections'] }), 'draft').request).toEqual({
+      enabled: true,
+      email: 'studio@esempio.it',
+      sendDay: 9,
+      contents: ['collections'],
+    });
   });
 });
 

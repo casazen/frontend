@@ -627,6 +627,9 @@ export function accountantChange(current: AccountantPackageSettings | null | und
       leftOut.push('accountantEmail');
     }
   }
+  // The folders this person sees can be none (the settings hold only folders they may not choose: `accountantSettingsFor`), and a list with no folder is refused by the server: nothing is sent
+  // until they choose one, and the draft says it left that out.
+  if (kept.contents.length === 0) return { request: null, leftOut: leftOut.includes('accountantContents') ? leftOut : [...leftOut, 'accountantContents'] };
   const request = accountantRequestOf(kept);
   return { request: accountantUnchanged(current, request) ? null : request, leftOut };
 }
