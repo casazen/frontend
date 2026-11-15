@@ -1,0 +1,188 @@
+import { isAxiosError } from 'axios';
+import { getProblemCode } from '@/lib/api-errors';
+import type { OwnerFiscalProfile, OwnerAddress, OwnerIssuerProfile, OwnerIssuerProfileRequest, OwnerIssuerRegime, PropertyOwnerSummary } from '@/types';
+import { OWNER_ISSUER_REGIMES } from '@/types';
+
+/** What the form of the issuer profile of an owner holds: every field as the text typed in it, the choices by their code. */
+export interface OwnerIssuerForm {
+  regime: OwnerIssuerRegime | '';
+  legalName: string;
+  fiscalCode: string;
+  vatNumber: string;
+  fatturaPaRegimeCode: string;
+  addressStreet: string;
+  addressCivic: string;
+  postalCode: string;
+  city: string;
+  province: string;
+  stayVatTreatment: 'Standard' | 'ExemptArt10';
+  guestDocumentSeries: string;
+  stampDutyReference: string;
+  issuerSdiRecipientCode: string;
+  issuerPec: string;
+}
+
+/** The fields of the form the server names when it refuses a value (`issuer_field_invalid`, and the fields a profile still misses): the names of the request. */
+export type OwnerIssuerField = keyof OwnerIssuerForm;
+
+const FIELDS: readonly OwnerIssuerField[] = [
+  'regime',
+  'legalName',
+  'fiscalCode',
+  'vatNumber',
+  'fatturaPaRegimeCode',
+  'addressStreet',
+  'addressCivic',
+  'postalCode',
+  'city',
+  'province',
+  'stayVatTreatment',
+  'guestDocumentSeries',
+  'stampDutyReference',
+  'issuerSdiRecipientCode',
+  'issuerPec',
+];
+
+const isRegime = (value: string | null): value is OwnerIssuerRegime => value !== null && (OWNER_ISSUER_REGIMES as readonly string[]).includes(value);
+
+/** Whether a name the server speaks is a field of the form. */
+export function isOwnerIssuerField(name: string): name is OwnerIssuerField {
+  return (FIELDS as readonly string[]).includes(name);
+}
+
+/** The form that starts from what the server holds: a series the owner does not have is empty (the default one, the year, is shown as the hint and not typed in). */
+export function formOf(profile: OwnerIssuerProfile): OwnerIssuerForm {
+  return {
+    regime: isRegime(profile.regime) ? profile.regime : '',
+    legalName: profile.legalName ?? '',
+    fiscalCode: profile.fiscalCode ?? '',
+    vatNumber: profile.vatNumber ?? '',
+    fatturaPaRegimeCode: profile.fatturaPaRegimeCode ?? '',
+    addressStreet: profile.addressStreet ?? '',
+    addressCivic: profile.addressCivic ?? '',
+    postalCode: profile.postalCode ?? '',
+    city: profile.city ?? '',
+    province: profile.province ?? '',
+    stayVatTreatment: profile.stayVatTreatment === 'ExemptArt10' ? 'ExemptArt10' : 'Standard',
+    guestDocumentSeries: profile.guestDocumentSeries ?? '',
+    stampDutyReference: profile.stampDutyReference ?? '',
+    issuerSdiRecipientCode: profile.issuerSdiRecipientCode ?? '',
+    issuerPec: profile.issuerPec ?? '',
+  };
+}
+
+/** Whether the form says something other than what the server holds: the texts are compared cut at their ends, and a blank is the same as nothing. */
+export function isChanged(form: OwnerIssuerForm, saved: OwnerIssuerForm): boolean {
+  return FIELDS.some((field) => form[field].trim() !== saved[field].trim());
+}
+
+function keepField<K extends OwnerIssuerField>(target: OwnerIssuerForm, source: OwnerIssuerForm, field: K): void {
+  target[field] = source[field];
+}
+
+/**
+ * The form after the server came to hold something else than what the form was built from (`base`: a save, another person's change, a profile read again): every field the person typed over `base` stays as it was typed,
+ * and every other field follows the server (`stored`). A read that brings the same data changes nothing, so nothing that is typed is ever thrown away, and a field nobody touched is never saved over what another person wrote.
+ */
+export function followedForm(form: OwnerIssuerForm, base: OwnerIssuerForm, stored: OwnerIssuerForm): OwnerIssuerForm {
+  const followed: OwnerIssuerForm = { ...stored };
+  for (const field of FIELDS) {
+    if (form[field].trim() !== base[field].trim()) keepField(followed, form, field);
+  }
+  return followed;
+}
+
+const text = (value: string): string | undefined => (value.trim() === '' ? undefined : value.trim());
+
+/**
+ * The profile as the server is asked for it: the whole profile (the server clears what is left out), every blank text left out, the codes in capitals (the fiscal code, the province, the regime
+ * code, the code of the recipient), the series and the stamp reference as typed. The country is Italy: the form is the one of the Italian owners.
+ */
+export function requestOf(form: OwnerIssuerForm): OwnerIssuerProfileRequest {
+  return {
+    regime: form.regime === '' ? undefined : form.regime,
+    legalName: text(form.legalName),
+    fiscalCode: text(form.fiscalCode)?.toUpperCase(),
+    vatNumber: text(form.vatNumber),
+    fatturaPaRegimeCode: text(form.fatturaPaRegimeCode)?.toUpperCase(),
+    addressStreet: text(form.addressStreet),
+    addressCivic: text(form.addressCivic),
+    postalCode: text(form.postalCode),
+    city: text(form.city),
+    province: text(form.province)?.toUpperCase(),
+    countryCode: 'IT',
+    stayVatTreatment: form.stayVatTreatment,
+    guestDocumentSeries: text(form.guestDocumentSeries),
+    stampDutyReference: text(form.stampDutyReference),
+    issuerSdiRecipientCode: text(form.issuerSdiRecipientCode)?.toUpperCase(),
+    issuerPec: text(form.issuerPec),
+  };
+}
+
+/** The profile of an Italian owner, the one this form edits: any other country (a Swiss profile made for ⚖ C1) is read, never overwritten by this form. */
+export function isItalianProfile(profile: Pick<OwnerIssuerProfile, 'countryCode'>): boolean {
+  return profile.countryCode.trim().toUpperCase() === 'IT';
+}
+
+/** Whether the owner is a company or a professional with a VAT number: an invoice (FatturaPA) is made out in its name, otherwise a receipt. */
+export function issuesInvoices(regime: OwnerIssuerRegime | ''): boolean {
+  return regime === 'VatOrdinary' || regime === 'VatFlatRate';
+}
+
+/**
+ * The fields the server refuses in a 422 `issuer_field_invalid`: it lists the values that are not valid (`errors`, and the first as `field`). A name that is not a field of this form is left out, and any
+ * other answer names none.
+ */
+export function refusedFieldsOf(error: unknown): OwnerIssuerField[] {
+  if (!isAxiosError(error) || error.response?.status !== 422) return [];
+  const data: unknown = error.response.data;
+  if (typeof data !== 'object' || data === null || getProblemCode(data) !== 'issuer_field_invalid') return [];
+  const body = data as Record<string, unknown>;
+  const listed = Array.isArray(body.errors) ? body.errors.map((entry) => (typeof entry === 'object' && entry !== null ? (entry as { field?: unknown }).field : undefined)) : [];
+  const names = listed.length > 0 ? listed : [body.field];
+  return [...new Set(names.filter((name): name is string => typeof name === 'string' && isOwnerIssuerField(name)))] as OwnerIssuerField[];
+}
+
+/** The fields a profile still misses that the form has (the server names them with the names of the request; a name this form does not have is left out). */
+export function missingFieldsOf(profile: Pick<OwnerIssuerProfile, 'missingFields'>): OwnerIssuerField[] {
+  return profile.missingFields.filter(isOwnerIssuerField);
+}
+
+/** Where an owner stands as an issuer, in one word the list can colour: no profile, a profile that misses something, or a profile that can issue. */
+export type OwnerIssuerState = 'none' | 'incomplete' | 'ready';
+
+export function issuerStateOf(profile: Pick<OwnerIssuerProfile, 'exists' | 'canIssue'>): OwnerIssuerState {
+  if (!profile.exists) return 'none';
+  return profile.canIssue ? 'ready' : 'incomplete';
+}
+
+/**
+ * The profile of an owner made from what CasaZen already knows of it (the quick creation of the step «Proprietari che emettono»): the name, the fiscal code and the VAT number of the profile in force
+ * of the owner accounting, the billing address, and the regime that follows from them (a company or a person with a VAT number: ordinary regime, an invoice; a person without one: a private person, a
+ * receipt). The treatment of the stay is the standard one (⚖ I1): nothing is decided for the owner that the data does not say. Whatever is still missing, the server says it when it saves, and the
+ * person completes it; nothing is invented to fill a field.
+ */
+export function issuerRequestFromOwnerData(data: { owner: PropertyOwnerSummary | null; profile: OwnerFiscalProfile | null; address: OwnerAddress | null }): OwnerIssuerProfileRequest {
+  const { owner, profile, address } = data;
+  const fullName = owner ? `${owner.firstName} ${owner.lastName}`.trim() : '';
+  const legalName = text(profile?.legalName ?? '') ?? text(fullName);
+  const vatNumber = text(profile?.vatNumber ?? '');
+  const company = profile?.entityKind === 'LegalEntity';
+  // A VAT number says an invoice; a person with no VAT number and a profile is a private person (a receipt); a company with no VAT number says nothing yet, and the person answers.
+  let regime: OwnerIssuerRegime | undefined;
+  if (vatNumber !== undefined) regime = 'VatOrdinary';
+  else if (!company && profile) regime = 'PrivatePerson';
+  return {
+    regime,
+    legalName,
+    fiscalCode: text(profile?.fiscalCode ?? '')?.toUpperCase(),
+    vatNumber,
+    addressStreet: text(address?.street ?? ''),
+    addressCivic: text(address?.buildingNumber ?? ''),
+    postalCode: text(address?.postalCode ?? ''),
+    city: text(address?.town ?? ''),
+    province: text(address?.province ?? '')?.toUpperCase(),
+    countryCode: 'IT',
+    stayVatTreatment: 'Standard',
+  };
+}

@@ -1,7 +1,9 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
+import { issuedDocumentsFileName } from '@/api/owner-issuer-profiles.api';
 import { ownerPortalApi } from '@/api/ownerPortal.api';
 import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
 import { ownerReadStateOf } from '@/features/owner-portal/owner-portal-model';
+import { saveDownload } from './save-download';
 import type {
   InviteOwnerContactBody,
   OwnerInboxPreferences,
@@ -186,6 +188,38 @@ export function useOwnerInvoices() {
     queryKey: [OWNER_PORTAL_KEY, 'invoices'],
     queryFn: () => ownerPortalApi.listInvoices(),
     ...PERSONAL,
+  });
+}
+
+// ---------------------------------------------------------------- the documents issued in the name of the owner (E17/F03/US01/T03)
+
+/**
+ * The documents CasaZen issued in the name of the owner (the receipts of a private owner, the invoices of a company, their credit notes): the number, the day, the kind, the total in its currency and the
+ * state towards the SDI, nothing of a guest. Like everything the portal reads it is kept only while the page is on screen, read again at every visit and gone when the person leaves the portal (`PERSONAL`).
+ * `period` (`yyyy-MM` or `yyyy`) narrows the list. A 404 is the part not being open, whatever an earlier answer left (the page asks `isError` first).
+ */
+export function useOwnerIssuedDocuments(period?: string) {
+  return useQuery({
+    queryKey: [OWNER_PORTAL_KEY, 'issued-documents', period ?? null],
+    queryFn: () => ownerPortalApi.listIssuedDocuments(period),
+    ...PERSONAL,
+  });
+}
+
+/** What the download of the ZIP for the accountant needs besides the period: a way to stop it. */
+interface IssuedExportRequest {
+  period: string;
+  signal?: AbortSignal;
+}
+
+/**
+ * Downloads the ZIP for the accountant of the owner and saves it under the name the server gave it. It holds documents and the data of the owner, so nothing of it is kept: the mutation is dropped as soon as
+ * nothing watches it (`gcTime: 0`), the file goes to the disk inside its function (never into the cache of the mutations) and a failure keeps only the answer of the server, without its request.
+ */
+export function useOwnerIssuedDocumentsExport() {
+  return useMutation({
+    gcTime: 0,
+    mutationFn: ({ period, signal }: IssuedExportRequest): Promise<void> => saveDownload(ownerPortalApi.exportIssuedDocuments(period, { signal }), issuedDocumentsFileName(period)),
   });
 }
 

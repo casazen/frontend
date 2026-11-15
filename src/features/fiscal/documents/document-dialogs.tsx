@@ -68,7 +68,7 @@ function SummaryRow({ label, children, testId }: { label: string; children: Reac
  * nothing is expected, and the dialog says that CasaZen gives the number when it issues. A credit note is issued in the series of the document it corrects: it says that and no number. A refusal
  * (the draft was made with rules or data that changed, the data of the invoice missing...) is told in the dialog, in the words of its code, and the dialog stays open.
  */
-export function IssueDocumentDialog({ document, onClose, onIssued }: DialogProps & { onIssued?: (id: string) => void }) {
+export function IssueDocumentDialog({ document, onClose, onIssued, replaces }: DialogProps & { onIssued?: (id: string) => void; replaces?: { number: string | null } }) {
   const { t, i18n } = useTranslation();
   const { hasPermission } = useWorkspace();
   const issue = useIssueFiscalDocument();
@@ -76,10 +76,14 @@ export function IssueDocumentDialog({ document, onClose, onIssued }: DialogProps
   // The setting that holds the series is read by who may read payments and properties, like the page of the documents.
   const canReadSetting = hasPermission('short-rent', 'payment.read') && hasPermission('short-rent', 'property.read');
   // A credit note is issued in the series of the document it corrects, which may be another year's: nothing is said of its series or number, and nothing is read for them.
+  // The replacement of an invoice the SDI rejected (`replaces`, E17/F03/US01/T02) holds the number of the rejected one from the start: the issue gives it that number and not the next one, so no number is
+  // expected from the newest documents and the dialog says the one it keeps (`replaces.number` is the number of the rejected invoice when the screen knows it).
   const correction = document.kind === 'CreditNote';
-  const context = useFiscalDocumentsContext(canReadSetting && !correction);
-  const issued = useIssuedNumbers(!correction);
-  const numbering = correction ? NO_NUMBERING : numberingOf(seriesOf(context.data?.guestDocumentSeries, todayInRome()), issued.data);
+  const keeps = replaces !== undefined;
+  const numbered = !correction && !keeps;
+  const context = useFiscalDocumentsContext(canReadSetting && numbered);
+  const issued = useIssuedNumbers(numbered);
+  const numbering = numbered ? numberingOf(seriesOf(context.data?.guestDocumentSeries, todayInRome()), issued.data) : NO_NUMBERING;
 
   return (
     <ConfirmationDialog
@@ -108,10 +112,16 @@ export function IssueDocumentDialog({ document, onClose, onIssued }: DialogProps
       <dl className="grid gap-2 text-sm" data-testid="fiscal-document-issue-summary">
         <SummaryRow label={t('fiscalDocuments.issue.document')}>{documentKindWords(t, document.kind)}</SummaryRow>
         <SummaryRow label={t('fiscalDocuments.issue.series')} testId="fiscal-document-issue-series">
-          {correction ? t('fiscalDocuments.issue.seriesOfOriginal') : (numbering.series ?? t('fiscalDocuments.issue.seriesUnknown'))}
+          {correction || keeps ? t('fiscalDocuments.issue.seriesOfOriginal') : (numbering.series ?? t('fiscalDocuments.issue.seriesUnknown'))}
         </SummaryRow>
         <SummaryRow label={t('fiscalDocuments.issue.number')} testId="fiscal-document-issue-number">
-          {numbering.next ? t('fiscalDocuments.issue.numberExpected', { number: numbering.next }) : t('fiscalDocuments.issue.numberUnknown')}
+          {replaces
+            ? replaces.number
+              ? t('fiscalDocuments.issue.numberKept', { number: replaces.number })
+              : t('fiscalDocuments.issue.numberKeptUnknown')
+            : numbering.next
+              ? t('fiscalDocuments.issue.numberExpected', { number: numbering.next })
+              : t('fiscalDocuments.issue.numberUnknown')}
         </SummaryRow>
         <SummaryRow label={t('fiscalDocuments.issue.total')} testId="fiscal-document-issue-total">
           <span className="tabular-nums">{formatDocumentAmount(document.total, document.currency, i18n.language)}</span>

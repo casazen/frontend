@@ -153,13 +153,21 @@ function refreshVerifications(queryClient: QueryClient): void {
 const FISCAL_DOCUMENT_ISSUED = 'fiscal-document-issued';
 
 /**
+ * The SDI rejected an electronic invoice of a booking (`PushTypes.FiscalDocumentSdiRejected`, E17/F01/US02/T03, NF-86, sent to the hosts of the booking once the «To do» of its correction is raised); its `entityId` is the booking.
+ * Neither the guest, nor an amount, nor the reason is in it: the pages read the document again, and the reason in plain words comes from its SDI state.
+ */
+const FISCAL_DOCUMENT_SDI_REJECTED = 'fiscal-document-sdi-rejected';
+
+/**
  * What an issued document changes on screen: the list of the fiscal documents, the detail of a document, the documents of a booking (the card of its tab Pagamento) and the numbers the next
  * confirmation reads, all under `FISCAL_DOCUMENTS_KEY`, and the payment ledger, which shows the fiscal document of a booking, and the summary of the agency of the page «Commercialista»
  * (E15/F02/US01/T01), which counts the documents issued to the guests. A page open in front of the host shows the new number and state without a reload. The bulk issue and the daily run send
- * nothing (one message per document would flood the bell): the page that asked for the bulk issue reads its own answer.
+ * nothing (one message per document would flood the bell): the page that asked for the bulk issue reads its own answer. A rejection of the SDI (E17/F03/US01/T02) reads the same things: the state of the document
+ * and its SDI panel (`['fiscal', 'documents', 'sdi', …]` are under the key) and the list «Da fare», which holds the item «Correggi la fattura».
  */
 function refreshFiscalDocuments(queryClient: QueryClient): void {
   void queryClient.invalidateQueries({ queryKey: FISCAL_DOCUMENTS_KEY });
+  void queryClient.invalidateQueries({ queryKey: [INTERNAL_ACTIVITIES_KEY] });
   void queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY] });
   void queryClient.invalidateQueries({ queryKey: [ACCOUNTANT_PACKAGE_KEY] });
 }
@@ -196,7 +204,7 @@ export function applyNotificationsChange(queryClient: QueryClient, change: Notif
   else if (change.type !== null && COMPLIANCE_ALERT_TYPES.has(change.type)) refreshComplianceLights(queryClient, change.type);
   if (change.type === VERIFICATION_REQUIRED) refreshVerifications(queryClient);
   if (change.type === ASSIST_REQUESTED) refreshAssistQueue(queryClient);
-  if (change.type === FISCAL_DOCUMENT_ISSUED) refreshFiscalDocuments(queryClient);
+  if (change.type === FISCAL_DOCUMENT_ISSUED || change.type === FISCAL_DOCUMENT_SDI_REJECTED) refreshFiscalDocuments(queryClient);
 }
 
 /** After a gap in the channel events may have been missed: everything the channel feeds is read again, the count included. */

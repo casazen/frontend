@@ -420,11 +420,13 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
       '/app/short-rent/automations',
     ],
     // The month of the owners of an agency, in the order of its steps.
-    // The invoices to the owners (E13/F02/US01/T03, behind their flag) come right after the statements they are made from, at 1.5.
+    // The invoices to the owners (E13/F02/US01/T03, behind their flag) come right after the statements they are made from, at 1.5; the self-billed invoices TD17 (E17/F03/US01/T02, behind the flag of the
+    // issuance of fiscal documents) come right after them, at 1.6.
     // The commissions of the channels (E13/F02/US03/T01) are the last tab: what each portal keeps when it sends no commission, for the changes made after the setup.
     '/app/account/owner-close': [
       '/app/account/statements',
       '/app/account/owner-invoices',
+      '/app/account/self-billing',
       '/app/account/withholding',
       '/app/account/wire-transfers',
       '/app/account/channel-commissions',

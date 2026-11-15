@@ -57,9 +57,12 @@ function invalidateAll(queryClient: QueryClient) {
 
 // ── Reads ─────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-/** The owners of the agency's registry: their names. A list that other pages change (the activation adds owners), read again every time a page asks for it. */
-export function useOwnerNames() {
-  return useQuery({ queryKey: ownerAccountingKeys.owners, queryFn: () => ownerAccountingApi.listOwners(), refetchOnMount: 'always' as const });
+/**
+ * The owners of the agency's registry: their names. A list that other pages change (the activation adds owners), read again every time a page asks for it. `enabled: false` for who is not the agency's
+ * administrator: the registry is refused to anyone else with a 403, which a read sends to the page of no access, so nothing is asked for them.
+ */
+export function useOwnerNames(enabled = true) {
+  return useQuery({ queryKey: ownerAccountingKeys.owners, queryFn: () => ownerAccountingApi.listOwners(), enabled, refetchOnMount: 'always' as const });
 }
 
 /**

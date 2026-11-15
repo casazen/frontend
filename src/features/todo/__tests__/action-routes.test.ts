@@ -8,6 +8,8 @@ import { ACTION_ROUTE_MAP, todoActionRoute } from '../activity-card';
 const BOOKING_ID = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
 const PROPERTY_ID = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee';
 const NO_ID = '00000000-0000-0000-0000-000000000000';
+const DOCUMENT_ID = 'dddddddd-dddd-dddd-dddd-dddddddddddd';
+const OWNER_ID = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
 
 /** Every `ActivityAction` of ADR-026-R6: the map has an entry for each (the later epics append theirs). */
 const R6_ACTIONS = [
@@ -220,6 +222,37 @@ describe('ACTION_ROUTE_MAP (ADR-026-R6)', () => {
     expect(todoActionRoute(item, permissions([]))).toBeNull();
   });
 
+  it('todoActionRoute_ReviewFiscalDocumentAboutAnOwner_OpensTheStepOfTheOwnersWhoIssueAndFallsBackToTheFiscalPage', () => {
+    // E17/F03/US01/T01: the owner of an Italian stay has no issuer profile that can issue (the item is about the owner, never a booking): the step of the wizard Fatturazione where the profile is made.
+    const item = itemFor('ReviewFiscalDocument', { entityType: 'PropertyOwner', entityId: OWNER_ID, propertyId: PROPERTY_ID });
+
+    expect(todoActionRoute(item)).toBe('/app/short-rent/fiscal/setup?step=owner-issuers');
+    expect(todoActionRoute(item, permissions(['property.read', 'payment.read']))).toBe('/app/short-rent/fiscal/setup?step=owner-issuers');
+    // The wizard needs the payments too: without them the item still leads to the fiscal page, and without both to nothing.
+    expect(todoActionRoute(item, permissions(['property.read']))).toBe('/app/short-rent/fiscal');
+    expect(todoActionRoute(item, permissions([]))).toBeNull();
+  });
+
+  it('todoActionRoute_CorrectInvoice_OpensTheRejectedDocumentAtTheStepOfTheCorrection', () => {
+    // `ActivityAction` 31 (E17/F01/US02/T03): the SDI rejected an invoice of CasaZen; the item is about the document and the page of the documents opens its detail at the guided correction.
+    const item = itemFor('CorrectInvoice', { entityType: 'FiscalDocument', entityId: DOCUMENT_ID, propertyId: null });
+    const expected = `/app/short-rent/fiscal/documents?document=${DOCUMENT_ID}&step=correct`;
+
+    expect(todoActionRoute(item)).toBe(expected);
+    expect(todoActionRoute(item, permissions(['property.read', 'payment.read']))).toBe(expected);
+    // Who may not open the documents page is led to the fiscal page when they read the properties, and is not offered a button at all otherwise.
+    expect(todoActionRoute(item, permissions(['property.read']))).toBe('/app/short-rent/fiscal');
+    expect(todoActionRoute(item, permissions([]))).toBeNull();
+  });
+
+  it('todoActionRoute_CorrectInvoice_AnItemOfAnotherKindOfEntity_NeverNamesADocumentThatIsNotOne', () => {
+    // The id of a booking is not the id of a document: an item that is not about a document leads to the fiscal page and the address carries no id.
+    const item = itemFor('CorrectInvoice', { entityType: 'Booking', entityId: BOOKING_ID, propertyId: null });
+
+    expect(todoActionRoute(item)).toBe('/app/short-rent/fiscal');
+    expect(todoActionRoute(itemFor('CorrectInvoice', { entityType: 'FiscalDocument', entityId: NO_ID, propertyId: null }))).toBe('/app/short-rent/fiscal');
+  });
+
   it('todoActionRoute_UnknownAction_ReturnsNullNeverTheDashboard', () => {
     // A later version of the server may send an action this one does not know yet; an inherited name is not one either.
     expect(todoActionRoute(itemFor('SomethingNew'))).toBeNull();
@@ -315,7 +348,7 @@ describe('ACTION_ROUTE_MAP: the check-in link of a portal booking', () => {
   });
 });
 
-// Every `ActivityAction` of the backend (`Casazen.Core/Entities/Enums/ActivityAction.cs`, today 22 values): the map has an entry for each, or the action is
+// Every `ActivityAction` of the backend (`Casazen.Core/Entities/Enums/ActivityAction.cs`, today 23 values): the map has an entry for each, or the action is
 // in the list of those whose page does not exist yet. An action that is in neither is a "To do" with no button that nobody noticed; the task that builds
 // the page adds the entry and takes the action out of the list (the test below fails until it does).
 const BACKEND_ACTIONS = [
@@ -338,6 +371,7 @@ const BACKEND_ACTIONS = [
   'DeclareTouristTax',
   'RenewPoliceCredentials',
   'ReviewFiscalDocument',
+  'CorrectInvoice',
   'ReviewOwnerStay',
   'RenewOwnerDocument',
   'CopyCheckInLink',

@@ -332,6 +332,11 @@ describe('documentWriteActionsOf (what may be changed, by state)', () => {
     ['an invoice that was issued', document(), { ...none, credit: true }],
     ['a receipt that was issued', document({ kind: 'Receipt' }), { ...none, credit: true }],
     ['a credit note that was issued', document({ kind: 'CreditNote' }), none],
+    // An invoice the SDI rejected never was issued: it is corrected from its panel, and the server refuses a credit note of it every time (422 `document_rejected_use_correction`).
+    ['an invoice the SDI rejected', document({ sdiStatus: 'rejected', sdiErrorCode: '00404' }), none],
+    ['an invoice the SDI delivered', document({ sdiStatus: 'delivered' }), { ...none, credit: true }],
+    // The draft that replaces a rejected invoice holds its number: it is issued and made again from the data, never dropped (422 `document_replacement_holds_number`).
+    ['the draft that replaces a rejected invoice', draft({ replacesDocumentId: 'd0000000-0000-4000-8000-0000000000aa' }), { issue: true, refresh: true, discard: false, credit: false }],
     ['a dropped draft', draft({ status: 'Discarded' }), none],
     ['a document of the channel manager', importedDocument({ status: 'Draft' }), none],
   ])('DocumentWriteActionsOf_%s_IsRead', (_case, candidate, expected) => {

@@ -194,18 +194,46 @@ export function initialValues(setup: BillingSetup, context: { organizationName: 
 // The steps
 // ---------------------------------------------------------------------------------------------------------------------
 
+/** The steps that exist only where something Italian asks for them (E17/F03/US01): the owners who issue the documents of their stays, and the sending to the SDI. */
+export interface ItalianSteps {
+  /** The agency has owners of Italian properties that still miss an issuer profile that can issue (the item `owner_issuer_missing` of the setup as it was when the wizard opened). */
+  ownerIssuers?: boolean;
+  /** The sending to the SDI is on (the flag `sdiSubmission`). */
+  sdi?: boolean;
+}
+
 /**
  * The steps of the wizard for what is known: «Commissioni dei canali» and «Mandato standard» only for an agency, «Italia» only for an Italian issuer (it follows the first
  * answer, so a person who has not chosen the country yet does not see it), «Commercialista» only while the package of the accountant is on (`accountant`, the flag `accountantPackage`:
- * with it off the wizard is the one it was). The others are always there.
+ * with it off the wizard is the one it was). «Proprietari che emettono» only for an agency with Italian owners that still miss a profile (`italian.ownerIssuers`), and «Invio allo SDI» only for an Italian
+ * issuer while the sending to the SDI is on (`italian.sdi`: with the flag off the wizard is the one it was). The others are always there.
  */
-export function stepIdsFor(country: string, agency: boolean, accountant = false): BillingStepId[] {
+export function stepIdsFor(country: string, agency: boolean, accountant = false, italian: ItalianSteps = {}): BillingStepId[] {
   return BILLING_STEP_ORDER.filter((id) => {
     if (id === BILLING_STEPS.channels || id === BILLING_STEPS.mandate) return agency;
     if (id === BILLING_STEPS.italy) return country === 'IT';
+    if (id === BILLING_STEPS.ownerIssuers) return agency && italian.ownerIssuers === true;
+    if (id === BILLING_STEPS.sdi) return country === 'IT' && italian.sdi === true;
     if (id === BILLING_STEPS.accountant) return accountant;
     return true;
   });
+}
+
+/** How many owners the setup still says have no issuer profile that can issue (the item `owner_issuer_missing`): `0` when it says none. The server's count, never one worked out from the rows. */
+export function ownerIssuersMissing(setup: BillingSetup | undefined): number {
+  return missingItemsOf(setup).find((item) => item.key === 'owner_issuer_missing')?.count ?? 0;
+}
+
+/**
+ * Where the connection of CasaZen to the SDI stands, from what the server says and whether the sending is on (E17/F03/US01/T02). `connected`: a channel is connected, the invoices go by themselves.
+ * `waitingCredentials`: the sending is on and no channel is connected yet (the credentials are CasaZen's to put in the environment): the invoices wait «da inviare» and the issuer uploads the XML by hand and
+ * declares it. `notConnected`: the sending is off, so no channel is used whatever the environment has (the same hand upload, and nothing to wait for). Nothing is claimed while the server has not said.
+ */
+export type SdiConnection = 'connected' | 'waitingCredentials' | 'notConnected';
+
+export function sdiConnectionOf(input: { providerConfigured: boolean; sendingOn: boolean }): SdiConnection {
+  if (!input.sendingOn) return 'notConnected';
+  return input.providerConfigured ? 'connected' : 'waitingCredentials';
 }
 
 /** Every item that is missing, in the order of the sections of the setup (the order of the wizard). */

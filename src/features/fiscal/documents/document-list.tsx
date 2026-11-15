@@ -11,6 +11,7 @@ import {
   bookingLinkOf,
   documentLabelOf,
   documentNameOf,
+  documentPurposeKey,
   documentSourceKey,
   formatDocumentAmount,
   formatDocumentDay,
@@ -120,6 +121,7 @@ function TotalFigure({ document, language }: { document: FiscalDocumentEntry; la
 function DocumentCell({ document, language, onOpen }: { document: FiscalDocumentEntry; language: string; onOpen?: (document: FiscalDocumentEntry) => void }) {
   const { t } = useTranslation();
   const sourceKey = documentSourceKey(document.source);
+  const purposeKey = documentPurposeKey(document.purpose);
   const name = documentNameOf(t, document);
 
   return (
@@ -145,6 +147,12 @@ function DocumentCell({ document, language, onOpen }: { document: FiscalDocument
       <span className="mt-0.5 block text-xs font-normal text-foreground/70" data-testid="fiscal-document-source">
         {sourceKey ? t(sourceKey) : document.source}
       </span>
+      {/* A booking may have several documents (the receipt of the owner, the invoice of the agency for its services): what each one is for, and who issued it when the server says so. */}
+      {purposeKey || document.issuerName ? (
+        <span className="mt-0.5 block text-xs font-normal text-foreground/70" data-testid="fiscal-document-purpose" data-purpose={document.purpose}>
+          {[purposeKey ? t(purposeKey) : null, document.issuerName ? t('fiscalDocuments.list.issuedBy', { issuer: document.issuerName }) : null].filter((part) => part !== null).join(' · ')}
+        </span>
+      ) : null}
     </div>
   );
 }

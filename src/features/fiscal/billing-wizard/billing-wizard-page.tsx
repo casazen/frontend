@@ -53,6 +53,7 @@ import {
   isNeedsWholeOrg,
   lastMonthOf,
   missingItemsOf,
+  ownerIssuersMissing,
   portalSettingsChanged,
   problemsOf,
   sectionOf,
@@ -82,13 +83,15 @@ import { IssuingStep } from './steps/issuing-step';
 import { ItalyStep } from './steps/italy-step';
 import { MandateStep } from './steps/mandate-step';
 import { NumberingStep } from './steps/numbering-step';
+import { OwnerIssuersStep } from './steps/owner-issuers-step';
+import { SdiStep } from './steps/sdi-step';
 import { StepFrame } from './steps/step-frame';
 import { SummaryStep } from './steps/summary-step';
 import { TouristTaxStep } from './steps/tourist-tax-step';
 import { VatStep } from './steps/vat-step';
 
 /** The name a step has in the texts: the id of the step, with no dash. */
-const stepKeyOf = (id: BillingStepId) => (id === BILLING_STEPS.touristTax ? 'touristTax' : id);
+const stepKeyOf = (id: BillingStepId) => (id === BILLING_STEPS.touristTax ? 'touristTax' : id === BILLING_STEPS.ownerIssuers ? 'ownerIssuers' : id);
 
 interface BillingWizardProps {
   setup: BillingSetup;
@@ -133,6 +136,10 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
   const rules = useChannelCommissionRules(agency);
   // The step «Commercialista» (E15/F02/US02/T01) exists only while the package of the accountant is on: with the flag off nothing is asked of the server and the wizard is the one it was.
   const accountantOn = flags.accountantPackage;
+  // The Italian steps (E17/F03/US01): «Proprietari che emettono» exists for an agency whose Italian owners still missed a profile when the wizard opened (the step does not vanish under the person's hands when
+  // the last profile is made: the setup is read again, the step list is not), and «Invio allo SDI» while the sending to the SDI is on: with the flag off the wizard is the one it was.
+  const [ownerIssuersStep] = useState(() => agency && ownerIssuersMissing(setup) > 0);
+  const italian = { ownerIssuers: ownerIssuersStep, sdi: flags.sdiSubmission };
   const accountant = useAccountantPackageSettings(accountantOn);
   const saveAccountant = useSaveAccountantPackageSettings();
   const sendAccountant = useSendAccountantPackageTest();
@@ -303,6 +310,12 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
         return { ...base, render: () => frame(id, <IssuingStep />) };
       case BILLING_STEPS.italy:
         return { ...base, schema: checked(italyStepSchema), render: () => frame(id, <ItalyStep />) };
+      case BILLING_STEPS.ownerIssuers:
+        // Its own calls (the profiles of the owners): the step saves nothing in the setup, and the count of what is missing is the setup's, read again after every save of a profile.
+        return { ...base, render: () => frame(id, <OwnerIssuersStep missing={ownerIssuersMissing(setup)} />) };
+      case BILLING_STEPS.sdi:
+        // Read-only: the state of the connection to the SDI and of each issuer, as the server says it.
+        return { ...base, render: () => frame(id, <SdiStep agency={agency} />) };
       case BILLING_STEPS.accountant:
         return {
           ...base,
@@ -330,15 +343,15 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
             const current = form.getValues();
             return frame(
               id,
-              <SummaryStep setup={setup} values={current} steps={stepIdsFor(current.countryCode, agency, accountantOn)} preview={preview} accountant={accountantSettings} />,
+              <SummaryStep setup={setup} values={current} steps={stepIdsFor(current.countryCode, agency, accountantOn, italian)} preview={preview} accountant={accountantSettings} />,
             );
           },
         };
     }
   };
 
-  const stepsFor = (values: BillingWizardValues) => stepIdsFor(values.countryCode, agency, accountantOn).map((id) => definition(id, values));
-  const openOn = firstMissingStep(setup, stepIdsFor(defaults.countryCode, agency, accountantOn)) ?? BILLING_STEPS.summary;
+  const stepsFor = (values: BillingWizardValues) => stepIdsFor(values.countryCode, agency, accountantOn, italian).map((id) => definition(id, values));
+  const openOn = firstMissingStep(setup, stepIdsFor(defaults.countryCode, agency, accountantOn, italian)) ?? BILLING_STEPS.summary;
 
   // The reach of the person is read before the first step: nobody is offered a field they could not fill, not even for the time of the question.
   if (canWrite && access.isPending) {
