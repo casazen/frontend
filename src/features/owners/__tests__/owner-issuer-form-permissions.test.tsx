@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { createElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as api from '@/api/owner-issuer-profiles.api';
@@ -7,6 +7,7 @@ import { ownerAccountingApi } from '@/api/owner-accounting.api';
 import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import { OwnerIssuersStep } from '@/features/fiscal/billing-wizard/steps/owner-issuers-step';
 import i18n from '@/i18n/config';
+import { OWNER_ISSUER_KEY } from '@/queries/use-owner-issuer-profile';
 import type { OwnerIssuerProfile } from '@/types';
 import { OwnerIssuerProfileSection } from '../components/owner-issuer-profile-form';
 
@@ -66,7 +67,18 @@ const owners = vi.mocked(ownerAccountingApi.listOwners);
 
 function renderInto(element: ReturnType<typeof createElement>) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
-  return render(createElement(QueryClientProvider, { client }, element));
+  return { ...render(createElement(QueryClientProvider, { client }, element)), client };
+}
+
+/** What the server answers for an owner that has no profile yet (an empty one, in clear for a caller who may change it). */
+const NO_PROFILE = (): OwnerIssuerProfile =>
+  profile({ exists: false, canIssue: false, regime: null, legalName: null, fiscalCode: null, addressStreet: null, addressCivic: null, postalCode: null, city: null, province: null });
+
+/** The window comes back: the profile of the owner is read again, and the page waits for the answer. */
+async function readAgain(client: ReturnType<typeof renderInto>['client']) {
+  await act(async () => {
+    await client.invalidateQueries({ queryKey: [OWNER_ISSUER_KEY, OWNER_ID] });
+  });
 }
 
 beforeEach(async () => {
@@ -133,6 +145,65 @@ describe('the issuer profile of an owner follows the permissions of the server (
     // The whole profile, in Italy, with the texts cut and what is blank left out (the server clears it): the choices marked «to confirm» keep their prudent default.
     expect(request).toMatchObject({ regime: 'VatOrdinary', legalName: 'Casa Mia Srl', vatNumber: '01234567890', countryCode: 'IT', stayVatTreatment: 'Standard' });
     expect(request.fiscalCode).toBeUndefined();
+  });
+
+  it('OwnerIssuerProfile_WhenTheProfileIsReadAgainWhileThePersonTypes_NeverThrowsAwayWhatWasTyped', async () => {
+    read.mockResolvedValue(NO_PROFILE());
+    const { client } = renderInto(createElement(OwnerIssuerProfileSection, { ownerId: OWNER_ID }));
+
+    const form = await screen.findByTestId('owner-issuer-form');
+    fireEvent.change(within(form).getByTestId('owner-issuer-legal-name'), { target: { value: 'Casa Mia Srl' } });
+    fireEvent.change(within(form).getByTestId('owner-issuer-city'), { target: { value: 'Como' } });
+    // The window comes back after more than half a minute: the profile is read again. The fields are the same; the answer says the profile exists now and what it misses.
+    read.mockResolvedValue({ ...NO_PROFILE(), exists: true, missingFields: ['regime'] });
+    await readAgain(client);
+
+    // The answer is on the page (the state of the profile changed) and what was typed is still there: a read never starts the form again.
+    await waitFor(() => expect(screen.getByTestId('owner-issuer-state')).toHaveAttribute('data-state', 'incomplete'));
+    expect(read).toHaveBeenCalledTimes(2);
+    expect(screen.getByTestId('owner-issuer-legal-name')).toHaveValue('Casa Mia Srl');
+    expect(screen.getByTestId('owner-issuer-city')).toHaveValue('Como');
+    expect(write).not.toHaveBeenCalled();
+  });
+
+  it('OwnerIssuerProfile_WhenAnotherPersonChangesIt_KeepsWhatWasTypedAndFollowsTheServerForTheRest', async () => {
+    read.mockResolvedValue(NO_PROFILE());
+    const { client } = renderInto(createElement(OwnerIssuerProfileSection, { ownerId: OWNER_ID }));
+    const form = await screen.findByTestId('owner-issuer-form');
+
+    // Nothing typed yet: the form is what the server holds.
+    read.mockResolvedValue({ ...NO_PROFILE(), city: 'Como' });
+    await readAgain(client);
+    await waitFor(() => expect(screen.getByTestId('owner-issuer-city')).toHaveValue('Como'));
+
+    // The name is typed; another person writes the street and changes the city: the name stays, the field nobody touched follows the server.
+    fireEvent.change(within(form).getByTestId('owner-issuer-legal-name'), { target: { value: 'Casa Mia Srl' } });
+    read.mockResolvedValue({ ...NO_PROFILE(), city: 'Lecco', addressStreet: 'Via Roma' });
+    await readAgain(client);
+
+    await waitFor(() => expect(screen.getByTestId('owner-issuer-city')).toHaveValue('Lecco'));
+    expect(screen.getByTestId('owner-issuer-street')).toHaveValue('Via Roma');
+    expect(screen.getByTestId('owner-issuer-legal-name')).toHaveValue('Casa Mia Srl');
+  });
+
+  it('OwnerIssuerProfile_AfterASave_ShowsWhatTheServerHoldsNow', async () => {
+    read.mockResolvedValue(NO_PROFILE());
+    // The server cuts the spaces and answers the name as it keeps it.
+    write.mockResolvedValue(profile({ canIssue: false, regime: 'VatOrdinary', legalName: 'Casa Mia Srl', vatNumber: '01234567890', city: null, missingFields: ['fiscalCode'] }));
+    renderInto(createElement(OwnerIssuerProfileSection, { ownerId: OWNER_ID }));
+
+    const form = await screen.findByTestId('owner-issuer-form');
+    fireEvent.click(within(form).getByTestId('owner-issuer-regime-VatOrdinary'));
+    fireEvent.change(within(form).getByTestId('owner-issuer-legal-name'), { target: { value: '  Casa Mia Srl  ' } });
+    fireEvent.change(within(form).getByTestId('owner-issuer-vat-number'), { target: { value: '01234567890' } });
+    const save = within(form).getByTestId('owner-issuer-save');
+    await waitFor(() => expect(save).toBeEnabled());
+    fireEvent.click(save);
+
+    await waitFor(() => expect(write).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(screen.getByTestId('owner-issuer-legal-name')).toHaveValue('Casa Mia Srl'));
+    // What was saved is what the form holds now: nothing left to save.
+    await waitFor(() => expect(screen.getByTestId('owner-issuer-save')).toBeDisabled());
   });
 
   it('OwnerIssuersStep_ARowThatTheServerMasks_HasNoButtonThatWrites_AndOneThatMayChangeItHasThem', async () => {

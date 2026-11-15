@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios';
 import type { OwnerAddress, OwnerFiscalProfile, OwnerIssuerProfile } from '@/types';
-import { formOf, isChanged, issuerRequestFromOwnerData, issuerStateOf, refusedFieldsOf, requestOf } from '../owner-issuer-model';
+import { followedForm, formOf, isChanged, issuerRequestFromOwnerData, issuerStateOf, refusedFieldsOf, requestOf } from '../owner-issuer-model';
 
 const profile = (overrides: Partial<OwnerIssuerProfile> = {}): OwnerIssuerProfile => ({
   ownerId: 'o1',
@@ -80,6 +80,20 @@ describe('the issuer profile of an owner as the form holds it (E17/F03/US01/T01)
     expect(isChanged({ ...saved, legalName: ` ${saved.legalName} ` }, saved)).toBe(false);
     expect(isChanged({ ...saved, city: 'Lecco' }, saved)).toBe(true);
     expect(isChanged({ ...saved, stayVatTreatment: 'ExemptArt10' }, saved)).toBe(true);
+  });
+
+  it('followedForm_KeepsWhatWasTypedAndLetsEveryOtherFieldFollowTheServer', () => {
+    const base = formOf(profile());
+    // The person typed the name; meanwhile another person wrote the city and the province on the server.
+    const typed = { ...base, legalName: 'Marta Bianchi' };
+    const stored = { ...base, city: 'Lecco', province: 'LC' };
+
+    expect(followedForm(typed, base, stored)).toEqual({ ...base, legalName: 'Marta Bianchi', city: 'Lecco', province: 'LC' });
+    // Nothing typed: the form is what the server holds. The same data: the form is what it was.
+    expect(followedForm(base, base, stored)).toEqual(stored);
+    expect(followedForm(typed, base, base)).toEqual(typed);
+    // A text cut at its ends is not a change of the person, so the server's value is followed.
+    expect(followedForm({ ...base, city: ` ${base.city} ` }, base, stored).city).toBe('Lecco');
   });
 
   it('issuerStateOf_TellsNoProfileFromAProfileThatMissesSomething', () => {

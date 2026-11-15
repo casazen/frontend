@@ -16,6 +16,7 @@ import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import { useOwnerIssuerProfile, useSaveOwnerIssuerProfile } from '@/queries/use-owner-issuer-profile';
 import { OWNER_ISSUER_REGIMES, type OwnerIssuerProfile, type OwnerIssuerRegime } from '@/types';
 import {
+  followedForm,
   formOf,
   isChanged,
   isItalianProfile,
@@ -74,6 +75,13 @@ export function OwnerIssuerProfileForm({ ownerId, profile, onSaved, onCancel }: 
   const save = useSaveOwnerIssuerProfile(ownerId);
   const stored = formOf(profile);
   const [form, setForm] = useState<OwnerIssuerForm>(stored);
+  // What the form was last built from. A read that brings the same data changes nothing: the window coming back (a read more than half a minute old is read again) must never throw away what the person is
+  // typing. When the server holds something else (another person's change) the fields nobody typed in follow it, and what was typed stays.
+  const [base, setBase] = useState<OwnerIssuerForm>(stored);
+  if (isChanged(stored, base)) {
+    setBase(stored);
+    setForm(followedForm(form, base, stored));
+  }
   const [refused, setRefused] = useState<readonly OwnerIssuerField[]>([]);
   const [problem, setProblem] = useState<string | null>(null);
   const changed = isChanged(form, stored);
@@ -95,6 +103,8 @@ export function OwnerIssuerProfileForm({ ownerId, profile, onSaved, onCancel }: 
     setRefused([]);
     try {
       const saved = await save.mutateAsync(requestOf(form));
+      // The form shows what the server holds now (it cuts and capitalizes what was typed), as it did when it started again after every read.
+      setForm(formOf(saved));
       toast.success(saved.canIssue ? t('ownerIssuer.saved.ready') : t('ownerIssuer.saved.incomplete'));
       onSaved?.();
     } catch (error) {
@@ -329,8 +339,8 @@ function SectionBody({ ownerId }: { ownerId: string }) {
       </div>
     );
   } else {
-    // The form starts from what the server holds and starts again when that is read again (after a save): no effect copies it into the state.
-    content = <OwnerIssuerProfileForm key={profile.dataUpdatedAt} ownerId={ownerId} profile={data} />;
+    // The form starts from what the server holds and follows it (see the form): it is never started again by a read that brings the same data, so what is typed survives the window coming back. One owner, one form.
+    content = <OwnerIssuerProfileForm key={ownerId} ownerId={ownerId} profile={data} />;
   }
 
   return (

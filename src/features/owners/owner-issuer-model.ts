@@ -76,6 +76,22 @@ export function isChanged(form: OwnerIssuerForm, saved: OwnerIssuerForm): boolea
   return FIELDS.some((field) => form[field].trim() !== saved[field].trim());
 }
 
+function keepField<K extends OwnerIssuerField>(target: OwnerIssuerForm, source: OwnerIssuerForm, field: K): void {
+  target[field] = source[field];
+}
+
+/**
+ * The form after the server came to hold something else than what the form was built from (`base`: a save, another person's change, a profile read again): every field the person typed over `base` stays as it was typed,
+ * and every other field follows the server (`stored`). A read that brings the same data changes nothing, so nothing that is typed is ever thrown away, and a field nobody touched is never saved over what another person wrote.
+ */
+export function followedForm(form: OwnerIssuerForm, base: OwnerIssuerForm, stored: OwnerIssuerForm): OwnerIssuerForm {
+  const followed: OwnerIssuerForm = { ...stored };
+  for (const field of FIELDS) {
+    if (form[field].trim() !== base[field].trim()) keepField(followed, form, field);
+  }
+  return followed;
+}
+
 const text = (value: string): string | undefined => (value.trim() === '' ? undefined : value.trim());
 
 /**
