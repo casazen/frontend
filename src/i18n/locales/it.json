@@ -2923,8 +2923,10 @@
           "storageFailed": "Non siamo riusciti a conservare il pacchetto per il link.",
           "unknown": "C’è stato un problema tecnico."
         },
-        "failed": "Ultimo tentativo: pacchetto di {{period}}, non inviato il {{when}}. {{reason}} Riproviamo ogni mattina finché non parte.",
+        "failed": "Ultimo tentativo: pacchetto di {{period}}, non inviato il {{when}}. {{reason}} {{retry}}",
         "none": "Non è ancora partito nessun invio.",
+        "retryOff": "L’invio ogni mese è spento: non riproviamo da soli.",
+        "retryOn": "Riproviamo ogni mattina finché non parte.",
         "sent": "Ultimo invio: pacchetto di {{period}}, e-mail con il link messa in invio il {{when}}."
       },
       "loadError": "Non riusciamo a leggere le impostazioni dell’invio al commercialista.",

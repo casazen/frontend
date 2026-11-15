@@ -311,6 +311,8 @@ function AccountantSettingsForm({ current, save, send, lastMonth, busy, ownerAcc
                   period: periodLabel(last.period, locale),
                   when: formatRomeDateTime(asInstant(last.at), locale, DATE_AND_TIME),
                   reason: t(lastSendErrorKey(last.error)),
+                  // «We try again every morning» is true only while the monthly send is on (the server tries again for no one else, and a failed test is not recorded here).
+                  retry: t(current.enabled ? 'billingWizard.accountant.lastSend.retryOn' : 'billingWizard.accountant.lastSend.retryOff'),
                 })}
           </p>
         ) : (

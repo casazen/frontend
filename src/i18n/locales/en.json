@@ -2923,8 +2923,10 @@
           "storageFailed": "We could not keep the package for the link.",
           "unknown": "There was a technical problem."
         },
-        "failed": "Last attempt: package of {{period}}, not sent on {{when}}. {{reason}} We try again every morning until it goes.",
+        "failed": "Last attempt: package of {{period}}, not sent on {{when}}. {{reason}} {{retry}}",
         "none": "No send has gone out yet.",
+        "retryOff": "The monthly send is off: we do not try again by ourselves.",
+        "retryOn": "We try again every morning until it goes.",
         "sent": "Last send: package of {{period}}, e-mail with the link handed over for sending on {{when}}."
       },
       "loadError": "We cannot read the settings of the send to the accountant.",

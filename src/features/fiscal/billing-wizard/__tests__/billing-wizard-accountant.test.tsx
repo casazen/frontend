@@ -197,6 +197,22 @@ describe('the step «Commercialista» of the wizard «Fatturazione» (E15/F02/US
     expect(screen.getByTestId('billing-accountant-last-send')).toHaveTextContent('ottobre 2026');
   });
 
+  // «We try again every morning» is a promise about the server, which tries again only while the monthly send is on: with it off the page says that nothing is tried again by itself.
+  it.each<[string, boolean, string, string]>([
+    ['TheMonthlySendOn', true, 'billingWizard.accountant.lastSend.retryOn', 'billingWizard.accountant.lastSend.retryOff'],
+    ['TheMonthlySendOff', false, 'billingWizard.accountant.lastSend.retryOff', 'billingWizard.accountant.lastSend.retryOn'],
+  ])('AccountantStep_ALastSendThatFailedWith%s_PromisesOnlyWhatTheServerDoes', async (_name, enabled, promised, notPromised) => {
+    getSettings.mockResolvedValue({ ...SAVED, enabled, lastSend: { period: '2026-10', at: '2026-11-03T05:00:00Z', result: 'failed', error: 'package_failed' } });
+    renderWizard();
+    await formOpen();
+
+    const last = screen.getByTestId('billing-accountant-last-send');
+    expect(last).toHaveAttribute('data-result', 'failed');
+    expect(last).toHaveTextContent(text('billingWizard.accountant.lastSend.errors.packageFailed'));
+    expect(last).toHaveTextContent(text(promised));
+    expect(last).not.toHaveTextContent(text(notPromised));
+  });
+
   it('AccountantStep_NothingTouched_ContinuaSavesNothingAndTheSummaryNeverWritesTheAddress', async () => {
     getSettings.mockResolvedValue(SAVED);
     renderWizard();
