@@ -33,6 +33,7 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
       'Disallow: /fornitori/*/richiesta',
       'Disallow: /fornitori/*/preventivo',
       'Disallow: /service/pay/',
+      'Disallow: /documents/view/',
       'Disallow: /my-bookings',
       'Disallow: /booking/',
       'Disallow: /requests/',

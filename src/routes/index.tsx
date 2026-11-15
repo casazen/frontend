@@ -60,6 +60,7 @@ import { SupplierAboutPage } from '@/pages/supplier-about';
 import { SupplierBookingConfirmPage } from '@/pages/supplier-booking-confirm';
 import { SupplierBookingPage } from '@/pages/supplier-booking';
 import { SupplierInquiryPage } from '@/pages/supplier-inquiry';
+import { PublicFiscalDocumentPage } from '@/pages/public/PublicFiscalDocumentPage';
 import { SupplierRequestPage } from '@/pages/supplier-request';
 import { SupplierServicePage } from '@/pages/supplier-service';
 import { SupplierServicesPage } from '@/pages/supplier-services';
@@ -346,6 +347,14 @@ export const appRoutes: RouteObject[] = [
     // not the console: it keeps its look until it is redesigned (like the rent payment).
     path: '/service/pay/:paymentId',
     element: <ServicePaymentPage />,
+    handle: NOT_REDESIGNED_ROUTE_HANDLE,
+  },
+  {
+    // Link of the e-mail that sends a guest the document of the stay (E12/F02/US02): `/documents/view/:documentId?token=…`. A guest's page, no sign-in (Auth0 is not
+    // loaded there, `isPublicUnauthenticatedPath`), not indexed, never behind a flag: an e-mail already sent must keep working. The token of the link is the only proof;
+    // the page takes it out of the address bar. It keeps its look until it is redesigned (like the pages above).
+    path: '/documents/view/:documentId',
+    element: <PublicFiscalDocumentPage />,
     handle: NOT_REDESIGNED_ROUTE_HANDLE,
   },
   {
