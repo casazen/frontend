@@ -165,6 +165,44 @@ describe('the states towards the SDI are the server\'s: «inviata» only after t
     expect(screen.queryByText(i18n.t('fiscalDocuments.list.state.submitted'))).toBeNull();
   });
 
+  it('SdiPanel_WhenTheSdiAnswersAfterTheSending_TheBannerOfTheSendingDoesNotStayUnderTheRejection', async () => {
+    submit.mockResolvedValue(answer('Submitted', { status: 'submitted', canSubmit: false, canDeclare: false }));
+    // The first read has the document to send; the SDI answers while the panel is open: the read that follows the sending says it rejected the file.
+    read
+      .mockResolvedValueOnce(state())
+      .mockResolvedValue(state({ status: 'rejected', errorCode: '00404', reason: 'Il codice fiscale del destinatario non è valido.', canSubmit: false, canDeclare: false, canCorrect: true }));
+    renderPanel();
+
+    fireEvent.click(await screen.findByTestId('fiscal-document-sdi-submit'));
+
+    await waitFor(async () => expect(await pill()).toHaveAttribute('data-state', 'rejected'));
+    // «Preso in carico dal canale» was what the server said when it was said: it is not what the document is now, and it is not told next to the rejection.
+    expect(screen.queryByTestId('fiscal-document-sdi-verdict')).toBeNull();
+    expect(screen.getByTestId('fiscal-document-sdi-reason')).toHaveTextContent('Il codice fiscale del destinatario non è valido.');
+  });
+
+  it('SdiPanel_AfterTheHandDeclaration_NoBannerKeepsTellingToDeclare', async () => {
+    const declared = state({ status: 'manual_declared', canSubmit: false, canDeclare: true, statusUpdatedAt: '2026-11-14T00:00:00Z' });
+    const noChannel = state({ providerConfigured: false });
+    // The reads: the panel opens, the sending is answered (nothing changed), the declaration is answered.
+    read.mockResolvedValueOnce(noChannel).mockResolvedValueOnce(noChannel).mockResolvedValue(declared);
+    submit.mockResolvedValue(answer('NotConfigured', { status: 'to_send', providerConfigured: false }));
+    declare.mockResolvedValue(declared);
+    renderPanel();
+
+    fireEvent.click(await screen.findByTestId('fiscal-document-sdi-submit'));
+    expect(await screen.findByTestId('fiscal-document-sdi-verdict')).toHaveAttribute('data-verdict', 'notConfigured');
+    await waitFor(() => expect(screen.getByTestId('fiscal-document-sdi-declare')).toBeEnabled());
+    fireEvent.click(screen.getByTestId('fiscal-document-sdi-declare'));
+    const dialog = await screen.findByTestId('fiscal-sdi-declare-dialog');
+    fireEvent.change(within(dialog).getByTestId('fiscal-sdi-declare-reference'), { target: { value: 'IT01234567890_00001.xml' } });
+    fireEvent.click(within(dialog).getByTestId('fiscal-sdi-declare-submit'));
+
+    await waitFor(async () => expect(await pill()).toHaveAttribute('data-state', 'manualDeclared'));
+    // The sentence that said «declare it by hand» is gone: the document is declared.
+    expect(screen.queryByTestId('fiscal-document-sdi-verdict')).toBeNull();
+  });
+
   it('SdiPanel_WhenTheStateIsReadAgainAndTheServerSaysNotFound_NothingOfTheOldStateStaysOnScreen', async () => {
     submit.mockResolvedValue(answer('Submitted', { status: 'submitted', canSubmit: false, canDeclare: false }));
     // The first read has the document; the read that follows the write finds it gone: a 404 is «not found» even though the cache still holds the old answer.

@@ -79,17 +79,19 @@ function SdiPanelBody({ document, scope, canAct, onCorrect }: SdiPanelBodyProps)
   const submit = useSubmitDocumentSdi();
   const busy = useDocumentsBusy({ documentIds: [document.id] });
   const [declaring, setDeclaring] = useState(false);
-  const [verdict, setVerdict] = useState<SubmitVerdict | null>(null);
+  // What the last answer of «Invia» said, with the state the server said the document was in when it said it: the words of the answer are told only while the document is still in that state, so a banner never stays
+  // under a state it no longer describes (the SDI answered while the panel was open, or the issuer declared the sending by hand).
+  const [answered, setAnswered] = useState<{ verdict: SubmitVerdict; status: string } | null>(null);
   const read = documentsReadOf({ enabled: true, isError: query.isError, status: getHttpStatus(query.error), hasData: query.data !== undefined });
   const state = read === 'ok' ? query.data : undefined;
   const name = documentNameOf(t, document);
 
   const send = async () => {
-    setVerdict(null);
+    setAnswered(null);
     try {
       const result = await submit.mutateAsync({ documentId: document.id, scope });
       // What is told comes from the answer: the outcome AND the state the server says the document is in now.
-      setVerdict(submitVerdictOf(result));
+      setAnswered({ verdict: submitVerdictOf(result), status: result.state.status });
     } catch (error) {
       // No answer, or a refusal: nothing is claimed. The state is read again (a call that got lost may have reached the channel), and the words say the document stays as it is.
       toast.error(getProblemMessage(error, t) ?? t('fiscalDocuments.sdi.submit.failed'));
@@ -130,7 +132,7 @@ function SdiPanelBody({ document, scope, canAct, onCorrect }: SdiPanelBodyProps)
     content = (
       <>
         <StateBlock state={state} language={i18n.language} />
-        {verdict ? <VerdictNote verdict={verdict} reason={state.reason} /> : null}
+        {answered !== null && answered.status === state.status ? <VerdictNote verdict={answered.verdict} reason={state.reason} /> : null}
         {canAct ? (
           <div className="flex flex-wrap items-center gap-2" data-testid="fiscal-document-sdi-actions">
             {state.canSubmit ? (
