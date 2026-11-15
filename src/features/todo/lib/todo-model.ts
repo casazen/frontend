@@ -82,6 +82,9 @@ const URGENCY_KEYS: Record<ActivityUrgency, { labelKey: string }> = {
 /** Reasons are codes or short texts of the server: only the ones that have a translation here are translated. */
 const REASON_PREFIX = 'activity.todo.reason.';
 
+/** The type of the To do that a routine makes: its reason is the host's own text, not a code of the server. */
+const ROUTINE_TASK_TYPE = 'RoutineTask';
+
 /** What a person reads of one item. */
 export interface TodoText {
   /** What it is: "Check-in da completare". */
@@ -211,6 +214,9 @@ function describeObject(activity: TodoActivity, ctx: TodoTextContext): string {
 
 function describeWhy(activity: TodoActivity, ctx: TodoTextContext): string | null {
   const reason = activity.reason?.trim();
+  // The To do of a routine carries the words the host wrote in it (one line, 140 characters at most): they are read as they are, whatever they look like (one word, a dotted
+  // word, the name of a code), and are never looked up in the tree of the texts.
+  if (reason && activity.activityType === ROUTINE_TASK_TYPE) return reason;
   if (reason) {
     const key = `${REASON_PREFIX}${reason}`;
     if (ctx.exists(key)) return ctx.t(key);

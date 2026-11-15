@@ -158,3 +158,29 @@ describe('describeTodo for every type of the backend', () => {
     await i18n.changeLanguage('it');
   });
 });
+
+// The To do that a routine makes carries the words the host wrote in the routine (E01/F04/US02/T01): they are its reason as they are, even one word, and never a key of the texts.
+describe('describeTodo and the To do of a routine', () => {
+  it.each(['Pulizia', 'Controlla la casa dopo la partenza', 'a.b', 'constructor', 'connection_inactive', 'activity.todo.type.unknown.why'])(
+    'describeTodo_RoutineTaskWithTheWordsOfTheHost_SaysThemAsTheyAre_%s',
+    (reason) => {
+      expect(describeTodo(activity('RoutineTask', { action: 'ReviewBooking', reason }), contextOf('it')).why).toBe(reason);
+    },
+  );
+
+  it('describeTodo_RoutineTaskWithSpacesAroundTheWords_SaysThemWithoutTheSpaces', () => {
+    expect(describeTodo(activity('RoutineTask', { action: 'ReviewBooking', reason: '  Pulizia  ' }), contextOf('it')).why).toBe('Pulizia');
+  });
+
+  it.each([null, '', '   '])('describeTodo_RoutineTaskWithNoWords_SaysWhatItsTypeSays_%j', (reason) => {
+    const fixed = i18n.getFixedT('it');
+
+    expect(describeTodo(activity('RoutineTask', { action: 'ReviewBooking', reason }), contextOf('it')).why).toBe(fixed('activity.todo.type.RoutineTask.why'));
+  });
+
+  it('describeTodo_OneWordReasonOfAnotherType_IsStillNotShown', () => {
+    const fixed = i18n.getFixedT('it');
+
+    expect(describeTodo(activity('IstatDeadline', { reason: 'Pulizia' }), contextOf('it')).why).toBe(fixed('activity.todo.type.IstatDeadline.why'));
+  });
+});
