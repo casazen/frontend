@@ -13,6 +13,9 @@ import { DASHBOARD_KEY } from '@/queries/use-dashboard';
 import { INVOICE_DATA_KEY } from '@/queries/use-invoice-data';
 import { FISCAL_DOCUMENTS_KEY } from '@/queries/use-fiscal-documents';
 import { NOTIFICATIONS_QUERY, UNREAD_COUNT_KEY } from '@/queries/use-notifications';
+import { ASSIST_REQUESTS_KEY } from '@/queries/use-onboarding-assist';
+import { invalidateOnboarding } from '@/queries/use-onboarding-plan';
+import { PANEL_STEPS_KEY } from '@/queries/use-onboarding-panel-step';
 import { PAYMENTS_KEY } from '@/queries/use-payments';
 import { VERIFICATION_KEY } from '@/queries/verification';
 import { ACCOUNTANT_PACKAGE_KEY } from '@/queries/use-accountant-package';
@@ -44,6 +47,23 @@ const VERIFICATION_REQUIRED = 'verification-required';
  * once; its `entityId` is the request of help, not a booking.
  */
 const ASSIST_REQUESTED = 'assist-requested';
+
+/**
+ * A host reopened a request support had closed («Non funziona», `PushTypes.AssistReopened`, E20/F03/US01/T02): the platform administrators are told at once, like for a new request,
+ * and the queue open in front of them shows it again, with the note of the host. Its `entityId` is the request of help.
+ */
+const ASSIST_REOPENED = 'assist-reopened';
+
+/**
+ * Support closed a request of the host (`PushTypes.AssistVerified` when CasaZen read the connection on the panel, `PushTypes.AssistDeclared` when it could not, E20/F03/US01/T02): every
+ * administrator of the org is told at once, and the page they have open shows where the request stands now. Its `entityId` is the request of help.
+ */
+const ASSIST_OUTCOME_TYPES: ReadonlySet<string> = new Set(['assist-verified', 'assist-declared']);
+
+/** Whether a notification is about a request of help (its `entityId` is the request, not a booking). */
+function isAssistType(type: string | null): boolean {
+  return type === ASSIST_REQUESTED || type === ASSIST_REOPENED || (type !== null && ASSIST_OUTCOME_TYPES.has(type));
+}
 
 /** The guests list and the guest card (`['guests', …]`, not shared as a constant by the pages that read them). */
 const GUESTS_QUERY = 'guests';
@@ -163,10 +183,21 @@ function refreshAssistQueue(queryClient: QueryClient): void {
 }
 
 /**
+ * What a request that support closed changes on screen, for the host (E20/F03/US02/T01): the list of its requests (the status and the outcome, «Verificato» or «Dichiarato dal supporto», with
+ * «Non funziona»), the guided steps, those the page follows too (`PANEL_STEPS_KEY`, the list and the step: the step passes to done), and the plan, the path, the activation checklist and the «Da fare»
+ * list, where the request had its item. A page open in front of the host shows it without a reload. The queries of someone who has no such page do not exist, so nothing is read.
+ */
+function refreshAssistOutcome(queryClient: QueryClient): void {
+  void queryClient.invalidateQueries({ queryKey: ASSIST_REQUESTS_KEY });
+  void queryClient.invalidateQueries({ queryKey: PANEL_STEPS_KEY });
+  invalidateOnboarding(queryClient);
+}
+
+/**
  * What a change makes stale. The count is written as the server sent it (no extra request); the list, the threads of the Home and
  * the per-booking counters are read again; the thread of the booking in the change is read again too (an open tab shows the new
  * message at once). A change without an entity (read on another device, unknown type) refreshes every open thread. A completed
- * check-in also refreshes the data it changes (`STALE_ON_CHECK_IN`), and a request of help from a host the staff queue.
+ * check-in also refreshes the data it changes (`STALE_ON_CHECK_IN`), a request of help from a host (or reopened by it) the staff queue, and a request support closed the requests of the host.
  */
 export function applyNotificationsChange(queryClient: QueryClient, change: NotificationsChange): void {
   queryClient.setQueryData(UNREAD_COUNT_KEY, change.unreadCount);
@@ -174,7 +205,7 @@ export function applyNotificationsChange(queryClient: QueryClient, change: Notif
   void queryClient.invalidateQueries({ queryKey: [HOST_THREADS_QUERY] });
   void queryClient.invalidateQueries({ queryKey: [UNREAD_MESSAGES_QUERY] });
   // The entity is a booking, except for a service request and for a request of help.
-  const entityIsBooking = !isServiceRequestType(change.type) && change.type !== ASSIST_REQUESTED;
+  const entityIsBooking = !isServiceRequestType(change.type) && !isAssistType(change.type);
   if (change.entityId && entityIsBooking) {
     void queryClient.invalidateQueries({ queryKey: [BOOKING_THREAD_QUERY, change.entityId] });
   } else if (!change.entityId) {
@@ -183,7 +214,8 @@ export function applyNotificationsChange(queryClient: QueryClient, change: Notif
   if (change.type === GUEST_CHECKIN_COMPLETED) refreshCheckInData(queryClient);
   else if (change.type !== null && COMPLIANCE_ALERT_TYPES.has(change.type)) refreshComplianceLights(queryClient, change.type);
   if (change.type === VERIFICATION_REQUIRED) refreshVerifications(queryClient);
-  if (change.type === ASSIST_REQUESTED) refreshAssistQueue(queryClient);
+  if (change.type === ASSIST_REQUESTED || change.type === ASSIST_REOPENED) refreshAssistQueue(queryClient);
+  if (change.type !== null && ASSIST_OUTCOME_TYPES.has(change.type)) refreshAssistOutcome(queryClient);
   if (change.type === FISCAL_DOCUMENT_ISSUED || change.type === FISCAL_DOCUMENT_SDI_REJECTED) refreshFiscalDocuments(queryClient);
 }
 
@@ -195,9 +227,10 @@ export function refreshAfterGap(queryClient: QueryClient): void {
   void queryClient.invalidateQueries({ queryKey: [BOOKING_THREAD_QUERY] });
   // A check-in completed while the channel was down sent no message: the pages that show its data read it again.
   refreshCheckInData(queryClient);
-  // The same for a verification handed to an operator, and for a request of help that reached the staff.
+  // The same for a verification handed to an operator, for a request of help that reached the staff, and for a request support closed (or the host reopened) in the meantime.
   refreshVerifications(queryClient);
   refreshAssistQueue(queryClient);
+  refreshAssistOutcome(queryClient);
   // And for a document issued while the channel was down.
   refreshFiscalDocuments(queryClient);
 }

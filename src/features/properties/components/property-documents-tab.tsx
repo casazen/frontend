@@ -2,6 +2,8 @@ import { useTranslation } from 'react-i18next';
 import { Pencil } from 'lucide-react';
 import { PlainSection } from '@/components/shared/calm';
 import { Button } from '@/components/ui/button';
+import { IstatCredentialsCard } from '@/features/compliance/components/istat-credentials-card';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import type { PropertyDetailDto } from '@/types';
 import { PropertyCinBadge } from './property-cin-badge';
 import { PropertyDocumentsSection } from './property-documents-section';
@@ -17,10 +19,12 @@ interface PropertyDocumentsTabProps {
 /**
  * The tab Documenti e adempimenti (SR-07d): the CIN, the documents of the property and the Alloggiati Web credentials. The
  * old page had them in two tabs (Documenti, CIN & Compliance); the summary of the compliance that closed the second one said
- * what the header and "Cosa fare ora" now say.
+ * what the header and "Cosa fare ora" now say. With the activation of the channel manager (the flag `octorateOnboarding`) the regional ISTAT credentials are under them,
+ * for a property in Italy (E20/F03/US02/T01): with the flag off nothing of them is drawn or asked.
  */
 export function PropertyDocumentsTab({ property, canWrite, onEditCin }: PropertyDocumentsTabProps) {
   const { t } = useTranslation();
+  const { flags } = useFeatureFlags();
 
   return (
     <div className="space-y-8">
@@ -40,6 +44,8 @@ export function PropertyDocumentsTab({ property, canWrite, onEditCin }: Property
       <PropertyDocumentsSection plain propertyId={property.id} documents={property.documents} />
 
       <QuesturaCredentialsCard propertyId={property.id} canEdit={canWrite} />
+
+      {flags.octorateOnboarding && property.country !== 'CH' ? <IstatCredentialsCard propertyId={property.id} canEdit={canWrite} /> : null}
     </div>
   );
 }

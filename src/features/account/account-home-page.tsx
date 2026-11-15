@@ -26,7 +26,7 @@ import {
   type HomeItem,
   type Reach,
 } from './account-home-model';
-import { activityPhrase } from './activity-phrases';
+import { activityActor, activityPhrase } from './activity-phrases';
 
 /** The words of an item of the home: what it says and, when there is something to add, why or since when. */
 function describeItem(item: HomeItem, t: TFunction): { title: string; body?: string } {
@@ -126,7 +126,7 @@ function RecentActivity({ entries, reach }: { entries: OrgActivityEntry[]; reach
           id: entry.id,
           at: asInstant(entry.when),
           text: activityPhrase(entry, { t, memberName }),
-          actor: entry.actorUserId ? (memberName(entry.actorUserId) ?? t('account.activity.formerMember')) : t('account.activity.system'),
+          actor: activityActor(entry, { t, memberName }),
         }))}
       />
     );
