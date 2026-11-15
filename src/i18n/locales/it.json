@@ -736,6 +736,10 @@
           "title": "Immobile importato da controllare",
           "why": "L'immobile è stato creato da un annuncio del gestionale dei canali e resta inattivo finché non controlli i dati importati."
         },
+        "CheckInLinkToSend": {
+          "title": "Link del check-in da consegnare",
+          "why": "Il link non è ancora arrivato all'ospite: guarda perché e copialo per mandarlo tu."
+        },
         "CheckInPending": {
           "title": "Check-in da completare",
           "why": "Il check-in di questo soggiorno non è ancora completo."
@@ -5614,6 +5618,41 @@
       "copyTitle": "Link di check-in",
       "copyHint": "Copialo e invialo all'ospite (WhatsApp, SMS…). Valido fino al {{date}}.",
       "copyFailed": "Copia non riuscita: seleziona il link e copialo a mano.",
+      "delivery": {
+        "carryIt": "Copia il link e mandalo tu all'ospite (WhatsApp, SMS…).",
+        "copyFailed": "Copia non riuscita. Usa «Genera link da copiare»: avrai un link nuovo da copiare a mano (quello di prima smette di funzionare).",
+        "failed": "Il link non è arrivato all'ospite",
+        "loadError": "Non riesco a leggere come sta andando l'invio del link.",
+        "reason": {
+          "chatNotLicensed": "La chat del portale non è ancora attiva per questo annuncio.",
+          "manualVerify": "Non sappiamo se il messaggio è partito: controlla la conversazione sul portale prima di mandare di nuovo il link.",
+          "mappingNotConfirmed": "L'annuncio non è ancora collegato a un tuo immobile: il messaggio non è partito.",
+          "messageRefused": "La chat del portale non ha accettato il messaggio.",
+          "noConversation": "Il portale non ha ancora aperto la conversazione di questa prenotazione.",
+          "notConnected": "Il collegamento con il tuo channel manager non è attivo.",
+          "rateLimited": "Il tuo channel manager ha ricevuto troppe richieste: ci abbiamo provato più volte senza riuscire.",
+          "rateLimitedRetrying": "Il tuo channel manager ha ricevuto troppe richieste: riproviamo tra poco in automatico.",
+          "threadClosed": "La conversazione è chiusa: non si possono più scrivere messaggi.",
+          "unavailable": "Il tuo channel manager non ha risposto dopo più tentativi.",
+          "unavailableRetrying": "Il tuo channel manager non ha risposto: riproviamo tra poco in automatico.",
+          "unknown": "Il link non è stato inviato in automatico."
+        },
+        "retrying": "Il link non è ancora arrivato all'ospite",
+        "sending": "Invio in corso nella chat del portale",
+        "sendingHint": "Il messaggio è con il portale e non è ancora partito. Non devi fare nulla: lo stato si aggiorna da solo.",
+        "sent": "Link inviato all'ospite",
+        "sentEmail": "Inviato per email",
+        "sentOn": "il {{date}}",
+        "sentPortalChat": "Inviato nella chat del portale",
+        "waitingChatPermission": "In attesa: la chat del portale non è ancora attiva",
+        "waitingChatPermissionHint": "Per attivarla devi dare il permesso alla chat nel tuo channel manager. Appena è attiva il link parte da solo.",
+        "waitingContact": "In attesa: non c'è un modo automatico per raggiungere l'ospite",
+        "waitingContactHint": "Per questa prenotazione CasaZen non ha un recapito dell'ospite: il link va consegnato a mano.",
+        "waitingStaticIps": "In attesa degli indirizzi IP",
+        "waitingStaticIpsHint": "Il tuo channel manager ci dà l'email dell'ospite solo dopo la registrazione degli indirizzi IP di CasaZen. Intanto il link va consegnato a mano.",
+        "waitingThread": "In attesa che il portale apra la conversazione",
+        "waitingThreadHint": "La chat di questa prenotazione non c'è ancora sul portale: il link parte da solo appena compare."
+      },
       "email": {
         "sent": "Email con il link consegnata al servizio di invio.",
         "sentAt": "Email con il link inviata il {{date}}.",
@@ -14984,6 +15023,7 @@
     "actions": {
       "anonymized": "I dati dell'ospite sono stati cancellati su sua richiesta.",
       "cannotReply": "Non puoi rispondere a questa conversazione.",
+      "chatNotLicensed": "Puoi leggere questa conversazione, ma non rispondere: la chat dei portali non è ancora attiva per questo annuncio. Per attivarla devi dare il permesso nel tuo channel manager.",
       "mappingNotConfirmed": "Puoi leggere questa conversazione, ma non rispondere: l'annuncio non è ancora collegato a un tuo immobile.",
       "readOnly": "Puoi leggere i messaggi, ma non hai il permesso di rispondere.",
       "threadClosed": "La conversazione è chiusa: non si possono più scrivere messaggi."
@@ -15027,6 +15067,12 @@
       "direct": "Diretto",
       "expedia": "Expedia",
       "vrbo": "Vrbo"
+    },
+    "channelStatus": {
+      "explanation": "Finché non è attiva, qui non arrivano i messaggi degli ospiti di questi annunci e non puoi rispondere da CasaZen: per attivarla devi dare il permesso alla chat nel tuo channel manager.",
+      "title_one": "Per {{count}} annuncio la chat del portale non è ancora attiva",
+      "title_other": "Per {{count}} annunci la chat dei portali non è ancora attiva",
+      "which": "Quali annunci"
     },
     "composer": {
       "label": "Messaggio per l'ospite",
@@ -15096,6 +15142,7 @@
     },
     "loadError": "Non riesco a caricare i messaggi.",
     "problem": {
+      "chatNotLicensed": "La chat dei portali non è ancora attiva per questo annuncio: il messaggio non è stato inviato. Per attivarla devi dare il permesso nel tuo channel manager.",
       "generic": "Non è andato a buon fine. Riprova.",
       "mappingNotConfirmed": "L'annuncio non è ancora collegato a un tuo immobile: il messaggio non è stato inviato.",
       "rateLimited_one": "Troppi messaggi: riprova tra {{count}} minuto.",
@@ -15112,6 +15159,7 @@
       "placeholder": "Cerca per ospite, codice o immobile"
     },
     "state": {
+      "automaticErrorHint": "La chat del portale non ha accettato il messaggio. Il link del check-in è nella tua lista «Da fare»: copialo da lì e mandalo tu all'ospite.",
       "check": "Controlla",
       "edit": "Modifica",
       "error": "Non inviato",
@@ -15141,6 +15189,7 @@
       "earlier": "Qui vedi gli ultimi messaggi della conversazione.",
       "empty": "Ancora nessun messaggio. Scrivi tu per primo.",
       "fileOnly": "Solo un allegato",
+      "linkHidden": "[link del check-in nascosto]",
       "loadError": "Non riesco a caricare la conversazione.",
       "loading": "Carico la conversazione…",
       "logLabel": "Messaggi con {{name}}",
@@ -15150,6 +15199,7 @@
       "request": "Richiesta",
       "sender": {
         "assistant": "Assistente CasaZen",
+        "automation": "Messaggio automatico",
         "guest": "Ospite",
         "you": "Tu"
       },
@@ -15416,6 +15466,7 @@
       "serviceRequestBackupClosed": "Una richiesta come riserva è stata chiusa.",
       "verificationRequired": "L'identità di un ospite aspetta la tua verifica.",
       "assistRequested": "Nuova richiesta «Fallo per me» da gestire.",
+      "checkinLinkFailed": "Il link del check-in non è arrivato a un ospite: copialo e mandalo tu.",
       "assistVerified": "Il collegamento che avevi chiesto è attivo: il supporto CasaZen l'ha fatto e abbiamo verificato che funziona.",
       "assistDeclared": "Il supporto CasaZen dichiara di aver fatto il collegamento che avevi chiesto. Se qualcosa non funziona, riapri la richiesta.",
       "assistReopened": "Un utente ha riaperto una richiesta «Fallo per me»: dice che non funziona.",

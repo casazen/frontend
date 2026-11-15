@@ -8,14 +8,17 @@ function codeOf(error: unknown): string | undefined {
 
 /**
  * The sentence for a send that did not go (NF-63), one for each answer the API gives: 409 `thread_closed` (the conversation closed
- * meanwhile), 409 `mapping_not_confirmed` (nothing was sent), 422 `channel_rule_violation` (no link, e-mail or number before the booking),
- * 422 for a text that is empty or too long, 429 with the minutes to wait. Anything else is the server's own sentence, or a general one.
+ * meanwhile), 409 `mapping_not_confirmed` (nothing was sent), 409 `chat_not_licensed` (the chat of the listing is not in the license of the channel
+ * manager yet, E23/F01/US01/T03: said as the inbox says it, nothing was sent and what to do about it, and not with the sentence of the server, which is about
+ * reading the messages of the guests), 422 `channel_rule_violation` (no link, e-mail or number before the booking), 422 for a text that is empty or too long,
+ * 429 with the minutes to wait. Anything else is the server's own sentence, or a general one.
  */
 export function replyProblemMessage(error: unknown, t: TFunction): string {
   const status = getHttpStatus(error);
   const code = codeOf(error);
   if (status === 409 && code === 'thread_closed') return t('messages.problem.threadClosed');
   if (status === 409 && code === 'mapping_not_confirmed') return t('messages.problem.mappingNotConfirmed');
+  if (status === 409 && code === 'chat_not_licensed') return t('messages.problem.chatNotLicensed');
   if (status === 422 && code === 'channel_rule_violation') return t('messages.request.noContacts');
   if (status === 422 && (code === 'message_text_invalid' || code === 'idempotency_key_invalid')) return t('messages.problem.textInvalid');
   if (status === 429) {

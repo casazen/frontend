@@ -99,6 +99,21 @@ describe('ThreadList (NF-61)', () => {
     expect(within(screen.getAllByTestId('message-thread-row')[1]).getByText('Tu: Ti aspettiamo.')).toBeInTheDocument();
   });
 
+  // PRIVACY (E23/F01): the preview of an automatic message holds the check-in link, a secret the host gets only if it may copy it (`booking.write`). Who may not (the default) reads it without.
+  it('ThreadList_PreviewOfAnAutomaticMessageWithTheCheckInLink_IsHiddenToWhoCannotCopyItAndShownToWhoCan', () => {
+    const preview = 'Ecco il link: https://casazen.test/checkin/secret-token-123 Valido fino al 20/11.';
+    const page: MessageHubPage = { ...PAGE, items: [thread({ threadKey: OTA_KEY, lastMessageOrigin: 'Automation', preview, unreadCount: 0 })], totalCount: 1 };
+
+    renderList({ page });
+    const hidden = screen.getByTestId('message-thread-row');
+    expect(hidden).toHaveTextContent('Messaggio automatico: Ecco il link: [link del check-in nascosto] Valido fino al 20/11.');
+    expect(hidden.textContent).not.toContain('secret-token-123');
+    cleanup();
+
+    renderList({ page, canWrite: true });
+    expect(screen.getByTestId('message-thread-row')).toHaveTextContent('https://casazen.test/checkin/secret-token-123');
+  });
+
   it('ThreadList_ViewAll_SaysWhichConversationsWaitForAnAnswer_ViewToRespondDoesNot', () => {
     const { onChange } = renderList({ state: { ...TO_RESPOND, view: 'all' } });
 

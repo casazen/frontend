@@ -67,6 +67,8 @@ const TYPE_KEYS: Record<string, TypeKeys> = {
   RoutineTask: { titleKey: 'activity.todo.type.RoutineTask.title', whyKey: 'activity.todo.type.RoutineTask.why' },
   // The automatic cleaning at check-out (E24/F01/US01/T02, NF-120): the dates of a stay changed after the supplier took the cleaning, so it stays on the old day and the host decides. About the booking.
   CleaningDateChanged: { titleKey: 'activity.todo.type.CleaningDateChanged.title', whyKey: 'activity.todo.type.CleaningDateChanged.why' },
+  // The check-in link of a stay from a portal that has not reached the guest (E23/F01/US01/T01, NF-122): about the booking, with «Copia link» as its action.
+  CheckInLinkToSend: { titleKey: 'activity.todo.type.CheckInLinkToSend.title', whyKey: 'activity.todo.type.CheckInLinkToSend.why' },
 };
 
 const UNKNOWN_TYPE_KEYS: TypeKeys = { titleKey: 'activity.todo.type.unknown.title', whyKey: 'activity.todo.type.unknown.why' };
