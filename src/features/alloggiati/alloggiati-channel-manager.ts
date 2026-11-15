@@ -1,4 +1,4 @@
-import type { AlloggiatiChannelManagerGuestDto, AlloggiatiRetryResultDto, AlloggiatiStatusDto } from '@/types/alloggiati.types';
+import type { AlloggiatiChannelManagerGuestDto, AlloggiatiRetryResultDto, AlloggiatiStatusDto, AlloggiatiWebStatus } from '@/types/alloggiati.types';
 
 /**
  * The stay on the channel manager (E20/F01/US02): what the page says about a stay whose guests are entrusted to the channel manager, which sends them to the police
@@ -76,11 +76,15 @@ export function placeFieldsOf(errorFields: string | null | undefined): PlaceFiel
 /** What the retry did, in the words the page has for it. */
 export type RetryOutcome = 'sent' | 'partlyFailed' | 'failed' | 'nothingToSend' | 'notApplicable';
 
-/** The outcome of a retry: the guests that went, some of them, none, nothing to try (a guest held back for a place is corrected, not retried), or a stay that is not on the channel manager. */
-export function retryOutcomeOf(retry: AlloggiatiRetryResultDto): RetryOutcome {
+/**
+ * The outcome of a retry: the guests that went, some of them, none, nothing to try (a guest held back for a place is corrected, not retried), or a stay that is not on the channel manager.
+ * `answered` is the status of the stay the retry answered with. `Sent` only says that every guest the retry tried went: a guest held back for a place is never tried again, so the stay can
+ * still be to correct. The words of «done» are for a stay the server now says is entrusted; any other status says that some guests went and others did not.
+ */
+export function retryOutcomeOf(retry: AlloggiatiRetryResultDto, answered: AlloggiatiWebStatus): RetryOutcome {
   switch (retry.state) {
     case 'Sent':
-      return 'sent';
+      return answered === 'EntrustedToChannelManager' ? 'sent' : 'partlyFailed';
     case 'PartlyFailed':
       return 'partlyFailed';
     case 'Failed':

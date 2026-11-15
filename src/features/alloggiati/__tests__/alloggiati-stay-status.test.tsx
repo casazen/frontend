@@ -247,6 +247,23 @@ describe('AlloggiatiBookingPanel: a guest the channel manager did not take', () 
     expect(result.textContent ?? '').not.toMatch(/^Fatto/);
     expect(await badge()).toHaveTextContent('Da correggere');
   });
+
+  // A guest held back for a place is never tried again: the retry sends the other one («Sent») and the stay is still to correct, so the page must not say «Fatto».
+  it('panel_RetrySentTheOthersButAGuestForAPlaceIsStillToCorrect_NeverSaysDone', async () => {
+    vi.mocked(alloggiatiApi.retryOctorateWrite).mockResolvedValue({ ...failedStatus([PLACE]), retry: { state: 'Sent', reason: null } });
+    renderPanel(failedStatus([PLACE, DOWN]));
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Riprova' }, WAIT));
+
+    const result = await screen.findByTestId('alloggiati-retry-result', undefined, WAIT);
+    expect(result).toHaveAttribute('data-outcome', 'partlyFailed');
+    expect(result.textContent ?? '').not.toMatch(/Fatto/);
+    expect(result).toHaveTextContent('altri no');
+    // The stay is what the server answered: still to correct, with the guest of the place in the list.
+    expect(await badge()).toHaveTextContent('Da correggere');
+    expect(screen.getByTestId('alloggiati-guest-error-1')).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByTestId('alloggiati-guest-error-2')).not.toBeInTheDocument(), WAIT);
+  });
 });
 
 describe('the words of the stay on the channel manager', () => {
@@ -273,9 +290,18 @@ describe('the words of the stay on the channel manager', () => {
   });
 
   it('retryOutcomeOf_EachStateOfTheServer_IsOneOfTheFiveOutcomesTheScreenHasWordsFor', () => {
-    const outcomes = (['Sent', 'PartlyFailed', 'Failed', 'NothingToSend', 'NotApplicable', 'NotMirrored'] as const).map((state) => retryOutcomeOf({ state, reason: null }));
+    const outcomes = (['Sent', 'PartlyFailed', 'Failed', 'NothingToSend', 'NotApplicable', 'NotMirrored'] as const).map((state) =>
+      retryOutcomeOf({ state, reason: null }, 'EntrustedToChannelManager'),
+    );
 
     expect(outcomes).toEqual(['sent', 'partlyFailed', 'failed', 'nothingToSend', 'notApplicable', 'notApplicable']);
+  });
+
+  it('retryOutcomeOf_SentWhileTheStayIsNotEntrusted_IsNeverDone', () => {
+    // «Sent» is what the retry tried: a guest held back for a place is never tried again, so the stay can still be to correct (or not entrusted yet).
+    expect(retryOutcomeOf({ state: 'Sent', reason: null }, 'ChannelManagerWriteFailed')).toBe('partlyFailed');
+    expect(retryOutcomeOf({ state: 'Sent', reason: null }, 'DaInviareManualmente')).toBe('partlyFailed');
+    expect(retryOutcomeOf({ state: 'Sent', reason: null }, 'EntrustedToChannelManager')).toBe('sent');
   });
 
   it.each(['it', 'en'] as const)('texts_%s_EveryCodeAndStateHasItsWordsAndNoneNamesTheSupplier', async (language) => {

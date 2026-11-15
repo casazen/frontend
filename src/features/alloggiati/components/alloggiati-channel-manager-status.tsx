@@ -76,7 +76,7 @@ export function AlloggiatiChannelManagerStatus({ bookingId, status, view }: Allo
 
   const receipt = status.channelManager?.receiptCoverage;
   const archivedOn = receipt?.archivedAt ? formatRomeDateTime(receipt.archivedAt, i18n.language, LONG_DATE) : '';
-  const retryOutcome = retry.data?.retry ? retryOutcomeOf(retry.data.retry) : null;
+  const retryOutcome = retry.data?.retry ? retryOutcomeOf(retry.data.retry, retry.data.status) : null;
 
   return (
     <div className="space-y-3" data-testid="alloggiati-channel-manager" data-view={view}>
