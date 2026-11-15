@@ -16623,13 +16623,18 @@
       "versionLine": "Version {{version}} · {{status}} · cut on {{cutoff}}"
     },
     "channelRules": {
-      "description": "What each portal keeps when its reservation carries no commission. It applies to the stays that end from today on: the ones already in the statements do not change.",
+      "description": "What each portal keeps when its reservation carries no commission. The percentages you write apply to the stays that end from the day you choose on; the months that are already closed are not recalculated.",
+      "fromHint": "The first check-out day of the stays the new percentages are for. The first day of the month to close is already proposed: that is where the stays held back for a missing commission are.",
+      "fromInvalid": "Write the day the percentages apply from.",
+      "fromLabel": "Valid from",
+      "fromOverlap": "That day falls on another rule of this portal: choose another day.",
+      "fromTooEarly": "The rule in force of a portal starts on {{date}}: choose that day or a later one.",
       "loadError": "We cannot read the commissions of the channels.",
       "loading": "Reading the commissions of the channels…",
       "noChange": "Change a percentage to be able to save.",
       "noChannels": "There are no portals to set a commission for.",
       "save": "Save the commissions",
-      "saved": "Commissions saved. They apply to the stays that end from today on.",
+      "saved": "Commissions saved. They apply to the stays that end from {{date}} on.",
       "title": "Channel commissions"
     },
     "close": {

@@ -5,20 +5,24 @@ import { AgencyFinanceGate } from '@/components/finance/agency-finance-gate';
 import { PageHeader } from '@/components/layout/page-header';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Field } from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
 import { SkeletonCard } from '@/components/ui/skeleton';
-import { commissionRulesRequest } from '@/features/fiscal/billing-wizard/billing-wizard-model';
+import { commissionRulesRequest, commissionStartTooEarly } from '@/features/fiscal/billing-wizard/billing-wizard-model';
 import { BILLING_ERROR_KEYS, isPercent } from '@/features/fiscal/billing-wizard/billing-wizard-schema';
 import { CommissionPercentsEditor } from '@/features/fiscal/billing-wizard/steps/commission-percents';
-import { todayInRome } from '@/lib/stay-dates';
+import { isStayDate, todayInRome } from '@/lib/stay-dates';
 import { useChannelCommissionRules, useSaveChannelCommissionRules } from '@/queries/use-billing-setup';
 import { OwnerAccountingError } from './components/owner-accounting-error';
-import { messageOf } from './owner-accounting-model';
+import { defaultPeriod, messageOf, problemFacts, startOfPeriod } from './owner-accounting-model';
+import { useOwnerFormat } from './use-owner-format';
 
 /**
  * «Commissioni dei canali» of the Amministrazione (E13/F02/US03/T01, NF-115, ⚖ R2): what each portal keeps when its reservation carries no commission, for the changes made after the setup. It is the
  * same editor as the step of the wizard «Fatturazione» (`CommissionPercentsEditor`) on the same endpoints of the owner ledger: the rules are read for `agency.statement.view` and written for
  * `agency.owner.financial.manage` on the whole organization, which only the owner and the administrators of an organization on the agency plan hold, so the door is the one of the other pages
- * of the agency's money and nothing is read for anyone else. It sits next to the month-end close, where the stays held back for a missing commission are found.
+ * of the agency's money and nothing is read for anyone else. It sits next to the month-end close, where the stays held back for a missing commission are found: the rules apply by the day a
+ * stay checks out, so the page asks from which day the new percents are for («Valide dal»), and proposes the first day of the month the close asks for next.
  */
 export function ChannelCommissionRulesPage() {
   const { t } = useTranslation();
@@ -36,12 +40,16 @@ export function ChannelCommissionRulesPage() {
 
 function ChannelCommissionRulesBody() {
   const { t } = useTranslation();
+  const { date } = useOwnerFormat();
   const rules = useChannelCommissionRules(true);
   const save = useSaveChannelCommissionRules();
   const [typed, setTyped] = useState<Record<string, string>>({});
   const [failure, setFailure] = useState<string | null>(null);
-  // The day a new percent starts from is the one the page opened on (Europe/Rome): the rule in force is closed the day before.
+  // The day the page opened on (Europe/Rome).
   const [today] = useState(() => todayInRome());
+  // The first check-out day the new percents are for: the first day of the month the close asks for next (the one before today), where the stays held back for a missing commission are. The person can
+  // choose another day. Nothing is read to know whether that month is already closed: a closed month is never posted again, so a day in it changes no statement.
+  const [from, setFrom] = useState(() => startOfPeriod(defaultPeriod(today)));
 
   const set = rules.data;
   // What is typed and is not a percent (empty is no change): the field says so, and nothing is sent.
@@ -49,9 +57,13 @@ function ChannelCommissionRulesBody() {
   for (const [channel, value] of Object.entries(typed)) {
     if (value.trim() !== '' && !isPercent(value)) problems[channel] = BILLING_ERROR_KEYS.percent;
   }
+  // A percent for a portal whose rule in force starts after that day would change the rule in place and leave the days between without one: the day is refused, with the day to choose.
+  const fromValid = isStayDate(from);
+  const tooEarly = set && fromValid ? commissionStartTooEarly(set, typed, from) : null;
+  const fromProblem = !fromValid ? t('ownerAccounting.channelRules.fromInvalid') : tooEarly !== null ? t('ownerAccounting.channelRules.fromTooEarly', { date: date(tooEarly) }) : undefined;
   // Only what the person typed is saved: a percent that is only shown (the default of the configuration, which nobody confirmed) is not turned into the agency's rule by saving another.
-  const request = set ? commissionRulesRequest(set, typed, today, { draft: true }) : null;
-  const invalid = Object.keys(problems).length > 0;
+  const request = set && fromProblem === undefined ? commissionRulesRequest(set, typed, today, { draft: true, validFrom: from }) : null;
+  const invalid = Object.keys(problems).length > 0 || fromProblem !== undefined;
 
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -61,10 +73,12 @@ function ChannelCommissionRulesBody() {
     try {
       await save.mutateAsync(request);
       setTyped({});
-      toast.success(t('ownerAccounting.channelRules.saved'));
+      toast.success(t('ownerAccounting.channelRules.saved', { date: date(from) }));
     } catch (error) {
-      // A rule that lines of the owner ledger already name cannot be given another percent (409), and a percent the server refuses comes back as 422: said in words, nothing is told as saved.
-      setFailure(messageOf(error, t));
+      // A day that falls on another rule of the portal is refused by the server on `validFrom` (422): it is the day to change, not a percent. A rule that lines of the owner ledger already name cannot
+      // be given another percent (409), and any other refusal comes back in its own words: said as they are, nothing is told as saved.
+      const facts = problemFacts(error);
+      setFailure(facts.status === 422 && facts.field === 'validFrom' ? t('ownerAccounting.channelRules.fromOverlap') : messageOf(error, t));
     }
   };
 
@@ -93,6 +107,18 @@ function ChannelCommissionRulesBody() {
           errorOf={(channel) => problems[channel]}
           disabled={save.isPending}
         />
+        <Field label={t('ownerAccounting.channelRules.fromLabel')} hint={t('ownerAccounting.channelRules.fromHint')} error={fromProblem} className="sm:max-w-xs">
+          <Input
+            type="date"
+            value={from}
+            onChange={(event) => {
+              setFailure(null);
+              setFrom(event.target.value);
+            }}
+            disabled={save.isPending}
+            data-testid="channel-rules-from"
+          />
+        </Field>
         {failure ? (
           <Alert variant="danger" data-testid="channel-rules-error">
             {failure}

@@ -16623,13 +16623,18 @@
       "versionLine": "Versione {{version}} · {{status}} · tagliata il {{cutoff}}"
     },
     "channelRules": {
-      "description": "Quanto trattiene ogni portale quando la sua prenotazione non porta la commissione. Vale per i soggiorni che finiscono da oggi in poi: quelli già nei rendiconti non cambiano.",
+      "description": "Quanto trattiene ogni portale quando la sua prenotazione non porta la commissione. Le percentuali che scrivi valgono per i soggiorni che finiscono dal giorno che scegli in poi; i mesi già chiusi non si ricalcolano.",
+      "fromHint": "Il primo giorno di partenza (check-out) dei soggiorni a cui valgono le percentuali nuove. È già proposto il primo giorno del mese da chiudere, dove stanno i soggiorni fermi per una commissione che manca.",
+      "fromInvalid": "Scrivi da che giorno valgono le percentuali.",
+      "fromLabel": "Valide dal",
+      "fromOverlap": "Quel giorno cade su un'altra regola di questo portale: scegli un altro giorno.",
+      "fromTooEarly": "La regola in vigore di un portale parte il {{date}}: scegli quel giorno o uno dopo.",
       "loadError": "Non riusciamo a leggere le commissioni dei canali.",
       "loading": "Leggo le commissioni dei canali…",
       "noChange": "Cambia una percentuale per poter salvare.",
       "noChannels": "Non ci sono portali per cui impostare una commissione.",
       "save": "Salva le commissioni",
-      "saved": "Commissioni salvate. Valgono per i soggiorni che finiscono da oggi in poi.",
+      "saved": "Commissioni salvate. Valgono per i soggiorni che finiscono dal {{date}} in poi.",
       "title": "Commissioni dei canali"
     },
     "close": {
