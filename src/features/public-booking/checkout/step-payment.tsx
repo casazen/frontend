@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { isAxiosError } from 'axios';
 import { AlertTriangle, ArrowLeft, CalendarClock, CreditCard, Hourglass, Info, Lock, Mail, Receipt, Send, ShieldCheck, User, WifiOff } from 'lucide-react';
@@ -15,6 +15,7 @@ import { buildBookingPayload, type CheckoutDraft } from '@/features/public-booki
 import { detailsSchema } from '@/features/public-booking/checkout/details-schema';
 import { formatDayMonth, formatPrice } from '@/features/public-site/stay/stay-format';
 import { getProblemCode, getProblemMessage } from '@/lib/api-errors';
+import { bookingAttributionOf } from '@/lib/booking-link';
 import { buildCheckoutOutcomePath } from '@/lib/booking-url';
 import { findPendingCheckout, savePendingCheckout, type PendingCheckout } from '@/lib/pending-checkout';
 import { siteLocale } from '@/lib/site-language';
@@ -45,6 +46,7 @@ interface StepPaymentProps {
 export function StepPayment({ org, orgSlug, draft, onDraft, ages, onBack, onEditDetails, onEditStay, booking, onBooked }: StepPaymentProps) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const model = useBooking();
   const { property, stay, quote, online, currency, hostLabel } = model;
   const createBooking = useCreateDirectBooking();
@@ -102,6 +104,8 @@ export function StepPayment({ org, orgSlug, draft, onDraft, ages, onBack, onEdit
           draft: { ...draft, pay },
           marketingConsentVersion: org.marketingConsentVersion,
           softOptInNoticeVersion: org.softOptInNoticeVersion,
+          // Where the guest came from: the `utm_*` of the address (a link the agency copied) and the host of the site they came from. Read now, kept nowhere.
+          attribution: bookingAttributionOf(searchParams, document.referrer, window.location.origin),
         }),
       );
       savePendingCheckout({

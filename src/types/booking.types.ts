@@ -86,6 +86,14 @@ export interface Booking {
    */
   otaSource?: string | null;
   /**
+   * Where the booking came from, in the four words the host reads (E27/F01/US01/T01, NF-123): a portal of the channel manager, the site of the agency (a booking made from a
+   * link of the agency, or a reservation of the booking engine of the agency), the booking site of CasaZen, or the host's own entry. `source` is unchanged (the invoicing
+   * reasons per channel). Missing from an older answer: nothing is drawn then.
+   */
+  origin?: BookingOrigin;
+  /** The channel of a booking whose `origin` is `Portal` (the name of its source: `Airbnb`, `BookingCom`...); null for any other origin. */
+  originChannel?: string | null;
+  /**
    * Booking detail only: the amounts the channel reported for an imported booking (ADR-033-R2). Missing for a booking that does not
    * come from a channel and for who may not read payments, who gets the state without any amount.
    */
@@ -217,6 +225,13 @@ export type BookingListView = 'all' | 'toConfirm' | 'upcoming' | 'inProgress' | 
  */
 export type BookingChannel = 'Direct' | 'Manual' | 'Airbnb' | 'BookingCom' | 'Expedia' | 'Vrbo' | 'TripAdvisor' | 'Agoda' | 'Other';
 
+/**
+ * Where a booking came from (`origin` of every booking answer, and the values of the `origin` filter of the list): a portal, the site of the agency, CasaZen's own
+ * booking site or the host. Worked out by the API from the source and the attribution of the booking, in the order of the API.
+ */
+export const BOOKING_ORIGINS = ['Portal', 'AgencySite', 'CasaZenSite', 'Manual'] as const;
+export type BookingOrigin = (typeof BOOKING_ORIGINS)[number];
+
 /** How much of the total of a booking has come in. */
 export type BookingPaymentState = 'None' | 'Partial' | 'Paid' | 'Refunded';
 
@@ -248,6 +263,8 @@ export interface BookingFilterParams {
   propertyId?: string;
   /** `Direct,Airbnb`: names of `BookingChannel`. */
   channel?: string;
+  /** `Portal,AgencySite`: names of `BookingOrigin`; left out for no filter. */
+  origin?: string;
   /** `Sent,InProgress`: the state of the online check-in link. */
   checkInStatus?: string;
   /** First and last arrival day (`yyyy-MM-dd`, both included). */

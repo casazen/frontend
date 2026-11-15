@@ -15,6 +15,18 @@ export interface DirectBookingConsentPayload {
 
 export type PaymentOption = 'Immediate' | 'OnCancellationDeadline' | 'OnSite';
 
+/**
+ * Where the guest of a checkout came from (`attribution` of `POST /api/public/bookings`, E27/F01/US01/T01, NF-123): the `utm_*` of the link they followed and the
+ * host name of the site they came from (`referrer`, written with two r like the API). Every field is optional, and only what is a lower-case token (or a host name)
+ * is sent: the API drops the rest without refusing the booking, and keeps nothing that is the guest's. No address of a page, no e-mail, no phone number.
+ */
+export interface DirectBookingAttributionPayload {
+  source?: string;
+  medium?: string;
+  campaign?: string;
+  referrer?: string;
+}
+
 export interface CreateDirectBookingPayload {
   propertyId: string;
   checkInDate: string;
@@ -41,6 +53,11 @@ export interface CreateDirectBookingPayload {
    * It is a notice, not a consent: the guest ticks nothing for it.
    */
   softOptInNoticeVersion?: string;
+  /**
+   * Where the guest came from (E27/F01/US01/T01, NF-123): the source of the link of the address and the host of the site they came from, left out when there is none.
+   * With the source of the booking it tells the host the origin («Sito dell'agenzia» for a link the agency copied). It changes no price and no availability.
+   */
+  attribution?: DirectBookingAttributionPayload;
 }
 
 /** Body of `POST /public/bookings/quote`: the stay to price before booking. */

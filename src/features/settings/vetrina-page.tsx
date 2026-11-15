@@ -10,7 +10,9 @@ import { VetrinaPreviewPanel } from './components/vetrina-preview-panel';
 import { VetrinaUrlCopy } from './components/vetrina-url-copy';
 import { VetrinaPropertyList } from './components/vetrina-property-list';
 import { buildPropertyBookingPath, buildOrgBookingPath } from '@/lib/booking-url';
+import { orgSiteUrl } from '@/lib/booking-link';
 import { SitePublicationBanner } from '@/features/onboarding/components/site-publication-banner';
+import { useOrgBookingSite } from './domain/use-org-domain';
 
 export function VetrinaPage() {
   const { t } = useTranslation();
@@ -21,6 +23,8 @@ export function VetrinaPage() {
 
   const orgSlug = org?.slug ?? null;
   const orgBookingPath = orgSlug ? buildOrgBookingPath(orgSlug) : null;
+  // Where the site really is (its own domain or subdomain, else the platform): the links the host copies are on it, not on the address of the page they sit on (NF-123).
+  const bookingSite = useOrgBookingSite(org?.id, orgSlug);
 
   const selectedProperty = properties.find((p) => p.id === selectedPropertyId) ?? null;
   const previewPath = orgSlug
@@ -35,7 +39,7 @@ export function VetrinaPage() {
 
   return (
     <AppShell>
-      {orgBookingPath ? (
+      {orgBookingPath && bookingSite ? (
         <div className="-m-4 flex h-[calc(100svh-var(--header-height))] min-h-0 flex-col overflow-hidden max-md:h-[calc(100svh-var(--header-height)-var(--bottom-nav-height))] md:-m-6">
           {/* The tabs of the section (the head draws them) sit tight on the preview: the room under them is the padding of this band. */}
           <div className="shrink-0 border-b bg-background px-4 py-4 md:px-6 [&_nav>div]:mb-0">
@@ -54,7 +58,7 @@ export function VetrinaPage() {
                 <VetrinaPropertyList
                   properties={properties}
                   isLoading={propertiesLoading}
-                  orgSlug={orgSlug!}
+                  bookingSite={bookingSite}
                   selectedId={selectedPropertyId}
                   onSelect={handlePropertySelect}
                 />
@@ -75,7 +79,7 @@ export function VetrinaPage() {
                 </button>
                 {!orgUrlCollapsed && (
                   <div className="px-3 pb-3">
-                    <VetrinaUrlCopy bookingSitePath={orgBookingPath} variant="inline" />
+                    <VetrinaUrlCopy url={orgSiteUrl(bookingSite.site)} variant="inline" />
                   </div>
                 )}
               </div>

@@ -154,6 +154,19 @@ describe('buildBookingPayload', () => {
     expect(payload.specialRequests).toHaveLength(SPECIAL_REQUESTS_MAX);
     expect(payload.specialRequests?.startsWith(PETS_NOTE)).toBe(true);
   });
+
+  it('buildBookingPayload_Attribution_IsSentAsItIsOnlyWhenThereIsOne', () => {
+    // Where the guest came from (NF-123): a source, a campaign, the host of a site. Nothing of it is the guest's, and a booking with none sends no block.
+    const attribution = { source: 'agency-site', medium: 'link', campaign: 'estate-2026', referrer: 'www.agenzia.it' };
+
+    expect(buildBookingPayload({ ...stay, draft, attribution }).attribution).toEqual(attribution);
+    expect(buildBookingPayload({ ...stay, draft })).not.toHaveProperty('attribution');
+    expect(buildBookingPayload({ ...stay, draft, attribution: undefined })).not.toHaveProperty('attribution');
+    // The guest's own data never ride in it, and it changes nothing of what the guest typed.
+    const payload = buildBookingPayload({ ...stay, draft, attribution });
+    expect(JSON.stringify(payload.attribution)).not.toMatch(/mario|rossi|example/i);
+    expect(payload.guest).toEqual({ firstName: 'Mario', lastName: 'Rossi', email: 'mario@example.com', country: 'IT' });
+  });
 });
 
 describe('parseStep', () => {

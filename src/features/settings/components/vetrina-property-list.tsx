@@ -1,12 +1,14 @@
 import { useTranslation } from 'react-i18next';
 import { Loader2, Home } from 'lucide-react';
 import { VetrinaPropertyRow } from './vetrina-property-row';
+import type { OrgBookingSite } from '../domain/use-org-domain';
 import type { Property } from '@/types';
 
 interface VetrinaPropertyListProps {
   properties: Property[];
   isLoading: boolean;
-  orgSlug: string;
+  /** Where the links of the site are (its own host or the platform), for the links the rows copy. */
+  bookingSite: OrgBookingSite;
   selectedId: string | null;
   onSelect: (id: string) => void;
 }
@@ -14,7 +16,7 @@ interface VetrinaPropertyListProps {
 export function VetrinaPropertyList({
   properties,
   isLoading,
-  orgSlug,
+  bookingSite,
   selectedId,
   onSelect,
 }: VetrinaPropertyListProps) {
@@ -43,7 +45,7 @@ export function VetrinaPropertyList({
         <VetrinaPropertyRow
           key={property.id}
           property={property}
-          orgSlug={orgSlug}
+          bookingSite={bookingSite}
           isSelected={selectedId === property.id}
           onSelect={onSelect}
         />

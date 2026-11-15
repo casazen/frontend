@@ -1,6 +1,6 @@
 import { hasInternationalPrefix } from '@/features/public-booking/checkout/details-schema';
 import { DIRECT_CHECKOUT_CONSENT_VERSION } from '@/types/direct-booking.types';
-import type { CreateDirectBookingPayload, PaymentOption } from '@/types';
+import type { CreateDirectBookingPayload, DirectBookingAttributionPayload, PaymentOption } from '@/types';
 
 /**
  * The checkout in three steps (DB-05), without a screen: what the guest chose, the steps and the body of the booking that is sent.
@@ -150,6 +150,8 @@ interface BookingPayloadInput {
   marketingConsentVersion?: string | null;
   /** The version of the soft opt-in notice the site carries: the notice is shown, and its version sent back, only when there is one. */
   softOptInNoticeVersion?: string | null;
+  /** Where the guest came from (`bookingAttributionOf`): the `utm_*` of the address and the host of the site they came from; left out when there is none. */
+  attribution?: DirectBookingAttributionPayload;
 }
 
 /**
@@ -157,7 +159,8 @@ interface BookingPayloadInput {
  * and charges its own total. The consent to the privacy notice is the one of the checkout (given in the last step); the ones to the
  * offers, one per channel (NF-90), are sent only when the site has a text for them, and are whatever the guest chose (never preselected;
  * WhatsApp never without the phone number it needs). The single `marketingConsent` of before is no longer sent. The soft opt-in notice
- * (art. 130 c. 4) is not a consent: only the version the page showed goes back, and only when the site has one.
+ * (art. 130 c. 4) is not a consent: only the version the page showed goes back, and only when the site has one. Where the guest came from (E27/F01/US02, NF-123)
+ * goes with it as it is, when there is something to say: it is not the guest's data (a source, a campaign, the host of a site), and it changes no price.
  */
 export function buildBookingPayload({
   propertyId,
@@ -170,6 +173,7 @@ export function buildBookingPayload({
   draft,
   marketingConsentVersion,
   softOptInNoticeVersion,
+  attribution,
 }: BookingPayloadInput): CreateDirectBookingPayload {
   const { details } = draft;
   const phone = details.phone.trim();
@@ -200,5 +204,6 @@ export function buildBookingPayload({
         }
       : {}),
     ...(softOptInNoticeVersion ? { softOptInNoticeVersion } : {}),
+    ...(attribution ? { attribution } : {}),
   };
 }

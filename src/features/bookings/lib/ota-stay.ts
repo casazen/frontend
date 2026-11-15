@@ -1,6 +1,6 @@
 import { BedDouble, Building2, Compass, Globe, House, Pencil, Plane, Plug, TreePalm, type LucideIcon } from 'lucide-react';
 import { getBookingSourceLabel } from '@/lib/i18n-labels';
-import type { Booking, BookingChannel } from '@/types';
+import { BOOKING_ORIGINS, type Booking, type BookingChannel } from '@/types';
 
 type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
 
@@ -57,6 +57,25 @@ export function bookingChannelText(
 export function bookingSourceName(booking: Pick<Booking, 'source' | 'icalFeedId' | 'channelLabel'>, t: TranslateFn): string {
   if (booking.source === 'OtherChannel' && !booking.icalFeedId && booking.channelLabel) return booking.channelLabel;
   return getBookingSourceLabel(booking.source, t);
+}
+
+/**
+ * Where a booking came from, in the words the host reads (E27/F01/US01/T01, NF-123): «Portale Airbnb» (a portal, by its name: `bookingSourceName`, so a portal with no
+ * source of its own is told by the name the channel manager gave it), «Sito dell'agenzia», «Sito CasaZen» or «Manuale» (`booking.origin.*`). `null` when the answer has no
+ * origin (an older one) or one this client does not know: nothing is drawn, never a raw value.
+ */
+export function bookingOriginName(
+  booking: Pick<Booking, 'origin' | 'originChannel' | 'source' | 'icalFeedId' | 'channelLabel'>,
+  t: TranslateFn,
+): string | null {
+  const { origin } = booking;
+  if (!origin || !(BOOKING_ORIGINS as readonly string[]).includes(origin)) return null;
+  if (origin !== 'Portal') return t(`booking.origin.${origin}`);
+
+  const portal = booking.originChannel ?? booking.source;
+  const name = portal ? bookingSourceName({ ...booking, source: portal }, t) : null;
+  // «Altro portale» (a portal with no source of its own and no name from the channel manager) adds nothing to «Portale».
+  return name && name !== getBookingSourceLabel('OtherChannel', t) ? t('booking.origin.PortalNamed', { name }) : t('booking.origin.Portal');
 }
 
 /** The OTA stay is "da verificare" (CO-21): a sync found its block gone from the feed or with other dates. */

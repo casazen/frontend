@@ -4184,6 +4184,7 @@
           "toSend": "Link to send",
           "waiting": "Waiting for the guest"
         },
+        "origin": "Origin",
         "property": "Property"
       },
       "guestCount_one": "{{count}} guest",
@@ -4840,6 +4841,13 @@
       "Other": "Other channels",
       "TripAdvisor": "Tripadvisor",
       "Vrbo": "Vrbo"
+    },
+    "origin": {
+      "AgencySite": "Agency site",
+      "CasaZenSite": "CasaZen site",
+      "Manual": "Manual",
+      "Portal": "Portal",
+      "PortalNamed": "{{name}} portal"
     },
     "requests": {
       "title": "Requests to approve",
@@ -8458,7 +8466,36 @@
     "copyPropertyUrl": "Copy property URL",
     "openPropertyPage": "Open property page",
     "orgUrlSectionTitle": "Org URL",
-    "selectPropertyHint": "Select a property to preview its booking page."
+    "selectPropertyHint": "Select a property to preview its booking page.",
+    "bookingLink": {
+      "campaign": "Campaign name",
+      "campaignHint": "It tells you where bookings come from, for example “summer-2026”. Don't write people's names, e-mail addresses or phone numbers.",
+      "campaignPlaceholder": "summer-2026",
+      "campaignPreview": "The link will say: {{value}}",
+      "campaignRefused": "This name can't go in the link: remove e-mail addresses, phone numbers and tax codes.",
+      "checkIn": "Arrival",
+      "checkInPast": "The arrival can't be in the past.",
+      "checkOut": "Departure",
+      "checkOutNotAfter": "The departure must be after the arrival.",
+      "copied": "Link copied",
+      "copy": "Copy link",
+      "datesHint": "If you choose an arrival and a departure, the guest finds the dates already picked in the calendar. They only go in the link together.",
+      "description": "The link to the page of {{name}}, to put on your agency's website. The guest books here and the booking shows as “Agency site”.",
+      "guests": "Guests",
+      "language": "Page language",
+      "linkLabel": "Your link",
+      "notPublished": "This home isn't published on the site yet: the link will work once it is.",
+      "open": "Link for the agency's website: {{name}}",
+      "popupBlocked": "The browser blocked the print window. Allow it and try again.",
+      "print": "Print the QR",
+      "printLine": "Scan the code to book",
+      "qrAlt": "QR code of the link for {{name}}",
+      "siteFailed": "We can't read the address of your site: the link uses the CasaZen address.",
+      "siteLoading": "Reading the address of your site…",
+      "siteRestricted": "The link uses the CasaZen address: only whoever manages the account can see the address of your site.",
+      "siteRetry": "Try again",
+      "title": "Link for your agency's website"
+    }
   },
   "documentArchive": {
     "booking": "Booking",

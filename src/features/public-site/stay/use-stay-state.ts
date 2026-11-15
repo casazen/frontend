@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { todayInRome } from '@/lib/stay-dates';
 import { useQueryWriter } from '../hooks/use-query-writer';
-import { readStay, stayHref, writeStay, type StayLimits, type StayState } from './stay-state';
+import { readStay, siteLink, writeStay, type StayLimits, type StayState } from './stay-state';
 
 /** The place chosen in the «Dove» field: the id of a destination of the site (`GET …/destinations`), empty for all. */
 export const WHERE_PARAM = 'where';
@@ -12,7 +12,8 @@ export const WHERE_PARAM = 'where';
  * It is written with `replace`, so the Back button leaves the page and does not step through every date (`push: true` adds an
  * entry for a decisive change, as the search does). Quick successive edits (the arrival, the departure and the guests in the same
  * moment) all land: each one starts from the last query written, not from the last rendered (the race of the first calendar that
- * lost an edit). `linkTo(path)` is a link to another page of the site that carries the stay. `where` is the place chosen in
+ * lost an edit). `linkTo(path)` is a link to another page of the site that carries the stay and, when the address has them, the `utm_*` that say where the guest
+ * came from (they go on to the checkout, `siteLink`). `where` is the place chosen in
  * the search of the site (DB-07b), kept in the address with the stay.
  */
 export function useStayState(limits: Partial<Pick<StayLimits, 'maxGuests' | 'petsAllowed'>> & { today?: string } = {}) {
@@ -49,7 +50,7 @@ export function useStayState(limits: Partial<Pick<StayLimits, 'maxGuests' | 'pet
     [write],
   );
 
-  const linkTo = useCallback((path: string) => stayHref(path, stay), [stay]);
+  const linkTo = useCallback((path: string) => siteLink(path, stay, searchParams), [stay, searchParams]);
 
   return { stay, problems, guests: stay.adults + stay.children, setStay, clearDates, linkTo, where, setWhere, searchParams, writeQuery: write };
 }

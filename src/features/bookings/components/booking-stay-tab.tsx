@@ -13,6 +13,7 @@ import { stayDateOf } from '../lib/booking-price';
 import { channelGuidanceOf } from '../lib/booking-change';
 import { bookingChannelText } from '../lib/ota-stay';
 import { BookingSourceValue, FACT_LINK, Fact, Facts } from './booking-facts';
+import { BookingOriginBadge } from './booking-origin-badge';
 import { OtaChangeGuidance } from './ota-change-guidance';
 
 interface BookingStayTabProps {
@@ -70,6 +71,8 @@ export function BookingStayTab({ booking }: BookingStayTabProps) {
                   {channelText}
                 </span>
               ) : null}
+              {/* Where it came from (NF-123): «Portale Airbnb», «Sito dell'agenzia», «Sito CasaZen» or «Manuale». */}
+              <BookingOriginBadge booking={booking} className="mt-1 flex w-fit" />
             </Fact>
           ) : null}
           {booking.bookingCode ? (

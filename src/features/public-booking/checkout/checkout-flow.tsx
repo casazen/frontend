@@ -10,6 +10,7 @@ import { StepPayment } from '@/features/public-booking/checkout/step-payment';
 import { StepStay } from '@/features/public-booking/checkout/step-stay';
 import { parseStep, type CheckoutDraft, type CheckoutStep, type DetailsValues } from '@/features/public-booking/checkout/checkout-model';
 import { orgDocumentPath } from '@/lib/org-document-paths';
+import { carryLinkAttribution } from '@/lib/booking-link';
 import { buildPropertyPageUrl } from '@/lib/booking-url';
 import { resizeChildrenAges } from '@/lib/tourist-tax';
 import type { DirectBookingResponse, PublicOrgDto } from '@/types';
@@ -72,12 +73,16 @@ export function CheckoutFlow({ org, orgSlug, draft, onDraft }: CheckoutFlowProps
   );
   const ages = resizeChildrenAges(draft.childrenAges, stay.children);
 
-  const backToProperty = buildPropertyPageUrl(orgSlug, property, {
-    checkIn: stay.checkIn,
-    checkOut: stay.checkOut,
-    guests: stay.adults + stay.children,
-    children: stay.children,
-  });
+  // The way back to the home keeps where the guest came from (`utm_*` of the address), so that booking again from there still says it (E27/F01/US02).
+  const backToProperty = carryLinkAttribution(
+    buildPropertyPageUrl(orgSlug, property, {
+      checkIn: stay.checkIn,
+      checkOut: stay.checkOut,
+      guests: stay.adults + stay.children,
+      children: stay.children,
+    }),
+    searchParams,
+  );
   const editStay = booked ? undefined : () => goTo(1);
 
   return (

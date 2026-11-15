@@ -7,8 +7,9 @@ import { StatusBadge } from '@/components/shared/status/status-badge';
 import { getBookingStatusLabel } from '@/lib/i18n-labels';
 import { addDays, formatRomeDateTime, formatStayDate, todayInRome } from '@/lib/stay-dates';
 import { formatCurrency } from '@/lib/utils';
-import type { BookingChannel, BookingListItem } from '@/types';
+import { BOOKING_ORIGINS, type BookingChannel, type BookingListItem } from '@/types';
 import { OtaBadge } from './components/booking-facts';
+import { BookingOriginBadge } from './components/booking-origin-badge';
 import { bookingCanCancel } from './lib/booking-change';
 import { bookingNights, stayDateOf } from './lib/booking-price';
 import { BOOKINGS_PATH, CHECK_IN_CHOICES, DEFAULT_BOOKING_CHIP } from './lib/booking-list-query';
@@ -103,6 +104,8 @@ export function useBookingsList({ canWrite, properties, handlers }: BookingsList
                 {detail}
               </span>
             ) : null}
+            {/* Where it came from (NF-123): a portal, the site of the agency, CasaZen's site or the host; nothing for an answer that has no origin. */}
+            <BookingOriginBadge booking={booking} className="mt-1 flex w-fit" />
           </div>
         </div>
       );
@@ -227,6 +230,13 @@ export function useBookingsList({ canWrite, properties, handlers }: BookingsList
           type: 'multi',
           label: t('booking.list.filters.channel'),
           options: CHANNELS.map((channel) => ({ value: channel, label: bookingChannelName(channel, t), icon: CHANNEL_ICONS[channel] })),
+        },
+        {
+          // Where it came from (NF-123): the portals, the site of the agency, CasaZen's site, the host. The values are the words of the `origin` of the API.
+          id: 'origin',
+          type: 'multi',
+          label: t('booking.list.filters.origin'),
+          options: BOOKING_ORIGINS.map((origin) => ({ value: origin, label: t(`booking.origin.${origin}`) })),
         },
         { id: 'arrival', type: 'date', label: t('booking.list.filters.arrival') },
         {

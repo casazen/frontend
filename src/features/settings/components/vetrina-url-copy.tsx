@@ -7,18 +7,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 
 interface VetrinaUrlCopyProps {
-  bookingSitePath: string;
+  /** The address of the booking site as it really is (its own host, or the platform path on the address of the app): written as it is, never put on the page's own address. */
+  url: string;
   variant?: 'card' | 'inline';
 }
 
-export function VetrinaUrlCopy({ bookingSitePath, variant = 'card' }: VetrinaUrlCopyProps) {
+export function VetrinaUrlCopy({ url, variant = 'card' }: VetrinaUrlCopyProps) {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
-  const absoluteUrl = `${window.location.origin}${bookingSitePath}`;
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(absoluteUrl);
+      await navigator.clipboard.writeText(url);
       setCopied(true);
       toast.success(t('directBooking.urlCopied'));
       setTimeout(() => setCopied(false), 2000);
@@ -30,7 +30,7 @@ export function VetrinaUrlCopy({ bookingSitePath, variant = 'card' }: VetrinaUrl
   if (variant === 'inline') {
     return (
       <div className="flex w-full max-w-2xl gap-2" data-testid="vetrina-url-copy">
-        <Input readOnly value={absoluteUrl} className="font-mono text-xs" data-testid="vetrina-public-url" />
+        <Input readOnly value={url} className="font-mono text-xs" data-testid="vetrina-public-url" />
         <Button type="button" variant="outline" onClick={handleCopy} className="shrink-0">
           {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
           <span className="ml-2 hidden sm:inline">{t('directBooking.copyUrl')}</span>
@@ -47,7 +47,7 @@ export function VetrinaUrlCopy({ bookingSitePath, variant = 'card' }: VetrinaUrl
       <CardContent className="space-y-3">
         <p className="text-sm text-muted-foreground">{t('directBooking.publicUrlDescription')}</p>
         <div className="flex gap-2">
-          <Input readOnly value={absoluteUrl} className="font-mono text-xs" data-testid="vetrina-public-url" />
+          <Input readOnly value={url} className="font-mono text-xs" data-testid="vetrina-public-url" />
           <Button type="button" variant="outline" onClick={handleCopy} className="shrink-0">
             {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             <span className="ml-2 hidden sm:inline">{t('directBooking.copyUrl')}</span>
