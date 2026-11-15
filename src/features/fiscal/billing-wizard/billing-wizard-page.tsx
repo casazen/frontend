@@ -84,6 +84,7 @@ import { ItalyStep } from './steps/italy-step';
 import { MandateStep } from './steps/mandate-step';
 import { NumberingStep } from './steps/numbering-step';
 import { OwnerIssuersStep } from './steps/owner-issuers-step';
+import { SdiStep } from './steps/sdi-step';
 import { StepFrame } from './steps/step-frame';
 import { SummaryStep } from './steps/summary-step';
 import { TouristTaxStep } from './steps/tourist-tax-step';
@@ -136,9 +137,9 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
   // The step «Commercialista» (E15/F02/US02/T01) exists only while the package of the accountant is on: with the flag off nothing is asked of the server and the wizard is the one it was.
   const accountantOn = flags.accountantPackage;
   // The Italian steps (E17/F03/US01): «Proprietari che emettono» exists for an agency whose Italian owners still missed a profile when the wizard opened (the step does not vanish under the person's hands when
-  // the last profile is made: the setup is read again, the step list is not).
+  // the last profile is made: the setup is read again, the step list is not), and «Invio allo SDI» while the sending to the SDI is on: with the flag off the wizard is the one it was.
   const [ownerIssuersStep] = useState(() => agency && ownerIssuersMissing(setup) > 0);
-  const italian = { ownerIssuers: ownerIssuersStep };
+  const italian = { ownerIssuers: ownerIssuersStep, sdi: flags.sdiSubmission };
   const accountant = useAccountantPackageSettings(accountantOn);
   const saveAccountant = useSaveAccountantPackageSettings();
   const sendAccountant = useSendAccountantPackageTest();
@@ -312,6 +313,9 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
       case BILLING_STEPS.ownerIssuers:
         // Its own calls (the profiles of the owners): the step saves nothing in the setup, and the count of what is missing is the setup's, read again after every save of a profile.
         return { ...base, render: () => frame(id, <OwnerIssuersStep missing={ownerIssuersMissing(setup)} />) };
+      case BILLING_STEPS.sdi:
+        // Read-only: the state of the connection to the SDI and of each issuer, as the server says it.
+        return { ...base, render: () => frame(id, <SdiStep agency={agency} />) };
       case BILLING_STEPS.accountant:
         return {
           ...base,

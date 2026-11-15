@@ -75,6 +75,9 @@ const ONBOARDING_PART = 'OnboardingPart';
 const ASSIST_REQUEST = 'OnboardingAssistRequest';
 const ONBOARDING_FLOW = 'OnboardingFlow';
 
+/** The `entityType` of the items about a fiscal document (`FiscalDocumentTodos.EntityType`): the id of the entity is the document. */
+const FISCAL_DOCUMENT = 'FiscalDocument';
+
 /**
  * Where the "Do now" button of an item leads, by the `action` the server sends (ADR-026-R6): the single registry of the app. The task that
  * raises a "To do" of a new action adds its entry here (and its `ActivityAction` member in the backend), and the screen that opens it
@@ -148,8 +151,18 @@ export const ACTION_ROUTE_MAP = {
   },
   // A fiscal document of the channel manager the SDI rejected or that is still to collect (E06/F03/US02/T01, `ActivityAction` 30): the fiscal page of the
   // host, where the documents are. The page that lists them (E06/F03/US04/T01) replaces this entry when it exists, as the notes above say.
+  // An item about an owner (`PropertyOwner`, E17/F01/US01/T02: the owner who issues the documents of its stays has no issuer profile that can issue) opens the step «Proprietari che emettono» of the wizard
+  // «Fatturazione» (E17/F03/US01/T01), where the profile is made and completed; for who may not open the wizard, and for every other item, the fiscal page.
   ReviewFiscalDocument: {
-    route: { path: '/app/short-rent/fiscal' },
+    route: { path: '/app/short-rent/fiscal/setup', onlyFor: ['PropertyOwner'], search: { step: 'owner-issuers' } },
+    fallback: { path: '/app/short-rent/fiscal' },
+  },
+  // The SDI rejected an electronic invoice of CasaZen (E17/F01/US02/T03, `ActivityAction` 31): the guided correction of the document, in the page of the documents, on the document the item is about
+  // (`?document=<id>&step=correct`: the page opens its detail at the step of the correction and never leaves it). The item names the document and a code, never a word of it: the reason in plain words is read from
+  // the SDI state of the document. For who may not open the documents page, the fiscal page of the host.
+  CorrectInvoice: {
+    route: { path: '/app/short-rent/fiscal/documents', onlyFor: [FISCAL_DOCUMENT], entityParam: 'document', search: { step: 'correct' } },
+    fallback: { path: '/app/short-rent/fiscal' },
   },
   // The actions the traffic light of the cockpit raises (E03/F02/US01/T03, NF-52): the feeder opens a "To do" for each red or yellow item, with the
   // action of the cockpit. They lead where the cockpit leads (`COMPLIANCE_ACTION_TARGETS` of `lib/compliance-routes.ts`), so the «Adesso» block of the

@@ -15,8 +15,9 @@ export const LEGACY_ISSUER_PATH = '/app/short-rent/fiscal/issuer';
 
 /**
  * The steps of the wizard, by the name `?step=` carries, in the order of the wizard. The steps «Commissioni dei canali» and «Mandato standard» exist only for an agency, and
- * «Italia» only for an Italian issuer; «Proprietari che emettono» (E17/F03/US01/T01) only for an agency whose Italian owners issue the documents of their stays; «Commercialista» (E15/F02/US02/T01, optional) only
- * while the package of the accountant is on (the flag `accountantPackage`); the others are always there.
+ * «Italia» only for an Italian issuer; «Proprietari che emettono» (E17/F03/US01/T01) only for an agency whose Italian owners issue the documents of their stays; «Invio allo SDI» (E17/F03/US01/T02) only for an
+ * Italian issuer while the sending to the SDI is on (the flag `sdiSubmission`); «Commercialista» (E15/F02/US02/T01, optional) only while the package of the accountant is on (the flag `accountantPackage`);
+ * the others are always there.
  */
 export const BILLING_STEPS = {
   issuer: 'issuer',
@@ -28,6 +29,7 @@ export const BILLING_STEPS = {
   issuing: 'issuing',
   italy: 'italy',
   ownerIssuers: 'owner-issuers',
+  sdi: 'sdi',
   accountant: 'accountant',
   summary: 'summary',
 } as const;
@@ -45,6 +47,7 @@ export const BILLING_STEP_ORDER: readonly BillingStepId[] = [
   BILLING_STEPS.issuing,
   BILLING_STEPS.italy,
   BILLING_STEPS.ownerIssuers,
+  BILLING_STEPS.sdi,
   BILLING_STEPS.accountant,
   BILLING_STEPS.summary,
 ];

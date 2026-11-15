@@ -29,8 +29,9 @@ const BACKEND_ITEM_KEYS = [
   'stamp_duty_unconfirmed',
   'channel_commissions_unconfirmed',
   'owners_without_mandate',
-  // The Italian owners who issue (E17/F01/US01/T01): `BillingSetupItemKeys` of the backend.
+  // The Italian owners who issue (E17/F01/US01/T01) and the issuers that wait for the channel to the SDI (E17/F01/US02/T02): `BillingSetupItemKeys` of the backend.
   'owner_issuer_missing',
+  'sdi_issuer_registration_pending',
 ];
 
 /** The sections the backend sends (`BillingSetupSections`). */
@@ -85,7 +86,7 @@ describe('the part «Fatturazione» of the guide opens its wizard at the step of
       expect(i18n.t(textKey), key).not.toContain('billingWizard.');
     }
     expect(i18n.t(billingItemTextKey('owners_without_mandate'), { count: 1 })).not.toBe(i18n.t(billingItemTextKey('owners_without_mandate'), { count: 3 }));
-    for (const key of ['owner_issuer_missing']) {
+    for (const key of ['owner_issuer_missing', 'sdi_issuer_registration_pending']) {
       expect(i18n.t(billingItemTextKey(key), { count: 1 }), key).not.toBe(i18n.t(billingItemTextKey(key), { count: 3 }));
     }
     expect(i18n.t(billingItemTextKey('brand_new_item'))).not.toContain('billingWizard.');

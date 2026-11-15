@@ -60,6 +60,7 @@ export * from './assistant-settings.types';
 export * from './fiscal-issuer.types';
 export * from './billing-setup.types';
 export * from './fiscal-documents.types';
+export * from './self-billing.types';
 export * from './invoice-data.types';
 export * from './document-archive.types';
 export * from './compliance-health.types';

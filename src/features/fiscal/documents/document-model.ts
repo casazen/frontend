@@ -9,6 +9,7 @@ import type { StatusIconName, StatusTone } from '@/lib/status-dictionary';
 import { formatStayDate, isStayDate, todayInRome } from '@/lib/stay-dates';
 import {
   FISCAL_DOCUMENT_LINE_TYPES,
+  FISCAL_DOCUMENT_SDI_STATUSES,
   type BookingFiscalDocument,
   type FiscalCreditNoteRequest,
   type FiscalDocumentBatchResult,
@@ -17,6 +18,9 @@ import {
   type FiscalDocumentEntry,
   type FiscalDocumentExportFormat,
   type FiscalDocumentsContext,
+  type SdiDeclaration,
+  type SdiScope,
+  type SdiSubmitResult,
 } from '@/types';
 
 /** Documents on a page of the list (the page size the server uses when it is not told one). */
@@ -59,6 +63,11 @@ function numberFormat(language: string, currency: string | null): Intl.NumberFor
 export function formatDocumentAmount(amount: number, currency: string, language: string): string {
   if (CURRENCY_CODE.test(currency)) return numberFormat(language, currency).format(amount);
   return `${numberFormat(language, null).format(amount)} ${currency}`.trim();
+}
+
+/** Whether a currency of the server is a code (`EUR`): without one an amount is written with no symbol, and the screen that shows it says so in words. */
+export function hasCurrencyCode(currency: string): boolean {
+  return CURRENCY_CODE.test(currency);
 }
 
 /** A day of a document (`YYYY-MM-DD`, Europe/Rome) in the language of the person; what is not a day is shown as it came. */
@@ -176,8 +185,8 @@ export const DOCUMENT_STATE_KEYS = [
   'unrecognizedStatus',
 ] as const;
 
-/** The state of a document on the SDI, for a document CasaZen issued: only a state the SDI confirmed is «Consegnata». */
-function sdiStateOf(document: FiscalDocumentEntry): DocumentState {
+/** The state of a document on the SDI, for a document CasaZen issued: only a state the SDI confirmed is «Consegnata». The panel of the SDI writes the state the server answers with the same words as the list. */
+export function sdiStateOf(document: Pick<FiscalDocumentEntry, 'sdiStatus' | 'sdiErrorCode'>): DocumentState {
   switch (document.sdiStatus) {
     case 'not_applicable':
       return state('issued', 'success', 'check-circle');
@@ -367,6 +376,119 @@ export function documentLabelOf(t: TFunction, document: Pick<FiscalDocumentEntry
   return document.recipientName ? `${name} · ${document.recipientName}` : name;
 }
 
+// ---------------------------------------------------------------------------------------------------------------------------------
+// What a document is for, and the SDI (E17/F03/US01/T02)
+
+/** The purposes the words are written for (backend `FiscalDocumentPurpose`); any other one is shown as it came. */
+export const DOCUMENT_PURPOSES = ['GuestStay', 'OwnerInvoice', 'SelfBilling'] as const;
+
+/** The key of the words of the purpose of a document, or `null` for a purpose this client has no words for and for a document the server gave none (nothing is claimed then). */
+export function documentPurposeKey(purpose: string | undefined): string | null {
+  return purpose !== undefined && (DOCUMENT_PURPOSES as readonly string[]).includes(purpose) ? `fiscalDocuments.list.purpose.${purpose}` : null;
+}
+
+/** A document of a stay of a guest: the one the endpoints of the guest documents change. A server that says no purpose is an older one, and its documents are the guests'. */
+export function isGuestPurpose(purpose: string | undefined): boolean {
+  return purpose === undefined || purpose === 'GuestStay';
+}
+
+/** Whose endpoints the SDI of a document is read and changed through: an owner invoice has its own, every other document is on the fiscal documents. */
+export function sdiScopeOf(document: Pick<FiscalDocumentEntry, 'purpose'>): SdiScope {
+  return document.purpose === 'OwnerInvoice' ? 'owner' : 'guest';
+}
+
+/** The states of a document towards the SDI that have a panel: the invoice is on its way, or was answered, or was declared. A receipt and a Swiss document (`not_applicable`) have none, and one the server says nothing of (`unknown`) neither. */
+const SDI_PANEL_STATES: readonly string[] = ['to_send', 'submitted', 'delivered', 'rejected', 'manual_declared'];
+
+/**
+ * Whether the SDI panel is drawn for a document: an electronic invoice or credit note CasaZen issued (an imported document is the channel manager's, its SDI is its business), in a state of the SDI that has
+ * something to say. A state this client does not know is drawn too, read-only (the panel says it as it came, and never as a state that is complete).
+ */
+export function isSdiDocument(document: Pick<FiscalDocumentEntry, 'source' | 'status' | 'sdiStatus'>): boolean {
+  if (document.source !== 'CasaZen' || document.status !== 'Issued') return false;
+  return SDI_PANEL_STATES.includes(document.sdiStatus) || !(FISCAL_DOCUMENT_SDI_STATUSES as readonly string[]).includes(document.sdiStatus);
+}
+
+/** What the answer of «Invia» says. `submitted` is said only when the channel took the file AND the state the server answers is `submitted`: anything the server does not confirm is `unconfirmed`, never a success. */
+export type SubmitVerdict = 'submitted' | 'alreadySubmitted' | 'refused' | 'notConfigured' | 'unconfirmed';
+
+export function submitVerdictOf(result: SdiSubmitResult): SubmitVerdict {
+  switch (result.outcome) {
+    case 'Submitted':
+      return result.state.status === 'submitted' ? 'submitted' : 'unconfirmed';
+    case 'AlreadySubmitted':
+      return 'alreadySubmitted';
+    case 'Refused':
+      return 'refused';
+    case 'NotConfigured':
+      return 'notConfigured';
+    default:
+      return 'unconfirmed';
+  }
+}
+
+/** What a link to the page asks of a document (`?document=<id>&step=correct|review`, the «Do now» of a «To do» item): the document opens, and the guided correction at once when it says `correct`. */
+export type DocumentIntent = 'correct' | 'review';
+
+const DOCUMENT_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** The document and the step an address names; what is not an id or a known step is nothing (a hand-made address opens no document and no step). */
+export function documentLinkOf(params: URLSearchParams): { documentId: string | null; intent: DocumentIntent | undefined } {
+  const id = params.get('document') ?? '';
+  const step = params.get('step');
+  return { documentId: DOCUMENT_ID.test(id) ? id : null, intent: step === 'correct' || step === 'review' ? step : undefined };
+}
+
+/** The longest reference of a sending and the longest code of a rejection the server keeps (it refuses more with 422 `sdi_declaration_invalid`). */
+export const SDI_REFERENCE_MAX = 255;
+export const SDI_ERROR_CODE_MAX = 20;
+export const SDI_ERROR_TEXT_MAX = 500;
+
+/** What the dialog of the declaration holds: what is declared, and the fields of each kind as typed. */
+export interface SdiDeclareForm {
+  kind: 'Sent' | 'Rejected';
+  date: string;
+  reference: string;
+  errorCode: string;
+  errorText: string;
+}
+
+export type SdiDeclareField = 'date' | 'reference' | 'errorCode';
+
+/**
+ * What is wrong with the declaration before it is asked of the server, by field: the day of the sending is required, not in the future (Europe/Rome) and not before the day the document was issued; its
+ * reference is required; the code of a rejection is required and short. The server checks the same (422 `sdi_declaration_invalid`), so a refusal that names fields is shown on them too.
+ */
+export function declareProblemsOf(form: SdiDeclareForm, context: { today: string; issueDate: string | null }): SdiDeclareField[] {
+  const problems: SdiDeclareField[] = [];
+  if (form.kind === 'Sent') {
+    const { today, issueDate } = context;
+    if (!isStayDate(form.date) || form.date > today || (issueDate !== null && form.date < issueDate)) problems.push('date');
+    const reference = form.reference.trim();
+    if (reference === '' || reference.length > SDI_REFERENCE_MAX) problems.push('reference');
+  } else {
+    const code = form.errorCode.trim();
+    if (code === '' || code.length > SDI_ERROR_CODE_MAX) problems.push('errorCode');
+  }
+  return problems;
+}
+
+/** The declaration as the server is asked for it: what is typed, cut at its ends. */
+export function declarationOf(form: SdiDeclareForm): SdiDeclaration {
+  if (form.kind === 'Sent') return { kind: 'Sent', date: form.date, reference: form.reference.trim() };
+  const text = form.errorText.trim().slice(0, SDI_ERROR_TEXT_MAX);
+  return { kind: 'Rejected', errorCode: form.errorCode.trim(), ...(text === '' ? {} : { errorText: text }) };
+}
+
+/** The fields a 422 `sdi_declaration_invalid` names (`fields`): only the ones the dialog has. */
+export function declareRefusedFieldsOf(error: unknown): SdiDeclareField[] {
+  if (!isAxiosError(error) || error.response?.status !== 422) return [];
+  const data: unknown = error.response.data;
+  if (typeof data !== 'object' || data === null || getProblemCode(data) !== 'sdi_declaration_invalid') return [];
+  const fields = (data as { fields?: unknown }).fields;
+  return Array.isArray(fields) ? fields.filter((field): field is SdiDeclareField => field === 'date' || field === 'reference' || field === 'errorCode') : [];
+}
+
 /** What a person with the right to write payments may do with a document, on top of what it offers to everybody (`documentActionsOf`). */
 export interface DocumentWriteActions {
   /** A draft is issued. */
@@ -387,8 +509,9 @@ const NO_WRITE_ACTIONS: DocumentWriteActions = { issue: false, refresh: false, d
  * again (a credit note that is still a draft is the amounts of the document it credits: there is nothing to make it again from). An invoice or a receipt that was issued is credited;
  * a credit note and a proforma never are.
  */
-export function documentWriteActionsOf(document: Pick<FiscalDocumentEntry, 'source' | 'status' | 'kind'>, canWrite: boolean): DocumentWriteActions {
-  if (!canWrite || document.source !== 'CasaZen') return NO_WRITE_ACTIONS;
+export function documentWriteActionsOf(document: Pick<FiscalDocumentEntry, 'source' | 'status' | 'kind' | 'purpose'>, canWrite: boolean): DocumentWriteActions {
+  // An invoice of the property manager to an owner and a self-billed invoice are never changed with the endpoints of the guest documents (the server refuses with 422): their own pages change them.
+  if (!canWrite || document.source !== 'CasaZen' || !isGuestPurpose(document.purpose)) return NO_WRITE_ACTIONS;
   const draft = document.status === 'Draft';
   return {
     issue: draft,

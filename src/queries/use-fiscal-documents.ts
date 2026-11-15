@@ -4,18 +4,23 @@ import { toast } from 'sonner';
 import {
   createCreditNote,
   createDraft,
+  declareDocumentSdi,
   discardDraft,
   downloadPdf,
   downloadXml,
   exportList,
   getDocument,
+  getDocumentSdi,
   getDocumentsContext,
+  getSdiIssuers,
   issueBatch,
   issueDocument,
   listBookingDocuments,
   listDocuments,
   listDraftsForBatch,
   refreshDraft,
+  startDocumentCorrection,
+  submitDocumentSdi,
 } from '@/api/fiscal-documents.api';
 import { BATCH_MAX, documentFileName, exportFileName, isAwaitingSdi, isPeriodDraft, type NumberedDocument } from '@/features/fiscal/documents/document-model';
 import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
@@ -23,7 +28,7 @@ import { useNow } from '@/hooks/use-now';
 import i18n from '@/i18n/config';
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import { saveBlobAs } from '@/lib/file-download';
-import type { FiscalCreditNoteRequest, FiscalDocumentCriteria, FiscalDocumentEntry, FiscalDocumentExportFormat } from '@/types';
+import type { FiscalCreditNoteRequest, FiscalDocumentCriteria, FiscalDocumentEntry, FiscalDocumentExportFormat, SdiDeclaration, SdiScope } from '@/types';
 import { PAYMENTS_KEY } from './use-payments';
 
 /**
@@ -133,7 +138,8 @@ export function useFiscalDocumentsContext(enabled = true) {
 }
 
 interface DownloadRequest {
-  document: FiscalDocumentEntry;
+  /** What the download needs of a document: where its file is (the id and the source) and the number its file is named after. A self-billed invoice (TD17) is downloaded through the same endpoints. */
+  document: Pick<FiscalDocumentEntry, 'id' | 'source' | 'number'>;
   format: 'pdf' | 'xml';
 }
 
@@ -443,5 +449,109 @@ export function useSelectDraftsOfPeriod() {
       }
     },
     gcTime: 0,
+  });
+}
+
+// ---------------------------------------------------------------------------------------------------------------------------------
+// The SDI: state, submission, declaration, correction (E17/F03/US01/T02)
+
+/**
+ * Where a document stands with the SDI. It is read again whenever it opens and is not kept once nothing shows it (`FRESH`): the state changes without any screen (the SDI answers) and by other hands (a
+ * declaration on another device). While the channel holds the file (`submitted`) it is read again every {@link SDI_POLL_MS} for {@link SDI_WATCH_MS} at most from when the panel opened, as the list does, and a
+ * tab in the background does not ask. The writes and the messages of the live channel read it again with the rest of the documents (it lives under {@link FISCAL_DOCUMENTS_KEY}). `scope` says whose endpoints
+ * are asked (an owner invoice has its own); `enabled: false` for who may not read it, and without an id.
+ */
+export function useDocumentSdi(id: string | null, scope: SdiScope, options: { enabled?: boolean } = {}) {
+  const [since] = useState(() => Date.now());
+  return useQuery({
+    queryKey: [...FISCAL_DOCUMENTS_KEY, 'sdi', scope, id],
+    queryFn: () => getDocumentSdi(id ?? '', scope),
+    enabled: id !== null && (options.enabled ?? true),
+    refetchInterval: (current) => (current.state.data?.status === 'submitted' && Date.now() - since < SDI_WATCH_MS ? SDI_POLL_MS : false),
+    refetchIntervalInBackground: false,
+    ...FRESH,
+  });
+}
+
+/**
+ * The issuers that send electronic invoices through the channel to the SDI and where each stands (`GET api/fiscal/sdi/issuers`), for the step «Invio allo SDI» of the wizard. It is derived from the documents on the
+ * server and asks the channel nothing; it is read again whenever the step opens and is not kept once the step is left (`FRESH`). `enabled: false` while the sending is off, for who may not see the step.
+ */
+export function useSdiIssuers(enabled: boolean) {
+  return useQuery({
+    queryKey: [...FISCAL_DOCUMENTS_KEY, 'sdi-issuers'],
+    queryFn: () => getSdiIssuers(),
+    enabled,
+    ...FRESH,
+  });
+}
+
+/**
+ * «Invia» (`POST .../sdi/submit`): the document goes to the SDI through the channel. The mutation keeps nothing once nobody watches it (`gcTime: 0`) and a failure is kept without its request (`withoutRequest`). The
+ * answer is `{ outcome, state }` and the screen says what happened from THOSE two: the state of the document is the server's, and the state query is written with it so that the panel shows it at once. It tells nothing
+ * itself (no «done» toast that could say «sent» over a file the channel refused): the panel reads the answer.
+ */
+export function useSubmitDocumentSdi() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: FISCAL_DOCUMENT_MUTATION_KEY,
+    mutationFn: async ({ documentId, scope }: { documentId: string; scope: SdiScope }) => {
+      try {
+        return await submitDocumentSdi(documentId, scope);
+      } catch (error) {
+        throw withoutRequest(error);
+      }
+    },
+    gcTime: 0,
+    onSuccess: (result, { documentId, scope }) => {
+      queryClient.setQueryData([...FISCAL_DOCUMENTS_KEY, 'sdi', scope, documentId], result.state);
+    },
+    onSettled: () => afterWrite(queryClient),
+  });
+}
+
+/**
+ * The declaration that the issuer sent the file by hand (`POST .../sdi/declare`), or that the SDI rejected the one it uploaded. A failure is told by the dialog the declaration was made in (the fields the server refuses
+ * are on it); the answer is the state of the document as the server holds it now.
+ */
+export function useDeclareDocumentSdi() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: FISCAL_DOCUMENT_MUTATION_KEY,
+    mutationFn: async ({ documentId, scope, declaration }: { documentId: string; scope: SdiScope; declaration: SdiDeclaration }) => {
+      try {
+        return await declareDocumentSdi(documentId, scope, declaration);
+      } catch (error) {
+        throw withoutRequest(error);
+      }
+    },
+    gcTime: 0,
+    onSuccess: (state, { documentId, scope }) => {
+      queryClient.setQueryData([...FISCAL_DOCUMENTS_KEY, 'sdi', scope, documentId], state);
+    },
+    onSettled: () => afterWrite(queryClient),
+  });
+}
+
+/**
+ * Starts the correction of an invoice the SDI rejected (`POST .../sdi/correct`): the rejected document is replaced by a draft that keeps its number. The answer is the replacement (its id and number), which the guided
+ * correction goes on with; a failure is told by the step, in the words of its code.
+ */
+export function useStartDocumentCorrection() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: FISCAL_DOCUMENT_MUTATION_KEY,
+    mutationFn: async ({ documentId }: { documentId: string }) => {
+      try {
+        return await startDocumentCorrection(documentId);
+      } catch (error) {
+        throw withoutRequest(error);
+      }
+    },
+    gcTime: 0,
+    onSettled: () => afterWrite(queryClient),
   });
 }

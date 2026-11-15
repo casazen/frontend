@@ -33,11 +33,15 @@ export const BILLING_SETUP_ITEM_KEYS = [
   'conservation_agreement_unconfirmed',
   'stamp_duty_unconfirmed',
   'owner_issuer_missing',
+  'sdi_issuer_registration_pending',
 ] as const;
 export type BillingSetupItemKey = (typeof BILLING_SETUP_ITEM_KEYS)[number];
 
-/** Why an item is missing (backend `BillingSetupReasons`): a value is absent, a choice was never confirmed, or the installation lacks something the user cannot fix. */
-export const BILLING_SETUP_REASONS = ['required', 'unconfirmed', 'unavailable'] as const;
+/**
+ * Why an item is missing (backend `BillingSetupReasons`): a value is absent, a choice was never confirmed, the installation lacks something the user cannot fix, or somebody else has to do something and
+ * the user waits (`pending`: the enabling of a VAT number at the channel to the SDI, E17/F01/US02/T02).
+ */
+export const BILLING_SETUP_REASONS = ['required', 'unconfirmed', 'unavailable', 'pending'] as const;
 export type BillingSetupReason = (typeof BILLING_SETUP_REASONS)[number];
 
 /**

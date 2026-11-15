@@ -2215,6 +2215,13 @@
       "batchAlreadyPaid": "This wire file has already been marked as paid.",
       "batchNotDownloaded": "The file has to be downloaded before it is marked as paid.",
       "batchXmlNotFound": "This wire file has no content: it cannot be downloaded.",
+      "documentNotCorrectable": "This rejected invoice cannot be corrected from here: it already has credit notes.",
+      "documentNotRejected": "Only an invoice the SDI rejected is corrected. An invoice that was delivered is corrected with a credit note.",
+      "documentOwnerInvoice": "An invoice to an owner is handled from the invoices to the owners, not from here.",
+      "documentRejectedUseCorrection": "An invoice the SDI rejected was never issued: it is corrected, not cancelled with a credit note.",
+      "documentReplacementHoldsNumber": "This draft replaces an invoice the SDI rejected and keeps its number: it is issued, never discarded.",
+      "documentReplacementInvalid": "The draft does not replace a rejected invoice of the same issuer, or it does not keep its number.",
+      "documentSelfBilling": "A self-billed invoice (TD17) is handled from the page of the self-billed invoices, not from here.",
       "f24NotFound": "There is no F24 for this month.",
       "invalidDebitAccountIban": "The IBAN of your agency, which the transfers leave from, is not valid: correct it in the «Invoicing» part and try again.",
       "mixedCurrenciesNotAllowed": "A wire file has a single currency: choose payments that are all in euro or all in francs.",
@@ -2226,6 +2233,14 @@
       "ownerMissingIban": "An owner of the chosen statements has no IBAN: add it before creating the file.",
       "payoutsAlreadyInBatch": "At least one of the chosen payments is already in a bank file: a payment is made only once. Take the ones already in a file off the choice and try again.",
       "payoutsNotFoundOrNotOwned": "One of the chosen payments no longer exists: the list has been updated.",
+      "sdiDeclarationInvalid": "The declaration is incomplete or not valid: check the day, the reference or the code.",
+      "sdiNotElectronic": "This document does not go to the SDI: only the electronic invoices and credit notes issued by CasaZen do.",
+      "sdiNotToSend": "This document is no longer «to send»: it was already sent, declared, delivered or rejected. Refresh the state.",
+      "sdiStateFinal": "The SDI already answered about this document: its state does not change any more.",
+      "selfBillingEstimateUnconfirmed": "Part of the amount is an estimate: compare it with the invoice of the portal and accept it to issue.",
+      "selfBillingNotConfigured": "Self-billed invoices cannot be made yet: the settings miss the VAT rate or the portal. CasaZen sets them.",
+      "selfBillingPeriodInvalid": "The month you chose is not valid.",
+      "selfBillingPeriodNotEnded": "The month is not over yet: self-billed invoices are prepared and issued once the month has ended.",
       "statementNotApproved": "The statement has to be approved first.",
       "statementNotDraft": "This statement is no longer a draft: the list has been updated.",
       "statementNotExportable": "The PDF and the CSV can only be downloaded once the statement is approved.",
@@ -3089,6 +3104,7 @@
       "mandate": "The standard mandate is for the owners who have none: commission, flat fees and who bears the payment fees. It does not change the mandates that already exist.",
       "numbering": "The documents are numbered one after the other, with no gaps. Check how the number starts: the year is already included.",
       "ownerIssuers": "In Italy the owner issues the document of the stay, with its own data and its own series. For each owner, make the profile from its data and complete what is missing: while it is missing, CasaZen does not prepare its documents.",
+      "sdi": "Here you see whether CasaZen is connected to the SDI and where each issuer stands. There is nothing to fill in: if the connection is not there yet, you download the XML from the document, upload it by hand to the portal of the tax agency and declare it sent.",
       "summary": "Here you check what is missing, every item opens its step, and you see an example document with the rates in force.",
       "supportGeneric": "If you do not know what to answer, write to CasaZen support.",
       "supportWithEmail": "If you do not know what to answer, write to CasaZen support:",
@@ -3194,6 +3210,9 @@
       "owners_without_mandate_other": "{{count}} owners have no mandate.",
       "regime_code_missing": "The regime code of the electronic invoice is missing.",
       "regime_missing": "You have not chosen your regime yet.",
+      "sdi_issuer_registration_pending": "Some issuers are waiting to be enabled for the SDI.",
+      "sdi_issuer_registration_pending_one": "1 issuer is waiting for its VAT number to be enabled for sending to the SDI: you do not have to do anything.",
+      "sdi_issuer_registration_pending_other": "{{count}} issuers are waiting for their VAT numbers to be enabled for sending to the SDI: you do not have to do anything.",
       "stamp_duty_unconfirmed": "The stamp reference or the confirmation of the virtual stamp is missing.",
       "swiss_uid_missing": "The UID number of the issuer is missing.",
       "tax_rule_missing": "There is no VAT rule in force for this regime yet: CasaZen adds it.",
@@ -3343,6 +3362,43 @@
       "title": "You can only look"
     },
     "saveFailed": "We could not save. What you wrote is still here: try again.",
+    "sdi": {
+      "intro": "Here you see how the electronic invoices reach the SDI. There is nothing to fill in.",
+      "issuers": {
+        "empty": "No issuer with a VAT number has electronic invoices yet.",
+        "organization": "Your organization",
+        "title": "Issuers"
+      },
+      "loadError": "The state of the connection to the SDI could not be read.",
+      "loading": "Checking the connection…",
+      "note": "The documents of the owners who issue go to the SDI with the VAT number of each one.",
+      "registration": {
+        "other": "State: {{state}}",
+        "otherText": "This is a state this version does not know: we show it as it is.",
+        "pending": {
+          "label": "Waiting",
+          "text": "The channel has not enabled the VAT number of this issuer yet. You do not have to do anything: CasaZen takes care of it, and the documents stay «to send»."
+        },
+        "registered": {
+          "label": "Enabled",
+          "text": "The channel accepted a submission of this issuer: its VAT number is enabled."
+        },
+        "unknown": {
+          "label": "Not asked yet",
+          "text": "Nothing was sent yet: the VAT number is enabled at the first submission."
+        }
+      },
+      "state": {
+        "connected": {
+          "body": "CasaZen sends the electronic invoices to the SDI and tells you when they are delivered or rejected.",
+          "title": "Connected to the SDI"
+        },
+        "waitingCredentials": {
+          "body": "The connection to the SDI is not active yet: the credentials are missing, and CasaZen puts them in. Until they are there the invoices stay «to send»: you download the XML from the document, upload it by hand to the portal of the tax agency and declare it sent.",
+          "title": "Waiting for the credentials"
+        }
+      }
+    },
     "steps": {
       "accountant": {
         "label": "Accountant",
@@ -3383,6 +3439,11 @@
         "label": "Owners who issue",
         "purpose": "In Italy the owner issues: its profile is needed.",
         "title": "Who issues for the owners"
+      },
+      "sdi": {
+        "label": "Sending to the SDI",
+        "purpose": "The state of the connection and of each issuer.",
+        "title": "How the invoices reach the SDI"
       },
       "summary": {
         "label": "Summary",
@@ -8650,6 +8711,60 @@
       "open": "All fiscal documents",
       "title": "Fiscal document"
     },
+    "correction": {
+      "close": "Close",
+      "data": {
+        "body": "Check the data of who receives the invoice: a rejection often comes from a fiscal code or a VAT number.",
+        "check": "Check the data",
+        "draftKeeps": "The draft of the corrected invoice keeps the number {{number}}: it is issued, never discarded.",
+        "draftKeepsUnknown": "The draft of the corrected invoice keeps the number of the rejected one: it is issued, never discarded.",
+        "next": "Go to the issue",
+        "noBooking": "This invoice has no booking: there are no data to correct from here.",
+        "right": "The data are right: go to the issue"
+      },
+      "delivered": "The SDI delivered this invoice: it is not corrected, it is cancelled with a credit note.",
+      "description": "Guided correction of an invoice the SDI rejected",
+      "done": {
+        "body": "Invoice {{number}} was issued again.",
+        "bodyUnknown": "The invoice was issued again, with the number of the rejected one.",
+        "next": "It is now «to send» to the SDI: open it to send it.",
+        "open": "Open the corrected invoice",
+        "title": "Invoice corrected"
+      },
+      "exit": "Close and resume later",
+      "explain": {
+        "data": "You check the data of who receives the invoice, then you issue it again.",
+        "noCredit": "No credit note is needed: the rejected invoice is replaced.",
+        "same": "Invoice {{number}} never reached who receives it: we make it again with the same number.",
+        "sameUnknown": "The invoice never reached who receives it: we make it again with the same number.",
+        "start": "Start the correction",
+        "title": "How we correct it"
+      },
+      "help": {
+        "body": "An invoice the SDI rejected never reached who receives it: that is why we replace it instead of cancelling it. You can close whenever you want: the draft stays in the list of the documents and you resume from there.",
+        "title": "Help"
+      },
+      "issue": {
+        "body": "The corrected invoice takes the place of the rejected one, with the same number. After the issue it is «to send» to the SDI.",
+        "button": "Issue the invoice again"
+      },
+      "loading": "Loading the invoice…",
+      "notCorrectable": "This document cannot be corrected from here: it is not rejected, or it already has credit notes, or it was already corrected.",
+      "phase": {
+        "data": "Check the data",
+        "done": "Done",
+        "explain": "What we do",
+        "issue": "Issue the invoice again"
+      },
+      "progress": "Step {{step}} of {{total}}",
+      "replacement": {
+        "body": "This draft replaces an invoice the SDI rejected and keeps its number: it is issued, never discarded.",
+        "continue": "Continue the correction",
+        "title": "Correction in progress"
+      },
+      "startFailed": "We could not start the correction. Try again in a moment.",
+      "startUnreadable": "The correction started, but we cannot read the draft: you find it in the list of the documents."
+    },
     "credit": {
       "amount": {
         "hint": "Write the amount with the cents, for example 120.50. It cannot be more than what is left to credit: the system checks it.",
@@ -8748,6 +8863,8 @@
       "lastNumber": "Last number issued: {{number}}",
       "number": "Number",
       "numberExpected": "{{number}} (expected)",
+      "numberKept": "{{number}} (the same as the rejected invoice)",
+      "numberKeptUnknown": "The same as the rejected invoice",
       "numberNote": "Worked out from the documents you see in the list: CasaZen gives the final number when it issues, in order and with no gaps.",
       "numberUnknown": "Assigned by CasaZen when issuing, in order and with no gaps",
       "series": "Series",
@@ -8831,6 +8948,7 @@
       },
       "forbidden": "Your role cannot see the fiscal documents. Ask whoever administers the organization to give you access.",
       "gone": "This document is no longer there.",
+      "issuedBy": "Issued by {{issuer}}",
       "kind": {
         "CreditNote": "Credit note",
         "Invoice": "Invoice",
@@ -8847,6 +8965,11 @@
       },
       "notFound": "List not found.",
       "pdfUnavailable": "PDF not available",
+      "purpose": {
+        "GuestStay": "Document of the stay",
+        "OwnerInvoice": "Invoice to the owner",
+        "SelfBilling": "Self-billed invoice (TD17)"
+      },
       "readOnly": "Read-only",
       "source": {
         "CasaZen": "Issued by CasaZen",
@@ -8882,6 +9005,75 @@
     "refresh": {
       "done": "Draft updated with the current details of the booking.",
       "failed": "We could not update the draft. Try again in a moment."
+    },
+    "sdi": {
+      "correct": {
+        "button": "Correct",
+        "label": "Correct {{document}}"
+      },
+      "declare": {
+        "button": "Declare sent by hand",
+        "confirm": "Declare",
+        "date": {
+          "error": "Write a valid day: not in the future and not before the day of the document.",
+          "hint": "Not in the future and not before the day of the document.",
+          "label": "Day it was sent"
+        },
+        "description": "For {{document}}: you declare that you uploaded the file to the «Fatture e Corrispettivi» portal of the tax agency, or that the SDI rejected it. CasaZen does not check it: it writes what you declare.",
+        "doneRejected": "Declaration recorded: the document is shown as rejected by the SDI.",
+        "doneSent": "Declaration recorded: the document is shown as sent by hand by you.",
+        "errorCode": {
+          "error": "Write the code of the rejection (20 characters at most).",
+          "hint": "The code of the notification of the SDI, for example 00404.",
+          "label": "Code of the rejection"
+        },
+        "errorText": {
+          "label": "Text of the notification"
+        },
+        "failed": "We could not record the declaration. Try again in a moment.",
+        "kind": {
+          "Rejected": "The SDI rejected it",
+          "Sent": "I sent it myself, by hand",
+          "legend": "What do you want to declare?"
+        },
+        "label": "Declare that you sent {{document}} by hand",
+        "reference": {
+          "error": "Write the reference of the sending (255 characters at most).",
+          "hint": "The name of the file or the identifier the portal gave you.",
+          "label": "Reference of the sending"
+        },
+        "title": "Did you send the file by hand?"
+      },
+      "forbidden": "You cannot see the SDI state of this document.",
+      "gone": "We cannot find the state of this document any more.",
+      "hint": {
+        "declared": "You declared it sent yourself: CasaZen has no answer of the SDI about this document.",
+        "delivered": "The SDI delivered it. If something is wrong, you correct it with a credit note.",
+        "noChannel": "The connection to the SDI is not active yet, so sending is done by hand: download the XML («XML» button), upload it to the «Fatture e Corrispettivi» portal of the tax agency and then press «Declare sent by hand».",
+        "ownerRejected": "A rejected invoice to an owner is corrected with a credit note, from the invoices to the owners.",
+        "readOnly": "You can see the state; to send or declare, you need someone who can change the documents."
+      },
+      "loadError": "The SDI state could not be read.",
+      "loading": "Checking the state…",
+      "reason": {
+        "refusedTitle": "Why it did not go",
+        "rejectedTitle": "Why the SDI rejected it",
+        "unknown": "The reason was not given: check the code or correct the data and try again."
+      },
+      "submit": {
+        "button": "Send",
+        "failed": "We could not send the document: we received no answer. Check the state above before you try again.",
+        "label": "Send {{document}} to the SDI"
+      },
+      "title": "Sending to the SDI",
+      "updatedOn": "since {{date}}",
+      "verdict": {
+        "alreadySubmitted": "The file was already sent: we do not send it twice.",
+        "notConfigured": "There is no connection to the SDI yet: nothing was sent. Download the XML, upload it by hand to the portal of the tax agency and press «Declare sent by hand».",
+        "refused": "The channel did not accept the file: the document stays «to send».",
+        "submitted": "The channel took the file: now we wait for the answer of the SDI. You see it here, and in «To do» if it is rejected.",
+        "unconfirmed": "We could not confirm the sending: check the state above before you try again."
+      }
     }
   },
   "guestCancellation": {
@@ -14851,6 +15043,7 @@
     "ownerClose": "Month-end close",
     "ownerInvoices": "Invoices to the owners",
     "owners": "Owners",
+    "selfBilling": "Self-billed invoices (TD17)",
     "withholding": "Withholding tax"
   },
   "notFound": {
@@ -14971,7 +15164,8 @@
       "serviceRequestBackupWon": "The job of a request has passed to you.",
       "serviceRequestBackupClosed": "A request you were a backup for was closed.",
       "verificationRequired": "A guest's identity is waiting for you to verify it.",
-      "assistRequested": "New «Do it for me» request to handle."
+      "assistRequested": "New «Do it for me» request to handle.",
+      "fiscalDocumentSdiRejected": "The SDI rejected an invoice: it needs to be corrected."
     }
   },
   "octorate": {
@@ -30302,5 +30496,118 @@
       "ready": "The profile is complete: CasaZen can issue the documents of the stays in the name of the owner."
     },
     "title": "Issuer of the documents of the stays"
+  },
+  "selfBilling": {
+    "currencyMissing": "The server does not give the currency of some of these amounts: they are written without a symbol and are not converted.",
+    "detail": {
+      "description": "Check the lines before you issue: after the issue the self-billed invoice does not change any more.",
+      "discard": {
+        "button": "Discard the draft",
+        "confirm": "Discard the draft",
+        "description": "The draft is discarded: it uses no number and you can make a new one.",
+        "done": "Draft discarded.",
+        "title": "Discard the draft?"
+      },
+      "estimate": {
+        "body": "{{amount}} does not come from the invoice of the portal but from a rule of the agency or from the default value: compare it with the invoice of the portal before you issue.",
+        "title": "Part of the amount is an estimate"
+      },
+      "gone": "We cannot find this self-billed invoice any more.",
+      "holder": "Holder: {{holder}}. Portal: {{portal}}.",
+      "issue": {
+        "accept": "I checked the estimated part ({{amount}}) and I accept it.",
+        "button": "Issue",
+        "confirm": "Issue",
+        "consequence": "After the issue the self-billed invoice does not change any more.",
+        "description": "Total {{total}}. It gets its number in the series of the holder and then goes to the SDI.",
+        "done": "Self-billed invoice issued.",
+        "doneNumbered": "Self-billed invoice {{number}} issued.",
+        "failed": "We could not issue the self-billed invoice. Try again in a moment.",
+        "title": "Issue the self-billed invoice?"
+      },
+      "lines": {
+        "amount": "Taxable amount",
+        "description": "Description",
+        "rate": "{{rate}}%",
+        "title": "Lines",
+        "vat": "VAT integrated"
+      },
+      "loadError": "The self-billed invoice could not be loaded.",
+      "loading": "Loading the self-billed invoice…",
+      "pdf": "PDF",
+      "rule": "Rules used: version {{version}}",
+      "title": "Self-billed invoice",
+      "titleFor": "Self-billed invoice of {{month}}",
+      "totals": {
+        "base": "Taxable amount",
+        "total": "Total",
+        "vat": "VAT"
+      },
+      "xml": "XML"
+    },
+    "drafts": {
+      "button": "Prepare the drafts of the month",
+      "failed": "We could not prepare the drafts. Try again in a moment.",
+      "needMonth": "Choose a month to prepare the drafts.",
+      "report": {
+        "counts": "New drafts: {{created}}. Updated: {{updated}}. Already issued: {{issued}}. Discarded because they are no longer needed: {{discarded}}.",
+        "failedRow": "{{holder}} · {{portal}}: {{reason}}",
+        "failed_one": "We cannot make the draft for 1 issuer yet:",
+        "failed_other": "We cannot make the draft for {{count}} issuers yet:",
+        "fields": "Missing: {{fields}}.",
+        "ledgerNotPosted": "The month of the owners is not posted yet: the drafts are made from the ledger of the month. Close the month first and then prepare the drafts again.",
+        "notDue": "Commissions that are not self-billed:",
+        "notDueRow_one": "{{channel}}: {{amount}} for {{count}} stay, {{reason}}.",
+        "notDueRow_other": "{{channel}}: {{amount}} for {{count}} stays, {{reason}}.",
+        "title": "Drafts of {{month}}"
+      }
+    },
+    "holder": {
+      "Agency": "Agency",
+      "Owner": "Owner"
+    },
+    "notDue": {
+      "currency_not_supported": "the commission is not in euro",
+      "holder_not_italian": "the holder is not in Italy",
+      "holder_not_vat_registered": "the holder has no VAT number",
+      "holder_private_person": "the holder is a private person: the portal already charged the Italian VAT",
+      "not_a_portal": "the booking is not a stay of a portal",
+      "portal_not_configured": "the portal is not configured yet: write to CasaZen",
+      "stay_not_active": "the booking is not active (cancelled or no-show)",
+      "stay_not_found": "the booking is no longer there"
+    },
+    "page": {
+      "allMonths": "All months",
+      "description": "The self-billed invoices for the commissions foreign portals charge you without VAT: you prepare them, check them and issue them.",
+      "empty": "There are no self-billed invoices yet.",
+      "emptyMonth": "There are no self-billed invoices for this month: press «Prepare the drafts of the month».",
+      "filterPeriod": "Month",
+      "listTitle": "Self-billed invoices",
+      "loadError": "The self-billed invoices could not be loaded.",
+      "loading": "Loading the self-billed invoices…",
+      "note": "When a foreign portal charges you a commission without VAT, in Italy you integrate it with a self-billed invoice TD17 by the 15th of the following month. The rate, the day and the series are prudent choices, to be confirmed with the accountant.",
+      "title": "Self-billed invoices (TD17)",
+      "unavailable": "Self-billed invoices are not open yet in this environment."
+    },
+    "reason": {
+      "issuer_profile_incomplete": "the issuer profile is incomplete",
+      "owner_issuer_missing": "the issuer profile of the owner is missing"
+    },
+    "row": {
+      "due": "To be issued by {{date}}",
+      "issued": "Self-billed invoice {{number}} of {{date}}",
+      "monthAndHolder": "{{month}} · {{holder}} · portal in {{country}}",
+      "open": "Open",
+      "openLabel": "Open the self-billed invoice {{title}}",
+      "parts": "Taxable amount {{base}} · VAT {{vat}}",
+      "review": "Review and issue",
+      "reviewLabel": "Review and issue the self-billed invoice {{title}}",
+      "total": "Total {{amount}}"
+    },
+    "status": {
+      "Discarded": "Discarded draft",
+      "Draft": "Draft",
+      "Issued": "Issued"
+    }
   }
 }
