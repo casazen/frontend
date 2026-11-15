@@ -9,6 +9,7 @@ export const OWNER_TAX_CHECKS_KEY = 'owner-tax-checks';
 
 export const ownerTaxChecksKeys = {
   cases: [OWNER_TAX_CHECKS_KEY, 'cases'] as const,
+  pendingCases: [OWNER_TAX_CHECKS_KEY, 'cases', 'pending'] as const,
   units: (ownerId: string) => [OWNER_TAX_CHECKS_KEY, 'units', ownerId] as const,
 };
 
@@ -21,6 +22,20 @@ export function useCompanyTenantCases(enabled: boolean) {
   return useQuery({
     queryKey: ownerTaxChecksKeys.cases,
     queryFn: () => ownerTaxChecksApi.listCompanyTenantCases(),
+    enabled,
+    refetchOnMount: 'always' as const,
+    staleTime: 30_000,
+  });
+}
+
+/**
+ * The stays that still wait for a decision, on their own. The list of every stay keeps only the 200 with the latest check-out, the decided ones among them, so a stay older than that which still waits for its decision is
+ * not in it: the dialog of the decision asks for the waiting ones (`enabled` only when the list did not hold the stay it was opened on) before it tells that the stay needs none. `null` when the server refuses it (403).
+ */
+export function usePendingCompanyTenantCases(enabled: boolean) {
+  return useQuery({
+    queryKey: ownerTaxChecksKeys.pendingCases,
+    queryFn: () => ownerTaxChecksApi.listCompanyTenantCases('Pending'),
     enabled,
     refetchOnMount: 'always' as const,
     staleTime: 30_000,

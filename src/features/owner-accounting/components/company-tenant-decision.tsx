@@ -13,7 +13,7 @@ import { SkeletonCard } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { isFeatureEnabled } from '@/config/feature-flags';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
-import { useCompanyTenantCases, useDecideCompanyTenant } from '@/queries/use-owner-tax-checks';
+import { useCompanyTenantCases, useDecideCompanyTenant, usePendingCompanyTenantCases } from '@/queries/use-owner-tax-checks';
 import type { CompanyTenantCase, ShortLetTaxRegime } from '@/types';
 import { failureText, messageOf } from '../owner-accounting-model';
 import { useOwnerFormat } from '../use-owner-format';
@@ -137,7 +137,11 @@ export function CompanyTenantDecisionDialog({ bookingId, onClose }: TenantDecisi
   const cases = useCompanyTenantCases(true);
   // A read that failed is a failed read, whatever an earlier answer left in the cache.
   const list = cases.isError ? undefined : cases.data;
-  const kase = list?.find((candidate) => candidate.bookingId === bookingId) ?? null;
+  const inList = list?.find((candidate) => candidate.bookingId === bookingId) ?? null;
+  // The list keeps the 200 stays with the latest check-out, the decided ones among them: a stay older than that which still waits for its decision is looked for among the waiting ones before it is told gone.
+  const older = usePendingCompanyTenantCases(Array.isArray(list) && inList === null);
+  const kase = inList ?? (older.isError ? undefined : older.data)?.find((candidate) => candidate.bookingId === bookingId) ?? null;
+  const retry = older.isError && inList === null ? older : cases;
 
   return (
     <Dialog open onOpenChange={(next) => !next && onClose()}>
@@ -146,19 +150,19 @@ export function CompanyTenantDecisionDialog({ bookingId, onClose }: TenantDecisi
           <DialogTitle>{t('ownerAccounting.tenantDecision.title')}</DialogTitle>
           <DialogDescription>{t('ownerAccounting.tenantDecision.description')}</DialogDescription>
         </DialogHeader>
-        {cases.isPending ? (
+        {cases.isPending || older.isLoading ? (
           <SkeletonCard lines={3} label={t('ownerAccounting.tenantDecision.loading')} />
-        ) : cases.isError ? (
+        ) : cases.isError || (older.isError && kase === null) ? (
           <Alert
             variant="danger"
             action={
-              <Button type="button" size="sm" variant="outline" onClick={() => void cases.refetch()}>
+              <Button type="button" size="sm" variant="outline" onClick={() => void retry.refetch()}>
                 {t('shared.errorState.retry')}
               </Button>
             }
             data-testid="tenant-decision-load-error"
           >
-            {messageOf(cases.error, t)}
+            {messageOf(retry.error, t)}
           </Alert>
         ) : list === null || list === undefined ? (
           <Alert variant="warning" data-testid="tenant-decision-no-access">

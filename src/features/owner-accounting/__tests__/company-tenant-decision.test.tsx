@@ -171,6 +171,36 @@ describe('the decision is the person\'s: a regime nobody chose for them and a re
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
   });
 
+  it('CompanyTenant_AStayOlderThanTheListThatStillWaits_IsLookedForAmongTheWaitingOnes_BeforeItIsToldGone', async () => {
+    const OLD = 'dddddddd-4444-4444-8444-dddddddddddd';
+    // The list of every stay keeps the 200 with the latest check-out: the old stay is not in it, but the server still has it among the ones that wait for a decision.
+    api.listCompanyTenantCases.mockImplementation(async (state?: string) => (state === 'Pending' ? [kase({ bookingId: OLD, bookingCode: 'BK-0001', checkOut: '2025-01-05' })] : [kase()]));
+    renderSection(`/app/account/withholding?decision=${OLD}`);
+
+    const dialog = await screen.findByRole('dialog');
+    expect(await within(dialog).findByTestId('tenant-decision-form')).toBeInTheDocument();
+    expect(within(dialog).getByTestId('tenant-decision-case')).toHaveTextContent('BK-0001');
+    expect(screen.queryByTestId('tenant-decision-gone')).toBeNull();
+    expect(api.listCompanyTenantCases).toHaveBeenCalledWith('Pending');
+  });
+
+  it('CompanyTenant_AStayThatTheWaitingOnesDoNotHoldEither_IsToldGone_AndAFailedReadOfThemIsNotToldGone', async () => {
+    const MISSING = 'eeeeeeee-5555-4555-8555-eeeeeeeeeeee';
+    api.listCompanyTenantCases.mockImplementation(async (state?: string) => (state === 'Pending' ? [] : [kase()]));
+    renderSection(`/app/account/withholding?decision=${MISSING}`);
+    expect(await screen.findByTestId('tenant-decision-gone')).toBeInTheDocument();
+    cleanup();
+
+    // The read of the waiting ones failed: nothing is known about the stay, and «it needs no decision» is not said.
+    api.listCompanyTenantCases.mockImplementation(async (state?: string) => {
+      if (state === 'Pending') throw problem(500, 'internal_error');
+      return [kase()];
+    });
+    renderSection(`/app/account/withholding?decision=${MISSING}`);
+    expect(await screen.findByTestId('tenant-decision-load-error')).toBeInTheDocument();
+    expect(screen.queryByTestId('tenant-decision-gone')).toBeNull();
+  });
+
   it('CompanyTenant_ARefusalOfTheServer_IsToldInTheDialog_AndTheListIsReadAgain', async () => {
     api.decide.mockRejectedValue(problem(422, 'owner_tax_decision_not_applicable'));
     renderSection(`/app/account/withholding?decision=${FIRST}`);
