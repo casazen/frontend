@@ -24805,7 +24805,9 @@
     "contextPicker": {
       "loading": "Caricamento...",
       "title": "Seleziona workspace",
-      "description": "Scegli il contesto applicativo da aprire."
+      "description": "Scegli il contesto applicativo da aprire.",
+      "setupHost": "Attiva affitti brevi e lunghi",
+      "setupHostDescription": "Configura la tua organizzazione e completa i consensi per accedere agli affitti."
     },
     "noAccess": {
       "title": "Nessun accesso disponibile",

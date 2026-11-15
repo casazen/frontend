@@ -7,14 +7,17 @@ import { LoadingScreen } from '@/components/shared/loading-screen';
 import { CasaZenLogo } from '@/components/brand/casazen-mark';
 import { NavIcon } from '@/components/layout/nav-icon';
 import { getAccessibleAreas } from '@/config/areas';
-import { Navigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
+import { useMe } from '@/queries/use-users';
 
 export function ContextPickerPage() {
   const { t } = useTranslation();
   const { contexts, isReady, setActiveContext } = useWorkspace();
+  const { data: profile, isLoading: profileLoading } = useMe();
   const isRecovering = useEmptyWorkspaceRecovery(contexts.length, isReady);
+  const showHostSetup = !!profile && (!profile.orgId || profile.onboardingRequired === true);
 
-  if (!isReady || isRecovering) {
+  if (!isReady || isRecovering || profileLoading) {
     return <LoadingScreen message={t('shared.contextPicker.loading')} />;
   }
 
@@ -22,7 +25,7 @@ export function ContextPickerPage() {
     return <Navigate to="/app/no-access" replace />;
   }
 
-  if (contexts.length === 1) {
+  if (contexts.length === 1 && !showHostSetup) {
     return <Navigate to={contexts[0].defaultRoute} replace />;
   }
 
@@ -61,6 +64,16 @@ export function ContextPickerPage() {
               </span>
             </Button>
           ))}
+          {showHostSetup && (
+            <Button asChild variant="outline" className="h-auto w-full justify-start whitespace-normal py-3 text-left">
+              <Link to="/onboarding" state={{ completeStep: true }}>
+                <span>
+                  <span className="block font-semibold">{t('shared.contextPicker.setupHost')}</span>
+                  <span className="block text-sm font-normal text-muted-foreground">{t('shared.contextPicker.setupHostDescription')}</span>
+                </span>
+              </Link>
+            </Button>
+          )}
         </CardContent>
       </Card>
     </div>
