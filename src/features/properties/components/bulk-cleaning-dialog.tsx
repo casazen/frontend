@@ -80,6 +80,7 @@ function BulkCleaningBody({ save, onClose, routineLink }: { save: BulkSave; onCl
   const [selected, setSelected] = useState<string[]>([]);
   const [draft, setDraft] = useState<CleaningForm>(() => emptyCleaningForm(SUPPLIER_CURRENCY));
   const [attempted, setAttempted] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CleaningSetupBulkResponse | null>(null);
 
@@ -142,17 +143,35 @@ function BulkCleaningBody({ save, onClose, routineLink }: { save: BulkSave; onCl
           .slice(0, MAX_BULK_PROPERTIES);
   const allSelected = selectable.length > 0 && selectable.every((property) => selected.includes(property.id));
 
-  const submit = async (event: FormEvent) => {
-    event.preventDefault();
+  // The properties chosen that have a setup saved already: saving replaces the whole setup of each one (what the body leaves out is cleared, the time and the length included), so they are told first.
+  const existing = chosen.filter((property) => {
+    const read = readOf(property.id);
+    return read.state === 'known' && read.configured;
+  });
+
+  const runSave = async () => {
     if (save.isPending || currency === null) return;
-    setAttempted(true);
-    if (Object.keys(cleaningProblems(form)).length > 0) return;
     setError(null);
     try {
       setResult(await save.mutateAsync({ ...cleaningDtoOf(form, currency), propertyIds: chosen.map((property) => property.id) }));
     } catch (failure) {
       setError(getProblemMessage(failure, t) ?? t('propertyCleaning.bulk.saveError'));
+    } finally {
+      setConfirming(false);
     }
+  };
+
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    if (save.isPending || currency === null) return;
+    setAttempted(true);
+    if (Object.keys(cleaningProblems(form)).length > 0) return;
+    // Nothing is saved before the person says yes to replacing what is already there.
+    if (existing.length > 0) {
+      setConfirming(true);
+      return;
+    }
+    void runSave();
   };
 
   if (result) {
@@ -208,6 +227,30 @@ function BulkCleaningBody({ save, onClose, routineLink }: { save: BulkSave; onCl
           ) : null}
           <Button type="button" onClick={onClose} data-testid="bulk-cleaning-close">
             {t('propertyCleaning.bulk.close')}
+          </Button>
+        </DialogFooter>
+      </div>
+    );
+  }
+
+  // The question before replacing: a step of its own and not a dialog inside the form (a button of a dialog inside a form submits the form), with the properties that have a cleaner already named.
+  if (confirming) {
+    return (
+      <div className="space-y-4" data-testid="bulk-cleaning-confirm">
+        <Alert variant="warning">{t('propertyCleaning.bulk.replaceWarning', { count: existing.length })}</Alert>
+        <ul className="max-h-48 divide-y overflow-y-auto rounded-md border text-sm" aria-label={t('propertyCleaning.bulk.replaceList')} data-testid="bulk-cleaning-confirm-list">
+          {existing.map((property) => (
+            <li key={property.id} className="break-words px-3 py-2 font-medium">
+              {property.name}
+            </li>
+          ))}
+        </ul>
+        <DialogFooter className="gap-2 sm:gap-0">
+          <Button type="button" variant="ghost" onClick={() => setConfirming(false)} disabled={save.isPending} data-testid="bulk-cleaning-replace-back">
+            {t('propertyCleaning.bulk.replaceBack')}
+          </Button>
+          <Button type="button" loading={save.isPending} onClick={() => void runSave()} data-testid="bulk-cleaning-replace-confirm">
+            {t('propertyCleaning.bulk.replaceConfirm')}
           </Button>
         </DialogFooter>
       </div>
@@ -325,7 +368,7 @@ function BulkCleaningBody({ save, onClose, routineLink }: { save: BulkSave; onCl
   const suppliersLoading = form.kind === 'Supplier' && supplierReads.some((read) => read.isPending);
 
   return (
-    <form className="space-y-5" onSubmit={(event) => void submit(event)} noValidate data-testid="bulk-cleaning-form">
+    <form className="space-y-5" onSubmit={submit} noValidate data-testid="bulk-cleaning-form">
       {chooser}
 
       {currency !== null ? (

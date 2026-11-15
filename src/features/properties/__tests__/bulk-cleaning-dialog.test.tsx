@@ -394,6 +394,68 @@ describe('who cleans, for many properties (E24/F01/US02/T01)', () => {
     });
   });
 
+  describe('what the save replaces', () => {
+    it('BulkCleaningDialog_PropertyThatHasACleanerAlready_IsNamedAndNothingIsSavedUntilThePersonSaysYes', async () => {
+      // «Casa Monti» has a cleaner and a price agreed already: the save would replace the whole of it.
+      vi.mocked(propertyCleaningApi.get).mockImplementation(async (propertyId) =>
+        propertyId === 'p2'
+          ? setupOf(propertyId, { configured: true, cleanerKind: 'Staff', staffUserId: 'user-1', priceCents: 3000, active: true })
+          : setupOf(propertyId),
+      );
+      vi.mocked(propertyCleaningApi.saveBulk).mockResolvedValue({
+        results: [
+          { propertyId: 'p1', saved: true, code: null, message: null },
+          { propertyId: 'p2', saved: true, code: null, message: null },
+        ],
+        saved: 2,
+        failed: 0,
+      });
+      renderDialog();
+
+      await fillTheForm();
+      fireEvent.click(screen.getByTestId('bulk-cleaning-save'));
+
+      // The question comes first, with the name of the property that would lose its setup, and nothing is saved.
+      const confirm = await screen.findByTestId('bulk-cleaning-confirm');
+      expect(confirm).toHaveTextContent("Per 1 immobile c'è già chi pulisce");
+      expect(screen.getByTestId('bulk-cleaning-confirm-list')).toHaveTextContent('Casa Monti');
+      expect(screen.getByTestId('bulk-cleaning-confirm-list')).not.toHaveTextContent('Casa Mare');
+      expect(propertyCleaningApi.saveBulk).not.toHaveBeenCalled();
+
+      // Back: the form is as it was left, and still nothing is saved (the buttons of the question never submit the form).
+      fireEvent.click(screen.getByTestId('bulk-cleaning-replace-back'));
+      expect(await screen.findByTestId('bulk-cleaning-form')).toBeInTheDocument();
+      expect(screen.getByTestId('bulk-cleaning-price')).toHaveValue('45');
+      expect(propertyCleaningApi.saveBulk).not.toHaveBeenCalled();
+
+      // Yes: now it is saved.
+      fireEvent.click(screen.getByTestId('bulk-cleaning-save'));
+      fireEvent.click(await screen.findByTestId('bulk-cleaning-replace-confirm'));
+      await waitFor(() => expect(propertyCleaningApi.saveBulk).toHaveBeenCalledTimes(1));
+      expect(await screen.findByTestId('bulk-cleaning-all-saved')).toBeInTheDocument();
+    });
+
+    it('BulkCleaningDialog_NoPropertyHasACleanerYet_SavesAtOnceWithNoQuestionAndTheTextSaysItReplaces', async () => {
+      vi.mocked(propertyCleaningApi.saveBulk).mockResolvedValue({
+        results: [
+          { propertyId: 'p1', saved: true, code: null, message: null },
+          { propertyId: 'p2', saved: true, code: null, message: null },
+        ],
+        saved: 2,
+        failed: 0,
+      });
+      renderDialog();
+
+      // What the layer tells before anything is chosen: it replaces what is already set.
+      expect(await screen.findByTestId('bulk-cleaning-dialog')).toHaveTextContent('sostituisce quello che è già impostato');
+      await fillTheForm();
+      fireEvent.click(screen.getByTestId('bulk-cleaning-save'));
+
+      expect(await screen.findByTestId('bulk-cleaning-all-saved')).toBeInTheDocument();
+      expect(screen.queryByTestId('bulk-cleaning-confirm')).not.toBeInTheDocument();
+    });
+  });
+
   describe('closing the layer', () => {
     it('BulkCleaningDialog_SaveOnItsWay_DoesNotCloseWithEscOrTheXAndTheResultIsStillTold', async () => {
       const pending = deferred<CleaningSetupBulkResponse>();
