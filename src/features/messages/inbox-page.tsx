@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { useWorkspace } from '@/hooks/use-workspace';
+import { ChatAvailabilityBanner } from './components/chat-availability-banner';
 import { ContactOptionsPanel } from './components/contact-options-panel';
 import { InboxPane } from './components/inbox-pane';
 
@@ -16,6 +17,9 @@ import { InboxPane } from './components/inbox-pane';
  * reached instead of an empty list: the conversation of the channel or of the site when there is one, an e-mail through CasaZen for a channel
  * with no chat, or why there is no way (`ContactOptionsPanel`, NF-63).
  *
+ * When the chat of some listings is not active yet it says so above the list (`ChatAvailabilityBanner`, E23/F01/US02): «Per N annunci la chat dei portali
+ * non è ancora attiva», instead of leaving their conversations missing without a word.
+ *
  * Reading asks `booking.read`; what the host sees follows its reach on the properties (the server applies it), so a collaborator
  * «Solo alcuni» lists the conversations of its own properties only.
  */
@@ -28,6 +32,7 @@ export function InboxPage() {
     <AppShell>
       <div className="space-y-6" data-testid="messages-inbox-page">
         <PageHeader title={t('messages.inbox.title')} description={t('messages.inbox.description')} />
+        <ChatAvailabilityBanner />
         <div className="grid grid-cols-1 gap-8 2xl:grid-cols-[minmax(0,28rem)_minmax(0,1fr)] 2xl:items-start">
           <InboxPane noConversation={(state) => (state.bookingId ? <ContactOptionsPanel bookingId={state.bookingId} canWrite={canWrite} /> : null)} />
           <div

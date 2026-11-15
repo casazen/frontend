@@ -21,7 +21,9 @@ export type FeatureFlagKey =
   | 'octorateDocumentImport'
   | 'ownerInvoicing'
   | 'accountantPackage'
-  | 'routines';
+  | 'routines'
+  | 'portalChatCheckInLink'
+  | 'guestContactInfo';
 
 export type FeatureFlags = Record<FeatureFlagKey, boolean>;
 
@@ -156,6 +158,19 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * switched on (`GET api/routines/actions`): the others can only run in test mode.
    */
   routines: false,
+  /**
+   * The check-in link of a stay from a portal that has no e-mail address goes to the guest in the reservation chat of the portal (backend `PortalChatCheckInLink`, E23/F01, NF-122,
+   * decision O10), off until the product owner turns it on in the test environment: the chat of the channel manager needs a permission that is not given everywhere yet. While it is
+   * off (and `guestContactInfo` too) the guest panel of a booking shows nothing of the delivery of the link, nothing asks the server for it, and the check-in link stays what it was: an
+   * e-mail, or a link the host copies. With the flag on the panel says where the link stands (sent, waiting for the chat, waiting for the conversation, failed) and offers «Copia link».
+   */
+  portalChatCheckInLink: false,
+  /**
+   * The e-mail address of a portal guest is read from the channel manager, once, for the check-in link only (backend `GuestContactInfo`, E23/F01, NF-122), off until the static IP addresses
+   * are registered. It has no screen of its own: it decides, with `portalChatCheckInLink`, whether the guest panel of a booking reads the delivery of the check-in link and says that the
+   * link waits for the registration of the IP addresses.
+   */
+  guestContactInfo: false,
 };
 
 /** Known flags from the API response; anything but `true` is off. */

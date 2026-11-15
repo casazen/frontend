@@ -36,6 +36,8 @@ const KINDS: Record<string, NotificationKind> = {
   // The guest finished the online check-in: Documenti shows the link's state and the guests registered.
   'guest-checkin-completed': { icon: UserCheck, textKey: 'notifications.types.guestCheckinCompleted', route: bookingTab('guest') },
   'guest-data-missing': { icon: ClipboardCheck, textKey: 'notifications.types.guestDataMissing', route: bookingTab('guest') },
+  // E23/F01/US01/T01: the check-in link of a stay from a portal did not reach the guest and the host carries it; Documenti shows why and has «Copia link».
+  'checkin-link-failed': { icon: AlertTriangle, textKey: 'notifications.types.checkinLinkFailed', route: bookingTab('guest') },
   // E03/F04/US02/T03: a guest handed the verification of the identity to a person; the operators open the console.
   'verification-required': { icon: ShieldCheck, textKey: 'notifications.types.verificationRequired', route: () => VERIFICATIONS_ROUTE },
   // E10/F03/US03/T03: a host asked CasaZen support to do a step («Fallo per me»); the entity is the request, and the staff open the queue of the requests.

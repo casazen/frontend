@@ -37,7 +37,14 @@ function ThreadRow({ thread, selected, search, now, showNeedsReply, compact }: T
   const locale = i18n.language;
   const guest = thread.guestName?.trim() || t('messages.thread.sender.guest');
   const origin = thread.lastMessageOrigin;
-  const prefix = origin === 'Person' ? t('messages.thread.sender.you') : origin === 'Assistant' ? t('messages.thread.sender.assistant') : null;
+  const prefix =
+    origin === 'Person'
+      ? t('messages.thread.sender.you')
+      : origin === 'Assistant'
+        ? t('messages.thread.sender.assistant')
+        : origin === 'Automation'
+          ? t('messages.thread.sender.automation')
+          : null;
   const text = thread.preview?.trim();
   const preview = text ? (prefix ? `${prefix}: ${text}` : text) : t('messages.thread.fileOnly');
   const stay = formatStayRange(thread.checkInDate, thread.checkOutDate, locale);

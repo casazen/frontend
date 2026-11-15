@@ -298,7 +298,24 @@ describe('ACTION_ROUTE_MAP: the actions of the traffic light', () => {
   });
 });
 
-// Every `ActivityAction` of the backend (`Casazen.Core/Entities/Enums/ActivityAction.cs`, today 21 values): the map has an entry for each, or the action is
+// E23/F01/US01/T01 (NF-122): the check-in link of a stay from a portal has not reached the guest. The item is about the booking and «Fallo ora» opens the guest tab, where the
+// panel of the link says why and has «Copia link»; whoever cannot read the bookings is not offered a button that ends on «nessun accesso».
+describe('ACTION_ROUTE_MAP: the check-in link of a portal booking', () => {
+  const item = { action: 'CopyCheckInLink', entityType: 'Booking', entityId: BOOKING_ID, propertyId: PROPERTY_ID as string | null };
+
+  it('todoActionRoute_CopyCheckInLink_OpensTheGuestTabOfTheBooking', () => {
+    expect(todoActionRoute(item)).toBe(`/app/short-rent/bookings/${BOOKING_ID}?tab=guest`);
+    expect(todoActionRoute(item, permissions(['booking.read']))).toBe(`/app/short-rent/bookings/${BOOKING_ID}?tab=guest`);
+  });
+
+  it('todoActionRoute_CopyCheckInLink_NeverOffersAPageThePersonCannotOpenOrTheIdOfSomethingThatIsNotABooking', () => {
+    expect(todoActionRoute(item, permissions(['property.read']))).toBeNull();
+    expect(todoActionRoute({ ...item, entityType: 'Property' })).toBeNull();
+    expect(todoActionRoute({ ...item, entityId: NO_ID })).toBeNull();
+  });
+});
+
+// Every `ActivityAction` of the backend (`Casazen.Core/Entities/Enums/ActivityAction.cs`, today 22 values): the map has an entry for each, or the action is
 // in the list of those whose page does not exist yet. An action that is in neither is a "To do" with no button that nobody noticed; the task that builds
 // the page adds the entry and takes the action out of the list (the test below fails until it does).
 const BACKEND_ACTIONS = [
@@ -323,6 +340,7 @@ const BACKEND_ACTIONS = [
   'ReviewFiscalDocument',
   'ReviewOwnerStay',
   'RenewOwnerDocument',
+  'CopyCheckInLink',
 ] as const;
 
 /** The actions whose page does not exist in the app yet: the mapping of the listings of the channel manager and the stays and documents of the owner portal. */

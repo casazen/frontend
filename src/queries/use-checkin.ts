@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { publicCheckinApi } from '@/api/checkin.api';
 import { bookingsApi } from '@/api/bookings.api';
 import {
@@ -12,6 +12,7 @@ import { isAxiosError } from 'axios';
 import { getProblemMessage } from '@/lib/api-errors';
 import { readInvoiceDataProblems } from '@/lib/invoice-data-schema';
 import { retryTransientErrors } from '@/lib/query-client';
+import { CHECKIN_LINK_DELIVERY_KEY } from '@/queries/use-checkin-link-delivery';
 
 const CHECKIN_KEY = 'checkin';
 export const CHECKIN_SESSION_KEY = 'checkin-session';
@@ -91,6 +92,15 @@ function toastLinkEmail(data: CheckInLinkResponse) {
   }
 }
 
+/**
+ * A link the host generated or sent replaces the one the system was taking to the guest: the server ends that delivery (E23/F01/US01/T01), so the line that
+ * says where the link stands is read again with the state of the session.
+ */
+function refreshLinkOf(queryClient: QueryClient, bookingId: string): void {
+  void queryClient.invalidateQueries({ queryKey: [CHECKIN_SESSION_KEY, bookingId] });
+  void queryClient.invalidateQueries({ queryKey: [CHECKIN_LINK_DELIVERY_KEY, bookingId] });
+}
+
 /** Sends a new link by email (also the reminder). The toast says what really happened to the email. */
 export function useResendCheckInLink(bookingId: string) {
   const queryClient = useQueryClient();
@@ -98,7 +108,7 @@ export function useResendCheckInLink(bookingId: string) {
   return useMutation({
     mutationFn: () => bookingsApi.resendCheckInLink(bookingId),
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: [CHECKIN_SESSION_KEY, bookingId] });
+      refreshLinkOf(queryClient, bookingId);
       toastLinkEmail(data);
     },
     onError: (error) => {
@@ -114,7 +124,7 @@ export function useSendCheckInLink() {
   return useMutation({
     mutationFn: (bookingId: string) => bookingsApi.resendCheckInLink(bookingId),
     onSuccess: (data, bookingId) => {
-      queryClient.invalidateQueries({ queryKey: [CHECKIN_SESSION_KEY, bookingId] });
+      refreshLinkOf(queryClient, bookingId);
       toastLinkEmail(data);
     },
     onError: (error) => {
@@ -130,7 +140,7 @@ export function useCreateCheckInLink(bookingId: string) {
   return useMutation({
     mutationFn: () => bookingsApi.createCheckInLink(bookingId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [CHECKIN_SESSION_KEY, bookingId] });
+      refreshLinkOf(queryClient, bookingId);
       toast.success(i18n.t('checkin.link.toast.generated'));
     },
     onError: (error) => {

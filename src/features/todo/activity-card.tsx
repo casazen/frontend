@@ -95,7 +95,8 @@ const ONBOARDING_FLOW = 'OnboardingFlow';
  * - `ResumeWizard`: the activation of the property, the wizard that is resumed by property, and the steps of the activation of CasaZen with Octorate
  *   (epic E10), told apart by the entity (`onlyFor`): a guided step of the panel opens its own page (it finds its kind from the id of the step), a
  *   part put off or left half way, and a «Fallo per me» request, open the plan (their items know the id of a stored row, not the part). The flow to
- *   complete opens the summary of the activation (its item knows a derived id, not the flow, so the table opens on all the flows).
+ *   complete opens the summary of the activation (its item knows a derived id, not the flow, so the table opens on all the flows);
+ * - `CopyCheckInLink`: the tab Documenti of the booking (`?tab=guest`), where the panel of the check-in link says where the link stands and has «Copia link» (E23/F01, NF-122).
  *
  * A route filled with the id of the entity (`target: 'entity'`) names the kind of entity the item must be about (`entityType`, `Booking`
  * for the page of a booking): `ApproveAiDraft` may be about a queue item, whose id is not a booking's, so such an item gets no booking address from it (the button is left
@@ -176,6 +177,11 @@ export const ACTION_ROUTE_MAP = {
   },
   DeclareTouristTax: {
     route: { path: '/app/short-rent/alloggiati/reports', propertyParam: 'property', search: { kind: 'TouristTaxDeclaration' } },
+  },
+  // The check-in link of a stay from a portal has not reached the guest (E23/F01/US01/T01, `ActivityAction` 110, NF-122): the guest tab of the booking, where the panel of the link says
+  // why it has not gone by itself and has «Copia link». The item is about the booking.
+  CopyCheckInLink: {
+    route: { path: '/app/short-rent/bookings/:id', target: 'entity', entityType: BOOKING, tab: 'guest' },
   },
 } satisfies Record<string, TodoActionTarget>;
 

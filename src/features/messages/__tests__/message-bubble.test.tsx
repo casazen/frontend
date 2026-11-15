@@ -77,6 +77,20 @@ describe('MessageBubble: the state of a message and what can be done about it (N
     expect(actions.onResend).toHaveBeenCalledWith(msg);
   });
 
+  // E23/F01/US01/T01: the check-in link that CasaZen writes in the chat of the portal is nobody's words. It is told apart, and a refused one is not sent again by hand (the copy would be
+  // the message of a person, which answers the guest's last question for good): the link waits in the «Da fare» list with «Copia link».
+  it('MessageBubble_AutomaticMessageTheChannelRefused_IsToldApartSaysWhatHappenedAndIsNotSentAgainByHand', () => {
+    const msg = message({ origin: 'Automation', deliveryState: 'Error', text: 'Ecco il link del check-in' });
+    const actions = renderBubble(itemOf(msg, 'Messaggio automatico'));
+
+    expect(screen.getByTestId('message-bubble')).toHaveAttribute('data-origin', 'Automation');
+    expect(screen.getByText('Messaggio automatico')).toBeInTheDocument();
+    expect(screen.getByTestId('delivery-error')).toHaveTextContent('La chat del portale non ha accettato il messaggio.');
+    expect(screen.getByTestId('delivery-error').textContent).not.toMatch(/octorate/i);
+    expect(screen.queryByRole('button', { name: 'Riprova' })).not.toBeInTheDocument();
+    expect(actions.onResend).not.toHaveBeenCalled();
+  });
+
   it('MessageBubble_MessageAlreadySentAgain_HasNoSecondButtonToSendItAThirdTime', () => {
     renderBubble(itemOf(message({ deliveryState: 'Error' })), actionsMock(), { resent: new Set(['m-1']) });
 

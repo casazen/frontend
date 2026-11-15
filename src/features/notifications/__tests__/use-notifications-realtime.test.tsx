@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-quer
 import { createElement } from 'react';
 import { getInvoiceData } from '@/api/invoice-data.api';
 import { COMPLIANCE_KEY } from '@/features/compliance/use-compliance';
+import { INTERNAL_ACTIVITIES_KEY } from '@/lib/query-client';
 import { COMPLIANCE_ARCHIVE_KEY } from '@/queries/compliance-archive';
 import { COMPLIANCE_HEALTH_KEY } from '@/queries/compliance-health';
 import { ACCOUNTANT_PACKAGE_KEY } from '@/queries/use-accountant-package';
@@ -12,6 +13,7 @@ import { ALLOGGIATI_KEY } from '@/queries/use-alloggiati';
 import { BOOKING_THREAD_QUERY, HOST_THREADS_QUERY, UNREAD_MESSAGES_QUERY } from '@/queries/use-booking-messages';
 import { BOOKINGS_KEY } from '@/queries/use-bookings';
 import { CHECKIN_SESSION_KEY } from '@/queries/use-checkin';
+import { CHECKIN_LINK_DELIVERY_KEY } from '@/queries/use-checkin-link-delivery';
 import { DASHBOARD_KEY } from '@/queries/use-dashboard';
 import { FISCAL_DOCUMENTS_KEY } from '@/queries/use-fiscal-documents';
 import { INVOICE_DATA_KEY, useInvoiceData } from '@/queries/use-invoice-data';
@@ -157,6 +159,22 @@ describe('useNotificationsRealtime', () => {
     expect(keys).toContainEqual([INVOICE_DATA_KEY]);
     // So is the coverage report of the archive of the proofs, which an open «Riepilogo» shows (E03/F03/US02).
     expect(keys).toContainEqual([COMPLIANCE_ARCHIVE_KEY, 'report']);
+  });
+
+  // E23/F01/US01/T01: a link that did not reach the guest while the socket was down sent no message either: where the link stands and the «To do» list are read again.
+  it('useNotificationsRealtime_ReconnectAfterAGap_AlsoReadsAgainWhereTheCheckInLinkStandsAndTheTodoList', () => {
+    const { queryClient, wrapper } = setup();
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    const client = fakeClient();
+    renderHook(() => useNotificationsRealtime({ enabled: true, userId: 'u1', getAccessToken, client }), { wrapper });
+
+    act(() => client.setState('connected'));
+    act(() => client.setState('connecting'));
+    act(() => client.setState('connected'));
+
+    const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+    expect(keys).toContainEqual([CHECKIN_LINK_DELIVERY_KEY]);
+    expect(keys).toContainEqual([INTERNAL_ACTIVITIES_KEY]);
   });
 
   it('useNotificationsRealtime_ReconnectAfterAGap_AlsoReadsAgainTheVerificationsOfTheOperator', () => {
@@ -381,7 +399,8 @@ describe('applyNotificationsChange', () => {
     const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
     applyNotificationsChange(queryClient, { unreadCount: 1, type: 'guest-checkin-completed', entityId: 'b-1' });
     const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
-    for (const root of [BOOKINGS_KEY, CHECKIN_SESSION_KEY, ALLOGGIATI_KEY, COMPLIANCE_KEY, DASHBOARD_KEY, 'guests', INVOICE_DATA_KEY])
+    // Where the link stands on its way to the guest ends with the check-in (E23/F01/US01/T01): the guest panel stops saying that it waits.
+    for (const root of [BOOKINGS_KEY, CHECKIN_SESSION_KEY, CHECKIN_LINK_DELIVERY_KEY, ALLOGGIATI_KEY, COMPLIANCE_KEY, DASHBOARD_KEY, 'guests', INVOICE_DATA_KEY])
       expect(keys, root).toContainEqual([root]);
     // The entity is a booking, so its thread is read again too, as for any booking event.
     expect(keys).toContainEqual([BOOKING_THREAD_QUERY, 'b-1']);
@@ -566,9 +585,36 @@ describe('applyNotificationsChange', () => {
       const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
       expect(keys).not.toContainEqual([BOOKINGS_KEY]);
       expect(keys).not.toContainEqual([CHECKIN_SESSION_KEY]);
+      expect(keys).not.toContainEqual([CHECKIN_LINK_DELIVERY_KEY]);
       expect(keys).not.toContainEqual([INVOICE_DATA_KEY]);
     },
   );
+
+  // E23/F01/US01/T01 (NF-122): the automatic delivery of the check-in link of a booking failed for good (the push `checkin-link-failed`, whose entity is the booking). The page of the
+  // booking that is open shows where the link stands and «Copia link», and the «To do» list the item that asks the host to carry the link, without a reload.
+  it('applyNotificationsChange_CheckInLinkFailed_ReadsAgainWhereTheLinkStandsTheSessionTheBookingAndTheTodoListAndNothingElseOfTheCheckIn', () => {
+    const { queryClient } = setup();
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    applyNotificationsChange(queryClient, { unreadCount: 1, type: 'checkin-link-failed', entityId: 'b-1' });
+    const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+    for (const root of [CHECKIN_LINK_DELIVERY_KEY, CHECKIN_SESSION_KEY, BOOKINGS_KEY, INTERNAL_ACTIVITIES_KEY]) expect(keys, root).toContainEqual([root]);
+    // The entity is a booking, as for any booking event.
+    expect(keys).toContainEqual([BOOKING_THREAD_QUERY, 'b-1']);
+    // No guest completed anything: the guests of the stay, the invoice data and the cockpit are not read again.
+    for (const root of [ALLOGGIATI_KEY, COMPLIANCE_KEY, INVOICE_DATA_KEY]) expect(keys, root).not.toContainEqual([root]);
+  });
+
+  it('applyNotificationsChange_CheckInLinkFailed_AnOpenGuestPanelReadsWhereTheLinkStandsAgainWithoutAReload', async () => {
+    const { queryClient, wrapper } = setup();
+    const readDelivery = vi.fn().mockResolvedValue({ channel: 'PortalChat', state: 'Sending', attempts: 1, ended: false });
+    // What the open guest tab of booking b-1 keeps mounted (`useCheckInLinkDelivery`).
+    renderHook(() => useQuery({ queryKey: [CHECKIN_LINK_DELIVERY_KEY, 'b-1'], queryFn: readDelivery }), { wrapper });
+    await waitFor(() => expect(readDelivery).toHaveBeenCalledTimes(1));
+
+    act(() => applyNotificationsChange(queryClient, { unreadCount: 1, type: 'checkin-link-failed', entityId: 'b-1' }));
+
+    await waitFor(() => expect(readDelivery).toHaveBeenCalledTimes(2));
+  });
 
   it('applyNotificationsChange_GuestCheckInCompleted_AnOpenBookingPageReadsTheBookingAndItsCheckInAgainWithoutAReload', async () => {
     const { queryClient, wrapper } = setup();
