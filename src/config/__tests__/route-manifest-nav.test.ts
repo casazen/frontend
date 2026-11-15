@@ -182,6 +182,7 @@ describe('route-manifest main menu (UI-04a)', () => {
     ['account', '/app/account/statements'],
     ['account', '/app/account/withholding'],
     ['account', '/app/account/wire-transfers'],
+    ['account', '/app/account/channel-commissions'],
     ['account', '/app/account/owner-close'],
     ['account', '/app/account/owners'],
     ['admin', '/app/admin/activities'],
@@ -194,6 +195,8 @@ describe('route-manifest main menu (UI-04a)', () => {
     ['/app/account/statements', 'StatementsPage'],
     ['/app/account/withholding', 'WithholdingPage'],
     ['/app/account/wire-transfers', 'WireTransferPage'],
+    // The commissions of the portals after the setup (E13/F02/US03/T01): the same door as the other pages of the agency's money.
+    ['/app/account/channel-commissions', 'ChannelCommissionRulesPage'],
   ] as const;
 
   it.each(MONEY_PAGES)('has %s in the Amministrazione, behind the plan, for the finance administrators, and it opens %s', async (path, componentName) => {
@@ -220,6 +223,7 @@ describe('route-manifest main menu (UI-04a)', () => {
       '/app/account/statements',
       '/app/account/withholding',
       '/app/account/wire-transfers',
+      '/app/account/channel-commissions',
     ]);
     expect(paths(getPrimaryNavEntries('account', allowAll, on)).length).toBeLessThanOrEqual(MAX_PRIMARY_NAV_ENTRIES);
     // A member of the org that is not its owner or an administrator (accountant, property manager, collaborator) has no way in: the endpoints are not theirs.
@@ -284,6 +288,7 @@ describe('route-manifest main menu (UI-04a)', () => {
       '/app/account/owner-invoices',
       '/app/account/withholding',
       '/app/account/wire-transfers',
+      '/app/account/channel-commissions',
     ]);
     // The flag off: nothing changes for the plan that exists today.
     expect(paths(getNavSection('/app/account/statements', allowAll, { agencyTier: true }))).not.toContain('/app/account/owner-invoices');
@@ -412,7 +417,14 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
     '/app/short-rent/settings/organization': ['/app/short-rent/settings/integration', '/app/short-rent/settings/assistant'],
     // The month of the owners of an agency, in the order of its steps.
     // The invoices to the owners (E13/F02/US01/T03, behind their flag) come right after the statements they are made from, at 1.5.
-    '/app/account/owner-close': ['/app/account/statements', '/app/account/owner-invoices', '/app/account/withholding', '/app/account/wire-transfers'],
+    // The commissions of the channels (E13/F02/US03/T01) are the last tab: what each portal keeps when it sends no commission, for the changes made after the setup.
+    '/app/account/owner-close': [
+      '/app/account/statements',
+      '/app/account/owner-invoices',
+      '/app/account/withholding',
+      '/app/account/wire-transfers',
+      '/app/account/channel-commissions',
+    ],
     '/app/admin/suppliers': ['/app/admin/suppliers/invite', '/app/admin/invite-qr'],
     '/app/admin/seo': ['/app/admin/marketing'],
     '/app/admin/jobs': ['/app/admin/ai', '/app/admin/demo'],

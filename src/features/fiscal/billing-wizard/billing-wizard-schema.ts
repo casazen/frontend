@@ -163,7 +163,7 @@ function check(context: RefinementCtx, valid: boolean, path: string | readonly (
 }
 
 /** Whether a text is a percent from 0 to 100 with at most two decimals. */
-function isPercent(value: string): boolean {
+export function isPercent(value: string): boolean {
   const text = value.trim();
   if (!PERCENT.test(text)) return false;
   const parsed = parseDecimal(text);

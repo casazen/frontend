@@ -188,7 +188,7 @@ describe('NavSectionTabs (UI-04a)', () => {
     cleanup();
 
     renderAt('/app/account/statements', { flags: { agencyTier: true } });
-    expect(labelsOf('Sezioni di Chiusura mensile')).toEqual(['Chiusura mensile', 'Rendiconti', "Ritenute d'acconto", 'Bonifici proprietari']);
+    expect(labelsOf('Sezioni di Chiusura mensile')).toEqual(['Chiusura mensile', 'Rendiconti', "Ritenute d'acconto", 'Bonifici proprietari', 'Commissioni dei canali']);
     cleanup();
 
     // The supplier area keeps the links to its sub-pages in the header of the page of the entry (`NavChildLinks`).

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import type { OwnerCloseReadiness, OwnerReadinessIssue } from '@/types';
 import {
+  CHANNEL_COMMISSIONS_PATH,
   OWNER_ONBOARDING_PATH,
   actionForIssue,
   camelCode,
@@ -180,6 +181,12 @@ function renderAction(action: IssueAction, group: AnomalyGroup, { t, period, onP
       return (
         <Button asChild size="sm" variant="outline">
           <Link to={OWNER_ONBOARDING_PATH}>{t('ownerAccounting.anomalies.actions.onboarding')}</Link>
+        </Button>
+      );
+    case 'channelRules':
+      return (
+        <Button asChild size="sm" variant="outline">
+          <Link to={CHANNEL_COMMISSIONS_PATH}>{t('ownerAccounting.anomalies.actions.channelRules')}</Link>
         </Button>
       );
     case 'payment':

@@ -156,6 +156,9 @@ describe('the month: groups, anomalies, percentage', () => {
       owner_fiscal_profile_missing: 'profile',
       owner_fiscal_policy_not_approved: 'profile',
       ownership_share_gap: 'onboarding',
+      // A stay with no mandate in force is resolved in the financial data of the owner, a portal with no commission rule in the channel commissions (E13/F02/US03/T01).
+      mandate_missing_for_stay: 'profile',
+      channel_commission_missing: 'channelRules',
       source_amount_missing: 'payment',
       period_dirty: 'regenerate',
       statement_missing: 'prepare',

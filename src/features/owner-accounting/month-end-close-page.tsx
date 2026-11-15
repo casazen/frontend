@@ -13,6 +13,7 @@ import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { endOfMonth, todayInRome } from '@/lib/stay-dates';
 import { ownerAccountingKeys, useCloseReadiness, useOwnerNames, usePostPeriod } from '@/queries/use-owner-accounting';
 import type { OwnerStatementVersion } from '@/types';
+import { BulkCloseDialog } from './components/bulk-close-dialog';
 import { CloseReadinessPanel } from './components/close-readiness-panel';
 import { CorrectionDialog } from './components/correction-dialog';
 import { FxRateDialog } from './components/fx-rate-dialog';
@@ -39,7 +40,8 @@ import { useOwnerFormat } from './use-owner-format';
  * «Chiusura mensile» of the Amministrazione (E06/F05/US02/T04, NF-110): the month of the agency's owners in four groups, what is still to prepare,
  * to check, approved and published, how ready the month is and what is wrong, and for each owner the next step of the controlled close: check,
  * approve, publish, pay, close. Opening the page only reads. Every change is the person's click, with a confirmation proportionate to the risk,
- * and a statement that was published is never edited: the only change is a new version.
+ * and a statement that was published is never edited: the only change is a new version. For an agency with many flats the section of the owners has «Esegui per tutti»
+ * (E13/F02/US03/T01): the same steps for every owner of the month in one go, with the progress and then a result for each owner, the ones that failed listed with the reason.
  */
 export function MonthEndClosePage() {
   const { t } = useTranslation();
@@ -70,6 +72,7 @@ function MonthEndCloseBody() {
   const ownersQuery = useOwnerNames();
   const post = usePostPeriod();
   const [dialog, setDialog] = useState<PageDialog>(null);
+  const [bulkOpen, setBulkOpen] = useState(false);
 
   const names = useMemo(() => new Map((ownersQuery.data ?? []).map((owner) => [owner.id, `${owner.firstName} ${owner.lastName}`.trim()] as const)), [ownersQuery.data]);
   const readiness = readinessQuery.data;
@@ -129,7 +132,14 @@ function MonthEndCloseBody() {
         />
 
         {summary.owners > 0 ? (
-          <PlainSection title={t('ownerAccounting.rows.title')} count={summary.owners} data-testid="month-owners">
+          <PlainSection
+            title={t('ownerAccounting.rows.title')}
+            count={summary.owners}
+            actionLabel={t('ownerAccounting.bulk.open')}
+            onAction={() => setBulkOpen(true)}
+            actionTestId="bulk-open"
+            data-testid="month-owners"
+          >
             <div className="space-y-6">
               {OWNER_GROUPS.map((group) => (
                 <OwnerGroupSection key={group} group={group} period={period} monthOver={monthOver} owners={ownersOf(readiness, group)} nameOf={nameOf} />
@@ -157,6 +167,9 @@ function MonthEndCloseBody() {
       {dialog?.kind === 'fx' ? <FxRateDialog open onOpenChange={(open) => !open && setDialog(null)} defaultDate={lastDay > today ? today : lastDay} /> : null}
       {dialog?.kind === 'correction' ? (
         <CorrectionDialog open onOpenChange={(open) => !open && setDialog(null)} ownerId={dialog.ownerId} ownerName={nameOf(dialog.ownerId)} currency={currencyOf(dialog.ownerId)} />
+      ) : null}
+      {bulkOpen && readiness && summary ? (
+        <BulkCloseDialog open onOpenChange={setBulkOpen} period={period} readiness={readiness} summary={summary} monthOver={monthOver} nameOf={nameOf} />
       ) : null}
     </div>
   );
