@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach, beforeAll, beforeEach } from 'vitest';
-import { cleanup, configure, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, configure, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { createElement, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
@@ -23,7 +23,13 @@ import { TouristTaxStep } from '../tourist-tax-step';
 import type { CheckInWizardValues } from '../wizard/lib/checkin-wizard-model';
 import { TaxCollection } from '../wizard/steps/tax-collection';
 import { TaxStep } from '../wizard/steps/tax-step';
-import { guestTaxAvailability, readPublicTouristTax, readTouristTaxPaymentIntent, withoutPaymentReturn } from '../lib/tourist-tax-model';
+import {
+  guestTaxAvailability,
+  readPublicTouristTax,
+  readTouristTaxPaymentIntent,
+  refusalLeavesPaymentOpen,
+  withoutPaymentReturn,
+} from '../lib/tourist-tax-model';
 
 // The Payment Element and Stripe.js are Stripe's: the page only has to open them with what the API gave, and to confirm once.
 const stripe = vi.hoisted(() => ({ confirmPayment: vi.fn(), loadStripe: vi.fn() }));
@@ -103,7 +109,10 @@ function queryClientOf() {
   return new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
 }
 
-function renderStep(view: PublicTouristTax | null, props: { refetch?: () => Promise<unknown>; completed?: boolean } = {}) {
+/** What a new read of the tax answers: the tax as the server says it now, or the failure of the read. */
+type TaxReadResult = { data?: PublicTouristTax; isError?: boolean };
+
+function renderStep(view: PublicTouristTax | null, props: { refetch?: () => Promise<TaxReadResult | undefined>; completed?: boolean } = {}) {
   const client = queryClientOf();
   const refetch = props.refetch ?? vi.fn().mockResolvedValue(undefined);
   const element = (current: PublicTouristTax | null) =>
@@ -294,7 +303,89 @@ describe('TouristTaxStep: the money', () => {
   });
 });
 
+describe('TouristTaxStep: back to what the server says after an outcome that is not sure', () => {
+  const PAY = /^Paga 9,00\s*CHF$/;
+  const refused = (type: string, message: string) => ({ error: { type, message } });
+  const settled = async () => {
+    // What `settle` does after the read of the tax (a microtask): the negative checks below look at the end of it.
+    await act(async () => {
+      await Promise.resolve();
+    });
+  };
+
+  it('confirmRefused_OutcomeOpen_ReadsTheTaxFirstThenAsksTheIntentAgain_NoSecondConfirmation', async () => {
+    stripe.confirmPayment.mockResolvedValue(refused('api_connection_error', 'A network error occurred.'));
+    const refetch = vi.fn().mockResolvedValue({ data: taxView(), isError: false });
+    renderStep(taxView(), { refetch });
+
+    fireEvent.click(await screen.findByRole('button', { name: PAY }));
+
+    await waitFor(() => expect(publicCheckinApi.createTouristTaxPaymentIntent).toHaveBeenCalledTimes(2));
+    expect(refetch).toHaveBeenCalledTimes(1);
+    // The tax is read BEFORE the intent is asked for again, and nothing is confirmed twice.
+    const readOrder = refetch.mock.invocationCallOrder[0] ?? Number.POSITIVE_INFINITY;
+    const askedAgainOrder = vi.mocked(publicCheckinApi.createTouristTaxPaymentIntent).mock.invocationCallOrder[1] ?? 0;
+    expect(readOrder).toBeLessThan(askedAgainOrder);
+    expect(stripe.confirmPayment).toHaveBeenCalledTimes(1);
+    expect(await screen.findByTestId('tourist-tax-payment')).toBeInTheDocument();
+  });
+
+  it('confirmRefused_DeclinedCard_NothingIsReadOrAskedAndTheFormStays', async () => {
+    stripe.confirmPayment.mockResolvedValue(refused('card_error', 'Your card was declined.'));
+    const refetch = vi.fn().mockResolvedValue({ data: taxView(), isError: false });
+    renderStep(taxView(), { refetch });
+
+    fireEvent.click(await screen.findByRole('button', { name: PAY }));
+
+    expect(await screen.findByTestId('tourist-tax-payment-error')).toHaveTextContent('Your card was declined.');
+    expect(screen.getByTestId('tourist-tax-payment')).toBeInTheDocument();
+    expect(refetch).not.toHaveBeenCalled();
+    expect(publicCheckinApi.createTouristTaxPaymentIntent).toHaveBeenCalledTimes(1);
+  });
+
+  it('confirmRefused_TheServerNowSaysThereIsNothingToPay_NoNewIntentIsAskedFor', async () => {
+    // The host recorded «Pagata in struttura»: the server cancelled the intent, so the confirmation is refused, and the tax read again is no longer payable.
+    stripe.confirmPayment.mockResolvedValue(refused('invalid_request_error', 'The PaymentIntent was canceled.'));
+    const refetch = vi.fn().mockResolvedValue({ data: taxView({ status: 'PaidAtProperty', reason: 'PaidAtProperty', payable: 0 }), isError: false });
+    renderStep(taxView(), { refetch });
+
+    fireEvent.click(await screen.findByRole('button', { name: PAY }));
+
+    await waitFor(() => expect(refetch).toHaveBeenCalledTimes(1));
+    await settled();
+    expect(publicCheckinApi.createTouristTaxPaymentIntent).toHaveBeenCalledTimes(1);
+  });
+
+  it('intentRefused404_ReadsTheTaxAgain', async () => {
+    vi.mocked(publicCheckinApi.createTouristTaxPaymentIntent).mockRejectedValue(httpError(404));
+    const { refetch } = renderStep(taxView());
+
+    await screen.findByTestId('tourist-tax-session-failed');
+    await waitFor(() => expect(refetch).toHaveBeenCalled());
+  });
+
+  it('retry_ReadsTheTaxFirst_AndATaxThatIsPaidGetsNoIntent', async () => {
+    vi.mocked(publicCheckinApi.createTouristTaxPaymentIntent).mockRejectedValueOnce(httpError(503));
+    const refetch = vi.fn().mockResolvedValue({ data: taxView({ status: 'PaidOnline', reason: 'NothingDue', payable: 0, collectedAmount: 9 }), isError: false });
+    renderStep(taxView(), { refetch });
+
+    fireEvent.click(await screen.findByTestId('tourist-tax-retry'));
+
+    await waitFor(() => expect(refetch).toHaveBeenCalledTimes(1));
+    await settled();
+    expect(publicCheckinApi.createTouristTaxPaymentIntent).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('the answers of the API', () => {
+  it('refusalLeavesPaymentOpen_ADeclinedCardOrAnIncompleteFormDoNot_AnyOtherRefusalDoes', () => {
+    expect(refusalLeavesPaymentOpen({ type: 'card_error', code: 'card_declined' })).toBe(false);
+    expect(refusalLeavesPaymentOpen({ type: 'validation_error' })).toBe(false);
+    expect(refusalLeavesPaymentOpen({ type: 'invalid_request_error', code: 'payment_intent_unexpected_state' })).toBe(true);
+    expect(refusalLeavesPaymentOpen({ type: 'api_connection_error' })).toBe(true);
+    expect(refusalLeavesPaymentOpen(undefined)).toBe(true);
+  });
+
   it('readPublicTouristTax_AnAnswerThatIsNotTheTax_IsNothingAndNeverATaxOfZero', () => {
     // A catch-all answer that gave the context of the link, or the page of a misconfigured rewrite.
     expect(readPublicTouristTax({ completed: false, status: 'Inviato', sessionId: 'x', declaredGuests: 1 })).toBeNull();

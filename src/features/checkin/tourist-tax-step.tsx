@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Alert } from '@/components/ui/alert';
@@ -20,18 +20,25 @@ import {
   paymentElementLocaleOf,
   paymentReturnUrlOf,
   problemCodeOf,
+  refusalLeavesPaymentOpen,
   type GuestTaxOutlook,
 } from './lib/tourist-tax-model';
 
 type Money = (amount: number) => string;
+
+/** What a new read of the tax answers (`refetch` of the query): the tax as the server says it now, or the failure of the read. */
+interface TaxRead {
+  data?: PublicTouristTax;
+  isError?: boolean;
+}
 
 interface TouristTaxStepProps {
   /** The check-in link: the only access check of the page. */
   token: string;
   /** What the API says now; `null` when it could not be read (the step says so and offers to try again). */
   view: PublicTouristTax | null;
-  /** Reads the tax again: after a payment the state comes from the server, never from the browser's own result. */
-  refetch: () => Promise<unknown>;
+  /** Reads the tax again: after a payment the state comes from the server, never from the browser's own result. The answer says what the server says now. */
+  refetch: () => Promise<TaxRead | undefined>;
   /** A read is under way. */
   fetching: boolean;
   /**
@@ -96,7 +103,7 @@ function TaxFigures({ view, money }: { view: PublicTouristTax; money: Money }) {
 interface PaymentAreaProps {
   token: string;
   view: PublicTouristTax;
-  refetch: () => Promise<unknown>;
+  refetch: () => Promise<TaxRead | undefined>;
   fetching: boolean;
   onPayingChange?: (paying: boolean) => void;
 }
@@ -105,7 +112,8 @@ interface PaymentAreaProps {
  * The payment of what the API says can be paid now: the PaymentIntent of the stay on the organization's account (asked once for each amount: the same call again gives the same
  * intent), the Payment Element, and what follows a payment. «Pagata» is never said because the browser got a result: after a confirmation the page says the payment is being
  * confirmed and reads the tax again, with backoff, until the server (which learns it from the payment provider) says it is paid. While a payment is under way the form is not shown,
- * so the guest cannot pay twice.
+ * so the guest cannot pay twice. An outcome the page cannot be sure of (a refusal that leaves the payment open, a payment not confirmed for long, an intent that could not be had) is
+ * settled with the server (`settle`): the tax is read again and only a tax that still has something to pay asks for the intent once more.
  */
 function PaymentArea({ token, view, refetch, fetching, onPayingChange }: PaymentAreaProps) {
   const { t, i18n } = useTranslation();
@@ -114,6 +122,9 @@ function PaymentArea({ token, view, refetch, fetching, onPayingChange }: Payment
   const [clientStatus, setClientStatus] = useState<ClientPaymentStatus | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
+  // The server is being asked again: the buttons wait, and a second ask does not start while one is under way.
+  const [checking, setChecking] = useState(false);
+  const settling = useRef(false);
   const failure = intent.error;
   // A payment is under way when the guest confirmed one, or the server says one of the stay is (another tab, a method that redirected the guest and brought them back).
   const awaiting = clientStatus === 'succeeded' || clientStatus === 'processing' || problemCodeOf(failure) === TOURIST_TAX_IN_PROGRESS_CODE;
@@ -128,20 +139,48 @@ function PaymentArea({ token, view, refetch, fetching, onPayingChange }: Payment
     mutate();
   }, [awaiting, amountKey, mutate]);
 
-  // A 409 says the tax moved (nothing left to pay, the payment is not offered any more, one is under way): the page reads it again and shows what it says.
+  /**
+   * Back to what the server says after an outcome the page cannot be sure of. The tax is read first: when the server now says nothing is left to pay (paid online, paid at the property, a
+   * payment recorded since) or the read failed, no intent is asked for (never a second charge: the page does not offer a form for a stay that is paid). Otherwise the intent is asked for
+   * again: the server answers 409 while a payment of the stay is under way (the page then waits for it), and gives a valid intent when none is (the payment that went wrong gives the form
+   * back). `clientStatus` goes only when the server gave an intent, so «in conferma» stays up for as long as a payment may be moving.
+   */
+  const settle = useCallback(async () => {
+    if (settling.current) return;
+    settling.current = true;
+    setChecking(true);
+    try {
+      const read = await refetch();
+      if (read?.isError || (read?.data !== undefined && read.data.payable <= 0)) return;
+      mutate(undefined, {
+        onSuccess: () => {
+          setClientStatus(null);
+          setAttempt(0);
+        },
+      });
+    } finally {
+      settling.current = false;
+      setChecking(false);
+    }
+  }, [mutate, refetch]);
+
+  // A 404 or a 409 says the tax moved (the payment is not offered any more or the link is gone, nothing left to pay, one is under way): the page reads it again and shows what it says.
   useEffect(() => {
-    if (failure !== null && getHttpStatus(failure) === 409) void refetch();
+    const status = failure === null ? undefined : getHttpStatus(failure);
+    if (status === 404 || status === 409) void refetch();
   }, [failure, refetch]);
 
-  // Backoff while the server has not recorded the payment yet; after a number of reads the guest is offered «Aggiorna lo stato» instead of waiting for ever.
+  // Backoff while the server has not recorded the payment yet; after a number of reads the guest is offered «Aggiorna lo stato» instead of waiting for ever. The last read also asks for the
+  // intent again (`settle`): a payment that went wrong after «in conferma» gives the form back, one that is still under way answers 409.
   useEffect(() => {
     if (!awaiting || stopped || fetching) return undefined;
     const timer = window.setTimeout(() => {
       setAttempt((current) => current + 1);
-      void refetch();
+      if (attempt + 1 >= TOURIST_TAX_MAX_POLLS) void settle();
+      else void refetch();
     }, nextPollDelay(attempt));
     return () => window.clearTimeout(timer);
-  }, [awaiting, stopped, fetching, attempt, refetch]);
+  }, [awaiting, stopped, fetching, attempt, refetch, settle]);
 
   if (awaiting) {
     return (
@@ -154,10 +193,10 @@ function PaymentArea({ token, view, refetch, fetching, onPayingChange }: Payment
             type="button"
             variant="outline"
             size="sm"
-            disabled={fetching}
+            disabled={fetching || checking}
             onClick={() => {
               setAttempt(0);
-              void refetch();
+              void settle();
             }}
             data-testid="tourist-tax-refresh"
           >
@@ -174,7 +213,7 @@ function PaymentArea({ token, view, refetch, fetching, onPayingChange }: Payment
         <p role="alert" className="text-sm text-destructive">
           {t('checkin.touristTax.sessionFailed')}
         </p>
-        <Button type="button" variant="outline" size="sm" onClick={() => mutate()} data-testid="tourist-tax-retry">
+        <Button type="button" variant="outline" size="sm" disabled={checking} onClick={() => void settle()} data-testid="tourist-tax-retry">
           {t('checkin.touristTax.retry')}
         </Button>
       </div>
@@ -219,6 +258,10 @@ function PaymentArea({ token, view, refetch, fetching, onPayingChange }: Payment
           setClientStatus(status);
         }}
         onError={setPaymentError}
+        // A declined card leaves the intent as it was; any other refusal may leave the server in another state (cancelled by the host, paid with the answer lost): it is asked.
+        onRefusal={(refusal) => {
+          if (refusalLeavesPaymentOpen(refusal)) void settle();
+        }}
       />
     </div>
   );

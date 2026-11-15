@@ -7,6 +7,12 @@ import { clientStatusFromIntent, type ClientPaymentStatus } from '@/features/pub
 
 export type StripeIntentMode = 'payment' | 'setup';
 
+/** What Stripe.js says of a refusal besides its words: the kind and the code of the error, never the intent it carries (that one holds the client secret). */
+export interface PaymentRefusal {
+  type?: string;
+  code?: string;
+}
+
 interface StripeIntentFormProps {
   mode: StripeIntentMode;
   /** Where Stripe sends the guest back after a redirect method: the outcome page of the booking (BK-07). */
@@ -14,6 +20,8 @@ interface StripeIntentFormProps {
   /** The intent was submitted without a redirect: its status as far as Stripe.js knows (never the booking's). */
   onSubmitted: (status: ClientPaymentStatus) => void;
   onError: (message: string) => void;
+  /** Told with `onError` which kind of refusal it was: a page that must tell a declined card from an intent that can no longer be paid reads it (the check-in, for the tourist tax). */
+  onRefusal?: (refusal: PaymentRefusal) => void;
   /** The words of the button; left out, "Paga subito" / "Conferma" as the checkout has always said. A block that is not a charge says so here. */
   submitLabel?: string;
   busyLabel?: string;
@@ -21,7 +29,7 @@ interface StripeIntentFormProps {
   onProcessingChange?: (processing: boolean) => void;
 }
 
-function StripeIntentForm({ mode, returnUrl, onSubmitted, onError, submitLabel, busyLabel: busyText, onProcessingChange }: StripeIntentFormProps) {
+function StripeIntentForm({ mode, returnUrl, onSubmitted, onError, onRefusal, submitLabel, busyLabel: busyText, onProcessingChange }: StripeIntentFormProps) {
   const { t } = useTranslation();
   const stripe = useStripe();
   const elements = useElements();
@@ -44,6 +52,7 @@ function StripeIntentForm({ mode, returnUrl, onSubmitted, onError, submitLabel, 
         });
         if (error) {
           onError(error.message ?? t('publicBooking.paymentFailed'));
+          onRefusal?.({ type: error.type, code: error.code });
           return;
         }
         onSubmitted(clientStatusFromIntent(paymentIntent?.status) ?? 'processing');
@@ -55,6 +64,7 @@ function StripeIntentForm({ mode, returnUrl, onSubmitted, onError, submitLabel, 
         });
         if (error) {
           onError(error.message ?? t('publicBooking.paymentSetupError'));
+          onRefusal?.({ type: error.type, code: error.code });
           return;
         }
         onSubmitted(clientStatusFromIntent(setupIntent?.status) ?? 'processing');

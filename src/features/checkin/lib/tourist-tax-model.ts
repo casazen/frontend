@@ -1,5 +1,6 @@
 import { isAxiosError } from 'axios';
 import type { StripeElementLocale } from '@stripe/stripe-js';
+import type { PaymentRefusal } from '@/features/public-booking/components/stripe-intent-payment';
 import { getHttpStatus, getProblemCode } from '@/lib/api-errors';
 import { formatCurrency } from '@/lib/utils';
 import type { TouristTaxCollection } from '@/types/checkin-wizard.types';
@@ -79,6 +80,15 @@ export function readTouristTaxPaymentIntent(data: unknown): TouristTaxPaymentInt
 /** The `code` of the problem a failed call answered (`tourist_tax_payment_in_progress`…), or `undefined`. */
 export function problemCodeOf(error: unknown): string | undefined {
   return isAxiosError(error) ? getProblemCode(error.response?.data) : undefined;
+}
+
+/**
+ * Whether a refusal of the confirmation leaves the payment of the stay open. A declined card, or a form that is not complete, leave the intent as it was: it can be paid again at once and
+ * nothing is asked of the server. Any other refusal (the intent cancelled by the host's «Pagata in struttura», one paid whose answer was lost, a connection that dropped) may leave the
+ * server in another state than the page has: the page asks the server, never the result the browser got.
+ */
+export function refusalLeavesPaymentOpen(refusal: PaymentRefusal | undefined): boolean {
+  return refusal?.type !== 'card_error' && refusal?.type !== 'validation_error';
 }
 
 /**
