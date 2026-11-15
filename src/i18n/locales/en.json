@@ -736,6 +736,10 @@
           "title": "Imported property to check",
           "why": "The property was created from a listing of the channel manager and stays inactive until you check what was imported."
         },
+        "CheckInLinkToSend": {
+          "title": "Check-in link to hand over",
+          "why": "The link has not reached the guest yet: see why and copy it to send it yourself."
+        },
         "CheckInPending": {
           "title": "Check-in to complete",
           "why": "The check-in of this stay is not complete yet."
@@ -5596,6 +5600,41 @@
       "copyTitle": "Check-in link",
       "copyHint": "Copy it and send it to the guest (WhatsApp, SMS…). Valid until {{date}}.",
       "copyFailed": "Copy failed: select the link and copy it by hand.",
+      "delivery": {
+        "carryIt": "Copy the link and send it to the guest yourself (WhatsApp, SMS…).",
+        "copyFailed": "Copy failed. Use “Generate link to copy”: you get a new link to copy by hand (the earlier one stops working).",
+        "failed": "The link did not reach the guest",
+        "loadError": "I cannot read how the sending of the link is going.",
+        "reason": {
+          "chatNotLicensed": "The portal chat is not active for this listing yet.",
+          "manualVerify": "We do not know whether the message left: check the conversation on the portal before sending the link again.",
+          "mappingNotConfirmed": "The listing is not linked to one of your properties yet: the message did not leave.",
+          "messageRefused": "The portal chat did not accept the message.",
+          "noConversation": "The portal has not opened the conversation of this booking yet.",
+          "notConnected": "The connection with your channel manager is not active.",
+          "rateLimited": "Your channel manager received too many requests: we tried several times without success.",
+          "rateLimitedRetrying": "Your channel manager received too many requests: we will try again shortly, by ourselves.",
+          "threadClosed": "The conversation is closed: no more messages can be written.",
+          "unavailable": "Your channel manager did not answer after several attempts.",
+          "unavailableRetrying": "Your channel manager did not answer: we will try again shortly, by ourselves.",
+          "unknown": "The link was not sent automatically."
+        },
+        "retrying": "The link has not reached the guest yet",
+        "sending": "Sending in the portal chat",
+        "sendingHint": "The message is with the portal and has not left yet. You do not have to do anything: the state updates by itself.",
+        "sent": "Link sent to the guest",
+        "sentEmail": "Sent by email",
+        "sentOn": "on {{date}}",
+        "sentPortalChat": "Sent in the portal chat",
+        "waitingChatPermission": "Waiting: the portal chat is not active yet",
+        "waitingChatPermissionHint": "To activate it you have to give the permission for the chat in your channel manager. As soon as it is active the link goes by itself.",
+        "waitingContact": "Waiting: there is no automatic way to reach the guest",
+        "waitingContactHint": "CasaZen has no contact for the guest of this booking: the link has to be handed over by hand.",
+        "waitingStaticIps": "Waiting for the IP addresses",
+        "waitingStaticIpsHint": "Your channel manager gives us the guest's email only once the IP addresses of CasaZen are registered. Meanwhile the link has to be handed over by hand.",
+        "waitingThread": "Waiting for the portal to open the conversation",
+        "waitingThreadHint": "The chat of this booking is not on the portal yet: the link goes by itself as soon as it appears."
+      },
       "email": {
         "sent": "Email with the link handed to the email service.",
         "sentAt": "Email with the link sent on {{date}}.",
@@ -14966,6 +15005,7 @@
     "actions": {
       "anonymized": "The guest's data was erased at their request.",
       "cannotReply": "You cannot answer this conversation.",
+      "chatNotLicensed": "You can read this conversation but not answer it: the portal chat is not active for this listing yet. To activate it you have to give the permission in your channel manager.",
       "mappingNotConfirmed": "You can read this conversation but not answer it: the listing is not linked to one of your properties yet.",
       "readOnly": "You can read the messages, but you do not have permission to answer.",
       "threadClosed": "The conversation is closed: no more messages can be written."
@@ -15009,6 +15049,12 @@
       "direct": "Direct",
       "expedia": "Expedia",
       "vrbo": "Vrbo"
+    },
+    "channelStatus": {
+      "explanation": "Until it is active, the guests' messages for these listings do not arrive here and you cannot answer from CasaZen: to activate it you have to give the permission for the chat in your channel manager.",
+      "title_one": "For {{count}} listing the portal chat is not active yet",
+      "title_other": "For {{count}} listings the portal chats are not active yet",
+      "which": "Which listings"
     },
     "composer": {
       "label": "Message for the guest",
@@ -15078,6 +15124,7 @@
     },
     "loadError": "Messages could not be loaded.",
     "problem": {
+      "chatNotLicensed": "The portal chat is not active for this listing yet: the message was not sent. To activate it you have to give the permission in your channel manager.",
       "generic": "It did not work. Try again.",
       "mappingNotConfirmed": "The listing is not linked to one of your properties yet: the message was not sent.",
       "rateLimited_one": "Too many messages: try again in {{count}} minute.",
@@ -15094,6 +15141,7 @@
       "placeholder": "Search by guest, code or property"
     },
     "state": {
+      "automaticErrorHint": "The portal chat did not accept the message. The check-in link is in your “To do” list: copy it from there and send it to the guest yourself.",
       "check": "Check",
       "edit": "Edit",
       "error": "Not sent",
@@ -15123,6 +15171,7 @@
       "earlier": "You see the latest messages of the conversation here.",
       "empty": "No messages yet. Write first.",
       "fileOnly": "Only an attachment",
+      "linkHidden": "[check-in link hidden]",
       "loadError": "I cannot load the conversation.",
       "loading": "Loading the conversation…",
       "logLabel": "Messages with {{name}}",
@@ -15132,6 +15181,7 @@
       "request": "Request",
       "sender": {
         "assistant": "CasaZen assistant",
+        "automation": "Automatic message",
         "guest": "Guest",
         "you": "You"
       },
@@ -15398,6 +15448,7 @@
       "serviceRequestBackupClosed": "A request you were a backup for was closed.",
       "verificationRequired": "A guest's identity is waiting for you to verify it.",
       "assistRequested": "New «Do it for me» request to handle.",
+      "checkinLinkFailed": "A check-in link did not reach a guest: copy it and send it yourself.",
       "assistVerified": "The connection you asked for is active: CasaZen support made it and we checked that it works.",
       "assistDeclared": "CasaZen support says it made the connection you asked for. If something does not work, reopen the request.",
       "assistReopened": "A user reopened a «Do it for me» request: it says it does not work.",

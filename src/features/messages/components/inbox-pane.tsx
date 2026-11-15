@@ -15,6 +15,8 @@ interface InboxPaneProps {
   compact?: boolean;
   /** What stands in for an empty list when it is the one of a booking that has no conversation yet. */
   noConversation?: (state: InboxState) => ReactNode;
+  /** The reader may copy the check-in link (`booking.write`): without it the link in the preview of an automatic message is hidden. */
+  canWrite?: boolean;
 }
 
 /**
@@ -22,7 +24,7 @@ interface InboxPaneProps {
  * the left column, what the page of a conversation draws beside the open thread; the list is the same in both, and every row keeps the
  * filters in its address.
  */
-export function InboxPane({ selectedKey, compact = false, noConversation }: InboxPaneProps) {
+export function InboxPane({ selectedKey, compact = false, noConversation, canWrite = false }: InboxPaneProps) {
   const [params, setParams] = useSearchParams();
   const { search } = useLocation();
   useListReturn(MESSAGES_PATH);
@@ -55,6 +57,7 @@ export function InboxPane({ selectedKey, compact = false, noConversation }: Inbo
         compact={compact}
         onChange={update}
         noConversation={noConversation ? noConversation(state) : undefined}
+        canWrite={canWrite}
       />
     </div>
   );
