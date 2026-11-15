@@ -1424,6 +1424,46 @@
     "bookings": "Prenotazioni",
     "guest": "Ospite",
     "property": "Proprietà",
+    "channelManager": {
+      "entrusted": "I dati degli ospiti sono stati affidati al tuo channel manager, che li invia alla Questura. Per CasaZen la comunicazione è fatta solo quando la ricevuta è archiviata.",
+      "field": {
+        "birthComune": "il comune di nascita",
+        "documentIssuePlace": "il luogo di rilascio del documento",
+        "residenceComune": "il comune di residenza",
+        "unknown": "i luoghi indicati"
+      },
+      "fix": "Correggi i dati degli ospiti",
+      "fixLayer": "Correggi il luogo che il tuo channel manager non riconosce e salva. Poi apri il check-in degli ospiti e premi «Conferma e invia»: è lì che l'ospite corretto passa al tuo channel manager (con l'invio automatico acceso parte da solo).",
+      "guestsLabel": "Ospiti che il channel manager non ha preso",
+      "lastAttempt": "Ultimo tentativo: {{when}}",
+      "needsPermission": "Per riprovare o correggere gli ospiti serve il permesso di inviare i dati degli ospiti: chiedilo a chi gestisce l'organizzazione.",
+      "nextStep": "Dopo aver corretto e salvato, apri il check-in degli ospiti e premi «Conferma e invia»: è lì che l'ospite corretto passa al tuo channel manager. Con l'invio automatico acceso parte da solo.",
+      "reason": {
+        "octorate_auth": "Il tuo channel manager ha rifiutato l'accesso di CasaZen: ricollega l'account e riprova.",
+        "octorate_conflict": "Il tuo channel manager segnala un conflitto con i suoi dati: riprova.",
+        "octorate_guest_rejected": "Il tuo channel manager non ha accettato i dati di questo ospite: controllali e correggili.",
+        "octorate_not_found": "Il tuo channel manager non trova questa prenotazione: controlla il collegamento dell'immobile.",
+        "octorate_rate_limited": "Il tuo channel manager ha ricevuto troppe richieste: riprova tra qualche minuto.",
+        "octorate_server": "Il tuo channel manager non risponde in questo momento: riprova tra qualche minuto.",
+        "place_not_recognized": "Il tuo channel manager non riconosce un luogo di questo ospite: correggi {{fields}}.",
+        "unknown": "Il tuo channel manager non ha preso questo ospite. Riprova; se succede ancora, scrivi all'assistenza."
+      },
+      "receiptArchived": "La ricevuta è archiviata in CasaZen: la trovi più sotto, tra le prove.",
+      "receiptArchivedLabel": "Ricevuta archiviata",
+      "receiptArchivedOn": "La ricevuta è archiviata in CasaZen dal {{date}}: la trovi più sotto, tra le prove.",
+      "receiptMissing": "I dati degli ospiti sono stati affidati al tuo channel manager, ma la ricevuta non è ancora in archivio: caricala nell'Archivio delle prove, oppure controlla l'esito nel tuo Cassetto Compliance.",
+      "reconfirm": "Apri il check-in degli ospiti",
+      "retry": "Riprova",
+      "retryResult": {
+        "error": "Non siamo riusciti a riprovare. Riprova tra qualche minuto.",
+        "failed": "Il tuo channel manager non ha preso gli ospiti: guarda il motivo qui sopra e riprova più tardi.",
+        "notApplicable": "Questo soggiorno non è collegato al tuo channel manager: non c'è niente da riprovare.",
+        "nothingToSend": "Non c'era niente da riprovare: correggi i dati indicati qui sopra.",
+        "partlyFailed": "Alcuni ospiti sono passati al tuo channel manager e altri no: guarda l'elenco qui sopra.",
+        "sent": "Fatto: gli ospiti che non erano partiti sono passati al tuo channel manager."
+      },
+      "toCorrect": "Il tuo channel manager non ha preso tutti gli ospiti di questo soggiorno."
+    },
     "checkIn": "Check-in",
     "confirmationNumber": "Numero conferma",
     "error": {
@@ -1456,8 +1496,10 @@
       "sent_receipt_pending": "Inviato, ricevuta in attesa"
     },
     "statusLabel": {
+      "ChannelManagerWriteFailed": "Da correggere",
       "DaInviare": "Da inviare",
       "DaInviareManualmente": "Da inviare manualmente",
+      "EntrustedToChannelManager": "Affidato al channel manager, in attesa della ricevuta",
       "InviatoManualmente": "Inviato manualmente",
       "Inviato": "Inviato (ricevuta)",
       "NotDue": "Non dovuta",
@@ -1481,6 +1523,7 @@
     },
     "notDueNotice": "Gli ospiti non sono arrivati: per questo soggiorno non c'è nessuna comunicazione alla Questura da fare.",
     "statusError": "Impossibile caricare lo stato della comunicazione Alloggiati.",
+    "statusNotFound": "Non troviamo lo stato Alloggiati di questo soggiorno: potrebbe non esistere più o non essere tuo.",
     "summaryError": "Impossibile caricare le comunicazioni Alloggiati.",
     "markSentManually": "Segna come inviato manualmente",
     "markSentAvailableFromArrival": "Disponibile dal giorno di arrivo",
@@ -1848,6 +1891,7 @@
       "alloggiatiFileNotReady": "Il file Alloggiati non può essere generato: i dati degli ospiti sono incompleti oppure manca qualche codice ufficiale.",
       "alloggiatiFileStayDaysInvalid": "Il file Alloggiati non può essere generato: una schedina accetta da 1 a 30 giorni di permanenza.",
       "alloggiatiFileNameNotRepresentable": "Il file Alloggiati non può essere generato: il nome o il cognome di un ospite contiene caratteri che il portale non accetta. Scrivili solo con lettere dell'alfabeto latino, come sul documento.",
+      "alloggiatiWriteInProgress": "Gli ospiti di questo soggiorno stanno già passando al tuo channel manager: non è stato ripetuto niente. Riprova tra un momento.",
       "taxApplicabilityUnresolved": "Manca un'informazione per decidere la ritenuta: CasaZen non la indovina.",
       "taxFileAlreadyFiled": "Il file è già stato spedito: non si può rigenerare.",
       "taxFilingReferenceRequired": "Serve il riferimento: chi l'ha trasmesso, la ricevuta o il motivo.",
@@ -6483,6 +6527,23 @@
       "title": "Identificazione e accesso"
     },
     "sender": {
+      "autoSend": {
+        "adminOnly": "Solo il titolare o un amministratore dell'organizzazione può cambiarlo.",
+        "consequence": {
+          "off": "Gli ospiti vanno al tuo channel manager solo quando confermi tu il check-in.",
+          "on": "Gli ospiti vanno al tuo channel manager senza che tu confermi il check-in, per tutti gli immobili dell'organizzazione."
+        },
+        "label": "Invia gli ospiti da solo quando i dati sono completi e l'identità è verificata",
+        "onlySetting": "Chi invia non cambia: cambia solo questa impostazione.",
+        "readOnly": {
+          "off": "L'invio automatico degli ospiti è spento.",
+          "on": "L'invio automatico degli ospiti è acceso."
+        },
+        "saved": {
+          "off": "Impostazione salvata: gli ospiti partono solo quando confermi tu il check-in.",
+          "on": "Impostazione salvata: gli ospiti partono da soli quando i dati sono completi e l'identità è verificata."
+        }
+      },
       "choice": {
         "istat": "Lo stesso invio si occupa anche delle statistiche regionali (ISTAT), dove richieste.",
         "legend": "Chi invia i dati degli ospiti alla Polizia?",
@@ -6581,6 +6642,7 @@
         }
       },
       "errors": {
+        "autoSendNotAllowed": "Solo il titolare o un amministratore dell'organizzazione può cambiare l'invio automatico degli ospiti: non è cambiato nulla. Lascia l'interruttore com'era e riprova.",
         "casaZenNotAvailable": "L'invio con CasaZen non è ancora disponibile: scegli un'altra opzione.",
         "changedConcurrently": "Qualcuno ha cambiato chi invia mentre eri qui: controlla di nuovo il riepilogo.",
         "channelManagerNotAvailable": "Il tuo channel manager non può inviare per questo immobile: collegalo prima, oppure scegli un'altra opzione.",
@@ -7176,6 +7238,34 @@
     }
   },
   "complianceArchive": {
+    "booking": {
+      "loadError": "Non riusciamo a caricare le prove e il registro degli invii di questo soggiorno.",
+      "loading": "Carico le prove e gli invii…",
+      "log": {
+        "kind": {
+          "AlloggiatiGuests": "Ospiti alla Questura",
+          "IstatPeriod": "Comunicazione ISTAT del periodo",
+          "other": "Invio",
+          "TouristTaxPeriod": "Imposta di soggiorno del periodo"
+        },
+        "reference": "rif. {{reference}}",
+        "sender": {
+          "CasaZen": "Inviato da CasaZen",
+          "ChannelManager": "Affidato al tuo channel manager",
+          "Manual": "Dichiarato inviato a mano",
+          "ManualBy": "Dichiarato inviato a mano da {{name}}",
+          "other": "Registrato in CasaZen"
+        }
+      },
+      "logEmpty": "Non c'è ancora nessun invio registrato per questo soggiorno.",
+      "logLabel": "Registro degli invii",
+      "logTitle": "Registro degli invii",
+      "notFound": "Non troviamo le prove di questo soggiorno: potrebbe non esistere più o non essere tuo.",
+      "proofsEmpty": "Non c'è ancora nessuna ricevuta archiviata per questo soggiorno.",
+      "proofsTitle": "Prove archiviate",
+      "retry": "Riprova",
+      "stale": "Non siamo riusciti ad aggiornare l'elenco: quello che vedi potrebbe essere vecchio."
+    },
     "coverage": {
       "counts": "{{proven}} con prova · {{toVerify}} da verificare · {{missing}} mancanti · {{notApplicable}} non applicabili",
       "deadline": "Scadenza: {{when}}",
@@ -25130,6 +25220,14 @@
       }
     },
     "alloggiati": {
+      "ChannelManagerWriteFailed": {
+        "label": "Da correggere",
+        "explain": "Il tuo channel manager non ha preso tutti gli ospiti: guarda il motivo di ognuno, correggi i dati o riprova.",
+        "need": [
+          "Correggere i dati indicati, se un luogo non è riconosciuto",
+          "Riprovare a passare gli ospiti al channel manager"
+        ]
+      },
       "DaInviare": {
         "label": "Da inviare",
         "explain": "In attesa del giorno di arrivo: il portale non accetta una data di arrivo futura."
@@ -25140,6 +25238,14 @@
         "need": [
           "Invio sul portale Alloggiati Web",
           "Segnalare qui l'invio, con la data"
+        ]
+      },
+      "EntrustedToChannelManager": {
+        "label": "Affidato al channel manager, in attesa della ricevuta",
+        "explain": "Gli ospiti sono stati affidati al tuo channel manager, che li invia alla Questura. Per CasaZen la comunicazione è fatta solo quando la ricevuta è archiviata.",
+        "need": [
+          "Il tuo channel manager invia gli ospiti alla Questura",
+          "Archiviare la ricevuta in CasaZen"
         ]
       },
       "InviatoManualmente": {

@@ -1,3 +1,5 @@
+import type { ComplianceSenderType, OctorateSyncStatus } from './checkin-wizard.types';
+import type { ComplianceLightName } from './compliance.types';
 import type { DocumentType, Gender } from './guest.types';
 import type { AlloggiatiCodeTable, StayGuestType } from './public-checkin.types';
 
@@ -5,6 +7,9 @@ import type { AlloggiatiCodeTable, StayGuestType } from './public-checkin.types'
  * State of an Alloggiati Web communication (CO-11, decision D6, ADR-015).
  * SentReceiptPending: sent successfully, awaiting receipt retrieval.
  * NotDue: the guests never came (a no-show), so no communication is owed; the API derives it, no report holds it.
+ * EntrustedToChannelManager: every guest of the stay is on the channel manager for good and the channel manager sends them to the police (E20/F01/US01/T02).
+ * It is not «sent» (derived, never stored): the stay is green only with an archived receipt.
+ * ChannelManagerWriteFailed: at least one guest could not be written to the channel manager (derived, never stored): `channelManager.guests` says which and why.
  */
 export type AlloggiatiWebStatus =
   | 'DaInviare'
@@ -14,7 +19,68 @@ export type AlloggiatiWebStatus =
   | 'SentReceiptPending'
   | 'Rifiutato'
   | 'Errore'
-  | 'NotDue';
+  | 'NotDue'
+  | 'EntrustedToChannelManager'
+  | 'ChannelManagerWriteFailed';
+
+/** Where the guests of a stay stand on the channel manager (`ChannelManagerWriteState` of the backend, by name). */
+export type ChannelManagerWriteState = 'NotApplicable' | 'NothingWritten' | 'InProgress' | 'Entrusted' | 'Failed';
+
+/**
+ * One guest of a stay as it stands on the channel manager (`AlloggiatiChannelManagerGuestDto`). No name and no document: the position of the guest in the stay (from 0,
+ * as the stay lists them), the state and the codes.
+ */
+export interface AlloggiatiChannelManagerGuestDto {
+  position: number;
+  state: OctorateSyncStatus;
+  /** Written as a draft (the sender was not the channel manager): not entrusted. */
+  sentAsDraft: boolean;
+  /** Why the last attempt failed (`place_not_recognized`, `octorate_auth`, ...); a code this version does not know gets the generic words. Null after a success. */
+  errorCode: string | null;
+  /** The fields of the guest to correct for `place_not_recognized` (`birthComune`, `residenceComune`, `documentIssuePlace`, comma separated); null otherwise. */
+  errorFields: string | null;
+  attempts: number;
+  /** UTC instant of the last attempt. */
+  lastAttemptAt: string | null;
+}
+
+/** Whether an archived receipt covers the arrival day of the stay: the only thing that makes it green. */
+export interface AlloggiatiReceiptCoverageDto {
+  archived: boolean;
+  /** `casazen_receipt` or `manual_upload`; null when none. */
+  source: string | null;
+  /** UTC instant; null when none or when it has no date. */
+  archivedAt: string | null;
+}
+
+/**
+ * The guests of a stay on the channel manager and the receipt that covers its arrival day (`AlloggiatiChannelManagerDto`): the block the per-stay status and the compliance of a
+ * booking share, built by the server from the same facts and rules as the cockpit. The client never works a light out: it shows the one the server says.
+ */
+export interface AlloggiatiChannelManagerDto {
+  /** Who sends the police communication of the stay, as far as CasaZen can rely on it (`ChannelManager` only while the connector is on). */
+  sender: ComplianceSenderType;
+  state: ChannelManagerWriteState;
+  /** The guests written to the channel manager, by position; empty when it is not the sender. */
+  guests: AlloggiatiChannelManagerGuestDto[];
+  receiptCoverage: AlloggiatiReceiptCoverageDto;
+  /** The light of the cockpit for the stay: yellow for an entrusted stay without a receipt, never green without one; null before the arrival day or when nothing is due. */
+  light: ComplianceLightName | null;
+  /** The stable reason of the light (`receipt_archived`, `entrusted_to_channel_manager`, `alloggiati_failed`, ...); null with no light. */
+  reason: string | null;
+  /** What can help: `RetryOctorateWrite` when asking again can mend a write that failed. */
+  actions: string[];
+}
+
+/** The outcome of a send of the guests to the channel manager (`OctorateCheckInSendState`). */
+export type OctorateCheckInSendState = 'NotMirrored' | 'NotApplicable' | 'NothingToSend' | 'Sent' | 'PartlyFailed' | 'Failed';
+
+/** What the retry of the write of the guests did (`POST /alloggiati/{bookingId}/retry-octorate-write`): the outcome and, when it did nothing, why. No personal data. */
+export interface AlloggiatiRetryResultDto {
+  state: OctorateCheckInSendState;
+  /** Why nothing was tried (`sender_not_channel_manager`, `booking_not_active`, ...); null when guests were tried. */
+  reason: string | null;
+}
 
 export interface AlloggiatiStatusDto {
   bookingId: string;
@@ -31,6 +97,10 @@ export interface AlloggiatiStatusDto {
   hoursUntilDeadline: number;
   isOverdue: boolean;
   dataComplete: boolean;
+  /** The guests on the channel manager, the sender and the receipt coverage (E20/F01/US01/T02); null or missing where the status is answered without it. */
+  channelManager?: AlloggiatiChannelManagerDto | null;
+  /** What the retry of the write did; only in the answer of the retry. */
+  retry?: AlloggiatiRetryResultDto | null;
 }
 
 export interface AlloggiatiSummaryDto {

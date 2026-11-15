@@ -54,6 +54,12 @@ export interface PropertySender {
   delegationTextVersion: string;
   declaredAt: string | null;
   lastChangedAt: string | null;
+  /**
+   * An organization-wide setting, the same for every property of the organization (E20/F01/US01/T01, decision O1): CasaZen writes the guests of a stay to the channel manager
+   * as soon as their data is complete and the identity check passed, with no confirmation of the host. Off by default (absent reads as off). Only the organization
+   * administrator changes it.
+   */
+  autoSendGuestsToOctorate?: boolean;
 }
 
 /** `POST /properties/{id}/sender/connection-test`: nothing in it is stored or transmitted. */
@@ -77,4 +83,10 @@ export interface SwitchSenderRequest {
   delegationConsent: boolean;
   /** The version of the delegation text the host read; required with `delegationConsent`. */
   delegationTextVersion?: string;
+  /**
+   * The organization-wide setting of `PropertySender.autoSendGuestsToOctorate`: `true` lets CasaZen write the guests to the channel manager on its own, `false` goes back to the
+   * host's confirmation in the check-in wizard, left out changes nothing. Only the organization administrator may send it with a value that differs from the one in force
+   * (403 otherwise), so the client leaves it out for anyone else and when nothing changes.
+   */
+  autoSendGuestsToOctorate?: boolean;
 }
