@@ -173,6 +173,30 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
     expect(screen.queryByText(/Booking #/)).not.toBeInTheDocument();
   });
 
+  it.each([
+    [{ source: 'Direct', origin: 'AgencySite', originChannel: null }, "Sito dell'agenzia"],
+    [{ source: 'Direct', origin: 'CasaZenSite', originChannel: null }, 'Sito CasaZen'],
+    [{ source: 'Airbnb', otaSource: 'Airbnb', origin: 'Portal', originChannel: 'Airbnb' }, 'Portale Airbnb'],
+    [{ source: 'Manual', origin: 'Manual', originChannel: null }, 'Manuale'],
+  ] as const)('BookingDetailPage_BookingWithAnOrigin_ShowsWhereItCameFromInTheStayTab (%j)', async (overrides, word) => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue(booking(overrides));
+
+    renderPage();
+
+    // A booking made from a link the agency copied shows «Sito dell'agenzia» (NF-123); the answer says it, the page never works it out.
+    expect(await screen.findByTestId('booking-origin-badge', undefined, WAIT)).toHaveTextContent(word);
+    expect(screen.getAllByTestId('booking-origin-badge')).toHaveLength(1);
+  });
+
+  it('BookingDetailPage_AnswerWithNoOrigin_ShowsNoOriginBadge', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ source: 'Direct' }));
+
+    renderPage();
+
+    expect(await screen.findByTestId('booking-detail-source', undefined, WAIT)).toBeInTheDocument();
+    expect(screen.queryByTestId('booking-origin-badge')).not.toBeInTheDocument();
+  });
+
   it('BookingDetailPage_PendingManualBooking_ConfirmsItFromTheDialog', async () => {
     // The detail is read again after the confirmation: the second read returns the confirmed booking.
     vi.mocked(bookingsApi.getById)
