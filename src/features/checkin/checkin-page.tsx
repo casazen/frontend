@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FormProvider, useFieldArray, useForm, useWatch, type FieldErrors, type FieldPath } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useParams, useSearchParams } from 'react-router-dom';
@@ -30,9 +30,11 @@ import {
 } from './schemas/checkin.schema';
 import { StayGuestDocumentFields, StayGuestPersonalFields } from './components/stay-guest-fields';
 import { DocumentReadStep } from './components/document-read-step';
+import { GuestPageFrame } from './components/guest-page-frame';
 import { InvoiceStep } from './components/invoice-step';
 import { LanguageSwitcher } from './components/language-switcher';
 import { isListAvailable, type CodeTableSource } from './components/code-table';
+import { IDENTITY_STEP_PARAM } from './lib/door-model';
 import { offeredGuestLocales, resolveGuestLocale, useGuestPageLocale, type GuestLocale } from './lib/guest-locale';
 import { guestProblemMessage, translateGuestServerCode } from './lib/guest-errors';
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
@@ -150,6 +152,21 @@ function countFieldErrors(errors: FieldErrors | undefined): number {
   return count;
 }
 
+/**
+ * The first step of the page that holds a field the form found invalid when the guest sent it, or `null` when none of the fields of the steps is (the invoice step counts). The guest who
+ * came in at the identity step (through the door of the property) may never have typed the data of the first ones: the send takes them there instead of leaving them at a button that
+ * seems to do nothing.
+ */
+function firstStepWithProblems(errors: FieldErrors<PublicCheckInFormValues>, statistical: readonly StatisticalGuestField[]): number | null {
+  const guestErrors: unknown = errors.guests;
+  const entries = Array.isArray(guestErrors) ? (guestErrors as Array<Record<string, unknown> | undefined>) : [];
+  const fieldsInError = new Set(entries.flatMap((entry) => (entry ? Object.keys(entry) : [])));
+  if ([...PERSONAL_FIELDS, ...statistical].some((field) => fieldsInError.has(field))) return STEP_GUESTS;
+  if (DOCUMENT_FIELDS.some((field) => fieldsInError.has(field))) return STEP_DOCUMENT;
+  if (errors.invoice) return STEP_INVOICE;
+  return null;
+}
+
 function emptyForm(): PublicCheckInFormValues {
   return {
     guests: [stayGuestDefaults('SingleGuest')],
@@ -158,18 +175,6 @@ function emptyForm(): PublicCheckInFormValues {
     marketingConsentWhatsApp: false,
     marketingEmail: '',
   };
-}
-
-/** The frame of every state of the page: the language switcher is always at the top, whatever the page shows below it. */
-function GuestPageFrame({ switcher, children, testId }: { switcher: ReactNode; children: ReactNode; testId?: string }) {
-  return (
-    <div className="min-h-screen bg-muted/30 px-4 py-6" data-testid={testId}>
-      <div className="mx-auto max-w-2xl space-y-6">
-        {switcher}
-        {children}
-      </div>
-    </div>
-  );
 }
 
 export function CheckInPage() {
@@ -195,9 +200,13 @@ export function CheckInPage() {
   });
   const taxView = taxAvailability === 'ready' ? (taxRead.data ?? null) : null;
   const steps = stepsOf(identity.progress !== null, taxAvailability === 'ready' || taxAvailability === 'failed');
-  const [step, setStep] = useState<number>(STEP_SCAN);
+  // The step the guest moved to; `null` until they move. The guest who came through the door of the property (`?step=identity`, E22/F02/US01/T01) starts at the identity step once the API offers one;
+  // any other address starts at the first step. From the first move on, the guest's own choice is what counts.
+  const [step, setStep] = useState<number | null>(null);
+  const startStep = searchParams.get('step') === IDENTITY_STEP_PARAM && steps.includes(STEP_IDENTITY) ? STEP_IDENTITY : STEP_SCAN;
+  const wantedStep = step ?? startStep;
   // A step that went away (the verification or the tax payment was switched off while the page was open) leaves the guest at the step that follows it.
-  const current = steps.includes(step) ? step : stepAfterGone(step, steps);
+  const current = steps.includes(wantedStep) ? wantedStep : stepAfterGone(wantedStep, steps);
   // The payment cannot be made (the server says it is not offered, e.g. the platform key is not there): the backend then does not hold the lock code either, so the guest is never kept out.
   const [taxCannotPay, setTaxCannotPay] = useState(false);
   // The organization asks for the tax before the lock code and something can still be paid: the guest stays at the step until the server records the payment.
@@ -453,7 +462,12 @@ export function CheckInPage() {
         }
       }
     },
-    reportProblems,
+    (errors) => {
+      // The fields in error may be on a step the guest has left, or never reached: they are taken to the first one that has something to correct.
+      const target = firstStepWithProblems(errors, statisticalFields);
+      if (target !== null && target !== current) setStep(target);
+      reportProblems();
+    },
   );
 
   const switcher = (
@@ -625,7 +639,7 @@ export function CheckInPage() {
                     onCannotPayChange={setTaxCannotPay}
                   />
                 )}
-                {current === STEP_IDENTITY && <IdentityStep identity={identity} />}
+                {current === STEP_IDENTITY && <IdentityStep identity={identity} token={token} />}
                 {current === STEP_INVOICE && <InvoiceStep hasInvoiceData={context.hasInvoiceData === true} />}
                 {current === STEP_CONSENTS && (
                   <ConsentStep

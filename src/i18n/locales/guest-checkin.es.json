@@ -189,13 +189,13 @@
       "consent": {
         "accept": "Acepto la comprobación facial",
         "decline": "No acepto: me verificará una persona",
-        "description": "Para darle el código de acceso del alojamiento, comparamos un selfie con la foto de su documento de identidad.",
-        "documentKept": "La foto de su documento se conserva cifrada solo hasta que termine la comprobación y después se elimina.",
-        "optional": "Puede decir que no. Entonces una persona del alojamiento comprobará su identidad con usted y el código de acceso le llegará después de su decisión. Decir que no no detiene su check-in.",
-        "optionalTitle": "Es su decisión",
-        "purpose": "Usted fotografía su documento y después se hace un selfie con la cámara. Un programa de nuestro servidor compara ambos. Su selfie nunca se guarda: se elimina en cuanto termina la comparación.",
-        "purposeTitle": "Qué ocurre",
+        "draft": "Borrador",
+        "loadFailed": "No hemos podido mostrarle el texto del consentimiento",
+        "loading": "Cargando el texto del consentimiento...",
+        "retry": "Reintentar",
+        "servedIn": "Este texto está disponible en {{language}}.",
         "title": "Compruebe su identidad con su cara",
+        "unavailable": "El texto del consentimiento no está disponible en este momento, por lo que no se puede ofrecer la comprobación facial. Puede pedir que una persona verifique su identidad.",
         "version": "Versión de este texto: {{version}}"
       }
     },
@@ -223,6 +223,33 @@
     },
     "documentIssuedOn": {
       "label": "Fecha de expedición (opcional)"
+    },
+    "door": {
+      "arrivalHint": "El día en que empieza su estancia.",
+      "arrivalLabel": "Fecha de llegada",
+      "codeHint": "Figura en el correo de confirmación de su reserva.",
+      "codeLabel": "Código de la reserva",
+      "description": "Escriba los datos de su reserva: le llevamos al check-in y a la verificación de identidad.",
+      "errors": {
+        "arrivalInvalid": "La fecha no es válida.",
+        "arrivalRequired": "Elija la fecha de llegada.",
+        "codeInvalid": "El código es demasiado largo.",
+        "codeRequired": "Escriba el código de la reserva.",
+        "failed": "Algo no ha funcionado. Inténtelo de nuevo en un momento.",
+        "network": "No podemos conectar con el servidor. Compruebe su conexión e inténtelo de nuevo.",
+        "notFound": "No encontramos ninguna estancia con estos datos. Compruebe el código (o el apellido) y la fecha de llegada e inténtelo de nuevo.",
+        "surnameInvalid": "El apellido es demasiado largo.",
+        "surnameRequired": "Escriba el apellido.",
+        "tooManyRequests": "Demasiados intentos en poco tiempo. Espere un minuto e inténtelo de nuevo."
+      },
+      "modeCode": "Tengo el código",
+      "modeLabel": "Cómo encontrar su estancia",
+      "modeSurname": "No tengo el código",
+      "submit": "Continuar",
+      "submitting": "Buscando su estancia...",
+      "surnameHint": "El apellido de quien reservó o del primer huésped.",
+      "surnameLabel": "Apellido del huésped principal",
+      "title": "Check-in en la entrada"
     },
     "educationLevel": {
       "label": "Nivel de estudios *",
@@ -268,17 +295,28 @@
     },
     "identity": {
       "document": {
+        "back": {
+          "fileLabel": "Foto del reverso del documento de identidad",
+          "illustration": "El reverso de un documento de identidad: las líneas de letras y números están abajo, dentro del recuadro.",
+          "instructions": "Ahora dé la vuelta a la tarjeta y fotografíe el reverso, donde están las líneas de letras y números (la zona que lee una máquina). Muéstrelo entero, plano y sin reflejos.",
+          "pick": "Fotografiar el reverso",
+          "pickAgain": "Fotografiar de nuevo el reverso"
+        },
         "fileLabel": "Foto del documento de identidad",
-        "instructions": "Coloque el documento sobre una superficie plana y bien iluminada. Muestre todo el lado con su foto y las dos líneas de letras de abajo, sin reflejos.",
+        "frontReceived": "Hemos recibido el lado con su foto.",
+        "instructions": "Coloque el documento sobre una superficie plana y bien iluminada. Muestre todo el lado con su foto, sin reflejos. El pasaporte lo tiene todo en una página: muestre la página con su foto y las dos líneas de letras de abajo.",
         "notAcceptable": "La foto todavía no es suficientemente buena. Vuelva a hacerla.",
         "pick": "Fotografiar el documento",
         "pickAgain": "Fotografiarlo de nuevo",
         "sending": "Leyendo el documento...",
+        "sideProgress": "Foto {{current}} de {{total}}",
         "title": "Fotografíe su documento de identidad"
       },
       "documentNotArchived": "El documento no se archivará.",
       "guidance": {
         "avoid_glare": "Evite los reflejos: incline un poco el documento o aléjese de la luz.",
+        "document_back_needed": "Ahora fotografíe el reverso de la tarjeta, donde están las líneas de letras.",
+        "document_front_needed": "Fotografíe el lado de la tarjeta con su foto.",
         "hold_still": "Mantenga quieto el teléfono: la foto está borrosa.",
         "less_light": "Hay demasiada luz: pase a un lugar con luz más suave.",
         "more_light": "Hay poca luz: pase a un lugar más luminoso.",
@@ -304,6 +342,7 @@
       },
       "problem": {
         "consent_required": "Primero necesitamos su respuesta sobre la comprobación facial.",
+        "consent_text_changed": "El texto del consentimiento se ha actualizado. Léalo de nuevo antes de responder.",
         "document_photo": "Necesitamos de nuevo la foto del documento: vuelva a hacerla.",
         "document_required": "Primero fotografíe el documento.",
         "failed": "Algo ha salido mal. Inténtelo de nuevo.",

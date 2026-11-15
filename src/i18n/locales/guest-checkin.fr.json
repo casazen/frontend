@@ -189,13 +189,13 @@
       "consent": {
         "accept": "J'accepte la vérification du visage",
         "decline": "Je n'accepte pas : une personne me vérifiera",
-        "description": "Pour vous donner le code d'accès du logement, nous comparons un selfie avec la photo de votre pièce d'identité.",
-        "documentKept": "La photo de votre document n'est conservée, chiffrée, que jusqu'à la fin de la vérification, puis elle est supprimée.",
-        "optional": "Vous pouvez refuser. Une personne du logement vérifiera alors votre identité avec vous et le code d'accès vous parviendra après sa décision. Refuser n'arrête pas votre enregistrement.",
-        "optionalTitle": "C'est votre choix",
-        "purpose": "Vous photographiez votre document puis prenez un selfie avec la caméra. Un programme sur notre serveur compare les deux. Votre selfie n'est jamais enregistré : il est supprimé dès que la comparaison est terminée.",
-        "purposeTitle": "Ce qui se passe",
+        "draft": "Brouillon",
+        "loadFailed": "Nous n'avons pas pu afficher le texte du consentement",
+        "loading": "Chargement du texte du consentement...",
+        "retry": "Réessayer",
+        "servedIn": "Ce texte est disponible en {{language}}.",
         "title": "Vérifier votre identité avec votre visage",
+        "unavailable": "Le texte du consentement n'est pas disponible pour le moment : la vérification du visage ne peut donc pas être proposée. Vous pouvez demander qu'une personne vérifie votre identité.",
         "version": "Version de ce texte : {{version}}"
       }
     },
@@ -223,6 +223,33 @@
     },
     "documentIssuedOn": {
       "label": "Date de délivrance (facultatif)"
+    },
+    "door": {
+      "arrivalHint": "Le jour où votre séjour commence.",
+      "arrivalLabel": "Date d'arrivée",
+      "codeHint": "Il figure dans l'e-mail de confirmation de votre réservation.",
+      "codeLabel": "Code de réservation",
+      "description": "Saisissez les informations de votre réservation : nous vous conduisons au check-in et à la vérification d'identité.",
+      "errors": {
+        "arrivalInvalid": "La date n'est pas valide.",
+        "arrivalRequired": "Choisissez la date d'arrivée.",
+        "codeInvalid": "Le code est trop long.",
+        "codeRequired": "Saisissez le code de réservation.",
+        "failed": "Un problème est survenu. Veuillez réessayer dans un instant.",
+        "network": "Nous n'arrivons pas à joindre le serveur. Vérifiez votre connexion et réessayez.",
+        "notFound": "Nous ne trouvons aucun séjour avec ces informations. Vérifiez le code (ou le nom) et la date d'arrivée, puis réessayez.",
+        "surnameInvalid": "Le nom est trop long.",
+        "surnameRequired": "Saisissez le nom.",
+        "tooManyRequests": "Trop de tentatives en peu de temps. Attendez une minute et réessayez."
+      },
+      "modeCode": "J'ai le code",
+      "modeLabel": "Comment retrouver votre séjour",
+      "modeSurname": "Je n'ai pas le code",
+      "submit": "Continuer",
+      "submitting": "Recherche de votre séjour...",
+      "surnameHint": "Le nom de la personne qui a réservé, ou du premier invité.",
+      "surnameLabel": "Nom de l'invité principal",
+      "title": "Check-in à l'entrée"
     },
     "educationLevel": {
       "label": "Niveau d'études *",
@@ -268,17 +295,28 @@
     },
     "identity": {
       "document": {
+        "back": {
+          "fileLabel": "Photo du verso de la pièce d'identité",
+          "illustration": "Le verso d'une carte d'identité : les lignes de lettres et de chiffres sont en bas, dans le cadre.",
+          "instructions": "Retournez maintenant la carte et photographiez le verso, où se trouvent les lignes de lettres et de chiffres (la zone lue par une machine). Montrez-le en entier, bien à plat et sans reflets.",
+          "pick": "Photographier le verso",
+          "pickAgain": "Photographier de nouveau le verso"
+        },
         "fileLabel": "Photo de la pièce d'identité",
-        "instructions": "Posez le document sur une surface plane et bien éclairée. Montrez tout le côté avec votre photo et les deux lignes de lettres en bas, sans reflets.",
+        "frontReceived": "Le côté avec votre photo a bien été reçu.",
+        "instructions": "Posez le document sur une surface plane et bien éclairée. Montrez tout le côté avec votre photo, sans reflets. Un passeport a tout sur une seule page : montrez la page avec votre photo et les deux lignes de lettres en bas.",
         "notAcceptable": "La photo n'est pas encore assez bonne. Veuillez la reprendre.",
         "pick": "Photographier le document",
         "pickAgain": "Le photographier de nouveau",
         "sending": "Lecture du document...",
+        "sideProgress": "Photo {{current}} sur {{total}}",
         "title": "Photographiez votre pièce d'identité"
       },
       "documentNotArchived": "Le document ne sera pas archivé.",
       "guidance": {
         "avoid_glare": "Évitez les reflets : inclinez un peu le document ou éloignez-vous de la lumière.",
+        "document_back_needed": "Photographiez maintenant le verso de la carte, où se trouvent les lignes de lettres.",
+        "document_front_needed": "Photographiez le côté de la carte avec votre photo.",
         "hold_still": "Tenez le téléphone immobile : la photo est floue.",
         "less_light": "Il y a trop de lumière : placez-vous sous une lumière plus douce.",
         "more_light": "Il n'y a pas assez de lumière : placez-vous dans un endroit plus lumineux.",
@@ -304,6 +342,7 @@
       },
       "problem": {
         "consent_required": "Nous avons d'abord besoin de votre réponse sur la vérification du visage.",
+        "consent_text_changed": "Le texte du consentement a été mis à jour. Veuillez le relire avant de répondre.",
         "document_photo": "Nous avons de nouveau besoin de la photo du document : veuillez la reprendre.",
         "document_required": "Veuillez d'abord photographier le document.",
         "failed": "Un problème est survenu. Veuillez réessayer.",

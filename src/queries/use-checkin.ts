@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
-import { publicCheckinApi } from '@/api/checkin.api';
+import { propertyDoorQrApi, publicCheckinApi } from '@/api/checkin.api';
 import { bookingsApi } from '@/api/bookings.api';
 import {
   CHECK_IN_LINK_EMAIL_ERRORS,
   type CheckInLinkResponse,
+  type DoorCheckInRequest,
   type PublicCheckInSubmitRequest,
 } from '@/types/public-checkin.types';
 import { toast } from 'sonner';
@@ -24,6 +25,78 @@ export function useCheckInContext(token: string) {
     queryFn: () => publicCheckinApi.getContext(token),
     enabled: !!token,
     retry: retryTransientErrors(1),
+  });
+}
+
+/**
+ * The legal texts of the identity step of the stay of the link, in the language of the page (E22/F02/US01/T01): the consent the guest agrees to and, for a property that keeps no
+ * document, the notice. The registry can publish a new version at any time, so they are always asked again when the step opens and never kept as fresh; they hold nothing personal.
+ * Asked only while `enabled` (the guest is at the consent); an error is final for the guest to read, not an old answer.
+ */
+export function useGuestLegalTexts(token: string, language: string, enabled: boolean) {
+  return useQuery({
+    queryKey: [CHECKIN_KEY, token, 'legal-texts', language],
+    queryFn: () => publicCheckinApi.getLegalTexts(token, language),
+    enabled: enabled && !!token,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    retry: retryTransientErrors(1),
+  });
+}
+
+/**
+ * The guest at the door (E22/F02/US01/T01): what was typed (a booking code or a surname, and a date) is personal data, so the mutation does not outlive the page (`gcTime: 0`) and what it keeps of
+ * a failure is the answer without the request (`withoutRequest`: the status and the body stay, which is what the page turns into words, and the code or the surname do not). The answer holds the
+ * token of the check-in link, a secret: it is dropped as soon as the page that asked is gone.
+ */
+export function useOpenDoorCheckIn(doorToken: string) {
+  return useMutation({
+    gcTime: 0,
+    mutationFn: async (request: DoorCheckInRequest) => {
+      try {
+        return await publicCheckinApi.openDoor(doorToken, request);
+      } catch (error) {
+        throw withoutRequest(error);
+      }
+    },
+  });
+}
+
+/** Root of the door QR of a property for the host. */
+export const DOOR_QR_KEY = 'door-qr';
+
+/**
+ * The address behind the QR of the door of a property (E22/F02/US01/T01): it holds the door token, so it is asked again every time the page opens and is not kept once the page is closed
+ * (`gcTime: 0`). The first call makes the token. Asked only while `enabled` (the flag is on and the person may write the property: the server answers 403 otherwise).
+ */
+export function useDoorQr(propertyId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: [DOOR_QR_KEY, propertyId],
+    queryFn: () => propertyDoorQrApi.get(propertyId),
+    enabled: enabled && !!propertyId,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: 'always',
+    retry: retryTransientErrors(1),
+  });
+}
+
+/** «Rigenera»: replaces the door token, and the printed code of the old one stops working at once. The new address takes the place of the old one in the page. */
+export function useRotateDoorQr(propertyId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    gcTime: 0,
+    mutationFn: async () => {
+      try {
+        return await propertyDoorQrApi.rotate(propertyId);
+      } catch (error) {
+        throw withoutRequest(error);
+      }
+    },
+    onSuccess: (qr) => {
+      queryClient.setQueryData([DOOR_QR_KEY, propertyId], qr);
+    },
   });
 }
 

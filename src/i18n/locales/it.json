@@ -1674,6 +1674,9 @@
       "archiveDocumentNotFound": "Non troviamo più questo documento, oppure non è tra gli immobili a cui hai accesso. L'elenco è stato aggiornato.",
       "archiveExportTooLarge": "L'archivio sarebbe troppo grande. Scegli un periodo più breve o meno tipi di documento.",
       "billingChannelsInvalid": "I dati sugli account dei portali non sono validi. Controlla e riprova.",
+      "biometricAttemptsOutOfRange": "I tentativi vanno da 1 a 5.",
+      "biometricThresholdsOrderInvalid": "La soglia minima deve essere più bassa di quella di accettazione.",
+      "biometricThresholdsOutOfRange": "Le soglie devono stare tra 0,50 e 0,95.",
       "bookingNotActive": "La prenotazione non è attiva (è annullata o l’ospite non si è presentato): non si può emettere un documento.",
       "channelAccountHoldersConflict": "Un altro salvataggio ha cambiato gli stessi annunci: ricarica la pagina e riprova.",
       "channelAccountHoldersInvalid": "Le modifiche agli intestatari non sono valide: controlla gli annunci e i portali e riprova.",
@@ -1704,7 +1707,9 @@
       "documentReadOnly": "Questo documento è in sola lettura: non lo emette CasaZen.",
       "documentRuleNotConfigured": "Mancano le regole fiscali di questo documento (aliquote e tipo di documento): completa la configurazione della fatturazione.",
       "fatturapaXmlInvalid": "Il file della fattura elettronica non è valido: controlla i dati di chi emette e di chi riceve il documento.",
+      "guestUnreachable": "L'ospite non ha un indirizzo email registrato: non abbiamo inviato nulla.",
       "issuerRegimeCountryMismatch": "Il regime scelto non vale per il paese di chi emette. Controlla il paese e il regime.",
+      "noPendingVerification": "Questa verifica non è più in attesa.",
       "ownerMandateOwnersEmpty": "Non c’è nessun proprietario a cui applicare il mandato.",
       "reportInvalidPeriod": "Il periodo non è valido: controlla le date.",
       "reportPeriodTooLong": "Il periodo è troppo lungo: scegline uno di al massimo 24 mesi.",
@@ -1889,6 +1894,8 @@
       "supportVaultSecretMissing": "Queste credenziali non ci sono ancora: salvale prima, oppure chiedile all'utente.",
       "supportVaultTooManyOpenings": "Hai già aperto le credenziali 5 volte nell'ultima ora per questa richiesta: riprova più tardi.",
       "supportVaultValueInvalid": "Utente e password sono obbligatori, al massimo 200 caratteri; il codice aggiuntivo al massimo 100.",
+      "videoCallNotSent": "L'email non è partita e nulla è stato inviato. Riprova.",
+      "videoCallUrlInvalid": "Il link della riunione non è valido: deve cominciare con https://, senza spazi né password.",
       "xlsxTooManyRows": "Troppe righe: un foglio di un file Excel può avere al massimo 10.000 righe. Scegli un periodo più breve e riprova.",
       "planLimitReached": "Hai raggiunto il limite del tuo piano",
       "planRequired": "Questa funzione richiede un piano superiore.",
@@ -3688,6 +3695,72 @@
         }
       }
     }
+  },
+  "biometricSettings": {
+    "accept": {
+      "help": "Da questo valore in su il volto è accettato da solo. Sotto questa soglia decide l'operatore.",
+      "label": "Soglia di accettazione"
+    },
+    "attempts": {
+      "help": "Dopo questi tentativi la verifica passa a un operatore. Da {{min}} a {{max}}.",
+      "label": "Tentativi dell'ospite"
+    },
+    "calibrated": "Soglie tarate il {{date}}.",
+    "defaults": "Per ora valgono i valori predefiniti: se salvi, diventano quelli della tua organizzazione.",
+    "description": "Come controlliamo che l'ospite sia chi dice di essere: confrontiamo un selfie con la foto del documento. Se la lasci spenta, a verificare è sempre una persona.",
+    "enabled": {
+      "help": "Se è accesa, l'ospite scatta un selfie e un programma lo confronta con la foto del documento. Se è spenta, a verificare è sempre una persona.",
+      "label": "Confronto del volto con il documento"
+    },
+    "errors": {
+      "attemptsRange": "I tentativi vanno da 1 a 5.",
+      "notANumber": "Scrivi un numero.",
+      "thresholdsOrder": "La soglia minima deve essere più bassa di quella di accettazione.",
+      "thresholdsRange": "Le soglie devono stare tra {{min}} e {{max}}."
+    },
+    "escalate": {
+      "help": "Sotto questo valore il tentativo non passa e l'ospite riprova. Tra le due soglie decide l'operatore.",
+      "label": "Soglia minima"
+    },
+    "loadError": "Non riusciamo a leggere le impostazioni della verifica.",
+    "models": {
+      "description": "Lo vede solo lo staff di CasaZen: dice quali modelli sono pronti e perché uno non si può usare. Finché ne manca uno, ogni verifica passa a una persona.",
+      "loadError": "Non riusciamo a leggere lo stato dei modelli.",
+      "notPinned": "Impronta del file non impostata",
+      "pinned": "Impronta del file impostata",
+      "reason": {
+        "config_invalid": "La configurazione dei modelli non è valida.",
+        "download_failed": "Il file non si è potuto scaricare.",
+        "file_missing": "Il file del modello non c'è.",
+        "hash_mismatch": "Il file non corrisponde all'impronta impostata.",
+        "hash_not_configured": "L'impronta (SHA-256) del file non è stata impostata: senza, il modello non si usa.",
+        "load_failed": "Il modello non si è caricato.",
+        "model_incompatible": "Il modello non è compatibile con il programma.",
+        "other": "Motivo non previsto.",
+        "path_invalid": "Il percorso del file non è valido."
+      },
+      "state": {
+        "disabled": "Spento",
+        "failed": "Non pronto",
+        "loading": "In caricamento",
+        "other": "Sconosciuto",
+        "present": "Presente",
+        "ready": "Pronto",
+        "unavailable": "Non disponibile"
+      },
+      "summary": "Stato dei modelli: {{state}}.",
+      "title": "Modelli del confronto"
+    },
+    "provisional": {
+      "badge": "Soglie provvisorie",
+      "explain": "Le soglie non sono ancora state tarate su dati reali: l'esito automatico va considerato provvisorio. La taratura la conferma lo staff di CasaZen, non si imposta da qui."
+    },
+    "retry": "Riprova",
+    "save": "Salva",
+    "saveFailed": "Impossibile salvare le impostazioni della verifica",
+    "saved": "Impostazioni della verifica salvate",
+    "thresholdsRange": "Le soglie vanno da {{min}} a {{max}}: più il valore è alto, più il confronto è severo.",
+    "title": "Verifica dell'identità"
   },
   "booking": {
     "status": {
@@ -5551,13 +5624,13 @@
       "consent": {
         "accept": "Acconsento al controllo del volto",
         "decline": "Non acconsento: mi verificherà una persona",
-        "description": "Per darti il codice di accesso della struttura, confrontiamo un selfie con la foto del tuo documento d'identità.",
-        "documentKept": "La foto del tuo documento viene conservata cifrata solo fino alla fine del controllo, poi viene cancellata.",
-        "optional": "Puoi rifiutare. Allora una persona della struttura verificherà la tua identità con te e il codice di accesso ti arriva dopo la sua decisione. Rifiutare non blocca il tuo check-in.",
-        "optionalTitle": "La scelta è tua",
-        "purpose": "Fotografi il tuo documento e poi scatti un selfie con la fotocamera. Un programma sul nostro server confronta le due foto. Il tuo selfie non viene mai salvato: viene cancellato appena finisce il confronto.",
-        "purposeTitle": "Cosa succede",
+        "draft": "Bozza",
+        "loadFailed": "Non riusciamo a mostrarti il testo del consenso",
+        "loading": "Carichiamo il testo del consenso...",
+        "retry": "Riprova",
+        "servedIn": "Questo testo è disponibile in {{language}}.",
         "title": "Verifica la tua identità con il viso",
+        "unavailable": "Il testo del consenso non è disponibile in questo momento, quindi il confronto del volto non può essere offerto. Puoi chiedere che a verificarti sia una persona.",
         "version": "Versione di questo testo: {{version}}"
       }
     },
@@ -5658,6 +5731,33 @@
     "documentIssuedOn": {
       "label": "Data di rilascio (facoltativo)"
     },
+    "door": {
+      "arrivalHint": "Il giorno in cui inizia il soggiorno.",
+      "arrivalLabel": "Data di arrivo",
+      "codeHint": "È nell'email di conferma della tua prenotazione.",
+      "codeLabel": "Codice della prenotazione",
+      "description": "Scrivi i dati della tua prenotazione: ti portiamo al check-in e alla verifica dell'identità.",
+      "errors": {
+        "arrivalInvalid": "La data non è valida.",
+        "arrivalRequired": "Scegli la data di arrivo.",
+        "codeInvalid": "Il codice è troppo lungo.",
+        "codeRequired": "Scrivi il codice della prenotazione.",
+        "failed": "Qualcosa non ha funzionato. Riprova tra poco.",
+        "network": "Non riusciamo a raggiungere il server. Controlla la connessione e riprova.",
+        "notFound": "Non troviamo un soggiorno con questi dati. Controlla il codice (o il cognome) e la data di arrivo, poi riprova.",
+        "surnameInvalid": "Il cognome è troppo lungo.",
+        "surnameRequired": "Scrivi il cognome.",
+        "tooManyRequests": "Troppi tentativi in poco tempo. Aspetta un minuto e riprova."
+      },
+      "modeCode": "Ho il codice",
+      "modeLabel": "Come trovare il tuo soggiorno",
+      "modeSurname": "Non ho il codice",
+      "submit": "Continua",
+      "submitting": "Cerchiamo il tuo soggiorno...",
+      "surnameHint": "Il cognome di chi ha prenotato o del primo ospite.",
+      "surnameLabel": "Cognome dell'ospite principale",
+      "title": "Check-in all'ingresso"
+    },
     "educationLevel": {
       "label": "Titolo di studio *",
       "none": "Nessun titolo",
@@ -5702,17 +5802,28 @@
     },
     "identity": {
       "document": {
+        "back": {
+          "fileLabel": "Foto del retro del documento di identità",
+          "illustration": "Il retro di una carta d'identità: le righe di lettere e numeri sono in basso, dentro il riquadro.",
+          "instructions": "Ora gira la carta e fotografa il retro, dove ci sono le righe di lettere e numeri (la zona che legge una macchina). Mostralo tutto, ben piano e senza riflessi.",
+          "pick": "Fotografa il retro",
+          "pickAgain": "Fotografa di nuovo il retro"
+        },
         "fileLabel": "Foto del documento d'identità",
-        "instructions": "Appoggia il documento su una superficie piana e ben illuminata. Inquadra tutto il lato con la tua foto e le due righe di lettere in basso, senza riflessi.",
+        "frontReceived": "Il lato con la tua foto è arrivato.",
+        "instructions": "Appoggia il documento su una superficie piana e ben illuminata. Mostra tutto il lato con la tua foto, senza riflessi. Il passaporto ha tutto in una pagina: mostra la pagina con la foto e le due righe di lettere in basso.",
         "notAcceptable": "La foto non è ancora abbastanza buona. Scattala di nuovo.",
         "pick": "Fotografa il documento",
         "pickAgain": "Fotografalo di nuovo",
         "sending": "Lettura del documento...",
+        "sideProgress": "Foto {{current}} di {{total}}",
         "title": "Fotografa il tuo documento d'identità"
       },
       "documentNotArchived": "Il documento non sarà archiviato.",
       "guidance": {
         "avoid_glare": "Evita i riflessi: inclina un poco il documento o allontanati dalla luce.",
+        "document_back_needed": "Ora fotografa il retro della carta, dove ci sono le righe di lettere.",
+        "document_front_needed": "Fotografa il lato della carta con la tua foto.",
         "hold_still": "Tieni fermo il telefono: la foto è sfocata.",
         "less_light": "C'è troppa luce: spostati dove la luce è più morbida.",
         "more_light": "C'è poca luce: spostati in un posto più luminoso.",
@@ -5738,6 +5849,7 @@
       },
       "problem": {
         "consent_required": "Prima ci serve la tua risposta sul controllo del volto.",
+        "consent_text_changed": "Il testo del consenso è stato aggiornato. Leggilo di nuovo prima di rispondere.",
         "document_photo": "Ci serve di nuovo la foto del documento: scattala ancora una volta.",
         "document_required": "Prima fotografa il documento.",
         "failed": "Qualcosa non ha funzionato. Riprova.",
@@ -20732,6 +20844,22 @@
       }
     },
     "qr": {
+      "door": {
+        "hint": "Stampa o scarica questo codice QR e mettilo alla porta della struttura: chi arriva scrive il codice della prenotazione e la data di arrivo e prosegue con il check-in e la verifica dell'identità.",
+        "instructions": "Inquadra questo codice QR per fare il check-in e la verifica dell'identità del tuo soggiorno",
+        "loadFailed": "Non riusciamo a creare il codice QR. Riprova tra poco.",
+        "needsWrite": "Il codice QR della porta lo crea e lo sostituisce chi può modificare l'immobile. Chiedi a chi lo gestisce.",
+        "needsWriteTitle": "Serve il permesso di modificare l'immobile",
+        "notFound": "Non troviamo questo immobile: forse non è tra quelli a cui hai accesso.",
+        "retry": "Riprova",
+        "rotate": "Rigenera",
+        "rotateConfirm": "Rigenera il codice",
+        "rotateDescription": "Il codice stampato finora smette di funzionare subito: dovrai stampare quello nuovo e sostituirlo alla porta.",
+        "rotateFailed": "Non siamo riusciti a rigenerare il codice. Il codice che vedi è quello in uso adesso.",
+        "rotateTitle": "Rigenerare il codice QR della porta?",
+        "rotated": "Nuovo codice QR creato: il vecchio non funziona più.",
+        "title": "Codice QR della porta"
+      },
       "download": "Scarica PNG",
       "error": "Errore",
       "errorDescription": "ID immobile mancante o non valido.",
@@ -30114,6 +30242,7 @@
       "rejectButton": "Non verificato",
       "rejectDescription": "Il check-in viene chiuso e l'ospite non può riprovare. Nessun codice di accesso viene inviato.",
       "rejectTitle": "Rifiuta il check-in",
+      "verifyAfterCall": "Dopo la videochiamata registra la decisione. Approvando, all'ospite arriva per email il codice di accesso della struttura (se ne ha uno); «Non verificato» non invia nulla e richiede una nota.",
       "verifyDescription": "Contatta l'ospite fuori da CasaZen e poi registra la decisione. Approvando, all'ospite arriva per email il codice di accesso della struttura (se ne ha uno); «Non verificato» non invia nulla e richiede una nota.",
       "verifyTitle": "Registra la tua decisione"
     },
@@ -30140,6 +30269,7 @@
       "upcoming": "Prossime"
     },
     "guest": {
+      "callHint": "Proponi una videochiamata all'ospite da questa scheda e poi registra la tua decisione.",
       "contactHint": "Contatta l'ospite fuori da CasaZen (per esempio con una videochiamata) e poi registra la tua decisione.",
       "noContact": "Nessun indirizzo email registrato: cerca il contatto dell'ospite nella prenotazione.",
       "openBooking": "Apri la prenotazione",
@@ -30192,6 +30322,28 @@
       "timeout": "ha impiegato troppo tempo",
       "unavailable": "i modelli non sono disponibili",
       "unreadable": "il documento non è leggibile"
+    },
+    "videoCall": {
+      "button": "Videochiamata",
+      "description": "Crea la riunione con lo strumento che usi di solito e incolla qui il link: lo mandiamo all'ospite per email. Dopo la chiamata registri la tua decisione.",
+      "errors": {
+        "failed": "Qualcosa non ha funzionato. Riprova tra poco.",
+        "forbidden": "Non hai il permesso di proporre una videochiamata per questa verifica.",
+        "invalid_url": "Il link non è valido: deve cominciare con https://, senza spazi né password, e non superare 500 caratteri.",
+        "not_pending": "Questa verifica non è più in attesa: forse l'ha già decisa un'altra persona. La coda è stata aggiornata.",
+        "not_sent": "L'email non è partita e nulla è stato inviato. Riprova.",
+        "outcome_unknown": "Non siamo riusciti a confermare l'invio: l'email potrebbe essere partita lo stesso. Prima di riprovare, chiedi all'ospite se l'ha ricevuta.",
+        "required": "Incolla il link della riunione.",
+        "too_many_requests": "Troppe richieste in poco tempo. Aspetta un momento e riprova.",
+        "unreachable": "L'ospite non ha un indirizzo email registrato, quindi non abbiamo inviato nulla. Apri la prenotazione per cercare un altro contatto, per esempio la chat del portale."
+      },
+      "linkHint": "Deve cominciare con https://. Il link va solo all'ospite per email: non resta nella scheda della prenotazione.",
+      "linkLabel": "Link della riunione",
+      "send": "Invia all'ospite",
+      "sending": "Invio...",
+      "sent": "Link della videochiamata inviato all'ospite. Dopo la chiamata registra la tua decisione.",
+      "sentNote": "Link della videochiamata inviato",
+      "title": "Proponi una videochiamata a {{name}}"
     },
     "why": {
       "no_match": "L'ultimo controllo automatico non ha trovato il volto uguale a quello del documento. L'ospite può anche aver chiesto lui una persona.",

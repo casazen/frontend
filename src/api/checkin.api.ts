@@ -8,6 +8,11 @@ import type {
   BiometricConsentRequest,
   BiometricConsentResponse,
   CheckInDocumentReadResult,
+  CheckInLegalTextsResponse,
+  DocumentSide,
+  DoorCheckInRequest,
+  DoorCheckInResponse,
+  DoorQr,
   IdentityDocumentResponse,
   IdentityOperatorResponse,
   IdentitySelfieResponse,
@@ -64,23 +69,44 @@ export const publicCheckinApi = {
     ApiClient.post<BiometricConsentResponse>(`/public/checkin/${token}/biometric-consent`, request, { public: true }),
 
   /**
+   * The legal texts of the identity step for the stay of the link (E22/F01/US02/T02): the consent to the face check and, for a property that keeps no document (Ticino), the notice, each with
+   * the `version` the consent posts back and `isDraft` (a draft is served outside production only). `language` is the one of the page (`it`, `en`, `de`, `fr`, `es`); the server serves the closest
+   * language it has and says which. 404 for a link that is not open. Behind the flag `checkInIdentityVerification`.
+   */
+  getLegalTexts: (token: string, language: string) =>
+    ApiClient.get<CheckInLegalTextsResponse>(`/public/checkin/${token}/legal-texts`, { lang: language }, { public: true }),
+
+  /**
+   * The guest at the door of the property (E22/F01/US02/T01): the booking code (or the surname of the main guest) and the arrival date find the stay and answer the token of its check-in link.
+   * The one answer for everything that does not open is the 404 `door_checkin_not_found`; 429 over five attempts a minute. The data is in the body, never in the address.
+   */
+  openDoor: (doorToken: string, request: DoorCheckInRequest) =>
+    ApiClient.post<DoorCheckInResponse>(`/public/checkin/door/${encodeURIComponent(doorToken)}`, request, { public: true }),
+
+  /**
    * The photo of the identity document of the guest who verifies: the answer carries the capture guidance (`acceptable`, `guidanceCodes`). The photo is
    * read in memory by the API; outside Ticino it is kept encrypted until the verification is over, in Ticino nothing is kept.
+   *
+   * A document of two sides (the Italian electronic identity card has the face on the front and the lines of letters on the back, E22/F01/US01/T02) is sent one side at a time with `side`
+   * (`front`, then `back` when the answer asks for it with `document_back_needed`); a passport sent as `front` is complete with that one picture. Without `side` the call is what it always was
+   * (`single`: one picture with the face and the lines of letters).
    */
-  postDocument: (token: string, photo: Blob) => {
+  postDocument: (token: string, photo: Blob, side?: DocumentSide) => {
     const body = new FormData();
     body.append('document', photo, 'document.jpg');
+    if (side) body.append('side', side);
     return ApiClient.post<IdentityDocumentResponse>(`/public/checkin/${token}/document`, body, PUBLIC_MULTIPART);
   },
 
   /**
    * The selfie of the guest who verifies (ADR-013-R1: compared in the request, ADR-013-R2: nothing of it is kept). For a property in Ticino the photo
-   * of the document comes again with it (`documentPhoto`). The answer is `ok` (with the lock code), `retry` or `operator`.
+   * of the document comes again with it (`documentPhoto`, and `documentPhotoBack` for a document of two sides). The answer is `ok` (with the lock code), `retry` or `operator`.
    */
-  postSelfie: (token: string, selfie: Blob, documentPhoto?: Blob | null) => {
+  postSelfie: (token: string, selfie: Blob, documentPhoto?: Blob | null, documentPhotoBack?: Blob | null) => {
     const body = new FormData();
     body.append('selfie', selfie, 'selfie.jpg');
     if (documentPhoto) body.append('documentPhoto', documentPhoto, 'document.jpg');
+    if (documentPhotoBack) body.append('documentPhotoBack', documentPhotoBack, 'document-back.jpg');
     return ApiClient.post<IdentitySelfieResponse>(`/public/checkin/${token}/selfie`, body, PUBLIC_MULTIPART);
   },
 
@@ -113,4 +139,15 @@ export const publicCheckinApi = {
     if (!intent) throw new UnexpectedApiResponseError('/public/checkin/{token}/tourist-tax/payment-intent');
     return intent;
   },
+};
+
+/**
+ * The QR code of the door of a property, for the host (E22/F01/US02/T01): it leads the guest who arrives to `/checkin/porta/{doorToken}`. The token is made the first time it is asked and
+ * is replaced by `rotate` («Rigenera»), after which the printed code stops working at once. `property.write` is needed (403 otherwise; 404 `property_not_found` for another org's property).
+ * Behind the flag `checkInIdentityVerification` (404 while it is off). The answers hold the door token: private, never cached.
+ */
+export const propertyDoorQrApi = {
+  get: (propertyId: string) => ApiClient.get<DoorQr>(`/properties/${encodeURIComponent(propertyId)}/door-qr`),
+
+  rotate: (propertyId: string) => ApiClient.post<DoorQr>(`/properties/${encodeURIComponent(propertyId)}/door-qr/rotate`),
 };
