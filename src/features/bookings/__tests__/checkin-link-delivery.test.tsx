@@ -207,6 +207,50 @@ describe('CheckInLinkPanel: where the check-in link of a portal booking stands (
     expect(screen.queryByTestId('checkin-delivery-state')).not.toBeInTheDocument();
   });
 
+  // The host issued another link (generated it or sent it again): the server ends the row of the delivery and leaves its state as it was, `Sent`, which is now the history of a link that
+  // no longer works. It is not told as where the link stands (a green «Inviato nella chat del portale» beside a link just generated), and the line of the e-mail of the new link is not hidden.
+  it.each([
+    ['PortalChat', 'host_link'],
+    ['PortalChat', 'link_replaced'],
+  ] as const)('panel_%sDeliverySentThenEndedBy_%s_SaysNothingAndLeavesTheLineOfTheEmailOfTheNewLink', async (channel, endedReason) => {
+    vi.mocked(bookingsApi.getCheckInSession).mockResolvedValue(NO_RECIPIENT);
+    vi.mocked(checkinLinkApi.getDelivery).mockResolvedValue(
+      delivery({ channel, state: 'Sent', lastErrorCode: null, checkInLink: null, sentAt: '2026-11-14T08:00:00Z', ended: true, endedReason }),
+    );
+    renderPanel();
+
+    expect(await screen.findByTestId('checkin-link-email')).toHaveTextContent('Email non inviata');
+    await deliveryDrawn();
+    expect(screen.queryByTestId('checkin-delivery-state')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Inviato nella chat/)).not.toBeInTheDocument();
+  });
+
+  it('panel_EmailDeliverySentThenEndedByTheHostLink_SaysNothingOfTheOldEmailAndTheLineOfTheEmailOfTheNewLinkTells', async () => {
+    vi.mocked(bookingsApi.getCheckInSession).mockResolvedValue({ ...NO_RECIPIENT, emailStatus: 'Sent', emailError: null, sentAt: '2026-11-15T09:00:00Z' });
+    vi.mocked(checkinLinkApi.getDelivery).mockResolvedValue(
+      delivery({ channel: 'Email', state: 'Sent', lastErrorCode: null, checkInLink: null, sentAt: '2026-11-14T08:00:00Z', ended: true, endedReason: 'host_link' }),
+    );
+    renderPanel();
+
+    expect(await screen.findByTestId('checkin-link-email')).toHaveTextContent('Email con il link inviata il');
+    await deliveryDrawn();
+    expect(screen.queryByTestId('checkin-delivery-state')).not.toBeInTheDocument();
+  });
+
+  // What ended with the check-in or the expiry of the link was true while it lasted: the line stays.
+  it.each([
+    ['check_in_completed', 'Completo'],
+    ['link_expired', 'Scaduto'],
+  ] as const)('panel_PortalChatDeliverySentThenEndedBy_%s_KeepsItsLine', async (endedReason, status) => {
+    vi.mocked(bookingsApi.getCheckInSession).mockResolvedValue({ ...NO_RECIPIENT, status });
+    vi.mocked(checkinLinkApi.getDelivery).mockResolvedValue(
+      delivery({ state: 'Sent', lastErrorCode: null, checkInLink: null, sentAt: '2026-11-14T08:00:00Z', ended: true, endedReason }),
+    );
+    renderPanel();
+
+    expect(await screen.findByTestId('checkin-delivery-state')).toHaveTextContent('Inviato nella chat del portale');
+  });
+
   it('panel_ExpiredLink_DoesNotShowAWaitingStateForALinkNobodyCanOpen', async () => {
     vi.mocked(bookingsApi.getCheckInSession).mockResolvedValue({ ...NO_RECIPIENT, status: 'Scaduto' });
     vi.mocked(checkinLinkApi.getDelivery).mockResolvedValue(delivery({ checkInLink: null }));

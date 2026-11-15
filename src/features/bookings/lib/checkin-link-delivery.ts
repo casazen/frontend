@@ -45,6 +45,13 @@ const FAILURE_REASONS: Readonly<Record<string, { reasonKey: string }>> = {
 
 const UNKNOWN_FAILURE_REASON = { reasonKey: 'checkin.link.delivery.reason.unknown' };
 
+/**
+ * Why a delivery ended because ANOTHER link took the place of the one it carried (`CheckInLinkEndReasons.HostLink`, `LinkReplaced`): the host generated or sent a new
+ * link, and the old one stopped working. The server ends the row and leaves its state as it was, so a `Sent` row of such a delivery is the history of a dead link, not the
+ * state of the link now.
+ */
+const LINK_REPLACED_REASONS: ReadonlySet<string> = new Set(['host_link', 'link_replaced']);
+
 /** The sentence of a failed delivery for its code. */
 function failureReasonKey(code: string | null | undefined): string {
   return (code && Object.hasOwn(FAILURE_REASONS, code) ? FAILURE_REASONS[code] : UNKNOWN_FAILURE_REASON).reasonKey;
@@ -60,6 +67,9 @@ interface DeliveryContext {
 /**
  * The line the panel shows for the delivery of the link, or `null` when it says nothing (no delivery, a state this version does not know, a delivery that
  * ended, a link that is no longer usable). What did not happen is never told as done (UX-09):
+ * - `Sent` is told only for the link it carried: a delivery that ended because the host issued another link (`host_link`, `link_replaced`) is about a link that no
+ *   longer works, and says nothing (the line of the e-mail and the link just issued tell what there is); one that ended with the check-in, the expiry or the booking
+ *   keeps its line, which is true;
  * - `Sent` by e-mail is told only while nothing contradicts it: an e-mail the provider refused, that is still in the queue or that the session says was never asked
  *   for is the business of the e-mail line;
  * - `Sending` is a message with the channel that has not left yet, so it is «in invio», never «inviato»;
@@ -70,6 +80,7 @@ export function describeDelivery(delivery: CheckInLinkDelivery | null | undefine
   if (!delivery || !delivery.channel || !state) return null;
 
   if (state === 'Sent') {
+    if (delivery.ended && delivery.endedReason && LINK_REPLACED_REASONS.has(delivery.endedReason)) return null;
     if (delivery.channel === 'Email') {
       if (context.emailStatus === 'Failed' || context.emailStatus === 'Queued' || context.emailStatus === 'NotRequested') return null;
       return { tone: 'done', labelKey: 'checkin.link.delivery.sentEmail', hintKey: null, needsTheHost: false };
