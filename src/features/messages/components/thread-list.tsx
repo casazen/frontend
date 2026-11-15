@@ -12,6 +12,7 @@ import { useNow } from '@/hooks/use-now';
 import { messageThreadPath } from '@/lib/message-hub-routes';
 import { cn } from '@/lib/utils';
 import type { MessageHubPage, MessageHubThread } from '@/types';
+import { hideCheckInLink } from '../lib/automatic-message';
 import { hasInboxFilters, type InboxState } from '../lib/inbox-state';
 import { formatListTime, formatStayRange } from '../lib/thread-format';
 import { ChannelBadge } from './channel-badge';
@@ -25,6 +26,8 @@ interface ThreadRowProps {
   /** The words «Da rispondere» on the row: the view «Da rispondere» says it for all of them. */
   showNeedsReply: boolean;
   compact: boolean;
+  /** The reader may copy the check-in link (`booking.write`): without it the link in the preview of an automatic message is hidden. */
+  canWrite: boolean;
 }
 
 /**
@@ -32,7 +35,7 @@ interface ThreadRowProps {
  * «Richiesta» when there is no booking yet, the property and the days of the stay, and how many messages wait to be read. The whole
  * row opens the conversation.
  */
-function ThreadRow({ thread, selected, search, now, showNeedsReply, compact }: ThreadRowProps) {
+function ThreadRow({ thread, selected, search, now, showNeedsReply, compact, canWrite }: ThreadRowProps) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
   const guest = thread.guestName?.trim() || t('messages.thread.sender.guest');
@@ -45,7 +48,9 @@ function ThreadRow({ thread, selected, search, now, showNeedsReply, compact }: T
         : origin === 'Automation'
           ? t('messages.thread.sender.automation')
           : null;
-  const text = thread.preview?.trim();
+  // The preview of an automatic message of CasaZen (the check-in link) holds the link, a secret that the host gets only if it may copy it (`booking.write`): who may not reads it without.
+  const start = thread.preview?.trim();
+  const text = start && origin === 'Automation' && !canWrite ? hideCheckInLink(start, t('messages.thread.linkHidden')) : start;
   const preview = text ? (prefix ? `${prefix}: ${text}` : text) : t('messages.thread.fileOnly');
   const stay = formatStayRange(thread.checkInDate, thread.checkOutDate, locale);
   const unread = thread.unreadCount > 0;
@@ -110,6 +115,11 @@ interface ThreadListProps {
   onChange: (changes: Partial<InboxState>) => void;
   /** What stands in for an empty list when it is the one of a booking that has no conversation yet (how the guest can be reached). */
   noConversation?: ReactNode;
+  /**
+   * The reader may copy the check-in link (`booking.write`, the rule of the guest panel of the booking). Without it (the default) the link that the preview of an automatic message
+   * of CasaZen holds is hidden: it is a secret the server gives only to who may copy it.
+   */
+  canWrite?: boolean;
 }
 
 /**
@@ -117,7 +127,7 @@ interface ThreadListProps {
  * (never an empty list for an error), the page empty because nothing waits for an answer, or because the search finds nothing, each in
  * simple words with the one thing to do about it. Pagination at the bottom when there is more than a page.
  */
-export function ThreadList({ page, loading, error, onRetry, state, search, selectedKey, compact = false, onChange, noConversation }: ThreadListProps) {
+export function ThreadList({ page, loading, error, onRetry, state, search, selectedKey, compact = false, onChange, noConversation, canWrite = false }: ThreadListProps) {
   const { t } = useTranslation();
   const nowMs = useNow();
   const now = useMemo(() => new Date(nowMs), [nowMs]);
@@ -178,6 +188,7 @@ export function ThreadList({ page, loading, error, onRetry, state, search, selec
             now={now}
             showNeedsReply={state.view !== 'toRespond'}
             compact={compact}
+            canWrite={canWrite}
           />
         ))}
       </ul>

@@ -15028,6 +15028,7 @@
       "earlier": "Qui vedi gli ultimi messaggi della conversazione.",
       "empty": "Ancora nessun messaggio. Scrivi tu per primo.",
       "fileOnly": "Solo un allegato",
+      "linkHidden": "[link del check-in nascosto]",
       "loadError": "Non riesco a caricare la conversazione.",
       "loading": "Carico la conversazione…",
       "logLabel": "Messaggi con {{name}}",

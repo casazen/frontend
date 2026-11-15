@@ -15028,6 +15028,7 @@
       "earlier": "You see the latest messages of the conversation here.",
       "empty": "No messages yet. Write first.",
       "fileOnly": "Only an attachment",
+      "linkHidden": "[check-in link hidden]",
       "loadError": "I cannot load the conversation.",
       "loading": "Loading the conversation…",
       "logLabel": "Messages with {{name}}",

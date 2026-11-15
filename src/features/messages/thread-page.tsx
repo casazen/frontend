@@ -221,7 +221,7 @@ function ThreadView({ threadKey }: { threadKey: string }) {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,18rem)] lg:items-start 2xl:grid-cols-[minmax(0,19rem)_minmax(0,1fr)_minmax(0,19rem)]">
         {withList ? (
           <aside aria-label={t('messages.inbox.title')} className="min-w-0">
-            <InboxPane selectedKey={threadKey} compact />
+            <InboxPane selectedKey={threadKey} compact canWrite={canWrite} />
           </aside>
         ) : null}
         <Conversation

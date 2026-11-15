@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { useDownloadAttachment, useMessageAttachment } from '@/queries/use-message-thread';
 import type { PendingThreadMessage } from '@/queries/use-thread-send';
 import type { MessageHubMessage } from '@/types';
+import { hideCheckInLink } from '../lib/automatic-message';
 import { canRetryReply, replyProblemMessage } from '../lib/reply-problems';
 import type { HubThreadItem } from '../lib/thread-items';
 import { formatMessageTime } from '../lib/thread-format';
@@ -192,9 +193,12 @@ export function MessageBubble({ item, threadKey, hostLanguage, canWrite, resent,
   const { message, pending } = item;
   const sending = pending?.status === 'sending';
   const state = message?.deliveryState;
-  const hasText = item.text.trim().length > 0;
   // An automatic message of CasaZen (the check-in link) is the host's side of the conversation but nobody's words: it is told apart by its name, and drawn neutral, not as the host's own.
   const automatic = message?.origin === 'Automation';
+  // The text of that message holds the link to the page of the guest, a secret that the host gets only if it may copy it (`booking.write`, as in the guest panel of the booking): a reader
+  // who may not copy it reads the message without the link.
+  const text = automatic && !canWrite ? hideCheckInLink(item.text, t('messages.thread.linkHidden')) : item.text;
+  const hasText = text.trim().length > 0;
 
   return (
     <div
@@ -226,7 +230,7 @@ export function MessageBubble({ item, threadKey, hostLanguage, canWrite, resent,
             sending && 'opacity-70',
           )}
         >
-          {item.text}
+          {text}
         </div>
       ) : null}
       {message?.attachment ? <MessageAttachment messageId={message.id} contentType={message.attachment.contentType} /> : null}

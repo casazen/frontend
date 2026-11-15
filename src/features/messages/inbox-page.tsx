@@ -34,7 +34,7 @@ export function InboxPage() {
         <PageHeader title={t('messages.inbox.title')} description={t('messages.inbox.description')} />
         <ChatAvailabilityBanner />
         <div className="grid grid-cols-1 gap-8 2xl:grid-cols-[minmax(0,28rem)_minmax(0,1fr)] 2xl:items-start">
-          <InboxPane noConversation={(state) => (state.bookingId ? <ContactOptionsPanel bookingId={state.bookingId} canWrite={canWrite} /> : null)} />
+          <InboxPane canWrite={canWrite} noConversation={(state) => (state.bookingId ? <ContactOptionsPanel bookingId={state.bookingId} canWrite={canWrite} /> : null)} />
           <div
             className="hidden min-h-64 flex-col items-center justify-center gap-3 rounded-xl border border-dashed p-10 text-center 2xl:flex"
             data-testid="messages-no-selection"

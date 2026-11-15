@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { AxiosError } from 'axios';
 import i18n from '@/i18n/config';
 import type { MessageHubMessage, MessageHubThreadDetail } from '@/types';
+import { hideCheckInLink } from '../lib/automatic-message';
 import { guestProfilePath } from '../lib/guest-profile';
 import { canRetryReply, replyProblemMessage } from '../lib/reply-problems';
 import { buildThreadItems, resendKeyOf, resentMessageIds, senderOf } from '../lib/thread-items';
@@ -136,6 +137,26 @@ describe('the sentence for a send that did not go (NF-63)', () => {
     expect(canRetryReply(httpError(409, { code: 'thread_closed' }))).toBe(false);
     expect(canRetryReply(httpError(409, { code: 'chat_not_licensed' }))).toBe(false);
     expect(canRetryReply(httpError(422, { code: 'channel_rule_violation' }))).toBe(false);
+  });
+});
+
+// PRIVACY (E23/F01): the page of the guest check-in is `{site}/checkin/{token}`, and the token is a secret that opens it: the text of an automatic message holds it, and a reader who may not
+// copy the link (no `booking.write`) reads that text without it.
+describe('the check-in link in the text of an automatic message', () => {
+  const HIDDEN = '[nascosto]';
+
+  it.each([
+    ['Ecco il link: https://casazen.test/checkin/secret-token-123 Grazie', `Ecco il link: ${HIDDEN} Grazie`],
+    ['https://casazen.test/checkin/AbC-_9%2Fx~1', HIDDEN],
+    ['Link: casazen.test/checkin/secret-token-123', `Link: ${HIDDEN}`],
+    ['Italiano: https://a.test/checkin/one\n\nEnglish: https://a.test/checkin/one', `Italiano: ${HIDDEN}\n\nEnglish: ${HIDDEN}`],
+  ])('hideCheckInLink_%j_ReplacesTheLinkAndOnlyTheLink', (text, expected) => {
+    expect(hideCheckInLink(text, HIDDEN)).toBe(expected);
+  });
+
+  it('hideCheckInLink_TextWithoutTheLink_IsUnchanged', () => {
+    const text = 'Il check-in è dalle 15. Vedi /app/short-rent/bookings/b-1 oppure https://casazen.test/checkout/one';
+    expect(hideCheckInLink(text, HIDDEN)).toBe(text);
   });
 });
 
