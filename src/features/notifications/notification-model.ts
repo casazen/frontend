@@ -1,4 +1,4 @@
-import { AlertTriangle, BedDouble, Bell, CalendarClock, ClipboardCheck, LifeBuoy, LogOut, MessageSquare, ShieldAlert, ShieldCheck, UserCheck, Wrench, type LucideIcon } from 'lucide-react';
+import { AlertTriangle, BedDouble, Bell, CalendarClock, ClipboardCheck, FileWarning, LifeBuoy, LogOut, MessageSquare, ShieldAlert, ShieldCheck, UserCheck, Wrench, type LucideIcon } from 'lucide-react';
 import type { InAppNotification } from '@/api/notifications.api';
 import type { AppContextKey } from '@/config/route-manifest';
 import { ONBOARDING_PLAN_PATH } from '@/lib/onboarding-parts';
@@ -50,6 +50,8 @@ const KINDS: Record<string, NotificationKind> = {
   'alloggiati-deadline': { icon: CalendarClock, textKey: 'notifications.types.alloggiatiDeadline', route: bookingTab('alloggiati') },
   'alloggiati-overdue': { icon: ShieldAlert, textKey: 'notifications.types.alloggiatiOverdue', route: bookingTab('alloggiati') },
   'alloggiati-failed': { icon: AlertTriangle, textKey: 'notifications.types.alloggiatiFailed', route: bookingTab('alloggiati') },
+  // E17/F01/US02/T03: the SDI rejected an invoice of the booking; the booking's tab Pagamento holds its documents, and the «Da fare» item "Correggi la fattura" opens the correction from the documents page.
+  'fiscal-document-sdi-rejected': { icon: FileWarning, textKey: 'notifications.types.fiscalDocumentSdiRejected', route: bookingTab('payment') },
   'checkout-reminder': { icon: LogOut, textKey: 'notifications.types.checkoutReminder', route: bookingRoute },
   'ota-stay-review': { icon: AlertTriangle, textKey: 'notifications.types.otaStayReview', route: bookingRoute },
   'service-request-created': serviceRequest('notifications.types.serviceRequestCreated'),

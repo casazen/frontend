@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { FileSpreadsheet, FileText } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { ListPagination } from '@/components/shared/list-view/list-pagination';
@@ -29,6 +30,7 @@ import {
   criteriaOf,
   DOCUMENTS_PAGE_SIZE,
   documentLabelOf,
+  documentLinkOf,
   documentsReadOf,
   exportBlockOf,
   hasActiveFilters,
@@ -38,6 +40,7 @@ import {
   sdiNoteVisibleFor,
   type BatchOutcome,
   type DocumentFilters,
+  type DocumentIntent,
 } from './document-model';
 
 const NO_DOCUMENTS: readonly FiscalDocumentEntry[] = [];
@@ -115,10 +118,24 @@ export function FiscalDocumentsPage() {
   const canChangeIssuer = hasPermission('short-rent', 'property.write');
   const canReadBookings = hasPermission('short-rent', 'booking.read');
   const canWrite = canRead && hasPermission('short-rent', 'payment.write') && isFeatureEnabled(flags, 'fiscalDocumentIssuance');
+  const sdiSubmissionOn = isFeatureEnabled(flags, 'sdiSubmission');
 
+  const [params, setParams] = useSearchParams();
+  const link = documentLinkOf(params);
   const [filters, setFilters] = useState<DocumentFilters>(NO_FILTERS);
   const [page, setPage] = useState(1);
-  const [openId, setOpenId] = useState<string | null>(null);
+  // The document an address names (`?document=<id>&step=correct`, the «Do now» of a «To do» item) opens at once, with the step it asks for; any other way of opening one has no step.
+  const [openId, setOpenId] = useState<string | null>(link.documentId);
+  const [intent, setIntent] = useState<DocumentIntent | undefined>(link.intent);
+  const [linked, setLinked] = useState<string | null>(link.documentId);
+  if (link.documentId !== linked) {
+    // The address names another document while the page is open (a «Do now» from the bell): it opens too.
+    setLinked(link.documentId);
+    if (link.documentId !== null) {
+      setOpenId(link.documentId);
+      setIntent(link.intent);
+    }
+  }
   const [selected, setSelected] = useState<ReadonlyMap<string, FiscalDocumentEntry>>(NO_SELECTION);
   const [note, setNote] = useState<SelectNote | null>(null);
   const [confirming, setConfirming] = useState(false);
@@ -217,6 +234,17 @@ export function FiscalDocumentsPage() {
     if (kind === 'discarded') setOpenId((current) => (current === id ? null : current));
   };
   const canSelectPeriod = read === 'ok' && problem === null && (filters.status === '' || filters.status === 'Draft');
+  // Opens a document, or closes the detail: the step the address asked for goes with it, and the address stops naming the document (a reload does not open it again).
+  const openDocument = (id: string | null) => {
+    setOpenId(id);
+    setIntent(undefined);
+    if (params.has('document') || params.has('step')) {
+      const next = new URLSearchParams(params);
+      next.delete('document');
+      next.delete('step');
+      setParams(next, { replace: true });
+    }
+  };
 
   const filtered = hasActiveFilters(filters);
   const issuerMode = issuerModeOf(context.data);
@@ -268,7 +296,8 @@ export function FiscalDocumentsPage() {
               {t(exportBlock === 'status' ? 'fiscalDocuments.list.export.statusBlocked' : 'fiscalDocuments.list.export.hint')}
             </p>
 
-            {read === 'ok' && sdiNoteVisibleFor(context.data, rows) ? (
+            {/* With the sending to the SDI on, the panel of each document says what to do with the file (with no channel connected: upload it by hand and declare it), so this older note is not drawn. */}
+            {read === 'ok' && !sdiSubmissionOn && sdiNoteVisibleFor(context.data, rows) ? (
               <p className="text-sm text-foreground/70" data-testid="fiscal-documents-sdi-note">
                 {t('fiscalDocuments.list.note.sdiNotAvailable')}
               </p>
@@ -305,7 +334,7 @@ export function FiscalDocumentsPage() {
                 canReadBookings={canReadBookings}
                 flags={flags}
                 canWrite={canWrite}
-                onOpen={(document) => setOpenId(document.id)}
+                onOpen={(document) => openDocument(document.id)}
                 onChanged={changed}
                 selection={
                   canWrite
@@ -336,11 +365,13 @@ export function FiscalDocumentsPage() {
 
             <DocumentDetailDrawer
               documentId={openId}
-              onClose={() => setOpenId(null)}
+              onClose={() => openDocument(null)}
               flags={flags}
               canWrite={canWrite}
               canReadBookings={canReadBookings}
+              intent={intent}
               onChanged={changed}
+              onOpenDocument={openDocument}
             />
 
             {confirming ? (

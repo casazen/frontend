@@ -5,7 +5,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import { LogOut } from 'lucide-react';
 import { SkipLink } from '@/components/layout/skip-link';
 import { Button } from '@/components/ui/button';
+import { isFeatureEnabled } from '@/config/feature-flags';
 import { useAuth } from '@/hooks/use-auth';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { cn } from '@/lib/utils';
 import { useSeoMeta } from '@/lib/seo-meta';
 import { clearOwnerPortalCache, useCanManageOwnerContacts } from '@/queries/ownerPortal';
@@ -30,6 +32,9 @@ export function OwnerPortalShell() {
   const queryClient = useQueryClient();
   const { logout } = useAuth();
   const canManageContacts = useCanManageOwnerContacts();
+  const { flags } = useFeatureFlags();
+  // The documents issued in the name of the owner exist while the issuance of fiscal documents and the agency plan are on (E17/F03/US01/T03): with either off the entry is not there and nothing changes.
+  const issuedDocumentsOpen = isFeatureEnabled(flags, 'fiscalDocumentIssuance') && isFeatureEnabled(flags, 'agencyTier');
   useSeoMeta({ title: t('ownerPortal.shell.pageTitle'), noindex: true });
 
   useEffect(() => () => clearOwnerPortalCache(queryClient), [queryClient]);
@@ -59,6 +64,11 @@ export function OwnerPortalShell() {
             <NavLink to={ownerPortalPaths.documents} className={linkClass}>
               {t('ownerPortal.shell.nav.documents')}
             </NavLink>
+            {issuedDocumentsOpen ? (
+              <NavLink to={ownerPortalPaths.issuedDocuments} className={linkClass}>
+                {t('ownerPortal.shell.nav.issuedDocuments')}
+              </NavLink>
+            ) : null}
             <NavLink to={ownerPortalPaths.messages} className={linkClass}>
               {t('ownerPortal.shell.nav.messages')}
             </NavLink>

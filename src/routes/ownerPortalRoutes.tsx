@@ -13,6 +13,7 @@ import { OwnerConversation } from '@/pages/owner-portal/OwnerConversation';
 import { OwnerDashboard } from '@/pages/owner-portal/OwnerDashboard';
 import { OwnerDocuments } from '@/pages/owner-portal/OwnerDocuments';
 import { OwnerInbox } from '@/pages/owner-portal/OwnerInbox';
+import { OwnerIssuedDocuments } from '@/pages/owner-portal/OwnerIssuedDocuments';
 import { OwnerProperties } from '@/pages/owner-portal/OwnerProperties';
 import { OwnerStatementDetail } from '@/pages/owner-portal/OwnerStatementDetail';
 import { OwnerStatements } from '@/pages/owner-portal/OwnerStatements';
@@ -55,6 +56,8 @@ export const ownerPortalRoutes: RouteObject[] = [
       // The old address of the statements: the accounting page holds them now.
       { path: 'rendiconti', element: <Navigate to={ownerPortalPaths.accounting} replace /> },
       { path: 'documenti', element: <OwnerDocuments /> },
+      // The documents CasaZen issued in the name of the owner (E17/F03/US01/T03): a page behind the flags of the issuance and of the agency plan, which says it is not open while they are off.
+      { path: 'documenti-emessi', element: <OwnerIssuedDocuments /> },
       { path: 'messaggi', element: <OwnerInbox /> },
       // The link of the e-mail that tells the owner the agency wrote: the id of the conversation only.
       { path: 'messaggi/:conversationId', element: <OwnerConversation /> },

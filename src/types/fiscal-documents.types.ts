@@ -56,6 +56,15 @@ export interface FiscalDocumentEntry {
   sdiErrorCode: string | null;
   hasXml: boolean;
   octoratePdfAvailable: boolean;
+  /**
+   * What the document is for (E17/F01/US01/T02): `GuestStay`, `OwnerInvoice` (the invoice of the property manager to an owner) or `SelfBilling` (a TD17). Only there when the server sends it; a purpose this client does
+   * not know is shown as it came. An owner invoice and a self-billed invoice are never changed with the endpoints of the guest documents (the server refuses with 422), so the screens do not offer it.
+   */
+  purpose?: string;
+  /** The rejected document that this draft replaces, when it is the replacement a correction made (it keeps the number of the rejected one): `null` or absent for any other document. */
+  replacesDocumentId?: string | null;
+  /** Who issued the document, by name, when the server says it (several documents of a booking may have several issuers: the owner, the agency): absent when it does not. */
+  issuerName?: string | null;
 }
 
 /** One page of the list, newest first, as the server pages and counts it. */
@@ -180,4 +189,56 @@ export interface BookingFiscalDocument {
   currency: string;
   paymentState: string;
   issueDate: string | null;
+}
+
+// ---------------------------------------------------------------------------------------------------------------------------------
+// The SDI: state, submission, declaration, correction (E17/F01/US02, E17/F03/US01/T02, NF-116, NF-86)
+
+/**
+ * Whose endpoints the SDI state of a document is read and changed through: the documents of the guests (and a self-billed invoice) are on `api/fiscal/documents/{id}/sdi` behind `payment.read` and
+ * `payment.write`, an invoice of the property manager to an owner is on `api/owner-invoices/{id}/sdi` behind `agency.statement.view` and `agency.statement.manage` (the first answers 422
+ * `document_owner_invoice` for an owner invoice).
+ */
+export type SdiScope = 'guest' | 'owner';
+
+/**
+ * Where an electronic invoice stands with the SDI, as the server says it (`GET .../sdi`): the state, the code of what went wrong and its reason in plain words (written in the language of the request, and
+ * never naming the channel), when the state is of, and what can be done now. `submitted` is said only when the channel accepted the file, `delivered` and `rejected` only with an outcome, `manual_declared`
+ * only with the declaration of a person: the client never works a state out of what it sent.
+ */
+export interface FiscalDocumentSdiState {
+  documentId: string;
+  status: string;
+  errorCode: string | null;
+  reason: string | null;
+  statusUpdatedAt: string | null;
+  /** A channel to the SDI is connected: «Invia» is attempted (otherwise it answers `NotConfigured`, and the XML is uploaded by hand). */
+  providerConfigured: boolean;
+  canSubmit: boolean;
+  canDeclare: boolean;
+  canCorrect: boolean;
+}
+
+/** The answer of «Invia»: what it did and the state of the document now. */
+export interface SdiSubmitResult {
+  /** What the submission did (backend `SdiSubmitOutcome`): `NotConfigured`, `Submitted`, `Refused` or `AlreadySubmitted`. `Submitted` is the only one that says the channel took the file; a code this client does not know is never read as a success. */
+  outcome: string;
+  state: FiscalDocumentSdiState;
+}
+
+/** What an issuer declares of a file it sent by hand: the day and the reference of the sending, or the code (and the text) of the notification of rejection the SDI sent. */
+export type SdiDeclaration = { kind: 'Sent'; date: string; reference: string } | { kind: 'Rejected'; errorCode: string; errorText?: string };
+
+/** One issuer with a VAT number that sends electronic invoices: the profile of the organization (`propertyOwnerId` is `null`) or the one of an owner who issues. */
+export interface SdiIssuerRegistration {
+  issuerProfileId: string;
+  propertyOwnerId: string | null;
+  /** Where the issuer stands with the channel (`GET api/fiscal/sdi/issuers`): its VAT number enabled (`registered`), not enabled yet (`pending`), or nothing submitted yet (`unknown`); any other code reads as `unknown`. */
+  state: string;
+}
+
+/** The channel to the SDI of this environment and its issuers (`GET api/fiscal/sdi/issuers`). */
+export interface SdiIssuers {
+  providerConfigured: boolean;
+  issuers: SdiIssuerRegistration[];
 }

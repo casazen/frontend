@@ -2282,15 +2282,32 @@
       "batchAlreadyPaid": "Questo file dei bonifici è già stato segnato come pagato.",
       "batchNotDownloaded": "Prima di segnare il file come pagato va scaricato.",
       "batchXmlNotFound": "Questo file dei bonifici non ha contenuto: non si può scaricare.",
+      "documentNotCorrectable": "Questa fattura scartata non si può correggere da qui: ha già delle note di credito.",
+      "documentNotRejected": "Si corregge solo una fattura scartata dallo SDI. Una fattura consegnata si corregge con una nota di credito.",
+      "documentOwnerInvoice": "Una fattura al proprietario si gestisce dalle fatture ai proprietari, non da qui.",
+      "documentRejectedUseCorrection": "Una fattura scartata dallo SDI non è mai stata emessa: si corregge, non si annulla con una nota di credito.",
+      "documentReplacementHoldsNumber": "Questa bozza sostituisce una fattura scartata dallo SDI e tiene il suo numero: si emette, non si scarta.",
+      "documentReplacementInvalid": "La bozza non sostituisce una fattura scartata di chi emette, oppure non tiene il suo numero.",
+      "documentSelfBilling": "Un’autofattura (TD17) si gestisce dalla pagina delle autofatture, non da qui.",
       "f24NotFound": "Per questo mese non c'è un F24.",
       "invalidDebitAccountIban": "L'IBAN della tua agenzia, da cui partono i bonifici, non è valido: correggilo nella parte «Fatturazione» e riprova.",
       "mixedCurrenciesNotAllowed": "Un file dei bonifici ha una sola valuta: scegli pagamenti tutti in euro o tutti in franchi.",
       "noPayoutsProvided": "Scegli almeno un pagamento.",
       "noStatementsProvided": "Scegli almeno un rendiconto.",
       "ownerInvalidIban": "L'IBAN di un proprietario dei pagamenti scelti non è valido: correggilo prima di creare il file.",
+      "ownerIssuedDocumentNotFound": "Non troviamo questo documento tra quelli emessi a tuo nome.",
+      "ownerIssuedDocumentsNotAvailable": "I documenti emessi a tuo nome non sono ancora aperti, oppure non hai una proprietà attiva.",
       "ownerMissingIban": "Manca l'IBAN di un proprietario dei rendiconti scelti: aggiungilo prima di creare il file.",
       "payoutsAlreadyInBatch": "Almeno uno dei pagamenti scelti è già in un file per la banca: un pagamento si paga una volta sola. Togli dalla scelta quelli già inseriti in un file e riprova.",
       "payoutsNotFoundOrNotOwned": "Uno dei pagamenti scelti non esiste più: l'elenco è stato aggiornato.",
+      "sdiDeclarationInvalid": "La dichiarazione non è completa o non è valida: controlla il giorno, il riferimento o il codice.",
+      "sdiNotElectronic": "Questo documento non va allo SDI: ci vanno solo le fatture e le note di credito elettroniche emesse da CasaZen.",
+      "sdiNotToSend": "Questo documento non è più «da inviare»: è già stato inviato, dichiarato, consegnato o scartato. Aggiorna lo stato.",
+      "sdiStateFinal": "Lo SDI ha già risposto su questo documento: lo stato non cambia più.",
+      "selfBillingEstimateUnconfirmed": "Una parte dell’importo è una stima: confrontala con la fattura del portale e accettala per emettere.",
+      "selfBillingNotConfigured": "Le autofatture non si possono ancora fare: nelle impostazioni mancano l’aliquota IVA o il portale. Le sistema CasaZen.",
+      "selfBillingPeriodInvalid": "Il mese scelto non è valido.",
+      "selfBillingPeriodNotEnded": "Il mese non è ancora finito: le autofatture si preparano e si emettono a mese concluso.",
       "statementNotApproved": "Il rendiconto deve prima essere approvato.",
       "statementNotDraft": "Questo rendiconto non è più una bozza: l'elenco è stato aggiornato.",
       "statementNotExportable": "Il PDF e il CSV si scaricano solo dopo l'approvazione del rendiconto.",
@@ -3153,6 +3170,8 @@
       "italy": "Sono due promemoria: l’adesione gratuita alla conservazione dei documenti sul portale dell’Agenzia delle Entrate e il bollo. Spunta quando l’hai fatto: CasaZen non può verificarlo per te.",
       "mandate": "Il mandato standard vale per i proprietari che non ne hanno uno: commissione, importi fissi e a carico di chi sono le spese dei pagamenti. Non cambia i mandati che esistono già.",
       "numbering": "I documenti si numerano di seguito, senza salti, per ogni serie. Controlla come comincia il numero: l’anno è già compreso.",
+      "ownerIssuers": "In Italia il documento del soggiorno lo emette il proprietario, con i suoi dati e il suo sezionale. Per ogni proprietario crea il profilo dai suoi dati e completa quello che manca: finché manca, CasaZen non prepara i suoi documenti.",
+      "sdi": "Qui vedi se CasaZen è collegata allo SDI e a che punto è ogni emittente. Non c’è niente da compilare: se il collegamento non c’è ancora, scarichi l’XML dal documento, lo carichi a mano sul portale dell’Agenzia delle Entrate e lo dichiari inviato.",
       "summary": "Qui controlli che cosa manca, ogni voce apre il suo passo, e vedi un documento di esempio con le aliquote in vigore.",
       "supportGeneric": "Se non sai che cosa rispondere, scrivi all’assistenza di CasaZen.",
       "supportWithEmail": "Se non sai che cosa rispondere, scrivi all’assistenza di CasaZen:",
@@ -3249,12 +3268,18 @@
       "fiscal_code_missing": "Manca il codice fiscale di chi emette.",
       "guest_series_unconfirmed": "Non hai ancora confermato la numerazione dei documenti agli ospiti.",
       "legal_name_missing": "Manca il nome di chi emette sui documenti.",
+      "owner_issuer_missing": "Ci sono proprietari senza profilo emittente.",
+      "owner_issuer_missing_one": "C’è 1 proprietario senza profilo emittente.",
+      "owner_issuer_missing_other": "Ci sono {{count}} proprietari senza profilo emittente.",
       "owner_series_unconfirmed": "Non hai ancora confermato la numerazione delle fatture ai proprietari.",
       "owners_without_mandate": "Ci sono proprietari senza mandato.",
       "owners_without_mandate_one": "C’è 1 proprietario senza mandato.",
       "owners_without_mandate_other": "Ci sono {{count}} proprietari senza mandato.",
       "regime_code_missing": "Manca il codice del regime della fattura elettronica.",
       "regime_missing": "Non hai ancora scelto il regime.",
+      "sdi_issuer_registration_pending": "Alcuni emittenti aspettano di essere abilitati allo SDI.",
+      "sdi_issuer_registration_pending_one": "1 emittente aspetta che il suo numero di partita IVA sia abilitato per l’invio allo SDI: non devi fare niente.",
+      "sdi_issuer_registration_pending_other": "{{count}} emittenti aspettano che il loro numero di partita IVA sia abilitato per l’invio allo SDI: non devi fare niente.",
       "stamp_duty_unconfirmed": "Manca il riferimento del bollo o la conferma del bollo virtuale.",
       "swiss_uid_missing": "Manca il numero UID di chi emette.",
       "tax_rule_missing": "Per questo regime non c’è ancora una regola di IVA in vigore: la aggiunge CasaZen.",
@@ -3357,12 +3382,90 @@
       },
       "preview": "Esempio di numero: {{number}}"
     },
+    "ownerIssuers": {
+      "complete": "Tutti i proprietari hanno un profilo che può emettere.",
+      "dialog": {
+        "description": "Compila i dati: li usa CasaZen per emettere i documenti dei soggiorni a nome del proprietario.",
+        "title": "Profilo emittente di {{owner}}"
+      },
+      "empty": "Non ci sono ancora proprietari. Li aggiungi con l’attivazione dei proprietari.",
+      "intro": "In Italia il documento del soggiorno lo emette il proprietario, con i suoi dati e il suo sezionale: CasaZen lo emette a suo nome. Per ogni proprietario serve un profilo emittente completo.",
+      "loadError": "Impossibile caricare i proprietari.",
+      "loading": "Carico i proprietari…",
+      "missing_one": "Manca ancora il profilo emittente di 1 proprietario.",
+      "missing_other": "Mancano ancora i profili emittenti di {{count}} proprietari.",
+      "note": "Un profilo già completo si cambia da qui o dalla pagina dei dati finanziari del proprietario.",
+      "row": {
+        "complete": "Completa",
+        "completeLabel": "Completa il profilo emittente di {{owner}}",
+        "create": "Crea dai dati del proprietario",
+        "createFailed": "Non siamo riusciti a creare il profilo. Riprova tra poco.",
+        "createLabel": "Crea il profilo emittente di {{owner}} dai suoi dati",
+        "createdIncomplete": "Profilo di {{owner}} creato dai suoi dati: mancano ancora alcune cose.",
+        "createdReady": "Profilo di {{owner}} creato: è pronto per emettere.",
+        "edit": "Modifica",
+        "editLabel": "Modifica il profilo emittente di {{owner}}",
+        "error": "Non riesco a leggere il profilo.",
+        "fill": "Inserisci a mano",
+        "fillLabel": "Inserisci a mano il profilo emittente di {{owner}}",
+        "gone": "Non c’è più tra i tuoi proprietari.",
+        "loading": "Carico il profilo…",
+        "masked": "I dati del proprietario sono nascosti per te: non abbiamo da dove partire. Inseriscili a mano, oppure chiedi a chi gestisce la parte economica dei proprietari.",
+        "missing": "Mancano: {{fields}}.",
+        "missingUnknown": "Mancano ancora alcuni dati.",
+        "notForYou": "Il profilo non è per te.",
+        "state": {
+          "incomplete": "Da completare",
+          "none": "Senza profilo",
+          "ready": "Pronto"
+        }
+      },
+      "showAll": "Mostra tutti ({{count}})",
+      "showLess": "Mostra meno"
+    },
     "readOnly": {
       "noPermission": "Il tuo ruolo può vedere la fatturazione ma non cambiarla: chiedi a chi amministra l’organizzazione.",
       "partialScope": "Il tuo accesso riguarda solo alcuni immobili, e la fatturazione è di tutta l’organizzazione: puoi vederla ma non cambiarla.",
       "title": "Puoi solo guardare"
     },
     "saveFailed": "Non siamo riusciti a salvare. Quello che hai scritto è ancora qui: riprova.",
+    "sdi": {
+      "intro": "Qui vedi come le fatture elettroniche arrivano allo SDI. Non c’è niente da compilare.",
+      "issuers": {
+        "empty": "Nessun emittente con partita IVA ha ancora fatture elettroniche.",
+        "organization": "La tua organizzazione",
+        "title": "Emittenti"
+      },
+      "loadError": "Impossibile leggere lo stato del collegamento allo SDI.",
+      "loading": "Controllo il collegamento…",
+      "note": "I documenti dei proprietari che emettono vanno allo SDI con il numero di partita IVA di ciascuno.",
+      "registration": {
+        "other": "Stato: {{state}}",
+        "otherText": "È uno stato che questa versione non conosce: lo mostriamo com’è.",
+        "pending": {
+          "label": "In attesa",
+          "text": "Il canale non ha ancora abilitato il numero di partita IVA di questo emittente. Non devi fare niente: ci pensa CasaZen, e i documenti restano «da inviare»."
+        },
+        "registered": {
+          "label": "Abilitato",
+          "text": "Il canale ha accettato un invio di questo emittente: il suo numero di partita IVA è abilitato."
+        },
+        "unknown": {
+          "label": "Non ancora richiesto",
+          "text": "Non è partito ancora nessun invio: il numero di partita IVA si abilita al primo invio."
+        }
+      },
+      "state": {
+        "connected": {
+          "body": "CasaZen invia le fatture elettroniche allo SDI e ti dice quando sono consegnate o scartate.",
+          "title": "Collegato allo SDI"
+        },
+        "waitingCredentials": {
+          "body": "Il collegamento allo SDI non è ancora attivo: mancano le credenziali, che le mette CasaZen. Finché non ci sono le fatture restano «da inviare»: scarichi l’XML dal documento, lo carichi a mano sul portale dell’Agenzia delle Entrate e lo dichiari inviato.",
+          "title": "In attesa delle credenziali"
+        }
+      }
+    },
     "steps": {
       "accountant": {
         "label": "Commercialista",
@@ -3398,6 +3501,16 @@
         "label": "Numerazione",
         "purpose": "Le serie dei documenti e delle fatture.",
         "title": "Numerazione dei documenti"
+      },
+      "ownerIssuers": {
+        "label": "Proprietari che emettono",
+        "purpose": "In Italia emette il proprietario: serve il suo profilo.",
+        "title": "Chi emette per i proprietari"
+      },
+      "sdi": {
+        "label": "Invio allo SDI",
+        "purpose": "Lo stato del collegamento e di ogni emittente.",
+        "title": "Come arrivano le fatture allo SDI"
       },
       "summary": {
         "label": "Riepilogo",
@@ -3454,6 +3567,7 @@
         "issuing": "Emissione",
         "name": "Nome sui documenti",
         "numbering": "Numerazione",
+        "ownerIssuers": "Proprietari che emettono",
         "regime": "Regime",
         "touristTax": "Tassa di soggiorno"
       },
@@ -3466,6 +3580,9 @@
         "title_other": "Mancano ancora {{count}} cose"
       },
       "numbering": "Ospiti {{guest}}, proprietari {{owner}}",
+      "ownerIssuers": {
+        "ready": "Tutti pronti"
+      },
       "touristTax": {
         "none": "Nessun portale: la incassi tu",
         "portals": "La incassano i portali: {{portals}}"
@@ -8715,6 +8832,60 @@
       "open": "Tutti i documenti fiscali",
       "title": "Documento fiscale"
     },
+    "correction": {
+      "close": "Chiudi",
+      "data": {
+        "body": "Controlla i dati di chi riceve la fattura: spesso lo scarto dipende da un codice fiscale o da una partita IVA.",
+        "check": "Controlla i dati",
+        "draftKeeps": "La bozza della fattura corretta tiene il numero {{number}}: si emette, non si scarta.",
+        "draftKeepsUnknown": "La bozza della fattura corretta tiene il numero di quella scartata: si emette, non si scarta.",
+        "next": "Vai all’emissione",
+        "noBooking": "Questa fattura non ha una prenotazione: non ci sono dati da correggere da qui.",
+        "right": "I dati sono giusti: vai all’emissione"
+      },
+      "delivered": "Questa fattura è stata consegnata dallo SDI: non si corregge, si annulla con una nota di credito.",
+      "description": "Correzione guidata di una fattura scartata dallo SDI",
+      "done": {
+        "body": "La fattura {{number}} è stata emessa di nuovo.",
+        "bodyUnknown": "La fattura è stata emessa di nuovo, con il numero di quella scartata.",
+        "next": "Ora è «da inviare» allo SDI: aprila per inviarla.",
+        "open": "Apri la fattura corretta",
+        "title": "Fattura corretta"
+      },
+      "exit": "Chiudi e riprendi dopo",
+      "explain": {
+        "data": "Controlli i dati di chi riceve la fattura, poi la emetti di nuovo.",
+        "noCredit": "Non serve una nota di credito: la fattura scartata viene sostituita.",
+        "same": "La fattura {{number}} non è mai arrivata a chi la riceve: la rifacciamo con lo stesso numero.",
+        "sameUnknown": "La fattura non è mai arrivata a chi la riceve: la rifacciamo con lo stesso numero.",
+        "start": "Inizia la correzione",
+        "title": "Come la correggiamo"
+      },
+      "help": {
+        "body": "Una fattura scartata dallo SDI non è mai arrivata a chi la riceve: per questo la sostituiamo invece di annullarla. Puoi chiudere quando vuoi: la bozza resta nell’elenco dei documenti e la riprendi da lì.",
+        "title": "Aiuto"
+      },
+      "issue": {
+        "body": "La fattura corretta prende il posto di quella scartata, con lo stesso numero. Dopo l’emissione risulta «da inviare» allo SDI.",
+        "button": "Emetti di nuovo la fattura"
+      },
+      "loading": "Carico la fattura…",
+      "notCorrectable": "Questo documento non si può correggere da qui: o non è scartato, o ha già note di credito, o è già stato corretto.",
+      "phase": {
+        "data": "Controlla i dati",
+        "done": "Fatto",
+        "explain": "Che cosa facciamo",
+        "issue": "Emetti di nuovo la fattura"
+      },
+      "progress": "Passo {{step}} di {{total}}",
+      "replacement": {
+        "body": "Questa bozza sostituisce una fattura scartata dallo SDI e tiene il suo numero: si emette, non si scarta.",
+        "continue": "Continua la correzione",
+        "title": "Correzione in corso"
+      },
+      "startFailed": "Non siamo riusciti a iniziare la correzione. Riprova tra poco.",
+      "startUnreadable": "La correzione è partita, ma non riusciamo a leggere la bozza: la trovi nell’elenco dei documenti."
+    },
     "credit": {
       "amount": {
         "hint": "Scrivi l’importo con i centesimi, per esempio 120,50. Non può superare quello che resta da stornare: lo controlla il sistema.",
@@ -8813,6 +8984,8 @@
       "lastNumber": "Ultimo numero emesso: {{number}}",
       "number": "Numero",
       "numberExpected": "{{number}} (previsto)",
+      "numberKept": "{{number}} (lo stesso della fattura scartata)",
+      "numberKeptUnknown": "Lo stesso della fattura scartata",
       "numberNote": "Calcolato sui documenti che vedi nell’elenco: il numero definitivo lo assegna CasaZen all’emissione, in ordine e senza buchi.",
       "numberUnknown": "Lo assegna CasaZen all’emissione, in ordine e senza buchi",
       "series": "Serie",
@@ -8896,6 +9069,7 @@
       },
       "forbidden": "Il tuo ruolo non può vedere i documenti fiscali. Chiedi a chi amministra l'organizzazione di darti accesso.",
       "gone": "Questo documento non c’è più.",
+      "issuedBy": "Emesso da {{issuer}}",
       "kind": {
         "CreditNote": "Nota di credito",
         "Invoice": "Fattura",
@@ -8912,6 +9086,11 @@
       },
       "notFound": "Elenco non trovato.",
       "pdfUnavailable": "PDF non disponibile",
+      "purpose": {
+        "GuestStay": "Documento del soggiorno",
+        "OwnerInvoice": "Fattura al proprietario",
+        "SelfBilling": "Autofattura (TD17)"
+      },
       "readOnly": "Sola lettura",
       "source": {
         "CasaZen": "Emesso da CasaZen",
@@ -8947,6 +9126,75 @@
     "refresh": {
       "done": "Bozza aggiornata con i dati attuali della prenotazione.",
       "failed": "Non siamo riusciti ad aggiornare la bozza. Riprova tra poco."
+    },
+    "sdi": {
+      "correct": {
+        "button": "Correggi",
+        "label": "Correggi {{document}}"
+      },
+      "declare": {
+        "button": "Dichiara inviato a mano",
+        "confirm": "Dichiara",
+        "date": {
+          "error": "Scrivi un giorno valido: non nel futuro e non prima del giorno del documento.",
+          "hint": "Non nel futuro e non prima del giorno del documento.",
+          "label": "Giorno dell’invio"
+        },
+        "description": "Per {{document}}: dichiari che hai caricato il file sul portale «Fatture e Corrispettivi» dell’Agenzia delle Entrate, oppure che lo SDI lo ha scartato. CasaZen non lo controlla: scrive quello che dichiari.",
+        "doneRejected": "Dichiarazione registrata: il documento risulta scartato dallo SDI.",
+        "doneSent": "Dichiarazione registrata: il documento risulta inviato a mano da te.",
+        "errorCode": {
+          "error": "Scrivi il codice dello scarto (al massimo 20 caratteri).",
+          "hint": "Il codice della notifica dello SDI, per esempio 00404.",
+          "label": "Codice dello scarto"
+        },
+        "errorText": {
+          "label": "Testo della notifica"
+        },
+        "failed": "Non siamo riusciti a registrare la dichiarazione. Riprova tra poco.",
+        "kind": {
+          "Rejected": "Lo SDI l’ha scartato",
+          "Sent": "L’ho inviato io, a mano",
+          "legend": "Che cosa vuoi dichiarare?"
+        },
+        "label": "Dichiara che hai inviato {{document}} a mano",
+        "reference": {
+          "error": "Scrivi il riferimento dell’invio (al massimo 255 caratteri).",
+          "hint": "Il nome del file o l’identificativo che ti ha dato il portale.",
+          "label": "Riferimento dell’invio"
+        },
+        "title": "Hai inviato il file a mano?"
+      },
+      "forbidden": "Non puoi vedere lo stato dello SDI di questo documento.",
+      "gone": "Non troviamo più lo stato di questo documento.",
+      "hint": {
+        "declared": "L’hai dichiarata inviata tu: CasaZen non ha una risposta dello SDI su questo documento.",
+        "delivered": "Lo SDI l’ha consegnata. Se qualcosa non va, la correggi con una nota di credito.",
+        "noChannel": "Il collegamento allo SDI non è ancora attivo, quindi l’invio si fa a mano: scarica l’XML (pulsante «XML»), caricalo sul portale «Fatture e Corrispettivi» dell’Agenzia delle Entrate e poi premi «Dichiara inviato a mano».",
+        "ownerRejected": "Una fattura al proprietario scartata si corregge con una nota di credito, dalle fatture ai proprietari.",
+        "readOnly": "Puoi vedere lo stato; per inviare o dichiarare serve chi può cambiare i documenti."
+      },
+      "loadError": "Impossibile leggere lo stato dello SDI.",
+      "loading": "Controllo lo stato…",
+      "reason": {
+        "refusedTitle": "Perché non è partita",
+        "rejectedTitle": "Perché lo SDI l’ha scartata",
+        "unknown": "Il motivo non è stato detto: controlla il codice o correggi i dati e riprova."
+      },
+      "submit": {
+        "button": "Invia",
+        "failed": "Non siamo riusciti a inviare il documento: non abbiamo ricevuto risposta. Controlla lo stato qui sopra prima di riprovare.",
+        "label": "Invia {{document}} allo SDI"
+      },
+      "title": "Invio allo SDI",
+      "updatedOn": "dal {{date}}",
+      "verdict": {
+        "alreadySubmitted": "Il file era già stato inviato: non lo mandiamo due volte.",
+        "notConfigured": "Non c’è ancora un collegamento allo SDI: non è stato inviato niente. Scarica l’XML, caricalo a mano sul portale dell’Agenzia delle Entrate e premi «Dichiara inviato a mano».",
+        "refused": "Il canale non ha accettato il file: il documento resta «da inviare».",
+        "submitted": "Il file è stato preso in carico dal canale: ora aspettiamo la risposta dello SDI. La vedi qui, e nel «Da fare» se viene scartato.",
+        "unconfirmed": "Non siamo riusciti a confermare l’invio: controlla lo stato qui sopra prima di riprovare."
+      }
     }
   },
   "guestCancellation": {
@@ -14953,6 +15201,7 @@
     "ownerClose": "Chiusura mensile",
     "ownerInvoices": "Fatture ai proprietari",
     "owners": "Proprietari",
+    "selfBilling": "Autofatture (TD17)",
     "withholding": "Ritenute d'acconto"
   },
   "notFound": {
@@ -15076,7 +15325,8 @@
       "assistRequested": "Nuova richiesta «Fallo per me» da gestire.",
       "assistVerified": "Il collegamento che avevi chiesto è attivo: il supporto CasaZen l'ha fatto e abbiamo verificato che funziona.",
       "assistDeclared": "Il supporto CasaZen dichiara di aver fatto il collegamento che avevi chiesto. Se qualcosa non funziona, riapri la richiesta.",
-      "assistReopened": "Un utente ha riaperto una richiesta «Fallo per me»: dice che non funziona."
+      "assistReopened": "Un utente ha riaperto una richiesta «Fallo per me»: dice che non funziona.",
+      "fiscalDocumentSdiRejected": "Lo SDI ha scartato una fattura: va corretta."
     }
   },
   "octorate": {
@@ -18789,6 +19039,40 @@
         "StatementVersion": "Rendiconto"
       }
     },
+    "issued": {
+      "cardTitle": "{{kind}} {{number}} del {{date}}",
+      "currencyMissing": "Per questo documento non c’è la valuta: l’importo è scritto senza simbolo.",
+      "description": "Le ricevute e le fatture che CasaZen ha emesso a tuo nome per i tuoi soggiorni, con le eventuali note di credito.",
+      "empty": "Non ci sono ancora documenti emessi a tuo nome.",
+      "error": "Impossibile caricare i documenti emessi a tuo nome.",
+      "export": {
+        "download": "Scarica per il tuo commercialista",
+        "failed": "Non siamo riusciti a scaricare il file. Riprova tra poco.",
+        "title": "Scarica per il tuo commercialista",
+        "unavailable": "Questa parte del portale non è ancora aperta."
+      },
+      "file": "documento",
+      "listTitle": "I tuoi documenti",
+      "loading": "Carico i documenti…",
+      "pdf": "Scarica il PDF",
+      "pdfAria": "Scarica il PDF di {{title}}",
+      "privacy": "Qui trovi solo i documenti: non compare nessun dato degli ospiti.",
+      "sdi": {
+        "delivered": "Consegnata dallo SDI",
+        "manual_declared": "Inviata dall’agenzia (dichiarata)",
+        "not_applicable": "Non va allo SDI",
+        "other": "Stato dello SDI: {{code}}",
+        "rejected": "Scartata dallo SDI: l’agenzia la corregge",
+        "submitted": "Inviata allo SDI",
+        "to_send": "Da inviare allo SDI"
+      },
+      "showAll": "Mostra tutti ({{count}})",
+      "showLess": "Mostra meno",
+      "title": "Documenti emessi a tuo nome",
+      "total": "Totale",
+      "xml": "Scarica l’XML",
+      "xmlAria": "Scarica l’XML di {{title}}"
+    },
     "properties": {
       "backToDashboard": "Torna alla panoramica",
       "channel": "Canale",
@@ -18809,6 +19093,7 @@
         "contacts": "Contatti",
         "documents": "Documenti",
         "home": "Panoramica",
+        "issuedDocuments": "Documenti emessi",
         "label": "Portale proprietari",
         "messages": "Messaggi"
       },
@@ -30423,5 +30708,247 @@
     "bankFile": "Estratto conto (Excel o CSV)",
     "confirmBank": "Conferma i versamenti selezionati",
     "imported": "Registrato"
+  },
+  "issuedDocuments": {
+    "agency": {
+      "download": "Scarica per il commercialista del proprietario",
+      "title": "Documenti emessi a nome del proprietario"
+    },
+    "export": {
+      "description": "Un solo file ZIP con i PDF e gli XML dei documenti emessi a nome del proprietario nel periodo, il loro elenco (CSV ed Excel) e l’indice con l’impronta di ogni file: è quello che serve al suo commercialista.",
+      "done": "File scaricato.",
+      "failed": "Non siamo riusciti a scaricare il file. Riprova tra poco.",
+      "forbidden": "Non hai il permesso di scaricare questi documenti.",
+      "months": "Mesi",
+      "period": "Periodo",
+      "preparing": "Preparo il file: può volerci un po’.",
+      "unavailable": "Questa parte non è aperta, oppure il proprietario non c’è più.",
+      "year": "Anno {{year}}",
+      "years": "Anni"
+    }
+  },
+  "ownerIssuer": {
+    "confirmNote": "Le scelte «da confermare» sono valori prudenti: li conferma il commercialista e li puoi cambiare quando vuoi.",
+    "description": "In Italia il documento del soggiorno lo emette il proprietario, con i suoi dati e il suo sezionale: CasaZen lo emette a suo nome. Qui dici chi emette per questo proprietario.",
+    "facts": {
+      "address": "Indirizzo",
+      "empty": "Non indicato",
+      "fiscalCode": "Codice fiscale",
+      "guestDocumentSeries": "Sezionale",
+      "legalName": "Nome",
+      "regime": "Chi emette",
+      "stampDutyReference": "Riferimento del bollo",
+      "vatNumber": "Partita IVA"
+    },
+    "fields": {
+      "addressCivic": {
+        "label": "Numero civico"
+      },
+      "addressStreet": {
+        "label": "Via o piazza"
+      },
+      "city": {
+        "label": "Comune"
+      },
+      "fatturaPaRegimeCode": {
+        "hint": "Lo dà il commercialista, per esempio RF01. Se lo lasci vuoto usiamo quello della regola in vigore.",
+        "hintCode": "Se lo lasci vuoto usiamo {{code}}, quello della regola in vigore.",
+        "label": "Regime fiscale della fattura (RF)"
+      },
+      "fiscalCode": {
+        "hint": "Di 16 caratteri per una persona, di 11 cifre per una società.",
+        "label": "Codice fiscale"
+      },
+      "guestDocumentSeries": {
+        "hint": "La serie dei suoi numeri. Lasciala vuota per usare l’anno: {{default}}.",
+        "label": "Sezionale"
+      },
+      "issuerPec": {
+        "label": "PEC"
+      },
+      "issuerSdiRecipientCode": {
+        "hint": "Di 7 caratteri: serve se il proprietario riceve le fatture dallo SDI con un codice suo.",
+        "label": "Codice destinatario"
+      },
+      "legalName": {
+        "label": "Nome e cognome",
+        "labelCompany": "Denominazione o nome"
+      },
+      "postalCode": {
+        "label": "CAP"
+      },
+      "province": {
+        "hint": "Due lettere, per esempio CO.",
+        "label": "Provincia"
+      },
+      "regime": {
+        "label": "Chi emette"
+      },
+      "stampDutyReference": {
+        "hint": "L’autorizzazione al bollo virtuale o il numero del contrassegno. Se lo lasci vuoto la ricevuta scrive «imposta di bollo da assolvere».",
+        "label": "Riferimento del bollo"
+      },
+      "stayVatTreatment": {
+        "ExemptArt10": "Esente IVA (art. 10 n. 8)",
+        "Standard": "Con IVA, secondo la regola in vigore",
+        "hint": "Da confermare con il commercialista: con IVA o esente.",
+        "hintRate": "In vigore oggi: {{percent}}%. Da confermare con il commercialista.",
+        "label": "IVA sul soggiorno"
+      },
+      "vatNumber": {
+        "hint": "11 cifre, senza «IT».",
+        "label": "Partita IVA"
+      }
+    },
+    "foreign": "Il profilo di questo proprietario è di un altro paese: questa scheda modifica solo i profili italiani.",
+    "loadError": "Impossibile caricare il profilo emittente di questo proprietario.",
+    "loading": "Carico il profilo emittente…",
+    "maskedNotice": "I dati del profilo sono nascosti: li legge e li scrive per intero solo chi gestisce la parte economica dei proprietari.",
+    "notForYou": "Il profilo emittente non è per te: lo vede chi può leggere i dati dei proprietari.",
+    "notFound": "Questo proprietario non c’è più tra i tuoi.",
+    "refused": "Questo dato non è valido.",
+    "regime": {
+      "PrivatePerson": {
+        "description": "Un privato senza partita IVA: CasaZen emette una ricevuta a suo nome, con il bollo quando serve.",
+        "title": "Persona fisica"
+      },
+      "VatFlatRate": {
+        "description": "Con partita IVA in regime forfettario: fattura senza IVA, con il bollo quando serve.",
+        "title": "Regime forfettario"
+      },
+      "VatOrdinary": {
+        "description": "Con partita IVA in regime ordinario: CasaZen emette una fattura elettronica a suo nome, con il suo sezionale.",
+        "title": "Società o professionista"
+      },
+      "legend": "Chi emette il documento del soggiorno?"
+    },
+    "save": "Salva il profilo",
+    "saveFailed": "Non siamo riusciti a salvare il profilo. Riprova tra poco.",
+    "saved": {
+      "incomplete": "Profilo salvato. Mancano ancora alcuni dati.",
+      "ready": "Profilo salvato: CasaZen può emettere a nome del proprietario."
+    },
+    "state": {
+      "incomplete": "Profilo da completare",
+      "missing": "Mancano ancora: {{fields}}. Finché il profilo non è completo non si emette niente a suo nome.",
+      "missingUnknown": "Mancano ancora alcuni dati. Finché il profilo non è completo non si emette niente a suo nome.",
+      "none": "Questo proprietario non ha ancora un profilo emittente: finché manca, CasaZen non prepara i documenti dei suoi soggiorni.",
+      "ready": "Il profilo è completo: CasaZen può emettere i documenti dei soggiorni a nome del proprietario."
+    },
+    "title": "Emittente dei documenti dei soggiorni"
+  },
+  "selfBilling": {
+    "currencyMissing": "Per alcuni di questi importi il server non indica la valuta: sono scritti senza simbolo e non sono convertiti.",
+    "detail": {
+      "description": "Controlla le righe prima di emettere: dopo l’emissione l’autofattura non si modifica più.",
+      "discard": {
+        "button": "Scarta la bozza",
+        "confirm": "Scarta la bozza",
+        "description": "La bozza viene scartata: non consuma nessun numero e potrai farne una nuova.",
+        "done": "Bozza scartata.",
+        "failed": "Non siamo riusciti a scartare la bozza: è ancora lì. Riprova tra poco.",
+        "title": "Scartare la bozza?"
+      },
+      "estimate": {
+        "body": "{{amount}} non viene dalla fattura del portale ma da una regola dell’agenzia o dal valore di default: confrontalo con la fattura del portale prima di emettere.",
+        "title": "Una parte dell’importo è una stima"
+      },
+      "gone": "Non troviamo più questa autofattura.",
+      "holder": "Titolare: {{holder}}. Portale: {{portal}}.",
+      "issue": {
+        "accept": "Ho controllato la parte stimata ({{amount}}) e la accetto.",
+        "button": "Emetti",
+        "confirm": "Emetti",
+        "consequence": "Dopo l’emissione l’autofattura non si modifica più.",
+        "description": "Totale {{total}}. Riceve il suo numero nella serie del titolare e poi va allo SDI.",
+        "done": "Autofattura emessa.",
+        "doneNumbered": "Autofattura {{number}} emessa.",
+        "failed": "Non siamo riusciti a emettere l’autofattura. Riprova tra poco.",
+        "title": "Emettere l’autofattura?"
+      },
+      "lines": {
+        "amount": "Imponibile",
+        "description": "Descrizione",
+        "rate": "{{rate}}%",
+        "title": "Righe",
+        "vat": "IVA integrata"
+      },
+      "loadError": "Impossibile caricare l’autofattura.",
+      "loading": "Carico l’autofattura…",
+      "pdf": "PDF",
+      "rule": "Regole usate: versione {{version}}",
+      "title": "Autofattura",
+      "titleFor": "Autofattura di {{month}}",
+      "totals": {
+        "base": "Imponibile",
+        "total": "Totale",
+        "vat": "IVA"
+      },
+      "xml": "XML"
+    },
+    "drafts": {
+      "button": "Prepara le bozze del mese",
+      "failed": "Non siamo riusciti a preparare le bozze. Riprova tra poco.",
+      "needMonth": "Scegli un mese per preparare le bozze.",
+      "report": {
+        "counts": "Bozze nuove: {{created}}. Aggiornate: {{updated}}. Già emesse: {{issued}}. Scartate perché non servono più: {{discarded}}.",
+        "failedRow": "{{holder}} · {{portal}}: {{reason}}",
+        "failed_one": "Non possiamo ancora fare la bozza per 1 emittente:",
+        "failed_other": "Non possiamo ancora fare la bozza per {{count}} emittenti:",
+        "fields": "Mancano: {{fields}}.",
+        "ledgerNotPosted": "Il mese dei proprietari non è ancora registrato: le bozze si fanno dal libro del mese. Chiudi prima il mese e poi prepara di nuovo le bozze.",
+        "notDue": "Commissioni che non si autofatturano:",
+        "notDueRow_one": "{{channel}}: {{amount}} per {{count}} soggiorno, {{reason}}.",
+        "notDueRow_other": "{{channel}}: {{amount}} per {{count}} soggiorni, {{reason}}.",
+        "title": "Bozze di {{month}}"
+      }
+    },
+    "holder": {
+      "Agency": "Agenzia",
+      "Owner": "Proprietario"
+    },
+    "notDue": {
+      "currency_not_supported": "la commissione non è in euro",
+      "holder_not_italian": "il titolare non è in Italia",
+      "holder_not_vat_registered": "il titolare non ha la partita IVA",
+      "holder_private_person": "il titolare è un privato: il portale ha già messo l’IVA italiana",
+      "not_a_portal": "la prenotazione non è di un portale",
+      "portal_not_configured": "il portale non è ancora configurato: scrivi a CasaZen",
+      "stay_not_active": "la prenotazione non è attiva (annullata o no-show)",
+      "stay_not_found": "la prenotazione non c’è più"
+    },
+    "page": {
+      "allMonths": "Tutti i mesi",
+      "description": "Le autofatture per le commissioni che i portali esteri ti fanno pagare senza IVA: le prepari, le controlli e le emetti.",
+      "empty": "Non ci sono ancora autofatture.",
+      "emptyMonth": "Non ci sono autofatture per questo mese: premi «Prepara le bozze del mese».",
+      "filterPeriod": "Mese",
+      "listTitle": "Autofatture",
+      "loadError": "Impossibile caricare le autofatture.",
+      "loading": "Carico le autofatture…",
+      "note": "Quando un portale estero ti fa pagare una commissione senza IVA, in Italia la integri con un’autofattura TD17 entro il giorno 15 del mese dopo. L’aliquota, il giorno e la serie sono scelte prudenti, da confermare con il commercialista.",
+      "title": "Autofatture (TD17)",
+      "unavailable": "Le autofatture non sono ancora aperte in questo ambiente."
+    },
+    "reason": {
+      "issuer_profile_incomplete": "il profilo emittente è incompleto",
+      "owner_issuer_missing": "manca il profilo emittente del proprietario"
+    },
+    "row": {
+      "due": "Da emettere entro il {{date}}",
+      "issued": "Autofattura {{number}} del {{date}}",
+      "monthAndHolder": "{{month}} · {{holder}} · portale in {{country}}",
+      "open": "Apri",
+      "openLabel": "Apri l’autofattura {{title}}",
+      "parts": "Imponibile {{base}} · IVA {{vat}}",
+      "review": "Rivedi ed emetti",
+      "reviewLabel": "Rivedi ed emetti l’autofattura {{title}}",
+      "total": "Totale {{amount}}"
+    },
+    "status": {
+      "Discarded": "Bozza scartata",
+      "Draft": "Bozza",
+      "Issued": "Emessa"
+    }
   }
 }

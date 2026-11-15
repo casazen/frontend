@@ -1,7 +1,10 @@
+import { AxiosError } from 'axios';
 import { UnexpectedApiResponseError } from '@/lib/api-errors';
 import { withJsonErrorBody } from '@/lib/file-download';
 import axios from '@/lib/axios';
+import { acceptsRefusal } from './accept-refusal';
 import { ApiClient } from './client';
+import type { DownloadedFile } from './file.api';
 import type {
   InviteOwnerContactBody,
   OwnerCalendar,
@@ -13,6 +16,7 @@ import type {
   OwnerPortalDocuments,
   OwnerPortalExternalDocument,
   OwnerPortalInvoice,
+  OwnerPortalIssuedDocument,
   OwnerPortalOverview,
   OwnerPortalProperty,
   OwnerPortalReportQuery,
@@ -78,6 +82,79 @@ function asStatementDetail(url: string, data: unknown): OwnerPortalStatementDeta
   if (!Array.isArray(sections) || !Array.isArray(touristTax)) throw new UnexpectedApiResponseError(url);
   if (!sections.every((section: { lines?: unknown } | null) => typeof section === 'object' && section !== null && Array.isArray(section.lines))) throw new UnexpectedApiResponseError(url);
   return detail as OwnerPortalStatementDetail;
+}
+
+/** The ZIP is streamed while the server builds it (the PDF and the XML of every document of the period): it may take minutes, not the 30 s of every other call. */
+const EXPORT_TIMEOUT_MS = 10 * 60_000;
+
+/** A file answer that says it is a web page or a JSON body is not the ZIP that was asked for (the `index.html` of a wrong rewrite). */
+const NOT_A_FILE = /^(text\/html|application\/(json|problem\+json))/i;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * The documents issued in the name of the owner, reduced to what the page shows (E17/F03/US01/T03, NF-116): the number, the day, the kind, the total with its currency, the state towards the SDI and whether
+ * there is an XML. NOTHING of a guest is kept, whatever the answer carries: the member that is not in the list below never reaches the state of the page, the cache of the queries or a log. A member that is
+ * not one of the right type is a load error for the whole answer, never a row left out: a list that silently misses a document could be read as one that is in order.
+ */
+function asIssuedDocuments(url: string, data: unknown): OwnerPortalIssuedDocument[] {
+  const list = asList<unknown>(url, data);
+  return list.map((item) => {
+    if (
+      !isRecord(item) ||
+      typeof item.documentId !== 'string' ||
+      typeof item.number !== 'string' ||
+      typeof item.issueDate !== 'string' ||
+      typeof item.kind !== 'string' ||
+      typeof item.total !== 'number' ||
+      !Number.isFinite(item.total) ||
+      typeof item.currency !== 'string' ||
+      typeof item.sdiStatus !== 'string'
+    ) {
+      throw new UnexpectedApiResponseError(url);
+    }
+    return {
+      documentId: item.documentId,
+      agencyId: typeof item.agencyId === 'string' ? item.agencyId : '',
+      agencyName: typeof item.agencyName === 'string' ? item.agencyName : '',
+      number: item.number,
+      issueDate: item.issueDate,
+      kind: item.kind,
+      total: item.total,
+      currency: item.currency,
+      sdiStatus: item.sdiStatus,
+      hasXml: item.hasXml === true,
+    };
+  });
+}
+
+/** The value of a header of an answer, whatever the case of its name, or `null` (a browser lets a page read only the headers that the API exposes). */
+function headerOf(headers: unknown, name: string): string | null {
+  if (!isRecord(headers)) return null;
+  const wanted = name.toLowerCase();
+  for (const [key, value] of Object.entries(headers)) {
+    if (key.toLowerCase() === wanted && typeof value === 'string') return value;
+  }
+  return null;
+}
+
+/**
+ * A file of the documents issued in the name of the owner (the PDF, the XML, the ZIP for the accountant). Its 403 is an answer of the call, not a failure of the app: the body of a file is a Blob, which has no `code` until it is
+ * parsed, and the shared client sends the whole app to the page of no access on a 403 for a read whose body has no code. So the call takes the refusal as an answer (`acceptsRefusal`) and throws it again as the error it is,
+ * with its body parsed, so that the page says «the owner did not give this permission» (403 `owner_portal_permission_missing`) in words and the person stays in the portal. A page, or a JSON body, is not the file that was asked for.
+ */
+async function getIssuedFile(url: string, config: { params?: Record<string, string>; timeout?: number; signal?: AbortSignal } = {}): Promise<DownloadedFile> {
+  try {
+    const response = await axios.get<Blob>(url, { ...config, responseType: 'blob', validateStatus: acceptsRefusal });
+    if (response.status === 403) throw new AxiosError('Request failed with status code 403', AxiosError.ERR_BAD_REQUEST, response.config, response.request, response);
+    if (!(response.data instanceof Blob) || NOT_A_FILE.test(response.data.type)) throw new UnexpectedApiResponseError(url);
+    return { blob: response.data, contentDisposition: headerOf(response.headers, 'content-disposition') };
+  } catch (error) {
+    // With `responseType: 'blob'` a problem body arrives as a Blob: parse it so that its code can be read.
+    throw await withJsonErrorBody(error);
+  }
 }
 
 /** A file the portal hands out, with the name it is saved under chosen by the caller (the name of the server is not trusted for the disk). */
@@ -163,6 +240,33 @@ export const ownerPortalApi = {
 
   /** The PDF of one invoice, made from the document as it was issued, in the language of the person (Italian unless it is English). */
   downloadInvoicePdf: (invoiceId: string, language: 'it' | 'en') => getFile(`${BASE}/invoices/${encodeURIComponent(invoiceId)}/pdf?lang=${language}`),
+
+  // ---------------------------------------------------------------- the documents CasaZen issued in the name of the owner (needs `accounting.read`, E17/F03/US01/T03)
+
+  /**
+   * The documents CasaZen issued in the name of the owner (the receipts of a private owner, the invoices of a company, their credit notes), the newest first; `period` (`yyyy-MM` or `yyyy`) narrows them (400
+   * `accountant_package_invalid_period`). An empty list is what the server says while the part is not open (the flags are off): the page tells it from the answer of the export.
+   */
+  listIssuedDocuments: async (period?: string) => {
+    const url = `${BASE}/issued-documents`;
+    return asIssuedDocuments(url, await ApiClient.get<unknown>(url, period ? { period } : undefined));
+  },
+
+  /** The PDF of one document issued in the name of the owner, made from the document and the issuer as they were at the issue, in the language of the person (Italian unless it is English). 404 `owner_issued_document_not_found`. */
+  downloadIssuedDocumentPdf: async (documentId: string, language: 'it' | 'en') =>
+    (await getIssuedFile(`${BASE}/issued-documents/${encodeURIComponent(documentId)}/pdf?lang=${language}`)).blob,
+
+  /** The FatturaPA XML of an invoice or a credit note issued in the name of the owner, as it was stored at the issue (404 `fiscal_document_xml_unavailable` for a receipt). */
+  downloadIssuedDocumentXml: async (documentId: string) => (await getIssuedFile(`${BASE}/issued-documents/${encodeURIComponent(documentId)}/xml`)).blob,
+
+  /**
+   * The ZIP for the accountant of the owner (`GET .../issued-documents/export?period=2026-10`, or `?period=2026`), through the authenticated client, with the name the server gave it (`Content-Disposition`, `null` when
+   * the page cannot read it): the PDF and the XML of the documents of the period, their register and the index with the SHA-256 of every file. The call can be stopped (`signal`). 400
+   * `accountant_package_invalid_period`, 404 `owner_issued_documents_not_available`, 403 `owner_portal_permission_missing`, 422 `accountant_package_too_large` before the first byte. A problem body (a JSON Blob) is parsed so that its code can be read,
+   * and the 403 is an answer of the call (the person stays in the portal and the page says why: see `getIssuedFile`).
+   */
+  exportIssuedDocuments: (period: string, options: { signal?: AbortSignal } = {}): Promise<DownloadedFile> =>
+    getIssuedFile(`${BASE}/issued-documents/export`, { params: { period }, timeout: EXPORT_TIMEOUT_MS, signal: options.signal }),
 
   // ---------------------------------------------------------------- delegated contacts (only the owner manages them)
 

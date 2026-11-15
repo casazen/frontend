@@ -8,7 +8,7 @@ import { Alert } from '@/components/ui/alert';
 import { billingItemTextKey, billingStepOfItem } from '@/lib/onboarding-billing';
 import type { AccountantPackageSettings, BillingSetup, FiscalIssuerPreview } from '@/types';
 import { BILLING_STEPS, type BillingStepId } from '../billing-wizard-ids';
-import { addressLine, currencyOfCountry, missingItemsOf, regimeOfValues } from '../billing-wizard-model';
+import { addressLine, currencyOfCountry, missingItemsOf, ownerIssuersMissing, regimeOfValues } from '../billing-wizard-model';
 import { PORTAL_SOURCES, type BillingWizardValues } from '../billing-wizard-schema';
 import { DocumentExample } from './document-example';
 
@@ -81,6 +81,16 @@ export function SummaryStep({ setup, values, steps, preview, accountant }: Summa
     }),
     stepId: BILLING_STEPS.issuing,
   });
+  // The owners who issue the documents of their stays (E17/F03/US01/T01): a row only where the step exists. It is answered when the setup says no owner misses a profile, and the count is the server's.
+  if (has(BILLING_STEPS.ownerIssuers)) {
+    const owners = ownerIssuersMissing(setup);
+    items.push({
+      id: 'ownerIssuers',
+      label: t('billingWizard.summary.items.ownerIssuers'),
+      value: setup && owners === 0 ? t('billingWizard.summary.ownerIssuers.ready') : null,
+      stepId: BILLING_STEPS.ownerIssuers,
+    });
+  }
   // The optional step of the accountant: a row only where the step exists. «Nessun invio automatico» is an answer too (the step may be left as it is); a setting that cannot be read is not.
   if (has(BILLING_STEPS.accountant)) {
     items.push({
