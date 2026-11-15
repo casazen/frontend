@@ -30506,6 +30506,7 @@
         "confirm": "Discard the draft",
         "description": "The draft is discarded: it uses no number and you can make a new one.",
         "done": "Draft discarded.",
+        "failed": "We could not discard the draft: it is still there. Try again in a moment.",
         "title": "Discard the draft?"
       },
       "estimate": {

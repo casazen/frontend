@@ -299,7 +299,6 @@ function DrawerBody({ id, onClose }: { id: string; onClose: () => void }) {
   const { hasPermission } = useWorkspace();
   const { flags } = useFeatureFlags();
   const download = useDownloadFiscalDocument();
-  const discard = useDiscardSelfBilling();
   const busy = useSelfBillingBusy([id]);
   const [dialog, setDialog] = useState<'issue' | 'discard' | null>(null);
   const detail = getHttpStatus(query.error) === 404 || query.isError ? undefined : query.data;
@@ -415,24 +414,7 @@ function DrawerBody({ id, onClose }: { id: string; onClose: () => void }) {
         ) : null}
 
         {dialog === 'issue' ? <IssueDialog detail={detail} onClose={() => setDialog(null)} /> : null}
-        {dialog === 'discard' ? (
-          <ConfirmationDialog
-            open
-            onOpenChange={(open) => {
-              if (!open && !discard.isPending) setDialog(null);
-            }}
-            title={t('selfBilling.detail.discard.title')}
-            description={t('selfBilling.detail.discard.description')}
-            confirmLabel={t('selfBilling.detail.discard.confirm')}
-            variant="destructive"
-            isLoading={discard.isPending}
-            onConfirm={async () => {
-              await discard.mutateAsync({ documentId: id });
-              toast.success(t('selfBilling.detail.discard.done'));
-              onClose();
-            }}
-          />
-        ) : null}
+        {dialog === 'discard' ? <DiscardDialog id={id} onClose={() => setDialog(null)} onDiscarded={onClose} /> : null}
       </div>
     );
   }
@@ -445,6 +427,48 @@ function DrawerBody({ id, onClose }: { id: string; onClose: () => void }) {
       </SheetHeader>
       <div className="px-6">{content}</div>
     </div>
+  );
+}
+
+/**
+ * The confirmation of the discard of a draft (no number is consumed). A refusal or a call that gets no answer is told in the dialog, in the words of its code (else a sentence that says the draft is still there), and the dialog
+ * stays open: the confirmation lets the dialog stay open on a failure and says nothing itself, so a failure that is not told here would be a silent one.
+ */
+function DiscardDialog({ id, onClose, onDiscarded }: { id: string; onClose: () => void; onDiscarded: () => void }) {
+  const { t } = useTranslation();
+  const discard = useDiscardSelfBilling();
+  const [problem, setProblem] = useState<string | null>(null);
+
+  return (
+    <ConfirmationDialog
+      open
+      onOpenChange={(open) => {
+        // While the call is on its way the dialog stays, so that a failure is told in it.
+        if (!open && !discard.isPending) onClose();
+      }}
+      title={t('selfBilling.detail.discard.title')}
+      description={t('selfBilling.detail.discard.description')}
+      confirmLabel={t('selfBilling.detail.discard.confirm')}
+      variant="destructive"
+      isLoading={discard.isPending}
+      onConfirm={async () => {
+        setProblem(null);
+        try {
+          await discard.mutateAsync({ documentId: id });
+        } catch (error) {
+          setProblem(getProblemMessage(error, t) ?? t('selfBilling.detail.discard.failed'));
+          throw error;
+        }
+        toast.success(t('selfBilling.detail.discard.done'));
+        onDiscarded();
+      }}
+    >
+      {problem ? (
+        <Alert variant="danger" data-testid="self-billing-discard-problem">
+          {problem}
+        </Alert>
+      ) : null}
+    </ConfirmationDialog>
   );
 }
 

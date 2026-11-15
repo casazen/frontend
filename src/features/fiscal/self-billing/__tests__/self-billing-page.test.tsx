@@ -3,6 +3,8 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import { createElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
+import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios';
+import { toast } from 'sonner';
 import * as fiscalApi from '@/api/fiscal-documents.api';
 import * as api from '@/api/self-billing.api';
 import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
@@ -35,7 +37,14 @@ const list = vi.mocked(api.listSelfBilling);
 const read = vi.mocked(api.getSelfBilling);
 const prepare = vi.mocked(api.createSelfBillingDrafts);
 const issue = vi.mocked(api.issueSelfBilling);
+const discard = vi.mocked(api.discardSelfBilling);
 const sdi = vi.mocked(fiscalApi.getDocumentSdi);
+
+/** A call the server answers with `status` (a 500 has no words of its own, so the page says its own sentence). */
+function failure(status: number): AxiosError {
+  const config = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig;
+  return new AxiosError('Request failed', AxiosError.ERR_BAD_RESPONSE, config, {}, { status, data: {}, statusText: '', headers: {}, config });
+}
 
 /** Intl writes a no-break space between a figure and its currency: the page text is compared with plain spaces. */
 const plain = (value: string) => value.replace(/\s/g, ' ');
@@ -215,6 +224,23 @@ describe('the self-billed invoices (TD17) follow the role, the money and the con
 
     expect(await screen.findByTestId('self-billing-issue')).toBeEnabled();
     expect(screen.getByTestId('self-billing-discard')).toBeEnabled();
+  });
+
+  it('SelfBillingPage_WhenTheDiscardOfADraftFails_SaysWhyInTheDialogAndNothingSaysItWasDiscarded', async () => {
+    read.mockResolvedValue(detail());
+    discard.mockRejectedValue(failure(500));
+    renderPage();
+
+    fireEvent.click(await screen.findByTestId('self-billing-row-open'));
+    fireEvent.click(await screen.findByTestId('self-billing-discard'));
+    const dialog = await screen.findByRole('dialog', { name: i18n.t('selfBilling.detail.discard.title') });
+    fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('selfBilling.detail.discard.confirm') }));
+
+    // The failure is told in the dialog, which stays open: the draft is still there, and nothing says that it was discarded.
+    expect(await within(dialog).findByTestId('self-billing-discard-problem')).toHaveTextContent(i18n.t('selfBilling.detail.discard.failed'));
+    expect(discard).toHaveBeenCalledTimes(1);
+    expect(toast.success).not.toHaveBeenCalled();
+    expect(screen.getByTestId('self-billing-detail')).toHaveAttribute('data-status', 'Draft');
   });
 
   it('SelfBillingPage_TheSendingOfAnIssuedInvoiceToTheSdi_IsOfferedOnlyToWhoMayWritePayments', async () => {

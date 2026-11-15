@@ -30506,6 +30506,7 @@
         "confirm": "Scarta la bozza",
         "description": "La bozza viene scartata: non consuma nessun numero e potrai farne una nuova.",
         "done": "Bozza scartata.",
+        "failed": "Non siamo riusciti a scartare la bozza: è ancora lì. Riprova tra poco.",
         "title": "Scartare la bozza?"
       },
       "estimate": {
