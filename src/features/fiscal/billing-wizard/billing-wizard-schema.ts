@@ -3,11 +3,14 @@ import type { FieldValues } from 'react-hook-form';
 import { PARTITA_IVA, compactIdentifier } from '@/features/fiscal/tax-profile-changes';
 import { isValidFiscalCode } from '@/lib/fiscal-code';
 import {
+  ACCOUNTANT_OWNER_FOLDERS,
+  ACCOUNTANT_PACKAGE_FOLDERS,
   ACCOUNTANT_SEND_DAYS,
   CLEANING_FEE_TREATMENTS,
   COMMISSION_BASES,
   PORTAL_ACCOUNT_HOLDERS,
   STAY_VAT_TREATMENTS,
+  type AccountantPackageFolder,
   type AccountantPackageSettings,
   type CleaningFeeTreatment,
   type CommissionBase,
@@ -345,6 +348,29 @@ type AccountantFields = Pick<BillingWizardValues, 'accountantEmail' | 'accountan
 /** Whether the person has not touched any setting of the send: the step is then left as the server has it. */
 export function accountantUntouched(values: AccountantFields): boolean {
   return values.accountantEmail === null && values.accountantMonthly === null && values.accountantDay === null && values.accountantContents === null;
+}
+
+const OWNER_FOLDER_KEYS: ReadonlySet<string> = new Set(ACCOUNTANT_OWNER_FOLDERS);
+
+/**
+ * The folders of the package this person may choose. The ones that carry the owner accounting are the agency's: on an agency's organization the backend lets only a caller who holds
+ * `agency.statement.view` choose them (422 `accountant_package_owner_accounting_required` for anyone else), and that is the administrator of an organization on the agency plan, who is the
+ * only `ownerAccounting` of the wizard (the same person the steps of the portals and of the mandate are for). For anyone else they are neither offered nor sent.
+ */
+export function accountantFoldersFor(ownerAccounting: boolean): readonly AccountantPackageFolder[] {
+  return ownerAccounting ? ACCOUNTANT_PACKAGE_FOLDERS : ACCOUNTANT_PACKAGE_FOLDERS.filter((folder) => !OWNER_FOLDER_KEYS.has(folder));
+}
+
+/**
+ * The settings of the send as THIS person sees them: what the server has, without the folders they may not choose (`accountantFoldersFor`). Every check, every comparison and every save of the
+ * step works on this view, so that what the person never saw is neither ticked, nor counted as «a folder chosen», nor sent: a save replaces the folders as a whole, so what a person who
+ * may not choose the owner folders saves holds none of them (what the backend says). `null` while the settings cannot be read.
+ */
+export function accountantSettingsFor(settings: AccountantPackageSettings, ownerAccounting: boolean): AccountantPackageSettings;
+export function accountantSettingsFor(settings: AccountantPackageSettings | null | undefined, ownerAccounting: boolean): AccountantPackageSettings | null;
+export function accountantSettingsFor(settings: AccountantPackageSettings | null | undefined, ownerAccounting: boolean): AccountantPackageSettings | null {
+  if (!settings) return null;
+  return ownerAccounting ? settings : { ...settings, contents: settings.contents.filter((folder) => !OWNER_FOLDER_KEYS.has(folder)) };
 }
 
 /** The settings the step shows: a field the person changed shows their answer (an address emptied is an answer: no address), any other the server's. */

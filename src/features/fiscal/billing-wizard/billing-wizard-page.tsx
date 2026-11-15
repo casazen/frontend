@@ -64,6 +64,7 @@ import {
 } from './billing-wizard-model';
 import {
   BILLING_WIZARD_ID,
+  accountantSettingsFor,
   accountantStepSchema,
   channelsStepSchema,
   issuerStepSchema,
@@ -136,8 +137,9 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
   const saveAccountant = useSaveAccountantPackageSettings();
   const sendAccountant = useSendAccountantPackageTest();
   // The settings the wizard works with: none while they cannot be read (`null`: refused to this person, or still on their way) and none when the server says the module is off (a 404 is that even
-  // when the query still holds the answer it had: a failed read keeps its data), so that nothing is ever saved over a module that is not there.
-  const accountantSettings = accountant.isError && getHttpStatus(accountant.error) === 404 ? null : (accountant.data ?? null);
+  // when the query still holds the answer it had: a failed read keeps its data), so that nothing is ever saved over a module that is not there. They are the settings as THIS person sees them:
+  // the folders that carry the owner accounting are the agency's, and only the administrator of an organization on the agency plan (`agency`) may choose them (`accountantSettingsFor`).
+  const accountantSettings = accountantSettingsFor(accountant.isError && getHttpStatus(accountant.error) === 404 ? null : accountant.data, agency);
   // No button of the wizard takes a second press while a request of the person is on its way: the save of a step, the application of the mandate, the test send, the way out.
   const [leaving, setLeaving] = useState(false);
   const saving =
@@ -307,7 +309,8 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
           schema: checked(accountantStepSchema(accountantSettings)),
           // The step is optional and has its own actions: «Continua» waits for them as they wait for it, so that no second request starts while one is on its way.
           nextDisabled: leaving || saveAccountant.isPending || sendAccountant.isPending,
-          render: () => frame(id, <AccountantStep settings={accountant} save={saveAccountant} send={sendAccountant} lastMonth={lastMonthOf(today)} busy={saving || leaving} />),
+          render: () =>
+            frame(id, <AccountantStep settings={accountant} save={saveAccountant} send={sendAccountant} lastMonth={lastMonthOf(today)} busy={saving || leaving} ownerAccounting={agency} />),
         };
       case BILLING_STEPS.summary:
         return {

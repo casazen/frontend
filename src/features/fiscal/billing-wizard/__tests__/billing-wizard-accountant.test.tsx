@@ -9,6 +9,7 @@ import i18n from '@/i18n/config';
 import * as api from '@/api/billing-setup.api';
 import { accountantPackageApi } from '@/api/accountant-package.api';
 import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
+import { useAgencyPlan } from '@/hooks/use-agency-plan';
 import { ACCOUNTANT_PACKAGE_FOLDERS, type AccountantPackageEmailQueued, type AccountantPackageSettings } from '@/types';
 import { BILLING_SETUP_PATH, FISCAL_PATH } from '../billing-wizard-ids';
 import { BillingWizardPage } from '../billing-wizard-page';
@@ -45,13 +46,19 @@ vi.mock('@/components/layout/page-header', () => ({
 
 const env = vi.hoisted(() => ({
   flags: {} as Record<string, boolean>,
+  contexts: [] as Array<{ contextKey: string; roleKey: string }>,
   hasPermission: (() => true) as (context: string, permission: string) => boolean,
 }));
 vi.mock('@/hooks/use-workspace', () => ({
-  useWorkspace: () => ({ contexts: [{ contextKey: 'short-rent', roleKey: 'property_manager' }], getDefaultRoute: (contextKey: string) => `/app/${contextKey}`, hasPermission: env.hasPermission }),
+  useWorkspace: () => ({ contexts: env.contexts, getDefaultRoute: (contextKey: string) => `/app/${contextKey}`, hasPermission: env.hasPermission }),
 }));
 vi.mock('@/hooks/use-feature-flags', () => ({
   useFeatureFlags: () => ({ flags: { ...DEFAULT_FEATURE_FLAGS, fiscalDocumentIssuance: true, ...env.flags }, isLoading: false }),
+}));
+// The plan and the listings are only asked for the administrator of an organization (the agency's steps): the plan is whatever the test says, and there are no listings.
+vi.mock('@/hooks/use-agency-plan', () => ({ useAgencyPlan: vi.fn() }));
+vi.mock('@/queries/use-properties', () => ({
+  useProperties: () => ({ data: [], isPending: false, isError: false, error: null, refetch: vi.fn() }),
 }));
 
 // A whole wizard is rendered in these tests: the 5 s of the default are not enough on a loaded CI runner.
@@ -77,6 +84,10 @@ const SAVED: AccountantPackageSettings = {
 };
 
 const ADDRESS = 'studio@esempio.it';
+
+/** The administrator of the organization (the owner of the account context) and a collaborator who writes the setup but does not administer the organization. */
+const ADMIN = [{ contextKey: 'account', roleKey: 'org_owner' }];
+const COLLABORATOR = [{ contextKey: 'short-rent', roleKey: 'property_manager' }];
 
 /** A refusal of the server, with the body that was sent (an error of axios holds it in its `config`). */
 function refusal(status: number, data: unknown, sent?: unknown): AxiosError {
@@ -136,7 +147,11 @@ beforeEach(async () => {
   vi.resetAllMocks();
   await i18n.changeLanguage('it');
   env.flags = { accountantPackage: true };
+  env.contexts = COLLABORATOR;
   env.hasPermission = () => true;
+  vi.mocked(useAgencyPlan).mockReturnValue({ isAgency: false, isLoading: false, failed: false, retry: vi.fn() });
+  vi.mocked(api.getChannelCommissionRules).mockResolvedValue({ rules: [], channels: [] });
+  vi.mocked(api.getChannelAccountHolders).mockResolvedValue([]);
   vi.mocked(api.getBillingSetup).mockResolvedValue(swissSetup());
   vi.mocked(api.getBillingPreview).mockResolvedValue(previewOf(undefined));
   vi.mocked(api.canChangeBillingSetup).mockResolvedValue(true);
@@ -164,7 +179,7 @@ describe('the step «Commercialista» of the wizard «Fatturazione» (E15/F02/US
     expect(screen.getByTestId('billing-accountant-day')).toHaveValue('7');
     expect(screen.getByTestId('billing-accountant-folder-guestDocuments')).toBeChecked();
     expect(screen.getByTestId('billing-accountant-folder-collections')).toBeChecked();
-    expect(screen.getByTestId('billing-accountant-folder-vat')).not.toBeChecked();
+    expect(screen.getByTestId('billing-accountant-folder-touristTax')).not.toBeChecked();
     // The last send is told with its month and its day; the answer of the queue is not a delivery, and the page does not say it was.
     expect(screen.getByTestId('billing-accountant-last-send')).toHaveAttribute('data-result', 'sent');
     expect(screen.getByTestId('billing-accountant-last-send')).toHaveTextContent('ottobre 2026');
@@ -194,13 +209,13 @@ describe('the step «Commercialista» of the wizard «Fatturazione» (E15/F02/US
     turnMonthlyOn();
     await waitFor(() => expect(screen.getByTestId('billing-accountant-day')).toBeInTheDocument(), WAIT);
     fireEvent.change(screen.getByTestId('billing-accountant-day'), { target: { value: '10' } });
-    fireEvent.click(screen.getByTestId('billing-accountant-folder-vat'));
+    fireEvent.click(screen.getByTestId('billing-accountant-folder-touristTax'));
     await next();
     await onStep('summary');
 
     expect(updateSettings).toHaveBeenCalledTimes(1);
-    // The settings go together, as a whole: the address cut at its ends, the day and the folders as they are now (the folder that was ticked is out).
-    expect(updateSettings.mock.calls[0][0]).toEqual({ enabled: true, email: ADDRESS, sendDay: 10, contents: ACCOUNTANT_PACKAGE_FOLDERS.filter((folder) => folder !== 'vat') });
+    // The settings go together, as a whole: the address cut at its ends, the day and the folders as they are now (the folder that was ticked is out; this person may not choose the owner folders).
+    expect(updateSettings.mock.calls[0][0]).toEqual({ enabled: true, email: ADDRESS, sendDay: 10, contents: ['guestDocuments', 'collections'] });
     expect(within(screen.getByTestId('billing-step-summary')).getByText(text('billingWizard.summary.accountant.monthly', { day: 10 }))).toBeInTheDocument();
     // Nothing of the settings of the send is saved as a section of the billing setup.
     expect(api.saveBillingSetupSection).not.toHaveBeenCalledWith('accountant', expect.anything());
@@ -226,11 +241,11 @@ describe('the step «Commercialista» of the wizard «Fatturazione» (E15/F02/US
   });
 
   it('AccountantStep_NoFolderAtAll_IsAProblemOfTheFoldersAndNothingIsSent', async () => {
-    getSettings.mockResolvedValue({ ...SAVED, contents: ['vat'] });
+    getSettings.mockResolvedValue({ ...SAVED, contents: ['touristTax'] });
     renderWizard();
     await formOpen();
 
-    fireEvent.click(screen.getByTestId('billing-accountant-folder-vat'));
+    fireEvent.click(screen.getByTestId('billing-accountant-folder-touristTax'));
     await next();
     await waitFor(() => expect(screen.getByTestId('billing-accountant-contents-error')).toHaveTextContent(text('billingWizard.errors.accountantContents')), WAIT);
     expect(updateSettings).not.toHaveBeenCalled();
@@ -430,7 +445,8 @@ describe('who sees the step, and when (E15/F02/US02/T01)', () => {
 
     expect(screen.getByTestId('billing-read-only')).toHaveTextContent(text('billingWizard.readOnly.noPermission'));
     const fields = Array.from(screen.getByTestId('billing-step-accountant').querySelectorAll<HTMLElement>('input, select, textarea, button'));
-    expect(fields.length).toBeGreaterThan(8);
+    // The address, the monthly send, the day, the three folders this person may choose and the test.
+    expect(fields.length).toBeGreaterThanOrEqual(7);
     for (const field of fields) expect(field, field.getAttribute('data-testid') ?? field.tagName).toBeDisabled();
     await next();
     await onStep('summary');
@@ -467,5 +483,101 @@ describe('who sees the step, and when (E15/F02/US02/T01)', () => {
     expect(screen.queryByTestId('billing-accountant-email')).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: text('shared.errorState.retry') }));
     await waitFor(() => expect(screen.getByTestId('billing-accountant-email')).toHaveValue(ADDRESS), WAIT);
+  });
+});
+
+// Permission rule (backend `AccountantPackageSettingsService`): on an agency's organization only a caller who holds `agency.statement.view` may choose the folders that carry the owner accounting; for
+// anyone else the save is refused (422 `accountant_package_owner_accounting_required`). The wizard's `agency` is the administrator of an organization on the agency plan: the folders are offered and sent
+// only to that person.
+describe('the folders of the owner accounting are for who may choose them (E15/F02/US02/T01)', () => {
+  const OWNER_FOLDERS = ['ownerInvoices', 'statements', 'agencySummary', 'vat', 'withholding'];
+  const OTHER_FOLDERS = ['guestDocuments', 'touristTax', 'collections'];
+
+  /** Who looks at the step: the administrator of an organization on the agency plan, the administrator of one that is not an agency, or a collaborator (of an organization on the agency plan: the plan alone decides nothing). */
+  function lookingAs(who: 'agencyAdministrator' | 'administrator' | 'collaborator') {
+    env.contexts = who === 'collaborator' ? COLLABORATOR : ADMIN;
+    env.flags = { accountantPackage: true, agencyTier: true };
+    vi.mocked(useAgencyPlan).mockReturnValue({ isAgency: who !== 'administrator', isLoading: false, failed: false, retry: vi.fn() });
+  }
+
+  it('AccountantStep_TheAdministratorOfAnAgency_IsOfferedEveryFolderAndTheSaveHoldsThemAll', async () => {
+    lookingAs('agencyAdministrator');
+    renderWizard();
+    await formOpen();
+
+    for (const folder of ACCOUNTANT_PACKAGE_FOLDERS) expect(screen.getByTestId(`billing-accountant-folder-${folder}`), folder).toBeChecked();
+    expect(screen.getByText(text('billingWizard.accountant.contents.hint'))).toBeInTheDocument();
+
+    write(ADDRESS);
+    await next();
+    await onStep('summary');
+    expect(updateSettings).toHaveBeenCalledTimes(1);
+    expect(updateSettings.mock.calls[0][0].contents).toEqual([...ACCOUNTANT_PACKAGE_FOLDERS]);
+  });
+
+  it.each<[string, 'collaborator' | 'administrator']>([
+    ['ACollaboratorOfAnAgency', 'collaborator'],
+    ['TheAdministratorOfAnOrganizationThatIsNotAnAgency', 'administrator'],
+  ])('AccountantStep_%s_IsNotOfferedTheOwnerFoldersAndTheSaveNeverHoldsThem', async (_name, who) => {
+    lookingAs(who);
+    renderWizard();
+    await formOpen();
+
+    for (const folder of OWNER_FOLDERS) expect(screen.queryByTestId(`billing-accountant-folder-${folder}`), folder).not.toBeInTheDocument();
+    for (const folder of OTHER_FOLDERS) expect(screen.getByTestId(`billing-accountant-folder-${folder}`), folder).toBeChecked();
+    expect(screen.getByText(text('billingWizard.accountant.contents.hintNoOwnerFolders'))).toBeInTheDocument();
+
+    // The server holds every folder (its default for an organization that saved none): what this person saves holds none of the five, which the backend would refuse on an agency's organization.
+    write(ADDRESS);
+    await next();
+    await onStep('summary');
+    expect(updateSettings).toHaveBeenCalledTimes(1);
+    expect(updateSettings.mock.calls[0][0].contents).toEqual(OTHER_FOLDERS);
+  });
+
+  it('AccountantStep_ACollaboratorWhoseSettingsHoldOnlyOwnerFolders_HasNoFolderChosenUntilTheyChooseOne', async () => {
+    lookingAs('collaborator');
+    getSettings.mockResolvedValue({ ...SAVED, contents: ['statements', 'vat'] });
+    renderWizard();
+    await formOpen();
+
+    // What they cannot see is not ticked and does not count as a folder chosen: the save would be refused for it.
+    for (const folder of OTHER_FOLDERS) expect(screen.getByTestId(`billing-accountant-folder-${folder}`), folder).not.toBeChecked();
+    fireEvent.change(screen.getByTestId('billing-accountant-day'), { target: { value: '12' } });
+    await next();
+    await waitFor(() => expect(screen.getByTestId('billing-accountant-contents-error')).toHaveTextContent(text('billingWizard.errors.accountantContents')), WAIT);
+    expect(updateSettings).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByTestId('billing-accountant-folder-guestDocuments'));
+    await next();
+    await onStep('summary');
+    expect(updateSettings).toHaveBeenCalledTimes(1);
+    expect(updateSettings.mock.calls[0][0]).toEqual({ enabled: true, email: ADDRESS, sendDay: 12, contents: ['guestDocuments'] });
+  });
+
+  it('AccountantStep_ACollaboratorWhoChangesNothing_SavesNothingEvenWhenTheServerHoldsOwnerFolders', async () => {
+    lookingAs('collaborator');
+    getSettings.mockResolvedValue({ ...SAVED, contents: ['statements', 'vat', 'collections'] });
+    renderWizard();
+    await formOpen();
+
+    await next();
+    await onStep('summary');
+    // The owner folders an administrator chose stay as they are: only a change of what this person sees is saved.
+    expect(updateSettings).not.toHaveBeenCalled();
+  });
+
+  it('AccountantTest_ACollaboratorOnAnAgency_IsToldTheTestIsForWhoMaySeeTheOwnerAccounting_AndNoFolderIsBlamed', async () => {
+    lookingAs('collaborator');
+    getSettings.mockResolvedValue(SAVED);
+    sendTest.mockRejectedValue(refusal(422, { code: 'accountant_package_owner_accounting_required' }));
+    renderWizard();
+    await formOpen();
+
+    await pressTest();
+    const failure = await screen.findByTestId('billing-accountant-test-failure', undefined, WAIT);
+    expect(failure).toHaveTextContent(text('billingWizard.accountant.test.ownerAccounting'));
+    // The refusal is about the test: the person has no owner folder to take out, so none of the folders is blamed.
+    expect(screen.queryByTestId('billing-accountant-contents-error')).not.toBeInTheDocument();
   });
 });

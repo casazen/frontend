@@ -13,7 +13,15 @@ import {
   periodLabel,
   stepIdsFor,
 } from '../billing-wizard-model';
-import { accountantAnswersOf, accountantProblems, accountantStepSchema, isPlainEmail, type BillingWizardValues } from '../billing-wizard-schema';
+import {
+  accountantAnswersOf,
+  accountantFoldersFor,
+  accountantProblems,
+  accountantSettingsFor,
+  accountantStepSchema,
+  isPlainEmail,
+  type BillingWizardValues,
+} from '../billing-wizard-schema';
 import { swissSetup } from './billing-fixtures';
 
 const TODAY = '2026-11-15';
@@ -222,6 +230,43 @@ describe('what the step holds together (accountantProblems, the schema)', () => 
     expect(accountantStepSchema(NONE).safeParse(values({ accountantMonthly: true, accountantEmail: 'studio@esempio.it' })).success).toBe(true);
     // The server already has an address: turning the send on is enough.
     expect(accountantStepSchema({ ...SAVED, enabled: false }).safeParse(values({ accountantMonthly: true })).success).toBe(true);
+  });
+});
+
+// Permission rule: the five folders that carry the owner accounting are chosen only by the administrator of an agency (the backend refuses them from anyone else on an agency's organization).
+describe('the folders this person may choose (accountantFoldersFor, accountantSettingsFor)', () => {
+  const NOT_THE_OWNER_ACCOUNTING = ['guestDocuments', 'touristTax', 'collections'];
+
+  it('AccountantFoldersFor_TheAdministratorOfAnAgency_HasEveryFolder_AnyoneElseNoneOfTheFiveOfTheOwnerAccounting', () => {
+    expect(accountantFoldersFor(true)).toEqual([...ACCOUNTANT_PACKAGE_FOLDERS]);
+    expect(accountantFoldersFor(false)).toEqual(NOT_THE_OWNER_ACCOUNTING);
+  });
+
+  it('AccountantSettingsFor_WithoutTheOwnerFolders_IsTheServersSettingsMinusThemAndNeverTouchesTheServersOwn', () => {
+    expect(accountantSettingsFor(NONE, true)).toBe(NONE);
+    expect(accountantSettingsFor(NONE, false)).toEqual({ ...NONE, contents: NOT_THE_OWNER_ACCOUNTING });
+    expect(NONE.contents).toHaveLength(ACCOUNTANT_PACKAGE_FOLDERS.length);
+    expect(accountantSettingsFor(null, false)).toBeNull();
+    expect(accountantSettingsFor(undefined, true)).toBeNull();
+    // A folder the app does not know (the server is newer) is kept: the app cannot tell it from one it may send.
+    expect(accountantSettingsFor({ ...NONE, contents: ['statements', 'a_folder_of_the_future'] }, false)?.contents).toEqual(['a_folder_of_the_future']);
+  });
+
+  it('AccountantChange_OnTheViewOfAPersonWhoMayNotChooseThem_NeverSendsAnOwnerFolder_WholeOrDraft', () => {
+    const view = accountantSettingsFor(NONE, false);
+    const typed = values({ accountantEmail: 'studio@esempio.it' });
+    // The server holds every folder (its default): what is sent holds the three this person sees.
+    expect(accountantChange(view, typed, 'whole').request).toEqual({ enabled: false, email: 'studio@esempio.it', sendDay: 3, contents: NOT_THE_OWNER_ACCOUNTING });
+    expect(accountantChange(view, typed, 'draft').request).toEqual({ enabled: false, email: 'studio@esempio.it', sendDay: 3, contents: NOT_THE_OWNER_ACCOUNTING });
+    // Nothing they see changed (the owner folders they cannot see are no change): nothing is sent.
+    expect(accountantChange(view, values({ accountantMonthly: false }), 'whole').request).toBeNull();
+  });
+
+  it('AccountantProblems_ServerSettingsThatHoldOnlyOwnerFolders_AreNoFolderChosenForWhoCannotSeeThem', () => {
+    const view = accountantSettingsFor({ ...SAVED, contents: ['statements', 'vat'] }, false);
+    expect(view?.contents).toEqual([]);
+    expect(accountantChange(view, values({ accountantDay: 9 }), 'whole')).toEqual({ request: null, leftOut: ['accountantContents'] });
+    expect(accountantStepSchema(view).safeParse(values({ accountantDay: 9 })).success).toBe(false);
   });
 });
 

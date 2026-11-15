@@ -2901,6 +2901,7 @@
           }
         },
         "hint": "Choose the folders of the monthly e-mail: at least one. The package you download yourself from the “Accountant” page always has all of them. The owner folders are for agencies.",
+        "hintNoOwnerFolders": "Choose the folders of the monthly e-mail: at least one. The package you download yourself from the “Accountant” page always has all of them. The folders with the owners’ accounting belong to agencies and are chosen by whoever administers the organization: they do not appear here.",
         "legend": "What the package holds"
       },
       "day": {
@@ -2939,6 +2940,7 @@
         "button": "Send a test",
         "description": "Sends the accountant the package of {{period}}, last month, right now, with the folders chosen above; if you changed anything, it is saved first. It counts as the send of that month: it does not go out a second time by itself.",
         "failed": "We could not confirm that the test went out. Look at the last send above before you try again.",
+        "ownerAccounting": "This organization is an agency: the test package holds the owners’ accounting, and only whoever can see the owner statements can send it. Ask whoever administers the organization.",
         "preparing": "Preparing the package: it can take a few minutes. Do not leave this page.",
         "queued": "Test queued: the e-mail with the package of {{period}} goes out shortly to the address written above, and the link works until {{until}}. If it does not arrive, check the address.",
         "title": "Try the send",

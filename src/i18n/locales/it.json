@@ -2901,6 +2901,7 @@
           }
         },
         "hint": "Scegli le cartelle dell’e-mail mensile: ne serve almeno una. Il pacchetto che scarichi tu dalla pagina «Commercialista» le ha sempre tutte. Le cartelle dei proprietari valgono per le agenzie.",
+        "hintNoOwnerFolders": "Scegli le cartelle dell’e-mail mensile: ne serve almeno una. Il pacchetto che scarichi tu dalla pagina «Commercialista» le ha sempre tutte. Le cartelle con la contabilità dei proprietari sono delle agenzie e le sceglie chi amministra l’organizzazione: qui non compaiono.",
         "legend": "Che cosa contiene il pacchetto"
       },
       "day": {
@@ -2939,6 +2940,7 @@
         "button": "Invia una prova",
         "description": "Manda subito al commercialista il pacchetto di {{period}}, il mese scorso, con le cartelle scelte qui sopra; se hai cambiato qualcosa, viene salvato prima. Vale come invio di quel mese: in automatico non parte una seconda volta.",
         "failed": "Non siamo riusciti a confermare l’invio della prova. Guarda qui sopra l’ultimo invio prima di riprovare.",
+        "ownerAccounting": "Questa organizzazione è un’agenzia: il pacchetto di prova contiene la contabilità dei proprietari e lo può mandare solo chi può vedere i rendiconti dei proprietari. Chiedilo a chi amministra l’organizzazione.",
         "preparing": "Sto preparando il pacchetto: può volerci qualche minuto. Non lasciare questa pagina.",
         "queued": "Prova messa in coda: l’e-mail con il pacchetto di {{period}} parte tra poco per l’indirizzo scritto qui sopra, e il link vale fino al {{until}}. Se non arriva, controlla l’indirizzo.",
         "title": "Prova l’invio",

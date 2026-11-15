@@ -222,6 +222,13 @@ export interface AgencySummary {
 export const ACCOUNTANT_PACKAGE_FOLDERS = ['guestDocuments', 'ownerInvoices', 'statements', 'agencySummary', 'vat', 'withholding', 'touristTax', 'collections'] as const;
 export type AccountantPackageFolder = (typeof ACCOUNTANT_PACKAGE_FOLDERS)[number];
 
+/**
+ * The folders that carry the owner accounting (backend `AccountantPackageFolderRules.OwnerAccountingCarriers`): the invoices to the owners, the statements, the agency summary, the VAT and the
+ * withholding. On an organization on the agency plan the backend lets only a caller who holds `agency.statement.view` choose them (422 `accountant_package_owner_accounting_required` for anyone
+ * else, and the save replaces the folders as a whole), so the screen offers them only to that caller.
+ */
+export const ACCOUNTANT_OWNER_FOLDERS: readonly AccountantPackageFolder[] = ['ownerInvoices', 'statements', 'agencySummary', 'vat', 'withholding'];
+
 /** The first and the last day of the month the monthly send can be due on (`AccountantPackageSettings.MinSendDay`, `MaxSendDay`): every month has the 28th. */
 export const ACCOUNTANT_SEND_DAYS = { min: 1, max: 28 } as const;
 

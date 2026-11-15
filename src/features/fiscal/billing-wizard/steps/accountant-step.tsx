@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
+import { isAxiosError } from 'axios';
 import type { TFunction } from 'i18next';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -15,17 +16,19 @@ import { Select } from '@/components/ui/select';
 import { SkeletonLine } from '@/components/ui/skeleton';
 import { asInstant } from '@/features/owner-accounting/owner-accounting-model';
 import { translateValidationMessage } from '@/i18n/validation-message';
-import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
+import { getHttpStatus, getProblemCode, getProblemMessage } from '@/lib/api-errors';
 import { formatRomeDateTime } from '@/lib/stay-dates';
-import {
-  ACCOUNTANT_PACKAGE_FOLDERS,
-  ACCOUNTANT_SEND_DAYS,
-  type AccountantPackageEmailQueued,
-  type AccountantPackageSettings,
-  type SaveAccountantPackageSettingsRequest,
-} from '@/types';
+import { ACCOUNTANT_SEND_DAYS, type AccountantPackageEmailQueued, type AccountantPackageSettings, type SaveAccountantPackageSettingsRequest } from '@/types';
 import { accountantChange, accountantProblemsOf, amountLocale, lastSendErrorKey, periodLabel, type AccountantField } from '../billing-wizard-model';
-import { ACCOUNTANT_EMAIL_MAX, BILLING_ERROR_KEYS, accountantAnswersOf, accountantProblems, type BillingWizardValues } from '../billing-wizard-schema';
+import {
+  ACCOUNTANT_EMAIL_MAX,
+  BILLING_ERROR_KEYS,
+  accountantAnswersOf,
+  accountantFoldersFor,
+  accountantProblems,
+  accountantSettingsFor,
+  type BillingWizardValues,
+} from '../billing-wizard-schema';
 
 type Read<T> = Pick<UseQueryResult<T>, 'data' | 'isPending' | 'isError' | 'error' | 'refetch'>;
 
@@ -43,6 +46,11 @@ interface AccountantStepProps {
   lastMonth: string;
   /** Another request of the wizard is on its way (the save of a step, the way out): the action of the step waits for it, as «Continua» waits for the action. */
   busy: boolean;
+  /**
+   * The person may choose the folders that carry the owner accounting: the administrator of an organization on the agency plan (`agency` of the wizard, who holds `agency.statement.view`).
+   * For anyone else those folders are not offered and are never sent: the backend refuses them (422 `accountant_package_owner_accounting_required`) on an agency's organization.
+   */
+  ownerAccounting: boolean;
 }
 
 /** The fields of the step a problem can sit on: when one shows, they are all checked again at each change, so that its message goes as soon as the answer is fixed. */
@@ -58,6 +66,9 @@ const FOLDER_CARD =
 const DATE_ONLY: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
 const DATE_AND_TIME: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' };
 
+/** 422: the test of an organization on the agency plan is for a caller who may read the owner accounting, whatever folders are chosen (the package it sends holds it). */
+const OWNER_ACCOUNTING_REQUIRED_CODE = 'accountant_package_owner_accounting_required';
+
 /**
  * What a failed test send says, in words: a package that is too large (with how many files it would hold and how many one package allows, when the server says), the refusals the server explains
  * by code, and, for anything else, the sentence that admits the person cannot tell whether the e-mail went out (a call that ended without an answer may have): they look at the last send before they try again.
@@ -69,6 +80,8 @@ function testProblem(error: unknown, t: TFunction): string {
       ? t('billingWizard.accountant.test.tooLargeCount', { files: tooLarge.fileCount, max: tooLarge.maxFiles })
       : t('billingWizard.accountant.test.tooLarge');
   }
+  // Its own words: the generic ones talk about folders, and the person who gets this has no owner folder to take out.
+  if (isAxiosError(error) && error.response?.status === 422 && getProblemCode(error.response.data) === OWNER_ACCOUNTING_REQUIRED_CODE) return t('billingWizard.accountant.test.ownerAccounting');
   return getProblemMessage(error, t) ?? t('billingWizard.accountant.test.failed');
 }
 
@@ -81,7 +94,7 @@ function testProblem(error: unknown, t: TFunction): string {
  * once, and only when something changed. The test goes to the address that is SAVED, never to one that comes with the request: so «Invia una prova» saves what is on screen first (when it is valid
  * and different), and the e-mail goes where the person sees it going. The answer says «queued» and nothing more: delivery is not something the server can promise, and neither does the page.
  */
-export function AccountantStep({ settings, save, send, lastMonth, busy }: AccountantStepProps) {
+export function AccountantStep({ settings, save, send, lastMonth, busy, ownerAccounting }: AccountantStepProps) {
   const { t } = useTranslation();
   // A 404 is the module being off at the server: it is that even when the query still holds the answer it had (a read that fails keeps the data it had), and it is said, never a form.
   const notFound = settings.isError && getHttpStatus(settings.error) === 404;
@@ -95,7 +108,7 @@ export function AccountantStep({ settings, save, send, lastMonth, busy }: Accoun
         </Alert>
       ) : settings.data ? (
         // A read that fails after the settings are on screen (a transient error when the window comes back) does not take the form from under the person's hands.
-        <AccountantSettingsForm current={settings.data} save={save} send={send} lastMonth={lastMonth} busy={busy} />
+        <AccountantSettingsForm current={accountantSettingsFor(settings.data, ownerAccounting)} save={save} send={send} lastMonth={lastMonth} busy={busy} ownerAccounting={ownerAccounting} />
       ) : settings.data === null ? (
         <Alert variant="info" data-testid="billing-accountant-no-access">
           {t('billingWizard.accountant.noAccess')}
@@ -110,14 +123,16 @@ export function AccountantStep({ settings, save, send, lastMonth, busy }: Accoun
 }
 
 interface AccountantSettingsFormProps {
+  /** The settings as this person sees them (`accountantSettingsFor`): without the folders they may not choose. */
   current: AccountantPackageSettings;
   save: AccountantStepProps['save'];
   send: AccountantStepProps['send'];
   lastMonth: string;
   busy: boolean;
+  ownerAccounting: boolean;
 }
 
-function AccountantSettingsForm({ current, save, send, lastMonth, busy }: AccountantSettingsFormProps) {
+function AccountantSettingsForm({ current, save, send, lastMonth, busy, ownerAccounting }: AccountantSettingsFormProps) {
   const { t, i18n } = useTranslation();
   const {
     control,
@@ -177,12 +192,15 @@ function AccountantSettingsForm({ current, save, send, lastMonth, busy }: Accoun
       return;
     }
     setRunning(true);
+    // The save goes first and then the test: a refusal of the save names the field it is about; a refusal of the test is about the test, and names no field (not a folder the person chose).
+    let saving = true;
     try {
       const { request } = accountantChange(current, values, 'whole');
       if (request) await save.mutateAsync(request);
+      saving = false;
       setQueued(await send.mutateAsync());
     } catch (error) {
-      for (const problem of accountantProblemsOf(error)) setError(problem.name as AccountantField, { type: 'server', message: problem.messageKey });
+      if (saving) for (const problem of accountantProblemsOf(error)) setError(problem.name as AccountantField, { type: 'server', message: problem.messageKey });
       setFailure(error);
     } finally {
       setRunning(false);
@@ -235,10 +253,10 @@ function AccountantSettingsForm({ current, save, send, lastMonth, busy }: Accoun
       <fieldset className="m-0 flex min-w-0 flex-col gap-2 border-0 p-0" aria-describedby="billing-accountant-contents-hint" data-testid="billing-accountant-contents">
         <legend className="mb-1 text-sm font-medium">{t('billingWizard.accountant.contents.legend')}</legend>
         <p id="billing-accountant-contents-hint" className="text-sm text-foreground/70">
-          {t('billingWizard.accountant.contents.hint')}
+          {t(ownerAccounting ? 'billingWizard.accountant.contents.hint' : 'billingWizard.accountant.contents.hintNoOwnerFolders')}
         </p>
         <div className="grid gap-2 sm:grid-cols-2">
-          {ACCOUNTANT_PACKAGE_FOLDERS.map((folder) => (
+          {accountantFoldersFor(ownerAccounting).map((folder) => (
             <label key={folder} className={FOLDER_CARD}>
               <input
                 type="checkbox"
