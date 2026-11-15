@@ -20926,7 +20926,8 @@
       "link": "Go to the automations",
       "off": "The routine «Cleaning at check-out» is not on: until you switch it on no cleaning starts by itself.",
       "on": "The routine «Cleaning at check-out» is on: the cleaning starts by itself at check-out.",
-      "onNoCleaner": "The routine «Cleaning at check-out» is on, but this property has no active cleaner: no cleaning starts for this property."
+      "onNoCleaner": "The routine «Cleaning at check-out» is on, but this property has no active cleaner: no cleaning starts for this property.",
+      "unknown": "From here we cannot tell whether the routine «Cleaning at check-out» is on: check it in the automations."
     },
     "save": "Save",
     "saved": "Who cleans was saved",

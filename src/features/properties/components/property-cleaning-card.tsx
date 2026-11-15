@@ -9,7 +9,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
-import { parseActions } from '@/lib/routine-model';
 import { useRoutines } from '@/queries/routines';
 import { useSavePropertyCleaningSetup, usePropertyCleaningSetup } from '@/queries/property-cleaning';
 import { useOrgMembers } from '@/queries/use-org-team';
@@ -20,6 +19,7 @@ import {
   cleaningDtoOf,
   cleaningFormOf,
   cleaningProblems,
+  cleaningRoutineStateOf,
   cleaningStaffOf,
   formatCleaningPrice,
   memberName,
@@ -223,20 +223,29 @@ export function PropertyCleaningCard({ propertyId }: PropertyCleaningCardProps) 
     body = null;
   }
 
-  // The routine that makes the cleaning is said only from a read that worked: an error says nothing, and a stale list is not trusted either.
-  const routineOn = routines.isError || routines.data === undefined
-    ? undefined
-    : routines.data.some((routine) => routine.active && !routine.testMode && parseActions(routine.actionsJson).some((action) => action.type === 'CreateCleaningRequest'));
+  // The routine that makes the cleaning is said only from a read that worked: an error says nothing, and a stale list is not trusted either. An empty list is not «off»: the server answers it also
+  // to who reaches only some of the properties, and such a person cannot see the routines at all, so the card says it cannot tell and sends to the automations.
+  const routineState = routines.isError || routines.data === undefined ? undefined : cleaningRoutineStateOf(routines.data);
   // The routine acts only on a property that has an active setup (without one the action is blocked, `routine_cleaning_not_configured`): «it starts by itself» is told only then.
   const setupRuns = setup?.configured === true && setup.active;
+  const routineText =
+    routineState === 'on'
+      ? setupRuns
+        ? t('propertyCleaning.routine.on')
+        : t('propertyCleaning.routine.onNoCleaner')
+      : routineState === 'off'
+        ? t('propertyCleaning.routine.off')
+        : routineState === 'unknown'
+          ? t('propertyCleaning.routine.unknown')
+          : undefined;
 
   return (
     <PlainSection title={t('propertyCleaning.title')} data-testid="property-cleaning-card">
       <p className="text-sm text-muted-foreground">{t('propertyCleaning.description')}</p>
       {body}
-      {setup && !editing && routineOn !== undefined ? (
+      {setup && !editing && routineText !== undefined ? (
         <p className="text-sm text-foreground/70" data-testid="property-cleaning-routine">
-          {routineOn ? (setupRuns ? t('propertyCleaning.routine.on') : t('propertyCleaning.routine.onNoCleaner')) : t('propertyCleaning.routine.off')}{' '}
+          {routineText}{' '}
           <Link to={AUTOMATIONS_PATH} className="font-medium text-primary underline underline-offset-4">
             {t('propertyCleaning.routine.link')}
           </Link>

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import { AxiosError } from 'axios';
@@ -288,7 +288,6 @@ describe('the cleaner of a property (E24/F01/US02/T01)', () => {
     });
 
     it.each([
-      ['no routine', [] as Routine[]],
       ['a routine in test mode', [routine({ testMode: true })]],
       ['a routine that is off', [routine({ active: false })]],
     ])('PropertyCleaningCard_%s_SaysThatNothingStartsByItself', async (_name, routines) => {
@@ -296,6 +295,18 @@ describe('the cleaner of a property (E24/F01/US02/T01)', () => {
       renderCard();
 
       expect(await screen.findByTestId('property-cleaning-routine')).toHaveTextContent('non è attiva');
+    });
+
+    it('PropertyCleaningCard_EmptyListOfRoutines_NeverSaysTheRoutineIsOff_AndSendsToTheAutomations', async () => {
+      // The server answers an empty list also to who reaches only some of the properties (the routines act on all of them, so such a person sees none): the card cannot tell.
+      vi.mocked(routinesApi.getAll).mockResolvedValue([]);
+      renderCard();
+
+      const line = await screen.findByTestId('property-cleaning-routine');
+      expect(line).toHaveTextContent('Da qui non sappiamo se la routine');
+      expect(line).toHaveTextContent('controlla nelle automazioni');
+      expect(line).not.toHaveTextContent('non è attiva');
+      expect(within(line).getByRole('link', { name: 'Vai alle automazioni' })).toHaveAttribute('href', '/app/short-rent/automations');
     });
 
     it('PropertyCleaningCard_RoutinesThatCannotBeRead_SayNothingOfTheRoutine', async () => {

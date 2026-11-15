@@ -1,8 +1,8 @@
 import { SERVICE_LIMITS } from '@/features/supplier/services/lib/service-limits';
 import { centsToInput, parseEuros } from '@/features/supplier/services/lib/service-money';
-import { parseWhole } from '@/lib/routine-model';
+import { parseActions, parseWhole } from '@/lib/routine-model';
 import { formatCurrency } from '@/lib/utils';
-import type { CleaningSetupBulkResponse, Property, PropertyCleanerKind, PropertyCleaningSetup, SaveCleaningSetupDto } from '@/types';
+import type { CleaningSetupBulkResponse, Property, PropertyCleanerKind, PropertyCleaningSetup, Routine, SaveCleaningSetupDto } from '@/types';
 import type { OrgMember } from '@/types/org-team.types';
 import type { SupplierPicker } from '@/types/service-request';
 
@@ -146,6 +146,20 @@ export function formatCleaningPrice(priceCents: number, currency: string | null 
     }
   }
   return { text: new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount), currencyKnown: false };
+}
+
+/** Whether the ready routine «Pulizia al check-out» is on, as far as the list of the routines lets the card know. */
+export type CleaningRoutineState = 'on' | 'off' | 'unknown';
+
+/**
+ * The state of the routine that makes the cleanings, from the list the server answers. A routine acts on every property of the org, so the server shows none of them (it answers an empty list)
+ * to who reaches only some of the properties (`GET api/routines`): an empty list does not say «there is none», it says that the card cannot know, and the card does not claim that the routine is off.
+ * A list with routines in it is read as it is: one that is on, not in test mode and makes the cleaning is «on», any other list is «off».
+ */
+export function cleaningRoutineStateOf(routines: readonly Routine[]): CleaningRoutineState {
+  if (routines.length === 0) return 'unknown';
+  const on = routines.some((routine) => routine.active && !routine.testMode && parseActions(routine.actionsJson).some((action) => action.type === 'CreateCleaningRequest'));
+  return on ? 'on' : 'off';
 }
 
 /** The name of a member of the staff as the lists of the team write it. */
