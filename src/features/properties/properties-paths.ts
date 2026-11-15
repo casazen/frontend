@@ -46,3 +46,6 @@ export const propertyBookingsPath = (id: string) => `/app/${AREA}/bookings?prope
 
 /** Where a host asks a supplier for an intervention on this property. */
 export const propertyServiceRequestPath = (id: string) => `/app/${AREA}/marketplace?propertyId=${encodeURIComponent(id)}`;
+
+/** The page of the routines (a tab of «Impostazioni»), where the ready routine «Pulizia al check-out» is switched on. */
+export const AUTOMATIONS_PATH = `/app/${AREA}/automations`;

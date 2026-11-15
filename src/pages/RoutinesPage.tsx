@@ -16,11 +16,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { RoutineEditor } from '@/components/routines/RoutineEditor';
 import { RoutineLibrary } from '@/components/routines/RoutineLibrary';
+import { BulkCleaningDialog } from '@/features/properties/components/bulk-cleaning-dialog';
 import { getHttpStatus } from '@/lib/api-errors';
 import { formatRomeDateTime } from '@/lib/stay-dates';
 import {
   ACTION_OUTCOME_KEYS,
   actionLabelKey,
+  actionReasonKey,
   eventLabelKey,
   executionCodeKey,
   executionHeadline,
@@ -62,6 +64,8 @@ export function RoutinesPage() {
 
   const [editorOpen, setEditorOpen] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
+  // The layer that says who cleans for many properties at once (the ready cleaning routine acts on the properties that have a cleaner), over the library.
+  const [cleanersOpen, setCleanersOpen] = useState(false);
   const [logRoutineId, setLogRoutineId] = useState<string | undefined>();
   const [selectedRoutine, setSelectedRoutine] = useState<Routine | undefined>();
   const [routineToDelete, setRoutineToDelete] = useState<Routine | undefined>();
@@ -242,9 +246,17 @@ export function RoutinesPage() {
             <DialogTitle>{t('routines.library.title')}</DialogTitle>
             <DialogDescription>{t('routines.library.description')}</DialogDescription>
           </DialogHeader>
-          <RoutineLibrary availability={availability} onCreate={handleCreateFromTemplate} isCreating={createRoutine.isPending} />
+          <RoutineLibrary
+            availability={availability}
+            onCreate={handleCreateFromTemplate}
+            isCreating={createRoutine.isPending}
+            onSetupCleaners={() => setCleanersOpen(true)}
+          />
         </DialogContent>
       </Dialog>
+
+      {/* Who cleans, for many properties: the same layer as the list of the properties, opened from the ready cleaning routine; it does not send the host away. */}
+      <BulkCleaningDialog open={cleanersOpen} onOpenChange={setCleanersOpen} routineLink={false} />
 
       {/* Execution Log Dialog */}
       <Dialog open={logRoutineId !== undefined} onOpenChange={(open) => !open && setLogRoutineId(undefined)}>
@@ -465,7 +477,7 @@ function ExecutionRow({ execution, when }: { execution: RoutineExecution; when: 
         {result.actions.length > 0 && (
           <ul className="space-y-1 text-sm" data-testid={`execution-actions-${execution.id}`}>
             {result.actions.map((action) => {
-              const reasonKey = executionCodeKey(action.code);
+              const reasonKey = actionReasonKey(action);
               const nameKey = actionLabelKey(action.type);
               return (
                 <li key={action.index} className="text-muted-foreground">

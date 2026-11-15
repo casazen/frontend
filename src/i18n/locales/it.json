@@ -744,6 +744,10 @@
           "title": "Check-out da completare",
           "why": "Il soggiorno è finito: registra la partenza."
         },
+        "CleaningDateChanged": {
+          "title": "Pulizia da rivedere dopo il cambio di date",
+          "why": "Le date del soggiorno sono cambiate dopo che il fornitore ha preso la pulizia: resta sul giorno vecchio. Decidi se annullarla, chiederne un'altra o tenerla."
+        },
         "CleaningDue": {
           "title": "Pulizia da richiedere",
           "why": "Il soggiorno è finito e nessuno ha chiesto la pulizia: dichiara l'immobile pronto o richiedila prima del prossimo arrivo."
@@ -1675,6 +1679,20 @@
       "channelAccountHoldersInvalid": "Le modifiche agli intestatari non sono valide: controlla gli annunci e i portali e riprova.",
       "channelCommissionRuleInUse": "Una regola di commissione è già stata usata nei rendiconti: puoi chiuderla ma non cambiarne la percentuale né toglierla.",
       "channelCommissionRulesInvalid": "Una delle percentuali dei portali non è valida. Controlla e riprova.",
+      "cleaningSetupBulkEmpty": "Scegli almeno un immobile: un elenco vuoto non vale «tutti».",
+      "cleaningSetupBulkTooMany": "Puoi impostare al massimo 200 immobili alla volta.",
+      "cleaningSetupCleanerMismatch": "Il fornitore o la persona dello staff non corrispondono al tipo di addetto scelto: indica solo quello che serve.",
+      "cleaningSetupCleanerRequired": "Scegli chi fa la pulizia: un fornitore o una persona dello staff.",
+      "cleaningSetupCurrencyMismatch": "La valuta del prezzo deve essere quella dell'immobile.",
+      "cleaningSetupCurrencyRequired": "Indica la valuta del prezzo: un importo non si applica a una valuta che nessuno ha scelto.",
+      "cleaningSetupDurationInvalid": "La durata della pulizia va da 5 a 1.440 minuti.",
+      "cleaningSetupPriceInvalid": "Il prezzo concordato parte da 1 centesimo e non può superare il massimo ammesso; per un fornitore è obbligatorio.",
+      "cleaningSetupStaffInvalid": "La persona scelta non è un membro attivo della tua organizzazione con accesso a questo immobile.",
+      "cleaningSetupStartTimeInvalid": "L'ora di inizio deve essere in minuti interi (per esempio 11:00).",
+      "cleaningSetupSupplierCurrencyUnsupported": "I fornitori del marketplace lavorano in euro e non si converte nulla: un immobile in un'altra valuta può avere la pulizia solo a una persona dello staff.",
+      "cleaningSetupSupplierInactive": "Il fornitore scelto non è attivo: non può ricevere richieste.",
+      "cleaningSetupSupplierNotFound": "Il fornitore scelto non esiste.",
+      "cleaningSetupSupplierOutsideComune": "Il fornitore scelto non opera nel comune dell'immobile.",
       "complianceBookingNotFound": "Non troviamo questo soggiorno.",
       "complianceExportTooLarge": "Nel periodo ci sono più prove di quante ne entrino in un archivio: scegli un periodo più breve.",
       "complianceProofDayInvalid": "Il giorno della prova non è valido: scegli un giorno passato.",
@@ -20768,6 +20786,133 @@
       "stripe": "Pagamento sicuro con Stripe"
     }
   },
+  "propertyCleaning": {
+    "bulk": {
+      "allSaved_one": "Fatto: chi pulisce è stato salvato per l'immobile scelto.",
+      "allSaved_other": "Fatto: chi pulisce è stato salvato per tutti e {{count}} gli immobili.",
+      "chooseFirst": "Scegli almeno un immobile per decidere chi pulisce, il prezzo e l'ora.",
+      "close": "Chiudi",
+      "description": "Scegli gli immobili, poi chi pulisce, il prezzo e l'ora: vale per tutti insieme. Per ogni immobile vedrai se è stato salvato.",
+      "limit": "Al massimo {{max}} immobili alla volta.",
+      "lineNotSaved": "Non salvato.",
+      "lineSaved": "Salvato.",
+      "listError": "Non riusciamo a caricare i tuoi immobili.",
+      "loading": "Carico i tuoi immobili…",
+      "noProperties": "Non hai ancora immobili in affitto breve.",
+      "open": "Imposta chi pulisce",
+      "otherCurrency": "in {{currency}}: da impostare a parte",
+      "properties": "Immobili",
+      "resultList": "Esito per ogni immobile",
+      "retryFailed": "Riprova per quelli non salvati",
+      "routineHint": "Per far partire la pulizia da sola, attiva la routine «Pulizia al check-out».",
+      "save_one": "Salva per {{count}} immobile",
+      "save_other": "Salva per {{count}} immobili",
+      "saveError": "Non siamo riusciti a salvare chi pulisce. Controlla i dati e riprova.",
+      "selectAll": "Seleziona tutti",
+      "selected_one": "{{count}} immobile scelto",
+      "selected_other": "{{count}} immobili scelti",
+      "selectNone": "Deseleziona tutti",
+      "someFailed": "Immobili salvati: {{saved}}. Non salvati: {{failed}}. Sotto trovi il motivo di ognuno.",
+      "title": "Chi pulisce, per più immobili",
+      "unknownProperty": "Immobile"
+    },
+    "cancel": "Annulla",
+    "description": "Chi pulisce quando gli ospiti partono, a che prezzo e a che ora. La routine «Pulizia al check-out» crea la pulizia da sola per ogni soggiorno.",
+    "edit": "Modifica",
+    "fields": {
+      "active": "Pulizia automatica attiva",
+      "duration": "Durata (minuti)",
+      "kind": "Chi pulisce",
+      "price": "Prezzo concordato",
+      "priceIn": "Prezzo concordato ({{currency}})",
+      "staff": "Persona dello staff",
+      "supplier": "Fornitore",
+      "time": "Ora di inizio"
+    },
+    "forbidden": "Non puoi gestire le pulizie di questo immobile.",
+    "hints": {
+      "activeOff": "Spenta: l'impostazione resta salvata ma la routine non la usa, quindi nessuna pulizia parte da sola.",
+      "activeOn": "Accesa: la routine «Pulizia al check-out» la usa per ogni soggiorno.",
+      "duration": "Da {{min}} a {{max}} minuti. Se la lasci vuota: {{default}} minuti.",
+      "noCurrency": "La valuta dell'immobile non è indicata: non possiamo salvare un prezzo.",
+      "price": "Quanto chiede chi pulisce per ogni pulizia, in {{currency}} (la valuta dell'immobile).",
+      "priceStaff": "Facoltativo: il costo di ogni pulizia, in {{currency}} (la valuta dell'immobile).",
+      "time": "Se la lasci vuota, la pulizia parte all'ora del check-out dell'immobile.",
+      "timeProperty": "Se la lasci vuota, la pulizia parte all'ora del check-out dell'immobile ({{time}})."
+    },
+    "kind": {
+      "staff": {
+        "description": "Un membro del tuo team: la pulizia diventa un'attività sua, con il costo.",
+        "title": "Una persona dello staff"
+      },
+      "supplier": {
+        "description": "Un fornitore del marketplace, di preferenza uno dei tuoi di fiducia: riceve la richiesta al prezzo concordato.",
+        "euroOnly": "I fornitori lavorano in euro: per un immobile in {{currency}} la pulizia la fa una persona dello staff.",
+        "title": "Un fornitore"
+      }
+    },
+    "loadError": "Non riusciamo a leggere chi pulisce questo immobile: non sappiamo come è impostato.",
+    "loading": "Carico chi pulisce…",
+    "none": "Nessuno è stato scelto per pulire questo immobile. Finché non lo scegli la pulizia al check-out non parte da sola: resta tra le attività da fare, come «Pulizia da richiedere».",
+    "notFound": "Non troviamo più questo immobile.",
+    "problem": {
+      "duration": "La durata va da 5 a 1.440 minuti, in numeri interi.",
+      "priceInvalid": "Scrivi il prezzo come un importo (per esempio 45 oppure 45,50).",
+      "priceRange": "Il prezzo parte da 1 centesimo e non può superare il massimo ammesso. Se non c'è un costo, lascia il campo vuoto.",
+      "priceRequired": "Per un fornitore serve il prezzo concordato.",
+      "staffRequired": "Scegli la persona dello staff che pulisce.",
+      "supplierRequired": "Scegli il fornitore che pulisce.",
+      "time": "Scrivi l'ora come ore e minuti (per esempio 11:00)."
+    },
+    "retry": "Riprova",
+    "routine": {
+      "link": "Vai alle automazioni",
+      "off": "La routine «Pulizia al check-out» non è attiva: finché non la attivi non parte nessuna pulizia da sola.",
+      "on": "La routine «Pulizia al check-out» è attiva: la pulizia parte da sola al check-out."
+    },
+    "save": "Salva",
+    "saved": "Chi pulisce è stato salvato",
+    "saveError": "Non siamo riusciti a salvare chi pulisce. Riprova.",
+    "set": "Imposta chi pulisce",
+    "staff": {
+      "choose": "Scegli una persona",
+      "loadError": "Non riusciamo a caricare le persone del tuo team.",
+      "loading": "Carico le persone…",
+      "needsTeamPermission": "Per scegliere una persona dello staff serve il permesso di gestire il team: chiedilo a chi amministra l'account.",
+      "none": "Non ci sono persone attive nel team.",
+      "stored": "Persona già impostata"
+    },
+    "state": {
+      "off": "Spenta: l'impostazione resta salvata ma la pulizia non parte da sola.",
+      "on": "Attiva"
+    },
+    "summary": {
+      "cleaner": "Chi pulisce",
+      "duration": "Durata",
+      "minutes_one": "{{count}} minuto",
+      "minutes_other": "{{count}} minuti",
+      "noCurrency": "La valuta non è indicata: l'importo è mostrato senza simbolo.",
+      "noPrice": "Nessun prezzo indicato",
+      "price": "Prezzo concordato",
+      "staffNamed": "{{name}} (staff)",
+      "staffUnknown": "Una persona dello staff",
+      "state": "Stato",
+      "supplierUnknown": "Un fornitore",
+      "time": "Ora di inizio",
+      "timeOfProperty": "{{time}} (l'ora del check-out dell'immobile)",
+      "trusted": "Di fiducia"
+    },
+    "suppliers": {
+      "choose": "Scegli un fornitore",
+      "covers_one": "{{name}} (copre {{count}} immobile)",
+      "covers_other": "{{name}} (copre {{count}} immobili)",
+      "loadError": "Non riusciamo a caricare i fornitori di questa zona.",
+      "loading": "Carico i fornitori…",
+      "none": "Nessun fornitore attivo per le pulizie in questa zona: scegli una persona dello staff.",
+      "stored": "Fornitore già impostato"
+    },
+    "title": "Pulizie al check-out"
+  },
   "propertyMode": {
     "calendar": {
       "blockReason": "Passaggio all'affitto lungo",
@@ -23551,6 +23696,7 @@
     "actionTypes": {
       "addTag": "Aggiungi tag",
       "createActivity": "Crea attività",
+      "createCleaningRequest": "Crea la pulizia",
       "messageToGuest": "Invia messaggio all'ospite",
       "notifyOwner": "Notifica proprietario",
       "notifyStaff": "Notifica staff",
@@ -23665,18 +23811,24 @@
     "library": {
       "activate": "Attiva",
       "activating": "Creazione…",
-      "cleaningDescription": "Quando l'ospite fa il check-out aggiunge un'attività alla tua lista «Da fare» per organizzare la pulizia",
-      "cleaningTaskText": "Organizza la pulizia dell'immobile dopo il check-out",
+      "atTheTime": "All'ora dell'evento",
+      "cleaningDescription": "Crea la pulizia per chi pulisce l'appartamento, all'ora del check-out.",
+      "cleaningNote": "Chi pulisce, il prezzo e l'ora si scelgono per ogni appartamento, anche per più appartamenti insieme. La routine vale per tutti gli appartamenti che hanno chi pulisce: gli altri restano come ora.",
       "cleaningTitle": "Pulizia al check-out",
       "createInTestMode": "Crea in modalità test",
+      "daysCount_one": "{{count}} giorno",
+      "daysCount_other": "{{count}} giorni",
       "description": "Parti da una routine pronta: puoi modificarla dopo averla creata.",
       "documentReminderDescription": "Ricorda ai tuoi ospiti di mandare i documenti 3 giorni prima del check-in. Arriva a tutti, anche a chi li ha già mandati: le routine non leggono ancora lo stato dei documenti.",
       "documentReminderTitle": "Promemoria documenti prima dell'arrivo",
+      "hoursCount_one": "{{count}} ora",
+      "hoursCount_other": "{{count}} ore",
       "instructionsDescription": "Invia le istruzioni 2 giorni prima del check-in",
       "instructionsTitle": "Istruzioni prima dell'arrivo",
       "open": "Apri la libreria",
-      "reviewDescription": "Richiedi una recensione 1 giorno dopo il check-out",
-      "reviewTitle": "Richiesta recensione dopo la partenza",
+      "reviewDescription": "Un giorno dopo il check-out chiede una recensione all'ospite che ha prenotato dal tuo sito, una volta sola per prenotazione. Le prenotazioni dei portali, quelle annullate e quelle senza indirizzo email restano senza invito, e il registro dice perché.",
+      "reviewTitle": "Richiesta di recensione",
+      "setupCleaners": "Imposta chi pulisce",
       "title": "Libreria routine",
       "unavailableNote": "Contiene azioni non ancora disponibili: puoi crearla solo in modalità test, dove si simula senza inviare nulla."
     },
@@ -23688,6 +23840,7 @@
         "done": "Eseguita",
         "failed": "Non riuscita",
         "simulated": "Simulata: non è stato fatto nulla",
+        "skipped": "Saltata: non c'era niente da fare",
         "waiting": "In attesa"
       },
       "code": {
@@ -23697,10 +23850,26 @@
         "actionsInvalid": "Le azioni della routine non si possono leggere: non è partita.",
         "activityNeedsBooking": "L'attività si crea per una prenotazione e questo evento non ne ha una.",
         "airbnbNotConfirmed": "Un ospite di Airbnb non si contatta prima che la prenotazione sia confermata.",
+        "alreadyInvited": "L'invito per questa prenotazione è già stato inviato (da te o da una routine): parte una volta sola.",
+        "alreadyReviewed": "L'ospite ha già scritto la recensione: nessun invito inviato.",
         "bookingNotActive": "La prenotazione è stata annullata o l'ospite non è arrivato: le azioni dopo l'attesa non sono partite.",
         "campaignNeedsConsent": "Una campagna parte solo verso chi ha dato il consenso al marketing.",
+        "cleaningFailed": "La pulizia non si è potuta creare: non è stato creato nulla e il soggiorno resta tra le attività da fare come «Pulizia da richiedere».",
+        "cleaningNeedsBooking": "La pulizia si crea per un soggiorno e questo evento non ne ha uno.",
+        "cleaningNotConfigured": "Questo immobile non ha chi pulisce, o l'impostazione è spenta: nessuna pulizia creata. Impostala nella scheda dell'immobile.",
+        "cleaningSetupInvalid": "L'impostazione della pulizia di questo immobile non è più valida: controllala nella scheda dell'immobile. Il soggiorno resta tra le attività da fare come «Pulizia da richiedere».",
+        "cleaningStaffUnavailable": "La persona dello staff scelta non può fare questa pulizia (non è più attiva o non ha più accesso all'immobile). Il soggiorno resta tra le attività da fare come «Pulizia da richiedere».",
+        "cleaningSupplierCurrency": "I fornitori lavorano in euro: per un immobile in un'altra valuta la pulizia la fa solo una persona dello staff. Il soggiorno resta tra le attività da fare come «Pulizia da richiedere».",
         "conditionInvalid": "La condizione della routine non è valida: non è partita.",
         "inactive": "La routine è stata disattivata mentre aspettava: non è andata avanti.",
+        "noEmail": "Non c'è un indirizzo email a cui scrivere (manca, oppure l'ospite è stato cancellato o ha chiesto la cancellazione): nessun invito inviato.",
+        "noShow": "L'ospite non è arrivato (soggiorno segnato come no-show): nessun invito inviato.",
+        "notConfirmed": "La prenotazione è stata annullata o non è mai stata confermata: nessun invito inviato.",
+        "notDirect": "La prenotazione non arriva dal tuo sito di prenotazione (un portale chiede la recensione ai suoi ospiti): nessun invito inviato.",
+        "reviewInviteNotSent": "L'email di invito non è partita (la posta non è configurata o non è entrata in coda): puoi chiedere la recensione a mano dalla prenotazione.",
+        "reviewNeedsBooking": "La richiesta di recensione si fa per una prenotazione e questo evento non ne ha una.",
+        "tooEarly": "Il giorno del check-out non è ancora passato: l'invito si può mandare dal giorno dopo.",
+        "tooLate": "Sono passati più di 14 giorni dal check-out: il link sarebbe scaduto, nessun invito inviato.",
         "waitNotScheduled": "Non siamo riusciti a programmare l'attesa: la routine si è fermata."
       },
       "description": "Le ultime esecuzioni della routine, dalla più recente.",
@@ -23712,6 +23881,7 @@
         "pending": "Da avviare",
         "running": "In corso",
         "simulated": "Simulata",
+        "skipped": "Nulla da fare",
         "success": "Completata",
         "unknown": "Esito sconosciuto",
         "waiting": "In attesa"

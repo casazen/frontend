@@ -136,6 +136,8 @@ const BACKEND_TYPES = [
   'OwnerStaySyncFailed',
   'OwnerDocumentExpiring',
   'RoutineTask',
+  // The automatic cleaning at check-out (E24/F01/US01/T02): the dates of the stay changed after the supplier took the cleaning.
+  'CleaningDateChanged',
 ] as const;
 
 describe('describeTodo for every type of the backend', () => {

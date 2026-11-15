@@ -45,15 +45,16 @@ vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: v
 
 const ROUTINES_PATH = '/app/short-rent/automations';
 
-/** What `GET /routines/actions` says today: the wait and the To do run, the others do not exist yet. */
+/** What `GET /routines/actions` says today: the wait, the To do, the cleaning at check-out and the review request run; the others do not exist yet. */
 const CATALOG: RoutineActionCatalogItem[] = [
   { type: 'MessageToGuest', available: false, code: 'routine_action_not_available' },
   { type: 'NotifyOwner', available: false, code: 'routine_action_not_available' },
   { type: 'NotifyStaff', available: false, code: 'routine_action_not_available' },
   { type: 'NotifyTeam', available: false, code: 'routine_action_not_available' },
   { type: 'CreateActivity', available: true, code: null },
+  { type: 'CreateCleaningRequest', available: true, code: null },
   { type: 'SendAccessCode', available: false, code: 'routine_action_not_available' },
-  { type: 'RequestReview', available: false, code: 'routine_action_not_available' },
+  { type: 'RequestReview', available: true, code: null },
   { type: 'AddTag', available: false, code: 'routine_action_not_available' },
   { type: 'Wait', available: true, code: null },
 ];
@@ -224,10 +225,11 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       const select = await screen.findByTestId('action-type-select-0');
 
       // Every action is listed; the ones that cannot run yet are disabled and say it, the ones that run are not.
-      expect(within(select).getAllByRole('option')).toHaveLength(9);
+      expect(within(select).getAllByRole('option')).toHaveLength(10);
       expect(within(select).getByRole('option', { name: 'Notifica proprietario · Non ancora disponibile' })).toBeDisabled();
       expect(within(select).getByRole('option', { name: 'Invia messaggio all\'ospite · Non ancora disponibile' })).toBeDisabled();
       expect(within(select).getByRole('option', { name: 'Crea attività' })).toBeEnabled();
+      expect(within(select).getByRole('option', { name: 'Crea la pulizia' })).toBeEnabled();
       expect(within(select).getByRole('option', { name: 'Attendi' })).toBeEnabled();
       expect(screen.getByTestId('action-unavailable-hint')).toHaveTextContent('Le azioni non ancora disponibili non si possono scegliere');
       // A new line starts from an action that runs.
@@ -627,7 +629,7 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       renderPage();
 
       fireEvent.click(await screen.findByTestId('open-library-button'));
-      // The cleaning is a To do, which runs; the instructions need a message, which does not exist yet.
+      // The cleaning is made by an action that runs; the instructions need a message, which does not exist yet.
       expect(await screen.findByTestId('activate-template-0')).toBeEnabled();
       expect(screen.queryByTestId('template-unavailable-0')).not.toBeInTheDocument();
       expect(screen.getByTestId('template-unavailable-1')).toHaveTextContent('Non ancora disponibile');
@@ -650,22 +652,87 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       await waitFor(() => expect(screen.getByTestId('test-tab')).toHaveAttribute('aria-pressed', 'true'));
     });
 
-    it('RoutineLibrary_TemplateWhoseActionsRun_IsCreatedOnWithTheConfigurationTheServerTakes', async () => {
+    it('RoutineLibrary_ReadyCleaningRoutine_IsTheCleaningActionAtTheTimeOfTheCheckOutAndExplainsItself', async () => {
       vi.mocked(routinesApi.create).mockResolvedValue(CLEANING);
       renderPage();
 
       fireEvent.click(await screen.findByTestId('open-library-button'));
-      fireEvent.click(await screen.findByTestId('activate-template-0'));
+      const card = await screen.findByTestId('library-template-0');
+
+      // What it does, for whom and when, in words.
+      expect(card).toHaveTextContent("Crea la pulizia per chi pulisce l'appartamento, all'ora del check-out.");
+      expect(card).toHaveTextContent('Dopo il check-out');
+      expect(card).toHaveTextContent("All'ora dell'evento");
+      expect(screen.getByTestId('template-note-0')).toHaveTextContent('gli altri restano come ora');
+
+      // One click: the routine acts on every property that has a cleaner.
+      fireEvent.click(screen.getByTestId('activate-template-0'));
 
       await waitFor(() => expect(routinesApi.create).toHaveBeenCalledTimes(1));
-      // The To do has the words the server asks for (`text`), not a type of activity the server does not read.
+      // The action of the cleaning at check-out (no more a To do of the host), a time event with no delay (the time of the check-out of the property), and nothing to configure.
       expect(routinesApi.create).toHaveBeenCalledWith({
         name: 'Pulizia al check-out',
-        eventType: 'CheckoutOccurred',
-        actions: [{ type: 'CreateActivity', config: { text: 'Organizza la pulizia dell\'immobile dopo il check-out' } }],
+        eventType: 'AfterCheckout',
+        eventConfig: { days: 0, hours: 0 },
+        actions: [{ type: 'CreateCleaningRequest', config: {} }],
         testMode: false,
         active: true,
       });
+    });
+
+    it('RoutineLibrary_ReadyReviewRoutine_IsTheReviewRequestActionADayAfterTheCheckOut', async () => {
+      vi.mocked(routinesApi.create).mockResolvedValue(CLEANING);
+      renderPage();
+
+      fireEvent.click(await screen.findByTestId('open-library-button'));
+      expect(await screen.findByTestId('library-template-2')).toHaveTextContent('Richiesta di recensione');
+      expect(screen.getByTestId('library-template-2')).toHaveTextContent('1 giorno');
+      fireEvent.click(screen.getByTestId('activate-template-2'));
+
+      await waitFor(() => expect(routinesApi.create).toHaveBeenCalledTimes(1));
+      expect(routinesApi.create).toHaveBeenCalledWith({
+        name: 'Richiesta di recensione',
+        eventType: 'AfterCheckout',
+        eventConfig: { days: 1, hours: 0 },
+        actions: [{ type: 'RequestReview', config: {} }],
+        testMode: false,
+        active: true,
+      });
+    });
+
+    it('RoutineLibrary_ReviewRequestThatTheServerSaysCannotRunYet_IsCreatedInTestModeOnlyAndSaysWhy', async () => {
+      vi.mocked(routinesApi.getActionCatalog).mockResolvedValue(
+        CATALOG.map((item) => (item.type === 'RequestReview' ? { ...item, available: false, code: 'routine_action_not_available' } : item)),
+      );
+      renderPage();
+
+      fireEvent.click(await screen.findByTestId('open-library-button'));
+
+      expect(await screen.findByTestId('template-unavailable-2')).toHaveTextContent('Non ancora disponibile');
+      expect(screen.queryByTestId('activate-template-2')).not.toBeInTheDocument();
+      expect(screen.getByTestId('test-template-2')).toBeEnabled();
+    });
+
+    it('RoutineLibrary_SetupCleaners_OpensTheLayerOverTheLibraryWithTheProperties', async () => {
+      vi.mocked(useWorkspace).mockReturnValue({
+        contexts: [],
+        activeContext: 'short-rent',
+        isReady: true,
+        setActiveContext: vi.fn(),
+        hasPermission: () => false,
+        getDefaultRoute: () => '/app/short-rent',
+      });
+      renderPage();
+
+      fireEvent.click(await screen.findByTestId('open-library-button'));
+      fireEvent.click(await screen.findByTestId('setup-cleaners-0'));
+
+      // The layer lists the properties and does not send the host away: the library is still under it.
+      expect(await screen.findByTestId('bulk-cleaning-dialog')).toBeInTheDocument();
+      expect(await screen.findByTestId('bulk-cleaning-property-p1')).toBeInTheDocument();
+      expect(screen.getByTestId('library-template-0')).toBeInTheDocument();
+      // Only the cleaning offers it.
+      expect(screen.queryByTestId('setup-cleaners-1')).not.toBeInTheDocument();
     });
 
     it('RoutineLibrary_NoTemplateHasAConditionTheServerRefuses', async () => {
@@ -756,6 +823,56 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       // Never the raw words of the API.
       for (const row of [waitingRow, screen.getByTestId('execution-e2'), screen.getByTestId('execution-e3')]) {
         expect(row).not.toHaveTextContent(/Success|Failed|Waiting|routine_action_not_available/);
+      }
+    });
+
+    it('ExecutionLog_ActionsThatHadNothingToDoOrCouldNotRun_AreToldInWordsAndNeverAsARawCode', async () => {
+      const run = (id: string, outcome: string, action: { type: string; outcome: string; code: string }): RoutineExecution => ({
+        id,
+        orgId: 'org-1',
+        routineId: 'r1',
+        eventId: `ev-${id}`,
+        startedAt: '2026-11-09T08:00:00Z',
+        completedAt: '2026-11-09T08:00:01Z',
+        outcome,
+        resumeAt: null,
+        resultJson: JSON.stringify({ actions: [{ index: 0, ...action }], nextActionIndex: 1 }),
+      });
+      vi.mocked(routinesApi.getExecutions).mockResolvedValue([
+        run('k1', 'Success', { type: 'RequestReview', outcome: 'skipped', code: 'not_direct' }),
+        run('k2', 'Failed', { type: 'RequestReview', outcome: 'failed', code: 'review_invite_not_sent' }),
+        run('k3', 'Success', { type: 'CreateCleaningRequest', outcome: 'blocked', code: 'routine_cleaning_not_configured' }),
+        run('k4', 'Failed', { type: 'CreateCleaningRequest', outcome: 'failed', code: 'service_request_supplier_inactive' }),
+        run('k5', 'Failed', { type: 'RequestReview', outcome: 'failed', code: 'routine_review_needs_booking' }),
+        run('k6', 'Success', { type: 'RequestReview', outcome: 'skipped', code: 'already_invited' }),
+      ]);
+      renderPage();
+
+      fireEvent.click(await screen.findByTestId('show-log-r1'));
+
+      // Nothing to do for this booking: neutral, never a green «Completata», and the reason in words.
+      const skipped = await screen.findByTestId('execution-outcome-k1');
+      expect(skipped).toHaveTextContent('Nulla da fare');
+      expect(skipped).toHaveAttribute('data-tone', 'neutral');
+      expect(screen.getByTestId('execution-actions-k1')).toHaveTextContent(
+        "Richiedi recensione: Saltata: non c'era niente da fare - La prenotazione non arriva dal tuo sito di prenotazione",
+      );
+      expect(screen.getByTestId('execution-actions-k6')).toHaveTextContent("L'invito per questa prenotazione è già stato inviato");
+      // The invitation that did not leave is a failure, and says what is still possible.
+      expect(screen.getByTestId('execution-outcome-k2')).toHaveTextContent('Non riuscita');
+      expect(screen.getByTestId('execution-actions-k2')).toHaveTextContent("L'email di invito non è partita");
+      expect(screen.getByTestId('execution-actions-k2')).toHaveTextContent('a mano');
+      // A property with no cleaner: blocked, with where to set it.
+      expect(screen.getByTestId('execution-outcome-k3')).toHaveTextContent('Bloccata');
+      expect(screen.getByTestId('execution-actions-k3')).toHaveTextContent('Crea la pulizia: Bloccata - Questo immobile non ha chi pulisce');
+      // A cleaning that a supplier could not take, for a reason the page does not list: what always follows, never the code.
+      expect(screen.getByTestId('execution-actions-k4')).toHaveTextContent('La pulizia non si è potuta creare');
+      expect(screen.getByTestId('execution-actions-k4')).toHaveTextContent('Pulizia da richiedere');
+      expect(screen.getByTestId('execution-actions-k5')).toHaveTextContent('La richiesta di recensione si fa per una prenotazione');
+      for (const id of ['k1', 'k2', 'k3', 'k4', 'k5', 'k6']) {
+        expect(screen.getByTestId(`execution-${id}`)).not.toHaveTextContent(
+          /not_direct|review_invite_not_sent|routine_cleaning_not_configured|service_request_supplier_inactive|routine_review_needs_booking|already_invited|skipped/,
+        );
       }
     });
 

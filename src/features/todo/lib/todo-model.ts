@@ -65,6 +65,8 @@ const TYPE_KEYS: Record<string, TypeKeys> = {
   OwnerDocumentExpiring: { titleKey: 'activity.todo.type.OwnerDocumentExpiring.title', whyKey: 'activity.todo.type.OwnerDocumentExpiring.why' },
   // The To do that the action «Crea attività» of a routine of the host makes (E01/F04/US01/T02, NF-21): about a booking, with the words the host wrote in the routine as its reason.
   RoutineTask: { titleKey: 'activity.todo.type.RoutineTask.title', whyKey: 'activity.todo.type.RoutineTask.why' },
+  // The automatic cleaning at check-out (E24/F01/US01/T02, NF-120): the dates of a stay changed after the supplier took the cleaning, so it stays on the old day and the host decides. About the booking.
+  CleaningDateChanged: { titleKey: 'activity.todo.type.CleaningDateChanged.title', whyKey: 'activity.todo.type.CleaningDateChanged.why' },
 };
 
 const UNKNOWN_TYPE_KEYS: TypeKeys = { titleKey: 'activity.todo.type.unknown.title', whyKey: 'activity.todo.type.unknown.why' };

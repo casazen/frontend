@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { orderAlerts, upsertAlert } from '@/features/notifications/alert-model';
 import { useNotificationsRealtime } from '@/features/notifications/use-notifications-realtime';
+import { INTERNAL_ACTIVITIES_KEY } from '@/lib/query-client';
 import { PENDING_ALERTS_KEY, useDismissAlert, usePendingAlerts, useRemindAlert } from '@/queries/use-alerts';
 import type { PendingAlert } from '@/types/alert';
 
@@ -36,6 +37,9 @@ export function useAlertSignalr({ userId, getAccessToken }: Options) {
       // the channel up nothing else reads the list again). Reading it again, which the server can answer with the alert already in it,
       // drops the answer in flight.
       void queryClient.invalidateQueries({ queryKey: PENDING_ALERTS_KEY });
+      // A stay that needs the host (`BookingNeedsReview`) comes with its «Da fare»: the cleaning at check-out that could not be made («Pulizia da richiedere») or whose dates changed («Pulizia da
+      // rivedere», E24/F01/US01/T02). The list and the number of the menu are read at once, so the page open in front of the host shows the item without waiting for the next read.
+      if (alert.alertType === 'BookingNeedsReview') void queryClient.invalidateQueries({ queryKey: [INTERNAL_ACTIVITIES_KEY] });
     },
   });
   const pending = usePendingAlerts({ pollWhileDisconnected: channel !== 'connected' });

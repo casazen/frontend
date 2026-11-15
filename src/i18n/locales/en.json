@@ -744,6 +744,10 @@
           "title": "Check-out to complete",
           "why": "The stay is over: record the departure."
         },
+        "CleaningDateChanged": {
+          "title": "Cleaning to review after a change of dates",
+          "why": "The dates of the stay changed after the supplier took the cleaning: it stays on the old day. Decide whether to cancel it, ask for another or keep it."
+        },
         "CleaningDue": {
           "title": "Cleaning to arrange",
           "why": "The stay is over and no cleaning was asked for: declare the property ready or request a cleaning before the next arrival."
@@ -1675,6 +1679,20 @@
       "channelAccountHoldersInvalid": "The changes to the account holders are not valid: check the listings and the portals and try again.",
       "channelCommissionRuleInUse": "A commission rule has already been used in the statements: you can close it but not change its percentage or remove it.",
       "channelCommissionRulesInvalid": "One of the percentages of the portals is not valid. Check it and try again.",
+      "cleaningSetupBulkEmpty": "Choose at least one property: an empty list does not mean «all».",
+      "cleaningSetupBulkTooMany": "You can set at most 200 properties at a time.",
+      "cleaningSetupCleanerMismatch": "The supplier or the member of the staff does not match the kind of cleaner chosen: give only what is needed.",
+      "cleaningSetupCleanerRequired": "Choose who cleans: a supplier or a member of the staff.",
+      "cleaningSetupCurrencyMismatch": "The currency of the price must be the one of the property.",
+      "cleaningSetupCurrencyRequired": "State the currency of the price: an amount does not apply to a currency nobody chose.",
+      "cleaningSetupDurationInvalid": "The cleaning lasts from 5 to 1,440 minutes.",
+      "cleaningSetupPriceInvalid": "The agreed price starts from 1 cent and cannot exceed the highest allowed; for a supplier it is required.",
+      "cleaningSetupStaffInvalid": "The person chosen is not an active member of your organization with access to this property.",
+      "cleaningSetupStartTimeInvalid": "The start time must be in whole minutes (for example 11:00).",
+      "cleaningSetupSupplierCurrencyUnsupported": "The suppliers of the marketplace work in euro and nothing is converted: a property in another currency can only have a member of the staff clean it.",
+      "cleaningSetupSupplierInactive": "The supplier chosen is not active: it cannot receive requests.",
+      "cleaningSetupSupplierNotFound": "The supplier chosen does not exist.",
+      "cleaningSetupSupplierOutsideComune": "The supplier chosen does not work in the comune of the property.",
       "complianceBookingNotFound": "We can't find this stay.",
       "complianceExportTooLarge": "The period holds more proofs than one archive can carry: choose a shorter period.",
       "complianceProofDayInvalid": "The day of the proof is not valid: choose a day in the past.",
@@ -20768,6 +20786,133 @@
       "stripe": "Secure payment with Stripe"
     }
   },
+  "propertyCleaning": {
+    "bulk": {
+      "allSaved_one": "Done: who cleans was saved for the property you chose.",
+      "allSaved_other": "Done: who cleans was saved for all {{count}} properties.",
+      "chooseFirst": "Choose at least one property to decide who cleans, the price and the time.",
+      "close": "Close",
+      "description": "Choose the properties, then who cleans, the price and the time: it applies to all of them together. For each property you will see whether it was saved.",
+      "limit": "At most {{max}} properties at a time.",
+      "lineNotSaved": "Not saved.",
+      "lineSaved": "Saved.",
+      "listError": "We cannot load your properties.",
+      "loading": "Loading your properties…",
+      "noProperties": "You have no short-term properties yet.",
+      "open": "Set who cleans",
+      "otherCurrency": "in {{currency}}: set separately",
+      "properties": "Properties",
+      "resultList": "Result for each property",
+      "retryFailed": "Try again for the ones not saved",
+      "routineHint": "To have the cleaning made by itself, switch on the routine «Cleaning at check-out».",
+      "save_one": "Save for {{count}} property",
+      "save_other": "Save for {{count}} properties",
+      "saveError": "We could not save who cleans. Check the details and try again.",
+      "selectAll": "Select all",
+      "selected_one": "{{count}} property chosen",
+      "selected_other": "{{count}} properties chosen",
+      "selectNone": "Select none",
+      "someFailed": "Properties saved: {{saved}}. Not saved: {{failed}}. Below you find the reason for each.",
+      "title": "Who cleans, for many properties",
+      "unknownProperty": "Property"
+    },
+    "cancel": "Cancel",
+    "description": "Who cleans when the guests leave, at what price and at what time. The routine «Cleaning at check-out» makes the cleaning by itself for every stay.",
+    "edit": "Edit",
+    "fields": {
+      "active": "Automatic cleaning on",
+      "duration": "Length (minutes)",
+      "kind": "Who cleans",
+      "price": "Agreed price",
+      "priceIn": "Agreed price ({{currency}})",
+      "staff": "Member of the staff",
+      "supplier": "Supplier",
+      "time": "Start time"
+    },
+    "forbidden": "You cannot manage the cleaning of this property.",
+    "hints": {
+      "activeOff": "Off: the setting stays saved but the routine does not use it, so no cleaning starts by itself.",
+      "activeOn": "On: the routine «Cleaning at check-out» uses it for every stay.",
+      "duration": "From {{min}} to {{max}} minutes. If you leave it empty: {{default}} minutes.",
+      "noCurrency": "The currency of the property is not stated: we cannot save a price.",
+      "price": "What the cleaner asks for each cleaning, in {{currency}} (the currency of the property).",
+      "priceStaff": "Optional: the cost of each cleaning, in {{currency}} (the currency of the property).",
+      "time": "If you leave it empty, the cleaning starts at the check-out time of the property.",
+      "timeProperty": "If you leave it empty, the cleaning starts at the check-out time of the property ({{time}})."
+    },
+    "kind": {
+      "staff": {
+        "description": "A member of your team: the cleaning becomes a task of theirs, with its cost.",
+        "title": "A member of the staff"
+      },
+      "supplier": {
+        "description": "A supplier of the marketplace, preferably one of your trusted ones: it receives the request at the agreed price.",
+        "euroOnly": "The suppliers work in euro: for a property in {{currency}} a member of the staff cleans.",
+        "title": "A supplier"
+      }
+    },
+    "loadError": "We cannot read who cleans this property: we do not know how it is set.",
+    "loading": "Loading who cleans…",
+    "none": "Nobody was chosen to clean this property. Until you choose, the cleaning at check-out does not start by itself: it stays in the to do list as «Cleaning to arrange».",
+    "notFound": "We cannot find this property any more.",
+    "problem": {
+      "duration": "The length is from 5 to 1,440 minutes, in whole numbers.",
+      "priceInvalid": "Write the price as an amount (for example 45 or 45.50).",
+      "priceRange": "The price starts from 1 cent and cannot exceed the highest allowed. If there is no cost, leave the field empty.",
+      "priceRequired": "A supplier needs the agreed price.",
+      "staffRequired": "Choose the member of the staff who cleans.",
+      "supplierRequired": "Choose the supplier who cleans.",
+      "time": "Write the time as hours and minutes (for example 11:00)."
+    },
+    "retry": "Try again",
+    "routine": {
+      "link": "Go to the automations",
+      "off": "The routine «Cleaning at check-out» is not on: until you switch it on no cleaning starts by itself.",
+      "on": "The routine «Cleaning at check-out» is on: the cleaning starts by itself at check-out."
+    },
+    "save": "Save",
+    "saved": "Who cleans was saved",
+    "saveError": "We could not save who cleans. Try again.",
+    "set": "Set who cleans",
+    "staff": {
+      "choose": "Choose a person",
+      "loadError": "We cannot load the people of your team.",
+      "loading": "Loading the people…",
+      "needsTeamPermission": "To choose a member of the staff you need the permission to manage the team: ask whoever administers the account.",
+      "none": "There are no active people in the team.",
+      "stored": "Person already set"
+    },
+    "state": {
+      "off": "Off: the setting stays saved but the cleaning does not start by itself.",
+      "on": "On"
+    },
+    "summary": {
+      "cleaner": "Who cleans",
+      "duration": "Length",
+      "minutes_one": "{{count}} minute",
+      "minutes_other": "{{count}} minutes",
+      "noCurrency": "The currency is not stated: the amount is shown without a symbol.",
+      "noPrice": "No price stated",
+      "price": "Agreed price",
+      "staffNamed": "{{name}} (staff)",
+      "staffUnknown": "A member of the staff",
+      "state": "State",
+      "supplierUnknown": "A supplier",
+      "time": "Start time",
+      "timeOfProperty": "{{time}} (the check-out time of the property)",
+      "trusted": "Trusted"
+    },
+    "suppliers": {
+      "choose": "Choose a supplier",
+      "covers_one": "{{name}} (covers {{count}} property)",
+      "covers_other": "{{name}} (covers {{count}} properties)",
+      "loadError": "We cannot load the suppliers of this area.",
+      "loading": "Loading the suppliers…",
+      "none": "No active supplier for cleaning in this area: choose a member of the staff.",
+      "stored": "Supplier already set"
+    },
+    "title": "Cleaning at check-out"
+  },
   "propertyMode": {
     "calendar": {
       "blockReason": "Change to long-term rental",
@@ -23551,6 +23696,7 @@
     "actionTypes": {
       "addTag": "Add tag",
       "createActivity": "Create activity",
+      "createCleaningRequest": "Create the cleaning",
       "messageToGuest": "Send message to guest",
       "notifyOwner": "Notify owner",
       "notifyStaff": "Notify staff",
@@ -23665,18 +23811,24 @@
     "library": {
       "activate": "Activate",
       "activating": "Creating…",
-      "cleaningDescription": "When the guest checks out it adds a task to your To do list to arrange the cleaning",
-      "cleaningTaskText": "Arrange the cleaning of the property after check-out",
+      "atTheTime": "At the time of the event",
+      "cleaningDescription": "Makes the cleaning for whoever cleans the property, at the time of check-out.",
+      "cleaningNote": "Who cleans, the price and the time are chosen for each property, also for many properties together. The routine applies to every property that has a cleaner: the others stay as they are.",
       "cleaningTitle": "Cleaning at check-out",
       "createInTestMode": "Create in test mode",
+      "daysCount_one": "{{count}} day",
+      "daysCount_other": "{{count}} days",
       "description": "Start from a ready routine: you can edit it after creating it.",
       "documentReminderDescription": "Reminds your guests to send their documents 3 days before check-in. It goes to every guest, also to those who already sent them: routines do not read the state of the documents yet.",
       "documentReminderTitle": "Documents reminder before arrival",
+      "hoursCount_one": "{{count}} hour",
+      "hoursCount_other": "{{count}} hours",
       "instructionsDescription": "Send instructions 2 days before check-in",
       "instructionsTitle": "Instructions before arrival",
       "open": "Open the library",
-      "reviewDescription": "Request a review 1 day after check-out",
-      "reviewTitle": "Review request after departure",
+      "reviewDescription": "One day after check-out it asks for a review the guest who booked on your site, once for each booking. Bookings from the portals, cancelled ones and ones with no email address get no invitation, and the log says why.",
+      "reviewTitle": "Review request",
+      "setupCleaners": "Set who cleans",
       "title": "Routine library",
       "unavailableNote": "It holds actions that are not available yet: you can only create it in test mode, where it is simulated and nothing is sent."
     },
@@ -23688,6 +23840,7 @@
         "done": "Done",
         "failed": "Failed",
         "simulated": "Simulated: nothing was done",
+        "skipped": "Skipped: there was nothing to do",
         "waiting": "Waiting"
       },
       "code": {
@@ -23697,10 +23850,26 @@
         "actionsInvalid": "The actions of the routine cannot be read: it did not run.",
         "activityNeedsBooking": "The task is made for a booking and this event has none.",
         "airbnbNotConfirmed": "An Airbnb guest is not contacted before the booking is confirmed.",
+        "alreadyInvited": "The invitation of this booking was sent already (by you or by a routine): it goes out once.",
+        "alreadyReviewed": "The guest already wrote the review: no invitation sent.",
         "bookingNotActive": "The booking was cancelled or the guest did not show up: the actions after the wait did not run.",
         "campaignNeedsConsent": "A campaign goes only to a guest who consented to marketing.",
+        "cleaningFailed": "The cleaning could not be made: nothing was created and the stay stays in the to do list as «Cleaning to arrange».",
+        "cleaningNeedsBooking": "The cleaning is made for a stay and this event has none.",
+        "cleaningNotConfigured": "This property has no cleaner, or the setting is off: no cleaning was made. Set it in the sheet of the property.",
+        "cleaningSetupInvalid": "The cleaning setting of this property is not valid any more: check it in the sheet of the property. The stay stays in the to do list as «Cleaning to arrange».",
+        "cleaningStaffUnavailable": "The member of the staff chosen cannot do this cleaning (no longer active, or no longer has access to the property). The stay stays in the to do list as «Cleaning to arrange».",
+        "cleaningSupplierCurrency": "The suppliers work in euro: for a property in another currency only a member of the staff cleans. The stay stays in the to do list as «Cleaning to arrange».",
         "conditionInvalid": "The condition of the routine is not valid: it did not run.",
         "inactive": "The routine was switched off while it waited: it did not go on.",
+        "noEmail": "There is no email address to write to (none was given, or the guest was erased or asked for the erasure): no invitation sent.",
+        "noShow": "The guest did not show up (the stay is marked as a no-show): no invitation sent.",
+        "notConfirmed": "The booking was cancelled or never confirmed: no invitation sent.",
+        "notDirect": "The booking does not come from your booking site (a portal asks its own guests for the review): no invitation sent.",
+        "reviewInviteNotSent": "The invitation e-mail did not go out (the mail is not configured, or it could not be queued): you can still ask for the review by hand from the booking.",
+        "reviewNeedsBooking": "The review is requested for a booking and this event has none.",
+        "tooEarly": "The check-out day has not passed yet: the invitation can go out from the day after.",
+        "tooLate": "More than 14 days have passed since check-out: the link would have expired, no invitation sent.",
         "waitNotScheduled": "We could not schedule the wait: the routine stopped."
       },
       "description": "The latest runs of the routine, the newest first.",
@@ -23712,6 +23881,7 @@
         "pending": "To start",
         "running": "Running",
         "simulated": "Simulated",
+        "skipped": "Nothing to do",
         "success": "Completed",
         "unknown": "Unknown outcome",
         "waiting": "Waiting"
