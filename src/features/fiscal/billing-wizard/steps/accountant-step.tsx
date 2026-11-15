@@ -74,8 +74,9 @@ const OWNER_ACCOUNTING_REQUIRED_CODE = 'accountant_package_owner_accounting_requ
 /**
  * What a failed test send says, in words: a package that is too large (with how many files it would hold and how many one package allows, when the server says), the refusals the server explains
  * by code, and, for anything else, the sentence that admits the person cannot tell whether the e-mail went out (a call that ended without an answer may have): they look at the last send before they try again.
+ * `asked` is whether the test itself was asked (and not only the save that goes before it): only then can a call with no answer have gone through.
  */
-function testProblem(error: unknown, t: TFunction): string {
+function testProblem(error: unknown, asked: boolean, t: TFunction): string {
   const tooLarge = accountantPackageTooLarge(error);
   if (tooLarge) {
     return tooLarge.fileCount !== null && tooLarge.maxFiles !== null
@@ -84,6 +85,9 @@ function testProblem(error: unknown, t: TFunction): string {
   }
   // Its own words: the generic ones talk about folders, and the person who gets this has no owner folder to take out.
   if (isAxiosError(error) && error.response?.status === 422 && getProblemCode(error.response.data) === OWNER_ACCOUNTING_REQUIRED_CODE) return t('billingWizard.accountant.test.ownerAccounting');
+  // No answer at all (the ten minutes ran out, the connection dropped): the server may have made the package and queued the e-mail. «Cannot reach the server, try again» would send the person to a second
+  // test (which sends again whatever was sent), so it is the sentence that admits they cannot tell. Before the test is asked nothing has gone out, and the generic words are the true ones.
+  if (asked && isAxiosError(error) && !error.response) return t('billingWizard.accountant.test.failed');
   return getProblemMessage(error, t) ?? t('billingWizard.accountant.test.failed');
 }
 
@@ -158,7 +162,8 @@ function AccountantSettingsForm({ current, save, send, lastMonth, busy, ownerAcc
   const typedDay = useWatch({ control, name: 'accountantDay' });
   const typedContents = useWatch({ control, name: 'accountantContents' });
   const [queued, setQueued] = useState<AccountantPackageEmailQueued | null>(null);
-  const [failure, setFailure] = useState<unknown>(null);
+  // What failed, and whether it was the test itself (`asked`) or only the save that goes before it.
+  const [failure, setFailure] = useState<{ error: unknown; asked: boolean } | null>(null);
   // The test is on its way (the save that goes before it, then the send): the page's own save of «Continua» is not the test, and does not make the button say so.
   const [running, setRunning] = useState(false);
   const locale = amountLocale(i18n.language);
@@ -214,7 +219,7 @@ function AccountantSettingsForm({ current, save, send, lastMonth, busy, ownerAcc
       if (saving) for (const problem of accountantProblemsOf(error)) setError(problem.name as AccountantField, { type: 'server', message: problem.messageKey });
       // The settings are the organization's: a refusal of the role or of the reach, of the save or of the test, turns the wizard read-only, as at a save of the step.
       if (isAccountantRefused(error)) onRefused();
-      setFailure(error);
+      setFailure({ error, asked: !saving });
     } finally {
       setRunning(false);
     }
@@ -333,7 +338,7 @@ function AccountantSettingsForm({ current, save, send, lastMonth, busy, ownerAcc
         ) : null}
         {failure !== null ? (
           <Alert variant="danger" data-testid="billing-accountant-test-failure">
-            {testProblem(failure, t)}
+            {testProblem(failure.error, failure.asked, t)}
           </Alert>
         ) : null}
       </section>

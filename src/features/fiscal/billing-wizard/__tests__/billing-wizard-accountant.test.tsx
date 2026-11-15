@@ -387,7 +387,7 @@ describe('«Invia una prova» (E15/F02/US02/T01)', () => {
     expect(screen.queryByTestId('billing-accountant-test-result')).not.toBeInTheDocument();
   });
 
-  it('AccountantTest_ACallThatEndedWithNoAnswerFromTheServer_AdmitsThatItCannotTellAndSendsThePersonToTheLastSend', async () => {
+  it('AccountantTest_TheServerFailsWithAnErrorOfItsOwn_AdmitsThatItCannotTellAndSendsThePersonToTheLastSend', async () => {
     getSettings.mockResolvedValue(SAVED);
     sendTest.mockRejectedValue(refusal(500, {}));
     renderWizard();
@@ -397,6 +397,35 @@ describe('«Invia una prova» (E15/F02/US02/T01)', () => {
     const failure = await screen.findByTestId('billing-accountant-test-failure', undefined, WAIT);
     expect(failure).toHaveTextContent(text('billingWizard.accountant.test.failed'));
     expect(screen.queryByTestId('billing-accountant-test-result')).not.toBeInTheDocument();
+  });
+
+  // A call with no answer at all (the ten minutes of the test ran out, the connection dropped: no `response`) may have gone through: the server may have made the package and queued the e-mail.
+  it.each([
+    ['TheTenMinutesRanOut', AxiosError.ECONNABORTED, 'timeout of 600000ms exceeded'],
+    ['TheConnectionDropped', AxiosError.ERR_NETWORK, 'Network Error'],
+  ])('AccountantTest_ACallWithNoAnswerAtAllBecause%s_AdmitsThatItCannotTellAndNeverSaysTheServerCannotBeReached', async (_name, code, message) => {
+    getSettings.mockResolvedValue(SAVED);
+    sendTest.mockRejectedValue(new AxiosError(message, code, { headers: new AxiosHeaders() } as InternalAxiosRequestConfig));
+    renderWizard();
+    await formOpen();
+
+    await pressTest();
+    const failure = await screen.findByTestId('billing-accountant-test-failure', undefined, WAIT);
+    expect(failure).toHaveTextContent(text('billingWizard.accountant.test.failed'));
+    expect(failure).not.toHaveTextContent(text('apiErrors.network'));
+    expect(screen.queryByTestId('billing-accountant-test-result')).not.toBeInTheDocument();
+  });
+
+  it('AccountantTest_TheSaveThatGoesBeforeTheTestHasNoAnswer_SaysTheServerCannotBeReachedForNothingWasSent', async () => {
+    updateSettings.mockRejectedValue(new AxiosError('Network Error', AxiosError.ERR_NETWORK, { headers: new AxiosHeaders() } as InternalAxiosRequestConfig));
+    renderWizard();
+    await formOpen();
+
+    write(ADDRESS);
+    await pressTest();
+    const failure = await screen.findByTestId('billing-accountant-test-failure', undefined, WAIT);
+    expect(failure).toHaveTextContent(text('apiErrors.network'));
+    expect(sendTest).not.toHaveBeenCalled();
   });
 
   it('AccountantTest_ThePackageIsTooLarge_SaysHowManyFilesItWouldHoldAndHowManyOneAllows', async () => {
