@@ -303,6 +303,15 @@ describe('bookingAttributionOf', () => {
     expect(bookingAttributionOf(new URLSearchParams(''), 'https://www.google.com/search?q=casa+mare', APP_ORIGIN)).toEqual({ referrer: 'www.google.com' });
   });
 
+  it.each([['http://192.168.1.5/page?x=1'], ['http://10.0.0.7/'], ['http://mario-pc/inbox'], ['http://localhost:3000/'], ['http://[::1]/']])(
+    'bookingAttributionOf_ReferrerThatIsNotAHostOfTheInternet_IsNeverSent (%s)',
+    (referrer) => {
+      // A machine of a private network may be named after a person: the API keeps no such host (it needs a dot and no IP address), so it is not even sent.
+      expect(bookingAttributionOf(new URLSearchParams(''), referrer, APP_ORIGIN)).toBeUndefined();
+      expect(bookingAttributionOf(new URLSearchParams('utm_source=agency-site'), referrer, APP_ORIGIN)).toEqual({ source: 'agency-site' });
+    },
+  );
+
   it('bookingAttributionOf_ValuesThatAreNotTokens_AreLeftOutAndNeverSent', () => {
     const attribution = bookingAttributionOf(
       new URLSearchParams('utm_source=agency-site&utm_medium=a%20b&utm_campaign=3331234567'),

@@ -181,14 +181,26 @@ export function carryLinkAttribution(href: string, search: URLSearchParams): str
   return createPath({ ...path, search: query.toString() });
 }
 
+/** What the URL parser writes for any address of an IPv4 host (`192.168.1.5`). */
+const IPV4_HOST = /^\d{1,3}(?:\.\d{1,3}){3}$/;
+
+/**
+ * The host of a referrer the API keeps (`SignupAttributionRules.ReferrerHostOf`): the name of a site on the internet, so with a dot in it and not an IP address. A machine of a
+ * private network (`mario-pc`, `192.168.1.5`, `localhost`) may be named after a person: the API drops it, so it is not even sent.
+ */
+function isReferrerHostOnTheInternet(host: string): boolean {
+  return host.includes('.') && !IPV4_HOST.test(host);
+}
+
 /**
  * The attribution a checkout sends with its booking: the `utm_*` of the address (`carryLinkAttribution`) and the host name of the site the guest came from, from the
- * `referrer` of the page (the host only: never the page, its path or its query). `undefined` when there is none of either, and a referrer of the site itself is none.
+ * `referrer` of the page (the host only: never the page, its path or its query, and only a host the API keeps). `undefined` when there is none of either, and a referrer of the
+ * site itself is none.
  */
 export function bookingAttributionOf(search: URLSearchParams, referrer: string, appOrigin: string): DirectBookingAttributionPayload | undefined {
   const attribution: DirectBookingAttributionPayload = {};
   for (const [field, token] of readLinkAttribution(search)) attribution[field] = token;
   const host = externalReferrerHost(referrer, appOrigin);
-  if (host) attribution.referrer = host;
+  if (host && isReferrerHostOnTheInternet(host)) attribution.referrer = host;
   return Object.keys(attribution).length > 0 ? attribution : undefined;
 }
