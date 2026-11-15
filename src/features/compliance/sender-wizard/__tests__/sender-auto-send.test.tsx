@@ -328,6 +328,23 @@ describe('SenderWizardPage: the setting is saved with the summary and the wizard
     expect(screen.getByTestId('location')).toHaveTextContent(ADDRESS);
   });
 
+  it('SenderWizardPage_SettingOnItsWay_KeepsTheSwitchOffUntilTheServerAnswers', async () => {
+    workspace.permissions = ['property.read', 'property.write', ADMIN];
+    let answer: (sender: PropertySender) => void = () => undefined;
+    vi.mocked(propertySenderApi.switch).mockReturnValue(new Promise<PropertySender>((resolve) => (answer = resolve)));
+    await toTheSummary();
+
+    fireEvent.click(screen.getByRole('switch'));
+    next();
+
+    // The request is on its way: the switch cannot be moved meanwhile, so what is on screen is what was sent.
+    await waitFor(() => expect(screen.getByRole('switch')).toBeDisabled(), WAIT);
+    expect(propertySenderApi.switch).toHaveBeenCalledTimes(1);
+
+    answer({ ...server, autoSendGuestsToOctorate: true });
+    await waitFor(() => expect(wizard()).toHaveAttribute('data-step', 'credentials'), WAIT);
+  });
+
   it('SenderWizardPage_AdministratorLeavesItAsItWas_SendsNothingAboutIt', async () => {
     workspace.permissions = ['property.read', 'property.write', ADMIN];
     await toTheSummary();

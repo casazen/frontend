@@ -24,6 +24,8 @@ interface AutoSendSettingProps {
   read: PropertySender;
   /** The person may change the setting (the organization administrator): without it the setting is told and nobody is offered a switch the server would refuse. */
   canChange: boolean;
+  /** A request of the wizard is on its way (the change of the sender with this setting): the switch stays off, so what is on screen is what was sent. */
+  busy: boolean;
 }
 
 /**
@@ -32,7 +34,7 @@ interface AutoSendSettingProps {
  * state on screen means; the change is sent with the button of the step, like the sender, and the wizard stays where it is. Only the organization administrator can change it. Until
  * the person touches the switch it shows the setting as the server holds it now and nothing about it is sent.
  */
-function AutoSendSetting({ read, canChange }: AutoSendSettingProps) {
+function AutoSendSetting({ read, canChange, busy }: AutoSendSettingProps) {
   const { t } = useTranslation();
   const { control, setValue } = useFormContext<SenderWizardValues>();
   const chosen = useWatch({ control, name: 'autoSendGuests' });
@@ -46,6 +48,7 @@ function AutoSendSetting({ read, canChange }: AutoSendSettingProps) {
           <Switch
             id="sender-auto-send-switch"
             checked={on}
+            disabled={busy}
             onCheckedChange={(checked) => setValue('autoSendGuests', checked, { shouldDirty: true, shouldTouch: true })}
             aria-describedby="sender-auto-send-consequence"
             data-testid="sender-auto-send-switch"
@@ -69,6 +72,8 @@ interface SenderSummaryStepProps {
   read: PropertySender;
   /** The person is the administrator of the organization, who alone changes its setting of the automatic send of the guests (`org.billing.admin`). */
   canChangeAutoSend?: boolean;
+  /** Any request of the wizard is on its way: the switch of the setting is off meanwhile, like the buttons of the step. */
+  busy?: boolean;
 }
 
 /**
@@ -77,7 +82,7 @@ interface SenderSummaryStepProps {
  * With the channel manager as the sender it also holds the setting of the organization «Invia gli ospiti da solo…» (`AutoSendSetting`). Nothing is sent to the server until the
  * button of this step.
  */
-export function SenderSummaryStep({ read, canChangeAutoSend = false }: SenderSummaryStepProps) {
+export function SenderSummaryStep({ read, canChangeAutoSend = false, busy = false }: SenderSummaryStepProps) {
   const { t } = useTranslation();
   const { control, setValue } = useFormContext<SenderWizardValues>();
   const values = useWatch({ control }) as SenderWizardValues;
@@ -110,7 +115,7 @@ export function SenderSummaryStep({ read, canChangeAutoSend = false }: SenderSum
     <div className="flex flex-col gap-6" data-testid="sender-summary-step">
       <WizardSummary items={items} />
 
-      {values.sender === 'ChannelManager' ? <AutoSendSetting read={read} canChange={canChangeAutoSend} /> : null}
+      {values.sender === 'ChannelManager' ? <AutoSendSetting read={read} canChange={canChangeAutoSend} busy={busy} /> : null}
 
       {kind !== 'same' ? (
         <section className="min-w-0 space-y-3" data-testid="sender-switch-confirmation" aria-labelledby="sender-switch-title">

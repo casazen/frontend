@@ -267,7 +267,7 @@ function SenderWizard({ propertyId, read }: SenderWizardProps) {
         nextLabel: t('compliance.sender.steps.summary.next'),
         nextDisabled: busy,
         beforeNext: applySwitch,
-        render: () => <SenderSummaryStep read={read} canChangeAutoSend={canChangeAutoSend} />,
+        render: () => <SenderSummaryStep read={read} canChangeAutoSend={canChangeAutoSend} busy={busy} />,
       },
       [SENDER_STEP.credentials]: {
         id: SENDER_STEP.credentials,
