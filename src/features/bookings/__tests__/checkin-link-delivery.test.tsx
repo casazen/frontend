@@ -2,6 +2,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { bookingsApi } from '@/api/bookings.api';
 import { checkinLinkApi } from '@/api/checkin-link.api';
@@ -114,6 +115,25 @@ describe('CheckInLinkPanel: where the check-in link of a portal booking stands (
     // Copying makes no new link: the one the guest may already hold keeps working.
     expect(bookingsApi.createCheckInLink).not.toHaveBeenCalled();
     expect(bookingsApi.resendCheckInLink).not.toHaveBeenCalled();
+  });
+
+  // The link of the delivery is never in the page, so «seleziona il link e copialo a mano» would lead nowhere: a copy that fails says to use «Genera link da copiare», which shows a new link.
+  it('panel_CopyOfTheLinkOfTheDeliveryThatFails_SendsToGenerateALinkToCopyAndNeverPrintsTheLink', async () => {
+    vi.mocked(bookingsApi.getCheckInSession).mockResolvedValue(NO_RECIPIENT);
+    vi.mocked(checkinLinkApi.getDelivery).mockResolvedValue(delivery());
+    vi.mocked(copyTextToClipboard).mockRejectedValueOnce(new Error('denied'));
+    const { container } = renderPanel();
+
+    const copy = await screen.findByTestId('checkin-delivery-copy');
+    await waitFor(() => expect(copy).toBeEnabled());
+    fireEvent.click(copy);
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledTimes(1));
+    const sentence = String(vi.mocked(toast.error).mock.calls[0]?.[0]);
+    expect(sentence).toContain('Genera link da copiare');
+    expect(sentence).not.toMatch(/seleziona/i);
+    expect(toast.success).not.toHaveBeenCalled();
+    expect(everythingShown(container)).not.toContain('secret-token-123');
   });
 
   it('panel_ServerGivesNoLink_OffersNothingToCopyEvenToWhoMayCopy', async () => {
@@ -338,7 +358,7 @@ describe('CheckInLinkPanel: where the check-in link of a portal booking stands (
 
   it('panel_EveryTextOfTheDelivery_ExistsInBothLanguagesWithoutTheNameOfTheChannelManager', async () => {
     const keys = [
-      'sent', 'sentEmail', 'sentOn', 'sentPortalChat', 'sending', 'sendingHint', 'failed', 'carryIt', 'loadError',
+      'sent', 'sentEmail', 'sentOn', 'sentPortalChat', 'sending', 'sendingHint', 'failed', 'carryIt', 'copyFailed', 'loadError',
       'waitingChatPermission', 'waitingChatPermissionHint', 'waitingThread', 'waitingThreadHint', 'waitingContact', 'waitingContactHint', 'waitingStaticIps', 'waitingStaticIpsHint',
       'reason.chatNotLicensed', 'reason.manualVerify', 'reason.mappingNotConfirmed', 'reason.messageRefused', 'reason.noConversation', 'reason.notConnected',
       'reason.rateLimited', 'reason.threadClosed', 'reason.unavailable', 'reason.unknown',

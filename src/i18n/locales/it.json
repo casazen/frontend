@@ -5572,6 +5572,7 @@
       "copyFailed": "Copia non riuscita: seleziona il link e copialo a mano.",
       "delivery": {
         "carryIt": "Copia il link e mandalo tu all'ospite (WhatsApp, SMS…).",
+        "copyFailed": "Copia non riuscita. Usa «Genera link da copiare»: avrai un link nuovo da copiare a mano (quello di prima smette di funzionare).",
         "failed": "Il link non è arrivato all'ospite",
         "loadError": "Non riesco a leggere come sta andando l'invio del link.",
         "reason": {

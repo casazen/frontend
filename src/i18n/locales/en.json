@@ -5572,6 +5572,7 @@
       "copyFailed": "Copy failed: select the link and copy it by hand.",
       "delivery": {
         "carryIt": "Copy the link and send it to the guest yourself (WhatsApp, SMS…).",
+        "copyFailed": "Copy failed. Use “Generate link to copy”: you get a new link to copy by hand (the earlier one stops working).",
         "failed": "The link did not reach the guest",
         "loadError": "I cannot read how the sending of the link is going.",
         "reason": {

@@ -195,7 +195,8 @@ export function CheckInLinkPanel({ bookingId, canWrite }: CheckInLinkPanelProps)
       toast.success(t('checkin.linkCopied'));
       setTimeout(() => setCopied(null), 2000);
     } catch {
-      toast.error(t('checkin.link.copyFailed'));
+      // The link of the delivery is never in the page (it is only copied), so «seleziona il link» would lead nowhere: the way on is a new link, which «Genera link da copiare» shows.
+      toast.error(t(which === 'delivery' ? 'checkin.link.delivery.copyFailed' : 'checkin.link.copyFailed'));
     }
   };
 
