@@ -5583,10 +5583,13 @@
           "noConversation": "The portal has not opened the conversation of this booking yet.",
           "notConnected": "The connection with your channel manager is not active.",
           "rateLimited": "Your channel manager received too many requests: we tried several times without success.",
+          "rateLimitedRetrying": "Your channel manager received too many requests: we will try again shortly, by ourselves.",
           "threadClosed": "The conversation is closed: no more messages can be written.",
           "unavailable": "Your channel manager did not answer after several attempts.",
+          "unavailableRetrying": "Your channel manager did not answer: we will try again shortly, by ourselves.",
           "unknown": "The link was not sent automatically."
         },
+        "retrying": "The link has not reached the guest yet",
         "sending": "Sending in the portal chat",
         "sendingHint": "The message is with the portal and has not left yet. You do not have to do anything: the state updates by itself.",
         "sent": "Link sent to the guest",

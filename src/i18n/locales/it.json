@@ -5583,10 +5583,13 @@
           "noConversation": "Il portale non ha ancora aperto la conversazione di questa prenotazione.",
           "notConnected": "Il collegamento con il tuo channel manager non è attivo.",
           "rateLimited": "Il tuo channel manager ha ricevuto troppe richieste: ci abbiamo provato più volte senza riuscire.",
+          "rateLimitedRetrying": "Il tuo channel manager ha ricevuto troppe richieste: riproviamo tra poco in automatico.",
           "threadClosed": "La conversazione è chiusa: non si possono più scrivere messaggi.",
           "unavailable": "Il tuo channel manager non ha risposto dopo più tentativi.",
+          "unavailableRetrying": "Il tuo channel manager non ha risposto: riproviamo tra poco in automatico.",
           "unknown": "Il link non è stato inviato in automatico."
         },
+        "retrying": "Il link non è ancora arrivato all'ospite",
         "sending": "Invio in corso nella chat del portale",
         "sendingHint": "Il messaggio è con il portale e non è ancora partito. Non devi fare nulla: lo stato si aggiorna da solo.",
         "sent": "Link inviato all'ospite",

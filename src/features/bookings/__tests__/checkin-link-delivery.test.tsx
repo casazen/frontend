@@ -209,6 +209,38 @@ describe('CheckInLinkPanel: where the check-in link of a portal booking stands (
     expect(everythingShown(container)).not.toMatch(/octorate/i);
   });
 
+  // A failure worth a retry (a limit, an outage) that has attempts left is not final: the hourly job of the server tries again by itself (`IsFinalFailure`). It is told as «non ancora arrivato,
+  // riproviamo tra poco», with the way to carry the link meanwhile, and never as tried several times.
+  it.each([
+    ['octorate_unavailable', 1, 'Il tuo channel manager non ha risposto: riproviamo tra poco in automatico.'],
+    ['octorate_rate_limited', 2, 'Il tuo channel manager ha ricevuto troppe richieste: riproviamo tra poco in automatico.'],
+  ] as const)('panel_FailedWithTheCode_%s_AtAttempt_%s_SaysItIsTriedAgainShortlyAndStillOffersTheLink', async (lastErrorCode, attempts, hint) => {
+    vi.mocked(bookingsApi.getCheckInSession).mockResolvedValue(NO_RECIPIENT);
+    vi.mocked(checkinLinkApi.getDelivery).mockResolvedValue(delivery({ state: 'Failed', lastErrorCode, attempts }));
+    renderPanel();
+
+    expect(await screen.findByTestId('checkin-delivery-state')).toHaveTextContent("Il link non è ancora arrivato all'ospite");
+    expect(screen.getByTestId('checkin-delivery-hint')).toHaveTextContent(hint);
+    expect(screen.getByTestId('checkin-delivery-hint').textContent).not.toMatch(/più (tentativi|volte)/);
+    expect(screen.getByTestId('checkin-delivery')).toHaveAttribute('role', 'status');
+    expect(screen.getByTestId('checkin-delivery-copy')).toBeInTheDocument();
+  });
+
+  // The final failure (the attempts are used, or the code is not worth a retry) keeps the sentences that say what happened.
+  it.each([
+    ['octorate_unavailable', 3, 'Il tuo channel manager non ha risposto dopo più tentativi.'],
+    ['octorate_rate_limited', 3, 'ci abbiamo provato più volte senza riuscire.'],
+    ['octorate_message_error', 1, 'La chat del portale non ha accettato il messaggio.'],
+  ] as const)('panel_FailedWithTheCode_%s_AtAttempt_%s_IsFinalAndKeepsItsSentence', async (lastErrorCode, attempts, hint) => {
+    vi.mocked(bookingsApi.getCheckInSession).mockResolvedValue(NO_RECIPIENT);
+    vi.mocked(checkinLinkApi.getDelivery).mockResolvedValue(delivery({ state: 'Failed', lastErrorCode, attempts }));
+    renderPanel();
+
+    expect(await screen.findByTestId('checkin-delivery-state')).toHaveTextContent("Il link non è arrivato all'ospite");
+    expect(screen.getByTestId('checkin-delivery-hint')).toHaveTextContent(hint);
+    expect(screen.getByTestId('checkin-delivery')).toHaveAttribute('role', 'alert');
+  });
+
   it('panel_FailedForACodeNobodyKnowsYet_SaysItWithTheGenericSentenceNeverTheCode', async () => {
     vi.mocked(bookingsApi.getCheckInSession).mockResolvedValue(NO_RECIPIENT);
     vi.mocked(checkinLinkApi.getDelivery).mockResolvedValue(delivery({ state: 'Failed', lastErrorCode: 'a_code_of_a_later_server' }));
@@ -361,7 +393,7 @@ describe('CheckInLinkPanel: where the check-in link of a portal booking stands (
       'sent', 'sentEmail', 'sentOn', 'sentPortalChat', 'sending', 'sendingHint', 'failed', 'carryIt', 'copyFailed', 'loadError',
       'waitingChatPermission', 'waitingChatPermissionHint', 'waitingThread', 'waitingThreadHint', 'waitingContact', 'waitingContactHint', 'waitingStaticIps', 'waitingStaticIpsHint',
       'reason.chatNotLicensed', 'reason.manualVerify', 'reason.mappingNotConfirmed', 'reason.messageRefused', 'reason.noConversation', 'reason.notConnected',
-      'reason.rateLimited', 'reason.threadClosed', 'reason.unavailable', 'reason.unknown',
+      'reason.rateLimited', 'reason.threadClosed', 'reason.unavailable', 'reason.unknown', 'retrying', 'reason.rateLimitedRetrying', 'reason.unavailableRetrying',
     ].map((key) => `checkin.link.delivery.${key}`);
     for (const language of ['it', 'en']) {
       const t = i18n.getFixedT(language);
