@@ -5,7 +5,7 @@ import { Alert, type AlertVariant } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { OwnerBulkOwnerResult, OwnerBulkRun } from '@/types';
-import { codeWords, figuresOf, fixTargetOf, headlineOf, rowKindOf, tallyOf, verdictOf, type BulkVerdict, type RowKind } from '../bulk-close-model';
+import { codeWords, figuresOf, fixTargetOf, headlineOf, rowKindOf, tallyOf, unansweredOf, verdictOf, type BulkVerdict, type RowKind } from '../bulk-close-model';
 import type { Period } from '../owner-accounting-model';
 import { useOwnerFormat } from '../use-owner-format';
 import { Disclosure } from './disclosure';
@@ -46,6 +46,7 @@ export function BulkCloseResult({ run, period, nameOf }: BulkCloseResultProps) {
   if (verdict === 'running') return null;
 
   const tally = tallyOf(run);
+  const unanswered = unansweredOf(run);
   const rows = [...run.results].sort((a, b) => nameOf(a.ownerId).localeCompare(nameOf(b.ownerId)));
   const ofKind = (...kinds: RowKind[]) => rows.filter((row) => kinds.includes(rowKindOf(row)));
   const failed = ofKind('failed');
@@ -68,6 +69,12 @@ export function BulkCloseResult({ run, period, nameOf }: BulkCloseResultProps) {
         </p>
         {verdict === 'runFailed' && run.errorCode ? <p className="mt-1">{codeWords(run.errorCode, t, exists)}</p> : null}
       </Alert>
+
+      {unanswered > 0 && verdict !== 'incomplete' ? (
+        <Alert variant="warning" data-testid="bulk-unanswered">
+          {t('ownerAccounting.bulk.result.unanswered', { count: unanswered, total: tally.total })}
+        </Alert>
+      ) : null}
 
       {counts.some(([, count]) => count > 0) ? (
         <p className="flex flex-wrap items-center gap-2 text-sm" data-testid="bulk-tally">

@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import type { OwnerBulkOwnerResult, OwnerBulkRun, OwnerCloseReadiness } from '@/types';
 import { BulkCloseDialog } from '../components/bulk-close-dialog';
-import { isRunOver, suggestedBulkAction, verdictOf } from '../bulk-close-model';
+import { isRunOver, suggestedBulkAction, unansweredOf, verdictOf } from '../bulk-close-model';
 import { MonthEndClosePage } from '../month-end-close-page';
 import { summarize } from '../owner-accounting-model';
 import { MONTH, OTHER_OWNER_ID, OWNER_ID, YEAR, ownerReadiness, readiness, version } from './owner-accounting-fixtures';
@@ -132,6 +132,16 @@ describe('what a bulk run comes to (E13/F02/US03/T01)', () => {
     expect(verdictOf(run({ jobId: 'job', status: 'Queued', total: 3, results: [] }))).toBe('running');
   });
 
+  it('UnansweredOf_TheOwnersAskedForThatHaveNoRow_WhateverTheVerdictSays', () => {
+    expect(unansweredOf(run({ total: 5, results: rows(3) }))).toBe(2);
+    // A failure does not hide them: the verdict is «someNotDone» and two owners still have no answer.
+    const failedWithGaps = run({ total: 5, results: [...rows(2), row('x', { ok: false, code: 'fx_missing' })] });
+    expect(verdictOf(failedWithGaps)).toBe('someNotDone');
+    expect(unansweredOf(failedWithGaps)).toBe(2);
+    expect(unansweredOf(run({ total: 3, results: rows(3) }))).toBe(0);
+    expect(unansweredOf(run({ total: 0, results: [] }))).toBe(0);
+  });
+
   it('SuggestedStep_FollowsTheMonth_PostThenGenerateApprovePublishClose', () => {
     const suggest = (month: OwnerCloseReadiness, monthOver = true) => suggestedBulkAction(month, summarize(month), monthOver);
     const unposted = { code: 'unposted_source', ownerId: null, propertyId: null, sourceId: null, blocking: false };
@@ -186,6 +196,17 @@ describe('«Esegui per tutti»: the result of the run, owner by owner (E13/F02/U
     expect(screen.getByTestId('bulk-tally-unchanged')).toHaveTextContent(text('ownerAccounting.bulk.result.tally.unchanged', { count: 1 }));
   });
 
+  it('BulkResult_AFailedOwnerWhileOthersHaveNoRow_SaysSoToo_NeverOnlyHowManyFailed', async () => {
+    api.runBulkStep.mockResolvedValue(run({ total: 5, results: [row(OWNER_ID), row(OTHER_OWNER_ID), row(THIRD_OWNER_ID, { ok: false, code: 'fx_missing' })] }));
+    renderDialog();
+    await start();
+
+    // «1 out of 5 did not go through» is not all that is known: two owners have no answer at all, and the screen says it.
+    expect(await screen.findByTestId('bulk-result')).toHaveAttribute('data-verdict', 'someNotDone');
+    expect(screen.getByTestId('bulk-headline')).toHaveTextContent(text('ownerAccounting.bulk.result.headline.someNotDone', { count: 1, total: 5, step: stepLabel('Approve') }));
+    expect(screen.getByTestId('bulk-unanswered')).toHaveTextContent(text('ownerAccounting.bulk.result.unanswered', { count: 2, total: 5 }));
+  });
+
   it('BulkResult_EveryOwnerDone_SaysDoneForAllAndListsNobody', async () => {
     api.runBulkStep.mockResolvedValue(run({ total: 3, results: [row(OWNER_ID), row(OTHER_OWNER_ID), row(THIRD_OWNER_ID, { unchanged: true })] }));
     renderDialog();
@@ -196,6 +217,7 @@ describe('«Esegui per tutti»: the result of the run, owner by owner (E13/F02/U
     expect(screen.getByTestId('bulk-headline')).toHaveTextContent(text('ownerAccounting.bulk.result.headline.allDone', { count: 3, step: stepLabel('Approve') }));
     expect(screen.queryByTestId('bulk-failed')).toBeNull();
     expect(screen.queryByTestId('bulk-flagged')).toBeNull();
+    expect(screen.queryByTestId('bulk-unanswered')).toBeNull();
   });
 
   it('BulkResult_AStatementMadeWithAnomalies_IsListedWithTheirReasons_AndTheRunIsNotAllDone', async () => {
@@ -231,6 +253,8 @@ describe('«Esegui per tutti»: the result of the run, owner by owner (E13/F02/U
     expect(result).toHaveAttribute('data-verdict', 'incomplete');
     expect(screen.getByTestId('bulk-headline')).toHaveTextContent(text('ownerAccounting.bulk.result.headline.incomplete', { count: 2, total: 3, step: stepLabel('Approve') }));
     expect(screen.queryByText(text('ownerAccounting.bulk.result.headline.allDone', { count: 3, step: stepLabel('Approve') }))).toBeNull();
+    // The headline already says it: no second line for the same owners.
+    expect(screen.queryByTestId('bulk-unanswered')).toBeNull();
   });
 
   it('BulkResult_ARunThatFailedItself_SaysSoWithItsReason_AndKeepsWhatItDid', async () => {

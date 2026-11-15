@@ -16564,6 +16564,8 @@
           "flagged": "Con anomalie: {{count}}",
           "unchanged": "Già a posto: {{count}}"
         },
+        "unanswered_one": "Per {{count}} proprietario su {{total}} non abbiamo la risposta: controlla l'elenco del mese.",
+        "unanswered_other": "Per {{count}} proprietari su {{total}} non abbiamo la risposta: controlla l'elenco del mese.",
         "unknownCode": "Non è andata a buon fine (codice {{code}})."
       },
       "runDescription": "{{step}} per tutti i proprietari: il risultato è proprietario per proprietario.",

@@ -16564,6 +16564,8 @@
           "flagged": "With anomalies: {{count}}",
           "unchanged": "Already in order: {{count}}"
         },
+        "unanswered_one": "We have no answer for {{count}} owner out of {{total}}: check the list of the month.",
+        "unanswered_other": "We have no answer for {{count}} owners out of {{total}}: check the list of the month.",
         "unknownCode": "It did not go through (code {{code}})."
       },
       "runDescription": "{{step}} for all the owners: the result is given owner by owner.",

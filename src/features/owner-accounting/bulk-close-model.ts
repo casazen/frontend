@@ -94,6 +94,14 @@ export function verdictOf(run: OwnerBulkRun): BulkVerdict {
 }
 
 /**
+ * The owners a run was asked for and has no row for. Whatever the verdict, they are told: «1 owner out of 5 did not go through» (`someNotDone`) must never be read as «the other 4 did» while
+ * two of them have no answer, and a run that failed itself says nothing about the owners it did not reach.
+ */
+export function unansweredOf(run: Pick<OwnerBulkRun, 'total' | 'results'>): number {
+  return Math.max(0, run.total - run.results.length);
+}
+
+/**
  * The line on top of the result of a run, in words: what it comes to from its rows ({@link verdictOf}). They are also the words of the toast that tells how a run went when the dialog
  * was left while it went on, so the screen and the toast never say two different things about the same run.
  */
