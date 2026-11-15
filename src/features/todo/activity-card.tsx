@@ -7,7 +7,7 @@ import type { ActivityUrgency, TodoActivity } from '@/api/internal-activities.ap
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { getManifestEntry, type PermissionPredicate } from '@/config/route-manifest';
+import { getManifestEntry, hasEntryPermission, type PermissionPredicate } from '@/config/route-manifest';
 import type { BookingTab } from '@/features/bookings/lib/booking-tabs';
 import { CONNECTION_HEALTH_SECTION } from '@/features/compliance/lib/connection-health-model';
 import { messageThreadPath } from '@/lib/message-hub-routes';
@@ -243,7 +243,9 @@ function buildRoute(route: TodoRoute, activity: TodoRouteSubject, hasPermission?
   if (route.onlyFor && !route.onlyFor.includes(activity.entityType)) return null;
   const entry = getManifestEntry(route.path);
   if (!entry) return null;
-  if (hasPermission && !entry.requiredPermissions.every((permission) => hasPermission(entry.context, permission))) return null;
+  // The same test the menu and the route use: the permissions of the page and, for the page of the organization administrator (`orgBillingAdmin`, like the withholding), being one. A person who is not is sent
+  // to the next page of the item (the booking), never to a page that tells them to ask an administrator.
+  if (hasPermission && !hasEntryPermission(entry, hasPermission)) return null;
 
   let path = entry.path;
   if (route.target === 'thread') {
