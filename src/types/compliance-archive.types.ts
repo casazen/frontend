@@ -4,6 +4,7 @@
  * those of the compliance drawer (`compliance-handoff.types.ts`).
  */
 
+import type { AlloggiatiChannelManagerDto } from '@/types/alloggiati.types';
 import type { ComplianceHandoffTopic } from '@/types/compliance-handoff.types';
 
 /** What a proof proves (`ManualProofKind`): the receipt of an Alloggiati communication, the proof of an ISTAT one, a tourist tax declaration or payment. */
@@ -71,12 +72,16 @@ export interface ComplianceSendLogLine {
   sentBy: string | null;
 }
 
-/** What the archive holds about one stay (`GET /api/bookings/{bookingId}/compliance`). */
+/**
+ * What the archive holds about one stay (`GET /api/bookings/{bookingId}/compliance`): the proofs of its arrival day and the log of what was sent for it, newest first, and the
+ * Alloggiati block of the per-stay status (E20/F01/US01/T02: the same one `GET /api/alloggiati/{bookingId}/status` carries as `channelManager`).
+ */
 export interface ComplianceBookingArchive {
   bookingId: string;
   propertyId: string;
   proofs: ComplianceArchiveEntry[];
   sendLog: ComplianceSendLogLine[];
+  alloggiati?: AlloggiatiChannelManagerDto | null;
 }
 
 /**

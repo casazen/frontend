@@ -73,11 +73,21 @@ const STALE_ON_CHECK_IN: readonly string[] = [
   INVOICE_DATA_KEY,
 ];
 
+/**
+ * What an event of a stay makes stale in its own section of the booking page (E20/F01/US02): the proofs and the send log of the stay, with the state of its guests on the
+ * channel manager that the same read carries (`useBookingCompliance`). Only the reads of a stay: the list and the files of the archive are not touched.
+ */
+function refreshStayCompliance(queryClient: QueryClient): void {
+  void queryClient.invalidateQueries({ queryKey: [COMPLIANCE_ARCHIVE_KEY, 'booking'] });
+}
+
 function refreshCheckInData(queryClient: QueryClient): void {
   STALE_ON_CHECK_IN.forEach((root) => void queryClient.invalidateQueries({ queryKey: [root] }));
   // The coverage report of the archive of the proofs (E03/F03/US02) says what the cockpit says, obligation by obligation: the guests of the stay changed,
   // so an open «Riepilogo» reads it again too. The files of the archive are not here: a check-in adds none.
   void queryClient.invalidateQueries({ queryKey: [COMPLIANCE_ARCHIVE_KEY, 'report'] });
+  // The guests of the stay go to the channel manager after their check-in: the section of the stay shows where they stand without a reload.
+  refreshStayCompliance(queryClient);
 }
 
 /**
@@ -115,12 +125,15 @@ const COMPLIANCE_ALERT_TYPES: ReadonlySet<string> = new Set([
 
 /**
  * What an alert that changes a light makes stale: the cockpit, the coverage report of the archive of the proofs (it says the same things by obligation:
- * an open page shows the new row without a reload) and, for a police send that is not active, the connection health of the properties. The list of the
+ * an open page shows the new row without a reload), the Alloggiati status of the stays (a write to the channel manager that failed, a receipt that is missing) with
+ * the section of the stay that shows it (E20/F01/US02) and, for a police send that is not active, the connection health of the properties. The list of the
  * files of the archive is not here: no alert adds or removes a file.
  */
 function refreshComplianceLights(queryClient: QueryClient, type: string): void {
   void queryClient.invalidateQueries({ queryKey: [COMPLIANCE_KEY] });
   void queryClient.invalidateQueries({ queryKey: [COMPLIANCE_ARCHIVE_KEY, 'report'] });
+  void queryClient.invalidateQueries({ queryKey: [ALLOGGIATI_KEY, 'status'] });
+  refreshStayCompliance(queryClient);
   if (type === CONNECTION_INACTIVE) void queryClient.invalidateQueries({ queryKey: [COMPLIANCE_HEALTH_KEY] });
 }
 
