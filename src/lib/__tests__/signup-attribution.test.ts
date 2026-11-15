@@ -13,6 +13,7 @@ import {
   PENDING_ATTRIBUTION_TTL_MS,
   buildSignupCtaHref,
   captureSignupAttribution,
+  keepDeferredLandingTouch,
   markSignupAttributionReady,
   readPendingSignupAttribution,
   readUtm,
@@ -22,6 +23,8 @@ import {
 
 const ORIGIN = 'https://public-site.example.test';
 const NOW = 1_790_000_000_000;
+/** The id of a document a guest got by e-mail: the address of its page names it (E12/F02/US02). */
+const DOCUMENT_ID = '3f2b8c0e-5d2a-4f7e-9a41-1c6d8e0b7a52';
 
 function httpError(status: number): AxiosError {
   return new AxiosError('failed', 'ERR_BAD_RESPONSE', undefined, undefined, { status, data: {} } as AxiosResponse);
@@ -85,6 +88,30 @@ describe('signup attribution (SE-03)', () => {
 
     expect(window.sessionStorage.getItem(LANDING_TOUCH_STORAGE_KEY)).toBeNull();
     // The next public page is the first of the visit, as if those pages had not been there.
+    recordLandingTouch({ pathname: '/p/affitti-brevi', search: '', origin: ORIGIN }, '');
+    expect(JSON.parse(window.sessionStorage.getItem(LANDING_TOUCH_STORAGE_KEY) ?? 'null')).toMatchObject({ landingPath: '/p/affitti-brevi' });
+  });
+
+  it('recordLandingTouch_DocumentPageOfAGuest_RecordsNothingNotEvenInMemoryAndNoAttributionNamesTheDocument', () => {
+    // The address of the document a guest got by e-mail names the document: that visit is no statistic about a visitor, even with statistics allowed.
+    const documentPage = { pathname: `/documents/view/${DOCUMENT_ID}`, search: '?token=the-secret-of-the-link&utm_source=newsletter', origin: ORIGIN };
+    recordLandingTouch(documentPage, 'https://mail.example.test/inbox');
+    expect(window.sessionStorage.getItem(LANDING_TOUCH_STORAGE_KEY)).toBeNull();
+
+    // Not even held in memory while the guest has not allowed statistics: allowing them later keeps nothing of this page.
+    window.localStorage.removeItem(CONSENT_STORAGE_KEY);
+    recordLandingTouch(documentPage, 'https://mail.example.test/inbox');
+    window.localStorage.setItem(CONSENT_STORAGE_KEY, 'accepted');
+    keepDeferredLandingTouch();
+    expect(window.sessionStorage.getItem(LANDING_TOUCH_STORAGE_KEY)).toBeNull();
+
+    // A signup that comes from that page never carries its address: not in the browser, and so not to the backend.
+    const attribution = captureSignupAttribution({ pathname: '/signup', search: '', origin: ORIGIN }, `${ORIGIN}${documentPage.pathname}`, NOW);
+    expect(attribution).toEqual({ landingPath: '/signup' });
+    expect(readPendingSignupAttribution(NOW)).toEqual({ landingPath: '/signup' });
+    expect(window.localStorage.getItem(PENDING_ATTRIBUTION_STORAGE_KEY) ?? '').not.toContain(DOCUMENT_ID);
+
+    // The next public page is the first of the visit, as if that page had not been there.
     recordLandingTouch({ pathname: '/p/affitti-brevi', search: '', origin: ORIGIN }, '');
     expect(JSON.parse(window.sessionStorage.getItem(LANDING_TOUCH_STORAGE_KEY) ?? 'null')).toMatchObject({ landingPath: '/p/affitti-brevi' });
   });

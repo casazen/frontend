@@ -2,6 +2,7 @@ import { isAxiosError } from 'axios';
 import { UsersApi } from '@/api/users.api';
 import { AuthTokenUnavailableError, isTransientRequestError } from '@/lib/api-errors';
 import { hasConsent } from '@/lib/cookie-consent';
+import { FISCAL_DOCUMENT_VIEW_PATH_PREFIX } from '@/lib/fiscal-document-link';
 import { HOST_INVITE_PATH_PREFIX } from '@/lib/host-invite';
 import { isMarketingLinkPath } from '@/lib/marketing-link-paths';
 import type { SignupAttribution } from '@/types';
@@ -95,6 +96,8 @@ export function validComune(value: string | null | undefined): string | undefine
 export function validLandingPath(pathname: string | null | undefined): string | undefined {
   // The address of an invite link carries its secret token: never part of an attribution.
   if (pathname?.startsWith(HOST_INVITE_PATH_PREFIX)) return undefined;
+  // The address of the document a guest got by e-mail names the document (E12/F02/US02): never part of an attribution either.
+  if (pathname?.startsWith(FISCAL_DOCUMENT_VIEW_PATH_PREFIX)) return undefined;
   return valid(pathname, LANDING_PATH_PATTERN, MAX_LANDING_PATH_LENGTH);
 }
 
@@ -165,6 +168,8 @@ let deferredTouch: LandingTouch | null = null;
 export function recordLandingTouch(location: PageLocation = window.location, referrer = document.referrer): void {
   // The visit of a person who stops or confirms the marketing e-mails is no statistic about a visitor (NF-95): not even held in memory.
   if (isMarketingLinkPath(location.pathname)) return;
+  // So is the visit of a guest who opens the document of the stay from the e-mail (E12/F02/US02): its address names the document. Not even held in memory.
+  if (location.pathname.startsWith(FISCAL_DOCUMENT_VIEW_PATH_PREFIX)) return;
   if (readJson<LandingTouch>(session, LANDING_TOUCH_STORAGE_KEY)) return;
   const touch: LandingTouch = {
     landingPath: validLandingPath(location.pathname),

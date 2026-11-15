@@ -1,3 +1,4 @@
+import { FISCAL_DOCUMENT_VIEW_PATH_PREFIX } from '@/lib/fiscal-document-link';
 import { isMarketingLinkPath } from '@/lib/marketing-link-paths';
 
 /** Origins where Web Crypto / Auth0 SPA SDK are allowed (see auth0-spa-js FAQ). */
@@ -24,7 +25,7 @@ export function isPublicUnauthenticatedPath(pathname: string): boolean {
     path.startsWith('/rent/pay/') ||
     path.startsWith('/service/pay/') ||
     // The page of the document a guest got by e-mail (E12/F02/US02): a guest is not asked for an account either.
-    path.startsWith('/documents/view/') ||
+    path.startsWith(FISCAL_DOCUMENT_VIEW_PATH_PREFIX) ||
     // The simulated module of the service that prepares the contract (CF-SIM, test environments): public like the real one.
     path.startsWith('/guided-form') ||
     // The pages the marketing e-mails link to (CRM-08, CRM-03): a person who only wants to stop the e-mails is not asked for an account.
