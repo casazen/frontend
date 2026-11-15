@@ -7654,6 +7654,7 @@
         "description": "The receipt of {{day}} stays in your private archive for five years.",
         "flats": "It covers",
         "purge": "CasaZen deletes the photos of the guests' documents of these stays shortly. This cannot be undone. The guests' data stay.",
+        "purgeLog": "The line «Documents deleted after the receipt» will appear shortly in the send log of each stay. The page does not refresh by itself: reload it to see the line.",
         "stays_one": "{{count}} stay is now in order.",
         "stays_other": "{{count}} stays are now in order.",
         "staysNone": "No stay is in order with this receipt.",

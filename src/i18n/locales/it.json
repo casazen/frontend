@@ -7654,6 +7654,7 @@
         "description": "La ricevuta del {{day}} resta nel tuo archivio privato per cinque anni.",
         "flats": "Vale per",
         "purge": "CasaZen cancella a breve le foto dei documenti degli ospiti di questi soggiorni. Non si può annullare. I dati degli ospiti restano.",
+        "purgeLog": "Nel registro degli invii di ogni soggiorno comparirà tra poco la riga «Documenti cancellati dopo la ricevuta». La pagina non si aggiorna da sola: ricaricala per vederla.",
         "stays_one": "{{count}} soggiorno è ora in regola.",
         "stays_other": "{{count}} soggiorni sono ora in regola.",
         "staysNone": "Nessun soggiorno risulta in regola con questa ricevuta.",

@@ -211,9 +211,15 @@ function UploadForm({ onClose, properties: listed, kinds, prefill, alloggiatiPor
             {stays > 0 ? t('complianceArchive.upload.outcome.stays', { count: stays }) : t('complianceArchive.upload.outcome.staysNone')}
           </p>
           {purgeOn && stays > 0 ? (
-            <p className="text-muted-foreground" data-testid="proof-upload-outcome-purge">
-              {t('complianceArchive.upload.outcome.purge')}
-            </p>
+            <>
+              <p className="text-muted-foreground" data-testid="proof-upload-outcome-purge">
+                {t('complianceArchive.upload.outcome.purge')}
+              </p>
+              {/* The job that deletes writes the line of the send log some moments after the upload and the backend sends no event for it: the page does not refresh by itself, and this says so. */}
+              <p className="text-muted-foreground" data-testid="proof-upload-outcome-purge-log">
+                {t('complianceArchive.upload.outcome.purgeLog')}
+              </p>
+            </>
           ) : null}
         </div>
 

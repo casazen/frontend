@@ -432,6 +432,25 @@ describe('what the host is told before saving and after', () => {
     fireEvent.click(screen.getByTestId('proof-upload-submit'));
 
     expect(await screen.findByTestId('proof-upload-outcome-purge')).toHaveTextContent('Non si può annullare');
+    // The job that deletes writes the line of the send log after the upload, with no event for the page: the outcome says the line is coming and that the page does not refresh by itself.
+    const line = screen.getByTestId('proof-upload-outcome-purge-log');
+    expect(line).toHaveTextContent('Documenti cancellati dopo la ricevuta');
+    expect(line).toHaveTextContent('La pagina non si aggiorna da sola');
+  });
+
+  // With no stay put in order nothing is deleted for this receipt: the outcome says nothing of deleted documents, nor of a line to come.
+  it('dialog_DeletionAfterTheReceiptOnAndNoStayPutInOrder_TellsNothingOfDeletedDocuments', async () => {
+    vi.mocked(axios.post).mockResolvedValue({ data: saved([A], 0) });
+    renderDialog({ flags: { purgeDocumentsAfterReceipt: true } });
+    await total();
+    chooseFile();
+    await waitFor(() => expect(screen.getByTestId('proof-upload-submit')).toBeEnabled());
+    fireEvent.click(screen.getByTestId('proof-upload-submit'));
+
+    const outcome = await screen.findByTestId('proof-upload-outcome');
+    expect(outcome).toHaveTextContent('Nessun soggiorno risulta in regola con questa ricevuta.');
+    expect(screen.queryByTestId('proof-upload-outcome-purge')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('proof-upload-outcome-purge-log')).not.toBeInTheDocument();
   });
 
   it('dialog_DeletionAfterTheReceiptOff_SaysNothingOfADeletionAndDoesNotWaitForTheSummary', async () => {
@@ -450,6 +469,7 @@ describe('what the host is told before saving and after', () => {
 
     fireEvent.click(screen.getByTestId('proof-upload-submit'));
     expect((await screen.findByTestId('proof-upload-outcome')).textContent).not.toMatch(/cancella|cancellat|non si può annullare/i);
+    expect(screen.queryByTestId('proof-upload-outcome-purge-log')).not.toBeInTheDocument();
   });
 
   // The summary is never a number that is not true: a read that fails is a failure with a way to try again (never a count, never the count of an older choice), and a flat the server
