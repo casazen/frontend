@@ -1523,6 +1523,7 @@
     },
     "notDueNotice": "Gli ospiti non sono arrivati: per questo soggiorno non c'è nessuna comunicazione alla Questura da fare.",
     "statusError": "Impossibile caricare lo stato della comunicazione Alloggiati.",
+    "statusNotFound": "Non troviamo lo stato Alloggiati di questo soggiorno: potrebbe non esistere più o non essere tuo.",
     "summaryError": "Impossibile caricare le comunicazioni Alloggiati.",
     "markSentManually": "Segna come inviato manualmente",
     "markSentAvailableFromArrival": "Disponibile dal giorno di arrivo",

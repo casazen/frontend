@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { getHttpStatus } from '@/lib/api-errors';
 import { useAlloggiatiStatus } from '@/queries/use-alloggiati';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { AlloggiatiStatusBadge } from './alloggiati-status-badge';
@@ -31,8 +32,12 @@ const STATUS_READ = { refetchOnMount: 'always', staleTime: 30_000 } as const;
  */
 export function AlloggiatiBookingPanel({ bookingId, checkInDate }: AlloggiatiBookingPanelProps) {
   const { t, i18n } = useTranslation();
-  const { data: status, isLoading, isError, refetch } = useAlloggiatiStatus(bookingId, true, STATUS_READ);
+  const { data, isLoading, isError, error, refetch } = useAlloggiatiStatus(bookingId, true, STATUS_READ);
   const { hasPermission } = useWorkspace();
+  // The query keeps its last data when a read fails: a 404 is «not found» whatever it still holds of an older read, and nothing of that read (the badge, the guests of the block, the
+  // actions «Riprova» and «Correggi») stays on screen.
+  const notFound = isError && getHttpStatus(error) === 404;
+  const status = notFound ? undefined : data;
   const channelView = status ? stayChannelViewOf(status) : null;
   const receiptArchived = channelView === 'receiptArchived';
 
@@ -45,7 +50,13 @@ export function AlloggiatiBookingPanel({ bookingId, checkInDate }: AlloggiatiBoo
         </div>
       )}
 
-      {!isLoading && (isError || !status) && (
+      {!isLoading && notFound && (
+        <p className="text-sm text-muted-foreground" data-testid="booking-alloggiati-not-found">
+          {t('alloggiati.statusNotFound')}
+        </p>
+      )}
+
+      {!isLoading && !notFound && (isError || !status) && (
         <div className="space-y-2" data-testid="booking-alloggiati-error">
           <p className="text-sm text-destructive">{t('alloggiati.statusError')}</p>
           <Button variant="outline" size="sm" onClick={() => refetch()}>

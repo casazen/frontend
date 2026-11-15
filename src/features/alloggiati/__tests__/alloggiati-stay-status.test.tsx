@@ -13,6 +13,7 @@ import type {
   AlloggiatiStatusDto,
   AlloggiatiWebStatus,
 } from '@/types/alloggiati.types';
+import { ALLOGGIATI_KEY } from '@/queries/use-alloggiati';
 import { guestErrorKey, placeFieldsOf, retryOutcomeOf, stayChannelViewOf } from '../alloggiati-channel-manager';
 import { AlloggiatiBookingPanel } from '../components/alloggiati-booking-panel';
 
@@ -80,9 +81,13 @@ function problem(status: number, data: unknown): AxiosError {
   return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, { status, data, statusText: '', headers: {}, config });
 }
 
-function renderPanel(status: AlloggiatiStatusDto) {
-  vi.mocked(alloggiatiApi.getStatus).mockResolvedValue(status);
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+/** The panel on a page whose read of the status answers `status`, or fails with it when it is an error. */
+function renderPanel(
+  status: AlloggiatiStatusDto | Error,
+  client: QueryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } }),
+) {
+  if (status instanceof Error) vi.mocked(alloggiatiApi.getStatus).mockRejectedValue(status);
+  else vi.mocked(alloggiatiApi.getStatus).mockResolvedValue(status);
   return render(
     createElement(
       QueryClientProvider,
@@ -150,6 +155,21 @@ describe('AlloggiatiBookingPanel: a stay entrusted to the channel manager', () =
     expect(screen.getByTestId('alloggiati-resend-button')).toBeInTheDocument();
     expect(screen.getByTestId('alloggiati-manual-notice')).toBeInTheDocument();
     expect(screen.queryByTestId('alloggiati-channel-manager')).not.toBeInTheDocument();
+  });
+});
+
+describe('AlloggiatiBookingPanel: a status that cannot be read', () => {
+  it('panel_StatusRead404_IsNotFoundWhateverTheCacheStillHoldsAndOffersNoAction', async () => {
+    // The status of an older read is in the cache (a stay to correct, with its actions); the new read answers 404: nothing of the old one may stay on the page.
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+    client.setQueryData([ALLOGGIATI_KEY, 'status', BOOKING_ID], failedStatus([PLACE, DOWN]));
+    renderPanel(problem(404, {}), client);
+
+    expect(await screen.findByTestId('booking-alloggiati-not-found', undefined, WAIT)).toHaveTextContent('Non troviamo lo stato Alloggiati');
+    expect(screen.queryByTestId('alloggiati-status-badge')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('alloggiati-channel-manager')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Riprova' })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('alloggiati-fix-guests')).not.toBeInTheDocument();
   });
 });
 

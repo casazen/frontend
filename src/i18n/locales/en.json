@@ -1523,6 +1523,7 @@
     },
     "notDueNotice": "The guests did not arrive: no communication to the police is due for this stay.",
     "statusError": "Unable to load the status of the Alloggiati communication.",
+    "statusNotFound": "We cannot find the Alloggiati status of this stay: it may no longer exist or may not be yours.",
     "summaryError": "Unable to load the Alloggiati communications.",
     "markSentManually": "Mark as sent manually",
     "markSentAvailableFromArrival": "Available from the arrival day",
