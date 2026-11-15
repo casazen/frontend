@@ -9,6 +9,7 @@ import {
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { isAxiosError } from 'axios';
+import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
 import { getProblemMessage } from '@/lib/api-errors';
 import { readInvoiceDataProblems } from '@/lib/invoice-data-schema';
 import { retryTransientErrors } from '@/lib/query-client';
@@ -23,6 +24,41 @@ export function useCheckInContext(token: string) {
     queryFn: () => publicCheckinApi.getContext(token),
     enabled: !!token,
     retry: retryTransientErrors(1),
+  });
+}
+
+/**
+ * The tourist tax of the stay of the link, for the guest page (E25/F01/US02/T01). It lives under the key of the context (`['checkin', token, 'tourist-tax']`), so whatever reads the context
+ * again after the guest sent the check-in reads the tax again too: the guests are on file by then, and the amount is the one of the stay as it stands. Always read again when the page opens
+ * and when the guest comes back to it, and never kept as fresh: a payment, the host's «Pagata in struttura» or a change of the tax moves it without the guest. Asked only when `enabled`
+ * (the flag `touristTaxOnlinePayment` is on and the link is known); a 404 or a 409 is final and is not tried again.
+ */
+export function useGuestTouristTax(token: string, enabled: boolean) {
+  return useQuery({
+    queryKey: [CHECKIN_KEY, token, 'tourist-tax'],
+    queryFn: () => publicCheckinApi.getTouristTax(token),
+    enabled: enabled && !!token,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    retry: retryTransientErrors(1),
+  });
+}
+
+/**
+ * The PaymentIntent the Payment Element of the tourist tax opens with. It carries the client secret of the intent, so the mutation is dropped as soon as nothing watches it
+ * (`gcTime: 0`, not five minutes in the cache of the mutations) and a refusal is kept without the request (`withoutRequest`: the status and the body of the answer stay, which is
+ * what the page turns into words, and the address with the token of the link does not).
+ */
+export function useCreateTouristTaxPaymentIntent(token: string) {
+  return useMutation({
+    gcTime: 0,
+    mutationFn: async () => {
+      try {
+        return await publicCheckinApi.createTouristTaxPaymentIntent(token);
+      } catch (error) {
+        throw withoutRequest(error);
+      }
+    },
   });
 }
 

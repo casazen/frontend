@@ -8,6 +8,7 @@ import type {
   NoShowResult,
   SaveMunicipalityRateRequest,
   StayTouristTax,
+  TouristTaxCollection,
   TouristTaxCollector,
 } from '@/types/checkin-wizard.types';
 import type { StayGuestSubmit } from '@/types/public-checkin.types';
@@ -34,7 +35,16 @@ export const checkInWizardApi = {
   /** The guests never came: a confirmed booking from its check-in day. */
   markNoShow: (bookingId: string) => ApiClient.post<NoShowResult>(`/bookings/${bookingId}/no-show`),
 
+  /** The tax of the stay guest by guest; with the flag `touristTaxOnlinePayment` of the server on it also carries the `collection` block (what is to collect, paid online, owed back). */
   getTouristTax: (bookingId: string) => ApiClient.get<StayTouristTax>(`/bookings/${bookingId}/tourist-tax`),
+
+  /**
+   * The host records that the guest paid the tourist tax at the property («Pagata in struttura», E25/F01/US01/T01); the guest can no longer pay it online. Needs `payment.write` on the
+   * property and the flag `touristTaxOnlinePayment` (404 while it is off). 422 `tourist_tax_collection_not_applicable` for a stay that is not active or whose channel collects the tax,
+   * 409 `tourist_tax_paid_online` when the guest already paid online, 409 `tourist_tax_payment_in_progress` while a payment is on its way. Answers the new collection block.
+   */
+  recordTouristTaxPaidAtProperty: (bookingId: string) =>
+    ApiClient.post<TouristTaxCollection>(`/bookings/${bookingId}/tourist-tax/paid-at-property`),
 
   /** The exemptions the host chooses for the guests (a null code clears one). */
   setExemptions: (bookingId: string, exemptions: GuestExemption[]) =>

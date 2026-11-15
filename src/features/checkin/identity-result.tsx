@@ -2,13 +2,15 @@ import { useEffect, useId, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle2, Clock, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { guidanceKey, retakeTargetOf } from './lib/identity-model';
+import { guidanceKey, LOCK_CODE_HELD_TOURIST_TAX, retakeTargetOf } from './lib/identity-model';
 
 interface IdentityResultProps {
   /** What the guest is told: passed, try again, or a person verifies. */
   kind: 'ok' | 'retry' | 'operator';
   /** The lock code of the property: shown only for `ok`, whatever else is passed. */
   lockCode: string | null;
+  /** Why an `ok` has no code although the property has one: the code is held back until the tourist tax is paid (`tourist_tax_due`). */
+  lockCodeHeld?: string | null;
   /** What to change, as codes of the API (a `retry`). */
   guidanceCodes: readonly string[];
   attemptsRemaining: number;
@@ -30,6 +32,7 @@ interface IdentityResultProps {
 export function IdentityResult({
   kind,
   lockCode,
+  lockCodeHeld = null,
   guidanceCodes,
   attemptsRemaining,
   operatorRequested,
@@ -68,6 +71,11 @@ export function IdentityResult({
               {t('checkin.identity.result.ok.codeEmail')}
             </p>
           </>
+        ) : lockCodeHeld === LOCK_CODE_HELD_TOURIST_TAX ? (
+          // The property has a code and the organization asks for the tourist tax before it: the guest is told so, never that the code was sent.
+          <p className="text-sm text-muted-foreground" data-testid="identity-code-held">
+            {t('checkin.identity.result.ok.codeHeldTouristTax')}
+          </p>
         ) : (
           <p className="text-sm text-muted-foreground" data-testid="identity-no-code">
             {t('checkin.identity.result.ok.noCode')}

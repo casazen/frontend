@@ -49,6 +49,8 @@ const TYPE_KEYS: Record<string, TypeKeys> = {
     whyKey: 'activity.todo.type.MunicipalityTaxRateMissing.why',
   },
   TouristTaxDeadline: { titleKey: 'activity.todo.type.TouristTaxDeadline.title', whyKey: 'activity.todo.type.TouristTaxDeadline.why' },
+  // The difference of the tourist tax that is owed back to a guest (E25/F01/US01/T01, NF-119): the host gives it back, CasaZen never does it by itself in these cases.
+  TouristTaxRefundDue: { titleKey: 'activity.todo.type.TouristTaxRefundDue.title', whyKey: 'activity.todo.type.TouristTaxRefundDue.why' },
   // The types of the other modules already in the backend (the channel manager, the stays, the assistant, the owner portal): each item has its words.
   // Where the page of its action does not exist yet (`ACTIONS_WITHOUT_A_PAGE_YET` in the test of the registry) it has no button, but it is not told as «Attività da completare».
   CleaningDue: { titleKey: 'activity.todo.type.CleaningDue.title', whyKey: 'activity.todo.type.CleaningDue.why' },

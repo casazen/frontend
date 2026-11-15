@@ -1,4 +1,4 @@
-import type { GuestGender, StayGuestType } from './public-checkin.types';
+import type { GuestGender, StayGuestType, TouristTaxCollectionStatus, TouristTaxNotPayableReason } from './public-checkin.types';
 
 /**
  * Contract of the host wizard "Guest check-in" (E03/F01/US01/T04) and of the tourist tax of a stay (E03/F01/US07/T02). Enums are
@@ -174,6 +174,34 @@ export interface TouristTaxExemptionReason {
   labelKey: string;
 }
 
+/**
+ * The collection of the tourist tax as the host sees it (`collection` of `GET /bookings/{id}/tourist-tax`, E25/F01/US01/T01): what is still to collect, what the guest paid
+ * online, what is owed back. Every amount is in `currency` (the currency of the property); empty when the API does not say, and the amounts are then shown with no symbol.
+ */
+export interface TouristTaxCollection {
+  status: TouristTaxCollectionStatus;
+  reason: TouristTaxNotPayableReason;
+  /** What is still to collect for the stay, whoever collects it. */
+  toCollect: number;
+  /** What the guest can pay online now. */
+  onlinePayable: number;
+  /** What is owed back to the guest: the host gives it back (a «To do» says so), never an automatic refund for a stay that is going on. */
+  refundDue: number;
+  /** The tax the host collects for the stay as it is now; null when it cannot be calculated. */
+  amountDue: number | null;
+  /** The tax the price of the booking included. */
+  includedInBooking: number;
+  /** What the guest paid online. */
+  collectedAmount: number;
+  /** What was refunded of it. */
+  refundedAmount: number;
+  currency: string;
+  /** When it was paid online or recorded as paid at the property (an ISO instant). */
+  collectedAt?: string | null;
+  /** The organization offers the online payment and its account takes payments. */
+  onlinePaymentAvailable: boolean;
+}
+
 /** The tourist tax of a stay guest by guest (`GET /bookings/{id}/tourist-tax`). When no rate is known `missingRate` is true and the amounts are null, never 0. */
 export interface StayTouristTax {
   bookingId: string;
@@ -198,6 +226,11 @@ export interface StayTouristTax {
   confirmedAt?: string | null;
   /** The confirmed tax no longer matches the stay. */
   stale: boolean;
+  /**
+   * The collection of the tax (what is still to collect, paid online, owed back). Absent or null while the flag `touristTaxOnlinePayment` of the server is off, and in the
+   * answers of the check-in wizard and of the writes of the tax: the step then shows nothing of the collection.
+   */
+  collection?: TouristTaxCollection | null;
 }
 
 /** Everything the six steps show (`GET /bookings/{id}/checkin-wizard`). */

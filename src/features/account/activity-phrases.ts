@@ -3,10 +3,27 @@ import { getPlanTierLabel } from '@/lib/i18n-labels';
 import type { OrgActivityEntry } from '@/types/org-team.types';
 import { orgRoleLabel } from './account-roles';
 
+/** The credentials of the support vault a line of the log can name (`SupportVaultRules.CodeOf`), and the statuses support gives a request: closed lists, so a code this page does not know is never shown raw. */
+const ASSIST_CREDENTIALS: ReadonlySet<string> = new Set(['panel', 'police', 'regionalIstat']);
+const ASSIST_STATUSES: ReadonlySet<string> = new Set(['inProgress', 'done', 'cancelled']);
+
+/** The types of line that CasaZen support writes: its actor is a platform administrator, never a member of the team. */
+const SUPPORT_ACTOR_TYPES: ReadonlySet<string> = new Set(['OnboardingAssistUpdated']);
+
 export interface PhraseContext {
   t: TFunction;
   /** The name of the member with this account id, or `undefined` when the person is not (any more) in the team. */
   memberName: (userId: string) => string | undefined;
+}
+
+/**
+ * Who did it, as the list shows it under the sentence: the member, «Sistema» when nobody did it, and «Supporto CasaZen» for what support did (taking a request, closing it, opening
+ * a credential of the vault, E20/F03/US01): its person is not one of the team, so the team never reads it as «Ex membro», and no name of a person of support reaches the host.
+ */
+export function activityActor(entry: OrgActivityEntry, { t, memberName }: PhraseContext): string {
+  if (SUPPORT_ACTOR_TYPES.has(entry.type)) return t('account.activity.supportActor');
+  if (!entry.actorUserId) return t('account.activity.system');
+  return memberName(entry.actorUserId) ?? t('account.activity.formerMember');
 }
 
 /**
@@ -53,6 +70,17 @@ export function activityPhrase(entry: OrgActivityEntry, { t, memberName }: Phras
     case 'AdminGrantedConcordatoFacileGift':
       // The administrator of the platform gave the org a complimentary practice of the guided contract (CF-END): no name of the supplier.
       return t('leaseRound.activity.adminGrantedGift');
+    case 'OnboardingAssistRequested':
+      // The host asked CasaZen support to do a step, or reopened a request support had closed («Non funziona», E20/F03/US01/T02): the line holds the part and the context, never the note.
+      // The whole team reads it, so it names the member who asked (the actor of the line) and is never in the second person.
+      return t('account.activity.assistRequested', { member: (entry.actorUserId ? memberName(entry.actorUserId) : undefined) ?? t('account.activity.formerMember') });
+    case 'OnboardingAssistUpdated': {
+      // Support took, closed or cancelled a request, or OPENED A CREDENTIAL of the support vault for it (E20/F03/US01/T01): the host reads which one was used, never its value or the reason.
+      const credential = details.credential ?? '';
+      if (credential !== '') return ASSIST_CREDENTIALS.has(credential) ? t(`account.activity.assistCredential.${credential}`) : t('account.activity.other');
+      const status = details.status ?? '';
+      return ASSIST_STATUSES.has(status) ? t(`account.activity.assistStatus.${status}`) : t('account.activity.other');
+    }
     case 'PropertyActivatedWithReminders': {
       // A property activated with the documents or the safety sheet still to complete, acknowledged by the host (PO decision 2026-11-01).
       // The detail is `documents`, `safety` or `documents.safety`: each has its words; anything else gets the generic sentence.

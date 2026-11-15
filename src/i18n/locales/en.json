@@ -38,6 +38,17 @@
   "account": {
     "activity": {
       "accessRequested": "Request for access to an area or a page",
+      "assistCredential": {
+        "panel": "CasaZen support used the credentials of your channel manager's panel to make the connection you asked for",
+        "police": "CasaZen support used the Alloggiati Web credentials to make the connection you asked for",
+        "regionalIstat": "CasaZen support used the ISTAT credentials to make the connection you asked for"
+      },
+      "assistRequested": "{{member}} asked CasaZen support for help",
+      "assistStatus": {
+        "cancelled": "CasaZen support cancelled your request for help",
+        "done": "CasaZen support closed your request for help: it says it did it",
+        "inProgress": "CasaZen support took your request for help"
+      },
       "formerMember": "Former member",
       "invitationAccepted": "Invitation accepted ({{role}})",
       "invitationRevoked": "Invitation withdrawn ({{role}})",
@@ -57,6 +68,7 @@
         "documents_safety": "the documents and the safety sheet",
         "safety": "the safety sheet"
       },
+      "supportActor": "CasaZen support",
       "system": "System"
     },
     "home": {
@@ -811,6 +823,10 @@
         "TouristTaxDeadline": {
           "title": "Tourist tax due",
           "why": "The tax of the period has to be declared and paid, with the receipts archived."
+        },
+        "TouristTaxRefundDue": {
+          "title": "Refund the difference of the tourist tax",
+          "why": "The guest is owed a refund of the tourist tax: the confirmed amount is lower than what they paid, the stay was cancelled after the arrival or the automatic refund failed. You give the difference back."
         },
         "WizardResume": {
           "title": "Setup to resume",
@@ -1700,7 +1716,10 @@
       "archiveInvalidType": "This type of document does not exist.",
       "archiveTypeForbidden": "You do not have access to this type of document.",
       "assistContextInvalid": "This help request is not about a step we can do for you.",
+      "assistDoneNotValid": "The panel reads this connection as not valid: the request was not closed.",
+      "assistReopenNoteRequired": "Write what does not work, in 500 characters at most and without e-mail addresses.",
       "assistRequestAlreadyOpen": "You already have a request open for this step: you find it in To do.",
+      "assistRequestNotDone": "This request is not closed: there is nothing to reopen.",
       "assistStepAlreadyDone": "This step is already done: nothing else is needed.",
       "channelAccessNotValid": "The access to the portal is not valid: open it again and retry.",
       "channelConnectionNotFound": "The access is given but we cannot find the portal's connection: check the panel.",
@@ -1867,6 +1886,14 @@
       "propertyHasActiveLeases": "You cannot delete this property: it has active leases. End them before deleting it.",
       "propertyResponsibleInvalid": "That person cannot be in charge of this property: they must be an active member who can already access it.",
       "seriesTooLong": "The series of the numbers is too long: shorten it in the invoicing setup.",
+      "supportVaultKindInvalid": "This kind of credential does not exist.",
+      "supportVaultKindNotForRequest": "These credentials are not needed for this request.",
+      "supportVaultOrgNotFound": "We cannot find this organization.",
+      "supportVaultReasonInvalid": "Write a reason of 10 to 300 characters.",
+      "supportVaultRequestNotOpen": "The request is not open: credentials are opened only for an open request.",
+      "supportVaultSecretMissing": "These credentials are not there yet: save them first, or ask the user for them.",
+      "supportVaultTooManyOpenings": "You already opened the credentials 5 times in the last hour for this request: try again later.",
+      "supportVaultValueInvalid": "User name and password are required, 200 characters at most; the further code 100 at most.",
       "xlsxTooManyRows": "Too many rows: a sheet of an Excel file can have at most 10,000 rows. Choose a shorter period and try again.",
       "planLimitReached": "You have reached your plan limit",
       "planRequired": "This feature requires a higher plan.",
@@ -1910,6 +1937,9 @@
       "supplierCommitmentConflict": "You cannot take this job: it overlaps another you already accepted. You may have more than one on the same day only when the times do not touch.",
       "supplierPaymentsNotReady": "Your account is not ready for this yet: finish the setup on Stripe first.",
       "touristTaxChildAgesRequired": "Enter the age of every minor: it is needed to calculate the tourist tax.",
+      "touristTaxCollectionNotApplicable": "The tourist tax cannot be recorded as paid for this stay: the stay is cancelled or the portal collects the tax.",
+      "touristTaxPaidOnline": "The guest already paid the tourist tax online: it cannot be recorded as paid at the property.",
+      "touristTaxPaymentInProgress": "A tourist tax payment is under way: wait for it to be confirmed and try again.",
       "touristTaxQuoteInvalid": "Invalid calculation data: check the dates, guests, ages of the minors and price.",
       "consentsRequired": "To create your organization you must accept the required legal documents.",
       "orgSlugTaken": "This web address is already used, or was used, by another organization.",
@@ -5728,6 +5758,7 @@
       "result": {
         "ok": {
           "codeEmail": "If your booking has an email address, we also sent the code there.",
+          "codeHeldTouristTax": "Your identity is verified. The access code will reach you after the tourist tax is paid.",
           "codeLabel": "Your access code",
           "noCode": "Your identity is verified. If your booking has an email address, we sent the access code there; otherwise your host will give you the access instructions.",
           "title": "You are verified"
@@ -5860,6 +5891,41 @@
       "holiday": "Holiday",
       "label": "Purpose of the trip *",
       "other": "Other"
+    },
+    "touristTax": {
+      "amountDue": "Tax for the stay",
+      "atProperty": "You will pay this tax to your host at the property.",
+      "channelCollects": "The tourist tax is collected by the portal you booked on: you pay nothing here.",
+      "currencyMissing": "The amount is shown without a currency because we were not told which one.",
+      "exempt": "Exempt",
+      "guestLine_one": "Guest {{index}} · {{count}} night",
+      "guestLine_other": "Guest {{index}} · {{count}} nights",
+      "hostWillTell": "Your host will tell you the tourist tax.",
+      "included": "The tourist tax is already included in the payment of your booking: you pay nothing more here.",
+      "intro": "This is the tax the municipality charges for each night of your stay. You can pay it now by card.",
+      "loadFailed": "We cannot load the tourist tax. Please try again: if you prefer, you will pay it to your host at the property.",
+      "nothingDue": "There is no tourist tax to pay for this stay.",
+      "paidAtProperty": "Your host recorded that the tourist tax was already paid at the property.",
+      "paidPartly": "You have already paid {{amount}} online. You will pay the rest of the tax to your host at the property.",
+      "paidText": "We received your payment of {{amount}}. Thank you!",
+      "paidTitle": "Tourist tax paid",
+      "partIncluded": "Part of it is already included in the payment of your booking.",
+      "payAmount": "Pay {{amount}}",
+      "payNowLabel": "To pay now",
+      "paying": "Payment in progress...",
+      "paymentFailed": "The payment did not go through. Check your card details and try again.",
+      "paymentUnavailable": "Paying the tourist tax online is not available right now. You can go on: you will pay it to your host at the property.",
+      "preparing": "Preparing the payment...",
+      "processingText": "We are confirming the payment: it takes a few moments. You do not need to pay again.",
+      "processingTitle": "Payment being confirmed",
+      "refresh": "Refresh the status",
+      "requiredBeforeCode": "Your host gives you the access code after you pay the tourist tax: to go on, pay here.",
+      "retry": "Try again",
+      "sessionFailed": "We cannot open the payment. Please try again shortly.",
+      "stalledText": "The payment is not confirmed yet. If you have already paid, do not pay again: refresh the status in a few minutes.",
+      "stalledTitle": "Payment not confirmed yet",
+      "title": "Tourist tax",
+      "total": "Total"
     },
     "travelWay": {
       "bus": "Bus",
@@ -6112,6 +6178,38 @@
         "breakdownTitle": "Summary of the stay",
         "channelCollectedText": "The channel has already collected the tax ({{total}}) and pays it to the municipality: you must not collect it again.",
         "channelCollectedTitle": "The channel collected it: nothing to collect",
+        "collection": {
+          "currencyMissing": "The amounts are shown without a currency because we were not told which one.",
+          "detail": {
+            "amountUnknown": "We cannot yet say how much to collect: the amount is not calculated.",
+            "collectedByChannel": "The channel collects it and pays it to the municipality: you do not collect it.",
+            "includedInBooking": "The guest already paid it with the booking ({{amount}}): you do not collect it.",
+            "notDue": "There is nothing to collect for this stay.",
+            "paidAtProperty": "You recorded that the guest paid it at the property.",
+            "paidAtPropertyOn": "On {{date}} you recorded that the guest paid it at the property.",
+            "paidOnline": "The guest paid {{amount}} by card: you do not collect it.",
+            "paidOnlinePartly": "The guest paid {{paid}} online. {{rest}} is left to collect at the property.",
+            "toCollect": "Amount to collect: {{amount}}."
+          },
+          "guestMayPay": "The guest can pay {{amount}} online in the check-in. If they pay at the property instead, record it below.",
+          "markPaid": "Mark as paid at the property",
+          "markPaidFailed": "We could not record the payment. Please try again.",
+          "markPaidHint": "The guest will no longer be able to pay it online, so it is never paid twice.",
+          "refundDue": "To give back to the guest: {{amount}}. We do not do it automatically: you will find the task to complete in your list.",
+          "refundDueTitle": "To give back to the guest",
+          "refunded": "Refunded to the guest: {{amount}}.",
+          "state": {
+            "collectedByChannel": "Collected by the portal",
+            "includedInBooking": "Included in the booking payment",
+            "notDue": "Not due",
+            "paidAtProperty": "Paid at the property",
+            "paidOnline": "Paid online on {{date}}",
+            "paidOnlineNoDate": "Paid online",
+            "paidOnlinePartly": "Partly paid online",
+            "toCollect": "To collect"
+          },
+          "title": "Collection of the tourist tax"
+        },
         "collectorChannel": "The channel collected it",
         "collectorFailed": "We could not save your answer. Please try again.",
         "collectorHost": "I collect it at the property",
@@ -6725,6 +6823,12 @@
         "text": "Confirm who sends first: this step works on the sender in effect."
       },
       "credentials": {
+        "istat": {
+          "notSaved": "ISTAT credentials not saved yet.",
+          "saved": "ISTAT credentials saved.",
+          "title": "ISTAT credentials (optional)",
+          "why": "They are needed if you want CasaZen support to link the ISTAT of your region in the panel of your channel manager for you. Support opens them only on a request of yours, and you find every opening in the activity log."
+        },
         "notInDraft": "The credentials are not kept in the draft: if you leave without saving them, you will have to type them again.",
         "notSaved": "Credentials not saved yet.",
         "saved": "Credentials saved.",
@@ -6810,6 +6914,8 @@
         "credentialsNotSaved": "We could not save the credentials: they are still in the fields. Try again, or skip this step to go on without saving them.",
         "delegationOutdated": "The text of the delegation has changed: go back to «Who sends», read it and confirm again.",
         "delegationRequired": "An automatic sender needs the consent to the delegation: go back to «Who sends» and give it.",
+        "istatIncomplete": "Fill in the user name and password of the ISTAT credentials, or empty the fields to go on without saving them.",
+        "istatNotSaved": "We could not save the ISTAT credentials: they are still in the fields. Try again, or empty the fields to go on without saving them.",
         "notApplicable": "There is no sender to choose for this property.",
         "switchFailed": "The sender could not be changed: nothing has changed. Try again."
       },
@@ -10161,6 +10267,43 @@
       "saveFailed": "We could not save the data. Try again.",
       "title": "Who to invoice"
     }
+  },
+  "istatCredentials": {
+    "assist": {
+      "description": "If you prefer, CasaZen support links the ISTAT in your channel manager for you, with the credentials you saved here. Here you see where it stands."
+    },
+    "cancel": "Cancel",
+    "configuredOn": "Configured on {{date}}",
+    "description": "User name, password and, if the portal of your region asks for it, the code of the structure for the ISTAT of this property.",
+    "errors": {
+      "passwordRequired": "Enter the ISTAT password.",
+      "passwordTooLong": "The password can have 200 characters at most.",
+      "structureCodeTooLong": "The code of the structure can have 50 characters at most.",
+      "usernameRequired": "Enter the ISTAT user name.",
+      "usernameTooLong": "The user name can have 100 characters at most."
+    },
+    "fields": {
+      "password": "ISTAT password",
+      "structureCode": "Code of the structure (optional)",
+      "username": "ISTAT user name"
+    },
+    "hints": {
+      "structureCode": "The portal of some regions asks for it (CIR or CUSR): if yours does not, leave it empty."
+    },
+    "loadFailed": "Could not check whether the ISTAT credentials are configured.",
+    "loading": "Loading the state of the ISTAT credentials…",
+    "notConfigured": "Not configured",
+    "remove": "Remove credentials",
+    "removeConfirm": "Confirm removal",
+    "removed": "ISTAT credentials removed.",
+    "removeFailed": "Could not remove the ISTAT credentials.",
+    "replace": "Replace credentials",
+    "retry": "Try again",
+    "save": "Save credentials",
+    "saved": "ISTAT credentials saved.",
+    "saveFailed": "Could not save the ISTAT credentials.",
+    "title": "ISTAT credentials",
+    "writeOnlyHint": "The credentials are encrypted and are not visible after saving: to change them, enter them again. Only CasaZen support opens them, on a request of yours and with a reason, to link the ISTAT in the panel of your channel manager: you find every opening in the activity log."
   },
   "language": {
     "switchToItalian": "Switch to Italian",
@@ -15306,7 +15449,11 @@
       "verificationRequired": "A guest's identity is waiting for you to verify it.",
       "assistRequested": "New «Do it for me» request to handle.",
       "checkinLinkFailed": "A check-in link did not reach a guest: copy it and send it yourself.",
-      "fiscalDocumentSdiRejected": "The SDI rejected an invoice: it needs to be corrected."
+      "assistVerified": "The connection you asked for is active: CasaZen support made it and we checked that it works.",
+      "assistDeclared": "CasaZen support says it made the connection you asked for. If something does not work, reopen the request.",
+      "assistReopened": "A user reopened a «Do it for me» request: it says it does not work.",
+      "fiscalDocumentSdiRejected": "The SDI rejected an invoice: it needs to be corrected.",
+      "touristTaxPaid": "A guest paid the tourist tax online."
     }
   },
   "octorate": {
@@ -15916,6 +16063,67 @@
         }
       },
       "askTheUser": "For the data you cannot see, ask the user from their activity in To do.",
+      "checklist": {
+        "closed": "The request is closed: credentials are opened only for an open request.",
+        "description": "You only see whether a credential is there and since when. Values are opened one at a time, with a reason, and stay visible for a minute.",
+        "empty": "There is nothing to check for this request.",
+        "items": {
+          "istat": "ISTAT credentials",
+          "panelUser": "Panel user",
+          "police": "Police credentials (Alloggiati Web)",
+          "sender": "Who sends",
+          "steps": "Steps in the panel"
+        },
+        "org": "The whole organization",
+        "presence": {
+          "missing": "Missing",
+          "present": "Present",
+          "presentSince": "Present since {{date}}"
+        },
+        "propertyComune": "{{property}}, {{comune}}",
+        "requirement": {
+          "notRequired": "Not needed: the property is not in Italy.",
+          "required": "Needed for this request.",
+          "toVerify": "To check: it depends on the region."
+        },
+        "sender": {
+          "activationDeclared": "The host declared the sending active.",
+          "activationNotDeclared": "The host has not declared the sending active yet.",
+          "CasaZen": "CasaZen",
+          "ChannelManager": "The channel manager",
+          "default": "No choice saved: the default applies.",
+          "Manual": "The host, by hand",
+          "since": "{{sender}}, since {{date}}",
+          "unknown": "A sender this version does not know"
+        },
+        "steps": {
+          "channel": "channel {{channel}}",
+          "completedAt": "Completed on {{date}}",
+          "empty": "No step to do in this request.",
+          "guide": "Show the steps in the panel",
+          "kind": {
+            "channelAccess": "Access to a channel",
+            "istatConnection": "ISTAT connection",
+            "policeConnection": "Police connection"
+          },
+          "kindUnknown": "Step not recognized",
+          "lastCheck": {
+            "notValid": "The last check found it not valid.",
+            "unverifiable": "The last check could not read it.",
+            "verified": "The last check found it active."
+          },
+          "state": {
+            "assistRequested": "Handed to support",
+            "confirmed": "Confirmed",
+            "notStarted": "Not started",
+            "notValid": "Not valid",
+            "started": "Started",
+            "unknown": "State not recognized",
+            "verified": "Verified"
+          }
+        },
+        "title": "What this request needs"
+      },
       "contexts": {
         "panelChannelAccess": "Access to a channel",
         "panelIstat": "ISTAT connection",
@@ -15928,6 +16136,13 @@
       "copyError": "It could not be copied.",
       "copyLabel": "Copy {{what}}",
       "description": "The «Do it for me» requests of the users: take them and close them with a note.",
+      "detail": {
+        "description": "What is missing for this request and the credentials to open.",
+        "loadError": "The request could not be loaded.",
+        "loading": "Loading the request...",
+        "notFound": "This request is not there any more.",
+        "stale": "We could not update the request: it may be out of date."
+      },
       "dialogCancel": "Close without changing",
       "empty": "No open request",
       "emptyFiltered": "No request with this status.",
@@ -15962,10 +16177,52 @@
         "label": "Note (optional)"
       },
       "pageEmpty": "There are no more requests on this page: the others are on the earlier ones.",
+      "reveal": {
+        "cancel": "Close without opening",
+        "confirm": "Open for a minute",
+        "description": "For {{subject}}. Every opening is recorded and the user sees it in the activity log.",
+        "error": "The credentials could not be opened.",
+        "fields": {
+          "extraCode": "Further code",
+          "password": "Password",
+          "username": "User name"
+        },
+        "hidden": {
+          "text": "To see them again open them again: a new reason is needed.",
+          "title": "The credentials are hidden"
+        },
+        "kinds": {
+          "OctoratePanel": "panel user",
+          "Police": "police (Alloggiati Web)",
+          "RegionalIstat": "ISTAT"
+        },
+        "open": "Open credentials",
+        "openFor": "Open credentials: {{what}}",
+        "reason": {
+          "counter": "{{count}}/{{max}}",
+          "hint": "From 10 to 300 characters. It stays in the log of the openings: the user does not see it.",
+          "invalid": "Write a reason of 10 to 300 characters.",
+          "label": "Why are you opening them?"
+        },
+        "title": "Open the credentials: {{what}}",
+        "visible": {
+          "close": "Close",
+          "hideNow": "Hide now",
+          "hint": "Copy and paste them now: then they are hidden.",
+          "remaining": "They hide in {{seconds}} s.",
+          "title": "Credentials open"
+        }
+      },
       "row": {
         "actions": "Actions on the request",
+        "hostNote": "Note of the user:",
         "note": "Note:",
+        "open": "Open the request",
         "org": "{{context}}: the whole organization",
+        "outcome": {
+          "declared": "Outcome: declared by support, CasaZen could not check it",
+          "verified": "Outcome: verified, CasaZen read the connection on the panel"
+        },
         "part": "Step: {{part}}",
         "partUnknown": "Step not recognised",
         "property": "{{context}}: property {{property}}",
@@ -15985,7 +16242,26 @@
         "unknown": "Status not recognised"
       },
       "title": "Help requests",
-      "updated": "Request updated"
+      "updated": "Request updated",
+      "vault": {
+        "cancel": "Cancel",
+        "description": "The panel user reaches only the CasaZen address of the organization: copy it here and then delete the message. It is saved encrypted and can only be seen again by opening it from a request, with a reason.",
+        "error": "The credentials could not be saved.",
+        "errors": {
+          "passwordRequired": "Enter the panel password.",
+          "passwordTooLong": "The password can have 200 characters at most.",
+          "usernameRequired": "Enter the panel user.",
+          "usernameTooLong": "The user can have 200 characters at most."
+        },
+        "fields": {
+          "password": "Panel password",
+          "username": "Panel user"
+        },
+        "open": "Save the panel credentials",
+        "replace": "Replace the panel credentials",
+        "save": "Save in the vault",
+        "saved": "Credentials saved in the vault."
+      }
     },
     "bulk": {
       "adminOnly": "The organization administrator manages this page.",
@@ -16417,7 +16693,32 @@
           "needHelp": "I need help"
         },
         "error": "We could not send the request. Try again in a moment.",
+        "hostNote": "You wrote: «{{note}}»",
         "note": "CasaZen support takes care of it: you also find it in To do.",
+        "notWorking": {
+          "action": "It does not work",
+          "cancel": "Close without reopening",
+          "confirm": "Reopen the request",
+          "counter": "{{count}}/{{max}}",
+          "description": "The request goes back to CasaZen support, which reviews it. Write in a few words what is wrong.",
+          "error": "The request could not be reopened. Try again in a moment.",
+          "hint": "Do not write e-mail addresses or passwords.",
+          "label": "What does not work",
+          "reopened": "Request reopened: CasaZen support is on it again.",
+          "required": "Write what does not work.",
+          "title": "What does not work?"
+        },
+        "outcome": {
+          "declared": {
+            "text": "CasaZen support says it made the connection, but from here we cannot check it.",
+            "title": "Declared by support"
+          },
+          "verified": {
+            "text": "CasaZen support made the connection and we checked that it is active.",
+            "title": "Verified"
+          }
+        },
+        "staffNote": "Support note: «{{note}}»",
         "status": {
           "Cancelled": "Request cancelled",
           "Done": "Done: CasaZen support took care of it",
@@ -16520,6 +16821,15 @@
           "body": "CasaZen verified the connection: you go on from here.",
           "title": "Connection successful",
           "toast": "Connection verified"
+        },
+        "recoveredDeclared": {
+          "body": "CasaZen support says it made the connection: from here we cannot check it. If something does not work, say so below.",
+          "title": "Connection made by support",
+          "toast": "Support says it made the connection"
+        },
+        "recoveredUnknown": {
+          "body": "The connection shows as done: you can go on.",
+          "title": "Connection done"
         },
         "started": {
           "body": "Your progress is saved, but the panel did not open.",

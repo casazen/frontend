@@ -72,7 +72,12 @@ export interface IdentityProgress {
   documentRefused: boolean;
   /** The lock code, only after an `ok`; `null` for any other answer and for a property with none. */
   lockCode: string | null;
+  /** Why an `ok` came with no lock code although the property has one (`LOCK_CODE_HELD_TOURIST_TAX`): the code is held back until the tourist tax is paid. */
+  lockCodeHeld?: string | null;
 }
+
+/** `lockCodeHeld` of the selfie answer while the organization asks for the tourist tax before the lock code and the stay still owes it (E25/F01/US01/T01). */
+export const LOCK_CODE_HELD_TOURIST_TAX = 'tourist_tax_due';
 
 function stageOfState(state: IdentityVerificationState): IdentityStage {
   switch (state.step) {
@@ -140,14 +145,23 @@ export function afterDocument(progress: IdentityProgress, response: IdentityDocu
   };
 }
 
-/** After the selfie: the lock code comes only with an `ok`; a retry says what to change; a person verifies otherwise. */
+/** After the selfie: the lock code comes only with an `ok` (or why it is held back); a retry says what to change; a person verifies otherwise. */
 export function afterSelfie(progress: IdentityProgress, response: IdentitySelfieResponse): IdentityProgress {
   if (response.result === 'ok') {
     const code = typeof response.lockCode === 'string' ? response.lockCode.trim() : '';
-    return { ...progress, stage: 'done', attemptsRemaining: response.attemptsRemaining, guidanceCodes: [], documentRefused: false, lockCode: code === '' ? null : code };
+    const held = typeof response.lockCodeHeld === 'string' ? response.lockCodeHeld.trim() : '';
+    return {
+      ...progress,
+      stage: 'done',
+      attemptsRemaining: response.attemptsRemaining,
+      guidanceCodes: [],
+      documentRefused: false,
+      lockCode: code === '' ? null : code,
+      lockCodeHeld: code === '' && held !== '' ? held : null,
+    };
   }
   if (response.result === 'retry') {
-    return { ...progress, stage: 'retry', attemptsRemaining: response.attemptsRemaining, guidanceCodes: response.guidanceCodes, lockCode: null };
+    return { ...progress, stage: 'retry', attemptsRemaining: response.attemptsRemaining, guidanceCodes: response.guidanceCodes, lockCode: null, lockCodeHeld: null };
   }
   return {
     ...progress,
@@ -157,6 +171,7 @@ export function afterSelfie(progress: IdentityProgress, response: IdentitySelfie
     guidanceCodes: [],
     documentRefused: false,
     lockCode: null,
+    lockCodeHeld: null,
   };
 }
 
@@ -169,7 +184,7 @@ export function afterOperatorRequest(progress: IdentityProgress, response: Ident
 
 /** The guest takes again what the guidance asked for (the document or the selfie), from the screen of a `retry`. */
 export function afterRetake(progress: IdentityProgress): IdentityProgress {
-  return { ...progress, stage: retakeTargetOf(progress.guidanceCodes), guidanceCodes: [], documentRefused: false, lockCode: null };
+  return { ...progress, stage: retakeTargetOf(progress.guidanceCodes), guidanceCodes: [], documentRefused: false, lockCode: null, lockCodeHeld: null };
 }
 
 /** What a refused call changes: the step the API asks for first. Anything else leaves the guest where they are, with what they have. */

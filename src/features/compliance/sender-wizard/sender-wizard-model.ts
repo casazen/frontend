@@ -216,9 +216,10 @@ export function switchProblemOf(error: unknown): SwitchProblemKind | null {
 
 /**
  * What stops a step with words of its own: a refusal of the change of the sender, or the credentials of the portal that were typed and could not be saved (`credentialsIncomplete`: a field is
- * missing or too long; `credentialsNotSaved`: the server did not take them). The words are `compliance.sender.errors.<kind>`.
+ * missing or too long; `credentialsNotSaved`: the server did not take them), or the same for the regional ISTAT credentials (`istatIncomplete`, `istatNotSaved`). The words are
+ * `compliance.sender.errors.<kind>`.
  */
-export type StepProblemKind = SwitchProblemKind | 'credentialsIncomplete' | 'credentialsNotSaved';
+export type StepProblemKind = SwitchProblemKind | 'credentialsIncomplete' | 'credentialsNotSaved' | 'istatIncomplete' | 'istatNotSaved';
 
 /**
  * The step stops on something that has words of its own. It is thrown in place of the answer, which holds the request that was sent: the shell finds nothing to say in it

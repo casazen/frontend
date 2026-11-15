@@ -10,6 +10,8 @@ import { COMPLIANCE_HEALTH_KEY } from '@/queries/compliance-health';
 import { ACCOUNTANT_PACKAGE_KEY } from '@/queries/use-accountant-package';
 import { ADMIN_ASSIST_KEY } from '@/queries/use-admin-onboarding-assist';
 import { ALLOGGIATI_KEY } from '@/queries/use-alloggiati';
+import { ASSIST_REQUESTS_KEY } from '@/queries/use-onboarding-assist';
+import { PANEL_STEPS_KEY } from '@/queries/use-onboarding-panel-step';
 import { BOOKING_THREAD_QUERY, HOST_THREADS_QUERY, UNREAD_MESSAGES_QUERY } from '@/queries/use-booking-messages';
 import { BOOKINGS_KEY } from '@/queries/use-bookings';
 import { CHECKIN_SESSION_KEY } from '@/queries/use-checkin';
@@ -207,6 +209,22 @@ describe('useNotificationsRealtime', () => {
     expect(keys).toContainEqual([...ADMIN_ASSIST_KEY]);
   });
 
+  it('useNotificationsRealtime_ReconnectAfterAGap_AlsoReadsAgainTheRequestsOfHelpOfTheHostAndTheirSteps', () => {
+    const { queryClient, wrapper } = setup();
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    const client = fakeClient();
+    renderHook(() => useNotificationsRealtime({ enabled: true, userId: 'u1', getAccessToken, client }), { wrapper });
+
+    act(() => client.setState('connected'));
+    act(() => client.setState('connecting'));
+    act(() => client.setState('connected'));
+
+    // Support closed a request while the socket was down: the page of the host reads the request and its step again.
+    const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+    expect(keys).toContainEqual([...ASSIST_REQUESTS_KEY]);
+    expect(keys).toContainEqual([...PANEL_STEPS_KEY]);
+  });
+
   it('useNotificationsRealtime_ReconnectAfterAGap_AlsoReadsAgainTheFiscalDocuments', () => {
     const { queryClient, wrapper } = setup();
     const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
@@ -237,6 +255,24 @@ describe('useNotificationsRealtime', () => {
     expect(onNewNotification).toHaveBeenCalledWith(change);
     const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
     expect(keys).toContainEqual([...ADMIN_ASSIST_KEY]);
+  });
+
+  it.each(['assist-verified', 'assist-declared'])('useNotificationsRealtime_%sArrives_ReadsTheRequestsOfTheHostAndTheirStepsAndTellsTheBell', (type) => {
+    const { queryClient, wrapper } = setup();
+    queryClient.setQueryData(UNREAD_COUNT_KEY, 0);
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    const client = fakeClient();
+    const onNewNotification = vi.fn();
+    renderHook(() => useNotificationsRealtime({ enabled: true, userId: 'host-1', getAccessToken, client, onNewNotification }), { wrapper });
+
+    const change = { unreadCount: 1, type, entityId: 'ar-1' };
+    act(() => client.emit(change));
+
+    // The administrator is told at once (the pop-up of the bell), and the page that is open shows the request and its step as support left them.
+    expect(onNewNotification).toHaveBeenCalledWith(change);
+    const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+    expect(keys).toContainEqual([...ASSIST_REQUESTS_KEY]);
+    expect(keys).toContainEqual([...PANEL_STEPS_KEY]);
   });
 
   it('useNotificationsRealtime_State_FollowsTheChannel', () => {
@@ -509,6 +545,54 @@ describe('applyNotificationsChange', () => {
     act(() => applyNotificationsChange(queryClient, { unreadCount: 1, type: 'assist-requested', entityId: 'ar-1' }));
 
     await waitFor(() => expect(readQueue).toHaveBeenCalledTimes(2));
+  });
+
+  // E20/F03/US01/T02: support closed a request of the host. The entity is the request of help: it is not read as a booking, and the staff queue has nothing to read again.
+  it.each(['assist-verified', 'assist-declared'])('applyNotificationsChange_%s_ReadsTheRequestsOfTheHostTheStepsAndNothingOfABookingOrOfTheStaffQueue', (type) => {
+    const { queryClient } = setup();
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    applyNotificationsChange(queryClient, { unreadCount: 1, type, entityId: 'ar-1' });
+    const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+    expect(keys).toContainEqual([...ASSIST_REQUESTS_KEY]);
+    expect(keys).toContainEqual([...PANEL_STEPS_KEY]);
+    expect(keys).not.toContainEqual([...ADMIN_ASSIST_KEY]);
+    expect(keys).not.toContainEqual([BOOKING_THREAD_QUERY, 'ar-1']);
+    expect(keys).not.toContainEqual([BOOKING_THREAD_QUERY]);
+    expect(keys).not.toContainEqual([BOOKINGS_KEY]);
+  });
+
+  it('applyNotificationsChange_AssistOutcome_AnOpenListOfTheRequestsAndTheStepThePageFollowsReadTheOutcomeWithoutAReload', async () => {
+    const { queryClient, wrapper } = setup();
+    const readRequests = vi.fn().mockResolvedValue([]);
+    const readStep = vi.fn().mockResolvedValue({ id: 'step-1' });
+    // What the open page of a guided step keeps mounted: the requests of the host (`useAssistRequests`) and the step it follows (`usePanelStepStatus`).
+    renderHook(
+      () => [
+        useQuery({ queryKey: [...ASSIST_REQUESTS_KEY], queryFn: readRequests }),
+        useQuery({ queryKey: [...PANEL_STEPS_KEY, 'step', 'step-1'], queryFn: readStep }),
+      ],
+      { wrapper },
+    );
+    await waitFor(() => expect(readRequests).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(readStep).toHaveBeenCalledTimes(1));
+
+    act(() => applyNotificationsChange(queryClient, { unreadCount: 1, type: 'assist-declared', entityId: 'ar-1' }));
+
+    await waitFor(() => expect(readRequests).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(readStep).toHaveBeenCalledTimes(2));
+  });
+
+  // E20/F03/US01/T02: the host reopened a request: for the staff it is a request to handle again, as a new one.
+  it('applyNotificationsChange_AssistReopened_ReadsTheStaffQueueAgainAndNothingOfABookingOrOfTheHost', () => {
+    const { queryClient } = setup();
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    applyNotificationsChange(queryClient, { unreadCount: 1, type: 'assist-reopened', entityId: 'ar-1' });
+    const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+    expect(keys).toContainEqual([...ADMIN_ASSIST_KEY]);
+    expect(keys).not.toContainEqual([BOOKING_THREAD_QUERY, 'ar-1']);
+    expect(keys).not.toContainEqual([BOOKING_THREAD_QUERY]);
+    expect(keys).not.toContainEqual([BOOKINGS_KEY]);
+    expect(keys).not.toContainEqual([...ASSIST_REQUESTS_KEY]);
   });
 
   // E12/F02/US01/T01: a document of a booking was issued (the push `fiscal-document-issued`, whose entity is the booking): the pages of the documents show it without a reload.

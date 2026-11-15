@@ -8,9 +8,16 @@ import { Label } from '@/components/ui/label';
 import { selectClassName } from '@/features/checkin/components/stay-guest-fields';
 import { getProblemMessage } from '@/lib/api-errors';
 import { formatCurrency } from '@/lib/utils';
-import { useSetTouristTaxCollector, useSetTouristTaxExemptions, useStayTouristTax } from '@/queries/use-checkin-wizard';
+import {
+  useRecordTouristTaxPaidAtProperty,
+  useSetTouristTaxCollector,
+  useSetTouristTaxExemptions,
+  useStayTouristTax,
+} from '@/queries/use-checkin-wizard';
 import type { CheckInWizardState, StayTouristTax, StayTouristTaxGuest, TouristTaxCollector } from '@/types/checkin-wizard.types';
+import { formatTaxMoney } from '../../lib/tourist-tax-model';
 import { exemptionOf, taxBreakdownOf, taxOutlook, type CheckInWizardValues } from '../lib/checkin-wizard-model';
+import { TaxCollection } from './tax-collection';
 import { TaxRateSubstep } from './tax-rate-substep';
 
 /** The reasons the host may choose have a plain-words label under the key the API gives (`touristTax.exemption.<code>`). */
@@ -111,17 +118,27 @@ interface TaxStepProps {
  * The tourist tax step (NF-46, ADR-037): per guest the nights, the taxable nights, the exemption and the amount, then the breakdown of the
  * stay. A minor exempt by age is shown as automatic; the host chooses any other exemption from a list in plain words. When the channel
  * collected the tax the step says so and shows the amounts; when nobody knows who collected it, it asks; when no rate is known it never
- * shows a zero and offers "Enter your municipality tax", which returns to this same step.
+ * shows a zero and offers "Enter your municipality tax", which returns to this same step. While the server sends the collection of the tax
+ * (E25/F01/US02/T01: the flag of the online payment is on) the step ends with its state, «Da incassare», «Pagata online il …» or «Incassata dal
+ * portale», and «Segna come pagata in struttura» (`TaxCollection`); with the flag off it is the step it always was.
  */
 export function TaxStep({ bookingId, form, state }: TaxStepProps) {
   const { t, i18n } = useTranslation();
   const taxQuery = useStayTouristTax(bookingId);
   const setExemptions = useSetTouristTaxExemptions(bookingId);
   const setCollector = useSetTouristTaxCollector(bookingId);
+  const recordPaidAtProperty = useRecordTouristTaxPaidAtProperty(bookingId);
   const guests = useWatch({ control: form.control, name: 'guests' });
   const [rateOpen, setRateOpen] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
-  const money = (amount: number) => formatCurrency(amount, 'EUR', i18n.language.startsWith('en') ? 'en-GB' : 'it-IT');
+  const locale = i18n.language.startsWith('en') ? 'en-GB' : 'it-IT';
+  // The tax of the stay has no currency of its own (the Italian rates are in euro): when the server sends the collection (the flag of the online payment is on) its currency is the one of the
+  // property and the amounts are shown in it, a currency it does not say as a number with no symbol; with the flag off the amounts are the euro amounts they have always been.
+  const collectionCurrency = taxQuery.data?.collection?.currency;
+  const money = (amount: number) =>
+    taxQuery.data?.collection
+      ? formatTaxMoney(amount, collectionCurrency, locale)
+      : formatCurrency(amount, 'EUR', locale);
   const { propertyId } = state.booking;
 
   if (taxQuery.isLoading) {
@@ -147,7 +164,8 @@ export function TaxStep({ bookingId, form, state }: TaxStepProps) {
 
   const tax = taxQuery.data;
   const outlook = taxOutlook(tax);
-  const busy = setExemptions.isPending || setCollector.isPending;
+  // Every write of the card waits for the others: none of its buttons starts a second one while one is under way.
+  const busy = setExemptions.isPending || setCollector.isPending || recordPaidAtProperty.isPending;
 
   const chooseExemption = (index: number, code: string) => {
     const path = `guests.${index}.taxExemptionCode` as const;
@@ -167,6 +185,14 @@ export function TaxStep({ bookingId, form, state }: TaxStepProps) {
     setProblem(null);
     setCollector.mutate(collector, {
       onError: (error) => setProblem(getProblemMessage(error, t) ?? t('checkin.wizard.tax.collectorFailed')),
+    });
+  };
+
+  // «Pagata in struttura» (E25/F01/US02/T01): the server refuses it for a stay it does not apply to, one the guest already paid online or one whose payment is on its way, and says why.
+  const recordPaid = () => {
+    setProblem(null);
+    recordPaidAtProperty.mutate(undefined, {
+      onError: (error) => setProblem(getProblemMessage(error, t) ?? t('checkin.wizard.tax.collection.markPaidFailed')),
     });
   };
 
@@ -293,6 +319,10 @@ export function TaxStep({ bookingId, form, state }: TaxStepProps) {
             </Button>
           )}
         </section>
+      )}
+
+      {tax.collection && (
+        <TaxCollection collection={tax.collection} busy={busy} recording={recordPaidAtProperty.isPending} onRecordPaidAtProperty={recordPaid} />
       )}
 
       {problem && (
