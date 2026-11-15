@@ -8,7 +8,9 @@ import { WizardSummary, type WizardSummaryItem } from '@/components/shared/wizar
 import type { PropertySender } from '@/types';
 import {
   SENDER_STEP,
+  autoSendAsked,
   autoSendInForce,
+  autoSendShown,
   confirmationOf,
   consentGiven,
   isAutomaticSender,
@@ -18,6 +20,8 @@ import {
 import { useSenderPropertyName } from '../use-sender-property-name';
 
 interface AutoSendSettingProps {
+  /** The sender as the server says it now: its setting of the automatic send is the one the switch shows until the person touches it. */
+  read: PropertySender;
   /** The person may change the setting (the organization administrator): without it the setting is told and nobody is offered a switch the server would refuse. */
   canChange: boolean;
 }
@@ -25,12 +29,14 @@ interface AutoSendSettingProps {
 /**
  * «Invia gli ospiti da solo quando i dati sono completi e l'identità è verificata» (E20/F01/US02, decision O1): the setting of the whole organization that lets CasaZen write the
  * guests to the channel manager without waiting for the host to confirm the check-in. It is off unless the organization turned it on, and the sentence under it says what the
- * state on screen means; the change is sent with the button of the step, like the sender, and the wizard stays where it is. Only the organization administrator can change it.
+ * state on screen means; the change is sent with the button of the step, like the sender, and the wizard stays where it is. Only the organization administrator can change it. Until
+ * the person touches the switch it shows the setting as the server holds it now and nothing about it is sent.
  */
-function AutoSendSetting({ canChange }: AutoSendSettingProps) {
+function AutoSendSetting({ read, canChange }: AutoSendSettingProps) {
   const { t } = useTranslation();
   const { control, setValue } = useFormContext<SenderWizardValues>();
-  const on = useWatch({ control, name: 'autoSendGuests' }) === true;
+  const chosen = useWatch({ control, name: 'autoSendGuests' });
+  const on = canChange ? autoSendShown({ autoSendGuests: chosen }, read) : autoSendInForce(read);
   const state = on ? 'on' : 'off';
 
   return (
@@ -79,7 +85,7 @@ export function SenderSummaryStep({ read, canChangeAutoSend = false }: SenderSum
   const automatic = isAutomaticSender(values.sender);
   const token = confirmationOf(read.sender, values.sender);
   // The sender stays as it is but the administrator changed the setting of the guests: the line that says «nothing changes» would contradict the switch right above it.
-  const onlyTheSetting = canChangeAutoSend && values.sender === 'ChannelManager' && values.autoSendGuests !== autoSendInForce(read);
+  const onlyTheSetting = canChangeAutoSend && values.sender === 'ChannelManager' && autoSendAsked(values, read) !== undefined;
   // The change is about one property: the summary says which (its name is read after the sender, so only for a property the caller reaches).
   const propertyName = useSenderPropertyName(read.propertyId, true);
 
@@ -104,7 +110,7 @@ export function SenderSummaryStep({ read, canChangeAutoSend = false }: SenderSum
     <div className="flex flex-col gap-6" data-testid="sender-summary-step">
       <WizardSummary items={items} />
 
-      {values.sender === 'ChannelManager' ? <AutoSendSetting canChange={canChangeAutoSend} /> : null}
+      {values.sender === 'ChannelManager' ? <AutoSendSetting read={read} canChange={canChangeAutoSend} /> : null}
 
       {kind !== 'same' ? (
         <section className="min-w-0 space-y-3" data-testid="sender-switch-confirmation" aria-labelledby="sender-switch-title">

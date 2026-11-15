@@ -11,6 +11,7 @@ import { propertiesApi } from '@/api/properties.api';
 import { propertySenderApi } from '@/api/property-sender.api';
 import { questuraCredentialsApi } from '@/api/questura-credentials.api';
 import { wizardDraftApi } from '@/api/wizard-draft.api';
+import { PROPERTY_SENDER_KEY } from '@/queries/use-property-sender';
 import type { Property, PropertySender } from '@/types';
 import { SENDER_DRAFT_EXCLUDE, SENDER_WIZARD_DEFAULTS, autoSendRefused, toSwitchRequest, type SenderWizardValues } from '../sender-wizard-model';
 import { SenderWizardPage } from '../sender-wizard';
@@ -51,6 +52,7 @@ vi.setConfig({ testTimeout: 30_000 });
 
 const WAIT = { timeout: 5000 };
 const PROPERTY_ID = '3f2b8c1e-5a4d-4e6f-9b7a-1c2d3e4f5a6b';
+const OTHER_PROPERTY_ID = '7a1c9d20-3b4e-4f5a-8c6d-0e1f2a3b4c5d';
 const ADDRESS = `/app/short-rent/compliance/sender?property=${PROPERTY_ID}`;
 const VERSION = '2026-11-v1';
 const ADMIN = 'org.billing.admin';
@@ -124,6 +126,12 @@ describe('the request that carries the automatic send of the guests', () => {
 
     expect('autoSendGuestsToOctorate' in toSwitchRequest(asked, senderOf())).toBe(false);
     expect('autoSendGuestsToOctorate' in toSwitchRequest(asked, senderOf(), { canChangeAutoSend: false })).toBe(false);
+  });
+
+  // The setting is the organization's: another page, property or person may have turned it on since this one was read. A switch nobody touched never sends a value.
+  it('toSwitchRequest_SwitchNeverTouched_NeverSendsTheSettingWhateverTheServerHolds', () => {
+    expect('autoSendGuestsToOctorate' in toSwitchRequest(values(), senderOf({ autoSendGuestsToOctorate: true }), { canChangeAutoSend: true })).toBe(false);
+    expect('autoSendGuestsToOctorate' in toSwitchRequest(values({ autoSendGuests: null }), senderOf({ autoSendGuestsToOctorate: false }), { canChangeAutoSend: true })).toBe(false);
   });
 
   it('toSwitchRequest_SenderThatIsNotTheChannelManager_HasNoSettingToChange', () => {
@@ -200,6 +208,14 @@ describe('SenderSummaryStep: the setting «Invia gli ospiti da solo…»', () =>
     expect(screen.getByTestId('sender-auto-send')).toHaveTextContent("Solo il titolare o un amministratore dell'organizzazione può cambiarlo.");
   });
 
+  it('summaryStep_SwitchNeverTouched_ShowsWhatTheServerHoldsNowAndNothingChanges', () => {
+    renderStep({ canChange: true, read: senderOf({ autoSendGuestsToOctorate: true }) });
+
+    expect(screen.getByRole('switch')).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByTestId('held')).toHaveTextContent('null');
+    expect(screen.getByTestId('sender-switch-none')).toHaveTextContent('non cambia nulla');
+  });
+
   it('summaryStep_SenderThatIsNotTheChannelManager_HasNoSettingAtAll', () => {
     renderStep({ canChange: true, initial: { sender: 'Manual' }, read: senderOf({ sender: 'Manual' }) });
 
@@ -231,8 +247,9 @@ describe('SenderWizardPage: the setting is saved with the summary and the wizard
     return createElement('div', { 'data-testid': 'location' }, `${location.pathname}${location.search}`);
   }
 
-  function renderWizard() {
-    const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+  const newClient = () => new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+
+  function renderWizard(client: QueryClient = newClient()) {
     return render(
       createElement(
         QueryClientProvider,
@@ -250,8 +267,8 @@ describe('SenderWizardPage: the setting is saved with the summary and the wizard
   const wizard = () => screen.getByTestId('sender-wizard');
   const next = () => fireEvent.click(screen.getByTestId('sender-next'));
 
-  async function toTheSummary() {
-    renderWizard();
+  async function toTheSummary(client?: QueryClient) {
+    renderWizard(client);
     await screen.findByTestId('sender-choice-step', undefined, WAIT);
     next();
     await waitFor(() => expect(wizard()).toHaveAttribute('data-step', 'summary'), WAIT);
@@ -319,6 +336,39 @@ describe('SenderWizardPage: the setting is saved with the summary and the wizard
     await toTheSummary();
 
     expect(screen.getByRole('switch')).toHaveAttribute('aria-checked', 'true');
+  });
+
+  // The page opens with what an older visit cached (the setting off) while the server holds it on since another property's wizard turned it on: a switch nobody touched shows what
+  // the server says and never puts the old value back.
+  it('SenderWizardPage_SenderCachedBeforeTheSettingWasTurnedOnElsewhere_NeverPutsItBackWithoutTheSwitchBeingTouched', async () => {
+    workspace.permissions = ['property.read', 'property.write', ADMIN];
+    server = senderOf({ autoSendGuestsToOctorate: true });
+    const client = newClient();
+    client.setQueryData([PROPERTY_SENDER_KEY, PROPERTY_ID], senderOf({ autoSendGuestsToOctorate: false }));
+    await toTheSummary(client);
+
+    // The read that came in after the page opened says on, and the switch follows it.
+    await waitFor(() => expect(screen.getByRole('switch')).toHaveAttribute('aria-checked', 'true'), WAIT);
+    next();
+
+    await waitFor(() => expect(propertySenderApi.switch).toHaveBeenCalledTimes(1), WAIT);
+    expect(Object.keys(vi.mocked(propertySenderApi.switch).mock.calls[0][1])).not.toContain('autoSendGuestsToOctorate');
+    expect(server.autoSendGuestsToOctorate).toBe(true);
+  });
+
+  it('SenderWizardPage_SettingChanged_ReadsAgainTheSenderOfEveryPropertyOfTheOrganization', async () => {
+    workspace.permissions = ['property.read', 'property.write', ADMIN];
+    const client = newClient();
+    const other = [PROPERTY_SENDER_KEY, OTHER_PROPERTY_ID] as const;
+    client.setQueryData(other, senderOf({ propertyId: OTHER_PROPERTY_ID }));
+    await toTheSummary(client);
+
+    fireEvent.click(screen.getByRole('switch'));
+    next();
+
+    await waitFor(() => expect(propertySenderApi.switch).toHaveBeenCalledTimes(1), WAIT);
+    // The setting belongs to the organization: what the sender of another property cached before is not the setting any more.
+    await waitFor(() => expect(client.getQueryState(other)?.isInvalidated).toBe(true), WAIT);
   });
 
   it('SenderWizardPage_SaveAndExit_NeverKeepsTheSettingInTheDraftSoItAlwaysStartsFromTheServerNextTime', async () => {

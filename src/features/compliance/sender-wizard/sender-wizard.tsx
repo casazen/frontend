@@ -38,7 +38,6 @@ import {
   SENDER_WIZARD_DEFAULTS,
   SENDER_WRITE_PERMISSION,
   SenderStepBlockedError,
-  autoSendInForce,
   autoSendRefused,
   defaultSenderChoice,
   delegationSettled,
@@ -161,7 +160,8 @@ function SenderWizard({ propertyId, read }: SenderWizardProps) {
   // Any request of the wizard in flight: none of its buttons can be pressed again meanwhile.
   const busy = switchSender.isPending || testConnection.isPending || declareActivated.isPending || saveCredentials.isPending;
 
-  const [defaults] = useState<SenderWizardValues>(() => ({ ...SENDER_WIZARD_DEFAULTS, sender: defaultSenderChoice(read), autoSendGuests: autoSendInForce(read) }));
+  // The automatic send of the guests starts untouched (`null`): the switch shows what the server holds now, never what an older read of another visit held, and sends nothing until it is touched.
+  const [defaults] = useState<SenderWizardValues>(() => ({ ...SENDER_WIZARD_DEFAULTS, sender: defaultSenderChoice(read) }));
   const leaveTo = stateAddress(propertyId);
   const tested = testConnection.data !== undefined;
   const verified = read.state === 'Active' && read.verification === 'Verified';

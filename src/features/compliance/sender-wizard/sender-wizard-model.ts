@@ -38,20 +38,29 @@ export type SenderStepId = (typeof SENDER_STEP)[keyof typeof SENDER_STEP];
  * The answers of the wizard. `delegationConsentVersion` is the version of the delegation text the person ticked, never a bare yes: the consent counts only for the
  * text in force (`consentGiven`). `switchConfirmed` is the change the person confirmed (`confirmationOf`), so a confirmation never outlives the change it was about. Those two are
  * given in the session that shows what they are about and are not part of the draft (`SENDER_DRAFT_EXCLUDE`). `autoSendGuests` is the organization's setting «Invia gli ospiti da solo
- * quando i dati sono completi e l'identità è verificata» (E20/F01/US02, decision O1) as the summary shows it: it starts from the one in force and is sent only when the person who may change
- * it changed it (`toSwitchRequest`).
+ * quando i dati sono completi e l'identità è verificata» (E20/F01/US02, decision O1) as the person chose it on the summary: `null` until they touch the switch, which then shows the setting in
+ * force as the server says it now (the setting is the organization's, so another property's page or another person may have changed it since this one was read) and sends nothing about it.
+ * It is sent only when the person who may change it touched the switch and left a value that is not the one in force (`toSwitchRequest`).
  */
 export interface SenderWizardValues {
   sender: ComplianceSenderType | '';
   delegationConsentVersion: string;
   switchConfirmed: string;
-  autoSendGuests: boolean;
+  autoSendGuests: boolean | null;
 }
 
-export const SENDER_WIZARD_DEFAULTS: SenderWizardValues = { sender: '', delegationConsentVersion: '', switchConfirmed: '', autoSendGuests: false };
+export const SENDER_WIZARD_DEFAULTS: SenderWizardValues = { sender: '', delegationConsentVersion: '', switchConfirmed: '', autoSendGuests: null };
 
 /** Whether the organization lets CasaZen write the guests to the channel manager on its own, as the server says it now (absent: off, the default). */
 export const autoSendInForce = (read: Pick<PropertySender, 'autoSendGuestsToOctorate'>): boolean => read.autoSendGuestsToOctorate === true;
+
+/** What the switch shows: the value the person chose, or, while they have not touched it, the setting in force as the server says it now. */
+export const autoSendShown = (values: Pick<SenderWizardValues, 'autoSendGuests'>, read: Pick<PropertySender, 'autoSendGuestsToOctorate'>): boolean =>
+  typeof values.autoSendGuests === 'boolean' ? values.autoSendGuests : autoSendInForce(read);
+
+/** What the person asked for the setting: the value they chose when it is not the one in force, and `undefined` (nothing to send) when they never touched the switch or left it as it is. */
+export const autoSendAsked = (values: Pick<SenderWizardValues, 'autoSendGuests'>, read: Pick<PropertySender, 'autoSendGuestsToOctorate'>): boolean | undefined =>
+  typeof values.autoSendGuests === 'boolean' && values.autoSendGuests !== autoSendInForce(read) ? values.autoSendGuests : undefined;
 
 /** The name the draft of the wizard is kept under, in the browser: one for each property, so a draft never leads to another property than the one in the address. */
 export const senderWizardId = (propertyId: string) => `compliance-sender:${propertyId}`;
@@ -152,18 +161,19 @@ interface SwitchRequestOptions {
  * The request that changes the sender. The consent is sent only when the host gave it to the text in force and the organization has not accepted it yet; the version sent is the
  * one the screen was loaded from, which is the text the person read. The confirmation is sent only for the change the host confirmed. The automatic send of the guests is a setting
  * of the whole organization that the server lets only its administrator change (anyone else who asks for another value is refused with a 403, and nothing of the request is done):
- * it goes only with the channel manager as the sender, only when the person may change it and only when the value is not the one in force.
+ * it goes only with the channel manager as the sender, only when the person may change it, only when they touched the switch and only when the value they left is not the one in force:
+ * a switch they never touched never sends a value, so it cannot put back a setting that was turned on elsewhere.
  */
 export function toSwitchRequest(values: SenderWizardValues, read: PropertySender, options: SwitchRequestOptions = {}): SwitchSenderRequest {
   if (values.sender === '') throw new Error('The sender is not chosen');
   const consent = isAutomaticSender(values.sender) && !read.delegationAccepted && consentGiven(values, read);
-  const autoSend = options.canChangeAutoSend === true && values.sender === 'ChannelManager' && values.autoSendGuests !== autoSendInForce(read);
+  const autoSend = options.canChangeAutoSend === true && values.sender === 'ChannelManager' ? autoSendAsked(values, read) : undefined;
   return {
     sender: values.sender,
     confirmed: switchKind(read.sender, values.sender) !== 'same' && values.switchConfirmed === confirmationOf(read.sender, values.sender),
     delegationConsent: consent,
     ...(consent ? { delegationTextVersion: read.delegationTextVersion } : {}),
-    ...(autoSend ? { autoSendGuestsToOctorate: values.autoSendGuests } : {}),
+    ...(autoSend !== undefined ? { autoSendGuestsToOctorate: autoSend } : {}),
   };
 }
 
