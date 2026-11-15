@@ -1682,6 +1682,9 @@
       "archiveDocumentNotFound": "We can no longer find this document, or it is not among the properties you have access to. The list has been refreshed.",
       "archiveExportTooLarge": "The archive would be too large. Choose a shorter period or fewer types of document.",
       "billingChannelsInvalid": "The data about the portal accounts is not valid. Check it and try again.",
+      "biometricAttemptsOutOfRange": "The attempts go from 1 to 5.",
+      "biometricThresholdsOrderInvalid": "The minimum threshold must be lower than the acceptance threshold.",
+      "biometricThresholdsOutOfRange": "The thresholds must be between 0.50 and 0.95.",
       "bookingNotActive": "The booking is not active (it was cancelled or the guest did not show up): no document can be issued.",
       "channelAccountHoldersConflict": "Another save changed the same listings: reload the page and try again.",
       "channelAccountHoldersInvalid": "The changes to the account holders are not valid: check the listings and the portals and try again.",
@@ -1726,7 +1729,9 @@
       "documentReadOnly": "This document is read-only: CasaZen did not issue it.",
       "documentRuleNotConfigured": "The tax rules of this document (rates and kind of document) are missing: complete the invoicing setup.",
       "fatturapaXmlInvalid": "The electronic invoice file is not valid: check the details of who issues and who receives the document.",
+      "guestUnreachable": "The guest has no e-mail address on file: nothing was sent.",
       "issuerRegimeCountryMismatch": "The regime you chose does not apply to the country of the issuer. Check the country and the regime.",
+      "noPendingVerification": "This verification is no longer waiting.",
       "ownerMandateOwnersEmpty": "There is no owner to apply the mandate to.",
       "reportInvalidPeriod": "The period is not valid: check the dates.",
       "reportPeriodTooLong": "The period is too long: choose one of at most 24 months.",
@@ -1916,6 +1921,8 @@
       "supportVaultSecretMissing": "These credentials are not there yet: save them first, or ask the user for them.",
       "supportVaultTooManyOpenings": "You already opened the credentials 5 times in the last hour for this request: try again later.",
       "supportVaultValueInvalid": "User name and password are required, 200 characters at most; the further code 100 at most.",
+      "videoCallNotSent": "The e-mail did not go out and nothing was sent. Try again.",
+      "videoCallUrlInvalid": "The link of the meeting is not valid: it has to start with https://, with no spaces or password.",
       "xlsxTooManyRows": "Too many rows: a sheet of an Excel file can have at most 10,000 rows. Choose a shorter period and try again.",
       "planLimitReached": "You have reached your plan limit",
       "planRequired": "This feature requires a higher plan.",
@@ -3722,6 +3729,72 @@
         }
       }
     }
+  },
+  "biometricSettings": {
+    "accept": {
+      "help": "From this value up the face is accepted on its own. Under this threshold the operator decides.",
+      "label": "Acceptance threshold"
+    },
+    "attempts": {
+      "help": "After these attempts the check goes to an operator. From {{min}} to {{max}}.",
+      "label": "The guest's attempts"
+    },
+    "calibrated": "Thresholds calibrated on {{date}}.",
+    "defaults": "The default values are in force for now: if you save, they become your organization’s own.",
+    "description": "How we check that the guest is who they say they are: we compare a selfie with the photo of the document. If you leave it off, a person always does the check.",
+    "enabled": {
+      "help": "When it is on, the guest takes a selfie and a program compares it with the photo of the document. When it is off, a person always does the check.",
+      "label": "Face check against the document"
+    },
+    "errors": {
+      "attemptsRange": "The attempts go from 1 to 5.",
+      "notANumber": "Write a number.",
+      "thresholdsOrder": "The minimum threshold must be lower than the acceptance threshold.",
+      "thresholdsRange": "The thresholds must be between {{min}} and {{max}}."
+    },
+    "escalate": {
+      "help": "Under this value the attempt does not pass and the guest tries again. Between the two thresholds the operator decides.",
+      "label": "Minimum threshold"
+    },
+    "loadError": "We cannot read the settings of the identity check.",
+    "models": {
+      "description": "Only CasaZen staff see this: it says which models are ready and why one cannot be used. While one is missing, every check goes to a person.",
+      "loadError": "We cannot read the state of the models.",
+      "notPinned": "File fingerprint not set",
+      "pinned": "File fingerprint set",
+      "reason": {
+        "config_invalid": "The configuration of the models is not valid.",
+        "download_failed": "The file could not be downloaded.",
+        "file_missing": "The file of the model is not there.",
+        "hash_mismatch": "The file does not match the fingerprint that was set.",
+        "hash_not_configured": "The fingerprint (SHA-256) of the file was not set: without it the model is not used.",
+        "load_failed": "The model did not load.",
+        "model_incompatible": "The model is not compatible with the program.",
+        "other": "Unexpected reason.",
+        "path_invalid": "The path of the file is not valid."
+      },
+      "state": {
+        "disabled": "Off",
+        "failed": "Not ready",
+        "loading": "Loading",
+        "other": "Unknown",
+        "present": "Present",
+        "ready": "Ready",
+        "unavailable": "Not available"
+      },
+      "summary": "State of the models: {{state}}.",
+      "title": "Models of the comparison"
+    },
+    "provisional": {
+      "badge": "Provisional thresholds",
+      "explain": "The thresholds have not been calibrated on real data yet: treat the automatic outcome as provisional. CasaZen staff confirms the calibration, it cannot be set from here."
+    },
+    "retry": "Try again",
+    "save": "Save",
+    "saveFailed": "The settings of the identity check could not be saved",
+    "saved": "Identity check settings saved",
+    "thresholdsRange": "The thresholds go from {{min}} to {{max}}: the higher the value, the stricter the comparison.",
+    "title": "Identity check"
   },
   "booking": {
     "status": {
@@ -5593,13 +5666,13 @@
       "consent": {
         "accept": "I agree to the face check",
         "decline": "I do not agree: a person will check me",
-        "description": "To give you the access code of the property, we compare a selfie with the photo on your identity document.",
-        "documentKept": "The photo of your document is kept encrypted only until the check is over, then it is deleted.",
-        "optional": "You can say no. A person at the property will then check your identity with you, and the access code reaches you after their decision. Saying no does not stop your check-in.",
-        "optionalTitle": "It is your choice",
-        "purpose": "You photograph your document and then take a selfie with the camera. A program on our server compares the two. Your selfie is never saved: it is deleted as soon as the comparison ends.",
-        "purposeTitle": "What happens",
+        "draft": "Draft",
+        "loadFailed": "We could not show you the text of the consent",
+        "loading": "Loading the text of the consent...",
+        "retry": "Try again",
+        "servedIn": "This text is available in {{language}}.",
         "title": "Check your identity with your face",
+        "unavailable": "The text of the consent is not available right now, so the face check cannot be offered. You can ask for a person to verify you.",
         "version": "Version of this text: {{version}}"
       }
     },
@@ -5700,6 +5773,33 @@
     "documentIssuedOn": {
       "label": "Issue date (optional)"
     },
+    "door": {
+      "arrivalHint": "The day your stay begins.",
+      "arrivalLabel": "Arrival date",
+      "codeHint": "It is in the confirmation e-mail of your booking.",
+      "codeLabel": "Booking code",
+      "description": "Write the details of your booking: we take you to the check-in and the identity check.",
+      "errors": {
+        "arrivalInvalid": "The date is not valid.",
+        "arrivalRequired": "Choose the arrival date.",
+        "codeInvalid": "The code is too long.",
+        "codeRequired": "Write the booking code.",
+        "failed": "Something went wrong. Please try again in a moment.",
+        "network": "We could not reach the server. Check your connection and try again.",
+        "notFound": "We could not find a stay with these details. Check the code (or the surname) and the arrival date, then try again.",
+        "surnameInvalid": "The surname is too long.",
+        "surnameRequired": "Write the surname.",
+        "tooManyRequests": "Too many attempts in a short time. Wait a minute and try again."
+      },
+      "modeCode": "I have the code",
+      "modeLabel": "How to find your stay",
+      "modeSurname": "I do not have the code",
+      "submit": "Continue",
+      "submitting": "Looking for your stay...",
+      "surnameHint": "The surname of the person who booked, or of the first guest.",
+      "surnameLabel": "Surname of the main guest",
+      "title": "Check-in at the entrance"
+    },
     "educationLevel": {
       "label": "Education level *",
       "none": "No qualification",
@@ -5744,17 +5844,28 @@
     },
     "identity": {
       "document": {
+        "back": {
+          "fileLabel": "Photo of the back of the identity document",
+          "illustration": "The back of an identity card: the lines of letters and numbers are at the bottom, inside the frame.",
+          "instructions": "Now turn the card over and photograph the back, where the lines of letters and numbers are (the zone a machine reads). Show all of it, flat and without reflections.",
+          "pick": "Photograph the back",
+          "pickAgain": "Photograph the back again"
+        },
         "fileLabel": "Photo of the identity document",
-        "instructions": "Place the document on a flat, well-lit surface. Show the whole side with your photo and the two lines of letters at the bottom, without reflections.",
+        "frontReceived": "The side with your photo has arrived.",
+        "instructions": "Place the document on a flat, well-lit surface. Show the whole side with your photo, without reflections. A passport has everything on one page: show the page with your photo and the two lines of letters at the bottom.",
         "notAcceptable": "The photo is not good enough yet. Please take it again.",
         "pick": "Photograph the document",
         "pickAgain": "Photograph it again",
         "sending": "Reading the document...",
+        "sideProgress": "Photo {{current}} of {{total}}",
         "title": "Photograph your identity document"
       },
       "documentNotArchived": "The document will not be archived.",
       "guidance": {
         "avoid_glare": "Avoid reflections: tilt the document a little or move away from the light.",
+        "document_back_needed": "Now photograph the back of the card, where the lines of letters are.",
+        "document_front_needed": "Photograph the side of the card with your photo.",
         "hold_still": "Hold the phone still: the photo is blurred.",
         "less_light": "There is too much light: move to a softer light.",
         "more_light": "There is too little light: move to a brighter place.",
@@ -5780,6 +5891,7 @@
       },
       "problem": {
         "consent_required": "We need your answer about the face check first.",
+        "consent_text_changed": "The text of the consent has been updated. Please read it again before you answer.",
         "document_photo": "We need the photo of the document again: please take it once more.",
         "document_required": "Please photograph the document first.",
         "failed": "Something went wrong. Please try again.",
@@ -21127,6 +21239,22 @@
       }
     },
     "qr": {
+      "door": {
+        "hint": "Print or download this QR code and put it at the door of the property: whoever arrives types the booking code and the arrival date and goes on with the check-in and the identity check.",
+        "instructions": "Scan this QR code to do the check-in and the identity check of your stay",
+        "loadFailed": "We cannot create the QR code. Try again in a moment.",
+        "needsWrite": "The QR code of the door is created and replaced by whoever may edit the property. Ask whoever manages it.",
+        "needsWriteTitle": "You need permission to edit the property",
+        "notFound": "We cannot find this property: it may not be one you have access to.",
+        "retry": "Try again",
+        "rotate": "Regenerate",
+        "rotateConfirm": "Regenerate the code",
+        "rotateDescription": "The code printed so far stops working at once: you will have to print the new one and replace it at the door.",
+        "rotateFailed": "We could not regenerate the code. The code you see is the one in use right now.",
+        "rotateTitle": "Regenerate the QR code of the door?",
+        "rotated": "New QR code created: the old one no longer works.",
+        "title": "QR code of the door"
+      },
       "download": "Download PNG",
       "error": "Error",
       "errorDescription": "Property ID missing or invalid.",
@@ -30676,6 +30804,7 @@
       "rejectButton": "Not verified",
       "rejectDescription": "The check-in is closed and the guest cannot try again. No access code is sent.",
       "rejectTitle": "Reject the check-in",
+      "verifyAfterCall": "After the video call, record the decision. If you approve, the guest receives the access code of the property by e-mail (if it has one); “Not verified” sends nothing and needs a note.",
       "verifyDescription": "Contact the guest outside CasaZen, then record your decision. Approving sends the guest the access code of the property by email (if the property has one); \"Not verified\" sends nothing and needs a note.",
       "verifyTitle": "Record your decision"
     },
@@ -30702,6 +30831,7 @@
       "upcoming": "Upcoming"
     },
     "guest": {
+      "callHint": "Propose a video call to the guest from this card, then record your decision.",
       "contactHint": "Contact the guest outside CasaZen (for example by video call) and then record your decision.",
       "noContact": "No email address on file: look for the guest's contact in the booking.",
       "openBooking": "Open the booking",
@@ -30754,6 +30884,28 @@
       "timeout": "it took too long",
       "unavailable": "the models are not available",
       "unreadable": "the document could not be read"
+    },
+    "videoCall": {
+      "button": "Video call",
+      "description": "Create the meeting with the tool you usually use and paste the link here: we send it to the guest by e-mail. After the call you record your decision.",
+      "errors": {
+        "failed": "Something went wrong. Please try again in a moment.",
+        "forbidden": "You do not have permission to propose a video call for this verification.",
+        "invalid_url": "The link is not valid: it has to start with https://, with no spaces or password, and be at most 500 characters long.",
+        "not_pending": "This verification is no longer waiting: someone else may have decided it already. The queue has been refreshed.",
+        "not_sent": "The e-mail did not go out and nothing was sent. Try again.",
+        "outcome_unknown": "We could not confirm the sending: the e-mail may have gone out all the same. Before you try again, ask the guest whether they received it.",
+        "required": "Paste the link of the meeting.",
+        "too_many_requests": "Too many requests in a short time. Wait a moment and try again.",
+        "unreachable": "The guest has no e-mail address on file, so we sent nothing. Open the booking to look for another contact, for example the portal chat."
+      },
+      "linkHint": "It has to start with https://. The link goes to the guest by e-mail only: it does not stay in the booking card.",
+      "linkLabel": "Link of the meeting",
+      "send": "Send to the guest",
+      "sending": "Sending...",
+      "sent": "Video call link sent to the guest. After the call, record your decision.",
+      "sentNote": "Video call link sent",
+      "title": "Propose a video call to {{name}}"
     },
     "why": {
       "no_match": "The last automatic check did not find the face the same as the one on the document. The guest may also have asked for a person.",

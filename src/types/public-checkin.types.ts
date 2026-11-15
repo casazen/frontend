@@ -296,7 +296,17 @@ export interface IdentityVerificationState {
   operatorPathOpen: boolean;
   documentNotArchived: boolean;
   verifyingGuestPosition: number;
+  /**
+   * The pictures of the document the server holds a read of (E22/F01/US01/T02): `['single']`, or `front` and `back` for those that were sent; empty before the first one. Add-only
+   * field: an older API omits it.
+   */
+  documentSides?: string[];
+  /** The side of a document of two sides still to photograph (`front` or `back`), so a page that is opened again asks for it; null (or absent) when none is missing. */
+  documentSideNeeded?: DocumentSide | null;
 }
+
+/** The side of an identity document a picture is of: a card has the face on the front and, on the Italian electronic identity card, the lines of letters (MRZ) on the back. */
+export type DocumentSide = 'front' | 'back';
 
 /**
  * The guest's answer to the biometric consent (`POST /api/public/checkin/{token}/biometric-consent`, ADR-013-R9): explicit, separate from the
@@ -327,8 +337,12 @@ export interface IdentityDocumentResponse {
   /** What to change in the photo (`show_whole_document`, `avoid_glare`, `hold_still`, `more_light`, ...): codes the page translates. */
   guidanceCodes: string[];
   documentStored: boolean;
-  /** The property keeps no document (Ticino): the selfie request carries the photo again. */
+  /** The property keeps no document (Ticino): the selfie request carries the photo again (both sides of a document of two sides). */
   documentNotArchived: boolean;
+  /** The side that was just read (`single`, `front` or `back`). Add-only field: an older API omits it. */
+  side?: string;
+  /** The pictures of the attempt the server has a read of (`['single']`, or `front` and `back`). Add-only field. */
+  sides?: string[];
 }
 
 /**
@@ -353,6 +367,47 @@ export interface IdentityOperatorResponse {
   result: string;
   operatorPathOpen: boolean;
   state: IdentityVerificationState;
+}
+
+/** What a legal text of the identity step is for (API `CheckInLegalTextKinds`): the consent to the face check, and the notice for a property that keeps no document (Ticino). */
+export type CheckInLegalTextKind = 'biometric-consent' | 'ticino-notice';
+
+/**
+ * One legal text of the identity step as the registry serves it (`GET /api/public/checkin/{token}/legal-texts`, E22/F01/US02/T02): its `version` is the id the consent posts back, `language`
+ * the one of the file served (the closest the registry has), `isDraft` that it is not approved yet (served outside production only), and `contentHtml` its text, already sanitized by the server.
+ */
+export interface CheckInLegalText {
+  kind: CheckInLegalTextKind | string;
+  version: string;
+  language: string;
+  isDraft: boolean;
+  contentHtml: string;
+}
+
+/** Answer of `GET /api/public/checkin/{token}/legal-texts?lang=`: the language asked for and the texts of the stay (the consent, and the Ticino notice where it applies). */
+export interface CheckInLegalTextsResponse {
+  language: string;
+  texts: CheckInLegalText[];
+}
+
+/**
+ * What the guest types at the door (`POST /api/public/checkin/door/{doorToken}`, E22/F01/US02/T01): the booking code or, without one, the surname of the main guest, and the day the stay
+ * begins (`yyyy-MM-dd`). The code wins when both are sent, so only one of them is ever sent.
+ */
+export interface DoorCheckInRequest {
+  bookingCode?: string;
+  surname?: string;
+  arrivalDate: string;
+}
+
+/** Answer of the door: the token of the check-in link of the stay, and nothing else. It opens `/checkin/{token}`. */
+export interface DoorCheckInResponse {
+  token: string;
+}
+
+/** The address behind the QR code of the door of a property (`GET api/properties/{id}/door-qr` and `POST .../rotate`). */
+export interface DoorQr {
+  url: string;
 }
 
 /**

@@ -78,3 +78,51 @@ describe('the identity calls of the guest check-in (E03/F04/US03/T01)', () => {
     expect(postCall()).toEqual({ url: `/public/checkin/${TOKEN}/request-operator`, body: undefined, options: { public: true } });
   });
 });
+
+describe('the document on two sides, the legal texts and the door (E22/F02/US01/T01)', () => {
+  it.each(['front', 'back'] as const)('postDocument_Side_%s_SendsTheSideInTheFieldTheApiReads', async (side) => {
+    await publicCheckinApi.postDocument(TOKEN, new Blob(['document'], { type: 'image/jpeg' }), side);
+
+    const form = postCall().body as FormData;
+    expect([...form.keys()]).toEqual(['document', 'side']);
+    expect(form.get('side')).toBe(side);
+  });
+
+  it('postSelfie_TicinoWithTwoSides_SendsBothPicturesInTheFieldsTheApiReads', async () => {
+    await publicCheckinApi.postSelfie(
+      TOKEN,
+      new Blob(['selfie'], { type: 'image/jpeg' }),
+      new Blob(['front'], { type: 'image/jpeg' }),
+      new Blob(['back'], { type: 'image/jpeg' }),
+    );
+
+    const form = postCall().body as FormData;
+    expect([...form.keys()]).toEqual(['selfie', 'documentPhoto', 'documentPhotoBack']);
+    expect((form.get('documentPhotoBack') as File).name).toBe('document-back.jpg');
+  });
+
+  it('getLegalTexts_TheLanguageOfThePage_IsAnAnonymousGetWithTheLanguageInTheQuery', async () => {
+    vi.mocked(axios.get).mockResolvedValue({ data: { language: 'de', texts: [] } });
+
+    await expect(publicCheckinApi.getLegalTexts(TOKEN, 'de')).resolves.toEqual({ language: 'de', texts: [] });
+
+    const [url, config] = vi.mocked(axios.get).mock.calls[0];
+    expect(url).toBe(`/public/checkin/${TOKEN}/legal-texts`);
+    expect(config).toMatchObject({ params: { lang: 'de' }, public: true });
+  });
+
+  it('openDoor_BookingCodeAndDate_IsAnAnonymousPostWhoseBodyHoldsTheDataAndTheAddressNone', async () => {
+    vi.mocked(axios.post).mockResolvedValue({ data: { token: 'link-token' } });
+
+    await expect(publicCheckinApi.openDoor('door-token', { bookingCode: 'ABC123', arrivalDate: '2026-11-20' })).resolves.toEqual({ token: 'link-token' });
+
+    expect(postCall()).toEqual({
+      url: '/public/checkin/door/door-token',
+      body: { bookingCode: 'ABC123', arrivalDate: '2026-11-20' },
+      options: { public: true },
+    });
+    // What was typed is personal data: it is in the body only, never in the address of the call.
+    expect(postCall().url).not.toContain('ABC123');
+    expect(postCall().url).not.toContain('2026-11-20');
+  });
+});

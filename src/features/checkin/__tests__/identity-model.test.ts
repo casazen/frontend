@@ -19,9 +19,11 @@ import {
   guidanceKey,
   IDENTITY_PROBLEMS,
   isIdentityConcluded,
+  legalTextOf,
   problemKey,
   progressFromState,
   retakeTargetOf,
+  sideAskedBy,
   type IdentityProgress,
 } from '../lib/identity-model';
 
@@ -251,6 +253,10 @@ describe('afterProblem and isIdentityConcluded', () => {
     expect(afterProblem(start({ step: 'selfie' }), 'consent_required').stage).toBe('consent');
   });
 
+  it('afterProblem_TheTextOfTheConsentChanged_StaysAtTheConsentToReadItAgain', () => {
+    expect(afterProblem(start({ step: 'consent' }), 'consent_text_changed').stage).toBe('consent');
+  });
+
   it.each(['document_required', 'document_photo'] as const)('afterProblem_%s_GoesBackToTheDocument', (problem) => {
     expect(afterProblem(start({ step: 'selfie' }), problem).stage).toBe('document');
   });
@@ -291,6 +297,8 @@ describe('classifyIdentityError', () => {
 
   it.each([
     [409, 'biometric_consent_required', 'consent_required'],
+    [422, 'biometric_consent_version_unknown', 'consent_text_changed'],
+    [400, 'biometric_consent_version_required', 'consent_text_changed'],
     [409, 'document_check_required', 'document_required'],
     [400, 'document_photo_required', 'document_photo'],
     [409, 'document_photo_mismatch', 'document_photo'],
@@ -339,6 +347,9 @@ describe('the words of the identity step in the five languages of the page', () 
     'use_valid_document',
     'tip_remove_glasses',
     'tip_remove_mask',
+    // The document on two sides (E22/F01/US01/T02): which side comes next.
+    'document_back_needed',
+    'document_front_needed',
   ];
 
   it('guidanceCodes_AreExactlyTheOnesTheApiSends', () => {
@@ -367,13 +378,173 @@ describe('the words of the identity step in the five languages of the page', () 
       'checkin.identity.result.operator.text',
       'checkin.biometric.consent.accept',
       'checkin.biometric.consent.decline',
+      // The texts of the consent come from the registry; the page keeps the words around them.
+      ...['draft', 'loadFailed', 'loading', 'retry', 'servedIn', 'unavailable'].map((part) => `checkin.biometric.consent.${part}`),
+      // The document on two sides, with the drawing of where the lines of letters are.
+      ...['back.fileLabel', 'back.illustration', 'back.instructions', 'back.pick', 'back.pickAgain', 'frontReceived', 'sideProgress', 'instructions'].map(
+        (part) => `checkin.identity.document.${part}`,
+      ),
+      // The door of the property.
+      ...['title', 'description', 'modeLabel', 'modeCode', 'modeSurname', 'codeLabel', 'codeHint', 'surnameLabel', 'surnameHint', 'arrivalLabel', 'arrivalHint', 'submit', 'submitting'].map(
+        (part) => `checkin.door.${part}`,
+      ),
+      ...['notFound', 'tooManyRequests', 'network', 'failed', 'codeRequired', 'codeInvalid', 'surnameRequired', 'surnameInvalid', 'arrivalRequired', 'arrivalInvalid'].map(
+        (part) => `checkin.door.errors.${part}`,
+      ),
     ];
 
     expect(keys.filter((key) => typeof lookup(catalogue, key) !== 'string' || String(lookup(catalogue, key)).trim() === '')).toEqual([]);
   });
 
+  it('theTextsTheRegistryServes_AreNotInTheCataloguesAnyMore_TheyHaveOneSource', () => {
+    // The wording of the consent is the registry's (E22/F01/US02/T02): a copy in the page would drift from the version that is recorded.
+    const removed = ['description', 'documentKept', 'optional', 'optionalTitle', 'purpose', 'purposeTitle'].map((part) => `checkin.biometric.consent.${part}`);
+
+    for (const [, catalogue] of catalogues) expect(removed.filter((key) => lookup(catalogue, key) !== undefined)).toEqual([]);
+  });
+
   it('theItalianButtonToAskAPerson_IsTheOneOfTheBrief', () => {
     expect(lookup(it_, 'checkin.identity.operator.ask')).toBe('Chiedi la verifica di un operatore');
     expect(lookup(it_, 'checkin.identity.documentNotArchived')).toBe('Il documento non sarà archiviato.');
+  });
+});
+
+describe('the document on two sides (E22/F02/US01/T01)', () => {
+  const answer = (overrides: Partial<Parameters<typeof afterDocument>[1]> = {}) => ({
+    success: true,
+    acceptable: false,
+    guidanceCodes: [] as string[],
+    documentStored: true,
+    documentNotArchived: false,
+    ...overrides,
+  });
+  const backNeeded = answer({ guidanceCodes: ['document_back_needed'] });
+  const complete = answer({ acceptable: true });
+
+  it('progressFromState_NothingSentYet_AsksForTheFrontFirst', () => {
+    const progress = start({ step: 'document' });
+
+    expect(progress.documentSideNeeded).toBe('front');
+    expect(progress.documentTwoSided).toBe(false);
+    expect(progress.documentSidesTaken).toEqual([]);
+  });
+
+  it('progressFromState_TheServerHasTheFrontAndWantsTheBack_AsksForTheBackWithoutTheFrontAgain', () => {
+    const progress = start({ step: 'document', documentSides: ['front'], documentSideNeeded: 'back' });
+
+    expect(progress.documentSideNeeded).toBe('back');
+    expect(progress.documentTwoSided).toBe(true);
+    expect(progress.documentSidesTaken).toEqual(['front']);
+  });
+
+  it('progressFromState_APassportSentAsTheFront_IsOneSidedAndGoesOn', () => {
+    const progress = start({ step: 'selfie', documentSides: ['front'] });
+
+    expect(progress.documentTwoSided).toBe(false);
+    expect(progress.stage).toBe('selfie');
+  });
+
+  it('afterDocument_TheFrontIsGoodAndTheBackIsNeeded_AsksForTheBackAndIsNotARefusal', () => {
+    const next = afterDocument(start({ step: 'document' }), backNeeded, 'front');
+
+    expect(next.stage).toBe('document');
+    expect(next.documentSideNeeded).toBe('back');
+    expect(next.documentTwoSided).toBe(true);
+    expect(next.documentSidesTaken).toEqual(['front']);
+    // The photo that was taken was good: the page does not say it was not.
+    expect(next.documentRefused).toBe(false);
+  });
+
+  it('afterDocument_TheBackCompletesTheDocument_GoesToTheSelfie', () => {
+    const afterFront = afterDocument(start({ step: 'document' }), backNeeded, 'front');
+    const next = afterDocument(afterFront, complete, 'back');
+
+    expect(next.stage).toBe('selfie');
+    expect(next.documentSidesTaken).toEqual(['front', 'back']);
+    expect(next.guidanceCodes).toEqual([]);
+  });
+
+  it('afterDocument_APassportAsTheFront_NeedsNoBackAndGoesToTheSelfie', () => {
+    const next = afterDocument(start({ step: 'document' }), complete, 'front');
+
+    expect(next.stage).toBe('selfie');
+    expect(next.documentTwoSided).toBe(false);
+  });
+
+  it('afterDocument_TheBackIsNotGoodEnough_AsksForTheBackAgainWithTheGuidance', () => {
+    const afterFront = afterDocument(start({ step: 'document' }), backNeeded, 'front');
+    const next = afterDocument(afterFront, answer({ guidanceCodes: ['avoid_glare'] }), 'back');
+
+    expect(next.stage).toBe('document');
+    expect(next.documentSideNeeded).toBe('back');
+    expect(next.documentRefused).toBe(true);
+    expect(next.guidanceCodes).toEqual(['avoid_glare']);
+  });
+
+  it('afterDocument_TheFrontIsMissingAfterTheBack_AsksForTheFront', () => {
+    const next = afterDocument(start({ step: 'document', documentSideNeeded: 'back' }), answer({ guidanceCodes: ['document_front_needed'] }), 'back');
+
+    expect(next.documentSideNeeded).toBe('front');
+    expect(next.documentRefused).toBe(false);
+  });
+
+  it('afterDocument_TicinoWithTheServerSatisfiedAfterTheFrontOnly_StillAsksForTheBackBecauseBothComeAgainWithTheSelfie', () => {
+    // After a reload in Ticino the server has both sides, so it is satisfied by the front alone; the selfie of a property that keeps nothing carries both pictures.
+    const reloaded = start({ step: 'selfie', documentNotArchived: true, documentSides: ['front', 'back'] });
+    expect(reloaded.stage).toBe('document');
+    expect(reloaded.documentTwoSided).toBe(true);
+
+    const afterFront = afterDocument(reloaded, answer({ acceptable: true, documentNotArchived: true }), 'front');
+    expect(afterFront.stage).toBe('document');
+    expect(afterFront.documentSideNeeded).toBe('back');
+
+    const afterBack = afterDocument(afterFront, answer({ acceptable: true, documentNotArchived: true }), 'back');
+    expect(afterBack.stage).toBe('selfie');
+    expect(afterBack.documentSidesTaken).toEqual(['front', 'back']);
+  });
+
+  it('afterRetake_TheDocumentAgain_StartsFromTheFaceSide', () => {
+    const progress = afterDocument(afterDocument(start({ step: 'document' }), backNeeded, 'front'), complete, 'back');
+    const retry = afterSelfie(progress, { result: 'retry', guidanceCodes: ['upload_document_again'], attemptsRemaining: 1, operatorPathOpen: true });
+
+    expect(afterRetake(retry).documentSideNeeded).toBe('front');
+    expect(afterRetake(retry).stage).toBe('document');
+  });
+
+  it('afterProblem_ThePicturesAreNotTheOnesTheServerRead_AsksForTheDocumentAgainFromTheFrontWithNothingHeld', () => {
+    const progress = afterDocument(afterDocument(start({ step: 'document' }), backNeeded, 'front'), complete, 'back');
+    const next = afterProblem(progress, 'document_photo');
+
+    expect(next.stage).toBe('document');
+    expect(next.documentSideNeeded).toBe('front');
+    expect(next.documentSidesTaken).toEqual([]);
+  });
+
+  it('afterSelfie_APassOrAPerson_LetsGoOfTheSidesTheStepHeld', () => {
+    const progress = afterDocument(afterDocument(start({ step: 'document' }), backNeeded, 'front'), complete, 'back');
+
+    expect(afterSelfie(progress, { result: 'ok', guidanceCodes: [], attemptsRemaining: 2, operatorPathOpen: true }).documentSidesTaken).toEqual([]);
+    expect(afterSelfie(progress, { result: 'operator', guidanceCodes: [], attemptsRemaining: 0, operatorPathOpen: true }).documentSidesTaken).toEqual([]);
+    expect(afterSelfie(progress, { result: 'retry', guidanceCodes: ['hold_still'], attemptsRemaining: 1, operatorPathOpen: true }).documentSidesTaken).toEqual(['front', 'back']);
+  });
+
+  it.each([
+    [['document_back_needed'], 'back'],
+    [['avoid_glare', 'document_front_needed'], 'front'],
+    [['avoid_glare'], null],
+    [[], null],
+  ] as const)('sideAskedBy_%j_Is_%s', (codes, side) => {
+    expect(sideAskedBy(codes)).toBe(side);
+  });
+
+  it('legalTextOf_TheRegistryServedNoConsent_IsNull_AndAVersionlessTextIsNeverOne', () => {
+    const texts = [
+      { kind: 'ticino-notice', version: 'checkin-ticino-2026-11', language: 'it', isDraft: false, contentHtml: '<p>x</p>' },
+      { kind: 'biometric-consent', version: ' ', language: 'it', isDraft: false, contentHtml: '<p>y</p>' },
+    ];
+
+    expect(legalTextOf(texts, 'biometric-consent')).toBeNull();
+    expect(legalTextOf(texts, 'ticino-notice')?.version).toBe('checkin-ticino-2026-11');
+    expect(legalTextOf(undefined, 'biometric-consent')).toBeNull();
   });
 });

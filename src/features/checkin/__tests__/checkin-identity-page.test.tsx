@@ -14,6 +14,7 @@ vi.mock('@/api/checkin.api', () => ({
     submit: vi.fn(),
     searchCodes: vi.fn(),
     setLanguage: vi.fn(),
+    getLegalTexts: vi.fn(),
     postBiometricConsent: vi.fn(),
     postDocument: vi.fn(),
     postSelfie: vi.fn(),
@@ -72,7 +73,7 @@ const openContext: PublicCheckInContextDto = {
 
 const withIdentity: PublicCheckInContextDto = { ...openContext, identityVerification: identityState(), documentNotArchived: false };
 
-function renderPage() {
+function renderPage(search = '') {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
     createElement(
@@ -80,7 +81,7 @@ function renderPage() {
       { client },
       createElement(
         MemoryRouter,
-        { initialEntries: [`/checkin/${TOKEN}`] },
+        { initialEntries: [`/checkin/${TOKEN}${search}`] },
         createElement(Routes, null, createElement(Route, { path: '/checkin/:token', element: createElement(CheckInPage) })),
       ),
     ),
@@ -134,6 +135,10 @@ beforeEach(async () => {
   vi.clearAllMocks();
   vi.mocked(publicCheckinApi.searchCodes).mockResolvedValue([]);
   vi.mocked(publicCheckinApi.getContext).mockResolvedValue(withIdentity);
+  vi.mocked(publicCheckinApi.getLegalTexts).mockResolvedValue({
+    language: 'it',
+    texts: [{ kind: 'biometric-consent', version: 'checkin-biometric-2026-11', language: 'it', isDraft: false, contentHtml: '<p>Il tuo selfie non viene mai salvato.</p>' }],
+  });
   await i18n.changeLanguage('it');
 });
 
@@ -268,5 +273,56 @@ describe('CheckInPage with the identity verification (E03/F04/US03/T01)', () => 
     await goToTheStepAfterTheDocument();
 
     expect(await screen.findByTestId('checkin-document-not-archived')).toHaveTextContent('Il documento non sarà archiviato.');
+  });
+});
+
+describe('CheckInPage opened through the door of the property (E22/F02/US01/T01)', () => {
+  it('doorEntry_TheAddressSaysIdentity_StartsAtTheIdentityStepWithTheTextOfTheRegistry', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+    renderPage('?step=identity');
+
+    await screen.findByTestId('checkin-identity-step');
+    expect(stepLabel()).toBe('Passo 4 di 6');
+    expect(await screen.findByTestId('checkin-consent-text')).toHaveTextContent('Il tuo selfie non viene mai salvato.');
+    expect(publicCheckinApi.getLegalTexts).toHaveBeenCalledWith(TOKEN, 'it');
+  });
+
+  it('doorEntry_NoStepInTheAddress_StartsAtTheFirstStepAsItAlwaysDid', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+    renderPage();
+
+    await screen.findByTestId('checkin-page');
+    expect(screen.queryByTestId('checkin-identity-step')).not.toBeInTheDocument();
+    expect(stepLabel()).toBe('Passo 1 di 6');
+  });
+
+  it('doorEntry_TheVerificationIsOffForTheStay_StartsAtTheFirstStepWhateverTheAddressSays', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+    vi.mocked(publicCheckinApi.getContext).mockResolvedValue(openContext);
+    renderPage('?step=identity');
+
+    await screen.findByTestId('checkin-page');
+    expect(screen.queryByTestId('checkin-identity-step')).not.toBeInTheDocument();
+    expect(stepLabel()).toBe('Passo 1 di 5');
+  });
+
+  it('doorEntry_SendingWithTheDataNeverTyped_TakesTheGuestToTheStepThatHoldsIt', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+    vi.mocked(publicCheckinApi.postBiometricConsent).mockResolvedValue({
+      consentRecorded: false,
+      result: 'operator',
+      biometricOffered: false,
+      operatorPathOpen: true,
+      state: identityState({ step: 'operator', consentRefused: true, operatorRequested: true, biometricOffered: false }),
+    });
+    renderPage('?step=identity');
+    // The guest asks for a person at the door, goes on to the invoice and the consents, and sends: nothing of the data of the stay was ever typed here.
+    fireEvent.click(await screen.findByTestId('checkin-biometric-decline'));
+    await waitFor(() => expect(screen.getByTestId('checkin-next')).toBeEnabled());
+    fireEvent.click(screen.getByTestId('checkin-next'));
+    fireEvent.click(await screen.findByTestId('checkin-invoice-no'));
+    fireEvent.click(screen.getByTestId('checkin-next'));
+    fireEvent.click(await screen.findByTestId('checkin-submit'));
+
+    // The page does not stay at a button that seems to do nothing: it takes the guest to the first step with a field to correct.
+    await screen.findByTestId('stay-guest-0');
+    expect(stepLabel()).toBe('Passo 2 di 6');
+    expect(publicCheckinApi.submit).not.toHaveBeenCalled();
   });
 });

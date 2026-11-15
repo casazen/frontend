@@ -2,6 +2,9 @@ import { isAxiosError } from 'axios';
 import { getHttpStatus, getProblemCode, isTransientRequestError } from '@/lib/api-errors';
 import type {
   BiometricConsentResponse,
+  CheckInLegalText,
+  CheckInLegalTextKind,
+  DocumentSide,
   IdentityDocumentResponse,
   IdentityOperatorResponse,
   IdentitySelfieResponse,
@@ -9,10 +12,16 @@ import type {
 } from '@/types/public-checkin.types';
 
 /**
- * The version of the text of the biometric consent the guest reads (ADR-013-R9): it is sent with a consent and kept with its time, so the text the
- * guest agreed to can be told. Change it with the text (`checkin.biometric.consent.*`), at most 50 characters.
+ * The kinds of legal text the registry of the identity step serves (API `CheckInLegalTextKinds`): the consent to the face check, whose `version` the consent posts back, and
+ * the notice of a property that keeps no document (Ticino). The text of each is the registry's, never the page's (E22/F01/US02/T02).
  */
-export const BIOMETRIC_CONSENT_VERSION = 'checkin-biometric-2026-11';
+export const BIOMETRIC_CONSENT_KIND: CheckInLegalTextKind = 'biometric-consent';
+export const TICINO_NOTICE_KIND: CheckInLegalTextKind = 'ticino-notice';
+
+/** The text of `kind` among the ones the registry served, or `null` when it served none (in production, a text that is not approved yet is not served). */
+export function legalTextOf(texts: readonly CheckInLegalText[] | undefined, kind: CheckInLegalTextKind): CheckInLegalText | null {
+  return texts?.find((text) => text.kind === kind && text.version.trim() !== '') ?? null;
+}
 
 /**
  * The capture guidance codes of the API (`CaptureGuidanceCodes`): what to change in a photo, and the static tips of the selfie. Each has its words in
@@ -35,6 +44,8 @@ export const GUIDANCE_CODES = [
   'use_valid_document',
   'tip_remove_glasses',
   'tip_remove_mask',
+  'document_back_needed',
+  'document_front_needed',
 ] as const;
 
 /** The key of the words of a guidance code, or of the generic sentence for a code that is not known. */
@@ -42,8 +53,23 @@ export function guidanceKey(code: string): string {
   return (GUIDANCE_CODES as readonly string[]).includes(code) ? `checkin.identity.guidance.${code}` : 'checkin.identity.guidance.other';
 }
 
+/**
+ * The codes that only say which side of the document comes next: the picture before it was good, the document has two sides (the Italian electronic identity card has the face on the
+ * front and the lines of letters on the back). They are not a refusal of the photo that was taken.
+ */
+const SIDE_GUIDANCE: Readonly<Record<string, DocumentSide>> = { document_back_needed: 'back', document_front_needed: 'front' };
+
+/** The side a guidance asks for next, or `null` when it asks for none. */
+export function sideAskedBy(codes: readonly string[]): DocumentSide | null {
+  for (const code of codes) {
+    const side = SIDE_GUIDANCE[code];
+    if (side) return side;
+  }
+  return null;
+}
+
 /** The codes that ask for the document to be photographed again, not the selfie. */
-const DOCUMENT_GUIDANCE: ReadonlySet<string> = new Set(['upload_document_again', 'use_valid_document']);
+const DOCUMENT_GUIDANCE: ReadonlySet<string> = new Set(['upload_document_again', 'use_valid_document', ...Object.keys(SIDE_GUIDANCE)]);
 
 /** What the guest takes again after a `retry`: the document when the guidance says so, otherwise the selfie. */
 export function retakeTargetOf(codes: readonly string[]): 'document' | 'selfie' {
@@ -55,7 +81,7 @@ export type IdentityStage = 'consent' | 'document' | 'selfie' | 'retry' | 'opera
 
 /**
  * Everything the identity step knows, in memory for the life of the page and never in a storage, a cache or a log: the stage, whether a person
- * was asked, the attempts left, the guidance of the last answer and the lock code of a pass.
+ * was asked, the attempts left, the guidance of the last answer and the lock code of a pass. Never a picture: only which sides of the document were sent.
  */
 export interface IdentityProgress {
   stage: IdentityStage;
@@ -70,6 +96,12 @@ export interface IdentityProgress {
   guidanceCodes: readonly string[];
   /** The last photo of the document could not be compared: the guest takes it again (with the guidance, when the API gave any). */
   documentRefused: boolean;
+  /** The side of the document the next photo is of: the front first; the back when the answer said the document has two sides and the front was good. */
+  documentSideNeeded: DocumentSide;
+  /** The document has two sides (a card with the face on the front and the lines of letters on the back): the API said so, or the page was opened again with both on file. */
+  documentTwoSided: boolean;
+  /** The sides sent from this page since the step began (a property that keeps no document gets them again with the selfie, so the page holds those pictures; the list says which, it is no picture). */
+  documentSidesTaken: readonly DocumentSide[];
   /** The lock code, only after an `ok`; `null` for any other answer and for a property with none. */
   lockCode: string | null;
   /** Why an `ok` came with no lock code although the property has one (`LOCK_CODE_HELD_TOURIST_TAX`): the code is held back until the tourist tax is paid. */
@@ -95,6 +127,27 @@ function stageOfState(state: IdentityVerificationState): IdentityStage {
   }
 }
 
+/** The sides of the document the server holds a read of, without the `single` of a document of one picture. */
+function sidesOnFile(state: IdentityVerificationState): DocumentSide[] {
+  const sides = state.documentSides ?? [];
+  return (['front', 'back'] as const).filter((side) => sides.includes(side));
+}
+
+/** The document has two sides: a picture of the back is on file, or the server says a side is still missing (only a document of two sides misses one). */
+function isTwoSided(state: IdentityVerificationState): boolean {
+  return sidesOnFile(state).includes('back') || (state.documentSideNeeded ?? null) !== null;
+}
+
+/** What the document step starts from, given what the server says: the side it still wants (the front, when it says none), and the sides it has. */
+function documentFromState(state: IdentityVerificationState): Pick<IdentityProgress, 'documentSideNeeded' | 'documentTwoSided' | 'documentSidesTaken'> {
+  return {
+    documentSideNeeded: state.documentSideNeeded ?? 'front',
+    documentTwoSided: isTwoSided(state),
+    // A property that keeps no document has nothing of it on file, and the page that was closed holds no picture: both sides come again.
+    documentSidesTaken: state.documentNotArchived ? [] : sidesOnFile(state),
+  };
+}
+
 /** Where the identity step starts: what the API says about the session (the page opened, or opened again through the same link). */
 export function progressFromState(state: IdentityVerificationState): IdentityProgress {
   return {
@@ -106,6 +159,7 @@ export function progressFromState(state: IdentityVerificationState): IdentityPro
     guidanceCodes: [],
     documentRefused: false,
     lockCode: null,
+    ...documentFromState(state),
   };
 }
 
@@ -122,6 +176,7 @@ export function afterConsent(progress: IdentityProgress, response: BiometricCons
       documentNotArchived: state.documentNotArchived,
       guidanceCodes: [],
       documentRefused: false,
+      ...documentFromState(state),
     };
   }
   return {
@@ -134,14 +189,39 @@ export function afterConsent(progress: IdentityProgress, response: BiometricCons
   };
 }
 
-/** After the photo of the document: a photo that can be compared leads to the selfie, otherwise the guest takes it again with the guidance. */
-export function afterDocument(progress: IdentityProgress, response: IdentityDocumentResponse): IdentityProgress {
+/** `sides` with `side` in it, once, in the order front then back. */
+function withSide(sides: readonly DocumentSide[], side: DocumentSide): DocumentSide[] {
+  return (['front', 'back'] as const).filter((candidate) => candidate === side || sides.includes(candidate));
+}
+
+/**
+ * After the photo of one side of the document (`sent`, the front when the page does not know better): a photo that can be compared leads to the selfie, otherwise the guest takes
+ * it again with the guidance, or the other side when the answer asks for it (`document_back_needed`: the front was good and the card has its lines of letters on the back, so that is
+ * not a refusal of the photo that was taken). A property that keeps no document gets the pictures again with the selfie, so the selfie waits until the page holds every side of the document.
+ */
+export function afterDocument(progress: IdentityProgress, response: IdentityDocumentResponse, sent: DocumentSide = progress.documentSideNeeded): IdentityProgress {
+  const codes = response.guidanceCodes;
+  const asked = sideAskedBy(codes);
+  const twoSided = progress.documentTwoSided || asked !== null;
+  const taken = withSide(progress.documentSidesTaken, sent);
+  const notArchived = progress.documentNotArchived || response.documentNotArchived;
+
+  let next: DocumentSide | null = null;
+  if (!response.acceptable) {
+    next = asked ?? sent;
+  } else if (notArchived && twoSided) {
+    next = (['front', 'back'] as const).find((side) => !taken.includes(side)) ?? null;
+  }
+
   return {
     ...progress,
-    stage: response.acceptable ? 'selfie' : 'document',
-    documentNotArchived: progress.documentNotArchived || response.documentNotArchived,
-    guidanceCodes: response.acceptable ? [] : response.guidanceCodes,
-    documentRefused: !response.acceptable,
+    stage: next === null ? 'selfie' : 'document',
+    documentNotArchived: notArchived,
+    documentTwoSided: twoSided,
+    documentSidesTaken: taken,
+    documentSideNeeded: next ?? progress.documentSideNeeded,
+    guidanceCodes: response.acceptable ? [] : codes,
+    documentRefused: !response.acceptable && (codes.length === 0 || codes.some((code) => !(code in SIDE_GUIDANCE))),
   };
 }
 
@@ -156,6 +236,7 @@ export function afterSelfie(progress: IdentityProgress, response: IdentitySelfie
       attemptsRemaining: response.attemptsRemaining,
       guidanceCodes: [],
       documentRefused: false,
+      documentSidesTaken: [],
       lockCode: code === '' ? null : code,
       lockCodeHeld: code === '' && held !== '' ? held : null,
     };
@@ -170,6 +251,7 @@ export function afterSelfie(progress: IdentityProgress, response: IdentitySelfie
     attemptsRemaining: response.attemptsRemaining,
     guidanceCodes: [],
     documentRefused: false,
+    documentSidesTaken: [],
     lockCode: null,
     lockCodeHeld: null,
   };
@@ -179,18 +261,41 @@ export function afterSelfie(progress: IdentityProgress, response: IdentitySelfie
 export function afterOperatorRequest(progress: IdentityProgress, response: IdentityOperatorResponse): IdentityProgress {
   const { state } = response;
   if (state.step === 'done') return { ...progress, stage: 'done' };
-  return { ...progress, stage: 'operator', operatorRequested: true, biometricOffered: state.biometricOffered, guidanceCodes: [], documentRefused: false };
+  return {
+    ...progress,
+    stage: 'operator',
+    operatorRequested: true,
+    biometricOffered: state.biometricOffered,
+    guidanceCodes: [],
+    documentRefused: false,
+    documentSidesTaken: [],
+  };
 }
 
-/** The guest takes again what the guidance asked for (the document or the selfie), from the screen of a `retry`. */
+/**
+ * The guest takes again what the guidance asked for (the document or the selfie), from the screen of a `retry`. The document starts again from its face side; what the server already
+ * has of the other side stays with the server.
+ */
 export function afterRetake(progress: IdentityProgress): IdentityProgress {
-  return { ...progress, stage: retakeTargetOf(progress.guidanceCodes), guidanceCodes: [], documentRefused: false, lockCode: null, lockCodeHeld: null };
+  const target = retakeTargetOf(progress.guidanceCodes);
+  return {
+    ...progress,
+    stage: target,
+    guidanceCodes: [],
+    documentRefused: false,
+    lockCode: null,
+    lockCodeHeld: null,
+    ...(target === 'document' ? { documentSideNeeded: 'front' as const } : {}),
+  };
 }
 
 /** What a refused call changes: the step the API asks for first. Anything else leaves the guest where they are, with what they have. */
 export function afterProblem(progress: IdentityProgress, problem: IdentityProblem): IdentityProgress {
-  if (problem === 'consent_required') return { ...progress, stage: 'consent', guidanceCodes: [], documentRefused: false };
-  if (problem === 'document_required' || problem === 'document_photo') return { ...progress, stage: 'document', guidanceCodes: [], documentRefused: false };
+  if (problem === 'consent_required' || problem === 'consent_text_changed') return { ...progress, stage: 'consent', guidanceCodes: [], documentRefused: false };
+  if (problem === 'document_required' || problem === 'document_photo') {
+    // The pictures the page held are no longer the ones the server has read (or it has none): the document comes again from its face side.
+    return { ...progress, stage: 'document', guidanceCodes: [], documentRefused: false, documentSideNeeded: 'front', documentSidesTaken: [] };
+  }
   return progress;
 }
 
@@ -208,6 +313,7 @@ export const IDENTITY_PROBLEMS = [
   'too_large',
   'unsupported',
   'consent_required',
+  'consent_text_changed',
   'document_required',
   'document_photo',
   'processing',
@@ -228,6 +334,8 @@ export function classifyIdentityError(error: unknown): IdentityProblem {
   if (status === 429) return 'too_many_requests';
   if (status === 413) return 'too_large';
   if (code === 'biometric_consent_required') return 'consent_required';
+  // The text the guest read is no longer the one the registry serves (a new version was published), or none was sent: the guest reads it again before answering.
+  if (code === 'biometric_consent_version_unknown' || code === 'biometric_consent_version_required') return 'consent_text_changed';
   if (code === 'document_check_required') return 'document_required';
   if (code === 'document_photo_required' || code === 'document_photo_mismatch') return 'document_photo';
   if (code === 'document_type_unsupported' || code === 'selfie_type_unsupported' || code === 'document_photo_type_unsupported') return 'unsupported';

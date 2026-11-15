@@ -27,7 +27,8 @@ export type FeatureFlagKey =
   | 'purgeDocumentsAfterReceipt'
   | 'portalChatCheckInLink'
   | 'guestContactInfo'
-  | 'touristTaxOnlinePayment';
+  | 'touristTaxOnlinePayment'
+  | 'checkInIdentityVerification';
 
 export type FeatureFlags = Record<FeatureFlagKey, boolean>;
 
@@ -207,6 +208,13 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * wizard then shows no state of the collection).
    */
   touristTaxOnlinePayment: false,
+  /**
+   * The identity verification of the guest check-in (backend `CheckInIdentityVerification`, E03/F04, E22, NF-24, NF-50), off until the product owner turns it on in the test environment. The guest
+   * page does not read it (it follows what the check-in link says, `identityVerification`); it decides what the host sees: the card «Verifica dell'identità» of the organization settings, the
+   * video call of the verification queue (and the new words next to it) and the QR of the door in the property QR page. The page of the door (`/checkin/porta/:doorToken`) exists only while it is on.
+   * While it is off nothing changes: the settings page, the queue and the QR page are the ones they always were, nothing asks the server, and the backend answers 404 to every call of the identification.
+   */
+  checkInIdentityVerification: false,
 };
 
 /** Known flags from the API response; anything but `true` is off. */

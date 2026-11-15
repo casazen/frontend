@@ -1,19 +1,20 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, configure, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AxiosError, AxiosHeaders } from 'axios';
 import type { InternalAxiosRequestConfig } from 'axios';
 import i18n from '@/i18n/config';
 import { publicCheckinApi } from '@/api/checkin.api';
 import { expectNoAxeViolations } from '@/test/axe';
-import type { IdentityVerificationState } from '@/types/public-checkin.types';
+import type { CheckInLegalTextsResponse, IdentityVerificationState } from '@/types/public-checkin.types';
 import { IdentityStep } from '../identity-step';
 import { DOCUMENT_WITH_SELFIE_AS_IS_BYTES } from '@/lib/image-capture';
-import { BIOMETRIC_CONSENT_VERSION } from '../lib/identity-model';
 import { useIdentityVerification } from '../use-identity-verification';
 
 vi.mock('@/api/checkin.api', () => ({
   publicCheckinApi: {
+    getLegalTexts: vi.fn(),
     postBiometricConsent: vi.fn(),
     postDocument: vi.fn(),
     postSelfie: vi.fn(),
@@ -24,6 +25,26 @@ vi.mock('@/api/checkin.api', () => ({
 configure({ asyncUtilTimeout: 5_000 });
 
 const TOKEN = 'tok-identity';
+
+/** The version the registry serves for the consent: what the guest agrees to is this text, and this is what the consent sends back. */
+const CONSENT_VERSION = 'checkin-biometric-2026-11';
+
+/** What the registry serves for a stay: the consent and, for a property that keeps no document, the Ticino notice. */
+const servedTexts = (overrides: { notice?: boolean; draft?: boolean } = {}): CheckInLegalTextsResponse => ({
+  language: 'it',
+  texts: [
+    {
+      kind: 'biometric-consent',
+      version: CONSENT_VERSION,
+      language: 'it',
+      isDraft: overrides.draft ?? false,
+      contentHtml: '<h3>Verifica la tua identità con il viso</h3><p>Il tuo selfie non viene mai salvato.</p>',
+    },
+    ...(overrides.notice
+      ? [{ kind: 'ticino-notice', version: 'checkin-ticino-2026-11', language: 'it', isDraft: false, contentHtml: '<h3>Il check-in in Ticino</h3><p>Il documento non viene archiviato.</p>' }]
+      : []),
+  ],
+});
 
 const state = (overrides: Partial<IdentityVerificationState> = {}): IdentityVerificationState => ({
   step: 'consent',
@@ -40,18 +61,23 @@ const state = (overrides: Partial<IdentityVerificationState> = {}): IdentityVeri
   ...overrides,
 });
 
+/** The page gives the step the cache of the queries: the legal texts are asked with it. */
+const withQueries = (children: ReactNode) => (
+  <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })}>{children}</QueryClientProvider>
+);
+
 function Harness({ initial }: { initial: IdentityVerificationState }) {
   const identity = useIdentityVerification(TOKEN, initial);
   return (
     <>
-      <IdentityStep identity={identity} />
+      <IdentityStep identity={identity} token={TOKEN} />
       <span data-testid="harness-concluded">{String(identity.concluded)}</span>
       <span data-testid="harness-busy">{String(identity.busy)}</span>
     </>
   );
 }
 
-const renderStep = (initial: IdentityVerificationState = state()) => render(<Harness initial={initial} />);
+const renderStep = (initial: IdentityVerificationState = state()) => render(withQueries(<Harness initial={initial} />));
 
 /** What the page does: it keeps the state of the check and shows the step only while the guest is on it; «Back» takes the step away and leaves the state. */
 function PageHarness({ initial }: { initial: IdentityVerificationState }) {
@@ -59,7 +85,7 @@ function PageHarness({ initial }: { initial: IdentityVerificationState }) {
   const [onTheStep, setOnTheStep] = useState(true);
   return (
     <>
-      {onTheStep && <IdentityStep identity={identity} />}
+      {onTheStep && <IdentityStep identity={identity} token={TOKEN} />}
       <button type="button" data-testid="harness-back" onClick={() => setOnTheStep(false)}>
         back
       </button>
@@ -128,8 +154,12 @@ async function takeAndSendSelfie() {
 
 beforeEach(async () => {
   vi.clearAllMocks();
+  vi.mocked(publicCheckinApi.getLegalTexts).mockResolvedValue(servedTexts());
   await i18n.changeLanguage('it');
 });
+
+/** The text of the consent is on the screen: the guest can agree to it. */
+const waitForTheConsentText = () => waitFor(() => expect(screen.getByTestId('checkin-biometric-accept')).toBeEnabled());
 
 afterEach(() => {
   cleanup();
@@ -139,11 +169,15 @@ afterEach(() => {
 });
 
 describe('IdentityStep: the consent (E03/F04/US03/T01, AC-NF50-7, AC-NF50-3)', () => {
-  it('IdentityStep_FirstScreen_IsTheSeparateConsentWithAnExplicitYesAndAnEquallyEasyNo', () => {
+  it('IdentityStep_FirstScreen_IsTheSeparateConsentWithAnExplicitYesAndAnEquallyEasyNo', async () => {
     renderStep();
 
     expect(stage()).toBe('consent');
     expect(screen.getByTestId('checkin-biometric-consent')).toBeInTheDocument();
+    // The words are the registry's: until they are on the screen there is nothing to agree to.
+    expect(screen.getByTestId('checkin-biometric-accept')).toBeDisabled();
+    await waitForTheConsentText();
+    expect(screen.getByTestId('checkin-consent-text')).toHaveTextContent('Il tuo selfie non viene mai salvato.');
     expect(screen.getByTestId('checkin-biometric-accept')).toBeEnabled();
     expect(screen.getByTestId('checkin-biometric-decline')).toBeEnabled();
     // Nothing is captured before the guest answers: no camera, no file.
@@ -162,6 +196,7 @@ describe('IdentityStep: the consent (E03/F04/US03/T01, AC-NF50-7, AC-NF50-3)', (
       state: state({ step: 'operator', consentRefused: true, operatorRequested: true, biometricOffered: false }),
     });
     renderStep();
+    await waitForTheConsentText();
 
     fireEvent.click(screen.getByTestId('checkin-biometric-decline'));
 
@@ -183,13 +218,100 @@ describe('IdentityStep: the consent (E03/F04/US03/T01, AC-NF50-7, AC-NF50-3)', (
       state: state({ step: 'document', consentRecorded: true }),
     });
     renderStep();
+    await waitForTheConsentText();
 
     fireEvent.click(screen.getByTestId('checkin-biometric-accept'));
 
     await waitFor(() => expect(stage()).toBe('document'));
-    expect(publicCheckinApi.postBiometricConsent).toHaveBeenCalledWith(TOKEN, { consentGiven: true, consentVersion: BIOMETRIC_CONSENT_VERSION });
-    expect(BIOMETRIC_CONSENT_VERSION.length).toBeLessThanOrEqual(50);
+    // The version is the one the registry served with the text that was on the screen: the page has none of its own.
+    expect(publicCheckinApi.postBiometricConsent).toHaveBeenCalledWith(TOKEN, { consentGiven: true, consentVersion: CONSENT_VERSION });
+    expect(CONSENT_VERSION.length).toBeLessThanOrEqual(50);
     expect(screen.getByTestId('checkin-identity-document')).toBeInTheDocument();
+  });
+
+  it('IdentityStep_TheRegistryServesADraft_ShowsTheDraftBadgeAndAgreesToThatVersion', async () => {
+    vi.mocked(publicCheckinApi.getLegalTexts).mockResolvedValue(servedTexts({ draft: true }));
+    vi.mocked(publicCheckinApi.postBiometricConsent).mockResolvedValue({
+      consentRecorded: true,
+      result: 'consent_recorded',
+      biometricOffered: true,
+      operatorPathOpen: true,
+      state: state({ step: 'document', consentRecorded: true }),
+    });
+    renderStep();
+
+    expect(await screen.findByTestId('checkin-consent-text-draft')).toHaveTextContent('Bozza');
+    await waitForTheConsentText();
+    fireEvent.click(screen.getByTestId('checkin-biometric-accept'));
+
+    await waitFor(() => expect(publicCheckinApi.postBiometricConsent).toHaveBeenCalledWith(TOKEN, { consentGiven: true, consentVersion: CONSENT_VERSION }));
+  });
+
+  it('IdentityStep_TheRegistryServesAnApprovedText_ShowsNoDraftBadge', async () => {
+    renderStep();
+
+    await waitForTheConsentText();
+    expect(screen.queryByTestId('checkin-consent-text-draft')).not.toBeInTheDocument();
+    expect(screen.getByTestId('checkin-consent-version')).toHaveTextContent(CONSENT_VERSION);
+  });
+
+  it('IdentityStep_TheRegistryServesNoConsent_OffersNothingToAgreeToAndTheWayToAPersonStaysOpen', async () => {
+    vi.mocked(publicCheckinApi.getLegalTexts).mockResolvedValue({ language: 'it', texts: [] });
+    vi.mocked(publicCheckinApi.postBiometricConsent).mockResolvedValue({
+      consentRecorded: false,
+      result: 'operator',
+      biometricOffered: false,
+      operatorPathOpen: true,
+      state: state({ step: 'operator', consentRefused: true, operatorRequested: true, biometricOffered: false }),
+    });
+    renderStep();
+
+    expect(await screen.findByTestId('checkin-consent-unavailable')).toBeInTheDocument();
+    expect(screen.getByTestId('checkin-biometric-accept')).toBeDisabled();
+    expect(screen.getByTestId('checkin-biometric-decline')).toBeEnabled();
+    fireEvent.click(screen.getByTestId('checkin-biometric-decline'));
+    await waitFor(() => expect(stage()).toBe('operator'));
+  });
+
+  it('IdentityStep_TheTextsCannotBeRead_SaysSoNeverOffersTheConsentAndAnotherTryReadsThemAgain', async () => {
+    // A network failure is tried once more by the query (a second later) before the guest is told.
+    vi.mocked(publicCheckinApi.getLegalTexts).mockRejectedValue(httpError(undefined, undefined, AxiosError.ERR_NETWORK));
+    renderStep();
+
+    const failure = await screen.findByTestId('checkin-consent-error');
+    expect(failure).toHaveTextContent(i18n.t('checkin.identity.problem.network'));
+    expect(screen.getByTestId('checkin-biometric-accept')).toBeDisabled();
+    expect(screen.getByTestId('checkin-biometric-decline')).toBeEnabled();
+
+    vi.mocked(publicCheckinApi.getLegalTexts).mockResolvedValue(servedTexts());
+    fireEvent.click(screen.getByTestId('checkin-consent-retry'));
+
+    await waitForTheConsentText();
+    expect(screen.queryByTestId('checkin-consent-error')).not.toBeInTheDocument();
+  });
+
+  it('IdentityStep_TheLinkIsNoLongerValidWhenTheTextsAreAsked_SaysSoWhateverWasInMemory', async () => {
+    vi.mocked(publicCheckinApi.getLegalTexts).mockRejectedValue(httpError(404));
+    renderStep();
+
+    expect(await screen.findByTestId('checkin-consent-error')).toHaveTextContent(i18n.t('checkin.identity.problem.link_unavailable'));
+    expect(screen.queryByTestId('checkin-consent-text')).not.toBeInTheDocument();
+  });
+
+  it('IdentityStep_TheRegistryPublishedANewVersion_TheGuestReadsTheNewTextBeforeAnsweringAgain', async () => {
+    vi.mocked(publicCheckinApi.postBiometricConsent).mockRejectedValueOnce(httpError(422, { code: 'biometric_consent_version_unknown' }));
+    renderStep();
+    await waitForTheConsentText();
+    const newer = servedTexts();
+    newer.texts[0] = { ...newer.texts[0], version: 'checkin-biometric-2026-12' };
+    vi.mocked(publicCheckinApi.getLegalTexts).mockResolvedValue(newer);
+
+    fireEvent.click(screen.getByTestId('checkin-biometric-accept'));
+
+    expect(await screen.findByTestId('checkin-identity-problem')).toHaveTextContent(i18n.t('checkin.identity.problem.consent_text_changed'));
+    // The texts were asked again: what is on the screen now is the version the registry serves.
+    await waitFor(() => expect(screen.getByTestId('checkin-consent-version')).toHaveTextContent('checkin-biometric-2026-12'));
+    expect(stage()).toBe('consent');
   });
 
   it('IdentityStep_AnswerInFlight_EveryButtonStaysDisabledSoASecondTapCannotStartAnotherCall', async () => {
@@ -200,6 +322,7 @@ describe('IdentityStep: the consent (E03/F04/US03/T01, AC-NF50-7, AC-NF50-3)', (
       }),
     );
     renderStep();
+    await waitForTheConsentText();
 
     fireEvent.click(screen.getByTestId('checkin-biometric-accept'));
 
@@ -599,18 +722,24 @@ describe('IdentityStep: the selfie (AC-NF50-1, ADR-013-R11, R12)', () => {
 });
 
 describe('IdentityStep: a property in Ticino (ADR-013-R6, R15)', () => {
-  it('IdentityStep_Ticino_ShowsTheDocumentIsNotArchivedAndTheConsentDoesNotSayItIsKept', () => {
+  it('IdentityStep_Ticino_ShowsTheDocumentIsNotArchivedAndTheNoticeTheRegistryServes', async () => {
+    vi.mocked(publicCheckinApi.getLegalTexts).mockResolvedValue(servedTexts({ notice: true }));
     renderStep(state({ documentNotArchived: true }));
 
     expect(screen.getByTestId('checkin-document-not-archived')).toHaveTextContent('Il documento non sarà archiviato.');
-    expect(screen.getByTestId('checkin-biometric-consent')).not.toHaveTextContent(i18n.t('checkin.biometric.consent.documentKept'));
+    expect(await screen.findByTestId('checkin-ticino-notice')).toHaveTextContent('Il documento non viene archiviato.');
+    // The consent and the notice are read before the guest answers: both are on the screen when the buttons work.
+    await waitForTheConsentText();
+    expect(screen.getByTestId('checkin-consent-text')).toBeInTheDocument();
   });
 
-  it('IdentityStep_OutsideTicino_ShowsNoNoticeAndTheConsentSaysHowLongTheDocumentIsKept', () => {
+  it('IdentityStep_OutsideTicino_ShowsNoNoticeOfTheDocumentNotBeingArchived', async () => {
     renderStep(state({ documentNotArchived: false }));
+    await waitForTheConsentText();
 
     expect(screen.queryByTestId('checkin-document-not-archived')).not.toBeInTheDocument();
-    expect(screen.getByTestId('checkin-biometric-consent')).toHaveTextContent(i18n.t('checkin.biometric.consent.documentKept'));
+    expect(screen.queryByTestId('checkin-ticino-notice')).not.toBeInTheDocument();
+    expect(publicCheckinApi.getLegalTexts).toHaveBeenCalledWith(TOKEN, 'it');
   });
 
   it('IdentityStep_Ticino_SendsThePhotoOfTheDocumentAgainWithEverySelfie', async () => {
@@ -713,7 +842,7 @@ describe('IdentityStep: the camera and the picture are let go (ADR-013-R2, R11)'
 
   it('IdentityStep_TheGuestLeavesTheStepWithTheLivePreview_TheCameraIsSwitchedOffAtOnce', async () => {
     const { stop } = stubCamera();
-    render(<PageHarness initial={selfieState} />);
+    render(withQueries(<PageHarness initial={selfieState} />));
     await waitForPreview();
     expect(stop).not.toHaveBeenCalled();
 
@@ -804,6 +933,7 @@ describe('IdentityStep: the camera and the picture are let go (ADR-013-R2, R11)'
 describe('IdentityStep: accessibility (UX-11)', () => {
   it('IdentityStep_TheConsentTheDocumentAndTheResults_HaveNoAccessibilityViolations', async () => {
     const consent = renderStep();
+    await waitForTheConsentText();
     await expectNoAxeViolations(consent.container);
     consent.unmount();
 
@@ -850,20 +980,25 @@ describe('IdentityStep: accessibility (UX-11)', () => {
     await expectNoAxeViolations(container);
   });
 
-  it('IdentityStep_TheButtons_AreNativeButtonsThatNeverSubmitAForm', () => {
+  it('IdentityStep_TheButtons_AreNativeButtonsThatNeverSubmitAForm', async () => {
     renderStep();
+    await waitForTheConsentText();
 
     for (const button of screen.getAllByRole('button')) expect(button).toHaveAttribute('type', 'button');
   });
 });
 
 describe('IdentityStep in the other languages', () => {
-  it('IdentityStep_English_ShowsTheEnglishConsent', async () => {
+  it('IdentityStep_English_AsksTheRegistryForTheEnglishTextAndSaysWhenItIsInAnotherLanguage', async () => {
     await i18n.changeLanguage('en');
-    renderStep();
+    vi.mocked(publicCheckinApi.getLegalTexts).mockResolvedValue(servedTexts({ notice: true }));
+    renderStep(state({ documentNotArchived: true }));
 
-    expect(screen.getByText(i18n.t('checkin.biometric.consent.title'))).toBeInTheDocument();
+    await waitForTheConsentText();
     expect(screen.getByTestId('checkin-biometric-accept')).toHaveTextContent('I agree to the face check');
+    expect(publicCheckinApi.getLegalTexts).toHaveBeenCalledWith(TOKEN, 'en');
+    // The registry served Italian files for an English page: the guest is told which language the texts are in.
+    expect(screen.getByTestId('checkin-consent-text-language')).toHaveTextContent('Italiano');
     await i18n.changeLanguage('it');
   });
 });

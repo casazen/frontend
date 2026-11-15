@@ -47,6 +47,7 @@ import { OnSiteRequestConfirmPage } from '@/features/public-booking/onsite-reque
 import { CheckoutOutcomePage } from '@/features/public-booking/checkout-outcome-page';
 import { ReviewLinkPage } from '@/features/reviews/review-link-page';
 import { CheckInPage } from '@/features/checkin/checkin-page';
+import { DoorCheckInPage } from '@/pages/DoorCheckInPage';
 import { ConfirmPage } from '@/features/public-marketing/confirm-page';
 import { UnsubscribePage } from '@/features/public-marketing/unsubscribe-page';
 import { WelcomePage } from '@/features/public-marketing/welcome-page';
@@ -328,6 +329,14 @@ export const appRoutes: RouteObject[] = [
     // The first address of the showcase, which never worked (A4-16): kept as a redirect for links already shared.
     path: '/s/:slug',
     element: <LegacySupplierShowcaseRedirect />,
+  },
+  {
+    // The page the QR code at the door of a property opens (E22/F02/US01/T01): the guest who arrives types the booking code (or the surname) and the arrival date and goes on to the
+    // check-in of the stay at the identity step. No sign-in (`/checkin` is a public path), the frame of the check-in, not indexed (`robots.txt` keeps `/checkin/` out). It exists only while the
+    // flag `checkInIdentityVerification` is on; the page itself shows the public 404 otherwise.
+    path: '/checkin/porta/:doorToken',
+    element: <DoorCheckInPage />,
+    handle: NOT_REDESIGNED_ROUTE_HANDLE,
   },
   {
     // A guest's page, not the host's console: it keeps its look until it is redesigned (like the booking site).

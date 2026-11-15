@@ -14,8 +14,9 @@ import { todayInRome } from '@/lib/stay-dates';
 
 /**
  * The console of the identity verifications (NF-50, NF-51, E03/F04/US03/T02): the guests who wait for a person, each with the property, the arrival,
- * why it is here and the checks that put it here, with a quiet summary of the figures above. The operator contacts the guest outside CasaZen
- * (the video call is not part of this phase) and records the decision here.
+ * why it is here and the checks that put it here, with a quiet summary of the figures above. While the identity verification is on, the operator proposes a video
+ * call from the card of the guest («Videochiamata»: the address of the meeting goes to the guest by e-mail, E22/F02/US01/T02); with it off the operator contacts
+ * the guest outside CasaZen as before. Either way the decision is recorded here.
  */
 export function VerificationQueuePage() {
   const { t } = useTranslation();

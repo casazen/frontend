@@ -189,13 +189,13 @@
       "consent": {
         "accept": "Ich stimme der Gesichtsprüfung zu",
         "decline": "Ich stimme nicht zu: Eine Person prüft mich",
-        "description": "Um Ihnen den Zugangscode der Unterkunft zu geben, vergleichen wir ein Selfie mit dem Foto auf Ihrem Ausweisdokument.",
-        "documentKept": "Das Foto Ihres Dokuments wird nur bis zum Ende der Prüfung verschlüsselt aufbewahrt und danach gelöscht.",
-        "optional": "Sie können ablehnen. Dann prüft eine Person der Unterkunft Ihre Identität mit Ihnen, und der Zugangscode erreicht Sie nach deren Entscheidung. Eine Ablehnung stoppt Ihren Check-in nicht.",
-        "optionalTitle": "Es ist Ihre Entscheidung",
-        "purpose": "Sie fotografieren Ihr Dokument und nehmen dann mit der Kamera ein Selfie auf. Ein Programm auf unserem Server vergleicht beides. Ihr Selfie wird nie gespeichert: Es wird gelöscht, sobald der Vergleich endet.",
-        "purposeTitle": "Was passiert",
+        "draft": "Entwurf",
+        "loadFailed": "Wir können Ihnen den Text der Einwilligung gerade nicht anzeigen",
+        "loading": "Der Text der Einwilligung wird geladen ...",
+        "retry": "Erneut versuchen",
+        "servedIn": "Dieser Text ist auf {{language}} verfügbar.",
         "title": "Identität mit dem Gesicht prüfen",
+        "unavailable": "Der Text der Einwilligung ist gerade nicht verfügbar, daher kann die Gesichtsprüfung nicht angeboten werden. Sie können darum bitten, dass eine Person Sie prüft.",
         "version": "Version dieses Textes: {{version}}"
       }
     },
@@ -223,6 +223,33 @@
     },
     "documentIssuedOn": {
       "label": "Ausstellungsdatum (freiwillig)"
+    },
+    "door": {
+      "arrivalHint": "Der Tag, an dem Ihr Aufenthalt beginnt.",
+      "arrivalLabel": "Anreisedatum",
+      "codeHint": "Sie finden ihn in der Bestätigungs-E-Mail Ihrer Buchung.",
+      "codeLabel": "Buchungscode",
+      "description": "Geben Sie die Daten Ihrer Buchung ein: Wir führen Sie zum Check-in und zur Identitätsprüfung.",
+      "errors": {
+        "arrivalInvalid": "Das Datum ist ungültig.",
+        "arrivalRequired": "Wählen Sie das Anreisedatum.",
+        "codeInvalid": "Der Code ist zu lang.",
+        "codeRequired": "Geben Sie den Buchungscode ein.",
+        "failed": "Etwas ist schiefgelaufen. Bitte versuchen Sie es gleich noch einmal.",
+        "network": "Wir erreichen den Server nicht. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+        "notFound": "Wir finden keinen Aufenthalt mit diesen Angaben. Prüfen Sie den Code (oder den Nachnamen) und das Anreisedatum und versuchen Sie es erneut.",
+        "surnameInvalid": "Der Nachname ist zu lang.",
+        "surnameRequired": "Geben Sie den Nachnamen ein.",
+        "tooManyRequests": "Zu viele Versuche in kurzer Zeit. Warten Sie eine Minute und versuchen Sie es erneut."
+      },
+      "modeCode": "Ich habe den Code",
+      "modeLabel": "So finden wir Ihren Aufenthalt",
+      "modeSurname": "Ich habe keinen Code",
+      "submit": "Weiter",
+      "submitting": "Ihr Aufenthalt wird gesucht ...",
+      "surnameHint": "Der Nachname der Person, die gebucht hat, oder des ersten Gastes.",
+      "surnameLabel": "Nachname des Hauptgastes",
+      "title": "Check-in am Eingang"
     },
     "educationLevel": {
       "label": "Bildungsabschluss *",
@@ -268,17 +295,28 @@
     },
     "identity": {
       "document": {
+        "back": {
+          "fileLabel": "Foto der Rückseite des Ausweisdokuments",
+          "illustration": "Die Rückseite einer Ausweiskarte: Die Zeilen mit Buchstaben und Zahlen sind unten, im Rahmen.",
+          "instructions": "Drehen Sie nun die Karte um und fotografieren Sie die Rückseite, auf der die Zeilen mit Buchstaben und Zahlen stehen (der Bereich, den eine Maschine liest). Zeigen Sie sie ganz, flach und ohne Spiegelungen.",
+          "pick": "Rückseite fotografieren",
+          "pickAgain": "Rückseite erneut fotografieren"
+        },
         "fileLabel": "Foto des Ausweisdokuments",
-        "instructions": "Legen Sie das Dokument auf eine ebene, gut beleuchtete Fläche. Zeigen Sie die ganze Seite mit Ihrem Foto und den zwei Zeilen mit Buchstaben unten, ohne Spiegelungen.",
+        "frontReceived": "Die Seite mit Ihrem Foto ist angekommen.",
+        "instructions": "Legen Sie das Dokument auf eine ebene, gut beleuchtete Fläche. Zeigen Sie die ganze Seite mit Ihrem Foto, ohne Spiegelungen. Ein Reisepass hat alles auf einer Seite: Zeigen Sie die Seite mit Ihrem Foto und den zwei Zeilen mit Buchstaben unten.",
         "notAcceptable": "Das Foto ist noch nicht gut genug. Bitte nehmen Sie es erneut auf.",
         "pick": "Dokument fotografieren",
         "pickAgain": "Erneut fotografieren",
         "sending": "Dokument wird gelesen...",
+        "sideProgress": "Foto {{current}} von {{total}}",
         "title": "Ausweisdokument fotografieren"
       },
       "documentNotArchived": "Das Dokument wird nicht archiviert.",
       "guidance": {
         "avoid_glare": "Vermeiden Sie Spiegelungen: Neigen Sie das Dokument leicht oder gehen Sie vom Licht weg.",
+        "document_back_needed": "Fotografieren Sie jetzt die Rückseite der Karte, auf der die Zeilen mit Buchstaben stehen.",
+        "document_front_needed": "Fotografieren Sie die Seite der Karte mit Ihrem Foto.",
         "hold_still": "Halten Sie das Handy ruhig: Das Foto ist unscharf.",
         "less_light": "Es ist zu hell: Gehen Sie an einen Ort mit weicherem Licht.",
         "more_light": "Es ist zu dunkel: Gehen Sie an einen helleren Ort.",
@@ -304,6 +342,7 @@
       },
       "problem": {
         "consent_required": "Wir brauchen zuerst Ihre Antwort zur Gesichtsprüfung.",
+        "consent_text_changed": "Der Text der Einwilligung wurde aktualisiert. Bitte lesen Sie ihn noch einmal, bevor Sie antworten.",
         "document_photo": "Wir brauchen das Foto des Dokuments noch einmal: Bitte nehmen Sie es erneut auf.",
         "document_required": "Bitte fotografieren Sie zuerst das Dokument.",
         "failed": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
