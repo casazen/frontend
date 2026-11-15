@@ -1699,6 +1699,7 @@
       "cleaningSetupSupplierOutsideComune": "Il fornitore scelto non opera nel comune dell'immobile.",
       "complianceBookingNotFound": "Non troviamo questo soggiorno.",
       "complianceExportTooLarge": "Nel periodo ci sono più prove di quante ne entrino in un archivio: scegli un periodo più breve.",
+      "complianceProofCoverageInvalid": "Una ricevuta può valere per più immobili solo se sono tutti in Italia. Togli la spunta agli immobili che non sono in Italia oppure, se è l'immobile scelto sopra a non esserlo, a tutti gli altri.",
       "complianceProofDayInvalid": "Il giorno della prova non è valido: scegli un giorno passato.",
       "complianceProofFileInvalid": "Scegli il file della prova: quello che hai caricato è vuoto o non c'è.",
       "complianceProofNotFound": "Non troviamo questa prova: forse non esiste più o non puoi vederla.",
@@ -1845,12 +1846,6 @@
       "ownerAddressInvalid": "L'indirizzo non è valido. Controlla il campo indicato e riprova.",
       "ownerInvoiceVersionSuperseded": "Questa versione del rendiconto è stata sostituita: la fattura si fa dall'ultima versione.",
       "ownerInvoiceNothingToInvoice": "In questo rendiconto non c'è nulla da fatturare: nessuna provvigione, riaddebito o spesa dell'agenzia.",
-      "documentDraftOutdated": "La bozza non è più quella che verrebbe emessa adesso: il rendiconto, il mandato o le regole sono cambiati. Ricalcolala e controllala di nuovo.",
-      "documentAlreadyIssued": "La fattura di questo mese è già emessa.",
-      "documentConfirmationRequired": "Serve la conferma dell'emissione.",
-      "documentRuleNotConfigured": "Mancano le regole dell'IVA per questo documento. Completale in «Fatturazione» e riprova.",
-      "documentInvoiceDataMissing": "Mancano dati del destinatario per fare la fattura (indirizzo o dati fiscali). Completali nei dati finanziari del proprietario e riprova.",
-      "documentNotDraft": "Questa fattura non è più una bozza.",
       "ownerPeriodInvalid": "Il mese non è valido.",
       "ownerAttachmentNotFound": "Questo allegato non è disponibile.",
       "ownerCalendarRangeInvalid": "Il periodo scelto non è valido.",
@@ -2265,8 +2260,6 @@
       "messageTextInvalid": "Il messaggio non può essere vuoto né più lungo di 2000 caratteri: modificalo e riprova.",
       "octorateChatNotSendable": "Il canale non permette più di scrivere in questa conversazione.",
       "octorateMessageError": "Il canale non ha accettato il messaggio.",
-      "octorateRateLimited": "Il tuo channel manager ha ricevuto troppe richieste: riprova tra qualche minuto.",
-      "octorateRequestRejected": "Il tuo channel manager non ha accettato il messaggio.",
       "threadKeyInvalid": "La conversazione di questa bozza non c'è più.",
       "threadNotFound": "La conversazione di questa bozza non c'è più.",
       "leaseAlreadyTerminated": "Questo contratto è già terminato.",
@@ -7115,7 +7108,9 @@
       "retry": "Riprova",
       "section": {
         "body": "Controlla nell'area collegata l'esito dell'invio di questo soggiorno: ti diciamo dove andare e cosa guardare.",
-        "title": "Cassetto Compliance"
+        "thisProperty": "Questo immobile",
+        "title": "Cassetto Compliance",
+        "uploadReceipt": "Carica la ricevuta"
       },
       "target": {
         "booking": "Prenotazione",
@@ -7522,8 +7517,10 @@
       "loadError": "Non riusciamo a caricare le prove e il registro degli invii di questo soggiorno.",
       "loading": "Carico le prove e gli invii…",
       "log": {
+        "doneByCasaZen": "Fatto da CasaZen",
         "kind": {
           "AlloggiatiGuests": "Ospiti alla Questura",
+          "DocumentsDeleted": "Documenti cancellati dopo la ricevuta",
           "IstatPeriod": "Comunicazione ISTAT del periodo",
           "other": "Invio",
           "TouristTaxPeriod": "Imposta di soggiorno del periodo"
@@ -7664,22 +7661,65 @@
       "cancel": "Annulla",
       "chooseMonth": "Scegli il mese",
       "chooseProperty": "Scegli l'immobile",
+      "coverage": {
+        "failed": "Non riusciamo a contare i soggiorni che diventano in regola. Puoi salvare la ricevuta lo stesso.",
+        "failedPurge": "Non riusciamo a contare i soggiorni che diventano in regola. Di solito serve saperlo prima di salvare, perché dopo il salvataggio si cancellano le foto dei documenti degli ospiti: riprova. Se continua a non riuscire, puoi salvare lo stesso confermando qui sotto.",
+        "flatLine_one": "{{name}}: {{count}} soggiorno",
+        "flatLine_other": "{{name}}: {{count}} soggiorni",
+        "goOn": "Salvo lo stesso, senza il conteggio: so che CasaZen cancella le foto dei documenti degli ospiti dei soggiorni che questa ricevuta mette in regola e che non si può annullare.",
+        "loading": "Conto i soggiorni che diventano in regola…",
+        "none": "Con questa ricevuta non diventa in regola nessun soggiorno.",
+        "noneHint": "Nel giorno e negli immobili scelti non c'è nessun soggiorno da mettere in regola, oppure il loro invio non è completo. La ricevuta si può salvare lo stesso.",
+        "notFound": "Non troviamo uno degli immobili scelti: potrebbe non esistere più o non essere tuo.",
+        "perFlat": "Soggiorni per immobile",
+        "purge": "Dopo il salvataggio CasaZen cancella le foto dei documenti degli ospiti di questi soggiorni. Non si può annullare. I dati degli ospiti restano.",
+        "retry": "Riprova",
+        "summary_one": "Diventa in regola: {{count}} soggiorno",
+        "summary_other": "Diventano in regola: {{count}} soggiorni"
+      },
       "day": "Giorno della comunicazione",
       "dayHint": "Il giorno in cui è stata inviata, non nel futuro.",
       "dayInvalid": "Scegli un giorno passato, non nel futuro.",
       "description": "PDF, JPG o PNG: il file resta nel tuo archivio privato per cinque anni.",
       "done": "Prova caricata nell'archivio.",
       "failed": "Non siamo riusciti a caricare la prova. Riprova.",
-      "file": "File",
+      "fileChoose": "Scegli il file",
+      "fileChooseAnother": "Scegli un altro file",
+      "fileChosen": "File scelto: {{name}}",
+      "fileDrop": "Trascina qui il file",
       "fileHint": "PDF, JPG o PNG.",
       "fileInvalid": "Il file deve essere un PDF, un JPG o un PNG.",
+      "flats": {
+        "current": "{{name}} (questo immobile)",
+        "hint": "Se usi un solo account del portale per più immobili, la ricevuta del giorno li comprende tutti. Una ricevuta può valere per più immobili solo se sono tutti in Italia, al massimo {{max}}.",
+        "legend": "Questa ricevuta vale per",
+        "limit": "Una ricevuta può valere al massimo per {{max}} immobili: per sceglierne un altro togli la spunta a uno."
+      },
       "kind": "Cosa dimostra",
       "month": "Mese",
       "open": "Carica una prova",
-      "portalBody": "Entra nel portale, scarica la ricevuta della comunicazione e poi caricala qui sotto.",
+      "outcome": {
+        "close": "Chiudi",
+        "description": "La ricevuta del {{day}} resta nel tuo archivio privato per cinque anni.",
+        "flats": "Vale per",
+        "purge": "CasaZen cancella a breve le foto dei documenti degli ospiti di questi soggiorni. Non si può annullare. I dati degli ospiti restano.",
+        "purgeLog": "Nel registro degli invii di ogni soggiorno comparirà tra poco la riga «Documenti cancellati dopo la ricevuta». La pagina non si aggiorna da sola: ricaricala per vederla.",
+        "stays_one": "{{count}} soggiorno è ora in regola.",
+        "stays_other": "{{count}} soggiorni sono ora in regola.",
+        "staysNone": "Nessun soggiorno risulta in regola con questa ricevuta.",
+        "title": "Ricevuta salvata"
+      },
+      "portalBody": "Entra nel portale con il tuo account e cerca la ricevuta: è pronta dal giorno dopo l'invio e resta scaricabile per 30 giorni. Scaricala come PDF.",
       "portalLink": "Apri il portale Alloggiati Web",
       "portalTitle": "Prima prendi la ricevuta",
       "property": "Immobile",
+      "recovery": {
+        "dayBody": "Nel portale scegli il giorno della comunicazione: {{day}}. La ricevuta è una sola per giorno e per account, anche se hai più immobili.",
+        "dayBodyNoDay": "Nel portale scegli il giorno della comunicazione. La ricevuta è una sola per giorno e per account, anche se hai più immobili.",
+        "dayTitle": "Poi scegli il giorno",
+        "fileTitle": "Infine carica il file",
+        "title": "Recupera la ricevuta"
+      },
       "submit": "Carica la prova",
       "title": "Carica una prova"
     }
@@ -15470,6 +15510,7 @@
       "assistVerified": "Il collegamento che avevi chiesto è attivo: il supporto CasaZen l'ha fatto e abbiamo verificato che funziona.",
       "assistDeclared": "Il supporto CasaZen dichiara di aver fatto il collegamento che avevi chiesto. Se qualcosa non funziona, riapri la richiesta.",
       "assistReopened": "Un utente ha riaperto una richiesta «Fallo per me»: dice che non funziona.",
+      "fiscalDocumentIssued": "È stato emesso un documento fiscale per una prenotazione.",
       "fiscalDocumentSdiRejected": "Lo SDI ha scartato una fattura: va corretta.",
       "touristTaxPaid": "Un ospite ha pagato online la tassa di soggiorno."
     }

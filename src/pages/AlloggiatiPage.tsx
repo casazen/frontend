@@ -70,7 +70,8 @@ export function AlloggiatiPage() {
   const kind = readableKinds.find((candidate) => candidate === address.kind);
   const canUpload = (candidate: ComplianceProofKind) => uploadKinds.includes(candidate);
 
-  const properties = useProperties({}, { fresh: true });
+  // The short-rent flats only: the proofs of the archive are of short stays, and the dialog of a receipt offers these flats to cover (never one let long-term).
+  const properties = useProperties({ mode: 'short' }, { fresh: true });
   const propertyList = Array.isArray(properties.data) ? properties.data : NO_PROPERTIES;
   // The queries wait for the properties, which the address is checked against (a property that is not one of the caller's is no filter), and for the
   // flags, which decide whether the page has a summary: before they are read the page would show the proofs for a moment and then the summary.

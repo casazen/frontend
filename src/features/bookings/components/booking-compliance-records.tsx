@@ -11,7 +11,7 @@ const LONG_DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', y
 const LONG_DATE_TIME: Intl.DateTimeFormatOptions = { ...LONG_DATE, hour: '2-digit', minute: '2-digit' };
 
 /** The kinds of the send log and the ways to send that have words of their own: any other value gets the generic ones, never its raw name. */
-const LOG_KINDS: ReadonlySet<string> = new Set(['AlloggiatiGuests', 'IstatPeriod', 'TouristTaxPeriod']);
+const LOG_KINDS: ReadonlySet<string> = new Set(['AlloggiatiGuests', 'IstatPeriod', 'TouristTaxPeriod', 'DocumentsDeleted']);
 const LOG_SENDERS: ReadonlySet<string> = new Set(['CasaZen', 'ChannelManager', 'Manual']);
 
 /** Newest first, whatever order the server sent them in (the one that was last made is the one the host looks for). */
@@ -19,7 +19,10 @@ function newestFirst<T>(items: readonly T[], when: (item: T) => string): T[] {
   return [...items].sort((left, right) => Date.parse(when(right)) - Date.parse(when(left)));
 }
 
-/** What was sent for the stay, who sent it and when: one line of the log. A line the channel manager holds says «affidato», never «inviato»: it is the channel manager that sends. */
+/**
+ * What was sent for the stay, who sent it and when: one line of the log. A line the channel manager holds says «affidato», never «inviato»: it is the channel manager that sends.
+ * The line of the documents deleted after the receipt is not a send (E20/F02/US01/T02): CasaZen did it, with the date, and it never says «inviato».
+ */
 function SendLogRow({ line }: { line: ComplianceSendLogLine }) {
   const { t, i18n } = useTranslation();
   const kind = LOG_KINDS.has(line.kind) ? line.kind : 'other';
@@ -31,9 +34,11 @@ function SendLogRow({ line }: { line: ComplianceSendLogLine }) {
     <li className="min-w-0 space-y-0.5 p-4" data-testid={`send-log-row-${line.id}`}>
       <p className="break-words font-medium">{t(`complianceArchive.booking.log.kind.${kind}`)}</p>
       <p className="break-words text-sm">
-        {sender === 'Manual' && line.sentBy
-          ? t('complianceArchive.booking.log.sender.ManualBy', { name: line.sentBy })
-          : t(`complianceArchive.booking.log.sender.${sender}`)}
+        {kind === 'DocumentsDeleted'
+          ? t('complianceArchive.booking.log.doneByCasaZen')
+          : sender === 'Manual' && line.sentBy
+            ? t('complianceArchive.booking.log.sender.ManualBy', { name: line.sentBy })
+            : t(`complianceArchive.booking.log.sender.${sender}`)}
       </p>
       <p className="break-words text-sm text-foreground/70">
         {when}
