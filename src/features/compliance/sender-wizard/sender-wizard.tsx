@@ -329,7 +329,8 @@ function SenderWizard({ propertyId, read }: SenderWizardProps) {
               istat={
                 istatAvailable
                   ? {
-                      configured: istatStatus.data?.configured ?? null,
+                      // Only what the last read said: a read that failed keeps the older answer in the query, and the step says nothing rather than say what may not be true any more.
+                      configured: istatStatus.isSuccess ? istatStatus.data.configured : null,
                       values: typedIstat,
                       errors: istatErrors,
                       onChange: changeIstat,

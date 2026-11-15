@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
@@ -205,6 +205,32 @@ describe('IstatCredentialsCard, the write-only credentials of the regional ISTAT
     expect(await screen.findByTestId('istat-credentials-error')).toBeInTheDocument();
     expect(screen.queryByText(text('istatCredentials.notConfigured'))).not.toBeInTheDocument();
     expect(screen.queryByTestId('istat-credentials-form')).not.toBeInTheDocument();
+  });
+
+  it('IstatCredentialsCard_AReadThatFailsAfterAGoodOne_SaysSoAndKeepsNeitherTheOldAnswerNorTheFormMadeOfIt', async () => {
+    vi.mocked(onboardingAssistApi.getIstatCredentialsStatus).mockResolvedValue({ configured: true, configuredAt: '2026-11-10T10:30:00Z' });
+    renderCard();
+    await screen.findByText(/^Configurate il/);
+    expect(screen.getByRole('button', { name: text('istatCredentials.replace') })).toBeInTheDocument();
+
+    // The property is not found any more: a query keeps the older answer when a read fails (a 404 included), and the card must not draw it as the truth.
+    vi.mocked(onboardingAssistApi.getIstatCredentialsStatus).mockRejectedValue(problemError(404, { code: 'property_not_found' }));
+    await act(async () => {
+      await client.invalidateQueries({ queryKey: ['istat-credentials', PROPERTY_ID] });
+    });
+
+    expect(await screen.findByTestId('istat-credentials-error')).toHaveTextContent(text('istatCredentials.loadFailed'));
+    expect(screen.queryByText(/^Configurate il/)).not.toBeInTheDocument();
+    expect(screen.queryByText(text('istatCredentials.notConfigured'))).not.toBeInTheDocument();
+    expect(screen.queryByTestId('istat-credentials-form')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: text('istatCredentials.replace') })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: text('istatCredentials.remove') })).not.toBeInTheDocument();
+
+    // Asked again and answered, what is true now is shown.
+    vi.mocked(onboardingAssistApi.getIstatCredentialsStatus).mockResolvedValue({ configured: false, configuredAt: null });
+    fireEvent.click(within(screen.getByTestId('istat-credentials-error')).getByRole('button', { name: text('istatCredentials.retry') }));
+    expect(await screen.findByText(text('istatCredentials.notConfigured'))).toBeInTheDocument();
+    expect(screen.getByTestId('istat-credentials-form')).toBeInTheDocument();
   });
 
   it('IstatCredentialsCard_WithoutThePermissionToWrite_ShowsTheStatusWithoutTheForm', async () => {

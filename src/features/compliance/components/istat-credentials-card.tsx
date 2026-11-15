@@ -67,7 +67,10 @@ export function IstatCredentialsCard({ propertyId, canEdit }: IstatCredentialsCa
   // Any request of the card in flight: none of its buttons can be pressed again meanwhile.
   const busy = save.isPending || remove.isPending;
 
-  const configured = status.data?.configured === true;
+  // What the server said the last time it was asked, and only if that last time worked: a read that failed keeps the older answer in the query (a 404 included), which is not what is
+  // true now, so the card neither says «configurate» nor offers to replace or remove what it cannot see.
+  const read = status.isSuccess ? status.data : undefined;
+  const configured = read?.configured === true;
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -101,7 +104,7 @@ export function IstatCredentialsCard({ propertyId, canEdit }: IstatCredentialsCa
             <Loader2 className="h-4 w-4 animate-spin" />
             {t('istatCredentials.loading')}
           </p>
-        ) : status.isError || !status.data ? (
+        ) : !read ? (
           <div className="space-y-2" data-testid="istat-credentials-error">
             <p className="text-sm text-destructive">{t('istatCredentials.loadFailed')}</p>
             <Button type="button" variant="outline" size="sm" onClick={() => void status.refetch()}>
@@ -110,10 +113,10 @@ export function IstatCredentialsCard({ propertyId, canEdit }: IstatCredentialsCa
           </div>
         ) : (
           <div className="flex flex-wrap items-center gap-2" data-testid="istat-credentials-status" data-configured={configured}>
-            {configured && status.data.configuredAt ? (
+            {configured && read.configuredAt ? (
               <Badge variant="success">
                 <ShieldCheck className="mr-1 h-3.5 w-3.5" />
-                {t('istatCredentials.configuredOn', { date: formatDateTime(status.data.configuredAt) })}
+                {t('istatCredentials.configuredOn', { date: formatDateTime(read.configuredAt) })}
               </Badge>
             ) : (
               <Badge variant="secondary">{t('istatCredentials.notConfigured')}</Badge>
@@ -123,7 +126,7 @@ export function IstatCredentialsCard({ propertyId, canEdit }: IstatCredentialsCa
 
         <p className="text-xs text-muted-foreground">{t('istatCredentials.writeOnlyHint')}</p>
 
-        {canEdit && status.data && (
+        {canEdit && read && (
           <form className="max-w-md space-y-3" onSubmit={handleSubmit} noValidate data-testid="istat-credentials-form">
             <IstatCredentialsFields
               values={values}

@@ -833,6 +833,24 @@ describe('SenderWizardPage: the regional ISTAT credentials of the credentials st
     expect(wizard().textContent ?? '').not.toMatch(/octorate/i);
   });
 
+  it('SenderWizardPage_IstatReadFailsAfterAGoodOne_SaysNothingOfWhetherTheyAreSavedInsteadOfTheOlderAnswer', async () => {
+    vi.mocked(onboardingAssistApi.getIstatCredentialsStatus).mockResolvedValue({ configured: true, configuredAt: '2026-11-10T10:30:00Z' });
+    const { client } = await open();
+    await toTheCredentials();
+    const block = await screen.findByTestId('sender-istat-credentials');
+    await waitFor(() => expect(within(block).getByTestId('sender-istat-status')).toHaveAttribute('data-configured', 'true'), WAIT);
+
+    // The property is not found any more: a query keeps the older answer when a read fails (a 404 included), and the step must not go on saying «salvate» on it.
+    vi.mocked(onboardingAssistApi.getIstatCredentialsStatus).mockRejectedValue(problem(404, { code: 'property_not_found' }));
+    await act(async () => {
+      await client.invalidateQueries({ queryKey: ['istat-credentials', PROPERTY_ID] });
+    });
+
+    await waitFor(() => expect(within(block).queryByTestId('sender-istat-status')).not.toBeInTheDocument(), WAIT);
+    // The fields are still there to be typed in, and the button does not say «Sostituisci» on an answer nobody can trust.
+    expect(within(block).getByTestId('sender-istat-save')).toHaveTextContent(text('istatCredentials.save'));
+  });
+
   it('SenderWizardPage_IstatTypedAndTheMainButton_SavesThemBeforeTheStepIsLeftAndLeavesNothingBehind', async () => {
     const { client } = await open();
     await toTheCredentials();
