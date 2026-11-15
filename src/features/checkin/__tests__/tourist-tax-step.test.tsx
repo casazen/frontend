@@ -3,6 +3,7 @@ import { cleanup, configure, fireEvent, render, screen, waitFor, within } from '
 import { createElement, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
 import { AxiosError, AxiosHeaders } from 'axios';
 import type { InternalAxiosRequestConfig } from 'axios';
 import i18n from '@/i18n/config';
@@ -10,15 +11,18 @@ import { DEFAULT_FEATURE_FLAGS, type FeatureFlags } from '@/config/feature-flags
 import { WorkspaceContext, type WorkspaceContextValue } from '@/contexts/workspace-context';
 import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { publicCheckinApi } from '@/api/checkin.api';
+import { checkInWizardApi } from '@/api/checkin-wizard.api';
 import { applyNotificationsChange } from '@/features/notifications/use-notifications-realtime';
 import { notificationKind } from '@/features/notifications/notification-model';
 import { TOURIST_TAX_KEY } from '@/queries/use-checkin-wizard';
-import type { TouristTaxCollection } from '@/types/checkin-wizard.types';
+import type { CheckInWizardState, StayTouristTax, TouristTaxCollection } from '@/types/checkin-wizard.types';
 import type { PublicCheckInContextDto, PublicCheckInGuestPrefill, PublicTouristTax, TouristTaxPaymentIntent } from '@/types/public-checkin.types';
 import { CheckInPage } from '../checkin-page';
 import { ensureGuestLocale } from '../lib/guest-locale';
 import { TouristTaxStep } from '../tourist-tax-step';
+import type { CheckInWizardValues } from '../wizard/lib/checkin-wizard-model';
 import { TaxCollection } from '../wizard/steps/tax-collection';
+import { TaxStep } from '../wizard/steps/tax-step';
 import { guestTaxAvailability, readPublicTouristTax, readTouristTaxPaymentIntent, withoutPaymentReturn } from '../lib/tourist-tax-model';
 
 // The Payment Element and Stripe.js are Stripe's: the page only has to open them with what the API gave, and to confirm once.
@@ -38,6 +42,16 @@ vi.mock('@/api/checkin.api', () => ({
     setLanguage: vi.fn(),
     getTouristTax: vi.fn(),
     createTouristTaxPaymentIntent: vi.fn(),
+  },
+}));
+vi.mock('@/api/checkin-wizard.api', () => ({
+  checkInWizardApi: {
+    getTouristTax: vi.fn(),
+    recordTouristTaxPaidAtProperty: vi.fn(),
+    setExemptions: vi.fn(),
+    setCollector: vi.fn(),
+    getMunicipalityRate: vi.fn(),
+    saveMunicipalityRate: vi.fn(),
   },
 }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
@@ -642,6 +656,127 @@ describe('TaxCollection: the host sees the state of the collection', () => {
     expect(screen.getByTestId('tax-collection-paid-at-property')).toBeDisabled();
     fireEvent.click(screen.getByTestId('tax-collection-paid-at-property'));
     expect(onRecord).toHaveBeenCalledTimes(1);
+  });
+});
+
+/** The tax of a stay of one guest, as the host's step reads it, with the collection block the server sends while its flag is on. */
+function hostTax(collectionOverrides: Partial<TouristTaxCollection> | null = {}): StayTouristTax {
+  return {
+    bookingId: 'b-1',
+    status: 'Calculated',
+    rateSource: 'Official',
+    missingRate: false,
+    nights: 2,
+    taxableNights: 2,
+    ageRulesApply: true,
+    categories: [],
+    total: 4,
+    amountDue: 4,
+    collector: 'Host',
+    collectorSource: 'Default',
+    collectorNeeded: false,
+    guests: [{ position: 0, nights: 2, taxableNights: 2, amount: 4, exemptionKind: 'None' }],
+    reasons: [{ code: 'resident', labelKey: 'touristTax.exemption.resident' }],
+    stale: false,
+    ...(collectionOverrides === null ? {} : { collection: { ...collection, toCollect: 4, onlinePayable: 4, amountDue: 4, ...collectionOverrides } }),
+  };
+}
+
+function HostTaxStep() {
+  const form = useForm<CheckInWizardValues>({
+    defaultValues: { guests: [{ firstName: 'Anna', lastName: 'Verdi', taxExemptionCode: '' }] as unknown as CheckInWizardValues['guests'] },
+  });
+  const state = { booking: { bookingId: 'b-1', propertyId: 'p-1', checkIn: '2026-10-10' } } as unknown as CheckInWizardState;
+  return createElement(TaxStep, { bookingId: 'b-1', form, state });
+}
+
+function renderHostStep(options: { workspace?: boolean } = {}) {
+  const workspace = {
+    contexts: [],
+    activeContext: 'short-rent',
+    isReady: true,
+    setActiveContext: vi.fn(),
+    hasPermission: (_context: string, permission: string) => permission === 'payment.write',
+    getDefaultRoute: vi.fn().mockReturnValue('/app/short-rent'),
+  } as unknown as WorkspaceContextValue;
+  const client = queryClientOf();
+  const step = createElement(QueryClientProvider, { client }, createElement(HostTaxStep));
+  return render(options.workspace === false ? step : createElement(WorkspaceContext.Provider, { value: workspace }, step));
+}
+
+describe('TaxStep of the host wizard with the collection', () => {
+  beforeEach(() => {
+    vi.mocked(checkInWizardApi.getTouristTax).mockResolvedValue(hostTax());
+  });
+
+  it('flagOff_NoCollectionBlockIsSentAndTheStepIsTheOneItAlwaysWas', async () => {
+    // No workspace around the step: nothing of the collection is drawn, so nothing reads it (the step must not need it).
+    vi.mocked(checkInWizardApi.getTouristTax).mockResolvedValue(hostTax(null));
+    renderHostStep({ workspace: false });
+
+    expect(await screen.findByTestId('tax-guest-0')).toBeInTheDocument();
+    expect(screen.queryByTestId('checkin-wizard-tax-collection')).not.toBeInTheDocument();
+    // The amounts are the euro amounts they always were.
+    expect(screen.getByTestId('tax-guest-0-amount')).toHaveTextContent(/4,00\s*€/);
+  });
+
+  it('collectionBlock_IsAtTheEndOfTheStepWithTheStateOfTheApi', async () => {
+    renderHostStep();
+
+    const block = await screen.findByTestId('checkin-wizard-tax-collection');
+    expect(screen.getByTestId('tax-collection-state')).toHaveTextContent('Da incassare');
+    expect(block).toHaveTextContent(/4,00\s*€/);
+    expect(screen.getByRole('button', { name: 'Segna come pagata in struttura' })).toBeEnabled();
+  });
+
+  it('markPaidAtProperty_WhileItRuns_HoldsEveryButtonOfTheCardAndRecordsOnce_ThenTheStateIsTheServers', async () => {
+    let finish: (value: TouristTaxCollection) => void = () => undefined;
+    vi.mocked(checkInWizardApi.recordTouristTaxPaidAtProperty).mockReturnValue(new Promise<TouristTaxCollection>((resolve) => (finish = resolve)));
+    renderHostStep();
+
+    const button = await screen.findByTestId('tax-collection-paid-at-property');
+    fireEvent.click(button);
+    fireEvent.click(button);
+
+    // The mutation starts a moment after the click, and the second click met a button already disabled: one write.
+    await waitFor(() => expect(checkInWizardApi.recordTouristTaxPaidAtProperty).toHaveBeenCalledTimes(1));
+    expect(checkInWizardApi.recordTouristTaxPaidAtProperty).toHaveBeenCalledWith('b-1');
+    // Any write of the card holds the others: the exemption of the guest waits too.
+    await waitFor(() => expect(screen.getByTestId('tax-exemption-0')).toBeDisabled());
+    expect(screen.getByTestId('tax-collection-paid-at-property')).toBeDisabled();
+
+    // The server answers: the state is what it says, and the tax is read again.
+    vi.mocked(checkInWizardApi.getTouristTax).mockResolvedValue(
+      hostTax({ status: 'PaidAtProperty', reason: 'PaidAtProperty', toCollect: 0, onlinePayable: 0, collectedAt: '2026-11-15T09:30:00Z' }),
+    );
+    finish({ ...collection, status: 'PaidAtProperty', reason: 'PaidAtProperty', toCollect: 0, onlinePayable: 0, collectedAt: '2026-11-15T09:30:00Z' });
+    await waitFor(() => expect(screen.getByTestId('tax-collection-state')).toHaveTextContent('Pagata in struttura'));
+    expect(screen.queryByTestId('tax-collection-paid-at-property')).not.toBeInTheDocument();
+    expect(screen.getByTestId('tax-exemption-0')).toBeEnabled();
+    await waitFor(() => expect(checkInWizardApi.getTouristTax).toHaveBeenCalledTimes(2));
+  });
+
+  it('markPaidAtProperty_RefusedByTheServer_SaysWhyAndTheButtonStaysForAnotherTry', async () => {
+    vi.mocked(checkInWizardApi.recordTouristTaxPaidAtProperty).mockRejectedValue(httpError(409, { code: 'tourist_tax_paid_online' }));
+    renderHostStep();
+
+    fireEvent.click(await screen.findByTestId('tax-collection-paid-at-property'));
+
+    expect(await screen.findByTestId('checkin-wizard-tax-problem')).toHaveTextContent('già pagato la tassa di soggiorno online');
+    await waitFor(() => expect(screen.getByTestId('tax-collection-paid-at-property')).toBeEnabled());
+  });
+
+  it('exemptionChosen_TheAnswerHasNoCollection_TheBlockStaysAndTheTaxIsReadAgain', async () => {
+    vi.mocked(checkInWizardApi.setExemptions).mockResolvedValue(hostTax(null));
+    renderHostStep();
+    await screen.findByTestId('checkin-wizard-tax-collection');
+
+    fireEvent.change(screen.getByTestId('tax-exemption-0'), { target: { value: 'resident' } });
+
+    await waitFor(() => expect(checkInWizardApi.setExemptions).toHaveBeenCalledTimes(1));
+    // The answer of a write carries no collection block: the one on screen does not vanish (it would look as if the flag went off), and the tax is read again.
+    await waitFor(() => expect(checkInWizardApi.getTouristTax).toHaveBeenCalledTimes(2));
+    expect(screen.getByTestId('checkin-wizard-tax-collection')).toBeInTheDocument();
   });
 });
 
