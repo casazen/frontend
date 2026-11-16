@@ -36,6 +36,7 @@ import { SupplierEntryLink } from './components/supplier-entry-link';
 import { ProfileLoadError } from '@/components/auth/profile-load-error';
 import { Button } from '@/components/ui/button';
 import { LoadingScreen } from '@/components/shared/loading-screen';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 
 const RENTAL_TYPES: RentalType[] = ['ShortTerm', 'LongTerm', 'Both'];
 
@@ -53,6 +54,7 @@ interface PendingRoles {
 }
 
 export function OnboardingPage() {
+  const { flags } = useFeatureFlags();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -168,7 +170,7 @@ export function OnboardingPage() {
     if (isDemoMode) {
       applyDemoOnboardingProfile(rentalType);
       setIsLeaving(true);
-      window.location.assign(getPostOnboardingRoute(rentalType, from, { firstRun: true }));
+      window.location.assign(getPostOnboardingRoute(rentalType, from, { firstRun: true, guidedSetup: flags.octorateOnboarding }));
       return;
     }
 
@@ -217,7 +219,7 @@ export function OnboardingPage() {
 
     const target = isEditMode
       ? getProfilePageForRentalType(rentalType)
-      : getPostOnboardingRoute(rentalType, from, { firstRun: result.orgProvisioned === true });
+      : getPostOnboardingRoute(rentalType, from, { firstRun: result.orgProvisioned === true, guidedSetup: flags.octorateOnboarding });
     if (result.rolesSynced === false) {
       if (pendingRoles) toast.error(t('onboarding.rolesPending.stillPending'));
       setPendingRoles({ rentalType, target });
