@@ -60,6 +60,7 @@ export interface PropertyWizardValues {
   comuneIstatCode: string;
   /** The comune's name: what is stored as the city of the property. */
   city: string;
+  country: 'IT' | 'CH' | '';
   /** Optional: an Italian postal code, 5 digits. */
   postalCode: string;
   maxGuests: number;
@@ -152,15 +153,21 @@ export const baseStepSchema: StepSchema = z.object({
     .refine((value) => CIVIC_NUMBER.test(value), 'propertyWizard.validation.address.civic'),
   unit: z.string().max(30, 'propertyWizard.validation.unit.max'),
   // The comune is what the regional rules, the CIN check and the tourist tax follow: it is chosen from the official list.
-  comuneIstatCode: z.string().regex(/^[0-9]{6}$/, 'propertyWizard.validation.comune.required'),
+  comuneIstatCode: z.string(),
   city: z.string().min(2, 'propertyWizard.validation.comune.required'),
-  postalCode: z.string().trim().regex(/^(\d{5})?$/, 'propertyWizard.validation.postalCode.format'),
+  country: z.enum(['IT', 'CH'], { error: 'property.form.chooseCountry' }),
+  postalCode: z.string().trim().regex(/^(\d{4,5})?$/, 'propertyWizard.validation.postalCode.format'),
   maxGuests: z.number({ error: 'propertyWizard.validation.maxGuests' }).int().min(1, 'propertyWizard.validation.maxGuests').max(100, 'propertyWizard.validation.maxGuests'),
   bedrooms: z.number({ error: 'propertyWizard.validation.bedrooms' }).int().min(0, 'propertyWizard.validation.bedrooms').max(100, 'propertyWizard.validation.bedrooms'),
   beds: z.number({ error: 'propertyWizard.validation.beds' }).int().min(1, 'propertyWizard.validation.beds').max(100, 'propertyWizard.validation.beds'),
   bathrooms: z.number({ error: 'propertyWizard.validation.bathrooms' }).int().min(1, 'propertyWizard.validation.bathrooms').max(50, 'propertyWizard.validation.bathrooms'),
   areaSqm: z.string().trim().regex(/^(\d{1,4})?$/, 'propertyWizard.validation.areaSqm').refine((value) => value === '' || Number(value) >= 1, 'propertyWizard.validation.areaSqm'),
   rooms: roomsSchema,
+}).superRefine((value, context) => {
+  if (value.country === 'IT' && !/^[0-9]{6}$/.test(value.comuneIstatCode))
+    context.addIssue({ code: 'custom', path: ['comuneIstatCode'], message: 'propertyWizard.validation.comune.required' });
+  if (value.postalCode && value.postalCode.length !== (value.country === 'CH' ? 4 : 5))
+    context.addIssue({ code: 'custom', path: ['postalCode'], message: 'propertyWizard.validation.postalCode.format' });
 });
 
 /**
@@ -307,6 +314,7 @@ export const NEW_PROPERTY_DEFAULTS: PropertyWizardValues = {
   unit: '',
   comuneIstatCode: '',
   city: '',
+  country: 'IT',
   postalCode: '',
   maxGuests: 4,
   bedrooms: 2,
@@ -395,6 +403,7 @@ export function wizardDefaults(property?: Property, seed: WizardListingSeed = EM
     unit: property.unit ?? '',
     comuneIstatCode: property.comuneIstatCode ?? '',
     city: property.city,
+    country: property.country,
     postalCode: property.postalCode ?? '',
     // 0 = not set for a property that was never let for short stays: the counters start from the smallest valid value.
     maxGuests: Math.max(1, property.maxGuests),
@@ -445,6 +454,7 @@ function baseFields(values: PropertyWizardValues) {
     // Blank = no unit: the API clears it on an update and stores none on a create.
     unit: values.unit.trim() === '' ? null : values.unit.trim(),
     city: values.city,
+    country: values.country === '' ? undefined : values.country,
     comuneIstatCode: values.comuneIstatCode,
     postalCode: values.postalCode.trim(),
     bedrooms: values.bedrooms,
@@ -529,15 +539,16 @@ export function amenitiesUpdatePayload(values: PropertyWizardValues, stored: Pic
 }
 
 /** True when the property has what the first step asks for — a name, an address, a city and guests — as the server counts it. */
-function baseFieldsAreSet(property: Pick<Property, 'name' | 'address' | 'city' | 'maxGuests'>): boolean {
-  return property.name.trim() !== '' && property.address.trim() !== '' && property.city.trim() !== '' && property.maxGuests > 0;
+function baseFieldsAreSet(property: Pick<Property, 'name' | 'address' | 'city' | 'maxGuests'> & Partial<Pick<Property, 'country'>>): boolean {
+  return property.name.trim() !== '' && property.address.trim() !== '' && property.city.trim() !== '' && property.maxGuests > 0 &&
+    (property.country === undefined || property.country.length > 0);
 }
 
 /**
  * Where the open `base-data` blocker is fixed: the first step when the name, the address, the city or the guests are missing, the
  * prices when only the rate is. Used by the reopening of the wizard and by the «Correggi» of the last step.
  */
-export function baseDataStepFor(property: Pick<Property, 'name' | 'address' | 'city' | 'maxGuests'>): 'base' | 'prices' {
+export function baseDataStepFor(property: Pick<Property, 'name' | 'address' | 'city' | 'maxGuests'> & Partial<Pick<Property, 'country'>>): 'base' | 'prices' {
   return baseFieldsAreSet(property) ? 'prices' : 'base';
 }
 

@@ -111,6 +111,7 @@ export function BaseStep({ form, storedRoomCount = 0 }: BaseStepProps) {
     formState: { errors },
   } = form;
   const comuneIstatCode = watch('comuneIstatCode') || null;
+  const country = watch('country');
   // Once the unit has a room, the bedrooms and the beds are the rooms': the counters are not asked twice.
   const hasRooms = watch('rooms').length > 0;
 
@@ -133,11 +134,19 @@ export function BaseStep({ form, storedRoomCount = 0 }: BaseStepProps) {
         <Input autoComplete="off" maxLength={100} placeholder={t('propertyWizard.base.name.placeholder')} {...register('name')} />
       </Field>
 
+      <Field label={t('property.country')} error={errors.country}>
+        <select className="h-10 w-full rounded-md border border-input bg-background px-3" {...register('country')}>
+          <option value="" disabled>{t('property.form.chooseCountry')}</option>
+          <option value="IT">{t('property.country.it')}</option>
+          <option value="CH">{t('property.country.ch')}</option>
+        </select>
+      </Field>
+
       <div className="grid min-w-0 gap-4 md:grid-cols-2">
         <Field label={t('propertyWizard.base.address.label')} hint={t('propertyWizard.base.address.hint')} error={errors.address}>
           <Input autoComplete="street-address" placeholder={t('propertyWizard.base.address.placeholder')} {...register('address')} />
         </Field>
-        <Field label={t('propertyWizard.base.comune.label')} hint={t('propertyWizard.base.comune.hint')} error={errors.city ?? errors.comuneIstatCode}>
+        {country === 'IT' ? <Field label={t('propertyWizard.base.comune.label')} hint={t('propertyWizard.base.comune.hint')} error={errors.city ?? errors.comuneIstatCode}>
           {(control) => (
             <ComunePicker
               id={control.id}
@@ -160,7 +169,9 @@ export function BaseStep({ form, storedRoomCount = 0 }: BaseStepProps) {
               }
             />
           )}
-        </Field>
+        </Field> : <Field label={t('property.form.city')} error={errors.city}>
+          <Input autoComplete="address-level2" {...register('city')} />
+        </Field>}
       </div>
 
       <div className="grid min-w-0 gap-4 md:grid-cols-2">
