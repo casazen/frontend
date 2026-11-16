@@ -37,7 +37,8 @@ vi.mock('../components/consents-step', () => ({
 import { useAuth } from '@/hooks/use-auth';
 import { UsersApi } from '@/api/users.api';
 import { toast } from 'sonner';
-import { OnboardingPage } from '../onboarding-page';
+// Compatibility editor and consent-renewal coverage. The new signup is covered in commercial-signup-wizard.test.tsx and the browser flow.
+import { ExistingOnboardingPage as OnboardingPage } from '../onboarding-page';
 import { CONSENT_STORAGE_KEY } from '@/lib/cookie-consent';
 import { captureSignupAttribution, readPendingSignupAttribution } from '@/lib/signup-attribution';
 

@@ -1,5 +1,5 @@
 import { useRef, type ReactNode } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/page-header';
 import { PAGE_MAIN_ASIDE } from '@/components/layout/page-columns';
@@ -25,7 +25,7 @@ import { useAccountSubscription } from './use-account-subscription';
 function AccountBillingBody() {
   const { t } = useTranslation();
   const { pathname } = useLocation();
-  const { planTier, isLoading: profileLoading } = useCurrentUser();
+  const { planTier, user: commercialProfile, isLoading: profileLoading } = useCurrentUser();
   const entitlementQuery = useEntitlement();
   const plansQuery = useBillingPlans();
   const { subscriptionQuery, checkoutReturn, timedOut } = useAccountSubscription();
@@ -127,6 +127,7 @@ function AccountBillingBody() {
             />
             <BillingDataSection subscription={subscription} />
             <SubscriptionStates status={subscription.status} />
+            {commercialProfile?.commercialSignup && <div className="space-y-3 py-5"><h2 className="font-semibold">{t('commercial.rentalAreas')}</h2>{commercialProfile.commercialSignup.profile === 'agency' && <p className="text-sm">{t('commercial.agency.count', { count: subscription.roomQuantity ?? 0 })}</p>}<p className="text-sm text-muted-foreground">{t('commercial.manageAreasText')}</p><Button asChild variant="outline"><Link to="/onboarding?mode=edit">{t('commercial.manageAreas')}</Link></Button></div>}
           </div>
         </div>
       </div>

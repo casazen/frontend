@@ -1,0 +1,32 @@
+import type { UserDetail } from '@/types';
+import type { ContextNav, RouteManifestEntry } from '@/config/route-manifest';
+
+/** Product modules, independently of technical rollout flags and of team permissions. */
+export function commercialModuleForPath(path: string): string | null {
+  if (/\/(?:integrations\/octorate|channels|ota)(?:\/|$)/.test(path)) return 'channels';
+  if (/\/(?:settings\/(?:domain|site-appearance|site-documents|payments)|vetrina)(?:\/|$)/.test(path)) return 'direct-booking';
+  if (/\/compliance\/identification(?:\/|$)|\/verifications(?:\/|$)/.test(path)) return 'identification';
+  if (/\/(?:compliance|alloggiati)(?:\/|$)/.test(path)) return 'compliance';
+  if (/\/settings\/assistant(?:\/|$)/.test(path)) return 'messages-ai';
+  if (/\/(?:interventions|activities|service-requests)(?:\/|$)/.test(path)) return 'operations';
+  if (/\/(?:fiscal|accountant)(?:\/|$)/.test(path)) return 'fiscal';
+  if (/\/properties\/:id\/pricing(?:\/|$)/.test(path)) return 'revenue';
+  if (/\/crm(?:\/|$)/.test(path)) return 'crm';
+  return null;
+}
+export function commercialRouteAllowed(profile: UserDetail | null | undefined, path: string) {
+  if (!profile?.commercialSignup) return true; // Existing accounts retain their contracted access.
+  const module = commercialModuleForPath(path);
+  return !module || profile.commercialEnabledAddons?.includes(module) === true;
+}
+export function commercialNavigation(nav: ContextNav, profile: UserDetail | null | undefined): ContextNav {
+  const allowed = (entry: RouteManifestEntry) => commercialRouteAllowed(profile, entry.path);
+  return { sections: nav.sections.map(section => ({ ...section, entries: section.entries.filter(allowed) })).filter(section => section.entries.length > 0), more: nav.more.filter(allowed), footer: nav.footer.filter(allowed) };
+}
+
+export function commercialPartAllowed(profile: UserDetail | null | undefined, part: string): boolean {
+  if (!profile?.commercialSignup) return true;
+  const modules: Record<string, string> = { octorateConnection: 'channels', channels: 'channels', listings: 'channels', pricesRules: 'revenue', compliance: 'compliance', identification: 'identification', messagesAi: 'messages-ai', fiscalDocuments: 'fiscal', partners: 'operations' };
+  const module = modules[part];
+  return !module || profile.commercialEnabledAddons?.includes(module) === true;
+}

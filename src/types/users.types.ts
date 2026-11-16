@@ -30,6 +30,9 @@ export interface UserSummary {
 }
 
 export interface UserDetail extends UserSummary {
+  commercialSetupRequired?: boolean;
+  commercialEnabledAddons?: string[];
+  commercialSignup?: import('@/features/onboarding/commercial-model').CommercialSelection | null;
   phoneNumber?: string;
   updatedAt: string;
   // UTC timestamp when user completed onboarding. Null if user has not completed onboarding yet.
@@ -78,6 +81,7 @@ export interface UserRolesResponse {
 }
 
 export interface OnboardingRequest {
+  commercialSignup?: import('@/features/onboarding/commercial-model').CommercialSelection;
   rentalType: RentalType;
   planTier?: PlanTier;
   consents?: OnboardingConsentsPayload;

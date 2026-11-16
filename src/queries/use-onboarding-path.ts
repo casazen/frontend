@@ -1,3 +1,5 @@
+import { useCommercialProfile } from '@/hooks/use-commercial-profile';
+import { commercialPartAllowed } from '@/features/onboarding/commercial-access';
 import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { onboardingApi } from '@/api/onboarding.api';
@@ -29,7 +31,8 @@ export function useOnboardingPath(options?: { enabled?: boolean }) {
 export function useOnboardingPathEnabled(): boolean {
   const { flags } = useFeatureFlags();
   const { contexts } = useWorkspace();
-  return flags.octorateOnboarding && isOrgBillingAdmin(contexts);
+  const commercial = useCommercialProfile();
+  return flags.octorateOnboarding && isOrgBillingAdmin(contexts) && (!commercial?.commercialSignup || commercial.commercialEnabledAddons?.includes('channels') === true);
 }
 
 /** What the home shows of the path while it is incomplete. */
@@ -52,13 +55,14 @@ export function useVisibleOnboardingPath(options?: { enabled?: boolean }): { pat
   // A screen that has no use for the path now (the guide while it is closed, a welcome already seen) asks nothing of the server.
   const enabled = useOnboardingPathEnabled() && (options?.enabled ?? true);
   const query = useOnboardingPath({ enabled });
+  const commercial = useCommercialProfile();
 
   return useMemo(() => {
     if (!enabled) return { path: null, pending: false };
-    const steps = knownPathSteps(query.data);
+    const steps = knownPathSteps(query.data).map(step => ({ ...step, parts: step.parts.filter(part => commercialPartAllowed(commercial, part)) })).filter(step => step.parts.length > 0);
     if (steps.length === 0 || !isPathIncomplete(steps)) return { path: null, pending: query.isPending };
-    return { path: { steps, next: nextPathStep(query.data, steps), ...pathProgress(steps) }, pending: false };
-  }, [enabled, query.data, query.isPending]);
+    return { path: { steps, next: nextPathStep(query.data, steps) ?? (query.data?.next ? steps.find(step => step.visible && step.state === 'open') ?? null : null), ...pathProgress(steps) }, pending: false };
+  }, [enabled, query.data, query.isPending, commercial]);
 }
 
 /**
