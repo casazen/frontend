@@ -13,7 +13,7 @@ import { useWorkspace } from '@/hooks/use-workspace';
 import { getPlanLimitMessage, getPlanTierLabel, getPlanUpgradeCta } from '@/lib/i18n-labels';
 import { useCinCompliance } from '@/queries/use-cin';
 import { useListingStatusSummary } from '@/queries/use-listing-status';
-import { useActivateProperty, useDeleteProperty, usePauseProperty, useProperties } from '@/queries/use-properties';
+import { SHORT_PROPERTIES_OVERVIEW, useActivateProperty, useDeleteProperty, usePauseProperty, useProperties } from '@/queries/use-properties';
 import { useEntitlement } from '@/queries/use-users';
 import type { Property } from '@/types';
 import { BulkCleaningDialog } from './components/bulk-cleaning-dialog';
@@ -64,7 +64,7 @@ function PlanUsageNote() {
  */
 export function PropertiesPage() {
   const { t } = useTranslation();
-  const { data: properties, isLoading, isError, error, refetch } = useProperties({ mode: 'short' }, { fresh: true });
+  const { data: properties, isLoading, isError, error, refetch } = useProperties(SHORT_PROPERTIES_OVERVIEW, { fresh: true });
   const { data: cinCompliance } = useCinCompliance();
   const { mutate: pause, isPending: pausing } = usePauseProperty();
   const { mutate: activate, isPending: activating } = useActivateProperty();

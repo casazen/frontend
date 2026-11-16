@@ -280,7 +280,8 @@ export function statusTextKey(kind: StatusKind, status: string, part: StatusText
 }
 
 /** The status of a property to show: suspended first (it needs fixing), then the pause the host set, then the compliance status. */
-export function propertyStatus(property: { complianceStatus?: string | null; isPaused?: boolean }): PropertyStatus {
+export function propertyStatus(property: { complianceStatus?: string | null; isPaused?: boolean; isActive?: boolean }): PropertyStatus {
+  if (property.isActive === false) return "Pending";
   const compliance = property.complianceStatus;
   if (compliance === "Suspended") return "Suspended";
   if (property.isPaused) return "Paused";

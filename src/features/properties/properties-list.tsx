@@ -31,6 +31,10 @@ const needsAttention = (property: Property) => {
 
 /** The states in the order the host has to look at them: what is blocked first, what works last. */
 const STATUS_RANK: Record<PropertyStatus, number> = { Suspended: 0, Pending: 1, Paused: 2, Active: 3 };
+const MISSING_LABELS: Record<string, string> = {
+  base_data: 'baseData', cin: 'cin', documents: 'documents', safety: 'safety',
+  activation_not_confirmed: 'activationNotConfirmed', photos: 'photos', calendar: 'calendar',
+};
 
 export interface PropertiesListOptions {
   /** `property.write`: completing, reactivating, pausing, editing and deleting are for who may write the property. */
@@ -174,6 +178,14 @@ export function usePropertiesList({ canWrite, canReadBookings, busy, onPause, on
               <div className="flex min-w-0 flex-col items-start gap-1">
                 <StatusBadge kind="property" status={propertyStatus(property)} />
                 {since ? <span className="text-sm font-normal text-foreground/70">{since}</span> : null}
+                {property.missing?.some((item) => item.blocking) ? (
+                  <span className="text-sm font-normal text-foreground/70">
+                    {t('accountProperties.list.missing', {
+                      items: property.missing.filter((item) => item.blocking)
+                        .map((item) => t(`accountProperties.missing.${MISSING_LABELS[item.code] ?? item.code}`, { defaultValue: item.code })).join(', '),
+                    })}
+                  </span>
+                ) : null}
               </div>
             );
           },

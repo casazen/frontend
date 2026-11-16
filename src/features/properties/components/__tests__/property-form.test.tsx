@@ -265,6 +265,14 @@ describe('PropertyForm (A2-04, A2-27)', { timeout: 20_000 }, () => {
     expect(screen.getByLabelText(i18n.t('property.form.damageDeposit', { currency: 'CHF' }))).toHaveValue(300);
     expect(screen.getByText(i18n.t('property.form.amountsInFrancs'))).toBeInTheDocument();
     expect(screen.queryByText(i18n.t('property.form.amountsInEuro'))).not.toBeInTheDocument();
+    expect(screen.queryByTestId('property-comune-field')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('property-cin-input')).not.toBeInTheDocument();
+  });
+
+  it('PropertyForm_UnknownCountry_RequiresAChoice', () => {
+    renderForm({ property: { ...PROPERTY, country: '' as Property['country'] } });
+    expect(field('property.country')).toHaveValue('');
+    expect(screen.getByRole('option', { name: i18n.t('property.form.chooseCountry') })).toBeDisabled();
   });
 
   it('PropertyForm_PoliciesFailToLoad_ShowsTheErrorAndKeepsTheCurrentPolicy', async () => {
