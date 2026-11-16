@@ -1,9 +1,7 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/page-header';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { getProblemMessage } from '@/lib/api-errors';
@@ -155,11 +153,7 @@ export function AdminSuppliersPage() {
       <PageHeader
         title={t('admin.suppliers.title')}
         description={t('admin.suppliers.description')}
-        action={
-          <Button asChild data-testid="admin-suppliers-invite">
-            <Link to="/app/admin/suppliers/invite">{t('admin.suppliers.inviteNew')}</Link>
-          </Button>
-        }
+
       />
       <SuppliersTab />
     </div>

@@ -92,8 +92,8 @@ function InviteFlow({ token }: { token: string }) {
   const inviter = data.inviterName?.trim();
   return (
     <InviteLayout
-      title={inviter ? t('hostInvite.invitedBy', { name: inviter }) : t('hostInvite.invited')}
-      description={t('hostInvite.description')}
+      title={data.isAgency ? t('admin.staffInvite.qrTitle') : inviter ? t('hostInvite.invitedBy', { name: inviter }) : t('hostInvite.invited')}
+      description={t(data.isAgency ? 'admin.staffInvite.personalQr' : 'hostInvite.description')}
     >
       {data.maskedEmail && (
         <p className="rounded-md bg-muted p-3 text-sm" data-testid="host-invite-masked-email">
