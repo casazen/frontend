@@ -23,6 +23,8 @@ vi.mock('@/config/demo.config', async (importOriginal) => {
 import { useAuth } from '@/hooks/use-auth';
 import { UsersApi } from '@/api/users.api';
 import { OnboardingGuard } from '../onboarding-guard';
+import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
+import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 
 const ROLES_CLAIM = 'https://casazen.app/roles';
 const forceReauth = vi.fn();
@@ -91,25 +93,33 @@ function WorkspaceProbe() {
   );
 }
 
-function renderGuard(path = '/app/short-rent/properties') {
+function renderGuard(path = '/app/short-rent/properties', guidedSetup = false) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={client}>
-      <MemoryRouter initialEntries={[path]}>
-        <Routes>
-          <Route path="/onboarding" element={<OnboardingProbe />} />
-          <Route path="/register/claim" element={<p data-testid="claim-page">claim</p>} />
-          <Route path="/account-inactive" element={<p data-testid="account-inactive-page">account disabled</p>} />
-          <Route element={<OnboardingGuard />}>
-            <Route path="/app/*" element={<WorkspaceProbe />} />
-          </Route>
-        </Routes>
-      </MemoryRouter>
+      <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, octorateOnboarding: guidedSetup }, isLoading: false }}>
+        <MemoryRouter initialEntries={[path]}>
+          <Routes>
+            <Route path="/onboarding" element={<OnboardingProbe />} />
+            <Route path="/register/claim" element={<p data-testid="claim-page">claim</p>} />
+            <Route path="/account-inactive" element={<p data-testid="account-inactive-page">account disabled</p>} />
+            <Route element={<OnboardingGuard />}>
+              <Route path="/app/*" element={<WorkspaceProbe />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </FeatureFlagsContext.Provider>
     </QueryClientProvider>,
   );
 }
 
 describe('OnboardingGuard (PL-01)', () => {
+  it('opens guided setup for a new short-term host and allows its pages to load', async () => {
+    mockAuth({ roles: ['PropertyOwner'] });
+    vi.mocked(UsersApi.getMe).mockResolvedValue(profile({ orgId: 'org-1', onboardingCompletedAt: '2026-06-16T12:00:00Z', rentalType: 'ShortTerm', hasProperties: false }));
+    renderGuard('/app/short-rent', true);
+    expect(await screen.findByTestId('workspace')).toHaveTextContent('/app/short-rent/onboarding');
+  });
   beforeEach(() => {
     demo.enabled = false;
     sessionStorage.clear();

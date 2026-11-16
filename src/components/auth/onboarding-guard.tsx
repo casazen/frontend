@@ -17,6 +17,8 @@ import { useMe } from '@/queries/use-users';
 import { isAccountInactiveError } from '@/lib/api-errors';
 import { ACCOUNT_INACTIVE_PATH } from '@/lib/axios';
 import { useSignupAttributionSync } from '@/hooks/use-signup-attribution-sync';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
+import { ONBOARDING_PLAN_PATH } from '@/lib/onboarding-parts';
 
 /**
  * Sends to `/onboarding` only the users who need it (A1-01): hosts without an org or without a completed
@@ -32,6 +34,7 @@ export function OnboardingGuard() {
   const { isLoading: authLoading, isAuthenticated, user } = useAuth();
   const { roles, isResolved: rolesResolved } = useUserRoleState();
   const { data: profile, isLoading: profileLoading, error: profileError, refetch, isFetching } = useMe();
+  const { flags, isLoading: flagsLoading } = useFeatureFlags();
   const passes =
     !authLoading &&
     isAuthenticated &&
@@ -65,12 +68,19 @@ export function OnboardingGuard() {
     return <Navigate to="/onboarding" replace state={{ from }} />;
   }
 
-  // Onboarded host whose org has no property yet: the creation of the first one, never the whole wizard again.
+  // An onboarded host without properties starts with guided setup when available, or first-property creation otherwise.
   if (
     isAuthenticated &&
     profile?.rentalType &&
     needsFirstProperty(user, profile, roles, location.pathname)
   ) {
+    if (flagsLoading) return <LoadingScreen message={t('shared.loading.defaultMessage')} />;
+    if (flags.octorateOnboarding && profile.rentalType !== 'LongTerm') {
+      if (location.pathname.replace(/\/+$/, '') === '/app/short-rent') {
+        return <Navigate to={ONBOARDING_PLAN_PATH} replace />;
+      }
+      return <Outlet />;
+    }
     return <Navigate to={getFirstPropertyRoute(profile.rentalType)} replace />;
   }
 

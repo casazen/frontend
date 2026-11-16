@@ -135,6 +135,7 @@ const FIRST_PROPERTY_EXEMPT_PATTERNS = [
   /^\/app\/(?:short|long)-rent\/settings(?:\/|$)/,
   /^\/app\/account\/billing(?:\/|$)/,
   /^\/app\/short-rent\/integrations\/octorate(?:\/|$)/,
+  /^\/app\/short-rent\/onboarding(?:\/|$)/,
   /^\/app\/(?:short|long)-rent\/profile(?:\/|$)/,
   /^\/profile(?:\/|$)/,
   /^\/legale(?:\/|$)/,
@@ -177,14 +178,17 @@ export function getFirstPropertyRoute(rentalType: RentalType): string {
 
 /**
  * Where to go once the onboarding is done: a deep page the guard redirected from when it belongs to a context the chosen
- * rental type opens; otherwise, right after the org was created (`firstRun`), the creation of the first property;
+ * rental type opens; otherwise, right after the org was created (`firstRun`), guided setup when enabled or the first property;
  * otherwise the home of the rental type.
  */
 export function getPostOnboardingRoute(
   rentalType: RentalType,
   from?: string | null,
-  options?: { firstRun?: boolean },
+  options?: { firstRun?: boolean; guidedSetup?: boolean },
 ): string {
+  if (options?.firstRun && options.guidedSetup && rentalType !== 'LongTerm') {
+    return '/app/short-rent/onboarding';
+  }
   const prefixes = RENTAL_TYPE_CONTEXT_PREFIXES[rentalType] ?? [];
   if (from && prefixes.some((prefix) => from === prefix || from.startsWith(`${prefix}/`))) {
     // A new host sent from the bare home of an area is not "going somewhere": it starts with the first property.
