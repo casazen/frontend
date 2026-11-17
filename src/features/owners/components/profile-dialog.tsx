@@ -70,6 +70,8 @@ const initial = (from: OwnerFiscalProfile | null, suggestedFrom: string): FormSt
   accountingPolicyId: from?.accountingPolicyId ?? '',
 });
 
+const REVIEW_FIELDS = ['legalName', 'entityKind', 'taxResidenceCountry', 'fiscalCode', 'vatNumber', 'foreignTaxId', 'legalAddress', 'settlementCurrency', 'bankAccountReference', 'mandateRole', 'mandateFrom', 'mandateTo', 'revenueRecognitionRule', 'expenseCommissionModel', 'workingCapitalRule', 'taxJurisdiction'] as const;
+
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 const JURISDICTION = /^[A-Za-z]{2}(-[A-Za-z0-9]{1,5})?$/;
 
@@ -290,7 +292,7 @@ export function ProfileDialog({ open, onOpenChange, ownerId, from, policies, sug
       {step === 6 ? (
         <div className="space-y-5" data-testid="profile-review">
           <dl className="grid gap-4 sm:grid-cols-2">
-            {(['legalName', 'entityKind', 'taxResidenceCountry', 'fiscalCode', 'vatNumber', 'foreignTaxId', 'legalAddress', 'settlementCurrency', 'bankAccountReference', 'mandateRole', 'mandateFrom', 'mandateTo', 'revenueRecognitionRule', 'expenseCommissionModel', 'workingCapitalRule', 'taxJurisdiction'] as const).map((field) => (
+            {REVIEW_FIELDS.map((field) => (
               <div key={field} className="min-w-0 border-b border-border pb-3">
                 <dt className="text-sm text-foreground/60">{t(`ownerProfile.fields.${field}`)}</dt>
                 <dd className="break-words text-sm font-medium">{reviewValue(field)}</dd>
