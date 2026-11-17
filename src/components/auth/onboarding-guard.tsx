@@ -62,7 +62,7 @@ export function OnboardingGuard() {
     return <Navigate to={SUPPLIER_CLAIM_PATH} replace />;
   }
 
-  if (isAuthenticated && needsOnboarding(user, profile, roles)) {
+  if (isAuthenticated && (profile?.commercialSetupRequired === true || needsOnboarding(user, profile, roles))) {
     // `from` stays in the history of the browser: the code and the state of the callback of the channel manager do not go along.
     const from = `${location.pathname}${searchWithoutOctorateCallback(location.pathname, location.search)}`;
     return <Navigate to="/onboarding" replace state={{ from }} />;

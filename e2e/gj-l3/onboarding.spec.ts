@@ -1,3 +1,4 @@
+import { completeCommercialSignup } from './commercial-signup';
 import { test, expect, type Browser, type BrowserContext, type Page } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
 import { PNG } from 'pngjs';
@@ -8,7 +9,7 @@ import { pickComune } from './host-steps';
 /**
  * Onboarding L3: a new host and a new supplier reach a working account through the UI only, against the ephemeral stack
  * (real backend, throw-away PostgreSQL, mock IdP). The entry points are the printed QR codes of the admin page: the test
- * decodes the image and opens exactly the address it holds. The API is only an oracle for assertions.
+ * decodes the image and opens exactly the address it holds. A signed simulated Stripe webhook confirms payment in the disposable stack; the API otherwise serves as an oracle.
  *
  * Every test runs on a phone viewport (the people scanning a QR are on a phone) unless it says otherwise, and fails on any
  * 5xx answer of the API and on horizontal overflow of the screens a new user sees.
@@ -89,16 +90,6 @@ async function readPrintedEntryAddresses(browser: Browser): Promise<{ host: stri
   }
 }
 
-/** Accepts every consent of the onboarding and continues (the last screen: no plan is asked). */
-async function acceptConsents(page: Page): Promise<void> {
-  const consents = page.getByTestId('onboarding-consents-step');
-  await expect(consents).toBeVisible({ timeout: 20_000 });
-  for (const checkbox of await consents.getByRole('checkbox').all()) {
-    if ((await checkbox.getAttribute('id')) !== 'marketing') await checkbox.click();
-  }
-  await page.getByTestId('onboarding-consents-continue').click();
-}
-
 // The CI config has a 30 s default per test: a whole onboarding (login, several screens, API) needs more on a shared runner.
 test.describe.configure({ mode: 'serial', timeout: 120_000 });
 
@@ -126,18 +117,10 @@ test.describe('Onboarding L3 (real stack)', () => {
       await page.goto(entry.host);
       await signInAtIdp(page, email);
 
-      // Screen 1: only the choice of the host. The supplier is a quiet line, not a card that competes.
-      await expect(page.getByRole('heading', { name: /Da dove vuoi iniziare/i })).toBeVisible({ timeout: 30_000 });
-      await expect(page.getByRole('button', { name: 'Scegli' })).toHaveCount(3);
-      await expect(page.getByRole('heading', { name: /Sono un fornitore/i })).toHaveCount(0);
+      await expect(page.getByTestId(/^signup-profile-/)).toHaveCount(4);
       await expectNoHorizontalOverflow(page, 'onboarding choice');
       await shot(page, 'host-1-choice');
-      await page.getByRole('button', { name: 'Scegli' }).first().click();
-
-      // Screen 2: the consents, the last one. No plan is asked.
-      await acceptConsents(page);
-      await expect(page.getByTestId('plan-selection-grid')).toHaveCount(0);
-      await expect(page.getByTestId('onboarding-roles-pending')).toHaveCount(0, { timeout: 20_000 });
+      await completeCommercialSignup(page, 'owner');
 
       // Straight into the first property, in the short form.
       await expect(page).toHaveURL(/\/app\/short-rent\/properties\/create\?first=1/, { timeout: 30_000 });
@@ -173,10 +156,10 @@ test.describe('Onboarding L3 (real stack)', () => {
       await shot(page, 'host-3-dashboard-checklist');
       console.log(`[onboarding-l3] short-rent host: QR -> property created in ${Math.round((Date.now() - t0) / 1000)}s`);
 
-      // The oracle: the org exists on Starter and the property is stored with its comune.
+      // The oracle: the org exists on Pro and the property is stored with its comune.
       const api = oracleFor(context.request, stack, await accessToken(page));
       const me = await api.get<{ org?: { planTier?: string }; rentalType?: string }>('/users/me');
-      expect(me.org?.planTier).toBe('Starter');
+      expect(me.org?.planTier).toBe('Pro');
       expect(me.rentalType).toBe('ShortTerm');
       const properties = await api.get<Array<{ name: string; city: string; comuneIstatCode?: string; maxGuests: number; nightlyRate: number }>>('/properties');
       const created = properties.find((p) => p.name === propertyName);
@@ -197,9 +180,7 @@ test.describe('Onboarding L3 (real stack)', () => {
       await page.goto(entry.host);
       await signInAtIdp(page, email);
 
-      await expect(page.getByRole('heading', { name: /Da dove vuoi iniziare/i })).toBeVisible({ timeout: 30_000 });
-      await page.getByRole('button', { name: 'Scegli' }).nth(1).click(); // "Locazioni di lungo periodo"
-      await acceptConsents(page);
+      await completeCommercialSignup(page, 'long-rent');
 
       await expect(page).toHaveURL(/\/app\/long-rent\/properties\/new\?first=1/, { timeout: 30_000 });
       await expect(page.getByTestId('quick-property-form')).toBeVisible();
@@ -228,7 +209,7 @@ test.describe('Onboarding L3 (real stack)', () => {
       const api = oracleFor(context.request, stack, await accessToken(page));
       const me = await api.get<{ org?: { planTier?: string }; rentalType?: string }>('/users/me');
       expect(me.rentalType).toBe('LongTerm');
-      expect(me.org?.planTier).toBe('Starter');
+      expect(me.org?.planTier).toBe('Pro');
       expect(errors5xx, '5xx answers of the API').toEqual([]);
     } finally {
       await context.close();
@@ -318,8 +299,8 @@ test.describe('Onboarding L3 (real stack)', () => {
     try {
       await page.goto('/login');
       await signInAtIdp(page, `lost-${unique()}@example.test`);
-      await expect(page.getByRole('heading', { name: /Da dove vuoi iniziare/i })).toBeVisible({ timeout: 30_000 });
-      await page.getByTestId('onboarding-supplier-register').click();
+      await expect(page.getByTestId('signup-profile-supplier')).toBeVisible({ timeout: 30_000 });
+      await page.getByTestId('signup-profile-supplier').click();
       await expect(page).toHaveURL(/\/register$/);
       await expect(page.locator('#legalName')).toBeVisible();
     } finally {

@@ -1,40 +1,40 @@
 {
   "registrationPreparation": {
-  "providerAction": "Dati per la registrazione · OpenAPI",
-  "redirecting": "Reindirizzamento al pagamento…",
-  "title": "Dati per la registrazione",
-  "description": "Controlla i dati precompilati e aggiungi ciò che manca. Prima del pagamento verifichiamo la completezza della pratica.",
-  "privacy": "I documenti di identità servono per la registrazione e saranno trasmessi a OpenAPI con il contratto. Sono conservati tra gli allegati privati del contratto.",
-  "signedContract": "Contratto firmato: già acquisito da CasaZen.",
-  "selectDocument": "Seleziona un allegato già caricato",
-  "uploadDocument": "Oppure carica il documento (PDF, JPG o PNG, massimo 20 MB)",
-  "uploading": "Caricamento del documento…",
-  "selectValue": "Seleziona…",
-  "fileTooLarge": "Il documento supera 20 MB.",
-  "uploadError": "Caricamento del documento non riuscito.",
-  "saved": "Dati della registrazione salvati.",
-  "saveError": "Salvataggio non riuscito. Riapri il modulo se è stato modificato da un’altra scheda.",
-  "loadError": "Non è stato possibile caricare i dati della registrazione.",
-  "retry": "Riprova",
-  "loading": "Caricamento dei dati…",
-  "fixIssues": "Completa o correggi questi dati prima di proseguire:",
-  "contract": "Contratto",
-  "additionalFields": "Dati aggiuntivi e campi richiesti in base al caso",
-  "costs": "Il pagamento del servizio è di 32,90 €. Le eventuali imposte di registro e bollo sono escluse e vengono addebitate dal fornitore sull’IBAN indicato.",
-  "saveDraft": "Salva e continua dopo",
-  "continuePayment": "Salva e passa al pagamento Stripe",
-  "continuePaid": "Pagamento già ricevuto: continua con la delega",
-  "saving": "Operazione in corso…",
-  "groups": {
+    "providerAction": "Dati per la registrazione · OpenAPI",
+    "redirecting": "Reindirizzamento al pagamento…",
+    "title": "Dati per la registrazione",
+    "description": "Controlla i dati precompilati e aggiungi ciò che manca. Prima del pagamento verifichiamo la completezza della pratica.",
+    "privacy": "I documenti di identità servono per la registrazione e saranno trasmessi a OpenAPI con il contratto. Sono conservati tra gli allegati privati del contratto.",
+    "signedContract": "Contratto firmato: già acquisito da CasaZen.",
+    "selectDocument": "Seleziona un allegato già caricato",
+    "uploadDocument": "Oppure carica il documento (PDF, JPG o PNG, massimo 20 MB)",
+    "uploading": "Caricamento del documento…",
+    "selectValue": "Seleziona…",
+    "fileTooLarge": "Il documento supera 20 MB.",
+    "uploadError": "Caricamento del documento non riuscito.",
+    "saved": "Dati della registrazione salvati.",
+    "saveError": "Salvataggio non riuscito. Riapri il modulo se è stato modificato da un’altra scheda.",
+    "loadError": "Non è stato possibile caricare i dati della registrazione.",
+    "retry": "Riprova",
+    "loading": "Caricamento dei dati…",
+    "fixIssues": "Completa o correggi questi dati prima di proseguire:",
     "contract": "Contratto",
-    "property": "Immobile",
-    "applicant": "Richiedente e conto per le imposte",
-    "landlords": "Locatori e documenti",
-    "tenants": "Conduttori e documenti",
-    "taxes": "Regime fiscale, garanzie e clausole",
-    "otherProperties": "Ulteriori immobili nello stesso contratto"
-  }
-},
+    "additionalFields": "Dati aggiuntivi e campi richiesti in base al caso",
+    "costs": "Il pagamento del servizio è di 32,90 €. Le eventuali imposte di registro e bollo sono escluse e vengono addebitate dal fornitore sull’IBAN indicato.",
+    "saveDraft": "Salva e continua dopo",
+    "continuePayment": "Salva e passa al pagamento Stripe",
+    "continuePaid": "Pagamento già ricevuto: continua con la delega",
+    "saving": "Operazione in corso…",
+    "groups": {
+      "contract": "Contratto",
+      "property": "Immobile",
+      "applicant": "Richiedente e conto per le imposte",
+      "landlords": "Locatori e documenti",
+      "tenants": "Conduttori e documenti",
+      "taxes": "Regime fiscale, garanzie e clausole",
+      "otherProperties": "Ulteriori immobili nello stesso contratto"
+    }
+  },
   "account": {
     "activity": {
       "accessRequested": "Richiesta di accesso a un'area o a una pagina",
@@ -5406,7 +5406,7 @@
       "Attestation": "Attestazione (solo se arriva a parte)",
       "Registration": "Ricevuta di registrazione",
       "RegistrationIdentity": "Documento per la registrazione",
-        "Other": "Altro"
+      "Other": "Altro"
     }
   },
   "channels": {
@@ -11806,14 +11806,14 @@
       "explain": "Cosa significa questo stato",
       "serviceDraft": "Il contratto lo prepara il servizio guidato: qui segui la pratica e non devi compilare nulla. Questa bozza passa a «Registrato» da sola quando la pratica è conclusa e hai caricato i documenti che ricevi: li leggiamo e compiliamo noi i dati."
     },
-      "tabs": {
-        "canoni": "Canoni",
-        "data": "Dati",
-        "deadlines": "Scadenze",
-        "documents": "Documenti",
-        "label": "Sezioni del contratto",
-        "payments": "Pagamenti"
-      },
+    "tabs": {
+      "canoni": "Canoni",
+      "data": "Dati",
+      "deadlines": "Scadenze",
+      "documents": "Documenti",
+      "label": "Sezioni del contratto",
+      "payments": "Pagamenti"
+    },
     "toDefine": "Da definire"
   },
   "leaseWizard": {
@@ -31859,5 +31859,167 @@
       "Draft": "Bozza",
       "Issued": "Emessa"
     }
+  },
+  "commercial": {
+    "secure": "Configurazione sicura",
+    "progress": "Il tuo percorso",
+    "kicker": "Il tuo spazio, su misura",
+    "steps": {
+      "profile": "Il tuo profilo",
+      "features": "Piano e funzionalità",
+      "summary": "Riepilogo",
+      "payment": "Pagamento",
+      "ready": "Inizia"
+    },
+    "headings": {
+      "profile": "Come vuoi usare CasaZen?",
+      "features": "Costruisci il tuo CasaZen.",
+      "summary": "Tutto quello che ti serve, in chiaro.",
+      "consents": "Un ultimo passaggio prima del pagamento.",
+      "payment": "Attiva il tuo spazio.",
+      "ready": "Benvenuto in CasaZen."
+    },
+    "descriptions": {
+      "profile": "Partiamo dalla tua attività. Ti mostreremo solo il percorso e gli strumenti adatti a te.",
+      "features": "Le basi sono incluse. Aggiungi solo ciò che serve alla tua attività.",
+      "summary": "Controlla il piano e gli extra che hai scelto. Nulla si attiva prima della conferma del pagamento.",
+      "consents": "Leggi i documenti e conferma le tue scelte. Poi passerai al pagamento sicuro.",
+      "payment": "Inserisci i dati di fatturazione e completa il pagamento su Stripe.",
+      "ready": "Il pagamento è confermato. Ora ti accompagniamo nella configurazione, un passo alla volta."
+    },
+    "profiles": {
+      "agency": {
+        "title": "Agenzia / Property manager",
+        "text": "Gestisco strutture e appartamenti per conto di altri proprietari.",
+        "hint": "Crea una nuova agenzia · paghi per camera"
+      },
+      "owner": {
+        "title": "Proprietario privato",
+        "text": "Gestisco i miei appartamenti per affitti brevi e soggiorni turistici.",
+        "hint": "Tariffe del piano · extra da Pro"
+      },
+      "supplier": {
+        "title": "Fornitore di servizi",
+        "text": "Offro pulizie, manutenzione, check-in o altri servizi per gli immobili.",
+        "hint": "Vai al percorso dedicato ai fornitori"
+      },
+      "long-rent": {
+        "title": "Affitti a lungo termine",
+        "text": "Gestisco contratti di locazione, inquilini, canoni e scadenze.",
+        "hint": "Attiva solo l’area Affitti lungo termine"
+      }
+    },
+    "secondModule": "Per ora attiviamo una sola area di gestione. Potrai aggiungere l’altra in seguito da Amministrazione → Fatturazione e piano, con il gestore del piano.",
+    "pricePending": "Prezzo da configurare",
+    "perRoomMonth": " / camera / mese",
+    "perMonth": "al mese, IVA esclusa",
+    "monthSuffix": " / mese",
+    "choosePlan": "Scegli il tuo piano",
+    "unlimited": "Immobili illimitati",
+    "properties_one": "Fino a {{count}} immobile",
+    "properties_other": "Fino a {{count}} immobili",
+    "agency": {
+      "title": "Quante camere gestisci?",
+      "explanation": "La tariffa si applica a ciascuna camera gestita, non al numero di strutture. Anche gli add-on selezionati sono conteggiati per camera.",
+      "example": "Una struttura con camera 1, camera 2 e camera 3 = 3 camere da pagare.",
+      "rooms": "Numero totale di camere",
+      "count_one": "{{count}} camera fatturata",
+      "count_other": "{{count}} camere fatturate",
+      "create": "Crea la tua agenzia",
+      "name": "Nome dell’agenzia",
+      "admin": "Creeremo una nuova agenzia con questo nome. Ne sarai titolare e amministratore: potrai invitare i collaboratori e gestirne gli accessi. Si entra nella tua agenzia solo su invito.",
+      "inviteLater": "Da Amministrazione → Persone potrai invitare i collaboratori e assegnare ruoli e immobili."
+    },
+    "included": "Incluso nel piano",
+    "extras": "Di cosa hai bisogno in più?",
+    "extrasDescription": "Seleziona gli add-on utili. Il riepilogo si aggiorna mentre scegli.",
+    "proRequired": "Gli extra sono disponibili da Pro in poi. Scegli Pro o Scale per attivarli.",
+    "unavailable": "Non ancora acquistabile",
+    "loading": "Carichiamo piani e funzionalità…",
+    "catalogError": "Non riusciamo a caricare il catalogo. Riprova per visualizzare prezzi e disponibilità aggiornati.",
+    "retry": "Riprova",
+    "back": "Indietro",
+    "review": "Vai al riepilogo",
+    "yourSetup": "La tua configurazione",
+    "labels": {
+      "profile": "Profilo",
+      "area": "Area attiva",
+      "plan": "Piano"
+    },
+    "longRent": "Affitti lungo termine",
+    "shortRent": "Affitti brevi",
+    "selectedExtras": "Add-on selezionati",
+    "noExtras": "Nessun add-on: parti dalle funzionalità incluse nel piano.",
+    "edit": "Modifica le scelte",
+    "continuePayment": "Continua al pagamento",
+    "notPurchasable": "Questo piano o uno degli extra non è ancora acquistabile. L’attivazione richiede un prezzo configurato nel catalogo.",
+    "failed": "Non siamo riusciti a completare il passaggio. Le tue scelte restano qui: riprova.",
+    "paymentPending": "Stiamo verificando il pagamento.",
+    "paymentPendingText": "Attendiamo la conferma del pagamento. Puoi ricaricare questa pagina: la tua configurazione è salvata.",
+    "checkPayment": "Verifica il pagamento",
+    "paymentCanceled": "Pagamento non completato. La configurazione è salvata: puoi riprendere da qui.",
+    "pay": "Vai al pagamento sicuro",
+    "redirecting": "Apertura del pagamento…",
+    "stripeNotice": "Il pagamento avviene su Stripe. L’accesso si attiva solo dopo la conferma del pagamento.",
+    "rolesPending": "Stiamo aggiornando le autorizzazioni del tuo account. Ricarica la pagina tra qualche istante per continuare.",
+    "subscriptionError": "Non riusciamo a verificare l’abbonamento. Riprova prima di procedere.",
+    "readyTitle": "Il tuo spazio è pronto.",
+    "readyText": "Iniziamo dal primo immobile. Ti guideremo nei soli passaggi necessari per la tua attività; potrai interrompere e riprendere.",
+    "enter": "Entra e inizia la configurazione",
+    "orderSummary": "Il tuo riepilogo",
+    "basePlan": "Piano base",
+    "total": "Totale mensile",
+    "taxNote": "IVA esclusa. Le imposte applicabili sono calcolate al pagamento.",
+    "changeLater": "Potrai gestire piano e moduli da Amministrazione. Nessun extra viene aggiunto automaticamente.",
+    "addons": {
+      "channels": {
+        "title": "Canali e distribuzione",
+        "text": "Collega i portali e sincronizza disponibilità e prenotazioni."
+      },
+      "direct-booking": {
+        "title": "Prenotazioni dirette",
+        "text": "Il tuo sito e un percorso di prenotazione per gli ospiti."
+      },
+      "compliance": {
+        "title": "Adempimenti automatici",
+        "text": "Configura invii e controlli per i servizi supportati."
+      },
+      "identification": {
+        "title": "Identificazione ospiti",
+        "text": "Accompagna gli ospiti nella verifica e nel check-in."
+      },
+      "messages-ai": {
+        "title": "Messaggi e assistente AI",
+        "text": "Supporto alle conversazioni e alle risposte agli ospiti."
+      },
+      "operations": {
+        "title": "Interventi e fornitori",
+        "text": "Coordina pulizie, manutenzioni e attività operative."
+      },
+      "fiscal": {
+        "title": "Documenti fiscali",
+        "text": "Configura documenti, emissione e flussi amministrativi."
+      },
+      "revenue": {
+        "title": "Prezzi e ricavi",
+        "text": "Strumenti di supporto per tariffe e risultati."
+      },
+      "crm": {
+        "title": "CRM ospiti",
+        "text": "Organizza i contatti e cura le relazioni con gli ospiti."
+      }
+    },
+    "moduleRequired": "Aggiungi questo modulo al tuo piano",
+    "moduleRequiredText": "Il modulo non è attivo per la tua organizzazione. Il gestore del piano può configurarlo da Amministrazione.",
+    "managePlan": "Gestisci piano e moduli",
+    "rentalAreas": "Aree di gestione",
+    "manageAreasText": "Aggiungi gli affitti brevi o le locazioni di lungo periodo alla tua attività. Questa scelta è riservata al gestore del piano.",
+    "manageAreas": "Gestisci le aree attive",
+    "baseShort": "Calendario e prenotazioni manuali",
+    "baseLong": "Contratti, inquilini, canoni e scadenze",
+    "baseCommon": "Immobili, contatti e archivio documenti",
+    "resumePayment": "Gestisci o completa il pagamento",
+    "roomUnit": " per camera",
+    "invitationOnly": "Devi entrare in un’agenzia esistente? Apri il link di invito ricevuto dall’amministratore. Non occorre creare una nuova agenzia o acquistare un piano personale."
   }
 }

@@ -1,3 +1,8 @@
+import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useCommercialProfile } from '@/hooks/use-commercial-profile';
+import { commercialRouteAllowed } from '@/features/onboarding/commercial-access';
+import { Button } from '@/components/ui/button';
 import { Suspense, lazy, type ComponentType, type LazyExoticComponent } from 'react';
 import { ROUTE_MANIFEST, type RouteManifestEntry } from '@/config/route-manifest';
 import { LoadingScreen } from '@/components/shared/loading-screen';
@@ -7,6 +12,9 @@ const LAZY_ROUTE_COMPONENTS: Record<string, LazyExoticComponent<ComponentType>> 
 );
 
 export function ManifestRoute({ entry }: { entry: RouteManifestEntry }) {
+  const user = useCommercialProfile();
+  const { t } = useTranslation();
+  if (!commercialRouteAllowed(user, entry.path)) return <section className="mx-auto max-w-xl space-y-4 p-8"><h1 className="text-2xl font-semibold">{t('commercial.moduleRequired')}</h1><p>{t('commercial.moduleRequiredText')}</p><Button asChild><Link to="/app/account/billing">{t('commercial.managePlan')}</Link></Button></section>;
   const Component = LAZY_ROUTE_COMPONENTS[entry.path];
   return (
     // Inside the content region of the shell (it scrolls with the window): the spinner fills it, not the viewport.

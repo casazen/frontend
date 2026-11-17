@@ -1,4 +1,5 @@
 import { test, expect } from './test';
+import { completeOnboardingFromRentalChoice } from './helpers/onboarding';
 import { demoUrl } from './helpers/demo-profile';
 import {
   DEMO_ORG_SLUG,
@@ -31,22 +32,9 @@ test.describe('Golden Journey web (#301)', () => {
       }
     });
 
-    // Step 3: host onboarding → consents → plan → short-rent
+    // Step 3: profile, plan, consent and simulated payment.
     await page.goto(demoUrl('/onboarding', 'onboarding'));
-    await expect(page.getByRole('heading', { name: /Da dove vuoi iniziare/i })).toBeVisible();
-    await page.getByRole('button', { name: 'Scegli' }).first().click();
-
-    const consents = page.getByTestId('onboarding-consents-step');
-    await expect(consents).toBeVisible({ timeout: 20_000 });
-    const checkboxes = consents.getByRole('checkbox');
-    const count = await checkboxes.count();
-    for (let i = 0; i < count; i++) {
-      await checkboxes.nth(i).click();
-    }
-    const consentsContinue = page.getByTestId('onboarding-consents-continue');
-    await expect(consentsContinue).toBeEnabled({ timeout: 10_000 });
-    await consentsContinue.click();
-
+    await completeOnboardingFromRentalChoice(page, 0);
     await expect(page).toHaveURL(/\/app\/short-rent/, { timeout: 15_000 });
 
     // Step 4: guest public booking — branded shell

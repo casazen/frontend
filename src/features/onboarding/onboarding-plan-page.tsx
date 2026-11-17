@@ -1,3 +1,5 @@
+import { useCommercialProfile } from '@/hooks/use-commercial-profile';
+import { commercialPartAllowed } from './commercial-access';
 import { Fragment, useId, useMemo, useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -59,7 +61,8 @@ export function OnboardingPlanPage() {
   const adminNoteId = useId();
   const [deferring, setDeferring] = useState<Deferring | null>(null);
 
-  const parts = useMemo(() => knownParts(plan.data), [plan.data]);
+  const commercial = useCommercialProfile();
+  const parts = useMemo(() => knownParts(plan.data).filter(part => commercialPartAllowed(commercial, part.code)), [plan.data, commercial]);
   const needs = useMemo(() => knownNeeds(plan.data), [plan.data]);
   const focus = firstOpenPart(parts);
   // Every flow counts every property the caller reaches (each is in exactly one state of each flow), so the largest total is the number of properties.

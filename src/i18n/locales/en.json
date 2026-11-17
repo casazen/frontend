@@ -1,40 +1,40 @@
 {
   "registrationPreparation": {
-  "providerAction": "Registration details · OpenAPI",
-  "redirecting": "Redirecting to payment…",
-  "title": "Registration details",
-  "description": "Check the prefilled details and add anything missing. We validate the filing before opening payment.",
-  "privacy": "Identity documents are needed for registration and will be sent to OpenAPI with the contract. They are kept as private contract attachments.",
-  "signedContract": "Signed contract: already held by CasaZen.",
-  "selectDocument": "Select an existing attachment",
-  "uploadDocument": "Or upload the document (PDF, JPG or PNG, maximum 20 MB)",
-  "uploading": "Uploading document…",
-  "selectValue": "Select…",
-  "fileTooLarge": "The document exceeds 20 MB.",
-  "uploadError": "Document upload failed.",
-  "saved": "Registration details saved.",
-  "saveError": "Unable to save. Reopen this form if another tab changed it.",
-  "loadError": "Unable to load registration details.",
-  "retry": "Try again",
-  "loading": "Loading details…",
-  "fixIssues": "Complete or correct these details before continuing:",
-  "contract": "Contract",
-  "additionalFields": "Additional and conditional details",
-  "costs": "The service payment is €32.90. Any registration taxes and stamp duty are excluded and charged by the provider to the specified IBAN.",
-  "saveDraft": "Save and continue later",
-  "continuePayment": "Save and continue to Stripe payment",
-  "continuePaid": "Payment received: continue with authorization",
-  "saving": "Processing…",
-  "groups": {
+    "providerAction": "Registration details · OpenAPI",
+    "redirecting": "Redirecting to payment…",
+    "title": "Registration details",
+    "description": "Check the prefilled details and add anything missing. We validate the filing before opening payment.",
+    "privacy": "Identity documents are needed for registration and will be sent to OpenAPI with the contract. They are kept as private contract attachments.",
+    "signedContract": "Signed contract: already held by CasaZen.",
+    "selectDocument": "Select an existing attachment",
+    "uploadDocument": "Or upload the document (PDF, JPG or PNG, maximum 20 MB)",
+    "uploading": "Uploading document…",
+    "selectValue": "Select…",
+    "fileTooLarge": "The document exceeds 20 MB.",
+    "uploadError": "Document upload failed.",
+    "saved": "Registration details saved.",
+    "saveError": "Unable to save. Reopen this form if another tab changed it.",
+    "loadError": "Unable to load registration details.",
+    "retry": "Try again",
+    "loading": "Loading details…",
+    "fixIssues": "Complete or correct these details before continuing:",
     "contract": "Contract",
-    "property": "Property",
-    "applicant": "Applicant and tax payment account",
-    "landlords": "Landlords and documents",
-    "tenants": "Tenants and documents",
-    "taxes": "Tax regime, guarantees and clauses",
-    "otherProperties": "Additional properties in the same contract"
-  }
-},
+    "additionalFields": "Additional and conditional details",
+    "costs": "The service payment is €32.90. Any registration taxes and stamp duty are excluded and charged by the provider to the specified IBAN.",
+    "saveDraft": "Save and continue later",
+    "continuePayment": "Save and continue to Stripe payment",
+    "continuePaid": "Payment received: continue with authorization",
+    "saving": "Processing…",
+    "groups": {
+      "contract": "Contract",
+      "property": "Property",
+      "applicant": "Applicant and tax payment account",
+      "landlords": "Landlords and documents",
+      "tenants": "Tenants and documents",
+      "taxes": "Tax regime, guarantees and clauses",
+      "otherProperties": "Additional properties in the same contract"
+    }
+  },
   "account": {
     "activity": {
       "accessRequested": "Request for access to an area or a page",
@@ -5406,7 +5406,7 @@
       "Attestation": "Attestation (only if it comes separately)",
       "Registration": "Registration receipt",
       "RegistrationIdentity": "Registration identity document",
-        "Other": "Other"
+      "Other": "Other"
     }
   },
   "channels": {
@@ -31859,5 +31859,167 @@
       "Draft": "Draft",
       "Issued": "Issued"
     }
+  },
+  "commercial": {
+    "secure": "Secure setup",
+    "progress": "Your setup journey",
+    "kicker": "Your workspace, your way",
+    "steps": {
+      "profile": "Your profile",
+      "features": "Plan and features",
+      "summary": "Review",
+      "payment": "Payment",
+      "ready": "Get started"
+    },
+    "headings": {
+      "profile": "How will you use CasaZen?",
+      "features": "Make CasaZen yours.",
+      "summary": "Everything you need, clearly priced.",
+      "consents": "One last step before payment.",
+      "payment": "Activate your workspace.",
+      "ready": "Welcome to CasaZen."
+    },
+    "descriptions": {
+      "profile": "Start with your business. We will tailor the journey and tools to your needs.",
+      "features": "The essentials are included. Add only what your business needs.",
+      "summary": "Review your plan and extras. Nothing activates before payment is confirmed.",
+      "consents": "Read the documents and confirm your choices, then proceed to secure payment.",
+      "payment": "Enter your billing details and complete payment on Stripe.",
+      "ready": "Payment confirmed. We will guide you through setup, one step at a time."
+    },
+    "profiles": {
+      "agency": {
+        "title": "Agency / Property manager",
+        "text": "I manage properties on behalf of other owners.",
+        "hint": "Create a new agency · billed per room"
+      },
+      "owner": {
+        "title": "Private owner",
+        "text": "I manage my own apartments for short stays and holiday rentals.",
+        "hint": "Plan pricing · extras from Pro"
+      },
+      "supplier": {
+        "title": "Service provider",
+        "text": "I offer cleaning, maintenance, check-in or other property services.",
+        "hint": "Open the dedicated provider journey"
+      },
+      "long-rent": {
+        "title": "Long-term rentals",
+        "text": "I manage leases, tenants, rent and deadlines.",
+        "hint": "Activate the Long-term rentals area only"
+      }
+    },
+    "secondModule": "We start with one rental area. Your plan administrator can add the other later in Administration → Billing and plan.",
+    "pricePending": "Price not configured",
+    "perRoomMonth": " / room / month",
+    "perMonth": "per month, excluding tax",
+    "monthSuffix": " / month",
+    "choosePlan": "Choose your plan",
+    "unlimited": "Unlimited properties",
+    "properties_one": "Up to {{count}} property",
+    "properties_other": "Up to {{count}} properties",
+    "agency": {
+      "title": "How many rooms do you manage?",
+      "explanation": "Pricing applies to each managed room, rather than each property. Selected add-ons are also billed per room.",
+      "example": "One property with room 1, room 2 and room 3 = 3 billable rooms.",
+      "rooms": "Total rooms",
+      "count_one": "{{count}} billable room",
+      "count_other": "{{count}} billable rooms",
+      "create": "Create your agency",
+      "name": "Agency name",
+      "admin": "We will create a new agency with this name. As its owner and administrator, you can invite collaborators and manage access. Members join your agency by invitation only.",
+      "inviteLater": "Invite collaborators and assign roles and properties from Administration → People."
+    },
+    "included": "Included in your plan",
+    "extras": "What else do you need?",
+    "extrasDescription": "Select useful add-ons. Your summary updates as you choose.",
+    "proRequired": "Extras are available from Pro. Choose Pro or Scale to enable them.",
+    "unavailable": "Not available to purchase yet",
+    "loading": "Loading plans and features…",
+    "catalogError": "We could not load the catalog. Retry for current pricing and availability.",
+    "retry": "Retry",
+    "back": "Back",
+    "review": "Review configuration",
+    "yourSetup": "Your configuration",
+    "labels": {
+      "profile": "Profile",
+      "area": "Active area",
+      "plan": "Plan"
+    },
+    "longRent": "Long-term rentals",
+    "shortRent": "Short-term rentals",
+    "selectedExtras": "Selected add-ons",
+    "noExtras": "No add-ons: start with your plan’s included features.",
+    "edit": "Edit choices",
+    "continuePayment": "Continue to payment",
+    "notPurchasable": "This plan or one of its extras cannot be purchased yet. A configured catalog price is required.",
+    "failed": "We could not complete this step. Your choices are still here: please retry.",
+    "paymentPending": "We are checking your payment.",
+    "paymentPendingText": "We are waiting for payment confirmation. You can reload this page: your configuration is saved.",
+    "checkPayment": "Check payment",
+    "paymentCanceled": "Payment was not completed. Your configuration is saved so you can resume here.",
+    "pay": "Continue to secure payment",
+    "redirecting": "Opening payment…",
+    "stripeNotice": "Payment is handled by Stripe. Access activates only after payment confirmation.",
+    "rolesPending": "We are updating your account permissions. Reload this page shortly to continue.",
+    "subscriptionError": "We could not verify your subscription. Retry before continuing.",
+    "readyTitle": "Your workspace is ready.",
+    "readyText": "Start with your first property. We will guide you through the steps your business needs. Pause and resume whenever you like.",
+    "enter": "Enter and start guided setup",
+    "orderSummary": "Your summary",
+    "basePlan": "Base plan",
+    "total": "Monthly total",
+    "taxNote": "Excluding tax. Applicable taxes are calculated at checkout.",
+    "changeLater": "Manage your plan and modules in Administration. Extras are never added automatically.",
+    "addons": {
+      "channels": {
+        "title": "Channels and distribution",
+        "text": "Connect portals and sync availability and bookings."
+      },
+      "direct-booking": {
+        "title": "Direct bookings",
+        "text": "Your website and a booking journey for guests."
+      },
+      "compliance": {
+        "title": "Automated compliance",
+        "text": "Configure submissions and checks for supported services."
+      },
+      "identification": {
+        "title": "Guest identification",
+        "text": "Guide guests through verification and check-in."
+      },
+      "messages-ai": {
+        "title": "Messaging and AI assistant",
+        "text": "Support for guest conversations and replies."
+      },
+      "operations": {
+        "title": "Tasks and providers",
+        "text": "Coordinate cleaning, maintenance and operations."
+      },
+      "fiscal": {
+        "title": "Fiscal documents",
+        "text": "Configure documents, issuance and administration."
+      },
+      "revenue": {
+        "title": "Rates and revenue",
+        "text": "Tools to support pricing and performance."
+      },
+      "crm": {
+        "title": "Guest CRM",
+        "text": "Organize contacts and maintain guest relationships."
+      }
+    },
+    "moduleRequired": "Add this module to your plan",
+    "moduleRequiredText": "This module is not active for your organization. Your plan administrator can configure it in Administration.",
+    "managePlan": "Manage plan and modules",
+    "rentalAreas": "Rental areas",
+    "manageAreasText": "Add short-term or long-term rentals to your business. Only your plan administrator can change this.",
+    "manageAreas": "Manage active areas",
+    "baseShort": "Calendar and manual bookings",
+    "baseLong": "Leases, tenants, rent and deadlines",
+    "baseCommon": "Properties, contacts and document archive",
+    "resumePayment": "Manage or complete payment",
+    "roomUnit": " per room",
+    "invitationOnly": "Joining an existing agency? Open the invitation link from its administrator. You do not need to create an agency or buy a personal plan."
   }
 }

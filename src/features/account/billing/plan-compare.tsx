@@ -63,7 +63,7 @@ function PlanRow({ plan, action, properties, showUnavailableHint, portal, onChoo
           ) : null}
         </h3>
         <p data-testid={`plan-price-${plan.tier}`} className="break-words text-sm">
-          {priceText}
+          {priceText}{plan.billingUnit === 'room' ? t('commercial.roomUnit') : null}
         </p>
         <p className="break-words text-sm text-foreground/70">
           {plan.unitAllowance < 0

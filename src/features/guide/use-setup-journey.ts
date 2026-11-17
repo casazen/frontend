@@ -1,3 +1,4 @@
+import { useCommercialProfile } from '@/hooks/use-commercial-profile';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { GuidePathState } from '@/components/shared/calm';
@@ -48,6 +49,7 @@ export interface SetupJourney {
 export function useSetupJourney(options: { enabled?: boolean } = {}): { journey: SetupJourney | null; pending: boolean } {
   const enabled = options.enabled ?? true;
   const { t } = useTranslation();
+  const commercial = useCommercialProfile();
   const { hasPermission } = useWorkspace();
   const visible = useVisibleOnboardingPath({ enabled });
   const path = enabled ? visible.path : null;
@@ -91,7 +93,7 @@ export function useSetupJourney(options: { enabled?: boolean } = {}): { journey:
     }
 
     if (status.isPending) return { journey: null, pending: useChecklist };
-    const checklist = normalizeSteps(status.data);
+    const checklist = normalizeSteps(status.data).filter(step => !commercial?.commercialSignup || !['payments', 'sitePublished'].includes(step.key) || commercial.commercialEnabledAddons?.includes('direct-booking') === true);
     const nextStep = nextActionableStep(checklist);
     if (checklist.length === 0 || !nextStep) return { journey: null, pending: false };
 
@@ -117,5 +119,5 @@ export function useSetupJourney(options: { enabled?: boolean } = {}): { journey:
       },
       pending: false,
     };
-  }, [enabled, visible.pending, path, next, plan.isPending, plan.data, status.isPending, status.data, useChecklist, hasPermission, t]);
+  }, [enabled, visible.pending, path, next, plan.isPending, plan.data, status.isPending, status.data, useChecklist, hasPermission, t, commercial]);
 }

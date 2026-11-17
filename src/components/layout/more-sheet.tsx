@@ -1,3 +1,5 @@
+import { commercialNavigation, commercialRouteAllowed } from '@/features/onboarding/commercial-access';
+import { useCommercialProfile } from '@/hooks/use-commercial-profile';
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
@@ -42,9 +44,10 @@ export function MoreSheet({ contextKey, organizationName = null }: MoreSheetProp
   const isWide = useMediaQuery(FROM_TABLET_QUERY);
 
   const permissionCheck = (ctx: AppContextKey, permission: string) => hasPermission(ctx, permission);
-  const nav = getContextNav(contextKey, permissionCheck, flags, { withoutBottom: true });
+  const commercialProfile = useCommercialProfile();
+  const nav = commercialNavigation(getContextNav(contextKey, permissionCheck, flags, { withoutBottom: true }), commercialProfile);
   const matchEntries = getNavMatchEntries(contextKey, permissionCheck, flags);
-  const counts = useNavCounts(getVisibleNavEntries(contextKey, permissionCheck, flags));
+  const counts = useNavCounts(getVisibleNavEntries(contextKey, permissionCheck, flags).filter(entry => commercialRouteAllowed(commercialProfile, entry.path)));
 
   // No sheet on a tablet or a computer: it would hide a page that has its own sidebar.
   useEffect(() => {

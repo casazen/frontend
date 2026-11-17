@@ -1,3 +1,5 @@
+import { commercialNavigation, commercialRouteAllowed } from '@/features/onboarding/commercial-access';
+import { useCommercialProfile } from '@/hooks/use-commercial-profile';
 import { useTranslation } from 'react-i18next';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { getArea } from '@/config/areas';
@@ -64,9 +66,10 @@ export function ContextSidebar({ contextKey, organizationName = null }: ContextS
 
   const area = getArea(contextKey);
   const permissionCheck = (ctx: AppContextKey, permission: string) => hasPermission(ctx, permission);
-  const nav = getContextNav(contextKey, permissionCheck, flags);
+  const commercialProfile = useCommercialProfile();
+  const nav = commercialNavigation(getContextNav(contextKey, permissionCheck, flags), commercialProfile);
   const matchEntries = getNavMatchEntries(contextKey, permissionCheck, flags);
-  const counts = useNavCounts(getVisibleNavEntries(contextKey, permissionCheck, flags));
+  const counts = useNavCounts(getVisibleNavEntries(contextKey, permissionCheck, flags).filter(entry => commercialRouteAllowed(commercialProfile, entry.path)));
 
   const footerLabel = area.footerKey ? t(area.footerKey) : 'v1.0.0 · casazen.io';
 

@@ -20,6 +20,7 @@ export interface BillingPlan {
   displayName: string;
   /** Monthly price from the backend configuration (`Billing:Display:<Tier>:PriceMonthly`); 0 when not configured. */
   priceMonthly: number;
+  billingUnit?: 'room' | 'plan';
   currency: string;
   /** Maximum number of properties; -1 means unlimited. */
   unitAllowance: number;
@@ -30,6 +31,8 @@ export interface BillingPlan {
 
 /** `GET /api/billing/subscription`. */
 export interface BillingSubscription {
+  roomQuantity?: number;
+  enabledAddons?: string[];
   /** Tier stored on the org; the tier actually granted is the effective one of `/users/me`. */
   planTier: PlanTier;
   status: BillingSubscriptionStatus;
@@ -49,6 +52,7 @@ export interface BillingSubscription {
 /** `POST /api/billing/checkout-session`. */
 export interface CheckoutSessionRequest {
   planTier: PlanTier;
+  commercialSignup?: import('@/features/onboarding/commercial-model').CommercialSelection;
   /** ISO 3166-1 alpha-2. */
   billingCountry: string;
   vatId?: string;

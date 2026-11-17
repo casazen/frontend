@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { CommercialSignupWizard } from './commercial-signup-wizard';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -54,6 +55,17 @@ interface PendingRoles {
 }
 
 export function OnboardingPage() {
+  const { data: profile, isLoading, error } = useMe();
+  const [params] = useSearchParams();
+  const roles = useUserRoles();
+  const legacy = params.get('mode') === 'edit' || (profile?.commercialSetupRequired !== true &&
+    (isExemptFromHostOnboarding(roles) || isLinkedSupplier(profile) || !!profile?.orgId));
+  if (isLoading) return <LoadingScreen />;
+  if (legacy || (!profile && error && isProfileLoadFailure(error))) return <ExistingOnboardingPage />;
+  return <CommercialSignupWizard profile={profile} />;
+}
+
+export function ExistingOnboardingPage() {
   const { flags } = useFeatureFlags();
   const { t } = useTranslation();
   const navigate = useNavigate();
