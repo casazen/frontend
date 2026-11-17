@@ -20137,6 +20137,31 @@
       "suggestion": {
         "issuerProfile": "Valuta di dargli un profilo emittente d'impresa, qui sotto."
       }
+    },
+    "wizard": {
+      "description": "Completa una sezione alla volta. Potrai controllare tutti i dati prima di salvare.",
+      "next": "Continua",
+      "back": "Indietro",
+      "progress": "Passaggio {{current}} di {{total}}",
+      "steps": {
+        "identity": "Chi è il proprietario?",
+        "tax": "Residenza e dati fiscali",
+        "payment": "Come riceve i pagamenti?",
+        "mandate": "Il mandato di gestione",
+        "model": "Ricavi e commissioni",
+        "rule": "La regola contabile",
+        "review": "Controlla i dati"
+      },
+      "hints": {
+        "identity": "Inizia dal tipo di proprietario e dalla data di validità del profilo.",
+        "tax": "Inserisci i dati che identificano il proprietario ai fini fiscali.",
+        "payment": "Specifica la valuta e il conto per i rendiconti e gli accrediti.",
+        "mandate": "Indica il ruolo e il periodo previsto dal contratto.",
+        "model": "Scegli come riconoscere ricavi, costi e anticipi.",
+        "rule": "Seleziona la giurisdizione e la regola approvata dal commercialista.",
+        "review": "Verifica il riepilogo. Puoi tornare indietro per correggere i dati."
+      },
+      "edit": "Modifica i dati"
     }
   },
   "owners": {
