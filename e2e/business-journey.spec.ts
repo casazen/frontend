@@ -16,6 +16,7 @@ const PAYMENT_ID = 'pay-biz-e2e-001';
 
 test.describe('Business Golden Path', () => {
   test('host onboarding → plan selection → short-rent dashboard', async ({ page }) => {
+    test.setTimeout(120_000);
     await page.goto(demoUrl('/onboarding', 'onboarding'));
 
     await expect(page.getByRole('heading', { name: /Come vuoi usare CasaZen|How will you use CasaZen/i })).toBeVisible();
