@@ -248,6 +248,9 @@ describe('the mandate and the billing address of an owner (E13/F02/US01/T01)', (
     api.saveAddress.mockResolvedValue(address({ town: 'Como', province: 'CO', country: 'IT' }));
     renderPage();
 
+    expect(screen.queryByTestId('owner-address-form')).toBeNull();
+    expect(await screen.findByTestId('owner-address-summary')).toHaveTextContent('Via Nassa');
+    fireEvent.click(await screen.findByTestId('owner-address-edit'));
     const form = await screen.findByTestId('owner-address-form');
     expect(within(form).getByTestId('address-street')).toHaveValue('Via Nassa');
     // Nothing changed yet: nothing to save.

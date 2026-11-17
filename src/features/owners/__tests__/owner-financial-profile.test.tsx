@@ -50,6 +50,11 @@ function renderPage(search = '', client = new QueryClient({ defaultOptions: { qu
 }
 
 /** What the server answers to a refusal: the status and the problem with its code. */
+function reviewProfile(dialog: HTMLElement) {
+  for (let step = 0; step < 6 && !within(dialog).queryByTestId('profile-review'); step += 1) fireEvent.click(within(dialog).getByTestId('profile-dialog-submit'));
+  expect(within(dialog).getByTestId('profile-review')).toBeInTheDocument();
+}
+
 const problem = (status: number, code: string) => Object.assign(new Error(code), { isAxiosError: true, response: { status, data: { code } } });
 
 beforeEach(async () => {
@@ -256,6 +261,7 @@ describe('the profile is personal data, and nothing of it outlives the page (E06
     expect(client.getQueryCache().findAll({ queryKey: ['owner-accounting', 'profiles'] })).toHaveLength(1);
 
     const dialog = await openNewVersion();
+    reviewProfile(dialog);
     fireEvent.click(within(dialog).getByTestId('profile-dialog-submit'));
     await waitFor(() => expect(api.saveFiscalProfile).toHaveBeenCalledTimes(1));
     await waitFor(() => expect(screen.queryByTestId('profile-dialog')).toBeNull());
@@ -281,6 +287,7 @@ describe('the profile is personal data, and nothing of it outlives the page (E06
     const { client } = renderPage('', appClient());
 
     const dialog = await openNewVersion();
+    reviewProfile(dialog);
     fireEvent.click(within(dialog).getByTestId('profile-dialog-submit'));
     // The form still says what the server said (the field it names)...
     expect(await within(dialog).findByTestId('profile-dialog-error')).toHaveTextContent('legalName');
@@ -409,7 +416,10 @@ describe('what a profile and a rule send to the server (E06/F05/US02/T04)', () =
     fireEvent.click(await screen.findByTestId('profile-new-version'));
     const dialog = await screen.findByTestId('profile-dialog');
     fireEvent.change(within(dialog).getByTestId('profile-legal-name'), { target: { value: ' Marta Rossi Bianchi ' } });
+    fireEvent.click(within(dialog).getByTestId('profile-dialog-submit'));
+    fireEvent.click(within(dialog).getByTestId('profile-dialog-submit'));
     fireEvent.change(within(dialog).getByTestId('profile-iban'), { target: { value: 'IT60X0542811101000000123457' } });
+    reviewProfile(dialog);
     fireEvent.click(within(dialog).getByTestId('profile-dialog-submit'));
 
     // The form starts from the profile in force, and a new version starts today: the one in force ends the day before.
@@ -485,5 +495,33 @@ describe('what a profile and a rule send to the server (E06/F05/US02/T04)', () =
     fireEvent.change(within(dialog).getByTestId('policy-version'), { target: { value: '1' } });
     expect(within(dialog).getByTestId('policy-dialog-submit')).toBeDisabled();
     expect(api.createPolicy).not.toHaveBeenCalled();
+  });
+});
+
+
+describe('the owner profile guided journey (#913)', () => {
+  it('shows one section at a time, retains edits when going back and saves only after review', async () => {
+    api.listFiscalProfiles.mockResolvedValue([profile({ masked: false, legalName: 'Marta Rossi' })]);
+    api.saveFiscalProfile.mockResolvedValue(profile({ masked: false }));
+    renderPage();
+    fireEvent.click(await screen.findByTestId('profile-new-version'));
+    const dialog = await screen.findByTestId('profile-dialog');
+    expect(within(dialog).queryByTestId('profile-iban')).toBeNull();
+    fireEvent.change(within(dialog).getByTestId('profile-legal-name'), { target: { value: 'Marta Bianchi' } });
+    fireEvent.click(within(dialog).getByTestId('profile-dialog-submit'));
+    expect(within(dialog).queryByTestId('profile-legal-name')).toBeNull();
+    expect(within(dialog).getByTestId('profile-country')).toBeInTheDocument();
+    fireEvent.change(within(dialog).getByTestId('profile-country'), { target: { value: 'I' } });
+    expect(within(dialog).getByTestId('profile-dialog-submit')).toBeDisabled();
+    expect(dialog).toHaveTextContent(text('ownerProfile.dialog.countryInvalid'));
+    fireEvent.change(within(dialog).getByTestId('profile-country'), { target: { value: 'IT' } });
+    fireEvent.click(within(dialog).getByTestId('profile-back'));
+    expect(within(dialog).getByTestId('profile-legal-name')).toHaveValue('Marta Bianchi');
+    reviewProfile(dialog);
+    expect(api.saveFiscalProfile).not.toHaveBeenCalled();
+    expect(within(dialog).getByTestId('profile-review')).toHaveTextContent('Marta Bianchi');
+    fireEvent.click(within(dialog).getByTestId('profile-dialog-submit'));
+    await waitFor(() => expect(api.saveFiscalProfile).toHaveBeenCalledTimes(1));
+    expect(api.saveFiscalProfile.mock.calls[0][1]).toMatchObject({ legalName: 'Marta Bianchi' });
   });
 });
