@@ -1,5 +1,6 @@
 import { test, expect } from './test';
 import { demoUrl } from './helpers/demo-profile';
+import { completeOnboardingConsents } from './helpers/onboarding';
 const plans = ['Starter', 'Pro', 'Scale', 'Agency'].map(tier => ({ tier, displayName: tier, priceMonthly: tier === 'Agency' ? 12 : 20, currency: 'EUR', unitAllowance: tier === 'Scale' || tier === 'Agency' ? -1 : 3, features: ['Archivio documenti'], purchasable: true }));
 test.setTimeout(120_000);
 test.beforeEach(async ({ page }) => {
@@ -53,10 +54,7 @@ test('checkout request carries the chosen rooms and modules; a success URL alone
   await page.getByRole('checkbox').first().check();
   await page.getByRole('button', { name: 'Vai al riepilogo' }).click();
   await page.getByRole('button', { name: 'Continua al pagamento' }).click();
-  const consents = page.getByTestId('onboarding-consents-step');
-  const checks = consents.getByRole('checkbox');
-  for (let i = 0; i < await checks.count(); i++) await checks.nth(i).check();
-  await page.getByTestId('onboarding-consents-continue').click();
+  await completeOnboardingConsents(page);
   await page.locator('#signup-billing-country').selectOption('IT');
   await page.getByRole('button', { name: 'Vai al pagamento sicuro' }).click();
   await expect(page).toHaveURL(/checkout.stripe.com/);

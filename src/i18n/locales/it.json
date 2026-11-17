@@ -32044,4 +32044,33 @@
       "guideCheck": "Esegui la verifica del collegamento prima di chiudere la richiesta. Se il sistema non può verificarlo, registra un esito dichiarato con una nota che spieghi il controllo effettuato.",
       "guideMissing": "Se manca un accesso, chiedilo all’utente dalla procedura di assistenza prevista. Non inserire credenziali nelle note della richiesta."
   }
+,
+  "orgComplianceSender": {
+    "loading": "Caricamento della scelta di invio…",
+    "retry": "Riprova",
+    "loadError": "Non riusciamo a leggere la scelta dell’account. Riprova prima di modificarla.",
+    "scope": "Una scelta per il tuo account",
+    "title": "Chi invia i dati degli ospiti?",
+    "description": "Scegli una volta per gli immobili italiani, presenti e futuri. Gli immobili con una scelta specifica la mantengono; gli immobili all’estero seguono gli adempimenti locali.",
+    "channel": "Il mio channel manager",
+    "channelHint": "Scegli Octorate. Ogni immobile deve poi essere collegato e verificato prima dell’invio.",
+    "manual": "Invio io sui portali",
+    "manualHint": "Scarichi i file dei soggiorni e invii i dati alla Polizia e alle statistiche regionali, dove richieste.",
+    "continue": "Continua: riepilogo",
+    "review": "Controlla la scelta prima di salvare",
+    "effect": "La preferenza viene ereditata dagli immobili italiani senza una scelta specifica. Non attiva servizi esterni, non verifica le credenziali e non attesta che gli invii funzionino.",
+    "overrides_one": "{{count}} immobile mantiene la propria scelta specifica. Puoi cambiarla dalla sua scheda.",
+    "overrides_other": "{{count}} immobili mantengono la propria scelta specifica. Puoi cambiarla dalle rispettive schede.",
+    "confirm": "Confermo questa scelta per gli immobili che la ereditano. Prima di cambiare servizio mi assicuro che il precedente invio automatico sia disattivato, per evitare doppi invii.",
+    "save": "Salva per il mio account",
+    "back": "Indietro",
+    "saved": "Preferenza salvata: {{sender}}",
+    "edit": "Modifica scelta",
+    "saveError": "Scelta non salvata. Riprova.",
+    "accountsTitle": "Credenziali e codice appartamento: cosa cambia?",
+    "accounts": "Con un’utenza Alloggiati Web abilitata a “Gestione Appartamenti”, un’agenzia o un privato può gestire più immobili. La Questura competente, la provincia e la tipologia autorizzata restano determinanti: non è un’utenza unica nazionale. Ogni appartamento mantiene il proprio identificativo nel portale (IdAppartamento). Segui l’abilitazione rilasciata dalla Questura; ISTAT dipende dal sistema regionale. Questa scelta non copia né condivide credenziali fra immobili.",
+    "source": "Manuale ufficiale Alloggiati Web · sezione 8",
+    "inherited": "Questo immobile eredita la scelta del tuo account. Qui puoi impostare un’eccezione per il solo immobile.",
+    "editAccount": "Vedi la scelta dell’account"
+  }
 }

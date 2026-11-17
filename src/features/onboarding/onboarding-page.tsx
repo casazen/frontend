@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { confirmWorkspaceAccess } from './confirm-workspace-access';
 import { CommercialSignupWizard } from './commercial-signup-wizard';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -32,7 +34,7 @@ import { useReloadLegalDocuments } from '@/queries/use-legal';
 import { markSignupAttributionReady, syncSignupAttribution } from '@/lib/signup-attribution';
 import { RentalTypeCard } from './components/rental-type-card';
 import { ConsentsStep } from './components/consents-step';
-import { RolesPendingPanel } from './components/roles-pending-panel';
+import { WorkspaceAccessError } from './components/workspace-access-error';
 import { SupplierEntryLink } from './components/supplier-entry-link';
 import { ProfileLoadError } from '@/components/auth/profile-load-error';
 import { Button } from '@/components/ui/button';
@@ -49,7 +51,7 @@ const CONSENTS_REQUIRED_CODE = 'consents_required';
 /** Two screens at most: the rental type, then the legal consents. The plan is never asked here: the org starts on Starter. */
 type WizardStep = 'role' | 'consents';
 
-interface PendingRoles {
+interface PendingAccess {
   rentalType: RentalType;
   target: string;
 }
@@ -76,7 +78,8 @@ export function ExistingOnboardingPage() {
   const from = locationState?.from ?? null;
   // The activation checklist sent the user here to finish a step it still shows as "todo": stay, never bounce to the home.
   const completingChecklistStep = locationState?.completeStep === true;
-  const { refreshAccessToken, forceReauth } = useAuth();
+  const { refreshAccessToken } = useAuth();
+  const client = useQueryClient();
   const {
     data: profile,
     isLoading: profileLoading,
@@ -93,8 +96,7 @@ export function ExistingOnboardingPage() {
   const [consentsAttempt, setConsentsAttempt] = useState(0);
   const [failedType, setFailedType] = useState<RentalType | null>(null);
   const [consentsForced, setConsentsForced] = useState(false);
-  const [pendingRoles, setPendingRoles] = useState<PendingRoles | null>(null);
-  const [isRenewing, setIsRenewing] = useState(false);
+  const [pendingAccess, setPendingAccess] = useState<PendingAccess | null>(null);
   const [isLeaving, setIsLeaving] = useState(false);
 
   const roles = useUserRoles();
@@ -115,7 +117,7 @@ export function ExistingOnboardingPage() {
   const canSkip = !isEditMode && isExemptFromHostOnboarding(roles) && (!hasOrg || hostAccessWithheld);
 
   useEffect(() => {
-    if (profileLoading || !profile || pendingRoles || isLeaving) return;
+    if (profileLoading || !profile || pendingAccess || isLeaving) return;
 
     if (isEditMode && !canEditOnboarding(profile)) {
       navigate('/', { replace: true });
@@ -156,20 +158,24 @@ export function ExistingOnboardingPage() {
     hostAccessWithheld,
     isEditMode,
     completingChecklistStep,
-    pendingRoles,
+    pendingAccess,
     isLeaving,
     renewsConsents,
   ]);
 
-  const leaveTo = async (target: string) => {
+  const leaveTo = async (target: string, rentalType: RentalType) => {
     setIsLeaving(true);
     try {
-      // New roles reach the access token only through a fresh token.
-      await refreshAccessToken();
+      // Host policies and this bootstrap both resolve persisted DB memberships. Auth0 role synchronization is
+      // separate: a failed M2M call must not block a workspace the server has already authorized.
+      await confirmWorkspaceAccess(client, target);
+      // Keep SDK claims fresh when possible, without forcing a new sign-in or delaying access.
+      void refreshAccessToken().catch(() => undefined);
+      navigate(target, { replace: true });
     } catch {
-      // No silent renewal: the next page load renews the token or asks to sign in again.
+      setIsLeaving(false);
+      setPendingAccess({ rentalType, target });
     }
-    window.location.assign(target);
   };
 
   const finishOnboarding = async (
@@ -232,27 +238,8 @@ export function ExistingOnboardingPage() {
     const target = isEditMode
       ? getProfilePageForRentalType(rentalType)
       : getPostOnboardingRoute(rentalType, from, { firstRun: result.orgProvisioned === true, guidedSetup: flags.octorateOnboarding });
-    if (result.rolesSynced === false) {
-      if (pendingRoles) toast.error(t('onboarding.rolesPending.stillPending'));
-      setPendingRoles({ rentalType, target });
-      return;
-    }
-
-    setPendingRoles(null);
-    await leaveTo(target);
-  };
-
-  const renewSessionAndContinue = async (target: string) => {
-    setIsRenewing(true);
-    try {
-      await refreshAccessToken();
-    } catch {
-      // Silent renewal refused (e.g. login_required): a new sign-in issues a token with the current roles.
-      forceReauth();
-      return;
-    }
-    setIsLeaving(true);
-    window.location.assign(target);
+    setPendingAccess(null);
+    await leaveTo(target, rentalType);
   };
 
   const handleRentalSelect = (rentalType: RentalType) => {
@@ -286,14 +273,11 @@ export function ExistingOnboardingPage() {
     );
   }
 
-  if (pendingRoles) {
+  if (pendingAccess) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/40 px-4 py-12">
-        <RolesPendingPanel
-          isRetrying={completeOnboarding.isPending}
-          isRenewing={isRenewing}
-          onRetry={() => void finishOnboarding(pendingRoles.rentalType)}
-          onRenewSession={() => void renewSessionAndContinue(pendingRoles.target)}
+        <WorkspaceAccessError
+          onRetry={() => void leaveTo(pendingAccess.target, pendingAccess.rentalType)}
         />
       </div>
     );
