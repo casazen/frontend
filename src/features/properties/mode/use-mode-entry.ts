@@ -14,7 +14,7 @@ export function useModeChangeMenuItems(area: ModeArea, propertyId: string): Page
   const { t } = useTranslation();
   const workspace = useContext(WorkspaceContext);
 
-  if (!workspace?.hasPermission(area, 'property.write')) return [];
+  if (area === 'short-rent' || !workspace?.hasPermission(area, 'property.write')) return [];
   return [
     {
       label: t('propertyMode.entry.change'),

@@ -433,9 +433,11 @@ export function useSaveFiscalProfile(ownerId: string) {
 export function useCreateOwnerMandate(ownerId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (command: OwnerMandateCommand) => {
+    mutationFn: async (input: OwnerMandateCommand | { command: OwnerMandateCommand; file: File }) => {
       try {
-        return await ownerAccountingApi.createMandate(ownerId, command);
+        return 'file' in input
+          ? await ownerAccountingApi.createMandateWithDocument(ownerId, input.command, input.file)
+          : await ownerAccountingApi.createMandate(ownerId, input);
       } catch (error) {
         throw withoutRequest(error);
       }

@@ -143,6 +143,13 @@ describe('i18n helpers', () => {
 });
 
 describe('locale files', () => {
+  it('resourceRegistry_MatchesTheCompleteRuntimeBundles', () => {
+    expect(i18n.getResourceBundle('it', 'translation')).toEqual(APP_RESOURCES.it.translation);
+    expect(i18n.getResourceBundle('en', 'translation')).toEqual(APP_RESOURCES.en.translation);
+    expect(itKeys.has('onboardingAccess.description')).toBe(true);
+    expect(enKeys.has('onboardingAccess.description')).toBe(true);
+  });
+
   it('hasKey_ObjectTranslations_RecognisesParentsWithoutMatchingPartialNames', () => {
     const keys = flatten({ guide: { sections: { intro: 'Welcome' } } });
     expect(hasKey(keys, 'guide.sections')).toBe(true);
@@ -325,6 +332,15 @@ describe('plurals', () => {
     expect(i18n.getFixedT('it')('publicBooking.guestBookings.guestsCount', { count: 1 })).toBe('1 ospite');
     expect(i18n.getFixedT('it')('publicBooking.guestBookings.guestsCount', { count: 2 })).toBe('2 ospiti');
     expect(i18n.getFixedT('en')('publicBooking.guestBookings.guestsCount', { count: 1 })).toBe('1 guest');
+  });
+});
+
+describe('listing AI translations', () => {
+  it('includes the listing fields and retry action in the runtime registry', () => {
+    expect(i18n.getResourceBundle('it', 'translation')).toEqual(APP_RESOURCES.it.translation);
+    expect(i18n.getResourceBundle('en', 'translation')).toEqual(APP_RESOURCES.en.translation);
+    expect(itKeys.has('listingAi.fields.transport')).toBe(true);
+    expect(enKeys.has('listingAi.retry')).toBe(true);
   });
 });
 

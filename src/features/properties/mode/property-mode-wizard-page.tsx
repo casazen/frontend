@@ -169,6 +169,10 @@ function PropertyModeWizardPage({ area }: { area: ModeArea }) {
   const doneStep = searchParams.get('step') === WIZARD_DONE_STEP;
   const backTo = exitPathFor(area, id, entry);
 
+  // New short-to-long conversions are no longer offered. Historical scheduled changes can still be read and cancelled.
+  // Check the server's mode, not the URL or saved draft, so changing the section or step cannot start a new conversion.
+  if (currentMode === 'Short' && !waiting) return <Navigate to={backTo} replace />;
+
   return (
     <div className={cn(FOCUS_COLUMN, 'space-y-6')} data-testid="property-mode-page">
       <PageHeader title={t('propertyMode.page.title')} description={property.data.name} crumbs={crumbs} />
