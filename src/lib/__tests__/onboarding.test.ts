@@ -136,6 +136,9 @@ describe('onboarding helpers', () => {
   });
 
   it('getPostOnboardingRoute_FirstRunOpensTheFirstPropertyUnlessAGuardSentTheUserToADeepPage', () => {
+    expect(getPostOnboardingRoute('ShortTerm', '/app/short-rent/bookings/42', { firstRun: true, guidedSetup: true })).toBe('/app/short-rent/onboarding');
+    expect(getPostOnboardingRoute('Both', null, { firstRun: true, guidedSetup: true })).toBe('/app/short-rent/onboarding');
+    expect(getPostOnboardingRoute('LongTerm', null, { firstRun: true, guidedSetup: true })).toBe('/app/long-rent/properties/new?first=1');
     expect(getPostOnboardingRoute('ShortTerm', null, { firstRun: true })).toBe('/app/short-rent/properties/create?first=1');
     expect(getPostOnboardingRoute('LongTerm', null, { firstRun: true })).toBe('/app/long-rent/properties/new?first=1');
     // `Both` starts with short rent; the long-term area is one click away.
@@ -275,6 +278,8 @@ describe('first property pending', () => {
       '/properties/create',
       '/app/short-rent/settings/billing',
       '/app/short-rent/profile',
+      '/app/short-rent/onboarding',
+      '/app/short-rent/onboarding/parts/compliance',
       '/onboarding',
     ]) {
       expect(needsFirstProperty(host, profile, undefined, path)).toBe(false);

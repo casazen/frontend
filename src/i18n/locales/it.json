@@ -21063,6 +21063,7 @@
       "description": "Aggiungi una nuova struttura ricettiva al tuo portfolio"
     },
     "form": {
+      "chooseCountry": "Scegli il paese",
       "basicInfo": {
         "title": "Informazioni di base",
         "description": "Dettagli generali sull'immobile"

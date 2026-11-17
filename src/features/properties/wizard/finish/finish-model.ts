@@ -67,7 +67,7 @@ export type FixTarget = { kind: 'step'; step: WizardStepId } | { kind: 'section'
  * the amenities step, which holds the safety sheet; the CIN, the documents and the calendars: here). A step the host cannot act on
  * — the tourist tax — has no place.
  */
-export function fixTargetFor(activationStepId: string, property: Pick<Property, 'name' | 'address' | 'city' | 'maxGuests'>): FixTarget | null {
+export function fixTargetFor(activationStepId: string, property: Pick<Property, 'name' | 'address' | 'city' | 'maxGuests'> & Partial<Pick<Property, 'country'>>): FixTarget | null {
   switch (activationStepId) {
     case 'base-data':
       return { kind: 'step', step: baseDataStepFor(property) };
