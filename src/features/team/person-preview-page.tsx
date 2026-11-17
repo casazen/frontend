@@ -147,6 +147,7 @@ function PersonPreview({ row, callerRole, roles }: { row: PersonRow; callerRole:
         title={row.kind === 'invitation' ? t('team.access.titleInvited', { name: row.name }) : t('team.access.title', { name: row.name })}
         description={t('team.access.description', { role: orgRoleLabel(shown.role, t) })}
         crumbs="auto"
+        mobilePrimary="none"
         primary={
           may.changeRole
             ? { label: t('team.actions.role.label'), icon: UserCog, onClick: () => setDialog('role'), testId: 'preview-change-role' }

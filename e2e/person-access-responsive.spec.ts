@@ -13,12 +13,17 @@ for (const viewport of [{ name: 'desktop', width: 1280, height: 900 }, { name: '
       await testInfo.attach(name, { path, contentType: 'image/png' });
     };
     await fits();
+    await expect(page.getByTestId('preview-change-role')).toBeInViewport();
     await expect(page.getByText('Casa Lago', { exact: true })).toBeVisible();
     await expect(page.getByText('Riservata', { exact: true })).toHaveCount(0);
     const menu = page.getByTestId('preview-pages-short-rent');
     await expect(menu).not.toHaveAttribute('open');
     await expect(page.getByTestId('preview-cannot-long-rent')).toBeVisible();
     await capture('summary');
+    if (viewport.name === 'mobile') {
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+      await expect(page.getByTestId('preview-change-role')).not.toBeInViewport();
+    }
     const summary = menu.locator('summary');
     await summary.focus();
     await page.keyboard.press('Enter');
@@ -37,3 +42,4 @@ for (const viewport of [{ name: 'desktop', width: 1280, height: 900 }, { name: '
     await expect(page.getByTestId('preview-role-Collaborator')).toHaveAttribute('aria-pressed', 'true');
   });
 }
+

@@ -30266,7 +30266,7 @@
       "available": "Accesso consentito",
       "showPages_one": "Vedi {{count}} pagina del menu",
       "showPages_other": "Vedi le {{count}} pagine del menu",
-      "previewHint": "Confronta i ruoli senza modificare gli accessi. Le modifiche si salvano solo da «Ruoli e permessi».",
+      "previewHint": "Il confronto non modifica gli accessi. Per cambiare il ruolo, apri la modifica e conferma il salvataggio.",
       "backToToday": "Torna al ruolo di oggi",
       "canEnter": "Può entrare. Nel menu trova:",
       "canTitle": "Cosa può fare",
