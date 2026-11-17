@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { confirmWorkspaceAccess } from './confirm-workspace-access';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -42,7 +43,6 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
   const [provisioned, setProvisioned] = useState(!!profile?.orgId);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [rolesPending, setRolesPending] = useState(false);
   const plans = useBillingPlans(step !== 'profile');
   const catalog = useQuery({ queryKey: ['billing', 'commercial-catalog'], queryFn: CommercialSignupApi.getCatalog, enabled: step !== 'profile' });
   const checkout = useStartCheckout();
@@ -88,8 +88,8 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
       setProvisioned(true);
       setConsenting(false);
       setStep('payment');
-      await auth.refreshAccessToken();
-      setRolesPending(result.rolesSynced === false);
+      // DB memberships are already persisted; Auth0 synchronization must not block payment/setup.
+      void auth.refreshAccessToken().catch(() => undefined);
       // Keep the draft server-side through the profile query, including after Stripe or a browser refresh.
       await client.invalidateQueries({ queryKey: ['me'] });
     } catch (err) {
@@ -105,13 +105,15 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
     if (!paid || !selection) return;
     setBusy(true); setError(null);
     try {
-      await auth.refreshAccessToken();
       const me = await UsersApi.getMe();
       if (me.commercialSetupRequired) { setError(t('commercial.paymentPending')); return; }
       await client.invalidateQueries({ queryKey: ['me'] });
       const rentalType = signupRentalType(selection.profile);
-      window.location.assign(me.hasProperties === false ? getFirstPropertyRoute(rentalType) : getHomeRouteForRentalType(rentalType));
-    } catch (err) { setError(getProblemMessage(err, t) ?? t('commercial.failed')); }
+      const target = me.hasProperties === false ? getFirstPropertyRoute(rentalType) : getHomeRouteForRentalType(rentalType);
+      await confirmWorkspaceAccess(client, target);
+      void auth.refreshAccessToken().catch(() => undefined);
+      navigate(target, { replace: true });
+    } catch (err) { setError(getProblemMessage(err, t) ?? t('onboardingAccess.description')); }
     finally { setBusy(false); }
   }
 
@@ -212,7 +214,6 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
             {currentStep === 'payment' && <section className="space-y-5 rounded-2xl border bg-white p-6">
               {pendingPayment ? <div role="status" className="space-y-4"><ShieldCheck className="size-10 text-[#467b67]" aria-hidden="true" /><h2 className="text-lg font-semibold">{t('commercial.paymentPending')}</h2><p className="text-sm text-muted-foreground">{t('commercial.paymentPendingText')}</p><Button variant="outline" onClick={() => void subscription.refetch()}>{t('commercial.checkPayment')}</Button></div> : <>
                 {params.get('checkout') === 'cancel' && <p role="status" className="rounded-xl bg-[#efe8dc] p-4 text-sm">{t('commercial.paymentCanceled')}</p>}
-                {rolesPending && <p role="status" className="text-sm">{t('commercial.rolesPending')}</p>}
                 <BillingProfileForm idPrefix="signup" defaultValues={{ billingCountry: subscription.data?.billingCountry ?? '', vatId: subscription.data?.vatId ?? '' }} submitLabel={t('commercial.pay')} pendingLabel={t('commercial.redirecting')} isPending={checkout.isPending || checkout.isSuccess || !!hasSubscription || !canPay} onSubmit={values => {
                   checkout.mutate({ planTier: selection.planTier, commercialSignup: selection, returnPath: '/onboarding', ...toBillingProfileRequest(values) }, { onError: err => setError(getProblemMessage(err, t) ?? t('commercial.failed')) });
                 }} />

@@ -1,0 +1,7 @@
+{
+  "onboardingAccess": {
+    "title": "Your setup is saved",
+    "description": "We could not confirm access to your workspace yet. Try again: you do not need to repeat setup or sign out.",
+    "retry": "Check and continue"
+  }
+}

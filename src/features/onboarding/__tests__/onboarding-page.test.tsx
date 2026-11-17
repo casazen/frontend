@@ -8,6 +8,13 @@ import i18n from '@/i18n/config';
 import type { OnboardingResponse, UserDetail } from '@/types';
 import type { OnboardingConsentsPayload } from '@/types/onboarding.types';
 
+vi.mock('../confirm-workspace-access', () => ({ confirmWorkspaceAccess: vi.fn(async () => undefined) }));
+vi.mock('react-router-dom', async () => {
+  const original = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
+  const { useCallback } = await import('react');
+  return { ...original, useNavigate: () => { const actual = original.useNavigate(); return useCallback((to: string, options?: object) => { continuation(to); return actual(to, options); }, [actual]); } };
+});
+const { continuation } = vi.hoisted(() => ({ continuation: vi.fn() }));
 vi.mock('@/hooks/use-auth', () => ({ useAuth: vi.fn() }));
 vi.mock('@/api/users.api', () => ({
   UsersApi: { getMe: vi.fn(), postOnboarding: vi.fn(), putOnboarding: vi.fn(), recordSignupAttribution: vi.fn() },
@@ -35,6 +42,7 @@ vi.mock('../components/consents-step', () => ({
 }));
 
 import { useAuth } from '@/hooks/use-auth';
+import { confirmWorkspaceAccess } from '../confirm-workspace-access';
 import { UsersApi } from '@/api/users.api';
 import { toast } from 'sonner';
 // Compatibility editor and consent-renewal coverage. The new signup is covered in commercial-signup-wizard.test.tsx and the browser flow.
@@ -150,7 +158,7 @@ describe('OnboardingPage (PL-01)', () => {
     renderPage({ pathname: '/onboarding', state: { from: '/app/short-rent/properties' } });
     await chooseShortTermWithConsents();
 
-    await waitFor(() => expect(assign).toHaveBeenCalledWith('/app/short-rent/properties'));
+    await waitFor(() => expect(continuation).toHaveBeenCalledWith('/app/short-rent/properties'));
     expect(UsersApi.postOnboarding).toHaveBeenCalledWith({
       rentalType: 'ShortTerm',
       consents: CONSENTS,
@@ -174,7 +182,7 @@ describe('OnboardingPage (PL-01)', () => {
     await chooseShortTermWithConsents();
 
     // A new org starts with its first property, not on an empty dashboard.
-    await waitFor(() => expect(assign).toHaveBeenCalledWith('/app/short-rent/properties/create?first=1'));
+    await waitFor(() => expect(continuation).toHaveBeenCalledWith('/app/short-rent/properties/create?first=1'));
     expect(UsersApi.recordSignupAttribution).toHaveBeenCalledWith({
       utmSource: 'seo-compliance',
       utmMedium: 'cta',
@@ -194,61 +202,46 @@ describe('OnboardingPage (PL-01)', () => {
     renderPage();
     await chooseShortTermWithConsents();
 
-    await waitFor(() => expect(assign).toHaveBeenCalledWith('/app/short-rent/properties/create?first=1'));
+    await waitFor(() => expect(continuation).toHaveBeenCalledWith('/app/short-rent/properties/create?first=1'));
     // Kept for the next page load (the onboarding guard sends it again).
     expect(readPendingSignupAttribution()).toEqual({ utmSource: 'google', landingPath: '/signup' });
   });
 
-  it('OnboardingPage_RolesNotSynced_ShowsPendingPanelAndRenewsSession', async () => {
+  it('OnboardingPage_RolesNotSynced_EntersTheServerAuthorizedWorkspaceWithoutAnExtraStep', async () => {
     mockAuth([]);
     vi.mocked(UsersApi.getMe).mockResolvedValue(profile());
-    vi.mocked(UsersApi.postOnboarding).mockResolvedValue(
-      response({ rolesSynced: false, rolesSyncError: 'auth0_management_token_failed' }),
-    );
-
+    vi.mocked(UsersApi.postOnboarding).mockResolvedValue(response({ rolesSynced: false, rolesSyncError: 'auth0_management_token_failed' }));
     renderPage();
     await chooseShortTermWithConsents();
-
-    expect(await screen.findByTestId('onboarding-roles-pending')).toBeInTheDocument();
-    expect(screen.getByText(i18n.t('onboarding.rolesPending.description'))).toBeInTheDocument();
+    await waitFor(() => expect(continuation).toHaveBeenCalledWith('/app/short-rent'));
+    expect(confirmWorkspaceAccess).toHaveBeenCalled();
+    expect(screen.queryByTestId('onboarding-access-error')).not.toBeInTheDocument();
     expect(assign).not.toHaveBeenCalled();
-
-    fireEvent.click(screen.getByTestId('onboarding-roles-renew'));
-
-    await waitFor(() => expect(assign).toHaveBeenCalledWith('/app/short-rent'));
-    expect(refreshAccessToken).toHaveBeenCalledTimes(1);
+    expect(forceReauth).not.toHaveBeenCalled();
   });
 
-  it('OnboardingPage_RolesNotSyncedAndSilentRenewalRefused_SignsInAgain', async () => {
+  it('OnboardingPage_SilentRenewalRefused_StillUsesServerAuthorizedAccessWithoutSigningOut', async () => {
     mockAuth([]);
     vi.mocked(UsersApi.getMe).mockResolvedValue(profile());
     vi.mocked(UsersApi.postOnboarding).mockResolvedValue(response({ rolesSynced: false }));
     refreshAccessToken.mockRejectedValueOnce(Object.assign(new Error('login required'), { error: 'login_required' }));
-
     renderPage();
     await chooseShortTermWithConsents();
-    fireEvent.click(await screen.findByTestId('onboarding-roles-renew'));
-
-    await waitFor(() => expect(forceReauth).toHaveBeenCalledTimes(1));
-    expect(assign).not.toHaveBeenCalled();
+    await waitFor(() => expect(continuation).toHaveBeenCalledWith('/app/short-rent'));
+    expect(forceReauth).not.toHaveBeenCalled();
   });
 
-  it('OnboardingPage_RolesNotSyncedRetry_PutsAgainAndLeavesOnceSynced', async () => {
+  it('OnboardingPage_AccessNotConfirmed_RetriesVerificationWithoutRepeatingOnboarding', async () => {
     mockAuth([]);
-    vi.mocked(UsersApi.getMe).mockResolvedValueOnce(profile()).mockResolvedValue(ONBOARDED);
+    vi.mocked(UsersApi.getMe).mockResolvedValue(profile());
     vi.mocked(UsersApi.postOnboarding).mockResolvedValue(response({ rolesSynced: false }));
-    vi.mocked(UsersApi.putOnboarding).mockResolvedValue(response({ rolesSynced: true }));
-
+    vi.mocked(confirmWorkspaceAccess).mockRejectedValueOnce(new Error('not ready'));
     renderPage();
     await chooseShortTermWithConsents();
-    expect(await screen.findByTestId('onboarding-roles-pending')).toBeInTheDocument();
-    // The profile is reloaded after the first call: the org now exists, so the retry is an idempotent PUT.
-    await waitFor(() => expect(UsersApi.getMe).toHaveBeenCalledTimes(2));
-
-    fireEvent.click(screen.getByTestId('onboarding-roles-retry'));
-
-    await waitFor(() => expect(assign).toHaveBeenCalledWith('/app/short-rent'));
-    expect(UsersApi.putOnboarding).toHaveBeenCalledWith({ rentalType: 'ShortTerm', planTier: undefined });
+    fireEvent.click(await screen.findByTestId('onboarding-access-retry'));
+    await waitFor(() => expect(continuation).toHaveBeenCalledWith('/app/short-rent'));
+    expect(UsersApi.postOnboarding).toHaveBeenCalledTimes(1);
+    expect(UsersApi.putOnboarding).not.toHaveBeenCalled();
   });
 
   it('OnboardingPage_ConsentsRequiredOnPut_ShowsConsentsAndPosts', async () => {
@@ -269,7 +262,7 @@ describe('OnboardingPage (PL-01)', () => {
     );
     expect(toast.error).toHaveBeenCalledWith(i18n.t('onboarding.consentRequiredToast'));
     // PL-06: edit mode returns to the profile of the saved rental type (not the legacy /profile alias).
-    await waitFor(() => expect(assign).toHaveBeenCalledWith('/app/long-rent/profile'));
+    await waitFor(() => expect(continuation).toHaveBeenCalledWith('/app/long-rent/profile'));
   });
 
   it('OnboardingPage_EditMode_StartsFromTheRoleStepAndNavigatesToProfileAfterSaving', async () => {
@@ -288,7 +281,7 @@ describe('OnboardingPage (PL-01)', () => {
     fireEvent.click(screen.getByTestId('onboarding-edit-save'));
 
     // PL-06: after saving LongTerm in edit mode, open the long-rent profile (not the plan page).
-    await waitFor(() => expect(assign).toHaveBeenCalledWith('/app/long-rent/profile'));
+    await waitFor(() => expect(continuation).toHaveBeenCalledWith('/app/long-rent/profile'));
     expect(UsersApi.putOnboarding).toHaveBeenCalledWith({ rentalType: 'LongTerm', planTier: undefined });
     expect(UsersApi.postOnboarding).not.toHaveBeenCalled();
     expect(refreshAccessToken).toHaveBeenCalledTimes(1);
@@ -338,7 +331,7 @@ describe('OnboardingPage (PL-01)', () => {
 
     fireEvent.click(screen.getByTestId('accept-consents'));
 
-    await waitFor(() => expect(assign).toHaveBeenCalledWith('/app/short-rent'));
+    await waitFor(() => expect(continuation).toHaveBeenCalledWith('/app/short-rent'));
     expect(UsersApi.postOnboarding).toHaveBeenCalledTimes(2);
     resetQueries.mockRestore();
   });
@@ -356,7 +349,7 @@ describe('OnboardingPage (PL-01)', () => {
 
     fireEvent.click(screen.getByTestId('onboarding-retry'));
 
-    await waitFor(() => expect(assign).toHaveBeenCalledWith('/app/short-rent'));
+    await waitFor(() => expect(continuation).toHaveBeenCalledWith('/app/short-rent'));
     expect(UsersApi.postOnboarding).toHaveBeenCalledTimes(2);
   });
 
@@ -386,7 +379,7 @@ describe('OnboardingPage (PL-01)', () => {
     expect(screen.queryByRole('button', { name: i18n.t('onboarding.choose') })).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId('accept-consents'));
 
-    await waitFor(() => expect(assign).toHaveBeenCalledWith('/app/short-rent/guests'));
+    await waitFor(() => expect(continuation).toHaveBeenCalledWith('/app/short-rent/guests'));
     expect(UsersApi.postOnboarding).toHaveBeenCalledWith({
       rentalType: 'ShortTerm',
       consents: CONSENTS,
@@ -412,7 +405,7 @@ describe('OnboardingPage (PL-01)', () => {
     renderPage({ pathname: '/onboarding', state: { completeStep: true } });
     await chooseShortTermWithConsents();
 
-    await waitFor(() => expect(assign).toHaveBeenCalledWith('/app/short-rent'));
+    await waitFor(() => expect(continuation).toHaveBeenCalledWith('/app/short-rent'));
     expect(UsersApi.postOnboarding).toHaveBeenCalledWith({
       rentalType: 'ShortTerm',
       consents: CONSENTS,
@@ -431,8 +424,8 @@ describe('OnboardingPage (PL-01)', () => {
     renderPage();
     await chooseShortTermWithConsents();
 
-    await waitFor(() => expect(assign).toHaveBeenCalledWith('/app/short-rent'));
-    expect(screen.queryByTestId('short-rent-home')).not.toBeInTheDocument();
+    await waitFor(() => expect(continuation).toHaveBeenCalledWith('/app/short-rent'));
+    expect(screen.queryByTestId('short-rent-home')).toBeInTheDocument();
     expect(UsersApi.postOnboarding).toHaveBeenCalledWith({
       rentalType: 'ShortTerm',
       consents: CONSENTS,

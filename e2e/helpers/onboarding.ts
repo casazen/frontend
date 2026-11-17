@@ -22,6 +22,15 @@ export async function completeOnboardingFromRentalChoice(page: Page, rentalButto
     created = true;
     return route.fulfill({ json: { orgId: 'org-test', orgProvisioned: true, rentalType, rolesAssigned: ['PropertyOwner'], rolesSynced: true } });
   });
+  // The browser-only suite must model the same server authorization checked by signup, not an HTML fallback.
+  // A checkout success URL alone still grants nothing: both saved onboarding and confirmed payment are required.
+  await page.route('**/api/me/contexts', route => {
+    if (!created || !confirmed) return route.fulfill({ status: 403, json: { code: 'commercial_setup_required' } });
+    return route.fulfill({ json: {
+      userId: 'demo|onboarding',
+      contexts: [{ contextKey: rentalType === 'LongTerm' ? 'long-rent' : 'short-rent', displayName: 'Host', roleKey: rentalType === 'LongTerm' ? 'long_term_landlord' : 'property_owner', permissions: ['property.read', 'property.write'], defaultRoute: rentalType === 'LongTerm' ? '/app/long-rent' : '/app/short-rent' }],
+    } });
+  });
   let paid = false;
   await page.route('**/api/billing/subscription', route => route.fulfill({ json: { status: paid ? 'active' : 'none', planTier: 'Starter', billingCountry: null, vatId: null, currentPeriodEnd: null, seats: 1 } }));
   await page.route('**/api/billing/checkout-session', route => {
@@ -40,13 +49,18 @@ export async function completeOnboardingFromRentalChoice(page: Page, rentalButto
   await page.goto('/onboarding?checkout=success&demoProfile=onboarding');
   await expect(page.getByRole('button', { name: 'Entra e inizia la configurazione' })).toBeVisible();
   confirmed = true;
+  // The demo SDK has no real identity provider refresh. Publish its paid host persona only after confirmation,
+  // so the newly mounted workspace receives the same host area as the server fixture above.
+  await page.evaluate(next => sessionStorage.setItem('casazen:demo-profile', next), rentalType === 'LongTerm' ? 'long-term' : 'short-stay');
   await page.getByRole('button', { name: 'Entra e inizia la configurazione' }).click();
 }
 
 export async function completeOnboardingConsents(page: Page): Promise<void> {
   const consents = page.getByTestId('onboarding-consents-step');
   await expect(consents).toBeVisible({ timeout: 20_000 });
-  for (const checkbox of await consents.getByRole('checkbox').all()) await checkbox.check();
+  const checks = consents.getByRole('checkbox');
+  await expect(checks.first()).toBeVisible({ timeout: 20_000 });
+  for (const checkbox of await checks.all()) await checkbox.check();
   const continueButton = page.getByTestId('onboarding-consents-continue');
   await expect(continueButton).toBeEnabled({ timeout: 10_000 });
   await continueButton.click();

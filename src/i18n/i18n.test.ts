@@ -143,6 +143,13 @@ describe('i18n helpers', () => {
 });
 
 describe('locale files', () => {
+  it('resourceRegistry_MatchesTheCompleteRuntimeBundles', () => {
+    expect(i18n.getResourceBundle('it', 'translation')).toEqual(APP_RESOURCES.it.translation);
+    expect(i18n.getResourceBundle('en', 'translation')).toEqual(APP_RESOURCES.en.translation);
+    expect(itKeys.has('onboardingAccess.description')).toBe(true);
+    expect(enKeys.has('onboardingAccess.description')).toBe(true);
+  });
+
   it('hasKey_ObjectTranslations_RecognisesParentsWithoutMatchingPartialNames', () => {
     const keys = flatten({ guide: { sections: { intro: 'Welcome' } } });
     expect(hasKey(keys, 'guide.sections')).toBe(true);
