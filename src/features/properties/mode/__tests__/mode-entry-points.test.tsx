@@ -87,9 +87,7 @@ describe('useModeChangeMenuItems (PM-03)', () => {
 
   it('useModeChangeMenuItems_WithPermission_IsTheWizardOfTheSectionOfThePage', () => {
     const short = renderHook(() => useModeChangeMenuItems('short-rent', PROPERTY_ID), { wrapper: providers() });
-    expect(short.result.current).toEqual([
-      expect.objectContaining({ label: 'Cambia modalità', to: `/app/short-rent/properties/${PROPERTY_ID}/mode`, testId: 'property-mode-change' }),
-    ]);
+    expect(short.result.current).toEqual([]);
     const long = renderHook(() => useModeChangeMenuItems('long-rent', PROPERTY_ID), { wrapper: providers() });
     expect(long.result.current[0]).toMatchObject({ to: `/app/long-rent/properties/${PROPERTY_ID}/mode` });
   });
@@ -171,17 +169,10 @@ describe('the pages of a property (PM-03)', () => {
     );
   }
 
-  async function openTheMenu() {
-    fireEvent.keyDown(screen.getByRole('button', { name: i18n.t('pageHeader.moreActions') }), { key: 'Enter' });
-    return screen.findByRole('menu');
-  }
-
-  it('PropertyDetailPage_OffersTheChangeInTheMenuOfTheThreeDots', async () => {
+  it('PropertyDetailPage_DoesNotOfferShortToLongConversion', () => {
     renderShort();
-
-    // The change is in the menu "⋯" of the page, with the other actions of the property.
-    const menu = await openTheMenu();
-    expect(within(menu).getByRole('menuitem', { name: 'Cambia modalità' })).toHaveAttribute('href', `/app/short-rent/properties/${PROPERTY_ID}/mode`);
+    expect(screen.queryByTestId('property-mode-change')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: i18n.t('pageHeader.moreActions') })).not.toBeInTheDocument();
   });
 
   it('PropertyDetailPage_WithoutTheWritePermission_HasNoEntry', () => {

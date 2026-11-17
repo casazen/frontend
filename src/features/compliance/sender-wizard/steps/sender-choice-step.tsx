@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Alert } from '@/components/ui/alert';
@@ -76,6 +77,7 @@ export function SenderChoiceStep({ read }: SenderChoiceStepProps) {
 
   return (
     <div className="flex flex-col gap-6" data-testid="sender-choice-step">
+      {read.source === 'OrganizationDefault' ? <Alert variant="info">{t('orgComplianceSender.inherited')} <Link className="underline underline-offset-4" to="/app/short-rent/onboarding">{t('orgComplianceSender.editAccount')}</Link></Alert> : null}
       {/* Whether the channel manager sends the ISTAT of the region of the property, said at once, before anything is asked (CHK-05 point 3). Behind the flag of the activation: with it off nothing is drawn. */}
       <IstatCoverageNotice propertyId={read.propertyId} />
 

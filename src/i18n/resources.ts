@@ -2,12 +2,13 @@ import it from './locales/it.json';
 import en from './locales/en.json';
 import propertySetupIt from './locales/property-setup.it.json';
 import propertySetupEn from './locales/property-setup.en.json';
+import { listingAiIt, listingAiEn } from './listing-ai';
 import { userRemovalMessages } from './user-removal-messages';
 
 /** The complete host-language resources, shared by runtime and translation validation. Add feature bundles here so every key, placeholder and plural is checked. */
 export const APP_RESOURCES = {
   it: { translation: {
-    ...it,
+    ...it, listingAi: listingAiIt,
     propertySetup: propertySetupIt,
     userRemoval: userRemovalMessages.it,
     apiErrors: { ...it.apiErrors, codes: {
@@ -18,7 +19,7 @@ export const APP_RESOURCES = {
     } },
   } },
   en: { translation: {
-    ...en,
+    ...en, listingAi: listingAiEn,
     propertySetup: propertySetupEn,
     userRemoval: userRemovalMessages.en,
     apiErrors: { ...en.apiErrors, codes: {

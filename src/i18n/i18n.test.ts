@@ -327,6 +327,15 @@ describe('plurals', () => {
   });
 });
 
+describe('listing AI translations', () => {
+  it('includes the listing fields and retry action in the runtime registry', () => {
+    expect(i18n.getResourceBundle('it', 'translation')).toEqual(APP_RESOURCES.it.translation);
+    expect(i18n.getResourceBundle('en', 'translation')).toEqual(APP_RESOURCES.en.translation);
+    expect(itKeys.has('listingAi.fields.transport')).toBe(true);
+    expect(enKeys.has('listingAi.retry')).toBe(true);
+  });
+});
+
 describe('zod error map', () => {
   beforeEach(async () => {
     await i18n.changeLanguage('it');

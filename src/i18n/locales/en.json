@@ -30269,6 +30269,10 @@
   },
   "team": {
     "access": {
+      "available": "Access allowed",
+      "showPages_one": "View {{count}} menu page",
+      "showPages_other": "View {{count}} menu pages",
+      "previewHint": "Comparing roles does not change access. To change the role, open the editor and confirm your changes.",
       "backToToday": "Back to today's role",
       "canEnter": "Can enter. The menu has:",
       "canTitle": "What they can do",
@@ -32039,5 +32043,34 @@
       "guideBoth": "Set up the Alloggiati Web connection and the regional statistics connection separately. These services may use different credentials.",
       "guideCheck": "Test the connection before closing the request. If the system cannot verify it, record a declared outcome with a note explaining the check performed.",
       "guideMissing": "If an access is missing, ask the user through the established support process. Never put credentials in the request notes."
+  }
+,
+  "orgComplianceSender": {
+    "loading": "Loading your sending preference…",
+    "retry": "Try again",
+    "loadError": "We could not load the account preference. Try again before changing it.",
+    "scope": "One choice for your account",
+    "title": "Who sends your guests’ details?",
+    "description": "Choose once for your current and future Italian properties. Properties with a specific choice keep it; properties abroad follow local requirements.",
+    "channel": "My channel manager",
+    "channelHint": "Choose Octorate. Each property must then be connected and verified before sending.",
+    "manual": "I send on the portals",
+    "manualHint": "Download stay files and send details to the Police and regional statistics portals where required.",
+    "continue": "Continue: review",
+    "review": "Review your choice before saving",
+    "effect": "Italian properties without their own choice inherit this preference. It does not activate external services, validate credentials or prove that sending works.",
+    "overrides_one": "{{count}} property keeps its specific choice. Change it on the property page.",
+    "overrides_other": "{{count}} properties keep their specific choices. Change them on their property pages.",
+    "confirm": "I confirm this choice for properties that inherit it. Before changing service, I will ensure the previous automatic sender is disabled to prevent duplicate submissions.",
+    "save": "Save for my account",
+    "back": "Back",
+    "saved": "Saved preference: {{sender}}",
+    "edit": "Change choice",
+    "saveError": "Your choice was not saved. Try again.",
+    "accountsTitle": "Credentials and apartment ID: what changes?",
+    "accounts": "An Alloggiati Web account enabled for “Gestione Appartamenti” can manage multiple properties for an agency or private host. The competent Questura, province and authorised accommodation category still apply: this is not a single nationwide account. Each apartment keeps its own portal identifier (IdAppartamento). Follow the authorisation issued by the Questura; ISTAT depends on the regional system. This preference does not copy or share credentials between properties.",
+    "source": "Official Alloggiati Web manual · section 8",
+    "inherited": "This property inherits your account preference. You can set an exception for this property here.",
+    "editAccount": "View account preference"
   }
 }
