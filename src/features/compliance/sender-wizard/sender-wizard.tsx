@@ -198,6 +198,8 @@ function SenderWizard({ propertyId, read }: SenderWizardProps) {
     setBlocked(null);
     const request = toSwitchRequest(values, read, { canChangeAutoSend });
     try {
+      // Keeping the account choice is not a property override. Operational verification remains property-specific.
+      if (read.source === 'OrganizationDefault' && request.sender === read.sender && request.autoSendGuestsToOctorate === undefined && !request.delegationConsent) return;
       const answer = await switchSender.mutateAsync(request);
       if (request.autoSendGuestsToOctorate !== undefined) {
         const on = answer.autoSendGuestsToOctorate ?? request.autoSendGuestsToOctorate;
