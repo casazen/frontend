@@ -13,7 +13,7 @@ import { getHttpStatus } from '@/lib/api-errors';
 import { useMarketplaceEntry } from '@/queries/use-marketplace';
 import type { MarketplaceEntryDetail } from '@/types';
 import { marketplaceAction, marketplaceReturnTarget, parseMarketplaceEntry } from '../lib/marketplace-entry';
-import { MARKETPLACE_ENTRY_PARAM, MARKETPLACE_MINE_PATH } from '../lib/marketplace-paths';
+import { MARKETPLACE_ENTRY_PARAM, MARKETPLACE_MINE_PATH, MARKETPLACE_PROPERTY_PARAM } from '../lib/marketplace-paths';
 import { MarketplaceStatusBadge } from './marketplace-status-badge';
 
 /** A part of the detail card: its heading and what it says. */
@@ -127,12 +127,12 @@ function EntryDetail({ detail }: { detail: MarketplaceEntryDetail }) {
 }
 
 /** The foot of the card: the one thing to do, or why it cannot be done. */
-function EntryFooter({ detail }: { detail: MarketplaceEntryDetail }) {
+function EntryFooter({ detail, propertyId }: { detail: MarketplaceEntryDetail; propertyId?: string }) {
   const { t, i18n } = useTranslation();
   const location = useLocation();
   const action = marketplaceAction(
     { kind: detail.kind, code: detail.code, status: detail.status, canActivate: detail.actions.canActivate },
-    undefined,
+    propertyId,
     marketplaceReturnTarget(location),
     detail.activation.type,
   );
@@ -164,9 +164,9 @@ function EntryFooter({ detail }: { detail: MarketplaceEntryDetail }) {
  * The inside of the drawer: the title, the card (or the state it is in) and its foot. It reads the entry, so it is mounted only while the
  * drawer is open: a closed drawer asks for nothing.
  */
-function EntryPanelContent({ kind, code, bodyRef }: { kind: string; code: string; bodyRef: RefObject<HTMLDivElement | null> }) {
+function EntryPanelContent({ kind, code, propertyId, bodyRef }: { kind: string; code: string; propertyId?: string; bodyRef: RefObject<HTMLDivElement | null> }) {
   const { t } = useTranslation();
-  const entry = useMarketplaceEntry(kind, code);
+  const entry = useMarketplaceEntry(kind, code, propertyId);
 
   const detail = entry.data;
   // The card is not there for this person (a partner their plan or country does not allow, a code that does not exist): said as such.
@@ -197,7 +197,7 @@ function EntryPanelContent({ kind, code, bodyRef }: { kind: string; code: string
           <SkeletonLine lines={5} label={t('marketplace.detail.loading')} />
         )}
       </div>
-      {detail ? <EntryFooter detail={detail} /> : null}
+      {detail ? <EntryFooter detail={detail} propertyId={propertyId} /> : null}
     </>
   );
 }
@@ -207,7 +207,7 @@ function EntryPanelContent({ kind, code, bodyRef }: { kind: string; code: string
  * `md` up. The focus is trapped inside; Esc, a press outside and the close button close it (the dialog tells the drawer, which takes the
  * parameter away); the focus goes back to the card that opened it.
  */
-function EntryPanel({ kind, code }: { kind: string; code: string }) {
+function EntryPanel({ kind, code, propertyId }: { kind: string; code: string; propertyId?: string }) {
   const { t } = useTranslation();
   const bodyRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -236,7 +236,7 @@ function EntryPanel({ kind, code }: { kind: string; code: string }) {
         className="fixed z-50 flex flex-col bg-background text-foreground shadow-lg outline-none max-md:inset-x-0 max-md:bottom-0 max-md:max-h-[92dvh] max-md:rounded-t-2xl max-md:border-t max-md:pb-[env(safe-area-inset-bottom)] md:inset-y-0 md:right-0 md:w-full md:max-w-xl md:border-l md:data-[state=open]:animate-in md:data-[state=open]:slide-in-from-right md:data-[state=open]:duration-300 md:data-[state=closed]:animate-out md:data-[state=closed]:slide-out-to-right md:data-[state=closed]:duration-200"
       >
         <SheetHandle className="md:hidden" onClose={() => closeRef.current?.click()} />
-        <EntryPanelContent kind={kind} code={code} bodyRef={bodyRef} />
+        <EntryPanelContent kind={kind} code={code} propertyId={propertyId} bodyRef={bodyRef} />
         <DialogPrimitive.Close
           ref={closeRef}
           className="absolute right-2 top-1.5 flex size-11 items-center justify-center rounded-full opacity-70 transition-opacity hover:bg-muted hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:right-3 md:top-3"
@@ -251,16 +251,21 @@ function EntryPanel({ kind, code }: { kind: string; code: string }) {
 
 /**
  * The detail card of an integration (MKT-02): a drawer that is open while the address has `?entry=<kind>:<code>`, so that it can be
- * shared and a link opens it on load. Closing it (the close button, Esc, a press outside) takes the parameter away and keeps the
- * others. It reads the entry for the property the page is about; the footer leads to the wizard, to the Active tab, or says why not.
+ * shared. The Discover drawer reads account-level status; a row in Active may open its own property’s integration details.
  */
 export function MarketplaceEntryDrawer() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const requested = parseMarketplaceEntry(searchParams.get(MARKETPLACE_ENTRY_PARAM));
+  const { pathname } = useLocation();
+  const isActiveTab = pathname === MARKETPLACE_MINE_PATH;
+  const entry = parseMarketplaceEntry(searchParams.get(MARKETPLACE_ENTRY_PARAM));
+  const propertyId = isActiveTab ? searchParams.get(MARKETPLACE_PROPERTY_PARAM) || undefined : undefined;
+  const requested = entry && { ...entry, propertyId };
 
-  // The last card stays in place while the panel slides out: by then the address no longer names it.
+  // Keep the last card and its scope while the panel closes.
   const [last, setLast] = useState(requested);
-  if (requested && (last?.kind !== requested.kind || last.code !== requested.code)) setLast(requested);
+  if (requested && (last?.kind !== requested.kind || last.code !== requested.code || last.propertyId !== requested.propertyId)) {
+    setLast(requested);
+  }
   const shown = requested ?? last;
 
   const close = () =>
@@ -268,6 +273,7 @@ export function MarketplaceEntryDrawer() {
       (previous) => {
         const next = new URLSearchParams(previous);
         next.delete(MARKETPLACE_ENTRY_PARAM);
+        if (isActiveTab) next.delete(MARKETPLACE_PROPERTY_PARAM);
         return next;
       },
       { replace: true, preventScrollReset: true },
@@ -280,7 +286,7 @@ export function MarketplaceEntryDrawer() {
         if (!open) close();
       }}
     >
-      {shown ? <EntryPanel key={`${shown.kind}:${shown.code}`} kind={shown.kind} code={shown.code} /> : null}
+      {shown ? <EntryPanel key={`${shown.kind}:${shown.code}`} {...shown} /> : null}
     </Dialog>
   );
 }

@@ -231,14 +231,17 @@ describe('MarketplaceEntryDrawer · the detail card (MKT-02)', () => {
     expect(within(dialog).queryByTestId('marketplace-entry-reason')).not.toBeInTheDocument();
   });
 
-  it('MarketplaceEntryDrawer_OnTheActiveTab_StillOffersTheWizardForWhatIsNotOn', async () => {
-    // «Attiva» and «Correggi» lead to a wizard, never to the page the person is on: they stay on the Active tab.
+  it('MarketplaceEntryDrawer_OnTheActiveTab_ReadsTheSelectedIntegrationPropertyAndUsesItForFix', async () => {
     hooks.entry.mockReturnValue(entryAnswer({ ...DETAIL, status: 'ToFix' }));
-    renderDrawer('/app/short-rent/marketplace/mine?propertyId=prop-1&entry=Channel:PORTAL1');
+    renderDrawer('/app/short-rent/marketplace/mine?propertyId=prop-2&entry=Channel:PORTAL1');
 
     const action = within(await screen.findByRole('dialog')).getByTestId('marketplace-entry-action');
+    expect(hooks.entry).toHaveBeenCalledWith('Channel', 'PORTAL1', 'prop-2');
     expect(action).toHaveTextContent('Correggi');
-    expect(new URL(action.getAttribute('href') ?? '', 'http://localhost').pathname).toBe('/app/short-rent/marketplace/activate/channel/PORTAL1');
+    const url = new URL(action.getAttribute('href') ?? '', 'http://localhost');
+    expect(url.pathname).toBe('/app/short-rent/marketplace/activate/channel/PORTAL1');
+    expect(url.searchParams.get('propertyId')).toBe('prop-2');
+    expect(url.searchParams.get('returnTo')).toBe('/app/short-rent/marketplace/mine');
   });
 
   it('MarketplaceEntryDrawer_WizardLink_BringsThePersonBackToThePageWithoutTheCard', async () => {
