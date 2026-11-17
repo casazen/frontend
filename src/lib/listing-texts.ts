@@ -19,7 +19,14 @@ export const OPTIONAL_LANGUAGES: readonly ListingLanguage[] = TRANSLATED_LANGUAG
 export interface ListingTextDraft {
   title: string;
   description: string;
+  spaces?: string;
+  access?: string;
+  neighborhood?: string;
+  transport?: string;
+  rules?: string;
 }
+
+export const LISTING_EXTRA_FIELDS = ['spaces', 'access', 'neighborhood', 'transport', 'rules'] as const;
 
 /** The headline and the description of every language but Italian, empty: what a property without translations starts from. */
 export function emptyTextDrafts(): Record<string, ListingTextDraft> {
@@ -27,12 +34,15 @@ export function emptyTextDrafts(): Record<string, ListingTextDraft> {
 }
 
 /** The texts the site profile stores, as the fields of the wizard (a language it does not have is empty). */
-export function textDraftsFromProfile(profile: Pick<SiteProfile, 'translations'> | null | undefined): Record<string, ListingTextDraft> {
+export function textDraftsFromProfile(profile: Pick<SiteProfile, 'translations'> & Partial<Pick<SiteProfile, 'floorNote' | 'checkInMethod' | 'zone'>> | null | undefined): Record<string, ListingTextDraft> {
   const drafts = emptyTextDrafts();
   for (const language of TRANSLATED_LANGUAGES) {
     const stored = profile?.translations?.[language];
-    drafts[language] = { title: stored?.title ?? '', description: stored?.description ?? '' };
+    drafts[language] = { ...Object.fromEntries(LISTING_EXTRA_FIELDS.filter((field) => stored?.[field] != null).map((field) => [field, stored?.[field] ?? ''])), title: stored?.title ?? '', description: stored?.description ?? '' };
   }
+  const italian = { spaces: profile?.floorNote?.it, access: profile?.checkInMethod?.it, neighborhood: profile?.zone?.it, transport: profile?.translations?.it?.transport };
+  const existing = Object.fromEntries(Object.entries(italian).filter(([, value]) => value != null));
+  if (Object.keys(existing).length) drafts.it = { title: '', description: '', ...existing };
   return drafts;
 }
 
@@ -66,10 +76,10 @@ const clean = (text: string | null | undefined): string | null => {
 
 /** True when the typed texts of some language differ from the ones stored (blank and absent are the same). */
 export function textDraftsChanged(stored: Record<string, ListingTextDraft>, current: Record<string, ListingTextDraft>): boolean {
-  return TRANSLATED_LANGUAGES.some((language) => {
+  return [...TRANSLATED_LANGUAGES, 'it'].some((language) => {
     const before = stored[language];
     const after = current[language];
-    return (clean(before?.title) ?? '') !== (clean(after?.title) ?? '') || (clean(before?.description) ?? '') !== (clean(after?.description) ?? '');
+    return (['title', 'description', ...LISTING_EXTRA_FIELDS] as const).some((field) => (clean(before?.[field]) ?? '') !== (clean(after?.[field]) ?? ''));
   });
 }
 
@@ -95,10 +105,18 @@ export function buildSiteProfileRequest(profile: SiteProfile, drafts: Record<str
     if (description) merged.description = description;
     else delete merged.description;
 
+    for (const field of LISTING_EXTRA_FIELDS) {
+      if (draft[field] !== undefined) merged[field] = clean(draft[field]);
+    }
+
     const kept = Object.entries(merged).filter(([, text]) => typeof text === 'string' && text.trim() !== '');
     if (kept.length > 0) translations[language] = Object.fromEntries(kept) as ListingTexts;
     else delete translations[language];
   }
+
+  const italian = drafts.it;
+  const italianText = (existing: SiteProfile['floorNote'], value: string | undefined) => value === undefined ? existing ?? null : { ...existing, it: value };
+  if (italian?.transport !== undefined) translations.it = { ...translations.it, transport: clean(italian.transport) };
 
   return {
     floorLevel: profile.floorLevel ?? null,
@@ -110,11 +128,11 @@ export function buildSiteProfileRequest(profile: SiteProfile, drafts: Record<str
     checkInTo: profile.checkInTo ?? null,
     videoUrl: profile.videoUrl ?? null,
     tourUrl: profile.tourUrl ?? null,
-    zone: profile.zone ?? null,
+    zone: italianText(profile.zone, italian?.neighborhood),
     near: profile.near ?? null,
-    floorNote: profile.floorNote ?? null,
+    floorNote: italianText(profile.floorNote, italian?.spaces),
     outdoorNote: profile.outdoorNote ?? null,
-    checkInMethod: profile.checkInMethod ?? null,
+    checkInMethod: italianText(profile.checkInMethod, italian?.access),
     rulesNote: profile.rulesNote ?? null,
     highlights: profile.highlights ?? [],
     safetyNotes: profile.safetyNotes ?? [],
