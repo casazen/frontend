@@ -1,3 +1,5 @@
+import { requiresItalianCin } from '@/lib/cin-format';
+import { SwissRegistrationGuidance } from './swiss-registration-guidance';
 import { useTranslation } from 'react-i18next';
 import { Pencil } from 'lucide-react';
 import { PlainSection } from '@/components/shared/calm';
@@ -28,7 +30,7 @@ export function PropertyDocumentsTab({ property, canWrite, onEditCin }: Property
 
   return (
     <div className="space-y-8">
-      <PlainSection title={t('property.detail.cinTitle')}>
+      {requiresItalianCin(property.country) ? <PlainSection title={t('property.detail.cinTitle')}>
         <div className="flex flex-wrap items-center gap-3">
           <PropertyCinBadge cinStatus={property.cinStatus} cinCode={property.cinCode} />
           {canWrite ? (
@@ -39,7 +41,7 @@ export function PropertyDocumentsTab({ property, canWrite, onEditCin }: Property
           ) : null}
         </div>
         <p className="mt-2 text-sm text-foreground/70">{t('property.detail.cinDescription')}</p>
-      </PlainSection>
+      </PlainSection> : <SwissRegistrationGuidance />}
 
       <PropertyDocumentsSection plain propertyId={property.id} documents={property.documents} />
 
