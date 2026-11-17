@@ -166,6 +166,10 @@ export function useBookingCalendar(params?: {
     queryKey: [BOOKINGS_KEY, 'calendar', params],
     queryFn: () => bookingsApi.getCalendar(params!),
     enabled: !!params?.propertyId && !!params?.startDate && !!params?.endDate,
+    // Octorate imports run outside this browser: a previously empty range must be read again on return.
+    refetchOnMount: 'always',
+    refetchInterval: 30_000,
+    refetchIntervalInBackground: false,
     retry: retryTransientErrors(1),
   });
 }
