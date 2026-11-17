@@ -16,7 +16,7 @@ import { WorkspaceContext } from '@/contexts/workspace-context';
 import { displayableMediaUrls } from '@/lib/media-url';
 import { propertyStatus } from '@/lib/status-dictionary';
 import { formatCurrency } from '@/lib/utils';
-import { useActivateProperty, usePauseProperty, useProperties } from '@/queries/use-properties';
+import { SHORT_PROPERTIES_OVERVIEW, useActivateProperty, usePauseProperty, useProperties } from '@/queries/use-properties';
 import type { Property } from '@/types';
 import { formatPropertyLocation } from '../property-location';
 import {
@@ -33,7 +33,7 @@ import {
  * list, so there is no second request, and a property paused or reactivated from the drawer changes in both.
  */
 function usePropertyOfTheList(id: string) {
-  const query = useProperties({ mode: 'short' });
+  const query = useProperties(SHORT_PROPERTIES_OVERVIEW);
   return {
     property: query.data?.find((candidate) => candidate.id === id),
     isLoading: query.isLoading,
@@ -94,7 +94,7 @@ function KeyData({ property }: { property: Property }) {
             t('property.table.noRate')
           )}
         </dd>
-        <dt className="text-foreground/70">{t('property.drawer.cin')}</dt>
+        {property.country === 'IT' ? <><dt className="text-foreground/70">{t('property.drawer.cin')}</dt>
         <dd className="break-words">
           {property.cinCode ? (
             <code>{property.cinCode}</code>
@@ -104,7 +104,7 @@ function KeyData({ property }: { property: Property }) {
               {t('property.drawer.cinMissing')}
             </span>
           )}
-        </dd>
+        </dd></> : null}
       </dl>
     </PlainSection>
   );

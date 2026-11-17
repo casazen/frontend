@@ -173,7 +173,7 @@ export function PropertyForm({
             </CardContent>
           </Card>
 
-          {shortStay && (
+          {shortStay && country === 'IT' && (
             <Card>
               <CardHeader>
                 <CardTitle>{t('property.form.cin.title')}</CardTitle>
@@ -198,7 +198,7 @@ export function PropertyForm({
                 <Input id="address" {...register('address')} placeholder={t('property.form.placeholder.address')} />
                 <FormFieldError error={errors.address} />
               </div>
-              <div className="space-y-2" data-testid="property-comune-field">
+              {country === 'IT' ? <div className="space-y-2" data-testid="property-comune-field">
                 <Label htmlFor="comune">{t('property.form.comune.label')}</Label>
                 <ComunePicker
                   id="comune"
@@ -219,11 +219,12 @@ export function PropertyForm({
                   </p>
                 )}
                 <FormFieldError error={errors.comuneIstatCode} />
-              </div>
+              </div> : null}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="country">{t('property.country')}</Label>
                   <select id="country" className={selectClassName} {...register('country')}>
+                    <option value="" disabled>{t('property.form.chooseCountry')}</option>
                     <option value="IT">{t('property.country.it')}</option>
                     <option value="CH">{t('property.country.ch')}</option>
                   </select>
@@ -253,11 +254,11 @@ export function PropertyForm({
                   <Input
                     id="city"
                     {...register('city')}
-                    readOnly={!!comuneIstatCode}
-                    aria-describedby={comuneIstatCode ? 'city-from-comune' : undefined}
+                    readOnly={country === 'IT' && !!comuneIstatCode}
+                    aria-describedby={country === 'IT' && comuneIstatCode ? 'city-from-comune' : undefined}
                     placeholder={t('property.form.placeholder.city')}
                   />
-                  {comuneIstatCode && (
+                  {country === 'IT' && comuneIstatCode && (
                     <p id="city-from-comune" className="text-xs text-muted-foreground">{t('property.form.comune.cityFromComune')}</p>
                   )}
                   <FormFieldError error={errors.city} />

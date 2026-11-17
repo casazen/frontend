@@ -21063,6 +21063,7 @@
       "description": "Add a new accommodation facility to your portfolio"
     },
     "form": {
+      "chooseCountry": "Choose a country",
       "basicInfo": {
         "title": "Basic Information",
         "description": "General details about the property"

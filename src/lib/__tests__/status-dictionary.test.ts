@@ -281,6 +281,7 @@ describe("pipelines", () => {
 describe("states the interface works out", () => {
   it.each([
     [{ complianceStatus: "Active", isPaused: false }, "Active"],
+    [{ complianceStatus: "Active", isActive: false }, "Pending"],
     [{ complianceStatus: "Active", isPaused: true }, "Paused"],
     [{ complianceStatus: "Pending", isPaused: false }, "Pending"],
     [{ complianceStatus: "Pending", isPaused: true }, "Paused"],

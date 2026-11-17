@@ -79,6 +79,11 @@ describe('the rooms of the first step (NF-34)', () => {
 });
 
 describe('baseStepSchema and the rooms', () => {
+  it('requires a country and accepts a Swiss municipality without an Italian code', () => {
+    expect(baseStepSchema.safeParse({ ...base, country: '', rooms: [] }).success).toBe(false);
+    expect(baseStepSchema.safeParse({ ...base, country: 'CH', comuneIstatCode: '', city: 'Lugano', postalCode: '6900', rooms: [] }).success).toBe(true);
+    expect(baseStepSchema.safeParse({ ...base, country: 'IT', comuneIstatCode: '', rooms: [] }).success).toBe(false);
+  });
   it('rooms_NoneAtAll_IsFine_TheHostGaveTheCountersOnly', () => {
     expect(baseStepSchema.safeParse({ ...base, rooms: [] }).success).toBe(true);
   });
