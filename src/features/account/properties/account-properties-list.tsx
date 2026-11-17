@@ -199,10 +199,10 @@ export function useAccountPropertiesList({
             ? { id: 'page', label: t('accountProperties.list.actions.page'), icon: Expand, href: propertyDetailPath(area, row.property.id), testId: 'account-property-page' }
             : null,
           { id: 'who', label: t('accountProperties.list.actions.who'), icon: Users, onSelect: () => onWho(row), testId: 'account-property-who' },
-          canWrite(row)
+          canWrite(row) && row.mode === 'Long'
             ? {
                 id: 'mode',
-                label: t(row.mode === 'Long' ? 'accountProperties.list.actions.toShort' : 'accountProperties.list.actions.toLong'),
+                label: t('accountProperties.list.actions.toShort'),
                 icon: ArrowRightLeft,
                 href: propertyModePath(area, row.property.id, 'account'),
                 testId: 'account-property-mode',
