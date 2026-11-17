@@ -16,6 +16,8 @@ const api = vi.hoisted(() => ({
   listPolicies: vi.fn(),
   listMandates: vi.fn(),
   createMandate: vi.fn(),
+  createMandateWithDocument: vi.fn(),
+  readMandateDocument: vi.fn(),
   getAddress: vi.fn(),
   saveAddress: vi.fn(),
 }));
@@ -93,6 +95,61 @@ beforeEach(async () => {
 afterEach(() => cleanup());
 
 describe('the mandate and the billing address of an owner (E13/F02/US01/T01)', () => {
+  it('reads the optional signed PDF first, requires review and saves the file only on confirmation', async () => {
+    api.listFiscalProfiles.mockResolvedValue([profile({ masked: false, settlementCurrency: 'CHF' })]);
+    api.readMandateDocument.mockResolvedValue({ validFrom: null, commissionPercent: 17.5, commissionBase: null, commissionIncludesVat: true, cleaningFlatRate: 42, linenFlatRate: null, passthroughPaymentFees: null, currency: 'CHF' });
+    api.createMandateWithDocument.mockResolvedValue(mandate({ documentUploaded: true, hasDocument: true }));
+    renderPage();
+    fireEvent.click(await screen.findByTestId('mandate-new-version'));
+    const dialog = await screen.findByTestId('mandate-dialog');
+    expect(within(dialog).queryByTestId('mandate-percent')).toBeNull();
+    const file = new File(['%PDF-1.7 signed agreement'], 'mandato.pdf', { type: 'application/pdf' });
+    fireEvent.change(within(dialog).getByTestId('mandate-upload-input'), { target: { files: [file] } });
+    fireEvent.click(within(dialog).getByTestId('mandate-dialog-submit'));
+    await waitFor(() => expect(api.readMandateDocument).toHaveBeenCalledWith(OWNER_ID, file, expect.any(AbortSignal)));
+    expect(await within(dialog).findByTestId('mandate-percent')).toHaveValue('17,50');
+    expect(api.createMandateWithDocument).not.toHaveBeenCalled();
+    fireEvent.change(within(dialog).getByTestId('mandate-percent'), { target: { value: '18' } });
+    fireEvent.click(within(dialog).getByTestId('mandate-dialog-submit'));
+    expect(within(dialog).getByTestId('mandate-cleaning')).toHaveValue('42,00');
+    fireEvent.click(within(dialog).getByTestId('mandate-dialog-submit'));
+    expect(within(dialog).getByTestId('mandate-review')).toHaveTextContent('mandato.pdf');
+    expect(api.createMandateWithDocument).not.toHaveBeenCalled();
+    fireEvent.click(within(dialog).getByTestId('mandate-dialog-submit'));
+    await waitFor(() => expect(api.createMandateWithDocument).toHaveBeenCalledWith(OWNER_ID, expect.objectContaining({ commissionPercent: 18, cleaningFlatRate: 42 }), file));
+    expect(api.createMandate).not.toHaveBeenCalled();
+  });
+
+  it('allows manual entry and retains the PDF when document reading fails', async () => {
+    api.listFiscalProfiles.mockResolvedValue([profile({ masked: false, settlementCurrency: 'CHF' })]);
+    api.readMandateDocument.mockRejectedValue(new Error('unavailable'));
+    api.createMandateWithDocument.mockResolvedValue(mandate({ hasDocument: true }));
+    renderPage();
+    fireEvent.click(await screen.findByTestId('mandate-new-version'));
+    const dialog = await screen.findByTestId('mandate-dialog');
+    const file = new File(['%PDF-1.7 scanned'], 'scan.pdf', { type: 'application/pdf' });
+    fireEvent.change(within(dialog).getByTestId('mandate-upload-input'), { target: { files: [file] } });
+    fireEvent.click(within(dialog).getByTestId('mandate-dialog-submit'));
+    expect(await within(dialog).findByText(text('ownerMandate.wizard.readUnavailable'))).toBeInTheDocument();
+    expect(within(dialog).getByTestId('mandate-percent')).toHaveValue('20,00');
+    for (let step = 1; step <= 3; step++) fireEvent.click(within(dialog).getByTestId('mandate-dialog-submit'));
+    await waitFor(() => expect(api.createMandateWithDocument).toHaveBeenCalledWith(OWNER_ID, expect.anything(), file));
+  });
+
+  it('does not convert a contract fee from another currency into the owner currency', async () => {
+    api.listFiscalProfiles.mockResolvedValue([profile({ masked: false, settlementCurrency: 'CHF' })]);
+    api.readMandateDocument.mockResolvedValue({ validFrom: null, commissionPercent: null, commissionBase: null, commissionIncludesVat: null, cleaningFlatRate: 99, linenFlatRate: null, passthroughPaymentFees: null, currency: 'EUR' });
+    renderPage();
+    fireEvent.click(await screen.findByTestId('mandate-new-version'));
+    const dialog = await screen.findByTestId('mandate-dialog');
+    fireEvent.change(within(dialog).getByTestId('mandate-upload-input'), { target: { files: [new File(['%PDF-1.7'], 'eur.pdf')] } });
+    fireEvent.click(within(dialog).getByTestId('mandate-dialog-submit'));
+    await within(dialog).findByTestId('mandate-percent');
+    fireEvent.click(within(dialog).getByTestId('mandate-dialog-submit'));
+    expect(within(dialog).getByTestId('mandate-cleaning')).toHaveValue('80,00');
+    expect(api.createMandateWithDocument).not.toHaveBeenCalled();
+  });
+
   it('OwnerMandate_WithoutFinancialManage_IsReadOnly_AndNothingIsAskedOrWritten', async () => {
     // The server answers the profile masked to a caller that does not hold `agency.owner.financial.manage`: the page follows it.
     api.listFiscalProfiles.mockResolvedValue([profile({ masked: true, settlementCurrency: 'CHF' })]);
@@ -119,15 +176,20 @@ describe('the mandate and the billing address of an owner (E13/F02/US01/T01)', (
 
     fireEvent.click(await screen.findByTestId('mandate-new-version'));
     const dialog = await screen.findByTestId('mandate-dialog');
+    fireEvent.click(within(dialog).getByTestId('mandate-dialog-submit'));
     // The form starts from the version it replaces, and the flat fee says its currency: the one of the profile, never an assumed euro.
     expect(within(dialog).getByTestId('mandate-percent')).toHaveValue('20,00');
-    expect(within(dialog).getByTestId('mandate-cleaning')).toHaveValue('80,00');
-    expect(dialog).toHaveTextContent(`${text('ownerMandate.fields.cleaningFlatRate')} (CHF)`);
 
     fireEvent.change(within(dialog).getByTestId('mandate-percent'), { target: { value: '25,5' } });
     fireEvent.change(within(dialog).getByTestId('mandate-vat'), { target: { value: 'included' } });
     const submit = within(dialog).getByTestId('mandate-dialog-submit');
     await waitFor(() => expect(submit).toBeEnabled());
+    fireEvent.click(submit);
+    expect(within(dialog).getByTestId('mandate-cleaning')).toHaveValue('80,00');
+    expect(dialog).toHaveTextContent(`${text('ownerMandate.fields.cleaningFlatRate')} (CHF)`);
+    fireEvent.click(submit);
+    expect(within(dialog).getByTestId('mandate-review')).toBeInTheDocument();
+    expect(api.createMandate).not.toHaveBeenCalled();
     fireEvent.click(submit);
 
     await waitFor(() => expect(api.createMandate).toHaveBeenCalledTimes(1));
@@ -150,6 +212,7 @@ describe('the mandate and the billing address of an owner (E13/F02/US01/T01)', (
 
     fireEvent.click(await screen.findByTestId('mandate-new-version'));
     const dialog = await screen.findByTestId('mandate-dialog');
+    fireEvent.click(within(dialog).getByTestId('mandate-dialog-submit'));
     // The server refuses a version that does not start after the newest one (409): the form says so first and keeps its button off.
     fireEvent.change(within(dialog).getByTestId('mandate-valid-from'), { target: { value: '2024-01-01' } });
     expect(await within(dialog).findByText(/2024/)).toBeInTheDocument();

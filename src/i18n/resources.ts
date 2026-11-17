@@ -1,3 +1,4 @@
+import { ownerMandateWizardMessages } from './owner-mandate-messages';
 import onboardingAccessIt from './locales/it-onboarding-access.json';
 import onboardingAccessEn from './locales/en-onboarding-access.json';
 import it from './locales/it.json';
@@ -18,6 +19,7 @@ export const APP_RESOURCES = {
       auth0ManagementCredentialsRejected: userRemovalMessages.it.credentialsRejected,
       auth0DeleteNotAllowed: userRemovalMessages.it.deleteNotAllowed,
     } },
+    ownerMandate: { ...it.ownerMandate, wizard: ownerMandateWizardMessages.it },
   } },
   en: { translation: {
     ...onboardingAccessEn,
@@ -30,5 +32,6 @@ export const APP_RESOURCES = {
       auth0ManagementCredentialsRejected: userRemovalMessages.en.credentialsRejected,
       auth0DeleteNotAllowed: userRemovalMessages.en.deleteNotAllowed,
     } },
+    ownerMandate: { ...en.ownerMandate, wizard: ownerMandateWizardMessages.en },
   } },
 };
