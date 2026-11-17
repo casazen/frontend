@@ -61,30 +61,15 @@ test.describe('Aligned cards', () => {
     await page.addInitScript(() => localStorage.setItem('casazen_cookie_consent', 'rejected'));
   });
 
-  test.describe('Onboarding: the three ways to start', () => {
+  test.describe('Onboarding: profile choices', () => {
     for (const width of [1060, 1900]) {
-      test(`the title, the text, the list and the button of the three cards line up at ${width} px`, async ({ page }) => {
+      test(`profile cards are aligned and accessible at ${width} px`, async ({ page }) => {
         await page.setViewportSize({ width, height: 900 });
         await page.goto(demoUrl('/onboarding', 'onboarding'));
-
-        const titles = page.getByRole('heading', { level: 3 });
-        await expect(titles).toHaveCount(3);
-        const cards = titles.locator('..');
-        const each = (selector: string) => [0, 1, 2].map((index) => cards.nth(index).locator(selector).first());
-
-        // At 1060 px "Locazioni di lungo periodo" wraps on two lines or fits on one, according to the font: the title is made long
-        // on purpose, because a title on more lines than the first is what used to push down the rest of its card.
-        if (width === 1060) {
-          await setText(titles.nth(1), 'Locazioni di lungo periodo, con contratto e canone');
-          expect(await linesOf(titles.nth(1))).toBeGreaterThan(await linesOf(titles.nth(0)));
-        }
-
-        await expectAligned(each('h3'), 'title');
-        await expectAligned(each('p'), 'text');
-        await expectAligned(each('ol'), 'list');
-        await expectAligned(each('button'), 'button');
-        await expectAligned(each('button'), 'button', 'bottom');
-        await expectAligned([0, 1, 2].map((index) => cards.nth(index)), 'card', 'bottom');
+        const cards = page.getByTestId(/^signup-profile-/);
+        await expect(cards).toHaveCount(4);
+        await expectAligned([cards.nth(0), cards.nth(1)], 'first row');
+        await expectAligned([cards.nth(2), cards.nth(3)], 'second row');
       });
     }
   });

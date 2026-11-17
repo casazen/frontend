@@ -1,3 +1,4 @@
+import { completeCommercialSignup } from './commercial-signup';
 import { expect, test, type APIRequestContext, type Browser, type BrowserContext, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -91,14 +92,7 @@ export function leaseIdOf(page: Page): string {
  * `/onboarding` to set up an organization of its own). It ends on the list of the contracts, with the guide that asks for the first one.
  */
 export async function becomeLongTermLandlord(page: Page, propertyName: string): Promise<void> {
-  await expect(page.getByRole('heading', { name: /Da dove vuoi iniziare/i })).toBeVisible({ timeout: 30_000 });
-  await page.getByRole('button', { name: 'Scegli' }).nth(1).click(); // "Locazioni di lungo periodo"
-  const consents = page.getByTestId('onboarding-consents-step');
-  await expect(consents).toBeVisible({ timeout: 20_000 });
-  for (const checkbox of await consents.getByRole('checkbox').all()) {
-    if ((await checkbox.getAttribute('id')) !== 'marketing') await checkbox.click();
-  }
-  await page.getByTestId('onboarding-consents-continue').click();
+  await completeCommercialSignup(page, 'long-rent');
 
   await expect(page).toHaveURL(/\/app\/long-rent\/properties\/new\?first=1/, { timeout: 30_000 });
   await expect(page.getByTestId('quick-property-form')).toBeVisible();

@@ -1,6 +1,6 @@
 import { test, expect } from './test';
 import { demoUrl } from './helpers/demo-profile';
-import { completeOnboardingConsents } from './helpers/onboarding';
+import { completeOnboardingFromRentalChoice } from './helpers/onboarding';
 import { mockPropertiesApi } from './helpers/properties-api-mock';
 import {
   mockAdminUpdateOrgPlan,
@@ -26,14 +26,11 @@ test.describe('Plan management (#202 extension)', () => {
     await mockPlansCatalog(page);
   });
 
-  // The backend starts every org on Starter (a paid plan comes from Stripe), so the wizard never asks for a plan.
-  test('onboarding wizard does not ask for a plan and opens the first property', async ({ page }) => {
+  // The signup selects a plan and requires confirmation before entering the workspace.
+  test('onboarding completes payment and opens the first property', async ({ page }) => {
     await page.goto(demoUrl(ONBOARDING_URL, 'onboarding'));
 
-    await page.getByRole('button', { name: 'Scegli' }).first().click();
-    await completeOnboardingConsents(page);
-
-    await expect(page.getByTestId('plan-selection-grid')).toHaveCount(0);
+    await completeOnboardingFromRentalChoice(page, 0);
     await expect(page).toHaveURL(/\/app\/short-rent\/properties\/create\?first=1/);
   });
 

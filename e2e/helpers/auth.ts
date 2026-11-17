@@ -4,7 +4,7 @@ import { requireE2eCredentials } from './env';
 /** True once Auth0 has written a token, or the signed-in app (area picker, shell, onboarding) is on screen. */
 function sessionIsReady(): boolean {
   if (document.querySelector('[data-testid="app-ready"], [data-testid="onboarding-consents-step"]')) return true;
-  if (/Da dove vuoi iniziare/i.test(document.body?.innerText ?? '')) return true;
+  if (/Da dove vuoi iniziare|Come vuoi usare CasaZen/i.test(document.body?.innerText ?? '')) return true;
   for (const store of [localStorage, sessionStorage]) {
     for (const key of Object.keys(store)) {
       if ((store.getItem(key) ?? '').includes('access_token')) return true;
@@ -299,7 +299,7 @@ export async function readAuth0Roles(page: Page): Promise<string[]> {
 export async function waitForAppReady(page: Page): Promise<void> {
   await page
     .getByTestId('app-ready')
-    .or(page.getByRole('heading', { name: /Da dove vuoi iniziare/i }))
+    .or(page.getByRole('heading', { name: /Da dove vuoi iniziare|Come vuoi usare CasaZen/i }))
     .or(page.getByTestId('onboarding-consents-step'))
     .first()
     .waitFor({ state: 'visible', timeout: 90_000 });

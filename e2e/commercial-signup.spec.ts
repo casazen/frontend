@@ -13,7 +13,6 @@ test('four profiles, Starter lock and per-room agency summary on desktop and mob
   await page.goto(demoUrl('/onboarding', 'onboarding'));
   await expect(page.getByTestId('commercial-signup')).toBeVisible();
   await expect(page.getByTestId(/^signup-profile-/)).toHaveCount(4);
-  await page.screenshot({ path: '/workspace/work/signup-desktop.png', fullPage: true });
   await page.getByTestId('signup-profile-owner').click();
   await expect(page.getByRole('checkbox').first()).toBeDisabled();
   await page.getByRole('button', { name: /Pro/ }).click();
@@ -25,12 +24,10 @@ test('four profiles, Starter lock and per-room agency summary on desktop and mob
   await page.getByRole('checkbox').first().check();
   await expect(page.getByText('3 camere fatturate')).toBeVisible();
   await expect(page.getByText(/45,00/)).toBeVisible();
-  await page.screenshot({ path: '/workspace/work/signup-agency.png', fullPage: true });
   await page.getByRole('button', { name: 'Vai al riepilogo' }).click();
   await expect(page.getByRole('heading', { name: 'La tua configurazione' })).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.locator('body')).toHaveJSProperty('scrollWidth', 390);
-  await page.screenshot({ path: '/workspace/work/signup-mobile.png', fullPage: true });
 });
 
 test('checkout request carries the chosen rooms and modules; a success URL alone never grants access', async ({ page }) => {
@@ -63,7 +60,7 @@ test('checkout request carries the chosen rooms and modules; a success URL alone
   await page.locator('#signup-billing-country').selectOption('IT');
   await page.getByRole('button', { name: 'Vai al pagamento sicuro' }).click();
   await expect(page).toHaveURL(/checkout.stripe.com/);
-  await page.goto(demoUrl('/onboarding?checkout=success', 'onboarding'));
+  await page.goto(demoUrl('/onboarding?checkout=success', 'onboarding'), { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: 'Stiamo verificando il pagamento.' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Entra e inizia la configurazione' })).toHaveCount(0);
 });

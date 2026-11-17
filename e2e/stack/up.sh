@@ -61,7 +61,7 @@ if [ -n "${STRIPE_TEST_SECRET_KEY:-}" ]; then
   STRIPE_ARGS=(
     "Stripe__SecretKey=$STRIPE_TEST_SECRET_KEY"
     "Stripe__PublishableKey=${STRIPE_TEST_PUBLISHABLE_KEY:-}"
-    "Stripe__WebhookSecret=${STRIPE_TEST_WEBHOOK_SECRET:-}"
+    "Stripe__WebhookSecret=${STRIPE_TEST_WEBHOOK_SECRET:-whsec_e2e_commercial_signup_secret}"
     "Stripe__ConnectWebhookSecret=${STRIPE_TEST_CONNECT_WEBHOOK_SECRET:-}"
   )
 fi
@@ -82,6 +82,11 @@ NO_BUILD=""; [ "${E2E_BACKEND_NO_BUILD:-0}" = "1" ] && NO_BUILD="--no-build"
 BACKEND_CMD="${E2E_BACKEND_CMD:-dotnet run --project $BACKEND_DIR/Casazen.Web -c Release --no-launch-profile $NO_BUILD}"
 env ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS="http://localhost:$API_PORT" \
   "ConnectionStrings__DefaultConnection=$CONN" \
+  "Stripe__WebhookSecret=${STRIPE_TEST_WEBHOOK_SECRET:-whsec_e2e_commercial_signup_secret}" \
+  "Billing__Prices__Pro=price_e2e_pro" "Billing__Display__Pro__PriceMonthly=20" \
+  "Billing__Addons__direct-booking__PriceId=price_e2e_direct" "Billing__Addons__direct-booking__PriceMonthly=2" \
+  "Billing__Addons__compliance__PriceId=price_e2e_compliance" "Billing__Addons__compliance__PriceMonthly=2" \
+  "Billing__Addons__operations__PriceId=price_e2e_operations" "Billing__Addons__operations__PriceMonthly=2" \
   "Auth0__Domain=localhost:$IDP_PORT" "Auth0__Audience=https://casazen-api" \
   "Auth0__ManagementClientId=e2e-m2m" "Auth0__ManagementClientSecret=e2e-m2m-secret" \
   "App__PublicSiteBaseUrl=http://localhost:$FE_PORT" "App__ApiBaseUrl=http://localhost:$API_PORT" "Cors__AllowedOrigins=http://localhost:$FE_PORT" \

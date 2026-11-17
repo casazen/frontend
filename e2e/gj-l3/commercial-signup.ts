@@ -1,0 +1,44 @@
+import { createHash, createHmac, randomUUID } from 'node:crypto';
+import { expect, type Page } from '@playwright/test';
+import { accessToken, loadStack } from './stack';
+
+/** Drives signup in the UI, then simulates Stripe's signed subscription webhook in the disposable stack. */
+export async function completeCommercialSignup(page: Page, profile: 'owner' | 'long-rent'): Promise<void> {
+  await expect(page.getByTestId(`signup-profile-${profile}`)).toBeVisible({ timeout: 30_000 });
+  await page.getByTestId(`signup-profile-${profile}`).click();
+  await page.getByRole('button', { name: /^Pro\b/ }).click();
+  if (profile === 'owner') {
+    for (const name of ['Prenotazioni dirette', 'Adempimenti automatici', 'Interventi e fornitori']) {
+      await page.getByRole('checkbox', { name: new RegExp(name, 'i') }).check();
+    }
+  }
+  await page.getByRole('button', { name: 'Vai al riepilogo' }).click();
+  await page.getByRole('button', { name: 'Continua al pagamento' }).click();
+  const consents = page.getByTestId('onboarding-consents-step');
+  for (const checkbox of await consents.getByRole('checkbox').all()) await checkbox.check();
+  await page.getByTestId('onboarding-consents-continue').click();
+  await expect(page.locator('#signup-billing-country')).toBeVisible({ timeout: 30_000 });
+  const stack = loadStack();
+  const token = await accessToken(page);
+  const headers = { Authorization: `Bearer ${token}` };
+  const response = await page.request.get(`${stack.apiUrl}/users/me`, { headers });
+  expect(response.ok()).toBeTruthy();
+  const me = await response.json() as { orgId: string; commercialSignup: { profile: string; planTier: string; rooms: number; agencyName: string | null; addons: string[] } };
+  const s = me.commercialSignup;
+  const fingerprint = createHash('sha256').update(JSON.stringify({ Profile: s.profile, PlanTier: s.planTier, Rooms: s.rooms, AgencyName: s.agencyName ?? null, Addons: s.addons })).digest('hex').toUpperCase();
+  const prices: Record<string, string> = { 'direct-booking': 'price_e2e_direct', compliance: 'price_e2e_compliance', operations: 'price_e2e_operations' };
+  const item = (price: string) => ({ id: `si_${randomUUID()}`, object: 'subscription_item', quantity: 1, price: { id: price, object: 'price' } });
+  const body = JSON.stringify({ id: `evt_${randomUUID()}`, object: 'event', type: 'customer.subscription.created', data: { object: { id: `sub_${randomUUID()}`, object: 'subscription', status: 'active', customer: `cus_${randomUUID()}`, metadata: { orgId: me.orgId, commercialConfiguration: fingerprint }, items: { object: 'list', data: [item('price_e2e_pro'), ...s.addons.map(a => item(prices[a]))] } } } });
+  const timestamp = Math.floor(Date.now() / 1000);
+  const secret = process.env.STRIPE_TEST_WEBHOOK_SECRET || 'whsec_e2e_commercial_signup_secret';
+  const signature = createHmac('sha256', secret).update(`${timestamp}.${body}`).digest('hex');
+  const webhook = await page.request.post(`${new URL(stack.apiUrl).origin}/webhooks/stripe`, { data: body, headers: { 'content-type': 'application/json', 'stripe-signature': `t=${timestamp},v1=${signature}` } });
+  expect(webhook.status()).toBe(200);
+  await expect.poll(async () => {
+    const result = await page.request.get(`${stack.apiUrl}/users/me`, { headers });
+    return result.ok() && !(await result.json() as { commercialSetupRequired: boolean }).commercialSetupRequired;
+  }, { timeout: 60_000 }).toBe(true);
+  await page.goto('/onboarding?checkout=success');
+  const enter = page.getByRole('button', { name: 'Entra e inizia la configurazione' });
+  if (await enter.isVisible().catch(() => false)) await enter.click();
+}
