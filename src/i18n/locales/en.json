@@ -15386,6 +15386,7 @@
     },
     "bookingCard": {
       "balance": "Still to pay",
+      "details": "Stay details",
       "children_one": "including {{count}} child",
       "children_other": "including {{count}} children",
       "commission": "Channel commission",
@@ -15417,7 +15418,13 @@
       "vrbo": "Vrbo"
     },
     "channelStatus": {
+      "errorExplanation": "Recent messages may be missing. Check the portal for urgent requests while CasaZen retries synchronization.",
+      "errorTitle_one": "Message sync interrupted for {{count}} listing",
+      "errorTitle_other": "Message sync interrupted for {{count}} listings",
       "explanation": "Until it is active, the guests' messages for these listings do not arrive here and you cannot answer from CasaZen: to activate it you have to give the permission for the chat in your channel manager.",
+      "pendingExplanation": "Portal conversations will appear after the first sync.",
+      "pendingTitle_one": "{{count}} listing waiting for its first sync",
+      "pendingTitle_other": "{{count}} listings waiting for their first sync",
       "title_one": "For {{count}} listing the portal chat is not active yet",
       "title_other": "For {{count}} listings the portal chats are not active yet",
       "which": "Which listings"

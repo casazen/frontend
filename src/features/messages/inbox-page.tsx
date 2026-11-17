@@ -10,7 +10,7 @@ import { InboxPane } from './components/inbox-pane';
 /**
  * `/app/short-rent/messages`: every conversation with the guests in one list, the ones of the channels and the direct ones (NF-61).
  * It starts on «Da rispondere»; the filters (all, not read, channel, property, one booking) and the search are in the address, and
- * each row opens the conversation. From a wide screen the open conversation takes the place of the empty column on the right, with
+ * each row opens the conversation. On desktop the open conversation takes the place of the empty column on the right, with
  * the list beside it (`ThreadPage`); on a phone the list leads to the conversation.
  *
  * Opened for one booking (`?booking=<id>`, the way a booking leads here) that has no conversation yet, it says how the guest can be
@@ -30,17 +30,19 @@ export function InboxPage() {
 
   return (
     <AppShell>
-      <div className="space-y-6" data-testid="messages-inbox-page">
+      <div className="space-y-4" data-testid="messages-inbox-page">
         <PageHeader title={t('messages.inbox.title')} description={t('messages.inbox.description')} />
         <ChatAvailabilityBanner />
-        <div className="grid grid-cols-1 gap-8 2xl:grid-cols-[minmax(0,28rem)_minmax(0,1fr)] 2xl:items-start">
+        <div className="grid min-w-0 overflow-hidden rounded-2xl border bg-card lg:min-h-[34rem] lg:grid-cols-[minmax(18rem,22rem)_minmax(0,1fr)]">
           <InboxPane canWrite={canWrite} noConversation={(state) => (state.bookingId ? <ContactOptionsPanel bookingId={state.bookingId} canWrite={canWrite} /> : null)} />
           <div
-            className="hidden min-h-64 flex-col items-center justify-center gap-3 rounded-xl border border-dashed p-10 text-center 2xl:flex"
+            className="hidden flex-col items-center justify-center gap-3 border-l bg-muted/30 p-10 text-center lg:flex"
             data-testid="messages-no-selection"
           >
-            <MessageSquare className="size-10 text-muted-foreground" aria-hidden="true" />
-            <p className="text-lg font-semibold">{t('messages.inbox.noSelection.title')}</p>
+            <div className="grid size-14 place-items-center rounded-2xl bg-accent text-accent-foreground">
+              <MessageSquare className="size-6" aria-hidden="true" />
+            </div>
+            <h2 className="text-lg font-semibold">{t('messages.inbox.noSelection.title')}</h2>
             <p className="max-w-sm text-sm text-muted-foreground">{t('messages.inbox.noSelection.description')}</p>
           </div>
         </div>

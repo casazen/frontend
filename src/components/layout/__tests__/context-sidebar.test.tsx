@@ -108,12 +108,13 @@ describe('ContextSidebar (UI-04a)', () => {
     expect(screen.getByText('v1.0.0 · casazen.io')).toBeInTheDocument();
   });
 
-  it('ContextSidebar_ShortRent_ShowsEightEntriesInGroupsAndTheSettingsPinnedAtTheFoot', () => {
+  it('ContextSidebar_ShortRent_ShowsMessagesInTheMainMenuAndSettingsAtTheFoot', () => {
     arrange(['short-rent']);
     renderSidebar('short-rent');
 
     const nav = screen.getByRole('navigation', { name: 'Menu Affitti brevi' });
-    expect(within(nav).getAllByRole('link')).toHaveLength(8);
+    expect(within(nav).getAllByRole('link')).toHaveLength(9);
+    expect(within(nav).getByRole('link', { name: 'Messaggi' })).toHaveAttribute('href', '/app/short-rent/messages');
     // The adempimenti are in the main menu, not tucked in "Altro".
     expect(within(within(nav).getByRole('group', { name: 'Ogni giorno' })).getByRole('link', { name: /Adempimenti/ })).toBeInTheDocument();
     const groups = within(nav).getAllByRole('group');

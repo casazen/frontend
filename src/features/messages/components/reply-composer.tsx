@@ -1,4 +1,5 @@
 import { useId, useState, type KeyboardEvent } from 'react';
+import { Send } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
@@ -80,7 +81,7 @@ export function ReplyComposer({ threadKey, withChannelTemplates, value, onChange
         event.preventDefault();
         submit();
       }}
-      className="space-y-2"
+      className="space-y-3 rounded-xl border bg-background p-3 focus-within:ring-1 focus-within:ring-ring sm:p-4"
       data-testid="reply-composer"
     >
       <label htmlFor={fieldId} className="sr-only">
@@ -92,10 +93,10 @@ export function ReplyComposer({ threadKey, withChannelTemplates, value, onChange
         onChange={(event) => change(event.target.value)}
         onKeyDown={onKeyDown}
         maxLength={GUEST_MESSAGE_MAX_LENGTH}
-        rows={4}
+        rows={3}
         placeholder={t('messages.composer.placeholder')}
         aria-describedby={hintId}
-        className="resize-y"
+        className="min-h-20 resize-y"
       />
       <div id={hintId} className="space-y-1 text-xs text-muted-foreground">
         {blocked ? (
@@ -113,7 +114,7 @@ export function ReplyComposer({ threadKey, withChannelTemplates, value, onChange
         <TemplatePicker threadKey={threadKey} withChannelTemplates={withChannelTemplates} onInsert={insert} />
         <Select
           size="sm"
-          wrapperClassName="w-40"
+          wrapperClassName="w-32 max-w-full"
           aria-label={t('messages.composer.language')}
           value={guestLanguage}
           onChange={(event) => setGuestLanguage(event.target.value)}
@@ -129,6 +130,7 @@ export function ReplyComposer({ threadKey, withChannelTemplates, value, onChange
           <TranslateButton threadKey={threadKey} source={{ text: trimmed }} targetLanguage={guestLanguage} label={t('messages.composer.translate')} onUse={change} />
         ) : null}
         <Button type="submit" className="ml-auto" disabled={!canSend} data-testid="reply-send">
+          <Send className="size-4" aria-hidden="true" />
           {t('messages.composer.send')}
         </Button>
       </div>

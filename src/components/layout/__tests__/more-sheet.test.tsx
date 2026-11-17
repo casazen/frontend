@@ -112,9 +112,8 @@ describe('MoreSheet (UI-04b)', () => {
         'nav-group-management',
         'nav-group-footer',
       ]);
-      // The adempimenti are first on the phone too, with their counter: what the law dates is not tucked in "Altro".
       expect(groups[0]).toHaveAccessibleName('Ogni giorno');
-      expect(tiles(groups[0])).toEqual(['Adempimenti']);
+      expect(tiles(groups[0])).toEqual(['Messaggi', 'Adempimenti']);
       expect(groups[1]).toHaveAccessibleName('La tua offerta');
       expect(tiles(groups[1])).toEqual(['Sito di prenotazione', 'Marketplace']);
       expect(groups[2]).toHaveAccessibleName('Gestione');

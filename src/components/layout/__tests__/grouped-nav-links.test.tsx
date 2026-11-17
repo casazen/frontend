@@ -61,7 +61,7 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
       expect(screen.getByRole('group', { name: 'Ogni giorno' })).toHaveAttribute('aria-labelledby');
       expect(screen.getByRole('group', { name: 'Ogni giorno' })).not.toHaveAttribute('aria-label');
       const everyday = screen.getByRole('group', { name: 'Ogni giorno' });
-      expect(within(everyday).getAllByRole('link').map((item) => item.textContent)).toEqual(['Cruscotto', 'Calendario', 'Prenotazioni', 'Adempimenti']);
+      expect(within(everyday).getAllByRole('link').map((item) => item.textContent)).toEqual(['Cruscotto', 'Calendario', 'Prenotazioni', 'Messaggi', 'Adempimenti']);
       const offer = screen.getByRole('group', { name: 'La tua offerta' });
       expect(within(offer).getAllByRole('link').map((item) => item.textContent)).toEqual(['Immobili', 'Sito di prenotazione', 'Marketplace']);
       const management = screen.getByRole('group', { name: 'Gestione' });
@@ -156,6 +156,16 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
   });
 
   describe('counters', () => {
+    it('shows Messages and its unread count in the sidebar and mobile menu', () => {
+      for (const variant of ['sidebar', 'sheet'] as const) {
+        const view = renderNav('/app/short-rent/messages/ota%3A123', { variant, counts: { messages: 3 } });
+        const messages = link(/Messaggi/);
+        expect(messages).toHaveAccessibleName('Messaggi, 3 messaggi da leggere');
+        expect(messages).toHaveAttribute('aria-current', 'page');
+        expect(messages).toHaveAttribute('href', '/app/short-rent/messages');
+        view.unmount();
+      }
+    });
     it('GroupedNavLinks_EntryWithRequests_ShowsTheCountAndSaysItAloud', () => {
       renderNav('/app/short-rent', { counts: { bookingRequests: 2 } });
 
@@ -267,7 +277,7 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
     it('GroupedNavLinks_PagesOfASection_AreNotEntriesOfTheMenu', () => {
       renderNav('/app/short-rent');
 
-      for (const name of ['Messaggi', 'Ospiti', 'CRM Ospiti', 'Recensioni', 'Ricavi', 'Report', 'Regime fiscale', 'Stripe Connect', 'Canali e calendari', 'Fornitori fidati', 'Dominio pubblico', 'Verifiche', 'Da approvare', 'Profilo']) {
+      for (const name of ['Ospiti', 'CRM Ospiti', 'Recensioni', 'Ricavi', 'Report', 'Regime fiscale', 'Stripe Connect', 'Canali e calendari', 'Fornitori fidati', 'Dominio pubblico', 'Verifiche', 'Da approvare', 'Profilo']) {
         expect(screen.queryByRole('link', { name }), name).not.toBeInTheDocument();
       }
     });
@@ -291,7 +301,6 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
       ['/app/short-rent/activities', 'Cruscotto'],
       ['/app/short-rent/approval-queue', 'Cruscotto'],
       ['/app/short-rent/verifications', 'Cruscotto'],
-      ['/app/short-rent/messages', 'Prenotazioni'],
       ['/app/short-rent/guests', 'Prenotazioni'],
       ['/app/short-rent/reviews', 'Prenotazioni'],
       ['/app/short-rent/payments/revenue', 'Incassi'],

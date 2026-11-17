@@ -6,7 +6,7 @@ import { pinE2eLocale } from './helpers/locale';
 import { mockSupplierConsoleApi } from './helpers/supplier-console-mock';
 
 /**
- * UI-04a: navigation by area. The sidebar shows at most seven main entries in named groups and "Altro"; the area switcher
+ * UI-04a: navigation by area. The sidebar shows the main entries in named groups and "Altro"; the area switcher
  * replaces the icon tabs; counters, the collapsed sidebar and the pages that hang from a menu entry.
  * The specs that read the roles and names of the old menus (navigation, supplier-layout, context-workspace-switch,
  * long-term-layer) are updated next to them.
@@ -19,24 +19,23 @@ test.describe('Area navigation (UI-04a)', () => {
       await pinE2eLocale(page, 'it');
     });
 
-    test('the main menu has eight entries in three groups, the adempimenti among them, no "Altro", and the settings at the foot', async ({ page }) => {
+    test('the main menu includes Messages in its three groups, with settings at the foot', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
       const menu = page.getByRole('navigation', { name: 'Menu Affitti brevi' });
       await expect(menu.getByRole('group')).toHaveCount(3);
-      await expect(menu.getByRole('link')).toHaveCount(8);
-      for (const name of ['Cruscotto', 'Calendario', 'Prenotazioni', 'Adempimenti', 'Immobili', 'Sito di prenotazione', 'Marketplace', 'Incassi']) {
+      await expect(menu.getByRole('link')).toHaveCount(9);
+      for (const name of ['Cruscotto', 'Calendario', 'Prenotazioni', 'Messaggi', 'Adempimenti', 'Immobili', 'Sito di prenotazione', 'Marketplace', 'Incassi']) {
         await expect(menu.getByRole('link', { name })).toBeVisible();
       }
 
-      // It held sixteen entries, then eight. The queues are tabs of the Cruscotto, the settings are pinned at the foot of the sidebar,
+      // The queues are tabs of the Cruscotto, the settings are pinned at the foot of the sidebar,
       // «Inizia con CasaZen» is the welcome of the first access and the guide of the header, Profilo is in the menu of the user.
       await expect(menu.getByRole('button', { name: 'Altro' })).toHaveCount(0);
       const foot = page.getByRole('navigation', { name: 'Impostazioni e inviti' });
       await expect(foot.getByRole('link')).toHaveText(['Impostazioni', 'Consiglia CasaZen']);
       // The pages that hang from an entry, the profile, plan and billing are in no menu.
       const inNoMenu = [
-        'Messaggi',
         'Ospiti',
         'CRM Ospiti',
         'Recensioni',
@@ -223,12 +222,12 @@ test.describe('Area navigation (UI-04a)', () => {
       await expect(tabs.getByRole('link', { name: 'Documenti sito' })).toHaveAttribute('aria-current', 'page');
     });
 
-    test('the messages, the guests and the reviews are tabs of Prenotazioni (the CRM is behind its flag), the payments figures tabs of Incassi', async ({ page }) => {
+    test('the guests and reviews are tabs of Prenotazioni (the CRM is behind its flag), the payments figures tabs of Incassi', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent/bookings', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
       const menu = page.getByRole('navigation', { name: 'Menu Affitti brevi' });
       const bookingTabs = page.getByRole('navigation', { name: 'Sezioni di Prenotazioni' });
-      await expect(bookingTabs.getByRole('link')).toHaveText(['Prenotazioni', 'Messaggi', 'Ospiti', 'Recensioni']);
+      await expect(bookingTabs.getByRole('link')).toHaveText(['Prenotazioni', 'Ospiti', 'Recensioni']);
       await bookingTabs.getByRole('link', { name: 'Recensioni' }).click();
       await expect(page).toHaveURL(/\/app\/short-rent\/reviews$/);
       await expect(menu.getByRole('link', { name: 'Prenotazioni' })).toHaveAttribute('aria-current', 'page');
