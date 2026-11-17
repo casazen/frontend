@@ -86,7 +86,7 @@ describe('NavSectionTabs (UI-04a)', () => {
     await i18n.changeLanguage('en');
     renderAt('/app/short-rent/guests');
 
-    expect(labelsOf('Sections of Bookings')).toEqual(['Bookings', 'Messages', 'Guests', 'Reviews']);
+    expect(labelsOf('Sections of Bookings')).toEqual(['Bookings', 'Guests', 'Reviews']);
   });
 
   it('NavSectionTabs_UserWhoMayNotOpenAPage_DoesNotSeeItsTab', () => {
