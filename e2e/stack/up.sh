@@ -83,6 +83,7 @@ BACKEND_CMD="${E2E_BACKEND_CMD:-dotnet run --project $BACKEND_DIR/Casazen.Web -c
 env ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS="http://localhost:$API_PORT" \
   "ConnectionStrings__DefaultConnection=$CONN" \
   "Stripe__WebhookSecret=${STRIPE_TEST_WEBHOOK_SECRET:-whsec_e2e_commercial_signup_secret}" \
+  "Billing__Prices__Starter=price_e2e_starter" "Billing__Display__Starter__PriceMonthly=10" \
   "Billing__Prices__Pro=price_e2e_pro" "Billing__Display__Pro__PriceMonthly=20" \
   "Billing__Addons__direct-booking__PriceId=price_e2e_direct" "Billing__Addons__direct-booking__PriceMonthly=2" \
   "Billing__Addons__compliance__PriceId=price_e2e_compliance" "Billing__Addons__compliance__PriceMonthly=2" \

@@ -38,7 +38,8 @@ import { useAuth } from '@/hooks/use-auth';
 import { UsersApi } from '@/api/users.api';
 import { toast } from 'sonner';
 // Compatibility editor and consent-renewal coverage. The new signup is covered in commercial-signup-wizard.test.tsx and the browser flow.
-import { ExistingOnboardingPage as OnboardingPage } from '../onboarding-page';
+vi.mock('../commercial-signup-wizard', () => ({ CommercialSignupWizard: () => <p data-testid="commercial-wizard">payment</p> }));
+import { ExistingOnboardingPage as OnboardingPage, OnboardingPage as RoutedOnboardingPage } from '../onboarding-page';
 import { CONSENT_STORAGE_KEY } from '@/lib/cookie-consent';
 import { captureSignupAttribution, readPendingSignupAttribution } from '@/lib/signup-attribution';
 
@@ -131,6 +132,14 @@ describe('OnboardingPage (PL-01)', () => {
     vi.unstubAllGlobals();
     vi.clearAllMocks();
     window.localStorage.clear();
+  });
+
+  it.each(['Admin', 'Supplier'])('requires payment for a new host organization even for an existing %s', async (role) => {
+    mockAuth([role]);
+    vi.mocked(UsersApi.getMe).mockResolvedValue(profile({ orgId: 'org-1', commercialSetupRequired: true }));
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(<QueryClientProvider client={client}><MemoryRouter><RoutedOnboardingPage /></MemoryRouter></QueryClientProvider>);
+    expect(await screen.findByTestId('commercial-wizard')).toBeVisible();
   });
 
   it('OnboardingPage_HostRolesWithoutOrg_PostsWithConsentsAndReturnsToOrigin', async () => {

@@ -58,8 +58,8 @@ export function OnboardingPage() {
   const { data: profile, isLoading, error } = useMe();
   const [params] = useSearchParams();
   const roles = useUserRoles();
-  const legacy = params.get('mode') === 'edit' || isExemptFromHostOnboarding(roles) || isLinkedSupplier(profile) ||
-    (!!profile?.orgId && profile.commercialSetupRequired !== true);
+  const legacy = params.get('mode') === 'edit' || (profile?.commercialSetupRequired !== true &&
+    (isExemptFromHostOnboarding(roles) || isLinkedSupplier(profile) || !!profile?.orgId));
   if (isLoading) return <LoadingScreen />;
   if (legacy || (!profile && error && isProfileLoadFailure(error))) return <ExistingOnboardingPage />;
   return <CommercialSignupWizard profile={profile} />;
