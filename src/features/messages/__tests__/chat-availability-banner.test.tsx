@@ -73,6 +73,7 @@ describe('InboxPage: the listings whose chat is not active yet (E23/F01/US02, NF
     const names = within(screen.getByTestId('chat-availability-listings')).getAllByTestId('chat-availability-listing').map((item) => item.textContent);
     expect(names).toEqual(['Casa Mare', 'Casa Monti']);
     expect(banner.textContent).not.toMatch(/octorate/i);
+    expect(await screen.findByTestId('chat-error')).toHaveTextContent('Casa Sole');
   });
 
   it('InboxPage_OneListingWaitsForTheChat_SaysItInTheSingular', async () => {
@@ -93,7 +94,6 @@ describe('InboxPage: the listings whose chat is not active yet (E23/F01/US02, NF
 
   it.each([
     ['every chat works', [listing('Casa Lago', 'available', 1)]],
-    ['a chat failed for another reason', [listing('Casa Sole', 'error', 1)]],
     ['no listing is confirmed yet', []],
   ])('InboxPage_%s_ShowsNoBanner', async (_case, items) => {
     vi.mocked(messageHubApi.getChannelStatus).mockResolvedValue({ items });
@@ -102,6 +102,17 @@ describe('InboxPage: the listings whose chat is not active yet (E23/F01/US02, NF
     await screen.findByTestId('messages-inbox');
     await statusDrawn();
     expect(screen.queryByTestId('chat-availability-banner')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('chat-error')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('chat-pending_sync')).not.toBeInTheDocument();
+  });
+
+  it('explains which listings are awaiting a first sync', async () => {
+    vi.mocked(messageHubApi.getChannelStatus).mockResolvedValue({ items: [listing('Casa Mare', 'pending_sync', 1)] });
+    renderInbox();
+
+    const notice = await screen.findByTestId('chat-pending_sync');
+    expect(notice).toHaveTextContent('1 annuncio in attesa della prima sincronizzazione');
+    expect(notice).toHaveTextContent('Casa Mare');
   });
 
   it('InboxPage_StateOfTheChatsCannotBeRead_ShowsNoBannerAndTheInboxStillWorks', async () => {

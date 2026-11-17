@@ -74,8 +74,6 @@ interface InboxFiltersProps {
   onChange: (changes: Partial<InboxState>) => void;
   /** The properties of the host; the filter by property is offered when there are two or more. */
   properties: readonly InboxPropertyOption[];
-  /** The column beside an open conversation: the fields go one under the other. */
-  compact?: boolean;
 }
 
 /**
@@ -83,7 +81,7 @@ interface InboxFiltersProps {
  * starts), the channel, the property when the host has more than one, the search, and the one booking the page may have been opened for.
  * Everything is in the address (`onChange` writes it), so the list is the same after a refresh and beside an open conversation.
  */
-export function InboxFilters({ state, onChange, properties, compact = false }: InboxFiltersProps) {
+export function InboxFilters({ state, onChange, properties }: InboxFiltersProps) {
   const { t } = useTranslation();
   const commitSearch = useCallback((q: string) => onChange({ q }), [onChange]);
   // What the button «Azzera i filtri» takes away: the booking has its own way out, below.
@@ -96,12 +94,10 @@ export function InboxFilters({ state, onChange, properties, compact = false }: I
 
   return (
     <div className="space-y-3" role="search" aria-label={t('messages.search.label')} data-testid="messages-filters">
-      <Segmented label={t('messages.filter.label')} options={views} value={state.view} onValueChange={(view) => onChange({ view })} className="w-full sm:w-auto" />
+      <InboxSearch value={state.q} onCommit={commitSearch} />
+      <Segmented label={t('messages.filter.label')} options={views} value={state.view} onValueChange={(view) => onChange({ view })} className="w-full" />
 
-      <div className={cn('grid grid-cols-1 gap-3', !compact && 'sm:grid-cols-2')}>
-        <div className={cn(!compact && properties.length < 2 && 'sm:col-span-2')}>
-          <InboxSearch value={state.q} onCommit={commitSearch} />
-        </div>
+      <div className={cn('grid gap-2', properties.length >= 2 && 'min-[26rem]:grid-cols-2')}>
         <Select
           size="sm"
           aria-label={t('messages.filter.channel')}

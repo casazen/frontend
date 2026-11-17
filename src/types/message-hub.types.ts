@@ -229,10 +229,10 @@ export interface MessageContactOptions {
 }
 
 /**
- * Whether the chat of a listing works (E23/F01/US01/T03): `available`, `waiting_permission` (the chat is not in the license of the listing yet, so its
- * messages cannot be read and the host cannot answer in it) or `error` (the last pass of the copy failed for another reason).
+ * Synchronization state of a listing's chat. `pending_sync` means no pass has succeeded or failed yet.
+ * `waiting_permission` means chat is not licensed, and `error` is any other reported synchronization failure.
  */
-export type MessageChannelStatusCode = 'available' | 'waiting_permission' | 'error';
+export type MessageChannelStatusCode = 'pending_sync' | 'available' | 'waiting_permission' | 'error';
 
 /** The chat of one listing with a confirmed link to a property (`GET /api/messages/channel-status`). Never a name of a guest or an address. */
 export interface MessageChannelStatusItem {

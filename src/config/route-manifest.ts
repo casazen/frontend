@@ -46,9 +46,9 @@ export type NavCountKey = 'bookingRequests' | 'supplierRequests' | 'compliance' 
 
 /**
  * The main menu of an area never has more primary entries than this (UI-04a). Nine since the menus lost "Altro" as a place for daily pages:
- * Affitti brevi has eight, and the CRM of the guests is the ninth while its flag is on; what is set once is at the foot of the sidebar.
+ * Affitti brevi has nine, including the message inbox, and adds CRM when its flag is on.
  */
-export const MAX_PRIMARY_NAV_ENTRIES = 9;
+export const MAX_PRIMARY_NAV_ENTRIES = 10;
 
 /** The bottom bar of the phone has at most this many destinations, "Altro" apart (UI-04a/UI-04b). */
 export const MAX_BOTTOM_NAV_ENTRIES = 4;
@@ -1590,16 +1590,14 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   },
   // Messages (E05/F02/US03, NF-61)
   {
-    // Messaggi: every conversation with the guests, the ones of the channels and the direct ones, "Da rispondere" first, with the number of the
-    // messages not read yet on its tab. The first tab of Prenotazioni after the bookings. The main menu has its eight entries (UI-04a), so
-    // the page hangs from the entry of the bookings like the guests and the reviews do. The server shows each user only the conversations
-    // its scope reaches (HostScope); reading asks `booking.read`, and answering asks `booking.write` inside the page.
+    // Direct and OTA conversations in the Short Rent menu. The unread count follows the caller's booking scope.
     path: '/app/short-rent/messages',
     context: 'short-rent',
     requiredPermissions: ['booking.read'],
     navKey: 'nav.messages',
-    navParent: '/app/short-rent/bookings',
-    navOrder: 1,
+    navGroup: 'everyday',
+    navPlacement: 'primary',
+    navOrder: 3.25,
     navCount: 'messages',
     icon: 'MessageSquare',
     component: async () => ({ default: (await import('@/features/messages/inbox-page')).InboxPage }),
@@ -1616,7 +1614,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   },
   // Guests
   {
-    // Ospiti: the second tab of Prenotazioni, after the messages.
+    // Ospiti is a tab of Prenotazioni.
     path: '/app/short-rent/guests',
     context: 'short-rent',
     requiredPermissions: ['booking.read'],

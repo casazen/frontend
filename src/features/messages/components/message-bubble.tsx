@@ -225,7 +225,8 @@ export function MessageBubble({ item, threadKey, hostLanguage, canWrite, resent,
       {hasText ? (
         <div
           className={cn(
-            'max-w-[85%] whitespace-pre-wrap rounded-2xl border px-3 py-2 text-sm [overflow-wrap:anywhere]',
+            'max-w-[85%] whitespace-pre-wrap rounded-2xl border px-3.5 py-2.5 text-sm leading-relaxed [overflow-wrap:anywhere]',
+            item.mine ? 'rounded-tr-sm' : 'rounded-tl-sm',
             automatic ? 'bg-muted text-foreground' : item.mine ? 'border-transparent bg-primary text-primary-foreground' : 'bg-card',
             sending && 'opacity-70',
           )}

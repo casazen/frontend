@@ -15386,6 +15386,7 @@
     },
     "bookingCard": {
       "balance": "Ancora da pagare",
+      "details": "Dettagli soggiorno",
       "children_one": "di cui {{count}} bambino",
       "children_other": "di cui {{count}} bambini",
       "commission": "Commissione del canale",
@@ -15417,7 +15418,13 @@
       "vrbo": "Vrbo"
     },
     "channelStatus": {
+      "errorExplanation": "I messaggi recenti potrebbero mancare. Per le richieste urgenti controlla il portale mentre CasaZen riprova la sincronizzazione.",
+      "errorTitle_one": "Sincronizzazione dei messaggi interrotta per {{count}} annuncio",
+      "errorTitle_other": "Sincronizzazione dei messaggi interrotta per {{count}} annunci",
       "explanation": "Finché non è attiva, qui non arrivano i messaggi degli ospiti di questi annunci e non puoi rispondere da CasaZen: per attivarla devi dare il permesso alla chat nel tuo channel manager.",
+      "pendingExplanation": "Le conversazioni dei portali compariranno dopo la prima sincronizzazione.",
+      "pendingTitle_one": "{{count}} annuncio in attesa della prima sincronizzazione",
+      "pendingTitle_other": "{{count}} annunci in attesa della prima sincronizzazione",
       "title_one": "Per {{count}} annuncio la chat del portale non è ancora attiva",
       "title_other": "Per {{count}} annunci la chat dei portali non è ancora attiva",
       "which": "Quali annunci"
