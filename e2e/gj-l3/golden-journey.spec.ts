@@ -21,7 +21,7 @@ import { guestBooksStay, guestCompletesCheckIn, guestConfirmsEmail, type Payment
  * Golden Journey L3 from the UI (FN-03, audit A6-04, A6-23, A6-24, A3-23).
  *
  * Four DISTINCT browser contexts against an ephemeral stack (real backend, throw-away PostgreSQL, mock IdP and mail,
- * see e2e/stack/): platform admin (invites the supplier), host, supplier (phone viewport: F1-F2) and anonymous guest.
+ * see e2e/stack/): host, supplier (phone viewport: F1-F2) and anonymous guest.
  * Every action goes through the UI; the API is only an oracle for assertions (read-only, on behalf of the actor).
  * Dates are relative to today in Europe/Rome; accounts, slugs and emails are unique per run (no reuse, no cleanup).
  *
@@ -75,7 +75,7 @@ async function runGoldenJourney(browser: Browser, stack: StackEnv, request: impo
   const checkOut = romeDay(NIGHTS);
   const errors5xx: string[] = [];
   const { actors, contexts } = await newActors(browser, errors5xx);
-  const { admin, host, supplier, guest: guestPage } = actors;
+  const { host, supplier, guest: guestPage } = actors;
   let hostApi!: Oracle;
   let supplierApi!: Oracle;
   const ids: Record<string, string> = {};
