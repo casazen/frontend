@@ -140,6 +140,7 @@ describe('route-manifest main menu (UI-04a)', () => {
       '/app/admin',
       '/app/admin/users',
       '/app/admin/suppliers',
+      '/app/admin/suppliers/invite',
       '/app/admin/seo',
       '/app/admin/cin',
       '/app/admin/jobs',
@@ -149,6 +150,7 @@ describe('route-manifest main menu (UI-04a)', () => {
       '/app/admin',
       '/app/admin/users',
       '/app/admin/suppliers',
+      '/app/admin/suppliers/invite',
       '/app/admin/onboarding-assist',
       '/app/admin/activities',
       '/app/admin/seo',
@@ -431,7 +433,6 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
       '/app/account/wire-transfers',
       '/app/account/channel-commissions',
     ],
-    '/app/admin/suppliers': ['/app/admin/suppliers/invite', '/app/admin/invite-qr'],
     '/app/admin/seo': ['/app/admin/marketing'],
     '/app/admin/jobs': ['/app/admin/ai', '/app/admin/demo'],
     // The CRM is no tab of Prenotazioni any more: it is an entry of "Altro" behind its flag (below), and its pages hang from it as tabs:

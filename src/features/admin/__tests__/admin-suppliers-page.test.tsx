@@ -299,7 +299,7 @@ describe('AdminSuppliersPage (SU-12, A4-29)', () => {
     renderPage();
     await screen.findByTestId('admin-supplier-s-active');
 
-    expect(screen.getByTestId('admin-suppliers-invite')).toHaveAttribute('href', '/app/admin/suppliers/invite');
+    expect(screen.queryByTestId('admin-suppliers-invite')).not.toBeInTheDocument();
   });
 
   it('AdminSuppliersPage_English_ShowsTranslatedLabelsWithoutItalianLeftovers', async () => {
@@ -310,6 +310,6 @@ describe('AdminSuppliersPage (SU-12, A4-29)', () => {
     expect(within(suspended).getByTestId('admin-supplier-status-s-suspended')).toHaveTextContent('Suspended');
     expect(within(suspended).getByTestId('admin-supplier-reactivate-s-suspended')).toHaveTextContent('Reactivate');
     expect(screen.getByRole('heading', { name: 'Suppliers' })).toBeInTheDocument();
-    expect(screen.getByTestId('admin-suppliers-invite')).toHaveTextContent('Invite supplier');
+    expect(screen.queryByTestId('admin-suppliers-invite')).not.toBeInTheDocument();
   });
 });

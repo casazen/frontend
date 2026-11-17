@@ -1,3 +1,4 @@
+import { useMe } from '@/queries/use-users';
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -46,6 +47,7 @@ function SeatLimitWay() {
 
 function InviteWizard() {
   const { t, i18n } = useTranslation();
+  const { data: profile } = useMe();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const create = useCreateOrgInvitation();
@@ -80,6 +82,7 @@ function InviteWizard() {
     () => inviteDefaults(searchParams, accountLanguage ?? interfaceLanguage(i18n.language), properties),
     [searchParams, accountLanguage, i18n.language, properties],
   );
+  if (profile?.org?.isAgency === false) return <div role="alert" className="p-6">{t('admin.staffInvite.privateTeam')}</div>;
   if (waitingForProperties || waitingForSettings) return <LoadingScreen message={t('team.invite.loading')} className="h-auto flex-1" />;
 
   const steps: WizardStep<InviteValues>[] = [

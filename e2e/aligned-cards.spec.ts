@@ -441,25 +441,6 @@ test.describe('Aligned cards', () => {
     });
   });
 
-  test.describe('Invite QR codes of the admin', () => {
-    test('the code, the address and the buttons of the two cards start at the same height', async ({ page }) => {
-      await page.setViewportSize({ width: 1280, height: 900 });
-      await page.goto(demoUrl('/app/admin/invite-qr', 'admin'));
-
-      const cards = [page.getByTestId('qr-supplier'), page.getByTestId('qr-host')];
-      await expect(cards[1].getByTestId('qr-host-image')).toBeVisible();
-      await expectAligned(cards.map((card) => card.locator('h3')), 'title');
-      await expectAligned(cards.map((card) => card.locator('img')), 'code');
-      await expectAligned(cards.map((card) => card.locator('p[data-testid$="-url"]')), 'address');
-      // The address of the host is on two lines (it carries the campaign, a long one here), the one of the supplier on one.
-      await page.getByTestId('qr-campaign-input').fill('campagna-di-autunno-per-i-nuovi-host-del-lago');
-      await expect(cards[1].getByTestId('qr-host-url')).toContainText('campagna-di-autunno');
-      expect(await linesOf(cards[1].getByTestId('qr-host-url'))).toBeGreaterThan(await linesOf(cards[0].getByTestId('qr-supplier-url')));
-      await expectAligned(cards.map((card) => card.getByRole('button').first()), 'buttons');
-      await expectAligned(cards, 'card', 'bottom');
-    });
-  });
-
   test.describe('OTA channels (behind the otaPartnerApi flag)', () => {
     test('the rows and the button of the cards line up whichever optional rows a channel has', async ({ page }) => {
       await page.route('**/api/public/features', async (route) => {

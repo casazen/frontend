@@ -886,6 +886,18 @@
     "statusUpdateError": "Could not update activity status."
   },
   "admin": {
+    "staffInvite": {
+      "qrError": "Unable to generate QR. You can still copy the invitation link.",
+      "inviteUser": "Invite new agency",
+      "description": "Invite the first user of a new agency. They will create and administer their own organization.",
+      "hint": "The staff console is reserved for the super admin. Agency admins can invite unlimited collaborators; private owners cannot add collaborators.",
+      "formTitle": "Invite a new agency administrator",
+      "create": "Send invitation and generate QR",
+      "expires": "Personal invitation valid until {{date}}.",
+      "qrTitle": "Create your agency on CasaZen",
+      "personalQr": "Personal QR for the invited email only. The recipient creates a new agency and becomes its administrator.",
+      "privateTeam": "Only agency administrators can invite collaborators."
+    },
     "dashboard": {
       "title": "Admin Dashboard",
       "description": "CasaZen system overview",
@@ -24288,7 +24300,7 @@
     "empty": "No revenue data available"
   },
   "roles": {
-    "Admin": "Administrator",
+    "Admin": "Super admin",
     "PropertyOwner": "Owner",
     "PropertyManager": "Property Manager",
     "Guest": "Guest",
@@ -24806,7 +24818,9 @@
     "contextPicker": {
       "loading": "Loading...",
       "title": "Select workspace",
-      "description": "Choose the application context to open."
+      "description": "Choose the application context to open.",
+      "setupHost": "Activate short and long rentals",
+      "setupHostDescription": "Set up your organization and complete the required consents to access rentals."
     },
     "noAccess": {
       "title": "No access available",

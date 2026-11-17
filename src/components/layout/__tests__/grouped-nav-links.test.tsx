@@ -105,6 +105,7 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
         'Cruscotto',
         'Utenti',
         'Fornitori',
+        'Inviti',
       ]);
       expect(within(screen.getByRole('group', { name: 'Supporto' })).getAllByRole('link').map((item) => item.textContent)).toEqual([
         'Richieste di aiuto',

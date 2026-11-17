@@ -886,6 +886,18 @@
     "statusUpdateError": "Impossibile aggiornare lo stato dell'attività."
   },
   "admin": {
+    "staffInvite": {
+      "qrError": "Impossibile generare il QR. Puoi comunque copiare il link dell’invito.",
+      "inviteUser": "Invita nuova agenzia",
+      "description": "Invita il primo utente di una nuova agenzia. Creerà la propria organizzazione e ne diventerà amministratore.",
+      "hint": "La console staff è riservata al super admin. Gli admin di agenzia invitano i propri collaboratori senza limiti; i privati non possono aggiungere collaboratori.",
+      "formTitle": "Invita l’amministratore di una nuova agenzia",
+      "create": "Invia invito e genera QR",
+      "expires": "Invito personale valido fino al {{date}}.",
+      "qrTitle": "Crea la tua agenzia su CasaZen",
+      "personalQr": "QR personale, riservato all’email invitata. Il destinatario crea una nuova agenzia e ne diventa amministratore.",
+      "privateTeam": "Solo gli amministratori di agenzia possono invitare collaboratori."
+    },
     "dashboard": {
       "title": "Dashboard Amministratore",
       "description": "Panoramica del sistema CasaZen",
@@ -24288,7 +24300,7 @@
     "empty": "Nessun dato ricavi disponibile"
   },
   "roles": {
-    "Admin": "Amministratore",
+    "Admin": "Super admin",
     "PropertyOwner": "Proprietario",
     "PropertyManager": "Property Manager",
     "Guest": "Ospite",
@@ -24806,7 +24818,9 @@
     "contextPicker": {
       "loading": "Caricamento...",
       "title": "Seleziona workspace",
-      "description": "Scegli il contesto applicativo da aprire."
+      "description": "Scegli il contesto applicativo da aprire.",
+      "setupHost": "Attiva affitti brevi e lunghi",
+      "setupHostDescription": "Configura la tua organizzazione e completa i consensi per accedere agli affitti."
     },
     "noAccess": {
       "title": "Nessun accesso disponibile",

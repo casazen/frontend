@@ -70,25 +70,21 @@ async function decodeQr(page: Page, testId: string): Promise<string> {
   return (decoded as { data: string }).data;
 }
 
-/** The two entry addresses, as the admin page prints them (read from the QR images, not from the page text). */
-async function readPrintedEntryAddresses(browser: Browser, campaign: string): Promise<{ host: string; supplier: string }> {
+/** The agency founder receives a personal QR; public registration remains available to private owners and suppliers. */
+async function readPrintedEntryAddresses(browser: Browser): Promise<{ host: string; supplier: string; agency: string }> {
   const { page, context } = await newActor(browser, { width: 1280, height: 900 });
   try {
     await loginAs(page, stack, `gj-admin-${unique()}@example.test`);
     await page.goto('/app/admin/invite-qr');
-    await expect(page.getByTestId('qr-supplier-image')).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByTestId('qr-host-image')).toBeVisible();
-    await page.getByTestId('qr-campaign-input').fill(campaign);
-    // The host code follows the campaign: wait for the image to be redrawn with it.
-    await expect(page.getByTestId('qr-host-url')).toContainText(`utm_campaign=${campaign}`);
-    await expect.poll(async () => decodeQr(page, 'qr-host')).toContain(`utm_campaign=${campaign}`);
-    const host = await decodeQr(page, 'qr-host');
-    const supplier = await decodeQr(page, 'qr-supplier');
-    // What is printed under the code is what the code holds.
-    await expect(page.getByTestId('qr-host-url')).toHaveText(host);
-    await expect(page.getByTestId('qr-supplier-url')).toHaveText(supplier);
+    await expect(page.getByTestId('host-invite-email')).toBeVisible({ timeout: 20_000 });
+    await page.getByTestId('host-invite-email').fill(`agency-${unique()}@example.test`);
+    await page.getByTestId('host-invite-submit').click();
+    await expect(page.getByTestId('qr-agency-image')).toBeVisible({ timeout: 20_000 });
+    const agency = await decodeQr(page, 'qr-agency');
+    await expect(page.getByTestId('qr-agency-url')).toHaveText(agency);
     await shot(page, 'admin-invite-qr');
-    return { host, supplier };
+    const origin = new URL(stack.feUrl).origin;
+    return { host: `${origin}/signup?role=host`, supplier: `${origin}/register`, agency };
   } finally {
     await context.close();
   }
@@ -98,22 +94,17 @@ async function readPrintedEntryAddresses(browser: Browser, campaign: string): Pr
 test.describe.configure({ mode: 'serial', timeout: 120_000 });
 
 test.describe('Onboarding L3 (real stack)', () => {
-  let entry: { host: string; supplier: string };
+  let entry: { host: string; supplier: string; agency: string };
 
   test.beforeAll(async ({ browser }) => {
-    entry = await readPrintedEntryAddresses(browser, `e2e-${unique()}`);
+    entry = await readPrintedEntryAddresses(browser);
   });
 
-  test('the admin prints two QR codes that hold the public entry addresses, without tokens', async () => {
-    const origin = new URL(stack.feUrl).origin;
-    expect(entry.supplier).toBe(`${origin}/register`);
-    const host = new URL(entry.host);
-    expect(host.origin + host.pathname).toBe(`${origin}/signup`);
-    expect(host.searchParams.get('role')).toBe('host');
-    expect(host.searchParams.get('utm_source')).toBe('qr');
-    expect(host.searchParams.get('utm_medium')).toBe('print');
-    // Nothing secret or personal in a code that anyone can photograph.
-    expect(entry.host + entry.supplier).not.toMatch(/token|email|@/i);
+  test('the admin prints a personal QR for a new agency', async () => {
+    const url = new URL(entry.agency);
+    expect(url.origin).toBe(new URL(stack.feUrl).origin);
+    expect(url.pathname).toMatch(/^\/invito-host\/[^/]+$/);
+    expect(entry.agency).not.toContain('@');
   });
 
   test('new host scans the code on a phone: type, consents, first property, then the checklist (short rent)', async ({ browser }) => {
