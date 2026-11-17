@@ -167,6 +167,13 @@ describe('locale files', () => {
     expect(missingInIt, 'keys present in en.json but missing in it.json').toEqual([]);
   });
 
+  it('includes the owner wizard translations in the complete runtime bundles', () => {
+    expect(i18n.getResourceBundle('it', 'translation')).toEqual(APP_RESOURCES.it.translation);
+    expect(i18n.getResourceBundle('en', 'translation')).toEqual(APP_RESOURCES.en.translation);
+    expect(itKeys.has('propertyWizard.owner.required')).toBe(true);
+    expect(enKeys.has('propertyWizard.owner.required')).toBe(true);
+  });
+
   it('localeFiles_SameKey_UsesTheSamePlaceholdersInBothLanguages', () => {
     const mismatches = [...itKeys.entries()]
       .filter(([key]) => enKeys.has(key))

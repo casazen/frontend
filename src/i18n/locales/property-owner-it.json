@@ -1,0 +1,14 @@
+{
+  "propertyWizard": {
+    "owner": {
+      "label": "Proprietario",
+      "title": "Di chi è questa casa?",
+      "purpose": "Associa il proprietario e le quote di proprietà. Puoi verificare i dati prima di salvarli, senza lasciare questa procedura.",
+      "required": "Per completare una struttura gestita da un’agenzia, associa il proprietario e completa le quote di proprietà.",
+      "adminRequired": "Chiedi a un amministratore dell’agenzia di associare il proprietario e confermare le quote prima di proseguire.",
+      "ready": "Il proprietario è associato a questa struttura. Puoi proseguire.",
+      "assign": "Assegna proprietario",
+      "loadError": "Non siamo riusciti a verificare il proprietario. Riprova prima di proseguire."
+    }
+  }
+}

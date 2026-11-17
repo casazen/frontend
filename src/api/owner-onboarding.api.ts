@@ -22,7 +22,7 @@ const invitationUrl = (invitationId: string) => `${INVITATIONS}/${encodeURICompo
  */
 export const ownerOnboardingApi = {
   /** What is missing for the owner accounting and for the portal, on every owner and property the caller reaches. Read only. */
-  getReadiness: () => ApiClient.get<OwnerReadinessReport>('/onboarding/owners/readiness'),
+  getReadiness: (propertyId?: string) => ApiClient.get<OwnerReadinessReport>('/onboarding/owners/readiness', propertyId ? { propertyId } : undefined),
 
   /**
    * Checks the file (`dryRun`, nothing is written) or imports it (only the valid rows). The file is read by the server only: the app never parses it and

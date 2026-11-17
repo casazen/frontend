@@ -3,6 +3,8 @@ import onboardingAccessIt from './locales/it-onboarding-access.json';
 import onboardingAccessEn from './locales/en-onboarding-access.json';
 import it from './locales/it.json';
 import en from './locales/en.json';
+import ownerSetupIt from './locales/property-owner-it.json';
+import ownerSetupEn from './locales/property-owner-en.json';
 import { listingAiIt, listingAiEn } from './listing-ai';
 import propertySetupIt from './locales/property-setup.it.json';
 import propertySetupEn from './locales/property-setup.en.json';
@@ -18,6 +20,7 @@ export const APP_RESOURCES = {
     listingAi: listingAiIt,
     propertySetup: propertySetupIt,
     userRemoval: userRemovalMessages.it,
+    propertyWizard: { ...it.propertyWizard, ...ownerSetupIt.propertyWizard },
     apiErrors: { ...it.apiErrors, codes: {
       ...it.apiErrors.codes,
       auth0ManagementTokenFailed: userRemovalMessages.it.tokenFailed,
@@ -33,6 +36,7 @@ export const APP_RESOURCES = {
     listingAi: listingAiEn,
     propertySetup: propertySetupEn,
     userRemoval: userRemovalMessages.en,
+    propertyWizard: { ...en.propertyWizard, ...ownerSetupEn.propertyWizard },
     apiErrors: { ...en.apiErrors, codes: {
       ...en.apiErrors.codes,
       auth0ManagementTokenFailed: userRemovalMessages.en.tokenFailed,

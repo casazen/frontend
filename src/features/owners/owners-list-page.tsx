@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AgencyFinanceGate } from '@/components/finance/agency-finance-gate';
 import { PageHeader } from '@/components/layout/page-header';
@@ -59,6 +59,7 @@ function OwnersBody() {
   }
 
   const list = owners.data;
+  if (list.length === 0) return <Navigate to={OWNER_ONBOARDING_PATH} replace />;
   const shown = showAll ? list : list.slice(0, VISIBLE_OWNERS);
 
   return (

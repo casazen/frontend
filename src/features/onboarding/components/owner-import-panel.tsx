@@ -189,7 +189,7 @@ function ResultView({ result, page, onPage }: ResultViewProps) {
  * mutations (`useImportOwners`), and the panel forgets them when the person chooses another file. It says in so many words that importing sends no invitation:
  * the invitations are another act, with its own preview and confirmation.
  */
-export function OwnerImportPanel() {
+export function OwnerImportPanel({ propertyRef }: { propertyRef?: string } = {}) {
   const { t } = useTranslation();
   const check = useImportOwners();
   const [file, setFile] = useState<File | null>(null);
@@ -285,53 +285,59 @@ export function OwnerImportPanel() {
     setPage(0);
   }
 
+  const manualForm = <OwnerManualForm propertyRef={propertyRef} key={formKey} disabled={isPending} onFile={checkManual} onEdit={editManual} />;
+
   return (
     <div className="min-w-0 space-y-4" data-testid="owner-import-panel">
       <Alert variant="info" data-testid="owner-import-sends-nothing">
         {t('ownerOnboarding.import.sendsNothing')}
       </Alert>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          className={TOUCH_TARGET}
-          onClick={() => saveBlobAs(new Blob([ownerTemplateCsv()], { type: 'text/csv;charset=utf-8' }), 'modello-proprietari.csv')}
-          data-testid="owner-import-template"
-        >
-          <Download aria-hidden="true" className="size-4" />
-          {t('ownerOnboarding.import.template')}
-        </Button>
-        <p className="text-sm text-foreground/70">{t('ownerOnboarding.import.limits')}</p>
-      </div>
+      {propertyRef ? manualForm : (
+        <>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className={TOUCH_TARGET}
+              onClick={() => saveBlobAs(new Blob([ownerTemplateCsv()], { type: 'text/csv;charset=utf-8' }), 'modello-proprietari.csv')}
+              data-testid="owner-import-template"
+            >
+              <Download aria-hidden="true" className="size-4" />
+              {t('ownerOnboarding.import.template')}
+            </Button>
+            <p className="text-sm text-foreground/70">{t('ownerOnboarding.import.limits')}</p>
+          </div>
 
-      <Dropzone
-        accept={ACCEPT}
-        multiple={false}
-        onFiles={choose}
-        disabled={isPending}
-        title={file ? t('ownerOnboarding.import.chosen', { name: file.name }) : t('ownerOnboarding.import.drop')}
-        buttonLabel={t(file ? 'ownerOnboarding.import.chooseAnother' : 'ownerOnboarding.import.choose')}
-        hint={t('ownerOnboarding.import.hint')}
-        data-testid="owner-import-dropzone"
-      />
+          <Dropzone
+            accept={ACCEPT}
+            multiple={false}
+            onFiles={choose}
+            disabled={isPending}
+            title={file ? t('ownerOnboarding.import.chosen', { name: file.name }) : t('ownerOnboarding.import.drop')}
+            buttonLabel={t(file ? 'ownerOnboarding.import.chooseAnother' : 'ownerOnboarding.import.choose')}
+            hint={t('ownerOnboarding.import.hint')}
+            data-testid="owner-import-dropzone"
+          />
 
-      <div className="space-y-3">
-        <Button
-          type="button"
-          variant="ghost"
-          className={TOUCH_TARGET}
-          aria-expanded={manualOpen}
-          aria-controls="owner-manual-region"
-          onClick={() => setManualOpen((open) => !open)}
-          data-testid="owner-import-manual-toggle"
-        >
-          {t(manualOpen ? 'ownerOnboarding.manual.close' : 'ownerOnboarding.manual.open')}
-        </Button>
-        <div id="owner-manual-region" hidden={!manualOpen}>
-          {manualOpen ? <OwnerManualForm key={formKey} disabled={isPending} onFile={checkManual} onEdit={editManual} /> : null}
-        </div>
-      </div>
+          <div className="space-y-3">
+            <Button
+              type="button"
+              variant="ghost"
+              className={TOUCH_TARGET}
+              aria-expanded={manualOpen}
+              aria-controls="owner-manual-region"
+              onClick={() => setManualOpen((open) => !open)}
+              data-testid="owner-import-manual-toggle"
+            >
+              {t(manualOpen ? 'ownerOnboarding.manual.close' : 'ownerOnboarding.manual.open')}
+            </Button>
+            <div id="owner-manual-region" hidden={!manualOpen}>
+              {manualOpen ? manualForm : null}
+            </div>
+          </div>
+        </>
+      )}
 
       {problem ? (
         <Alert variant="danger" data-testid="owner-import-file-problem">
@@ -340,9 +346,11 @@ export function OwnerImportPanel() {
       ) : null}
 
       <div className="flex flex-wrap items-center gap-2">
-        <Button type="button" className={TOUCH_TARGET} disabled={!file || isPending} loading={isPending && check.variables?.dryRun === true} onClick={checkFile} data-testid="owner-import-check">
-          {t('ownerOnboarding.import.check')}
-        </Button>
+        {!propertyRef ? (
+          <Button type="button" className={TOUCH_TARGET} disabled={!file || isPending} loading={isPending && check.variables?.dryRun === true} onClick={checkFile} data-testid="owner-import-check">
+            {t('ownerOnboarding.import.check')}
+          </Button>
+        ) : null}
         <Button
           type="button"
           variant="outline"
