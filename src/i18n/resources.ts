@@ -4,6 +4,8 @@ import onboardingAccessEn from './locales/en-onboarding-access.json';
 import it from './locales/it.json';
 import en from './locales/en.json';
 import { listingAiIt, listingAiEn } from './listing-ai';
+import propertySetupIt from './locales/property-setup.it.json';
+import propertySetupEn from './locales/property-setup.en.json';
 import { userRemovalMessages } from './user-removal-messages';
 import priceEstimateIt from './locales/price-estimate.it.json';
 import priceEstimateEn from './locales/price-estimate.en.json';
@@ -14,6 +16,7 @@ export const APP_RESOURCES = {
     ...onboardingAccessIt,
     ...it,
     listingAi: listingAiIt,
+    propertySetup: propertySetupIt,
     userRemoval: userRemovalMessages.it,
     apiErrors: { ...it.apiErrors, codes: {
       ...it.apiErrors.codes,
@@ -28,6 +31,7 @@ export const APP_RESOURCES = {
     ...onboardingAccessEn,
     ...en,
     listingAi: listingAiEn,
+    propertySetup: propertySetupEn,
     userRemoval: userRemovalMessages.en,
     apiErrors: { ...en.apiErrors, codes: {
       ...en.apiErrors.codes,
