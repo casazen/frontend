@@ -6,7 +6,7 @@ import type { ComplianceSenderType } from './checkin-wizard.types';
  */
 
 /** How the sender in effect came to be: a person chose it, one of the two defaults (PO-02), or the property is outside Italy. */
-export const PROPERTY_SENDER_SOURCES = ['Stored', 'DefaultConnected', 'DefaultNotConnected', 'NotApplicable'] as const;
+export const PROPERTY_SENDER_SOURCES = ['Stored', 'OrganizationDefault', 'DefaultConnected', 'DefaultNotConnected', 'NotApplicable'] as const;
 export type PropertySenderSource = (typeof PROPERTY_SENDER_SOURCES)[number];
 
 /** The state of the sender as the host reads it: `Active` only when the channel manager itself proved it, `Declared` is the host's word. */
