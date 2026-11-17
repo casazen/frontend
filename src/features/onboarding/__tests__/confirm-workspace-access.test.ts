@@ -25,6 +25,14 @@ describe('server-confirmed onboarding continuation', () => {
     vi.mocked(contextsApi.getContexts).mockResolvedValue(response);
     await expect(confirmWorkspaceAccess(new QueryClient(), '/app/short-rent')).rejects.toThrow();
   });
+  it('publishes a verified billing gate without authorizing or bootstrapping the host workspace', async () => {
+    const client = new QueryClient(); client.setQueryData(['me'], { orgId: null });
+    const paymentRequired = { ...profile, commercialSetupRequired: true };
+    vi.mocked(UsersApi.getMe).mockResolvedValue(paymentRequired);
+    await expect(confirmWorkspaceAccess(client, '/app/short-rent')).rejects.toThrow('onboarding_payment_required');
+    expect(client.getQueryData(['me'])).toEqual(paymentRequired);
+    expect(contextsApi.getContexts).not.toHaveBeenCalled();
+  });
   it('keeps a server denial and does not replace the cached profile', async () => {
     const client = new QueryClient(); client.setQueryData(['me'], { orgId: null });
     const denied = { response: { status: 403 } }; vi.mocked(contextsApi.getContexts).mockRejectedValue(denied);
