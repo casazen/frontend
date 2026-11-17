@@ -95,7 +95,7 @@ function integrationCardProps(integration: Integration, t: TFunction) {
 
 /** The first three groups. They use the statuses across the account scope. */
 function ChannelManagerGroups() {
-  const catalog = useMarketplaceCatalog();
+  const catalog = useMarketplaceCatalog(undefined);
   const integrations = useIntegrations();
 
   return (
@@ -177,7 +177,7 @@ function HomeServicesGroup() {
   const { t } = useTranslation();
   const suppliers = useMarketplaceSuppliers({ accountScope: true });
   const catalog = useServiceCategories();
-  const marketplace = useMarketplaceCatalog();
+  const marketplace = useMarketplaceCatalog(undefined);
   // The sentence that sends the person to the Partners group is there only when that group has cards to show (the same read as the group's).
   const partnersBelow = (findMarketplaceGroup(marketplace.data, 'partners')?.entries.length ?? 0) > 0;
   const items = suppliers.data?.items ?? [];
@@ -215,7 +215,7 @@ function HomeServicesGroup() {
 /** The last group: the external partners the administrator of CasaZen put in the catalog. None is written in the page. */
 function PartnersGroup() {
   const { t } = useTranslation();
-  const catalog = useMarketplaceCatalog();
+  const catalog = useMarketplaceCatalog(undefined);
   const partners = findMarketplaceGroup(catalog.data, 'partners')?.entries ?? [];
 
   return (

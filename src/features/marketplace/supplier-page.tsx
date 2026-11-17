@@ -53,6 +53,7 @@ function SupplierPageBody({ query }: { query: ReturnType<typeof useMarketplaceSu
         <EmptyState
           icon={Store}
           title={t('marketplace.drawer.notFound')}
+          description={t('marketplace.detail.notFoundDescription')}
           action={{ label: t('marketplace.supplier.backToMarketplace'), href: MARKETPLACE_PATH }}
           className="py-8"
         />
