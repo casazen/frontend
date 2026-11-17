@@ -150,7 +150,7 @@ test.describe('Add property wizard', () => {
 
     await page.getByTestId('property-setup-open-sender').click();
     await expect(page).toHaveURL(new RegExp(`returnPropertyId=${NEW_PROPERTY_ID}`));
-    await page.getByTestId('sender-option-Manual').click();
+    await expect(page.getByTestId('sender-option-Manual')).toBeChecked();
     await page.getByTestId('sender-next').click();
     await expect(page.getByTestId('sender-summary-step')).toBeVisible();
     const save = page.waitForRequest(request => request.method() === 'PUT' && request.url().endsWith(`/properties/${NEW_PROPERTY_ID}/sender`));
@@ -186,8 +186,8 @@ test.describe('Add property wizard', () => {
     await page.getByTestId('property-wizard-tos').click();
     await page.getByTestId('property-wizard-finish').click();
 
-    expect(state.completeCalls).toBe(1);
     await expect(page.getByRole('heading', { name: /Casa Procedura.*è pronto/ })).toBeVisible();
+    expect(state.completeCalls).toBe(1);
     await expect(page.getByTestId('wizard-done-primary')).toContainText('Apri il calendario');
 
     // «Aggiungi un altro immobile» is a new wizard: its first step is empty and its first «Continua» creates, it does not save over this one.

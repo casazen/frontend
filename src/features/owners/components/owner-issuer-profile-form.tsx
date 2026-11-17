@@ -6,6 +6,7 @@ import { PlainSection } from '@/components/shared/calm';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { ChoiceCard, ChoiceGroup } from '@/components/ui/choice-card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
@@ -340,7 +341,7 @@ function SectionBody({ ownerId }: { ownerId: string }) {
     );
   } else {
     // The form starts from what the server holds and follows it (see the form): it is never started again by a read that brings the same data, so what is typed survives the window coming back. One owner, one form.
-    content = <OwnerIssuerProfileForm key={ownerId} ownerId={ownerId} profile={data} />;
+    content = <IssuerEditor key={ownerId} ownerId={ownerId} profile={data} />;
   }
 
   return (
@@ -349,4 +350,19 @@ function SectionBody({ ownerId }: { ownerId: string }) {
       {content}
     </PlainSection>
   );
+}
+
+function IssuerEditor({ ownerId, profile }: { ownerId: string; profile: OwnerIssuerProfile }) {
+  const { t } = useTranslation();
+  const [editing, setEditing] = useState(false);
+  return <div className="space-y-3">
+    {!editing ? <OwnerIssuerProfileFacts profile={profile} /> : null}
+    <Button type="button" variant="outline" size="sm" onClick={() => setEditing(true)} data-testid="owner-issuer-edit">{t('ownerProfile.wizard.edit')}</Button>
+    <Dialog open={editing} onOpenChange={setEditing}>
+      <DialogContent className="max-h-[90dvh] overflow-y-auto">
+        <DialogHeader><DialogTitle>{t('ownerIssuer.title')}</DialogTitle><DialogDescription>{t('ownerIssuer.description')}</DialogDescription></DialogHeader>
+        {editing ? <OwnerIssuerProfileForm ownerId={ownerId} profile={profile} onSaved={() => setEditing(false)} onCancel={() => setEditing(false)} /> : null}
+      </DialogContent>
+    </Dialog>
+  </div>;
 }

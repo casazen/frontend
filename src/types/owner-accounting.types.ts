@@ -615,6 +615,7 @@ export interface OwnerMandate {
   withholdingTreatment: CommissionTreatment;
   monthlyFrequency: number;
   hasDocument: boolean;
+  documentUploaded?: boolean;
   createdAt: string;
   createdByUserId: string | null;
 }
@@ -700,4 +701,16 @@ export interface OwnerBulkRun {
 export interface OwnerBulkCommand {
   action: OwnerBulkAction;
   ownerIds?: string[];
+}
+
+/** Proposals from the signed PDF, never facts until the person reviews and saves. */
+export interface OwnerMandateReading {
+  validFrom: string | null;
+  commissionPercent: number | null;
+  commissionBase: CommissionBase | null;
+  commissionIncludesVat: boolean | null;
+  cleaningFlatRate: number | null;
+  linenFlatRate: number | null;
+  passthroughPaymentFees: boolean | null;
+  currency: string | null;
 }

@@ -1,6 +1,7 @@
 import type { Property, PropertyDetailDto } from '../../src/types';
 
-export const NEW_PROPERTY_ID = 'prop-flow-e2e-001';
+// The reporting wizard accepts only the GUID shape used by backend property IDs.
+export const NEW_PROPERTY_ID = 'e51dbd5a-7a80-4cf0-9140-cde685a3b632';
 
 export const emptyPropertyList: Property[] = [];
 

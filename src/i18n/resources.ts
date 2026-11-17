@@ -1,14 +1,19 @@
+import { ownerMandateWizardMessages } from './owner-mandate-messages';
+import onboardingAccessIt from './locales/it-onboarding-access.json';
+import onboardingAccessEn from './locales/en-onboarding-access.json';
 import it from './locales/it.json';
 import en from './locales/en.json';
+import { listingAiIt, listingAiEn } from './listing-ai';
 import propertySetupIt from './locales/property-setup.it.json';
 import propertySetupEn from './locales/property-setup.en.json';
-import { listingAiIt, listingAiEn } from './listing-ai';
 import { userRemovalMessages } from './user-removal-messages';
 
 /** The complete host-language resources, shared by runtime and translation validation. Add feature bundles here so every key, placeholder and plural is checked. */
 export const APP_RESOURCES = {
   it: { translation: {
-    ...it, listingAi: listingAiIt,
+    ...onboardingAccessIt,
+    ...it,
+    listingAi: listingAiIt,
     propertySetup: propertySetupIt,
     userRemoval: userRemovalMessages.it,
     apiErrors: { ...it.apiErrors, codes: {
@@ -17,9 +22,12 @@ export const APP_RESOURCES = {
       auth0ManagementCredentialsRejected: userRemovalMessages.it.credentialsRejected,
       auth0DeleteNotAllowed: userRemovalMessages.it.deleteNotAllowed,
     } },
+    ownerMandate: { ...it.ownerMandate, wizard: ownerMandateWizardMessages.it },
   } },
   en: { translation: {
-    ...en, listingAi: listingAiEn,
+    ...onboardingAccessEn,
+    ...en,
+    listingAi: listingAiEn,
     propertySetup: propertySetupEn,
     userRemoval: userRemovalMessages.en,
     apiErrors: { ...en.apiErrors, codes: {
@@ -28,5 +36,6 @@ export const APP_RESOURCES = {
       auth0ManagementCredentialsRejected: userRemovalMessages.en.credentialsRejected,
       auth0DeleteNotAllowed: userRemovalMessages.en.deleteNotAllowed,
     } },
+    ownerMandate: { ...en.ownerMandate, wizard: ownerMandateWizardMessages.en },
   } },
 };

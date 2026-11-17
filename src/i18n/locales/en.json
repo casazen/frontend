@@ -20137,6 +20137,31 @@
       "suggestion": {
         "issuerProfile": "Consider giving it a business issuer profile, below."
       }
+    },
+    "wizard": {
+      "description": "Complete one section at a time. You can review all details before saving.",
+      "next": "Continue",
+      "back": "Back",
+      "progress": "Step {{current}} of {{total}}",
+      "steps": {
+        "identity": "Who is the owner?",
+        "tax": "Residence and tax details",
+        "payment": "How are payments received?",
+        "mandate": "The management mandate",
+        "model": "Revenue and commissions",
+        "rule": "The accounting policy",
+        "review": "Review the details"
+      },
+      "hints": {
+        "identity": "Start with the owner type and the effective date of this profile.",
+        "tax": "Enter the details that identify the owner for tax purposes.",
+        "payment": "Specify the currency and account for statements and payouts.",
+        "mandate": "Enter the role and period agreed in the contract.",
+        "model": "Choose how revenue, expenses and advances are recognized.",
+        "rule": "Select the jurisdiction and the policy approved by the accountant.",
+        "review": "Check the summary. Go back to correct any details."
+      },
+      "edit": "Edit details"
     }
   },
   "owners": {
