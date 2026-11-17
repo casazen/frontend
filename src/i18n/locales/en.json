@@ -24818,7 +24818,9 @@
     "contextPicker": {
       "loading": "Loading...",
       "title": "Select workspace",
-      "description": "Choose the application context to open."
+      "description": "Choose the application context to open.",
+      "setupHost": "Activate short and long rentals",
+      "setupHostDescription": "Set up your organization and complete the required consents to access rentals."
     },
     "noAccess": {
       "title": "No access available",
