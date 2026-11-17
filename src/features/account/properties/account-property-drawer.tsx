@@ -170,11 +170,11 @@ export function AccountPropertyDrawerContent({ id }: DetailContentProps) {
   );
   const moreActions = [
     completing ? openPage(true) : null,
-    canWrite ? (
+    canWrite && row.mode === 'Long' ? (
       <Button key="mode" asChild variant="outline" size="sm" className="max-md:min-h-11">
         <Link to={propertyModePath(area, row.property.id, 'account')} data-testid="account-property-drawer-mode">
           <ArrowRightLeft aria-hidden="true" className="size-4" />
-          {t(row.mode === 'Long' ? 'accountProperties.list.actions.toShort' : 'accountProperties.list.actions.toLong')}
+          {t('accountProperties.list.actions.toShort')}
         </Link>
       </Button>
     ) : null,

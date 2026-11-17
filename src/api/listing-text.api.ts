@@ -1,3 +1,4 @@
+import type { ListingLanguage, ListingTexts } from '@/types';
 import { ApiClient } from './client';
 
 /** The AI reads photos and writes a long text: it may take 20-30 seconds, more than the default 30 s of the client on a slow line. */
@@ -29,6 +30,7 @@ export interface ListingTextSuggestion {
   /** At most 2,000 characters, paragraphs separated by a blank line; `null` without the AI. */
   description: string | null;
   basedOn: ListingTextBasis;
+  fields?: ListingTexts | null;
 }
 
 /**
@@ -36,6 +38,8 @@ export interface ListingTextSuggestion {
  * browser, cover first), the comune and the data of the property. Nothing is saved: the host keeps or changes the text and saves the step.
  */
 export const listingTextApi = {
+  suggestFields: (propertyId: string, body: { photos: string[]; regenerate: boolean; language: ListingLanguage }, signal?: AbortSignal) =>
+    ApiClient.post<ListingTextSuggestion>(`/properties/${propertyId}/listing-text/fields-suggestion`, body, { timeout: SUGGESTION_TIMEOUT_MS, signal }),
   suggest: (propertyId: string, body: { photos: string[]; regenerate: boolean }) =>
     ApiClient.post<ListingTextSuggestion>(`/properties/${propertyId}/listing-text/suggestion`, body, {
       timeout: SUGGESTION_TIMEOUT_MS,
