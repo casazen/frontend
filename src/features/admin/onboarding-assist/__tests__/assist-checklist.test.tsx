@@ -69,6 +69,30 @@ beforeEach(async () => {
 afterEach(cleanup);
 
 describe('AssistChecklist, what support needs for each property of a «Fallo per me» request (E20/F03/US02/T01)', () => {
+  it('shows the actual work to perform without hiding the guide in an accordion', () => {
+    renderChecklist(request({ context: 'panelIstat' }), [block({ country: 'IT' })]);
+    const guide = screen.getByTestId('assist-checklist-task-guide');
+    expect(guide).toHaveTextContent(i18n.t('complianceJurisdiction.guideIstat'));
+    expect(within(guide).getAllByRole('listitem')).toHaveLength(3);
+  });
+
+  it('does not ask for Italian credentials or a sender for a Swiss property, even with stale API fields', () => {
+    renderChecklist(request(), [block({ country: 'CH', policeCredentials: { present: false, updatedAt: null } })]);
+    expect(screen.getByTestId('assist-checklist-local-requirements')).toHaveTextContent(i18n.t('complianceJurisdiction.foreignDescription'));
+    expect(screen.queryByTestId('assist-checklist-police')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('assist-checklist-istat')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('assist-checklist-sender')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('assist-checklist-step-policeConnection')).not.toBeInTheDocument();
+    expect(openButton('Police')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: i18n.t('complianceJurisdiction.ticinoLink') })).toHaveAttribute('href', 'https://www4.ti.ch/di/pol-new/servizi-online/notifiche-degli-ospiti-alla-polizia-no-lear');
+  });
+
+  it('never marks a non-required ISTAT credential missing', () => {
+    renderChecklist(request(), [block({ country: 'IT', istatCredentials: { present: false, updatedAt: null, requirement: 'notRequired' } })]);
+    expect(within(screen.getByTestId('assist-checklist-istat')).queryByTestId('assist-checklist-missing')).not.toBeInTheDocument();
+    expect(openButton('RegionalIstat')).not.toBeInTheDocument();
+  });
+
   it('AssistChecklist_RequestAboutThePolice_OffersThePanelAndThePoliceCredentialsAndNeverTheIstatOnes', () => {
     renderChecklist(request({ context: 'panelPolice' }), [block()]);
 

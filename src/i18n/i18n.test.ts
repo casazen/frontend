@@ -2,9 +2,6 @@ import { describe, expect, it, beforeEach } from 'vitest';
 import { z } from 'zod';
 import i18n from '@/i18n/config';
 import { APP_RESOURCES } from '@/i18n/resources';
-
-const it_ = APP_RESOURCES.it.translation;
-const en = APP_RESOURCES.en.translation;
 import guestDe from '@/i18n/locales/guest-checkin.de.json';
 import guestFr from '@/i18n/locales/guest-checkin.fr.json';
 import guestEs from '@/i18n/locales/guest-checkin.es.json';
@@ -26,6 +23,9 @@ import {
 import { LEASE_EVENT_TYPES, LEASE_STATUSES } from '@/types';
 import { COMBUSTION_APPLIANCES, SAFETY_DETECTOR_TYPES, SAFETY_ITEM_CODES } from '@/types/compliance.types';
 import { STATUS_DICTIONARY, type StatusDefinition } from '@/lib/status-dictionary';
+
+const it_ = APP_RESOURCES.it.translation;
+const en = APP_RESOURCES.en.translation;
 
 type LocaleTree = { [key: string]: string | string[] | LocaleTree };
 
@@ -143,13 +143,6 @@ describe('i18n helpers', () => {
 });
 
 describe('locale files', () => {
-  it('resourceRegistry_MatchesTheCompleteRuntimeBundles', () => {
-    expect(i18n.getResourceBundle('it', 'translation')).toEqual(APP_RESOURCES.it.translation);
-    expect(i18n.getResourceBundle('en', 'translation')).toEqual(APP_RESOURCES.en.translation);
-    expect(itKeys.has('listingAi.fields.transport')).toBe(true);
-    expect(enKeys.has('listingAi.retry')).toBe(true);
-  });
-
   it('hasKey_ObjectTranslations_RecognisesParentsWithoutMatchingPartialNames', () => {
     const keys = flatten({ guide: { sections: { intro: 'Welcome' } } });
     expect(hasKey(keys, 'guide.sections')).toBe(true);
@@ -213,6 +206,8 @@ describe('keys used in code', () => {
     expect(Object.keys(SOURCES).length).toBeGreaterThan(100);
     expect(used.size).toBeGreaterThan(1000);
     expect(used.has('property.validation.name.minLength')).toBe(true);
+    expect(used.has('userRemoval.failureTitle')).toBe(true);
+    expect(used.has('userRemoval.alternative')).toBe(true);
   });
 
   it('staticKeys_UsedInCode_ExistInItAndEn', () => {
@@ -321,6 +316,15 @@ describe('plurals', () => {
     expect(i18n.getFixedT('it')('publicBooking.guestBookings.guestsCount', { count: 1 })).toBe('1 ospite');
     expect(i18n.getFixedT('it')('publicBooking.guestBookings.guestsCount', { count: 2 })).toBe('2 ospiti');
     expect(i18n.getFixedT('en')('publicBooking.guestBookings.guestsCount', { count: 1 })).toBe('1 guest');
+  });
+});
+
+describe('listing AI translations', () => {
+  it('includes the listing fields and retry action in the runtime registry', () => {
+    expect(i18n.getResourceBundle('it', 'translation')).toEqual(APP_RESOURCES.it.translation);
+    expect(i18n.getResourceBundle('en', 'translation')).toEqual(APP_RESOURCES.en.translation);
+    expect(itKeys.has('listingAi.fields.transport')).toBe(true);
+    expect(enKeys.has('listingAi.retry')).toBe(true);
   });
 });
 
