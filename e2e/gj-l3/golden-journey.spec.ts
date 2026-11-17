@@ -14,14 +14,14 @@ import {
   type StackEnv,
 } from './stack';
 import { activateProperty, completeHostOnboarding, createProperty, PROPERTY } from './host-steps';
-import { inviteSupplier, registerAndActivateSupplier } from './supplier-steps';
+import { registerAndActivateSupplier } from './supplier-steps';
 import { guestBooksStay, guestCompletesCheckIn, guestConfirmsEmail, type PaymentMode } from './guest-steps';
 
 /**
  * Golden Journey L3 from the UI (FN-03, audit A6-04, A6-23, A6-24, A3-23).
  *
  * Four DISTINCT browser contexts against an ephemeral stack (real backend, throw-away PostgreSQL, mock IdP and mail,
- * see e2e/stack/): platform admin (invites the supplier), host, supplier (phone viewport: F1-F2) and anonymous guest.
+ * see e2e/stack/): host, supplier (phone viewport: F1-F2) and anonymous guest.
  * Every action goes through the UI; the API is only an oracle for assertions (read-only, on behalf of the actor).
  * Dates are relative to today in Europe/Rome; accounts, slugs and emails are unique per run (no reuse, no cleanup).
  *
@@ -75,20 +75,14 @@ async function runGoldenJourney(browser: Browser, stack: StackEnv, request: impo
   const checkOut = romeDay(NIGHTS);
   const errors5xx: string[] = [];
   const { actors, contexts } = await newActors(browser, errors5xx);
-  const { admin, host, supplier, guest: guestPage } = actors;
+  const { host, supplier, guest: guestPage } = actors;
   let hostApi!: Oracle;
   let supplierApi!: Oracle;
   const ids: Record<string, string> = {};
 
   try {
-    await step('Platform admin invites the supplier by email', async () => {
-      await loginAs(admin, stack, emails.admin);
-      await inviteSupplier(admin, emails.supplier, 'Roma');
-    });
-
-    await step('Supplier accepts the invite, registers and activates the profile (phone viewport)', async () => {
-      const invite = await waitForMail(request, stack, emails.supplier, /Invito/i);
-      await registerAndActivateSupplier(supplier, stack, linkIn(invite, '/register'), emails.supplier, supplierName);
+    await step('Supplier registers and activates the profile (phone viewport)', async () => {
+      await registerAndActivateSupplier(supplier, stack, `${stack.feUrl}/register`, emails.supplier, supplierName);
       supplierApi = oracleFor(request, stack, await accessToken(supplier));
       const profile = await supplierApi.get<{ status: string; orgId: string }>('/supplier/profile');
       expect(profile.status, 'supplier profile is Active').toBe('Active');

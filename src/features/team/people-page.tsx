@@ -1,3 +1,4 @@
+import { useMe } from '@/queries/use-users';
 import { useTranslation } from 'react-i18next';
 import { UserPlus } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
@@ -16,6 +17,8 @@ import { ACCOUNT_INVITE_PATH, ACCOUNT_ROLES_PATH } from './team-paths';
  */
 export function PeoplePage() {
   const { t } = useTranslation();
+  const { data: profile } = useMe();
+  const isPrivate = profile?.org?.isAgency === false;
   const viewsScope = useListViewsScope();
   const { rows, isLoading, isError, error, refetch, invitationsFailed, refetchInvitations } = usePeopleRows({ fresh: true });
   const list = usePeopleList();
@@ -26,7 +29,7 @@ export function PeoplePage() {
         title={t('team.title')}
         description={t('team.description')}
         crumbs="auto"
-        primary={{ label: t('team.invite.cta'), icon: UserPlus, to: ACCOUNT_INVITE_PATH, testId: 'people-invite' }}
+        primary={isPrivate ? undefined : { label: t('team.invite.cta'), icon: UserPlus, to: ACCOUNT_INVITE_PATH, testId: 'people-invite' }}
         secondary={[{ label: t('team.roles.title'), to: ACCOUNT_ROLES_PATH, testId: 'people-roles' }]}
       />
 

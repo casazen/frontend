@@ -163,8 +163,8 @@ describe('isNavEntryActive on the route manifest', () => {
     ['admin', '/app/admin/compliance/tax-rates', '/app/admin/cin'],
     ['admin', '/app/admin/compliance/ltr-reference-data', '/app/admin/cin'],
     ['admin', '/app/admin/compliance/istat-regions', '/app/admin/cin'],
-    // The invites are a tab of Fornitori.
-    ['admin', '/app/admin/suppliers/invite', '/app/admin/suppliers'],
+    // Staff invitations are a primary entry.
+    ['admin', '/app/admin/suppliers/invite', '/app/admin/suppliers/invite'],
     ['admin', '/app/admin/marketing', '/app/admin/seo'],
   ] as const)('%s %s highlights %s', (contextKey, pathname, expected) => {
     expect(activePath(contextKey, pathname)).toBe(expected);

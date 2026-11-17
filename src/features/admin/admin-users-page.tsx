@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/page-header';
@@ -44,6 +45,7 @@ export function AdminUsersPage() {
       <PageHeader
         title={t('admin.users.title')}
         description={t('admin.users.description')}
+        action={<Button asChild><Link to="/app/admin/suppliers/invite?type=host">{t('admin.staffInvite.inviteUser')}</Link></Button>}
       />
 
       <Card>

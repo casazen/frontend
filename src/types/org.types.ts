@@ -4,6 +4,7 @@ export type PlanTier = 'Starter' | 'Pro' | 'Scale' | 'Agency';
 
 /** Public projection of the caller's organization (AC9/AC11). Never carries Stripe/billing ids. */
 export interface Org {
+  isAgency?: boolean;
   id: string;
   name: string;
   slug: string;
