@@ -45,9 +45,9 @@ export function PropertyDocumentsTab({ property, canWrite, onEditCin }: Property
 
       <PropertyDocumentsSection plain propertyId={property.id} documents={property.documents} />
 
-      <QuesturaCredentialsCard propertyId={property.id} canEdit={canWrite} />
+      {property.country === 'IT' ? <QuesturaCredentialsCard propertyId={property.id} canEdit={canWrite} /> : null}
 
-      {flags.octorateOnboarding && property.country !== 'CH' ? <IstatCredentialsCard propertyId={property.id} canEdit={canWrite} /> : null}
+      {flags.octorateOnboarding && property.country === 'IT' ? <IstatCredentialsCard propertyId={property.id} canEdit={canWrite} /> : null}
     </div>
   );
 }

@@ -125,7 +125,7 @@ function ActivationWizardContent({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const steps = requiresItalianCin(property.country) ? activation.steps : activation.steps.filter((step) => step.id !== 'cin');
+  const steps = requiresItalianCin(property.country) ? activation.steps : activation.steps.filter((step) => step.id !== 'cin' && step.id !== 'safety');
   const texts = useStepTexts(steps);
   const stepIds = wizardStepIds(steps);
 
