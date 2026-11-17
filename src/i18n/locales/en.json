@@ -18888,35 +18888,6 @@
     }
   },
   "ownerMandate": {
-    "wizard": {
-      "stopReading": "Stop reading and enter manually",
-      "description": "Start with the signed agreement, then review the terms before saving.",
-      "optional": "Already have the signed agreement? Attach it to suggest the terms with AI. This is optional: you can enter everything manually.",
-      "drop": "Drop the signed mandate here",
-      "choose": "Choose a PDF",
-      "fileHint": "PDF up to 20 MB. The document is attached only when you save the version.",
-      "fileError": "Choose a valid PDF up to 20 MB.",
-      "next": "Continue",
-      "readNext": "Read the agreement and continue",
-      "manual": "Continue without an agreement",
-      "manualWithFile": "Enter manually and keep the PDF",
-      "remove": "Remove the PDF",
-      "reading": "Reading the agreement. Scanned documents can take a few minutes.",
-      "readDone": "We suggested the terms we could read. Check every field: AI can make mistakes and missing terms still need completing. Amounts are suggested only when the currency matches the owner’s currency.",
-      "readUnavailable": "We could not read reliable terms. You can enter them manually and still attach the PDF.",
-      "progress": "Step {{current}} of {{total}}",
-      "steps": {
-        "0": "The signed agreement",
-        "1": "Start date and commission",
-        "2": "Flat fees and payments",
-        "3": "Review the mandate"
-      },
-      "back": "Back",
-      "reviewHint": "Confirm after checking the terms against the agreement. Saving creates a new mandate version.",
-      "linkInstead": "Document already stored? Use a link",
-      "download": "Download signed mandate",
-      "downloadError": "The mandate could not be downloaded. Try again."
-    },
     "base": {
       "GrossExclTouristTax": "takings of the stay without the tourist tax (cleaning included)",
       "GrossExclTouristTaxAndCleaning": "takings of the stay without the tourist tax and without the cleaning"
@@ -21306,6 +21277,12 @@
       "popupBlocked": "The browser blocked the print window. Check your browser settings.",
       "print": "Print",
       "title": "Guest verification QR code"
+    },
+    "swissRegistration": {
+      "title": "Registration in Switzerland",
+      "description": "The Italian CIN does not apply to this property. Check the requirements of the canton and municipality where the property is located.",
+      "ticino": "In Ticino, including Lugano, obtain the cantonal identification number and display it in listings. This number is separate from the Italian CIN. CasaZen does not automatically verify cantonal registration.",
+      "link": "Accommodation registration · Ticino Turismo"
     }
   },
   "propertyBooking": {
@@ -30292,6 +30269,10 @@
   },
   "team": {
     "access": {
+      "available": "Access allowed",
+      "showPages_one": "View {{count}} menu page",
+      "showPages_other": "View {{count}} menu pages",
+      "previewHint": "Comparing roles does not change access. To change the role, open the editor and confirm your changes.",
       "backToToday": "Back to today's role",
       "canEnter": "Can enter. The menu has:",
       "canTitle": "What they can do",
@@ -32050,5 +32031,17 @@
     "resumePayment": "Manage or complete payment",
     "roomUnit": " per room",
     "invitationOnly": "Joining an existing agency? Open the invitation link from its administrator. You do not need to create an agency or buy a personal plan."
+  },
+  "complianceJurisdiction": {
+      "foreignTitle": "Requirements in the property’s country",
+      "foreignDescription": "Italian Questura, Alloggiati Web and ISTAT do not apply to this property. Their credentials and an Italian sender choice are not required. Check the local requirements instead: CasaZen does not automatically consider them fulfilled.",
+      "ticinoLink": "Ticino · guest notifications to the cantonal police",
+      "guideTitle": "How to complete this request",
+      "guidePrepare": "Check the property and its country. Confirm who sends the data: if the channel manager sends it, open its panel using the property’s access.",
+      "guidePolice": "Open the Alloggiati Web connection in the panel. Use the credentials issued by the competent Questura and the apartment identifier where required.",
+      "guideIstat": "Open the statistics connection for the property’s region in the panel. Check the regional portal and enter the credentials and property code required by that service.",
+      "guideBoth": "Set up the Alloggiati Web connection and the regional statistics connection separately. These services may use different credentials.",
+      "guideCheck": "Test the connection before closing the request. If the system cannot verify it, record a declared outcome with a note explaining the check performed.",
+      "guideMissing": "If an access is missing, ask the user through the established support process. Never put credentials in the request notes."
   }
 }

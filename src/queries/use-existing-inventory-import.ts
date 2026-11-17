@@ -114,7 +114,10 @@ export function useRunExistingInventory() {
   return useMutation({
     mutationFn: ({ batchId, retryUnknown }: { batchId: string; retryUnknown?: readonly string[] }) =>
       octorateApi.runExistingInventoryBatch(batchId, retryUnknown),
-    onSuccess: (batch) => remember(queryClient, batch),
+    onSuccess: (batch) => {
+      remember(queryClient, batch);
+      void queryClient.invalidateQueries({ queryKey: ['bookings'] });
+    },
     onSettled: (_batch, _error, { batchId }) => {
       void queryClient.invalidateQueries({ queryKey: OCTORATE_LISTINGS_KEY });
       void queryClient.invalidateQueries({ queryKey: batchKey(batchId) });
@@ -132,7 +135,10 @@ export function useContinueExistingInventory() {
   return useMutation({
     mutationFn: ({ batchId, leaveForLater, retryUnknown }: { batchId: string; leaveForLater?: readonly string[]; retryUnknown?: readonly string[] }) =>
       octorateApi.continueExistingInventoryBatch(batchId, { leaveForLater, retryUnknown }),
-    onSuccess: (batch) => remember(queryClient, batch),
+    onSuccess: (batch) => {
+      remember(queryClient, batch);
+      void queryClient.invalidateQueries({ queryKey: ['bookings'] });
+    },
     onSettled: (_batch, _error, { batchId }) => {
       void queryClient.invalidateQueries({ queryKey: OCTORATE_LISTINGS_KEY });
       void queryClient.invalidateQueries({ queryKey: batchKey(batchId) });

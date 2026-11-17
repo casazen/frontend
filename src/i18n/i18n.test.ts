@@ -1,8 +1,7 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import { z } from 'zod';
 import i18n from '@/i18n/config';
-import it_ from '@/i18n/locales/it.json';
-import en from '@/i18n/locales/en.json';
+import { APP_RESOURCES } from '@/i18n/resources';
 import guestDe from '@/i18n/locales/guest-checkin.de.json';
 import guestFr from '@/i18n/locales/guest-checkin.fr.json';
 import guestEs from '@/i18n/locales/guest-checkin.es.json';
@@ -24,6 +23,9 @@ import {
 import { LEASE_EVENT_TYPES, LEASE_STATUSES } from '@/types';
 import { COMBUSTION_APPLIANCES, SAFETY_DETECTOR_TYPES, SAFETY_ITEM_CODES } from '@/types/compliance.types';
 import { STATUS_DICTIONARY, type StatusDefinition } from '@/lib/status-dictionary';
+
+const it_ = APP_RESOURCES.it.translation;
+const en = APP_RESOURCES.en.translation;
 
 type LocaleTree = { [key: string]: string | string[] | LocaleTree };
 
@@ -204,6 +206,8 @@ describe('keys used in code', () => {
     expect(Object.keys(SOURCES).length).toBeGreaterThan(100);
     expect(used.size).toBeGreaterThan(1000);
     expect(used.has('property.validation.name.minLength')).toBe(true);
+    expect(used.has('userRemoval.failureTitle')).toBe(true);
+    expect(used.has('userRemoval.alternative')).toBe(true);
   });
 
   it('staticKeys_UsedInCode_ExistInItAndEn', () => {

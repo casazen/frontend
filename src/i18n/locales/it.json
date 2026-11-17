@@ -18888,35 +18888,6 @@
     }
   },
   "ownerMandate": {
-    "wizard": {
-      "stopReading": "Interrompi la lettura e compila a mano",
-      "description": "Parti dal contratto firmato, poi verifica le condizioni prima di salvare.",
-      "optional": "Hai già il contratto firmato? Allegalo per precompilare i dati con l’AI. È facoltativo: puoi inserire tutto a mano.",
-      "drop": "Trascina qui il mandato firmato",
-      "choose": "Scegli il PDF",
-      "fileHint": "PDF fino a 20 MB. Il documento sarà allegato solo quando salvi la versione.",
-      "fileError": "Scegli un PDF valido fino a 20 MB.",
-      "next": "Continua",
-      "readNext": "Leggi il contratto e continua",
-      "manual": "Continua senza contratto",
-      "manualWithFile": "Compila a mano e conserva il PDF",
-      "remove": "Rimuovi il PDF",
-      "reading": "Lettura del contratto in corso. Per le scansioni possono servire alcuni minuti.",
-      "readDone": "Abbiamo proposto i dati leggibili. Controllali tutti: l’AI può commettere errori e i campi mancanti restano da completare. Gli importi si precompilano solo se la valuta coincide con quella del proprietario.",
-      "readUnavailable": "Non siamo riusciti a ricavare dati certi. Puoi compilare a mano e allegare comunque il PDF.",
-      "progress": "Passo {{current}} di {{total}}",
-      "steps": {
-        "0": "Il contratto firmato",
-        "1": "Decorrenza e provvigione",
-        "2": "Forfait e pagamenti",
-        "3": "Controlla il mandato"
-      },
-      "back": "Indietro",
-      "reviewHint": "Conferma solo dopo aver confrontato le condizioni con il contratto. Il salvataggio crea una nuova versione del mandato.",
-      "linkInstead": "Il documento è già archiviato? Usa un collegamento",
-      "download": "Scarica il mandato firmato",
-      "downloadError": "Non è stato possibile scaricare il mandato. Riprova."
-    },
     "base": {
       "GrossExclTouristTax": "incasso del soggiorno senza imposta di soggiorno (pulizie incluse)",
       "GrossExclTouristTaxAndCleaning": "incasso del soggiorno senza imposta di soggiorno e senza pulizie"
@@ -21306,6 +21277,12 @@
       "popupBlocked": "Il browser ha bloccato la finestra di stampa. Verifica le impostazioni del browser.",
       "print": "Stampa",
       "title": "Codice QR per verifica ospiti"
+    },
+    "swissRegistration": {
+      "title": "Registrazione in Svizzera",
+      "description": "Il CIN italiano non si applica a questa struttura. Verifica gli obblighi del Cantone e del Comune in cui si trova l’alloggio.",
+      "ticino": "In Ticino, quindi anche a Lugano, occorre ottenere il numero identificativo cantonale e riportarlo negli annunci. Questo numero non è un CIN. CasaZen non verifica automaticamente la registrazione cantonale.",
+      "link": "Registrazione alloggi · Ticino Turismo"
     }
   },
   "propertyBooking": {
@@ -30292,6 +30269,10 @@
   },
   "team": {
     "access": {
+      "available": "Accesso consentito",
+      "showPages_one": "Vedi {{count}} pagina del menu",
+      "showPages_other": "Vedi le {{count}} pagine del menu",
+      "previewHint": "Il confronto non modifica gli accessi. Per cambiare il ruolo, apri la modifica e conferma il salvataggio.",
       "backToToday": "Torna al ruolo di oggi",
       "canEnter": "Può entrare. Nel menu trova:",
       "canTitle": "Cosa può fare",
@@ -32050,5 +32031,17 @@
     "resumePayment": "Gestisci o completa il pagamento",
     "roomUnit": " per camera",
     "invitationOnly": "Devi entrare in un’agenzia esistente? Apri il link di invito ricevuto dall’amministratore. Non occorre creare una nuova agenzia o acquistare un piano personale."
+  },
+  "complianceJurisdiction": {
+      "foreignTitle": "Adempimenti del paese della struttura",
+      "foreignDescription": "Questura, Alloggiati Web e ISTAT italiani non si applicano a questo immobile. Non servono le relative credenziali né una scelta del mittente italiano. Verifica invece gli obblighi del luogo: CasaZen non li considera assolti automaticamente.",
+      "ticinoLink": "Ticino · notifica degli ospiti alla Polizia cantonale",
+      "guideTitle": "Come completare questa richiesta",
+      "guidePrepare": "Controlla l’immobile e il paese. Verifica chi invierà i dati: se invia il channel manager, apri il suo pannello con l’accesso della struttura.",
+      "guidePolice": "Nel pannello apri il collegamento Alloggiati Web. Usa le credenziali rilasciate dalla Questura competente e l’eventuale identificativo dell’appartamento.",
+      "guideIstat": "Nel pannello apri il collegamento statistico della regione della struttura. Controlla il portale regionale e inserisci le credenziali e il codice struttura previsti da quel servizio.",
+      "guideBoth": "Configura separatamente il collegamento Alloggiati Web e quello statistico regionale. Le credenziali dei due servizi possono essere diverse.",
+      "guideCheck": "Esegui la verifica del collegamento prima di chiudere la richiesta. Se il sistema non può verificarlo, registra un esito dichiarato con una nota che spieghi il controllo effettuato.",
+      "guideMissing": "Se manca un accesso, chiedilo all’utente dalla procedura di assistenza prevista. Non inserire credenziali nelle note della richiesta."
   }
 }

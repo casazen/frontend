@@ -50,6 +50,14 @@ jobs:
           CI: true
 
       - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: owner-mandate-visual-${{ matrix.shard }}
+          path: test-results/**/owner-mandate-*.png
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: playwright-l2-report-${{ matrix.shard }}
@@ -61,7 +69,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: owner-mandate-visual-${{ matrix.shard }}
-          path: test-results/**/owner-mandate-*.png
+          name: person-access-visual-${{ matrix.shard }}
+          path: test-results/**/person-access-*.png
           if-no-files-found: ignore
           retention-days: 7

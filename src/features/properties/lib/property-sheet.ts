@@ -1,3 +1,4 @@
+import { requiresItalianCin } from '@/lib/cin-format';
 import { pendingLines, type ComplianceLine } from '@/features/compliance/lib/compliance-lines';
 import type { PropertyStatus } from '@/lib/status-dictionary';
 import type { CinStatus } from '@/types';
@@ -45,6 +46,7 @@ export type PropertyNextStepKind =
 export interface PropertyNextStepFacts {
   status: PropertyStatus;
   cinStatus: CinStatus;
+  country?: string;
   /** Photos that can be shown (absolute addresses): a legacy path is no photo. */
   photoCount: number;
   /** The person may write the property: a missing photo is only asked of them, never of who can only read. */
@@ -57,12 +59,12 @@ export interface PropertyNextStepFacts {
   compliance?: readonly ComplianceLine[];
 }
 
-export function nextStepOf({ status, cinStatus, photoCount, canWrite, compliance }: PropertyNextStepFacts): PropertyNextStepKind {
+export function nextStepOf({ status, cinStatus, country, photoCount, canWrite, compliance }: PropertyNextStepFacts): PropertyNextStepKind {
   if (status === 'Suspended') return 'suspended';
   if (status === 'Pending') return 'completeActivation';
   if (status === 'Paused') return 'reactivate';
-  if (cinStatus === 'Missing') return 'cinMissing';
-  if (cinStatus === 'Invalid') return 'cinInvalid';
+  if (requiresItalianCin(country) && cinStatus === 'Missing') return 'cinMissing';
+  if (requiresItalianCin(country) && cinStatus === 'Invalid') return 'cinInvalid';
   const pending = pendingLines(compliance ?? []);
   // What the host has to do for compliance is worth more than a photo; what is only in hand is worth saying when nothing else is asked.
   if (pending.some((line) => line.state === 'red')) return 'compliance';
