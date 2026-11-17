@@ -59,12 +59,28 @@ jobs:
           retention-days: 7
 
       - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: owner-mandate-visual-${{ matrix.shard }}
+          path: test-results/**/owner-mandate-*.png
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: playwright-l2-report-${{ matrix.shard }}
           path: |
             playwright-report/
             test-results/
+          retention-days: 7
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ai-price-visual-${{ matrix.shard }}
+          path: test-results/**/ai-price-*.png
+          if-no-files-found: ignore
           retention-days: 7
 
       - uses: actions/upload-artifact@v4
@@ -80,5 +96,13 @@ jobs:
         with:
           name: listing-ai-visual-${{ matrix.shard }}
           path: test-results/**/listing-ai-*.png
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: owner-profile-visual-${{ matrix.shard }}
+          path: test-results/**/owner-profile-*.png
           if-no-files-found: ignore
           retention-days: 7

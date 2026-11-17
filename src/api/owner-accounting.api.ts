@@ -5,6 +5,7 @@ import axios from '@/lib/axios';
 import { UnexpectedApiResponseError, getHttpStatus } from '@/lib/api-errors';
 import { withJsonErrorBody } from '@/lib/file-download';
 import type {
+  OwnerMandateReading,
   OwnerAccountingEvidence,
   OwnerAccountingPolicy,
   OwnerAccountingPolicyCommand,
@@ -93,6 +94,23 @@ export const ownerAccountingApi = {
 
   /** A new version from `validFrom`: the one in force ends the day before (`agency.owner.financial.manage`). 422 `owner_mandate_invalid` (with the `field`), 409 `owner_mandate_overlap`. */
   createMandate: (ownerId: string, command: OwnerMandateCommand) => ApiClient.post<OwnerMandate>(`/owners/${ownerId}/mandates`, command),
+
+  readMandateDocument: async (ownerId: string, file: File, signal?: AbortSignal): Promise<OwnerMandateReading> => {
+    const data = new FormData();
+    data.append('file', file);
+    const response = await axios.post<OwnerMandateReading>(`/owners/${ownerId}/mandates/read-document`, data, { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 300_000, signal });
+    return response.data;
+  },
+
+  createMandateWithDocument: async (ownerId: string, command: OwnerMandateCommand, file: File): Promise<OwnerMandate> => {
+    const data = new FormData();
+    data.append('file', file);
+    data.append('command', JSON.stringify(command));
+    const response = await axios.post<OwnerMandate>(`/owners/${ownerId}/mandates/with-document`, data, { headers: { 'Content-Type': 'multipart/form-data' } });
+    return response.data;
+  },
+
+  downloadMandateDocument: (ownerId: string, mandateId: string): Promise<DownloadedFile> => fileApi.get(`/owners/${ownerId}/mandates/${mandateId}/document`),
 
   /**
    * The structured billing address of the owner, in clear (`agency.owner.financial.read`); `null` when the server refuses it to this caller (403): a refused read would send the whole app

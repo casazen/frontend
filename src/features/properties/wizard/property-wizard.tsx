@@ -8,6 +8,13 @@ import { Button } from '@/components/ui/button';
 import { useOptionalWizard } from '@/components/shared/wizard/wizard-context';
 import { WizardShell, type WizardShellProps, type WizardStep } from '@/components/shared/wizard/wizard-shell';
 import { ownerOnboardingApi } from '@/api/owner-onboarding.api';
+import { getBillingSetup } from '@/api/billing-setup.api';
+import { propertySenderApi } from '@/api/property-sender.api';
+import { useCommercialProfile } from '@/hooks/use-commercial-profile';
+import { commercialRouteAllowed } from '@/features/onboarding/commercial-access';
+import { billingIdentityComplete, senderChoiceSaved } from './property-setup-model';
+import { BillingSetupStep } from './steps/billing-setup-step';
+import { ComplianceSetupStep } from './steps/compliance-setup-step';
 import { getActivationBlockedProblem } from '@/api/compliance.api';
 import { openReminders } from '@/features/compliance/activation-wizard-model';
 import { useCompleteComplianceActivation, useComplianceActivation } from '@/features/compliance/use-compliance';
@@ -170,7 +177,11 @@ interface PropertyWizardProps {
 export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySteps, initialStepId, onCreated }: PropertyWizardProps) {
   const { t } = useTranslation();
   // The channels step exists only where the channel manager is connected (its flag): the endpoints it reads answer 404 otherwise.
-  const connectorOn = useFeatureFlags().flags.octorateConnector;
+  const { flags } = useFeatureFlags();
+  const connectorOn = flags.octorateConnector;
+  const commercial = useCommercialProfile();
+  const complianceOn = commercialRouteAllowed(commercial, '/app/short-rent/compliance');
+  const billingOn = flags.fiscalDocumentIssuance && commercialRouteAllowed(commercial, '/app/short-rent/fiscal');
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, org } = useCurrentUser();
@@ -194,6 +205,7 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
   const savedDiscounts = useRef(JSON.stringify(stayDiscountTiers(defaults.stayDiscounts)));
   const [planLimitHit, setPlanLimitHit] = useState(false);
   const [tosAccepted, setTosAccepted] = useState(false);
+  const [setupFailure, setSetupFailure] = useState<string | null>(null);
   /** The host knows that the documents and the safety sheet still open are their obligations (reminders, PO decision 2026-11-01). */
   const [remindersAccepted, setRemindersAccepted] = useState(false);
   /** The blockers of the last refused activation (409): the server knows some that the screen could not. */
@@ -322,11 +334,38 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
     savedDiscounts.current = signature;
   };
 
+  // The account data lives in its own guided flows; verify the persisted answer, not a local checkbox.
+  const verifyCompliance = async (values: PropertyWizardValues) => {
+    setSetupFailure(null);
+    if (!propertyId || !complianceOn || values.country !== 'IT') return;
+    const sender = await propertySenderApi.get(propertyId);
+    if (!senderChoiceSaved(sender)) {
+      const message = t('propertySetup.compliance.required');
+      setSetupFailure(message);
+      throw new Error(message);
+    }
+  };
+  const verifyBilling = async () => {
+    setSetupFailure(null);
+    if (!billingOn) return;
+    if (!billingIdentityComplete(await getBillingSetup())) {
+      const message = t('propertySetup.billing.required');
+      setSetupFailure(message);
+      throw new Error(message);
+    }
+  };
+
   // The last button: writes the switch (first, so that a «no» is in place when the property goes live) and activates, when the server
   // says that nothing blocks; with a blocker open it sends nothing and the host finishes later.
   const finish = async (values: PropertyWizardValues) => {
     if (!propertyId) return null;
-    await verifyOwner();
+    setSetupFailure(null);
+    if (stage === 'ready' || stage === 'active') await verifyOwner();
+    // Recheck the setup before activation, including when opening the last step directly.
+    if (stage === 'ready' && !onlySteps) {
+      await verifyCompliance(values);
+      await verifyBilling();
+    }
     setRefused(null);
     for (const action of finishActions(stage, values.publishedOnSite, storedVisibility.current)) {
       if (action === 'visibility') {
@@ -444,6 +483,22 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
           } satisfies WizardStep<PropertyWizardValues>,
         ]
       : []),
+    ...(complianceOn ? [{
+      id: 'compliance',
+      label: t('propertySetup.compliance.label'),
+      title: t('propertySetup.compliance.heading'),
+      purpose: t('propertySetup.compliance.purpose'),
+      beforeNext: verifyCompliance,
+      render: ({ form }: { form: UseFormReturn<PropertyWizardValues> }) => propertyId ? <ComplianceSetupStep propertyId={propertyId} country={form.getValues('country')} /> : null,
+    } satisfies WizardStep<PropertyWizardValues>] : []),
+    ...(billingOn ? [{
+      id: 'billing',
+      label: t('propertySetup.billing.label'),
+      title: t('propertySetup.billing.heading'),
+      purpose: t('propertySetup.billing.purpose'),
+      beforeNext: verifyBilling,
+      render: () => propertyId ? <BillingSetupStep propertyId={propertyId} /> : null,
+    } satisfies WizardStep<PropertyWizardValues>] : []),
     {
       id: 'finish',
       label: t('propertyWizard.steps.finish.label'),
@@ -489,8 +544,9 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
       onlySteps={onlySteps && ownerRequired ? [...onlySteps, 'owner'] : onlySteps}
       defaultValues={defaults}
       initialStepId={initialStepId}
+      onStepChange={() => setSetupFailure(null)}
       finishLabel={t(`propertyWizard.last.button.${stage === 'ready' ? 'activate' : stage === 'active' ? 'done' : 'later'}`)}
-      finishFailedMessage={t('propertyWizard.errors.saveFailed')}
+      finishFailedMessage={setupFailure ?? t('propertyWizard.errors.saveFailed')}
       onFinish={finish}
       // The first step is not saved yet: the draft keeps its answers over a reload. Once the property exists they are on the server.
       draft={propertyId ? false : { accept: (saved) => saved.step === 'base' }}

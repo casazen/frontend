@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
+import { propertySetupReturn } from '@/features/properties/wizard/property-setup-model';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle, Check, CheckCircle2, Info, XCircle, type LucideIcon } from 'lucide-react';
 import { ErrorState } from '@/components/shared/error-state';
@@ -51,6 +52,8 @@ const POINT_ICON: Record<Tone, { Icon: LucideIcon; className: string }> = {
  */
 export function SenderWizardDone({ propertyId }: { propertyId: string }) {
   const { t } = useTranslation();
+  const [params] = useSearchParams();
+  const returnTo = propertySetupReturn(params, 'compliance');
   const sender = useSender(propertyId);
   const propertyName = useSenderPropertyName(propertyId, !!sender.data);
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -87,7 +90,7 @@ export function SenderWizardDone({ propertyId }: { propertyId: string }) {
   // The line only says what the setting is: with a result that is done (a sender the server verified) it is part of it and has the green check; while the result is not complete (the host's word,
   // not verified, off) it is information with a neutral sign, never the green check of something done.
   const AutoSendIcon = settled ? Check : Info;
-  const primary = settled
+  const primary = returnTo ? { label: t('propertySetup.returnToProperty'), to: returnTo } : settled
     ? { label: t('compliance.sender.done.toCompliance'), to: COMPLIANCE_PATH }
     : { label: t('compliance.sender.done.toState'), to: stateAddress };
   const secondary = settled

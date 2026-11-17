@@ -1,0 +1,8 @@
+{
+  "priceEstimate": {
+    "timeout": "The price estimate is taking longer than expected. Your prices have not changed. Try again or enter them yourself.",
+    "currencyMismatch": "This estimate uses a different currency. Ask for a new estimate in {{currency}} before applying it.",
+    "rateLabel": "Base price per night ({{currency}})",
+    "cleaningLabel": "Cleaning fee ({{currency}})"
+  }
+}

@@ -65,7 +65,7 @@ export function OwnerManualForm({ disabled, onFile, onEdit, propertyRef }: Owner
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Field label={t('ownerOnboarding.manual.property')} hint={t('ownerOnboarding.manual.propertyHint')}>
-          <Input readOnly={Boolean(propertyRef)} value={values.property} onChange={(event) => set('property')(event.target.value)} disabled={disabled} autoComplete="off" data-testid="owner-manual-property" />
+          <Input readOnly={Boolean(propertyRef)} tabIndex={propertyRef ? -1 : undefined} value={values.property} onChange={(event) => set('property')(event.target.value)} disabled={disabled} autoComplete="off" data-testid="owner-manual-property" />
         </Field>
         <Field label={t('ownerOnboarding.manual.legalName')}>
           <Input value={values.legalName} onChange={(event) => set('legalName')(event.target.value)} disabled={disabled} autoComplete="off" data-testid="owner-manual-name" />

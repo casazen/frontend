@@ -27,6 +27,7 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 1280, height: 900 
     await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'owner');
     await page.getByRole('button', { name: 'Assegna proprietario', exact: true }).click();
     await expect(page.getByTestId('owner-manual-name')).toBeInViewport();
+    await expect(page.getByTestId('owner-manual-name')).toBeFocused();
     await expect(page.getByTestId('owner-import-dropzone')).toHaveCount(0);
     await expect(page.getByTestId('owner-manual-property')).toHaveValue(NEW_PROPERTY_ID);
     await expect(page.getByTestId('owner-manual-property')).toHaveAttribute('readonly');

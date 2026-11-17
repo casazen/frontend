@@ -4,6 +4,7 @@ import { demoUrl } from './helpers/demo-profile';
 import { createPropertyWithWizard, mockPropertiesApi } from './helpers/properties-api-mock';
 import { mockCurrentUserWithOrg, mockEntitlement } from './helpers/org-api-mock';
 import { NEW_PROPERTY_ID, buildCreatedProperty } from './fixtures/properties.fixtures';
+import type { PropertySender } from '../src/types/property-sender.types';
 import type { ComplianceActivationResult, ComplianceStepStatus } from '../src/types/compliance.types';
 
 /**
@@ -15,9 +16,37 @@ interface ServerState {
   active: boolean;
   completeCalls: number;
   completeAnswer: 'ok' | 'blocked';
+  senderSaved: boolean;
 }
 
 const step = (id: string, status: ComplianceStepStatus, blocker = true) => ({ id, label: id, status, blocker });
+
+async function mockReportingSetup(page: Page, state: ServerState): Promise<void> {
+  await page.route('**/api/properties/*/sender', async route => {
+    if (route.request().method() === 'PUT') {
+      expect(route.request().postDataJSON().sender).toBe('Manual');
+      state.senderSaved = true;
+    }
+    const sender: PropertySender = {
+      propertyId: NEW_PROPERTY_ID, sender: 'Manual', istatSender: 'Manual', applies: true,
+      source: state.senderSaved ? 'Stored' : 'DefaultNotConnected', state: 'NotConfigured', verification: 'NotApplicable',
+      reason: null, guidance: null, policeAccountValid: null, policeAutorun: null, policeLastCron: null,
+      questuraCredentialsConfigured: false, channelManagerAvailable: false, availableSenders: ['Manual'],
+      delegationAccepted: false, delegationTextVersion: '', declaredAt: null,
+      lastChangedAt: state.senderSaved ? '2026-11-17T10:00:00Z' : null,
+    };
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(sender) });
+  });
+  await page.route('**/api/wizards/ComplianceSender/draft**', async route => {
+    if (route.request().method() === 'GET') { await route.fulfill({ status: 404 }); return; }
+    if (route.request().method() === 'DELETE') { await route.fulfill({ status: 204 }); return; }
+    const request = route.request().postDataJSON();
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
+      type: 'ComplianceSender', entityId: NEW_PROPERTY_ID, version: request.clientVersion + 1,
+      lastSavedAt: '2026-11-17T10:00:00Z', data: request.data,
+    }) });
+  });
+}
 
 async function mockActivation(page: Page, state: ServerState): Promise<void> {
   await page.route('**/api/properties/*/compliance/activation', async (route) => {
@@ -72,7 +101,7 @@ async function mockActivation(page: Page, state: ServerState): Promise<void> {
  * off here (the flag `octorateConnector` is, in the e2e, as in production): the texts of the listing are optional, as they always were, so
  * the Italian headline is written and the English texts are left empty — «Continua» asks for nothing more.
  */
-async function goToLastStep(page: Page): Promise<void> {
+async function goToComplianceStep(page: Page): Promise<void> {
   await page.goto(demoUrl('/app/short-rent/properties/create', 'short-stay'));
   const created = await createPropertyWithWizard(page, { name: 'Casa Procedura', address: 'Via Garibaldi 42', comune: 'Milano', postalCode: '20100' });
   expect(created.status()).toBe(201);
@@ -88,6 +117,13 @@ async function goToLastStep(page: Page): Promise<void> {
   await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'prices');
   await page.getByLabel('Prezzo base per notte').fill('135');
   await page.getByTestId('property-wizard-next').click();
+  await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'compliance');
+}
+
+async function goToLastStep(page: Page): Promise<void> {
+  await goToComplianceStep(page);
+  await expect(page.getByTestId('property-setup-compliance')).toContainText('La scelta del mittente è salvata');
+  await page.getByTestId('property-wizard-next').click();
   await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'finish');
 }
 
@@ -95,11 +131,39 @@ test.describe('Add property wizard', () => {
   let state: ServerState;
 
   test.beforeEach(async ({ page }) => {
-    state = { cin: false, active: false, completeCalls: 0, completeAnswer: 'ok' };
+    state = { cin: false, active: false, completeCalls: 0, completeAnswer: 'ok', senderSaved: true };
     await mockPropertiesApi(page);
     await mockCurrentUserWithOrg(page);
     await mockEntitlement(page, { properties: 0 });
     await mockActivation(page, state);
+    await mockReportingSetup(page, state);
+  });
+
+  test('the manual default must be explicitly saved through the reporting wizard before property setup continues', async ({ page }) => {
+    state.senderSaved = false;
+    await goToComplianceStep(page);
+    await expect(page.getByTestId('property-setup-compliance')).toContainText('Devi ancora confermare');
+    await page.getByTestId('property-wizard-next').click();
+    await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'compliance');
+    await expect(page.getByTestId('wizard-finish-error')).toContainText('Configura e salva il mittente degli invii');
+    expect(state.completeCalls).toBe(0);
+
+    await page.getByTestId('property-setup-open-sender').click();
+    await expect(page).toHaveURL(new RegExp(`returnPropertyId=${NEW_PROPERTY_ID}`));
+    await expect(page.getByTestId('sender-option-Manual')).toBeChecked();
+    await page.getByTestId('sender-next').click();
+    await expect(page.getByTestId('sender-summary-step')).toBeVisible();
+    const save = page.waitForRequest(request => request.method() === 'PUT' && request.url().endsWith(`/properties/${NEW_PROPERTY_ID}/sender`));
+    await page.getByTestId('sender-finish').click();
+    await save;
+    await expect(page.getByTestId('sender-done-primary')).toHaveText('Continua con l’immobile');
+    expect(state.senderSaved).toBe(true);
+    await page.getByTestId('sender-done-primary').click();
+    await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'compliance');
+    await expect(page.getByTestId('property-setup-compliance')).toContainText('La scelta del mittente è salvata');
+    await page.getByTestId('property-wizard-next').click();
+    await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'finish');
+    expect(state.completeCalls).toBe(0);
   });
 
   test('the last step is read from the server: with the CIN missing nothing activates, once it is saved the property can go live', async ({ page }) => {
@@ -122,8 +186,8 @@ test.describe('Add property wizard', () => {
     await page.getByTestId('property-wizard-tos').click();
     await page.getByTestId('property-wizard-finish').click();
 
-    expect(state.completeCalls).toBe(1);
     await expect(page.getByRole('heading', { name: /Casa Procedura.*è pronto/ })).toBeVisible();
+    expect(state.completeCalls).toBe(1);
     await expect(page.getByTestId('wizard-done-primary')).toContainText('Apri il calendario');
 
     // «Aggiungi un altro immobile» is a new wizard: its first step is empty and its first «Continua» creates, it does not save over this one.
@@ -133,13 +197,20 @@ test.describe('Add property wizard', () => {
     await expect(page).not.toHaveURL(/propertyId=/);
   });
 
-  test('«Finisci dopo» saves what there is and activates nothing: the property stays to be completed', async ({ page }) => {
-    await goToLastStep(page);
+  test('«Finisci dopo» leaves a property as a draft even if reporting was never configured', async ({ page }) => {
+    state.senderSaved = false;
+    await mockPropertiesApi(page, [buildCreatedProperty({
+      name: 'Casa Procedura', comuneIstatCode: '058091', nightlyRate: 135, isActive: false,
+    })]);
+    await mockActivation(page, state);
+    await page.goto(demoUrl(`/app/short-rent/properties/create?propertyId=${NEW_PROPERTY_ID}&step=finish`, 'short-stay'));
+    await expect(page.getByTestId('property-wizard-finish')).toHaveText(/Finisci dopo/);
 
     await page.getByTestId('property-wizard-finish').click();
 
     await expect(page.getByRole('heading', { name: /Casa Procedura.*è salvato/ })).toBeVisible();
     expect(state.completeCalls).toBe(0);
+    expect(state.senderSaved).toBe(false);
     // What is missing is listed with the button that goes where it is fixed.
     await page.getByTestId('property-wizard-done-fix-cin').click();
     await expect(page).toHaveURL(/step=finish/);

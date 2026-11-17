@@ -10,5 +10,6 @@ export const priceSuggestionApi = {
 
   /** The AI proposes the price of the saved property; it is a `200` also when the AI cannot be used (`aiUsed` false and the reason). */
   suggest: (propertyId: string, positioning: PricePositioning) =>
-    ApiClient.post<PriceSuggestion>(path(propertyId), { positioning }),
+    // The provider's bounded long-call may take 90s; leave time to return its explicit fallback.
+    ApiClient.post<PriceSuggestion>(path(propertyId), { positioning }, { timeout: 120_000 }),
 };

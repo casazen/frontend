@@ -144,10 +144,13 @@ describe('i18n helpers', () => {
 
 describe('locale files', () => {
   it('resourceRegistry_MatchesTheCompleteRuntimeBundles', () => {
+    // A feature bundle registered outside the shared registry must not silently escape key/placeholder validation.
     expect(i18n.getResourceBundle('it', 'translation')).toEqual(APP_RESOURCES.it.translation);
     expect(i18n.getResourceBundle('en', 'translation')).toEqual(APP_RESOURCES.en.translation);
     expect(itKeys.has('onboardingAccess.description')).toBe(true);
     expect(enKeys.has('onboardingAccess.description')).toBe(true);
+    expect(itKeys.has('propertySetup.compliance.required')).toBe(true);
+    expect(enKeys.has('propertySetup.billing.required')).toBe(true);
   });
 
   it('hasKey_ObjectTranslations_RecognisesParentsWithoutMatchingPartialNames', () => {
@@ -313,6 +316,15 @@ describe('keys used in code', () => {
     ];
     const missing = expected.filter((key) => !itKeys.has(key) || !enKeys.has(key));
     expect(missing).toEqual([]);
+  });
+});
+
+describe('pricing translations', () => {
+  it('includes the timeout and currency mismatch messages in the runtime registry', () => {
+    expect(i18n.getResourceBundle('it', 'translation')).toEqual(APP_RESOURCES.it.translation);
+    expect(i18n.getResourceBundle('en', 'translation')).toEqual(APP_RESOURCES.en.translation);
+    expect(itKeys.has('priceEstimate.timeout')).toBe(true);
+    expect(enKeys.has('priceEstimate.currencyMismatch')).toBe(true);
   });
 });
 
