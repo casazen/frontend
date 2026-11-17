@@ -11,8 +11,8 @@ export function propertySetupReturn(params: URLSearchParams, step: 'compliance' 
 
 export function senderChoiceSaved(sender: PropertySender | null | undefined): boolean {
   if (!sender?.applies) return false;
-  // A default of Manual is not an answer the person gave. Verification is reported separately.
-  return sender.source === 'Stored';
+  // An organization choice is a saved answer too; implicit defaults are not. Verification is reported separately.
+  return sender.source === 'Stored' || sender.source === 'OrganizationDefault';
 }
 
 /** Collect the issuer identity and tax regime before finishing the property; other fiscal choices stay in their wizard. */

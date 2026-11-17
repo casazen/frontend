@@ -8,6 +8,10 @@ describe('property operational onboarding', () => {
   it('requires a saved sender choice rather than the implicit manual default', () => {
     expect(senderChoiceSaved({ applies: true, source: 'DefaultNotConnected', sender: 'Manual' } as PropertySender)).toBe(false);
     expect(senderChoiceSaved({ applies: true, source: 'Stored', sender: 'Manual' } as PropertySender)).toBe(true);
+    expect(senderChoiceSaved({ applies: true, source: 'OrganizationDefault', sender: 'Manual' } as PropertySender)).toBe(true);
+    expect(senderChoiceSaved({ applies: true, source: 'OrganizationDefault', sender: 'ChannelManager' } as PropertySender)).toBe(true);
+    expect(senderChoiceSaved({ applies: false, source: 'OrganizationDefault', sender: 'Manual' } as PropertySender)).toBe(false);
+    expect(senderChoiceSaved({ applies: true, source: 'DefaultConnected', sender: 'Manual' } as PropertySender)).toBe(false);
     expect(senderChoiceSaved(null)).toBe(false);
     expect(senderChoiceSaved({ applies: false, source: 'NotApplicable' } as PropertySender)).toBe(false);
   });
