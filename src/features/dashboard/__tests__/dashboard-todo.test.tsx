@@ -27,7 +27,7 @@ vi.mock('@/queries/use-properties', () => {
   const properties = [{ id: 'p-1', name: 'Casa Mare' }];
   return { useProperties: () => ({ data: properties, isSuccess: true }) };
 });
-vi.mock('@/queries/internalActivities', () => ({ useActivities: vi.fn(), useActivityCount: vi.fn(), useCloseActivity: vi.fn() }));
+vi.mock('@/queries/internalActivities', () => ({ useActivities: vi.fn(), useActivityCount: vi.fn() }));
 vi.mock('@/features/compliance/use-compliance', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/features/compliance/use-compliance')>()),
   useComplianceFineCount: vi.fn(),

@@ -412,11 +412,18 @@ const BACKEND_ACTIONS = [
 ] as const;
 
 /** The actions whose page does not exist in the app yet: the mapping of the listings of the channel manager and the stays and documents of the owner portal. */
-const ACTIONS_WITHOUT_A_PAGE_YET: readonly string[] = ['ConfirmChannelMapping', 'CheckImportedListing', 'ReviewOwnerStay', 'RenewOwnerDocument'];
+const ACTIONS_WITHOUT_A_PAGE_YET: readonly string[] = ['ConfirmChannelMapping', 'ReviewOwnerStay', 'RenewOwnerDocument'];
 
 describe('ACTION_ROUTE_MAP and the actions of the backend', () => {
   it.each(BACKEND_ACTIONS)('actionRouteMap_BackendAction_%s_HasAnEntryOrIsInTheListOfThoseWithoutAPageYet', (action) => {
     expect(Object.hasOwn(ACTION_ROUTE_MAP, action), action).toBe(!ACTIONS_WITHOUT_A_PAGE_YET.includes(action));
+  });
+
+  it('todoActionRoute_ImportedListing_OpensItsWizardOrReadOnlyProperty', () => {
+    const item = itemFor('CheckImportedListing', { entityType: 'Property', entityId: PROPERTY_ID });
+    expect(todoActionRoute(item, permissions(['property.write']))).toBe(`/app/short-rent/properties/create?propertyId=${PROPERTY_ID}`);
+    expect(todoActionRoute(item, permissions(['property.read']))).toBe(`/app/short-rent/properties/${PROPERTY_ID}`);
+    expect(todoActionRoute(item, permissions([]))).toBeNull();
   });
 
   it('actionRouteMap_EveryEntry_IsAnActionOfTheBackend', () => {

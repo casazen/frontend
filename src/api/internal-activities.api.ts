@@ -69,7 +69,4 @@ export const internalActivitiesApi = {
 
   /** The number on the nav badge: the urgent ones among them. */
   getUrgentCount: () => ApiClient.get<TodoCount>('/me/activities/count'),
-
-  /** Closes one item by hand (204; an item already closed answers 204 too, one the caller does not reach 404). */
-  close: (id: string) => ApiClient.post<void>(`/me/activities/${id}/close`),
 };

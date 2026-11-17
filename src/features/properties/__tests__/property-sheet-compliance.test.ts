@@ -47,6 +47,12 @@ describe('property nextStepOf with the compliance lights (NF-52, AC-NF52-9)', ()
     expect(nextStepOf({ ...active, ...facts, compliance: [line('red')] })).toBe(kind);
   });
 
+  it('does not ask Swiss hosts for an Italian CIN, while preserving other tasks', () => {
+    expect(nextStepOf({ ...active, country: 'CH', cinStatus: 'Missing' })).toBe('allInOrder');
+    expect(nextStepOf({ ...active, country: 'CH', cinStatus: 'Invalid', compliance: [line('red')] })).toBe('compliance');
+    expect(nextStepOf({ ...active, country: 'IT', cinStatus: 'Missing' })).toBe('cinMissing');
+  });
+
   it('complianceLineOf_IsTheWorstOfTheOnesNotInOrder', () => {
     const red = line('red', 'UploadIstatProof');
 

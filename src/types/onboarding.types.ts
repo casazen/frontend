@@ -721,6 +721,8 @@ export interface AssistChecklistStep {
  * and dates only: never a credential.
  */
 export interface AssistChecklistProperty {
+  /** Country of the property; absent when reading an older API or an organization-level block. */
+  country?: string | null;
   propertyId: string | null;
   propertyName: string | null;
   comune: string | null;

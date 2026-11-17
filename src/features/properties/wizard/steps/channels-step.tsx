@@ -10,7 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getProblemMessage } from '@/lib/api-errors';
-import { isValidCin } from '@/lib/cin-format';
+import { isValidCin, requiresItalianCin } from '@/lib/cin-format';
 import { useListingStatus, usePublishListing, type AdoptedTexts } from '@/queries/use-listing-status';
 import { useProperty } from '@/queries/use-properties';
 import { useChannelName } from '../../components/channel-name';
@@ -62,7 +62,7 @@ export function ChannelsStep({ form, propertyId, goTo, onAdopted }: ChannelsStep
 
   const entries = channelEntries(status.data);
   const selected = selectedChannels(entries, leftOut);
-  const cinValid = isValidCin(property.data?.cinCode);
+  const cinValid = !requiresItalianCin(property.data?.country) || isValidCin(property.data?.cinCode);
   const cinWaits = !cinValid && !cinLater;
   const outsideRows = (status.data?.channels ?? []).filter((row) => row.changedOutside.length > 0);
   // The CIN stays in CasaZen whatever the channel: the ones that receive content and have no row yet are included.
@@ -124,10 +124,10 @@ export function ChannelsStep({ form, propertyId, goTo, onAdopted }: ChannelsStep
         </ul>
       )}
 
-      <p className="flex items-start gap-2 text-sm text-foreground/70" data-testid="property-wizard-channels-cin-line">
+      {requiresItalianCin(property.data?.country) ? <p className="flex items-start gap-2 text-sm text-foreground/70" data-testid="property-wizard-channels-cin-line">
         <Landmark aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
         <span>{t('propertyWizard.channels.cin.stays', { channels: cinStaysFor.map(channelName).join(', ') })}</span>
-      </p>
+      </p> : null}
 
       {!cinValid ? (
         <Alert

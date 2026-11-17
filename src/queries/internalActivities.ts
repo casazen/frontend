@@ -78,24 +78,3 @@ export function useActivityCount({ enabled = true }: { enabled?: boolean } = {})
     refetchInterval: TODO_POLL_MS,
   });
 }
-
-/**
- * "Segna come fatto": closes one item by hand. It takes the item off the list of the whole organization, so it asks the permission to
- * write the properties (`property.write` of Affitti brevi): the card offers it only to who holds it and the endpoint must ask the same,
- * a refusal (403) being told by the error toast. The list and the number are read again whatever the answer: when the item was already
- * closed or is not the caller's any more (404), reading the list is what takes it off the screen.
- */
-export function useCloseActivity(id: string) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: () => internalActivitiesApi.close(id),
-    onSuccess: () => {
-      toast.success(i18n.t('activity.todo.closed'));
-    },
-    onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('activity.todo.closeError'));
-    },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: [INTERNAL_ACTIVITIES_KEY] }),
-  });
-}
