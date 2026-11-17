@@ -9,7 +9,10 @@ import {FeatureFlagsContext} from '../../src/contexts/feature-flags-context';
 import {DEFAULT_FEATURE_FLAGS} from '../../src/config/feature-flags';
 import {OwnerFinancialProfilePage} from '../../src/features/owners/owner-financial-profile-page';
 import {profile, policy, OWNER_ID} from '../../src/features/owner-accounting/__tests__/owner-accounting-fixtures';
-import axios from '../../src/lib/axios';
+import axios, { setApiAuthHandlers } from '../../src/lib/axios';
+// Follow the same authenticated request path as the app; the adapter below keeps every response local.
+setApiAuthHandlers({ getAccessToken: async () => 'owner-profile-fixture-token' });
+
 // Isolated browser fixture for the production page. These synthetic responses never reach an external service.
 const fiscal = profile({ masked: false, legalName: 'Marta Rossi', fiscalCode: 'RSSMRT80A41F205X', legalAddress: 'Via Roma 12, Como', bankAccountReference: 'IT60X0542811101000000123456' });
 const address = { street: 'Via Roma', buildingNumber: '12', postalCode: '22100', town: 'Como', province: 'CO', country: 'IT' };
