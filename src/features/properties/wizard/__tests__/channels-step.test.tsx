@@ -12,6 +12,7 @@ const { state, publishMock, goTo } = vi.hoisted(() => ({
   state: {
     status: { data: undefined as unknown, isLoading: false, isError: false, error: null as unknown, refetch: vi.fn() },
     cinCode: 'IT058091C27G5FFZDZ' as string | null,
+    country: 'IT',
   },
   publishMock: vi.fn(),
   goTo: vi.fn(),
@@ -22,7 +23,7 @@ vi.mock('@/queries/use-listing-status', () => ({
   usePublishListing: () => ({ mutateAsync: publishMock, isPending: false }),
   useResolveOutsideChange: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
-vi.mock('@/queries/use-properties', () => ({ useProperty: () => ({ data: { id: 'p1', cinCode: state.cinCode } }) }));
+vi.mock('@/queries/use-properties', () => ({ useProperty: () => ({ data: { id: 'p1', cinCode: state.cinCode, country: state.country } }) }));
 
 const row = (channel: string, overrides: Partial<ListingChannelStatus> = {}): ListingChannelStatus => ({
   channel,
@@ -78,6 +79,7 @@ describe('ChannelsStep (E02/F03/US01/T04)', () => {
     publishMock.mockResolvedValue({ propertyId: 'p1', channels: [] });
     goTo.mockReset();
     state.cinCode = 'IT058091C27G5FFZDZ';
+    state.country = 'IT';
     withRows();
   });
 
@@ -90,6 +92,17 @@ describe('ChannelsStep (E02/F03/US01/T04)', () => {
     }
     // The line says where the CIN is not sent yet (NF-30).
     expect(screen.getByTestId('property-wizard-channels-cin-line')).toHaveTextContent('Il CIN resta in CasaZen: per ora non viene inviato a Booking.com, Airbnb, Vrbo.');
+  });
+
+  it('SwissProperty_DoesNotAskForItalianCinOrBlockPublication', async () => {
+    state.country = 'CH';
+    state.cinCode = null;
+    render(<Harness />);
+    expect(screen.queryByTestId('property-wizard-channels-cin')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('property-wizard-channels-cin-line')).not.toBeInTheDocument();
+    expect(publishButton()).toBeEnabled();
+    fireEvent.click(publishButton());
+    await waitFor(() => expect(publishMock).toHaveBeenCalled());
   });
 
   it('eachChannel_StateInWordsCompletenessReasonAndTheStepsThatLackDataWithCorreggi', () => {
@@ -126,6 +139,7 @@ describe('ChannelsStep (E02/F03/US01/T04)', () => {
     // With a valid CIN the same row points where the server says: the data of the property.
     goTo.mockReset();
     state.cinCode = 'IT058091C27G5FFZDZ';
+    state.country = 'IT';
     cleanup();
     render(<Harness />);
     fireEvent.click(screen.getByTestId('property-wizard-fix-booking_xml-base'));

@@ -21277,6 +21277,12 @@
       "popupBlocked": "Il browser ha bloccato la finestra di stampa. Verifica le impostazioni del browser.",
       "print": "Stampa",
       "title": "Codice QR per verifica ospiti"
+    },
+    "swissRegistration": {
+      "title": "Registrazione in Svizzera",
+      "description": "Il CIN italiano non si applica a questa struttura. Verifica gli obblighi del Cantone e del Comune in cui si trova l’alloggio.",
+      "ticino": "In Ticino, quindi anche a Lugano, occorre ottenere il numero identificativo cantonale e riportarlo negli annunci. Questo numero non è un CIN. CasaZen non verifica automaticamente la registrazione cantonale.",
+      "link": "Registrazione alloggi · Ticino Turismo"
     }
   },
   "propertyBooking": {
@@ -32021,5 +32027,17 @@
     "resumePayment": "Gestisci o completa il pagamento",
     "roomUnit": " per camera",
     "invitationOnly": "Devi entrare in un’agenzia esistente? Apri il link di invito ricevuto dall’amministratore. Non occorre creare una nuova agenzia o acquistare un piano personale."
+  },
+  "complianceJurisdiction": {
+      "foreignTitle": "Adempimenti del paese della struttura",
+      "foreignDescription": "Questura, Alloggiati Web e ISTAT italiani non si applicano a questo immobile. Non servono le relative credenziali né una scelta del mittente italiano. Verifica invece gli obblighi del luogo: CasaZen non li considera assolti automaticamente.",
+      "ticinoLink": "Ticino · notifica degli ospiti alla Polizia cantonale",
+      "guideTitle": "Come completare questa richiesta",
+      "guidePrepare": "Controlla l’immobile e il paese. Verifica chi invierà i dati: se invia il channel manager, apri il suo pannello con l’accesso della struttura.",
+      "guidePolice": "Nel pannello apri il collegamento Alloggiati Web. Usa le credenziali rilasciate dalla Questura competente e l’eventuale identificativo dell’appartamento.",
+      "guideIstat": "Nel pannello apri il collegamento statistico della regione della struttura. Controlla il portale regionale e inserisci le credenziali e il codice struttura previsti da quel servizio.",
+      "guideBoth": "Configura separatamente il collegamento Alloggiati Web e quello statistico regionale. Le credenziali dei due servizi possono essere diverse.",
+      "guideCheck": "Esegui la verifica del collegamento prima di chiudere la richiesta. Se il sistema non può verificarlo, registra un esito dichiarato con una nota che spieghi il controllo effettuato.",
+      "guideMissing": "Se manca un accesso, chiedilo all’utente dalla procedura di assistenza prevista. Non inserire credenziali nelle note della richiesta."
   }
 }

@@ -51,3 +51,8 @@ export const optionalCinSchema = z
   .string()
   .refine(isEmptyOrValidCin, { message: CIN_FORMAT_MESSAGE_KEY })
   .optional();
+
+/** The Italian CIN is only applicable to Italian properties. Unknown countries remain conservative. */
+export function requiresItalianCin(country: string | null | undefined): boolean {
+  return country?.toUpperCase() !== 'CH';
+}

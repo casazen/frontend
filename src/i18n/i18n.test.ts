@@ -213,6 +213,8 @@ describe('keys used in code', () => {
     expect(Object.keys(SOURCES).length).toBeGreaterThan(100);
     expect(used.size).toBeGreaterThan(1000);
     expect(used.has('property.validation.name.minLength')).toBe(true);
+    expect(used.has('userRemoval.failureTitle')).toBe(true);
+    expect(used.has('userRemoval.alternative')).toBe(true);
   });
 
   it('staticKeys_UsedInCode_ExistInItAndEn', () => {
