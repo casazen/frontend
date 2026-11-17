@@ -24,7 +24,7 @@ const sampleStay = {
   guest: { firstName: 'Mario', lastName: 'Rossi', email: 'mario@example.com', phone: '', country: 'IT' },
 };
 
-// The suppliers are searched by the comune chosen from the official list: a property without one is asked to add it (SR-09a).
+// The property is used when scheduling a job from Interventions.
 const sampleProperty = buildCreatedProperty({
   id: PROPERTY_ID,
   name: 'Casa Marketplace',
@@ -285,10 +285,12 @@ test.describe('Marketplace suppliers (#340)', () => {
 
     await expect(page.getByTestId('marketplace-request-service-btn')).toHaveCount(0);
     await page.getByTestId('marketplace-open-page').click();
-    await expect(page.getByTestId('marketplace-supplier-page')).toBeVisible({ timeout: 15_000 });
+    const supplierPage = page.getByTestId('marketplace-supplier-page');
+    await expect(supplierPage).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('marketplace-supplier-detail')).toHaveCount(0);
     await expect(page).toHaveURL(new RegExp(`/marketplace/suppliers/${SUPPLIER_ORG_ID}$`));
-    await expect(page.getByTestId(`marketplace-service-${SERVICE_ID}`)).toBeVisible();
-    await expect(page.getByTestId(`marketplace-request-service-${SERVICE_ID}`)).toHaveCount(0);
+    await expect(supplierPage.getByTestId(`marketplace-service-${SERVICE_ID}`)).toBeVisible();
+    await expect(supplierPage.getByTestId(`marketplace-request-service-${SERVICE_ID}`)).toHaveCount(0);
 
     // Intervention requests still work from their own workflow.
     await page.goto(demoUrl(`/app/short-rent/interventions/request?propertyId=${PROPERTY_ID}&type=cleaning&supplierOrgId=${SUPPLIER_ORG_ID}`, 'short-stay'));
