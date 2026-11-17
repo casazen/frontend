@@ -21277,6 +21277,12 @@
       "popupBlocked": "The browser blocked the print window. Check your browser settings.",
       "print": "Print",
       "title": "Guest verification QR code"
+    },
+    "swissRegistration": {
+      "title": "Registration in Switzerland",
+      "description": "The Italian CIN does not apply to this property. Check the requirements of the canton and municipality where the property is located.",
+      "ticino": "In Ticino, including Lugano, obtain the cantonal identification number and display it in listings. This number is separate from the Italian CIN. CasaZen does not automatically verify cantonal registration.",
+      "link": "Accommodation registration · Ticino Turismo"
     }
   },
   "propertyBooking": {
