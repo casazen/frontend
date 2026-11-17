@@ -22,13 +22,13 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 1280, height: 900 
     await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'owner');
     await expect(page.getByRole('heading', { name: 'Di chi è questa casa?' })).toBeVisible();
     await expectNothingSticksOut(page, 'owner step');
-    await testInfo.attach(`owner-step-${viewport.width}`, { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
+    await page.screenshot({ path: testInfo.outputPath(`owner-onboarding-step-${viewport.width}.png`), fullPage: true, animations: 'disabled' });
     await page.getByTestId('property-wizard-next').click();
     await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'owner');
     await page.getByRole('button', { name: 'Assegna proprietario', exact: true }).click();
     await expect(page.getByTestId('owner-manual-property')).toHaveValue(NEW_PROPERTY_ID);
     await expect(page.getByTestId('owner-manual-property')).toHaveAttribute('readonly');
     await expectNothingSticksOut(page, 'owner assignment dialog');
-    await testInfo.attach(`owner-assignment-${viewport.width}`, { body: await page.screenshot(), contentType: 'image/png' });
+    await page.screenshot({ path: testInfo.outputPath(`owner-onboarding-assignment-${viewport.width}.png`), animations: 'disabled' });
   });
 }

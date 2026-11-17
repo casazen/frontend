@@ -49,6 +49,15 @@ jobs:
         env:
           CI: true
 
+      - name: Upload owner onboarding visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: owner-onboarding-visual-${{ matrix.shard }}
+          path: test-results/**/owner-onboarding-*.png
+          if-no-files-found: ignore
+          retention-days: 7
+
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
@@ -58,11 +67,10 @@ jobs:
             test-results/
           retention-days: 7
 
-      - name: Upload owner onboarding visual evidence
+      - uses: actions/upload-artifact@v4
         if: always()
-        uses: actions/upload-artifact@v4
         with:
-          name: owner-onboarding-visual-${{ matrix.shard }}
-          path: test-results/property-owner-setup-*/attachments/*.png
+          name: person-access-visual-${{ matrix.shard }}
+          path: test-results/**/person-access-*.png
           if-no-files-found: ignore
           retention-days: 7

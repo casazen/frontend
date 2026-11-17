@@ -8,7 +8,7 @@ import { useOwnerReadiness } from '@/queries/use-owner-onboarding';
 import { propertyHasOwner } from '../owner-step-model';
 
 /** Assignment stays in the property flow; the existing checked import is portalled outside the wizard's form. */
-export function OwnerStep({ propertyId }: { propertyId: string }) {
+export function OwnerStep({ propertyId, canAssign }: { propertyId: string; canAssign: boolean }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const readiness = useOwnerReadiness(true, propertyId);
@@ -16,11 +16,11 @@ export function OwnerStep({ propertyId }: { propertyId: string }) {
   return (
     <section className="space-y-5" data-testid="property-owner-step">
       <Alert variant={ready ? 'success' : 'info'}>
-        {t(ready ? 'propertyWizard.owner.ready' : 'propertyWizard.owner.required')}
+        {t(ready ? 'propertyWizard.owner.ready' : canAssign ? 'propertyWizard.owner.required' : 'propertyWizard.owner.adminRequired')}
       </Alert>
       {readiness.isError ? <Alert variant="danger">{t('propertyWizard.owner.loadError')}</Alert> : null}
       <div className="flex flex-wrap gap-3">
-        <Button type="button" onClick={() => setOpen(true)}>{t('propertyWizard.owner.assign')}</Button>
+        {canAssign ? <Button type="button" onClick={() => setOpen(true)}>{t('propertyWizard.owner.assign')}</Button> : null}
         <Button type="button" variant="outline" loading={readiness.isFetching} onClick={() => void readiness.refetch()}>{t('shared.errorState.retry')}</Button>
       </div>
       <Dialog open={open} onOpenChange={setOpen}>

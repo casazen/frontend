@@ -12,11 +12,13 @@ import { getActivationBlockedProblem } from '@/api/compliance.api';
 import { openReminders } from '@/features/compliance/activation-wizard-model';
 import { useCompleteComplianceActivation, useComplianceActivation } from '@/features/compliance/use-compliance';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
+import { useWorkspace } from '@/hooks/use-workspace';
 import { getProblemMessage } from '@/lib/api-errors';
 import { getPlanLimitMessage, getPlanUpgradeCta, getPlanUpgradePath, isPlanLimitError } from '@/lib/entitlement-error';
 import { clearWizardDraft } from '@/lib/wizard-draft';
 import { photoMetaSignature } from '@/lib/listing-photos';
 import { textDraftsChanged, textDraftsFromProfile } from '@/lib/listing-texts';
+import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { usePropertyRooms, useSavePropertyRooms, useSaveStayDiscounts } from '@/queries/use-listing-data';
 import type { AdoptedTexts } from '@/queries/use-listing-status';
 import { usePlanUsage } from '@/queries/use-properties';
@@ -172,6 +174,7 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, org } = useCurrentUser();
+  const { contexts } = useWorkspace();
   const create = useWizardCreateProperty();
   const saveProperty = useWizardSaveProperty();
   const saveRoomsMutation = useSavePropertyRooms();
@@ -208,8 +211,10 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
   // Said before the first step is saved: the plan usage (any writer reads it) or the entitlement (the billing administrator) say
   // there is no room, or the server just refused (403 `plan_limit_reached`). The server stays the source of truth on a create.
   const planUsage = usePlanUsage(!propertyId);
-  const entitlement = useEntitlement();
-  const ownerRequired = entitlement.data?.isAgency === true;
+  const canAssignOwner = isOrgBillingAdmin(contexts);
+  const entitlement = useEntitlement(canAssignOwner);
+  // Property managers may read who owns the property but cannot read billing entitlements or assign shares.
+  const ownerRequired = entitlement.data?.isAgency ?? (org?.isAgency === true && org.planTier === 'Agency');
   const verifyOwner = async () => {
     if (!ownerRequired || !propertyId) return;
     const report = await ownerOnboardingApi.getReadiness(propertyId);
@@ -371,7 +376,7 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
       title: t('propertyWizard.owner.title'),
       purpose: t('propertyWizard.owner.purpose'),
       beforeNext: verifyOwner,
-      render: () => propertyId ? <OwnerStep propertyId={propertyId} /> : null,
+      render: () => propertyId ? <OwnerStep propertyId={propertyId} canAssign={canAssignOwner} /> : null,
     } satisfies WizardStep<PropertyWizardValues>] : []),
     {
       id: 'photos',

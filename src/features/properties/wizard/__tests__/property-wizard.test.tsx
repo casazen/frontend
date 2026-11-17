@@ -6,11 +6,13 @@ import type { Property } from '@/types';
 import { PropertyWizard } from '../property-wizard';
 import type { WizardListingSeed } from '../property-wizard-model';
 
-const { flags, createMock, saveMock, saveTextsMock, ownerReadinessMock, entitlement, toast, ADOPTED } = vi.hoisted(() => ({
+const { flags, createMock, saveMock, saveTextsMock, ownerReadinessMock, entitlement, org, workspace, toast, ADOPTED } = vi.hoisted(() => ({
   flags: { octorateConnector: false },
   createMock: vi.fn(),
   ownerReadinessMock: vi.fn(),
   entitlement: { data: undefined as { isAgency: boolean } | undefined },
+  org: { id: 'o1', isAgency: false, planTier: 'Pro' },
+  workspace: { contexts: [{ contextKey: 'account', roleKey: 'org_owner' }] },
   saveMock: vi.fn(),
   saveTextsMock: vi.fn(),
   toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() },
@@ -22,12 +24,13 @@ const { flags, createMock, saveMock, saveTextsMock, ownerReadinessMock, entitlem
 }));
 
 vi.mock('@/api/owner-onboarding.api', () => ({ ownerOnboardingApi: { getReadiness: ownerReadinessMock } }));
-vi.mock('../steps/owner-step', () => ({ OwnerStep: () => <div>Owner assignment</div> }));
+vi.mock('../steps/owner-step', () => ({ OwnerStep: ({ canAssign }: { canAssign: boolean }) => <div>{canAssign ? 'Owner assignment' : 'Owner check'}</div> }));
 vi.mock('sonner', () => ({ toast }));
+vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => workspace }));
 vi.mock('@/hooks/use-feature-flags', () => ({ useFeatureFlags: () => ({ flags, isLoading: false }) }));
 vi.mock('@/queries/use-users', () => ({
-  useCurrentUser: () => ({ user: { id: 'u1' }, org: { id: 'o1' } }),
-  useEntitlement: () => entitlement,
+  useCurrentUser: () => ({ user: { id: 'u1' }, org }),
+  useEntitlement: (enabled = true) => enabled ? entitlement : { data: undefined },
 }));
 vi.mock('@/queries/use-properties', () => ({
   usePlanUsage: () => ({ data: { used: 0, max: null, unlimited: true, canAdd: true } }),
@@ -138,17 +141,26 @@ describe('PropertyWizard (E02/F03/US01)', () => {
     toast.success.mockReset();
     flags.octorateConnector = false;
     entitlement.data = undefined;
+    org.isAgency = false;
+    org.planTier = 'Pro';
+    workspace.contexts[0].roleKey = 'org_owner';
     ownerReadinessMock.mockReset();
   });
 
-  it('requires an owner for an agency and checks the server before continuing', async () => {
-    entitlement.data = { isAgency: true };
-    ownerReadinessMock.mockResolvedValue({ summary: { owners: 0 }, properties: [], truncated: false });
+  it.each([
+    ['an administrator', 'org_owner', 'Owner assignment'],
+    ['a property manager without the billing entitlement', 'org_manager', 'Owner check'],
+  ])('requires an owner for %s and verifies the persisted assignment', async (_, roleKey, ownerStepText) => {
+    workspace.contexts[0].roleKey = roleKey;
+    org.isAgency = true;
+    org.planTier = 'Agency';
+    if (roleKey === 'org_owner') entitlement.data = { isAgency: true };
+    ownerReadinessMock.mockResolvedValue({ summary: { owners: 0, properties: 1 }, properties: [], truncated: false });
     window.history.replaceState({}, '', '/app/short-rent/properties/create?propertyId=p1&step=owner');
     render(<MemoryRouter initialEntries={['/app/short-rent/properties/create?propertyId=p1&step=owner']}>
       <PropertyWizard property={PROPERTY} onlySteps={['finish']} />
     </MemoryRouter>);
-    expect(screen.getByText('Owner assignment')).toBeInTheDocument();
+    expect(screen.getByText(ownerStepText)).toBeInTheDocument();
     fireEvent.click(screen.getByTestId('property-wizard-next'));
     await waitFor(() => expect(ownerReadinessMock).toHaveBeenCalledOnce());
     expect(await screen.findByText(i18n.t('propertyWizard.errors.saveFailed'))).toBeInTheDocument();
