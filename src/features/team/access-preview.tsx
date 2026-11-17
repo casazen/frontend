@@ -61,17 +61,17 @@ export function AccessPreview({ role, areas, deactivated = false }: { role: OrgR
 
       {can.length > 0 ? (
         <PreviewGroup icon={Check} label={t('team.preview.can')}>
-          {can.join(', ')}
+          <ul role="list" className="grid gap-x-6 gap-y-2 sm:grid-cols-2">{can.map((name) => <li key={name} className="min-w-0 break-words">{name}</li>)}</ul>
         </PreviewGroup>
       ) : null}
       {read.length > 0 ? (
         <PreviewGroup icon={Eye} label={t('team.preview.read')}>
-          {read.join(', ')}
+          <ul role="list" className="grid gap-x-6 gap-y-2 sm:grid-cols-2">{read.map((name) => <li key={name} className="min-w-0 break-words">{name}</li>)}</ul>
         </PreviewGroup>
       ) : null}
       {cannot.length > 0 ? (
         <PreviewGroup icon={Minus} label={t('team.preview.cannot')}>
-          {cannot.join(', ')}
+          <ul role="list" className="grid gap-x-6 gap-y-2 sm:grid-cols-2">{cannot.map((name) => <li key={name} className="min-w-0 break-words">{name}</li>)}</ul>
         </PreviewGroup>
       ) : null}
     </div>

@@ -34,7 +34,7 @@ for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 
     await page.getByTestId('property-wizard-ai-price-yes').click();
     await expect(page.getByTestId('property-wizard-ai-price-none')).toBeVisible();
     await expect(input).toHaveValue('120');
-    await testInfo.attach(`price-unavailable-${viewport.width}`, { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
+    await page.screenshot({ path: testInfo.outputPath(`ai-price-unavailable-${viewport.width}.png`), fullPage: true, animations: 'disabled' });
     await page.getByRole('button', { name: 'Riprova', exact: true }).click();
     await expect(page.getByTestId('property-wizard-ai-price-rate')).toContainText('CHF');
     await expect(input).toHaveValue('120');
@@ -44,6 +44,6 @@ for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 
     expect(calls).toBe(2);
     const sideways = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(sideways).toBeLessThanOrEqual(1);
-    await testInfo.attach(`price-applied-${viewport.width}`, { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
+    await page.screenshot({ path: testInfo.outputPath(`ai-price-applied-${viewport.width}.png`), fullPage: true, animations: 'disabled' });
   });
 }
