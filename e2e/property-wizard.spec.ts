@@ -145,6 +145,7 @@ test.describe('Add property wizard', () => {
     await expect(page.getByTestId('property-setup-compliance')).toContainText('Devi ancora confermare');
     await page.getByTestId('property-wizard-next').click();
     await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'compliance');
+    await expect(page.getByTestId('wizard-finish-error')).toContainText('Configura e salva il mittente degli invii');
     expect(state.completeCalls).toBe(0);
 
     await page.getByTestId('property-setup-open-sender').click();

@@ -199,6 +199,7 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
   const savedDiscounts = useRef(JSON.stringify(stayDiscountTiers(defaults.stayDiscounts)));
   const [planLimitHit, setPlanLimitHit] = useState(false);
   const [tosAccepted, setTosAccepted] = useState(false);
+  const [setupFailure, setSetupFailure] = useState<string | null>(null);
   /** The host knows that the documents and the safety sheet still open are their obligations (reminders, PO decision 2026-11-01). */
   const [remindersAccepted, setRemindersAccepted] = useState(false);
   /** The blockers of the last refused activation (409): the server knows some that the screen could not. */
@@ -321,19 +322,30 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
 
   // The account data lives in its own guided flows; verify the persisted answer, not a local checkbox.
   const verifyCompliance = async (values: PropertyWizardValues) => {
+    setSetupFailure(null);
     if (!propertyId || !complianceOn || values.country !== 'IT') return;
     const sender = await propertySenderApi.get(propertyId);
-    if (!senderChoiceSaved(sender)) throw new Error(t('propertySetup.compliance.required'));
+    if (!senderChoiceSaved(sender)) {
+      const message = t('propertySetup.compliance.required');
+      setSetupFailure(message);
+      throw new Error(message);
+    }
   };
   const verifyBilling = async () => {
+    setSetupFailure(null);
     if (!billingOn) return;
-    if (!billingIdentityComplete(await getBillingSetup())) throw new Error(t('propertySetup.billing.required'));
+    if (!billingIdentityComplete(await getBillingSetup())) {
+      const message = t('propertySetup.billing.required');
+      setSetupFailure(message);
+      throw new Error(message);
+    }
   };
 
   // The last button: writes the switch (first, so that a «no» is in place when the property goes live) and activates, when the server
   // says that nothing blocks; with a blocker open it sends nothing and the host finishes later.
   const finish = async (values: PropertyWizardValues) => {
     if (!propertyId) return null;
+    setSetupFailure(null);
     // Recheck the setup before activation, including when opening the last step directly.
     if (stage === 'ready' && !onlySteps) {
       await verifyCompliance(values);
@@ -508,8 +520,9 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
       onlySteps={onlySteps}
       defaultValues={defaults}
       initialStepId={initialStepId}
+      onStepChange={() => setSetupFailure(null)}
       finishLabel={t(`propertyWizard.last.button.${stage === 'ready' ? 'activate' : stage === 'active' ? 'done' : 'later'}`)}
-      finishFailedMessage={t('propertyWizard.errors.saveFailed')}
+      finishFailedMessage={setupFailure ?? t('propertyWizard.errors.saveFailed')}
       onFinish={finish}
       // The first step is not saved yet: the draft keeps its answers over a reload. Once the property exists they are on the server.
       draft={propertyId ? false : { accept: (saved) => saved.step === 'base' }}
