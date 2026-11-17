@@ -32027,5 +32027,17 @@
     "resumePayment": "Manage or complete payment",
     "roomUnit": " per room",
     "invitationOnly": "Joining an existing agency? Open the invitation link from its administrator. You do not need to create an agency or buy a personal plan."
+  },
+  "complianceJurisdiction": {
+      "foreignTitle": "Requirements in the property’s country",
+      "foreignDescription": "Italian Questura, Alloggiati Web and ISTAT do not apply to this property. Their credentials and an Italian sender choice are not required. Check the local requirements instead: CasaZen does not automatically consider them fulfilled.",
+      "ticinoLink": "Ticino · guest notifications to the cantonal police",
+      "guideTitle": "How to complete this request",
+      "guidePrepare": "Check the property and its country. Confirm who sends the data: if the channel manager sends it, open its panel using the property’s access.",
+      "guidePolice": "Open the Alloggiati Web connection in the panel. Use the credentials issued by the competent Questura and the apartment identifier where required.",
+      "guideIstat": "Open the statistics connection for the property’s region in the panel. Check the regional portal and enter the credentials and property code required by that service.",
+      "guideBoth": "Set up the Alloggiati Web connection and the regional statistics connection separately. These services may use different credentials.",
+      "guideCheck": "Test the connection before closing the request. If the system cannot verify it, record a declared outcome with a note explaining the check performed.",
+      "guideMissing": "If an access is missing, ask the user through the established support process. Never put credentials in the request notes."
   }
 }
