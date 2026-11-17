@@ -334,8 +334,8 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
   // says that nothing blocks; with a blocker open it sends nothing and the host finishes later.
   const finish = async (values: PropertyWizardValues) => {
     if (!propertyId) return null;
-    // A direct link to the last step must not bypass the data asked by the full onboarding.
-    if (!onlySteps) {
+    // Recheck the setup before activation, including when opening the last step directly.
+    if (stage === 'ready' && !onlySteps) {
       await verifyCompliance(values);
       await verifyBilling();
     }

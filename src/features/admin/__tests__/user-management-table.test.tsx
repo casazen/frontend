@@ -1,3 +1,4 @@
+import { AxiosError } from 'axios';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -127,6 +128,35 @@ describe('UserManagementTable deactivation and reactivation (PL-03)', () => {
 
     await waitFor(() => expect(toast.success).toHaveBeenCalledWith(i18n.t('toast.userRemoved')));
     expect(UsersApi.deleteRegisteredUser).toHaveBeenCalledWith('auth0|active');
+  });
+
+  it('remove_rejectedConfiguration_keepsDialogOpenWithActionableError', async () => {
+    vi.mocked(UsersApi.deleteRegisteredUser).mockRejectedValue(new AxiosError('failed', undefined, undefined, undefined, {
+      status: 502, statusText: 'Bad Gateway', headers: {}, config: {} as never,
+      data: { code: 'auth0_management_credentials_rejected' },
+    }));
+    renderTable([active]);
+
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('admin.users.table.removeAction') }));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('admin.users.deleteDialog.confirm') }));
+
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent(i18n.t('userRemoval.credentialsRejected'));
+    expect(dialog).toHaveTextContent(i18n.t('userRemoval.alternative'));
+    expect(toast.success).not.toHaveBeenCalled();
+    expect(within(dialog).getByRole('button', { name: i18n.t('admin.users.deleteDialog.confirm') })).toBeEnabled();
+  });
+
+  it('remove_whilePending_cannotDismissOrSubmitTwice', async () => {
+    vi.mocked(UsersApi.deleteRegisteredUser).mockReturnValue(new Promise(() => {}));
+    renderTable([active]);
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('admin.users.table.removeAction') }));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('admin.users.deleteDialog.confirm') }));
+    await waitFor(() => expect(within(dialog).getByRole('button', { name: i18n.t('admin.users.deleteDialog.removing') })).toBeDisabled());
+    fireEvent.keyDown(dialog, { key: 'Escape' });
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(UsersApi.deleteRegisteredUser).toHaveBeenCalledTimes(1);
   });
 
   it('remove_cancel_doesNotDelete', async () => {

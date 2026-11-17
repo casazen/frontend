@@ -196,13 +196,17 @@ test.describe('Add property wizard', () => {
     await expect(page).not.toHaveURL(/propertyId=/);
   });
 
-  test('«Finisci dopo» saves what there is and activates nothing: the property stays to be completed', async ({ page }) => {
-    await goToLastStep(page);
+  test('«Finisci dopo» leaves a property as a draft even if reporting was never configured', async ({ page }) => {
+    state.senderSaved = false;
+    await mockPropertiesApi(page, [buildCreatedProperty({ name: 'Casa Procedura', nightlyRate: 135 })]);
+    await page.goto(demoUrl(`/app/short-rent/properties/create?propertyId=${NEW_PROPERTY_ID}&step=finish`, 'short-stay'));
+    await expect(page.getByTestId('property-wizard-finish')).toHaveText(/Finisci dopo/);
 
     await page.getByTestId('property-wizard-finish').click();
 
     await expect(page.getByRole('heading', { name: /Casa Procedura.*è salvato/ })).toBeVisible();
     expect(state.completeCalls).toBe(0);
+    expect(state.senderSaved).toBe(false);
     // What is missing is listed with the button that goes where it is fixed.
     await page.getByTestId('property-wizard-done-fix-cin').click();
     await expect(page).toHaveURL(/step=finish/);

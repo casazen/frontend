@@ -1,3 +1,4 @@
+import { SwissRegistrationGuidance } from '@/features/properties/components/swiss-registration-guidance';
 import { useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -33,7 +34,7 @@ import {
   propertyFormPayload,
   wizardStepIds,
 } from '@/features/compliance/activation-wizard-model';
-import { CIN_FORMAT_MESSAGE_KEY, isEmptyOrValidCin, normalizeCin } from '@/lib/cin-format';
+import { CIN_FORMAT_MESSAGE_KEY, isEmptyOrValidCin, normalizeCin, requiresItalianCin } from '@/lib/cin-format';
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import { getPropertyDocumentTypeLabel } from '@/lib/i18n-labels';
 import type { ActivationBlocker, ComplianceActivationResult, ComplianceStepStatus } from '@/types/compliance.types';
@@ -124,7 +125,7 @@ function ActivationWizardContent({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const steps = activation.steps;
+  const steps = requiresItalianCin(property.country) ? activation.steps : activation.steps.filter((step) => step.id !== 'cin' && step.id !== 'safety');
   const texts = useStepTexts(steps);
   const stepIds = wizardStepIds(steps);
 
@@ -289,6 +290,8 @@ function ActivationWizardContent({
             </Button>
           </div>
         )}
+
+        {!requiresItalianCin(property.country) ? <SwissRegistrationGuidance /> : null}
 
         <StepIndicator
           stepIds={stepIds}

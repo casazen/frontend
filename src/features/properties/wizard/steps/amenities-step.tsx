@@ -109,7 +109,7 @@ export function AmenitiesStep({ form, propertyId }: AmenitiesStepProps) {
         {chosen > 0 ? t('propertyWizard.amenities.count', { count: chosen }) : t('propertyWizard.amenities.none')}
       </p>
 
-      <SafetyCard propertyId={propertyId} amenities={amenities} areaSqm={area > 0 ? area : null} />
+      {form.watch('country') === 'IT' ? <SafetyCard propertyId={propertyId} amenities={amenities} areaSqm={area > 0 ? area : null} /> : null}
     </>
   );
 }
