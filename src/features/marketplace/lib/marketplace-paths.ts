@@ -13,7 +13,7 @@ export const MARKETPLACE_MINE_PATH = `${MARKETPLACE_PATH}/mine`;
 /** The page where the channels are connected: the connect-your-channels wizard starts there, and the groups that wait for it lead to it. */
 export const CHANNELS_PAGE_PATH = '/app/short-rent/channels';
 
-/** The parameter of the address that holds the property the marketplace is about. */
+/** The selected property for an integration setup or an active integration’s details. */
 export const MARKETPLACE_PROPERTY_PARAM = 'propertyId';
 
 /** The parameter of the address that holds the words of the search. */
@@ -50,8 +50,7 @@ export const marketplaceFunctionRequestPath = (moduleCode: string) => `${MARKETP
 export const marketplacePartnerActivationPath = (code: string) => `${MARKETPLACE_PATH}/partners/${encodeURIComponent(code)}/activate`;
 
 /**
- * `path` with the property the marketplace is about (and any other parameter given): every link of the marketplace carries the
- * property, so that going from Scopri to a category or to a supplier stays on the property that was chosen.
+ * `path` with the optional property for a specific integration action and any additional query parameters.
  */
 export function marketplaceHref(path: string, propertyId: string | null | undefined, extra: Record<string, string | undefined> = {}): string {
   const params = new URLSearchParams();

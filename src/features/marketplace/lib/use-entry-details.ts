@@ -19,6 +19,7 @@ export function useOpenEntryDetails() {
           const next = new URLSearchParams(previous);
           next.set(MARKETPLACE_ENTRY_PARAM, marketplaceEntryValue(entry));
           if (propertyId) next.set(MARKETPLACE_PROPERTY_PARAM, propertyId);
+          else next.delete(MARKETPLACE_PROPERTY_PARAM);
           return next;
         },
         // The card is part of the page, not a step of the way: it takes the place of the entry of the history, and Back leaves the page.

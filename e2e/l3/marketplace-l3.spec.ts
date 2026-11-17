@@ -61,7 +61,7 @@ test.describe('L3 marketplace: supplier request for a stay', () => {
   test.beforeEach(async ({ page }) => {
     requireE2eCredentials();
     await page.goto('/app/short-rent/marketplace');
-    await expect(page.getByTestId('marketplace-property-select')).toBeVisible({ timeout: 60_000 });
+    await expect(page.getByTestId('marketplace-page')).toBeVisible({ timeout: 60_000 });
     const token = await readAccessToken(page);
     expect(token, 'access token of the E2E user').toBeTruthy();
     auth = { Authorization: `Bearer ${token}` };
@@ -85,7 +85,7 @@ test.describe('L3 marketplace: supplier request for a stay', () => {
     expect(((await refused.json()) as { code?: string }).code).toBe('supplier_not_found');
   });
 
-  test('AC: a request sent from the marketplace for a stay shows in the booking detail and in the app query', async ({
+  test('AC: a request sent from Interventions for a stay shows in the booking detail and in the app query', async ({
     page,
     request,
   }) => {
@@ -105,11 +105,12 @@ test.describe('L3 marketplace: supplier request for a stay', () => {
     // its request at the end.
     const startTime = `${String(12 + (Date.now() % 8)).padStart(2, '0')}:00`;
 
-    // The suppliers of the category have a page of their own (MKT): the category in the address, the property chosen.
-    await page.goto(`/app/short-rent/marketplace/categories/cleaning?propertyId=${propertyId}`);
+    // Supplier discovery is account-wide; the actual job is created in Interventions.
+    await page.goto('/app/short-rent/marketplace/categories/cleaning');
     await page.getByTestId(`marketplace-supplier-${supplierOrgId}`).click({ timeout: 30_000 });
-    await page.getByTestId('marketplace-request-service-btn').click();
-    // «Richiedi fornitore» opens the guided request on its details: the property, the kind of work and the supplier are known.
+    await expect(page.getByTestId('marketplace-supplier-detail')).toBeVisible();
+    await expect(page.getByTestId('marketplace-request-service-btn')).toHaveCount(0);
+    await page.goto(`/app/short-rent/interventions/request?propertyId=${propertyId}&type=cleaning&supplierOrgId=${supplierOrgId}`);
     await expect(page.getByTestId('request-wizard')).toHaveAttribute('data-step', 'details', { timeout: 30_000 });
     // The time and the length are the host's own (a service of the catalog would go with one of its slots instead), and the stay is a link.
     await page.getByTestId('request-service-custom').check({ force: true });
