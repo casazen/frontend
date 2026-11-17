@@ -7,6 +7,13 @@ import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { useOptionalWizard } from '@/components/shared/wizard/wizard-context';
 import { WizardShell, type WizardShellProps, type WizardStep } from '@/components/shared/wizard/wizard-shell';
+import { getBillingSetup } from '@/api/billing-setup.api';
+import { propertySenderApi } from '@/api/property-sender.api';
+import { useCommercialProfile } from '@/hooks/use-commercial-profile';
+import { commercialRouteAllowed } from '@/features/onboarding/commercial-access';
+import { billingIdentityComplete, senderChoiceSaved } from './property-setup-model';
+import { BillingSetupStep } from './steps/billing-setup-step';
+import { ComplianceSetupStep } from './steps/compliance-setup-step';
 import { getActivationBlockedProblem } from '@/api/compliance.api';
 import { openReminders } from '@/features/compliance/activation-wizard-model';
 import { useCompleteComplianceActivation, useComplianceActivation } from '@/features/compliance/use-compliance';
@@ -165,7 +172,11 @@ interface PropertyWizardProps {
 export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySteps, initialStepId, onCreated }: PropertyWizardProps) {
   const { t } = useTranslation();
   // The channels step exists only where the channel manager is connected (its flag): the endpoints it reads answer 404 otherwise.
-  const connectorOn = useFeatureFlags().flags.octorateConnector;
+  const { flags } = useFeatureFlags();
+  const connectorOn = flags.octorateConnector;
+  const commercial = useCommercialProfile();
+  const complianceOn = commercialRouteAllowed(commercial, '/app/short-rent/compliance');
+  const billingOn = flags.fiscalDocumentIssuance && commercialRouteAllowed(commercial, '/app/short-rent/fiscal');
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, org } = useCurrentUser();
@@ -308,10 +319,26 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
     savedDiscounts.current = signature;
   };
 
+  // The account data lives in its own guided flows; verify the persisted answer, not a local checkbox.
+  const verifyCompliance = async (values: PropertyWizardValues) => {
+    if (!propertyId || !complianceOn || values.country !== 'IT') return;
+    const sender = await propertySenderApi.get(propertyId);
+    if (!senderChoiceSaved(sender)) throw new Error(t('propertySetup.compliance.required'));
+  };
+  const verifyBilling = async () => {
+    if (!billingOn) return;
+    if (!billingIdentityComplete(await getBillingSetup())) throw new Error(t('propertySetup.billing.required'));
+  };
+
   // The last button: writes the switch (first, so that a «no» is in place when the property goes live) and activates, when the server
   // says that nothing blocks; with a blocker open it sends nothing and the host finishes later.
   const finish = async (values: PropertyWizardValues) => {
     if (!propertyId) return null;
+    // A direct link to the last step must not bypass the data asked by the full onboarding.
+    if (!onlySteps) {
+      await verifyCompliance(values);
+      await verifyBilling();
+    }
     setRefused(null);
     for (const action of finishActions(stage, values.publishedOnSite, storedVisibility.current)) {
       if (action === 'visibility') {
@@ -421,6 +448,22 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
           } satisfies WizardStep<PropertyWizardValues>,
         ]
       : []),
+    ...(complianceOn ? [{
+      id: 'compliance',
+      label: t('propertySetup.compliance.label'),
+      title: t('propertySetup.compliance.heading'),
+      purpose: t('propertySetup.compliance.purpose'),
+      beforeNext: verifyCompliance,
+      render: ({ form }: { form: UseFormReturn<PropertyWizardValues> }) => propertyId ? <ComplianceSetupStep propertyId={propertyId} country={form.getValues('country')} /> : null,
+    } satisfies WizardStep<PropertyWizardValues>] : []),
+    ...(billingOn ? [{
+      id: 'billing',
+      label: t('propertySetup.billing.label'),
+      title: t('propertySetup.billing.heading'),
+      purpose: t('propertySetup.billing.purpose'),
+      beforeNext: verifyBilling,
+      render: () => propertyId ? <BillingSetupStep propertyId={propertyId} /> : null,
+    } satisfies WizardStep<PropertyWizardValues>] : []),
     {
       id: 'finish',
       label: t('propertyWizard.steps.finish.label'),
