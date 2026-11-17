@@ -4,14 +4,33 @@ import { z } from 'zod';
 import { i18nZodErrorMap, setZodErrorMapI18n } from './zod-error-map';
 import it from './locales/it.json';
 import en from './locales/en.json';
+import { userRemovalMessages } from './user-removal-messages';
 import { readStoredLocale } from './locale-storage';
 
 export { LOCALE_STORAGE_KEY, type AppLocale } from './locale-storage';
 
 void i18n.use(initReactI18next).init({
   resources: {
-    it: { translation: it },
-    en: { translation: en },
+    it: { translation: {
+      ...it,
+      userRemoval: userRemovalMessages.it,
+      apiErrors: { ...it.apiErrors, codes: {
+        ...it.apiErrors.codes,
+        auth0ManagementTokenFailed: userRemovalMessages.it.tokenFailed,
+        auth0ManagementCredentialsRejected: userRemovalMessages.it.credentialsRejected,
+        auth0DeleteNotAllowed: userRemovalMessages.it.deleteNotAllowed,
+      } },
+    } },
+    en: { translation: {
+      ...en,
+      userRemoval: userRemovalMessages.en,
+      apiErrors: { ...en.apiErrors, codes: {
+        ...en.apiErrors.codes,
+        auth0ManagementTokenFailed: userRemovalMessages.en.tokenFailed,
+        auth0ManagementCredentialsRejected: userRemovalMessages.en.credentialsRejected,
+        auth0DeleteNotAllowed: userRemovalMessages.en.deleteNotAllowed,
+      } },
+    } },
   },
   lng: readStoredLocale(),
   // A text a language lacks falls back to Italian. The three languages of the guest check-in page (their subset files are
