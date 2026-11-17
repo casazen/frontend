@@ -315,7 +315,7 @@ function MandateDialog({ open, onOpenChange, ownerId, currency, versions }: Mand
           hint={t('ownerMandate.wizard.fileHint')} data-testid="mandate-upload" />
         {fileError ? <Alert variant="danger">{fileError}</Alert> : null}
         {file ? <Button type="button" variant="ghost" disabled={reading} onClick={() => { setFile(null); setFileError(null); }}>{t('ownerMandate.wizard.remove')}</Button> : null}
-        <Button type="button" variant="ghost" disabled={reading} onClick={() => { setFileError(null); setStep(1); }}>{t(file ? 'ownerMandate.wizard.manualWithFile' : 'ownerMandate.wizard.manual')}</Button>
+        <Button type="button" variant="ghost" disabled={reading} onClick={() => { setFileError(null); if (!file) set({ documentReference: '' }); setStep(1); }}>{t(file ? 'ownerMandate.wizard.manualWithFile' : 'ownerMandate.wizard.manual')}</Button>
         {reading ? <div className="space-y-2"><p role="status" className="text-sm text-muted-foreground">{t('ownerMandate.wizard.reading')}</p><Button type="button" variant="outline" onClick={() => readController.current?.abort()}>{t('ownerMandate.wizard.stopReading')}</Button></div> : null}
       </div> : null}
       {readNote && step > 0 ? <Alert variant="info">{readNote}</Alert> : null}
@@ -334,7 +334,7 @@ function MandateDialog({ open, onOpenChange, ownerId, currency, versions }: Mand
           <Field
             label={t('ownerMandate.fields.commissionPercent')}
             hint={t('ownerMandate.dialog.percentHint')}
-            error={form.commissionPercent.trim() === '' || percentOk ? undefined : 'ownerMandate.dialog.percentInvalid'}
+            error={form.commissionPercent.trim() === '' || percentOk ? undefined : t('ownerMandate.dialog.percentInvalid')}
           >
             <Input value={form.commissionPercent} inputMode="decimal" maxLength={7} autoComplete="off" onChange={(event) => set({ commissionPercent: event.target.value })} data-testid="mandate-percent" />
           </Field>
@@ -360,10 +360,10 @@ function MandateDialog({ open, onOpenChange, ownerId, currency, versions }: Mand
       {step === 2 ? <fieldset className="grid gap-4">
         <legend className="px-1 text-sm font-medium">{t('ownerMandate.dialog.fees')}</legend>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={cleaningLabel} optional hint={feeHint} error={cleaning.ok ? undefined : 'ownerMandate.dialog.feeInvalid'}>
+          <Field label={cleaningLabel} optional hint={feeHint} error={cleaning.ok ? undefined : t('ownerMandate.dialog.feeInvalid')}>
             <Input value={form.cleaningFlatRate} inputMode="decimal" maxLength={14} autoComplete="off" onChange={(event) => set({ cleaningFlatRate: event.target.value })} data-testid="mandate-cleaning" />
           </Field>
-          <Field label={linenLabel} optional hint={feeHint} error={linen.ok ? undefined : 'ownerMandate.dialog.feeInvalid'}>
+          <Field label={linenLabel} optional hint={feeHint} error={linen.ok ? undefined : t('ownerMandate.dialog.feeInvalid')}>
             <Input value={form.linenFlatRate} inputMode="decimal" maxLength={14} autoComplete="off" onChange={(event) => set({ linenFlatRate: event.target.value })} data-testid="mandate-linen" />
           </Field>
         </div>
