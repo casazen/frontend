@@ -57,3 +57,11 @@ jobs:
             playwright-report/
             test-results/
           retention-days: 7
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: person-access-visual-${{ matrix.shard }}
+          path: test-results/**/person-access-*.png
+          if-no-files-found: ignore
+          retention-days: 7
