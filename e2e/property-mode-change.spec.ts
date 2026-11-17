@@ -78,7 +78,12 @@ test.describe('Change of rental mode (PM-03)', () => {
     await page.goto(demoUrl(SHORT_PAGE, 'short-stay'), { waitUntil: 'domcontentloaded' });
     await expect(page.getByRole('heading', { level: 1, name: 'Villa Aurora' })).toBeVisible({ timeout: 20_000 });
     await expect(page.getByTestId('property-mode-change')).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Altre azioni' })).toHaveCount(0);
+    await page.getByTestId('page-header-more').click();
+    const actions = page.getByRole('menu');
+    await expect(actions.getByRole('menuitem', { name: 'Modifica', exact: true })).toBeVisible();
+    await expect(actions.getByRole('menuitem', { name: 'Cambia modalità', exact: true })).toHaveCount(0);
+    await expect(actions.getByTestId('property-mode-change')).toHaveCount(0);
+    await page.keyboard.press('Escape');
 
     const draftKey = wizardDraftKey(`property-mode-${SHORT_ID}`, { userId: 'auth0|demo-e2e', orgId: DEMO_ORG.id });
     await page.addInitScript(({ key, day }) => {
