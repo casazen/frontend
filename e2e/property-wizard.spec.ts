@@ -199,7 +199,10 @@ test.describe('Add property wizard', () => {
 
   test('«Finisci dopo» leaves a property as a draft even if reporting was never configured', async ({ page }) => {
     state.senderSaved = false;
-    await mockPropertiesApi(page, [buildCreatedProperty({ name: 'Casa Procedura', nightlyRate: 135 })]);
+    await mockPropertiesApi(page, [buildCreatedProperty({
+      name: 'Casa Procedura', comuneIstatCode: '058091', nightlyRate: 135, isActive: false,
+    })]);
+    await mockActivation(page, state);
     await page.goto(demoUrl(`/app/short-rent/properties/create?propertyId=${NEW_PROPERTY_ID}&step=finish`, 'short-stay'));
     await expect(page.getByTestId('property-wizard-finish')).toHaveText(/Finisci dopo/);
 
