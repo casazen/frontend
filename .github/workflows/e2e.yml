@@ -73,3 +73,11 @@ jobs:
           path: test-results/**/person-access-*.png
           if-no-files-found: ignore
           retention-days: 7
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: listing-ai-visual-${{ matrix.shard }}
+          path: test-results/**/listing-ai-*.png
+          if-no-files-found: ignore
+          retention-days: 7

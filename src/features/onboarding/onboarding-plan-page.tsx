@@ -24,6 +24,7 @@ import type { OnboardingPart } from '@/types/onboarding.types';
 import { OnboardingDeferDialog } from './components/onboarding-defer-dialog';
 import { OnboardingNeedsPanel } from './components/onboarding-needs-panel';
 import { OnboardingPartRow } from './components/onboarding-part-row';
+import { OrgSenderPreference } from './components/org-sender-preference';
 import { OwnerStep } from './components/owner-step-row';
 
 /** At least 44 px high on every device (the product rule), and a long label wraps instead of pushing the page sideways. */
@@ -192,6 +193,8 @@ export function OnboardingPlanPage() {
             </div>
           }
         />
+
+        {isAdmin ? <OrgSenderPreference /> : null}
 
         {content}
       </div>
