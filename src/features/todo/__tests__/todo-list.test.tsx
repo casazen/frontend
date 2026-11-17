@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { createElement } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import type { TodoActivity } from '@/api/internal-activities.api';
-import { useActivities, useActivityCount, useCloseActivity } from '@/queries/internalActivities';
+import { useActivities, useActivityCount } from '@/queries/internalActivities';
 import { TodoListPage } from '../todo-list';
 
 type PermissionCheck = (context: string, permission: string) => boolean;
@@ -37,7 +37,7 @@ vi.mock('@/queries/use-properties', () => ({
     ],
   }),
 }));
-vi.mock('@/queries/internalActivities', () => ({ useActivities: vi.fn(), useActivityCount: vi.fn(), useCloseActivity: vi.fn() }));
+vi.mock('@/queries/internalActivities', () => ({ useActivities: vi.fn(), useActivityCount: vi.fn() }));
 
 function todo(overrides: Partial<TodoActivity> & { id: string }): TodoActivity {
   return {
@@ -116,12 +116,9 @@ const cards = () => screen.getAllByTestId('todo-activity');
 const urgencies = () => cards().map((card) => card.getAttribute('data-urgency'));
 
 describe('TodoListPage (NF-07, ADR-026)', () => {
-  const mutate = vi.fn();
-
   beforeEach(async () => {
     vi.clearAllMocks();
     workspace.hasPermission = () => true;
-    vi.mocked(useCloseActivity).mockReturnValue({ mutate, isPending: false } as unknown as ReturnType<typeof useCloseActivity>);
     menuCount(2);
     answer({ data: LIST });
     await i18n.changeLanguage('it');
@@ -193,13 +190,13 @@ describe('TodoListPage (NF-07, ADR-026)', () => {
     expect(within(checkIn).getByRole('link', { name: /^Fallo ora/ })).toHaveAttribute('href', '/app/short-rent/bookings/b-3/check-in');
   });
 
-  it('TodoListPage_ActionThisVersionDoesNotKnow_HasNoDoNowButStillCanBeClosed', () => {
+  it('TodoListPage_UnknownAction_CannotBeDismissedWithoutResolvingItsSource', () => {
     answer({ data: [todo({ id: 'x', action: 'ActionOfALaterVersion' })] });
     renderPage();
 
     const [card] = cards();
     expect(within(card).queryByRole('link', { name: /^Fallo ora/ })).not.toBeInTheDocument();
-    expect(within(card).getByTestId('todo-close')).toBeInTheDocument();
+    expect(within(card).queryByTestId('todo-close')).not.toBeInTheDocument();
   });
 
   it('TodoListPage_Summary_CountsTheItemsAndTheUrgentOnes', () => {
@@ -270,21 +267,22 @@ describe('TodoListPage (NF-07, ADR-026)', () => {
     expect(screen.queryByTestId('todo-filter-property')).not.toBeInTheDocument();
   });
 
-  it('TodoListPage_MarkAsDone_AsksFirstThenClosesTheItem', async () => {
+  it('TodoListPage_EvenAnOwnerCannotDismissUnfinishedProcesses', () => {
     renderPage();
+    expect(screen.queryByTestId('todo-close')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Segna come fatto/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
 
-    fireEvent.click(within(cards()[0]).getByTestId('todo-close'));
-    expect(screen.getByRole('dialog', { name: 'Segnare questa attività come fatta?' })).toBeInTheDocument();
-    expect(mutate).not.toHaveBeenCalled();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Segna come fatto' }));
-
-    await waitFor(() => expect(mutate).toHaveBeenCalledTimes(1));
+  it('TodoListPage_ImportedListing_OpensTheReviewWizard', () => {
+    answer({ data: [todo({ id: 'imported', action: 'CheckImportedListing', entityType: 'Property', entityId: 'p-1', propertyId: 'p-1' })] });
+    renderPage();
+    expect(screen.getByTestId('todo-do-now')).toHaveAttribute('href', '/app/short-rent/properties/create?propertyId=p-1');
+    expect(screen.queryByTestId('todo-close')).not.toBeInTheDocument();
   });
 
   it('TodoListPage_RoleThatOnlyReads_SeesTheItemsButHasNoMarkAsDone', () => {
-    // The Commercialista and a collaborator without the right to write hold `property.read`, which is all the page asks. Closing an item
-    // takes it off the list of the whole organization, a deadline of the law included: it is offered to who may write the properties.
+    // Read-only roles keep the list, and completion still follows the source process.
     workspace.hasPermission = (context, permission) => context === 'short-rent' && ['property.read', 'booking.read'].includes(permission);
     renderPage();
 
