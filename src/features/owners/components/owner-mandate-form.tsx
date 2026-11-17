@@ -1,7 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { PlainSection } from '@/components/shared/calm';
+import { Alert } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Dropzone } from '@/components/ui/dropzone';
+import { ownerAccountingApi } from '@/api/owner-accounting.api';
+import { saveBlobAs } from '@/lib/file-download';
 import { Badge } from '@/components/ui/badge';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
@@ -58,7 +63,7 @@ export function OwnerMandateSection({ ownerId, currency, canManage }: OwnerManda
     content = (
       <ul role="list" className="divide-y divide-border text-sm" data-testid="owner-mandate-versions">
         {versions.map((mandate) => (
-          <MandateVersion key={mandate.id} mandate={mandate} currency={currency} today={today} />
+          <MandateVersion key={mandate.id} mandate={mandate} currency={currency} today={today} canManage={canManage} />
         ))}
       </ul>
     );
@@ -78,9 +83,18 @@ export function OwnerMandateSection({ ownerId, currency, canManage }: OwnerManda
   );
 }
 
-function MandateVersion({ mandate, currency, today }: { mandate: OwnerMandate; currency: string | null; today: string }) {
+function MandateVersion({ mandate, currency, today, canManage }: { mandate: OwnerMandate; currency: string | null; today: string; canManage: boolean }) {
   const { t } = useTranslation();
   const { date, percent, money, amount } = useOwnerFormat();
+  const [downloading, setDownloading] = useState(false);
+  const download = async () => {
+    setDownloading(true);
+    try {
+      const file = await ownerAccountingApi.downloadMandateDocument(mandate.ownerId, mandate.id);
+      saveBlobAs(file.blob, `mandato-${mandate.id}.pdf`);
+    } catch { toast.error(t('ownerMandate.wizard.downloadError')); }
+    finally { setDownloading(false); }
+  };
   const inForce = mandateCovers(mandate, today);
   const fee = (value: number) => (currency ? money(value, currency) : amount(value));
 
@@ -103,6 +117,7 @@ function MandateVersion({ mandate, currency, today }: { mandate: OwnerMandate; c
       {mandate.linenFlatRate !== null ? <p className="break-words text-foreground/70">{t('ownerMandate.version.linen', { amount: fee(mandate.linenFlatRate) })}</p> : null}
       <p className="break-words text-foreground/70">{mandate.passthroughPaymentFees ? t('ownerMandate.version.feesOwner') : t('ownerMandate.version.feesAgency')}</p>
       <p className="break-words text-foreground/70">{mandate.hasDocument ? t('ownerMandate.version.document') : t('ownerMandate.version.noDocument')}</p>
+      {canManage && mandate.documentUploaded ? <Button type="button" variant="ghost" loading={downloading} onClick={() => void download()}>{t('ownerMandate.wizard.download')}</Button> : null}
     </li>
   );
 }
@@ -172,7 +187,69 @@ function MandateDialog({ open, onOpenChange, ownerId, currency, versions }: Mand
   const from = ofTheOwner.find((mandate) => mandate.validFrom === latestStart) ?? null;
   const [form, setForm] = useState<FormState>(() => initial(from, latestStart));
   const [error, setError] = useState<string | null>(null);
-  const set = (patch: Partial<FormState>) => setForm((current) => ({ ...current, ...patch }));
+  const [step, setStep] = useState(0);
+  const [file, setFile] = useState<File | null>(null);
+  const [reading, setReading] = useState(false);
+  const [readNote, setReadNote] = useState<string | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const readController = useRef<AbortController | null>(null);
+  useEffect(() => () => readController.current?.abort(), []);
+  const dirty = useRef(new Set<keyof FormState>());
+  const suggested = useRef(new Set<keyof FormState>());
+  const heading = useRef<HTMLHeadingElement>(null);
+  useEffect(() => { heading.current?.focus(); }, [step]);
+  const set = (patch: Partial<FormState>) => {
+    for (const key of Object.keys(patch) as (keyof FormState)[]) dirty.current.add(key);
+    setForm((current) => ({ ...current, ...patch }));
+  };
+  const choose = (files: File[]) => {
+    const chosen = files[0];
+    if (!chosen) return;
+    setReadNote(null);
+    setError(null);
+    const baseline = initial(from, latestStart);
+    setForm((current) => {
+      const next = { ...current };
+      for (const key of suggested.current) if (!dirty.current.has(key)) Object.assign(next, { [key]: baseline[key] });
+      return next;
+    });
+    suggested.current.clear();
+    if (!/\.pdf$/i.test(chosen.name) || chosen.size < 5 || chosen.size > 20 * 1024 * 1024) {
+      setFile(null);
+      setFileError(t('ownerMandate.wizard.fileError'));
+      return;
+    }
+    setFileError(null);
+    setFile(chosen);
+  };
+  const readDocument = async () => {
+    if (!file) { setStep(1); return; }
+    setReading(true);
+    setReadNote(null);
+    const controller = new AbortController();
+    readController.current = controller;
+    try {
+      const values = await ownerAccountingApi.readMandateDocument(ownerId, file, controller.signal);
+      const patch: Partial<FormState> = {};
+      if (values.validFrom && DAY.test(values.validFrom) && (latestStart === null || values.validFrom > latestStart)) patch.validFrom = values.validFrom;
+      if (values.commissionPercent !== null) patch.commissionPercent = asField(values.commissionPercent);
+      if (values.commissionBase !== null) patch.commissionBase = values.commissionBase;
+      if (values.commissionIncludesVat !== null) patch.commissionIncludesVat = values.commissionIncludesVat;
+      // Never turn a fee written in another or unknown currency into the owner's settlement currency.
+      if (currency && values.currency?.toUpperCase() === currency.toUpperCase()) {
+        if (values.cleaningFlatRate !== null) patch.cleaningFlatRate = asField(values.cleaningFlatRate);
+        if (values.linenFlatRate !== null) patch.linenFlatRate = asField(values.linenFlatRate);
+      }
+      if (values.passthroughPaymentFees !== null) patch.passthroughPaymentFees = values.passthroughPaymentFees;
+      for (const key of Object.keys(patch) as (keyof FormState)[]) {
+        if (dirty.current.has(key)) delete patch[key];
+        else suggested.current.add(key);
+      }
+      setForm((current) => ({ ...current, ...patch }));
+      setReadNote(t(Object.keys(patch).length ? 'ownerMandate.wizard.readDone' : 'ownerMandate.wizard.readUnavailable'));
+    } catch { setReadNote(t('ownerMandate.wizard.readUnavailable')); }
+    finally { setReading(false); setStep(1); }
+  };
 
   const percent = parseEuroAmount(form.commissionPercent);
   const percentOk = percent !== null && percent >= 0 && percent <= 100;
@@ -189,7 +266,11 @@ function MandateDialog({ open, onOpenChange, ownerId, currency, versions }: Mand
   const linenLabel = feeLabel('linenFlatRate');
   const feeHint = currency ? t('ownerMandate.dialog.feeHint') : t('ownerMandate.dialog.feeHintNoCurrency');
 
+  const stepValid = step === 0 ? !fileError && (file !== null || documentOk) : step === 1 ? DAY.test(form.validFrom) && startsAfterTheLast && percentOk : step === 2 ? cleaning.ok && linen.ok : valid;
   const onSubmit = async () => {
+    if (!stepValid) return;
+    if (step === 0) { await readDocument(); return; }
+    if (step < 3) { setStep((current) => current + 1); return; }
     if (!valid || percent === null) return;
     setError(null);
     const command: OwnerMandateCommand = {
@@ -204,7 +285,7 @@ function MandateDialog({ open, onOpenChange, ownerId, currency, versions }: Mand
       ...(document === '' ? {} : { documentReference: document }),
     };
     try {
-      await save.mutateAsync(command);
+      await save.mutateAsync(file ? { command, file } : command);
       toast.success(t('ownerMandate.dialog.done'));
       onOpenChange(false);
     } catch (failure) {
@@ -215,16 +296,30 @@ function MandateDialog({ open, onOpenChange, ownerId, currency, versions }: Mand
   return (
     <FormDialog
       open={open}
-      onOpenChange={onOpenChange}
+      onOpenChange={(next) => { if (!reading && !save.isPending) onOpenChange(next); }}
       title={t('ownerMandate.dialog.title')}
-      description={t('ownerMandate.dialog.description')}
-      submitLabel={t('ownerMandate.dialog.submit')}
-      pending={save.isPending}
-      submitDisabled={!valid}
+      description={t('ownerMandate.wizard.description')}
+      submitLabel={t(step === 3 ? 'ownerMandate.dialog.submit' : step === 0 && file ? 'ownerMandate.wizard.readNext' : 'ownerMandate.wizard.next')}
+      pending={save.isPending || reading}
+      submitDisabled={!stepValid}
       error={error}
       onSubmit={onSubmit}
       testId="mandate-dialog"
     >
+      <p className="text-sm text-muted-foreground" role="status">{t('ownerMandate.wizard.progress', { current: step + 1, total: 4 })}</p>
+      <h3 ref={heading} tabIndex={-1} className="text-xl font-semibold outline-none">{t(`ownerMandate.wizard.steps.${step}`)}</h3>
+      {step === 0 ? <div className="space-y-4">
+        <p className="text-sm text-muted-foreground">{t('ownerMandate.wizard.optional')}</p>
+        <Dropzone accept={['application/pdf', '.pdf']} multiple={false} onFiles={choose} disabled={reading}
+          title={file ? file.name : t('ownerMandate.wizard.drop')} buttonLabel={t('ownerMandate.wizard.choose')}
+          hint={t('ownerMandate.wizard.fileHint')} data-testid="mandate-upload" />
+        {fileError ? <Alert variant="danger">{fileError}</Alert> : null}
+        {file ? <Button type="button" variant="ghost" disabled={reading} onClick={() => { setFile(null); setFileError(null); }}>{t('ownerMandate.wizard.remove')}</Button> : null}
+        <Button type="button" variant="ghost" disabled={reading} onClick={() => { setFileError(null); setStep(1); }}>{t(file ? 'ownerMandate.wizard.manualWithFile' : 'ownerMandate.wizard.manual')}</Button>
+        {reading ? <div className="space-y-2"><p role="status" className="text-sm text-muted-foreground">{t('ownerMandate.wizard.reading')}</p><Button type="button" variant="outline" onClick={() => readController.current?.abort()}>{t('ownerMandate.wizard.stopReading')}</Button></div> : null}
+      </div> : null}
+      {readNote && step > 0 ? <Alert variant="info">{readNote}</Alert> : null}
+      {step === 1 ? <>
       <Field
         label={t('ownerMandate.fields.validFrom')}
         hint={t('ownerMandate.dialog.validFromHint')}
@@ -261,7 +356,8 @@ function MandateDialog({ open, onOpenChange, ownerId, currency, versions }: Mand
         </div>
       </fieldset>
 
-      <fieldset className="grid gap-4 rounded-md border border-border p-3">
+      </> : null}
+      {step === 2 ? <fieldset className="grid gap-4">
         <legend className="px-1 text-sm font-medium">{t('ownerMandate.dialog.fees')}</legend>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={cleaningLabel} optional hint={feeHint} error={cleaning.ok ? undefined : 'ownerMandate.dialog.feeInvalid'}>
@@ -281,11 +377,28 @@ function MandateDialog({ open, onOpenChange, ownerId, currency, versions }: Mand
             <option value="owner">{t('ownerMandate.version.feesOwner')}</option>
           </Select>
         </Field>
-      </fieldset>
-
-      <Field label={t('ownerMandate.fields.documentReference')} optional hint={t('ownerMandate.dialog.documentHint')} error={documentOk ? undefined : 'ownerMandate.dialog.documentInvalid'}>
+      </fieldset> : null}
+      {step === 3 ? <div className="space-y-4" data-testid="mandate-review">
+        <dl className="grid gap-4 sm:grid-cols-2">
+          {[
+            [t('ownerMandate.fields.validFrom'), date(form.validFrom)],
+            [t('ownerMandate.fields.commissionPercent'), form.commissionPercent + '%'],
+            [t('ownerMandate.fields.commissionBase'), t(`ownerMandate.base.${form.commissionBase}`)],
+            [t('ownerMandate.fields.commissionIncludesVat'), t(form.commissionIncludesVat ? 'ownerMandate.vat.included' : 'ownerMandate.vat.excluded')],
+            [cleaningLabel, form.cleaningFlatRate || '—'],
+            [linenLabel, form.linenFlatRate || '—'],
+            [t('ownerMandate.fields.passthroughPaymentFees'), t(form.passthroughPaymentFees ? 'ownerMandate.version.feesOwner' : 'ownerMandate.version.feesAgency')],
+            [t('ownerMandate.fields.documentReference'), file?.name ?? (document || t('ownerMandate.version.noDocument'))],
+          ].map(([label, value]) => <div key={label} className="min-w-0 border-b border-border pb-3"><dt className="text-sm text-muted-foreground">{label}</dt><dd className="mt-1 break-words font-medium">{value}</dd></div>)}
+        </dl>
+        <p className="text-sm text-muted-foreground">{t('ownerMandate.wizard.reviewHint')}</p>
+      </div> : null}
+      {step === 0 && !file ? <details className="text-sm"><summary className="cursor-pointer text-muted-foreground">{t('ownerMandate.wizard.linkInstead')}</summary>
+      <Field label={t('ownerMandate.fields.documentReference')} optional hint={t('ownerMandate.dialog.documentHint')} error={documentOk ? undefined : t('ownerMandate.dialog.documentInvalid')}>
         <Input value={form.documentReference} maxLength={DOCUMENT_MAX} autoComplete="off" inputMode="url" onChange={(event) => set({ documentReference: event.target.value })} data-testid="mandate-document" />
       </Field>
+      </details> : null}
+      {step > 0 ? <Button type="button" variant="ghost" disabled={save.isPending || reading} className="justify-self-start" onClick={() => setStep((current) => current - 1)} data-testid="mandate-back">{t('ownerMandate.wizard.back')}</Button> : null}
     </FormDialog>
   );
 }
