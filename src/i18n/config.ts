@@ -2,19 +2,13 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import { z } from 'zod';
 import { i18nZodErrorMap, setZodErrorMapI18n } from './zod-error-map';
-import it from './locales/it.json';
-import en from './locales/en.json';
-import priceEstimateIt from './locales/price-estimate.it.json';
-import priceEstimateEn from './locales/price-estimate.en.json';
+import { APP_RESOURCES } from './resources';
 import { readStoredLocale } from './locale-storage';
 
 export { LOCALE_STORAGE_KEY, type AppLocale } from './locale-storage';
 
 void i18n.use(initReactI18next).init({
-  resources: {
-    it: { translation: { ...it, ...priceEstimateIt } },
-    en: { translation: { ...en, ...priceEstimateEn } },
-  },
+  resources: APP_RESOURCES,
   lng: readStoredLocale(),
   // A text a language lacks falls back to Italian. The three languages of the guest check-in page (their subset files are
   // loaded when chosen) fall back to English first, then to Italian.
