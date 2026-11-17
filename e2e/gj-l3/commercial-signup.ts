@@ -8,7 +8,8 @@ export async function completeCommercialSignup(page: Page, profile: 'owner' | 'l
   const legacyHeading = page.getByRole('heading', { name: /Da dove vuoi iniziare/i });
   const profileCard = page.getByTestId(`signup-profile-${profile}`);
   await expect(legacyHeading.or(profileCard)).toBeVisible({ timeout: 30_000 });
-  if (await legacyHeading.isVisible()) {
+  const legacy = await legacyHeading.isVisible();
+  if (legacy) {
     await page.getByRole('button', { name: 'Scegli' }).nth(profile === 'long-rent' ? 1 : 0).click();
     const consents = page.getByTestId('onboarding-consents-step');
     for (const checkbox of await consents.getByRole('checkbox').all()) await checkbox.check();
@@ -51,6 +52,11 @@ export async function completeCommercialSignup(page: Page, profile: 'owner' | 'l
     const result = await page.request.get(`${stack.apiUrl}/users/me`, { headers });
     return result.ok() && !(await result.json() as { commercialSetupRequired: boolean }).commercialSetupRequired;
   }, { timeout: 60_000 }).toBe(true);
+  // An administrator's default home remains the staff console; open its newly configured host area.
+  if (legacy) {
+    await page.goto(profile === 'long-rent' ? '/app/long-rent/properties/new?first=1' : '/app/short-rent/properties/create?first=1');
+    return;
+  }
   await page.goto('/onboarding?checkout=success');
   const enter = page.getByRole('button', { name: 'Entra e inizia la configurazione' });
   if (await enter.isVisible().catch(() => false)) await enter.click();
