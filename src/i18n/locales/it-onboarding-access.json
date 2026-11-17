@@ -1,0 +1,7 @@
+{
+  "onboardingAccess": {
+    "title": "La configurazione è salvata",
+    "description": "Non riusciamo ancora a verificare l’accesso allo spazio di lavoro. Riprova: non serve ripetere la configurazione né uscire dal tuo account.",
+    "retry": "Verifica e continua"
+  }
+}

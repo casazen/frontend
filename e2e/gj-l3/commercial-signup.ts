@@ -11,6 +11,20 @@ async function acceptConsents(page: Page): Promise<void> {
   await expect(page.getByTestId('onboarding-consents-continue')).toBeEnabled({ timeout: 10_000 });
 }
 
+/**
+ * The saved profile can trigger an application redirect before payment is shown. A successful POST is not a
+ * navigation barrier: wait for the billing UI instead of competing with the app using page.goto('/onboarding').
+ */
+export async function provisionLegacyCommercialSignup(page: Page, profile: 'owner' | 'long-rent'): Promise<void> {
+  await page.getByRole('button', { name: 'Scegli' }).nth(profile === 'long-rent' ? 1 : 0).click();
+  await acceptConsents(page);
+  const provisioned = page.waitForResponse(response => response.request().method() === 'POST' && response.url().endsWith('/api/users/onboarding'));
+  await page.getByTestId('onboarding-consents-continue').click();
+  expect((await provisioned).ok()).toBeTruthy();
+  // This assertion follows any redirect initiated by onboarding and its guard; it never initiates another one.
+  await expect(page.locator('#signup-billing-country')).toBeVisible({ timeout: 30_000 });
+}
+
 /** Drives signup in the UI, then simulates Stripe's signed subscription webhook in the disposable stack. */
 export async function completeCommercialSignup(page: Page, profile: 'owner' | 'long-rent'): Promise<void> {
   // Platform administrators can voluntarily create an organization through the existing onboarding.
@@ -19,12 +33,7 @@ export async function completeCommercialSignup(page: Page, profile: 'owner' | 'l
   await expect(legacyHeading.or(profileCard)).toBeVisible({ timeout: 30_000 });
   const legacy = await legacyHeading.isVisible();
   if (legacy) {
-    await page.getByRole('button', { name: 'Scegli' }).nth(profile === 'long-rent' ? 1 : 0).click();
-    await acceptConsents(page);
-    const provisioned = page.waitForResponse(response => response.request().method() === 'POST' && response.url().endsWith('/api/users/onboarding'));
-    await page.getByTestId('onboarding-consents-continue').click();
-    expect((await provisioned).ok()).toBeTruthy();
-    await page.goto('/onboarding');
+    await provisionLegacyCommercialSignup(page, profile);
   } else {
     await profileCard.click();
     await page.getByRole('button', { name: /^Pro\b/ }).click();
