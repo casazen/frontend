@@ -309,6 +309,15 @@ describe('keys used in code', () => {
   });
 });
 
+describe('pricing translations', () => {
+  it('includes the timeout and currency mismatch messages in the runtime registry', () => {
+    expect(i18n.getResourceBundle('it', 'translation')).toEqual(APP_RESOURCES.it.translation);
+    expect(i18n.getResourceBundle('en', 'translation')).toEqual(APP_RESOURCES.en.translation);
+    expect(itKeys.has('priceEstimate.timeout')).toBe(true);
+    expect(enKeys.has('priceEstimate.currencyMismatch')).toBe(true);
+  });
+});
+
 describe('plurals', () => {
   it('nightsBreakdown_OneAndManyNights_UsesGrammaticalPlural', () => {
     const tIt = i18n.getFixedT('it');
