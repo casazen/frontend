@@ -2,6 +2,15 @@ import { createHash, createHmac, randomUUID } from 'node:crypto';
 import { expect, type Page } from '@playwright/test';
 import { accessToken, loadStack } from './stack';
 
+async function acceptConsents(page: Page): Promise<void> {
+  const consents = page.getByTestId('onboarding-consents-step');
+  await expect(consents).toBeVisible({ timeout: 30_000 });
+  const checks = consents.getByRole('checkbox');
+  await expect(checks.first()).toBeVisible({ timeout: 30_000 });
+  for (const checkbox of await checks.all()) await checkbox.check();
+  await expect(page.getByTestId('onboarding-consents-continue')).toBeEnabled({ timeout: 10_000 });
+}
+
 /** Drives signup in the UI, then simulates Stripe's signed subscription webhook in the disposable stack. */
 export async function completeCommercialSignup(page: Page, profile: 'owner' | 'long-rent'): Promise<void> {
   // Platform administrators can voluntarily create an organization through the existing onboarding.
@@ -11,8 +20,7 @@ export async function completeCommercialSignup(page: Page, profile: 'owner' | 'l
   const legacy = await legacyHeading.isVisible();
   if (legacy) {
     await page.getByRole('button', { name: 'Scegli' }).nth(profile === 'long-rent' ? 1 : 0).click();
-    const consents = page.getByTestId('onboarding-consents-step');
-    for (const checkbox of await consents.getByRole('checkbox').all()) await checkbox.check();
+    await acceptConsents(page);
     const provisioned = page.waitForResponse(response => response.request().method() === 'POST' && response.url().endsWith('/api/users/onboarding'));
     await page.getByTestId('onboarding-consents-continue').click();
     expect((await provisioned).ok()).toBeTruthy();
@@ -27,8 +35,7 @@ export async function completeCommercialSignup(page: Page, profile: 'owner' | 'l
     }
     await page.getByRole('button', { name: 'Vai al riepilogo' }).click();
     await page.getByRole('button', { name: 'Continua al pagamento' }).click();
-    const consents = page.getByTestId('onboarding-consents-step');
-    for (const checkbox of await consents.getByRole('checkbox').all()) await checkbox.check();
+    await acceptConsents(page);
     await page.getByTestId('onboarding-consents-continue').click();
   }
   await expect(page.locator('#signup-billing-country')).toBeVisible({ timeout: 30_000 });
