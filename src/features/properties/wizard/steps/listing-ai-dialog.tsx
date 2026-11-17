@@ -27,15 +27,19 @@ export function ListingAiDialog({ form, propertyId, photos }: { form: UseFormRet
   const [review, setReview] = useState(false);
   const [previous, setPrevious] = useState<Snapshot | null>(null);
   const generation = useRef(0);
-  useEffect(() => () => { generation.current++; }, []);
+  const requestController = useRef<AbortController | null>(null);
+  useEffect(() => () => { generation.current++; requestController.current?.abort(); }, []);
   const busy = progress !== null;
   const languageName = (language: ListingLanguage) => t(`propertyWizard.descriptions.languages.${language}`);
   const changeOpen = (value: boolean) => {
-    if (!value) { generation.current++; setProgress(null); }
+    if (!value) { generation.current++; requestController.current?.abort(); setProgress(null); }
     setOpen(value);
   };
   const generate = async (languages: ListingLanguage[], retry = false) => {
     const run = ++generation.current;
+    requestController.current?.abort();
+    const controller = new AbortController();
+    requestController.current = controller;
     setFailed([]);
     setReview(true);
     if (!retry) setResults({});
@@ -48,7 +52,7 @@ export function ListingAiDialog({ form, propertyId, photos }: { form: UseFormRet
       setProgress({ language, current: index + 1, total: languages.length });
       let budgetExhausted = false;
       try {
-        const answer = await listingTextApi.suggestFields(propertyId, { photos: reduced, language, regenerate: retry });
+        const answer = await listingTextApi.suggestFields(propertyId, { photos: reduced, language, regenerate: retry }, controller.signal);
         if (generation.current !== run) return;
         budgetExhausted = answer.reason === 'ai_budget_exhausted';
         if (!answer.aiUsed || !answer.fields?.title || !answer.fields.description) throw new Error('No suggestion');
@@ -77,8 +81,8 @@ export function ListingAiDialog({ form, propertyId, photos }: { form: UseFormRet
         if (populated.title) form.setValue('listingTitle', populated.title, { shouldDirty: true, shouldValidate: true });
         if (populated.description) form.setValue('description', populated.description, { shouldDirty: true, shouldValidate: true });
         if (populated.rules) form.setValue('houseRules', populated.rules, { shouldDirty: true });
-        texts.it = { title: '', description: '', ...texts.it, ...Object.fromEntries(LISTING_EXTRA_FIELDS.filter((field) => populated[field]).map((field) => [field, populated[field]])) };
-      } else texts[language] = { title: '', description: '', ...texts[language], ...populated };
+        texts.it = { ...texts.it, title: '', description: '', ...Object.fromEntries(LISTING_EXTRA_FIELDS.filter((field) => populated[field]).map((field) => [field, populated[field]])) };
+      } else texts[language] = { ...texts[language], ...populated, title: populated.title ?? texts[language]?.title ?? '', description: populated.description ?? texts[language]?.description ?? '' };
     }
     form.setValue('texts', texts, { shouldDirty: true, shouldValidate: true });
     changeOpen(false);
@@ -108,9 +112,9 @@ export function ListingAiDialog({ form, propertyId, photos }: { form: UseFormRet
           <Button type="button" disabled={selected.length === 0} onClick={() => void generate(selected)} data-testid="listing-ai-generate">{t('listingAi.generate')}</Button>
         </> : <>
           <div role="status" aria-live="polite" className="text-sm text-foreground/70">{progress ? t('listingAi.generating', { ...progress, language: languageName(progress.language) }) : null}</div>
+          {failed.map((language) => <p key={language} role="alert" className="text-sm text-danger-foreground">{t('listingAi.failed', { language: languageName(language) })}</p>)}
           {selected.map((language) => <details key={language} className="rounded-lg border border-border p-4" open={selected.length === 1}>
             <summary className="cursor-pointer font-medium">{languageName(language)}</summary>
-            {failed.includes(language) ? <p role="alert" className="mt-3 text-sm text-danger-foreground">{t('listingAi.failed', { language: languageName(language) })}</p> : null}
             {basis[language] ? <p className="mt-3 text-xs text-foreground/70">{t('propertyWizard.photos.listing.aiWritten', { basis: describeBasis(basis[language]!, t) })}</p> : null}
             {results[language] ? <dl className="mt-4 space-y-4">{FIELDS.map((field) => <div key={field}><dt className="text-sm font-medium">{t(`listingAi.fields.${field}`)}</dt><dd className="mt-1 whitespace-pre-wrap break-words text-sm text-foreground/70" lang={language}>{results[language]?.[field] || t('listingAi.empty')}</dd></div>)}</dl> : null}
           </details>)}

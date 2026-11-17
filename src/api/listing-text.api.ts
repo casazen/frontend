@@ -38,8 +38,8 @@ export interface ListingTextSuggestion {
  * browser, cover first), the comune and the data of the property. Nothing is saved: the host keeps or changes the text and saves the step.
  */
 export const listingTextApi = {
-  suggestFields: (propertyId: string, body: { photos: string[]; regenerate: boolean; language: ListingLanguage }) =>
-    ApiClient.post<ListingTextSuggestion>(`/properties/${propertyId}/listing-text/fields-suggestion`, body, { timeout: SUGGESTION_TIMEOUT_MS }),
+  suggestFields: (propertyId: string, body: { photos: string[]; regenerate: boolean; language: ListingLanguage }, signal?: AbortSignal) =>
+    ApiClient.post<ListingTextSuggestion>(`/properties/${propertyId}/listing-text/fields-suggestion`, body, { timeout: SUGGESTION_TIMEOUT_MS, signal }),
   suggest: (propertyId: string, body: { photos: string[]; regenerate: boolean }) =>
     ApiClient.post<ListingTextSuggestion>(`/properties/${propertyId}/listing-text/suggestion`, body, {
       timeout: SUGGESTION_TIMEOUT_MS,

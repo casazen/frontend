@@ -69,6 +69,7 @@ describe('multilingual listing suggestions', () => {
     render(<Harness />); start();
     await waitFor(() => expect(suggestApi).toHaveBeenCalledTimes(1));
     fireEvent.click(screen.getByRole('button', { name: 'Annulla', exact: true }));
+    expect(suggestApi.mock.calls[0][2].aborted).toBe(true);
     resolve(answer);
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     expect(suggestApi).toHaveBeenCalledTimes(1);
