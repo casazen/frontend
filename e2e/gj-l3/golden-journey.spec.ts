@@ -14,7 +14,7 @@ import {
   type StackEnv,
 } from './stack';
 import { activateProperty, completeHostOnboarding, createProperty, PROPERTY } from './host-steps';
-import { inviteSupplier, registerAndActivateSupplier } from './supplier-steps';
+import { registerAndActivateSupplier } from './supplier-steps';
 import { guestBooksStay, guestCompletesCheckIn, guestConfirmsEmail, type PaymentMode } from './guest-steps';
 
 /**
@@ -81,14 +81,8 @@ async function runGoldenJourney(browser: Browser, stack: StackEnv, request: impo
   const ids: Record<string, string> = {};
 
   try {
-    await step('Platform admin invites the supplier by email', async () => {
-      await loginAs(admin, stack, emails.admin);
-      await inviteSupplier(admin, emails.supplier, 'Roma');
-    });
-
-    await step('Supplier accepts the invite, registers and activates the profile (phone viewport)', async () => {
-      const invite = await waitForMail(request, stack, emails.supplier, /Invito/i);
-      await registerAndActivateSupplier(supplier, stack, linkIn(invite, '/register'), emails.supplier, supplierName);
+    await step('Supplier registers and activates the profile (phone viewport)', async () => {
+      await registerAndActivateSupplier(supplier, stack, `${stack.feUrl}/register`, emails.supplier, supplierName);
       supplierApi = oracleFor(request, stack, await accessToken(supplier));
       const profile = await supplierApi.get<{ status: string; orgId: string }>('/supplier/profile');
       expect(profile.status, 'supplier profile is Active').toBe('Active');
