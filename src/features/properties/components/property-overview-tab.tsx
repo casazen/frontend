@@ -6,7 +6,7 @@ import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { FACT_LINK, Fact, Facts } from '@/features/bookings/components/booking-facts';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
-import { isValidCin } from '@/lib/cin-format';
+import { isValidCin, requiresItalianCin } from '@/lib/cin-format';
 import { formatCurrency, formatDate, formatDateTime } from '@/lib/utils';
 import type { PropertyDetailDto } from '@/types';
 import { PRICING_SECTION_ID } from '../lib/property-sheet';
@@ -46,9 +46,9 @@ export function PropertyOverviewTab({ property, canWrite, publicPath, onEditCin 
       <Facts>
         <Fact label={t('property.drawer.address')}>{formatPropertyLocation(property)}</Fact>
         <Fact label={t('property.drawer.spaces')}>{spaces}</Fact>
-        <Fact label={t('property.drawer.cin')}>
+        {requiresItalianCin(property.country) ? <Fact label={t('property.drawer.cin')}>
           <PropertyCinBadge cinStatus={property.cinStatus} cinCode={property.cinCode} onEdit={canWrite ? onEditCin : undefined} />
-        </Fact>
+        </Fact> : null}
         <Fact label={t('property.info.timezone')}>{property.timezone}</Fact>
         {property.description ? (
           <Fact label={t('property.detail.description')}>
@@ -119,7 +119,7 @@ export function PropertyOverviewTab({ property, canWrite, publicPath, onEditCin 
 
       {connectorOn ? (
         <PlainSection title={t('property.detail.sections.channels')}>
-          <MultiChannelStatus propertyId={property.id} canWrite={canWrite} cinValid={isValidCin(property.cinCode)} />
+          <MultiChannelStatus propertyId={property.id} canWrite={canWrite} cinValid={!requiresItalianCin(property.country) || isValidCin(property.cinCode)} />
         </PlainSection>
       ) : null}
 

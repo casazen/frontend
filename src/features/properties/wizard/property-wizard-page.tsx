@@ -11,7 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { useComplianceActivation } from '@/features/compliance/use-compliance';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
-import { isValidCin } from '@/lib/cin-format';
+import { isValidCin, requiresItalianCin } from '@/lib/cin-format';
 import { cn } from '@/lib/utils';
 import { useListingStatus } from '@/queries/use-listing-status';
 import { useProperty } from '@/queries/use-properties';
@@ -73,7 +73,7 @@ function ResumeWizard({ propertyId, stepNamed }: { propertyId: string; stepNamed
   // Fixed once, when the status first arrives (or fails: the wizard then opens as it always did) and the property is there to say if its CIN
   // is valid: a CIN that is missing is fixed in the last step, not in the `base` the server files it under.
   if (checked === undefined && connectorOn && property.data && (channels.data !== undefined || channels.isError)) {
-    setChecked(importedSteps(channels.data, isValidCin(property.data.cinCode)));
+    setChecked(importedSteps(channels.data, !requiresItalianCin(property.data.country) || isValidCin(property.data.cinCode)));
   }
   const waitingForStatus = connectorOn && shortRent && checked === undefined;
 

@@ -45,6 +45,7 @@ export function fetchFoundListings(queryClient: QueryClient): Promise<OctorateLi
 /** What every change of a mapping leaves behind: the listings are read again (also after a refusal: the server may have moved on). */
 function refreshAfterChange(queryClient: QueryClient) {
   void queryClient.invalidateQueries({ queryKey: OCTORATE_LISTINGS_KEY });
+  void queryClient.invalidateQueries({ queryKey: ['bookings'] });
 }
 
 /**

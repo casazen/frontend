@@ -7,6 +7,8 @@ import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useProperty } from '@/queries/use-properties';
 import type { ActivationBlocker, ComplianceActivationResult } from '@/types/compliance.types';
 import { ActivationSection } from '../finish/activation-section';
+import { requiresItalianCin } from '@/lib/cin-format';
+import { SwissRegistrationGuidance } from '../../components/swiss-registration-guidance';
 import { CinSection } from '../finish/cin-section';
 import { DocumentsSection } from '../finish/documents-section';
 import { finishStage } from '../finish/finish-model';
@@ -69,11 +71,11 @@ export function FinishStep({
         </div>
       </details>
 
-      <CinSection
+      {property.data && !requiresItalianCin(property.data.country) ? <SwissRegistrationGuidance /> : <CinSection
         propertyId={propertyId}
         storedCin={property.data?.cinCode ?? null}
         guidanceUrl={steps?.find((step) => step.id === 'cin')?.linkUrl}
-      />
+      />}
 
       <DocumentsSection propertyId={propertyId} step={steps?.find((step) => step.id === 'documents')} />
 

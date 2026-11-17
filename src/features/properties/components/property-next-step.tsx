@@ -74,7 +74,7 @@ export function PropertyNextStep({ property, status, canWrite, canReadBookings, 
   const summary = lightsOf(lights);
   const lightsFailed = wantsLights && lightsCouldNotBeRead(lights);
   const lines = useMemo(() => (summary ? propertyLinesOf(summary, property.id) : []), [summary, property.id]);
-  const facts = { status, cinStatus: property.cinStatus, photoCount: displayableMediaUrls(property.photoUrls).length, canWrite };
+  const facts = { status, cinStatus: property.cinStatus, country: property.country, photoCount: displayableMediaUrls(property.photoUrls).length, canWrite };
   const kind = nextStepOf({ ...facts, compliance: lines });
 
   // What the activation still misses, in the words of the wizard: read only while the activation is the step (no request otherwise).
