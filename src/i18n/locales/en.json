@@ -1561,7 +1561,7 @@
       "Errore": "Error while preparing the communication: send it on the Questura portal.",
       "Rifiutato": "The portal rejected the communication: fix the data and send it again on the Questura portal."
     },
-    "notDueNotice": "The guests did not arrive: no communication to the police is due for this stay.",
+    "notDueNotice": "No Italian police communication is due for this stay. Obligations in other countries are available in their dedicated section.",
     "statusError": "Unable to load the status of the Alloggiati communication.",
     "statusNotFound": "We cannot find the Alloggiati status of this stay: it may no longer exist or may not be yours.",
     "summaryError": "Unable to load the Alloggiati communications.",
@@ -26657,7 +26657,7 @@
       },
       "NotDue": {
         "label": "Not due",
-        "explain": "The guests did not arrive: no communication to the police is due for this stay."
+        "explain": "No Italian police communication is due for this stay. Obligations in other countries are available in their dedicated section."
       },
       "Rifiutato": {
         "label": "Rejected",

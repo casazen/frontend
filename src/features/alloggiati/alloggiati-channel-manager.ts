@@ -25,10 +25,10 @@ export type StayChannelView = 'entrusted' | 'receiptArchived' | 'receiptMissing'
  */
 export function stayChannelViewOf(status: Pick<AlloggiatiStatusDto, 'status' | 'channelManager'>): StayChannelView | null {
   if (status.status === 'ChannelManagerWriteFailed') return 'toCorrect';
-  if (status.status !== 'EntrustedToChannelManager') return null;
-
   const block = status.channelManager;
-  if (block?.receiptCoverage?.archived === true) return 'receiptArchived';
+  const failure = status.status === 'Errore' || status.status === 'Rifiutato';
+  if (status.status !== 'NotDue' && !failure && block?.receiptCoverage?.archived === true) return 'receiptArchived';
+  if (status.status !== 'EntrustedToChannelManager') return null;
   return block?.light === 'Red' ? 'receiptMissing' : 'entrusted';
 }
 
