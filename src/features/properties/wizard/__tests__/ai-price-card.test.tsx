@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { AxiosError } from 'axios';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -52,7 +53,7 @@ const NO_AI = (reason: NonNullable<PriceSuggestion['reason']>, rate: number | nu
 /** The form of the card under test, for a test that changes a field the way the host typing would. */
 const formHandle: { current: UseFormReturn<PropertyWizardValues> | null } = { current: null };
 
-function Harness({ values }: { values?: Partial<PropertyWizardValues> }) {
+function Harness({ values, currency }: { values?: Partial<PropertyWizardValues>; currency?: string }) {
   const form = useForm<PropertyWizardValues>({
     defaultValues: {
       ...NEW_PROPERTY_DEFAULTS,
@@ -75,19 +76,19 @@ function Harness({ values }: { values?: Partial<PropertyWizardValues> }) {
   const dirty = Object.keys(form.formState.dirtyFields);
   return (
     <>
-      <AiPriceCard form={form} propertyId={PROPERTY_ID} />
+      <AiPriceCard form={form} propertyId={PROPERTY_ID} currency={currency} />
       <output data-testid="values">{JSON.stringify({ rate, cleaning, weekend, minNights })}</output>
       <output data-testid="dirty">{JSON.stringify(dirty)}</output>
     </>
   );
 }
 
-function renderCard(values?: Partial<PropertyWizardValues>) {
+function renderCard(values?: Partial<PropertyWizardValues>, currency?: string) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
     <QueryClientProvider client={client}>
       <I18nextProvider i18n={i18n}>
-        <Harness values={values} />
+        <Harness values={values} currency={currency} />
       </I18nextProvider>
     </QueryClientProvider>,
   );
@@ -321,4 +322,54 @@ describe('AiPriceCard', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
     expect(await screen.findByTestId('property-wizard-ai-price-rate')).toHaveTextContent('€140 a night');
   });
+  it('shows an AI timeout instead of claiming a lost connection and preserves manual prices', async () => {
+    vi.mocked(priceSuggestionApi.suggest).mockRejectedValueOnce(new AxiosError('timeout', 'ECONNABORTED'));
+    renderCard();
+    fireEvent.click(await screen.findByTestId('property-wizard-ai-price-yes'));
+    expect(await screen.findByTestId('property-wizard-ai-price-error')).toHaveTextContent('The price estimate is taking longer than expected');
+    expect(values().rate).toBe('100');
+  });
+
+  it('preserves a genuine network failure as a connection error', async () => {
+    vi.mocked(priceSuggestionApi.suggest).mockRejectedValueOnce(new AxiosError('network', 'ERR_NETWORK'));
+    renderCard();
+    fireEvent.click(await screen.findByTestId('property-wizard-ai-price-yes'));
+    const error = await screen.findByTestId('property-wizard-ai-price-error');
+    expect(error).not.toHaveTextContent('The price estimate is taking longer');
+    expect(values().rate).toBe('100');
+  });
+
+  it('disables retry while the provider is answering and shows failures after a no-price result', async () => {
+    let reject!: (error: Error) => void;
+    vi.mocked(priceSuggestionApi.suggest).mockResolvedValueOnce(NO_AI('ai_unavailable', null))
+      .mockImplementationOnce(() => new Promise((_resolve, failure) => { reject = failure; }));
+    renderCard();
+    fireEvent.click(await screen.findByTestId('property-wizard-ai-price-yes'));
+    const retry = await screen.findByRole('button', { name: 'Try again' });
+    fireEvent.click(retry);
+    await waitFor(() => expect(retry).toBeDisabled());
+    fireEvent.click(retry);
+    expect(priceSuggestionApi.suggest).toHaveBeenCalledTimes(2);
+    await act(async () => reject(new AxiosError('timeout', 'ECONNABORTED')));
+    expect(await screen.findByTestId('property-wizard-ai-price-error')).toHaveTextContent('The price estimate is taking longer');
+  });
+
+  it('shows and applies the saved currency without inferring it from the country', async () => {
+    vi.mocked(priceSuggestionApi.suggest).mockResolvedValue({ ...AI_ANSWER, currency: 'CHF' });
+    renderCard({ country: 'CH' }, 'CHF');
+    await calculate();
+    expect(screen.getByTestId('property-wizard-ai-price-rate')).toHaveTextContent('CHF');
+    fireEvent.click(screen.getByTestId('property-wizard-ai-price-apply'));
+    expect(values().rate).toBe('140');
+  });
+
+  it('does not apply an older EUR estimate to a CHF property', async () => {
+    renderCard({ country: 'CH' }, 'CHF');
+    await calculate();
+    expect(screen.getByTestId('property-wizard-ai-price-apply')).toBeDisabled();
+    expect(screen.getByText(/Ask for a new estimate in CHF/)).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('property-wizard-ai-price-apply'));
+    expect(values().rate).toBe('100');
+  });
+
 });
