@@ -30263,6 +30263,10 @@
   },
   "team": {
     "access": {
+      "available": "Access allowed",
+      "showPages_one": "View {{count}} menu page",
+      "showPages_other": "View {{count}} menu pages",
+      "previewHint": "Compare roles without changing access. Changes are saved only from “Roles and permissions”.",
       "backToToday": "Back to today's role",
       "canEnter": "Can enter. The menu has:",
       "canTitle": "What they can do",
