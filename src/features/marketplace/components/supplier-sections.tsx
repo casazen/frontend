@@ -2,11 +2,10 @@ import { Mail, Phone } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PlainSection } from '@/components/shared/calm';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { getServiceCategoryLabel } from '@/lib/i18n-labels';
 import { displayableMediaUrls } from '@/lib/media-url';
 import { formatWorkDuration } from '@/lib/work-duration';
-import type { SupplierPicker, SupplierPickerService } from '@/types/service-request';
+import type { SupplierPicker } from '@/types/service-request';
 import { responseLabel, servicePriceLabel } from '../lib/supplier-labels';
 import { VerifiedBadge } from './verified-badge';
 
@@ -70,14 +69,8 @@ export function SupplierAbout({ supplier }: { supplier: SupplierPicker }) {
   );
 }
 
-interface SupplierServicesProps {
-  supplier: SupplierPicker;
-  /** With it each service has its «Richiedi»: the request starts from that service. */
-  onRequest?: (service: SupplierPickerService) => void;
-}
-
 /** The services of the supplier with «da {prezzo}» and how long they take («Su preventivo» when it gave no price). */
-export function SupplierServices({ supplier, onRequest }: SupplierServicesProps) {
+export function SupplierServices({ supplier }: { supplier: SupplierPicker }) {
   const { t, i18n } = useTranslation();
   const services = supplier.services ?? [];
   if (services.length === 0) return null;
@@ -95,19 +88,6 @@ export function SupplierServices({ supplier, onRequest }: SupplierServicesProps)
                   .join(' · ')}
               </p>
             </div>
-            {onRequest ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="min-h-11"
-                aria-label={t('marketplace.supplier.requestService', { service: service.name })}
-                onClick={() => onRequest(service)}
-                data-testid={`marketplace-request-service-${service.id}`}
-              >
-                {t('marketplace.supplier.request')}
-              </Button>
-            ) : null}
           </li>
         ))}
       </ul>

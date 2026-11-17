@@ -171,7 +171,7 @@ describe('MarketplaceMinePage · Attivi', () => {
     expect(providers).toHaveTextContent('Pulizie');
     const link = target('marketplace-provider-sup-1-link');
     expect(link.path).toBe('/app/short-rent/marketplace/suppliers/sup-1');
-    expect(link.params.get('propertyId')).toBe('prop-1');
+    expect(link.params.has('propertyId')).toBe(false);
     // The tab is read for the whole scope of the caller, not for one property, and nothing is asked of the suppliers' search.
     expect(api.getMarketplaceActive).toHaveBeenCalledWith(undefined, 'it');
     expect(api.getMarketplaceHealth).toHaveBeenCalledWith(undefined, 'it');

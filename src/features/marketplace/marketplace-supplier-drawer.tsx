@@ -1,4 +1,4 @@
-import { Link, matchPath, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   registerDetail,
@@ -18,32 +18,19 @@ import {
   SupplierServices,
   SupplierTrust,
 } from './components/supplier-sections';
-import { MARKETPLACE_CATEGORIES_PATH, marketplaceHref, marketplaceSupplierPath } from './lib/marketplace-paths';
-import { useMarketplaceProperty } from './lib/marketplace-property';
-import { useRequestIntervention } from './lib/use-request-intervention';
+import { marketplaceSupplierPath } from './lib/marketplace-paths';
 
 /** What the address calls the drawer of a supplier of the marketplace: `?detail=marketplace-supplier:<orgId>`. */
 export const MARKETPLACE_SUPPLIER_DRAWER_KIND = 'marketplace-supplier';
 
 /**
- * The supplier of the drawer, read from the list of the suppliers of the property the marketplace is about: the same query as
+ * The supplier of the drawer, read from the account’s supplier list: the same query as
  * the pages when it is not narrowed, so there is no second request, and a shared address opens the right supplier.
  */
 function useSupplierOfTheList(id: string) {
-  const properties = useMarketplaceProperty();
-  const suppliers = useMarketplaceSuppliers({ propertyId: properties.property?.id });
+  const suppliers = useMarketplaceSuppliers({ accountScope: true });
 
-  return {
-    property: properties.property,
-    supplier: suppliers.data?.items.find((candidate) => candidate.orgId === id),
-    isLoading: properties.isLoading || suppliers.isLoading,
-    isError: properties.isError || suppliers.isError,
-    error: properties.error ?? suppliers.error,
-    refetch: () => {
-      if (properties.isError) void properties.refetch();
-      else void suppliers.refetch();
-    },
-  };
+  return { ...suppliers, supplier: suppliers.data?.items.find((candidate) => candidate.orgId === id) };
 }
 
 export function SupplierDrawerTitle({ id }: DetailTitleProps) {
@@ -52,33 +39,17 @@ export function SupplierDrawerTitle({ id }: DetailTitleProps) {
 }
 
 /**
- * The quick look at a supplier (UI-15): what the card says and a little more, with the one thing to do. The page of the supplier
- * (`marketplaceSupplierPath`) has everything, every service with its own «Richiedi».
+ * The quick look at a supplier (UI-15): services, coverage, contacts and links to the supplier’s full page and showcase.
  */
-function SupplierDetails({ supplier, propertyId }: { supplier: SupplierPicker; propertyId: string }) {
+function SupplierDetails({ supplier }: { supplier: SupplierPicker }) {
   const { t } = useTranslation();
-  const { pathname } = useLocation();
-  const request = useRequestIntervention(propertyId);
-
-  // The category of the page the drawer was opened from, when the supplier offers it; else the first one it offers.
-  const narrowedTo = matchPath(`${MARKETPLACE_CATEGORIES_PATH}/:category`, pathname)?.params.category;
-  const requestCategory = narrowedTo && supplier.categories.includes(narrowedTo) ? narrowedTo : supplier.categories[0];
-
   return (
     <div className="space-y-6 pb-2" data-testid="marketplace-supplier-detail">
       <SupplierPhotos supplier={supplier} />
 
-      {/* The one thing to do here. No commission is shown to the host (D3). */}
       <div className="flex flex-wrap gap-2">
-        <Button
-          type="button"
-          onClick={() => request.open({ supplierOrgId: supplier.orgId, category: requestCategory })}
-          data-testid="marketplace-request-service-btn"
-        >
-          {t('serviceRequest.requestSupplier')}
-        </Button>
         <Button asChild variant="outline" data-testid="marketplace-open-page">
-          <Link to={marketplaceHref(marketplaceSupplierPath(supplier.orgId), propertyId)}>{t('marketplace.drawer.openPage')}</Link>
+          <Link to={marketplaceSupplierPath(supplier.orgId)}>{t('marketplace.drawer.openPage')}</Link>
         </Button>
         {supplier.showcaseSlug ? (
           <Button asChild variant="outline" data-testid="marketplace-showcase-link">
@@ -98,24 +69,23 @@ function SupplierDetails({ supplier, propertyId }: { supplier: SupplierPicker; p
 
 export function SupplierDrawerContent({ id }: DetailContentProps) {
   const { t } = useTranslation();
-  const { property, supplier, isLoading, isError, error, refetch } = useSupplierOfTheList(id);
+  const { supplier, isLoading, isError, error, refetch } = useSupplierOfTheList(id);
 
   if (isLoading) return <SkeletonLine lines={4} />;
 
   if (isError && !supplier) {
-    return <ErrorState title={t('marketplace.drawer.loadError')} error={error} onRetry={refetch} />;
+    return <ErrorState title={t('marketplace.drawer.loadError')} error={error} onRetry={() => void refetch()} />;
   }
 
-  if (!supplier || !property) {
+  if (!supplier) {
     return (
       <div role="status" className="space-y-1 py-4" data-testid="marketplace-supplier-not-found">
         <p className="font-semibold">{t('marketplace.drawer.notFound')}</p>
-        <p className="text-sm text-foreground/70">{t('marketplace.drawer.notFoundDescription')}</p>
       </div>
     );
   }
 
-  return <SupplierDetails supplier={supplier} propertyId={property.id} />;
+  return <SupplierDetails supplier={supplier} />;
 }
 
 // Registered when this module is loaded, which every list of the suppliers does (the grid imports it): the drawer opens from a

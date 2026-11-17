@@ -8,9 +8,9 @@ import { MARKETPLACE_PATH, MARKETPLACE_QUERY_PARAM } from './lib/marketplace-pat
 import { useSupplierFilters } from './lib/use-supplier-filters';
 
 /**
- * Cerca (MKT): the suppliers around the property that match the words of the search, found by the name of the supplier, by what it
+ * Cerca (MKT): the suppliers in the account’s service areas that match the words of the search, found by the name of the supplier, by what it
  * offers (the name of a service) and by the category, in Italian or English, without minding capitals or accents (SR-09a-FU2). The
- * words are in the address (`?q=`), so a search can be shared; with none, every supplier around the property is listed.
+ * words are in the address (`?q=`), so a search can be shared; with none, every supplier in those areas is listed.
  */
 export function MarketplaceSearchPage() {
   const { t } = useTranslation();
@@ -33,22 +33,22 @@ export function MarketplaceSearchPage() {
       section="discover"
       title={t('marketplace.search.title')}
       description={t('marketplace.search.description')}
-      trail={[{ label: t('marketplace.title'), path: MARKETPLACE_PATH }, { label: t('marketplace.search.title') }]}
+      crumbs={[{ label: t('marketplace.title'), to: MARKETPLACE_PATH }, { label: t('marketplace.search.title') }]}
       toolbar={<SupplierSearchBox value={words} onSearch={setWords} live />}
     >
-      {({ property }) => <SearchResults propertyId={property.id} words={words.trim()} onClear={() => setWords('')} />}
+      <SearchResults words={words.trim()} onClear={() => setWords('')} />
     </MarketplaceFrame>
   );
 }
 
-function SearchResults({ propertyId, words, onClear }: { propertyId: string; words: string; onClear: () => void }) {
+function SearchResults({ words, onClear }: { words: string; onClear: () => void }) {
   const { t } = useTranslation();
   const filters = useSupplierFilters();
-  const query = useMarketplaceSuppliers({ propertyId, q: words || undefined, sort: filters.sort });
+  const query = useMarketplaceSuppliers({ accountScope: true, q: words || undefined, sort: filters.sort });
 
   return (
     <div data-testid="marketplace-search-results">
-      <SupplierResults query={query} filters={filters} emptyText={t('marketplace.noNetwork')} onClearSearch={words ? onClear : undefined} />
+      <SupplierResults query={query} filters={filters} emptyText={t('marketplace.categories.none')} onClearSearch={words ? onClear : undefined} />
     </div>
   );
 }

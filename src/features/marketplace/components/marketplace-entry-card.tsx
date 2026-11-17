@@ -22,8 +22,6 @@ export interface BuiltInIntegration {
 
 interface MarketplaceEntryCardProps {
   entry: MarketplaceCatalogEntry;
-  /** The property the marketplace is about: the wizards and the Active tab keep it. */
-  propertyId: string | undefined;
   /** Only for CasaZen's own integrations: they lead to their own page and have no detail card. */
   builtIn?: BuiltInIntegration;
   testId?: string;
@@ -55,14 +53,14 @@ function EntryLogo({ name, logoUrl, icon: Icon }: { name: string; logoUrl: strin
  * is not specified: never an invented price), where it stands, and one action: Activate or Fix (they open the wizard), Manage (the
  * Active tab). «Dettagli» opens the detail card, which the address names (`?entry=<kind>:<code>`) so that it can be shared.
  */
-export function MarketplaceEntryCard({ entry, propertyId, builtIn, testId = `marketplace-entry-${entry.kind}-${entry.code}` }: MarketplaceEntryCardProps) {
+export function MarketplaceEntryCard({ entry, builtIn, testId = `marketplace-entry-${entry.kind}-${entry.code}` }: MarketplaceEntryCardProps) {
   const { t, i18n } = useTranslation();
   const location = useLocation();
   const [, setSearchParams] = useSearchParams();
 
   const action: MarketplaceCardAction | null = builtIn
     ? { kind: entry.status === 'Active' ? 'manage' : 'activate', to: builtIn.href }
-    : marketplaceAction(entry, propertyId, marketplaceReturnTarget(location));
+    : marketplaceAction(entry, undefined, marketplaceReturnTarget(location));
 
   // The server says why a wizard cannot start; a reason this page has no text for is said in general words.
   const reasonKey = `marketplace.detail.reason.${entry.reason}`;

@@ -19,7 +19,6 @@ import { countByCategory } from './lib/category-groups';
 import { splitMainChannels } from './lib/main-channels';
 import { CHANNEL_MANAGER_GROUP_IDS, channelManagerAvailable, findMarketplaceGroup } from './lib/marketplace-entry';
 import { MARKETPLACE_QUERY_PARAM, MARKETPLACE_SEARCH_PATH, marketplaceHref } from './lib/marketplace-paths';
-import { useMarketplaceProperty } from './lib/marketplace-property';
 import { useIntegrations, type Integration, type IntegrationId } from './lib/use-integrations';
 
 /** Where each of CasaZen's own integrations stands among the groups: the calendars are a sales channel, the card payments a tool. */
@@ -44,7 +43,6 @@ type CatalogQuery = ReturnType<typeof useMarketplaceCatalog>;
 export function MarketplacePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { property } = useMarketplaceProperty();
 
   return (
     <MarketplaceFrame
@@ -53,19 +51,14 @@ export function MarketplacePage() {
       description={t('marketplace.description')}
       toolbar={
         <SupplierSearchBox
-          onSearch={(words) => navigate(marketplaceHref(MARKETPLACE_SEARCH_PATH, property?.id, { [MARKETPLACE_QUERY_PARAM]: words.trim() }))}
+          onSearch={(words) => navigate(marketplaceHref(MARKETPLACE_SEARCH_PATH, undefined, { [MARKETPLACE_QUERY_PARAM]: words.trim() }))}
         />
       }
-      before={<ChannelManagerGroups />}
-      after={
-        <>
-          <PartnersGroup />
-          {/* The detail card of an integration: open while the address has `?entry=`, so that it can be shared. */}
-          <MarketplaceEntryDrawer />
-        </>
-      }
     >
-      {({ property: current }) => <HomeServicesGroup propertyId={current.id} />}
+      <ChannelManagerGroups />
+      <HomeServicesGroup />
+      <PartnersGroup />
+      <MarketplaceEntryDrawer />
     </MarketplaceFrame>
   );
 }
@@ -100,10 +93,9 @@ function integrationCardProps(integration: Integration, t: TFunction) {
   };
 }
 
-/** The first three groups. They do not look for suppliers, so they do not wait for the comune of the property. */
+/** The first three groups. They use the statuses across the account scope. */
 function ChannelManagerGroups() {
-  const { property } = useMarketplaceProperty();
-  const catalog = useMarketplaceCatalog(property?.id);
+  const catalog = useMarketplaceCatalog();
   const integrations = useIntegrations();
 
   return (
@@ -112,7 +104,6 @@ function ChannelManagerGroups() {
         <CatalogGroup
           key={id}
           id={id}
-          propertyId={property?.id}
           catalog={catalog}
           integrations={integrations.filter((integration) => BUILT_IN_GROUP[integration.id] === id)}
         />
@@ -123,7 +114,6 @@ function ChannelManagerGroups() {
 
 interface CatalogGroupProps {
   id: MarketplaceGroupId;
-  propertyId: string | undefined;
   catalog: CatalogQuery;
   /** CasaZen's own integrations of this group: they are there whatever the catalog says. */
   integrations: Integration[];
@@ -134,7 +124,7 @@ interface CatalogGroupProps {
  * not available or not connected the cards of the catalog are replaced by a sentence and the way to connect it. The sales channels show
  * the main ones at once and the others behind «Visualizza altri»: a channel that is active, pending or to fix is never hidden.
  */
-function CatalogGroup({ id, propertyId, catalog, integrations }: CatalogGroupProps) {
+function CatalogGroup({ id, catalog, integrations }: CatalogGroupProps) {
   const { t } = useTranslation();
   const [showAll, setShowAll] = useState(false);
   const data = catalog.data;
@@ -146,9 +136,9 @@ function CatalogGroup({ id, propertyId, catalog, integrations }: CatalogGroupPro
   const cards = [
     ...integrations.map((integration) => {
       const { entry, testId, builtIn } = integrationCardProps(integration, t);
-      return <MarketplaceEntryCard key={`built-in-${integration.id}`} entry={entry} propertyId={propertyId} builtIn={builtIn} testId={testId} />;
+      return <MarketplaceEntryCard key={`built-in-${integration.id}`} entry={entry} builtIn={builtIn} testId={testId} />;
     }),
-    ...shown.map((entry) => <MarketplaceEntryCard key={`${entry.kind}:${entry.code}`} entry={entry} propertyId={propertyId} />),
+    ...shown.map((entry) => <MarketplaceEntryCard key={`${entry.kind}:${entry.code}`} entry={entry} />),
   ];
 
   return (
@@ -182,12 +172,12 @@ function CatalogGroup({ id, propertyId, catalog, integrations }: CatalogGroupPro
   );
 }
 
-/** «Fornitori CasaZen», the group that kept its flow: one tile for each category, with its suppliers around the property. */
-function HomeServicesGroup({ propertyId }: { propertyId: string }) {
+/** «Fornitori CasaZen», the group that kept its flow: one tile for each category, with its suppliers across the account’s service areas. */
+function HomeServicesGroup() {
   const { t } = useTranslation();
-  const suppliers = useMarketplaceSuppliers({ propertyId });
+  const suppliers = useMarketplaceSuppliers({ accountScope: true });
   const catalog = useServiceCategories();
-  const marketplace = useMarketplaceCatalog(propertyId);
+  const marketplace = useMarketplaceCatalog();
   // The sentence that sends the person to the Partners group is there only when that group has cards to show (the same read as the group's).
   const partnersBelow = (findMarketplaceGroup(marketplace.data, 'partners')?.entries.length ?? 0) > 0;
   const items = suppliers.data?.items ?? [];
@@ -205,14 +195,14 @@ function HomeServicesGroup({ propertyId }: { propertyId: string }) {
         <>
           {items.length === 0 ? (
             <p className="py-1 text-sm text-muted-foreground" role="status" data-testid="marketplace-no-network">
-              {t('marketplace.noNetwork')}
+              {t('marketplace.categories.none')}
               {partnersBelow ? ` ${t('marketplace.noNetworkPartners')}` : null}
             </p>
           ) : null}
           <ul role="list" className="grid list-none gap-3 pt-2 sm:grid-cols-2 xl:grid-cols-3" data-testid="marketplace-categories">
             {catalog.data.map((category) => (
               <li key={category} className="min-w-0">
-                <CategoryTile category={category} count={counts.get(category) ?? 0} propertyId={propertyId} />
+                <CategoryTile category={category} count={counts.get(category) ?? 0} />
               </li>
             ))}
           </ul>
@@ -225,8 +215,7 @@ function HomeServicesGroup({ propertyId }: { propertyId: string }) {
 /** The last group: the external partners the administrator of CasaZen put in the catalog. None is written in the page. */
 function PartnersGroup() {
   const { t } = useTranslation();
-  const { property } = useMarketplaceProperty();
-  const catalog = useMarketplaceCatalog(property?.id);
+  const catalog = useMarketplaceCatalog();
   const partners = findMarketplaceGroup(catalog.data, 'partners')?.entries ?? [];
 
   return (
@@ -234,7 +223,7 @@ function PartnersGroup() {
       {partners.length > 0 ? (
         <MarketplaceCards>
           {partners.map((partner) => (
-            <MarketplaceEntryCard key={`${partner.kind}:${partner.code}`} entry={partner} propertyId={property?.id} />
+            <MarketplaceEntryCard key={`${partner.kind}:${partner.code}`} entry={partner} />
           ))}
         </MarketplaceCards>
       ) : catalog.isPending ? (

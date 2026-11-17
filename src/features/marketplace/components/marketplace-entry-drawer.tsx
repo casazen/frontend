@@ -14,7 +14,6 @@ import { useMarketplaceEntry } from '@/queries/use-marketplace';
 import type { MarketplaceEntryDetail } from '@/types';
 import { marketplaceAction, marketplaceReturnTarget, parseMarketplaceEntry } from '../lib/marketplace-entry';
 import { MARKETPLACE_ENTRY_PARAM, MARKETPLACE_MINE_PATH } from '../lib/marketplace-paths';
-import { useMarketplaceProperty } from '../lib/marketplace-property';
 import { MarketplaceStatusBadge } from './marketplace-status-badge';
 
 /** A part of the detail card: its heading and what it says. */
@@ -128,12 +127,12 @@ function EntryDetail({ detail }: { detail: MarketplaceEntryDetail }) {
 }
 
 /** The foot of the card: the one thing to do, or why it cannot be done. */
-function EntryFooter({ detail, propertyId }: { detail: MarketplaceEntryDetail; propertyId: string | undefined }) {
+function EntryFooter({ detail }: { detail: MarketplaceEntryDetail }) {
   const { t, i18n } = useTranslation();
   const location = useLocation();
   const action = marketplaceAction(
     { kind: detail.kind, code: detail.code, status: detail.status, canActivate: detail.actions.canActivate },
-    propertyId,
+    undefined,
     marketplaceReturnTarget(location),
     detail.activation.type,
   );
@@ -167,8 +166,7 @@ function EntryFooter({ detail, propertyId }: { detail: MarketplaceEntryDetail; p
  */
 function EntryPanelContent({ kind, code, bodyRef }: { kind: string; code: string; bodyRef: RefObject<HTMLDivElement | null> }) {
   const { t } = useTranslation();
-  const { property } = useMarketplaceProperty();
-  const entry = useMarketplaceEntry(kind, code, property?.id);
+  const entry = useMarketplaceEntry(kind, code);
 
   const detail = entry.data;
   // The card is not there for this person (a partner their plan or country does not allow, a code that does not exist): said as such.
@@ -199,7 +197,7 @@ function EntryPanelContent({ kind, code, bodyRef }: { kind: string; code: string
           <SkeletonLine lines={5} label={t('marketplace.detail.loading')} />
         )}
       </div>
-      {detail ? <EntryFooter detail={detail} propertyId={property?.id} /> : null}
+      {detail ? <EntryFooter detail={detail} /> : null}
     </>
   );
 }

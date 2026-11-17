@@ -15,7 +15,6 @@ const hooks = vi.hoisted(() => ({ entry: vi.fn() }));
 vi.mock('@/queries/use-marketplace', () => ({
   useMarketplaceEntry: (kind?: string, code?: string, propertyId?: string) => hooks.entry(kind, code, propertyId),
 }));
-vi.mock('../lib/marketplace-property', () => ({ useMarketplaceProperty: () => ({ property: { id: 'prop-1' } }) }));
 
 const ROUTE = '/app/short-rent/marketplace?propertyId=prop-1&entry=Channel:PORTAL1';
 
@@ -96,7 +95,7 @@ describe('MarketplaceEntryDrawer · the detail card (MKT-02)', () => {
 
     const dialog = await screen.findByRole('dialog', { name: 'TEST Portal' });
     expect(dialog).toBeInTheDocument();
-    expect(hooks.entry).toHaveBeenCalledWith('Channel', 'PORTAL1', 'prop-1');
+    expect(hooks.entry).toHaveBeenCalledWith('Channel', 'PORTAL1', undefined);
   });
 
   it('MarketplaceEntryDrawer_Open_ShowsEverySectionInOrder', async () => {
@@ -215,7 +214,7 @@ describe('MarketplaceEntryDrawer · the detail card (MKT-02)', () => {
     expect(action).toHaveTextContent(label);
     const url = new URL(action.getAttribute('href') ?? '', 'http://localhost');
     expect(url.pathname).toBe(path);
-    expect(url.searchParams.get('propertyId')).toBe('prop-1');
+    expect(url.searchParams.has('propertyId')).toBe(false);
   });
 
   it.each([
@@ -337,7 +336,7 @@ describe('MarketplaceEntryDrawer · the detail card (MKT-02)', () => {
     renderDrawer(
       '/app/short-rent/marketplace?propertyId=prop-1',
       <ul>
-        <MarketplaceEntryCard entry={CARD} propertyId="prop-1" />
+        <MarketplaceEntryCard entry={CARD} />
       </ul>,
     );
     const details = screen.getByRole('button', { name: 'Dettagli di TEST Portal' });

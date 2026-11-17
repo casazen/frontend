@@ -1,6 +1,6 @@
 import { isAxiosError } from 'axios';
 import { Link, useParams } from 'react-router-dom';
-import { Store, Wrench } from 'lucide-react';
+import { Store } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { SkeletonLine } from '@/components/ui/skeleton';
 import { getServiceCategoryLabel } from '@/lib/i18n-labels';
 import { useMarketplaceSupplier } from '@/queries/use-service-requests';
-import { MarketplaceFrame, type MarketplaceContext } from './components/marketplace-frame';
+import { MarketplaceFrame } from './components/marketplace-frame';
 import {
   SupplierAbout,
   SupplierContacts,
@@ -17,19 +17,16 @@ import {
   SupplierServices,
   SupplierTrust,
 } from './components/supplier-sections';
-import { MARKETPLACE_PATH, marketplaceHref } from './lib/marketplace-paths';
-import { useMarketplaceProperty } from './lib/marketplace-property';
+import { MARKETPLACE_PATH } from './lib/marketplace-paths';
 
 /**
- * The page of a supplier (MKT): the same things the drawer says, with every service and a «Richiedi» for each, and the way to
- * its showcase when it has one. It can be shared (`/marketplace/suppliers/<orgId>?propertyId=`): the supplier is read for the
- * property in the address, and one that does not work around it, or is not active, is not found. No commission is shown (D3).
+ * The page of a supplier (MKT): the same things the drawer says, with every published service and the way to
+ * its showcase when it has one. It can be shared (`/marketplace/suppliers/<orgId>`): the supplier is read across the account’s service areas. No commission is shown (D3).
  */
 export function MarketplaceSupplierPage() {
   const { t } = useTranslation();
   const { orgId = '' } = useParams();
-  const { property } = useMarketplaceProperty();
-  const query = useMarketplaceSupplier(property?.id, orgId);
+  const query = useMarketplaceSupplier(orgId);
   const supplier = query.data;
   const name = supplier?.legalName ?? t('marketplace.supplier.title');
 
@@ -38,27 +35,15 @@ export function MarketplaceSupplierPage() {
       section="discover"
       title={name}
       description={supplier?.categories.map((category) => getServiceCategoryLabel(category, t)).join(' · ')}
-      trail={[{ label: t('marketplace.title'), path: MARKETPLACE_PATH }, { label: name }]}
-      primary={
-        supplier
-          ? (requestIntervention) => ({
-              label: t('serviceRequest.requestSupplier'),
-              icon: Wrench,
-              onClick: () => requestIntervention({ supplierOrgId: supplier.orgId, category: supplier.categories[0] }),
-              testId: 'marketplace-request-service-btn',
-            })
-          : null
-      }
+      crumbs={[{ label: t('marketplace.title'), to: MARKETPLACE_PATH }, { label: name }]}
     >
-      {(context) => <SupplierPageBody orgId={orgId} context={context} />}
+      <SupplierPageBody query={query} />
     </MarketplaceFrame>
   );
 }
 
-function SupplierPageBody({ orgId, context }: { orgId: string; context: MarketplaceContext }) {
+function SupplierPageBody({ query }: { query: ReturnType<typeof useMarketplaceSupplier> }) {
   const { t } = useTranslation();
-  const { property, requestIntervention } = context;
-  const query = useMarketplaceSupplier(property.id, orgId);
 
   if (query.isLoading) return <SkeletonLine lines={6} />;
 
@@ -68,8 +53,7 @@ function SupplierPageBody({ orgId, context }: { orgId: string; context: Marketpl
         <EmptyState
           icon={Store}
           title={t('marketplace.drawer.notFound')}
-          description={t('marketplace.drawer.notFoundDescription')}
-          action={{ label: t('marketplace.supplier.backToMarketplace'), href: marketplaceHref(MARKETPLACE_PATH, property.id) }}
+          action={{ label: t('marketplace.supplier.backToMarketplace'), href: MARKETPLACE_PATH }}
           className="py-8"
         />
       );
@@ -86,10 +70,7 @@ function SupplierPageBody({ orgId, context }: { orgId: string; context: Marketpl
         <SupplierPhotos supplier={supplier} />
         <SupplierTrust supplier={supplier} />
         <SupplierAbout supplier={supplier} />
-        <SupplierServices
-          supplier={supplier}
-          onRequest={(service) => requestIntervention({ supplierOrgId: supplier.orgId, service: { id: service.id, category: service.category } })}
-        />
+        <SupplierServices supplier={supplier} />
       </div>
       <div className="min-w-0 space-y-8">
         {supplier.showcaseSlug ? (
