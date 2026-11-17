@@ -189,7 +189,7 @@ function ResultView({ result, page, onPage }: ResultViewProps) {
  * mutations (`useImportOwners`), and the panel forgets them when the person chooses another file. It says in so many words that importing sends no invitation:
  * the invitations are another act, with its own preview and confirmation.
  */
-export function OwnerImportPanel() {
+export function OwnerImportPanel({ propertyRef }: { propertyRef?: string } = {}) {
   const { t } = useTranslation();
   const check = useImportOwners();
   const [file, setFile] = useState<File | null>(null);
@@ -201,7 +201,7 @@ export function OwnerImportPanel() {
   const [page, setPage] = useState(0);
   const [confirming, setConfirming] = useState(false);
   // The form of one owner entered by hand: shown on request, and emptied (a new key) when the file is forgotten or the import wrote something.
-  const [manualOpen, setManualOpen] = useState(false);
+  const [manualOpen, setManualOpen] = useState(Boolean(propertyRef));
   const [formKey, setFormKey] = useState(0);
 
   const { mutate, mutateAsync, reset, isPending, error } = check;
@@ -329,7 +329,7 @@ export function OwnerImportPanel() {
           {t(manualOpen ? 'ownerOnboarding.manual.close' : 'ownerOnboarding.manual.open')}
         </Button>
         <div id="owner-manual-region" hidden={!manualOpen}>
-          {manualOpen ? <OwnerManualForm key={formKey} disabled={isPending} onFile={checkManual} onEdit={editManual} /> : null}
+          {manualOpen ? <OwnerManualForm propertyRef={propertyRef} key={formKey} disabled={isPending} onFile={checkManual} onEdit={editManual} /> : null}
         </div>
       </div>
 

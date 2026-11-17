@@ -7,6 +7,7 @@ import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { useOptionalWizard } from '@/components/shared/wizard/wizard-context';
 import { WizardShell, type WizardShellProps, type WizardStep } from '@/components/shared/wizard/wizard-shell';
+import { ownerOnboardingApi } from '@/api/owner-onboarding.api';
 import { getActivationBlockedProblem } from '@/api/compliance.api';
 import { openReminders } from '@/features/compliance/activation-wizard-model';
 import { useCompleteComplianceActivation, useComplianceActivation } from '@/features/compliance/use-compliance';
@@ -58,6 +59,8 @@ import { DescriptionsStep } from './steps/descriptions-step';
 import { FinishStep } from './steps/finish-step';
 import { PhotosStep } from './steps/photos-step';
 import { PricesStep } from './steps/prices-step';
+import { OwnerStep } from './steps/owner-step';
+import { propertyHasOwner } from './owner-step-model';
 import { RulesStep } from './steps/rules-step';
 import { useWizardCreateProperty, useWizardSaveProperty } from './use-wizard-property';
 
@@ -206,6 +209,12 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
   // there is no room, or the server just refused (403 `plan_limit_reached`). The server stays the source of truth on a create.
   const planUsage = usePlanUsage(!propertyId);
   const entitlement = useEntitlement();
+  const ownerRequired = entitlement.data?.isAgency === true;
+  const verifyOwner = async () => {
+    if (!ownerRequired || !propertyId) return;
+    const report = await ownerOnboardingApi.getReadiness(propertyId);
+    if (!propertyHasOwner(report, propertyId)) throw new Error(t('propertyWizard.owner.required'));
+  };
   const blockedByPlan = !propertyId && (planLimitHit || planUsage.data?.canAdd === false || entitlement.data?.canAddProperty === false);
 
   // The property is in the address from the moment it exists (the reload and the links need it), whichever way the step changed.
@@ -312,6 +321,7 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
   // says that nothing blocks; with a blocker open it sends nothing and the host finishes later.
   const finish = async (values: PropertyWizardValues) => {
     if (!propertyId) return null;
+    await verifyOwner();
     setRefused(null);
     for (const action of finishActions(stage, values.publishedOnSite, storedVisibility.current)) {
       if (action === 'visibility') {
@@ -355,6 +365,14 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
         </>
       ),
     },
+    ...(ownerRequired ? [{
+      id: 'owner',
+      label: t('propertyWizard.owner.label'),
+      title: t('propertyWizard.owner.title'),
+      purpose: t('propertyWizard.owner.purpose'),
+      beforeNext: verifyOwner,
+      render: () => propertyId ? <OwnerStep propertyId={propertyId} /> : null,
+    } satisfies WizardStep<PropertyWizardValues>] : []),
     {
       id: 'photos',
       label: t('propertyWizard.steps.photos.label'),
@@ -448,6 +466,7 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
   ];
   const saveByStep: Record<string, (values: PropertyWizardValues) => Promise<void>> = {
     base: saveBase,
+    owner: async () => undefined,
     photos: savePhotos,
     amenities: saveAmenities,
     descriptions: saveDescriptions,
@@ -462,7 +481,7 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
     <PropertyWizardShell
       id={WIZARD_ID}
       steps={allSteps}
-      onlySteps={onlySteps}
+      onlySteps={onlySteps && ownerRequired ? [...onlySteps, 'owner'] : onlySteps}
       defaultValues={defaults}
       initialStepId={initialStepId}
       finishLabel={t(`propertyWizard.last.button.${stage === 'ready' ? 'activate' : stage === 'active' ? 'done' : 'later'}`)}

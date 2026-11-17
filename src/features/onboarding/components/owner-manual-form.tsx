@@ -17,6 +17,7 @@ const REQUIRED: readonly (keyof ManualOwnerValues)[] = ['property', 'legalName',
 interface OwnerManualFormProps {
   /** A request of the card is in flight: the form waits. */
   disabled: boolean;
+  propertyRef?: string;
   /** The one row as a file, to be checked exactly as a file chosen from the computer is: the check, then the confirmed import; with the row as the confirmation will name it. */
   onFile: (file: File, row: ManualOwnerRow) => void;
   /** A field of the form changed: the file that was made of it before (and its check) is not what the form holds any more. */
@@ -29,9 +30,9 @@ interface OwnerManualFormProps {
  * (a name, an address, a tax code) lives in this form only while it is on the page: it is not written to the URL, the storage or the log, and it is not kept by the cache of
  * the mutations (the file goes through `useImportOwners`). The form is not a form of the page: the card around it never submits.
  */
-export function OwnerManualForm({ disabled, onFile, onEdit }: OwnerManualFormProps) {
+export function OwnerManualForm({ disabled, onFile, onEdit, propertyRef }: OwnerManualFormProps) {
   const { t } = useTranslation();
-  const [values, setValues] = useState<ManualOwnerValues>(EMPTY);
+  const [values, setValues] = useState<ManualOwnerValues>(() => ({ ...EMPTY, property: propertyRef ?? '' }));
   const [problem, setProblem] = useState<string | null>(null);
 
   const set = (key: keyof ManualOwnerValues) => (value: string) => {
@@ -64,7 +65,7 @@ export function OwnerManualForm({ disabled, onFile, onEdit }: OwnerManualFormPro
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Field label={t('ownerOnboarding.manual.property')} hint={t('ownerOnboarding.manual.propertyHint')}>
-          <Input value={values.property} onChange={(event) => set('property')(event.target.value)} disabled={disabled} autoComplete="off" data-testid="owner-manual-property" />
+          <Input readOnly={Boolean(propertyRef)} value={values.property} onChange={(event) => set('property')(event.target.value)} disabled={disabled} autoComplete="off" data-testid="owner-manual-property" />
         </Field>
         <Field label={t('ownerOnboarding.manual.legalName')}>
           <Input value={values.legalName} onChange={(event) => set('legalName')(event.target.value)} disabled={disabled} autoComplete="off" data-testid="owner-manual-name" />

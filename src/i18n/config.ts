@@ -4,6 +4,8 @@ import { z } from 'zod';
 import { i18nZodErrorMap, setZodErrorMapI18n } from './zod-error-map';
 import it from './locales/it.json';
 import en from './locales/en.json';
+import ownerSetupIt from './locales/property-owner-it.json';
+import ownerSetupEn from './locales/property-owner-en.json';
 import { readStoredLocale } from './locale-storage';
 
 export { LOCALE_STORAGE_KEY, type AppLocale } from './locale-storage';
@@ -19,6 +21,9 @@ void i18n.use(initReactI18next).init({
   fallbackLng: { default: ['it'], de: ['en', 'it'], fr: ['en', 'it'], es: ['en', 'it'] },
   interpolation: { escapeValue: false },
 });
+
+i18n.addResourceBundle('it', 'translation', ownerSetupIt, true, true);
+i18n.addResourceBundle('en', 'translation', ownerSetupEn, true, true);
 
 // Break circular dependency: zod-error-map no longer imports i18n directly.
 setZodErrorMapI18n(i18n);
