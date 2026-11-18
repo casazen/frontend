@@ -68,12 +68,18 @@ describe('commercial profile and configuration', () => {
   });
   it('adds included and separately priced modules to the same owner plan', async () => {
     vi.mocked(CommercialSignupApi.getCatalog).mockResolvedValueOnce([
+      { code: 'channels', context: 'short-rent', priceMonthly: null, currency: 'EUR', purchasable: false, includedInPlans: ['Pro', 'Scale'] },
       { code: 'direct-booking', context: 'short-rent', priceMonthly: null, currency: 'EUR', purchasable: false, includedInPlans: ['Pro', 'Scale'] },
       { code: 'fiscal', context: 'all', priceMonthly: null, currency: 'EUR', purchasable: false, ownerOffer: { priceMonthly: 3, purchasable: true } },
     ]);
     start();
     fireEvent.click(screen.getByTestId('signup-profile-owner'));
+    expect(await screen.findByText('Sincronizzazione dei calendari OTA tramite iCal')).toBeVisible();
     fireEvent.click(await screen.findByRole('button', { name: /Pro/ }));
+    expect(await screen.findByText('Sincronizzazione automatica con i portali OTA')).toBeVisible();
+    expect(screen.getByText('Sincronizzazione dei contenuti con i portali OTA')).toBeVisible();
+    expect(screen.getByText('Hub messaggi integrato con i portali OTA')).toBeVisible();
+    expect(screen.queryByText(/tramite iCal/)).not.toBeInTheDocument();
     expect(await screen.findByText('Prenotazioni dirette', { selector: 'li' })).toBeVisible();
     expect(screen.queryByRole('checkbox', { name: /Prenotazioni dirette/ })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('checkbox', { name: /3,00/ }));
@@ -82,12 +88,12 @@ describe('commercial profile and configuration', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Continua al pagamento' }));
     fireEvent.click(screen.getByRole('button', { name: 'Conferma consensi' }));
     expect(UsersApi.postOnboarding).toHaveBeenLastCalledWith(expect.objectContaining({
-      commercialSignup: expect.objectContaining({ planTier: 'Pro', addons: ['fiscal', 'direct-booking'] }),
+      commercialSignup: expect.objectContaining({ planTier: 'Pro', addons: ['fiscal', 'channels', 'direct-booking'] }),
     }));
   });
   it('requires an agency name and explains founder administration and invite-only membership', async () => {
     start(); fireEvent.click(screen.getByTestId('signup-profile-agency'));
-    await screen.findByText('Canali e distribuzione', { selector: 'li' });
+    await screen.findByText('Sincronizzazione automatica con i portali OTA', { selector: 'li' });
     expect(screen.getByRole('button', { name: 'Vai al riepilogo' })).toBeDisabled();
     expect(screen.getByText(/Ne sarai titolare e amministratore/)).toBeVisible();
     fireEvent.change(screen.getByLabelText('Nome dell’agenzia'), { target: { value: 'Nuova Agenzia' } });
@@ -97,7 +103,7 @@ describe('commercial profile and configuration', () => {
     start(); fireEvent.click(screen.getByTestId('signup-profile-agency'));
     fireEvent.change(screen.getByLabelText('Nome dell’agenzia'), { target: { value: 'Nuova Agenzia' } });
     fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '3' } });
-    expect(await screen.findByText('Canali e distribuzione', { selector: 'li' })).toBeVisible();
+    expect(await screen.findByText('Sincronizzazione automatica con i portali OTA', { selector: 'li' })).toBeVisible();
     expect(screen.getByText('3 camere ipotizzate')).toBeVisible();
     expect(screen.getAllByText(/100,00/).at(-1)).toBeVisible();
     fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '' } });

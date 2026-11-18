@@ -215,7 +215,7 @@ export function PlanCompare({ detailsRef, plansQuery, subscription, tier, usage,
 
       {renderPlans()}
 
-      <p className="break-words text-sm text-foreground/70">{t('accountBilling.compare.note')}</p>
+      <p className="break-words text-sm text-foreground/70">{t(plans?.some(plan => plan.pricesIncludeVat) ? 'commercial.compareNoteVatIncluded' : 'accountBilling.compare.note')}</p>
 
       <CheckoutDialog plan={checkoutPlan} subscription={subscription} onClose={() => setCheckoutPlan(null)} onAlreadySubscribed={handleAlreadySubscribed} />
     </BillingDisclosure>

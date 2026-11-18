@@ -32100,6 +32100,7 @@
     "pricePending": "Price not configured",
     "perRoomMonth": " / room / month",
     "perMonth": "per month, excluding tax",
+    "perMonthVatIncluded": "per month, VAT included",
     "monthSuffix": " / month",
     "choosePlan": "Choose your plan",
     "unlimited": "Unlimited properties",
@@ -32122,6 +32123,7 @@
       "admin": "We will create a new agency with this name. As its owner and administrator, you can invite collaborators and manage access. Members join your agency by invitation only.",
       "inviteLater": "Invite collaborators and assign roles and properties from Administration → People.",
       "minimum": "Monthly minimum {{amount}}, excluding tax. A custom quote applies from {{threshold}} units.",
+      "minimumVatIncluded": "Monthly minimum {{amount}}, VAT included. A custom quote applies from {{threshold}} units.",
       "customQuote": "Custom quote",
       "continue": "Continue to activation",
       "setup": "Set up billing on Stripe",
@@ -32173,7 +32175,12 @@
     "basePlan": "Base plan",
     "total": "Monthly total",
     "taxNote": "Excluding tax. Applicable taxes are calculated at checkout.",
-    "changeLater": "Manage your plan and modules in Administration. Extras are never added automatically.",
+    "taxIncluded": "VAT included. Stripe shows the tax breakdown at checkout.",
+    "moduleStatus": "Module status",
+    "moduleActive": "Active",
+    "moduleInactive": "Inactive",
+    "compareNoteVatIncluded": "Prices include VAT.",
+    "changeLater": "View your plan and module status in Administration. Extras are added only when selected.",
     "addons": {
       "channels": {
         "title": "Channels and distribution",
@@ -32196,8 +32203,8 @@
         "text": "Ready-made and custom agents that manage stays, schedule cleaning and contact guests autonomously."
       },
       "messages-ai": {
-        "title": "Messaging and AI assistant",
-        "text": "Support for guest conversations and replies."
+        "title": "AI messaging assistant",
+        "text": "Set up rules and AI-assisted replies for guest conversations."
       },
       "operations": {
         "title": "Tasks and providers",
@@ -32223,6 +32230,10 @@
     "manageAreasText": "Add short-term or long-term rentals to your business. Only your plan administrator can change this.",
     "manageAreas": "Manage active areas",
     "baseShort": "Calendar and manual bookings",
+    "icalSync": "OTA calendar sync via iCal",
+    "otaSync": "Automatic sync with OTA portals",
+    "otaContentSync": "Content sync with OTA portals",
+    "otaMessaging": "Integrated messaging hub for OTA portals",
     "baseLong": "Leases, tenants, rent and deadlines",
     "baseCommon": "Properties, contacts and document archive",
     "resumePayment": "Manage or complete payment",

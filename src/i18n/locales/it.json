@@ -32100,6 +32100,7 @@
     "pricePending": "Prezzo da configurare",
     "perRoomMonth": " / camera / mese",
     "perMonth": "al mese, IVA esclusa",
+    "perMonthVatIncluded": "al mese, IVA inclusa",
     "monthSuffix": " / mese",
     "choosePlan": "Scegli il tuo piano",
     "unlimited": "Immobili illimitati",
@@ -32122,6 +32123,7 @@
       "admin": "Creeremo una nuova agenzia con questo nome. Ne sarai titolare e amministratore: potrai invitare i collaboratori e gestirne gli accessi. Si entra nella tua agenzia solo su invito.",
       "inviteLater": "Da Amministrazione → Persone potrai invitare i collaboratori e assegnare ruoli e immobili.",
       "minimum": "Minimo mensile {{amount}}, IVA esclusa. Da {{threshold}} unità si applica un preventivo personalizzato.",
+      "minimumVatIncluded": "Minimo mensile {{amount}}, IVA inclusa. Da {{threshold}} unità si applica un preventivo personalizzato.",
       "customQuote": "Su preventivo",
       "continue": "Continua all’attivazione",
       "setup": "Configura la fatturazione su Stripe",
@@ -32173,7 +32175,12 @@
     "basePlan": "Piano base",
     "total": "Totale mensile",
     "taxNote": "IVA esclusa. Le imposte applicabili sono calcolate al pagamento.",
-    "changeLater": "Potrai gestire piano e moduli da Amministrazione. Nessun extra viene aggiunto automaticamente.",
+    "taxIncluded": "IVA inclusa. Stripe mostra il dettaglio delle imposte al pagamento.",
+    "moduleStatus": "Stato dei moduli",
+    "moduleActive": "Attivo",
+    "moduleInactive": "Disattivo",
+    "compareNoteVatIncluded": "Prezzi IVA inclusa.",
+    "changeLater": "Consulta il piano e lo stato dei moduli in Amministrazione. Gli extra si aggiungono solo su scelta.",
     "addons": {
       "channels": {
         "title": "Canali e distribuzione",
@@ -32196,8 +32203,8 @@
         "text": "Agenti preimpostati e personalizzati per gestire soggiorni, organizzare pulizie e comunicare con gli ospiti in autonomia."
       },
       "messages-ai": {
-        "title": "Messaggi e assistente AI",
-        "text": "Supporto alle conversazioni e alle risposte agli ospiti."
+        "title": "Assistente AI per i messaggi",
+        "text": "Configura regole e risposte assistite per le conversazioni con gli ospiti."
       },
       "operations": {
         "title": "Interventi e fornitori",
@@ -32223,6 +32230,10 @@
     "manageAreasText": "Aggiungi gli affitti brevi o le locazioni di lungo periodo alla tua attività. Questa scelta è riservata al gestore del piano.",
     "manageAreas": "Gestisci le aree attive",
     "baseShort": "Calendario e prenotazioni manuali",
+    "icalSync": "Sincronizzazione dei calendari OTA tramite iCal",
+    "otaSync": "Sincronizzazione automatica con i portali OTA",
+    "otaContentSync": "Sincronizzazione dei contenuti con i portali OTA",
+    "otaMessaging": "Hub messaggi integrato con i portali OTA",
     "baseLong": "Contratti, inquilini, canoni e scadenze",
     "baseCommon": "Immobili, contatti e archivio documenti",
     "resumePayment": "Gestisci o completa il pagamento",

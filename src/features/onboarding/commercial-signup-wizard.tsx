@@ -72,6 +72,16 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
   const includedAddons = addons.filter(addon => selection && addon.includedInPlans?.includes(selection.planTier));
   const optionalAddons = addons.filter(addon => !includedAddons.includes(addon));
   const selectedExtras = selection?.addons.filter(code => !includedAddons.some(addon => addon.code === code)) ?? [];
+  const includedFeatures = [
+    ...(rentalArea !== 'LongTerm' ? [t('commercial.baseShort')] : []),
+    ...(rentalArea !== 'LongTerm' && selection?.planTier === 'Starter' ? [t('commercial.icalSync')] : []),
+    ...(rentalArea !== 'ShortTerm' ? [t('commercial.baseLong')] : []),
+    t('commercial.baseCommon'),
+    ...(plan?.features ?? []),
+    ...includedAddons.flatMap(addon => addon.code === 'channels'
+      ? [t('commercial.otaSync'), t('commercial.otaContentSync'), t('commercial.otaMessaging')]
+      : [t(`commercial.addons.${addon.code}.title`)]),
+  ];
   const showEstimate = !isAgency || step === 'features' || step === 'summary';
   const estimateQuantity = isAgency ? Number(roomEstimate) : 1;
   const validEstimate = roomEstimate !== '' && Number.isSafeInteger(estimateQuantity) && estimateQuantity >= 0 && estimateQuantity <= 10000;
@@ -163,7 +173,7 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
       <dt>{t('commercial.agency.band', { from: i === 0 ? 0 : tariff.bands[i - 1].upTo + 1, to: band.upTo })}</dt>
       <dd>{money(band.unitPrice)}{t('commercial.perRoomMonth')}</dd>
     </div>)}</dl>
-    <p>{t('commercial.agency.minimum', { amount: money(tariff.minimum), threshold: tariff.quoteFrom })}</p>
+    <p>{t(plan?.pricesIncludeVat ? 'commercial.agency.minimumVatIncluded' : 'commercial.agency.minimum', { amount: money(tariff.minimum), threshold: tariff.quoteFrom })}</p>
   </div>;
   return (
     <main className="min-h-dvh bg-[#f6f4f0] text-[#1f3a3d]" data-testid="commercial-signup">
@@ -231,13 +241,13 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
                 <h2 className="text-lg font-semibold">{t('commercial.choosePlan')}</h2>
                 <div className="grid gap-3 sm:grid-cols-3">{(plans.data ?? []).filter(item => item.tier !== 'Agency').map(item => <button type="button" key={item.tier} onClick={() => choosePlan(item.tier)} aria-pressed={item.tier === selection.planTier} className={`min-h-36 rounded-xl border-2 bg-white p-4 text-left ${item.tier === selection.planTier ? 'border-[#1f3a3d]' : 'border-transparent shadow-sm'}`}>
                   <span className="flex items-center justify-between gap-2 font-semibold">{item.displayName}{item.tier === selection.planTier && <Check className="size-4" aria-hidden="true" />}</span>
-                  <span className="mt-3 block text-lg font-semibold">{priceText(item)}</span><span className="block text-xs text-muted-foreground">{t('commercial.perMonth')}</span>
+                  <span className="mt-3 block text-lg font-semibold">{priceText(item)}</span><span className="block text-xs text-muted-foreground">{t(item.pricesIncludeVat ? 'commercial.perMonthVatIncluded' : 'commercial.perMonth')}</span>
                   <span className="mt-2 block text-xs text-muted-foreground">{item.unitAllowance < 0 ? t('commercial.unlimited') : t('commercial.properties', { count: item.unitAllowance })}</span>
                 </button>)}</div>
               </section>}
               <section className="rounded-2xl border bg-white p-6">
                 <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold"><Check className="size-5" aria-hidden="true" />{t('commercial.included')}</h2>
-                <ul className="grid gap-3 text-sm sm:grid-cols-2">{[...(rentalArea === 'LongTerm' ? [] : [t('commercial.baseShort')]), ...(rentalArea === 'ShortTerm' ? [] : [t('commercial.baseLong')]), t('commercial.baseCommon'), ...(plan?.features ?? []), ...includedAddons.map(addon => t(`commercial.addons.${addon.code}.title`))].map(feature => <li key={feature} className="flex gap-2"><Check className="mt-0.5 size-4 shrink-0 text-[#467b67]" aria-hidden="true" />{feature}</li>)}</ul>
+                <ul className="grid gap-3 text-sm sm:grid-cols-2">{includedFeatures.map(feature => <li key={feature} className="flex gap-2"><Check className="mt-0.5 size-4 shrink-0 text-[#467b67]" aria-hidden="true" />{feature}</li>)}</ul>
               </section>
               <section className="space-y-3">
                 <h2 className="flex items-center gap-2 text-lg font-semibold"><Sparkles className="size-5" aria-hidden="true" />{t('commercial.extras')}</h2>
@@ -293,7 +303,7 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
               const addon = addons.find(item => item.code === code);
               return <li key={code} className="flex justify-between gap-2"><span>{t(`commercial.addons.${code}.title`)}</span><span className="shrink-0">{addon?.priceMonthly != null ? money(addon.priceMonthly * estimateQuantity, addon.currency) : t('commercial.pricePending')}</span></li>;
             })}</ul>}
-            <div className="border-t pt-4" aria-live="polite"><p className="text-sm">{t(isAgency ? 'commercial.agency.total' : 'commercial.total')}</p><p className="mt-2 text-3xl font-semibold">{total === null ? <span className="text-lg">{t(customQuote ? 'commercial.agency.customQuote' : validEstimate ? 'commercial.pricePending' : 'commercial.agency.enterRooms')}</span> : money(total)}</p><p className="mt-1 text-xs text-muted-foreground">{t(isAgency ? 'commercial.agency.tax' : 'commercial.taxNote')}</p></div>
+            <div className="border-t pt-4" aria-live="polite"><p className="text-sm">{t(isAgency ? 'commercial.agency.total' : 'commercial.total')}</p><p className="mt-2 text-3xl font-semibold">{total === null ? <span className="text-lg">{t(customQuote ? 'commercial.agency.customQuote' : validEstimate ? 'commercial.pricePending' : 'commercial.agency.enterRooms')}</span> : money(total)}</p><p className="mt-1 text-xs text-muted-foreground">{t(plan?.pricesIncludeVat ? 'commercial.taxIncluded' : isAgency ? 'commercial.agency.tax' : 'commercial.taxNote')}</p></div>
             <p className="text-xs leading-relaxed text-muted-foreground">{t('commercial.changeLater')}</p>
           </aside>}
         </div>}
