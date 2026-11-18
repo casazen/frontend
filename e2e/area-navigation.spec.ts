@@ -19,6 +19,20 @@ test.describe('Area navigation (UI-04a)', () => {
       await pinE2eLocale(page, 'it');
     });
 
+    test('the empty message inbox stretches to the bottom of a tall window', async ({ page }) => {
+      await page.setViewportSize({ width: 1600, height: 1000 });
+      await page.route(/\/api\/messages\?/, (route) => route.fulfill({ json: { items: [], totalCount: 0, page: 1, pageSize: 20 } }));
+      await page.goto(demoUrl('/app/short-rent/messages', 'short-stay'));
+
+      await expect(page.getByText('Nessun messaggio a cui rispondere')).toBeVisible();
+      const workspace = page.getByTestId('messages-workspace');
+      await expect(workspace).toBeVisible();
+      const box = await workspace.boundingBox();
+      expect(box?.y).toBeLessThan(250);
+      expect(box!.y + box!.height).toBeGreaterThanOrEqual(960);
+      expect(box!.y + box!.height).toBeLessThanOrEqual(1000);
+    });
+
     test('the main menu includes Messages in its three groups, with settings at the foot', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
 

@@ -30,10 +30,10 @@ export function InboxPage() {
 
   return (
     <AppShell>
-      <div className="space-y-4" data-testid="messages-inbox-page">
+      <div className="flex flex-1 flex-col gap-4 lg:min-h-0" data-app-viewport data-testid="messages-inbox-page">
         <PageHeader title={t('messages.inbox.title')} description={t('messages.inbox.description')} />
         <ChatAvailabilityBanner />
-        <div className="grid min-w-0 overflow-hidden rounded-2xl border bg-card lg:min-h-[34rem] lg:grid-cols-[minmax(18rem,22rem)_minmax(0,1fr)]">
+        <div className="grid min-w-0 flex-1 overflow-hidden rounded-2xl border bg-card lg:min-h-[26rem] lg:grid-cols-[minmax(18rem,22rem)_minmax(0,1fr)] lg:grid-rows-[minmax(0,1fr)]" data-testid="messages-workspace">
           <InboxPane canWrite={canWrite} noConversation={(state) => (state.bookingId ? <ContactOptionsPanel bookingId={state.bookingId} canWrite={canWrite} /> : null)} />
           <div
             className="hidden flex-col items-center justify-center gap-3 border-l bg-muted/30 p-10 text-center lg:flex"
