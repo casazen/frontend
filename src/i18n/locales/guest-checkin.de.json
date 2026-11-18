@@ -144,6 +144,7 @@
     "scanMismatch": "Das Dokument lässt sich keinem namentlich gebuchten Gast zuordnen. Prüfen Sie das Foto oder kontaktieren Sie die Unterkunft, um einen Namen zu berichtigen.",
     "scanConfirm": "Gelesen wurde „{{read}}“. Ist dies {{name}} aus der Buchung?",
     "scanConfirmButton": "Gebuchten Namen bestätigen",
+    "privacyOpen": "Datenschutzhinweise der Unterkunft lesen",
     "privacyRead": "Ich habe die Datenschutzhinweise gelesen.",
     "marketingOptIn": "Ich möchte Werbenachrichten erhalten.",
     "documentNumberPlausibility": "Prüfen Sie die aufgedruckte Dokumentnummer. Geben Sie mindestens vier Zeichen und eine Ziffer ein.",

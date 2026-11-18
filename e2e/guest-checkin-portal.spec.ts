@@ -1,3 +1,4 @@
+/// <reference lib="dom" />
 import { test, expect } from './test';
 
 test.describe('Guest check-in portal', () => {
@@ -80,7 +81,7 @@ test('confirms a misread name, reuses the front after consent and submits the ve
     const reply = (json: unknown) => route.fulfill({ json });
     if (end === 'scan-flow' && request.method() === 'GET') return reply({ completed: false, status: 'InCompilazione',
       sessionId: 'demo', propertyName: 'Demo', language: 'it', declaredGuests: 1, guests: [guest],
-      availableCodeTables: [], identityVerification: state, privacyNoticeVersion: 'v1', marketingConsentVersion: 'v1' });
+      availableCodeTables: [], identityVerification: state, privacyNoticeOrgSlug: 'demo', privacyNoticeVersion: 'v1', marketingConsentVersion: 'v1' });
     if (end === 'read-document') {
       steps.push('scan');
       return reply({ read: true, confirmGuest: true, guestPosition: 0, guest: { ...guest, firstName: 'Euca', documentKind: 'IdentityCard',
@@ -136,6 +137,7 @@ test('confirms a misread name, reuses the front after consent and submits the ve
   await page.getByTestId('selfie-send').click();
   await page.getByTestId('checkin-next').click();
   await expect(page.getByTestId('checkin-submit')).toBeDisabled();
+  await expect(page.getByRole('link', { name: 'Apri l’informativa della struttura' })).toHaveAttribute('href', '/book/demo/privacy');
   await page.locator('#privacy-read').check();
   await page.getByTestId('checkin-submit').click();
   await expect(page.getByTestId('checkin-success')).toBeVisible();

@@ -88,6 +88,7 @@ export interface PublicCheckInContextDto {
   availableCodeTables?: AlloggiatiCodeTable[];
   /** Version of the privacy notice shown (art. 13 GDPR); absent when not configured. */
   privacyNoticeVersion?: string;
+  privacyNoticeOrgSlug?: string;
   /** Version of the optional marketing consent text; absent when the consent is not offered. */
   marketingConsentVersion?: string;
   /**

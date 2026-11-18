@@ -5635,6 +5635,7 @@
     "scanMismatch": "Il documento non corrisponde a un ospite identificabile nella prenotazione. Controlla la foto. Per correggere un nominativo contatta la struttura.",
     "scanConfirm": "Sul documento è stato letto «{{read}}». Confermi che si tratta di {{name}}, come nella prenotazione?",
     "scanConfirmButton": "Confermo il nominativo della prenotazione",
+    "privacyOpen": "Apri l’informativa della struttura",
     "privacyRead": "Ho preso visione dell’informativa.",
     "marketingOptIn": "Desidero ricevere comunicazioni promozionali.",
     "documentNumberPlausibility": "Controlla il numero stampato sul documento. Deve contenere almeno quattro caratteri e una cifra.",

@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { orgDocumentPath } from '@/lib/org-document-paths';
 import { ConsentForm } from './components/ConsentForm';
 
 interface ConsentStepProps {
@@ -6,11 +7,12 @@ interface ConsentStepProps {
   onPrivacyRead: (checked: boolean) => void;
   /** Privacy notice version shown to the guest. */
   privacyNoticeVersion?: string;
+  privacyNoticeOrgSlug?: string;
   /** Marketing consent version; when absent, no consent is offered. */
   marketingConsentVersion?: string;
 }
 
-export function ConsentStep({ privacyRead, onPrivacyRead, privacyNoticeVersion, marketingConsentVersion }: ConsentStepProps) {
+export function ConsentStep({ privacyRead, onPrivacyRead, privacyNoticeVersion, privacyNoticeOrgSlug, marketingConsentVersion }: ConsentStepProps) {
   const { t } = useTranslation();
 
   return (
@@ -25,6 +27,11 @@ export function ConsentStep({ privacyRead, onPrivacyRead, privacyNoticeVersion, 
         </h2>
         <p>{t('checkin.privacyNotice.legalObligation')}</p>
         <p className="text-muted-foreground">{t('checkin.privacyNotice.body')}</p>
+        {privacyNoticeOrgSlug && (
+          <a href={orgDocumentPath(privacyNoticeOrgSlug, 'privacy')} target="_blank" rel="noopener noreferrer" className="block underline">
+            {t('checkin.privacyOpen')}
+          </a>
+        )}
         {privacyNoticeVersion && (
           <p className="text-xs text-muted-foreground">
             {t('checkin.privacyNotice.version', { version: privacyNoticeVersion })}

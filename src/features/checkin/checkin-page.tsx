@@ -670,6 +670,7 @@ function GuestCheckInFlow({ token }: { token: string }) {
                     privacyRead={privacyRead}
                     onPrivacyRead={setPrivacyRead}
                     privacyNoticeVersion={context.privacyNoticeVersion}
+                    privacyNoticeOrgSlug={context.privacyNoticeOrgSlug}
                     marketingConsentVersion={context.marketingConsentVersion}
                   />
                 )}

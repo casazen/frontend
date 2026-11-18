@@ -5635,6 +5635,7 @@
     "scanMismatch": "This document could not be matched to a named guest on the booking. Check the photo or contact the property to correct a name.",
     "scanConfirm": "The document reads “{{read}}”. Is this {{name}} on the booking?",
     "scanConfirmButton": "Confirm the booked name",
+    "privacyOpen": "Read the property’s privacy notice",
     "privacyRead": "I have read the privacy notice.",
     "marketingOptIn": "I would like to receive promotional messages.",
     "documentNumberPlausibility": "Check the number printed on the document. Enter at least four characters including a digit.",

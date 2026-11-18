@@ -144,6 +144,7 @@
     "scanMismatch": "El documento no coincide con un huésped identificado en la reserva. Comprueba la foto o contacta con el alojamiento para corregir un nombre.",
     "scanConfirm": "En el documento se lee «{{read}}». ¿Se trata de {{name}} en la reserva?",
     "scanConfirmButton": "Confirmar el nombre de la reserva",
+    "privacyOpen": "Leer el aviso de privacidad del alojamiento",
     "privacyRead": "He leído el aviso de privacidad.",
     "marketingOptIn": "Deseo recibir mensajes promocionales.",
     "documentNumberPlausibility": "Comprueba el número impreso en el documento. Introduce al menos cuatro caracteres y un dígito.",
