@@ -256,14 +256,27 @@ describe('LongRentPropertyDetailPage (A7-06)', () => {
 
   it('LongRentPropertyDetailPage_WithoutThePermissionToReadLeases_StillOpensThePropertyExpenses', () => {
     access.readLeases = false;
+    // TanStack keeps data on disabled queries. A downgrade must also hide previously cached tenant details.
+    const cachedLease = {
+      id: 'old-lease',
+      propertyId: 'prop-1',
+      status: 'Registered',
+      startDate: '2020-01-01',
+      endDate: '2099-12-31',
+      monthlyRent: 850,
+      tenantFirstName: 'Nome',
+      tenantLastName: 'Riservato',
+    } as LeaseSummary;
     vi.mocked(leaseQueries.useLeases).mockReturnValue(
-      query({ data: undefined }) as unknown as ReturnType<typeof leaseQueries.useLeases>,
+      query({ data: [cachedLease] }) as unknown as ReturnType<typeof leaseQueries.useLeases>,
     );
     mockDetail(query<PropertyDocumentDto[]>({ data: [] }));
 
     // Not even by the address: a `?tab=contracts` opens the first tab that is there.
     renderAt('/app/long-rent/properties/prop-1?tab=contracts');
 
+    expect(screen.queryByText('Nome Riservato')).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: i18n.t('longRentProperties.detail.openRentSchedule') })).not.toBeInTheDocument();
     expect(screen.queryByTestId('long-rent-property-tab-contracts')).not.toBeInTheDocument();
     expect(screen.queryByTestId('long-rent-property-leases-empty')).not.toBeInTheDocument();
     expect(screen.getAllByRole('tab')[0]).toHaveTextContent(i18n.t('longRentProperties.detail.tabs.expenses'));

@@ -14,6 +14,7 @@ import type { SiteLegal } from '../site-config';
 import { sitePageById } from '../site-pages';
 import { BrowserFrame, ChannelsCatalogue, ChannelsStrip, ProductShowcase } from './home-showcase';
 import { BulletList, CardGrid, FeatureCard, PageHeader, Section, SecondaryLink, type Tint } from './site-blocks';
+import { TourEntry, PublicTour } from './demo-tour';
 import { InviteCta } from './site-pages-content';
 
 interface RentGroup {
@@ -46,8 +47,11 @@ export function ShortRentPage({ legal }: { legal: SiteLegal }) {
   return (
     <>
       <PageHeader title={t('site.shortRent.title')} intro={t('site.shortRent.intro')}>
+        <p className="w-full text-ink-600">{t('site.tour.shortIntro')}</p>
+        <TourEntry area="short" />
         <SecondaryLink href={sitePageById('longRent').path}>{t('site.shortRent.otherLink')}</SecondaryLink>
       </PageHeader>
+      <PublicTour area="short" legal={legal} />
       <ChannelsStrip />
       <Section title={t('site.shortRent.featuresTitle')} intro={t('site.shortRent.featuresIntro')}>
         <CardGrid>
@@ -87,8 +91,11 @@ export function LongRentPage({ legal }: { legal: SiteLegal }) {
   return (
     <>
       <PageHeader title={t('site.longRent.title')} intro={t('site.longRent.intro')}>
+        <p className="w-full text-ink-600">{t('site.tour.longIntro')}</p>
+        <TourEntry area="long" />
         <SecondaryLink href={sitePageById('shortRent').path}>{t('site.longRent.otherLink')}</SecondaryLink>
       </PageHeader>
+      <PublicTour area="long" legal={legal} />
       <Section title={t('site.longRent.featuresTitle')} intro={t('site.longRent.featuresIntro')}>
         <CardGrid>
           {LONG_GROUPS.map((group) => (

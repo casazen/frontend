@@ -9,6 +9,7 @@ import { Fact, Facts } from '@/features/bookings/components/booking-facts';
 import { RentManualNotices } from '@/features/leases/components/rent-manual-notices';
 import { leaseTenantName } from '@/features/leases/lib/lease-list-format';
 import { rentBreakdown } from '@/features/leases/lib/rent-breakdown';
+import { landlordMaintenancePath } from '@/features/maintenance-requests/paths';
 import { LandlordMaintenanceList } from '@/features/maintenance-requests/landlord-page';
 import { useRentLedger } from '@/queries/use-rent';
 import type { usePropertyDocuments } from '@/queries/use-properties';
@@ -253,7 +254,9 @@ export function MaintenancePanel({ leases }: { leases: readonly LeaseSummary[] |
       {[...leases].sort(startedLast).map((lease) => (
         <section key={lease.id} className="space-y-3" aria-labelledby={`property-maintenance-${lease.id}`}>
           <h2 id={`property-maintenance-${lease.id}`} className="text-base font-semibold">
-            {leaseTenantName(lease, t)}
+            <Link className="inline-flex min-h-11 items-center underline underline-offset-4" to={landlordMaintenancePath(lease.id)}>
+              {leaseTenantName(lease, t)}
+            </Link>
           </h2>
           <LandlordMaintenanceList leaseId={lease.id} />
         </section>

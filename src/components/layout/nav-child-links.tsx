@@ -1,3 +1,4 @@
+import { useCommercialRouteAccess } from '@/hooks/use-commercial-profile';
 import { useContext } from 'react';
 import { Link, useInRouterContext } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -29,11 +30,13 @@ export function NavChildLinks({ parentPath }: NavChildLinksProps) {
   const inRouter = useInRouterContext();
   const workspace = useContext(WorkspaceContext);
   const { flags } = useFeatureFlags();
+  const canOpenPath = useCommercialRouteAccess();
 
   const children = getNavChildren(
     parentPath,
     workspace ? (contextKey: AppContextKey, permission: string) => workspace.hasPermission(contextKey, permission) : undefined,
     flags,
+    canOpenPath,
   );
   if (!inRouter || children.length === 0) return null;
 

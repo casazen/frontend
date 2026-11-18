@@ -9,6 +9,8 @@ import { ErrorState } from '@/components/shared/error-state';
 import { Alert } from '@/components/ui/alert';
 import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
+import { PHONE_QUERY, useMediaQuery } from '@/hooks/use-media-query';
+import { Select } from '@/components/ui/select';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { ComplianceUrgentBlock } from '@/features/compliance/components/compliance-urgent-block';
 import { useComplianceFineCount, useComplianceLightsOn } from '@/features/compliance/use-compliance';
@@ -32,7 +34,7 @@ import { RevenueChart } from './components/revenue-chart';
 import { TodayCard } from './components/today-card';
 import { TodoSection } from './components/todo-section';
 import { buildTodayRows, buildTodoRows } from './lib/home-model';
-import { overviewQueryFor, parseHomePeriod, type HomePeriod } from './lib/home-period';
+import { HOME_PERIODS, overviewQueryFor, parseHomePeriod } from './lib/home-period';
 
 /** Two columns from a wide screen: the thing that matters on the left (60 %), the one beside it on the right. */
 const TWO_COLUMNS = 'grid gap-8 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] xl:items-start';
@@ -46,6 +48,7 @@ const TWO_COLUMNS = 'grid gap-8 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] xl:it
 export function DashboardPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
+  const phone = useMediaQuery(PHONE_QUERY);
   const [params, setParams] = useSearchParams();
   const { hasPermission } = useWorkspace();
   const { user } = useCurrentUser();
@@ -63,17 +66,17 @@ export function DashboardPage() {
     ? routines.data.filter(routine => routine.active && !routine.testMode).length
     : 0;
 
-  const properties = useProperties({ mode: 'short' });
+  const canReadProperties = hasPermission('short-rent', 'property.read');
+  const properties = useProperties({ mode: 'short' }, { enabled: canReadProperties });
   const propertyList = useMemo(() => (Array.isArray(properties.data) ? properties.data : []), [properties.data]);
-  const requested = params.get('propertyId') ?? '';
-  // An address with a property that is not the host's (an old link) is the whole scope, not an error.
-  const propertyId = properties.isSuccess && !propertyList.some((property) => property.id === requested) ? '' : requested;
+  // Keep the scope of a deep link even if the property was removed or the caller cannot read its name.
+  const propertyId = params.get('propertyId') ?? '';
   const period = parseHomePeriod(params.get('period'));
   const showAllTodo = params.get('todo') === 'all';
 
-  const today = useDashboardToday();
-  const overview = useDashboardOverview(overviewQueryFor(period, propertyId));
-  const feeds = useDashboardIcalFeeds(hasPermission('short-rent', 'property.read'));
+  const today = useDashboardToday(canReadBookings);
+  const overview = useDashboardOverview(overviewQueryFor(period, propertyId), canReadBookings);
+  const feeds = useDashboardIcalFeeds(canReadProperties && canReadBookings);
   const feedList = useMemo(() => (Array.isArray(feeds.data) ? feeds.data : []), [feeds.data]);
   // The guests who wrote and wait for an answer (SR-12): a row of "Da fare" each, the ones of the channels included (NF-61). Without the
   // permission to read bookings, no request.
@@ -121,8 +124,11 @@ export function DashboardPage() {
     [today.data, feedList, threadList, propertyId, canWrite, hasPermission, t, locale],
   );
 
+  const createBooking = canWrite
+    ? { label: t('dashboard.actions.createBooking'), icon: Plus, to: '/app/short-rent/bookings/create', testId: 'home-create-booking' }
+    : undefined;
   const firstName = user?.firstName?.trim();
-  const noActiveProperty = overview.data?.propertyCount === 0 && !propertyId && canWriteProperty;
+  const noActiveProperty = canReadBookings && overview.data?.propertyCount === 0 && !propertyId && canWriteProperty;
   const pendingActivation = today.data?.todo.items.find((item) => item.action === 'ActivateProperty');
   const activationRoute = pendingActivation
     ? complianceActionRoute({ action: 'ActivateProperty', propertyId: pendingActivation.propertyId, bookingId: null }, hasPermission)
@@ -133,46 +139,35 @@ export function DashboardPage() {
       <div className="space-y-6 md:space-y-8" data-testid="sr-home">
         <PageHeader
           title={firstName ? t('dashboard.title', { name: firstName }) : t('dashboard.titleNoName')}
-          description={today.data && !noActiveProperty ? purposeOf(today.data, propertyId, t, locale) : undefined}
-          primary={canWrite ? { label: t('dashboard.actions.createBooking'), icon: Plus, to: '/app/short-rent/bookings/create', testId: 'home-create-booking' } : undefined}
+          description={canReadBookings && today.data && !today.isError && !noActiveProperty ? purposeOf(today.data, propertyId, t, locale) : undefined}
+          primary={phone ? undefined : createBooking}
           action={activeRoutineCount > 0 ? (
             <Link to="/app/short-rent/automations" className="text-sm text-muted-foreground underline-offset-4 hover:underline">
               {t('routines.dashboardActive', { count: activeRoutineCount })}
             </Link>
           ) : undefined}
           secondary={[
+            ...(phone && createBooking ? [createBooking] : []),
             ...(canWriteProperty ? [{ label: t('dashboard.actions.addProperty'), icon: Building2, to: '/app/short-rent/properties/create' }] : []),
             // «Richiedi un intervento» (SR-08b): the guided request, on the property the Home is filtered to; for who may ask for one.
             ...(canRequestService
               ? [{ label: t('dashboard.actions.requestService'), icon: Wrench, to: requestInterventionPath(propertyId || undefined), testId: 'home-request-service' }]
               : []),
           ]}
-          mobilePrimary="fab"
+          mobilePrimary="none"
         />
 
         {/* «Sono in regola?» in one line, and, without the traffic light, what carries a risk of a sanction as the first block, whatever the filter below says: it is the host's, not a property's. */}
         {!noActiveProperty && canReadBookings ? <ComplianceUrgentBlock /> : null}
 
-        {/* The "To do" list (NF-07) as a road: the item to do now, the next ones and the way to the whole list; nothing while there is nothing to do. */}
-        {!noActiveProperty && todoItems.length > 0 ? (
-          <TodoPath
-            items={todoItems}
-            focus={todoFocus}
-            urgent={urgentCountOf(todoItems, urgentActivities.data?.count)}
-            propertyNames={propertyNames}
-            hasPermission={hasPermission}
-          />
-        ) : null}
-
-        {noActiveProperty ? null : (
+        {canReadBookings && !noActiveProperty ? (
           <HomeFilterBar
             properties={propertyList}
             propertyId={propertyId}
-            period={period}
             onPropertyChange={(value) => setQuery({ propertyId: value || null })}
-            onPeriodChange={(value: HomePeriod) => setQuery({ period: value === 'month' ? null : value })}
+            onReset={() => setQuery({ propertyId: null, period: null, today: null })}
           />
-        )}
+        ) : null}
 
         {noActiveProperty ? (
           <FocusBlock
@@ -185,35 +180,61 @@ export function DashboardPage() {
               testId: 'home-first-property-cta',
             }}
           />
-        ) : (
-          <>
-            <div className={TWO_COLUMNS}>
-              {today.data ? (
-                <>
-                  <TodayCard rows={todayRows} day={today.data.today} more={propertyId ? 0 : hiddenItems(today.data)} />
-                  <TodoSection rows={todoRows} showAll={showAllTodo} onToggleAll={() => setQuery({ todo: showAllTodo ? null : 'all' })} />
-                </>
-              ) : today.isError ? (
-                <div className="xl:col-span-2">
-                  <ErrorState
-                    title={t('dashboard.error.today')}
-                    error={today.error}
-                    onRetry={() => {
-                      void today.refetch();
-                      if (overview.isError) void overview.refetch();
-                    }}
-                    testId="dashboard-error"
-                  />
-                </div>
-              ) : (
-                <>
-                  <SkeletonCard lines={5} />
-                  <SkeletonCard lines={4} />
-                </>
-              )}
-            </div>
+        ) : canReadBookings ? (
+          <div className={TWO_COLUMNS}>
+            {today.data && !today.isError ? (
+              <>
+                <TodayCard rows={todayRows} today={today.data} propertyId={propertyId} />
+                <TodoSection rows={todoRows} showAll={showAllTodo} onToggleAll={() => setQuery({ todo: showAllTodo ? null : 'all' })} />
+              </>
+            ) : today.isError ? (
+              <div className="xl:col-span-2">
+                <ErrorState
+                  title={t('dashboard.error.today')}
+                  error={today.error}
+                  onRetry={() => {
+                    void today.refetch();
+                    if (overview.isError) void overview.refetch();
+                  }}
+                  testId="dashboard-error"
+                />
+              </div>
+            ) : (
+              <>
+                <SkeletonCard lines={5} />
+                <SkeletonCard lines={4} />
+              </>
+            )}
+          </div>
+        ) : null}
 
-            {overview.data ? (
+        {/* The "To do" list (NF-07) as a road: the item to do now, the next ones and the way to the whole list; nothing while there is nothing to do. */}
+        {!noActiveProperty && todoItems.length > 0 ? (
+          <TodoPath
+            items={todoItems}
+            focus={todoFocus}
+            urgent={urgentCountOf(todoItems, urgentActivities.data?.count)}
+            propertyNames={propertyNames}
+            hasPermission={hasPermission}
+          />
+        ) : null}
+
+        {canReadBookings && !noActiveProperty && (
+          <section aria-labelledby="home-numbers-title" className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+              <h2 id="home-numbers-title" className="text-lg font-semibold">{t('dashboard.numbers.label')}</h2>
+              <Select
+                size="sm"
+                aria-label={t('dashboard.filter.period')}
+                wrapperClassName="w-auto max-w-full"
+                data-testid="dashboard-period"
+                value={period}
+                onChange={event => setQuery({ period: event.target.value === 'month' ? null : event.target.value })}
+              >
+                {HOME_PERIODS.map(value => <option key={value} value={value}>{t(`dashboard.period.${value}`)}</option>)}
+              </Select>
+            </div>
+            {overview.data && !overview.isError && !overview.isPlaceholderData ? (
               <HomeNumbers overview={overview.data} period={period} />
             ) : overview.isError ? (
               // One error is enough when the day failed too: its retry reloads both.
@@ -223,11 +244,11 @@ export function DashboardPage() {
             ) : (
               <SkeletonLine lines={3} />
             )}
-          </>
+          </section>
         )}
 
         <div className={TWO_COLUMNS}>
-          {!noActiveProperty && overview.data ? (
+          {canReadBookings && !noActiveProperty && overview.data && !overview.isError && !overview.isPlaceholderData ? (
             overview.data.series && overview.data.revenue ? (
               <RevenueChart series={overview.data.series} currency={overview.data.revenue.currency} />
             ) : (
@@ -257,10 +278,6 @@ function purposeOf(today: DashboardToday, propertyId: string, t: ReturnType<type
     requests > 0 ? t('dashboard.summary.requests', { count: requests }) : null,
   ].filter(Boolean);
   const day = formatStayDate(today.today, locale, { weekday: 'long', day: 'numeric', month: 'long' });
+  if (propertyId && [today.arrivals, today.departures, today.approvals].some(list => list.count > list.items.length)) return day;
   return `${day} · ${parts.length > 0 ? parts.join(', ') : t('dashboard.summary.quiet')}`;
-}
-
-/** What the server counts for the day and does not list (it sends the first ones). */
-function hiddenItems(today: DashboardToday): number {
-  return [today.arrivals, today.departures, today.services].reduce((sum, list) => sum + Math.max(0, list.count - list.items.length), 0);
 }

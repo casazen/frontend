@@ -26,7 +26,7 @@ import { resolveActiveNavEntry } from '@/lib/nav-active';
 import { planPagePath, billingPagePath } from '@/lib/billing-routes';
 import { profilePathForContext } from '@/lib/profile-path';
 
-const CONTEXTS: AppContextKey[] = ['short-rent', 'long-rent', 'supplier', 'admin'];
+const CONTEXTS: AppContextKey[] = ['short-rent', 'long-rent', 'account', 'supplier', 'admin'];
 
 const allowAll = () => true;
 const notBillingAdmin: PermissionPredicate = (_ctx, permission) => permission !== ORG_BILLING_ADMIN_PERMISSION;
@@ -62,6 +62,18 @@ function userVariants(contextKey: AppContextKey) {
 }
 
 describe('route-manifest main menu (UI-04a)', () => {
+  it('keeps an included module reachable when its parent requires another commercial module', () => {
+    const parent = '/app/short-rent/compliance';
+    const child = '/app/short-rent/compliance/identification';
+    const canOpenPath = (path: string) => path !== parent;
+    const nav = getContextNav('short-rent', allowAll, {}, { canOpenPath });
+    expect(paths(nav.sections.flatMap((section) => section.entries))).not.toContain(parent);
+    expect(paths(nav.more)).toContain(child);
+    expect(getNavSection(child, allowAll, {}, canOpenPath)).toEqual([]);
+    expect(paths(getNavMatchEntries('short-rent', allowAll, {}, canOpenPath))).toContain(child);
+    expect(paths(getNavChildren(parent, allowAll, {}, (path) => path !== child))).not.toContain(child);
+  });
+
   it('puts Messages after Bookings in the primary short-rent menu', () => {
     const primary = getPrimaryNavEntries('short-rent', allowAll);
     expect(paths(primary)).toEqual([

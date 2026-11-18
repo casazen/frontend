@@ -73,7 +73,7 @@ function navigationCommands(context: CommandContext): CommandItem[] {
   const items: CommandItem[] = [];
 
   for (const area of context.areas) {
-    const entries = getNavMatchEntries(area.key, context.hasPermission, context.flags);
+    const entries = getNavMatchEntries(area.key, context.hasPermission, context.flags, context.canOpenPath);
     for (const entry of entries) {
       const parent = entry.navParent ? entries.find((candidate) => candidate.path === entry.navParent) : undefined;
       const where = [parent ? getNavLabel(parent, context.t) : '', severalAreas ? context.t(area.nameKey) : ''].filter(Boolean);

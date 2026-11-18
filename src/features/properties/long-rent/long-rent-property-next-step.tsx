@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { FocusBlock } from '@/components/shared/calm';
+import { leaseSheetPath } from '@/features/leases/lib/lease-next-step';
 import { formatCurrency } from '@/lib/utils';
 import { leaseOfRow, tenantOfRow } from './long-rent-property-format';
 import type { LongRentPropertyRow } from './long-rent-property-rows';
@@ -35,6 +36,7 @@ export function LongRentPropertyNextStep({ row, canCreateLease }: LongRentProper
           body={`${formatCurrency(row.current.monthlyRent)} ${t('longRentProperties.list.perMonth')}`}
           when={tenant.note ?? undefined}
           primary={open}
+          secondary={{ label: t('longRentProperties.detail.openRentSchedule'), href: leaseSheetPath(lease.id, 'pagamenti') }}
         />
       );
     }

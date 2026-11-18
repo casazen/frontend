@@ -1,5 +1,4 @@
-import { useContext, useMemo } from 'react';
-import { WorkspaceContext } from '@/contexts/workspace-context';
+import { useMemo } from 'react';
 import { parseStayDate, todayInRome } from '@/lib/stay-dates';
 import type { LongRentPropertyStatus } from '@/lib/status-dictionary';
 import { useLeases } from '@/queries/use-leases';
@@ -86,20 +85,19 @@ export function longRentPropertyRows(
  * fails the page works without the APE, the cadastral data and the "then free" it brings.
  * `fresh`: read again when the screen opens (the page of the list; the drawer reads what the list has just read).
  */
-export function useLongRentPropertyRows({ fresh = false }: { fresh?: boolean } = {}) {
-  // Read without `useWorkspace`, which refuses to run outside its provider: a drawer drawn on its own sees no leases.
-  const workspace = useContext(WorkspaceContext);
-  const canReadLeases = workspace?.hasPermission('long-rent', 'lease.read') ?? false;
+export function useLongRentPropertyRows({ canReadLeases, fresh = false }: { canReadLeases: boolean; fresh?: boolean }) {
   const properties = useProperties({ mode: 'long' }, { fresh });
   // The plain list of leases: the same request as the guide of the first steps, so it is one.
   const leases = useLeases(undefined, { refetchOnMount: fresh ? 'always' : undefined, enabled: canReadLeases });
-  const aggregate = useLongRentPropertyAggregate({ fresh });
+  const aggregate = useLongRentPropertyAggregate({ fresh, canReadLeases });
+  // A disabled query can still hold rows read before a change of role.
+  const visibleLeases = canReadLeases ? leases.data : undefined;
   // An answer that is not a list (the page of the app where an API answer should be) is a failed load, never an empty list.
   const loaded = Array.isArray(properties.data) ? properties.data : undefined;
 
   const rows = useMemo(
-    () => (loaded ? longRentPropertyRows(loaded, leases.data, todayInRome(), aggregate.data) : undefined),
-    [loaded, leases.data, aggregate.data],
+    () => (loaded ? longRentPropertyRows(loaded, visibleLeases, todayInRome(), aggregate.data) : undefined),
+    [loaded, visibleLeases, aggregate.data],
   );
 
   return {
@@ -108,8 +106,8 @@ export function useLongRentPropertyRows({ fresh = false }: { fresh?: boolean } =
     isError: !loaded && (properties.isError || properties.data !== undefined),
     error: properties.error,
     refetch: () => void properties.refetch(),
-    leasesKnown: leases.data !== undefined,
-    leasesFailed: leases.isError && leases.data === undefined,
+    leasesKnown: visibleLeases !== undefined,
+    leasesFailed: canReadLeases && leases.isError && leases.data === undefined,
     refetchLeases: () => void leases.refetch(),
   };
 }

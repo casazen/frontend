@@ -24,11 +24,9 @@ export interface RowNote {
   tone: NoteTone;
 }
 
-/** What the one button of a row does: go somewhere, or take the action in place (register the arrival, send the link, answer a request). */
+/** A row opens its source or answers a booking request. */
 export type RowAction =
   | { kind: 'link'; label: string; to: string }
-  | { kind: 'registerArrival'; label: string; bookingId: string }
-  | { kind: 'sendLink'; label: string; bookingId: string }
   | { kind: 'respond'; label: string; bookingId: string };
 
 /** The kinds of row of "Oggi": the chips filter by these. Cleanings are interventions of the cleaning category, listed apart. */
@@ -77,34 +75,28 @@ function stayRange(from: string, to: string, locale: string): string {
 
 const SERVICE_TONES: Record<string, NoteTone> = { Richiesto: 'neutral', PresoInCarico: 'info', InCorso: 'info', Completato: 'success', Pagato: 'success', Rifiutato: 'danger' };
 
-function arrivalRow(stay: DashboardTodayStay, canWrite: boolean, { t }: Context): HomeRow {
-  const arrived = stay.status === 'CheckedIn' || stay.status === 'CheckedOut';
-  const state = stay.checkIn?.state;
-  const ready = stay.checkIn?.dataComplete === true || state === 'Completed';
-  const waiting = state === 'Sent' || state === 'InProgress';
-  const note: RowNote = arrived
-    ? { text: t('dashboard.today.note.arrived'), tone: 'success' }
-    : ready
-      ? { text: t('dashboard.today.note.docsOk'), tone: 'success' }
-      : waiting
-        ? { text: t('dashboard.today.note.linkSent'), tone: 'neutral' }
-        : { text: t('dashboard.today.note.linkNotSent'), tone: 'warning' };
-  let action: RowAction | undefined;
-  if (canWrite && !arrived) {
-    action = ready
-      ? { kind: 'registerArrival', label: t('dashboard.today.action.registerArrival'), bookingId: stay.bookingId }
-      : { kind: 'sendLink', label: t(waiting ? 'dashboard.today.action.resendLink' : 'dashboard.today.action.sendLink'), bookingId: stay.bookingId };
+function arrivalNote(stay: DashboardTodayStay, t: TFunction): RowNote {
+  if (stay.status === 'CheckedIn' || stay.status === 'CheckedOut') return { text: t('dashboard.today.note.arrived'), tone: 'success' };
+  if (stay.checkIn?.dataComplete) return { text: t('dashboard.today.note.docsOk'), tone: 'success' };
+  switch (stay.checkIn?.state) {
+    case 'Completed': return { text: t('dashboard.today.note.submittedIncomplete'), tone: 'warning' };
+    case 'Sent': return { text: t('dashboard.today.note.linkSent'), tone: 'neutral' };
+    case 'InProgress': return { text: t('dashboard.today.note.inProgress'), tone: 'info' };
+    case 'Expired': return { text: t('dashboard.today.note.expired'), tone: 'warning' };
+    case 'NotSent': return { text: t('dashboard.today.note.linkNotSent'), tone: 'warning' };
+    default: return { text: t('dashboard.today.note.unknown'), tone: 'neutral' };
   }
+}
+
+function arrivalRow(stay: DashboardTodayStay, { t, locale }: Context): HomeRow {
   return {
     id: `arrival-${stay.bookingId}`,
     kind: 'arrivals',
-    done: arrived,
-    title: stay.guestName,
-    sub: `${stay.propertyName} · ${t('dashboard.today.guests', { count: stay.numberOfGuests })}`,
-    note,
-    to: bookingPath(stay.bookingId),
-    bookingId: stay.bookingId,
-    action,
+    done: stay.status === 'CheckedIn' || stay.status === 'CheckedOut',
+    title: stay.guestName || t('compliance.checkout.guestFallback'),
+    sub: `${stay.propertyName} · ${stayRange(stay.checkInDate, stay.checkOutDate, locale)} · ${t('dashboard.today.guests', { count: stay.numberOfGuests })}`,
+    note: arrivalNote(stay, t),
+    to: `${bookingPath(stay.bookingId)}?tab=guest`,
   };
 }
 
@@ -149,7 +141,7 @@ function serviceRow(service: DashboardTodayService, { t }: Context): HomeRow {
 export function buildTodayRows(today: DashboardToday, options: { propertyId: string; canWrite: boolean }, context: Context): HomeRow[] {
   const inScope = (item: { propertyId: string }) => !options.propertyId || item.propertyId === options.propertyId;
   return [
-    ...today.arrivals.items.filter(inScope).map((stay) => arrivalRow(stay, options.canWrite, context)),
+    ...today.arrivals.items.filter(inScope).map((stay) => arrivalRow(stay, context)),
     ...today.departures.items.filter(inScope).map((stay) => departureRow(stay, options.canWrite, context)),
     ...today.services.items.filter(inScope).map((service) => serviceRow(service, context)),
   ];

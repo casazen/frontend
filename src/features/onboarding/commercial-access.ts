@@ -1,5 +1,4 @@
 import type { UserDetail } from '@/types';
-import type { ContextNav, RouteManifestEntry } from '@/config/route-manifest';
 
 /** Product modules, independently of technical rollout flags and of team permissions. */
 export function commercialModuleForPath(path: string): string | null {
@@ -19,10 +18,6 @@ export function commercialRouteAllowed(profile: UserDetail | null | undefined, p
   if (!profile?.commercialSignup) return true; // Existing accounts retain their contracted access.
   const module = commercialModuleForPath(path);
   return !module || profile.commercialEnabledAddons?.includes(module) === true;
-}
-export function commercialNavigation(nav: ContextNav, profile: UserDetail | null | undefined): ContextNav {
-  const allowed = (entry: RouteManifestEntry) => commercialRouteAllowed(profile, entry.path);
-  return { sections: nav.sections.map(section => ({ ...section, entries: section.entries.filter(allowed) })).filter(section => section.entries.length > 0), more: nav.more.filter(allowed), footer: nav.footer.filter(allowed) };
 }
 
 export function commercialPartAllowed(profile: UserDetail | null | undefined, part: string): boolean {

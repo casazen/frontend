@@ -263,13 +263,13 @@ export function AlloggiatiGuestSummary({
         </div>
       )}
       {data.stayExceedsMaxDays && (
-        <p className="flex items-start gap-2 text-sm text-orange-600" data-testid="alloggiati-stay-exceeds-max">
+        <p className="flex items-start gap-2 text-sm text-warning-foreground" data-testid="alloggiati-stay-exceeds-max">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
           {t('alloggiati.guestSummary.stayExceedsMaxDays', { days: data.stayDays })}
         </p>
       )}
       {unregistered > 0 && (
-        <p className="flex items-start gap-2 text-sm text-orange-600" data-testid="alloggiati-unregistered-guests">
+        <p className="flex items-start gap-2 text-sm text-warning-foreground" data-testid="alloggiati-unregistered-guests">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
           {t('alloggiati.guestSummary.unregisteredGuests', { count: unregistered })}
         </p>

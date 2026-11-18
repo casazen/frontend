@@ -13,8 +13,8 @@
  * app (`src/styles/public-brand.css`), so that the buttons of the site and of the search and guides are the same color.
  */
 @import "tailwindcss" source(none);
-@source "./";
 @import "../styles/public-fonts.css";
+@source "./";
 
 @theme {
   --font-display: "Fraunces Variable", Fraunces, "Iowan Old Style", Georgia, "Times New Roman", serif;

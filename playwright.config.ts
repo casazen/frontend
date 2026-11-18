@@ -249,6 +249,7 @@ export default defineConfig({
           VITE_HTTPS: '0',
           // Same-origin relative API so page.route mocks work without hitting Railway/local HTTPS.
           VITE_API_BASE_URL: '/api',
+          VITE_SUPPORT_EMAIL: 'inviti@example.test',
         },
       },
 });

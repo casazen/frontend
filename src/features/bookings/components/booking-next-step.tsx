@@ -23,6 +23,7 @@ interface BookingNextStepProps {
   booking: Booking;
   /** The host may act on the booking (`booking.write`): without it the block says what is going on and leads back to the list. */
   canWrite: boolean;
+  viewingCheckIn?: boolean;
   onConfirm: () => void;
   onDecline: () => void;
   onArrival: () => void;
@@ -44,7 +45,7 @@ interface StepView {
  * not started, Alloggiati Web for one in progress or over. It says what is going on, whose turn it is, and gives the one
  * button that does it, with the actions and the permissions the page always had.
  */
-export function BookingNextStep({ booking, canWrite, onConfirm, onDecline, onArrival }: BookingNextStepProps) {
+export function BookingNextStep({ booking, canWrite, viewingCheckIn, onConfirm, onDecline, onArrival }: BookingNextStepProps) {
   const { t, i18n } = useTranslation();
   const today = todayInRome();
   const needs = documentsNeeded(booking, today);
@@ -239,6 +240,16 @@ export function BookingNextStep({ booking, canWrite, onConfirm, onDecline, onArr
   ) : (
     view.body
   );
+
+  if (viewingCheckIn && !canWrite && step.kind === 'registerArrival') {
+    return (
+      <section className="space-y-1 border-l-2 border-primary pl-3" data-testid="booking-next-step" data-next-step={step.kind}>
+        <h2 className="font-semibold">{t('booking.next.heading')}</h2>
+        <p className="text-sm">{t('dashboard.today.readOnlyArrival')}</p>
+        {hasLinesToShow(lineView) && <ComplianceLines lines={lines} label={t('compliance.lines.ofStay')} hasPermission={hasPermission} greens="each" />}
+      </section>
+    );
+  }
 
   return <FocusBlock data-testid="booking-next-step" data-next-step={step.kind} tone={step.tone} kicker={t('booking.next.heading')} {...view} body={body} />;
 }

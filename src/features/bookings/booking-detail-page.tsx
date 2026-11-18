@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
-import { Building2, Pencil, XCircle } from 'lucide-react';
+import { useLocation, useParams, useSearchParams } from 'react-router-dom';
+import { Building2, CalendarDays, Pencil, XCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import type { PageHeaderMenuItem } from '@/components/layout/page-header-actions';
 import { PlainSection } from '@/components/shared/calm';
+import { DemoTourContact } from '@/components/shared/demo-tour-contact';
+import { AskBookingDraftButton } from '@/features/assistant/ask/ask-trigger';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
 import { StatusBadge } from '@/components/shared/status/status-badge';
@@ -68,6 +70,7 @@ export function BookingDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { t, i18n } = useTranslation();
   const [searchParams] = useSearchParams();
+  const { state } = useLocation();
   const tabParam = searchParams.get('tab');
   const requestedTab = bookingPanelOf(tabParam);
   const [cancelOpen, setCancelOpen] = useState(false);
@@ -97,8 +100,10 @@ export function BookingDetailPage() {
   // An API error is never shown as "not found" (only a 404 is), and a 404 is "not found" whatever the cache still holds of the booking: the query keeps the old data
   // when a read fails, and the page of a booking that is gone must not open on it. A read that fails when the page already shows the booking (the page is read again
   // whenever it opens) leaves the page as it is: the error screen is for a page that has nothing to show.
-  const gone = isError && getHttpStatus(error) === 404;
-  if (isError && !gone && !booking) {
+  const status = isError ? getHttpStatus(error) : undefined;
+  const gone = status === 404;
+  const accessLost = status === 401 || status === 403;
+  if (isError && !gone && (!booking || accessLost)) {
     return (
       <AppShell>
         <div className="min-w-0 space-y-6">
@@ -161,7 +166,8 @@ export function BookingDetailPage() {
 
   const menu: PageHeaderMenuItem[] = [
     ...(canEdit ? [{ label: t('booking.detailPage.editBooking'), icon: Pencil, to: `${BOOKINGS_PATH}/${booking.id}/edit`, testId: 'edit-booking' }] : []),
-    { label: t('booking.detailPage.openProperty'), icon: Building2, to: `/app/short-rent/properties/${booking.propertyId}`, testId: 'booking-open-property' },
+    ...(hasPermission('short-rent', 'property.read') ? [{ label: t('booking.detailPage.openProperty'), icon: Building2, to: `/app/short-rent/properties/${booking.propertyId}`, testId: 'booking-open-property' }] : []),
+    { label: t('dashboard.today.free.cta'), icon: CalendarDays, to: `${BOOKINGS_PATH}/calendar?${new URLSearchParams({ view: 'timeline', from: stayDateOf(booking.checkInDate), propertyId: booking.propertyId })}` },
     ...(canCancel
       ? [{ separator: true as const }, { label: t('booking.cancel.action'), icon: XCircle, danger: true, onClick: () => setCancelOpen(true), testId: 'open-cancel-booking' }]
       : []),
@@ -190,6 +196,7 @@ export function BookingDetailPage() {
     <BookingNextStep
       booking={booking}
       canWrite={canWrite}
+      viewingCheckIn={activeTab === 'guest'}
       onConfirm={() => setConfirmOpen(true)}
       onDecline={() => setDeclineOpen(true)}
       onArrival={() => setArrivalOpen(true)}
@@ -204,7 +211,9 @@ export function BookingDetailPage() {
       >
         {/* The trail (Affitti brevi › Prenotazioni › this booking) and, on a phone, the link back to the list as the user left it (UI-05). */}
         <PageHeader
-          crumbs="auto"
+          crumbs={typeof state?.arrivalsSearch === 'string'
+            ? [{ label: t('dashboard.today.arrivalsLabel'), to: `/app/short-rent?${new URLSearchParams(state.arrivalsSearch)}` }, { label: guestName }]
+            : 'auto'}
           title={guestName}
           description={summary}
           action={<StatusBadge kind="booking" status={booking.status} size="lg" data-testid="booking-detail-status" />}
@@ -220,7 +229,7 @@ export function BookingDetailPage() {
             </summary>
             <div className="pb-3">{nextStep}</div>
           </details>
-        ) : nextStep}
+        ) : activeTab !== 'guest' && nextStep}
 
         {/* UI-07 Tabs: links with the tab in the address (`?tab=`), a menu on a phone. */}
         <Tabs
@@ -243,8 +252,12 @@ export function BookingDetailPage() {
           {activeTab === 'guest' && (
             <div className="space-y-8">
               <PlainSection title={t('booking.detailPage.checkInOnline')}>
-                <CheckInLinkPanel bookingId={booking.id} canWrite={canWrite} />
+                <CheckInLinkPanel bookingId={booking.id} canWrite={canWrite}>
+                  <AskBookingDraftButton />
+                  <DemoTourContact />
+                </CheckInLinkPanel>
               </PlainSection>
+              {nextStep}
               <div ref={alloggiatiRef} className="scroll-mt-6">
                 <PlainSection title={t('booking.detailPage.alloggiatiWeb')}>
                   <AlloggiatiBookingPanel bookingId={booking.id} checkInDate={booking.checkInDate} />

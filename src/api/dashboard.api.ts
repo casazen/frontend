@@ -20,7 +20,7 @@ function asObject<T>(value: unknown): T {
 
 export const dashboardApi = {
   /** The host's day in one read: arrivals, departures, interventions and the things to do, most pressing first (SR-03, SR-03b). */
-  getToday: async () => asObject<DashboardToday>(await ApiClient.get<unknown>('/dashboard/today')),
+  getToday: async (signal?: AbortSignal) => asObject<DashboardToday>(await ApiClient.get<unknown>('/dashboard/today', undefined, { signal })),
 
   /** The numbers of the Home for a period, with the difference from the one before, the next arrivals and the revenue by week or month (SR-03b). */
   getOverview: async (query: DashboardOverviewQuery) =>

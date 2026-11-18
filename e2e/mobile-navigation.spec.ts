@@ -163,12 +163,16 @@ test.describe('Mobile navigation (UI-04b)', () => {
     test('the header has no menu button: "Altro" of the bar is the only way to the sheet', async ({ page }) => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'), { waitUntil: 'domcontentloaded' });
 
-      await expect(page.getByRole('button', { name: 'Apri menu di navigazione' })).toHaveCount(0);
-      // What the header has is the search (UI-06), the guide and the profile: no button that opens a menu of the pages.
-      await expect(page.locator('header').getByRole('button')).toHaveCount(3);
-      await expect(page.locator('header').getByTestId('command-palette-trigger')).toBeVisible();
-      await expect(page.locator('header').getByTestId('guide-button')).toBeVisible();
-      await more(page).click();
+      const header = page.getByTestId('app-ready');
+      await expect(header.getByRole('button', { name: /^(Apri menu di navigazione|Altro)$/ })).toHaveCount(0);
+      await expect(header.getByRole('button', { name: /^Cerca immobili/ })).toBeVisible();
+      await expect(header.getByRole('button', { name: /^Apri la guida/ })).toBeVisible();
+      await expect(header.getByRole('button', { name: 'Chiedi a CasaZen', exact: true })).toBeVisible();
+
+      const trigger = bar(page).getByRole('button', { name: /^Altro/ });
+      await expect(more(page)).toHaveCount(1);
+      await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+      await trigger.click();
       await expect(sheet(page)).toBeVisible();
     });
 

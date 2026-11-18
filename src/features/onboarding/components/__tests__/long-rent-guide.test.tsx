@@ -6,8 +6,12 @@ import i18n from '@/i18n/config';
 import { LongRentGuide } from '../long-rent-guide';
 
 const queries = vi.hoisted(() => ({
+  denied: new Set<string>(),
   properties: { data: undefined as unknown[] | undefined },
   leases: { data: undefined as unknown[] | undefined },
+}));
+vi.mock('@/hooks/use-workspace', () => ({
+  useWorkspace: () => ({ hasPermission: (_area: string, permission: string) => !queries.denied.has(permission) }),
 }));
 vi.mock('@/queries/use-properties', () => ({ useProperties: () => queries.properties }));
 vi.mock('@/queries/use-leases', () => ({ useLeases: () => queries.leases }));
@@ -25,6 +29,7 @@ function renderGuide() {
 describe('LongRentGuide', () => {
   beforeEach(async () => {
     await i18n.changeLanguage('it');
+    queries.denied.clear();
     queries.properties.data = undefined;
     queries.leases.data = undefined;
   });
@@ -64,6 +69,19 @@ describe('LongRentGuide', () => {
       'href',
       '/app/long-rent/leases/new',
     );
+  });
+
+  it('does not offer a creation route to a read-only landlord', () => {
+    queries.denied.add('property.write');
+    queries.denied.add('lease.create');
+    queries.properties.data = [];
+    queries.leases.data = [];
+    renderGuide();
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+    queries.properties.data = [{ id: 'p1' }];
+    cleanup();
+    renderGuide();
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
   });
 
   it('everyStepDone_TheGuideGoesAway', () => {

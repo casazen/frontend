@@ -5723,8 +5723,8 @@
       "retry": "Riprova",
       "expiresAt": "Scade il {{date}}",
       "expired": "Il link è scaduto: invia un sollecito o genera un nuovo link da copiare.",
-      "completed": "L'ospite ha completato il check-in. Per correggere i dati usa la scheda Alloggiati.",
-      "notEligible": "Il link di check-in è disponibile solo per prenotazioni confermate o in corso.",
+      "completed": "L’ospite ha inviato il modulo di check-in online. Puoi verificare i dati degli ospiti nella sezione Alloggiati Web qui sotto.",
+      "notEligible": "Al momento non è possibile emettere un nuovo link per questa prenotazione.",
       "sendByEmail": "Invia link via email",
       "generateToCopy": "Genera link da copiare",
       "replaceWarning": "Un nuovo link sostituisce quello attuale, che smette di funzionare.",
@@ -8418,10 +8418,12 @@
       "today": "Impossibile caricare la giornata."
     },
     "filter": {
-      "allProperties": "Tutti gli immobili",
+      "allProperties": "Tutti gli immobili assegnati",
       "label": "Filtri della Home",
-      "period": "Periodo",
-      "property": "Immobile"
+      "period": "Periodo dei numeri",
+      "property": "Immobile",
+      "requestedProperty": "Immobile del collegamento",
+      "reset": "Azzera filtri"
     },
     "first": {
       "body": "Appena è attivo, qui trovi la giornata, le cose da fare e i numeri. Salviamo tutto mentre vai avanti: puoi fermarti quando vuoi.",
@@ -8599,10 +8601,8 @@
     },
     "today": {
       "action": {
-        "registerArrival": "Registra arrivo",
-        "registerDeparture": "Registra partenza",
-        "resendLink": "Invia di nuovo",
-        "sendLink": "Invia link check-in"
+        "openCheckIn": "Vedi check-in",
+        "registerDeparture": "Registra partenza"
       },
       "arrivalLoadFailed": "Impossibile aprire la prenotazione. Riprova.",
       "filterLabel": "Mostra per tipo",
@@ -8627,12 +8627,25 @@
         "arrived": "Arrivo registrato",
         "cleaning": "Pulizia: {{status}}",
         "departed": "Partenza registrata",
-        "docsOk": "Documenti ok",
+        "docsOk": "Dati del check-in completi",
+        "submittedIncomplete": "Modulo inviato · dati ospiti incompleti",
         "linkNotSent": "Link di check-in non ancora inviato",
         "linkSent": "Link inviato: in attesa dell'ospite",
-        "noCleaning": "Nessuna pulizia richiesta"
+        "noCleaning": "Nessuna pulizia richiesta",
+        "inProgress": "Check-in online in corso",
+        "expired": "Link di check-in scaduto",
+        "unknown": "Stato del check-in non disponibile"
       },
-      "title": "Oggi"
+      "title": "Oggi",
+      "partial": "La Home mostra solo una parte delle attività di oggi.",
+      "empty": {
+        "arrivals": "Nessun arrivo oggi per gli immobili selezionati.",
+        "departures": "Nessuna partenza oggi per gli immobili selezionati.",
+        "cleaning": "Nessuna pulizia oggi per gli immobili selezionati.",
+        "jobs": "Nessun intervento oggi per gli immobili selezionati."
+      },
+      "readOnlyArrival": "All’arrivo dell’ospite, un membro abilitato potrà registrare l’arrivo. Qui puoi consultare lo stato del check-in online.",
+      "arrivalsLabel": "Arrivi di oggi"
     },
     "otaStatus": {
       "title": "Stato canali OTA",
@@ -13530,6 +13543,7 @@
       "createLease": "Crea contratto"
     },
     "contracts": {
+      "openProperties": "Apri gli immobili",
       "all": "Tutti i contratti",
       "title": "I tuoi contratti"
     },
@@ -13641,6 +13655,9 @@
       "description": "Aggiorna i dati di {{name}}"
     },
     "detail": {
+      "viewRequests": "Vedi tutti gli interventi",
+      "viewTenants": "Apri l’elenco degli inquilini",
+      "openRentSchedule": "Verifica i canoni",
       "address": "Indirizzo",
       "apeMissing": "Nessun APE caricato. L'attestato di prestazione energetica serve per creare un contratto: caricalo qui sotto.",
       "apePresent": "APE caricato: puoi creare un contratto per questo immobile.",
@@ -20669,7 +20686,8 @@
         "steps": [
           "Accedi con il tuo account e completa i dati e i consensi richiesti. Se sei stato invitato in un’organizzazione, apri il link dell’invito con l’account destinatario.",
           "Scegli l’area di lavoro: Affitti brevi, Affitti lunghi, Amministrazione o Fornitori. Le aree e le azioni disponibili dipendono dal tuo ruolo e dagli immobili assegnati.",
-          "Prima di iniziare, verifica l’organizzazione indicata in alto. Da computer usa il menu laterale; da telefono usa la barra in basso e Altro. La ricerca globale aiuta a trovare le pagine accessibili.",
+          "Verifica area e organizzazione in alto. Su telefono apri Altro per cambiare area. Su computer usa il selettore della barra laterale. Scegli Cerca per trovare le pagine a cui hai accesso.",
+          "Chiedi a CasaZen cerca le pagine accessibili per nome. In Affitti brevi puoi chiedere quali arrivi di oggi hanno il check-in incompleto. Controlla l’ambito indicato e scegli una prenotazione per verificarla. In demo i dati sono di esempio. Puoi sempre aprire gli arrivi direttamente dal Cruscotto.",
           "Per avviare il lavoro operativo: prepara gli immobili, verifica disponibilità e tariffe, inserisci le prenotazioni, completa i dati degli ospiti e controlla gli adempimenti in scadenza."
         ]
       },
@@ -20688,6 +20706,7 @@
         "keywords": "arrivi partenze check in checkout blocchi",
         "steps": [
           "Apri Prenotazioni per consultare l’elenco o il calendario. Controlla immobile, date, numero di persone, stato e importi prima di creare o modificare un soggiorno.",
+          "Dal Cruscotto, in Oggi, scegli un immobile o tutti quelli assegnati. Negli arrivi seleziona Vedi check-in per aprire Documenti della prenotazione. Confronta immobile, date e stato. Se i dati sono incompleti, apri la scheda sorgente prima di intervenire. La data degli arrivi segue il fuso di Roma.",
           "Usa i blocchi manuali del calendario per chiudere periodi non disponibili. Un blocco di calendario non contiene necessariamente una prenotazione completa o i dati degli ospiti.",
           "Nel dettaglio della prenotazione verifica i dati prima di registrare l’arrivo. Il link di check-in permette all’ospite di compilare le informazioni richieste; la compilazione non equivale all’invio ad Alloggiati.",
           "Alla partenza apri il percorso di check-out e verifica le informazioni mostrate. Controlla separatamente lo stato del soggiorno e quello dei pagamenti."
@@ -20728,6 +20747,7 @@
         "keywords": "stripe rimborsi incassi messaggi",
         "steps": [
           "Apri Pagamenti o il dettaglio della prenotazione per controllare importi e stato. Distingui un pagamento in attesa da uno riuscito e verifica l’esito di un eventuale rimborso.",
+          "Se la prenotazione consente di preparare le istruzioni di arrivo, controlla la bozza, modificala e copiala in Messaggi. Per inviarla usa il flusso di Messaggi e verifica destinatario, canale e testo.",
           "Le modalità disponibili dipendono dalla configurazione dell’organizzazione e del sito di prenotazione. Non considerare un pagamento ricevuto solo perché esiste una prenotazione o è stata inviata una richiesta.",
           "Nella scheda Pagamento della prenotazione trovi i Dati di fatturazione: a chi va intestata la fattura e da dove arrivano i dati (dal tuo channel manager, dall’ospite al check-in, modificati da te). Controlli o correggi i dati dal pulsante della sezione; chi non gestisce i pagamenti li legge senza poterli cambiare. L’ospite può chiedere la fattura nel check-in e scrivere i suoi dati: se li lasci vuoti, aggiungili tu.",
           "Per le prenotazioni dirette compatibili, apri la conversazione dal dettaglio e invia il messaggio all’ospite. La conversazione resta scrivibile fino al settimo giorno dopo il check-out; dopo diventa di sola lettura.",
@@ -20748,7 +20768,7 @@
         "title": "Affitti lunghi e contratti",
         "keywords": "locatori conduttori ape rli canoni firma",
         "steps": [
-          "Nell’area Affitti lunghi seleziona l’immobile e avvia il contratto guidato. Compila locatori, conduttori, condizioni economiche e documenti richiesti, inclusa l’APE quando prevista.",
+          "In Affitti lunghi apri Immobili e scegli una casa. Nella scheda di una casa locata, Verifica i canoni apre le rate del contratto in corso. La scheda Contratti mostra anche le pratiche in preparazione.",
           "Puoi riprendere una bozza salvata e controllare cosa manca prima della conferma. Se due schede modificano la stessa bozza, ricarica i dati prima di ripetere l’operazione.",
           "Controlla il contratto prima di scaricarlo per la firma. Il download non dimostra che il documento sia firmato o registrato.",
           "Consulta nella scheda gli stati e le ricevute disponibili per la registrazione RLI e i canoni. Non considerare conclusa una registrazione solo perché il file è stato generato; verifica l’effettivo esito sul canale utilizzato."
@@ -24859,7 +24879,8 @@
       "savedHint": "Puoi cambiarle dal link «Cookie» in fondo alla pagina."
     },
     "demoBanner": {
-      "message": "Modalita' demo - Nessuna autenticazione richiesta. Tutti i dati sono simulati."
+      "message": "Demo · Dati di esempio",
+      "guided": "Demo · Dati di esempio in sola lettura"
     },
     "confirm": "Conferma",
     "cancel": "Annulla",
@@ -24974,6 +24995,34 @@
     "continue": "Continua la registrazione"
   },
   "site": {
+    "tour": {
+      "shortIntro": "Apri una prenotazione di esempio e verifica il check-in in due passaggi, senza account.",
+      "longIntro": "Apri un immobile di esempio e verifica contratto e canone in due passaggi, senza account.",
+      "shortIntro": "Demo con dati sintetici. Controlla un arrivo in due passaggi, senza account.",
+      "longIntro": "Demo con dati sintetici. Verifica un contratto in due passaggi, senza account.",
+      "shortCta": "Vedi gli arrivi di oggi",
+      "longCta": "Controlla un contratto",
+      "intro": "Scegli una demo con dati sintetici. In due passaggi puoi controllare un arrivo o un contratto, senza creare un account.",
+      "sampleDay": "Demo · Dati sintetici del {{day}}",
+      "shortTitle": "Arrivi del giorno",
+      "longTitle": "Immobile in affitto",
+      "openStay": "Apri la prenotazione di {{guest}} · {{property}}",
+      "openProperty": "Apri {{property}}",
+      "checkInState": "Check-in online in compilazione",
+      "checkInStep": "L’ospite ha iniziato a inserire i dati. Prima di registrare l’arrivo, controlla che abbia completato i documenti.",
+      "leaseState": "Contratto registrato e attivo",
+      "rentState": "Canone mensile {{rent}} EUR. Nessuna rata scaduta in questo esempio.",
+      "contactTitle": "Usa CasaZen per i tuoi immobili",
+      "inviteText": "Richiedi l’accesso su invito. Si aprirà un’email da controllare e inviare.",
+      "referralText": "L’accesso è su invito. Puoi scrivere all’host che ti ha presentato CasaZen. Aggiungi il suo indirizzo nella tua app di posta.",
+      "referralBody": "Ciao, ho provato la demo di CasaZen. Potresti invitarmi come host?",
+      "referralCta": "Scrivi al tuo referente",
+      "haveInvite": "Hai già ricevuto un invito?",
+      "inviteOnlyText": "Apri il link originale nella tua email o incolla qui il link di invito host per questo sito.",
+      "inviteLabel": "Link dell’invito CasaZen",
+      "inviteError": "Usa il link completo dell’invito host ricevuto per questo sito.",
+      "openInvite": "Apri il tuo invito"
+    },
     "meta": {
       "home": {
         "title": "CasaZen | Gestionale per affitti brevi e lunghi in regola",

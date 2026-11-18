@@ -4,11 +4,13 @@ import { createElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
+import { alloggiatiApi } from '@/api/alloggiati.api';
 import { bookingsApi } from '@/api/bookings.api';
 import { copyTextToClipboard } from '@/lib/utils';
 import { CheckInLinkPanel } from '../checkin-link-panel';
 import type { CheckInSessionStatusDto } from '@/types/public-checkin.types';
 
+vi.mock('@/api/alloggiati.api', () => ({ alloggiatiApi: { getStatus: vi.fn().mockResolvedValue({ dataComplete: true }) } }));
 vi.mock('@/api/bookings.api', () => ({
   bookingsApi: { getCheckInSession: vi.fn(), resendCheckInLink: vi.fn(), createCheckInLink: vi.fn() },
 }));
@@ -144,9 +146,17 @@ describe('CheckInLinkPanel (CO-09, A5-26)', () => {
     });
     renderPanel();
 
-    expect(await screen.findByText(/ha completato il check-in/)).toBeInTheDocument();
+    expect(await screen.findByText(i18n.t('checkin.link.completed'))).toBeInTheDocument();
     expect(screen.queryByTestId('checkin-resend-button')).not.toBeInTheDocument();
     expect(screen.queryByTestId('checkin-generate-button')).not.toBeInTheDocument();
+  });
+
+  it('reports a submitted form with missing guest details as incomplete', async () => {
+    vi.mocked(bookingsApi.getCheckInSession).mockResolvedValue({ status: 'Completo', canIssueLink: false });
+    vi.mocked(alloggiatiApi.getStatus).mockResolvedValueOnce({ dataComplete: false } as Awaited<ReturnType<typeof alloggiatiApi.getStatus>>);
+    renderPanel(false);
+    expect(await screen.findByText(i18n.t('dashboard.today.note.submittedIncomplete'))).toBeVisible();
+    expect(screen.queryByTestId('checkin-resend-button')).toBeNull();
   });
 
   it('panel_WithoutBookingWrite_ShowsStatusOnly', async () => {

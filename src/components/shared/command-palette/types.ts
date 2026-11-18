@@ -45,6 +45,7 @@ export interface CommandContext {
   areas: readonly AreaDefinition[];
   /** The permission test of the menus: the same the sidebar uses. */
   hasPermission: PermissionPredicate;
+  canOpenPath?: (path: string) => boolean;
   flags: Partial<FeatureFlags>;
   getDefaultRoute: (area: AppContextKey) => string;
   /** The cache of the queries the pages already made: the palette reads it and never asks the server for anything. */

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { CheckCircle2, Circle, ListChecks } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useWorkspace } from '@/hooks/use-workspace';
 import { useLeases } from '@/queries/use-leases';
 import { useProperties } from '@/queries/use-properties';
 
@@ -16,15 +17,17 @@ const LEASE_PATH = '/app/long-rent/leases/new';
  */
 export function LongRentGuide() {
   const { t } = useTranslation();
-  const properties = useProperties({ mode: 'long' });
-  const leases = useLeases();
+  const { hasPermission } = useWorkspace();
+  const canRead = hasPermission('long-rent', 'property.read') && hasPermission('long-rent', 'lease.read');
+  const properties = useProperties({ mode: 'long' }, { enabled: canRead });
+  const leases = useLeases(undefined, { enabled: canRead });
 
-  if (!properties.data || !leases.data) return null;
+  if (!canRead || !properties.data || !leases.data) return null;
 
   const steps = [
-    { key: 'property', done: properties.data.length > 0, to: PROPERTY_PATH },
+    { key: 'property', done: properties.data.length > 0, to: hasPermission('long-rent', 'property.write') ? PROPERTY_PATH : null },
     // A lease needs a property: the second step waits for the first.
-    { key: 'lease', done: leases.data.length > 0, to: properties.data.length > 0 ? LEASE_PATH : null },
+    { key: 'lease', done: leases.data.length > 0, to: properties.data.length > 0 && hasPermission('long-rent', 'lease.create') ? LEASE_PATH : null },
   ] as const;
   if (steps.every((step) => step.done)) return null;
 

@@ -25,7 +25,9 @@ import { LONG_RENT_PROPERTY_DRAWER_KIND, longRentLeasePath, longRentPropertyPath
  * there is no second request, and what changes in one changes in both.
  */
 function useRowOfTheList(id: string) {
-  const { rows, isLoading, isError, error, refetch } = useLongRentPropertyRows();
+  const workspace = useContext(WorkspaceContext);
+  const canReadLeases = workspace?.hasPermission('long-rent', 'lease.read') ?? false;
+  const { rows, isLoading, isError, error, refetch } = useLongRentPropertyRows({ canReadLeases });
   return { row: rows?.find((candidate) => candidate.property.id === id), isLoading, isError, error, refetch };
 }
 
