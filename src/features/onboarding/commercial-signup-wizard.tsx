@@ -239,7 +239,7 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
             <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t(isAgency ? 'commercial.agency.estimate' : 'commercial.orderSummary')}</p>
             <h2 className="text-xl font-semibold">{plan?.displayName ?? selection.planTier}</h2>
             <p className="text-sm text-muted-foreground">{t(selection.profile === 'long-rent' ? 'commercial.longRent' : 'commercial.shortRent')}</p>
-            {isAgency && validEstimate && <p className="rounded-lg bg-[#edf2ef] p-3 text-sm">{t('commercial.agency.count', { count: estimateQuantity })}</p>}
+            {isAgency && validEstimate && <p className="rounded-lg bg-[#edf2ef] p-3 text-sm">{t('commercial.agency.estimateCount', { count: estimateQuantity })}</p>}
             <ul className="space-y-3 text-sm"><li className="flex justify-between gap-2"><span>{t('commercial.basePlan')}</span><span>{plan && plan.priceMonthly > 0 && validEstimate ? money(plan.priceMonthly * estimateQuantity) : t('commercial.pricePending')}</span></li>{selection.addons.map(code => {
               const addon = addons.find(item => item.code === code);
               return <li key={code} className="flex justify-between gap-2"><span>{t(`commercial.addons.${code}.title`)}</span><span className="shrink-0">{addon?.priceMonthly != null && validEstimate ? money(addon.priceMonthly * estimateQuantity, addon.currency) : t('commercial.pricePending')}</span></li>;

@@ -23,7 +23,7 @@ test('four profiles, Starter lock and per-room agency summary on desktop and mob
   await page.locator('#signup-agency-name').fill('Demo Agency');
   await page.getByRole('spinbutton').fill('3');
   await page.getByRole('checkbox').first().check();
-  await expect(page.getByText('3 camere fatturate')).toBeVisible();
+  await expect(page.getByText('3 camere ipotizzate')).toBeVisible();
   await expect(page.getByText(/45,00/)).toBeVisible();
   await page.getByRole('button', { name: 'Vai al riepilogo' }).click();
   await expect(page.getByRole('heading', { name: 'La tua configurazione' })).toBeVisible();
@@ -31,7 +31,7 @@ test('four profiles, Starter lock and per-room agency summary on desktop and mob
   await expect(page.locator('body')).toHaveJSProperty('scrollWidth', 390);
 });
 
-test('checkout request carries the chosen rooms and modules; a success URL alone never grants access', async ({ page }) => {
+test('checkout request carries the chosen modules independently of the room estimate; a success URL alone never grants access', async ({ page }) => {
   let currentProfile: Record<string, unknown> = { id: 'demo|onboarding', email: 'demo@example.test', firstName: 'Demo', lastName: 'User', role: 'None', rentalType: null, isActive: true, orgId: null, org: null, onboardingCompletedAt: null };
   let selection: unknown;
   await page.route('**/api/users/me', route => route.fulfill({ json: currentProfile }));
@@ -43,7 +43,7 @@ test('checkout request carries the chosen rooms and modules; a success URL alone
   });
   await page.route('**/api/billing/subscription', route => route.fulfill({ json: { status: 'none', planTier: 'Starter', billingCountry: null, vatId: null, currentPeriodEnd: null, seats: 1 } }));
   await page.route('**/api/billing/checkout-session', async route => {
-    expect(route.request().postDataJSON()).toMatchObject({ planTier: 'Agency', billingCountry: 'IT', returnPath: '/onboarding', commercialSignup: { profile: 'agency', rooms: 3, addons: ['channels'] } });
+    expect(route.request().postDataJSON()).toMatchObject({ planTier: 'Agency', billingCountry: 'IT', returnPath: '/onboarding', commercialSignup: { profile: 'agency', rooms: 1, addons: ['channels'] } });
     await route.fulfill({ json: { checkoutUrl: 'https://checkout.stripe.com/c/test-commercial' } });
   });
   await page.route('https://checkout.stripe.com/**', route => route.fulfill({ contentType: 'text/html', body: '<p>Sandbox checkout placeholder</p>' }));
