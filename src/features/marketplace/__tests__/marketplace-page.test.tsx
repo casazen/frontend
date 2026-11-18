@@ -196,8 +196,23 @@ describe('MarketplacePage · Scopri', () => {
     // Each group says in one line what it holds.
     expect(screen.getByTestId('marketplace-group-salesChannels')).toHaveTextContent('I portali dove vendi i tuoi alloggi');
     expect(screen.getByTestId('marketplace-partners-section')).toHaveTextContent('non fornitori CasaZen');
-    // The catalog is asked for the property the page is about.
-    expect(hooks.catalog).toHaveBeenCalledWith('prop-1');
+    // Both reads are account-level.
+    expect(hooks.catalog).toHaveBeenCalledWith(undefined);
+    expect(api.fetchMarketplaceSuppliers).toHaveBeenCalledWith(expect.objectContaining({ accountScope: true }));
+    expect(api.getProperties).not.toHaveBeenCalled();
+  });
+
+  it('MarketplacePage_Scopri_LegacyPropertyLink_ShowsTheAccountCatalogWithoutPropertyOrInterventionControls', async () => {
+    api.getProperties.mockResolvedValue([]);
+    renderAt(<MarketplacePage />, '/app/short-rent/marketplace?propertyId=old-property');
+
+    expect(await screen.findByTestId('marketplace-entry-Channel-PORTAL1')).toBeInTheDocument();
+    expect(await screen.findByTestId('marketplace-category-cleaning')).toBeInTheDocument();
+    expect(screen.getByTestId('marketplace-search')).toBeInTheDocument();
+    expect(screen.queryByTestId('marketplace-property-select')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('marketplace-request-intervention')).not.toBeInTheDocument();
+    expect(hooks.catalog).toHaveBeenCalledWith(undefined);
+    expect(api.getProperties).not.toHaveBeenCalled();
   });
 
   it('MarketplacePage_Scopri_EveryCardHasNameLogoBenefitCostAndWhereItStands', async () => {
@@ -269,18 +284,18 @@ describe('MarketplacePage · Scopri', () => {
     renderAt(<MarketplacePage />);
     await screen.findByTestId('marketplace-entry-Channel-PORTAL1');
 
-    // Not active: the wizard of a channel, on the property, and it brings the person back to the page they were on.
+    // Not active: the wizard of a channel, and it brings the person back to the page they were on.
     const activate = target('marketplace-entry-Channel-PORTAL1-action');
     expect(screen.getByTestId('marketplace-entry-Channel-PORTAL1-action')).toHaveTextContent('Attiva');
     expect(activate.path).toBe('/app/short-rent/marketplace/activate/channel/PORTAL1');
-    expect(activate.params.get('propertyId')).toBe('prop-1');
+    expect(activate.params.has('propertyId')).toBe(false);
     expect(activate.params.get('returnTo')).toBe('/app/short-rent/marketplace');
 
-    // Active: managed in the Active tab, the property kept.
+    // Active: managed in the Active tab.
     expect(screen.getByTestId('marketplace-entry-Tool-TOOL1-status')).toHaveTextContent('Attivo');
     expect(screen.getByTestId('marketplace-entry-Tool-TOOL1-action')).toHaveTextContent('Gestisci');
     expect(target('marketplace-entry-Tool-TOOL1-action').path).toBe('/app/short-rent/marketplace/mine');
-    expect(target('marketplace-entry-Tool-TOOL1-action').params.get('propertyId')).toBe('prop-1');
+    expect(target('marketplace-entry-Tool-TOOL1-action').params.has('propertyId')).toBe(false);
 
     // To fix: the same wizard, with the word «Correggi».
     expect(screen.getByTestId('marketplace-entry-Tool-TOOL2-status')).toHaveTextContent('Da correggere');
@@ -349,7 +364,7 @@ describe('MarketplacePage · Scopri', () => {
     expect(cleaning).toHaveTextContent('Pulizie');
     expect(cleaning).toHaveTextContent('1 fornitore');
     expect(cleaning).toHaveAttribute('href', expect.stringContaining('/app/short-rent/marketplace/categories/cleaning'));
-    expect(cleaning).toHaveAttribute('href', expect.stringContaining('propertyId=prop-1'));
+    expect(cleaning).toHaveAttribute('href', '/app/short-rent/marketplace/categories/cleaning');
     expect(screen.getByTestId('marketplace-category-plumbing')).toHaveTextContent('Ancora nessun fornitore');
     expect(screen.queryByTestId('marketplace-no-network')).not.toBeInTheDocument();
     // The tiles are the group of Home services.
@@ -361,7 +376,7 @@ describe('MarketplacePage · Scopri', () => {
     renderAt(<MarketplacePage />);
 
     const note = await screen.findByTestId('marketplace-no-network');
-    expect(note).toHaveTextContent("In questo territorio non c'è ancora una rete CasaZen per questa categoria.");
+    expect(note).toHaveTextContent("Ancora nessun fornitore");
     expect(note).toHaveTextContent('Qui sotto trovi i partner esterni.');
     expect(screen.getByTestId('marketplace-partners-section')).toBeInTheDocument();
   });
@@ -377,7 +392,7 @@ describe('MarketplacePage · Scopri', () => {
 
     // The sentence about the territory stays; the one that sends the person to the Partners group is there only when that group has cards.
     const note = await screen.findByTestId('marketplace-no-network');
-    expect(note).toHaveTextContent("In questo territorio non c'è ancora una rete CasaZen per questa categoria.");
+    expect(note).toHaveTextContent("Ancora nessun fornitore");
     expect(note).not.toHaveTextContent('partner');
     expect(within(screen.getByTestId('marketplace-partners-section')).queryAllByRole('heading', { level: 3 })).toHaveLength(0);
   });
@@ -495,16 +510,6 @@ describe('MarketplacePage · Scopri', () => {
     fireEvent.click(within(screen.getByTestId('marketplace-partners-section')).getByRole('button', { name: 'Riprova' }));
 
     expect(refetch).toHaveBeenCalledTimes(1);
-  });
-
-  it('MarketplacePage_Scopri_PropertyWithoutComune_AsksForItButStillShowsTheOtherGroups', async () => {
-    api.getProperties.mockResolvedValue([{ ...PROPERTY, comuneIstatCode: undefined }]);
-    renderAt(<MarketplacePage />);
-
-    expect(await screen.findByText('Aggiungi il comune per vedere i fornitori della tua zona')).toBeInTheDocument();
-    expect(screen.getByTestId('marketplace-partners-section')).toBeInTheDocument();
-    expect(await screen.findByTestId('marketplace-entry-Channel-PORTAL1')).toBeInTheDocument();
-    expect(screen.queryByTestId('marketplace-suppliers-section')).not.toBeInTheDocument();
   });
 
   it('MarketplacePage_Tabs_AreScopriAndAttiviOnly', async () => {

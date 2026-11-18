@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { PlainSection } from '@/components/shared/calm';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { getHttpStatus } from '@/lib/api-errors';
@@ -43,7 +44,7 @@ export function OwnerAddressSection({ ownerId, canManage }: OwnerAddressSectionP
     content = <OwnerAccountingError error={address.error} title={t('ownerAddress.loadError')} onRetry={() => void address.refetch()} />;
   } else {
     // The form starts from what the server holds and starts again when that is read again (after a save): no effect copies it into the state.
-    content = <AddressForm key={address.dataUpdatedAt} ownerId={ownerId} saved={address.data} />;
+    content = <AddressEditor key={ownerId} ownerId={ownerId} saved={address.data} />;
   }
 
   return (
@@ -51,6 +52,23 @@ export function OwnerAddressSection({ ownerId, canManage }: OwnerAddressSectionP
       {content}
     </PlainSection>
   );
+}
+
+function AddressEditor({ ownerId, saved }: { ownerId: string; saved: OwnerAddress }) {
+  const { t } = useTranslation();
+  const [editing, setEditing] = useState(false);
+  const lines = [[saved.street, saved.buildingNumber].filter(Boolean).join(' '), [saved.postalCode, saved.town, saved.province].filter(Boolean).join(' '), saved.country].filter(Boolean);
+  return <div className="space-y-3">
+    <p className="max-w-2xl text-sm text-foreground/70">{t('ownerAddress.description')}</p>
+    {lines.length > 0 ? <address className="text-sm not-italic leading-relaxed" data-testid="owner-address-summary">{lines.map((line, index) => <p key={index}>{line}</p>)}</address> : <p className="text-sm text-foreground/60">{t('ownerProfile.facts.empty')}</p>}
+    <Button type="button" variant="outline" size="sm" onClick={() => setEditing(true)} data-testid="owner-address-edit">{t('ownerProfile.wizard.edit')}</Button>
+    <Dialog open={editing} onOpenChange={setEditing}>
+      <DialogContent className="max-h-[90dvh] overflow-y-auto">
+        <DialogHeader><DialogTitle>{t('ownerAddress.title')}</DialogTitle><DialogDescription>{t('ownerAddress.description')}</DialogDescription></DialogHeader>
+        {editing ? <AddressForm ownerId={ownerId} saved={saved} onSaved={() => setEditing(false)} /> : null}
+      </DialogContent>
+    </Dialog>
+  </div>;
 }
 
 interface FormState {
@@ -74,7 +92,7 @@ const fromAddress = (address: OwnerAddress): FormState => ({
 /** The text of a part of the address, or nothing: the server stores a blank optional part as none. */
 const text = (value: string): string | undefined => (value.trim() === '' ? undefined : value.trim());
 
-function AddressForm({ ownerId, saved }: { ownerId: string; saved: OwnerAddress }) {
+function AddressForm({ ownerId, saved, onSaved }: { ownerId: string; saved: OwnerAddress; onSaved: () => void }) {
   const { t, i18n } = useTranslation();
   const save = useSaveOwnerAddress(ownerId);
   const [form, setForm] = useState<FormState>(() => fromAddress(saved));
@@ -105,6 +123,7 @@ function AddressForm({ ownerId, saved }: { ownerId: string; saved: OwnerAddress 
     try {
       await save.mutateAsync(command);
       toast.success(t('ownerAddress.saved'));
+      onSaved();
     } catch (failure) {
       setError(failureText(failure, t, i18n.exists));
     }
@@ -134,11 +153,11 @@ function AddressForm({ ownerId, saved }: { ownerId: string; saved: OwnerAddress 
           label={t('ownerAddress.fields.province')}
           optional={country.toUpperCase() !== 'IT'}
           hint={t('ownerAddress.provinceHint')}
-          error={provinceOk ? undefined : 'ownerAddress.provinceRequired'}
+          error={provinceOk ? undefined : t('ownerAddress.provinceRequired')}
         >
           <Input value={form.province} maxLength={50} autoComplete="off" onChange={(event) => set({ province: event.target.value })} data-testid="address-province" />
         </Field>
-        <Field label={t('ownerAddress.fields.country')} hint={t('ownerAddress.countryHint')} error={country === '' || countryOk ? undefined : 'ownerAddress.countryInvalid'}>
+        <Field label={t('ownerAddress.fields.country')} hint={t('ownerAddress.countryHint')} error={country === '' || countryOk ? undefined : t('ownerAddress.countryInvalid')}>
           <Input value={form.country} maxLength={2} autoCapitalize="characters" autoComplete="off" onChange={(event) => set({ country: event.target.value })} data-testid="address-country" />
         </Field>
       </div>

@@ -67,13 +67,13 @@ export function useCurrentUser() {
 }
 
 /** Resolved plan entitlement (limits + usage) for the caller's org (#202, AC8). */
-export function useEntitlement() {
+export function useEntitlement(enabled = true) {
   const { org, user } = useCurrentUser();
   return useQuery({
     queryKey: ENTITLEMENT_QUERY_KEY,
     queryFn: () => OrgsApi.getMyEntitlement(),
     // A host endpoint: not asked while the backend withholds the host features (PL-02), e.g. from the admin shell.
-    enabled: !!org?.id && user?.onboardingRequired !== true,
+    enabled: enabled && !!org?.id && user?.onboardingRequired !== true,
     retry: false,
   });
 }

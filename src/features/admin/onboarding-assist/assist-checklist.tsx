@@ -173,7 +173,9 @@ function Block({ request, block, onOpen }: BlockProps) {
     : subject;
   const istat: AssistIstatPresence | null = block.istatCredentials;
   const requirement = istat && REQUIREMENTS.has(istat.requirement) ? istat.requirement : null;
+  const foreign = Boolean(block.country?.trim()) && block.country?.trim().toUpperCase() !== 'IT';
   const sender = block.sender;
+  const steps = foreign ? block.steps.filter((step) => step.kind === 'channelAccess') : block.steps;
   const senderKnown = sender !== null && SENDERS.has(sender.sender);
   // A credential is opened only when it is there (a missing one can only be refused) and when the request needs it.
   const canOpenPanel = offered('OctoratePanel') && block.panelUser.present;
@@ -185,6 +187,23 @@ function Block({ request, block, onOpen }: BlockProps) {
       <h4 className="break-words text-base font-semibold" data-testid="assist-checklist-block-title">
         {title}
       </h4>
+      {foreign ? (
+        <div className="rounded-lg bg-muted p-4 text-sm space-y-2" data-testid="assist-checklist-local-requirements">
+          <p className="font-medium">{t('complianceJurisdiction.foreignTitle')}</p>
+          <p>{t('complianceJurisdiction.foreignDescription')}</p>
+          {block.country?.trim().toUpperCase() === 'CH' ? <a className="inline-flex min-h-11 items-center text-primary hover:underline" href="https://www4.ti.ch/di/pol-new/servizi-online/notifiche-degli-ospiti-alla-polizia-no-lear" target="_blank" rel="noopener noreferrer">{t('complianceJurisdiction.ticinoLink')}</a> : null}
+        </div>
+      ) : request.part === 'compliance' ? (
+        <section className="rounded-lg bg-muted p-4 space-y-3" data-testid="assist-checklist-task-guide">
+          <h5 className="font-semibold">{t('complianceJurisdiction.guideTitle')}</h5>
+          <ol className="list-decimal space-y-2 pl-5 text-sm leading-relaxed">
+            <li>{t('complianceJurisdiction.guidePrepare')}</li>
+            <li>{t(request.context === 'panelPolice' ? 'complianceJurisdiction.guidePolice' : request.context === 'panelIstat' ? 'complianceJurisdiction.guideIstat' : 'complianceJurisdiction.guideBoth')}</li>
+            <li>{t('complianceJurisdiction.guideCheck')}</li>
+          </ol>
+          <p className="text-sm text-foreground/70">{t('complianceJurisdiction.guideMissing')}</p>
+        </section>
+      ) : null}
       <dl className="space-y-2">
         <Item label={t('onboardingPlan.assist.checklist.items.panelUser')} testId="assist-checklist-panel-user">
           <Presence presence={block.panelUser} />
@@ -194,26 +213,26 @@ function Block({ request, block, onOpen }: BlockProps) {
           </div>
         </Item>
 
-        {block.policeCredentials ? (
+        {!foreign && block.policeCredentials ? (
           <Item label={t('onboardingPlan.assist.checklist.items.police')} testId="assist-checklist-police">
             <Presence presence={block.policeCredentials} />
             {canOpenPolice ? <OpenButton kind="Police" onOpen={(kind) => onOpen(kind, subject)} /> : null}
           </Item>
         ) : null}
 
-        {istat ? (
+        {!foreign && istat ? (
           <Item label={t('onboardingPlan.assist.checklist.items.istat')} testId="assist-checklist-istat">
-            <Presence presence={istat} />
+            {requirement !== 'notRequired' ? <Presence presence={istat} /> : null}
             {requirement ? (
               <p className="text-foreground/70" data-testid="assist-checklist-istat-requirement" data-requirement={requirement}>
                 {t(`onboardingPlan.assist.checklist.requirement.${requirement}`)}
               </p>
             ) : null}
-            {canOpenIstat ? <OpenButton kind="RegionalIstat" onOpen={(kind) => onOpen(kind, subject)} /> : null}
+            {canOpenIstat && requirement !== 'notRequired' ? <OpenButton kind="RegionalIstat" onOpen={(kind) => onOpen(kind, subject)} /> : null}
           </Item>
         ) : null}
 
-        {block.propertyId ? (
+        {block.propertyId && !foreign ? (
           <Item label={t('onboardingPlan.assist.checklist.items.sender')} testId="assist-checklist-sender">
             {sender ? (
               <>
@@ -238,13 +257,13 @@ function Block({ request, block, onOpen }: BlockProps) {
         ) : null}
 
         <Item label={t('onboardingPlan.assist.checklist.items.steps')} testId="assist-checklist-steps">
-          {block.steps.length === 0 ? (
+          {steps.length === 0 ? (
             <p className="text-foreground/70" data-testid="assist-checklist-steps-empty">
               {t('onboardingPlan.assist.checklist.steps.empty')}
             </p>
           ) : (
             <ul role="list" className="space-y-3">
-              {block.steps.map((step) => (
+              {steps.map((step) => (
                 <StepLine key={`${step.kind}:${step.channelCode ?? ''}`} step={step} />
               ))}
             </ul>

@@ -11,12 +11,11 @@ import { useMarketplaceActive, useMarketplaceHealth } from '@/queries/use-market
 import { ActiveIntegrationCard, BuiltInIntegrationCard } from './components/active-integration-card';
 import { IntegrationHealthPanel } from './components/integration-health-panel';
 import { MarketplaceEntryDrawer } from './components/marketplace-entry-drawer';
-import { MarketplaceAccountFrame } from './components/marketplace-frame';
+import { MarketplaceFrame } from './components/marketplace-frame';
 import { UsedProvidersList } from './components/used-providers-list';
 import { buildActiveRows, fixPathOf, goesThroughConnector, mayManageKind, rowHasProblem } from './lib/active-model';
 import { marketplaceReturnTarget } from './lib/marketplace-entry';
-import { MARKETPLACE_PATH, marketplaceHref } from './lib/marketplace-paths';
-import { useMarketplaceProperty } from './lib/marketplace-property';
+import { MARKETPLACE_PATH } from './lib/marketplace-paths';
 import { useIntegrations } from './lib/use-integrations';
 
 const GRID = 'grid list-none gap-3 sm:grid-cols-2 xl:grid-cols-3';
@@ -30,16 +29,16 @@ export function MarketplaceMinePage() {
   const { t } = useTranslation();
 
   return (
-    <MarketplaceAccountFrame
+    <MarketplaceFrame
       section="mine"
       title={t('marketplace.mine.title')}
       description={t('marketplace.mine.description')}
-      trail={[{ label: t('marketplace.title'), path: MARKETPLACE_PATH }, { label: t('marketplace.mine.title') }]}
+      crumbs={[{ label: t('marketplace.title'), to: MARKETPLACE_PATH }, { label: t('marketplace.mine.title') }]}
     >
       <ActiveTab />
       {/* The detail card of an integration (the one of a row): open while the address has `?entry=`, so that it can be shared. */}
       <MarketplaceEntryDrawer />
-    </MarketplaceAccountFrame>
+    </MarketplaceFrame>
   );
 }
 
@@ -48,7 +47,6 @@ function ActiveTab() {
   const location = useLocation();
   const { hasPermission } = useWorkspace();
   const connectorOn = useFeatureFlags().flags.octorateConnector;
-  const { property } = useMarketplaceProperty();
   const builtIns = useIntegrations();
   const active = useMarketplaceActive(undefined);
   // The health is read only while the connector is on and for who may read it: with it off (or without the right) nothing is asked, nothing is said and no error is shown.
@@ -87,7 +85,7 @@ function ActiveTab() {
         icon={Plug}
         title={t('marketplace.mine.emptyTitle')}
         description={t('marketplace.mine.emptyHint')}
-        action={{ label: t('marketplace.mine.discover'), href: marketplaceHref(MARKETPLACE_PATH, property?.id) }}
+        action={{ label: t('marketplace.mine.discover'), href: MARKETPLACE_PATH }}
         className="py-8"
       />
     );
@@ -129,7 +127,7 @@ function ActiveTab() {
       {providers.length > 0 ? (
         <PlainSection title={t('marketplace.mine.providers.title')} data-testid="marketplace-providers-section">
           <p className="text-sm text-foreground/70">{t('marketplace.mine.providers.description')}</p>
-          <UsedProvidersList providers={providers} propertyId={property?.id} />
+          <UsedProvidersList providers={providers} />
         </PlainSection>
       ) : null}
     </div>

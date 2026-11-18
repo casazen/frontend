@@ -48,8 +48,8 @@ export const messageHubApi = {
   unread: () => ApiClient.get<MessageHubUnread>('/messages/unread', { includeOta: true }),
 
   /**
-   * `GET /api/messages/channel-status` (E23/F01/US01/T03): whether the chat of each listing the caller reaches works, `available`, `waiting_permission` (the chat is
-   * not in the license of the listing yet) or `error`. It reads what the copy of the conversations stored and asks the channel nothing; the inbox says with it why a
+   * `GET /api/messages/channel-status`: the sync state of each listing in scope, `available`, `pending_sync`, `waiting_permission` or `error`.
+   * It reads stored results without contacting Octorate; the inbox uses them to show why a
    * listing has no conversation instead of showing an empty list.
    */
   getChannelStatus: () => ApiClient.get<MessageChannelStatus>('/messages/channel-status'),

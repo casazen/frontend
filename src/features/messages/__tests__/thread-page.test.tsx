@@ -28,6 +28,7 @@ vi.mock('@/api/message-hub.api', () => ({
 vi.mock('@/hooks/use-workspace', () => ({
   useWorkspace: () => ({ hasPermission: (_context: string, permission: string) => permissions.canWrite || permission !== 'booking.write' }),
 }));
+vi.mock('@/queries/use-properties', () => ({ useProperties: () => ({ data: [] }) }));
 vi.mock('@/components/layout/app-shell', () => ({
   AppShell: ({ children }: { children: React.ReactNode }) => createElement('div', null, children),
 }));
@@ -82,11 +83,11 @@ function httpError(status: number, data: Record<string, unknown> = {}): AxiosErr
   return new AxiosError('failed', String(status), undefined, undefined, { status, data, statusText: '', headers: {}, config: {} as never });
 }
 
-function renderThread(threadKey = KEY) {
+function renderThread(threadKey = KEY, search = '') {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
     <QueryClientProvider client={client}>
-      <MemoryRouter initialEntries={[`/app/short-rent/messages/${encodeURIComponent(threadKey)}`]}>
+      <MemoryRouter initialEntries={[`/app/short-rent/messages/${encodeURIComponent(threadKey)}${search}`]}>
         <Routes>
           <Route path="/app/short-rent/messages/:threadKey" element={<ThreadPage />} />
         </Routes>
@@ -104,9 +105,9 @@ describe('ThreadPage (NF-61, NF-63, NF-64)', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     permissions.canWrite = true;
-    // From a desktop the booking card is open beside the conversation (on a phone it is a line that opens).
+    // On a wide desktop the list and the booking are both beside the conversation.
     window.matchMedia = ((query: string) => ({
-      matches: query === '(width >= 64rem)',
+      matches: query === '(width >= 64rem)' || query === '(width >= 96rem)',
       media: query,
       onchange: null,
       addEventListener: () => undefined,
@@ -116,6 +117,7 @@ describe('ThreadPage (NF-61, NF-63, NF-64)', () => {
       dispatchEvent: () => false,
     })) as typeof window.matchMedia;
     vi.mocked(messageHubApi.getThread).mockResolvedValue(thread());
+    vi.mocked(messageHubApi.list).mockResolvedValue({ items: [], totalCount: 0, page: 1, pageSize: 20 });
     vi.mocked(messageHubApi.markRead).mockResolvedValue({ threadKey: KEY, unreadCount: 0 });
     vi.mocked(messageHubApi.reply).mockResolvedValue({ channel: 'Ota', threadKey: KEY, message: msg({ id: 'm-2', direction: 'Outbound', origin: 'Person', text: 'Dalle 15.', deliveryState: 'Sent' }), state: 'Sent', replayed: false });
     await i18n.changeLanguage('it');
@@ -151,6 +153,17 @@ describe('ThreadPage (NF-61, NF-63, NF-64)', () => {
     expect(within(card).getByTestId('booking-card-open')).toHaveAttribute('href', '/app/short-rent/bookings/b-1');
     expect(within(card).getByTestId('booking-card-profile')).toHaveAttribute('href', '/app/short-rent/guests/g-1');
     expect(screen.getByTestId('channel-badge')).toHaveTextContent('Airbnb');
+  });
+
+  it('opens stay details from a narrow conversation and keeps the inbox filters in the back link', async () => {
+    const wideMatchMedia = window.matchMedia;
+    window.matchMedia = (query) => ({ ...wideMatchMedia(query), matches: false });
+    renderThread(KEY, '?view=unread&channel=Airbnb');
+
+    expect(await screen.findByRole('link', { name: 'Torna ai messaggi' })).toHaveAttribute('href', '/app/short-rent/messages?view=unread&channel=Airbnb');
+    expect(screen.queryByTestId('messages-inbox')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Dettagli soggiorno' }));
+    expect(within(await screen.findByRole('dialog', { name: 'Dettagli soggiorno' })).getByTestId('booking-card')).toBeVisible();
   });
 
   it('ThreadPage_FigureTheChannelHasNotGiven_IsLeftOutNeverShownAsZero', async () => {

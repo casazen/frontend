@@ -1,0 +1,31 @@
+{
+  "loading": "Controllo la configurazione salvata…",
+  "loadError": "Non riesco a leggere la configurazione. Riprova prima di continuare.",
+  "configure": "Configura ora",
+  "review": "Controlla i dati salvati",
+  "returnHint": "La procedura salva i dati a ogni passo. Al termine puoi tornare qui per continuare con l’immobile.",
+  "returnToProperty": "Continua con l’immobile",
+  "compliance": {
+    "label": "Adempimenti",
+    "heading": "Prepara gli adempimenti del soggiorno",
+    "purpose": "Scegli chi invia i dati degli ospiti. I requisiti dipendono dal Paese dell’immobile.",
+    "title": "Chi invia a Polizia e ISTAT?",
+    "text": "Indica se gestisci gli invii manualmente o tramite il tuo channel manager. La scelta viene salvata nella procedura guidata, insieme alle eventuali credenziali e deleghe.",
+    "saved": "La scelta del mittente è salvata. Lo stato di verifica e gli eventuali problemi sono indicati nella procedura: una scelta salvata non garantisce un invio attivo.",
+    "missing": "Devi ancora confermare come gestire gli invii. L’impostazione manuale predefinita non è una tua conferma.",
+    "required": "Configura e salva il mittente degli invii nel passo Adempimenti prima di continuare.",
+    "localTitle": "Gli adempimenti seguono il Paese della casa",
+    "localText": "Per questa casa fuori dall’Italia non sono richiesti CIN, Alloggiati Web o ISTAT italiani. Le credenziali italiane non vanno inserite qui.",
+    "localPending": "Per una casa in Svizzera verifica la registrazione degli ospiti, le autorizzazioni e la tassa di soggiorno con il Cantone e il Comune competenti. Questo passo non certifica che gli adempimenti locali siano completati."
+  },
+  "billing": {
+    "label": "Fatturazione",
+    "heading": "Chi emette i documenti del soggiorno?",
+    "purpose": "Completa identità e regime fiscale dell’emittente. I dati già salvati per l’organizzazione si riutilizzano.",
+    "title": "Dati dell’emittente e regime fiscale",
+    "text": "Indica nome o ragione sociale, indirizzo, Paese e trattamento IVA nella procedura Fatturazione. CasaZen riutilizza questi dati per gli immobili della tua organizzazione.",
+    "saved": "Identità e regime fiscale dell’emittente sono completi. Puoi controllare nella procedura numerazione, automazioni e altri dati ancora da completare.",
+    "missing": "Mancano alcuni dati dell’emittente o del regime fiscale. Completa questi dati prima di terminare l’immobile.",
+    "required": "Completa i dati dell’emittente e il regime fiscale nel passo Fatturazione prima di continuare."
+  }
+}

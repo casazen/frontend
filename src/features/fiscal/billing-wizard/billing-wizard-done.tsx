@@ -1,3 +1,5 @@
+import { useSearchParams } from 'react-router-dom';
+import { SETUP_RETURN_PARAM, propertySetupReturn } from '@/features/properties/wizard/property-setup-model';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle } from 'lucide-react';
 import { ErrorState } from '@/components/shared/error-state';
@@ -20,6 +22,9 @@ interface BillingWizardDoneProps {
  */
 export function BillingWizardDone({ home }: BillingWizardDoneProps) {
   const { t } = useTranslation();
+  const [params] = useSearchParams();
+  const returnTo = propertySetupReturn(params, 'billing');
+  const destination = returnTo ? { to: returnTo, label: t('propertySetup.returnToProperty') } : home;
   const setup = useBillingSetup();
 
   if (setup.isPending) return <LoadingScreen message={t('billingWizard.loading')} className="h-auto flex-1" />;
@@ -43,8 +48,8 @@ export function BillingWizardDone({ home }: BillingWizardDoneProps) {
             icon: AlertTriangle,
             tone: 'attention' as const,
           }))}
-          primary={first ? { label: t('billingWizard.done.partial.continue'), to: `${BILLING_SETUP_PATH}?step=${first}` } : home}
-          secondary={first ? { label: t('billingWizard.done.partial.later'), to: home.to } : secondary}
+          primary={first ? { label: t('billingWizard.done.partial.continue'), to: `${BILLING_SETUP_PATH}?${new URLSearchParams({ step: first, ...(returnTo ? { [SETUP_RETURN_PARAM]: params.get(SETUP_RETURN_PARAM)! } : {}) })}` } : destination}
+          secondary={first ? { label: t('billingWizard.done.partial.later'), to: destination.to } : secondary}
         />
       </div>
     );
@@ -63,7 +68,7 @@ export function BillingWizardDone({ home }: BillingWizardDoneProps) {
           { text: t(email ? 'billingWizard.done.emailOn' : 'billingWizard.done.emailOff') },
           { text: t('billingWizard.done.change') },
         ]}
-        primary={home}
+        primary={destination}
         secondary={secondary}
       />
     </div>

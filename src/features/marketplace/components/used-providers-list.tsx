@@ -3,21 +3,19 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { getServiceCategoryLabel } from '@/lib/i18n-labels';
 import type { MarketplaceActiveProvider } from '@/types';
-import { marketplaceHref, marketplaceSupplierPath } from '../lib/marketplace-paths';
+import { marketplaceSupplierPath } from '../lib/marketplace-paths';
 
 const GRID = 'grid list-none gap-3 sm:grid-cols-2 xl:grid-cols-3';
 
 interface UsedProvidersListProps {
   providers: readonly MarketplaceActiveProvider[];
-  /** The property the marketplace is about: the page of a supplier is read for it. */
-  propertyId: string | undefined;
 }
 
 /**
  * The CasaZen suppliers the host already asked for a job (the Active tab, AC-NF54-3): the name, how many requests are open, the last kind of work asked, and the way to the
  * page of the supplier. They are the ones the server lists, in its order; nothing is added to them.
  */
-export function UsedProvidersList({ providers, propertyId }: UsedProvidersListProps) {
+export function UsedProvidersList({ providers }: UsedProvidersListProps) {
   const { t } = useTranslation();
 
   return (
@@ -41,7 +39,7 @@ export function UsedProvidersList({ providers, propertyId }: UsedProvidersListPr
           </div>
           <Button asChild variant="outline" size="sm" className="mt-auto self-start">
             <Link
-              to={marketplaceHref(marketplaceSupplierPath(provider.supplierOrgId), propertyId)}
+              to={marketplaceSupplierPath(provider.supplierOrgId)}
               aria-label={t('marketplace.mine.providers.viewAria', { name: provider.supplierName })}
               data-testid={`marketplace-provider-${provider.supplierOrgId}-link`}
             >

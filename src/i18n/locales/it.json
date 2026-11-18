@@ -15386,6 +15386,7 @@
     },
     "bookingCard": {
       "balance": "Ancora da pagare",
+      "details": "Dettagli soggiorno",
       "children_one": "di cui {{count}} bambino",
       "children_other": "di cui {{count}} bambini",
       "commission": "Commissione del canale",
@@ -15417,7 +15418,13 @@
       "vrbo": "Vrbo"
     },
     "channelStatus": {
+      "errorExplanation": "I messaggi recenti potrebbero mancare. Per le richieste urgenti controlla il portale mentre CasaZen riprova la sincronizzazione.",
+      "errorTitle_one": "Sincronizzazione dei messaggi interrotta per {{count}} annuncio",
+      "errorTitle_other": "Sincronizzazione dei messaggi interrotta per {{count}} annunci",
       "explanation": "Finché non è attiva, qui non arrivano i messaggi degli ospiti di questi annunci e non puoi rispondere da CasaZen: per attivarla devi dare il permesso alla chat nel tuo channel manager.",
+      "pendingExplanation": "Le conversazioni dei portali compariranno dopo la prima sincronizzazione.",
+      "pendingTitle_one": "{{count}} annuncio in attesa della prima sincronizzazione",
+      "pendingTitle_other": "{{count}} annunci in attesa della prima sincronizzazione",
       "title_one": "Per {{count}} annuncio la chat del portale non è ancora attiva",
       "title_other": "Per {{count}} annunci la chat dei portali non è ancora attiva",
       "which": "Quali annunci"
@@ -20137,6 +20144,31 @@
       "suggestion": {
         "issuerProfile": "Valuta di dargli un profilo emittente d'impresa, qui sotto."
       }
+    },
+    "wizard": {
+      "description": "Completa una sezione alla volta. Potrai controllare tutti i dati prima di salvare.",
+      "next": "Continua",
+      "back": "Indietro",
+      "progress": "Passaggio {{current}} di {{total}}",
+      "steps": {
+        "identity": "Chi è il proprietario?",
+        "tax": "Residenza e dati fiscali",
+        "payment": "Come riceve i pagamenti?",
+        "mandate": "Il mandato di gestione",
+        "model": "Ricavi e commissioni",
+        "rule": "La regola contabile",
+        "review": "Controlla i dati"
+      },
+      "hints": {
+        "identity": "Inizia dal tipo di proprietario e dalla data di validità del profilo.",
+        "tax": "Inserisci i dati che identificano il proprietario ai fini fiscali.",
+        "payment": "Specifica la valuta e il conto per i rendiconti e gli accrediti.",
+        "mandate": "Indica il ruolo e il periodo previsto dal contratto.",
+        "model": "Scegli come riconoscere ricavi, costi e anticipi.",
+        "rule": "Seleziona la giurisdizione e la regola approvata dal commercialista.",
+        "review": "Verifica il riepilogo. Puoi tornare indietro per correggere i dati."
+      },
+      "edit": "Modifica i dati"
     }
   },
   "owners": {
@@ -21277,6 +21309,12 @@
       "popupBlocked": "Il browser ha bloccato la finestra di stampa. Verifica le impostazioni del browser.",
       "print": "Stampa",
       "title": "Codice QR per verifica ospiti"
+    },
+    "swissRegistration": {
+      "title": "Registrazione in Svizzera",
+      "description": "Il CIN italiano non si applica a questa struttura. Verifica gli obblighi del Cantone e del Comune in cui si trova l’alloggio.",
+      "ticino": "In Ticino, quindi anche a Lugano, occorre ottenere il numero identificativo cantonale e riportarlo negli annunci. Questo numero non è un CIN. CasaZen non verifica automaticamente la registrazione cantonale.",
+      "link": "Registrazione alloggi · Ticino Turismo"
     }
   },
   "propertyBooking": {
@@ -30263,6 +30301,10 @@
   },
   "team": {
     "access": {
+      "available": "Accesso consentito",
+      "showPages_one": "Vedi {{count}} pagina del menu",
+      "showPages_other": "Vedi le {{count}} pagine del menu",
+      "previewHint": "Il confronto non modifica gli accessi. Per cambiare il ruolo, apri la modifica e conferma il salvataggio.",
       "backToToday": "Torna al ruolo di oggi",
       "canEnter": "Può entrare. Nel menu trova:",
       "canTitle": "Cosa può fare",
@@ -32021,5 +32063,46 @@
     "resumePayment": "Gestisci o completa il pagamento",
     "roomUnit": " per camera",
     "invitationOnly": "Devi entrare in un’agenzia esistente? Apri il link di invito ricevuto dall’amministratore. Non occorre creare una nuova agenzia o acquistare un piano personale."
+  },
+  "complianceJurisdiction": {
+      "foreignTitle": "Adempimenti del paese della struttura",
+      "foreignDescription": "Questura, Alloggiati Web e ISTAT italiani non si applicano a questo immobile. Non servono le relative credenziali né una scelta del mittente italiano. Verifica invece gli obblighi del luogo: CasaZen non li considera assolti automaticamente.",
+      "ticinoLink": "Ticino · notifica degli ospiti alla Polizia cantonale",
+      "guideTitle": "Come completare questa richiesta",
+      "guidePrepare": "Controlla l’immobile e il paese. Verifica chi invierà i dati: se invia il channel manager, apri il suo pannello con l’accesso della struttura.",
+      "guidePolice": "Nel pannello apri il collegamento Alloggiati Web. Usa le credenziali rilasciate dalla Questura competente e l’eventuale identificativo dell’appartamento.",
+      "guideIstat": "Nel pannello apri il collegamento statistico della regione della struttura. Controlla il portale regionale e inserisci le credenziali e il codice struttura previsti da quel servizio.",
+      "guideBoth": "Configura separatamente il collegamento Alloggiati Web e quello statistico regionale. Le credenziali dei due servizi possono essere diverse.",
+      "guideCheck": "Esegui la verifica del collegamento prima di chiudere la richiesta. Se il sistema non può verificarlo, registra un esito dichiarato con una nota che spieghi il controllo effettuato.",
+      "guideMissing": "Se manca un accesso, chiedilo all’utente dalla procedura di assistenza prevista. Non inserire credenziali nelle note della richiesta."
+  }
+,
+  "orgComplianceSender": {
+    "loading": "Caricamento della scelta di invio…",
+    "retry": "Riprova",
+    "loadError": "Non riusciamo a leggere la scelta dell’account. Riprova prima di modificarla.",
+    "scope": "Una scelta per il tuo account",
+    "title": "Chi invia i dati degli ospiti?",
+    "description": "Scegli una volta per gli immobili italiani, presenti e futuri. Gli immobili con una scelta specifica la mantengono; gli immobili all’estero seguono gli adempimenti locali.",
+    "channel": "Il mio channel manager",
+    "channelHint": "Scegli Octorate. Ogni immobile deve poi essere collegato e verificato prima dell’invio.",
+    "manual": "Invio io sui portali",
+    "manualHint": "Scarichi i file dei soggiorni e invii i dati alla Polizia e alle statistiche regionali, dove richieste.",
+    "continue": "Continua: riepilogo",
+    "review": "Controlla la scelta prima di salvare",
+    "effect": "La preferenza viene ereditata dagli immobili italiani senza una scelta specifica. Non attiva servizi esterni, non verifica le credenziali e non attesta che gli invii funzionino.",
+    "overrides_one": "{{count}} immobile mantiene la propria scelta specifica. Puoi cambiarla dalla sua scheda.",
+    "overrides_other": "{{count}} immobili mantengono la propria scelta specifica. Puoi cambiarla dalle rispettive schede.",
+    "confirm": "Confermo questa scelta per gli immobili che la ereditano. Prima di cambiare servizio mi assicuro che il precedente invio automatico sia disattivato, per evitare doppi invii.",
+    "save": "Salva per il mio account",
+    "back": "Indietro",
+    "saved": "Preferenza salvata: {{sender}}",
+    "edit": "Modifica scelta",
+    "saveError": "Scelta non salvata. Riprova.",
+    "accountsTitle": "Credenziali e codice appartamento: cosa cambia?",
+    "accounts": "Con un’utenza Alloggiati Web abilitata a “Gestione Appartamenti”, un’agenzia o un privato può gestire più immobili. La Questura competente, la provincia e la tipologia autorizzata restano determinanti: non è un’utenza unica nazionale. Ogni appartamento mantiene il proprio identificativo nel portale (IdAppartamento). Segui l’abilitazione rilasciata dalla Questura; ISTAT dipende dal sistema regionale. Questa scelta non copia né condivide credenziali fra immobili.",
+    "source": "Manuale ufficiale Alloggiati Web · sezione 8",
+    "inherited": "Questo immobile eredita la scelta del tuo account. Qui puoi impostare un’eccezione per il solo immobile.",
+    "editAccount": "Vedi la scelta dell’account"
   }
 }

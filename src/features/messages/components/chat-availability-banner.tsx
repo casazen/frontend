@@ -1,40 +1,46 @@
 import { useTranslation } from 'react-i18next';
-import { Alert } from '@/components/ui/alert';
+import { Alert, type AlertVariant } from '@/components/ui/alert';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useMessageChannelStatus } from '@/queries/use-message-hub';
-import type { MessageChannelStatus, MessageChannelStatusItem } from '@/types';
+import type { MessageChannelStatusCode, MessageChannelStatusItem } from '@/types';
 
-/**
- * The listings whose chat is not active yet: the ones the server reports as `waiting_permission` (the chat is not in the license of the listing). Any other
- * state says nothing here, and an answer that is not the shape of the API (a page served instead of it) counts for none: the banner is a hint and never an error.
- */
-function listingsWaitingForTheChat(status: MessageChannelStatus | undefined): MessageChannelStatusItem[] {
-  const items = status?.items;
-  return Array.isArray(items) ? items.filter((item) => item.status === 'waiting_permission') : [];
+interface ListingStatusNotice {
+  status: MessageChannelStatusCode;
+  variant: AlertVariant;
+  title: string;
+  explanation: string;
 }
 
-/**
- * «Per N annunci la chat dei portali non è ancora attiva» (E23/F01/US02, NF-61, NF-62): what the inbox says, in one block and one line of explanation, when the
- * chat of some listings is not in the license of the channel manager yet, so that their conversations are not read and cannot be answered here, instead of an
- * empty list. The listings are in a disclosure under it. Nothing is drawn while all the chats work, while there is no connection to the channels (the flag
- * `octorateConnector` is off: nothing is asked) and while the state cannot be read. It follows the state the server stored, so it goes away by itself once the
- * chat is active.
- */
+const NOTICES: readonly ListingStatusNotice[] = [
+  { status: 'waiting_permission', variant: 'warning', title: 'messages.channelStatus.title', explanation: 'messages.channelStatus.explanation' },
+  { status: 'error', variant: 'warning', title: 'messages.channelStatus.errorTitle', explanation: 'messages.channelStatus.errorExplanation' },
+  { status: 'pending_sync', variant: 'info', title: 'messages.channelStatus.pendingTitle', explanation: 'messages.channelStatus.pendingExplanation' },
+];
+
+/** Shows the properties whose portal chat may be missing messages from the inbox. */
 export function ChatAvailabilityBanner() {
-  const { t } = useTranslation();
   const { flags } = useFeatureFlags();
   const status = useMessageChannelStatus(flags.octorateConnector);
-  // A failed read leaves the last answer in the query: it is not the state of the chats now, so the banner says nothing until a read works again.
-  const waiting = status.isError ? [] : listingsWaitingForTheChat(status.data);
-  if (waiting.length === 0) return null;
+  const items = status.data?.items;
+  if (!flags.octorateConnector || status.isError || !Array.isArray(items)) return null;
+
+  return NOTICES.map((notice) => {
+    const listings = items.filter((item) => item.status === notice.status);
+    return listings.length ? <AvailabilityNotice key={notice.status} notice={notice} listings={listings} /> : null;
+  });
+}
+
+function AvailabilityNotice({ notice, listings }: { notice: ListingStatusNotice; listings: MessageChannelStatusItem[] }) {
+  const { t } = useTranslation();
+  const permission = notice.status === 'waiting_permission';
 
   return (
-    <Alert variant="warning" title={t('messages.channelStatus.title', { count: waiting.length })} data-testid="chat-availability-banner">
-      <p>{t('messages.channelStatus.explanation')}</p>
-      <details className="mt-2" data-testid="chat-availability-listings">
+    <Alert variant={notice.variant} title={t(notice.title, { count: listings.length })} data-testid={permission ? 'chat-availability-banner' : `chat-${notice.status}`}>
+      <p>{t(notice.explanation)}</p>
+      <details className="mt-1" data-testid={permission ? 'chat-availability-listings' : undefined}>
         <summary className="min-h-11 cursor-pointer py-2 font-medium md:min-h-0 md:py-0">{t('messages.channelStatus.which')}</summary>
         <ul className="mt-1 list-disc space-y-0.5 pl-5">
-          {waiting.map((listing, index) => (
+          {listings.map((listing, index) => (
             // Two listings can lead to one property: the position keeps their keys apart.
             <li key={`${listing.propertyId}:${index}`} data-testid="chat-availability-listing">
               {listing.propertyName}

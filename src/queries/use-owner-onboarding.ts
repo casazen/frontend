@@ -74,10 +74,10 @@ function refreshOwnerData(queryClient: QueryClient): void {
  * screen shows «not found», never what an older answer held. It has no timer of its own (each read works out the whole portfolio on the server): it is read when the page
  * opens, on return to the tab, after a write, and again when the list of the invitations answers differently (an owner accepted: `useOwnerInvitations`).
  */
-export function useOwnerReadiness(enabled: boolean) {
+export function useOwnerReadiness(enabled: boolean, propertyId?: string) {
   return useQuery({
-    queryKey: ownerOnboardingKeys.readiness,
-    queryFn: () => ownerOnboardingApi.getReadiness(),
+    queryKey: propertyId ? [...ownerOnboardingKeys.readiness, propertyId] : ownerOnboardingKeys.readiness,
+    queryFn: () => ownerOnboardingApi.getReadiness(propertyId),
     enabled,
     gcTime: 0,
     refetchOnMount: 'always',

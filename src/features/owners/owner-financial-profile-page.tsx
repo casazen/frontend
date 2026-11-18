@@ -39,6 +39,14 @@ import { OwnerTaxChecksSection } from './components/owner-tax-checks-section';
 import { ApprovePolicyDialog, PolicyDialog } from './components/policy-dialog';
 import { ProfileDialog } from './components/profile-dialog';
 
+const FACT_GROUPS = [
+  { title: 'identity', fields: ['entityKind', 'legalName'] },
+  { title: 'tax', fields: ['taxResidenceCountry', 'legalAddress', 'fiscalCode', 'vatNumber', 'foreignTaxId'] },
+  { title: 'payment', fields: ['settlementCurrency', 'bankAccountReference'] },
+  { title: 'mandate', fields: ['mandateRole', 'mandateFrom', 'mandateTo'] },
+  { title: 'model', fields: ['revenueRecognitionRule', 'expenseCommissionModel', 'workingCapitalRule', 'taxJurisdiction'] },
+];
+
 const NEW_POLICY_TEST_ID = 'policy-new';
 
 /** The fields of a profile that identify a person or reach their money: shown masked until a person who may asks for them. */
@@ -95,7 +103,7 @@ export function OwnerFinancialProfilePage() {
       </div>
     );
   }
-  return <ProfileBody ownerId={ownerId ?? ''} />;
+  return <ProfileBody key={ownerId} ownerId={ownerId ?? ''} />;
 }
 
 function ProfileBody({ ownerId }: { ownerId: string }) {
@@ -350,16 +358,23 @@ function ProfileFacts({ profile, policy }: { profile: OwnerFiscalProfile; policy
         {profile.validTo ? t('ownerProfile.facts.validBetween', { from: date(profile.validFrom), to: date(profile.validTo) }) : t('ownerProfile.facts.validFrom', { from: date(profile.validFrom) })}
         {policy ? ` · ${t('ownerProfile.facts.rule', { rule: policy.ruleCode, version: policy.version })}` : ''}
       </p>
-      <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2" data-masked={profile.masked}>
-        {rows.map(([field, value]) => (
-          <div key={field} className="min-w-0">
-            <dt className="text-sm text-foreground/70">{t(`ownerProfile.fields.${field}`)}</dt>
-            <dd className="break-words" data-testid={`profile-value-${field}`}>
-              {value === null || value === '' ? <span className="text-foreground/60">{t('ownerProfile.facts.empty')}</span> : value}
-            </dd>
-          </div>
+      <div className="space-y-6">
+        {FACT_GROUPS.map((group) => (
+          <section key={group.title} className="space-y-3 border-t border-border pt-5" aria-label={t(`ownerProfile.wizard.steps.${group.title}`)}>
+            <h3 className="font-semibold">{t(`ownerProfile.wizard.steps.${group.title}`)}</h3>
+            <dl className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2" data-masked={profile.masked}>
+              {rows.filter(([field]) => group.fields.includes(field)).map(([field, value]) => (
+                <div key={field} className="min-w-0">
+                  <dt className="text-sm text-foreground/60">{t(`ownerProfile.fields.${field}`)}</dt>
+                  <dd className="mt-1 break-words text-sm font-medium" data-testid={`profile-value-${field}`}>
+                    {value === null || value === '' ? <span className="font-normal text-foreground/60">{t('ownerProfile.facts.empty')}</span> : value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </section>
         ))}
-      </dl>
+      </div>
       {!profile.masked ? (
         <Button type="button" variant="outline" size="sm" aria-pressed={reveal} onClick={() => setReveal((current) => !current)} data-testid="profile-reveal">
           {reveal ? t('ownerProfile.facts.hide') : t('ownerProfile.facts.reveal')}

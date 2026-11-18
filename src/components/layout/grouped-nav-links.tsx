@@ -231,7 +231,7 @@ export function FooterNavLinks({ entries, matchEntries, collapsed = false, count
 }
 
 /**
- * The menu of an area (UI-04a): labelled groups of at most nine primary entries and, only for a page whose section the user cannot
+ * The menu of an area (UI-04a): labelled groups of primary entries and, only for a page whose section the user cannot
  * open, "Altro". The sidebar draws it with the counters and, collapsed, only the icons with their names as tooltips (UI-04b); its
  * foot (the settings) is `FooterNavLinks`. The sheet of the phone (`variant="sheet"`) lists what the bottom bar does not, as tiles,
  * and shows "Altro" and the foot of the sidebar as two more groups.

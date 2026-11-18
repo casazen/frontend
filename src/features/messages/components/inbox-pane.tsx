@@ -44,21 +44,25 @@ export function InboxPane({ selectedKey, compact = false, noConversation, canWri
   );
 
   return (
-    <div className="min-w-0 space-y-4" data-testid="messages-inbox">
-      <InboxFilters state={state} onChange={update} properties={propertyOptions} compact={compact} />
-      <ThreadList
-        page={threads.data}
-        loading={threads.isPending}
-        error={threads.error}
-        onRetry={() => void threads.refetch()}
-        state={state}
-        search={search}
-        selectedKey={selectedKey}
-        compact={compact}
-        onChange={update}
-        noConversation={noConversation ? noConversation(state) : undefined}
-        canWrite={canWrite}
-      />
+    <div className="min-w-0" data-testid="messages-inbox">
+      <div className="border-b p-3 sm:p-4">
+        <InboxFilters state={state} onChange={update} properties={propertyOptions} />
+      </div>
+      <div className="p-2 lg:max-h-[min(38rem,70dvh)] lg:overflow-y-auto lg:overscroll-contain">
+        <ThreadList
+          page={threads.data}
+          loading={threads.isPending}
+          error={threads.error}
+          onRetry={() => void threads.refetch()}
+          state={state}
+          search={search}
+          selectedKey={selectedKey}
+          compact={compact}
+          onChange={update}
+          noConversation={noConversation ? noConversation(state) : undefined}
+          canWrite={canWrite}
+        />
+      </div>
     </div>
   );
 }

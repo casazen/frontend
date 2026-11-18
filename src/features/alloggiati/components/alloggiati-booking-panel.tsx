@@ -95,7 +95,7 @@ export function AlloggiatiBookingPanel({ bookingId, checkInDate }: AlloggiatiBoo
                   {t('alloggiati.manualNotice')}
                 </Alert>
               )}
-              {status.status === 'DaInviare' && (
+              {status.status === 'DaInviare' && !receiptArchived && (
                 <p className="text-sm text-muted-foreground">{t('alloggiati.waitingArrivalNotice')}</p>
               )}
               {status.status === 'InviatoManualmente' && !receiptArchived && (

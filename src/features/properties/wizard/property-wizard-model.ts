@@ -39,7 +39,9 @@ import {
 import { MAX_STAY_DISCOUNTS, stayDiscountDraftsFromServer, stayDiscountProblem, type StayDiscountDraft } from './stay-discounts-model';
 
 /** The steps of «Aggiungi immobile», in order. The address carries the id (`?step=photos`), so a step can be linked to. */
-export const WIZARD_STEP_IDS = ['base', 'photos', 'amenities', 'descriptions', 'rules', 'prices', 'channels', 'finish'] as const;
+export const WIZARD_STEP_IDS = [
+  'base', 'owner', 'photos', 'amenities', 'descriptions', 'rules', 'prices', 'channels', 'compliance', 'billing', 'finish',
+] as const;
 export type WizardStepId = (typeof WIZARD_STEP_IDS)[number];
 
 /** Name of the query parameter that carries the property once it exists on the server (the end of the first step). */
@@ -191,6 +193,8 @@ export const photosStepSchema: StepSchema = z.object({
   ),
 });
 
+const listingExtraShape = { spaces: z.string().max(1000).optional(), access: z.string().max(1000).optional(), neighborhood: z.string().max(1000).optional(), transport: z.string().max(1000).optional(), rules: z.string().max(1000).optional() };
+
 const listingTitleOf = (message: string) => z.string().trim().min(1, message).max(LISTING_TITLE_MAX, 'propertyWizard.validation.listingTitle');
 const listingTextOf = (message: string) => z.string().trim().min(1, message).max(LISTING_DESCRIPTION_MAX, 'propertyWizard.validation.description');
 
@@ -204,12 +208,14 @@ export const descriptionsStepSchema: StepSchema = z.object({
   texts: z
     .object({
       en: z.object({
+        ...listingExtraShape,
         title: listingTitleOf('propertyWizard.validation.descriptions.enTitle'),
         description: listingTextOf('propertyWizard.validation.descriptions.enDescription'),
       }),
     })
     .catchall(
       z.object({
+        ...listingExtraShape,
         title: z.string().trim().max(LISTING_TITLE_MAX, 'propertyWizard.validation.listingTitle'),
         description: z.string().trim().max(LISTING_DESCRIPTION_MAX, 'propertyWizard.validation.description'),
       }),
@@ -228,6 +234,7 @@ export const descriptionsLengthsSchema: StepSchema = z.object({
   texts: z.record(
     z.string(),
     z.object({
+      ...listingExtraShape,
       title: z.string().trim().max(LISTING_TITLE_MAX, 'propertyWizard.validation.listingTitle'),
       description: z.string().trim().max(LISTING_DESCRIPTION_MAX, 'propertyWizard.validation.description'),
     }),
@@ -485,7 +492,7 @@ export function baseUpdatePayload(values: PropertyWizardValues): UpdatePropertyD
  */
 export function descriptionsUpdatePayload(values: PropertyWizardValues): UpdatePropertyDto {
   const listingTitle = values.listingTitle.trim();
-  return { listingTitle: listingTitle === '' ? null : listingTitle, description: values.description.trim() };
+  return { listingTitle: listingTitle === '' ? null : listingTitle, description: values.description.trim(), ...(values.texts.it?.rules !== undefined ? { houseRules: values.houseRules.trim() } : {}) };
 }
 
 /**

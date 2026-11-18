@@ -140,9 +140,11 @@ describe('AlloggiatiBookingPanel: a stay entrusted to the channel manager', () =
     expect(screen.queryByTestId('booking-alloggiati-deadline')).not.toBeInTheDocument();
   });
 
-  it.each(['DaInviareManualmente', 'InviatoManualmente'] as const)('manual receipt covers %s without another send action', async (status) => {
+  it.each(['DaInviare', 'DaInviareManualmente', 'InviatoManualmente'] as const)('manual receipt covers %s without another send action', async (status) => {
     renderPanel(statusOf(status, block({ sender: 'Manual', state: 'NotApplicable', guests: [], light: 'Green', reason: 'receipt_archived', receiptCoverage: { archived: true, source: 'manual_upload', archivedAt: '2026-11-14T12:00:00Z' } }), { isOverdue: true }));
     expect(await badge()).toHaveTextContent('Ricevuta archiviata');
+    expect(screen.queryByText(i18n.t('alloggiati.waitingArrivalNotice'))).not.toBeInTheDocument();
+    expect(screen.queryByText(i18n.t('alloggiati.declaredNotice'))).not.toBeInTheDocument();
     expect(screen.queryByTestId('alloggiati-resend-button')).not.toBeInTheDocument();
     expect(screen.queryByTestId('alloggiati-manual-notice')).not.toBeInTheDocument();
     expect(screen.queryByTestId('booking-alloggiati-deadline')).not.toBeInTheDocument();

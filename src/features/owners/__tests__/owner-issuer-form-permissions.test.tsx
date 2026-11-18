@@ -138,6 +138,7 @@ describe('the issuer profile of an owner follows the permissions of the server (
     write.mockResolvedValue(profile({ canIssue: false, regime: 'VatOrdinary', legalName: 'Casa Mia Srl', vatNumber: '01234567890', missingFields: ['fiscalCode'] }));
     renderInto(createElement(OwnerIssuerProfileSection, { ownerId: OWNER_ID }));
 
+    fireEvent.click(await screen.findByTestId('owner-issuer-edit'));
     const form = await screen.findByTestId('owner-issuer-form');
     fireEvent.click(within(form).getByTestId('owner-issuer-regime-VatOrdinary'));
     fireEvent.change(within(form).getByTestId('owner-issuer-legal-name'), { target: { value: ' Casa Mia Srl ' } });
@@ -158,6 +159,7 @@ describe('the issuer profile of an owner follows the permissions of the server (
     read.mockResolvedValue(NO_PROFILE());
     const { client } = renderInto(createElement(OwnerIssuerProfileSection, { ownerId: OWNER_ID }));
 
+    fireEvent.click(await screen.findByTestId('owner-issuer-edit'));
     const form = await screen.findByTestId('owner-issuer-form');
     fireEvent.change(within(form).getByTestId('owner-issuer-legal-name'), { target: { value: 'Casa Mia Srl' } });
     fireEvent.change(within(form).getByTestId('owner-issuer-city'), { target: { value: 'Como' } });
@@ -176,6 +178,7 @@ describe('the issuer profile of an owner follows the permissions of the server (
   it('OwnerIssuerProfile_WhenAnotherPersonChangesIt_KeepsWhatWasTypedAndFollowsTheServerForTheRest', async () => {
     read.mockResolvedValue(NO_PROFILE());
     const { client } = renderInto(createElement(OwnerIssuerProfileSection, { ownerId: OWNER_ID }));
+    fireEvent.click(await screen.findByTestId('owner-issuer-edit'));
     const form = await screen.findByTestId('owner-issuer-form');
 
     // Nothing typed yet: the form is what the server holds.
@@ -199,6 +202,7 @@ describe('the issuer profile of an owner follows the permissions of the server (
     write.mockResolvedValue(profile({ canIssue: false, regime: 'VatOrdinary', legalName: 'Casa Mia Srl', vatNumber: '01234567890', city: null, missingFields: ['fiscalCode'] }));
     renderInto(createElement(OwnerIssuerProfileSection, { ownerId: OWNER_ID }));
 
+    fireEvent.click(await screen.findByTestId('owner-issuer-edit'));
     const form = await screen.findByTestId('owner-issuer-form');
     fireEvent.click(within(form).getByTestId('owner-issuer-regime-VatOrdinary'));
     fireEvent.change(within(form).getByTestId('owner-issuer-legal-name'), { target: { value: '  Casa Mia Srl  ' } });
@@ -208,7 +212,10 @@ describe('the issuer profile of an owner follows the permissions of the server (
     fireEvent.click(save);
 
     await waitFor(() => expect(write).toHaveBeenCalledTimes(1));
-    await waitFor(() => expect(screen.getByTestId('owner-issuer-legal-name')).toHaveValue('Casa Mia Srl'));
+    await waitFor(() => expect(screen.queryByTestId('owner-issuer-form')).toBeNull());
+    expect(screen.getByTestId('owner-issuer-fact-legalName')).toHaveTextContent('Casa Mia Srl');
+    fireEvent.click(screen.getByTestId('owner-issuer-edit'));
+    await screen.findByTestId('owner-issuer-form');
     // What was saved is what the form holds now: nothing left to save.
     await waitFor(() => expect(screen.getByTestId('owner-issuer-save')).toBeDisabled());
   });

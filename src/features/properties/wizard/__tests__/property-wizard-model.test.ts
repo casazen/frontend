@@ -138,8 +138,10 @@ describe('what the rules and prices steps save', () => {
 const PROPERTY = { name: 'Casa', address: 'Via Roma 1', city: 'Como', postalCode: '', maxGuests: 2, bedrooms: 1, bathrooms: 1, amenities: [] } as unknown as Property;
 
 describe('the steps of the wizard (NF-31, NF-37)', () => {
-  it('stepIds_DescriptionsAfterTheAmenities_ChannelsBeforeTheLastStep', () => {
-    expect(WIZARD_STEP_IDS).toEqual(['base', 'photos', 'amenities', 'descriptions', 'rules', 'prices', 'channels', 'finish']);
+  it('lists the owner step after basic details and setup checks before activation', () => {
+    expect(WIZARD_STEP_IDS).toEqual([
+      'base', 'owner', 'photos', 'amenities', 'descriptions', 'rules', 'prices', 'channels', 'compliance', 'billing', 'finish',
+    ]);
   });
 
   it('descriptionsStepSchema_ItalianAndEnglishTitleAndDescription_AreAllRequiredAndEachIsNamed', () => {

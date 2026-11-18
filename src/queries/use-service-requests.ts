@@ -355,30 +355,28 @@ export function useSuppliersByProperty(propertyId?: string, category?: string, o
  */
 export function useMarketplaceSuppliers(params: {
   propertyId?: string;
+  accountScope?: boolean;
   category?: string;
   q?: string;
   sort?: SupplierPickerSort;
 }) {
-  const { propertyId, category, q, sort } = params;
+  const { propertyId, accountScope, category, q, sort } = params;
+  const scopeKey = accountScope ? 'account' : propertyId;
   return useQuery({
-    queryKey: ['suppliers', 'marketplace', propertyId, category ?? '', q ?? '', sort ?? 'name'],
-    queryFn: () => fetchMarketplaceSuppliers({ propertyId: propertyId!, category, q, sort }),
-    enabled: !!propertyId,
+    queryKey: ['suppliers', 'marketplace', scopeKey, category ?? '', q ?? '', sort ?? 'recommended'],
+    queryFn: () => fetchMarketplaceSuppliers({ ...(accountScope ? { accountScope } : { propertyId }), category, q, sort }),
+    enabled: accountScope === true || !!propertyId,
     refetchOnMount: true,
     placeholderData: (previous, previousQuery) =>
-      previousQuery?.queryKey[2] === propertyId && previousQuery?.queryKey[3] === (category ?? '') ? previous : undefined,
+      previousQuery?.queryKey[2] === scopeKey && previousQuery?.queryKey[3] === (category ?? '') ? previous : undefined,
   });
 }
 
-/**
- * One supplier of the area of a property, for its page in the marketplace (MKT): every published service, the "from" price, the
- * measured response time and «Verificato». Read again when the page is opened (a supplier changes its services and prices).
- */
-export function useMarketplaceSupplier(propertyId: string | undefined, orgId: string) {
+export function useMarketplaceSupplier(orgId: string) {
   return useQuery({
-    queryKey: ['suppliers', 'marketplace-supplier', propertyId, orgId],
-    queryFn: () => fetchMarketplaceSupplier({ orgId, propertyId: propertyId! }),
-    enabled: !!propertyId && orgId !== '',
+    queryKey: ['suppliers', 'marketplace-supplier', 'account', orgId],
+    queryFn: () => fetchMarketplaceSupplier(orgId),
+    enabled: orgId !== '',
     refetchOnMount: true,
   });
 }

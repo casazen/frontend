@@ -491,11 +491,10 @@ test.describe('Aligned cards', () => {
     });
   });
 
-  test.describe('Marketplace: the suppliers of a property', () => {
+  test.describe('Marketplace: the account supplier catalog', () => {
     const PROPERTY_ID = 'prop-marketplace-aligned';
 
     async function mockMarketplace(page: Page): Promise<void> {
-      // The suppliers are searched by the comune chosen from the official list (SR-09a): a property without one is asked to add it.
       await mockPropertiesApi(page, [
         buildCreatedProperty({ id: PROPERTY_ID, name: 'Casa Marketplace', city: 'H501', comuneIstatCode: '058091' }),
       ]);
@@ -519,7 +518,7 @@ test.describe('Aligned cards', () => {
           photoUrls: [],
         });
         const items =
-          url.searchParams.get('propertyId') === PROPERTY_ID
+          url.searchParams.get('accountScope') === 'true'
             ? [
                 supplier(1, 'Servizi Integrati di Pulizia e Manutenzione per Strutture Ricettive del Lago di Como S.r.l.', ['cleaning', 'maintenance', 'plumbing', 'laundry'], 'Pulizie professionali, manutenzione ordinaria e straordinaria.'),
                 supplier(2, 'Pulizie Express Srl', ['cleaning']),
@@ -532,7 +531,7 @@ test.describe('Aligned cards', () => {
     test('the badges of two suppliers of a row start at the same height whatever the length of their names', async ({ page }) => {
       await mockMarketplace(page);
       await page.setViewportSize({ width: 1280, height: 900 });
-      await page.goto(demoUrl(`/app/short-rent/marketplace/categories/cleaning?propertyId=${PROPERTY_ID}`, 'short-stay'));
+      await page.goto(demoUrl('/app/short-rent/marketplace/categories/cleaning', 'short-stay'));
 
       const cards = page.getByTestId('marketplace-supplier-grid').locator('> div');
       await expect(cards).toHaveCount(2);

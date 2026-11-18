@@ -3,6 +3,7 @@ import type { MarketplaceCardStatus, MarketplaceCatalogGroup, MarketplaceCatalog
 import {
   MARKETPLACE_ENTRY_PARAM,
   MARKETPLACE_MINE_PATH,
+  MARKETPLACE_PROPERTY_PARAM,
   marketplaceActivationPath,
   marketplaceFunctionRequestPath,
   marketplaceHref,
@@ -49,6 +50,9 @@ export function marketplaceWizardPath(kind: string, code: string): string {
  */
 export function marketplaceReturnTarget(location: { pathname: string; search: string; hash: string }): string {
   const params = new URLSearchParams(location.search);
+  if (location.pathname === MARKETPLACE_MINE_PATH && params.has(MARKETPLACE_ENTRY_PARAM)) {
+    params.delete(MARKETPLACE_PROPERTY_PARAM);
+  }
   params.delete(MARKETPLACE_ENTRY_PARAM);
   const search = params.toString();
   return currentReturnTo({ pathname: location.pathname, search: search ? `?${search}` : '', hash: location.hash });

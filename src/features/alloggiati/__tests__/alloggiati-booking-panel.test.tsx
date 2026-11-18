@@ -12,7 +12,7 @@ vi.mock('@/queries/use-alloggiati', () => ({
   useMarkAlloggiatiSentManually: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ hasPermission: () => true }) }));
-vi.mock('../components/alloggiati-guest-summary', () => ({ AlloggiatiGuestSummary: () => null }));
+vi.mock('../components/alloggiati-guest-summary', () => ({ AlloggiatiGuestSummary: () => createElement('div', { 'data-testid': 'test-guest-summary' }) }));
 
 function statusOf(status: AlloggiatiWebStatus): AlloggiatiStatusDto {
   return {
@@ -54,6 +54,7 @@ describe('AlloggiatiBookingPanel: a stay that owes no communication', () => {
     expect(screen.queryByTestId('booking-alloggiati-deadline')).not.toBeInTheDocument();
     expect(screen.queryByTestId('alloggiati-resend-button')).not.toBeInTheDocument();
     expect(screen.queryByText('Dati ospite incompleti')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('test-guest-summary')).not.toBeInTheDocument();
   });
 
   it('panel_ToSendManually_StillShowsTheDeadlineAndTheWayToDeclareTheSending', () => {
@@ -63,5 +64,6 @@ describe('AlloggiatiBookingPanel: a stay that owes no communication', () => {
     expect(screen.getByTestId('booking-alloggiati-deadline')).toBeInTheDocument();
     expect(screen.getByTestId('alloggiati-resend-button')).toBeInTheDocument();
     expect(screen.queryByTestId('booking-alloggiati-not-due')).not.toBeInTheDocument();
+    expect(screen.getByTestId('test-guest-summary')).toBeInTheDocument();
   });
 });

@@ -82,10 +82,11 @@ describe('the texts as fields of the wizard', () => {
   it('textDraftsFromProfile_FillsEveryLanguageAndLeavesTheMissingOnesEmpty', () => {
     const drafts = textDraftsFromProfile(PROFILE);
 
-    expect(Object.keys(drafts)).toEqual([...TRANSLATED_LANGUAGES]);
-    expect(drafts.en).toEqual({ title: 'Trullo with pool', description: 'A quiet trullo.' });
+    expect(Object.keys(drafts)).toEqual([...TRANSLATED_LANGUAGES, 'it']);
+    expect(drafts.en).toEqual({ title: 'Trullo with pool', description: 'A quiet trullo.', spaces: 'Garden and terrace' });
     expect(drafts.fr).toEqual({ title: 'Trullo avec piscine', description: '' });
     expect(drafts.de).toEqual({ title: '', description: '' });
+    expect(drafts.it).toMatchObject({ access: 'In autonomia', neighborhood: 'Campagna di Ostuni', transport: 'Fermata a 200 m' });
     expect(textDraftsFromProfile(null)).toEqual(emptyTextDrafts());
   });
 
@@ -153,5 +154,24 @@ describe('what the save of the translated texts sends (data rule)', () => {
     const drafts = { ...textDraftsFromProfile(PROFILE), it: { title: 'Trullo con piscina', description: 'Un trullo tranquillo.' } };
 
     expect(buildSiteProfileRequest(PROFILE, drafts).translations.it).toEqual({ transport: 'Fermata a 200 m' });
+  });
+});
+
+
+describe('complete listing fields', () => {
+  it('persists generated extra fields and Italian profile sections without clearing unrelated data', () => {
+    const drafts = textDraftsFromProfile(PROFILE);
+    const before = structuredClone(drafts);
+    drafts.fr = { ...drafts.fr, spaces: 'Une chambre', access: 'Arrivée à 15h', neighborhood: 'Ostuni', transport: '', rules: 'Non fumeur' };
+    drafts.it = { title: '', description: '', spaces: 'Una camera', access: 'Arrivo dalle 15', neighborhood: 'Ostuni', transport: 'Arrivo in auto' };
+    expect(textDraftsChanged(before, drafts)).toBe(true);
+    const payload = buildSiteProfileRequest(PROFILE, drafts);
+    expect(payload.translations.fr).toMatchObject({ spaces: 'Une chambre', access: 'Arrivée à 15h', rules: 'Non fumeur' });
+    expect(payload.floorNote?.it).toBe('Una camera');
+    expect(payload.checkInMethod).toMatchObject({ it: 'Arrivo dalle 15', en: 'Self check-in' });
+    expect(payload.zone?.it).toBe('Ostuni');
+    expect(payload.translations.it.transport).toBe('Arrivo in auto');
+    expect(payload.highlights).toEqual(PROFILE.highlights);
+    expect(payload.safetyNotes).toEqual(PROFILE.safetyNotes);
   });
 });

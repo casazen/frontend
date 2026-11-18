@@ -1,3 +1,6 @@
+import { useEffect } from 'react';
+import { Alert } from '@/components/ui/alert';
+import { getProblemMessage } from '@/lib/api-errors';
 import {
   Dialog,
   DialogContent,
@@ -20,7 +23,9 @@ interface DeleteUserDialogProps {
 
 export function DeleteUserDialog({ user, open, onOpenChange }: DeleteUserDialogProps) {
   const { t } = useTranslation();
-  const { mutate: removeUser, isPending } = useDeleteUser();
+  const { mutate: removeUser, isPending, error, reset } = useDeleteUser();
+  useEffect(() => { reset(); }, [user?.id, open, reset]);
+  const changeOpen = (next: boolean) => { if (!isPending) onOpenChange(next); };
 
   function handleConfirm() {
     if (!user) return;
@@ -31,7 +36,7 @@ export function DeleteUserDialog({ user, open, onOpenChange }: DeleteUserDialogP
   const email = user?.email?.trim() ?? '';
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={changeOpen}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t('admin.users.deleteDialog.title')}</DialogTitle>
@@ -41,6 +46,12 @@ export function DeleteUserDialog({ user, open, onOpenChange }: DeleteUserDialogP
             })}
           </DialogDescription>
         </DialogHeader>
+        {error ? (
+          <Alert variant="danger" title={t('userRemoval.failureTitle')}>
+            <p>{getProblemMessage(error, t) ?? t('toast.userRemoveFailed')}</p>
+            {user?.isActive ? <p className="mt-2">{t('userRemoval.alternative')}</p> : null}
+          </Alert>
+        ) : null}
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
             {t('admin.users.deleteDialog.cancel')}

@@ -41,7 +41,7 @@ export const ownerFinancialPath = (ownerId: string, period?: Period) => `/app/ac
 export const startOfPeriod = (period: Period): string => `${periodParam(period)}-01`;
 
 /** Where the facts of an owner that are missing (the registry, the shares, the mandate) are completed: «Inizia con CasaZen», short rent. */
-export const OWNER_ONBOARDING_PATH = '/app/short-rent/onboarding';
+export const OWNER_ONBOARDING_PATH = '/app/short-rent/onboarding/owners';
 
 /** What each portal keeps when its reservation carries no commission (E13/F02/US03/T01): a tab of the month-end close, where the stays held back for a missing commission are found. */
 export const CHANNEL_COMMISSIONS_PATH = '/app/account/channel-commissions';

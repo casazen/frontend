@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
@@ -69,6 +70,8 @@ const initial = (from: OwnerFiscalProfile | null, suggestedFrom: string): FormSt
   accountingPolicyId: from?.accountingPolicyId ?? '',
 });
 
+const REVIEW_FIELDS = ['legalName', 'entityKind', 'taxResidenceCountry', 'fiscalCode', 'vatNumber', 'foreignTaxId', 'legalAddress', 'settlementCurrency', 'bankAccountReference', 'mandateRole', 'mandateFrom', 'mandateTo', 'revenueRecognitionRule', 'expenseCommissionModel', 'workingCapitalRule', 'taxJurisdiction'] as const;
+
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 const JURISDICTION = /^[A-Za-z]{2}(-[A-Za-z0-9]{1,5})?$/;
 
@@ -105,6 +108,9 @@ export function ProfileDialog({ open, onOpenChange, ownerId, from, policies, sug
   const { date } = useOwnerFormat();
   const save = useSaveFiscalProfile(ownerId);
   const [form, setForm] = useState<FormState>(() => initial(from, suggestedFrom));
+  const [step, setStep] = useState(0);
+  const heading = useRef<HTMLHeadingElement>(null);
+  useEffect(() => { heading.current?.focus(); }, [step]);
   const [error, setError] = useState<string | null>(null);
   const set = (patch: Partial<FormState>) => setForm((current) => ({ ...current, ...patch }));
 
@@ -116,7 +122,25 @@ export function ProfileDialog({ open, onOpenChange, ownerId, from, policies, sug
   const startsAfterTheLast = latestStart === null || !DAY.test(form.validFrom) || form.validFrom > latestStart;
   const valid = DAY.test(form.validFrom) && startsAfterTheLast && countryOk && currencyOk && jurisdictionOk && mandateOk;
 
+  const steps = ['identity', 'tax', 'payment', 'mandate', 'model', 'rule', 'review'] as const;
+  const stepValid = [DAY.test(form.validFrom) && startsAfterTheLast, countryOk, currencyOk, mandateOk, true, jurisdictionOk, valid][step];
+
+  const reviewValue = (field: keyof FormState): string => {
+    const value = form[field];
+    if (!value) return t('ownerProfile.facts.empty');
+    if (field === 'entityKind') return t(`ownerProfile.options.entityKind.${value}`);
+    if (field === 'mandateFrom' || field === 'mandateTo') return date(value);
+    if (field in PROFILE_OPTIONS && (PROFILE_OPTIONS[field as ProfileOptionField] as readonly string[]).includes(value)) return t(`ownerProfile.options.${field}.${value}`);
+    return value;
+  };
+  const selectedPolicy = policies.find((policy) => policy.id === form.accountingPolicyId);
+
   const onSubmit = async () => {
+    if (!stepValid) return;
+    if (step < steps.length - 1) {
+      setStep((current) => current + 1);
+      return;
+    }
     if (!valid) return;
     setError(null);
     const command: OwnerFiscalProfileCommand = {
@@ -153,14 +177,23 @@ export function ProfileDialog({ open, onOpenChange, ownerId, from, policies, sug
       open={open}
       onOpenChange={onOpenChange}
       title={t('ownerProfile.dialog.title')}
-      description={t('ownerProfile.dialog.description')}
-      submitLabel={t('ownerProfile.dialog.submit')}
+      description={t('ownerProfile.wizard.description')}
+      submitLabel={t(step === steps.length - 1 ? 'ownerProfile.dialog.submit' : 'ownerProfile.wizard.next')}
       pending={save.isPending}
-      submitDisabled={!valid}
+      submitDisabled={!stepValid}
       error={error}
       onSubmit={onSubmit}
       testId="profile-dialog"
     >
+      <div className="space-y-3">
+        <p className="text-sm text-foreground/60" role="status">{t('ownerProfile.wizard.progress', { current: step + 1, total: steps.length })}</p>
+        <div className="flex gap-1" aria-hidden="true">
+          {steps.map((name, index) => <span key={name} className={`h-1 flex-1 rounded-full ${index <= step ? 'bg-primary' : 'bg-muted'}`} />)}
+        </div>
+        <h3 ref={heading} tabIndex={-1} className="text-xl font-semibold outline-none">{t(`ownerProfile.wizard.steps.${steps[step]}`)}</h3>
+        <p className="text-sm text-foreground/70">{t(`ownerProfile.wizard.hints.${steps[step]}`)}</p>
+      </div>
+      {step === 0 ? <>
       <Field
         label={t('ownerProfile.dialog.validFrom')}
         hint={from === null ? t('ownerProfile.dialog.validFromFirst') : t('ownerProfile.dialog.validFromHint')}
@@ -180,8 +213,11 @@ export function ProfileDialog({ open, onOpenChange, ownerId, from, policies, sug
         <Field label={t('ownerProfile.fields.legalName')}>
           <Input value={form.legalName} maxLength={200} autoComplete="off" onChange={(event) => set({ legalName: event.target.value })} data-testid="profile-legal-name" />
         </Field>
+      </fieldset>
+      </> : null}
+      {step === 1 ? <fieldset className="grid gap-4">
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={t('ownerProfile.fields.taxResidenceCountry')} hint={t('ownerProfile.dialog.countryHint')} error={countryOk ? undefined : 'ownerProfile.dialog.countryInvalid'}>
+          <Field label={t('ownerProfile.fields.taxResidenceCountry')} hint={t('ownerProfile.dialog.countryHint')} error={countryOk ? undefined : t('ownerProfile.dialog.countryInvalid')}>
             <Input value={form.taxResidenceCountry} maxLength={2} autoCapitalize="characters" autoComplete="off" onChange={(event) => set({ taxResidenceCountry: event.target.value })} data-testid="profile-country" />
           </Field>
           <Field label={t('ownerProfile.fields.fiscalCode')} optional>
@@ -197,47 +233,43 @@ export function ProfileDialog({ open, onOpenChange, ownerId, from, policies, sug
         <Field label={t('ownerProfile.fields.legalAddress')} optional>
           <Textarea value={form.legalAddress} maxLength={500} rows={2} onChange={(event) => set({ legalAddress: event.target.value })} data-testid="profile-address" />
         </Field>
-      </fieldset>
+      </fieldset> : null}
 
-      <fieldset className="grid gap-4 rounded-md border border-border p-3">
-        <legend className="px-1 text-sm font-medium">{t('ownerProfile.dialog.payment')}</legend>
+      {step === 2 ? <fieldset className="grid gap-4">
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={t('ownerProfile.fields.settlementCurrency')} hint={t('ownerProfile.dialog.currencyHint')} error={currencyOk ? undefined : 'ownerProfile.dialog.currencyInvalid'}>
+          <Field label={t('ownerProfile.fields.settlementCurrency')} hint={t('ownerProfile.dialog.currencyHint')} error={currencyOk ? undefined : t('ownerProfile.dialog.currencyInvalid')}>
             <Input value={form.settlementCurrency} maxLength={3} autoCapitalize="characters" autoComplete="off" onChange={(event) => set({ settlementCurrency: event.target.value })} data-testid="profile-currency" />
           </Field>
           <Field label={t('ownerProfile.fields.bankAccountReference')} optional>
             <Input value={form.bankAccountReference} maxLength={40} autoComplete="off" onChange={(event) => set({ bankAccountReference: event.target.value })} data-testid="profile-iban" />
           </Field>
         </div>
-      </fieldset>
+      </fieldset> : null}
 
-      <fieldset className="grid gap-4 rounded-md border border-border p-3">
-        <legend className="px-1 text-sm font-medium">{t('ownerProfile.dialog.mandate')}</legend>
+      {step === 3 ? <fieldset className="grid gap-4">
         <div className="grid gap-4 sm:grid-cols-3">
           <ChoiceField field="mandateRole" value={form.mandateRole} onChange={set} />
           <Field label={t('ownerProfile.fields.mandateFrom')} optional>
             <Input type="date" value={form.mandateFrom} onChange={(event) => set({ mandateFrom: event.target.value })} data-testid="profile-mandate-from" />
           </Field>
-          <Field label={t('ownerProfile.fields.mandateTo')} optional error={mandateOk ? undefined : 'ownerProfile.dialog.mandateInvalid'}>
+          <Field label={t('ownerProfile.fields.mandateTo')} optional error={mandateOk ? undefined : t('ownerProfile.dialog.mandateInvalid')}>
             <Input type="date" value={form.mandateTo} onChange={(event) => set({ mandateTo: event.target.value })} data-testid="profile-mandate-to" />
           </Field>
         </div>
-      </fieldset>
+      </fieldset> : null}
 
-      <fieldset className="grid gap-4 rounded-md border border-border p-3">
-        <legend className="px-1 text-sm font-medium">{t('ownerProfile.dialog.model')}</legend>
+      {step === 4 ? <fieldset className="grid gap-4">
         <div className="grid gap-4 sm:grid-cols-3">
           <ChoiceField field="revenueRecognitionRule" value={form.revenueRecognitionRule} onChange={set} />
           <ChoiceField field="expenseCommissionModel" value={form.expenseCommissionModel} onChange={set} />
           <ChoiceField field="workingCapitalRule" value={form.workingCapitalRule} onChange={set} />
         </div>
-      </fieldset>
+      </fieldset> : null}
 
-      <fieldset className="grid gap-4 rounded-md border border-border p-3">
-        <legend className="px-1 text-sm font-medium">{t('ownerProfile.dialog.rule')}</legend>
+      {step === 5 ? <fieldset className="grid gap-4">
         <p className="text-sm text-foreground/70">{t('ownerProfile.dialog.ruleHint')}</p>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={t('ownerProfile.fields.taxJurisdiction')} hint={t('ownerProfile.dialog.jurisdictionHint')} error={jurisdictionOk ? undefined : 'ownerProfile.dialog.jurisdictionInvalid'}>
+          <Field label={t('ownerProfile.fields.taxJurisdiction')} hint={t('ownerProfile.dialog.jurisdictionHint')} error={jurisdictionOk ? undefined : t('ownerProfile.dialog.jurisdictionInvalid')}>
             <Input value={form.taxJurisdiction} maxLength={8} autoCapitalize="characters" autoComplete="off" onChange={(event) => set({ taxJurisdiction: event.target.value })} data-testid="profile-jurisdiction" />
           </Field>
           <Field label={t('ownerProfile.fields.accountingPolicyId')}>
@@ -256,7 +288,25 @@ export function ProfileDialog({ open, onOpenChange, ownerId, from, policies, sug
             </Select>
           </Field>
         </div>
-      </fieldset>
+      </fieldset> : null}
+      {step === 6 ? (
+        <div className="space-y-5" data-testid="profile-review">
+          <dl className="grid gap-4 sm:grid-cols-2">
+            {REVIEW_FIELDS.map((field) => (
+              <div key={field} className="min-w-0 border-b border-border pb-3">
+                <dt className="text-sm text-foreground/60">{t(`ownerProfile.fields.${field}`)}</dt>
+                <dd className="break-words text-sm font-medium">{reviewValue(field)}</dd>
+              </div>
+            ))}
+          </dl>
+          <div className="space-y-1">
+            <p className="text-sm text-foreground/60">{t('ownerProfile.fields.accountingPolicyId')}</p>
+            <p className="text-sm font-medium">{selectedPolicy ? t('ownerProfile.dialog.policyOption', { rule: selectedPolicy.ruleCode, version: selectedPolicy.version, jurisdiction: selectedPolicy.jurisdiction, state: t(selectedPolicy.approved ? 'ownerProfile.policy.approvedShort' : 'ownerProfile.policy.pendingShort') }) : t('ownerProfile.dialog.noPolicy')}</p>
+          </div>
+          <p className="text-sm text-foreground/70">{t('ownerProfile.facts.validFrom', { from: date(form.validFrom) })}</p>
+        </div>
+      ) : null}
+      {step > 0 ? <Button type="button" variant="ghost" className="justify-self-start" disabled={save.isPending} onClick={() => setStep((current) => current - 1)} data-testid="profile-back">{t('ownerProfile.wizard.back')}</Button> : null}
     </FormDialog>
   );
 }

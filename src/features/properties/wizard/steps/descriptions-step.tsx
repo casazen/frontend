@@ -6,7 +6,7 @@ import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { tabLinkClass } from '@/components/ui/tab-styles';
 import { Textarea } from '@/components/ui/textarea';
-import { LISTING_DESCRIPTION_MAX, LISTING_TITLE_MAX, OPTIONAL_LANGUAGES, shownOrigin } from '@/lib/listing-texts';
+import { LISTING_DESCRIPTION_MAX, LISTING_TITLE_MAX, LISTING_EXTRA_FIELDS, OPTIONAL_LANGUAGES, shownOrigin } from '@/lib/listing-texts';
 import { usePropertyPhotos } from '@/queries/use-property-photos';
 import { useSiteProfile } from '@/queries/use-site-profile';
 import type { ListingLanguage, TextOrigin } from '@/types';
@@ -78,8 +78,23 @@ function LanguageFields({ form, language, profile, optional = false }: LanguageF
         </Field>
         <OriginNote origin={shownOrigin(profile, language, 'description', typed.description)} testId={`property-wizard-origin-${language}-description`} />
       </div>
+      <ExtraFields form={form} language={language} />
     </div>
   );
+}
+
+function ExtraFields({ form, language }: { form: UseFormReturn<PropertyWizardValues>; language: ListingLanguage }) {
+  const { t } = useTranslation();
+  const texts = form.watch('texts')[language];
+  return <details className="rounded-lg border border-border p-4">
+    <summary className="cursor-pointer text-sm font-medium">{t('listingAi.details')}</summary>
+    <div className="mt-4 space-y-4">{LISTING_EXTRA_FIELDS.map((field) => <Field key={field} label={t(`listingAi.fields.${field}`)} optional>
+      <Textarea rows={3} lang={language} value={texts?.[field] ?? ''} maxLength={language !== 'it' ? 1000 : field === 'spaces' || field === 'neighborhood' ? 120 : field === 'access' ? 200 : 1000} onChange={(event) => {
+        form.setValue(`texts.${language}.${field}`, event.target.value, { shouldDirty: true, shouldValidate: true });
+        if (language === 'it' && field === 'rules') form.setValue('houseRules', event.target.value, { shouldDirty: true });
+      }} />
+    </Field>)}</div>
+  </details>;
 }
 
 interface DescriptionsStepProps {
@@ -174,6 +189,7 @@ export function DescriptionsStep({ form, propertyId, required = true }: Descript
 
         <div id={panelId('it')} role="tabpanel" aria-labelledby={tabId('it')} hidden={selected !== 'it'} className="min-w-0 space-y-2">
           <ListingTextCard form={form} propertyId={propertyId} photos={photos} optional={!required} />
+          <ExtraFields form={form} language="it" />
           <OriginNote origin={typedItalian ? 'UserWritten' : null} testId="property-wizard-origin-it" />
         </div>
 

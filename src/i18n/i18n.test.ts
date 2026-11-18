@@ -1,8 +1,7 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import { z } from 'zod';
 import i18n from '@/i18n/config';
-import it_ from '@/i18n/locales/it.json';
-import en from '@/i18n/locales/en.json';
+import { APP_RESOURCES } from '@/i18n/resources';
 import guestDe from '@/i18n/locales/guest-checkin.de.json';
 import guestFr from '@/i18n/locales/guest-checkin.fr.json';
 import guestEs from '@/i18n/locales/guest-checkin.es.json';
@@ -24,6 +23,9 @@ import {
 import { LEASE_EVENT_TYPES, LEASE_STATUSES } from '@/types';
 import { COMBUSTION_APPLIANCES, SAFETY_DETECTOR_TYPES, SAFETY_ITEM_CODES } from '@/types/compliance.types';
 import { STATUS_DICTIONARY, type StatusDefinition } from '@/lib/status-dictionary';
+
+const it_ = APP_RESOURCES.it.translation;
+const en = APP_RESOURCES.en.translation;
 
 type LocaleTree = { [key: string]: string | string[] | LocaleTree };
 
@@ -141,6 +143,16 @@ describe('i18n helpers', () => {
 });
 
 describe('locale files', () => {
+  it('resourceRegistry_MatchesTheCompleteRuntimeBundles', () => {
+    // A feature bundle registered outside the shared registry must not silently escape key/placeholder validation.
+    expect(i18n.getResourceBundle('it', 'translation')).toEqual(APP_RESOURCES.it.translation);
+    expect(i18n.getResourceBundle('en', 'translation')).toEqual(APP_RESOURCES.en.translation);
+    expect(itKeys.has('onboardingAccess.description')).toBe(true);
+    expect(enKeys.has('onboardingAccess.description')).toBe(true);
+    expect(itKeys.has('propertySetup.compliance.required')).toBe(true);
+    expect(enKeys.has('propertySetup.billing.required')).toBe(true);
+  });
+
   it('hasKey_ObjectTranslations_RecognisesParentsWithoutMatchingPartialNames', () => {
     const keys = flatten({ guide: { sections: { intro: 'Welcome' } } });
     expect(hasKey(keys, 'guide.sections')).toBe(true);
@@ -153,6 +165,13 @@ describe('locale files', () => {
     const missingInIt = [...enKeys.keys()].filter((k) => !itKeys.has(k));
     expect(missingInEn, 'keys present in it.json but missing in en.json').toEqual([]);
     expect(missingInIt, 'keys present in en.json but missing in it.json').toEqual([]);
+  });
+
+  it('includes the owner wizard translations in the complete runtime bundles', () => {
+    expect(i18n.getResourceBundle('it', 'translation')).toEqual(APP_RESOURCES.it.translation);
+    expect(i18n.getResourceBundle('en', 'translation')).toEqual(APP_RESOURCES.en.translation);
+    expect(itKeys.has('propertyWizard.owner.required')).toBe(true);
+    expect(enKeys.has('propertyWizard.owner.required')).toBe(true);
   });
 
   it('localeFiles_SameKey_UsesTheSamePlaceholdersInBothLanguages', () => {
@@ -204,6 +223,8 @@ describe('keys used in code', () => {
     expect(Object.keys(SOURCES).length).toBeGreaterThan(100);
     expect(used.size).toBeGreaterThan(1000);
     expect(used.has('property.validation.name.minLength')).toBe(true);
+    expect(used.has('userRemoval.failureTitle')).toBe(true);
+    expect(used.has('userRemoval.alternative')).toBe(true);
   });
 
   it('staticKeys_UsedInCode_ExistInItAndEn', () => {
@@ -298,6 +319,15 @@ describe('keys used in code', () => {
   });
 });
 
+describe('pricing translations', () => {
+  it('includes the timeout and currency mismatch messages in the runtime registry', () => {
+    expect(i18n.getResourceBundle('it', 'translation')).toEqual(APP_RESOURCES.it.translation);
+    expect(i18n.getResourceBundle('en', 'translation')).toEqual(APP_RESOURCES.en.translation);
+    expect(itKeys.has('priceEstimate.timeout')).toBe(true);
+    expect(enKeys.has('priceEstimate.currencyMismatch')).toBe(true);
+  });
+});
+
 describe('plurals', () => {
   it('nightsBreakdown_OneAndManyNights_UsesGrammaticalPlural', () => {
     const tIt = i18n.getFixedT('it');
@@ -312,6 +342,15 @@ describe('plurals', () => {
     expect(i18n.getFixedT('it')('publicBooking.guestBookings.guestsCount', { count: 1 })).toBe('1 ospite');
     expect(i18n.getFixedT('it')('publicBooking.guestBookings.guestsCount', { count: 2 })).toBe('2 ospiti');
     expect(i18n.getFixedT('en')('publicBooking.guestBookings.guestsCount', { count: 1 })).toBe('1 guest');
+  });
+});
+
+describe('listing AI translations', () => {
+  it('includes the listing fields and retry action in the runtime registry', () => {
+    expect(i18n.getResourceBundle('it', 'translation')).toEqual(APP_RESOURCES.it.translation);
+    expect(i18n.getResourceBundle('en', 'translation')).toEqual(APP_RESOURCES.en.translation);
+    expect(itKeys.has('listingAi.fields.transport')).toBe(true);
+    expect(enKeys.has('listingAi.retry')).toBe(true);
   });
 });
 

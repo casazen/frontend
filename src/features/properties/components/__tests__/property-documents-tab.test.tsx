@@ -84,14 +84,13 @@ describe('PropertyDocumentsTab, the credentials of the portals under the documen
     expect(onboardingApi.listAssistRequests).not.toHaveBeenCalled();
   });
 
-  it('PropertyDocumentsTab_APropertyInSwitzerland_DrawsNoIstatCardEvenWithTheActivationOn', async () => {
+  it('PropertyDocumentsTab_APropertyInSwitzerland_AsksForNoItalianPoliceOrIstatCredentials', () => {
     session.flags = { octorateOnboarding: true };
     renderTab('CH');
 
-    // The ISTAT is the Italian statistics of the stays: a Swiss property has no such credentials.
-    expect(await screen.findByTestId('questura-credentials-card')).toBeInTheDocument();
-    await waitFor(() => expect(questuraCredentialsApi.getStatus).toHaveBeenCalledWith(PROPERTY_ID));
+    expect(screen.queryByTestId('questura-credentials-card')).not.toBeInTheDocument();
     expect(screen.queryByTestId('istat-credentials-card')).not.toBeInTheDocument();
+    expect(questuraCredentialsApi.getStatus).not.toHaveBeenCalled();
     expect(onboardingAssistApi.getIstatCredentialsStatus).not.toHaveBeenCalled();
     expect(onboardingApi.listPanelSteps).not.toHaveBeenCalled();
     expect(onboardingApi.listAssistRequests).not.toHaveBeenCalled();

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { isAxiosError } from 'axios';
 import type { UseFormReturn } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Sparkles } from 'lucide-react';
@@ -15,6 +16,7 @@ import type { PropertyWizardValues } from '../property-wizard-model';
 interface AiPriceCardProps {
   form: UseFormReturn<PropertyWizardValues>;
   propertyId: string;
+  currency?: string;
 }
 
 /** The four fields of the step the suggestion can fill in. */
@@ -34,8 +36,8 @@ const RETRYABLE_REASONS: readonly PriceSuggestionReason[] = ['ai_unavailable', '
 
 const SET_OPTIONS = { shouldDirty: true, shouldValidate: true } as const;
 
-function euro(value: number, language: string): string {
-  return new Intl.NumberFormat(language, { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(value);
+function money(value: number, language: string, currency: string): string {
+  return new Intl.NumberFormat(language, { style: 'currency', currency, maximumFractionDigits: 0 }).format(value);
 }
 
 /** Puts the fields that are given into the form, as the host typing them would: the step then validates and saves them as always. */
@@ -65,7 +67,7 @@ function fieldsToRestore(current: PriceFields, applied: Partial<PriceFields>, pr
  * on. The numbers go into the fields only with «Usa questi valori», and can be given back. The card is there only where an AI is in
  * effect; when the AI is not behind the answer, the card says why (and, with enough similar homes, shows the price of those alone).
  */
-export function AiPriceCard({ form, propertyId }: AiPriceCardProps) {
+export function AiPriceCard({ form, propertyId, currency = 'EUR' }: AiPriceCardProps) {
   const { t, i18n } = useTranslation();
   const availability = usePriceSuggestionAvailability(propertyId);
   const suggest = useSuggestPrice(propertyId);
@@ -76,6 +78,7 @@ export function AiPriceCard({ form, propertyId }: AiPriceCardProps) {
   if (availability.data?.available !== true) return null;
 
   const calculate = () => {
+    if (suggest.isPending) return;
     suggest.mutate(positioning, { onSuccess: (suggestion) => setPhase({ kind: 'result', suggestion }) });
   };
 
@@ -85,7 +88,7 @@ export function AiPriceCard({ form, propertyId }: AiPriceCardProps) {
   };
 
   const apply = (suggestion: PriceSuggestion) => {
-    if (suggestion.nightlyRate === null) return;
+    if (suggestion.nightlyRate === null || (suggestion.currency ?? 'EUR') !== currency) return;
     const current = form.getValues();
     const previous: PriceFields = {
       nightlyRate: current.nightlyRate,
@@ -143,6 +146,13 @@ export function AiPriceCard({ form, propertyId }: AiPriceCardProps) {
       </div>
 
       <div aria-live="polite" aria-busy={suggest.isPending} className="min-w-0 space-y-3">
+        {suggest.isError ? (
+          <Alert variant="danger" action={<RetryButton onClick={calculate} disabled={suggest.isPending} />} data-testid="property-wizard-ai-price-error">
+            {isAxiosError(suggest.error) && ['ECONNABORTED', 'ETIMEDOUT'].includes(suggest.error.code ?? '')
+              ? t('priceEstimate.timeout')
+              : getProblemMessage(suggest.error, t) ?? t('propertyWizard.prices.ai.error')}
+          </Alert>
+        ) : null}
         {phase.kind === 'ask' ? (
           <>
             <div className="space-y-2">
@@ -155,6 +165,7 @@ export function AiPriceCard({ form, propertyId }: AiPriceCardProps) {
                   value,
                   label: t(`propertyWizard.prices.ai.positioning.${value}`),
                   testId: `property-wizard-ai-price-positioning-${value}`,
+                  disabled: suggest.isPending,
                 }))}
                 value={positioning}
                 onValueChange={setPositioning}
@@ -165,12 +176,6 @@ export function AiPriceCard({ form, propertyId }: AiPriceCardProps) {
               <p className="text-sm text-foreground/70" data-testid="property-wizard-ai-price-tip">
                 {t(`propertyWizard.prices.ai.tips.${tip}`)}
               </p>
-            ) : null}
-
-            {suggest.isError ? (
-              <Alert variant="danger" action={<RetryButton onClick={calculate} />} data-testid="property-wizard-ai-price-error">
-                {getProblemMessage(suggest.error, t) ?? t('propertyWizard.prices.ai.error')}
-              </Alert>
             ) : null}
 
             <div className="flex flex-wrap items-center gap-2">
@@ -187,6 +192,7 @@ export function AiPriceCard({ form, propertyId }: AiPriceCardProps) {
             suggestion={phase.suggestion}
             form={form}
             language={i18n.language}
+            expectedCurrency={currency}
             applied={phase.kind === 'applied'}
             onApply={() => apply(phase.suggestion)}
             onUndo={() => phase.kind === 'applied' && undo(phase)}
@@ -201,10 +207,10 @@ export function AiPriceCard({ form, propertyId }: AiPriceCardProps) {
   );
 }
 
-function RetryButton({ onClick }: { onClick: () => void }) {
+function RetryButton({ onClick, disabled = false }: { onClick: () => void; disabled?: boolean }) {
   const { t } = useTranslation();
   return (
-    <Button type="button" size="sm" variant="outline" onClick={onClick}>
+    <Button type="button" size="sm" variant="outline" onClick={onClick} disabled={disabled}>
       {t('propertyWizard.prices.ai.none.retry')}
     </Button>
   );
@@ -214,6 +220,7 @@ interface SuggestionViewProps {
   suggestion: PriceSuggestion;
   form: UseFormReturn<PropertyWizardValues>;
   language: string;
+  expectedCurrency: string;
   applied: boolean;
   retrying: boolean;
   onApply: () => void;
@@ -224,7 +231,7 @@ interface SuggestionViewProps {
 }
 
 /** What the AI answered: the price with its range, the extras, why, what it was based on, and the two ways out (take it, or keep one's own). */
-function SuggestionView({ suggestion, form, language, applied, retrying, onApply, onUndo, onChangePositioning, onRetry, onKeepMine }: SuggestionViewProps) {
+function SuggestionView({ suggestion, form, language, expectedCurrency, applied, retrying, onApply, onUndo, onChangePositioning, onRetry, onKeepMine }: SuggestionViewProps) {
   const { t } = useTranslation();
 
   // No price at all: say why, and offer a new try only where it can help.
@@ -232,7 +239,7 @@ function SuggestionView({ suggestion, form, language, applied, retrying, onApply
     const reason = suggestion.reason ?? 'ai_unavailable';
     return (
       <div className="space-y-3" data-testid="property-wizard-ai-price-none" data-reason={reason}>
-        <Alert variant="info" action={RETRYABLE_REASONS.includes(reason) ? <RetryButton onClick={onRetry} /> : undefined}>
+        <Alert variant="info" action={RETRYABLE_REASONS.includes(reason) ? <RetryButton onClick={onRetry} disabled={retrying} /> : undefined}>
           {t(`propertyWizard.prices.ai.none.${reason}`)}
         </Alert>
         <Button type="button" variant="ghost" onClick={onKeepMine} data-testid="property-wizard-ai-price-keep">
@@ -243,9 +250,11 @@ function SuggestionView({ suggestion, form, language, applied, retrying, onApply
   }
 
   const { basedOn } = suggestion;
+  const currency = suggestion.currency ?? 'EUR';
+  const wrongCurrency = currency !== expectedCurrency;
   const extras: string[] = [];
   if (suggestion.cleaningFee !== null) {
-    extras.push(t('propertyWizard.prices.ai.result.cleaning', { price: euro(suggestion.cleaningFee, language) }));
+    extras.push(t('propertyWizard.prices.ai.result.cleaning', { price: money(suggestion.cleaningFee, language, currency) }));
   }
   if (suggestion.weekendSurchargePercent !== null) {
     extras.push(t('propertyWizard.prices.ai.result.weekend', { percent: suggestion.weekendSurchargePercent }));
@@ -258,13 +267,13 @@ function SuggestionView({ suggestion, form, language, applied, retrying, onApply
     <div className="space-y-3" data-testid="property-wizard-ai-price-result">
       <div className="space-y-1">
         <p className="text-2xl font-semibold" data-testid="property-wizard-ai-price-rate">
-          {t('propertyWizard.prices.ai.result.perNight', { price: euro(suggestion.nightlyRate, language) })}
+          {t('propertyWizard.prices.ai.result.perNight', { price: money(suggestion.nightlyRate, language, currency) })}
         </p>
         {suggestion.rangeMin !== null && suggestion.rangeMax !== null ? (
           <p className="text-sm text-foreground/70" data-testid="property-wizard-ai-price-range">
             {t('propertyWizard.prices.ai.result.range', {
-              min: euro(suggestion.rangeMin, language),
-              max: euro(suggestion.rangeMax, language),
+              min: money(suggestion.rangeMin, language, currency),
+              max: money(suggestion.rangeMax, language, currency),
             })}
           </p>
         ) : null}
@@ -293,6 +302,7 @@ function SuggestionView({ suggestion, form, language, applied, retrying, onApply
       </p>
       <p className="text-xs text-foreground/70">{t('propertyWizard.prices.ai.result.estimate')}</p>
       <AiContentNotice visible={suggestion.aiUsed} />
+      {wrongCurrency ? <Alert variant="warning">{t('priceEstimate.currencyMismatch', { currency: expectedCurrency })}</Alert> : null}
 
       {applied ? (
         <div className="space-y-2" data-testid="property-wizard-ai-price-applied">
@@ -303,7 +313,7 @@ function SuggestionView({ suggestion, form, language, applied, retrying, onApply
         </div>
       ) : (
         <div className="flex flex-wrap items-center gap-2">
-          <Button type="button" onClick={onApply} data-testid="property-wizard-ai-price-apply">
+          <Button type="button" onClick={onApply} disabled={wrongCurrency || retrying} data-testid="property-wizard-ai-price-apply">
             {t('propertyWizard.prices.ai.result.apply')}
           </Button>
           <Button type="button" variant="outline" onClick={onChangePositioning} disabled={retrying} data-testid="property-wizard-ai-price-again">
