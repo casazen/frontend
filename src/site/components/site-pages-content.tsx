@@ -16,6 +16,7 @@ import {
   Mail,
   ShieldCheck,
   Smartphone,
+  Sparkles,
   Store,
   Wallet,
   type LucideIcon,
@@ -50,7 +51,7 @@ import {
 /**
  * Content of the pages of the public site (SEO-VETRINA). Every claim matches a feature that exists today (inventory of
  * 2026-10-13): no channel-manager API, no automatic Alloggiati Web transmission, no Ross1000/CIR in the product, no team,
- * mobile app or AI features, which are not available. The figures of the strip under the hero are facts of the product, not
+ * mobile app. AI Agents are offered as a separate module. The figures of the strip under the hero are facts of the product, not
  * statistics: there are no customers, ratings or testimonials to quote, and none is invented.
  *
  * CasaZen is on private invitation (product owner, 2026-10-13): there is no sign-up button, no prices and no plans. The call
@@ -78,8 +79,9 @@ const COMPLIANCE: { key: string; icon: LucideIcon; tint: Tint }[] = [
   { key: 'wizard', icon: ListChecks, tint: 'ink' },
 ];
 
-/** The four cards of "Il lavoro di tutti i giorni": the accents are the ones of the areas of the app. */
+/** The cards of "Il lavoro di tutti i giorni": the accents are the ones of the areas of the app. */
 const OPERATIONS: { key: string; icon: LucideIcon; tint: Tint }[] = [
+  { key: 'agents', icon: Sparkles, tint: 'terra' },
   { key: 'calendar', icon: CalendarDays, tint: 'terra' },
   { key: 'suppliers', icon: Handshake, tint: 'salvia' },
   { key: 'fiscal', icon: Calculator, tint: 'ametista' },
@@ -232,7 +234,7 @@ export function HomePage({ legal }: { legal: SiteLegal }) {
       </section>
 
       <Section title={t('site.home.operations.title')} intro={t('site.home.operations.intro')}>
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {OPERATIONS.map(({ key, icon, tint }) => (
             <FeatureCard
               key={key}

@@ -25088,6 +25088,8 @@
       },
       "operations": {
         "title": "Il lavoro di tutti i giorni",
+        "agentsTitle": "AI Agents",
+        "agentsText": "Con il modulo opzionale AI Agents puoi assegnare a un agente la pulizia dopo il check-out o le istruzioni di arrivo. Scegli un agente pronto o definisci il tuo obiettivo e le azioni che può eseguire.",
         "calendarTitle": "Calendario e iCal",
         "calendarText": "Prenotazioni, blocchi e sincronizzazione dei calendari iCal di Airbnb, Booking.com e altri portali, aggiornata circa ogni 15 minuti.",
         "suppliersTitle": "Fornitori della zona",

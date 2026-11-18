@@ -331,6 +331,8 @@ describe('the routines page (E01/F04/US02/T01)', () => {
         'bookingLeadTime',
       ]);
 
+      fireEvent.change(screen.getByLabelText('Obiettivo dell’agente'), { target: { value: 'Valuta i soggiorni brevi' } });
+
       // channel is one of a list: the names of the API, chosen and not typed.
       fireEvent.click(within(screen.getByTestId('condition-value-0')).getByLabelText('Sito diretto'));
       fireEvent.click(within(screen.getByTestId('condition-value-0')).getByLabelText('Inserita a mano'));
@@ -352,6 +354,7 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       await waitFor(() => expect(routinesApi.create).toHaveBeenCalledTimes(1));
       expect(routinesApi.create).toHaveBeenCalledWith({
         name: 'Solo per i diretti',
+        agentObjective: 'Valuta i soggiorni brevi',
         eventType: 'BookingConfirmed',
         eventConfig: {},
         condition: {

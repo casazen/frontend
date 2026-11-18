@@ -25088,6 +25088,8 @@
       },
       "operations": {
         "title": "The everyday work",
+        "agentsTitle": "AI Agents",
+        "agentsText": "The optional AI Agents module can arrange cleaning after check-out or send arrival instructions. Choose a ready-made agent or set your own objective and allowed actions.",
         "calendarTitle": "Calendar and iCal",
         "calendarText": "Bookings, blocks and iCal calendar sync with Airbnb, Booking.com and other portals, refreshed about every 15 minutes.",
         "suppliersTitle": "Local suppliers",
