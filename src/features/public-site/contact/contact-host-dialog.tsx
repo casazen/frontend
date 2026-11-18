@@ -30,7 +30,7 @@ const EMAIL_MAX = 254;
 
 // The messages are i18n keys: `Field` / `FormFieldError` translate them when rendering.
 const contactSchema = z.object({
-  name: z.string().trim().max(NAME_MAX, 'hostContact.errors.name'),
+  name: z.string().trim().min(1, 'validation.required').max(NAME_MAX, 'hostContact.errors.name'),
   email: z.string().trim().min(1, 'hostContact.errors.email').max(EMAIL_MAX, 'hostContact.errors.email').email('hostContact.errors.email'),
   message: z.string().trim().min(MESSAGE_MIN, 'hostContact.errors.message').max(MESSAGE_MAX, 'hostContact.errors.message'),
   consent: z.boolean().refine((value) => value, 'hostContact.errors.consent'),
@@ -84,7 +84,7 @@ function ContactHostForm({
       {
         email: values.email,
         message: values.message,
-        ...(values.name ? { name: values.name } : {}),
+        name: values.name,
         ...(propertyId ? { propertyId } : {}),
         ...(lang ? { lang } : {}),
         consent: true,
@@ -115,7 +115,7 @@ function ContactHostForm({
 
   return (
     <form onSubmit={submit} noValidate className="grid gap-4" data-testid="host-contact-form">
-      <Field label={t('hostContact.nameLabel')} optional error={errors.name}>
+      <Field label={t('hostContact.nameLabel')} error={errors.name}>
         <Input autoComplete="name" disabled={send.isPending} {...register('name')} />
       </Field>
       <Field label={t('hostContact.emailLabel')} hint={t('hostContact.emailHint', { host })} error={errors.email}>

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, configure, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, configure, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom';
 import i18n from '@/i18n/config';
@@ -58,13 +58,13 @@ const calendar: PublicCalendarDto = {
   days: Array.from({ length: 60 }, (_, offset) => ({ date: addDays(TODAY, offset), available: true, nightlyPriceCents: 10000, minNights: 1 })),
 };
 
-function renderPage(search = '') {
+function renderPage(search = '', publicOrg = org) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={client}>
       <MemoryRouter initialEntries={[`/book/demo-casazen/property/${PROPERTY_SLUG}${search}`]}>
         <Routes>
-          <Route path="/book/:orgSlug" element={<Outlet context={{ org }} />}>
+          <Route path="/book/:orgSlug" element={<Outlet context={{ org: publicOrg }} />}>
             <Route path="property/:propertySlugOrId" element={<PublicPropertyPage />} />
           </Route>
         </Routes>
@@ -98,6 +98,18 @@ describe('PublicPropertyPage', () => {
     // The route of the calendar takes the slug of the page as well as the id (DB-03b).
     expect(vi.mocked(publicOrgApi.getOrgPropertyCalendar).mock.calls[0][1]).toBe(PROPERTY_SLUG);
     // With no dates chosen there is nothing to price: the server is not asked.
+    expect(publicBookingApi.quoteDirectBooking).not.toHaveBeenCalled();
+  });
+
+  it('opens the contact form for a property that cannot be booked online, without exposing a host email', async () => {
+    vi.mocked(publicOrgApi.getOrgProperty).mockResolvedValue({ ...property, acceptsBookings: false });
+    renderPage('', { ...org, canContactHost: true });
+
+    fireEvent.click(await screen.findByTestId('property-host-write'));
+
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByLabelText(i18n.t('hostContact.nameLabel'))).toBeInTheDocument();
+    expect(screen.getByLabelText(i18n.t('hostContact.emailLabel'))).toBeInTheDocument();
     expect(publicBookingApi.quoteDirectBooking).not.toHaveBeenCalled();
   });
 
