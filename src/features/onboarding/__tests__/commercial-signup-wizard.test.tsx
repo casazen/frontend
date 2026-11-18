@@ -19,12 +19,23 @@ function start() {
 }
 afterEach(cleanup);
 describe('commercial profile and configuration', () => {
-  it('offers four profiles and routes suppliers to their registration', async () => {
+  it('offers three profiles and routes suppliers to their registration', async () => {
     start();
-    expect(screen.getAllByTestId(/^signup-profile-/)).toHaveLength(4);
+    expect(screen.getAllByTestId(/^signup-profile-/)).toHaveLength(3);
     expect(screen.queryByText('Entrambi')).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId('signup-profile-supplier'));
     expect(await screen.findByText('Supplier registration')).toBeVisible();
+  });
+  it('chooses rental areas independently and clears incompatible extras', async () => {
+    start(); fireEvent.click(screen.getByTestId('signup-profile-owner'));
+    fireEvent.click(screen.getByRole('button', { name: /Pro/ }));
+    fireEvent.click(await screen.findByRole('checkbox'));
+    fireEvent.click(screen.getByRole('radio', { name: 'Affitti lungo termine' }));
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('radio', { name: 'Affitti brevi e lunghi' }));
+    expect(screen.getByRole('checkbox')).not.toBeChecked();
+    fireEvent.click(screen.getByRole('button', { name: 'Vai al riepilogo' }));
+    expect(screen.getByText('Affitti brevi e lunghi', { selector: 'dd' })).toBeVisible();
   });
   it('locks extras on Starter, unlocks on Pro and clears them when returning to Starter', async () => {
     start(); fireEvent.click(screen.getByTestId('signup-profile-owner'));

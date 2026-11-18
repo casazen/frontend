@@ -17,8 +17,9 @@ describe('commercial onboarding pricing', () => {
     expect(commercialTotal(plan, [], agency)).toBeNull();
   });
   it('starts long-rent alone and hides short-rent add-ons', () => {
-    expect(signupRentalType('long-rent')).toBe('LongTerm');
-    expect(signupRentalType('agency')).toBe('ShortTerm');
-    expect(applicableAddons(addons, 'long-rent')).toEqual([]);
+    expect(signupRentalType({ ...agency, profile: 'long-rent' })).toBe('LongTerm');
+    expect(signupRentalType(agency)).toBe('ShortTerm');
+    expect(applicableAddons(addons, 'LongTerm')).toEqual([]);
+    expect(applicableAddons(addons, 'Both')).toEqual(addons);
   });
 });
