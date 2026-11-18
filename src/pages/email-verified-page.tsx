@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Home, LogIn, MailWarning } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
+import { hostInvitePath, readPendingHostInvite } from '@/lib/host-invite';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { emailVerificationOutcome } from './email-verification-outcome';
@@ -18,12 +19,14 @@ export function EmailVerifiedPage() {
   const { isLoading, isAuthenticated, login } = useAuth();
   const outcome = emailVerificationOutcome(searchParams);
   const failed = outcome === 'failed';
+  const pendingHostInvite = outcome === 'verified' ? readPendingHostInvite() : null;
+  const returnTo = pendingHostInvite ? hostInvitePath(pendingHostInvite) : undefined;
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      navigate('/', { replace: true });
+      navigate(returnTo ?? '/', { replace: true });
     }
-  }, [isAuthenticated, isLoading, navigate]);
+  }, [isAuthenticated, isLoading, navigate, returnTo]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
@@ -46,7 +49,7 @@ export function EmailVerifiedPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button className="w-full" size="lg" disabled={isLoading} onClick={() => login()} data-testid="email-verified-sign-in">
+          <Button className="w-full" size="lg" disabled={isLoading} onClick={() => login(returnTo ? { returnTo } : undefined)} data-testid="email-verified-sign-in">
             <LogIn className="mr-2 h-5 w-5" />
             {t('emailVerified.signIn')}
           </Button>
