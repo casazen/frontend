@@ -31,7 +31,13 @@ function PlanUsageNote() {
   // The answer is trusted as far as it has the two numbers: a note with holes in it is no note, and it never takes the page down.
   const max = entitlement?.limits?.maxProperties;
   const used = entitlement?.usage?.properties;
-  if (!entitlement || typeof max !== 'number' || typeof used !== 'number') return null;
+  if (
+    !entitlement ||
+    entitlement.isAgency ||
+    entitlement.planTier === 'Agency' ||
+    typeof max !== 'number' ||
+    typeof used !== 'number'
+  ) return null;
 
   const plan = getPlanTierLabel(entitlement.planTier, t);
   const unlimited = max < 0 || max >= UNLIMITED_PROPERTIES;
