@@ -56,7 +56,7 @@ export function BookingFiscalDocumentCard({ bookingId }: { bookingId: string }) 
 
   return (
     <PlainSection title={t('fiscalDocuments.bookingCard.title')} data-testid="booking-fiscal-document" {...pageLink}>
-      <div className="max-w-xl space-y-3">
+      <div className="min-w-0 space-y-3">
         {read === 'loading' || read === 'idle' ? (
           <p role="status" className="text-sm text-foreground/70" data-testid="booking-fiscal-document-loading">
             {t('fiscalDocuments.bookingCard.loading')}

@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { CONTAINER_COLUMNS } from '@/components/layout/page-columns';
 import { PlainSection } from '@/components/shared/calm';
 import { formatCurrency } from '@/lib/utils';
 import type { Booking } from '@/types';
@@ -57,9 +58,9 @@ export function BookingOtaAmounts({ booking }: { booking: Booking }) {
         : null;
 
   return (
-    <PlainSection title={t('booking.otaAmounts.title')} data-testid="booking-ota-amounts">
-      <div className="max-w-xl space-y-3">
-        <dl className="space-y-2">
+    <PlainSection title={t('booking.otaAmounts.title')} className="@container" data-testid="booking-ota-amounts">
+      <div className={CONTAINER_COLUMNS}>
+        <dl className="min-w-0 space-y-2">
           {rows.map((row) =>
             isFigure(row.value) ? (
               <Amount key={row.id} label={row.label} source={row.source}>
@@ -75,7 +76,7 @@ export function BookingOtaAmounts({ booking }: { booking: Booking }) {
           )}
         </dl>
 
-        <Facts className="pt-1">
+        <Facts>
           {booking.paymentState ? (
             <Fact label={t('booking.detailPage.paymentState')}>
               <span data-testid="booking-ota-payment-state" data-state={booking.paymentState}>
@@ -96,7 +97,7 @@ export function BookingOtaAmounts({ booking }: { booking: Booking }) {
         </Facts>
 
         {someMissing ? (
-          <p className="text-sm text-foreground/70" data-testid="booking-ota-some-missing">
+          <p className="text-sm text-foreground/70 @4xl:col-span-2" data-testid="booking-ota-some-missing">
             {t('booking.otaAmounts.someMissing')}
           </p>
         ) : null}

@@ -65,7 +65,7 @@ export function BookingInvoiceDataSection({ bookingId }: { bookingId: string }) 
 
   return (
     <PlainSection title={t('invoiceData.section.title')} data-testid="booking-invoice-data">
-      <div className="max-w-xl space-y-3">
+      <div className="@container min-w-0 space-y-3">
         {editing ? (
           <InvoiceDataSubstep bookingId={bookingId} onDone={close} onCancel={close} />
         ) : invoice.isPending ? (
@@ -94,7 +94,7 @@ export function BookingInvoiceDataSection({ bookingId }: { bookingId: string }) 
                 <p data-testid="booking-invoice-kind" data-kind={form.recipientKind}>
                   {t(`invoiceData.section.kind.${form.recipientKind}`)}
                 </p>
-                <Facts>
+                <Facts className="@4xl:grid @4xl:grid-cols-2 @4xl:gap-x-8 @4xl:gap-y-3 @4xl:space-y-0">
                   {form.name ? <Fact label={t(`invoiceData.fields.name.${form.recipientKind}`)}>{form.name}</Fact> : null}
                   {form.vatNumber && company ? <Fact label={t('invoiceData.fields.vatNumber.label')}>{form.vatNumber}</Fact> : null}
                   {form.fiscalCode ? <Fact label={t('invoiceData.fields.fiscalCode.label')}>{form.fiscalCode}</Fact> : null}

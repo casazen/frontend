@@ -22,12 +22,12 @@ export function IstatCredentialsFields({ values, errors, onChange, disabled = fa
   const { t } = useTranslation();
 
   return (
-    <>
+    <div className="grid grid-cols-1 gap-4 @3xl:grid-cols-3">
       {ISTAT_CREDENTIAL_FIELDS.map(({ field, type }) => {
         const id = `istat-${field}`;
         const hint = field === 'structureCode' ? `${id}-hint` : undefined;
         return (
-          <div key={field} className="space-y-1">
+          <div key={field} className="min-w-0 space-y-1">
             <Label htmlFor={id}>{t(`istatCredentials.fields.${field}`)}</Label>
             <Input
               id={id}
@@ -50,6 +50,6 @@ export function IstatCredentialsFields({ values, errors, onChange, disabled = fa
           </div>
         );
       })}
-    </>
+    </div>
   );
 }

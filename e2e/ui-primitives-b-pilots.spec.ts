@@ -137,6 +137,39 @@ async function openBooking(page: Page, width: number, search = '') {
 }
 
 test.describe('Tabs in the booking detail (pilot)', () => {
+  test('invoice data fills the payment tab on desktop and stacks on mobile', async ({ page }) => {
+    await page.route(`**/api/bookings/${DEMO_BOOKING_ID}/invoice-data`, (route) => route.fulfill({ json: {
+      bookingId: DEMO_BOOKING_ID,
+      recipientKind: 'Guest',
+      name: 'Mario Rossi',
+      fiscalCode: 'RSSMRA80A01H501U',
+      addressStreet: 'Via di prova',
+      countryCode: 'IT',
+    } }));
+    await openBooking(page, 1600, '?tab=payment');
+    await page.getByTestId('booking-invoice-open').click();
+
+    const panel = page.getByTestId('invoice-data-substep');
+    const name = page.getByTestId('invoice-data-name');
+    const fiscalCode = page.getByTestId('invoice-data-fiscalCode');
+    await expect(fiscalCode).toBeVisible();
+    const desktop = (await panel.boundingBox())!;
+    const tab = (await page.getByRole('tabpanel').boundingBox())!;
+    expect(desktop.width).toBeGreaterThan(tab.width * 0.95);
+    const desktopName = (await name.boundingBox())!;
+    const desktopCode = (await fiscalCode.boundingBox())!;
+    expect(desktopCode.x).toBeGreaterThan(desktopName.x + desktopName.width);
+    expect(desktopCode.y).toBeCloseTo(desktopName.y, 0);
+
+    await page.setViewportSize({ width: 390, height: 800 });
+    const mobileName = (await name.boundingBox())!;
+    const mobileCode = (await fiscalCode.boundingBox())!;
+    expect(mobileCode.x).toBeCloseTo(mobileName.x, 0);
+    expect(mobileCode.y).toBeGreaterThan(mobileName.y + mobileName.height);
+    await expectInsideTheScreen(page, panel, '390 px invoice editor');
+    await expectNothingSticksOut(page, '390 px booking payment tab');
+  });
+
   test('the tabs are links with the tab in the address, and the test ids of the Golden Journey are on them', async ({ page }) => {
     await openBooking(page, 1280);
     const tabs = page.getByRole('tablist', { name: 'Sezioni della prenotazione' });

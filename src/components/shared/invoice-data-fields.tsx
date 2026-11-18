@@ -1,6 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { Building2, User, type LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { FIELD_COLUMNS } from '@/components/layout/page-columns';
 import { ChoiceCard, ChoiceGroup } from '@/components/ui/choice-card';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
@@ -131,94 +132,100 @@ export function InvoiceDataFields({ copy, idPrefix, values, errors = {}, onChang
   );
 
   return (
-    <div className="flex flex-col gap-5" data-testid={`${idPrefix}-fields`}>
-      <ChoiceGroup legend={text['kind.legend']} legendVisible minCardWidth={10}>
-        {INVOICE_RECIPIENT_KINDS.map((kind) => (
-          <ChoiceCard
-            key={kind}
-            name={`${idPrefix}-recipientKind`}
-            value={kind}
-            checked={values.recipientKind === kind}
-            onChange={() => onChange('recipientKind', kind)}
-            icon={KIND_ICONS[kind]}
-            title={text[`kind.${kind}.title`]}
-            description={text[`kind.${kind}.description`]}
-            disabled={disabled}
-            data-testid={`${idPrefix}-kind-${kind}`}
-          />
-        ))}
-      </ChoiceGroup>
-
-      <Field label={nameLabel} error={errorOf('name')}>
-        <Input {...register('name')} />
-      </Field>
-
-      {company ? vatNumberField : null}
-
-      <Field label={text['fiscalCode.label']} hint={explain('fiscalCode.why', EXAMPLES.fiscalCode)} error={errorOf('fiscalCode')}>
-        <Input {...register('fiscalCode')} autoCapitalize="characters" spellCheck={false} />
-      </Field>
-
-      <details
-        open={opened || optionProblem}
-        onToggle={(event) => setOpened(event.currentTarget.open)}
-        className="min-w-0 text-sm"
-        data-testid={`${idPrefix}-more`}
-      >
-        <summary className="flex min-h-11 cursor-pointer items-center text-foreground/70">{text['more.label']}</summary>
-        <div className="flex flex-col gap-5 pb-2 pt-2">
-          <p className="text-foreground/70">{text['more.hint']}</p>
-          <fieldset className="m-0 flex min-w-0 flex-col gap-4 border-0 p-0">
-            <legend className="mb-2 text-sm font-medium">{text['address.legend']}</legend>
-            <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_7rem]">
-              <Field label={text['address.street']} error={errorOf('addressStreet')}>
-                <Input {...register('addressStreet')} />
-              </Field>
-              <Field label={text['address.civic']} error={errorOf('addressCivic')}>
-                <Input {...register('addressCivic')} />
-              </Field>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-[7rem_minmax(0,1fr)_6rem]">
-              <Field label={text['address.postalCode']} error={errorOf('postalCode')}>
-                <Input {...register('postalCode')} inputMode={values.countryCode === 'IT' ? 'numeric' : 'text'} />
-              </Field>
-              <Field label={text['address.city']} error={errorOf('city')}>
-                <Input {...register('city')} />
-              </Field>
-              <Field label={text['address.province']} error={errorOf('province')}>
-                <Input {...register('province')} autoCapitalize="characters" placeholder={EXAMPLES.province} />
-              </Field>
-            </div>
-          </fieldset>
-          <Field label={text['country.label']} hint={explain('country.why')} error={errorOf('countryCode')}>
-            <Select
-              id={idOf('countryCode')}
-              value={values.countryCode}
-              onChange={(event) => onChange('countryCode', event.target.value)}
+    <div className="@container min-w-0" data-testid={`${idPrefix}-fields`}>
+      <div className={FIELD_COLUMNS}>
+        <ChoiceGroup legend={text['kind.legend']} legendVisible minCardWidth={10} className="@4xl:col-span-2">
+          {INVOICE_RECIPIENT_KINDS.map((kind) => (
+            <ChoiceCard
+              key={kind}
+              name={`${idPrefix}-recipientKind`}
+              value={kind}
+              checked={values.recipientKind === kind}
+              onChange={() => onChange('recipientKind', kind)}
+              icon={KIND_ICONS[kind]}
+              title={text[`kind.${kind}.title`]}
+              description={text[`kind.${kind}.description`]}
               disabled={disabled}
-              data-testid={idOf('countryCode')}
-            >
-              {countryKnown ? null : <option value={values.countryCode}>{values.countryCode}</option>}
-              {countries.map((country) => (
-                <option key={country.code} value={country.code}>
-                  {country.name}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          {company ? null : vatNumberField}
-          <Field
-            label={text['sdiRecipientCode.label']}
-            hint={explain('sdiRecipientCode.why', EXAMPLES.sdiRecipientCode)}
-            error={errorOf('sdiRecipientCode')}
-          >
-            <Input {...register('sdiRecipientCode')} autoCapitalize="characters" spellCheck={false} />
-          </Field>
-          <Field label={text['pec.label']} hint={explain('pec.why', EXAMPLES.pec)} error={errorOf('pec')}>
-            <Input {...register('pec')} type="email" inputMode="email" spellCheck={false} />
-          </Field>
-        </div>
-      </details>
+              data-testid={`${idPrefix}-kind-${kind}`}
+            />
+          ))}
+        </ChoiceGroup>
+
+        <Field label={nameLabel} error={errorOf('name')}>
+          <Input {...register('name')} />
+        </Field>
+
+        {company ? vatNumberField : null}
+
+        <Field label={text['fiscalCode.label']} hint={explain('fiscalCode.why', EXAMPLES.fiscalCode)} error={errorOf('fiscalCode')}>
+          <Input {...register('fiscalCode')} autoCapitalize="characters" spellCheck={false} />
+        </Field>
+
+        <details
+          open={opened || optionProblem}
+          onToggle={(event) => setOpened(event.currentTarget.open)}
+          className="min-w-0 text-sm @4xl:col-span-2"
+          data-testid={`${idPrefix}-more`}
+        >
+          <summary className="flex min-h-11 cursor-pointer items-center text-foreground/70">{text['more.label']}</summary>
+          <div className={`${FIELD_COLUMNS} pb-2 pt-2`}>
+            <p className="text-foreground/70 @4xl:col-span-2">{text['more.hint']}</p>
+            <div className="@container min-w-0 space-y-5">
+              <fieldset className="m-0 flex min-w-0 flex-col gap-4 border-0 p-0">
+                <legend className="mb-2 text-sm font-medium">{text['address.legend']}</legend>
+                <div className="grid gap-4 @sm:grid-cols-[minmax(0,1fr)_7rem]">
+                  <Field label={text['address.street']} error={errorOf('addressStreet')}>
+                    <Input {...register('addressStreet')} />
+                  </Field>
+                  <Field label={text['address.civic']} error={errorOf('addressCivic')}>
+                    <Input {...register('addressCivic')} />
+                  </Field>
+                </div>
+                <div className="grid gap-4 @sm:grid-cols-[7rem_minmax(0,1fr)_6rem]">
+                  <Field label={text['address.postalCode']} error={errorOf('postalCode')}>
+                    <Input {...register('postalCode')} inputMode={values.countryCode === 'IT' ? 'numeric' : 'text'} />
+                  </Field>
+                  <Field label={text['address.city']} error={errorOf('city')}>
+                    <Input {...register('city')} />
+                  </Field>
+                  <Field label={text['address.province']} error={errorOf('province')}>
+                    <Input {...register('province')} autoCapitalize="characters" placeholder={EXAMPLES.province} />
+                  </Field>
+                </div>
+              </fieldset>
+              <Field label={text['country.label']} hint={explain('country.why')} error={errorOf('countryCode')}>
+                <Select
+                  id={idOf('countryCode')}
+                  value={values.countryCode}
+                  onChange={(event) => onChange('countryCode', event.target.value)}
+                  disabled={disabled}
+                  data-testid={idOf('countryCode')}
+                >
+                  {countryKnown ? null : <option value={values.countryCode}>{values.countryCode}</option>}
+                  {countries.map((country) => (
+                    <option key={country.code} value={country.code}>
+                      {country.name}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            </div>
+            <div className="min-w-0 space-y-5">
+              {company ? null : vatNumberField}
+              <Field
+                label={text['sdiRecipientCode.label']}
+                hint={explain('sdiRecipientCode.why', EXAMPLES.sdiRecipientCode)}
+                error={errorOf('sdiRecipientCode')}
+              >
+                <Input {...register('sdiRecipientCode')} autoCapitalize="characters" spellCheck={false} />
+              </Field>
+              <Field label={text['pec.label']} hint={explain('pec.why', EXAMPLES.pec)} error={errorOf('pec')}>
+                <Input {...register('pec')} type="email" inputMode="email" spellCheck={false} />
+              </Field>
+            </div>
+          </div>
+        </details>
+      </div>
     </div>
   );
 }

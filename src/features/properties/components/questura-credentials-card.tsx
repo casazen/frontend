@@ -88,7 +88,7 @@ export function QuesturaCredentialsCard({ propertyId, canEdit }: QuesturaCredent
         <p className="text-xs text-muted-foreground">{t('questuraCredentials.writeOnlyHint')}</p>
 
         {canEdit && status.data && (
-          <form className="max-w-md space-y-3" onSubmit={handleSubmit} noValidate data-testid="questura-credentials-form">
+          <form className="@container min-w-0 space-y-3" onSubmit={handleSubmit} noValidate data-testid="questura-credentials-form">
             <QuesturaCredentialsFields
               values={values}
               errors={errors}

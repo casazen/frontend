@@ -64,7 +64,7 @@ export function IstatStep({ propertyId, istat, busy, onKeyDown }: IstatStepProps
         </p>
       ) : null}
 
-      <div className="max-w-md space-y-3" data-testid="sender-istat-fields" onKeyDown={onKeyDown}>
+      <div className="@container min-w-0 space-y-3" data-testid="sender-istat-fields" onKeyDown={onKeyDown}>
         <IstatCredentialsFields values={istat.values} errors={istat.errors} onChange={istat.onChange} disabled={busy} />
         <p className="text-xs text-muted-foreground">{t('istatCredentials.writeOnlyHint')}</p>
         <Button type="button" variant="outline" disabled={busy} onClick={istat.onSave} data-testid="sender-istat-save">

@@ -19,11 +19,11 @@ export function QuesturaCredentialsFields({ values, errors, onChange }: Questura
   const { t } = useTranslation();
 
   return (
-    <>
+    <div className="grid grid-cols-1 gap-4 @3xl:grid-cols-3">
       {QUESTURA_CREDENTIAL_FIELDS.map(({ field, type, autoComplete }) => {
         const id = `questura-${field}`;
         return (
-          <div key={field} className="space-y-1">
+          <div key={field} className="min-w-0 space-y-1">
             <Label htmlFor={id}>{t(`questuraCredentials.fields.${field}`)}</Label>
             <Input
               id={id}
@@ -39,6 +39,6 @@ export function QuesturaCredentialsFields({ values, errors, onChange }: Questura
           </div>
         );
       })}
-    </>
+    </div>
   );
 }

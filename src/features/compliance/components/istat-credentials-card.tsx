@@ -127,7 +127,7 @@ export function IstatCredentialsCard({ propertyId, canEdit }: IstatCredentialsCa
         <p className="text-xs text-muted-foreground">{t('istatCredentials.writeOnlyHint')}</p>
 
         {canEdit && read && (
-          <form className="max-w-md space-y-3" onSubmit={handleSubmit} noValidate data-testid="istat-credentials-form">
+          <form className="@container min-w-0 space-y-3" onSubmit={handleSubmit} noValidate data-testid="istat-credentials-form">
             <IstatCredentialsFields
               values={values}
               errors={errors}
