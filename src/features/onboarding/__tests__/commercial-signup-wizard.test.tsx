@@ -19,7 +19,10 @@ vi.mock('@/queries/use-billing', () => ({
   useOpenBillingPortal: () => ({ mutate: vi.fn() }),
   useStartCheckout: () => ({ mutate: checkout }),
 }));
-vi.mock('@/api/commercial-signup.api', () => ({ CommercialSignupApi: { getCatalog: vi.fn(async () => [{ code: 'channels', context: 'short-rent', priceMonthly: 3, currency: 'EUR', purchasable: true, agencyIncluded: true, agencyPurchasable: true }]) } }));
+vi.mock('@/api/commercial-signup.api', () => ({ CommercialSignupApi: { getCatalog: vi.fn(async () => [
+  { code: 'channels', context: 'short-rent', priceMonthly: 3, currency: 'EUR', purchasable: true, agencyIncluded: true, agencyPurchasable: true },
+  { code: 'ai-agents', context: 'short-rent', priceMonthly: 2, currency: 'EUR', purchasable: true, agencyPurchasable: true, agencyPriceMonthly: 2 },
+]) } }));
 function start(profile?: UserDetail) {
   return render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><MemoryRouter><Routes><Route path="/" element={<CommercialSignupWizard profile={profile} />} /><Route path="/register" element={<p>Supplier registration</p>} /></Routes></MemoryRouter></QueryClientProvider>);
 }
@@ -35,17 +38,17 @@ describe('commercial profile and configuration', () => {
   it('chooses rental areas independently and clears incompatible extras', async () => {
     start(); fireEvent.click(screen.getByTestId('signup-profile-owner'));
     fireEvent.click(screen.getByRole('button', { name: /Pro/ }));
-    fireEvent.click(await screen.findByRole('checkbox'));
+    fireEvent.click(await screen.findByRole('checkbox', { name: /Canali e distribuzione/ }));
     fireEvent.click(screen.getByRole('radio', { name: 'Affitti lungo termine' }));
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('radio', { name: 'Affitti brevi e lunghi' }));
-    expect(screen.getByRole('checkbox')).not.toBeChecked();
+    expect(screen.getByRole('checkbox', { name: /Canali e distribuzione/ })).not.toBeChecked();
     fireEvent.click(screen.getByRole('button', { name: 'Vai al riepilogo' }));
     expect(screen.getByText('Affitti brevi e lunghi', { selector: 'dd' })).toBeVisible();
   });
   it('locks extras on Starter, unlocks on Pro and clears them when returning to Starter', async () => {
     start(); fireEvent.click(screen.getByTestId('signup-profile-owner'));
-    const extra = await screen.findByRole('checkbox'); expect(extra).toBeDisabled();
+    const extra = await screen.findByRole('checkbox', { name: /Canali e distribuzione/ }); expect(extra).toBeDisabled();
     fireEvent.click(screen.getByRole('button', { name: /Pro/ })); expect(extra).toBeEnabled();
     fireEvent.click(extra); expect(extra).toBeChecked();
     fireEvent.click(screen.getByRole('button', { name: /Starter/ })); expect(extra).not.toBeChecked(); expect(extra).toBeDisabled();
@@ -108,10 +111,13 @@ describe('commercial profile and configuration', () => {
     fireEvent.click(screen.getByTestId('signup-profile-agency'));
     fireEvent.change(screen.getByLabelText('Nome dell’agenzia'), { target: { value: 'Agenzia Test' } });
     fireEvent.click(screen.getByRole('radio', { name: 'Affitti brevi e lunghi' }));
-    fireEvent.click(await screen.findByRole('checkbox'));
+    const agentOption = await screen.findByRole('checkbox', { name: /AI Agents/ });
+    expect(agentOption).toBeEnabled();
+    expect(screen.queryByRole('checkbox', { name: /Canali e distribuzione/ })).not.toBeInTheDocument();
+    fireEvent.click(agentOption);
     fireEvent.click(screen.getByRole('button', { name: 'Indietro' }));
     fireEvent.click(screen.getByTestId('signup-profile-agency'));
-    expect(screen.getByRole('checkbox')).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: /AI Agents/ })).toBeChecked();
     expect(screen.getByLabelText('Nome dell’agenzia')).toHaveValue('Agenzia Test');
     fireEvent.click(screen.getByRole('button', { name: 'Vai al riepilogo' }));
     fireEvent.click(screen.getByRole('button', { name: 'Metti in pausa' }));
@@ -124,6 +130,7 @@ describe('commercial profile and configuration', () => {
     cleanup();
     start(user);
     expect(await screen.findByText('Agenzia Test')).toBeVisible();
+    expect(screen.getByText('AI Agents', { selector: 'li' })).toBeVisible();
     expect(screen.getByText('Affitti brevi e lunghi', { selector: 'dd' })).toBeVisible();
     expect(screen.queryByText('Conferma consensi')).not.toBeInTheDocument();
     sessionStorage.clear();

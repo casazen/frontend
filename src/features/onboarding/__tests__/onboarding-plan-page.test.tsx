@@ -35,7 +35,7 @@ vi.mock('@/components/layout/page-header', () => ({
 
 const workspace = vi.hoisted(() => ({
   contexts: [] as Array<{ contextKey: string; roleKey: string }>,
-  hasPermission: vi.fn((_area: string, _permission: string) => true),
+  hasPermission: vi.fn<(area: string, permission: string) => boolean>(() => true),
   getDefaultRoute: (contextKey: string) => `/app/${contextKey}`,
 }));
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => workspace }));

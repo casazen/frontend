@@ -189,9 +189,9 @@ async function runGoldenJourney(browser: Browser, stack: StackEnv, request: impo
       await supplierChoice.click();
       await host.getByTestId('request-next').click();
       await expect(host.getByTestId('request-stay')).toHaveValue(ids.bookingId);
-      await expect(host.getByTestId('request-day')).toHaveValue(checkOut);
-      // Activation covers cleaning in Roma. The supplier has not published a catalog service, so the host specifies the job and its time.
+      // The date appears after selecting the service.
       await host.locator('label').filter({ has: host.getByTestId('request-service-custom') }).click();
+      await expect(host.getByTestId('request-day')).toHaveValue(checkOut);
       await host.getByTestId('request-start-time').fill('10:00');
       await host.getByTestId('request-duration').selectOption('120');
       const notes = `Pulizia di fine soggiorno ${run}`;
