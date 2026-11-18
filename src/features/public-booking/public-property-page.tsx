@@ -6,6 +6,7 @@ import { Mail } from 'lucide-react';
 import { useOrgProperties, useOrgPublicProperty } from '@/queries/use-public-org';
 import { ReviewsSection } from '@/features/reviews/components/reviews-section';
 import { PropertyGallery } from '@/features/public-site/components/PropertyGallery';
+import { ContactHostDialog } from '@/features/public-site/contact/contact-host-dialog';
 import { usePropertySeoMeta } from '@/features/public-site/hooks/use-org-seo-meta';
 import { AvailabilitySection } from '@/features/public-booking/booking/availability-section';
 import { BookingAside } from '@/features/public-booking/booking/booking-aside';
@@ -88,12 +89,19 @@ function PropertyPageBody({ property, org, orgSlug, basePath, hostLabel }: Prope
   const hasPlan = usableLevels(property).length > 0;
   const hasZone = propertyHasZone(property);
   const publicPhone = property.publicPhone?.trim() || null;
-  // The way to write to the host is the address they published; the contact form of the site replaces it when that one is in.
-  const writeAction = org.contactEmail ? (
-    <a href={`mailto:${org.contactEmail}`} className={HOST_ACTION_CLASS} data-testid="property-host-write">
-      <Mail className="h-4 w-4" aria-hidden />
-      {t('publicProperty.host.write', { host: hostLabel ?? '' })}
-    </a>
+  const canContactHost = org.canContactHost ?? Boolean(org.contactEmail);
+  const writeAction = canContactHost && hostLabel ? (
+    <ContactHostDialog
+      site={orgSlug}
+      hostName={hostLabel}
+      propertyId={property.id}
+      trigger={
+        <button type="button" className={HOST_ACTION_CLASS} data-testid="property-host-write">
+          <Mail className="h-4 w-4" aria-hidden />
+          {t('publicProperty.host.write', { host: hostLabel })}
+        </button>
+      }
+    />
   ) : null;
   const hasHostCard = Boolean(hostLabel && (writeAction || publicPhone));
 
@@ -126,6 +134,10 @@ function PropertyPageBody({ property, org, orgSlug, basePath, hostLabel }: Prope
 
           <PropertyOverview property={property} description={description} hostLabel={hostLabel} hasHostCard={hasHostCard} />
 
+          {hasHostCard && hostLabel ? (
+            <HostCard name={hostLabel} phone={publicPhone} writeAction={writeAction} takesPayments={property.acceptsBookings === true} />
+          ) : null}
+
           {amenities.length > 0 ? (
             <section id="servizi" aria-labelledby="property-amenities-title" className="scroll-mt-20 space-y-5">
               <h2 id="property-amenities-title" className="public-display text-2xl font-semibold">
@@ -148,10 +160,6 @@ function PropertyPageBody({ property, org, orgSlug, basePath, hostLabel }: Prope
           {hasZone ? <ZoneSection property={property} /> : null}
 
           {hasRules ? <PropertyRules property={property} /> : null}
-
-          {hasHostCard && hostLabel ? (
-            <HostCard name={hostLabel} phone={publicPhone} writeAction={writeAction} takesPayments={property.acceptsBookings === true} />
-          ) : null}
         </div>
 
         <BookingAside />

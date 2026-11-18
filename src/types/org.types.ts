@@ -72,6 +72,8 @@ export interface PublicOrgDto {
   themeColor: string | null;
   /** Only present when the org opted in to publish it (A1-22, A1-23) — off by default (GDPR). */
   contactEmail: string | null;
+  /** The host can receive messages through the site, even with a private email address. */
+  canContactHost?: boolean;
   heroImageUrl?: string | null;
   tagline?: string | null;
   /** Always a supported theme id (see `src/lib/public-site-themes.ts`); older backends may send null. */
@@ -111,8 +113,8 @@ export interface HostContactPayload {
   email: string;
   /** 5 to 2000 characters once trimmed. */
   message: string;
-  /** At most 100 characters; left out when the visitor gave none. */
-  name?: string;
+  /** The name the visitor gives to the host, at most 100 characters. */
+  name: string;
   /** The home the visitor was looking at: counts only if it is a published home of the site. */
   propertyId?: string;
   /** The language of the site the visitor was reading, so that the host answers in it. */
