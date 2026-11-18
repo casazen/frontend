@@ -141,7 +141,7 @@ describe('MoreSheet (UI-04b)', () => {
       expect(within(sheet()).getByRole('status')).toHaveTextContent('Nessuna pagina trovata');
       fireEvent.click(within(sheet()).getByRole('button', { name: 'Azzera la ricerca nel menu' }));
       expect(search).toHaveFocus();
-      expect(within(sheet()).getByTestId('nav-group-everyday')).toBeInTheDocument();
+      expect(within(sheet()).getByTestId('nav-group-management')).toBeInTheDocument();
     });
 
     it('MoreSheet_Tiles_LeadToTheRealRoutes', () => {

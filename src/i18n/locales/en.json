@@ -24139,6 +24139,7 @@
       "unknown": "CasaZen did not receive confirmation. Check your service requests before sending again.",
       "checkList": "Check service requests",
       "track": "Follow the job and its updates in your service requests list.",
+      "stayRecovery": "Open service requests to check what has already been requested. You can start a new cleaning request from a booking you can access.",
       "stayUnavailable": "This stay is unavailable for this request",
       "status": "Request status: {{status}}.",
       "request": "Request housekeeping",
@@ -24457,6 +24458,9 @@
     "None": "Not activated"
   },
   "aiSettings": {
+    "example": "Example from the library",
+    "exampleTrigger": "At check-out",
+    "exampleAction": "Request cleaning for the property",
     "firstRoutine": "Try an AI routine",
     "pageTitle": "AI settings",
     "routineDescription": "Plan your work around arrivals and departures. Choose what triggers a routine, review its actions and test it before activation.",
@@ -24717,10 +24721,10 @@
     "name": "Name",
     "namePlaceholder": "E.g.: Send instructions 2 days before",
     "noActions": "No actions configured. Add at least one action.",
-    "noActiveRoutines": "No active agents. Choose one from the library or create your own.",
+    "noActiveRoutines": "No live routines",
     "noExecutions": "No executions recorded",
-    "noInactiveRoutines": "No inactive agents",
-    "noTestRoutines": "No agents in test mode",
+    "noInactiveRoutines": "No paused routines",
+    "noTestRoutines": "No routines simulating events",
     "problem": {
       "messageTemplate": "Select a message template.",
       "tag": "Enter a tag to add to the guest profile.",
@@ -24751,6 +24755,10 @@
     "waitDays": "Days to wait",
     "waitHours": "Hours to wait",
     "flow": {
+      "confirmTitle": "Enable live actions?",
+      "confirmDescription": "When the event occurs, “{{name}}” can perform these actions for stays matching the conditions.",
+      "confirmLive": "Confirm activation",
+      "all": "All",
       "when": "Trigger",
       "what": "Actions",
       "models": "Choose a template",
@@ -24780,7 +24788,17 @@
       "skipped": "The routine would skip this event.",
       "blocked": "Blocked",
       "possible": "Expected in this simulation",
-      "scope": "Routines apply to your organization. Saving and testing them requires access to all its properties."
+      "scope": "Routines apply to your organization. Saving and testing them requires access to all its properties.",
+      "atCheckin": "At check-in",
+      "atCheckout": "At check-out",
+      "timing": {
+        "BeforeCheckin": "{{delay}} before check-in",
+        "AfterCheckin": "{{delay}} after check-in",
+        "BeforeCheckout": "{{delay}} before check-out",
+        "AfterCheckout": "{{delay}} after check-out"
+      },
+      "createLive": "Create and activate routine",
+      "skippedAction": "Skipped"
     }
   },
   "serviceCategories": {

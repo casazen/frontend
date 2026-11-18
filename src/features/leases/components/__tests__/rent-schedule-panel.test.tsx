@@ -261,7 +261,10 @@ describe('RentSchedulePanel (LT-06)', () => {
   it('render_WithoutStripeAccount_OffersOnlyTheOfflinePaymentAndLinksToPayments', async () => {
     get.mockResolvedValue({ data: ledger({ onlinePaymentsAvailable: false }) });
 
-    renderPanel();
+    renderPanel({
+      ...writer,
+      hasPermission: (area, permission) => writer.hasPermission(area, permission) || (area === 'short-rent' && permission === 'property.write'),
+    });
 
     const notice = await screen.findByTestId('rent-online-unavailable');
     expect(within(notice).getByRole('link', { name: 'Impostazioni Stripe' })).toHaveAttribute('href', '/app/short-rent/settings/payments');

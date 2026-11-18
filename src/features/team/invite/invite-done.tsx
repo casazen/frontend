@@ -37,7 +37,7 @@ export function InviteDone({ sent }: InviteDoneProps) {
   }
 
   const { email, name, expiresAt } = sent.invitation;
-  const emailFailed = !sent.emailQueued;
+  const emailFailed = sent.emailQueued === false;
   const expiry = t('team.invite.done.expires', { date: dayOf(expiresAt, i18n.language) });
 
   return (
@@ -60,7 +60,7 @@ export function InviteDone({ sent }: InviteDoneProps) {
 
       <WizardDone
         title={t('team.invite.done.titleCreated', { name })}
-        description={!emailFailed ? t('team.invite.done.description', { email }) : undefined}
+        description={sent.emailQueued === true ? t('team.invite.done.description', { email }) : undefined}
         whatNext={[
           { text: expiry, icon: CalendarClock },
           { text: t('team.invite.done.account'), icon: KeyRound },

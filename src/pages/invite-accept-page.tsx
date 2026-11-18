@@ -285,7 +285,9 @@ function SignedInCard({ token, invite }: { token: string; invite: OrgInvitationL
   if (unusable) return <UnusableCard reason={unusable} />;
 
   const emailMismatch = user?.email && user.email.trim().toLowerCase() !== invite.email.trim().toLowerCase();
-  const refusal = failed ?? (emailMismatch ? { failure: { kind: 'emailMismatch' as const }, message: undefined } : null);
+  const unverified = user && 'email_verified' in user && user.email_verified === false;
+  const accountIssue = emailMismatch ? 'emailMismatch' : unverified ? 'emailNotVerified' : null;
+  const refusal = failed ?? (accountIssue ? { failure: { kind: accountIssue } as Refusal, message: undefined } : null);
   const blocked = refusal !== null && BLOCKING.includes(refusal.failure.kind);
   return (
     <InviteAcceptCard

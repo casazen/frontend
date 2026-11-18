@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BookOpen, Clock, FlaskConical, Pencil, Play, Plus, Repeat, Trash2 } from 'lucide-react';
@@ -20,18 +20,18 @@ import { RoutineSimulation } from '@/components/routines/RoutineSimulation';
 import { RoutineLibrary } from '@/components/routines/RoutineLibrary';
 import { BulkCleaningDialog } from '@/features/properties/components/bulk-cleaning-dialog';
 import { getHttpStatus } from '@/lib/api-errors';
+import { routineTrigger } from '@/lib/routine-trigger';
+import { describeRoutineError } from '@/lib/routine-errors';
 import { formatRomeDateTime } from '@/lib/stay-dates';
 import {
   ACTION_OUTCOME_KEYS,
   actionLabelKey,
   actionReasonKey,
-  eventLabelKey,
   executionCodeKey,
   executionHeadline,
   parseActions,
   parseExecutionResult,
   parseEventConfig,
-  TIME_EVENT_TYPES,
   toAvailability,
   unavailableActionTypes,
   utcInstant,
@@ -48,9 +48,17 @@ import {
   useSetRoutineTestMode,
   useUpdateRoutine,
 } from '@/queries/routines';
-import type { CreateRoutineDto, Routine, RoutineExecution, RoutineLibraryTemplate, UpdateRoutineDto } from '@/types';
+import type { CreateRoutineDto, Routine, RoutineAction, RoutineExecution, RoutineLibraryTemplate, UpdateRoutineDto } from '@/types';
 
-type RoutineFilter = 'active' | 'test' | 'inactive';
+interface LiveConfirmation {
+  name: string;
+  trigger: string;
+  objective?: string | null;
+  actions: RoutineAction[];
+  commit: () => Promise<unknown>;
+}
+
+type RoutineFilter = 'all' | 'active' | 'test' | 'inactive';
 
 /** The log of a routine shows at most this many lines: the newest 50, which is what the server sends on a page (`RoutineLimits.DefaultExecutionsPageSize`). */
 const EXECUTIONS_PAGE_SIZE = 50;
@@ -82,49 +90,96 @@ export function RoutinesPage() {
   const [logRoutineId, setLogRoutineId] = useState<string | undefined>();
   const [selectedRoutine, setSelectedRoutine] = useState<Routine | undefined>();
   const [routineToDelete, setRoutineToDelete] = useState<Routine | undefined>();
-  const [filter, setFilter] = useState<RoutineFilter>('active');
+  const [liveChange, setLiveChange] = useState<LiveConfirmation>();
+  const [liveError, setLiveError] = useState<string>();
+  const [livePending, setLivePending] = useState(false);
+  const liveRequest = useRef<Promise<void> | null>(null);
+  const [filter, setFilter] = useState<RoutineFilter>('all');
 
   // A card waits while ANY write on its routine is on its way, whichever write and however many are in flight on other cards at the same time (the hooks above follow only
   // their last call, so the ids come from the mutation cache): a second click on another button of the same card would answer for a routine that is about to change.
   const busyIds = useRoutineIdsBeingWritten();
 
   const handleCreate = () => {
+    createRoutine.reset();
     setTemplate(undefined);
     setSelectedRoutine(undefined);
     setEditorOpen(true);
   };
 
   const handleEdit = (routine: Routine) => {
+    updateRoutine.reset();
     setTemplate(undefined);
     setSelectedRoutine(routine);
     setEditorOpen(true);
   };
 
-  const handleSave = (dto: CreateRoutineDto | UpdateRoutineDto) => {
-    if (selectedRoutine) {
-      updateRoutine.mutate({ id: selectedRoutine.id, dto: dto as UpdateRoutineDto }, { onSuccess: () => setEditorOpen(false) });
-    } else {
-      createRoutine.mutate(dto as CreateRoutineDto, { onSuccess: (saved) => {
-        setEditorOpen(false);
-        setFilter(saved.active ? (saved.testMode ? 'test' : 'active') : 'inactive');
-      } });
-    }
-  };
+  function reviewLive(change: LiveConfirmation) {
+    setLiveError(undefined);
+    setLiveChange(change);
+  }
 
-  // The dialog waits for the answer and stays open when the server refuses (the hook says why).
+  function confirmLive() {
+    if (!liveChange) return Promise.resolve();
+    if (liveRequest.current) return liveRequest.current;
+    setLivePending(true);
+    setLiveError(undefined);
+    const request = liveChange.commit().then(() => undefined).catch(error => {
+      setLiveError(describeRoutineError(error, t) ?? t('routines.updateError'));
+      throw error;
+    }).finally(() => {
+      liveRequest.current = null;
+      setLivePending(false);
+    });
+    liveRequest.current = request;
+    return request;
+  }
+
+  async function saveRoutine(dto: CreateRoutineDto | UpdateRoutineDto) {
+    if (selectedRoutine) {
+      await updateRoutine.mutateAsync({ id: selectedRoutine.id, dto });
+    } else {
+      const saved = await createRoutine.mutateAsync(dto as CreateRoutineDto);
+      setFilter(saved.active ? (saved.testMode ? 'test' : 'active') : 'inactive');
+    }
+    setEditorOpen(false);
+  }
+
+  function handleSave(dto: CreateRoutineDto | UpdateRoutineDto) {
+    if (dto.active && !dto.testMode && !(selectedRoutine?.active && !selectedRoutine.testMode) && dto.eventType) {
+      reviewLive({
+        name: dto.name ?? selectedRoutine?.name ?? '',
+        trigger: routineTrigger(t, dto.eventType, dto.eventConfig),
+        objective: dto.agentObjective,
+        actions: dto.actions ?? [],
+        commit: () => saveRoutine(dto),
+      });
+    } else void saveRoutine(dto).catch(() => undefined);
+  }
+
   const handleConfirmDelete = async () => {
     if (routineToDelete) await deleteRoutine.mutateAsync(routineToDelete.id);
   };
 
-  const handleToggleActive = (routine: Routine) => {
-    setActive.mutate({ id: routine.id, active: !routine.active });
-  };
-
-  const handleToggleTestMode = (routine: Routine) => {
-    setTestMode.mutate({ id: routine.id, testMode: !routine.testMode });
-  };
+  function changeMode(routine: Routine, field: 'active' | 'testMode') {
+    const active = field === 'active' ? !routine.active : routine.active;
+    const testMode = field === 'testMode' ? !routine.testMode : routine.testMode;
+    const commit = () => field === 'active'
+      ? setActive.mutateAsync({ id: routine.id, active })
+      : setTestMode.mutateAsync({ id: routine.id, testMode });
+    if (active && !testMode) {
+      reviewLive({
+        name: routine.name,
+        objective: routine.agentObjective,
+        trigger: routineTrigger(t, routine.eventType, parseEventConfig(routine.eventConfig)),
+        actions: parseActions(routine.actionsJson),
+        commit,
+      });
+    } else void commit().catch(() => undefined);
+  }
 
   function configureTemplate(value: RoutineLibraryTemplate) {
+    createRoutine.reset();
     setSelectedRoutine(undefined);
     setTemplate(value);
     setLibraryOpen(false);
@@ -138,7 +193,7 @@ export function RoutinesPage() {
   const activeRoutines = list?.filter((r) => r.active && !r.testMode) ?? [];
   const testRoutines = list?.filter((r) => r.active && r.testMode) ?? [];
   const inactiveRoutines = list?.filter((r) => !r.active) ?? [];
-  const shown = filter === 'active' ? activeRoutines : filter === 'test' ? testRoutines : inactiveRoutines;
+  const shown = filter === 'all' ? list ?? [] : filter === 'active' ? activeRoutines : filter === 'test' ? testRoutines : inactiveRoutines;
   const emptyKey = filter === 'active' ? 'routines.noActiveRoutines' : filter === 'test' ? 'routines.noTestRoutines' : 'routines.noInactiveRoutines';
 
   return (
@@ -188,6 +243,7 @@ export function RoutinesPage() {
             value={filter}
             onValueChange={setFilter}
             options={[
+              { value: 'all', label: `${t('routines.flow.all')} (${list.length})`, testId: 'all-tab' },
               { value: 'active', label: `${t('routines.activeTab')} (${activeRoutines.length})`, testId: 'active-tab' },
               { value: 'test', label: `${t('routines.testTab')} (${testRoutines.length})`, testId: 'test-tab' },
               { value: 'inactive', label: `${t('routines.inactiveTab')} (${inactiveRoutines.length})`, testId: 'inactive-tab' },
@@ -212,8 +268,8 @@ export function RoutinesPage() {
                   onEdit={handleEdit}
                   onSimulate={setSimulation}
                   onDelete={setRoutineToDelete}
-                  onToggleActive={handleToggleActive}
-                  onToggleTestMode={handleToggleTestMode}
+                  onToggleActive={routine => changeMode(routine, 'active')}
+                  onToggleTestMode={routine => changeMode(routine, 'testMode')}
                   onShowLog={(target) => setLogRoutineId(target.id)}
                 />
               ))}
@@ -229,6 +285,9 @@ export function RoutinesPage() {
             <DialogTitle>{selectedRoutine ? t('routines.editTitle') : template ? t('routines.flow.configure') : t('routines.createTitle')}</DialogTitle>
             <DialogDescription>{t(template ? 'routines.flow.savedPaused' : 'routines.editorDescription')}</DialogDescription>
           </DialogHeader>
+          {(selectedRoutine ? updateRoutine.isError : createRoutine.isError) && <p role="alert" className="rounded-lg border border-destructive/40 p-3 text-sm text-destructive">
+            {describeRoutineError(selectedRoutine ? updateRoutine.error : createRoutine.error, t) ?? t('routines.createError')}
+          </p>}
           <RoutineEditor
             routine={selectedRoutine}
             template={template}
@@ -280,6 +339,29 @@ export function RoutinesPage() {
       </Dialog>
 
       <ConfirmationDialog
+        open={Boolean(liveChange)}
+        onOpenChange={open => { if (!open && !liveRequest.current) setLiveChange(undefined); }}
+        title={t('routines.flow.confirmTitle')}
+        description={t('routines.flow.confirmDescription', { name: liveChange?.name })}
+        confirmLabel={t('routines.flow.confirmLive')}
+        isLoading={livePending}
+        onConfirm={confirmLive}
+      >
+        {liveChange && <div className="space-y-3 rounded-lg bg-muted/60 p-3 text-sm">
+          <div><p className="text-muted-foreground">{t('routines.flow.when')}</p><p>{liveChange.trigger}</p></div>
+          {liveChange.objective && <div><p className="text-muted-foreground">{t('aiSettings.objective')}</p><p className="break-words">{liveChange.objective}</p></div>}
+          <div><p className="text-muted-foreground">{t('routines.flow.what')}</p>
+            <ol className="list-inside list-decimal space-y-1">
+              {liveChange.actions.map((action, index) => <li key={index}>{t(actionLabelKey(action.type) ?? 'routines.log.unknownAction')}
+                {[action.config?.text, action.config?.tag, action.config?.aiCondition].filter(value => typeof value === 'string' && value).map((value, position) => <span key={position} className="ml-1 break-words text-muted-foreground">· {String(value)}</span>)}
+              </li>)}
+            </ol>
+          </div>
+          {liveError && <p role="alert" className="text-destructive">{liveError}</p>}
+        </div>}
+      </ConfirmationDialog>
+
+      <ConfirmationDialog
         open={routineToDelete !== undefined}
         onOpenChange={(open) => !open && setRoutineToDelete(undefined)}
         title={t('routines.deleteTitle')}
@@ -311,10 +393,6 @@ function RoutineCard({ routine, availability, busy, onEdit, onSimulate, onDelete
   const { t } = useTranslation();
 
   const timing = parseEventConfig(routine.eventConfig);
-  const hours = timing.days * 24 + timing.hours;
-  const offset = TIME_EVENT_TYPES.includes(routine.eventType) && hours > 0
-    ? [Math.floor(hours / 24) && t('routines.library.daysCount', { count: Math.floor(hours / 24) }), hours % 24 && t('routines.library.hoursCount', { count: hours % 24 })].filter(Boolean).join(' ')
-    : null;
   const actions = parseActions(routine.actionsJson);
   const cannotRun = unavailableActionTypes(availability, actions);
   const actionNames = actions.map((action) => {
@@ -329,7 +407,7 @@ function RoutineCard({ routine, availability, busy, onEdit, onSimulate, onDelete
           <div className="min-w-40 flex-1 space-y-2">
             {/* A level under the title of the page: the card title of the kit is an h3, which would skip one. */}
             <h2 className="break-words text-lg font-semibold leading-none tracking-tight">{routine.name}</h2>
-            <CardDescription>{routine.agentObjective}</CardDescription>
+            {routine.agentObjective && <CardDescription>{routine.agentObjective}</CardDescription>}
             <Badge variant={routine.active && !routine.testMode ? 'success' : 'secondary'} data-testid={!routine.active ? 'paused-badge' : routine.testMode ? 'test-mode-badge' : 'active-badge'}>
               {t(!routine.active ? 'routines.flow.paused' : routine.testMode ? 'routines.flow.testing' : 'routines.flow.live')}
             </Badge>
@@ -371,7 +449,7 @@ function RoutineCard({ routine, availability, busy, onEdit, onSimulate, onDelete
         <div className="space-y-4">
           <div className="space-y-2 text-sm text-muted-foreground">
             <dl className="grid gap-3 rounded-lg bg-muted/50 p-3">
-              <div><dt className="text-xs">{t('routines.flow.when')}</dt><dd className="font-medium text-foreground">{t(eventLabelKey(routine.eventType))}{offset && ` · ${offset}`}</dd></div>
+              <div><dt className="text-xs">{t('routines.flow.when')}</dt><dd className="font-medium text-foreground">{routineTrigger(t, routine.eventType, timing)}</dd></div>
               <div><dt className="text-xs">{t('routines.flow.what')}</dt><dd className="text-foreground">{actionNames.length > 0 ? actionNames.join(', ') : t('routines.noActions')}</dd></div>
             </dl>
             <Button type="button" variant="outline" onClick={() => onSimulate(routine)} disabled={busy} data-testid={`simulate-${routine.id}`}><FlaskConical aria-hidden="true" />{t('routines.flow.simulate')}</Button>

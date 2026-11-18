@@ -138,8 +138,14 @@ function RequestWizard() {
   }
 
   if (base.values.bookingId && !stay) {
-    return <EmptyState icon={Building2} title={t('requestWizard.housekeeping.stayUnavailable')}
-      action={{ label: t('interventions.title'), href: INTERVENTIONS_PATH }} />;
+    return (
+      <EmptyState
+        icon={Building2}
+        title={t('requestWizard.housekeeping.stayUnavailable')}
+        description={t('requestWizard.housekeeping.stayRecovery')}
+        action={{ label: t('interventions.title'), href: INTERVENTIONS_PATH }}
+      />
+    );
   }
 
   const goToStep = (stepId: string) =>

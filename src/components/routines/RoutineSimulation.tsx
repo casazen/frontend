@@ -23,6 +23,7 @@ export function RoutineSimulation({ routineId }: { routineId: string }) {
   const items = bookings.data?.items ?? [];
   const selected = items.find(booking => booking.id === bookingId);
   const result = simulation.data;
+  const reason = executionCodeKey(result?.code ?? undefined);
   function search(event: FormEvent) {
     event.preventDefault();
     setBookingId('');
@@ -58,10 +59,10 @@ export function RoutineSimulation({ routineId }: { routineId: string }) {
       {simulation.isError && <p role="alert" className="text-sm text-destructive">{describeRoutineError(simulation.error, t) ?? t('routines.simulateError')}</p>}
       {result && <section aria-live="polite" className="space-y-3 rounded-lg border bg-muted/50 p-4">
         <h3 className="font-semibold">{t('routines.flow.result')}</h3>
-        <p>{t(result.code ? 'routines.flow.invalid' : !result.conditionsMatched ? 'routines.flow.unmatched' : result.wouldExecute ? 'routines.flow.matched' : 'routines.flow.skipped')}</p>
-        {result.conditionsMatched && result.wouldExecute && <ul className="space-y-2 text-sm">{result.actions.map(action => {
+        <p>{t(reason ?? (result.code ? 'routines.flow.invalid' : !result.conditionsMatched ? 'routines.flow.unmatched' : result.wouldExecute ? 'routines.flow.matched' : 'routines.flow.skipped'))}</p>
+        {result.conditionsMatched && result.actions.length > 0 && <ul className="space-y-2 text-sm">{result.actions.map(action => {
           const why = executionCodeKey(action.code ?? undefined);
-          return <li key={action.index}><strong>{t(actionLabelKey(action.type) ?? 'routines.log.unknownAction')}</strong><span className="ml-2">{t(action.wouldBlock ? 'routines.flow.blocked' : 'routines.flow.possible')}</span>{why && <p>{t(why)}</p>}</li>;
+          return <li key={action.index}><strong>{t(actionLabelKey(action.type) ?? 'routines.log.unknownAction')}</strong><span className="ml-2">{t(action.wouldBlock ? 'routines.flow.blocked' : result.wouldExecute ? 'routines.flow.possible' : 'routines.flow.skippedAction')}</span>{why && <p>{t(why)}</p>}</li>;
         })}</ul>}
       </section>}
     </div>

@@ -481,7 +481,7 @@ export function RoutineEditor({ routine, template, availability, onSave, onCance
           {t('common.cancel')}
         </Button>
         <Button type="submit" disabled={isSaving || !valid} data-testid="save-routine-button">
-          {isSaving ? t('common.saving') : template ? t('routines.flow.savePaused') : routine ? t('common.save') : t('routines.create')}
+          {isSaving ? t('common.saving') : template ? t('routines.flow.savePaused') : routine ? t('common.save') : t(active && !testMode && !activationBlocked ? 'routines.flow.createLive' : 'routines.create')}
         </Button>
       </div>
     </form>

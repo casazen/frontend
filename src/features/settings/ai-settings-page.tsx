@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, BookOpen, MessageSquareText, Settings2, Workflow } from 'lucide-react';
+import { ArrowRight, BookOpen, CalendarCheck, ClipboardList, MessageSquareText, Settings2, Workflow } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
 import { useCommercialProfile } from '@/hooks/use-commercial-profile';
@@ -20,6 +20,7 @@ export function AiSettingsPage() {
   const canConfigure = hasPermission('short-rent', 'property.write');
   const billingPath = hasPermission('account', ORG_BILLING_ADMIN_PERMISSION) ? '/app/account/billing' : null;
   const routinesIncluded = commercialRouteAllowed(profile, ROUTINES_PATH);
+  const showIdentity = commercialRouteAllowed(profile, '/app/short-rent/compliance/identification');
   const otherSettings = [
     { path: '/app/short-rent/settings/assistant', icon: MessageSquareText, title: 'nav.assistant', description: 'aiSettings.assistantDescription', visible: flags.messageAssistant && canConfigure },
     { path: '/app/admin/ai', icon: Settings2, title: 'nav.ai', description: 'aiSettings.provider', visible: hasPermission('admin', 'admin.seo.read') },
@@ -28,7 +29,7 @@ export function AiSettingsPage() {
     <div className="max-w-6xl space-y-5">
       <PageHeader title={t('aiSettings.pageTitle')} crumbs="auto" />
       {flags.routines && canConfigure && (
-        <section aria-labelledby="settings-routines-title" className="rounded-xl border bg-card p-4 sm:p-6" data-testid="ai-routines-entry">
+        <section aria-labelledby="settings-routines-title" className="grid items-start gap-4 rounded-xl border bg-card p-4 sm:p-6 lg:grid-cols-[minmax(0,3fr)_minmax(15rem,2fr)] lg:gap-x-6" data-testid="ai-routines-entry">
           <div className="flex items-start gap-3 sm:gap-4">
             <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary-text">
               <Workflow aria-hidden="true" className="size-6" />
@@ -39,16 +40,25 @@ export function AiSettingsPage() {
             </div>
           </div>
           {routinesIncluded ? (
-            <div className="mt-4 flex flex-wrap gap-2 sm:ml-15">
+            <div className="flex flex-wrap gap-2 sm:ml-15 lg:col-start-1">
               <Button asChild className="min-h-11"><Link to={ROUTINES_PATH}>{t('aiSettings.openRoutines')}<ArrowRight aria-hidden="true" className="size-4" /></Link></Button>
               <Button asChild variant="outline" className="min-h-11"><Link to={ROUTINES_PATH + '?view=library'}><BookOpen aria-hidden="true" className="size-4" />{t('aiSettings.browseTemplates')}</Link></Button>
             </div>
           ) : (
-            <div className="mt-4 space-y-2 text-sm">
+            <div className="space-y-2 text-sm lg:col-start-1">
               <p>{t('commercial.moduleRequiredText')}</p>
               {billingPath && <Button asChild variant="outline"><Link to={billingPath}>{t('commercial.managePlan')}</Link></Button>}
             </div>
           )}
+          <div className="rounded-lg bg-muted/70 p-4 lg:col-start-2 lg:row-span-2 lg:row-start-1">
+            <p className="mb-2 text-xs font-medium text-muted-foreground">{t('aiSettings.example')}</p>
+            <ol className="space-y-2 text-sm">
+              <li className="flex items-center gap-2 font-medium"><CalendarCheck aria-hidden="true" className="size-4 text-primary-text" />{t('aiSettings.exampleTrigger')}</li>
+              <li className="ml-2 border-l border-primary/30 pl-4">
+                <span className="flex items-center gap-2"><ClipboardList aria-hidden="true" className="size-4 shrink-0 text-primary-text" />{t('aiSettings.exampleAction')}</span>
+              </li>
+            </ol>
+          </div>
         </section>
       )}
       <div className="grid gap-3 empty:hidden md:grid-cols-2">
@@ -71,7 +81,7 @@ export function AiSettingsPage() {
           );
         })}
       </div>
-      {commercialRouteAllowed(profile, '/app/short-rent/compliance/identification') && <BiometricSettingsCard compact />}
+      {showIdentity && <BiometricSettingsCard compact />}
     </div>
   );
 }

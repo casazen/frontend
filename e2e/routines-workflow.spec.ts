@@ -16,8 +16,13 @@ const booking = {
 async function mockRoutines(page: Page) {
   const routines = [
     baseRoutine,
-    { ...baseRoutine, id: '00000000-0000-4000-8000-000000000702', name: 'Promemoria arrivo', testMode: true },
-    { ...baseRoutine, id: '00000000-0000-4000-8000-000000000703', name: 'Promemoria recensione', active: false },
+    { ...baseRoutine, id: '00000000-0000-4000-8000-000000000702', name: 'Istruzioni per l’arrivo',
+      agentObjective: 'Ricorda all’ospite gli orari e le istruzioni di accesso.',
+      eventType: 'BeforeCheckin', eventConfig: '{"days":2,"hours":0}',
+      actionsJson: '[{"type":"MessageToGuest","config":{"channel":"email","templateId":"demo-arrival"}}]', testMode: true },
+    { ...baseRoutine, id: '00000000-0000-4000-8000-000000000703', name: 'Richiesta di recensione',
+      agentObjective: 'Invita gli ospiti delle prenotazioni dirette a raccontare il soggiorno.',
+      eventConfig: '{"days":1,"hours":0}', actionsJson: '[{"type":"RequestReview","config":{}}]', active: false },
   ];
   const saved: object[] = [];
   const simulated: object[] = [];
@@ -47,7 +52,13 @@ for (const width of [390, 1440]) {
     await page.goto(demoUrl('/app/short-rent/automations', 'short-stay'));
     await expect(page.getByTestId(`routine-card-${baseRoutine.id}`)).toBeVisible();
     await expect(page.locator('body')).toHaveJSProperty('scrollWidth', width);
-    await page.screenshot({ path: info.outputPath(`routine-ai-${width}.jpg`), type: 'jpeg' });
+    await page.evaluate(() => document.fonts.ready);
+    // Dev builds may refresh during capture. Retry if Chromium returned an empty frame.
+    await expect(async () => {
+      await expect(page.getByTestId(`routine-card-${baseRoutine.id}`)).toBeVisible();
+      const shot = await page.screenshot({ path: info.outputPath(`routine-ai-${width}.jpg`), type: 'jpeg', animations: 'disabled' });
+      expect(shot.byteLength).toBeGreaterThan(10000);
+    }).toPass({ timeout: 15000 });
   });
 }
 

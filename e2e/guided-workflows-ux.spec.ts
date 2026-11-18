@@ -132,13 +132,16 @@ for (const [width, height] of [[320, 568], [768, 1024], [1440, 900]]) {
 }
 
 test('primo accesso anonimo · riprovare il login e aprire un invito senza esporre il token all’IdP', async ({ page }) => {
+  // The test compiles the anonymous app, then crosses origins for three separate identity-provider handoffs.
+  test.setTimeout(180_000);
   // The shared demo server already signs in a sample user. This isolated Vite instance runs
   // the real auth bridge, with an in-browser fixture standing in for the hosted identity provider.
   const { createServer } = await import('vite');
   const server = await createServer({
     logLevel: 'error',
     cacheDir: 'node_modules/.vite-guided-entry-e2e',
-    server: { host: '127.0.0.1', port: 0, hmr: false },
+    // Vite may resolve zero to its default port. Let it select a free port when CI already owns 5173.
+    server: { host: '127.0.0.1', port: 0, strictPort: false, hmr: false },
     define: {
       'import.meta.env.VITE_DEMO_MODE': '"false"',
       'import.meta.env.VITE_AUTH0_DOMAIN': '"idp.example.test"',

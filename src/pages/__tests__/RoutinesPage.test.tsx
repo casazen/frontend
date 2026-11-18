@@ -5,6 +5,7 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { AxiosError } from 'axios';
 import { toast } from 'sonner';
 import type { ContextBootstrapDto } from '@/api/contexts';
+import { bookingsApi } from '@/api/bookings.api';
 import { propertiesApi } from '@/api/properties.api';
 import { propertyCleaningApi } from '@/api/property-cleaning.api';
 import { routinesApi } from '@/api/routines.api';
@@ -22,7 +23,7 @@ import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { useWorkspace } from '@/hooks/use-workspace';
 import i18n from '@/i18n/config';
 import { expectNoAxeViolations } from '@/test/axe';
-import type { Property, Routine, RoutineActionCatalogItem, RoutineExecution } from '@/types';
+import type { BookingListItem, Property, Routine, RoutineActionCatalogItem, RoutineExecution } from '@/types';
 import { RoutinesPage } from '../RoutinesPage';
 
 vi.mock('@/api/routines.api', () => ({
@@ -166,6 +167,9 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       // The card names the event and its actions, as words and not as the codes of the API.
       expect(screen.getByTestId('routine-card-r1')).toHaveTextContent('Check-out effettuato');
       expect(screen.getByTestId('routine-card-r1')).toHaveTextContent('Crea un promemoria manuale');
+      expect(screen.getByTestId('all-tab')).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.getByTestId('routine-card-r2')).toBeVisible();
+      fireEvent.click(screen.getByTestId('active-tab'));
       expect(screen.queryByTestId('routine-card-r2')).not.toBeInTheDocument();
 
       fireEvent.click(screen.getByTestId('test-tab'));
@@ -269,6 +273,7 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       fireEvent.click(await screen.findByRole('button', { name: 'Usa «Crea la pulizia»' }));
       fireEvent.change(screen.getByLabelText('Condizione per l’agente AI (facoltativa)'), { target: { value: 'Almeno tre notti' } });
       fireEvent.click(screen.getByTestId('save-routine-button'));
+      fireEvent.click(await screen.findByRole('button', { name: 'Conferma attivazione' }));
       await waitFor(() => expect(routinesApi.create).toHaveBeenCalledWith(expect.objectContaining({
         active: true, testMode: false, actions: [{ type: 'CreateCleaningRequest', config: { aiCondition: 'Almeno tre notti' } }],
       })));
@@ -350,6 +355,7 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       fireEvent.change(screen.getByTestId('activity-text-0'), { target: { value: 'Controlla la casa' } });
       fireEvent.change(screen.getByTestId('activity-due-0'), { target: { value: '1' } });
       fireEvent.click(screen.getByTestId('save-routine-button'));
+      fireEvent.click(await screen.findByRole('button', { name: 'Conferma attivazione' }));
 
       await waitFor(() => expect(routinesApi.create).toHaveBeenCalledTimes(1));
       expect(routinesApi.create).toHaveBeenCalledWith({
@@ -393,6 +399,7 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       fireEvent.change(screen.getByTestId('action-type-select-0'), { target: { value: 'CreateActivity' } });
       fireEvent.change(screen.getByTestId('activity-text-0'), { target: { value: 'Controlla' } });
       fireEvent.click(screen.getByTestId('save-routine-button'));
+      fireEvent.click(await screen.findByRole('button', { name: 'Conferma attivazione' }));
 
       await waitFor(() => expect(routinesApi.create).toHaveBeenCalledTimes(1));
       expect(vi.mocked(routinesApi.create).mock.calls[0][0]).toMatchObject({
@@ -457,6 +464,7 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       fireEvent.change(screen.getByTestId('wait-days-0'), { target: { value: '0' } });
       fireEvent.change(screen.getByTestId('wait-hours-0'), { target: { value: '3' } });
       fireEvent.click(screen.getByTestId('save-routine-button'));
+      fireEvent.click(await screen.findByRole('button', { name: 'Conferma attivazione' }));
 
       await waitFor(() => expect(routinesApi.create).toHaveBeenCalledTimes(1));
       expect(routinesApi.create).toHaveBeenCalledWith(
@@ -553,6 +561,8 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       const toggle = await screen.findByTestId('toggle-active-r3');
       expect(toggle).not.toBeChecked();
       fireEvent.click(toggle);
+      expect(routinesApi.setActive).not.toHaveBeenCalled();
+      fireEvent.click(await screen.findByRole('button', { name: 'Conferma attivazione' }));
 
       await waitFor(() => expect(routinesApi.setActive).toHaveBeenCalledWith('r3', true));
       await waitFor(() =>
@@ -565,12 +575,34 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       expect(toast.success).not.toHaveBeenCalled();
     });
 
+    it('previews live actions when leaving simulation and permits cancellation or a single confirmed write', async () => {
+      const pending = deferred<Routine>();
+      vi.mocked(routinesApi.setTestMode).mockReturnValue(pending.promise);
+      renderPage();
+      const mode = await screen.findByTestId('toggle-test-mode-r2');
+      fireEvent.click(mode);
+      const preview = await screen.findByRole('dialog', { name: 'Attivare le azioni reali?' });
+      expect(preview).toHaveTextContent('2 giorni prima del check-in');
+      expect(preview).toHaveTextContent(i18n.t('routines.actionTypes.messageToGuest'));
+      fireEvent.click(within(preview).getByRole('button', { name: i18n.t('shared.cancel') }));
+      expect(routinesApi.setTestMode).not.toHaveBeenCalled();
+      fireEvent.click(mode);
+      const confirm = await screen.findByRole('button', { name: 'Conferma attivazione' });
+      fireEvent.click(confirm);
+      fireEvent.click(confirm);
+      await waitFor(() => expect(routinesApi.setTestMode).toHaveBeenCalledTimes(1));
+      expect(routinesApi.setTestMode).toHaveBeenCalledWith('r2', false);
+      pending.resolve({ ...IN_TEST, testMode: false });
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    });
+
     it('RoutinesPage_RefusalWithNoNamesOfActions_SaysItInTheWordsOfTheCode', async () => {
       vi.mocked(routinesApi.setActive).mockRejectedValue(httpError(422, { code: 'routine_action_not_available' }));
       renderPage();
 
       fireEvent.click(await screen.findByTestId('inactive-tab'));
       fireEvent.click(await screen.findByTestId('toggle-active-r3'));
+      fireEvent.click(await screen.findByRole('button', { name: 'Conferma attivazione' }));
 
       await waitFor(() =>
         expect(toast.error).toHaveBeenCalledWith(
@@ -585,10 +617,14 @@ describe('the routines page (E01/F04/US02/T01)', () => {
 
       fireEvent.click(await screen.findByTestId('inactive-tab'));
       fireEvent.click(await screen.findByTestId('toggle-active-r3'));
+      fireEvent.click(await screen.findByRole('button', { name: 'Conferma attivazione' }));
 
       await waitFor(() =>
         expect(toast.error).toHaveBeenCalledWith('Le routine valgono per tutti gli immobili dell’organizzazione: per cambiarle serve poterli vedere tutti.'),
       );
+      expect(screen.getByRole('dialog')).toBeVisible();
+      expect(within(screen.getByRole('dialog')).getByRole('alert')).toHaveTextContent('serve poterli vedere tutti');
+      expect(screen.getByTestId('toggle-active-r3')).not.toBeChecked();
     });
 
     it('RoutinesPage_WriteOnACardInFlight_DisablesEveryControlOfThatCardAndOnlyOfThatCard', async () => {
@@ -733,6 +769,51 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       await waitFor(() => expect(toast.error).toHaveBeenCalled());
       expect(screen.getByTestId('routine-name-input')).toHaveValue('Richiesta di recensione');
       expect(toast.success).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('previewing a booking', () => {
+    function bookingAccess(allowed: boolean) {
+      vi.mocked(useWorkspace).mockReturnValue({
+        activeContext: 'short-rent', contexts: [], isReady: true, setActiveContext: vi.fn(),
+        getDefaultRoute: () => ROUTINES_PATH, hasPermission: () => allowed,
+      });
+    }
+    it('does not request a booking list without booking.read', async () => {
+      bookingAccess(false);
+      const search = vi.spyOn(bookingsApi, 'search');
+      try {
+        renderPage();
+        fireEvent.click(await screen.findByTestId('simulate-r1'));
+        expect(screen.getByRole('dialog')).toHaveTextContent(i18n.t('routines.flow.noBookingAccess'));
+        expect(search).not.toHaveBeenCalled();
+        expect(routinesApi.simulate).not.toHaveBeenCalled();
+      } finally { search.mockRestore(); }
+    });
+
+    it('shows a refused preview and a blocked action without activating or running the routine', async () => {
+      bookingAccess(true);
+      const search = vi.spyOn(bookingsApi, 'search').mockResolvedValue({
+        page: 1, pageSize: 25, totalCount: 1,
+        items: [{ id: 'stay', bookingCode: 'ROMA1-00200', checkInDate: '2026-11-18' } as BookingListItem],
+      });
+      vi.mocked(routinesApi.simulate)
+        .mockRejectedValueOnce(httpError(403, { code: 'routines_need_org_scope' }))
+        .mockResolvedValue({ routineId: 'r1', routineName: CLEANING.name, conditionsMatched: true, wouldExecute: true,
+          actions: [{ index: 0, type: 'CreateActivity', wouldBlock: true, code: 'routine_action_not_available' }] });
+      try {
+        renderPage();
+        fireEvent.click(await screen.findByTestId('simulate-r1'));
+        fireEvent.change(await screen.findByLabelText(i18n.t('routines.flow.chooseBooking')), { target: { value: 'stay' } });
+        const simulate = screen.getByRole('button', { name: i18n.t('routines.flow.try') });
+        fireEvent.click(simulate);
+        expect(await screen.findByRole('alert')).toHaveTextContent('serve poterli vedere tutti');
+        fireEvent.click(simulate);
+        expect(await screen.findByText(i18n.t('routines.flow.blocked'))).toBeVisible();
+        expect(routinesApi.simulate).toHaveBeenCalledWith('r1', { bookingId: 'stay' });
+        expect(routinesApi.setActive).not.toHaveBeenCalled();
+        expect(routinesApi.setTestMode).not.toHaveBeenCalled();
+      } finally { search.mockRestore(); }
     });
   });
 

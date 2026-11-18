@@ -514,16 +514,14 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
       expect(screen.queryByRole('button', { name: 'Altro' })).not.toBeInTheDocument();
     });
 
-    it('GroupedNavLinks_Sheet_DrawsTilesInTwoColumnsNotARowPerEntry', () => {
+    it('GroupedNavLinks_Sheet_UsesFullWidthRowsOnNarrowPhonesAndTwoColumnsWhenTheyFit', () => {
       renderNav('/app/short-rent', { variant: 'sheet' });
 
       const offer = screen.getByRole('group', { name: 'La tua offerta' });
-      expect(within(offer).getByRole('list')).toHaveClass('grid', 'grid-cols-2');
-      // Far taller than the 44 px a finger needs, the icon above the name (the name is first in the markup: it is read
-      // before the counter).
-      expect(link('Marketplace')).toHaveClass('min-h-[4.5rem]', 'flex-col-reverse');
-      expect(link('Marketplace').querySelector('svg')).not.toBeNull();
-      expect(link('Marketplace').firstElementChild).toHaveTextContent('Marketplace');
+      expect(within(offer).getByRole('list')).toHaveClass('grid', 'grid-cols-1', 'min-[23rem]:grid-cols-2');
+      expect(link('Marketplace')).toHaveClass('min-h-12', 'items-center');
+      expect(link('Marketplace')).toHaveAccessibleName('Marketplace');
+      expect(link('Marketplace').querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
     });
 
     it('GroupedNavLinks_Sheet_DoesNotUseBorderColorsThePageResetsAndTellsTheOpenPageByBackgroundAndRing', () => {

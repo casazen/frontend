@@ -20827,7 +20827,7 @@
           "Nell’area Fornitori completa il profilo e l’attivazione, configura servizi e disponibilità e consulta la posta in arrivo per gestire le richieste ricevute.",
           "Aggiorna il calendario e verifica i conflitti prima di accettare un incarico. La guida iCal dell’area Fornitori spiega dove recuperare i link dai calendari esterni.",
           "Un profilo sospeso o un’attivazione incompleta può limitare le operazioni: leggi l’avviso mostrato e contatta il referente indicato nell’app.",
-          "Per chiedere una pulizia per un soggiorno, apri la sua prenotazione e scegli Richiedi pulizie. Controlla immobile, data e fornitore nel riepilogo. Dopo l’invio apri la richiesta per seguirne lo stato."
+          "Per chiedere una pulizia per un soggiorno, apri la sua prenotazione e scegli «Richiedi le pulizie». Controlla immobile, data e fornitore nel riepilogo. Dopo l’invio apri la richiesta per seguirne lo stato."
         ]
       },
       "troubleshooting": {
@@ -24139,6 +24139,7 @@
       "unknown": "CasaZen non ha ricevuto la conferma. Controlla gli interventi prima di inviare di nuovo la richiesta.",
       "checkList": "Controlla gli interventi",
       "track": "Segui il lavoro e i suoi aggiornamenti in Interventi.",
+      "stayRecovery": "Apri gli interventi per controllare le richieste già registrate. Puoi avviare una nuova pulizia da una prenotazione a cui hai accesso.",
       "stayUnavailable": "Soggiorno non disponibile per questa richiesta",
       "status": "Stato della richiesta: {{status}}.",
       "request": "Richiedi le pulizie",
@@ -24457,6 +24458,9 @@
     "None": "Da attivare"
   },
   "aiSettings": {
+    "example": "Esempio dalla libreria",
+    "exampleTrigger": "Al check-out",
+    "exampleAction": "Richiedi la pulizia dell’immobile",
     "firstRoutine": "Prova una routine AI",
     "pageTitle": "Impostazioni AI",
     "routineDescription": "Organizza il lavoro sugli arrivi e le partenze. Scegli cosa avvia una routine, controlla le azioni e provala prima di attivarla.",
@@ -24717,10 +24721,10 @@
     "name": "Nome",
     "namePlaceholder": "Es: Invia istruzioni 2 giorni prima",
     "noActions": "Nessuna azione configurata. Aggiungi almeno un'azione.",
-    "noActiveRoutines": "Nessun agente attivo. Scegline uno dalla libreria o creane uno tuo.",
+    "noActiveRoutines": "Nessuna routine attiva",
     "noExecutions": "Nessuna esecuzione registrata",
-    "noInactiveRoutines": "Nessun agente inattivo",
-    "noTestRoutines": "Nessun agente in prova",
+    "noInactiveRoutines": "Nessuna routine in pausa",
+    "noTestRoutines": "Nessuna routine attiva in simulazione",
     "problem": {
       "messageTemplate": "Seleziona un modello messaggio.",
       "tag": "Inserisci il tag da aggiungere al profilo ospite.",
@@ -24751,6 +24755,10 @@
     "waitDays": "Giorni di attesa",
     "waitHours": "Ore di attesa",
     "flow": {
+      "confirmTitle": "Attivare le azioni reali?",
+      "confirmDescription": "Quando si verifica l’evento, «{{name}}» potrà eseguire queste azioni per i soggiorni che soddisfano le condizioni.",
+      "confirmLive": "Conferma attivazione",
+      "all": "Tutte",
       "when": "Quando parte",
       "what": "Cosa fa",
       "models": "Scegli un modello",
@@ -24780,7 +24788,17 @@
       "skipped": "La routine salterebbe questo evento.",
       "blocked": "Bloccata",
       "possible": "Prevista nella simulazione",
-      "scope": "Le routine valgono per l’organizzazione. Per salvarle e provarle serve l’accesso a tutti i suoi immobili."
+      "scope": "Le routine valgono per l’organizzazione. Per salvarle e provarle serve l’accesso a tutti i suoi immobili.",
+      "atCheckin": "Al check-in",
+      "atCheckout": "Al check-out",
+      "timing": {
+        "BeforeCheckin": "{{delay}} prima del check-in",
+        "AfterCheckin": "{{delay}} dopo il check-in",
+        "BeforeCheckout": "{{delay}} prima del check-out",
+        "AfterCheckout": "{{delay}} dopo il check-out"
+      },
+      "createLive": "Crea e attiva la routine",
+      "skippedAction": "Saltata"
     }
   },
   "serviceCategories": {

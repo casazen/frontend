@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { BookCheck, MessageSquare, Star, FileWarning, type LucideIcon } from 'lucide-react';
-import { actionLabelKey, eventLabelKey, unavailableActionTypes, type ActionAvailability } from '@/lib/routine-model';
+import { actionLabelKey, unavailableActionTypes, type ActionAvailability } from '@/lib/routine-model';
+import { routineTrigger } from '@/lib/routine-trigger';
 import type { RoutineLibraryTemplate } from '@/types';
 
 interface RoutineLibraryProps {
@@ -13,7 +14,7 @@ interface RoutineLibraryProps {
   onConfigure: (template: RoutineLibraryTemplate) => void;
   /**
    * Opens the layer that says who cleans for many properties at once. The ready cleaning routine acts on every property that has a cleaner (a property with none is left as it is), so its card
-   * offers it: with it the agency sets the cleaner of its properties and switches the routine on in one go. Not offered when it is not given.
+   * offers it: with it the agency can set the cleaner of its properties. Not offered when it is not given.
    */
   onSetupCleaners?: () => void;
 }
@@ -87,15 +88,6 @@ function buildTemplates(t: TFunction): LibraryEntry[] {
   ];
 }
 
-/** The delay of a time event in words: «1 giorno», «2 ore», or «all'ora dell'evento» when there is none. */
-function offsetText(t: TFunction, days: number, hours: number): string {
-  const parts = [
-    ...(days > 0 ? [t('routines.library.daysCount', { count: days })] : []),
-    ...(hours > 0 ? [t('routines.library.hoursCount', { count: hours })] : []),
-  ];
-  return parts.length > 0 ? parts.join(' ') : t('routines.library.atTheTime');
-}
-
 export function RoutineLibrary({ availability, onConfigure, onSetupCleaners }: RoutineLibraryProps) {
   const { t } = useTranslation();
   const templates = buildTemplates(t);
@@ -122,7 +114,7 @@ export function RoutineLibrary({ availability, onConfigure, onSetupCleaners }: R
               <CardContent>
                 <div className="space-y-3">
                   <dl className="space-y-2 rounded-lg bg-muted/60 p-3 text-sm">
-                    <div><dt className="text-xs text-muted-foreground">{t('routines.flow.when')}</dt><dd className="font-medium">{t(eventLabelKey(template.eventType))}{template.eventConfig && ` · ${offsetText(t, template.eventConfig.days ?? 0, template.eventConfig.hours ?? 0)}`}</dd></div>
+                    <div><dt className="text-xs text-muted-foreground">{t('routines.flow.when')}</dt><dd className="font-medium">{routineTrigger(t, template.eventType, template.eventConfig)}</dd></div>
                     <div><dt className="text-xs text-muted-foreground">{t('routines.flow.what')}</dt><dd>{template.actions.map(action => t(actionLabelKey(action.type) ?? 'routines.log.unknownAction')).join(', ')}</dd></div>
                   </dl>
 
