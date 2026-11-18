@@ -15,7 +15,7 @@ import { getFirstPropertyRoute, getHomeRouteForRentalType, getStaleConsentDocume
 import type { BillingPlan, RentalType, UserDetail } from '@/types';
 import type { OnboardingConsentsPayload } from '@/types/onboarding.types';
 import { ConsentsStep } from './components/consents-step';
-import { allowsExtras, applicableAddons, billingQuantity, commercialTotal, signupRentalType, type CommercialSelection, type SignupProfile } from './commercial-model';
+import { addonsForTier, allowsExtras, applicableAddons, billingQuantity, commercialTotal, signupRentalType, type CommercialSelection, type SignupProfile } from './commercial-model';
 import { useReloadLegalDocuments } from '@/queries/use-legal';
 import { markSignupAttributionReady, syncSignupAttribution } from '@/lib/signup-attribution';
 import { BillingProfileForm } from '@/features/billing/components/billing-profile-form';
@@ -62,7 +62,7 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
   const currentStep = paid ? 'ready' : step;
   const plan = plans.data?.find(item => item.tier === selection?.planTier);
   const rentalArea = selection ? signupRentalType(selection) : 'ShortTerm';
-  const addons = applicableAddons(catalog.data ?? [], rentalArea);
+  const addons = applicableAddons(addonsForTier(catalog.data ?? [], selection?.planTier ?? 'Starter'), rentalArea);
   const total = selection ? commercialTotal(plan, addons, selection) : null;
   const money = (amount: number, currency = plan?.currency ?? 'EUR') => new Intl.NumberFormat(i18n.language, { style: 'currency', currency }).format(amount);
   const priceText = (item: BillingPlan) => item.priceMonthly > 0 ? money(item.priceMonthly, item.currency) : t('commercial.pricePending');
@@ -89,7 +89,12 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
 
   function choosePlan(tier: BillingPlan['tier']) {
     if (!selection) return;
-    setSelection({ ...selection, planTier: tier, addons: allowsExtras(tier) ? selection.addons : [] });
+    const nextAddons = addonsForTier(catalog.data ?? [], tier);
+    setSelection({ ...selection, planTier: tier, addons: allowsExtras(tier) ? selection.addons.filter(code => {
+      const next = nextAddons.find(addon => addon.code === code);
+      if (!next?.purchasable || next.priceMonthly === null) return false;
+      return !next.includedInPlans?.includes(selection.planTier) || next.includedInPlans.includes(tier);
+    }) : [] });
   }
 
   async function provision(consents: OnboardingConsentsPayload) {
@@ -214,7 +219,7 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
                   const disabled = !selected && (!allowsExtras(selection.planTier) || !addon.purchasable || addon.priceMonthly === null);
                   return <label key={addon.code} className={`flex gap-3 rounded-xl border bg-white p-5 ${disabled ? 'opacity-70' : 'cursor-pointer hover:border-[#1f3a3d]'} ${selected ? 'ring-1 ring-[#1f3a3d]' : ''}`}>
                     <input type="checkbox" disabled={disabled} checked={selected} onChange={event => setSelection({ ...selection, addons: event.target.checked ? [...selection.addons, addon.code] : selection.addons.filter(code => code !== addon.code) })} className="mt-1 size-4 shrink-0 accent-[#1f3a3d]" />
-                    <span className="space-y-1"><span className="block text-sm font-semibold">{t(`commercial.addons.${addon.code}.title`)}</span><span className="block text-xs leading-relaxed text-muted-foreground">{t(`commercial.addons.${addon.code}.text`)}</span><span className="block pt-1 text-xs font-medium">{addon.priceMonthly === null ? t('commercial.pricePending') : !addon.purchasable ? t('commercial.unavailable') : `${money(addon.priceMonthly, addon.currency)}${t(selection.profile === 'agency' ? 'commercial.perRoomMonth' : 'commercial.monthSuffix')}`}</span></span>
+                    <span className="space-y-1"><span className="block text-sm font-semibold">{t(`commercial.addons.${addon.code}.title`)}</span><span className="block text-xs leading-relaxed text-muted-foreground">{t(`commercial.addons.${addon.code}.text`)}</span><span className="block pt-1 text-xs font-medium">{addon.includedInPlans?.includes(selection.planTier) ? t('commercial.included') : addon.priceMonthly === null ? t('commercial.pricePending') : !addon.purchasable ? t('commercial.unavailable') : `${money(addon.priceMonthly, addon.currency)}${t(selection.profile === 'agency' ? 'commercial.perRoomMonth' : 'commercial.monthSuffix')}`}</span></span>
                   </label>;
                 })}</div>
               </section>
@@ -257,7 +262,7 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
             {selection.profile === 'agency' && <p className="rounded-lg bg-[#edf2ef] p-3 text-sm">{t('commercial.agency.count', { count: billingQuantity(selection) })}</p>}
             <ul className="space-y-3 text-sm"><li className="flex justify-between gap-2"><span>{t('commercial.basePlan')}</span><span>{plan && plan.priceMonthly > 0 ? money(plan.priceMonthly * billingQuantity(selection)) : t('commercial.pricePending')}</span></li>{selection.addons.map(code => {
               const addon = addons.find(item => item.code === code);
-              return <li key={code} className="flex justify-between gap-2"><span>{t(`commercial.addons.${code}.title`)}</span><span className="shrink-0">{addon?.priceMonthly != null ? money(addon.priceMonthly * billingQuantity(selection), addon.currency) : t('commercial.pricePending')}</span></li>;
+              return <li key={code} className="flex justify-between gap-2"><span>{t(`commercial.addons.${code}.title`)}</span><span className="shrink-0">{addon?.includedInPlans?.includes(selection.planTier) ? t('commercial.included') : addon?.priceMonthly != null ? money(addon.priceMonthly * billingQuantity(selection), addon.currency) : t('commercial.pricePending')}</span></li>;
             })}</ul>
             <div className="border-t pt-4" aria-live="polite"><p className="text-sm">{t('commercial.total')}</p><p className="mt-2 text-3xl font-semibold">{total === null ? <span className="text-lg">{t('commercial.pricePending')}</span> : money(total)}</p><p className="mt-1 text-xs text-muted-foreground">{t('commercial.taxNote')}</p></div>
             <p className="text-xs leading-relaxed text-muted-foreground">{t('commercial.changeLater')}</p>

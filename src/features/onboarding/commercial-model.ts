@@ -15,6 +15,13 @@ export interface CommercialAddon {
   priceMonthly: number | null;
   currency: string;
   purchasable: boolean;
+  includedInPlans?: PlanTier[];
+  ownerOffer?: { priceMonthly: number | null; purchasable: boolean };
+}
+export function addonsForTier(catalog: CommercialAddon[], tier: PlanTier): CommercialAddon[] {
+  return catalog.map(addon => addon.includedInPlans?.includes(tier)
+    ? { ...addon, priceMonthly: 0, purchasable: true }
+    : (tier === 'Pro' || tier === 'Scale') && addon.ownerOffer ? { ...addon, ...addon.ownerOffer } : addon);
 }
 export const signupRentalType = (selection: CommercialSelection): RentalType => selection.rentalArea ?? (selection.profile === 'long-rent' ? 'LongTerm' : 'ShortTerm');
 export const allowsExtras = (tier: PlanTier) => tier !== 'Starter';
