@@ -1,4 +1,3 @@
-/// <reference lib="dom" />
 import { test, expect } from './test';
 
 test.describe('Guest check-in portal', () => {
