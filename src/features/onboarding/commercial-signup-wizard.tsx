@@ -15,7 +15,7 @@ import { getFirstPropertyRoute, getHomeRouteForRentalType, getStaleConsentDocume
 import type { BillingPlan, RentalType, UserDetail } from '@/types';
 import type { OnboardingConsentsPayload } from '@/types/onboarding.types';
 import { ConsentsStep } from './components/consents-step';
-import { allowsExtras, applicableAddons, commercialUnitPrice, signupRentalType, type CommercialSelection, type SignupProfile } from './commercial-model';
+import { agencyBaseEstimate, allowsExtras, applicableAddons, commercialUnitPrice, signupRentalType, type CommercialSelection, type SignupProfile } from './commercial-model';
 import { useReloadLegalDocuments } from '@/queries/use-legal';
 import { markSignupAttributionReady, syncSignupAttribution } from '@/lib/signup-attribution';
 import { BillingProfileForm } from '@/features/billing/components/billing-profile-form';
@@ -61,20 +61,30 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
   const hasSubscription = subscription.data && !['none', 'canceled'].includes(subscription.data.status);
   const paid = subscription.data?.status === 'active' || subscription.data?.status === 'trialing';
   const currentStep = paid ? 'ready' : step;
-  const plan = plans.data?.find(item => item.tier === selection?.planTier);
+  const listedPlan = plans.data?.find(item => item.tier === selection?.planTier);
+  const plan = listedPlan?.tier === 'Agency' ? {
+    ...listedPlan, priceMonthly: listedPlan.agencyTariff?.bands[0]?.unitPrice ?? 0,
+    purchasable: listedPlan.agencyTariff?.purchasable === true,
+  } : listedPlan;
   const rentalArea = selection ? signupRentalType(selection) : 'ShortTerm';
-  const addons = applicableAddons(catalog.data ?? [], rentalArea);
   const isAgency = selection?.profile === 'agency';
+  const addons = applicableAddons(catalog.data ?? [], rentalArea).map(addon => isAgency ? {
+    ...addon, purchasable: addon.agencyPurchasable === true, priceMonthly: addon.agencyIncluded ? 0 : addon.agencyPriceMonthly ?? null,
+  } : addon);
   const showEstimate = !isAgency || step === 'features' || step === 'summary';
   const estimateQuantity = isAgency ? Number(roomEstimate) : 1;
-  const validEstimate = Number.isSafeInteger(estimateQuantity) && estimateQuantity > 0 && estimateQuantity <= 10000;
+  const validEstimate = roomEstimate !== '' && Number.isSafeInteger(estimateQuantity) && estimateQuantity >= 0 && estimateQuantity <= 10000;
   const unitTotal = selection ? commercialUnitPrice(plan, addons, selection) : null;
-  const total = unitTotal !== null && validEstimate ? unitTotal * estimateQuantity : null;
+  const baseEstimate = isAgency ? agencyBaseEstimate(plan?.agencyTariff, estimateQuantity) : plan?.priceMonthly ?? null;
+  const customQuote = isAgency && !!plan?.agencyTariff && estimateQuantity >= plan.agencyTariff.quoteFrom;
+  const total = plan && baseEstimate !== null && unitTotal !== null && validEstimate
+    ? baseEstimate + (unitTotal - plan.priceMonthly) * estimateQuantity : null;
+  const activationLabel = t(isAgency ? 'commercial.agency.continue' : 'commercial.continuePayment');
   const money = (amount: number, currency = plan?.currency ?? 'EUR') => new Intl.NumberFormat(i18n.language, { style: 'currency', currency }).format(amount);
   const priceText = (item: BillingPlan) => item.priceMonthly > 0 ? money(item.priceMonthly, item.currency) : t('commercial.pricePending');
   const pendingPayment = params.get('checkout') === 'success' && !paid;
   const agencyValid = selection?.profile !== 'agency' || (!!selection.agencyName?.trim() && selection.agencyName.trim().length <= 200);
-  const canPay = unitTotal !== null && agencyValid && !!plan?.purchasable && selection?.addons.every(code => addons.some(a => a.code === code && a.purchasable)) === true;
+  const canPay = (!isAgency || !!plan?.agencyTariff) && unitTotal !== null && agencyValid && !!plan?.purchasable && selection?.addons.every(code => addons.some(a => a.code === code && a.purchasable)) === true;
 
   useEffect(() => {
     document.getElementById('commercial-title')?.focus();
@@ -126,7 +136,7 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
     setBusy(true); setError(null);
     try {
       const me = await UsersApi.getMe();
-      if (me.commercialSetupRequired) { setError(t('commercial.paymentPending')); return; }
+      if (me.commercialSetupRequired) { setError(t(isAgency ? 'commercial.agency.pending' : 'commercial.paymentPending')); return; }
       await client.invalidateQueries({ queryKey: ['me'] });
       const target = me.hasProperties === false ? getFirstPropertyRoute(rentalArea) : getHomeRouteForRentalType(rentalArea);
       await confirmWorkspaceAccess(client, target);
@@ -137,6 +147,16 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
   }
 
   const headingKey = consenting ? 'consents' : currentStep;
+  const descriptionKey = isAgency && ['consents', 'summary', 'payment', 'ready'].includes(headingKey)
+    ? 'commercial.agency.setupDescription' : `commercial.descriptions.${headingKey}`;
+  const tariff = isAgency ? plan?.agencyTariff : null;
+  const agencyRates = tariff && <div className="space-y-2 text-sm">
+    <dl className="space-y-1">{tariff.bands.map((band, i) => <div key={band.upTo} className="flex justify-between gap-4">
+      <dt>{t('commercial.agency.band', { from: i === 0 ? 0 : tariff.bands[i - 1].upTo + 1, to: band.upTo })}</dt>
+      <dd>{money(band.unitPrice)}{t('commercial.perRoomMonth')}</dd>
+    </div>)}</dl>
+    <p>{t('commercial.agency.minimum', { amount: money(tariff.minimum), threshold: tariff.quoteFrom })}</p>
+  </div>;
   return (
     <main className="min-h-dvh bg-[#f6f4f0] text-[#1f3a3d]" data-testid="commercial-signup">
       <header className="border-b border-[#1f3a3d]/10 bg-white/70">
@@ -153,16 +173,16 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
               <div className={`mb-3 h-1 rounded-full ${index <= active ? 'bg-[#1f3a3d]' : 'bg-[#1f3a3d]/10'}`} />
               <span className={`flex items-center gap-2 text-xs sm:text-sm ${index === active ? 'font-semibold' : 'text-muted-foreground'}`}>
                 <span className="grid size-5 shrink-0 place-items-center rounded-full border border-current text-[10px]">{index < active ? <Check className="size-3" aria-hidden="true" /> : index + 1}</span>
-                <span className="sr-only sm:not-sr-only">{t(`commercial.steps.${item}`)}</span>
+                <span className="sr-only sm:not-sr-only">{t(isAgency && item === 'payment' ? 'commercial.agency.billing' : `commercial.steps.${item}`)}</span>
               </span>
             </li>;
           })}
         </ol>
-        <p className="mb-8 text-sm font-medium sm:hidden">{t(`commercial.steps.${currentStep}`)}</p>
+        <p className="mb-8 text-sm font-medium sm:hidden">{t(isAgency && currentStep === 'payment' ? 'commercial.agency.billing' : `commercial.steps.${currentStep}`)}</p>
         <div className="mb-8 max-w-2xl space-y-3">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#b34d25]">{t('commercial.kicker')}</p>
-          <h1 id="commercial-title" tabIndex={-1} className="text-3xl font-semibold tracking-tight outline-none sm:text-4xl">{t(`commercial.headings.${headingKey}`)}</h1>
-          <p className="text-base leading-relaxed text-muted-foreground">{t(`commercial.descriptions.${headingKey}`)}</p>
+          <h1 id="commercial-title" tabIndex={-1} className="text-3xl font-semibold tracking-tight outline-none sm:text-4xl">{t(isAgency && consenting ? 'commercial.agency.consents' : `commercial.headings.${headingKey}`)}</h1>
+          <p className="text-base leading-relaxed text-muted-foreground">{t(descriptionKey)}</p>
         </div>
         {error && <p role="alert" className="mb-5 rounded-xl border border-destructive/30 bg-white p-4 text-sm text-destructive">{error}</p>}
 
@@ -197,8 +217,8 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
                 <p className="rounded-xl bg-[#edf2ef] p-4 text-sm">{t('commercial.agency.admin')}</p>
                 <h3 className="font-semibold">{t('commercial.agency.title')}</h3>
                 <p className="text-sm text-muted-foreground">{t('commercial.agency.explanation')}</p>
-                <label className="block space-y-2 text-sm font-medium" htmlFor="signup-rooms"><span>{t('commercial.agency.rooms')}</span><input id="signup-rooms" type="number" min={1} max={10000} step={1} value={roomEstimate} onChange={event => setRoomEstimate(event.target.value)} className="block min-h-11 w-32 rounded-lg border bg-background px-3 text-base" /></label>
-                {plan && <p className="font-semibold">{priceText(plan)}{t('commercial.perRoomMonth')}</p>}
+                <label className="block space-y-2 text-sm font-medium" htmlFor="signup-rooms"><span>{t('commercial.agency.rooms')}</span><input id="signup-rooms" type="number" min={0} max={10000} step={1} value={roomEstimate} onChange={event => setRoomEstimate(event.target.value)} className="block min-h-11 w-32 rounded-lg border bg-background px-3 text-base" /></label>
+                {agencyRates}
               </section> : <section className="space-y-3">
                 <h2 className="text-lg font-semibold">{t('commercial.choosePlan')}</h2>
                 <div className="grid gap-3 sm:grid-cols-3">{(plans.data ?? []).filter(item => item.tier !== 'Agency').map(item => <button type="button" key={item.tier} onClick={() => choosePlan(item.tier)} aria-pressed={item.tier === selection.planTier} className={`min-h-36 rounded-xl border-2 bg-white p-4 text-left ${item.tier === selection.planTier ? 'border-[#1f3a3d]' : 'border-transparent shadow-sm'}`}>
@@ -220,7 +240,7 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
                   const disabled = !selected && (!allowsExtras(selection.planTier) || !addon.purchasable || addon.priceMonthly === null);
                   return <label key={addon.code} className={`flex gap-3 rounded-xl border bg-white p-5 ${disabled ? 'opacity-70' : 'cursor-pointer hover:border-[#1f3a3d]'} ${selected ? 'ring-1 ring-[#1f3a3d]' : ''}`}>
                     <input type="checkbox" disabled={disabled} checked={selected} onChange={event => setSelection({ ...selection, addons: event.target.checked ? [...selection.addons, addon.code] : selection.addons.filter(code => code !== addon.code) })} className="mt-1 size-4 shrink-0 accent-[#1f3a3d]" />
-                    <span className="space-y-1"><span className="block text-sm font-semibold">{t(`commercial.addons.${addon.code}.title`)}</span><span className="block text-xs leading-relaxed text-muted-foreground">{t(`commercial.addons.${addon.code}.text`)}</span><span className="block pt-1 text-xs font-medium">{addon.priceMonthly === null ? t('commercial.pricePending') : !addon.purchasable ? t('commercial.unavailable') : `${money(addon.priceMonthly, addon.currency)}${t(selection.profile === 'agency' ? 'commercial.perRoomMonth' : 'commercial.monthSuffix')}`}</span></span>
+                    <span className="space-y-1"><span className="block text-sm font-semibold">{t(`commercial.addons.${addon.code}.title`)}</span><span className="block text-xs leading-relaxed text-muted-foreground">{t(`commercial.addons.${addon.code}.text`)}</span><span className="block pt-1 text-xs font-medium">{isAgency && addon.agencyIncluded && addon.purchasable ? t('commercial.included') : addon.priceMonthly === null ? t('commercial.pricePending') : !addon.purchasable ? t('commercial.unavailable') : `${money(addon.priceMonthly, addon.currency)}${t(selection.profile === 'agency' ? 'commercial.perRoomMonth' : 'commercial.monthSuffix')}`}</span></span>
                   </label>;
                 })}</div>
               </section>
@@ -232,19 +252,20 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
               <dl className="space-y-4 text-sm">{[{ label: t('commercial.labels.profile'), value: t(`commercial.profiles.${selection.profile}.title`) }, { label: t('commercial.labels.area'), value: t(RENTAL_AREA_LABEL[rentalArea]) }, { label: t('commercial.labels.plan'), value: plan?.displayName ?? selection.planTier }].map(({ label, value }) => <div key={label} className="flex flex-wrap justify-between gap-2 border-b pb-3"><dt className="text-muted-foreground">{label}</dt><dd className="font-medium">{value}</dd></div>)}</dl>
               <h3 className="font-semibold">{t('commercial.selectedExtras')}</h3>
               {selection.addons.length ? <ul className="space-y-2 text-sm">{selection.addons.map(code => <li key={code} className="flex items-center gap-2"><Check className="size-4" />{t(`commercial.addons.${code}.title`)}</li>)}</ul> : <p className="text-sm text-muted-foreground">{t('commercial.noExtras')}</p>}
-              <div className="flex flex-wrap justify-between gap-3"><Button variant="outline" onClick={() => setStep('features')}>{t('commercial.edit')}</Button><Button onClick={() => setConsenting(true)} disabled={!canPay}>{t('commercial.continuePayment')}<ArrowRight className="size-4" /></Button></div>
+              <div className="flex flex-wrap justify-between gap-3"><Button variant="outline" onClick={() => setStep('features')}>{t('commercial.edit')}</Button><Button onClick={() => setConsenting(true)} disabled={!canPay}>{activationLabel}<ArrowRight className="size-4" /></Button></div>
               {!canPay && <p role="status" className="text-sm text-muted-foreground">{t('commercial.notPurchasable')}</p>}
-            </section> : <ConsentsStep key={consentsAttempt} onBack={() => setConsenting(false)} onContinue={payload => void provision(payload)} isLoading={busy} continueLabel={t('commercial.continuePayment')} />)}
+            </section> : <ConsentsStep key={consentsAttempt} onBack={() => setConsenting(false)} onContinue={payload => void provision(payload)} isLoading={busy} continueLabel={activationLabel} />)}
 
             {currentStep === 'payment' && <section className="space-y-5 rounded-2xl border bg-white p-6">
-              {pendingPayment ? <div role="status" className="space-y-4"><ShieldCheck className="size-10 text-[#467b67]" aria-hidden="true" /><h2 className="text-lg font-semibold">{t('commercial.paymentPending')}</h2><p className="text-sm text-muted-foreground">{t('commercial.paymentPendingText')}</p><Button variant="outline" onClick={() => void subscription.refetch()}>{t('commercial.checkPayment')}</Button></div> : <>
-                {params.get('checkout') === 'cancel' && <p role="status" className="rounded-xl bg-[#efe8dc] p-4 text-sm">{t('commercial.paymentCanceled')}</p>}
-                <BillingProfileForm idPrefix="signup" defaultValues={{ billingCountry: subscription.data?.billingCountry ?? '', vatId: subscription.data?.vatId ?? '' }} submitLabel={t('commercial.pay')} pendingLabel={t('commercial.redirecting')} isPending={checkout.isPending || checkout.isSuccess || !!hasSubscription || !canPay} onSubmit={values => {
+              {agencyRates}
+              {pendingPayment ? <div role="status" className="space-y-4"><ShieldCheck className="size-10 text-[#467b67]" aria-hidden="true" /><h2 className="text-lg font-semibold">{t(isAgency ? 'commercial.agency.pending' : 'commercial.paymentPending')}</h2><p className="text-sm text-muted-foreground">{t(isAgency ? 'commercial.agency.setupDescription' : 'commercial.paymentPendingText')}</p><Button variant="outline" onClick={() => void subscription.refetch()}>{t(isAgency ? 'commercial.agency.check' : 'commercial.checkPayment')}</Button></div> : <>
+                {params.get('checkout') === 'cancel' && <p role="status" className="rounded-xl bg-[#efe8dc] p-4 text-sm">{t(isAgency ? 'commercial.agency.canceled' : 'commercial.paymentCanceled')}</p>}
+                <BillingProfileForm idPrefix="signup" defaultValues={{ billingCountry: subscription.data?.billingCountry ?? '', vatId: subscription.data?.vatId ?? '' }} submitLabel={t(isAgency ? 'commercial.agency.setup' : 'commercial.pay')} pendingLabel={t('commercial.redirecting')} isPending={checkout.isPending || checkout.isSuccess || !!hasSubscription || !canPay} onSubmit={values => {
                   checkout.mutate({ planTier: selection.planTier, commercialSignup: selection, returnPath: '/onboarding', ...toBillingProfileRequest(values) }, { onError: err => setError(getProblemMessage(err, t) ?? t('commercial.failed')) });
                 }} />
                 {hasSubscription && <Button variant="outline" loading={portal.isPending} onClick={() => portal.mutate()}>{t('commercial.resumePayment')}</Button>}
                 {!canPay && <p role="status" className="text-sm text-muted-foreground">{t('commercial.notPurchasable')}</p>}
-                <p className="flex gap-2 text-xs leading-relaxed text-muted-foreground"><LockKeyhole className="size-4 shrink-0" aria-hidden="true" />{t('commercial.stripeNotice')}</p>
+                <p className="flex gap-2 text-xs leading-relaxed text-muted-foreground"><LockKeyhole className="size-4 shrink-0" aria-hidden="true" />{t(isAgency ? 'commercial.agency.setupDescription' : 'commercial.stripeNotice')}</p>
               </>}
               {subscription.isError && <p role="alert" className="text-sm text-destructive">{t('commercial.subscriptionError')}</p>}
             </section>}
@@ -260,11 +281,11 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
             <h2 className="text-xl font-semibold">{plan?.displayName ?? selection.planTier}</h2>
             <p className="text-sm text-muted-foreground">{t(RENTAL_AREA_LABEL[rentalArea])}</p>
             {isAgency && validEstimate && <p className="rounded-lg bg-[#edf2ef] p-3 text-sm">{t('commercial.agency.estimateCount', { count: estimateQuantity })}</p>}
-            {validEstimate && <ul className="space-y-3 text-sm"><li className="flex justify-between gap-2"><span>{t('commercial.basePlan')}</span><span>{plan && plan.priceMonthly > 0 ? money(plan.priceMonthly * estimateQuantity) : t('commercial.pricePending')}</span></li>{selection.addons.map(code => {
+            {validEstimate && !customQuote && <ul className="space-y-3 text-sm"><li className="flex justify-between gap-2"><span>{t('commercial.basePlan')}</span><span>{plan && plan.priceMonthly > 0 && baseEstimate !== null ? money(baseEstimate) : t('commercial.pricePending')}</span></li>{selection.addons.map(code => {
               const addon = addons.find(item => item.code === code);
               return <li key={code} className="flex justify-between gap-2"><span>{t(`commercial.addons.${code}.title`)}</span><span className="shrink-0">{addon?.priceMonthly != null ? money(addon.priceMonthly * estimateQuantity, addon.currency) : t('commercial.pricePending')}</span></li>;
             })}</ul>}
-            <div className="border-t pt-4" aria-live="polite"><p className="text-sm">{t(isAgency ? 'commercial.agency.total' : 'commercial.total')}</p><p className="mt-2 text-3xl font-semibold">{total === null ? <span className="text-lg">{t(validEstimate ? 'commercial.pricePending' : 'commercial.agency.enterRooms')}</span> : money(total)}</p><p className="mt-1 text-xs text-muted-foreground">{t('commercial.taxNote')}</p></div>
+            <div className="border-t pt-4" aria-live="polite"><p className="text-sm">{t(isAgency ? 'commercial.agency.total' : 'commercial.total')}</p><p className="mt-2 text-3xl font-semibold">{total === null ? <span className="text-lg">{t(customQuote ? 'commercial.agency.customQuote' : validEstimate ? 'commercial.pricePending' : 'commercial.agency.enterRooms')}</span> : money(total)}</p><p className="mt-1 text-xs text-muted-foreground">{t(isAgency ? 'commercial.agency.tax' : 'commercial.taxNote')}</p></div>
             <p className="text-xs leading-relaxed text-muted-foreground">{t('commercial.changeLater')}</p>
           </aside>}
         </div>}

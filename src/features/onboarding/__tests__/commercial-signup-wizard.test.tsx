@@ -13,12 +13,12 @@ vi.mock('../components/consents-step', () => ({
 }));
 vi.mock('@/hooks/use-auth', () => ({ useAuth: () => ({ refreshAccessToken: vi.fn() }) }));
 vi.mock('@/queries/use-billing', () => ({
-  useBillingPlans: () => ({ data: ['Starter', 'Pro', 'Scale', 'Agency'].map(tier => ({ tier, displayName: tier, priceMonthly: tier === 'Agency' ? 12 : 20, currency: 'EUR', unitAllowance: 3, features: ['Calendario'], purchasable: true })) }),
+  useBillingPlans: () => ({ data: ['Starter', 'Pro', 'Scale', 'Agency'].map(tier => ({ tier, displayName: tier, priceMonthly: tier === 'Agency' ? 11 : 20, agencyTariff: tier === 'Agency' ? { purchasable: true, minimum: 100, quoteFrom: 400, bands: [{ upTo: 49, unitPrice: 11 }, { upTo: 149, unitPrice: 9.9 }, { upTo: 399, unitPrice: 8.8 }] } : null, currency: 'EUR', unitAllowance: 3, features: ['Calendario'], purchasable: true })) }),
   useBillingSubscription: () => ({ data: { status: 'none' } }),
   useOpenBillingPortal: () => ({ mutate: vi.fn() }),
   useStartCheckout: () => ({ mutate: checkout }),
 }));
-vi.mock('@/api/commercial-signup.api', () => ({ CommercialSignupApi: { getCatalog: vi.fn(async () => [{ code: 'channels', context: 'short-rent', priceMonthly: 3, currency: 'EUR', purchasable: true }]) } }));
+vi.mock('@/api/commercial-signup.api', () => ({ CommercialSignupApi: { getCatalog: vi.fn(async () => [{ code: 'channels', context: 'short-rent', priceMonthly: 3, currency: 'EUR', purchasable: true, agencyIncluded: true, agencyPurchasable: true }]) } }));
 function start() {
   return render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><MemoryRouter><Routes><Route path="/" element={<CommercialSignupWizard profile={undefined} />} /><Route path="/register" element={<p>Supplier registration</p>} /></Routes></MemoryRouter></QueryClientProvider>);
 }
@@ -55,7 +55,7 @@ describe('commercial profile and configuration', () => {
       { code: 'channels', context: 'short-rent', priceMonthly: null, currency: 'EUR', purchasable: false },
       { code: 'operations', context: 'all', priceMonthly: null, currency: 'EUR', purchasable: true },
       { code: 'crm', context: 'short-rent', priceMonthly: 10, currency: 'EUR', purchasable: false },
-      { code: 'fiscal', context: 'all', priceMonthly: 3, currency: 'EUR', purchasable: true },
+      { code: 'fiscal', context: 'all', priceMonthly: 3, currency: 'EUR', purchasable: true, agencyIncluded: true, agencyPurchasable: true },
     ]);
     start();
     fireEvent.click(screen.getByTestId('signup-profile-owner'));
@@ -80,13 +80,13 @@ describe('commercial profile and configuration', () => {
     fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '3' } });
     fireEvent.click(await screen.findByRole('checkbox'));
     expect(screen.getByText('3 camere ipotizzate')).toBeVisible();
-    expect(screen.getByText(/45,00/)).toBeVisible();
+    expect(screen.getAllByText(/100,00/).at(-1)).toBeVisible();
     fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '' } });
-    expect(screen.getByText(/Inserisci da 1 a 10/)).toBeVisible();
+    expect(screen.getByText(/Inserisci da 0 a 10/)).toBeVisible();
     expect(screen.getByRole('button', { name: 'Vai al riepilogo' })).toBeEnabled();
     fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '800' } });
     fireEvent.click(screen.getByRole('button', { name: 'Vai al riepilogo' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Continua al pagamento' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Continua all’attivazione' }));
     fireEvent.click(screen.getByRole('button', { name: 'Conferma consensi' }));
     expect(UsersApi.postOnboarding).toHaveBeenCalledWith(expect.objectContaining({
       commercialSignup: expect.objectContaining({ profile: 'agency', rooms: 1, addons: ['channels'] }),

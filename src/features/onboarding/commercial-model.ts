@@ -15,6 +15,9 @@ export interface CommercialAddon {
   priceMonthly: number | null;
   currency: string;
   purchasable: boolean;
+  agencyIncluded?: boolean;
+  agencyPurchasable?: boolean;
+  agencyPriceMonthly?: number | null;
 }
 export const signupRentalType = (selection: CommercialSelection): RentalType => selection.rentalArea ?? (selection.profile === 'long-rent' ? 'LongTerm' : 'ShortTerm');
 export const allowsExtras = (tier: PlanTier) => tier !== 'Starter';
@@ -32,4 +35,10 @@ export function commercialUnitPrice(plan: BillingPlan | undefined, addons: Comme
     total += addon.priceMonthly;
   }
   return total;
+}
+
+export function agencyBaseEstimate(tariff: BillingPlan['agencyTariff'], units: number): number | null {
+  if (!tariff || !Number.isSafeInteger(units) || units < 0 || units >= tariff.quoteFrom) return null;
+  const band = tariff.bands.find(band => units <= band.upTo);
+  return band ? Math.max(tariff.minimum, units * band.unitPrice) : null;
 }
