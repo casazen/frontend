@@ -240,10 +240,10 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
             <h2 className="text-xl font-semibold">{plan?.displayName ?? selection.planTier}</h2>
             <p className="text-sm text-muted-foreground">{t(selection.profile === 'long-rent' ? 'commercial.longRent' : 'commercial.shortRent')}</p>
             {isAgency && validEstimate && <p className="rounded-lg bg-[#edf2ef] p-3 text-sm">{t('commercial.agency.estimateCount', { count: estimateQuantity })}</p>}
-            <ul className="space-y-3 text-sm"><li className="flex justify-between gap-2"><span>{t('commercial.basePlan')}</span><span>{plan && plan.priceMonthly > 0 && validEstimate ? money(plan.priceMonthly * estimateQuantity) : t('commercial.pricePending')}</span></li>{selection.addons.map(code => {
+            {validEstimate && <ul className="space-y-3 text-sm"><li className="flex justify-between gap-2"><span>{t('commercial.basePlan')}</span><span>{plan && plan.priceMonthly > 0 ? money(plan.priceMonthly * estimateQuantity) : t('commercial.pricePending')}</span></li>{selection.addons.map(code => {
               const addon = addons.find(item => item.code === code);
-              return <li key={code} className="flex justify-between gap-2"><span>{t(`commercial.addons.${code}.title`)}</span><span className="shrink-0">{addon?.priceMonthly != null && validEstimate ? money(addon.priceMonthly * estimateQuantity, addon.currency) : t('commercial.pricePending')}</span></li>;
-            })}</ul>
+              return <li key={code} className="flex justify-between gap-2"><span>{t(`commercial.addons.${code}.title`)}</span><span className="shrink-0">{addon?.priceMonthly != null ? money(addon.priceMonthly * estimateQuantity, addon.currency) : t('commercial.pricePending')}</span></li>;
+            })}</ul>}
             <div className="border-t pt-4" aria-live="polite"><p className="text-sm">{t(isAgency ? 'commercial.agency.total' : 'commercial.total')}</p><p className="mt-2 text-3xl font-semibold">{total === null ? <span className="text-lg">{t(validEstimate ? 'commercial.pricePending' : 'commercial.agency.enterRooms')}</span> : money(total)}</p><p className="mt-1 text-xs text-muted-foreground">{t('commercial.taxNote')}</p></div>
             <p className="text-xs leading-relaxed text-muted-foreground">{t('commercial.changeLater')}</p>
           </aside>}
