@@ -8,6 +8,8 @@ import { ProtectedRoute } from '@/components/auth/protected-route';
 import { OnboardingGuard } from '@/components/auth/onboarding-guard';
 import { AuthProviderBoundary } from '@/components/auth/auth-provider-boundary';
 import { LoginPage } from '@/pages/login-page';
+import { AccountInvitationPage } from '@/pages/account-invitation-page';
+import { ACCOUNT_INVITATION_PATH } from '@/lib/account-invitation';
 import { SignupPage } from '@/pages/signup-page';
 import { EmailVerifiedPage } from '@/pages/email-verified-page';
 import { SIGNUP_PATH } from '@/lib/signup-attribution';
@@ -198,6 +200,10 @@ export const appRoutes: RouteObject[] = [
       {
         path: '/login',
         element: <LoginPage />,
+      },
+      {
+        path: ACCOUNT_INVITATION_PATH,
+        element: <AccountInvitationPage />,
       },
       {
         path: '/register',
