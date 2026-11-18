@@ -15,23 +15,31 @@ export interface CommercialAddon {
   priceMonthly: number | null;
   currency: string;
   purchasable: boolean;
+  agencyIncluded?: boolean;
+  agencyPurchasable?: boolean;
+  agencyPriceMonthly?: number | null;
   includedInPlans?: PlanTier[];
   ownerOffer?: { priceMonthly: number | null; purchasable: boolean };
 }
 export function addonsForTier(catalog: CommercialAddon[], tier: PlanTier): CommercialAddon[] {
+  if (tier === 'Agency') return catalog.map(addon => ({
+    ...addon,
+    purchasable: addon.agencyPurchasable === true,
+    priceMonthly: addon.agencyIncluded ? 0 : addon.agencyPriceMonthly ?? null,
+    includedInPlans: addon.agencyIncluded && addon.agencyPurchasable ? ['Agency'] : [],
+  }));
   return catalog.map(addon => addon.includedInPlans?.includes(tier)
     ? { ...addon, priceMonthly: 0, purchasable: true }
     : (tier === 'Pro' || tier === 'Scale') && addon.ownerOffer ? { ...addon, ...addon.ownerOffer } : addon);
 }
 export const signupRentalType = (selection: CommercialSelection): RentalType => selection.rentalArea ?? (selection.profile === 'long-rent' ? 'LongTerm' : 'ShortTerm');
 export const allowsExtras = (tier: PlanTier) => tier !== 'Starter';
-export const billingQuantity = (selection: CommercialSelection) => selection.profile === 'agency' ? selection.rooms : 1;
 export function applicableAddons(addons: CommercialAddon[], area: RentalType) {
   const context = area === 'LongTerm' ? 'long-rent' : 'short-rent';
   return addons.filter(addon => area === 'Both' || addon.context === 'all' || addon.context === context);
 }
 /** Unknown display prices never become a zero euro promise. Stripe remains authoritative. */
-export function commercialTotal(plan: BillingPlan | undefined, addons: CommercialAddon[], selection: CommercialSelection): number | null {
+export function commercialUnitPrice(plan: BillingPlan | undefined, addons: CommercialAddon[], selection: CommercialSelection): number | null {
   if (!plan || !plan.purchasable || plan.priceMonthly <= 0) return null;
   let total = plan.priceMonthly;
   for (const code of selection.addons) {
@@ -39,5 +47,11 @@ export function commercialTotal(plan: BillingPlan | undefined, addons: Commercia
     if (!addon?.purchasable || addon.priceMonthly === null || addon.currency !== plan.currency) return null;
     total += addon.priceMonthly;
   }
-  return total * billingQuantity(selection);
+  return total;
+}
+
+export function agencyBaseEstimate(tariff: BillingPlan['agencyTariff'], units: number): number | null {
+  if (!tariff || !Number.isSafeInteger(units) || units < 0 || units >= tariff.quoteFrom) return null;
+  const band = tariff.bands.find(band => units <= band.upTo);
+  return band ? Math.max(tariff.minimum, units * band.unitPrice) : null;
 }

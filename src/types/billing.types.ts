@@ -20,6 +20,7 @@ export interface BillingPlan {
   displayName: string;
   /** Monthly price from the backend configuration (`Billing:Display:<Tier>:PriceMonthly`); 0 when not configured. */
   priceMonthly: number;
+  agencyTariff?: { purchasable: boolean; minimum: number; quoteFrom: number; bands: { upTo: number; unitPrice: number }[] } | null;
   billingUnit?: 'room' | 'plan';
   currency: string;
   /** Maximum number of properties; -1 means unlimited. */
