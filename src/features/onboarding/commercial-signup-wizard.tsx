@@ -190,10 +190,11 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
                 <p className="text-sm text-muted-foreground">{t('commercial.extrasDescription')}</p>
                 {!allowsExtras(selection.planTier) && <p className="flex gap-2 rounded-xl bg-[#efe8dc] p-4 text-sm"><LockKeyhole className="size-4 shrink-0" aria-hidden="true" />{t('commercial.proRequired')}</p>}
                 <div className="grid gap-3 sm:grid-cols-2">{addons.map(addon => {
-                  const disabled = !allowsExtras(selection.planTier) || !addon.purchasable;
-                  return <label key={addon.code} className={`flex gap-3 rounded-xl border bg-white p-5 ${disabled ? 'opacity-70' : 'cursor-pointer hover:border-[#1f3a3d]'} ${selection.addons.includes(addon.code) ? 'ring-1 ring-[#1f3a3d]' : ''}`}>
-                    <input type="checkbox" disabled={disabled} checked={selection.addons.includes(addon.code)} onChange={event => setSelection({ ...selection, addons: event.target.checked ? [...selection.addons, addon.code] : selection.addons.filter(code => code !== addon.code) })} className="mt-1 size-4 shrink-0 accent-[#1f3a3d]" />
-                    <span className="space-y-1"><span className="block text-sm font-semibold">{t(`commercial.addons.${addon.code}.title`)}</span><span className="block text-xs leading-relaxed text-muted-foreground">{t(`commercial.addons.${addon.code}.text`)}</span><span className="block pt-1 text-xs font-medium">{!addon.purchasable ? t('commercial.unavailable') : addon.priceMonthly === null ? t('commercial.pricePending') : `${money(addon.priceMonthly, addon.currency)}${t(selection.profile === 'agency' ? 'commercial.perRoomMonth' : 'commercial.monthSuffix')}`}</span></span>
+                  const selected = selection.addons.includes(addon.code);
+                  const disabled = !selected && (!allowsExtras(selection.planTier) || !addon.purchasable || addon.priceMonthly === null);
+                  return <label key={addon.code} className={`flex gap-3 rounded-xl border bg-white p-5 ${disabled ? 'opacity-70' : 'cursor-pointer hover:border-[#1f3a3d]'} ${selected ? 'ring-1 ring-[#1f3a3d]' : ''}`}>
+                    <input type="checkbox" disabled={disabled} checked={selected} onChange={event => setSelection({ ...selection, addons: event.target.checked ? [...selection.addons, addon.code] : selection.addons.filter(code => code !== addon.code) })} className="mt-1 size-4 shrink-0 accent-[#1f3a3d]" />
+                    <span className="space-y-1"><span className="block text-sm font-semibold">{t(`commercial.addons.${addon.code}.title`)}</span><span className="block text-xs leading-relaxed text-muted-foreground">{t(`commercial.addons.${addon.code}.text`)}</span><span className="block pt-1 text-xs font-medium">{addon.priceMonthly === null ? t('commercial.pricePending') : !addon.purchasable ? t('commercial.unavailable') : `${money(addon.priceMonthly, addon.currency)}${t(selection.profile === 'agency' ? 'commercial.perRoomMonth' : 'commercial.monthSuffix')}`}</span></span>
                   </label>;
                 })}</div>
               </section>
