@@ -63,6 +63,7 @@ export function BillingProfileForm({
         <select
           id={countryId}
           autoComplete="country"
+          required
           className={selectClassName}
           aria-invalid={!!errors.billingCountry}
           disabled={isPending}
