@@ -99,8 +99,15 @@
       }
     },
     "loading": "Chargement du check-in…",
+    "reopen": {
+      "loadTitle": "Enregistrement temporairement indisponible",
+      "loadHint": "Vérifiez votre connexion et réessayez avec ce lien.",
+      "retry": "Réessayer",
+      "nextStep": "Ensuite · {{name}}",
+      "resumed": "Les informations déjà enregistrées par l’établissement sont préremplies. Saisissez à nouveau les modifications que vous n’aviez pas envoyées."
+    },
     "invalidLink": "Lien non valide",
-    "invalidLinkDescription": "Le lien de check-in n'est pas valide ou a expiré. Contactez le gestionnaire du logement.",
+    "invalidLinkDescription": "Ce lien est invalide ou a expiré. Demandez un nouveau lien à l’établissement via votre réservation.",
     "guestCheckIn": "Check-in des invités",
     "birthDate": "Date de naissance *",
     "genderLabel": "Sexe *",
@@ -121,7 +128,7 @@
     "submit": "Envoyer le check-in",
     "fixHighlightedFields": "Certaines informations ne sont pas valides : corrigez les champs signalés puis envoyez de nouveau.",
     "successTitle": "Check-in terminé !",
-    "successDescription": "Vos informations ont été enregistrées. Merci !",
+    "successDescription": "L’établissement a reçu les informations sur votre séjour. Pour les corriger, contactez-le via votre réservation.",
     "alreadyCompletedTitle": "Check-in déjà terminé",
     "alreadyCompletedDescription": "Les informations de ce séjour ont déjà été envoyées. Pour protéger votre vie privée, elles ne sont plus affichées. Pour les corriger, contactez le gestionnaire du logement.",
     "marketingConsentVersion": "Facultatif. Version du texte : {{version}}",
@@ -132,7 +139,7 @@
       "version": "Version de l'information : {{version}}"
     },
     "stepScan": "Document",
-    "scanIntro": "Commencez par la photo du document de chaque personne. Les données sont lues automatiquement : vous les vérifiez à l'étape suivante.",
+    "scanIntro": "Vous pouvez remplir les informations à partir d’une photo du document ou les saisir à la main. Vous les vérifierez avant de les envoyer à l’établissement.",
     "scanHint": "JPG, PNG ou WebP, 5 Mo maximum. Si vous choisissez la vérification en ligne et donnez votre accord, vous pourrez utiliser la même photo pour vérifier votre document.",
     "scanButton": "Prendre ou charger la photo",
     "scanReading": "Lecture du document…",

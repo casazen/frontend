@@ -16,6 +16,7 @@ import { SkeletonLine } from '@/components/ui/skeleton';
 import { ACCOUNT_BILLING_PATH } from '@/lib/billing-routes';
 import { useOrgMembers, useOrgRoles } from '@/queries/use-org-team';
 import type { OrgInvitationLanguage, OrgSeats } from '@/types/org-team.types';
+import { ACCOUNT_PEOPLE_PATH } from '../../account/account-home-model';
 import { orgRoleLabel } from '../../account/account-roles';
 import { AccessPreview } from '../access-preview';
 import { AreaPropertyPicker } from '../area-property-picker';
@@ -25,6 +26,15 @@ import { assignableRoles } from '../team-roles';
 import { usePickerProperties, type RentalArea } from '../team-properties';
 import { ACCOUNT_ROLES_PATH } from '../team-paths';
 import { hasFullAccess, inviteScopeOf, type InviteValues } from './invite-model';
+
+export function BackToPeople() {
+  const { t } = useTranslation();
+  return (
+    <Button asChild size="sm" variant="outline" className="min-h-11">
+      <Link to={ACCOUNT_PEOPLE_PATH}>{t('team.invite.backToPeople')}</Link>
+    </Button>
+  );
+}
 
 /** The two ways a person is told how many seats are left: a line while there are some, a warning with the way out when there are none. */
 function SeatsNote({ seats }: { seats: OrgSeats | undefined }) {
@@ -104,7 +114,7 @@ export function RoleStep({ availableAreas }: { availableAreas: readonly RentalAr
   if (roles.isPending) return <SkeletonLine lines={4} />;
 
   const assignable = assignableRoles(roles.data?.roles);
-  if (roles.isError || assignable.length === 0) {
+  if (roles.isError) {
     return (
       <Alert
         variant="danger"
@@ -117,6 +127,10 @@ export function RoleStep({ availableAreas }: { availableAreas: readonly RentalAr
         {t('team.invite.role.loadError')}
       </Alert>
     );
+  }
+
+  if (assignable.length === 0) {
+    return <Alert variant="warning" action={<BackToPeople />}>{t('team.invite.role.noneAssignable')}</Alert>;
   }
 
   return (

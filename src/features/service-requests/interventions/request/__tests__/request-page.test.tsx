@@ -11,6 +11,7 @@ import { fetchHostSupplierServices, fetchHostSupplierSlots } from '@/api/host-su
 import { propertiesApi } from '@/api/properties.api';
 import { fetchServiceCategories } from '@/api/service-categories.api';
 import { createServiceRequest, fetchMarketplaceSuppliers, fetchSuppliersByProperty } from '@/api/service-requests.api';
+import { getServiceRequestStatusLabel } from '@/lib/i18n-labels';
 import { NOON_UTC, freezeClock } from '@/test/clock';
 import type { Booking, MarketplaceCatalogEntry, Property } from '@/types';
 import type { ServiceRequest, SupplierPicker } from '@/types/service-request';
@@ -25,7 +26,7 @@ vi.mock('@/components/layout/page-header', () => ({
 }));
 vi.mock('@/api/bookings.api', () => ({
   asBookingPage: (data: unknown) => ({ items: Array.isArray(data) ? data : [], totalCount: 0, page: 1, pageSize: 10 }),
-  bookingsApi: { getAll: vi.fn() },
+  bookingsApi: { getAll: vi.fn(), getById: vi.fn() },
 }));
 vi.mock('@/api/properties.api', () => ({ propertiesApi: { getAll: vi.fn() } }));
 vi.mock('@/api/service-categories.api', () => ({ fetchServiceCategories: vi.fn() }));
@@ -198,6 +199,31 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
     // The request is for the house: no stay was needed.
     expect(sent.bookingId).toBeUndefined();
     expect(await screen.findByTestId('wizard-done-primary', undefined, WAIT)).toHaveAttribute('href', '/app/short-rent/interventions/sr-1');
+  });
+
+  it('keeps the addressed departure when it is past or beyond the first page of stays', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue({ ...stay, checkOutDate: '2026-09-15T00:00:00Z' } as Booking);
+    vi.mocked(createServiceRequest).mockResolvedValue({ id: 'sr-linked', status: 'PresoInCarico' } as ServiceRequest);
+    renderPage(`propertyId=${PROPERTY_ID}&bookingId=${STAY_ID}&type=cleaning&date=2026-09-25`);
+    expect(await screen.findByTestId('cleaning-brief', undefined, WAIT)).toHaveTextContent('Soggiorno collegato');
+    await reachSummary();
+    fireEvent.click(screen.getByTestId('request-finish'));
+    expect(await screen.findByTestId('wizard-done-secondary', undefined, WAIT)).toHaveAttribute('href', `/app/short-rent/bookings/${STAY_ID}`);
+    expect(screen.getByTestId('request-done')).toHaveTextContent(i18n.t('requestWizard.housekeeping.status', { status: getServiceRequestStatusLabel('PresoInCarico', i18n.t) }));
+    expect(vi.mocked(createServiceRequest).mock.calls[0][0]).toMatchObject({ bookingId: STAY_ID, propertyId: PROPERTY_ID, category: 'cleaning' });
+  });
+
+  it('does not turn a cancelled or mismatched stay into a property-only request', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue({ ...stay, propertyId: OTHER_PROPERTY_ID } as Booking);
+    renderPage(`propertyId=${PROPERTY_ID}&bookingId=${STAY_ID}&type=cleaning`);
+    expect(await screen.findByText(i18n.t('requestWizard.housekeeping.stayUnavailable'), undefined, WAIT)).toBeInTheDocument();
+    expect(screen.queryByTestId('request-finish')).not.toBeInTheDocument();
+  });
+
+  it('opens the requests list instead of claiming success from an address without a receipt', async () => {
+    renderPage('step=fatto');
+    expect(await screen.findByText(i18n.t('requestWizard.housekeeping.verifyTitle'), undefined, WAIT)).toBeInTheDocument();
+    expect(createServiceRequest).not.toHaveBeenCalled();
   });
 
   it('RequestInterventionPage_AStayIsOnlyALink_ChosenAtTheEnd', async () => {
@@ -386,6 +412,17 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
     fireEvent.click(await screen.findByTestId('request-slot-10:00', undefined, WAIT));
     next();
     await screen.findByTestId('request-supplier-sees', undefined, WAIT);
+  });
+
+  it('offers a way to check recorded work after an uncertain send and never repeats the submission itself', async () => {
+    vi.mocked(createServiceRequest).mockRejectedValue(new AxiosError('Network Error', AxiosError.ERR_NETWORK));
+    renderPage();
+    await reachSummary();
+    fireEvent.click(screen.getByTestId('request-finish'));
+    expect(await screen.findByRole('link', { name: i18n.t('requestWizard.housekeeping.checkList') }, WAIT))
+      .toHaveAttribute('href', '/app/short-rent/interventions');
+    expect(screen.getByTestId('request-finish-error')).toHaveTextContent(i18n.t('requestWizard.housekeeping.unknown'));
+    expect(createServiceRequest).toHaveBeenCalledTimes(1);
   });
 
   it('RequestInterventionPage_SlotTakenMeanwhile_BringsTheHostBackToTheDetailsWithTheAnswersKept', async () => {

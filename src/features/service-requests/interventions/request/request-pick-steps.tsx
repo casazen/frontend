@@ -1,9 +1,9 @@
 import { useEffect, useMemo, type ReactNode } from 'react';
 import type { TFunction } from 'i18next';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { Globe, Home, ShieldCheck } from 'lucide-react';
+import { Globe, Home, ShieldCheck, Sparkles } from 'lucide-react';
 import { FormFieldError } from '@/components/shared/form-field-error';
 import { Alert } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +17,7 @@ import { countByCategory } from '@/features/marketplace/lib/category-groups';
 import { categoryIcon } from '@/features/marketplace/lib/category-icons';
 import { supplierFacts } from '@/features/marketplace/lib/supplier-labels';
 import { propertyEditPath } from '@/features/properties/properties-paths';
+import { formatStayDate } from '@/lib/stay-dates';
 import { getServiceCategoryLabel } from '@/lib/i18n-labels';
 import { usePartnersByServiceCategory } from '@/queries/use-marketplace';
 import { useProperties } from '@/queries/use-properties';
@@ -234,6 +235,28 @@ function supplierDescription(supplier: SupplierPicker, t: TFunction, language: s
       <span>{facts}</span>
       {services.length > 0 ? <span className="text-xs text-foreground/70">{services.join(' · ')}</span> : null}
     </span>
+  );
+}
+
+/** The brief stays above the supplier choice, where similar names and price ranges can otherwise hide the job itself. */
+export function CleaningBrief() {
+  const { t, i18n } = useTranslation();
+  const location = useLocation();
+  const { control } = useFormContext<RequestValues>();
+  const [propertyId, category, day, bookingId] = useWatch({ control, name: ['propertyId', 'category', 'day', 'bookingId'] });
+  const property = useWizardProperty(propertyId);
+  if (category !== 'cleaning' || !property) return null;
+  return (
+    <section className="mb-4 rounded-xl border border-border bg-muted/40 p-4" aria-label={t('requestWizard.housekeeping.brief')} data-testid="cleaning-brief">
+      <h3 className="flex items-start gap-2 font-semibold">
+        <Sparkles aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-primary-text" />{t('requestWizard.housekeeping.at', { property: property.name })}
+      </h3>
+      <p className="mt-1 text-sm text-muted-foreground">
+        {formatStayDate(day, i18n.language, { weekday: 'long', day: 'numeric', month: 'long' })}
+        {bookingId ? ` · ${t('requestWizard.housekeeping.linked')}` : ''}
+      </p>
+      {location.state?.requestResumed && <p role="status" className="mt-3 text-sm">{t('requestWizard.housekeeping.resume')}</p>}
+    </section>
   );
 }
 

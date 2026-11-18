@@ -1,7 +1,9 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Home, LogIn, MailWarning } from 'lucide-react';
+import { MailCheck, LogIn, MailWarning } from 'lucide-react';
+import { ORG_INVITE_ACCEPT_PATH, readOrgInviteToken } from '@/lib/org-invitation';
+import { useLoginHandoff } from '@/hooks/use-login-handoff';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,22 +17,24 @@ export function EmailVerifiedPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { isLoading, isAuthenticated, login } = useAuth();
+  const { isLoading, isAuthenticated } = useAuth();
+  const handoff = useLoginHandoff();
+  const pendingInvite = Boolean(readOrgInviteToken(new URLSearchParams()));
   const outcome = emailVerificationOutcome(searchParams);
   const failed = outcome === 'failed';
 
   useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      navigate('/', { replace: true });
+    if (!isLoading && isAuthenticated && !failed) {
+      navigate(pendingInvite ? ORG_INVITE_ACCEPT_PATH : '/', { replace: true });
     }
-  }, [isAuthenticated, isLoading, navigate]);
+  }, [isAuthenticated, isLoading, navigate, pendingInvite, failed]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-muted/40 px-4">
       <Card className="w-full max-w-md" data-testid="email-verified-page" data-outcome={outcome}>
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground">
-            {failed ? <MailWarning className="h-8 w-8" aria-hidden /> : <Home className="h-8 w-8" aria-hidden />}
+            {failed ? <MailWarning className="h-8 w-8" aria-hidden /> : <MailCheck className="h-8 w-8" aria-hidden />}
           </div>
           <CardTitle className="text-2xl">
             {t(failed ? 'emailVerified.failedTitle' : outcome === 'verified' ? 'emailVerified.title' : 'emailVerified.unknownTitle')}
@@ -45,10 +49,12 @@ export function EmailVerifiedPage() {
             )}
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <Button className="w-full" size="lg" disabled={isLoading} onClick={() => login()} data-testid="email-verified-sign-in">
+        <CardContent className="space-y-3">
+          {handoff.status === 'failed' || handoff.status === 'delayed' ? <p role="alert" className="text-sm">{t('login.handoffFailed')}</p> : null}
+          {!failed && !pendingInvite && <p className="text-sm text-muted-foreground">{t('emailVerified.inviteTab')}</p>}
+          <Button className="w-full" size="lg" disabled={isLoading || handoff.busy} onClick={() => handoff.start(pendingInvite ? { returnTo: ORG_INVITE_ACCEPT_PATH } : undefined)} data-testid="email-verified-sign-in">
             <LogIn className="mr-2 h-5 w-5" />
-            {t('emailVerified.signIn')}
+            {t(pendingInvite ? 'emailVerified.resumeInvite' : 'emailVerified.signIn')}
           </Button>
         </CardContent>
       </Card>

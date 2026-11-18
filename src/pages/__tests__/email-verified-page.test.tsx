@@ -50,6 +50,7 @@ describe('emailVerificationOutcome', () => {
 
 describe('EmailVerifiedPage', () => {
   beforeEach(async () => {
+    sessionStorage.removeItem('cz-org-invite');
     auth0.isLoading = false;
     auth0.isAuthenticated = false;
     auth0.loginWithRedirect.mockClear();
@@ -63,6 +64,14 @@ describe('EmailVerifiedPage', () => {
     expect(screen.getByText('Email confermata')).toBeInTheDocument();
     fireEvent.click(screen.getByTestId('email-verified-sign-in'));
     expect(auth0.loginWithRedirect).toHaveBeenCalledTimes(1);
+  });
+
+  it('resumes a pending team invitation without passing its token to sign-in', () => {
+    sessionStorage.setItem('cz-org-invite', 'ab'.repeat(32));
+    renderPage('?success=true');
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('emailVerified.resumeInvite') }));
+    expect(auth0.loginWithRedirect).toHaveBeenCalledWith(expect.objectContaining({ appState: { returnTo: '/invite/accept' } }));
+    expect(JSON.stringify(auth0.loginWithRedirect.mock.calls)).not.toContain('ab'.repeat(32));
   });
 
   it('explains a failed verification instead of the Auth0 English error', () => {

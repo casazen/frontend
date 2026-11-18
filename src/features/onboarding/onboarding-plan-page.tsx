@@ -15,7 +15,7 @@ import { supportConfig } from '@/config/support.config';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getProblemMessage } from '@/lib/api-errors';
-import { BULK_OFFER_ABOVE, ONBOARDING_BULK_PATH, firstOpenPart, knownNeeds, knownParts } from '@/lib/onboarding-parts';
+import { BULK_OFFER_ABOVE, ONBOARDING_BULK_PATH, firstOpenPart, knownNeeds, knownParts, normalizePartState } from '@/lib/onboarding-parts';
 import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { cn } from '@/lib/utils';
 import { useFlowSummaries } from '@/queries/use-onboarding-flows';
@@ -66,6 +66,8 @@ export function OnboardingPlanPage() {
   const parts = useMemo(() => knownParts(plan.data).filter(part => commercialPartAllowed(commercial, part.code)), [plan.data, commercial]);
   const needs = useMemo(() => knownNeeds(plan.data), [plan.data]);
   const focus = firstOpenPart(parts);
+  const available = parts.filter(part => normalizePartState(part.state) !== 'notAvailable');
+  const complete = available.filter(part => normalizePartState(part.state) === 'done').length;
   // Every flow counts every property the caller reaches (each is in exactly one state of each flow), so the largest total is the number of properties.
   const propertyCount = (flowSummaries.data ?? []).reduce((largest, summary) => Math.max(largest, Number.isFinite(summary.total) ? summary.total : 0), 0);
   const offerBulk = isAdmin && propertyCount > BULK_OFFER_ABOVE;
@@ -134,6 +136,10 @@ export function OnboardingPlanPage() {
           <h2 id={`${adminNoteId}-list`} className="sr-only">
             {t('onboardingPlan.listLabel')}
           </h2>
+          {available.length > 0 && <label className="mb-4 block space-y-2 text-sm font-medium">
+            {t('onboardingPlan.availableProgress', { done: complete, total: available.length })}
+            <progress value={complete} max={available.length} className="block h-2 w-full rounded-full accent-primary" />
+          </label>}
           <ol role="list" className="space-y-3" data-testid="onboarding-plan-parts">
             {parts.map((part) => (
               <Fragment key={part.code}>
@@ -180,7 +186,7 @@ export function OnboardingPlanPage() {
             // Always there, on every state of the page: the way out and the way to ask for help (UX-06).
             <div role="group" aria-label={t('onboardingPlan.actions.group')} className="flex flex-wrap items-center gap-2">
               <Button type="button" variant="outline" className={TOUCH_TARGET} onClick={saveAndExit} loading={exit.isPending} data-testid="onboarding-plan-exit">
-                {t('onboardingPlan.exit.action')}
+                {t(isAdmin && focus ? 'onboardingPlan.exit.action' : 'onboardingPlan.backToHome')}
               </Button>
               {helpEmail ? (
                 <Button asChild variant="ghost" className={TOUCH_TARGET}>

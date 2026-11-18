@@ -124,6 +124,7 @@ export function PropertyWizardPage() {
   /** Counts the wizards started in this visit: a new one is a new element, with nothing left of the last. */
   const [generation, setGeneration] = useState(0);
   const linkedPropertyId = searchParams.get(PROPERTY_ID_PARAM);
+  const savedProperty = useProperty(linkedPropertyId ?? '');
   const resumeId = linkedPropertyId && linkedPropertyId !== createdHere ? linkedPropertyId : null;
 
   // «Aggiungi immobile» opened again from the end of a wizard (a link to the empty address, the one that ended had made a property): a
@@ -138,7 +139,11 @@ export function PropertyWizardPage() {
   return (
     <AppShell>
       <div className={cn(FOCUS_COLUMN, 'space-y-6')} data-testid="property-wizard-page">
-        <PageHeader title={t('propertyWizard.page.title')} description={t('propertyWizard.page.description')} crumbs="auto" />
+        <PageHeader
+          title={linkedPropertyId && savedProperty.data && !savedProperty.isError ? t('propertySetup.resume.title', { name: savedProperty.data.name }) : t('propertyWizard.page.title')}
+          description={linkedPropertyId ? t('propertySetup.resume.description') : t('propertyWizard.page.description')}
+          crumbs="auto"
+        />
         {resumeId ? (
           <ResumeWizard key={resumeId} propertyId={resumeId} stepNamed={searchParams.get('step') !== null} />
         ) : (

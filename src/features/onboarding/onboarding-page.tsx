@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { confirmWorkspaceAccess } from './confirm-workspace-access';
 import { CommercialSignupWizard } from './commercial-signup-wizard';
@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { isAxiosError } from 'axios';
 import { useAuth } from '@/hooks/use-auth';
 import { useCompleteOnboarding, useMe } from '@/queries/use-users';
-import type { OnboardingResponse, RentalType } from '@/types';
+import type { OnboardingResponse, RentalType, UserDetail } from '@/types';
 import type { OnboardingConsentsPayload } from '@/types/onboarding.types';
 import { ROLES_CLAIM } from '@/lib/auth-roles';
 import { useUserRoles } from '@/hooks/use-user-roles';
@@ -58,12 +58,20 @@ interface PendingAccess {
 
 export function OnboardingPage() {
   const { data: profile, isLoading, error } = useMe();
+  if (isLoading) return <LoadingScreen />;
+  if (!profile && error && isProfileLoadFailure(error)) return <ExistingOnboardingPage />;
+  return <OnboardingRoute key={JSON.stringify([profile?.id, profile?.orgId])} profile={profile} />;
+}
+
+function OnboardingRoute({ profile }: { profile: UserDetail | undefined }) {
   const [params] = useSearchParams();
   const roles = useUserRoles();
-  const legacy = params.get('mode') === 'edit' || (profile?.commercialSetupRequired !== true &&
+  // A profile refetch may observe a settled payment before the workspace check finishes. Keep this visit on its confirmation screen.
+  const [startedInPayment] = useState(profile?.commercialSetupRequired === true);
+  const commercial = profile?.commercialSetupRequired === true || (startedInPayment && !!profile?.commercialSignup && !needsConsentRenewal(profile));
+  const legacy = params.get('mode') === 'edit' || (!commercial &&
     (isExemptFromHostOnboarding(roles) || isLinkedSupplier(profile) || !!profile?.orgId));
-  if (isLoading) return <LoadingScreen />;
-  if (legacy || (!profile && error && isProfileLoadFailure(error))) return <ExistingOnboardingPage />;
+  if (legacy) return <ExistingOnboardingPage />;
   return <CommercialSignupWizard profile={profile} />;
 }
 
@@ -89,6 +97,7 @@ export function ExistingOnboardingPage() {
   } = useMe();
   const completeOnboarding = useCompleteOnboarding();
   const reloadLegalDocuments = useReloadLegalDocuments();
+  const headingRef = useRef<HTMLHeadingElement>(null);
   const [step, setStep] = useState<WizardStep>('role');
   const [selectedType, setSelectedType] = useState<RentalType | null>(null);
   const [consents, setConsents] = useState<OnboardingConsentsPayload | null>(null);
@@ -98,6 +107,10 @@ export function ExistingOnboardingPage() {
   const [consentsForced, setConsentsForced] = useState(false);
   const [pendingAccess, setPendingAccess] = useState<PendingAccess | null>(null);
   const [isLeaving, setIsLeaving] = useState(false);
+
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, [step, consentsAttempt, profileLoading, isLeaving]);
 
   const roles = useUserRoles();
   const hasRoles = roles.length > 0;
@@ -338,7 +351,7 @@ export function ExistingOnboardingPage() {
               </ol>
             </>
           ) : null}
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{heading}</h1>
+          <h1 ref={headingRef} tabIndex={-1} className="text-3xl font-bold tracking-tight outline-none sm:text-4xl">{heading}</h1>
           <p className="text-muted-foreground">{subheading}</p>
         </div>
 

@@ -58,6 +58,7 @@ import {
   type WizardListingSeed,
   type WizardStepId,
 } from './property-wizard-model';
+import { forgetPropertyStep, rememberPropertyStep } from './property-setup-progress';
 import { PropertyWizardDone } from './property-wizard-done';
 import { roomInputs, roomsSignature, type RoomDraft } from './rooms-model';
 import { stayDiscountTiers } from './stay-discounts-model';
@@ -91,7 +92,7 @@ function PlanLimitAlert() {
 interface SaveAndCloseProps {
   /** Saves the answers of the step on screen, as «Avanti» does. Absent while nothing is saved yet (the first step of a new property): the button then only exits. */
   save?: (stepId: string, values: PropertyWizardValues) => Promise<void>;
-  onSaved: () => void;
+  onSaved: (step: string) => void;
 }
 
 /**
@@ -112,7 +113,7 @@ function SaveAndClose({ save, onSaved }: SaveAndCloseProps) {
 
   const run = async () => {
     if (!save) {
-      onSaved();
+      onSaved(wizard.stepId);
       return;
     }
     setBusy(true);
@@ -126,7 +127,7 @@ function SaveAndClose({ save, onSaved }: SaveAndCloseProps) {
       }
       if (!lenient && !(await form.trigger())) return;
       await save(wizard.stepId, form.getValues());
-      onSaved();
+      onSaved(wizard.stepId);
     } catch (failure) {
       setError(failure);
     } finally {
@@ -382,6 +383,11 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
         }
       }
     }
+    if (user?.id && org?.id) {
+      const scope = { userId: user.id, orgId: org.id };
+      if (stage === 'ready' || stage === 'active') forgetPropertyStep(scope, propertyId);
+      else rememberPropertyStep(scope, propertyId, 'finish');
+    }
     return propertyId;
   };
 
@@ -544,7 +550,10 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
       onlySteps={onlySteps && ownerRequired ? [...onlySteps, 'owner'] : onlySteps}
       defaultValues={defaults}
       initialStepId={initialStepId}
-      onStepChange={() => setSetupFailure(null)}
+      onStepChange={({ to }) => {
+        setSetupFailure(null);
+        if (propertyId && user?.id && org?.id) rememberPropertyStep({ userId: user.id, orgId: org.id }, propertyId, to);
+      }}
       finishLabel={t(`propertyWizard.last.button.${stage === 'ready' ? 'activate' : stage === 'active' ? 'done' : 'later'}`)}
       finishFailedMessage={setupFailure ?? t('propertyWizard.errors.saveFailed')}
       onFinish={finish}
@@ -554,7 +563,8 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
       aboveFooter={
         <SaveAndClose
           save={propertyId ? (stepId, values) => saveByStep[stepId]?.(values) ?? Promise.resolve() : undefined}
-          onSaved={() => {
+          onSaved={(step) => {
+            if (propertyId && user?.id && org?.id) rememberPropertyStep({ userId: user.id, orgId: org.id }, propertyId, step);
             toast.success(t(propertyId ? 'propertyWizard.exit.saved' : 'propertyWizard.exit.kept'));
             navigate(PROPERTIES_PATH);
           }}

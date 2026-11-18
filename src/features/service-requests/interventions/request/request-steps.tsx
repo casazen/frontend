@@ -1,3 +1,4 @@
+import type { Booking } from '@/types';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { isAxiosError } from 'axios';
 import type { TFunction } from 'i18next';
@@ -324,7 +325,7 @@ function TimeChoices() {
  * supplier should know, and, if the host wants, the stay the work is linked to: it is the house that is asked for, the stay is only a
  * link. Nothing here is kept in the draft: the services and the agendas change.
  */
-export function DetailsStep({ goTo }: { goTo: (stepId: string) => void }) {
+export function DetailsStep({ goTo, linkedStay }: { goTo: (stepId: string) => void; linkedStay?: Booking }) {
   const { t, i18n } = useTranslation();
   const { register, control, setValue, formState } = useFormContext<RequestValues>();
   const [propertyId, category, supplierOrgId, supplierName, serviceId, day, notes] = useWatch({
@@ -332,7 +333,7 @@ export function DetailsStep({ goTo }: { goTo: (stepId: string) => void }) {
     name: ['propertyId', 'category', 'supplierOrgId', 'supplierName', 'serviceId', 'day', 'notes'],
   });
   const suppliers = useSuppliersByProperty(propertyId, category);
-  const { stays, all } = useUpcomingStays(propertyId);
+  const { stays, all } = useUpcomingStays(propertyId, linkedStay);
   const window = category === 'cleaning' ? turnoverWindow(day, all ?? []) : null;
   const stayField = register('bookingId');
   const notAvailable = supplierOrgId !== '' && suppliers.isSuccess && !suppliers.data.items.some((supplier) => supplier.orgId === supplierOrgId);
@@ -483,12 +484,12 @@ function BackupChoice() {
 }
 
 /** Step ⑥: everything in plain words, each answer with its «Modifica», and what the supplier will see of it (decision D9). */
-export function ReviewStep() {
+export function ReviewStep({ linkedStay }: { linkedStay?: Booking }) {
   const { t, i18n } = useTranslation();
   const { control } = useFormContext<RequestValues>();
   const values = useWatch({ control }) as RequestValues;
   const properties = useProperties({ mode: 'short' });
-  const { stays } = useUpcomingStays(values.propertyId);
+  const { stays } = useUpcomingStays(values.propertyId, linkedStay);
 
   const property = (Array.isArray(properties.data) ? properties.data : []).find((candidate) => candidate.id === values.propertyId);
   const stay = stays.find((candidate) => candidate.id === values.bookingId);

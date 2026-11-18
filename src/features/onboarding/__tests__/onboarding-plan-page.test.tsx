@@ -411,7 +411,7 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
       renderPage();
       await rows();
 
-      fireEvent.click(exitButton());
+      fireEvent.click(screen.getByRole('button', { name: i18n.t('onboardingPlan.backToHome') }));
 
       expect(await screen.findByTestId('arrived')).toHaveTextContent('/app/short-rent');
       expect(onboardingApi.exitPart).not.toHaveBeenCalled();
@@ -423,7 +423,7 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
       renderPage();
       await rows();
 
-      fireEvent.click(exitButton());
+      fireEvent.click(screen.getByRole('button', { name: i18n.t('onboardingPlan.backToHome') }));
 
       expect(await screen.findByTestId('arrived')).toBeInTheDocument();
       expect(onboardingApi.exitPart).not.toHaveBeenCalled();
@@ -462,7 +462,7 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
       renderPage();
 
       expect(await screen.findByTestId('onboarding-plan-loading')).toBeInTheDocument();
-      expect(exitButton()).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: i18n.t('onboardingPlan.backToHome') })).toBeInTheDocument();
       expect(screen.getByTestId('onboarding-plan-help')).toBeInTheDocument();
 
       cleanup();
@@ -470,7 +470,7 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
       renderPage();
 
       expect(await screen.findByTestId('onboarding-plan-error')).toBeInTheDocument();
-      expect(exitButton()).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: i18n.t('onboardingPlan.backToHome') })).toBeInTheDocument();
       expect(screen.getByTestId('onboarding-plan-help')).toBeInTheDocument();
     });
   });

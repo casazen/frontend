@@ -1,8 +1,9 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Plus, Sparkles } from 'lucide-react';
+import { ArrowRight, Plus, Sparkles } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
+import { Button } from '@/components/ui/button';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import { ListView } from '@/components/shared/list-view/list-view';
 import { CinDeadlineBanner } from '@/features/cin';
@@ -14,11 +15,12 @@ import { getPlanLimitMessage, getPlanTierLabel, getPlanUpgradeCta } from '@/lib/
 import { useCinCompliance } from '@/queries/use-cin';
 import { useListingStatusSummary } from '@/queries/use-listing-status';
 import { SHORT_PROPERTIES_OVERVIEW, useActivateProperty, useDeleteProperty, usePauseProperty, useProperties } from '@/queries/use-properties';
-import { useEntitlement } from '@/queries/use-users';
+import { useCurrentUser, useEntitlement } from '@/queries/use-users';
 import type { Property } from '@/types';
 import { BulkCleaningDialog } from './components/bulk-cleaning-dialog';
 import { usePropertiesList } from './properties-list';
-import { PROPERTY_CREATE_PATH } from './properties-paths';
+import { propertyStepLabel, readPropertyStep } from './wizard/property-setup-progress';
+import { propertyWizardPath, PROPERTY_CREATE_PATH } from './properties-paths';
 
 /** From this many properties on, the limit of a plan is "no limit" (the API sends a very large number, or a negative one). */
 const UNLIMITED_PROPERTIES = 1_000_000;
@@ -77,6 +79,9 @@ export function PropertiesPage() {
   const deleteProperty = useDeleteProperty();
   const { hasPermission } = useWorkspace();
   const viewsScope = useListViewsScope();
+  const { user, org } = useCurrentUser();
+  const progress = user?.id && org?.id ? readPropertyStep({ userId: user.id, orgId: org.id }) : null;
+  const inProgress = !isError && properties?.find(property => property.id === progress?.propertyId);
   const canWrite = hasPermission('short-rent', 'property.write');
   const [propertyToDelete, setPropertyToDelete] = useState<Property | null>(null);
   // Who cleans, for many properties at once (E24/F01/US02/T01): behind the flag of the routines, which is what makes the cleaning at check-out run, and for who may write the properties.
@@ -95,7 +100,6 @@ export function PropertiesPage() {
   // field, and never set `isActive` (soft delete's own flag, PC-05). The mutations tell the person themselves how they went.
   const onPause = useCallback((property: Property) => pause(property.id), [pause]);
   const onActivate = useCallback((property: Property) => activate(property.id), [activate]);
-  const onDelete = useCallback((property: Property) => setPropertyToDelete(property), []);
 
   const list = usePropertiesList({
     canWrite,
@@ -103,7 +107,7 @@ export function PropertiesPage() {
     busy: pausing || activating || deleteProperty.isPending,
     onPause,
     onActivate,
-    onDelete,
+    onDelete: setPropertyToDelete,
     channelSummaries,
     // Not «Non pubblicato» for a summary that is still loading or could not be read: the column says nothing is known.
     channelsKnown: summaries.isSuccess,
@@ -134,6 +138,18 @@ export function PropertiesPage() {
             : undefined
         }
       />
+
+      {canWrite && progress && inProgress ? (
+        <section aria-labelledby="property-resume-title" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-4">
+          <div className="min-w-0">
+            <h2 id="property-resume-title" className="break-words font-semibold">{t('propertySetup.resume.listTitle', { name: inProgress.name })}</h2>
+            <p className="text-sm text-muted-foreground">{t('propertySetup.resume.lastStep', { step: t(propertyStepLabel(progress.step)) })}</p>
+          </div>
+          <Button asChild variant="outline" className="min-h-11" data-testid="property-setup-resume">
+            <Link to={propertyWizardPath(inProgress.id, progress.step)}>{t('propertySetup.resume.action')} <ArrowRight aria-hidden="true" /></Link>
+          </Button>
+        </section>
+      ) : null}
 
       <ListView
         list={list}

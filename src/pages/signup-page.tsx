@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Home, UserPlus } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
+import { useLoginHandoff } from '@/hooks/use-login-handoff';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,7 +23,8 @@ export function SignupPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
-  const { isLoading, isAuthenticated, login } = useAuth();
+  const { isLoading, isAuthenticated } = useAuth();
+  const { start, busy, status } = useLoginHandoff();
   const started = useRef(false);
   const signupCounted = useRef(false);
 
@@ -50,29 +52,31 @@ export function SignupPage() {
       navigate('/', { replace: true });
       return;
     }
-    login({ authorizationParams: SIGNUP_SCREEN });
-  }, [isLoading, isAuthenticated, login, navigate, search]);
+    start({ authorizationParams: SIGNUP_SCREEN });
+  }, [isLoading, isAuthenticated, start, navigate, search]);
 
   return (
     <div
-      className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4"
+      className="flex min-h-screen items-center justify-center bg-muted/40 px-4"
       data-testid="signup-page"
     >
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground">
-            <Home className="h-8 w-8" />
+            <UserPlus aria-hidden="true" className="h-8 w-8" />
           </div>
           <CardTitle className="text-2xl">{t('signup.title')}</CardTitle>
-          <CardDescription>{t('signup.redirecting')}</CardDescription>
+          <CardDescription role={status === 'failed' || status === 'delayed' ? 'alert' : 'status'}>
+            {t(status === 'failed' || status === 'delayed' ? 'login.handoffFailed' : 'signup.redirecting')}
+          </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center gap-4">
-          <Spinner size="lg" />
+          {busy && <Spinner size="lg" />}
           <Button
             className="w-full"
             size="lg"
-            disabled={isLoading}
-            onClick={() => login({ authorizationParams: SIGNUP_SCREEN })}
+            disabled={isLoading || busy}
+            onClick={() => start({ authorizationParams: SIGNUP_SCREEN })}
             data-testid="signup-continue"
           >
             <UserPlus className="mr-2 h-5 w-5" />

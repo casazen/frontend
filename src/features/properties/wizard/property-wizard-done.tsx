@@ -1,6 +1,8 @@
 import { Link, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CircleAlert, CircleCheck, EyeOff, Home } from 'lucide-react';
+import { ErrorState } from '@/components/shared/error-state';
+import { LoadingScreen } from '@/components/shared/loading-screen';
 import { WizardDone } from '@/components/shared/wizard/wizard-done';
 import { Button } from '@/components/ui/button';
 import { isOpenBlocker } from '@/features/compliance/activation-wizard-model';
@@ -30,8 +32,14 @@ export function PropertyWizardDone({ propertyId }: PropertyWizardDoneProps) {
   const activation = useComplianceActivation(propertyId ?? '');
 
   if (!propertyId) return <Navigate to={PROPERTIES_PATH} replace />;
-  if (property.isError) return <Navigate to={PROPERTIES_PATH} replace />;
-  if (!property.data || !activation.data) return null;
+  const failed = property.isError ? property : activation.isError ? activation : null;
+  if (failed) return (
+    <div className="space-y-3">
+      <ErrorState title={t('propertySetup.resume.statusError')} error={failed.error} onRetry={() => { void failed.refetch(); }} />
+      <Button variant="outline" asChild><Link to={PROPERTIES_PATH}>{t('propertyWizard.page.backToList')}</Link></Button>
+    </div>
+  );
+  if (!property.data || !activation.data) return <LoadingScreen message={t('propertyWizard.page.loading')} className="h-auto" />;
 
   const name = property.data.name;
   // The wizard again with an empty address: the page starts a new one (it does not go on with the one that has just ended).

@@ -30,7 +30,7 @@ import { LeaseSigningPanel } from './components/lease-signing-panel';
 import { useLeaseSheetMenu } from './components/use-lease-sheet-menu';
 import { RentSchedulePanel } from './components/rent-schedule-panel';
 import { LeaseGuide } from './guide/lease-guide';
-import { leasePropertyLine, leaseRentText } from './lib/lease-list-format';
+import { leasePropertyLine, leaseRentText, leaseTermText } from './lib/lease-list-format';
 import { useCfCompletion } from './lib/cf-completion';
 import { useCfDeliveredContract } from './lib/cf-import';
 import { describeLeaseStep } from './lib/lease-next-step';
@@ -51,10 +51,24 @@ function leaseTitle(lease: LeaseDetail, language: string, t: TFunction): string 
   return new Intl.ListFormat(language, { style: 'long', type: 'conjunction' }).format(names);
 }
 
-/** Under the title: "Casa Trastevere · Roma · Canone libero (4+4) · 950,00 €/mese". */
-function leasePurpose(lease: LeaseDetail, t: TFunction): string {
+function LeaseFacts({ lease }: { lease: LeaseDetail }) {
+  const { t, i18n } = useTranslation();
   const type = lease.contractType ? getLeaseContractTypeLabel(lease.contractType, t) : getFiscalRegimeLabel(lease.fiscalRegime, t);
-  return [leasePropertyLine(lease, t), type, leaseRentText(lease, t)].join(' · ');
+  const facts = [
+    [t('rent.focus.leaseType'), type],
+    [t('leaseList.columns.term'), leaseTermText(lease, t, i18n.language)],
+    [t('rent.focus.monthlyRent'), leaseRentText(lease, t)],
+  ];
+  return (
+    <dl data-testid="lease-facts" className="grid min-w-0 gap-3 rounded-xl border border-border bg-card px-4 py-3 sm:grid-cols-3 sm:gap-5">
+      {facts.map(([label, value]) => (
+        <div key={label} className="flex min-w-0 items-baseline justify-between gap-3 sm:block">
+          <dt className="text-sm text-muted-foreground">{label}</dt>
+          <dd className="min-w-0 break-words text-right text-sm font-semibold sm:mt-1 sm:text-left">{value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
 }
 
 /** The state of the lease: a badge that is also the button that explains it. */
@@ -143,11 +157,12 @@ function LeaseSheet({ lease, nextStep, stage }: { lease: LeaseDetail; nextStep: 
           { label: title },
         ]}
         title={title}
-        description={leasePurpose(lease, t)}
+        description={leasePropertyLine(lease, t)}
         action={<StatusToggle status={lease.status} open={explainOpen} controls={explainId} onToggle={() => setExplainOpen((open) => !open)} />}
         secondary={menu}
       />
 
+      <LeaseFacts lease={lease} />
       {explainOpen ? (
         <div id={explainId} data-testid="lease-status-explainer" className="border-s-2 border-border ps-4">
           <StatusExplainer kind="lease" status={lease.status} explain={serviceDraft ? t('leaseSheet.status.serviceDraft') : undefined} />

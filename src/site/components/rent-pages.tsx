@@ -10,6 +10,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { isDemoMode } from '@/config/demo.config';
 import type { SiteLegal } from '../site-config';
 import { sitePageById } from '../site-pages';
 import { BrowserFrame, ChannelsCatalogue, ChannelsStrip, ProductShowcase } from './home-showcase';
@@ -46,12 +47,12 @@ export function ShortRentPage({ legal }: { legal: SiteLegal }) {
   const { t } = useTranslation();
   return (
     <>
-      <PageHeader title={t('site.shortRent.title')} intro={t('site.shortRent.intro')}>
+      <PageHeader title={t('site.shortRent.title')} intro={t('site.shortRent.intro')}
+        preview={!isDemoMode && <PublicTour area="short" legal={legal} />}>
         <p className="w-full text-ink-600">{t('site.tour.shortIntro')}</p>
         <TourEntry area="short" />
         <SecondaryLink href={sitePageById('longRent').path}>{t('site.shortRent.otherLink')}</SecondaryLink>
       </PageHeader>
-      <PublicTour area="short" legal={legal} />
       <ChannelsStrip />
       <Section title={t('site.shortRent.featuresTitle')} intro={t('site.shortRent.featuresIntro')}>
         <CardGrid>
@@ -90,12 +91,12 @@ export function LongRentPage({ legal }: { legal: SiteLegal }) {
   const { t } = useTranslation();
   return (
     <>
-      <PageHeader title={t('site.longRent.title')} intro={t('site.longRent.intro')}>
+      <PageHeader title={t('site.longRent.title')} intro={t('site.longRent.intro')}
+        preview={!isDemoMode && <PublicTour area="long" legal={legal} />}>
         <p className="w-full text-ink-600">{t('site.tour.longIntro')}</p>
         <TourEntry area="long" />
         <SecondaryLink href={sitePageById('shortRent').path}>{t('site.longRent.otherLink')}</SecondaryLink>
       </PageHeader>
-      <PublicTour area="long" legal={legal} />
       <Section title={t('site.longRent.featuresTitle')} intro={t('site.longRent.featuresIntro')}>
         <CardGrid>
           {LONG_GROUPS.map((group) => (

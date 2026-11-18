@@ -1,3 +1,4 @@
+import { WorkspaceContext, type WorkspaceContextValue } from '@/contexts/workspace-context';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -56,13 +57,18 @@ function ledger(overrides: Partial<RentLedger> = {}): RentLedger {
   };
 }
 
-function renderPanel() {
+const writer: WorkspaceContextValue = {
+  contexts: [], activeContext: 'long-rent', isReady: true, getDefaultRoute: () => '/app/long-rent', setActiveContext: () => {},
+  hasPermission: (_area, permission) => permission === 'lease.create',
+};
+
+function renderPanel(workspace = writer) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
     <QueryClientProvider client={client}>
       <I18nextProvider i18n={i18n}>
         <MemoryRouter>
-          <RentSchedulePanel leaseId="lease-1" />
+          <WorkspaceContext.Provider value={workspace}><RentSchedulePanel leaseId="lease-1" /></WorkspaceContext.Provider>
         </MemoryRouter>
       </I18nextProvider>
     </QueryClientProvider>,
@@ -73,6 +79,22 @@ describe('RentSchedulePanel (LT-06)', () => {
   beforeEach(async () => {
     freezeClock('2026-10-10T08:00:00Z');
     await i18n.changeLanguage('it');
+  });
+
+  it('leads a reader to the oldest unresolved installment and hides write actions', async () => {
+    get.mockResolvedValue({ data: ledger({
+      installments: [
+        installment({ id: 'later', dueDate: '2026-11-07' }),
+        installment({ id: 'late', isOverdue: true, residual: 225 }),
+        installment({ id: 'paid', dueDate: '2026-08-01', status: 'Paid' }),
+      ],
+    }) });
+    renderPanel({ ...writer, hasPermission: () => false });
+    const focus = await screen.findByTestId('rent-focus');
+    expect(within(focus).getByRole('link')).toHaveAttribute('href', '#rent-installment-late');
+    expect(focus).toHaveTextContent(/225,00/);
+    expect(document.getElementById('rent-installment-late')).toHaveAttribute('tabindex', '-1');
+    expect(screen.queryByRole('button', { name: i18n.t('rent.edit') })).not.toBeInTheDocument();
   });
 
   afterEach(() => {
@@ -327,7 +349,7 @@ describe('RentSchedulePanel (LT-06)', () => {
       <QueryClientProvider client={client}>
         <I18nextProvider i18n={i18n}>
           <MemoryRouter>
-            <RentSchedulePanel leaseId="lease-1" leaseStatus={status} />
+            <WorkspaceContext.Provider value={writer}><RentSchedulePanel leaseId="lease-1" leaseStatus={status} /></WorkspaceContext.Provider>
           </MemoryRouter>
         </I18nextProvider>
       </QueryClientProvider>

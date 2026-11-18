@@ -177,7 +177,8 @@ describe('LeaseDetailPage', () => {
     expect(within(parties[1]).getByText('Conduttore')).toBeInTheDocument();
     // The title is the tenant, the line under it says what the lease is about.
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Giulia Verdi');
-    expect(screen.getByText(/Casa Trastevere · Roma · .* · 950,00\s€\/mese/)).toBeInTheDocument();
+    expect(within(screen.getByTestId('page-header')).getByText('Casa Trastevere · Roma')).toBeInTheDocument();
+    expect(within(screen.getByTestId('lease-facts')).getByText(/950,00\s€\/mese/)).toBeInTheDocument();
     // History with translated event types, never the raw enum value (A7-26), the latest first, with who did it.
     const events = within(screen.getByTestId('lease-timeline')).getAllByRole('listitem');
     expect(within(events[0]).getByText('Delega RLI registrata')).toBeInTheDocument();
@@ -360,7 +361,7 @@ describe('LeaseDetailPage', () => {
     // CF-FLOW: nothing to give anyone, and no name of the supplier (nor «partner») in the block.
     expect(screen.queryByDisplayValue('lease-1')).not.toBeInTheDocument();
     expect(notice.textContent).not.toMatch(/partner|concordato\s*facile/i);
-    expect(screen.getByText(/Casa Trastevere · Roma · .* · Canone da definire/)).toBeInTheDocument();
+    expect(screen.getByTestId('lease-facts')).toHaveTextContent('Canone da definire');
     expect(screen.queryByText(/3000/)).not.toBeInTheDocument();
     expect(screen.queryByText(/0,00\s€/)).not.toBeInTheDocument();
   });

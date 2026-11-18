@@ -1,18 +1,18 @@
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CalendarClock, Copy, KeyRound, Users } from 'lucide-react';
 import { WizardDone } from '@/components/shared/wizard/wizard-done';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import type { OrgInvitationSent } from '@/types/org-team.types';
+import { ACCOUNT_PEOPLE_PATH } from '../../account/account-home-model';
 import { dayOf } from '../team-dates';
 import { ACCOUNT_INVITE_PATH, ACCOUNT_INVITED_PATH } from '../team-paths';
 import { useCopyInvitationLink } from '../use-copy-invitation-link';
-import type { InviteValues } from './invite-model';
 
 interface InviteDoneProps {
-  /** What the server answered. Without it (the last screen opened again) the screen says what is true of every invitation. */
+  /** Available in the tab that submitted the invitation, until the page reloads. */
   sent: OrgInvitationSent | undefined;
-  values: InviteValues;
 }
 
 /**
@@ -20,18 +20,29 @@ interface InviteDoneProps {
  * and accepts the documents again, that the invitation takes a seat. When the email could not be queued it says so and offers the
  * link to hand by hand (`POST …/{id}/link`).
  */
-export function InviteDone({ sent, values }: InviteDoneProps) {
+export function InviteDone({ sent }: InviteDoneProps) {
   const { t, i18n } = useTranslation();
   const { copyLink, copying } = useCopyInvitationLink();
 
-  const name = sent?.invitation.name ?? (values.name.trim() || undefined);
-  const email = sent?.invitation.email ?? (values.email.trim() || undefined);
-  const emailFailed = sent?.emailQueued === false;
-  const expiry = sent ? t('team.invite.done.expires', { date: dayOf(sent.invitation.expiresAt, i18n.language) }) : t('team.invite.done.expiresGeneric');
+  if (!sent) {
+    return (
+      <Alert title={t('team.invite.done.checkStatus')} action={
+        <Button asChild size="sm" variant="outline" className="min-h-11">
+          <Link to={ACCOUNT_PEOPLE_PATH}>{t('team.roles.openPeople')}</Link>
+        </Button>
+      }>
+        {t('team.invite.done.checkPeople')}
+      </Alert>
+    );
+  }
+
+  const { email, name, expiresAt } = sent.invitation;
+  const emailFailed = !sent.emailQueued;
+  const expiry = t('team.invite.done.expires', { date: dayOf(expiresAt, i18n.language) });
 
   return (
     <div className="space-y-6" data-testid="invite-done">
-      {emailFailed && sent ? (
+      {emailFailed ? (
         <Alert
           variant="warning"
           title={t('team.invite.done.emailFailedTitle')}
@@ -48,14 +59,14 @@ export function InviteDone({ sent, values }: InviteDoneProps) {
       ) : null}
 
       <WizardDone
-        title={name ? t(emailFailed ? 'team.invite.done.titleCreated' : 'team.invite.done.title', { name }) : t('team.invite.done.titleGeneric')}
-        description={email && !emailFailed ? t('team.invite.done.description', { email }) : undefined}
+        title={t('team.invite.done.titleCreated', { name })}
+        description={!emailFailed ? t('team.invite.done.description', { email }) : undefined}
         whatNext={[
           { text: expiry, icon: CalendarClock },
           { text: t('team.invite.done.account'), icon: KeyRound },
           { text: t('team.invite.done.seat'), icon: Users },
         ]}
-        primary={{ label: t('team.invite.done.another'), to: sent ? `${ACCOUNT_INVITE_PATH}?n=${encodeURIComponent(sent.invitation.id)}` : `${ACCOUNT_INVITE_PATH}?n=again` }}
+        primary={{ label: t('team.invite.done.another'), to: `${ACCOUNT_INVITE_PATH}?n=${encodeURIComponent(sent.invitation.id)}` }}
         secondary={{ label: t('team.invite.done.seeInvited'), to: ACCOUNT_INVITED_PATH }}
       />
     </div>

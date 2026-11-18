@@ -173,9 +173,10 @@ export function CleaningStep({
             {t('serviceRequest.listLoading')}
           </p>
         ) : existing.isError ? (
-          <p role="alert" className="text-sm text-destructive" data-testid="checkout-cleaning-existing-error">
+          <div role="alert" className="flex flex-wrap items-center gap-2 text-sm text-destructive" data-testid="checkout-cleaning-existing-error">
             {getProblemMessage(existing.error, t) ?? t('serviceRequest.listLoadError')}
-          </p>
+            <Button type="button" size="sm" variant="outline" onClick={() => void existing.refetch()}>{t('serviceRequest.retry')}</Button>
+          </div>
         ) : (existing.data?.items.length ?? 0) === 0 ? (
           <p className="text-sm text-muted-foreground" data-testid="checkout-cleaning-existing-empty">
             {t('serviceRequest.emptyForStay')}

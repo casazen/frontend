@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import { PropertyWizardDone } from '../property-wizard-done';
@@ -31,6 +31,17 @@ describe('PropertyWizardDone: the next step of the path at the end of the wizard
   });
 
   afterEach(() => cleanup());
+
+  it('keeps a failed activation read recoverable on the completion screen', () => {
+    const refetch = vi.fn();
+    useProperty.mockReturnValue({ data: { id: 'prop-1', name: 'Casa Mare' }, isError: false });
+    useComplianceActivation.mockReturnValue({ isError: true, error: new Error('offline'), refetch });
+    renderDone();
+    expect(screen.getByRole('alert')).toHaveTextContent(i18n.t('propertySetup.resume.statusError'));
+    fireEvent.click(screen.getByRole('button', { name: /Riprova/i }));
+    expect(refetch).toHaveBeenCalledOnce();
+    expect(screen.getByRole('link')).toHaveAttribute('href', '/app/short-rent/properties');
+  });
 
   it('PropertyActive_ShowsTheSuggestionForThePartListingsUnderWhatHappensNow', () => {
     useComplianceActivation.mockReset().mockReturnValue({ data: { complianceStatus: 'Active', steps: [] } });

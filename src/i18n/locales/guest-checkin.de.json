@@ -99,8 +99,15 @@
       }
     },
     "loading": "Check-in wird geladen …",
+    "reopen": {
+      "loadTitle": "Check-in vorübergehend nicht verfügbar",
+      "loadHint": "Prüfen Sie Ihre Verbindung und versuchen Sie es erneut mit diesem Link.",
+      "retry": "Erneut versuchen",
+      "nextStep": "Danach · {{name}}",
+      "resumed": "Bereits von der Unterkunft erfasste Angaben sind vorausgefüllt. Bitte geben Sie noch nicht gesendete Änderungen erneut ein."
+    },
     "invalidLink": "Ungültiger Link",
-    "invalidLinkDescription": "Der Check-in-Link ist ungültig oder abgelaufen. Wenden Sie sich an den Vermieter.",
+    "invalidLinkDescription": "Der Link ist ungültig oder abgelaufen. Bitten Sie die Unterkunft über Ihre Buchung um einen neuen Link.",
     "guestCheckIn": "Gäste-Check-in",
     "birthDate": "Geburtsdatum *",
     "genderLabel": "Geschlecht *",
@@ -121,7 +128,7 @@
     "submit": "Check-in absenden",
     "fixHighlightedFields": "Einige Angaben sind ungültig: Bitte korrigieren Sie die markierten Felder und senden Sie erneut ab.",
     "successTitle": "Check-in abgeschlossen!",
-    "successDescription": "Ihre Angaben wurden gespeichert. Vielen Dank!",
+    "successDescription": "Die Unterkunft hat Ihre Angaben zum Aufenthalt erhalten. Für Korrekturen kontaktieren Sie die Unterkunft über Ihre Buchung.",
     "alreadyCompletedTitle": "Check-in bereits abgeschlossen",
     "alreadyCompletedDescription": "Die Angaben zu diesem Aufenthalt wurden bereits übermittelt. Zum Schutz Ihrer Privatsphäre werden sie nicht mehr angezeigt. Für Korrekturen wenden Sie sich an den Vermieter.",
     "marketingConsentVersion": "Freiwillig. Version des Textes: {{version}}",
@@ -132,7 +139,7 @@
       "version": "Version des Hinweises: {{version}}"
     },
     "stepScan": "Dokument",
-    "scanIntro": "Laden Sie zuerst ein Foto des Ausweises jedes Gastes hoch. Die Daten werden automatisch gelesen: Im nächsten Schritt prüfen und korrigieren Sie sie.",
+    "scanIntro": "Übernehmen Sie die Angaben aus einem Dokumentenfoto oder geben Sie sie von Hand ein. Vor dem Senden an die Unterkunft können Sie alles prüfen.",
     "scanHint": "JPG, PNG oder WebP, maximal 5 MB. Wenn Sie die Online-Verifizierung wählen und einwilligen, können Sie dasselbe Foto zur Prüfung Ihres Dokuments verwenden.",
     "scanButton": "Foto aufnehmen oder hochladen",
     "scanReading": "Dokument wird gelesen…",

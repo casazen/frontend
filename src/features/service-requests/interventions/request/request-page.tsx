@@ -1,6 +1,8 @@
-import { useCallback, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { isAxiosError } from 'axios';
 import { useQueryClient } from '@tanstack/react-query';
 import { Building2 } from 'lucide-react';
 import { FOCUS_COLUMN } from '@/components/layout/page-columns';
@@ -9,11 +11,9 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { WizardShell, type WizardStep } from '@/components/shared/wizard/wizard-shell';
-import { stayDateOf } from '@/features/bookings/lib/booking-price';
 import { PROPERTY_CREATE_PATH } from '@/features/properties/properties-paths';
-import { todayInRome } from '@/lib/stay-dates';
 import { cn } from '@/lib/utils';
-import { usePropertyBookings } from '@/queries/use-bookings';
+import { useBooking } from '@/queries/use-bookings';
 import { HOST_SUPPLIER_SLOTS_KEY } from '@/queries/use-host-supplier-catalog';
 import { useProperties } from '@/queries/use-properties';
 import { useServiceCategories } from '@/queries/use-service-categories';
@@ -34,8 +34,36 @@ import {
   type RequestStepId,
   type RequestValues,
 } from './request-model';
-import { ChannelStep, PartnersStep, PropertyStep, ProposalsStep, ServiceStep, type ChangeChannel } from './request-pick-steps';
+import { ChannelStep, CleaningBrief, PartnersStep, PropertyStep, ProposalsStep, ServiceStep, type ChangeChannel } from './request-pick-steps';
 import { DetailsStep, ReviewStep } from './request-steps';
+
+/** Entry points share a draft only when they refer to the same original job. Moving between steps keeps the same form. */
+function entryKey(search: URLSearchParams) {
+  const entry = new URLSearchParams();
+  for (const field of ['propertyId', 'bookingId', 'type', 'date', 'supplierOrgId', 'serviceId', 'n']) {
+    const value = search.get(field);
+    if (value) entry.set(field, value);
+  }
+  const context = entry.toString();
+  return context ? `${REQUEST_WIZARD_ID}?${context}` : REQUEST_WIZARD_ID;
+}
+
+/** Availability is checked afresh after a reload. Open the first missing answer before showing the review. */
+function ResumeRequest({ review, children }: { review?: boolean; children: ReactNode }) {
+  const [, setSearch] = useSearchParams();
+  const { getValues } = useFormContext<RequestValues>();
+  const { propertyId, category, supplierOrgId, serviceId, startTime } = getValues();
+  const missing = !propertyId ? 'property' : !category ? 'service' : !supplierOrgId ? 'proposals' : review && (!serviceId || !startTime) ? 'details' : null;
+  useEffect(() => {
+    if (!missing) return;
+    setSearch((previous) => {
+      const next = new URLSearchParams(previous);
+      next.set('step', missing);
+      return next;
+    }, { replace: true, state: { requestResumed: true } });
+  }, [setSearch, missing]);
+  return missing ? null : children;
+}
 
 function RequestWizard() {
   const { t } = useTranslation();
@@ -47,6 +75,7 @@ function RequestWizard() {
   const create = useCreateIntervention();
   // The sentence of the last refusal that sent the host back to a step: the wizard shows it where the host lands.
   const [refusal, setRefusal] = useState<string | null>(null);
+  const [checkAfterFailure, setCheckAfterFailure] = useState<string | null>(null);
   const schemas = useMemo(() => requestStepSchemas(), []);
   const channel = channelOf(search);
 
@@ -68,42 +97,30 @@ function RequestWizard() {
 
   const base = useMemo(() => requestDefaults(search, categories.data), [search, categories.data]);
   const propertyList = Array.isArray(properties.data) ? properties.data : null;
-  // A stay named by the address gives the day of the work (its check-out day): its property's stays are read before the wizard opens.
-  const needsStays = base.values.bookingId !== '' && base.values.propertyId !== '' && !search.has('date');
-  const stays = usePropertyBookings(needsStays ? base.values.propertyId : undefined);
-
-  const defaults = useMemo(() => {
-    const known = propertyList ?? [];
-    const addressed = known.some((property) => property.id === base.values.propertyId);
-    const propertyId = addressed ? base.values.propertyId : known.length === 1 ? known[0].id : '';
-    let bookingId = addressed ? base.values.bookingId : '';
-    let day = base.values.day;
-    if (bookingId) {
-      const stay = stays.data?.find((candidate) => candidate.id === bookingId);
-      if (stay) {
-        // Only the stays not over yet can be linked (the ones the step offers); the day of one that is over is today.
-        if (stayDateOf(stay.checkOutDate) < todayInRome()) bookingId = '';
-        else if (needsStays) day = dayForStay(stay.checkOutDate);
-      } else if (!stays.isPending) {
-        bookingId = '';
-      }
-    }
-    return { values: { ...base.values, propertyId, bookingId, day }, prefilled: base.prefilled };
-  }, [base, propertyList, stays.data, stays.isPending, needsStays]);
-
-  if (categories.isPending || properties.isPending || (needsStays && stays.isPending)) {
+  const addressed = propertyList?.some((property) => property.id === base.values.propertyId);
+  const linkedStay = useBooking(base.values.bookingId, { enabled: !!addressed });
+  const propertyId = addressed ? base.values.propertyId : propertyList?.length === 1 ? propertyList[0].id : '';
+  const stay = addressed && linkedStay.data?.propertyId === propertyId && linkedStay.data.status !== 'Cancelled' ? linkedStay.data : undefined;
+  const values = {
+    ...base.values,
+    propertyId,
+    bookingId: stay?.id ?? '',
+    day: stay && !search.has('date') ? dayForStay(stay.checkOutDate) : base.values.day,
+  };
+  const needsStay = !!base.values.bookingId && !!addressed;
+  if (categories.isPending || properties.isPending || (needsStay && linkedStay.isPending)) {
     return <LoadingScreen message={t('requestWizard.loading')} className="h-auto flex-1" />;
   }
 
-  // Without the catalog or the properties there is nothing to ask: the wizard says so, with a way to try again, and does not open on empty lists.
-  if (categories.isError || properties.isError) {
+  if (categories.isError || properties.isError || (needsStay && linkedStay.isError)) {
     return (
       <ErrorState
         title={t('requestWizard.loadError')}
-        error={categories.error ?? properties.error}
+        error={categories.error ?? properties.error ?? linkedStay.error}
         onRetry={() => {
-          void categories.refetch();
-          void properties.refetch();
+          if (categories.isError) void categories.refetch();
+          if (properties.isError) void properties.refetch();
+          if (needsStay && linkedStay.isError) void linkedStay.refetch();
         }}
       />
     );
@@ -118,6 +135,11 @@ function RequestWizard() {
         action={{ label: t('requestWizard.noProperty.action'), href: PROPERTY_CREATE_PATH }}
       />
     );
+  }
+
+  if (base.values.bookingId && !stay) {
+    return <EmptyState icon={Building2} title={t('requestWizard.housekeeping.stayUnavailable')}
+      action={{ label: t('interventions.title'), href: INTERVENTIONS_PATH }} />;
   }
 
   const goToStep = (stepId: string) =>
@@ -150,28 +172,43 @@ function RequestWizard() {
           property,
           who,
           service,
-          { ...describe('proposals'), schema: schemas.proposals, render: ({ goTo }) => <ProposalsStep onChannel={changeChannel} goTo={goTo} /> },
-          { ...describe('details'), schema: schemas.details, render: ({ goTo }) => <DetailsStep goTo={goTo} /> },
-          { ...describe('review'), render: () => <ReviewStep /> },
+          { ...describe('proposals'), schema: schemas.proposals, render: ({ goTo }) => <><CleaningBrief /><ProposalsStep onChannel={changeChannel} goTo={goTo} /></> },
+          { ...describe('details'), schema: schemas.details, render: ({ goTo }) => <ResumeRequest><DetailsStep goTo={goTo} linkedStay={stay} /></ResumeRequest> },
+          { ...describe('review'), render: () => <ResumeRequest review><ReviewStep linkedStay={stay} /></ResumeRequest> },
         ];
 
   return (
     <WizardShell<RequestValues, RequestSent>
-      id={REQUEST_WIZARD_ID}
+      id={entryKey(search)}
       steps={steps}
-      defaultValues={defaults.values}
-      initialStepId={openingStepFor(defaults.values, channel)}
+      defaultValues={values}
+      initialStepId={openingStepFor(values, channel)}
       finishLabel={channel === 'external' ? t('requestWizard.finishExternal') : t('requestWizard.finish')}
       finishFailedMessage={refusal ?? t('requestWizard.errors.sendFailed')}
+      aboveFooter={checkAfterFailure && (
+        <Link to={checkAfterFailure} className="inline-flex min-h-11 items-center font-medium text-primary underline underline-offset-4">
+          {t('requestWizard.housekeeping.checkList')}
+        </Link>
+      )}
       onFinish={async (values) => {
         if (channel === 'external') return { kind: 'external' as const };
         setRefusal(null);
+        setCheckAfterFailure(null);
         try {
           const request = await create.mutateAsync(toCreateRequest(values));
           return { kind: 'request' as const, request, supplierName: values.supplierName };
         } catch (error) {
           const problem = requestProblemOf(error);
-          if (!problem) throw error;
+          if (!problem) {
+            if (isAxiosError(error) && (!error.response || error.response.status >= 500)) {
+              // The supplier may already have the request when the creation response is lost.
+              const message = t('requestWizard.housekeeping.unknown');
+              setRefusal(message);
+              setCheckAfterFailure(values.bookingId ? `${INTERVENTIONS_PATH}?bookingId=${encodeURIComponent(values.bookingId)}` : INTERVENTIONS_PATH);
+              throw new Error(message, { cause: error });
+            }
+            throw error;
+          }
           // A refusal that changes what the host chose: the answers stay, the host is taken to the step they are on, with the slots read again.
           if (problem.kind === 'slotTaken' || problem.kind === 'commitmentConflict') {
             void queryClient.invalidateQueries({ queryKey: HOST_SUPPLIER_SLOTS_KEY });
@@ -182,10 +219,13 @@ function RequestWizard() {
           throw new Error(message);
         }
       }}
-      // An address that asks for something (`?propertyId=…&type=cleaning`) is not given the answers of an older visit instead.
-      draft={{ exclude: REQUEST_DRAFT_EXCLUDE, accept: () => !defaults.prefilled }}
-      onExit={() => navigate(INTERVENTIONS_PATH)}
-      renderDone={({ result, values }) => <RequestDone sent={result} values={values} />}
+      draft={{
+        exclude: REQUEST_DRAFT_EXCLUDE,
+        version: 2,
+        accept: (draft) => !draft.values.propertyId || !!propertyList?.some(({ id }) => id === draft.values.propertyId),
+      }}
+      onExit={() => navigate(stay ? `/app/short-rent/bookings/${stay.id}` : INTERVENTIONS_PATH)}
+      renderDone={({ result, values }) => <RequestDone sent={result} values={values} stayId={stay?.id} />}
       testIds={{
         root: 'request-wizard',
         back: 'request-back',
@@ -216,7 +256,7 @@ export function RequestInterventionPage() {
   return (
     <div className={cn(FOCUS_COLUMN, 'space-y-6')} data-testid="request-page">
       <PageHeader title={t('requestWizard.title')} crumbs="auto" />
-      <RequestWizard key={search.get('n') ?? 'first'} />
+      <RequestWizard key={entryKey(search)} />
     </div>
   );
 }

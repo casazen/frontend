@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import '@/i18n/config';
+import type { UserDetail } from '@/types';
 import { CommercialSignupApi } from '@/api/commercial-signup.api';
 import { UsersApi } from '@/api/users.api';
 import { CommercialSignupWizard } from '../commercial-signup-wizard';
@@ -19,8 +20,8 @@ vi.mock('@/queries/use-billing', () => ({
   useStartCheckout: () => ({ mutate: checkout }),
 }));
 vi.mock('@/api/commercial-signup.api', () => ({ CommercialSignupApi: { getCatalog: vi.fn(async () => [{ code: 'channels', context: 'short-rent', priceMonthly: 3, currency: 'EUR', purchasable: true, agencyIncluded: true, agencyPurchasable: true }]) } }));
-function start() {
-  return render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><MemoryRouter><Routes><Route path="/" element={<CommercialSignupWizard profile={undefined} />} /><Route path="/register" element={<p>Supplier registration</p>} /></Routes></MemoryRouter></QueryClientProvider>);
+function start(profile?: UserDetail) {
+  return render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><MemoryRouter><Routes><Route path="/" element={<CommercialSignupWizard profile={profile} />} /><Route path="/register" element={<p>Supplier registration</p>} /></Routes></MemoryRouter></QueryClientProvider>);
 }
 afterEach(cleanup);
 describe('commercial profile and configuration', () => {
@@ -81,11 +82,40 @@ describe('commercial profile and configuration', () => {
   it('requires an agency name and explains founder administration and invite-only membership', async () => {
     start(); fireEvent.click(screen.getByTestId('signup-profile-agency'));
     await screen.findByRole('checkbox');
-    expect(screen.getByRole('button', { name: 'Vai al riepilogo' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Vai al riepilogo' }));
+    expect(screen.getByLabelText('Nome dell’agenzia')).toHaveFocus();
+    expect(screen.getByRole('alert')).toHaveTextContent('Inserisci il nome');
     expect(screen.getByText(/Ne sarai titolare e amministratore/)).toBeVisible();
     fireEvent.change(screen.getByLabelText('Nome dell’agenzia'), { target: { value: 'Nuova Agenzia' } });
     expect(screen.getByRole('button', { name: 'Vai al riepilogo' })).toBeEnabled();
   });
+  it('resumes the scoped review after a reload and pause, and keeps choices when revisiting the same profile', async () => {
+    const user = { id: 'user:resume', orgId: null } as UserDetail;
+    const wizard = start(user);
+    fireEvent.click(screen.getByTestId('signup-profile-agency'));
+    fireEvent.change(screen.getByLabelText('Nome dell’agenzia'), { target: { value: 'Agenzia Test' } });
+    fireEvent.click(screen.getByRole('radio', { name: 'Affitti brevi e lunghi' }));
+    fireEvent.click(await screen.findByRole('checkbox'));
+    fireEvent.click(screen.getByRole('button', { name: 'Indietro' }));
+    fireEvent.click(screen.getByTestId('signup-profile-agency'));
+    expect(screen.getByRole('checkbox')).toBeChecked();
+    expect(screen.getByLabelText('Nome dell’agenzia')).toHaveValue('Agenzia Test');
+    fireEvent.click(screen.getByRole('button', { name: 'Vai al riepilogo' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Metti in pausa' }));
+    expect(screen.getByRole('heading', { name: 'Configurazione in pausa' })).toHaveFocus();
+    fireEvent.click(screen.getByRole('button', { name: 'Riprendi la configurazione' }));
+    expect(screen.getByText('Agenzia Test')).toBeVisible();
+    wizard.unmount();
+    start({ ...user, id: 'other' });
+    expect(screen.getByTestId('signup-profile-owner')).toBeVisible();
+    cleanup();
+    start(user);
+    expect(await screen.findByText('Agenzia Test')).toBeVisible();
+    expect(screen.getByText('Affitti brevi e lunghi', { selector: 'dd' })).toBeVisible();
+    expect(screen.queryByText('Conferma consensi')).not.toBeInTheDocument();
+    sessionStorage.clear();
+  });
+
   it('updates the estimate for three rooms without changing the commercial selection', async () => {
     start(); fireEvent.click(screen.getByTestId('signup-profile-agency'));
     fireEvent.change(screen.getByLabelText('Nome dell’agenzia'), { target: { value: 'Nuova Agenzia' } });

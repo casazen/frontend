@@ -183,6 +183,14 @@ describe('the welcome of the first access («Inizia con CasaZen» as the first w
     expect(window.localStorage.getItem('casazen:welcome-seen:u-1')).toBe('1');
   });
 
+  it('opens the next authorized task straight from the welcome without requiring a tour', async () => {
+    renderWith(<FirstRunWizard />);
+    await screen.findByTestId('first-run-welcome');
+    fireEvent.click(screen.getByTestId('first-run-start'));
+    expect(screen.getByTestId('where').textContent).toMatch(/^\/app\/short-rent\/onboarding\/parts\//);
+    expect(screen.queryByTestId('first-run-wizard')).not.toBeInTheDocument();
+  });
+
   it('Later_ClosesItForGoodAndAddsNoOtherLayer', async () => {
     renderWith(<FirstRunWizard />);
 

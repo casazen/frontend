@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Clock, Pencil, Play, Plus, Repeat, Trash2 } from 'lucide-react';
+import { BookOpen, Clock, FlaskConical, Pencil, Play, Plus, Repeat, Trash2 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import { PAGE_COLUMNS } from '@/components/layout/page-columns';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
@@ -15,6 +16,7 @@ import { Segmented } from '@/components/ui/segmented';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { RoutineEditor } from '@/components/routines/RoutineEditor';
+import { RoutineSimulation } from '@/components/routines/RoutineSimulation';
 import { RoutineLibrary } from '@/components/routines/RoutineLibrary';
 import { BulkCleaningDialog } from '@/features/properties/components/bulk-cleaning-dialog';
 import { getHttpStatus } from '@/lib/api-errors';
@@ -28,6 +30,8 @@ import {
   executionHeadline,
   parseActions,
   parseExecutionResult,
+  parseEventConfig,
+  TIME_EVENT_TYPES,
   toAvailability,
   unavailableActionTypes,
   utcInstant,
@@ -63,7 +67,16 @@ export function RoutinesPage() {
   const setTestMode = useSetRoutineTestMode();
 
   const [editorOpen, setEditorOpen] = useState(false);
-  const [libraryOpen, setLibraryOpen] = useState(false);
+  const [params, setParams] = useSearchParams();
+  const libraryOpen = params.get('view') === 'library';
+  const [template, setTemplate] = useState<RoutineLibraryTemplate>();
+  const [simulation, setSimulation] = useState<Routine>();
+  const setLibraryOpen = (open: boolean) => setParams(current => {
+    const next = new URLSearchParams(current);
+    if (open) next.set('view', 'library');
+    else next.delete('view');
+    return next;
+  }, { replace: true });
   // The layer that says who cleans for many properties at once (the ready cleaning routine acts on the properties that have a cleaner), over the library.
   const [cleanersOpen, setCleanersOpen] = useState(false);
   const [logRoutineId, setLogRoutineId] = useState<string | undefined>();
@@ -76,11 +89,13 @@ export function RoutinesPage() {
   const busyIds = useRoutineIdsBeingWritten();
 
   const handleCreate = () => {
+    setTemplate(undefined);
     setSelectedRoutine(undefined);
     setEditorOpen(true);
   };
 
   const handleEdit = (routine: Routine) => {
+    setTemplate(undefined);
     setSelectedRoutine(routine);
     setEditorOpen(true);
   };
@@ -89,7 +104,10 @@ export function RoutinesPage() {
     if (selectedRoutine) {
       updateRoutine.mutate({ id: selectedRoutine.id, dto: dto as UpdateRoutineDto }, { onSuccess: () => setEditorOpen(false) });
     } else {
-      createRoutine.mutate(dto as CreateRoutineDto, { onSuccess: () => setEditorOpen(false) });
+      createRoutine.mutate(dto as CreateRoutineDto, { onSuccess: (saved) => {
+        setEditorOpen(false);
+        setFilter(saved.active ? (saved.testMode ? 'test' : 'active') : 'inactive');
+      } });
     }
   };
 
@@ -106,34 +124,20 @@ export function RoutinesPage() {
     setTestMode.mutate({ id: routine.id, testMode: !routine.testMode });
   };
 
-  const handleCreateFromTemplate = (template: RoutineLibraryTemplate, { testMode }: { testMode: boolean }) => {
-    const dto: CreateRoutineDto = {
-      name: template.name,
-      agentObjective: template.agentObjective,
-      eventType: template.eventType,
-      ...(template.eventConfig ? { eventConfig: template.eventConfig } : {}),
-      ...(template.condition ? { condition: template.condition } : {}),
-      actions: template.actions,
-      testMode,
-      active: true,
-    };
-
-    createRoutine.mutate(dto, {
-      onSuccess: () => {
-        setLibraryOpen(false);
-        // A routine in test mode is in the tab of the tests: the person finds what was just made.
-        setFilter(testMode ? 'test' : 'active');
-      },
-    });
-  };
+  function configureTemplate(value: RoutineLibraryTemplate) {
+    setSelectedRoutine(undefined);
+    setTemplate(value);
+    setLibraryOpen(false);
+    setEditorOpen(true);
+  }
 
   const notAvailable = isError && getHttpStatus(error) === 404;
   // The routines the page shows: only a list that was read without failing. A refetch that fails keeps the old data in the query, and the page must not show it as if it were current.
   const list = isLoading || isError ? undefined : routines;
 
   const activeRoutines = list?.filter((r) => r.active && !r.testMode) ?? [];
-  const testRoutines = list?.filter((r) => r.testMode) ?? [];
-  const inactiveRoutines = list?.filter((r) => !r.active && !r.testMode) ?? [];
+  const testRoutines = list?.filter((r) => r.active && r.testMode) ?? [];
+  const inactiveRoutines = list?.filter((r) => !r.active) ?? [];
   const shown = filter === 'active' ? activeRoutines : filter === 'test' ? testRoutines : inactiveRoutines;
   const emptyKey = filter === 'active' ? 'routines.noActiveRoutines' : filter === 'test' ? 'routines.noTestRoutines' : 'routines.noInactiveRoutines';
 
@@ -143,14 +147,8 @@ export function RoutinesPage() {
         title={t('routines.title')}
         description={t('routines.description')}
         crumbs="auto"
-        primary={list ? { label: t('routines.create'), icon: Plus, onClick: handleCreate, testId: 'create-routine-button' } : undefined}
-        action={
-          list && list.length > 0 ? (
-            <Button variant="outline" onClick={() => setLibraryOpen(true)} data-testid="open-library-button">
-              {t('routines.library.title')}
-            </Button>
-          ) : undefined
-        }
+        primary={list ? { label: t('routines.flow.models'), icon: BookOpen, onClick: () => setLibraryOpen(true), testId: 'open-library-button' } : undefined}
+        action={list && <Button variant="outline" onClick={handleCreate} data-testid="create-routine-button"><Plus aria-hidden="true" />{t('routines.create')}</Button>}
       />
 
       {isLoading && (
@@ -178,8 +176,7 @@ export function RoutinesPage() {
           <EmptyState
             icon={Repeat}
             title={t('routines.empty.title')}
-            description={t('routines.empty.description')}
-            action={{ label: t('routines.library.open'), onClick: () => setLibraryOpen(true) }}
+            description={`${t('routines.empty.description')} ${t('routines.flow.scope')}`}
           />
         </div>
       )}
@@ -199,8 +196,9 @@ export function RoutinesPage() {
 
           {shown.length === 0 ? (
             <Card data-testid={`${filter}-empty`}>
-              <CardContent className="pt-6 text-center">
+              <CardContent className="space-y-3 pt-6 text-center">
                 <p className="text-sm text-muted-foreground">{t(emptyKey)}</p>
+                {filter === 'active' && (inactiveRoutines.length > 0 || testRoutines.length > 0) && <Button type="button" variant="outline" onClick={() => setFilter(inactiveRoutines.length > 0 ? 'inactive' : 'test')}>{t('routines.flow.resume')}</Button>}
               </CardContent>
             </Card>
           ) : (
@@ -212,6 +210,7 @@ export function RoutinesPage() {
                   availability={availability}
                   busy={busyIds.has(routine.id)}
                   onEdit={handleEdit}
+                  onSimulate={setSimulation}
                   onDelete={setRoutineToDelete}
                   onToggleActive={handleToggleActive}
                   onToggleTestMode={handleToggleTestMode}
@@ -227,11 +226,12 @@ export function RoutinesPage() {
       <Dialog open={editorOpen} onOpenChange={setEditorOpen}>
         <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{selectedRoutine ? t('routines.editTitle') : t('routines.createTitle')}</DialogTitle>
-            <DialogDescription>{t('routines.editorDescription')}</DialogDescription>
+            <DialogTitle>{selectedRoutine ? t('routines.editTitle') : template ? t('routines.flow.configure') : t('routines.createTitle')}</DialogTitle>
+            <DialogDescription>{t(template ? 'routines.flow.savedPaused' : 'routines.editorDescription')}</DialogDescription>
           </DialogHeader>
           <RoutineEditor
             routine={selectedRoutine}
+            template={template}
             availability={availability}
             onSave={handleSave}
             onCancel={() => setEditorOpen(false)}
@@ -241,7 +241,7 @@ export function RoutinesPage() {
       </Dialog>
 
       {/* Library Dialog */}
-      <Dialog open={libraryOpen} onOpenChange={setLibraryOpen}>
+      <Dialog open={Boolean(list) && libraryOpen} onOpenChange={setLibraryOpen}>
         <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t('routines.library.title')}</DialogTitle>
@@ -249,8 +249,7 @@ export function RoutinesPage() {
           </DialogHeader>
           <RoutineLibrary
             availability={availability}
-            onCreate={handleCreateFromTemplate}
-            isCreating={createRoutine.isPending}
+            onConfigure={configureTemplate}
             onSetupCleaners={() => setCleanersOpen(true)}
           />
         </DialogContent>
@@ -258,6 +257,16 @@ export function RoutinesPage() {
 
       {/* Who cleans, for many properties: the same layer as the list of the properties, opened from the ready cleaning routine; it does not send the host away. */}
       <BulkCleaningDialog open={cleanersOpen} onOpenChange={setCleanersOpen} routineLink={false} />
+
+      <Dialog open={Boolean(simulation)} onOpenChange={open => { if (!open) setSimulation(undefined); }}>
+        <DialogContent className="max-h-[90dvh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{t('routines.flow.simulateName', { name: simulation?.name })}</DialogTitle>
+            <DialogDescription>{t('routines.flow.simulateHint')}</DialogDescription>
+          </DialogHeader>
+          {simulation && <RoutineSimulation key={simulation.id} routineId={simulation.id} />}
+        </DialogContent>
+      </Dialog>
 
       {/* Execution Log Dialog */}
       <Dialog open={logRoutineId !== undefined} onOpenChange={(open) => !open && setLogRoutineId(undefined)}>
@@ -291,15 +300,21 @@ interface RoutineCardProps {
   /** A write on this routine is on its way: nothing of the card can be pressed. */
   busy: boolean;
   onEdit: (routine: Routine) => void;
+  onSimulate: (routine: Routine) => void;
   onDelete: (routine: Routine) => void;
   onToggleActive: (routine: Routine) => void;
   onToggleTestMode: (routine: Routine) => void;
   onShowLog: (routine: Routine) => void;
 }
 
-function RoutineCard({ routine, availability, busy, onEdit, onDelete, onToggleActive, onToggleTestMode, onShowLog }: RoutineCardProps) {
+function RoutineCard({ routine, availability, busy, onEdit, onSimulate, onDelete, onToggleActive, onToggleTestMode, onShowLog }: RoutineCardProps) {
   const { t } = useTranslation();
 
+  const timing = parseEventConfig(routine.eventConfig);
+  const hours = timing.days * 24 + timing.hours;
+  const offset = TIME_EVENT_TYPES.includes(routine.eventType) && hours > 0
+    ? [Math.floor(hours / 24) && t('routines.library.daysCount', { count: Math.floor(hours / 24) }), hours % 24 && t('routines.library.hoursCount', { count: hours % 24 })].filter(Boolean).join(' ')
+    : null;
   const actions = parseActions(routine.actionsJson);
   const cannotRun = unavailableActionTypes(availability, actions);
   const actionNames = actions.map((action) => {
@@ -310,23 +325,14 @@ function RoutineCard({ routine, availability, busy, onEdit, onDelete, onToggleAc
   return (
     <Card data-testid={`routine-card-${routine.id}`}>
       <CardHeader>
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0 space-y-1">
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div className="min-w-40 flex-1 space-y-2">
             {/* A level under the title of the page: the card title of the kit is an h3, which would skip one. */}
             <h2 className="break-words text-lg font-semibold leading-none tracking-tight">{routine.name}</h2>
-            <CardDescription>{t(eventLabelKey(routine.eventType))}</CardDescription>
-            <div className="mt-2 flex gap-2">
-              {routine.testMode && (
-                <Badge variant="outline" data-testid="test-mode-badge">
-                  {t('routines.testModeBadge')}
-                </Badge>
-              )}
-              {routine.active && (
-                <Badge variant="default" data-testid="active-badge">
-                  {t('routines.activeBadge')}
-                </Badge>
-              )}
-            </div>
+            <CardDescription>{routine.agentObjective}</CardDescription>
+            <Badge variant={routine.active && !routine.testMode ? 'success' : 'secondary'} data-testid={!routine.active ? 'paused-badge' : routine.testMode ? 'test-mode-badge' : 'active-badge'}>
+              {t(!routine.active ? 'routines.flow.paused' : routine.testMode ? 'routines.flow.testing' : 'routines.flow.live')}
+            </Badge>
           </div>
           <div className="flex shrink-0 gap-1">
             <Button
@@ -364,9 +370,11 @@ function RoutineCard({ routine, availability, busy, onEdit, onDelete, onToggleAc
       <CardContent>
         <div className="space-y-4">
           <div className="space-y-2 text-sm text-muted-foreground">
-            <p>
-              <span className="font-medium">{t('routines.actions')}:</span> {actionNames.length > 0 ? actionNames.join(', ') : '-'}
-            </p>
+            <dl className="grid gap-3 rounded-lg bg-muted/50 p-3">
+              <div><dt className="text-xs">{t('routines.flow.when')}</dt><dd className="font-medium text-foreground">{t(eventLabelKey(routine.eventType))}{offset && ` · ${offset}`}</dd></div>
+              <div><dt className="text-xs">{t('routines.flow.what')}</dt><dd className="text-foreground">{actionNames.length > 0 ? actionNames.join(', ') : t('routines.noActions')}</dd></div>
+            </dl>
+            <Button type="button" variant="outline" onClick={() => onSimulate(routine)} disabled={busy} data-testid={`simulate-${routine.id}`}><FlaskConical aria-hidden="true" />{t('routines.flow.simulate')}</Button>
             {cannotRun.length > 0 && (
               <p data-testid={`routine-unavailable-${routine.id}`}>
                 {t('routines.card.unavailableNote', {

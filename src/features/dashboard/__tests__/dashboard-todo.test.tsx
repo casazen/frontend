@@ -118,11 +118,11 @@ describe('DashboardPage To do list', () => {
     ] } as unknown as ReturnType<typeof useRoutines>);
     renderDashboard(true);
     expect(screen.queryByTestId('home-todo-path')).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: '1 agente AI attivo' })).toHaveAttribute('href', '/app/short-rent/automations');
+    expect(screen.getByRole('link', { name: '1 routine AI attiva' })).toHaveAttribute('href', '/app/short-rent/automations');
     cleanup();
     renderDashboard(false);
     expect(useRoutines).toHaveBeenLastCalledWith(false);
-    expect(screen.queryByRole('link', { name: '1 agente AI attivo' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: '1 routine AI attiva' })).not.toBeInTheDocument();
   });
 
   it('DashboardPage_ListCutByTheServer_SaysTheFirstOnesAndTakesTheUrgentCountFromTheMenu', () => {

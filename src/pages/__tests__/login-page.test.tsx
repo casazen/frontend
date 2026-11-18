@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import i18n from '@/i18n/config';
 
@@ -71,6 +71,27 @@ describe('LoginPage', () => {
     expect(login).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: i18n.t('login.signInButton') }));
     expect(login).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns control after a rejected handoff and retries the same destination once', async () => {
+    const login = vi.fn().mockRejectedValueOnce(new Error('offline')).mockResolvedValue(undefined);
+    setAuth({ login });
+    renderPage('/login?returnTo=%2Fapp%2Fshort-rent%2Fbookings');
+    expect(await screen.findByRole('alert')).toHaveTextContent(i18n.t('login.handoffFailed'));
+    fireEvent.click(screen.getByRole('button'));
+    expect(login).toHaveBeenCalledTimes(2);
+    expect(login.mock.calls[0]).toEqual(login.mock.calls[1]);
+  });
+
+  it('lets the visitor resume a stalled redirect without restarting it automatically', () => {
+    vi.useFakeTimers();
+    try {
+      const login = setAuth();
+      renderPage();
+      act(() => vi.advanceTimersByTime(16_000));
+      expect(screen.getByRole('button')).toBeEnabled();
+      expect(login).toHaveBeenCalledTimes(1);
+    } finally { vi.useRealTimers(); }
   });
 
   it('preserves the email destination and leaseId through Auth0 appState', () => {

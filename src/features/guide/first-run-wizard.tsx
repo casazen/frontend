@@ -1,8 +1,8 @@
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { QueryClientContext } from '@tanstack/react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, Compass, Footprints, PauseCircle } from 'lucide-react';
+import { ArrowRight, Compass } from 'lucide-react';
 import { GuidePath, type GuidePathStep } from '@/components/shared/calm';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -53,47 +53,45 @@ function WizardFlag() {
 interface WelcomeBodyProps {
   journey: SetupJourney;
   firstName: string | null;
+  organization: string | null;
   onStart: () => void;
   onLater: () => void;
 }
 
-function WelcomeBody({ journey, firstName, onStart, onLater }: WelcomeBodyProps) {
+function WelcomeBody({ journey, firstName, organization, onStart, onLater }: WelcomeBodyProps) {
   const { t } = useTranslation();
   const [screen, setScreen] = useState<Screen>('welcome');
+  const pathTitle = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    if (screen === 'path') pathTitle.current?.focus();
+  }, [screen]);
   const total = journey.total;
   const left = Math.max(1, journey.total - journey.done);
 
   if (screen === 'welcome') {
-    const promises = [
-      { icon: Footprints, text: t('guide.welcome.promise.steps') },
-      { icon: PauseCircle, text: t('guide.welcome.promise.pause') },
-      { icon: Compass, text: t('guide.welcome.promise.guide') },
-    ];
     return (
       <div className="space-y-6" data-testid="first-run-welcome">
         <DialogHeader className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wide text-primary-text">{t('guide.welcome.kicker')}</p>
+          <p className="break-words text-sm font-medium text-muted-foreground">{[organization, t('areas.shortRent.name')].filter(Boolean).join(' · ')}</p>
           <DialogTitle className="text-2xl leading-tight">
             {firstName ? t('guide.welcome.title', { name: firstName }) : t('guide.welcome.titleNoName')}
           </DialogTitle>
           <DialogDescription className="text-base">{t('guide.welcome.intro', { count: left })}</DialogDescription>
         </DialogHeader>
-        <ul className="space-y-3">
-          {promises.map(({ icon: Icon, text }) => (
-            <li key={text} className="flex items-start gap-3">
-              <span aria-hidden="true" className="grid size-9 shrink-0 place-items-center rounded-full bg-primary-soft text-primary-text">
-                <Icon className="size-4" />
-              </span>
-              <span className="pt-1.5 text-sm">{text}</span>
-            </li>
-          ))}
-        </ul>
-        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        {journey.current?.href && <section className="space-y-3 rounded-xl border bg-card p-4">
+          <h2 className="text-sm font-semibold">{t('guide.setup.now')}</h2>
+          <p className="break-words text-lg font-semibold">{journey.current.title}</p>
+          <Button type="button" className={TOUCH_TARGET} iconRight={<ArrowRight />} onClick={onStart} data-testid="first-run-start">
+            {journey.current.cta || t('guide.welcome.start', { step: journey.current.title })}
+          </Button>
+        </section>}
+        <p className="flex gap-2 text-sm text-muted-foreground"><Compass aria-hidden="true" className="mt-0.5 size-4 shrink-0" />{t('guide.welcome.promise.guide')}</p>
+        <div className="flex flex-wrap justify-between gap-2">
+          <Button type="button" variant="outline" className={TOUCH_TARGET} onClick={() => setScreen('path')} data-testid="first-run-next">
+            {t('guide.welcome.next')}
+          </Button>
           <Button type="button" variant="ghost" className={TOUCH_TARGET} onClick={onLater} data-testid="first-run-later">
             {t('guide.welcome.later')}
-          </Button>
-          <Button type="button" className={TOUCH_TARGET} iconRight={<ArrowRight />} onClick={() => setScreen('path')} data-testid="first-run-next">
-            {t('guide.welcome.next')}
           </Button>
         </div>
       </div>
@@ -105,7 +103,7 @@ function WelcomeBody({ journey, firstName, onStart, onLater }: WelcomeBodyProps)
     <div className="space-y-6" data-testid="first-run-path">
       <DialogHeader className="space-y-2">
         <p className="text-xs font-semibold uppercase tracking-wide text-primary-text">{t('guide.welcome.pathKicker')}</p>
-        <DialogTitle className="text-2xl leading-tight">{t('guide.welcome.pathTitle', { count: total })}</DialogTitle>
+        <DialogTitle ref={pathTitle} tabIndex={-1} className="text-2xl leading-tight outline-none">{t('guide.welcome.pathTitle', { count: total })}</DialogTitle>
         <DialogDescription className="text-base">{t('guide.welcome.pathIntro')}</DialogDescription>
       </DialogHeader>
       <GuidePath label={t('guide.setup.label')} steps={steps} density="compact" className="max-h-[45dvh] overflow-y-auto pr-1" />
@@ -126,14 +124,13 @@ function WelcomeBody({ journey, firstName, onStart, onLater }: WelcomeBodyProps)
 /**
  * The first wizard of a new host, «Inizia con CasaZen» as a layer over the app (the wizard rules: it opens on its own layer, never sends the
  * person away, always has a way out). It opens by itself on the Home of Affitti brevi the first time the organization administrator arrives there
- * with the setup still to complete (a step to do now), once per person on this device: a welcome in one screen, the road of the setup in a
- * second, and «Inizia» that opens the step to do now. «Più tardi» closes it for good: the same road waits in the «Guida» of the header,
+ * with the setup still to complete (a step to do now), once per person on this device: the welcome opens the next permitted task directly, with the full setup path available in a second screen. «Più tardi» closes it for good: the same road waits in the «Guida» of the header,
  * and the welcome says where it is.
  *
  * It replaces the entry «Inizia con CasaZen» of the menu: after the first access the road is in the guide and on the home.
  */
 export function FirstRunWizard() {
-  const { user } = useCurrentUser();
+  const { user, org } = useCurrentUser();
   const { contexts } = useWorkspace();
   const { pathname } = useLocation();
   // Like the guide, it can be rendered where there is no query client (an isolated test of the shell): there is then no setup to read.
@@ -143,10 +140,10 @@ export function FirstRunWizard() {
   const onHome = pathname.replace(/\/+$/, '') === SHORT_RENT_HOME;
   if (!hasQueryClient || !userId || !onHome || !isOrgBillingAdmin(contexts)) return null;
   // Keyed by the person: another account on the same device starts from what that person has seen.
-  return <FirstRunWelcome key={userId} userId={userId} firstName={user?.firstName?.trim() || null} />;
+  return <FirstRunWelcome key={userId} userId={userId} organization={org?.name ?? null} firstName={user?.firstName?.trim() || null} />;
 }
 
-function FirstRunWelcome({ userId, firstName }: { userId: string; firstName: string | null }) {
+function FirstRunWelcome({ userId, firstName, organization }: { userId: string; firstName: string | null; organization: string | null }) {
   const navigate = useNavigate();
   const [seen, setSeen] = useState(() => hasSeen(userId));
   const { journey } = useSetupJourney({ enabled: !seen });
@@ -173,6 +170,7 @@ function FirstRunWelcome({ userId, firstName }: { userId: string; firstName: str
         <WelcomeBody
           journey={journey}
           firstName={firstName}
+          organization={organization}
           onLater={close}
           onStart={() => {
             const target = journey.current;
