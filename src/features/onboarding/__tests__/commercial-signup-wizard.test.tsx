@@ -74,13 +74,20 @@ describe('commercial profile and configuration', () => {
     start();
     fireEvent.click(screen.getByTestId('signup-profile-owner'));
     fireEvent.click(await screen.findByRole('button', { name: /Pro/ }));
-    fireEvent.click(await screen.findByRole('checkbox', { name: /Incluso nel piano/ }));
+    expect(await screen.findByText('Prenotazioni dirette', { selector: 'li' })).toBeVisible();
+    expect(screen.queryByRole('checkbox', { name: /Prenotazioni dirette/ })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('checkbox', { name: /3,00/ }));
     expect(screen.getByText(/23,00/)).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: 'Vai al riepilogo' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Continua al pagamento' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Conferma consensi' }));
+    expect(UsersApi.postOnboarding).toHaveBeenLastCalledWith(expect.objectContaining({
+      commercialSignup: expect.objectContaining({ planTier: 'Pro', addons: ['fiscal', 'direct-booking'] }),
+    }));
   });
   it('requires an agency name and explains founder administration and invite-only membership', async () => {
     start(); fireEvent.click(screen.getByTestId('signup-profile-agency'));
-    await screen.findByRole('checkbox');
+    await screen.findByText('Canali e distribuzione', { selector: 'li' });
     expect(screen.getByRole('button', { name: 'Vai al riepilogo' })).toBeDisabled();
     expect(screen.getByText(/Ne sarai titolare e amministratore/)).toBeVisible();
     fireEvent.change(screen.getByLabelText('Nome dell’agenzia'), { target: { value: 'Nuova Agenzia' } });
@@ -90,7 +97,7 @@ describe('commercial profile and configuration', () => {
     start(); fireEvent.click(screen.getByTestId('signup-profile-agency'));
     fireEvent.change(screen.getByLabelText('Nome dell’agenzia'), { target: { value: 'Nuova Agenzia' } });
     fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '3' } });
-    fireEvent.click(await screen.findByRole('checkbox'));
+    expect(await screen.findByText('Canali e distribuzione', { selector: 'li' })).toBeVisible();
     expect(screen.getByText('3 camere ipotizzate')).toBeVisible();
     expect(screen.getAllByText(/100,00/).at(-1)).toBeVisible();
     fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '' } });
