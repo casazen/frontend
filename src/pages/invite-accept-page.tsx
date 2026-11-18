@@ -99,8 +99,11 @@ function SignedOutCard({ invite }: { invite: OrgInvitationLookup }) {
   const enter = (button: InviteEntryButton) => login({ returnTo: ORG_INVITE_ACCEPT_PATH, authorizationParams: button.authorizationParams });
 
   return (
-    <InviteAcceptCard title={t('invitation.joinTitle', { org: invite.orgName })} description={t('invitation.joinDescription')}>
-      <InviteDetails invite={invite} />
+    <InviteAcceptCard
+      title={t('invitation.joinTitle', { org: invite.orgName })}
+      description={t('invitation.joinDescription')}
+      summary={<InviteDetails invite={invite} />}
+    >
       <p className="text-sm text-muted-foreground">{t('invitation.useSameEmail')}</p>
       <Button className="w-full" size="lg" onClick={() => enter(primary)} data-testid={primary.testId}>
         {t(primary.labelKey)}
@@ -267,8 +270,8 @@ function SignedInCard({ token, invite }: { token: string; invite: OrgInvitationL
     <InviteAcceptCard
       title={t('invitation.acceptTitle', { org: invite.orgName })}
       description={user?.email ? t('invitation.signedInAs', { email: user.email }) : undefined}
+      summary={<InviteDetails invite={invite} />}
     >
-      <InviteDetails invite={invite} />
       {failed ? (
         <FailureAlert
           failure={failed.failure}

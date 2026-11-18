@@ -17,6 +17,8 @@ interface InviteAcceptCardProps {
   tone?: InviteCardTone;
   title: string;
   description?: string;
+  /** Invitation details stay above the actions on phones and beside them on wider screens. */
+  summary?: ReactNode;
   children?: ReactNode;
 }
 
@@ -25,19 +27,20 @@ interface InviteAcceptCardProps {
  * state of the page is this card with other words, so there is always a title and a way on, never an empty screen. It sits alone on the
  * screen: the person is not in the app yet, and has no menu to look at.
  */
-export function InviteAcceptCard({ tone = 'invite', title, description, children }: InviteAcceptCardProps) {
+export function InviteAcceptCard({ tone = 'invite', title, description, summary, children }: InviteAcceptCardProps) {
   const { icon: Icon, disc } = TONES[tone];
   return (
     <main className="flex min-h-screen items-center justify-center bg-muted/40 p-4" data-testid="invite-accept-page" data-state={tone}>
-      <Card className="w-full min-w-0 max-w-md">
-        <CardHeader className="text-center">
-          <div className={cn('mx-auto mb-4 grid size-16 place-items-center rounded-full', disc)}>
+      <Card className={cn('w-full min-w-0 max-w-md', summary && 'max-w-2xl md:grid md:max-w-6xl md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]')}>
+        <CardHeader className={cn('min-w-0 text-center', summary && 'p-4 sm:p-6 md:items-start md:border-r md:p-8 md:text-left')}>
+          <div className={cn('mx-auto mb-4 grid size-16 place-items-center rounded-full', summary && 'md:mx-0', disc)}>
             <Icon aria-hidden="true" className="size-8" />
           </div>
-          <h1 className="break-words text-2xl font-semibold leading-tight tracking-tight">{title}</h1>
-          {description ? <CardDescription className="break-words">{description}</CardDescription> : null}
+          <h1 className="max-w-full break-words text-2xl font-semibold leading-tight tracking-tight">{title}</h1>
+          {description ? <CardDescription className="max-w-full break-words">{description}</CardDescription> : null}
+          {summary ? <div className="w-full pt-4 text-left">{summary}</div> : null}
         </CardHeader>
-        {children ? <CardContent className="min-w-0 space-y-4">{children}</CardContent> : null}
+        {children ? <CardContent className={cn('min-w-0 space-y-4', summary && 'p-4 pt-0 sm:p-6 sm:pt-0 md:p-8')}>{children}</CardContent> : null}
       </Card>
     </main>
   );
