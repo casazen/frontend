@@ -46,6 +46,18 @@ Stati del check-in pubblico su telefono, 390 × 844.
 - Ricevuta · [Dopo](evidenze-flussi-guidati/dopo-ospite-ricevuta-390.jpg)
 - Ripresa · [Dopo](evidenze-flussi-guidati/dopo-ospite-ripresa-390.jpg)
 
+## Il benvenuto operativo di Affitti brevi
+
+Da **Inizia con CasaZen** si apre **Configura gli affitti brevi**. Con un amministratore e un’organizzazione senza preferenze per gli immobili italiani, la prima decisione è chi invia i dati degli ospiti. La scelta porta a un riepilogo. Il piano indica quindi il prossimo compito disponibile. La Home offre **Riprendi** per il passo messo in pausa su questo dispositivo. Il riferimento scade dopo 24 ore e il frontend ricontrolla stato e permessi prima di proporlo.
+
+La fixture di confronto ha entrambe le opzioni inizialmente vuote, collegamento Octorate assente e zero attività completate su otto disponibili. Con la disposizione precedente si contavano dieci comandi delle attività successive, compresi quelli disabilitati. Nella nuova pagina il piano completo si apre su richiesta. Le catture Chromium comprendono 320 × 568, 390 × 844, 768 × 1024 e desktop a 1440 px. Il comando seguente produce i JPEG e i risultati di axe insieme alle prove di conferma e ripresa.
+
+```sh
+npm run test:e2e -- --project=chromium e2e/onboarding-plan-screen.spec.ts
+```
+
+[Prove del piano e della ripresa](../../e2e/onboarding-plan-screen.spec.ts) · [Fixture del primo accesso](../../e2e/helpers/onboarding-plan-screen.ts)
+
 ## Accessibilità e condizioni di verifica
 
 Chromium 154 su Linux, Playwright 1.60.0 e axe-core 4.13.0. Lingua italiana, zoom al 100%, movimento ridotto e larghezze in pixel CSS. Le scansioni di questa matrice riguardano l’intero documento e le regole axe con tag WCAG 2.0 A/AA, 2.1 A/AA e 2.2 AA. Il conteggio somma gli elementi segnalati alle larghezze indicate. Lo scorrimento indica la massima differenza tra larghezza del documento e del viewport.

@@ -132,7 +132,7 @@ for (const [width, height] of [[320, 568], [768, 1024], [1440, 900]]) {
 }
 
 test('primo accesso anonimo · riprovare il login e aprire un invito senza esporre il token all’IdP', async ({ page }) => {
-  // The test compiles the anonymous app, then crosses origins for three separate identity-provider handoffs.
+  // This test compiles the anonymous app, then crosses origins for the login and invitation handoffs.
   test.setTimeout(180_000);
   // The shared demo server already signs in a sample user. This isolated Vite instance runs
   // the real auth bridge, with an in-browser fixture standing in for the hosted identity provider.
@@ -192,6 +192,23 @@ test('primo accesso anonimo · riprovare il login e aprire un invito senza espor
     expect(new URL(page.url()).searchParams.get('screen_hint')).toBe('signup');
     expect(page.url()).not.toContain(inviteToken);
     expect(lookups).toBe(2);
+
+    // Current invitation emails start on a ticket bridge before returning to the role-specific page.
+    const ticket = { organization: 'org_demo123', invitation: 'inv_ticket_demo', flow: 'team', token: inviteToken };
+    await page.goto(origin + '/attiva-invito#' + new URLSearchParams(ticket), { waitUntil: 'domcontentloaded' });
+    await expect(page).toHaveURL(/^https:\/\/idp\.example\.test\/authorize\?/);
+    const authorize = new URL(page.url());
+    expect(authorize.searchParams.get('organization')).toBe(ticket.organization);
+    expect(authorize.searchParams.get('invitation')).toBe(ticket.invitation);
+    expect(authorize.href).not.toContain(inviteToken);
+
+    await page.goto(origin + '/attiva-invito#token=incompleto', { waitUntil: 'domcontentloaded' });
+    const recovery = page.getByRole('main').getByRole('link', { name: /CasaZen|home/i });
+    await expect(recovery).toHaveAttribute('href', '/');
+    await expect(page).toHaveURL(origin + '/attiva-invito');
+    await recovery.press('Enter');
+    await expect(page).toHaveURL(origin + '/login?returnTo=%2F');
+    await expect(page.getByRole('button', { name: 'Continua con l’accesso' })).toBeVisible();
   } finally {
     await server.close();
   }

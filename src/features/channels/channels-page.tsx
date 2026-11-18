@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { usePlanReturn } from '@/features/onboarding/plan-return';
 import { CalendarDays } from 'lucide-react';
 import { toast } from 'sonner';
 import { propertyIcalApi } from '@/api/property-ical.api';
@@ -41,6 +42,7 @@ function useNow(): Date {
  */
 export function ChannelsPage() {
   const { t } = useTranslation();
+  const planReturn = usePlanReturn();
   const overview = useCalendarOverview();
   const { mutate: syncFeed, isPending: syncRequested, variables: syncVariables } = useSyncCalendarFeed();
   const { hasPermission } = useWorkspace();
@@ -72,7 +74,8 @@ export function ChannelsPage() {
   return (
     <AppShell>
       <div className="space-y-6" data-testid="channels-page">
-        <PageHeader title={t('channels.title')} description={t('channels.description')} />
+        <PageHeader title={t('channels.title')} description={t('channels.description')}
+          crumbs={planReturn ? [{ label: t('onboardingPlan.launch.backToPlan'), to: planReturn }, { label: t('channels.title') }] : undefined} />
 
         {overview.isError && !data ? (
           <ErrorState title={t('channels.loadError')} error={overview.error} onRetry={() => void overview.refetch()} testId="channels-error-state" />

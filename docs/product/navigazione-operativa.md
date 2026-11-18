@@ -100,7 +100,7 @@ Prefisso di ogni destinazione `/app/short-rent`. La barra indica il posto da sin
 | Cerca nel marketplace / Search marketplace | `marketplace/search` | Marketplace → ricerca | Come desktop | `booking.read` |
 | Fornitore / Supplier details | `marketplace/suppliers/:orgId` | Marketplace → scheda fornitore | Come desktop | `booking.read` |
 | Conversazione / Conversation | `messages/:threadKey` | Messaggi → conversazione | Come desktop | `booking.read` |
-| Inizia con CasaZen / Start with CasaZen | `onboarding` | Guida o primo accesso → piano | Come desktop | `property.read` · flag `octorateOnboarding` |
+| Inizia con CasaZen / Start with CasaZen | `onboarding` | Home → Inizia con CasaZen o Riprendi, oppure Guida → piano | Come desktop | `property.read` · flag `octorateOnboarding` |
 | Impostazioni in blocco / Bulk setup | `onboarding/bulk` | Piano agenzia → configurazione in blocco | Come desktop | Area · flag `octorateOnboarding` · gestore piano¹ |
 | Configura proprietari / Set up owners | `onboarding/owners` | Piano agenzia → proprietari | Come desktop | `property.read` · flag `octorateOnboarding` · gestore piano¹ |
 | Riprendi passo / Resume step | `onboarding/panel` | Attività della guida → passo sospeso | Come desktop | `property.write` · flag `octorateOnboarding` |

@@ -6,6 +6,7 @@ import { ArrowRight, Compass } from 'lucide-react';
 import { GuidePath, type GuidePathStep } from '@/components/shared/calm';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { usePlanResume } from '@/features/onboarding/use-plan-resume';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { useCurrentUser } from '@/queries/use-users';
@@ -54,11 +55,11 @@ interface WelcomeBodyProps {
   journey: SetupJourney;
   firstName: string | null;
   organization: string | null;
-  onStart: () => void;
+  onOpen: (href: string, state?: unknown) => void;
   onLater: () => void;
 }
 
-function WelcomeBody({ journey, firstName, organization, onStart, onLater }: WelcomeBodyProps) {
+function WelcomeBody({ journey, firstName, organization, onOpen, onLater }: WelcomeBodyProps) {
   const { t } = useTranslation();
   const [screen, setScreen] = useState<Screen>('welcome');
   const pathTitle = useRef<HTMLHeadingElement>(null);
@@ -67,6 +68,9 @@ function WelcomeBody({ journey, firstName, organization, onStart, onLater }: Wel
   }, [screen]);
   const total = journey.total;
   const left = Math.max(1, journey.total - journey.done);
+  const planHref = journey.source === 'path' ? journey.allHref : null;
+  const task = journey.current;
+  const openTask = () => { if (task?.href) onOpen(task.href, task.linkState); };
 
   if (screen === 'welcome') {
     return (
@@ -76,13 +80,19 @@ function WelcomeBody({ journey, firstName, organization, onStart, onLater }: Wel
           <DialogTitle className="text-2xl leading-tight">
             {firstName ? t('guide.welcome.title', { name: firstName }) : t('guide.welcome.titleNoName')}
           </DialogTitle>
-          <DialogDescription className="text-base">{t('guide.welcome.intro', { count: left })}</DialogDescription>
+          <DialogDescription className="text-base">
+            {planHref ? t('guide.welcome.promise.steps') : t('guide.welcome.intro', { count: left })}
+          </DialogDescription>
         </DialogHeader>
-        {journey.current?.href && <section className="space-y-3 rounded-xl border bg-card p-4">
+        {planHref ? (
+          <Button type="button" className={TOUCH_TARGET} iconRight={<ArrowRight />} onClick={() => onOpen(planHref)} data-testid="first-run-start">
+            {t('onboardingPlan.title')}
+          </Button>
+        ) : task?.href && <section className="space-y-3 rounded-xl border bg-card p-4">
           <h2 className="text-sm font-semibold">{t('guide.setup.now')}</h2>
-          <p className="break-words text-lg font-semibold">{journey.current.title}</p>
-          <Button type="button" className={TOUCH_TARGET} iconRight={<ArrowRight />} onClick={onStart} data-testid="first-run-start">
-            {journey.current.cta || t('guide.welcome.start', { step: journey.current.title })}
+          <p className="break-words text-lg font-semibold">{task.title}</p>
+          <Button type="button" className={TOUCH_TARGET} iconRight={<ArrowRight />} onClick={openTask} data-testid="first-run-start">
+            {task.cta || t('guide.welcome.start', { step: task.title })}
           </Button>
         </section>}
         <p className="flex gap-2 text-sm text-muted-foreground"><Compass aria-hidden="true" className="mt-0.5 size-4 shrink-0" />{t('guide.welcome.promise.guide')}</p>
@@ -111,9 +121,9 @@ function WelcomeBody({ journey, firstName, organization, onStart, onLater }: Wel
         <Button type="button" variant="ghost" className={TOUCH_TARGET} onClick={onLater} data-testid="first-run-later">
           {t('guide.welcome.later')}
         </Button>
-        {journey.current?.href ? (
-          <Button type="button" className={TOUCH_TARGET} iconRight={<ArrowRight />} onClick={onStart} data-testid="first-run-start">
-            {t('guide.welcome.start', { step: journey.current.title })}
+        {task?.href ? (
+          <Button type="button" className={TOUCH_TARGET} iconRight={<ArrowRight />} onClick={openTask} data-testid="first-run-start">
+            {t('guide.welcome.start', { step: task.title })}
           </Button>
         ) : null}
       </div>
@@ -124,7 +134,8 @@ function WelcomeBody({ journey, firstName, organization, onStart, onLater }: Wel
 /**
  * The first wizard of a new host, «Inizia con CasaZen» as a layer over the app (the wizard rules: it opens on its own layer, never sends the
  * person away, always has a way out). It opens by itself on the Home of Affitti brevi the first time the organization administrator arrives there
- * with the setup still to complete (a step to do now), once per person on this device: the welcome opens the next permitted task directly, with the full setup path available in a second screen. «Più tardi» closes it for good: the same road waits in the «Guida» of the header,
+ * with the setup still to complete, once per person on this device. The primary action opens the setup plan when the host has one,
+ * otherwise their next permitted checklist task. The steps and their current task are also available inside the dialog. «Più tardi» closes it for good: the same road waits in the «Guida» of the header,
  * and the welcome says where it is.
  *
  * It replaces the entry «Inizia con CasaZen» of the menu: after the first access the road is in the guide and on the home.
@@ -140,17 +151,20 @@ export function FirstRunWizard() {
   const onHome = pathname.replace(/\/+$/, '') === SHORT_RENT_HOME;
   if (!hasQueryClient || !userId || !onHome || !isOrgBillingAdmin(contexts)) return null;
   // Keyed by the person: another account on the same device starts from what that person has seen.
-  return <FirstRunWelcome key={userId} userId={userId} organization={org?.name ?? null} firstName={user?.firstName?.trim() || null} />;
+  return <FirstRunWelcome key={userId} userId={userId} orgId={org?.id} organization={org?.name ?? null} firstName={user?.firstName?.trim() || null} />;
 }
 
-function FirstRunWelcome({ userId, firstName, organization }: { userId: string; firstName: string | null; organization: string | null }) {
+function FirstRunWelcome({ userId, orgId, firstName, organization }: { userId: string; orgId?: string; firstName: string | null; organization: string | null }) {
   const navigate = useNavigate();
+  const { hasPermission } = useWorkspace();
   const [seen, setSeen] = useState(() => hasSeen(userId));
-  const { journey } = useSetupJourney({ enabled: !seen });
+  const resume = usePlanResume(userId, orgId, !seen);
+  const showWelcome = !seen && !resume.pending && !resume.step;
+  const { journey } = useSetupJourney({ enabled: showWelcome });
 
   // Open while the setup has a step to do now and the welcome was not seen: closing it marks it seen, which closes it.
-  const open = !seen && journey !== null && journey.current?.href !== undefined;
-  if (!journey || !open) return null;
+  if (!showWelcome || !journey?.current || (!journey.current.href && !journey.allHref)) return null;
+  if (journey.source === 'path' && !hasPermission('short-rent', 'property.read')) return null;
 
   // «Più tardi», Esc or a tap outside: it does not come back by itself, and the same road waits in the «Guida» of the header (the welcome says so).
   const close = () => {
@@ -172,10 +186,9 @@ function FirstRunWelcome({ userId, firstName, organization }: { userId: string; 
           firstName={firstName}
           organization={organization}
           onLater={close}
-          onStart={() => {
-            const target = journey.current;
+          onOpen={(href, state) => {
             close();
-            if (target?.href) navigate(target.href, { state: target.linkState });
+            navigate(href, { state });
           }}
         />
       </DialogContent>

@@ -6,6 +6,8 @@ import { I18nextProvider } from 'react-i18next';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
+import { orgComplianceSenderApi, type OrgComplianceSender } from '@/api/org-compliance-sender.api';
+import { readPlanResume } from '../plan-resume';
 import { onboardingApi } from '@/api/onboarding.api';
 import { ONBOARDING_PART_KEYS, type OnboardingPart, type OnboardingPartKey } from '@/types/onboarding.types';
 import { partPath, partTitleKey } from '@/lib/onboarding-parts';
@@ -14,6 +16,7 @@ import { freezeClock } from '@/test/clock';
 import { OnboardingPlanPage } from '../onboarding-plan-page';
 import { COLLABORATOR, OWNER, part, plan, problemError } from './onboarding-fixtures';
 
+vi.mock('@/api/org-compliance-sender.api', () => ({ orgComplianceSenderApi: { get: vi.fn(), set: vi.fn() } }));
 vi.mock('@/api/onboarding.api', () => ({
   onboardingApi: { getPlan: vi.fn(), deferPart: vi.fn(), exitPart: vi.fn(), resumePart: vi.fn(), getStatus: vi.fn(), getPath: vi.fn() },
 }));
@@ -29,6 +32,7 @@ vi.mock('@/components/layout/page-header', () => ({
 
 const workspace = vi.hoisted(() => ({
   contexts: [] as Array<{ contextKey: string; roleKey: string }>,
+  hasPermission: vi.fn((_area: string, _permission: string) => true),
   getDefaultRoute: (contextKey: string) => `/app/${contextKey}`,
 }));
 vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => workspace }));
@@ -46,12 +50,13 @@ function Arrived() {
   return <p data-testid="arrived">{useLocation().pathname}</p>;
 }
 
-function renderPage() {
+function renderPage(hash = '') {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+  client.setQueryData(['me'], { id: 'person', orgId: 'org', org: { id: 'org' } });
   return render(
     <I18nextProvider i18n={i18n}>
       <QueryClientProvider client={client}>
-        <MemoryRouter initialEntries={['/app/short-rent/onboarding']}>
+        <MemoryRouter initialEntries={[`/app/short-rent/onboarding${hash}`]}>
           <Routes>
             <Route path="/app/short-rent/onboarding" element={<OnboardingPlanPage />} />
             <Route path="*" element={<Arrived />} />
@@ -63,16 +68,26 @@ function renderPage() {
 }
 
 async function rows(): Promise<HTMLElement[]> {
-  const list = await screen.findByTestId('onboarding-plan-parts');
-  return Array.from(list.children) as HTMLElement[];
+  const outline = await screen.findByTestId('onboarding-plan-outline');
+  if (workspace.contexts === OWNER) await screen.findByTestId('org-sender-preference');
+  if (!(outline as HTMLDetailsElement).open) fireEvent.click(outline.querySelector('summary')!);
+  const current = screen.queryByTestId('onboarding-plan-current');
+  const parts = Array.from(screen.getByTestId('onboarding-plan-parts').querySelectorAll<HTMLElement>('[data-state]'));
+  const featured = current?.querySelector<HTMLElement>('[data-highlighted="true"]');
+  return featured ? [featured, ...parts] : parts;
 }
 
+const manualSender = { sender: 'Manual' as const, lastChangedAt: null, delegationAccepted: false, delegationTextVersion: 'v1', propertyOverrides: 0, autoSendGuestsToOctorate: false };
 const row = (code: OnboardingPartKey) => screen.getByTestId(`onboarding-part-${code}`);
 
 describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
   beforeEach(async () => {
     await i18n.changeLanguage('it');
     workspace.contexts = OWNER;
+    workspace.hasPermission.mockReturnValue(true);
+    sessionStorage.clear();
+    vi.mocked(orgComplianceSenderApi.get).mockReset().mockResolvedValue(manualSender);
+    vi.mocked(orgComplianceSenderApi.set).mockReset();
     support.email = 'aiuto@casazen.test';
     vi.mocked(onboardingApi.getPlan).mockReset().mockResolvedValue(plan());
     // The counts of the offer of the bulk configuration: few properties, so nothing is offered unless a test says otherwise.
@@ -89,17 +104,63 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
   });
 
   describe('what it shows', () => {
+    it('gives the missing sender priority, keeps the manual plan reachable and promotes the next task after saving', async () => {
+      let persisted: OrgComplianceSender = { ...manualSender, sender: null };
+      vi.mocked(orgComplianceSenderApi.get).mockImplementation(async () => persisted);
+      vi.mocked(orgComplianceSenderApi.set).mockImplementation(async () => {
+        persisted = manualSender;
+        return persisted;
+      });
+      renderPage();
+      const choice = await screen.findByRole('radio', { name: 'Invio manuale' });
+      const outline = await screen.findByTestId('onboarding-plan-outline');
+      const progress = screen.getByTestId('onboarding-plan-progress');
+      expect(progress).toHaveAttribute('value', '1');
+      expect(progress).toHaveAttribute('max', '8');
+      expect(outline).not.toHaveAttribute('open');
+      expect(screen.queryByTestId('onboarding-plan-current')).not.toBeInTheDocument();
+      fireEvent.click(outline.querySelector('summary')!);
+      expect(within(outline).getByTestId('onboarding-part-properties-open')).toHaveAttribute('href', partPath('properties'));
+      fireEvent.click(outline.querySelector('summary')!);
+      fireEvent.click(choice);
+      fireEvent.click(screen.getByRole('button', { name: 'Rivedi la scelta' }));
+      expect(orgComplianceSenderApi.set).not.toHaveBeenCalled();
+      fireEvent.click(screen.getByRole('checkbox', { name: /Confermo la scelta/ }));
+      fireEvent.click(screen.getByRole('button', { name: 'Salva preferenza' }));
+      const current = await screen.findByTestId('onboarding-plan-current');
+      expect(within(current).getByTestId('onboarding-part-properties-open')).toHaveAttribute('href', partPath('properties'));
+      expect(orgComplianceSenderApi.set).toHaveBeenCalledTimes(1);
+      expect(progress).toHaveAttribute('value', '1');
+    });
+
+    it('restores an accessible part outside the spotlight with the outline open and the keyboard there', async () => {
+      renderPage('#passo-identification');
+      const outline = await screen.findByTestId('onboarding-plan-outline');
+      await waitFor(() => expect(outline).toHaveAttribute('open'));
+      expect(row('identification')).toHaveFocus();
+    });
+
+    it('does not offer an administrator-only launcher as the next task to a read-only member', async () => {
+      workspace.contexts = COLLABORATOR;
+      workspace.hasPermission.mockReturnValue(false);
+      renderPage();
+      await rows();
+      expect(screen.queryByTestId('onboarding-plan-sender')).not.toBeInTheDocument();
+      expect(orgComplianceSenderApi.get).not.toHaveBeenCalled();
+      expect(within(screen.getByTestId('onboarding-plan-current')).queryByRole('link')).not.toBeInTheDocument();
+      expect(within(row('properties')).getByRole('link')).toHaveTextContent(i18n.t('onboardingPlan.workspace.details'));
+    });
+
     it('OnboardingPlan_LoadedPlan_ListsTheElevenPartsInOrderWithTheirTitle', async () => {
       renderPage();
 
       const list = await rows();
 
-      expect(list.map((item) => item.dataset.testid)).toEqual(ONBOARDING_PART_KEYS.map((code) => `onboarding-part-${code}`));
-      expect(list.map((item) => within(item).getByRole('heading', { level: 3 }).textContent)).toEqual(
-        ONBOARDING_PART_KEYS.map((code) => i18n.t(partTitleKey(code))),
-      );
-      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(i18n.t('onboardingPlan.title'));
-      expect(screen.getByTestId('page-description')).toHaveTextContent(i18n.t('onboardingPlan.description'));
+      const visibleOrder = ['properties', ...ONBOARDING_PART_KEYS.filter(code => code !== 'properties')] as const;
+      expect(list.map(item => item.dataset.testid)).toEqual(visibleOrder.map(code => `onboarding-part-${code}`));
+      expect(list.map(item => within(item).getByRole('heading', { level: 3 }).textContent)).toEqual(visibleOrder.map(code => i18n.t(partTitleKey(code))));
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(i18n.t('onboardingPlan.workspace.title'));
+      expect(screen.queryByTestId('page-description')).not.toBeInTheDocument();
     });
 
     it('OnboardingPlan_Part_ShowsItsStateInWordsWithProgressAndTheReasonInPlainWords', async () => {
@@ -140,7 +201,10 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
 
       const needs = screen.getByTestId('onboarding-needs');
 
-      expect(within(needs).getByRole('heading', { level: 2 })).toHaveTextContent(i18n.t('onboardingPlan.needsPanel.title'));
+      expect(needs).not.toHaveAttribute('open');
+      const summary = needs.querySelector('summary')!;
+      expect(summary).toHaveTextContent(i18n.t('onboardingPlan.workspace.prepare'));
+      fireEvent.click(summary);
       expect(within(needs).getAllByRole('listitem').map((item) => item.textContent)).toEqual(
         ['alloggiatiCredentials', 'istatCredentials', 'fiscalData', 'otaAccess', 'lockCode'].map((code) => i18n.t(`onboardingPlan.needs.${code}`)),
       );
@@ -280,16 +344,12 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
       expect(within(activation).queryByRole('link')).not.toBeInTheDocument();
     });
 
-    it('OnboardingPlan_PartAnotherPartNeeds_DisablesLaterWithTheSentenceThatSaysWhy', async () => {
+    it('keeps the next task focused when a required step cannot be postponed', async () => {
       renderPage();
       await rows();
-
       const properties = row('properties');
-      const later = within(properties).getByRole('button', { name: new RegExp(`^${i18n.t('onboardingPlan.actions.later')}`) });
-
-      expect(later).toBeDisabled();
-      expect(within(properties).getByTestId('onboarding-part-properties-later-note')).toHaveTextContent(i18n.t('onboardingPlan.defer.notDeferrable'));
-      expect(later).toHaveAccessibleDescription(i18n.t('onboardingPlan.defer.notDeferrable'));
+      expect(within(properties).getByRole('link')).toBeVisible();
+      expect(within(properties).queryByRole('button')).not.toBeInTheDocument();
     });
   });
 
@@ -403,6 +463,7 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
       await waitFor(() => expect(onboardingApi.exitPart).toHaveBeenCalledTimes(1));
       expect(onboardingApi.exitPart).toHaveBeenCalledWith('properties');
       await waitFor(() => expect(toast.success).toHaveBeenCalledWith(i18n.t('onboardingPlan.exit.saved')));
+      expect(readPlanResume('person', 'org')).toBe('properties');
       expect(await screen.findByTestId('arrived')).toHaveTextContent('/app/short-rent');
     });
 
@@ -438,6 +499,7 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
 
       await waitFor(() => expect(toast.error).toHaveBeenCalledWith(i18n.t('onboardingPlan.exit.error')));
       expect(screen.queryByTestId('arrived')).not.toBeInTheDocument();
+      expect(readPlanResume('person', 'org')).toBeNull();
       expect(toast.success).not.toHaveBeenCalled();
     });
 
@@ -567,7 +629,7 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
       renderPage();
       await rows();
 
-      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Start with CasaZen');
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Set up your short-term rentals');
       expect(within(row('properties')).getByRole('link')).toHaveTextContent('Resume');
       expect(document.body.textContent).not.toMatch(/onboardingPlan\./);
     });

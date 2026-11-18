@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BookOpen, Clock, FlaskConical, Pencil, Play, Plus, Repeat, Trash2 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
@@ -74,9 +74,12 @@ export function RoutinesPage() {
   const setActive = useSetRoutineActive();
   const setTestMode = useSetRoutineTestMode();
 
-  const [editorOpen, setEditorOpen] = useState(false);
+  const location = useLocation();
   const [params, setParams] = useSearchParams();
-  const libraryOpen = params.get('view') === 'library';
+  const view = params.get('view');
+  const libraryOpen = view === 'library';
+  const [editorOpen, setEditorOpen] = useState(view === 'create');
+  const [entry, setEntry] = useState({ key: location.key, view });
   const [template, setTemplate] = useState<RoutineLibraryTemplate>();
   const [simulation, setSimulation] = useState<Routine>();
   const setLibraryOpen = (open: boolean) => setParams(current => {
@@ -95,6 +98,15 @@ export function RoutinesPage() {
   const [livePending, setLivePending] = useState(false);
   const liveRequest = useRef<Promise<void> | null>(null);
   const [filter, setFilter] = useState<RoutineFilter>('all');
+  const objective = (location.state as { agentObjective?: unknown } | null)?.agentObjective;
+  if (entry.key !== location.key) {
+    setEntry({ key: location.key, view });
+    if (view === 'create' || view === 'library' || entry.view === 'create') {
+      setEditorOpen(view === 'create');
+      setSelectedRoutine(undefined);
+      setTemplate(undefined);
+    }
+  }
 
   // A card waits while ANY write on its routine is on its way, whichever write and however many are in flight on other cards at the same time (the hooks above follow only
   // their last call, so the ids come from the mutation cache): a second click on another button of the same card would answer for a routine that is about to change.
@@ -291,6 +303,7 @@ export function RoutinesPage() {
           <RoutineEditor
             routine={selectedRoutine}
             template={template}
+            initialObjective={view === 'create' && typeof objective === 'string' ? objective.slice(0, 500) : undefined}
             availability={availability}
             onSave={handleSave}
             onCancel={() => setEditorOpen(false)}
@@ -307,6 +320,7 @@ export function RoutinesPage() {
             <DialogDescription>{t('routines.library.description')}</DialogDescription>
           </DialogHeader>
           <RoutineLibrary
+            suggested={params.get('preset')}
             availability={availability}
             onConfigure={configureTemplate}
             onSetupCleaners={() => setCleanersOpen(true)}

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { usePlanReturn } from '@/features/onboarding/plan-return';
 import { Link, Navigate, useNavigationType, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
@@ -25,6 +26,7 @@ import { useWizardListingSeed } from './use-wizard-listing-seed';
 /** A property that cannot be opened: said with the reason the server gave, with the way back to the list always there. */
 function LoadError({ error, onRetry }: { error: unknown; onRetry: () => void }) {
   const { t } = useTranslation();
+  const planReturn = usePlanReturn();
   const notFound = getHttpStatus(error) === 404;
 
   return (
@@ -39,7 +41,7 @@ function LoadError({ error, onRetry }: { error: unknown; onRetry: () => void }) 
             </Button>
           )}
           <Button asChild size="sm" variant="ghost" className="min-h-11">
-            <Link to={PROPERTIES_PATH}>{t('propertyWizard.page.backToList')}</Link>
+            <Link to={planReturn ?? PROPERTIES_PATH}>{t(planReturn ? 'onboardingPlan.launch.backToPlan' : 'propertyWizard.page.backToList')}</Link>
           </Button>
         </>
       }
@@ -117,6 +119,7 @@ function ResumeWizard({ propertyId, stepNamed }: { propertyId: string; stepNamed
  * going on, not a reason to start another (which would lose its answers), so only a property named by a link is reopened.
  */
 export function PropertyWizardPage() {
+  const planReturn = usePlanReturn();
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigationType = useNavigationType();
@@ -142,7 +145,7 @@ export function PropertyWizardPage() {
         <PageHeader
           title={linkedPropertyId && savedProperty.data && !savedProperty.isError ? t('propertySetup.resume.title', { name: savedProperty.data.name }) : t('propertyWizard.page.title')}
           description={linkedPropertyId ? t('propertySetup.resume.description') : t('propertyWizard.page.description')}
-          crumbs="auto"
+          crumbs={planReturn ? [{ label: t('onboardingPlan.launch.backToPlan'), to: planReturn }, { label: t('propertyWizard.page.title') }] : 'auto'}
         />
         {resumeId ? (
           <ResumeWizard key={resumeId} propertyId={resumeId} stepNamed={searchParams.get('step') !== null} />

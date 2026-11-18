@@ -4,6 +4,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
 import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
+import { orgComplianceSenderApi, type OrgComplianceSender } from '@/api/org-compliance-sender.api';
+import { readPlanResume, savePlanResume } from '@/features/onboarding/plan-resume';
 import { onboardingApi } from '@/api/onboarding.api';
 import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
@@ -18,6 +20,8 @@ import { HomeNextStep } from '../components/home-next-step';
 vi.mock('@/api/onboarding.api', () => ({
   onboardingApi: { getStatus: vi.fn(), getPath: vi.fn(), getPlan: vi.fn() },
 }));
+
+vi.mock('@/api/org-compliance-sender.api', () => ({ orgComplianceSenderApi: { get: vi.fn() } }));
 
 const workspace = vi.hoisted(() => ({ contexts: [] as Array<{ contextKey: string; roleKey: string }> }));
 vi.mock('@/hooks/use-workspace', () => ({
@@ -50,8 +54,9 @@ const STATUS: OnboardingStatus = {
 
 const ALL_DONE = Object.fromEntries(ONBOARDING_PATH_STEP_CODES.map((code) => [code, 'done'])) as Parameters<typeof path>[0];
 
-function renderHome() {
+function renderHome(profile = { id: 'host', org: { id: 'org' } }) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  client.setQueryData(['me'], profile);
   const view = render(
     <I18nextProvider i18n={i18n}>
       <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, octorateOnboarding: flags.octorateOnboarding }, isLoading: false }}>
@@ -75,15 +80,50 @@ describe('HomeNextStep: the path or the next step of the checklist, never both (
     await i18n.changeLanguage('it');
     workspace.contexts = OWNER;
     flags.octorateOnboarding = true;
+    localStorage.clear();
+    vi.mocked(orgComplianceSenderApi.get).mockReset();
     vi.mocked(onboardingApi.getStatus).mockReset().mockResolvedValue(STATUS);
     // The connection is done: the listings, the prices and the compliance, which hang from the properties, can be done now.
     vi.mocked(onboardingApi.getPath).mockReset().mockResolvedValue(path({ connectChannels: 'done' }));
     vi.mocked(onboardingApi.getPlan)
       .mockReset()
-      .mockResolvedValue(plan({ properties: { state: 'done' }, channels: { state: 'done' }, listings: { state: 'open' }, pricesRules: { state: 'open' }, compliance: { state: 'open' } }));
+      .mockResolvedValue(plan({ properties: { state: 'done' }, channels: { state: 'done' }, listings: { state: 'open', launchTarget: 'listings' }, pricesRules: { state: 'open' }, compliance: { state: 'open' } }));
   });
 
   afterEach(() => cleanup());
+
+  it('resumes the exact paused part in place of the other setup card', async () => {
+    savePlanResume('host', 'org', 'listings');
+    renderHome();
+    expect(await screen.findByTestId('home-resume-onboarding')).toHaveAttribute('href', '/app/short-rent/onboarding#passo-listings');
+    expect(screen.queryByTestId('onboarding-path-card')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('activation-next-step')).not.toBeInTheDocument();
+    expect(orgComplianceSenderApi.get).not.toHaveBeenCalled();
+  });
+
+  it('returns to ordinary home tasks once the server confirms that the paused part is complete', async () => {
+    savePlanResume('host', 'org', 'properties');
+    renderHome();
+    expect(await screen.findByTestId('onboarding-path-card')).toBeInTheDocument();
+    expect(readPlanResume('host', 'org')).toBeNull();
+    expect(screen.queryByTestId('home-resume-onboarding')).not.toBeInTheDocument();
+  });
+
+  it('only the authorized person in the same organization resumes a missing sender preference', async () => {
+    savePlanResume('host', 'org', 'mittente');
+    const other = renderHome({ id: 'host', org: { id: 'other' } });
+    expect(await screen.findByTestId('onboarding-path-card')).toBeInTheDocument();
+    other.unmount();
+    workspace.contexts = COLLABORATOR;
+    const member = renderHome();
+    expect(await screen.findByTestId('activation-next-step')).toBeInTheDocument();
+    expect(orgComplianceSenderApi.get).not.toHaveBeenCalled();
+    member.unmount();
+    workspace.contexts = OWNER;
+    vi.mocked(orgComplianceSenderApi.get).mockResolvedValue({ sender: null } as OrgComplianceSender);
+    renderHome();
+    expect(await screen.findByTestId('home-resume-onboarding')).toHaveAttribute('href', '/app/short-rent/onboarding#mittente');
+  });
 
   it('PathIncomplete_ShowsThePathCardInsteadOfTheNextStepCardSoTheTwoAreNeverOnScreenTogether', async () => {
     renderHome();

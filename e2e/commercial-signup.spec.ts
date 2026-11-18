@@ -23,7 +23,8 @@ test('three profiles, Starter lock and per-room agency summary on desktop and mo
   await page.getByTestId('signup-profile-agency').click();
   await page.locator('#signup-agency-name').fill('Demo Agency');
   await page.getByRole('spinbutton').fill('3');
-  await page.getByRole('checkbox').first().check();
+  await expect(page.getByText('Sincronizzazione automatica con i portali OTA', { exact: true })).toBeVisible();
+  await expect(page.getByRole('checkbox', { name: /Canali e distribuzione/ })).toHaveCount(0);
   await expect(page.getByText('3 camere ipotizzate')).toBeVisible();
   await expect(page.getByText(/100,00/, { exact: false }).last()).toBeVisible();
   await page.getByRole('button', { name: 'Vai al riepilogo' }).click();
@@ -53,7 +54,7 @@ test('checkout request carries the chosen modules independently of the room esti
   await page.getByRole('radio', { name: 'Affitti brevi e lunghi' }).check();
   await page.locator('#signup-agency-name').fill('Demo Agency');
   await page.getByRole('spinbutton').fill('3');
-  await page.getByRole('checkbox').first().check();
+  await expect(page.getByText('Sincronizzazione automatica con i portali OTA', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Vai al riepilogo' }).click();
   await page.getByRole('button', { name: 'Continua all’attivazione' }).click();
   await completeOnboardingConsents(page);

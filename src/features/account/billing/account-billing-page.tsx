@@ -1,12 +1,15 @@
 import { useRef, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { CommercialSignupApi } from '@/api/commercial-signup.api';
 import { PageHeader } from '@/components/layout/page-header';
 import { PAGE_MAIN_ASIDE } from '@/components/layout/page-columns';
 import { PlainSection } from '@/components/shared/calm';
 import { Button } from '@/components/ui/button';
 import { SkeletonCard } from '@/components/ui/skeleton';
 import { BillingAdminRequired } from '@/features/billing/components/billing-admin-required';
+import { applicableAddons, signupRentalType } from '@/features/onboarding/commercial-model';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getProblemMessage } from '@/lib/api-errors';
 import { toBillingReturnPath } from '@/lib/billing-routes';
@@ -28,6 +31,12 @@ function AccountBillingBody() {
   const { planTier, user: commercialProfile, isLoading: profileLoading } = useCurrentUser();
   const entitlementQuery = useEntitlement();
   const plansQuery = useBillingPlans();
+  const signup = commercialProfile?.commercialSignup;
+  const { data: catalog } = useQuery({
+    queryKey: ['billing', 'commercial-catalog'],
+    queryFn: CommercialSignupApi.getCatalog,
+    enabled: !!signup,
+  });
   const { subscriptionQuery, checkoutReturn, timedOut } = useAccountSubscription();
   // Stripe returns to a plan or billing page of the backend's list, and this page is on it (AM-08a-FU1): it names itself, so the portal
   // (and the checkout of the plans) bring the person back here with the message of the outcome, also from the account area alone.
@@ -42,6 +51,12 @@ function AccountBillingBody() {
   const openAccess = entitlement?.openAccess === true;
   const tier = subscription ? pickShownTier(openAccess, subscription, planTier) : null;
   const pricesPending = subscription ? arePricesPending(plansQuery.data, subscription.status) : false;
+  const modules = signup && catalog
+    ? applicableAddons(catalog, commercialProfile?.rentalType ?? signupRentalType(signup))
+    : [];
+  const activeModules = subscription && ['active', 'trialing', 'past_due'].includes(subscription.status)
+    ? subscription.enabledAddons ?? commercialProfile?.commercialEnabledAddons ?? []
+    : [];
 
   /** The button of the plan block: the plans open under it and come into view. */
   const openPlans = () => {
@@ -113,6 +128,18 @@ function AccountBillingBody() {
                 )}
               </div>
             </PlainSection>
+            {modules.length > 0 && (
+              <PlainSection title={t('commercial.moduleStatus')}>
+                <dl className="space-y-2 text-sm">
+                  {modules.map(module => (
+                    <div key={module.code} className="flex justify-between gap-4">
+                      <dt>{t(`commercial.addons.${module.code}.title`)}</dt>
+                      <dd>{t(activeModules.includes(module.code) ? 'commercial.moduleActive' : 'commercial.moduleInactive')}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </PlainSection>
+            )}
           </div>
 
           <div className="min-w-0 border-b border-border">

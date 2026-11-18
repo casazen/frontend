@@ -9,6 +9,7 @@ import { routineTrigger } from '@/lib/routine-trigger';
 import type { RoutineLibraryTemplate } from '@/types';
 
 interface RoutineLibraryProps {
+  suggested?: string | null;
   /** What the catalog says of each action: a template that holds an action that cannot run yet cannot be switched on, only created in test mode. */
   availability?: ActionAvailability;
   onConfigure: (template: RoutineLibraryTemplate) => void;
@@ -88,18 +89,20 @@ function buildTemplates(t: TFunction): LibraryEntry[] {
   ];
 }
 
-export function RoutineLibrary({ availability, onConfigure, onSetupCleaners }: RoutineLibraryProps) {
+export function RoutineLibrary({ availability, onConfigure, onSetupCleaners, suggested }: RoutineLibraryProps) {
   const { t } = useTranslation();
-  const templates = buildTemplates(t);
+  const templates = buildTemplates(t).map((entry, index) => ({ ...entry, index }));
+  const desired = ['cleaning', 'arrival', 'review', 'documents'].indexOf(suggested ?? '');
+  if (desired >= 0) templates.unshift(...templates.splice(desired, 1));
 
   return (
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2">
-        {templates.map(({ template, icon: Icon, noteKey, setsCleaners }, index) => {
+        {templates.map(({ template, icon: Icon, noteKey, setsCleaners, index }) => {
           const cannotRun = unavailableActionTypes(availability, template.actions).length > 0;
           const needsTemplate = template.actions.some(action => action.type === 'MessageToGuest' && !action.config?.templateId);
           return (
-            <Card key={template.name} data-testid={`library-template-${index}`}>
+            <Card key={template.name} className={index === desired ? 'border-primary' : undefined} data-testid={`library-template-${index}`}>
               <CardHeader>
                 <div className="flex items-start gap-3">
                   <div className="rounded-lg bg-primary/10 p-2 text-primary">

@@ -1,4 +1,38 @@
 {
+  "agentPlayground": {
+    "exampleDetail": "{{channel}} · {{status}} · {{nights}} nights · {{guests}} guests",
+    "usage": "{{tokens}} tokens · {{milliseconds}} ms",
+    "title": "AI Agents playground",
+    "description": "Refine preset agents with synthetic stays. Compare decisions, tokens and response times before publishing.",
+    "forbidden": "This playground is reserved for the authorized super admin.",
+    "preset": "Preset agent",
+    "training": "Training",
+    "guidance": "Additional decision guidance",
+    "examples": "Training examples",
+    "evaluation": "Independent evaluation cases",
+    "channel": "Channel",
+    "status": "Status",
+    "nights": "Nights",
+    "guests": "Guests",
+    "noShow": "No-show",
+    "expected": "Expected decision",
+    "execute": "Execute",
+    "skip": "Skip",
+    "remove": "Remove",
+    "add": "Add scenario",
+    "train": "Train and compare",
+    "running": "Working…",
+    "failed": "Response unavailable",
+    "versions": "Versions and results",
+    "active": "Active version · {{version}}",
+    "proposal": "Candidate version · {{version}}",
+    "base": "Standard",
+    "scenario": "Scenario",
+    "current": "Current · {{score}}/{{total}}",
+    "candidate": "Candidate · {{score}}/{{total}}",
+    "publish": "Publish version",
+    "restore": "Restore {{version}}"
+  },
   "registrationPreparation": {
     "providerAction": "Registration details · OpenAPI",
     "redirecting": "Redirecting to payment…",
@@ -17530,7 +17564,21 @@
       "run": "Run the final test",
       "title": "Final test"
     },
-    "title": "Start with CasaZen"
+    "title": "Start with CasaZen",
+    "workspace": {
+      "details": "View details",
+      "title": "Set up your short-term rentals",
+      "progress": "Setup progress",
+      "progressCount": "{{done}} of {{total}} complete",
+      "prepare": "What to have ready",
+      "upNext": "Next step",
+      "otherSteps": "Other setup tasks",
+      "allSteps": "Browse the setup plan",
+      "connect": "Set up connection",
+      "later": "Continue later",
+      "finished": "You have completed all available parts of the plan.",
+      "waiting": "There are no open steps right now. Open the plan to see deferred tasks and their prerequisites."
+    }
   },
   "org": {
     "tier": {
@@ -20727,7 +20775,7 @@
         "steps": [
           "If invited, open the invitation with the recipient account. If setting up your own business, choose your role, area and plan before confirming the legal documents and proceeding to billing.",
           "Use “Pause setup” while choosing your plan or reviewing your choices. Saved choices remain in this tab for 24 hours. Reloading restores the saved step and you confirm the documents again.",
-          "After activation, open the first property form if you have no properties yet. On the first visit to the short-term rental home, the administrator’s welcome shows the next available task. Start it directly, view the full path or find it later in Guide.",
+          "When Start with CasaZen is available, the administrator can open the plan from the Short stays home. For Italian properties, choose who submits guest data and review the summary before confirming. The plan shows the next task. You can leave and return from Home or the Guide.",
           "Choose Short-term rentals, Long-term rentals, Administration or Suppliers. Available areas and actions depend on your role and assigned properties.",
           "Check the area and organization at the top. On a phone, open More to switch areas. On a computer, use the sidebar selector. Choose Search to find pages you can access.",
           "Ask CasaZen finds accessible pages by name. In short-term rentals, ask which arrivals today have incomplete check-in. Check the scope shown and open a booking to verify it. The demo uses sample records. You can also open arrivals directly from the Dashboard.",
@@ -24458,7 +24506,7 @@
     "None": "Not activated"
   },
   "aiSettings": {
-    "example": "Example from the library",
+    "example": "Schedule cleaning for stays of at least three nights. For shorter stays, notify staff.",
     "exampleTrigger": "At check-out",
     "exampleAction": "Request cleaning for the property",
     "firstRoutine": "Try an AI routine",
@@ -24478,7 +24526,6 @@
     "title": "AI",
     "provider": "Manage the platform provider, models and budget.",
     "objective": "Agent objective",
-    "example": "Schedule cleaning for stays of at least three nights. For shorter stays, notify staff.",
     "hint": "Use the booking channel, status, stay length and guest count. Leave blank to request all configured actions.",
     "invalidPlan": "AI returned an invalid action plan. Execution stopped.",
     "notSelected": "The agent skipped this action for this event."
@@ -25141,8 +25188,18 @@
       "openStay": "Review the stay for {{guest}}",
       "openProperty": "Lease details for {{property}}",
       "tenant": "Tenant · {{name}}",
-      "figures": { "guests": "Guests", "nights": "Nights", "rent": "Monthly rent", "overdue": "Overdue instalments" },
-      "dates": { "stayStart": "Arrival", "stayEnd": "Departure", "leaseStart": "Lease starts", "leaseEnd": "Lease ends" },
+      "figures": {
+        "guests": "Guests",
+        "nights": "Nights",
+        "rent": "Monthly rent",
+        "overdue": "Overdue instalments"
+      },
+      "dates": {
+        "stayStart": "Arrival",
+        "stayEnd": "Departure",
+        "leaseStart": "Lease starts",
+        "leaseEnd": "Lease ends"
+      },
       "checkInState": "Online check-in in progress",
       "checkInStep": "The guest has started entering their details. Check that their documents are complete before registering the arrival.",
       "leaseState": "Registered, active lease",
@@ -32218,6 +32275,7 @@
     "pricePending": "Price not configured",
     "perRoomMonth": " / room / month",
     "perMonth": "per month, excluding tax",
+    "perMonthVatIncluded": "per month, VAT included",
     "monthSuffix": " / month",
     "choosePlan": "Choose your plan",
     "unlimited": "Unlimited properties",
@@ -32240,6 +32298,7 @@
       "admin": "We will create a new agency with this name. As its owner and administrator, you can invite collaborators and manage access. Members join your agency by invitation only.",
       "inviteLater": "Invite collaborators and assign roles and properties from Administration → People.",
       "minimum": "Monthly minimum {{amount}}, excluding tax. A custom quote applies from {{threshold}} units.",
+      "minimumVatIncluded": "Monthly minimum {{amount}}, VAT included. A custom quote applies from {{threshold}} units.",
       "customQuote": "Custom quote",
       "continue": "Continue to activation",
       "setup": "Set up billing on Stripe",
@@ -32291,7 +32350,12 @@
     "basePlan": "Base plan",
     "total": "Monthly total",
     "taxNote": "Excluding tax. Applicable taxes are calculated at checkout.",
-    "changeLater": "Manage your plan and modules in Administration. Extras are never added automatically.",
+    "taxIncluded": "VAT included. Stripe shows the tax breakdown at checkout.",
+    "moduleStatus": "Module status",
+    "moduleActive": "Active",
+    "moduleInactive": "Inactive",
+    "compareNoteVatIncluded": "Prices include VAT.",
+    "changeLater": "View your plan and module status in Administration. Extras are added only when selected.",
     "addons": {
       "channels": {
         "title": "Channels and distribution",
@@ -32314,8 +32378,8 @@
         "text": "Ready-made and custom agents that manage stays, schedule cleaning and contact guests autonomously."
       },
       "messages-ai": {
-        "title": "Messaging and AI assistant",
-        "text": "Support for guest conversations and replies."
+        "title": "AI messaging assistant",
+        "text": "Set up rules and AI-assisted replies for guest conversations."
       },
       "operations": {
         "title": "Tasks and providers",
@@ -32341,6 +32405,10 @@
     "manageAreasText": "Add short-term or long-term rentals to your business. Only your plan administrator can change this.",
     "manageAreas": "Manage active areas",
     "baseShort": "Calendar and manual bookings",
+    "icalSync": "OTA calendar sync via iCal",
+    "otaSync": "Automatic sync with OTA portals",
+    "otaContentSync": "Content sync with OTA portals",
+    "otaMessaging": "Integrated messaging hub for OTA portals",
     "baseLong": "Leases, tenants, rent and deadlines",
     "baseCommon": "Properties, contacts and document archive",
     "resumePayment": "Manage or complete payment",
@@ -32348,44 +32416,47 @@
     "invitationOnly": "Joining an existing agency? Open the invitation link from its administrator. You do not need to create an agency or buy a personal plan."
   },
   "complianceJurisdiction": {
-      "foreignTitle": "Requirements in the property’s country",
-      "foreignDescription": "Italian Questura, Alloggiati Web and ISTAT do not apply to this property. Their credentials and an Italian sender choice are not required. Check the local requirements instead: CasaZen does not automatically consider them fulfilled.",
-      "ticinoLink": "Ticino · guest notifications to the cantonal police",
-      "guideTitle": "How to complete this request",
-      "guidePrepare": "Check the property and its country. Confirm who sends the data: if the channel manager sends it, open its panel using the property’s access.",
-      "guidePolice": "Open the Alloggiati Web connection in the panel. Use the credentials issued by the competent Questura and the apartment identifier where required.",
-      "guideIstat": "Open the statistics connection for the property’s region in the panel. Check the regional portal and enter the credentials and property code required by that service.",
-      "guideBoth": "Set up the Alloggiati Web connection and the regional statistics connection separately. These services may use different credentials.",
-      "guideCheck": "Test the connection before closing the request. If the system cannot verify it, record a declared outcome with a note explaining the check performed.",
-      "guideMissing": "If an access is missing, ask the user through the established support process. Never put credentials in the request notes."
-  }
-,
+    "foreignTitle": "Requirements in the property’s country",
+    "foreignDescription": "Italian Questura, Alloggiati Web and ISTAT do not apply to this property. Their credentials and an Italian sender choice are not required. Check the local requirements instead: CasaZen does not automatically consider them fulfilled.",
+    "ticinoLink": "Ticino · guest notifications to the cantonal police",
+    "guideTitle": "How to complete this request",
+    "guidePrepare": "Check the property and its country. Confirm who sends the data: if the channel manager sends it, open its panel using the property’s access.",
+    "guidePolice": "Open the Alloggiati Web connection in the panel. Use the credentials issued by the competent Questura and the apartment identifier where required.",
+    "guideIstat": "Open the statistics connection for the property’s region in the panel. Check the regional portal and enter the credentials and property code required by that service.",
+    "guideBoth": "Set up the Alloggiati Web connection and the regional statistics connection separately. These services may use different credentials.",
+    "guideCheck": "Test the connection before closing the request. If the system cannot verify it, record a declared outcome with a note explaining the check performed.",
+    "guideMissing": "If an access is missing, ask the user through the established support process. Never put credentials in the request notes."
+  },
   "orgComplianceSender": {
     "loading": "Loading your sending preference…",
     "retry": "Try again",
     "loadError": "We could not load the account preference. Try again before changing it.",
-    "scope": "One choice for your account",
     "title": "Who sends your guests’ details?",
-    "description": "Choose once for your current and future Italian properties. Properties with a specific choice keep it; properties abroad follow local requirements.",
-    "channel": "My channel manager",
-    "channelHint": "Choose Octorate. Each property must then be connected and verified before sending.",
-    "manual": "I send on the portals",
-    "manualHint": "Download stay files and send details to the Police and regional statistics portals where required.",
-    "continue": "Continue: review",
-    "review": "Review your choice before saving",
-    "effect": "Italian properties without their own choice inherit this preference. It does not activate external services, validate credentials or prove that sending works.",
+    "description": "For your Italian properties, choose who submits guest details to the police and, where required, to regional statistics portals.",
+    "channel": "Octorate",
+    "channelHint": "The channel manager submits the details once each property is connected and verified.",
+    "manual": "Manual submission",
+    "manualHint": "You download the stay files from CasaZen and submit them to the portals yourself.",
+    "continue": "Review choice",
+    "review": "Review the submission method",
+    "effect": "This saves the method for current and future Italian properties that use the account preference. Activation and verification are managed on each property’s page.",
     "overrides_one": "{{count}} property keeps its specific choice. Change it on the property page.",
-    "overrides_other": "{{count}} properties keep their specific choices. Change them on their property pages.",
-    "confirm": "I confirm this choice for properties that inherit it. Before changing service, I will ensure the previous automatic sender is disabled to prevent duplicate submissions.",
-    "save": "Save for my account",
-    "back": "Back",
-    "saved": "Saved preference: {{sender}}",
+    "overrides_other": "{{count}} properties keep their specific choices. Change them on the property pages.",
+    "confirm": "I confirm this choice for properties that use the account preference. If I change services, I will first turn off the previous sender to avoid duplicate submissions.",
+    "save": "Save preference",
+    "back": "Back to choice",
     "edit": "Change choice",
     "saveError": "Your choice was not saved. Try again.",
-    "accountsTitle": "Credentials and apartment ID: what changes?",
-    "accounts": "An Alloggiati Web account enabled for “Gestione Appartamenti” can manage multiple properties for an agency or private host. The competent Questura, province and authorised accommodation category still apply: this is not a single nationwide account. Each apartment keeps its own portal identifier (IdAppartamento). Follow the authorisation issued by the Questura; ISTAT depends on the regional system. This preference does not copy or share credentials between properties.",
+    "accountsTitle": "Property credentials and identifiers",
+    "accounts": "Credentials and verification are managed for each property. An Alloggiati Web account enabled for “Gestione Appartamenti” can manage several properties under the authorisation granted by the local Questura for the relevant province and accommodation category. Each apartment keeps its own portal identifier (IdAppartamento). Regional rules apply to statistics. Properties abroad follow local requirements.",
     "source": "Official Alloggiati Web manual · section 8",
     "inherited": "This property inherits your account preference. You can set an exception for this property here.",
-    "editAccount": "View account preference"
+    "editAccount": "View account preference",
+    "savedTitle": "Guest data submission",
+    "autoLabel": "Transfer guest details to Octorate automatically",
+    "autoOn": "For all properties in the organisation, CasaZen transfers the details to Octorate once they are complete and identity is verified.",
+    "autoOff": "CasaZen transfers the details to Octorate when you confirm check-in.",
+    "cancel": "Cancel changes",
+    "effectLabel": "What happens next"
   }
 }

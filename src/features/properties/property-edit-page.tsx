@@ -1,3 +1,4 @@
+import { usePlanReturn } from '@/features/onboarding/plan-return';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { longRentPropertyEditPath } from './long-rent/paths';
 import { useTranslation } from 'react-i18next';
@@ -13,13 +14,14 @@ export function PropertyEditPage() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const planReturn = usePlanReturn();
   const { data: property, isLoading } = useProperty(id!);
   const updateProperty = useUpdateProperty();
 
   const handleSubmit = async (data: CreatePropertyDto) => {
     if (id) {
       await updateProperty.mutateAsync({ id, data });
-      navigate('/app/short-rent/properties');
+      navigate(planReturn ?? '/app/short-rent/properties');
     }
   };
 
@@ -46,6 +48,7 @@ export function PropertyEditPage() {
       <div className="space-y-6">
         <PageHeader
           title={t('property.edit.title')}
+          crumbs={planReturn ? [{ label: t('onboardingPlan.launch.backToPlan'), to: planReturn }, { label: t('property.edit.title') }] : undefined}
           description={t('property.edit.description', { name: property.name })}
         />
 

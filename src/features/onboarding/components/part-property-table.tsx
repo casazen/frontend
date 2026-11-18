@@ -1,3 +1,8 @@
+import { isEntryFeatureEnabled } from '@/config/route-manifest';
+import { useCommercialProfile } from '@/hooks/use-commercial-profile';
+import { commercialRouteAllowed } from '../commercial-access';
+import { withPlanPart } from '@/features/onboarding/plan-return';
+import type { OnboardingPartKey } from '@/types/onboarding.types';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -21,6 +26,7 @@ const PAGE_SIZE = 20;
 const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading-tight';
 
 interface PartPropertyTableProps {
+  partKey?: OnboardingPartKey;
   flow: OnboardingFlowKey;
   /** What the part itself launches: the page a row opens when the server names no action for it. */
   target: OnboardingLaunchTarget;
@@ -36,9 +42,10 @@ interface PartPropertyTableProps {
  * registry resolves the action the server names, or the part's own page, against the manifest: no page, no button). The compliance part adds the
  * guided steps of the police and ISTAT for each property. 250 properties never load at once.
  */
-export function PartPropertyTable({ flow, target, panelSteps = false, assistFirst = false }: PartPropertyTableProps) {
+export function PartPropertyTable({ partKey, flow, target, panelSteps = false, assistFirst = false }: PartPropertyTableProps) {
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();
+  const profile = useCommercialProfile();
   const { flags } = useFeatureFlags();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
@@ -77,7 +84,8 @@ export function PartPropertyTable({ flow, target, panelSteps = false, assistFirs
       <ul className="space-y-2" role="list" data-testid="part-properties-list">
         {query.data.items.map((row) => {
           const action = launchTargetForAction(row.action);
-          const launch = resolveLaunchTarget(action?.target ?? target, action?.focus, row.propertyId, hasPermission, undefined, flags);
+          const resolved = resolveLaunchTarget(action?.target ?? target, action?.focus, row.propertyId, hasPermission, undefined, flags);
+          const launch = resolved && isEntryFeatureEnabled(resolved.entry, flags) && commercialRouteAllowed(profile, resolved.to) ? resolved : null;
           const state = normalizeFlowState(row.state);
           const reason = reasonOf(row);
           return (
@@ -98,7 +106,7 @@ export function PartPropertyTable({ flow, target, panelSteps = false, assistFirs
                 <div className="flex flex-wrap gap-2">
                   {launch ? (
                     <Button asChild size="sm" className={TOUCH_TARGET}>
-                      <Link to={launch.to} aria-label={`${t('onboardingPlan.actions.doNow')}: ${row.name}`} data-testid={`part-property-${row.propertyId}-do`}>
+                      <Link to={withPlanPart(launch.to, partKey)} aria-label={`${t('onboardingPlan.actions.doNow')}: ${row.name}`} data-testid={`part-property-${row.propertyId}-do`}>
                         {t('onboardingPlan.actions.doNow')}
                       </Link>
                     </Button>

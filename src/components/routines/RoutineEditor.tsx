@@ -39,6 +39,7 @@ import {
 import type { CreateRoutineDto, Routine, RoutineActionType, RoutineCondition, RoutineEventType, RoutineLibraryTemplate, UpdateRoutineDto } from '@/types';
 
 interface RoutineEditorProps {
+  initialObjective?: string;
   routine?: Routine;
   template?: RoutineLibraryTemplate;
   /** What the catalog says of each action (`GET api/routines/actions`): the ones that cannot run yet are disabled, and a routine that holds one is not switched on. */
@@ -54,7 +55,7 @@ function offsetOf(eventConfig: string | undefined): { days: string; hours: strin
   return { days: String(days + Math.floor(hours / 24)), hours: String(hours % 24) };
 }
 
-export function RoutineEditor({ routine, template, availability, onSave, onCancel, isSaving }: RoutineEditorProps) {
+export function RoutineEditor({ routine, template, availability, onSave, onCancel, isSaving, initialObjective }: RoutineEditorProps) {
   const { t } = useTranslation();
 
   // The initial values come from the routine once: the editor is mounted again each time its dialog opens, so it starts from the stored routine every time.
@@ -73,7 +74,7 @@ export function RoutineEditor({ routine, template, availability, onSave, onCance
     };
   });
 
-  const [objective, setObjective] = useState(routine?.agentObjective ?? template?.agentObjective ?? '');
+  const [objective, setObjective] = useState(routine?.agentObjective ?? template?.agentObjective ?? initialObjective ?? '');
   const [name, setName] = useState(initial.name);
   const [eventType, setEventType] = useState<RoutineEventType>(initial.eventType);
   const [days, setDays] = useState(initial.days);

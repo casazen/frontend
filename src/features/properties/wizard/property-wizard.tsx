@@ -1,3 +1,4 @@
+import { usePlanReturn } from '@/features/onboarding/plan-return';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useFormContext, type UseFormReturn } from 'react-hook-form';
@@ -184,6 +185,7 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
   const complianceOn = commercialRouteAllowed(commercial, '/app/short-rent/compliance');
   const billingOn = flags.fiscalDocumentIssuance && commercialRouteAllowed(commercial, '/app/short-rent/fiscal');
   const navigate = useNavigate();
+  const planReturn = usePlanReturn();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, org } = useCurrentUser();
   const { contexts } = useWorkspace();
@@ -559,14 +561,14 @@ export function PropertyWizard({ property, listing = EMPTY_LISTING_SEED, onlySte
       onFinish={finish}
       // The first step is not saved yet: the draft keeps its answers over a reload. Once the property exists they are on the server.
       draft={propertyId ? false : { accept: (saved) => saved.step === 'base' }}
-      onExit={() => navigate(PROPERTIES_PATH)}
+      onExit={() => navigate(planReturn ?? PROPERTIES_PATH)}
       aboveFooter={
         <SaveAndClose
           save={propertyId ? (stepId, values) => saveByStep[stepId]?.(values) ?? Promise.resolve() : undefined}
           onSaved={(step) => {
             if (propertyId && user?.id && org?.id) rememberPropertyStep({ userId: user.id, orgId: org.id }, propertyId, step);
             toast.success(t(propertyId ? 'propertyWizard.exit.saved' : 'propertyWizard.exit.kept'));
-            navigate(PROPERTIES_PATH);
+            navigate(planReturn ?? PROPERTIES_PATH);
           }}
         />
       }

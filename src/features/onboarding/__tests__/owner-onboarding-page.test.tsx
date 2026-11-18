@@ -884,7 +884,13 @@ describe('OnboardingPlanPage, the owner step in the plan (NF-109)', () => {
     const row = await screen.findByTestId('onboarding-owners-step');
     const list = screen.getByTestId('onboarding-plan-parts');
     const ids = Array.from(list.children).map((item) => (item as HTMLElement).dataset.testid);
-    expect(ids.indexOf('onboarding-owners-step')).toBe(ids.indexOf('onboarding-part-properties') + 1);
+    const propertiesIndex = ids.indexOf('onboarding-part-properties');
+    if (propertiesIndex >= 0) {
+      expect(ids.indexOf('onboarding-owners-step')).toBe(propertiesIndex + 1);
+    } else {
+      expect(within(screen.getByTestId('onboarding-plan-current')).getByTestId('onboarding-part-properties')).toBeInTheDocument();
+      expect(ids.indexOf('onboarding-owners-step')).toBe(ids.indexOf('onboarding-part-octorateConnection') + 1);
+    }
     expect(row).not.toHaveAttribute('data-highlighted');
     await waitFor(() => expect(row).toHaveAttribute('data-state', 'toComplete'));
     expect(within(row).getByTestId('onboarding-owners-step-open')).toHaveAttribute('href', OWNER_STEP_PATH);

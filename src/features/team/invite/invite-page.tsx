@@ -1,6 +1,6 @@
 import { useMe } from '@/queries/use-users';
 import { useMemo, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/page-header';
 import { FOCUS_COLUMN } from '@/components/layout/page-columns';
@@ -51,6 +51,7 @@ function InviteWizard() {
   const { data: profile } = useMe();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const assistantInvite = (useLocation().state as { invite?: { name?: unknown; email?: unknown } } | null)?.invite;
   const create = useCreateOrgInvitation();
   const members = useOrgMembers(true, { fresh: true });
   const invitations = useOrgInvitations({ fresh: true });
@@ -84,8 +85,14 @@ function InviteWizard() {
   const waitingForSettings = settings.isPending;
   const accountLanguage = settings.data?.defaultLanguage;
   const defaults = useMemo(
-    () => inviteDefaults(searchParams, accountLanguage ?? interfaceLanguage(i18n.language), properties, availableAreas),
-    [searchParams, accountLanguage, i18n.language, properties, availableAreas],
+    () => {
+      const initial = inviteDefaults(searchParams, accountLanguage ?? interfaceLanguage(i18n.language), properties, availableAreas);
+      if (!assistantInvite) return initial;
+      const name = typeof assistantInvite.name === 'string' ? assistantInvite.name.slice(0, 100) : '';
+      const email = typeof assistantInvite.email === 'string' ? assistantInvite.email.slice(0, 254) : '';
+      return { values: { ...initial.values, name, email }, prefilled: true };
+    },
+    [searchParams, accountLanguage, i18n.language, properties, availableAreas, assistantInvite],
   );
   if (profile?.org?.isAgency === false) {
     return <Alert action={<BackToPeople />}>{t('admin.staffInvite.privateTeam')}</Alert>;

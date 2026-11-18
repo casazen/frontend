@@ -40,7 +40,7 @@ export async function completeCommercialSignup(page: Page, profile: 'owner' | 'l
     await page.getByRole('button', { name: /^Pro\b/ }).click();
     if (profile === 'owner') {
       for (const name of ['Prenotazioni dirette', 'Adempimenti automatici', 'Interventi e fornitori']) {
-        await page.getByRole('checkbox', { name: new RegExp(name, 'i') }).check();
+        await expect(page.getByText(name, { exact: true })).toBeVisible();
       }
     }
     await page.getByRole('button', { name: 'Vai al riepilogo' }).click();
@@ -57,9 +57,8 @@ export async function completeCommercialSignup(page: Page, profile: 'owner' | 'l
   const me = await response.json() as { orgId: string; commercialSignup: { profile: string; planTier: string; rooms: number; agencyName: string | null; addons: string[]; rentalArea?: string } };
   const s = me.commercialSignup;
   const fingerprint = createHash('sha256').update(JSON.stringify({ Profile: s.profile, PlanTier: s.planTier, Rooms: s.rooms, AgencyName: s.agencyName ?? null, Addons: s.addons, RentalArea: s.rentalArea })).digest('hex').toUpperCase();
-  const prices: Record<string, string> = { 'direct-booking': 'price_e2e_direct', compliance: 'price_e2e_compliance', operations: 'price_e2e_operations' };
   const item = (price: string) => ({ id: `si_${randomUUID()}`, object: 'subscription_item', quantity: 1, price: { id: price, object: 'price' } });
-  const body = JSON.stringify({ id: `evt_${randomUUID()}`, object: 'event', api_version: '2025-12-15.clover', request: null, created: Math.floor(Date.now() / 1000), livemode: false, pending_webhooks: 1, type: 'customer.subscription.created', data: { object: { id: `sub_${randomUUID()}`, object: 'subscription', status: 'active', customer: `cus_${randomUUID()}`, metadata: { orgId: me.orgId, commercialConfiguration: fingerprint }, items: { object: 'list', data: [item(s.planTier === 'Starter' ? 'price_e2e_starter' : 'price_e2e_pro'), ...s.addons.map(a => item(prices[a]))] } } } });
+  const body = JSON.stringify({ id: `evt_${randomUUID()}`, object: 'event', api_version: '2025-12-15.clover', request: null, created: Math.floor(Date.now() / 1000), livemode: false, pending_webhooks: 1, type: 'customer.subscription.created', data: { object: { id: `sub_${randomUUID()}`, object: 'subscription', status: 'active', customer: `cus_${randomUUID()}`, metadata: { orgId: me.orgId, commercialConfiguration: fingerprint }, items: { object: 'list', data: [item(s.planTier === 'Starter' ? 'price_e2e_starter' : 'price_e2e_pro')] } } } });
   const timestamp = Math.floor(Date.now() / 1000);
   const secret = process.env.STRIPE_TEST_WEBHOOK_SECRET || 'whsec_e2e_commercial_signup_secret';
   const signature = createHmac('sha256', secret).update(`${timestamp}.${body}`).digest('hex');

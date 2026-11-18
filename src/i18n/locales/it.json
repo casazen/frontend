@@ -1,4 +1,38 @@
 {
+  "agentPlayground": {
+    "exampleDetail": "{{channel}} · {{status}} · {{nights}} notti · {{guests}} ospiti",
+    "usage": "{{tokens}} token · {{milliseconds}} ms",
+    "title": "Playground AI Agents",
+    "description": "Affina gli agenti predefiniti con soggiorni inventati. Confronta le decisioni, i token e i tempi prima di pubblicare.",
+    "forbidden": "Questo playground è riservato al super admin autorizzato.",
+    "preset": "Agente predefinito",
+    "training": "Addestramento",
+    "guidance": "Istruzioni aggiuntive per la decisione",
+    "examples": "Esempi di addestramento",
+    "evaluation": "Scenari di verifica indipendenti",
+    "channel": "Canale",
+    "status": "Stato",
+    "nights": "Notti",
+    "guests": "Ospiti",
+    "noShow": "Mancato arrivo",
+    "expected": "Decisione attesa",
+    "execute": "Esegui",
+    "skip": "Salta",
+    "remove": "Rimuovi",
+    "add": "Aggiungi scenario",
+    "train": "Addestra e confronta",
+    "running": "Elaborazione in corso…",
+    "failed": "Risposta non disponibile",
+    "versions": "Versioni e risultati",
+    "active": "Versione attiva · {{version}}",
+    "proposal": "Versione candidata · {{version}}",
+    "base": "Standard",
+    "scenario": "Scenario",
+    "current": "Attuale · {{score}}/{{total}}",
+    "candidate": "Candidata · {{score}}/{{total}}",
+    "publish": "Pubblica versione",
+    "restore": "Ripristina {{version}}"
+  },
   "registrationPreparation": {
     "providerAction": "Dati per la registrazione · OpenAPI",
     "redirecting": "Reindirizzamento al pagamento…",
@@ -17530,7 +17564,21 @@
       "run": "Fai la prova finale",
       "title": "Prova finale"
     },
-    "title": "Inizia con CasaZen"
+    "title": "Inizia con CasaZen",
+    "workspace": {
+      "details": "Vedi dettagli",
+      "title": "Configura gli affitti brevi",
+      "progress": "Progresso del piano",
+      "progressCount": "{{done}} di {{total}} completati",
+      "prepare": "Cosa ti serve",
+      "upNext": "Prossimo passo",
+      "otherSteps": "Altre attività del piano",
+      "allSteps": "Sfoglia il piano di configurazione",
+      "connect": "Configura il collegamento",
+      "later": "Riprendi più tardi",
+      "finished": "Hai completato tutte le parti disponibili del piano.",
+      "waiting": "Al momento non ci sono passi aperti. Consulta il piano per vedere le attività rimandate e le dipendenze."
+    }
   },
   "org": {
     "tier": {
@@ -20727,7 +20775,7 @@
         "steps": [
           "Se hai ricevuto un invito, apri il link con l’account destinatario. Se stai creando la tua attività, scegli il ruolo, l’area e il piano prima di confermare i documenti e passare alla fatturazione.",
           "Nella scelta del piano o nel riepilogo puoi usare «Metti in pausa». Le scelte salvate restano in questa scheda per 24 ore. Dopo una ricarica riprendi dal passaggio salvato e confermi di nuovo i documenti.",
-          "Dopo l’attivazione, se non hai ancora immobili, apri la scheda del primo immobile. Al primo accesso alla Home Affitti brevi, il benvenuto dell’amministratore propone il prossimo compito disponibile. Puoi avviarlo subito, consultare il percorso o ritrovarlo in Guida.",
+          "Se è attivo «Inizia con CasaZen», l’amministratore può aprire il piano dalla Home Affitti brevi. Per gli immobili italiani, scegli chi invia i dati degli ospiti e controlla il riepilogo prima di confermare. Il piano mostra il prossimo compito. Puoi uscire e ritrovarlo dalla Home o dalla Guida.",
           "Scegli l’area di lavoro: Affitti brevi, Affitti lunghi, Amministrazione o Fornitori. Le aree e le azioni disponibili dipendono dal tuo ruolo e dagli immobili assegnati.",
           "Verifica area e organizzazione in alto. Su telefono apri Altro per cambiare area. Su computer usa il selettore della barra laterale. Scegli Cerca per trovare le pagine a cui hai accesso.",
           "Chiedi a CasaZen cerca le pagine accessibili per nome. In Affitti brevi puoi chiedere quali arrivi di oggi hanno il check-in incompleto. Controlla l’ambito indicato e scegli una prenotazione per verificarla. In demo i dati sono di esempio. Puoi sempre aprire gli arrivi direttamente dal Cruscotto.",
@@ -24458,7 +24506,7 @@
     "None": "Da attivare"
   },
   "aiSettings": {
-    "example": "Esempio dalla libreria",
+    "example": "Per soggiorni di almeno tre notti organizza la pulizia. Per gli altri, avvisa lo staff.",
     "exampleTrigger": "Al check-out",
     "exampleAction": "Richiedi la pulizia dell’immobile",
     "firstRoutine": "Prova una routine AI",
@@ -24478,7 +24526,6 @@
     "title": "AI",
     "provider": "Gestisci il provider, i modelli e il budget della piattaforma.",
     "objective": "Obiettivo dell’agente",
-    "example": "Per soggiorni di almeno tre notti organizza la pulizia. Per gli altri, avvisa lo staff.",
     "hint": "Puoi usare canale, stato, durata e numero di ospiti. Lascia vuoto per richiedere tutte le azioni configurate.",
     "invalidPlan": "La risposta dell’AI non identifica azioni valide. Esecuzione interrotta.",
     "notSelected": "L’agente ha escluso questa azione per questo evento."
@@ -25141,8 +25188,18 @@
       "openStay": "Controlla il soggiorno di {{guest}}",
       "openProperty": "Dettagli del contratto di {{property}}",
       "tenant": "Conduttore · {{name}}",
-      "figures": { "guests": "Ospiti", "nights": "Notti", "rent": "Canone mensile", "overdue": "Rate scadute" },
-      "dates": { "stayStart": "Arrivo", "stayEnd": "Partenza", "leaseStart": "Inizio contratto", "leaseEnd": "Fine contratto" },
+      "figures": {
+        "guests": "Ospiti",
+        "nights": "Notti",
+        "rent": "Canone mensile",
+        "overdue": "Rate scadute"
+      },
+      "dates": {
+        "stayStart": "Arrivo",
+        "stayEnd": "Partenza",
+        "leaseStart": "Inizio contratto",
+        "leaseEnd": "Fine contratto"
+      },
       "checkInState": "Check-in online in compilazione",
       "checkInStep": "L’ospite ha iniziato a inserire i dati. Prima di registrare l’arrivo, controlla che abbia completato i documenti.",
       "leaseState": "Contratto registrato e attivo",
@@ -32218,6 +32275,7 @@
     "pricePending": "Prezzo da configurare",
     "perRoomMonth": " / camera / mese",
     "perMonth": "al mese, IVA esclusa",
+    "perMonthVatIncluded": "al mese, IVA inclusa",
     "monthSuffix": " / mese",
     "choosePlan": "Scegli il tuo piano",
     "unlimited": "Immobili illimitati",
@@ -32240,6 +32298,7 @@
       "admin": "Creeremo una nuova agenzia con questo nome. Ne sarai titolare e amministratore: potrai invitare i collaboratori e gestirne gli accessi. Si entra nella tua agenzia solo su invito.",
       "inviteLater": "Da Amministrazione → Persone potrai invitare i collaboratori e assegnare ruoli e immobili.",
       "minimum": "Minimo mensile {{amount}}, IVA esclusa. Da {{threshold}} unità si applica un preventivo personalizzato.",
+      "minimumVatIncluded": "Minimo mensile {{amount}}, IVA inclusa. Da {{threshold}} unità si applica un preventivo personalizzato.",
       "customQuote": "Su preventivo",
       "continue": "Continua all’attivazione",
       "setup": "Configura la fatturazione su Stripe",
@@ -32291,7 +32350,12 @@
     "basePlan": "Piano base",
     "total": "Totale mensile",
     "taxNote": "IVA esclusa. Le imposte applicabili sono calcolate al pagamento.",
-    "changeLater": "Potrai gestire piano e moduli da Amministrazione. Nessun extra viene aggiunto automaticamente.",
+    "taxIncluded": "IVA inclusa. Stripe mostra il dettaglio delle imposte al pagamento.",
+    "moduleStatus": "Stato dei moduli",
+    "moduleActive": "Attivo",
+    "moduleInactive": "Disattivo",
+    "compareNoteVatIncluded": "Prezzi IVA inclusa.",
+    "changeLater": "Consulta il piano e lo stato dei moduli in Amministrazione. Gli extra si aggiungono solo su scelta.",
     "addons": {
       "channels": {
         "title": "Canali e distribuzione",
@@ -32314,8 +32378,8 @@
         "text": "Agenti preimpostati e personalizzati per gestire soggiorni, organizzare pulizie e comunicare con gli ospiti in autonomia."
       },
       "messages-ai": {
-        "title": "Messaggi e assistente AI",
-        "text": "Supporto alle conversazioni e alle risposte agli ospiti."
+        "title": "Assistente AI per i messaggi",
+        "text": "Configura regole e risposte assistite per le conversazioni con gli ospiti."
       },
       "operations": {
         "title": "Interventi e fornitori",
@@ -32341,6 +32405,10 @@
     "manageAreasText": "Aggiungi gli affitti brevi o le locazioni di lungo periodo alla tua attività. Questa scelta è riservata al gestore del piano.",
     "manageAreas": "Gestisci le aree attive",
     "baseShort": "Calendario e prenotazioni manuali",
+    "icalSync": "Sincronizzazione dei calendari OTA tramite iCal",
+    "otaSync": "Sincronizzazione automatica con i portali OTA",
+    "otaContentSync": "Sincronizzazione dei contenuti con i portali OTA",
+    "otaMessaging": "Hub messaggi integrato con i portali OTA",
     "baseLong": "Contratti, inquilini, canoni e scadenze",
     "baseCommon": "Immobili, contatti e archivio documenti",
     "resumePayment": "Gestisci o completa il pagamento",
@@ -32348,44 +32416,47 @@
     "invitationOnly": "Devi entrare in un’agenzia esistente? Apri il link di invito ricevuto dall’amministratore. Non occorre creare una nuova agenzia o acquistare un piano personale."
   },
   "complianceJurisdiction": {
-      "foreignTitle": "Adempimenti del paese della struttura",
-      "foreignDescription": "Questura, Alloggiati Web e ISTAT italiani non si applicano a questo immobile. Non servono le relative credenziali né una scelta del mittente italiano. Verifica invece gli obblighi del luogo: CasaZen non li considera assolti automaticamente.",
-      "ticinoLink": "Ticino · notifica degli ospiti alla Polizia cantonale",
-      "guideTitle": "Come completare questa richiesta",
-      "guidePrepare": "Controlla l’immobile e il paese. Verifica chi invierà i dati: se invia il channel manager, apri il suo pannello con l’accesso della struttura.",
-      "guidePolice": "Nel pannello apri il collegamento Alloggiati Web. Usa le credenziali rilasciate dalla Questura competente e l’eventuale identificativo dell’appartamento.",
-      "guideIstat": "Nel pannello apri il collegamento statistico della regione della struttura. Controlla il portale regionale e inserisci le credenziali e il codice struttura previsti da quel servizio.",
-      "guideBoth": "Configura separatamente il collegamento Alloggiati Web e quello statistico regionale. Le credenziali dei due servizi possono essere diverse.",
-      "guideCheck": "Esegui la verifica del collegamento prima di chiudere la richiesta. Se il sistema non può verificarlo, registra un esito dichiarato con una nota che spieghi il controllo effettuato.",
-      "guideMissing": "Se manca un accesso, chiedilo all’utente dalla procedura di assistenza prevista. Non inserire credenziali nelle note della richiesta."
-  }
-,
+    "foreignTitle": "Adempimenti del paese della struttura",
+    "foreignDescription": "Questura, Alloggiati Web e ISTAT italiani non si applicano a questo immobile. Non servono le relative credenziali né una scelta del mittente italiano. Verifica invece gli obblighi del luogo: CasaZen non li considera assolti automaticamente.",
+    "ticinoLink": "Ticino · notifica degli ospiti alla Polizia cantonale",
+    "guideTitle": "Come completare questa richiesta",
+    "guidePrepare": "Controlla l’immobile e il paese. Verifica chi invierà i dati: se invia il channel manager, apri il suo pannello con l’accesso della struttura.",
+    "guidePolice": "Nel pannello apri il collegamento Alloggiati Web. Usa le credenziali rilasciate dalla Questura competente e l’eventuale identificativo dell’appartamento.",
+    "guideIstat": "Nel pannello apri il collegamento statistico della regione della struttura. Controlla il portale regionale e inserisci le credenziali e il codice struttura previsti da quel servizio.",
+    "guideBoth": "Configura separatamente il collegamento Alloggiati Web e quello statistico regionale. Le credenziali dei due servizi possono essere diverse.",
+    "guideCheck": "Esegui la verifica del collegamento prima di chiudere la richiesta. Se il sistema non può verificarlo, registra un esito dichiarato con una nota che spieghi il controllo effettuato.",
+    "guideMissing": "Se manca un accesso, chiedilo all’utente dalla procedura di assistenza prevista. Non inserire credenziali nelle note della richiesta."
+  },
   "orgComplianceSender": {
     "loading": "Caricamento della scelta di invio…",
     "retry": "Riprova",
     "loadError": "Non riusciamo a leggere la scelta dell’account. Riprova prima di modificarla.",
-    "scope": "Una scelta per il tuo account",
     "title": "Chi invia i dati degli ospiti?",
-    "description": "Scegli una volta per gli immobili italiani, presenti e futuri. Gli immobili con una scelta specifica la mantengono; gli immobili all’estero seguono gli adempimenti locali.",
-    "channel": "Il mio channel manager",
-    "channelHint": "Scegli Octorate. Ogni immobile deve poi essere collegato e verificato prima dell’invio.",
-    "manual": "Invio io sui portali",
-    "manualHint": "Scarichi i file dei soggiorni e invii i dati alla Polizia e alle statistiche regionali, dove richieste.",
-    "continue": "Continua: riepilogo",
-    "review": "Controlla la scelta prima di salvare",
-    "effect": "La preferenza viene ereditata dagli immobili italiani senza una scelta specifica. Non attiva servizi esterni, non verifica le credenziali e non attesta che gli invii funzionino.",
+    "description": "Per gli immobili italiani, scegli chi invia i dati alla Polizia e, dove richiesto, ai portali statistici regionali.",
+    "channel": "Octorate",
+    "channelHint": "Il channel manager invia i dati dopo il collegamento e la verifica di ogni immobile.",
+    "manual": "Invio manuale",
+    "manualHint": "Scarichi i file dei soggiorni da CasaZen e li invii tu ai portali.",
+    "continue": "Rivedi la scelta",
+    "review": "Verifica il metodo di invio",
+    "effect": "Salvi il metodo per gli immobili italiani, attuali e futuri, che usano la preferenza dell’account. Gestirai l’attivazione e le verifiche nelle schede degli immobili.",
     "overrides_one": "{{count}} immobile mantiene la propria scelta specifica. Puoi cambiarla dalla sua scheda.",
     "overrides_other": "{{count}} immobili mantengono la propria scelta specifica. Puoi cambiarla dalle rispettive schede.",
-    "confirm": "Confermo questa scelta per gli immobili che la ereditano. Prima di cambiare servizio mi assicuro che il precedente invio automatico sia disattivato, per evitare doppi invii.",
-    "save": "Salva per il mio account",
-    "back": "Indietro",
-    "saved": "Preferenza salvata: {{sender}}",
+    "confirm": "Confermo la scelta per gli immobili che la ereditano. Se cambio servizio, prima disattivo l’invio precedente per evitare doppie comunicazioni.",
+    "save": "Salva preferenza",
+    "back": "Torna alla scelta",
     "edit": "Modifica scelta",
     "saveError": "Scelta non salvata. Riprova.",
-    "accountsTitle": "Credenziali e codice appartamento: cosa cambia?",
-    "accounts": "Con un’utenza Alloggiati Web abilitata a “Gestione Appartamenti”, un’agenzia o un privato può gestire più immobili. La Questura competente, la provincia e la tipologia autorizzata restano determinanti: non è un’utenza unica nazionale. Ogni appartamento mantiene il proprio identificativo nel portale (IdAppartamento). Segui l’abilitazione rilasciata dalla Questura; ISTAT dipende dal sistema regionale. Questa scelta non copia né condivide credenziali fra immobili.",
+    "accountsTitle": "Credenziali e codici degli immobili",
+    "accounts": "Le credenziali e le verifiche si gestiscono per immobile. Un’utenza Alloggiati Web abilitata a “Gestione Appartamenti” può gestire più immobili secondo l’autorizzazione della Questura competente, la provincia e la tipologia di alloggio. Ogni appartamento mantiene il proprio identificativo (IdAppartamento). Per le statistiche valgono le regole regionali. Gli immobili esteri seguono gli adempimenti locali.",
     "source": "Manuale ufficiale Alloggiati Web · sezione 8",
     "inherited": "Questo immobile eredita la scelta del tuo account. Qui puoi impostare un’eccezione per il solo immobile.",
-    "editAccount": "Vedi la scelta dell’account"
+    "editAccount": "Vedi la scelta dell’account",
+    "savedTitle": "Invio dei dati ospiti",
+    "autoLabel": "Trasferisci automaticamente i dati a Octorate",
+    "autoOn": "Per tutti gli immobili dell’organizzazione, CasaZen trasferisce i dati a Octorate appena sono completi e l’identità è verificata.",
+    "autoOff": "CasaZen trasferisce i dati a Octorate quando confermi il check-in.",
+    "cancel": "Annulla modifica",
+    "effectLabel": "Cosa succede"
   }
 }

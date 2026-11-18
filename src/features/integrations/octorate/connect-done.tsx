@@ -1,4 +1,5 @@
-import { Navigate } from 'react-router-dom';
+import { inventoryPlanPart, usePlanReturn, withPlanPart } from '@/features/onboarding/plan-return';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CalendarSync, ClipboardCheck, Clock, ShieldCheck } from 'lucide-react';
 import { LoadingScreen } from '@/components/shared/loading-screen';
@@ -36,12 +37,14 @@ interface ConnectDoneProps {
  */
 export function ConnectDone({ outcomes, fresh, batchId = null, hasNew = false }: ConnectDoneProps) {
   const { t } = useTranslation();
+  const [params] = useSearchParams();
+  const planReturn = usePlanReturn();
   const connection = useOctorateConnection({ enabled: !fresh });
   const listings = useFoundListings({ enabled: fresh || connection.data?.status === 'Connected' });
 
   if (!fresh) {
     if (connection.isPending) return <LoadingScreen message={t('octorate.connect.consent.checking')} className="h-auto flex-1" />;
-    if (connection.data?.status !== 'Connected') return <Navigate to={OCTORATE_CONNECT_PATH} replace />;
+    if (connection.data?.status !== 'Connected') return <Navigate to={withPlanPart(OCTORATE_CONNECT_PATH, inventoryPlanPart(params))} replace />;
   }
   if (listings.isPending) return <LoadingScreen message={t('octorate.connect.done.loading')} className="h-auto flex-1" />;
 
@@ -58,7 +61,7 @@ export function ConnectDone({ outcomes, fresh, batchId = null, hasNew = false }:
         ...(kinds.has('later') ? [{ text: t('octorate.connect.done.later'), icon: Clock }] : []),
       ]}
       primary={{ label: t('octorate.connect.done.checkImported'), to: PROPERTIES_PATH }}
-      secondary={{ label: t('octorate.connect.done.toHome'), to: HOME_PATH }}
+      secondary={{ label: t(planReturn ? 'onboardingPlan.launch.backToPlan' : 'octorate.connect.done.toHome'), to: planReturn ?? HOME_PATH }}
     >
       {batchId ? <ExistingImportResult batchId={batchId} /> : null}
       {listings.isSuccess ? <ConnectResult rows={rows} /> : null}

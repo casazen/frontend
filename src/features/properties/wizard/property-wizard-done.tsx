@@ -1,3 +1,4 @@
+import { usePlanReturn } from '@/features/onboarding/plan-return';
 import { Link, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CircleAlert, CircleCheck, EyeOff, Home } from 'lucide-react';
@@ -28,15 +29,17 @@ const OPEN_STEPS = ['base-data', 'cin', 'documents', 'safety'] as const;
  */
 export function PropertyWizardDone({ propertyId }: PropertyWizardDoneProps) {
   const { t } = useTranslation();
+  const planReturn = usePlanReturn();
+  const backToPlan = planReturn ? { label: t('onboardingPlan.launch.backToPlan'), to: planReturn } : null;
   const property = useProperty(propertyId ?? '', { fresh: true });
   const activation = useComplianceActivation(propertyId ?? '');
 
-  if (!propertyId) return <Navigate to={PROPERTIES_PATH} replace />;
+  if (!propertyId) return <Navigate to={planReturn ?? PROPERTIES_PATH} replace />;
   const failed = property.isError ? property : activation.isError ? activation : null;
   if (failed) return (
     <div className="space-y-3">
       <ErrorState title={t('propertySetup.resume.statusError')} error={failed.error} onRetry={() => { void failed.refetch(); }} />
-      <Button variant="outline" asChild><Link to={PROPERTIES_PATH}>{t('propertyWizard.page.backToList')}</Link></Button>
+      <Button variant="outline" asChild><Link to={planReturn ?? PROPERTIES_PATH}>{t(planReturn ? 'onboardingPlan.launch.backToPlan' : 'propertyWizard.page.backToList')}</Link></Button>
     </div>
   );
   if (!property.data || !activation.data) return <LoadingScreen message={t('propertyWizard.page.loading')} className="h-auto" />;
@@ -56,7 +59,7 @@ export function PropertyWizardDone({ propertyId }: PropertyWizardDoneProps) {
           shown ? { icon: Home, text: t('propertyWizard.done.inList') } : { icon: EyeOff, text: t('propertyWizard.done.hiddenHow') },
         ]}
         primary={{ label: t('propertyWizard.done.calendar'), to: propertyCalendarPath(propertyId) }}
-        secondary={another}
+        secondary={backToPlan ?? another}
       >
         {shown ? null : (
           <div className="flex justify-center">
@@ -90,7 +93,7 @@ export function PropertyWizardDone({ propertyId }: PropertyWizardDoneProps) {
       ]}
       // The step is named: this screen is the end of the same wizard, which keeps its answers and goes straight to what is missing.
       primary={{ label: t('propertyWizard.done.complete'), to: open[0] ? fixLink(open[0].id) : propertyWizardPath(propertyId, 'finish') }}
-      secondary={{ label: t('propertyWizard.done.toList'), to: PROPERTIES_PATH }}
+      secondary={backToPlan ?? { label: t('propertyWizard.done.toList'), to: PROPERTIES_PATH }}
     >
       {open.length > 0 ? (
         <ul className="flex flex-wrap justify-center gap-2" aria-label={t('propertyWizard.done.fixLabel')} data-testid="property-wizard-done-fixes">

@@ -82,6 +82,19 @@ function SignupFlow({ profile }: { profile: UserDetail | undefined }) {
   const rentalArea = selection ? signupRentalType(selection) : 'ShortTerm';
   const isAgency = selection?.profile === 'agency';
   const addons = applicableAddons(addonsForTier(catalog.data ?? [], selection?.planTier ?? 'Starter'), rentalArea);
+  const includedAddons = addons.filter(addon => selection && addon.includedInPlans?.includes(selection.planTier));
+  const optionalAddons = addons.filter(addon => !includedAddons.includes(addon));
+  const selectedExtras = selection?.addons.filter(code => !includedAddons.some(addon => addon.code === code)) ?? [];
+  const includedFeatures = [
+    ...(rentalArea !== 'LongTerm' ? [t('commercial.baseShort')] : []),
+    ...(rentalArea !== 'LongTerm' && selection?.planTier === 'Starter' ? [t('commercial.icalSync')] : []),
+    ...(rentalArea !== 'ShortTerm' ? [t('commercial.baseLong')] : []),
+    t('commercial.baseCommon'),
+    ...(plan?.features ?? []),
+    ...includedAddons.flatMap(addon => addon.code === 'channels'
+      ? [t('commercial.otaSync'), t('commercial.otaContentSync'), t('commercial.otaMessaging')]
+      : [t(`commercial.addons.${addon.code}.title`)]),
+  ];
   const showEstimate = currentStep !== 'ready' && (!isAgency || step === 'features' || step === 'summary');
   const estimateQuantity = isAgency ? Number(roomEstimate) : 1;
   const validEstimate = roomEstimate !== '' && Number.isSafeInteger(estimateQuantity) && estimateQuantity >= 0 && estimateQuantity <= 10000;
@@ -157,9 +170,11 @@ function SignupFlow({ profile }: { profile: UserDetail | undefined }) {
 
   async function provision(consents: OnboardingConsentsPayload) {
     if (!selection) return;
+    const signup = { ...selection, addons: [...selectedExtras, ...includedAddons.map(addon => addon.code)] };
     setBusy(true); setError(null);
     try {
-      const result = await UsersApi.postOnboarding({ rentalType: rentalArea, commercialSignup: selection, consents });
+      const result = await UsersApi.postOnboarding({ rentalType: rentalArea, commercialSignup: signup, consents });
+      setSelection(signup);
       if (scope) clearCommercialDraft(scope);
       if (result.orgProvisioned) { markSignupAttributionReady(); await syncSignupAttribution(); }
       setProvisioned(true);
@@ -205,7 +220,7 @@ function SignupFlow({ profile }: { profile: UserDetail | undefined }) {
       <dt>{t('commercial.agency.band', { from: i === 0 ? 0 : tariff.bands[i - 1].upTo + 1, to: band.upTo })}</dt>
       <dd>{money(band.unitPrice)}{t('commercial.perRoomMonth')}</dd>
     </div>)}</dl>
-    <p>{t('commercial.agency.minimum', { amount: money(tariff.minimum), threshold: tariff.quoteFrom })}</p>
+    <p>{t(plan?.pricesIncludeVat ? 'commercial.agency.minimumVatIncluded' : 'commercial.agency.minimum', { amount: money(tariff.minimum), threshold: tariff.quoteFrom })}</p>
   </div>;
   return (
     <main className="min-h-dvh bg-[#f6f4f0] text-[#1f3a3d]" data-testid="commercial-signup">
@@ -284,24 +299,24 @@ function SignupFlow({ profile }: { profile: UserDetail | undefined }) {
                 <h2 className="text-lg font-semibold">{t('commercial.choosePlan')}</h2>
                 <div className="grid gap-3 sm:grid-cols-3">{(plans.data ?? []).filter(item => item.tier !== 'Agency').map(item => <button type="button" key={item.tier} onClick={() => choosePlan(item.tier)} aria-pressed={item.tier === selection.planTier} className={`min-h-36 rounded-xl border-2 bg-white p-4 text-left ${item.tier === selection.planTier ? 'border-[#1f3a3d]' : 'border-transparent shadow-sm'}`}>
                   <span className="flex items-center justify-between gap-2 font-semibold">{item.displayName}{item.tier === selection.planTier && <Check className="size-4" aria-hidden="true" />}</span>
-                  <span className="mt-3 block text-lg font-semibold">{priceText(item)}</span><span className="block text-xs text-muted-foreground">{t('commercial.perMonth')}</span>
+                  <span className="mt-3 block text-lg font-semibold">{priceText(item)}</span><span className="block text-xs text-muted-foreground">{t(item.pricesIncludeVat ? 'commercial.perMonthVatIncluded' : 'commercial.perMonth')}</span>
                   <span className="mt-2 block text-xs text-muted-foreground">{item.unitAllowance < 0 ? t('commercial.unlimited') : t('commercial.properties', { count: item.unitAllowance })}</span>
                 </button>)}</div>
               </section>}
               <section className="rounded-2xl border bg-white p-6">
                 <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold"><Check className="size-5" aria-hidden="true" />{t('commercial.included')}</h2>
-                <ul className="grid gap-3 text-sm sm:grid-cols-2">{[...(rentalArea === 'LongTerm' ? [] : [t('commercial.baseShort')]), ...(rentalArea === 'ShortTerm' ? [] : [t('commercial.baseLong')]), t('commercial.baseCommon'), ...(plan?.features ?? [])].map(feature => <li key={feature} className="flex gap-2"><Check className="mt-0.5 size-4 shrink-0 text-[#467b67]" aria-hidden="true" />{feature}</li>)}</ul>
+                <ul className="grid gap-3 text-sm sm:grid-cols-2">{includedFeatures.map(feature => <li key={feature} className="flex gap-2"><Check className="mt-0.5 size-4 shrink-0 text-[#467b67]" aria-hidden="true" />{feature}</li>)}</ul>
               </section>
               <section className="space-y-3">
                 <h2 className="flex items-center gap-2 text-lg font-semibold"><Sparkles className="size-5" aria-hidden="true" />{t('commercial.extras')}</h2>
                 <p className="text-sm text-muted-foreground">{t('commercial.extrasDescription')}</p>
                 {!allowsExtras(selection.planTier) && <p className="flex gap-2 rounded-xl bg-[#efe8dc] p-4 text-sm"><LockKeyhole className="size-4 shrink-0" aria-hidden="true" />{t('commercial.proRequired')}</p>}
-                <div className="grid gap-3 sm:grid-cols-2">{addons.map(addon => {
+                <div className="grid gap-3 sm:grid-cols-2">{optionalAddons.map(addon => {
                   const selected = selection.addons.includes(addon.code);
                   const disabled = !selected && (!allowsExtras(selection.planTier) || !addon.purchasable || addon.priceMonthly === null);
                   return <label key={addon.code} className={`flex gap-3 rounded-xl border bg-white p-5 ${disabled ? 'opacity-70' : 'cursor-pointer hover:border-[#1f3a3d]'} ${selected ? 'ring-1 ring-[#1f3a3d]' : ''}`}>
                     <input type="checkbox" disabled={disabled} checked={selected} onChange={event => setSelection({ ...selection, addons: event.target.checked ? [...selection.addons, addon.code] : selection.addons.filter(code => code !== addon.code) })} className="mt-1 size-4 shrink-0 accent-[#1f3a3d]" />
-                    <span className="space-y-1"><span className="block text-sm font-semibold">{t(`commercial.addons.${addon.code}.title`)}</span><span className="block text-xs leading-relaxed text-muted-foreground">{t(`commercial.addons.${addon.code}.text`)}</span><span className="block pt-1 text-xs font-medium">{addon.includedInPlans?.includes(selection.planTier) ? t('commercial.included') : addon.priceMonthly === null ? t('commercial.pricePending') : !addon.purchasable ? t('commercial.unavailable') : `${money(addon.priceMonthly, addon.currency)}${t(selection.profile === 'agency' ? 'commercial.perRoomMonth' : 'commercial.monthSuffix')}`}</span></span>
+                    <span className="space-y-1"><span className="block text-sm font-semibold">{t(`commercial.addons.${addon.code}.title`)}</span><span className="block text-xs leading-relaxed text-muted-foreground">{t(`commercial.addons.${addon.code}.text`)}</span>{allowsExtras(selection.planTier) && <span className="block pt-1 text-xs font-medium">{addon.priceMonthly === null ? t('commercial.pricePending') : !addon.purchasable ? t('commercial.unavailable') : `${money(addon.priceMonthly, addon.currency)}${t(selection.profile === 'agency' ? 'commercial.perRoomMonth' : 'commercial.monthSuffix')}`}</span>}</span>
                   </label>;
                 })}</div>
               </section>
@@ -312,7 +327,7 @@ function SignupFlow({ profile }: { profile: UserDetail | undefined }) {
               <h2 className="text-xl font-semibold">{t('commercial.yourSetup')}</h2>{selection.profile === 'agency' && <p className="font-medium">{selection.agencyName}</p>}
               <dl className="space-y-4 text-sm">{[{ label: t('commercial.labels.profile'), value: t(`commercial.profiles.${selection.profile}.title`) }, { label: t('commercial.labels.area'), value: t(RENTAL_AREA_LABEL[rentalArea]) }, { label: t('commercial.labels.plan'), value: plan?.displayName ?? selection.planTier }].map(({ label, value }) => <div key={label} className="flex flex-wrap justify-between gap-2 border-b pb-3"><dt className="text-muted-foreground">{label}</dt><dd className="font-medium">{value}</dd></div>)}</dl>
               <h3 className="font-semibold">{t('commercial.selectedExtras')}</h3>
-              {selection.addons.length ? <ul className="space-y-2 text-sm">{selection.addons.map(code => <li key={code} className="flex items-center gap-2"><Check className="size-4" />{t(`commercial.addons.${code}.title`)}</li>)}</ul> : <p className="text-sm text-muted-foreground">{t('commercial.noExtras')}</p>}
+              {selectedExtras.length ? <ul className="space-y-2 text-sm">{selectedExtras.map(code => <li key={code} className="flex items-center gap-2"><Check className="size-4" />{t(`commercial.addons.${code}.title`)}</li>)}</ul> : <p className="text-sm text-muted-foreground">{t('commercial.noExtras')}</p>}
               <div className="flex flex-wrap justify-between gap-3"><Button variant="outline" onClick={() => setStep('features')}>{t('commercial.edit')}</Button><Button onClick={() => { setShowRestored(false); setConsenting(true); }} disabled={!canPay}>{activationLabel}<ArrowRight className="size-4" /></Button></div>
               {!canPay && !pricingError && !loadingPrices && <p role="status" className="text-sm text-muted-foreground">{t('commercial.notPurchasable')}</p>}
             </section> : <ConsentsStep key={consentsAttempt} onBack={() => setConsenting(false)} onContinue={payload => void provision(payload)} isLoading={busy} continueLabel={activationLabel} />)}
@@ -342,11 +357,11 @@ function SignupFlow({ profile }: { profile: UserDetail | undefined }) {
             <h2 className="text-xl font-semibold">{plan?.displayName ?? selection.planTier}</h2>
             <p className="text-sm text-muted-foreground">{t(RENTAL_AREA_LABEL[rentalArea])}</p>
             {isAgency && validEstimate && <p className="rounded-lg bg-[#edf2ef] p-3 text-sm">{t('commercial.agency.estimateCount', { count: estimateQuantity })}</p>}
-            {validEstimate && !customQuote && <ul className="space-y-3 text-sm"><li className="flex justify-between gap-2"><span>{t('commercial.basePlan')}</span><span>{plan && plan.priceMonthly > 0 && baseEstimate !== null ? money(baseEstimate) : t('commercial.pricePending')}</span></li>{selection.addons.map(code => {
+            {validEstimate && !customQuote && <ul className="space-y-3 text-sm"><li className="flex justify-between gap-2"><span>{t('commercial.basePlan')}</span><span>{plan && plan.priceMonthly > 0 && baseEstimate !== null ? money(baseEstimate) : t('commercial.pricePending')}</span></li>{selectedExtras.map(code => {
               const addon = addons.find(item => item.code === code);
-              return <li key={code} className="flex justify-between gap-2"><span>{t(`commercial.addons.${code}.title`)}</span><span className="shrink-0">{addon?.includedInPlans?.includes(selection.planTier) ? t('commercial.included') : addon?.priceMonthly != null ? money(addon.priceMonthly * estimateQuantity, addon.currency) : t('commercial.pricePending')}</span></li>;
+              return <li key={code} className="flex justify-between gap-2"><span>{t(`commercial.addons.${code}.title`)}</span><span className="shrink-0">{addon?.priceMonthly != null ? money(addon.priceMonthly * estimateQuantity, addon.currency) : t('commercial.pricePending')}</span></li>;
             })}</ul>}
-            <div className="border-t pt-4" aria-live="polite"><p className="text-sm">{t(isAgency ? 'commercial.agency.total' : 'commercial.total')}</p><p className="mt-2 text-3xl font-semibold">{total === null ? <span className="text-lg">{t(customQuote ? 'commercial.agency.customQuote' : validEstimate ? 'commercial.pricePending' : 'commercial.agency.enterRooms')}</span> : money(total)}</p><p className="mt-1 text-xs text-muted-foreground">{t(isAgency ? 'commercial.agency.tax' : 'commercial.taxNote')}</p></div>
+            <div className="border-t pt-4" aria-live="polite"><p className="text-sm">{t(isAgency ? 'commercial.agency.total' : 'commercial.total')}</p><p className="mt-2 text-3xl font-semibold">{total === null ? <span className="text-lg">{t(customQuote ? 'commercial.agency.customQuote' : validEstimate ? 'commercial.pricePending' : 'commercial.agency.enterRooms')}</span> : money(total)}</p><p className="mt-1 text-xs text-muted-foreground">{t(plan?.pricesIncludeVat ? 'commercial.taxIncluded' : isAgency ? 'commercial.agency.tax' : 'commercial.taxNote')}</p></div>
             <p className="text-xs leading-relaxed text-muted-foreground">{t('commercial.changeLater')}</p>
           </aside>}
         </div>}
