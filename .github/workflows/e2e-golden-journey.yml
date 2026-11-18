@@ -85,16 +85,26 @@ jobs:
           HEAD_REF: ${{ github.head_ref || github.ref_name }}
           BASE_REF: ${{ github.base_ref || github.ref_name }}
         run: |
-          # A change that spans both repos lives on the SAME branch name in each: use it when it exists, because the
-          # base branch does not have the other half of the change yet. Otherwise fall back to the base branch.
-          # (The token is a secret: GitHub masks it in the log.)
-          if git ls-remote --exit-code --heads "https://x-access-token:${BACKEND_REPO_TOKEN}@github.com/${OTHER_REPO}.git" "refs/heads/${HEAD_REF}" > /dev/null 2>&1; then
-            echo "ref=${HEAD_REF}" >> "$GITHUB_OUTPUT"
-            echo "Using ${OTHER_REPO} on the same branch: ${HEAD_REF}"
-          else
-            echo "ref=${BASE_REF}" >> "$GITHUB_OUTPUT"
-            echo "Branch ${HEAD_REF} does not exist in ${OTHER_REPO}: using its base branch ${BASE_REF}"
+          # A matching backend branch is useful while a cross-repo change is in flight.
+          # Once that exact head has merged into the base, use the base so the two repos stay current.
+          ref="$BASE_REF"
+          if [[ "$HEAD_REF" != "$BASE_REF" ]] && matched=$(git ls-remote --exit-code --heads "https://x-access-token:${BACKEND_REPO_TOKEN}@github.com/${OTHER_REPO}.git" "refs/heads/${HEAD_REF}" 2>/dev/null); then
+            ref="$HEAD_REF"
+            matched_sha=${matched%%[[:space:]]*}
+            if prs=$(GH_TOKEN="$BACKEND_REPO_TOKEN" gh api --method GET "repos/${OTHER_REPO}/pulls" \
+              -f state=all -f "head=${OTHER_REPO%%/*}:$HEAD_REF" -f "base=$BASE_REF" -F per_page=100); then
+              if jq -e --arg sha "$matched_sha" '
+                all(.[]; .state != "open") and
+                any(.[]; .head.sha == $sha and .merged_at != null)
+              ' <<<"$prs" >/dev/null; then
+                ref="$BASE_REF"
+              fi
+            else
+              echo "::warning::Could not inspect matching backend pull requests; using the matching branch."
+            fi
           fi
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+          echo "Using ${OTHER_REPO} ref: $ref"
       - uses: actions/checkout@v4
         with:
           repository: casazen/backend
