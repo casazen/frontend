@@ -5,7 +5,7 @@ import { ChoiceCard, type ChoiceCardProps } from '@/components/ui/choice-card';
 import type { OrgRole, OrgRoleInfo } from '@/types/org-team.types';
 import { orgRoleLabel } from '../account/account-roles';
 import { buildAccessPreview } from './access-preview-model';
-import { RENTAL_AREAS } from './team-properties';
+import { RENTAL_AREAS, type RentalArea } from './team-properties';
 import { capabilityLabel, orgRoleDescription } from './team-labels';
 
 const ROLE_ICONS: Record<OrgRole, LucideIcon> = {
@@ -19,6 +19,7 @@ const ROLE_ICONS: Record<OrgRole, LucideIcon> = {
 export type RoleCardProps = Omit<ChoiceCardProps, 'type' | 'title' | 'description' | 'icon' | 'value' | 'role'> & {
   /** The role of the matrix this card is for (not `role`: that is the ARIA attribute of every input). */
   info: OrgRoleInfo;
+  availableAreas?: readonly RentalArea[];
 };
 
 /**
@@ -26,9 +27,9 @@ export type RoleCardProps = Omit<ChoiceCardProps, 'type' | 'title' | 'descriptio
  * from the matrix the backend gives (`GET /api/orgs/me/roles`), for both rental areas. It is a `ChoiceCard`: a real radio input
  * underneath, so it works with the form of a wizard (`register('role')`) and with a controlled dialog (`checked`, `onChange`).
  */
-export const RoleCard = forwardRef<HTMLInputElement, RoleCardProps>(function RoleCard({ info, ...input }, ref) {
+export const RoleCard = forwardRef<HTMLInputElement, RoleCardProps>(function RoleCard({ info, availableAreas = RENTAL_AREAS, ...input }, ref) {
   const { t } = useTranslation();
-  const model = buildAccessPreview(info, RENTAL_AREAS);
+  const model = buildAccessPreview(info, availableAreas);
   const names = (ids: string[]) => ids.map((id) => capabilityLabel(id, t)).filter((name): name is string => name !== undefined);
   const groups = [
     { id: 'can', label: t('team.preview.can'), items: names(model.can) },
