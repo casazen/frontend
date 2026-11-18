@@ -1,5 +1,5 @@
-import { useId, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useId, useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,14 +9,14 @@ import { getArea } from '@/config/areas';
 import { isDemoMode } from '@/config/demo.config';
 import type { AppContextKey } from '@/config/route-manifest';
 import { useCommandContext } from '@/components/shared/command-palette/use-command-context';
-import { navigationSource } from '@/components/shared/command-palette/sources/navigation';
-import { normalizeText, prepareCommands, searchCommands } from '@/components/shared/command-palette/search';
+import { normalizeText } from '@/components/shared/command-palette/search';
 import { useUiStore } from '@/store/ui-store';
 import { cn } from '@/lib/utils';
 import { asksForIncompleteArrivals } from './arrivals-capability';
 import type { AskIntent } from './ask-context';
 import { ArrivalsResult } from './arrivals-result';
 import { BookingDraft } from './booking-draft';
+import { resolveAsk, type AskLink } from './navigation';
 
 interface Props {
   area: AppContextKey;
@@ -50,26 +50,19 @@ export default function AskPanel({
   const title = useRef<HTMLHeadingElement>(null);
   const context = useCommandContext(area);
   const mobilePrimary = useUiStore((state) => state.mobilePrimaryVisible);
-  const pages =
-    submitted && intent === 'search'
-      ? navigationSource.getItems(context).filter((item) => item.area === area && item.to)
-      : [];
-  const hits = pages.length
-    ? (searchCommands(
-        prepareCommands(pages),
-        submitted.replace(
-          /^(dove trovo|dove si trova|come apro|mostrami|where (?:can i |do i )?find|show me|open)\s+/i,
-          '',
-        ),
-        { activeArea: area },
-      )[0]?.hits ?? [])
-    : [];
+  const navigate = useNavigate();
+  const pending = useRef<AbortController | null>(null);
+  const [answer, setAnswer] = useState<{ links: AskLink[]; message?: string }>({ links: [] });
+  const [thinking, setThinking] = useState(false);
+  useEffect(() => () => pending.current?.abort(), []);
   const sourceChosen = () => {
     navigated.current = true;
     onClose();
   };
-  const ask = (value: string) => {
+  const ask = async (value: string) => {
+    pending.current?.abort();
     setSubmitted(value.trim());
+    setAnswer({ links: [] });
     const action =
       canReadArrivals && asksForIncompleteArrivals(value)
         ? 'arrivals.incompleteToday'
@@ -77,6 +70,30 @@ export default function AskPanel({
           ? 'booking.prepareMessage'
           : 'search';
     setIntent(action);
+    if (action !== 'search') {
+      setThinking(false);
+      return;
+    }
+    const request = new AbortController();
+    pending.current = request;
+    setThinking(true);
+    try {
+      const next = !canReadArrivals && asksForIncompleteArrivals(value)
+        ? { links: [], message: t('ask.noPages') }
+        : await resolveAsk(value.trim(), context, orgName, request.signal);
+      if (request.signal.aborted) return;
+      if (next.direct && next.links.length === 1) {
+        const { to, state } = next.links[0];
+        sourceChosen();
+        navigate(to, { state });
+      } else {
+        setAnswer(next);
+      }
+    } catch {
+      if (!request.signal.aborted) setAnswer({ links: [], message: t('ask.lookupFailed') });
+    } finally {
+      if (!request.signal.aborted) setThinking(false);
+    }
   };
   let detail = canReadArrivals ? t(propertyId ? 'ask.selectedProperty' : 'ask.allProperties') : null;
   if (intent === 'booking.prepareMessage') detail = t('ask.bookingContext');
@@ -118,7 +135,7 @@ export default function AskPanel({
           className="space-y-2"
           onSubmit={(event) => {
             event.preventDefault();
-            if (term.trim()) ask(term);
+            if (term.trim()) void ask(term);
           }}
         >
           <label htmlFor={id} className="text-sm font-medium">
@@ -146,28 +163,22 @@ export default function AskPanel({
         ) : (
           <>
             {submitted && (
-              <div aria-live="polite" className="space-y-1 text-sm">
-                <p className="font-medium">{t(hits.length ? 'ask.navigation' : 'ask.noPages')}</p>
-                {hits.length ? (
-                  <ul>
-                    {hits.map(
-                      ({ item }) =>
-                        item.to && (
-                          <li key={item.id}>
-                            <Link
-                              to={item.to}
-                              onClick={sourceChosen}
-                              className="flex min-h-11 items-center gap-2 text-primary-text hover:underline"
-                            >
-                              {item.label}
-                              <ArrowRight className="size-4" aria-hidden="true" />
-                            </Link>
-                          </li>
-                        ),
-                    )}
+              <div aria-live="polite" aria-busy={thinking} className="space-y-2 text-sm">
+                <p className="font-medium">{thinking ? t('ask.resolving') : answer.message}</p>
+                {answer.links.length > 0 && (
+                  <ul className="divide-y rounded-md border">
+                    {answer.links.map(link => (
+                      <li key={link.to}>
+                        <Link to={link.to} state={link.state} onClick={sourceChosen}
+                          className="flex min-h-11 items-center justify-between gap-3 px-3 py-2 hover:bg-muted">
+                          <span><span className="font-medium text-primary-text">{link.title}</span>
+                            {link.detail && <span className="block text-xs text-muted-foreground">{link.detail}</span>}
+                          </span>
+                          <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
+                        </Link>
+                      </li>
+                    ))}
                   </ul>
-                ) : (
-                  <p>{t(canReadArrivals ? 'ask.clarify' : 'ask.searchHint')}</p>
                 )}
               </div>
             )}
@@ -176,7 +187,7 @@ export default function AskPanel({
                 type="button"
                 variant="soft"
                 className="min-h-11 h-auto justify-start whitespace-normal text-left"
-                onClick={() => setIntent('arrivals.incompleteToday')}
+                onClick={() => void ask(t('ask.question'))}
               >
                 {t('ask.question')}
               </Button>
@@ -186,7 +197,7 @@ export default function AskPanel({
                 type="button"
                 variant="outline"
                 className="min-h-11 h-auto justify-start whitespace-normal text-left"
-                onClick={() => setIntent('booking.prepareMessage')}
+                onClick={() => void ask(t('ask.draftPrompt'))}
               >
                 {t('ask.draftPrompt')}
               </Button>

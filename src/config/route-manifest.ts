@@ -1575,6 +1575,12 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     legacyPaths: ['/admin/ai'],
   },
   {
+    path: '/app/admin/ai/playground',
+    context: 'admin',
+    requiredPermissions: ['admin.seo.read'],
+    component: async () => ({ default: (await import('@/features/admin/agent-playground')).AgentPlaygroundPage }),
+  },
+  {
     path: '/app/admin/seo',
     context: 'admin',
     requiredPermissions: ['admin.seo.read'],

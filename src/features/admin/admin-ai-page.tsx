@@ -1,3 +1,4 @@
+import { AgentPlaygroundLink } from './agent-playground';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/page-header';
@@ -171,7 +172,7 @@ export function AdminAiPage() {
 
   return (
     <div className="space-y-6" data-testid="admin-ai-page">
-      <PageHeader title={t('admin.ai.title')} description={t('admin.ai.description')} />
+      <PageHeader title={t('admin.ai.title')} description={t('admin.ai.description')} action={<AgentPlaygroundLink />} />
       <Card>
         <CardHeader>
           <CardTitle>{t('admin.ai.formTitle')}</CardTitle>
