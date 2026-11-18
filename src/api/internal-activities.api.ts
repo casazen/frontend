@@ -45,6 +45,8 @@ export interface TodoActivity {
   propertyId: string | null;
   /** The deadline (UTC instant), when it has one. */
   dueAt: string | null;
+  /** When the work is planned (UTC); absent on older API versions. A future deadline alone does not postpone work. */
+  scheduledAt?: string | null;
   urgency: ActivityUrgency;
   /** Why it was raised, one line: a code or a short text, never personal data. */
   reason: string | null;
