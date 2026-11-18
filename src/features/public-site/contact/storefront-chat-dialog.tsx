@@ -43,7 +43,8 @@ function Conversation({ site, propertyId }: { site: string; propertyId: string }
   const consentId = useId();
   const url = `/public/orgs/${encodeURIComponent(site)}/properties/${encodeURIComponent(propertyId)}/chat`;
   const query = useQuery({
-    queryKey: ['storefront-chat', site, propertyId],
+    queryKey: ['storefront-chat', site, propertyId, consentId],
+    gcTime: 0,
     queryFn: ({ signal }) => ApiClient.get<ChatLine[]>(url, undefined, {
       public: true, signal, headers: { 'X-Storefront-Chat': accessRef.current ?? '' },
     }),
