@@ -827,7 +827,7 @@
           "why": "Il collegamento con il gestionale dei canali si è interrotto."
         },
         "RoutineTask": {
-          "title": "Attività creata da una routine",
+          "title": "Promemoria manuale della routine",
           "why": "Una routine che hai impostato ti chiede di occuparti di questa prenotazione."
         },
         "TouristTaxDeadline": {
@@ -24350,6 +24350,24 @@
     "None": "Da attivare"
   },
   "routines": {
+    "dashboardActive_one": "{{count}} routine attiva",
+    "dashboardActive_other": "{{count}} routine attive",
+    "aiCondition": "Condizione per l’agente AI (facoltativa)",
+    "aiExample": "Es. Solo per soggiorni di almeno tre notti",
+    "aiFacts": "L’agente può valutare canale, stato della prenotazione, numero di ospiti e notti. Lascia vuoto per eseguire sempre l’azione.",
+    "aiUnknown": "I dati disponibili non permettono di decidere. Azione sospesa per questo evento.",
+    "aiFalse": "La prenotazione non soddisfa la condizione AI.",
+    "aiUnavailable": "Il servizio AI non è disponibile per valutare la condizione.",
+    "chooseAction": "Scegli cosa deve fare CasaZen",
+    "assist": {
+      "label": "Oppure descrivi una singola operazione per l’AI",
+      "example": "Es. Organizza la pulizia con chi pulisce già la casa",
+      "suggest": "Trova operazione",
+      "loading": "Ricerca in corso…",
+      "use": "Usa «{{action}}»",
+      "noMatch": "Nessuna operazione disponibile corrisponde alla richiesta.",
+      "unavailable": "Il suggerimento AI non è disponibile. Puoi scegliere un’operazione dall’elenco."
+    },
     "action": {
       "activeBlocked": "Questa routine contiene azioni non ancora disponibili: per attivarla toglile, oppure provala in modalità test.",
       "notAvailableNamed": "Non si può attivare: contiene azioni non ancora disponibili ({{actions}}). Puoi provarla in modalità test.",
@@ -24360,7 +24378,7 @@
     "actions": "Azioni",
     "actionTypes": {
       "addTag": "Aggiungi tag",
-      "createActivity": "Crea attività",
+      "createActivity": "Crea un promemoria manuale",
       "createCleaningRequest": "Crea la pulizia",
       "messageToGuest": "Invia messaggio all'ospite",
       "notifyOwner": "Notifica proprietario",
@@ -24440,8 +24458,8 @@
     "deleteLogGoes": "Si cancella anche il registro delle sue esecuzioni.",
     "deleteSuccess": "Routine eliminata",
     "deleteTitle": "Eliminare la routine?",
-    "description": "Una routine fa partire da sola un'azione quando succede qualcosa a un soggiorno: per esempio, dopo il check-out ti crea un'attività da fare.",
-    "editorDescription": "Configura l'evento che attiva la routine, le condizioni e le azioni da eseguire",
+    "description": "Quando si verifica l’evento configurato, CasaZen esegue l’operazione in autonomia. Per esempio, al check-out può organizzare la pulizia con l’addetto dell’immobile.",
+    "editorDescription": "Scegli quando deve partire la routine e quali operazioni CasaZen eseguirà automaticamente. Ritrovi gli esiti nel registro.",
     "editTitle": "Modifica routine",
     "empty": {
       "description": "Parti da una routine pronta della libreria, oppure creane una tua.",

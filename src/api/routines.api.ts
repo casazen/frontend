@@ -9,6 +9,9 @@ import type {
 } from '@/types';
 
 export const routinesApi = {
+  suggestAction: (instruction: string) =>
+    ApiClient.post<{ type: 'CreateCleaningRequest' | 'RequestReview' | null }>('/routines/suggest-action', { instruction }),
+
   getAll: () => ApiClient.get<Routine[]>('/routines'),
 
   getById: (id: string) => ApiClient.get<Routine>(`/routines/${id}`),

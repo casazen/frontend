@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Building2, Plus, Wrench } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
@@ -18,6 +18,7 @@ import { TodoPath } from '@/features/todo/todo-path';
 import { complianceActionRoute } from '@/lib/compliance-routes';
 import { formatStayDate } from '@/lib/stay-dates';
 import { useActivities, useActivityCount } from '@/queries/internalActivities';
+import { useRoutines } from '@/queries/routines';
 import { useMessageHubThreads } from '@/queries/use-message-hub';
 import { useDashboardIcalFeeds, useDashboardOverview, useDashboardToday } from '@/queries/use-dashboard';
 import { useProperties } from '@/queries/use-properties';
@@ -49,11 +50,18 @@ export function DashboardPage() {
   const { hasPermission } = useWorkspace();
   const { user } = useCurrentUser();
   // OTA partner API in freeze (D10): no widget and no request while the flag is off.
-  const otaEnabled = useFeatureFlags().flags.otaPartnerApi;
+  const { flags } = useFeatureFlags();
+  const otaEnabled = flags.otaPartnerApi;
   const canWrite = hasPermission('short-rent', 'booking.write');
   const canReadBookings = hasPermission('short-rent', 'booking.read');
   const canWriteProperty = hasPermission('short-rent', 'property.write');
   const canRequestService = hasPermission('short-rent', 'servicerequest.write');
+
+  const showRoutineStatus = flags.routines && canWriteProperty;
+  const routines = useRoutines(showRoutineStatus);
+  const activeRoutineCount = showRoutineStatus && routines.isSuccess
+    ? routines.data.filter(routine => routine.active && !routine.testMode).length
+    : 0;
 
   const properties = useProperties({ mode: 'short' });
   const propertyList = useMemo(() => (Array.isArray(properties.data) ? properties.data : []), [properties.data]);
@@ -76,8 +84,8 @@ export function DashboardPage() {
   // passi»): its first item is the step to do now, unless what carries a risk of a sanction already holds the one highlighted block of the page.
   // The server cuts the list at 50: how many are urgent is the number of the tab «Da fare» (`/count`, which counts them all), and a list that long
   // is told as "the first ones", with no total.
-  const activities = useActivities();
-  const urgentActivities = useActivityCount();
+  const activities = useActivities({ excludeRoutineTasks: true });
+  const urgentActivities = useActivityCount({ excludeRoutineTasks: true });
   const todoItems = useMemo(() => (Array.isArray(activities.data) ? activities.data : []), [activities.data]);
   const complianceFines = useComplianceFineCount(canReadBookings);
   // With the traffic light on (NF-52) the compliance reaches the "Adesso" block through this very list (the feeder keeps it in step with the cockpit):
@@ -127,6 +135,11 @@ export function DashboardPage() {
           title={firstName ? t('dashboard.title', { name: firstName }) : t('dashboard.titleNoName')}
           description={today.data && !noActiveProperty ? purposeOf(today.data, propertyId, t, locale) : undefined}
           primary={canWrite ? { label: t('dashboard.actions.createBooking'), icon: Plus, to: '/app/short-rent/bookings/create', testId: 'home-create-booking' } : undefined}
+          action={activeRoutineCount > 0 ? (
+            <Link to="/app/short-rent/automations" className="text-sm text-muted-foreground underline-offset-4 hover:underline">
+              {t('routines.dashboardActive', { count: activeRoutineCount })}
+            </Link>
+          ) : undefined}
           secondary={[
             ...(canWriteProperty ? [{ label: t('dashboard.actions.addProperty'), icon: Building2, to: '/app/short-rent/properties/create' }] : []),
             // «Richiedi un intervento» (SR-08b): the guided request, on the property the Home is filtered to; for who may ask for one.

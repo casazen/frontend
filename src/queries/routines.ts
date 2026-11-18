@@ -15,10 +15,11 @@ const ROUTINE_WRITE_KEY = [ROUTINES_KEY, 'write'] as const;
 /** How long the list of the routines and the log of one are fresh: they change by what the host does and by the events of the stays, so a page that is opened reads them again. */
 const ROUTINES_STALE_TIME = 30 * 1000;
 
-export function useRoutines() {
+export function useRoutines(enabled = true) {
   return useQuery({
     queryKey: [ROUTINES_KEY],
     queryFn: () => routinesApi.getAll(),
+    enabled,
     staleTime: ROUTINES_STALE_TIME,
     // The page is opened from a menu and read again every time: a routine changed or deleted elsewhere must not stay on screen.
     refetchOnMount: 'always',

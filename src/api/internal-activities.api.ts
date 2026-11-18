@@ -67,8 +67,8 @@ export const internalActivitiesApi = {
     ApiClient.put<InternalActivity>(`/internal-activities/${id}/status`, data),
 
   /** The open "To do" items the caller reaches (HostScope), sorted by the server. */
-  getPending: () => ApiClient.get<TodoActivity[]>('/me/activities'),
+  getPending: (excludeRoutineTasks = false) => ApiClient.get<TodoActivity[]>('/me/activities', excludeRoutineTasks ? { excludeRoutineTasks } : undefined),
 
   /** The number on the nav badge: the urgent ones among them. */
-  getUrgentCount: () => ApiClient.get<TodoCount>('/me/activities/count'),
+  getUrgentCount: (excludeRoutineTasks = false) => ApiClient.get<TodoCount>('/me/activities/count', excludeRoutineTasks ? { excludeRoutineTasks } : undefined),
 };

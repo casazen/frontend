@@ -27,6 +27,7 @@ import { RoutinesPage } from '../RoutinesPage';
 
 vi.mock('@/api/routines.api', () => ({
   routinesApi: {
+    suggestAction: vi.fn(),
     getAll: vi.fn(),
     getById: vi.fn(),
     create: vi.fn(),
@@ -164,7 +165,7 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       expect(screen.getByTestId('inactive-tab')).toHaveTextContent('Inattive (1)');
       // The card names the event and its actions, as words and not as the codes of the API.
       expect(screen.getByTestId('routine-card-r1')).toHaveTextContent('Check-out effettuato');
-      expect(screen.getByTestId('routine-card-r1')).toHaveTextContent('Crea attività');
+      expect(screen.getByTestId('routine-card-r1')).toHaveTextContent('Crea un promemoria manuale');
       expect(screen.queryByTestId('routine-card-r2')).not.toBeInTheDocument();
 
       fireEvent.click(screen.getByTestId('test-tab'));
@@ -191,7 +192,7 @@ describe('the routines page (E01/F04/US02/T01)', () => {
 
       expect(await screen.findByTestId('routines-empty')).toHaveTextContent('Nessuna routine per ora');
       // One sentence on what a routine is, under the title.
-      expect(screen.getByText(/Una routine fa partire da sola un'azione quando succede qualcosa a un soggiorno/)).toBeInTheDocument();
+      expect(screen.getByText(/CasaZen esegue l’operazione in autonomia/)).toBeInTheDocument();
 
       fireEvent.click(within(screen.getByTestId('routines-empty')).getByRole('button', { name: 'Apri la libreria' }));
       expect(await screen.findByTestId('library-template-0')).toBeInTheDocument();
@@ -245,15 +246,32 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       const select = await screen.findByTestId('action-type-select-0');
 
       // Every action is listed; the ones that cannot run yet are disabled and say it, the ones that run are not.
-      expect(within(select).getAllByRole('option')).toHaveLength(10);
+      expect(within(select).getAllByRole('option')).toHaveLength(11);
       expect(within(select).getByRole('option', { name: 'Notifica proprietario · Non ancora disponibile' })).toBeDisabled();
       expect(within(select).getByRole('option', { name: 'Invia messaggio all\'ospite · Non ancora disponibile' })).toBeDisabled();
-      expect(within(select).getByRole('option', { name: 'Crea attività' })).toBeEnabled();
+      expect(within(select).getByRole('option', { name: 'Crea un promemoria manuale' })).toBeEnabled();
       expect(within(select).getByRole('option', { name: 'Crea la pulizia' })).toBeEnabled();
       expect(within(select).getByRole('option', { name: 'Attendi' })).toBeEnabled();
       expect(screen.getByTestId('action-unavailable-hint')).toHaveTextContent('Le azioni non ancora disponibili non si possono scegliere');
-      // A new line starts from an action that runs.
-      expect(select).toHaveValue('CreateActivity');
+      // Adding a line never implicitly chooses a manual reminder.
+      expect(select).toHaveValue('');
+    });
+
+    it('configures an autonomous cleaning from an instruction and saves its AI condition', async () => {
+      vi.mocked(routinesApi.suggestAction).mockResolvedValue({ type: 'CreateCleaningRequest' });
+      vi.mocked(routinesApi.create).mockResolvedValue(CLEANING);
+      renderPage();
+      fireEvent.change(await openCreateEditor(), { target: { value: 'Pulizia automatica' } });
+      fireEvent.click(screen.getByTestId('add-action-button'));
+      expect(screen.getByTestId('save-routine-button')).toBeDisabled();
+      fireEvent.change(screen.getByLabelText('Oppure descrivi una singola operazione per l’AI'), { target: { value: 'Organizza la pulizia' } });
+      fireEvent.click(screen.getByRole('button', { name: 'Trova operazione' }));
+      fireEvent.click(await screen.findByRole('button', { name: 'Usa «Crea la pulizia»' }));
+      fireEvent.change(screen.getByLabelText('Condizione per l’agente AI (facoltativa)'), { target: { value: 'Almeno tre notti' } });
+      fireEvent.click(screen.getByTestId('save-routine-button'));
+      await waitFor(() => expect(routinesApi.create).toHaveBeenCalledWith(expect.objectContaining({
+        active: true, testMode: false, actions: [{ type: 'CreateCleaningRequest', config: { aiCondition: 'Almeno tre notti' } }],
+      })));
     });
 
     it('RoutineEditor_EventPicker_NeverOffersTheWeeklyRecurrence', async () => {
@@ -326,6 +344,7 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       fireEvent.change(screen.getByTestId('condition-match'), { target: { value: 'OR' } });
 
       fireEvent.click(screen.getByTestId('add-action-button'));
+      fireEvent.change(screen.getByTestId('action-type-select-0'), { target: { value: 'CreateActivity' } });
       fireEvent.change(screen.getByTestId('activity-text-0'), { target: { value: 'Controlla la casa' } });
       fireEvent.change(screen.getByTestId('activity-due-0'), { target: { value: '1' } });
       fireEvent.click(screen.getByTestId('save-routine-button'));
@@ -368,6 +387,7 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       fireEvent.click(await within(screen.getByTestId('condition-value-0')).findByLabelText('Casa Mare'));
       expect(propertiesApi.getAll).toHaveBeenCalledWith({ mode: 'short' });
       fireEvent.click(screen.getByTestId('add-action-button'));
+      fireEvent.change(screen.getByTestId('action-type-select-0'), { target: { value: 'CreateActivity' } });
       fireEvent.change(screen.getByTestId('activity-text-0'), { target: { value: 'Controlla' } });
       fireEvent.click(screen.getByTestId('save-routine-button'));
 
@@ -381,6 +401,7 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       renderPage();
       fireEvent.change(await openCreateEditor(), { target: { value: 'Incompleta' } });
       fireEvent.click(screen.getByTestId('add-action-button'));
+      fireEvent.change(screen.getByTestId('action-type-select-0'), { target: { value: 'CreateActivity' } });
       fireEvent.change(screen.getByTestId('activity-text-0'), { target: { value: 'Qualcosa' } });
       expect(screen.getByTestId('save-routine-button')).toBeEnabled();
 
@@ -837,7 +858,7 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       const waitingRow = await screen.findByTestId('execution-e1');
       expect(waitingRow).toHaveTextContent('In attesa');
       expect(waitingRow).toHaveTextContent('Riprende il');
-      expect(screen.getByTestId('execution-actions-e2')).toHaveTextContent('Crea attività: Simulata: non è stato fatto nulla');
+      expect(screen.getByTestId('execution-actions-e2')).toHaveTextContent('Crea un promemoria manuale: Simulata: non è stato fatto nulla');
       expect(screen.getByTestId('execution-e3')).toHaveTextContent('Non riuscita');
       expect(screen.getByTestId('execution-actions-e3')).toHaveTextContent('L\'azione non è ancora disponibile: non ha fatto nulla.');
       // Never the raw words of the API.
