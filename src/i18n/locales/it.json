@@ -1,5 +1,8 @@
 {
   "agentPlayground": {
+    "trainWithAi": "Addestra con l’AI",
+    "trainWithAiHint": "Descrivi il comportamento atteso nelle istruzioni. L’AI genera esempi e verifica fino a 12 scenari distinti, inclusi casi limite ed eccezioni.",
+    "generating": "Generazione e confronto degli scenari in corso…",
     "exampleDetail": "{{channel}} · {{status}} · {{nights}} notti · {{guests}} ospiti",
     "usage": "{{tokens}} token · {{milliseconds}} ms",
     "title": "Playground AI Agents",
