@@ -100,12 +100,17 @@ function TrainingWorkspace({ preset, initial }: { preset: Preset; initial: State
   const [draft, setDraft] = useState(initial.draft ?? emptyDraft(preset));
   const [dirty, setDirty] = useState(false);
   const action = useMutation({
-    mutationFn: (operation: 'train' | 'activate' | 'restore') => operation === 'train'
-      ? ApiClient.post<State>(ROOT + '/' + preset + '/train', { revision: state.revision, draft }, { timeout: 120_000 })
-      : ApiClient.put<State>(ROOT + '/' + preset + '/active', { revision: state.revision, restore: operation === 'restore' }),
+    mutationFn: (operation: 'train' | 'trainWithAi' | 'activate' | 'restore') => {
+      const url = ROOT + '/' + preset;
+      const { revision } = state;
+      if (operation === 'trainWithAi') return ApiClient.post<State>(url + '/train-with-ai', { revision, prompt: draft.guidance.trim() }, { timeout: 240_000 });
+      if (operation === 'train') return ApiClient.post<State>(url + '/train', { revision, draft }, { timeout: 240_000 });
+      return ApiClient.put<State>(url + '/active', { revision, restore: operation === 'restore' });
+    },
     onSuccess: (next, operation) => {
       setState(next);
-      if (operation === 'train') setDirty(false);
+      if (operation === 'trainWithAi' && next.draft) setDraft(next.draft);
+      if (operation === 'train' || operation === 'trainWithAi') setDirty(false);
     },
   });
   const results = state.results ?? [];
@@ -124,12 +129,18 @@ function TrainingWorkspace({ preset, initial }: { preset: Preset; initial: State
                 <textarea maxLength={800} rows={3} className="rounded-md border bg-background p-3 text-sm" value={draft.guidance}
                   onChange={e => change({ guidance: e.target.value })} />
               </label>
+              <div className="space-y-2">
+                <Button type="button" disabled={!draft.guidance.trim()} onClick={() => action.mutate('trainWithAi')}>
+                  {t('agentPlayground.trainWithAi')}
+                </Button>
+                <p className="text-sm text-muted-foreground">{t('agentPlayground.trainWithAiHint')}</p>
+              </div>
               <Examples name={t('agentPlayground.examples')} rows={draft.training} limit={40} onChange={training => change({ training })} />
-              <Examples name={t('agentPlayground.evaluation')} rows={draft.evaluation} limit={6} onChange={evaluation => change({ evaluation })} />
-              <Button type="submit">{t('agentPlayground.train')}</Button>
+              <Examples name={t('agentPlayground.evaluation')} rows={draft.evaluation} limit={12} onChange={evaluation => change({ evaluation })} />
+              <Button type="submit" variant="outline">{t('agentPlayground.train')}</Button>
             </fieldset>
           </form>
-          <p aria-live="polite" className="mt-3 text-sm">{action.isPending && t('agentPlayground.running')}</p>
+          <p aria-live="polite" className="mt-3 text-sm">{action.isPending && t(action.variables === 'trainWithAi' ? 'agentPlayground.generating' : 'agentPlayground.running')}</p>
           {action.isError && <p role="alert" className="text-sm text-destructive">{getProblemMessage(action.error, t) ?? t('agentPlayground.failed')}</p>}
         </CardContent>
       </Card>

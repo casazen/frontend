@@ -1,5 +1,8 @@
 {
   "agentPlayground": {
+    "trainWithAi": "Train with AI",
+    "trainWithAiHint": "Describe the expected behavior in the instructions. AI generates examples and checks up to 12 distinct scenarios, including edge cases and exceptions.",
+    "generating": "Generating and comparing scenarios…",
     "exampleDetail": "{{channel}} · {{status}} · {{nights}} nights · {{guests}} guests",
     "usage": "{{tokens}} tokens · {{milliseconds}} ms",
     "title": "AI Agents playground",
