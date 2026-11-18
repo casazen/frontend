@@ -10,6 +10,7 @@ import { getProblemMessage, isTransientRequestError } from '@/lib/api-errors';
 import {
   acceptHostInviteOnce,
   clearPendingHostInvite,
+  hostInviteNeedsEmailVerification,
   hostInvitePath,
   isWellFormedHostInviteToken,
   savePendingHostInvite,
@@ -120,6 +121,7 @@ function InviteFlow({ token }: { token: string }) {
 function AcceptInvite({ token, inviterName }: { token: string; inviterName?: string | null }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { login, refreshAccessToken } = useAuth();
   const started = useRef(false);
   const [status, setStatus] = useState<'pending' | 'done' | 'error'>('pending');
   const [error, setError] = useState<unknown>(null);
@@ -162,18 +164,40 @@ function AcceptInvite({ token, inviterName }: { token: string; inviterName?: str
     );
   }
 
+  const needsEmailVerification = hostInviteNeedsEmailVerification(error);
   const transient = isTransientRequestError(error);
+  const retry = async () => {
+    if (!needsEmailVerification) {
+      run();
+      return;
+    }
+
+    setStatus('pending');
+    try {
+      if (await refreshAccessToken()) {
+        run();
+        return;
+      }
+    } catch {
+      // An expired session needs a fresh login before another acceptance attempt.
+    }
+    setStatus('error');
+    login({ returnTo: hostInvitePath(token), authorizationParams: { prompt: 'login' } });
+  };
   return (
     <InviteLayout title={t('hostInvite.acceptErrorTitle')}>
       <p role="alert" className="text-sm text-destructive" data-testid="host-invite-accept-error">
         {getProblemMessage(error, t) ?? t('hostInvite.acceptErrorGeneric')}
       </p>
-      {transient && (
-        <Button className="w-full" variant="outline" onClick={run}>
+      {(transient || needsEmailVerification) && (
+        <Button className="w-full" variant="outline" onClick={() => void retry()}>
           {t('hostInvite.retry')}
         </Button>
       )}
-      <Button className="w-full" variant="ghost" onClick={() => navigate(AFTER_ACCEPT_PATH, { replace: true })}>
+      <Button className="w-full" variant="ghost" onClick={() => {
+        clearPendingHostInvite();
+        navigate(AFTER_ACCEPT_PATH, { replace: true });
+      }}>
         {t('hostInvite.continueWithout')}
       </Button>
     </InviteLayout>
