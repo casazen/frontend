@@ -99,6 +99,7 @@ function Conversation({ threadKey, thread, title, listPath, bookingDetails, item
             <GuestAvatar name={thread.guestName ?? thread.booking?.guestName} />
             <div className="min-w-0">
               <h1 className="break-words text-xl font-semibold tracking-tight">{title}</h1>
+              {thread.visitorEmail ? <p className="break-all text-sm text-muted-foreground">{thread.visitorEmail}</p> : null}
               {thread.propertyName ? <p className="break-words text-sm text-muted-foreground">{thread.propertyName}</p> : null}
             </div>
           </div>
@@ -147,7 +148,7 @@ function Conversation({ threadKey, thread, title, listPath, bookingDetails, item
         ) : (
           <>
             {/* The draft of the assistant (E05/F05/US04): only with the flag `messageAssistant` and the permission to decide approvals; it renders nothing otherwise. */}
-            <DraftPanel threadKey={threadKey} canAsk />
+            {thread.source !== 'Storefront' ? <DraftPanel threadKey={threadKey} canAsk /> : null}
             <ReplyComposer
               threadKey={threadKey}
               withChannelTemplates={thread.source === 'Ota'}

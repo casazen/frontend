@@ -2,10 +2,11 @@ import { lazy, Suspense } from 'react';
 import { useOutletContext, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { isAxiosError } from 'axios';
-import { Mail } from 'lucide-react';
+import { Mail, MessageCircle } from 'lucide-react';
 import { useOrgProperties, useOrgPublicProperty } from '@/queries/use-public-org';
 import { ReviewsSection } from '@/features/reviews/components/reviews-section';
 import { PropertyGallery } from '@/features/public-site/components/PropertyGallery';
+import { StorefrontChatDialog } from '@/features/public-site/contact/storefront-chat-dialog';
 import { ContactHostDialog } from '@/features/public-site/contact/contact-host-dialog';
 import { usePropertySeoMeta } from '@/features/public-site/hooks/use-org-seo-meta';
 import { AvailabilitySection } from '@/features/public-booking/booking/availability-section';
@@ -90,7 +91,18 @@ function PropertyPageBody({ property, org, orgSlug, basePath, hostLabel }: Prope
   const hasZone = propertyHasZone(property);
   const publicPhone = property.publicPhone?.trim() || null;
   const canContactHost = org.canContactHost ?? Boolean(org.contactEmail);
-  const writeAction = canContactHost && hostLabel ? (
+  const writeAction = org.storefrontChatEnabled && hostLabel ? (
+    <StorefrontChatDialog
+      site={orgSlug}
+      propertyId={property.id}
+      trigger={
+        <button type="button" className={HOST_ACTION_CLASS} data-testid="property-host-chat">
+          <MessageCircle className="h-4 w-4" aria-hidden />
+          {t('storefrontChat.title')}
+        </button>
+      }
+    />
+  ) : canContactHost && hostLabel ? (
     <ContactHostDialog
       site={orgSlug}
       hostName={hostLabel}

@@ -74,6 +74,7 @@ export interface PublicOrgDto {
   contactEmail: string | null;
   /** The host can receive messages through the site, even with a private email address. */
   canContactHost?: boolean;
+  storefrontChatEnabled?: boolean;
   heroImageUrl?: string | null;
   tagline?: string | null;
   /** Always a supported theme id (see `src/lib/public-site-themes.ts`); older backends may send null. */
