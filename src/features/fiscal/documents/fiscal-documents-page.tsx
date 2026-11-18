@@ -1,3 +1,4 @@
+import { isStayDate } from '@/lib/stay-dates';
 import { useMemo, useState } from 'react';
 import { FileSpreadsheet, FileText } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -122,8 +123,19 @@ export function FiscalDocumentsPage() {
 
   const [params, setParams] = useSearchParams();
   const link = documentLinkOf(params);
-  const [filters, setFilters] = useState<DocumentFilters>(NO_FILTERS);
+  const from = params.get('from') ?? '';
+  const to = params.get('to') ?? '';
+  const kind = params.get('kind') === 'Invoice' ? 'Invoice' : '';
+  const period = from + '/' + to + '/' + kind;
+  const filtersFromAddress = (): DocumentFilters => ({ ...NO_FILTERS, kind, from: isStayDate(from) ? from : '', to: isStayDate(to) ? to : '' });
+  const [linkedPeriod, setLinkedPeriod] = useState(period);
+  const [filters, setFilters] = useState<DocumentFilters>(filtersFromAddress);
   const [page, setPage] = useState(1);
+  if (linkedPeriod !== period) {
+    setLinkedPeriod(period);
+    setFilters(filtersFromAddress());
+    setPage(1);
+  }
   // The document an address names (`?document=<id>&step=correct`, the «Do now» of a «To do» item) opens at once, with the step it asks for; any other way of opening one has no step.
   const [openId, setOpenId] = useState<string | null>(link.documentId);
   const [intent, setIntent] = useState<DocumentIntent | undefined>(link.intent);

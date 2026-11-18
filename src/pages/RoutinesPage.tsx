@@ -1,3 +1,4 @@
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Clock, Pencil, Play, Plus, Repeat, Trash2 } from 'lucide-react';
@@ -62,14 +63,26 @@ export function RoutinesPage() {
   const setActive = useSetRoutineActive();
   const setTestMode = useSetRoutineTestMode();
 
-  const [editorOpen, setEditorOpen] = useState(false);
-  const [libraryOpen, setLibraryOpen] = useState(false);
+  const location = useLocation();
+  const [params] = useSearchParams();
+  const view = params.get('view');
+  const [openedFrom, setOpenedFrom] = useState(location.key);
+  const [editorOpen, setEditorOpen] = useState(view === 'create');
+  const [libraryOpen, setLibraryOpen] = useState(view === 'library');
   // The layer that says who cleans for many properties at once (the ready cleaning routine acts on the properties that have a cleaner), over the library.
   const [cleanersOpen, setCleanersOpen] = useState(false);
   const [logRoutineId, setLogRoutineId] = useState<string | undefined>();
   const [selectedRoutine, setSelectedRoutine] = useState<Routine | undefined>();
   const [routineToDelete, setRoutineToDelete] = useState<Routine | undefined>();
   const [filter, setFilter] = useState<RoutineFilter>('active');
+  const objective = (location.state as { agentObjective?: unknown } | null)?.agentObjective;
+  if (openedFrom !== location.key) {
+    setOpenedFrom(location.key);
+    setEditorOpen(view === 'create');
+    setLibraryOpen(view === 'library');
+    setSelectedRoutine(undefined);
+  }
+
 
   // A card waits while ANY write on its routine is on its way, whichever write and however many are in flight on other cards at the same time (the hooks above follow only
   // their last call, so the ids come from the mutation cache): a second click on another button of the same card would answer for a routine that is about to change.
@@ -232,6 +245,7 @@ export function RoutinesPage() {
           </DialogHeader>
           <RoutineEditor
             routine={selectedRoutine}
+            initialObjective={view === 'create' && typeof objective === 'string' ? objective.slice(0, 500) : undefined}
             availability={availability}
             onSave={handleSave}
             onCancel={() => setEditorOpen(false)}
@@ -248,6 +262,7 @@ export function RoutinesPage() {
             <DialogDescription>{t('routines.library.description')}</DialogDescription>
           </DialogHeader>
           <RoutineLibrary
+            suggested={params.get('preset')}
             availability={availability}
             onCreate={handleCreateFromTemplate}
             isCreating={createRoutine.isPending}
