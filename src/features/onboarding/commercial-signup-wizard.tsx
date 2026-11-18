@@ -15,7 +15,7 @@ import { getFirstPropertyRoute, getHomeRouteForRentalType, getStaleConsentDocume
 import type { BillingPlan, UserDetail } from '@/types';
 import type { OnboardingConsentsPayload } from '@/types/onboarding.types';
 import { ConsentsStep } from './components/consents-step';
-import { allowsExtras, applicableAddons, billingQuantity, commercialTotal, signupRentalType, type CommercialSelection, type SignupProfile } from './commercial-model';
+import { allowsExtras, applicableAddons, commercialUnitPrice, signupRentalType, type CommercialSelection, type SignupProfile } from './commercial-model';
 import { useReloadLegalDocuments } from '@/queries/use-legal';
 import { markSignupAttributionReady, syncSignupAttribution } from '@/lib/signup-attribution';
 import { BillingProfileForm } from '@/features/billing/components/billing-profile-form';
@@ -36,6 +36,7 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
   const auth = useAuth();
   const existing = profile?.commercialSignup;
   const [selection, setSelection] = useState<CommercialSelection | null>(existing ?? null);
+  const [roomEstimate, setRoomEstimate] = useState('1');
   const [step, setStep] = useState<Step>(existing ? 'payment' : 'profile');
   const [consenting, setConsenting] = useState(false);
   const [consentsAttempt, setConsentsAttempt] = useState(0);
@@ -56,12 +57,17 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
   const currentStep = paid ? 'ready' : step;
   const plan = plans.data?.find(item => item.tier === selection?.planTier);
   const addons = applicableAddons(catalog.data ?? [], selection?.profile ?? 'owner');
-  const total = selection ? commercialTotal(plan, addons, selection) : null;
+  const isAgency = selection?.profile === 'agency';
+  const showEstimate = !isAgency || step === 'features' || step === 'summary';
+  const estimateQuantity = isAgency ? Number(roomEstimate) : 1;
+  const validEstimate = Number.isSafeInteger(estimateQuantity) && estimateQuantity > 0 && estimateQuantity <= 10000;
+  const unitTotal = selection ? commercialUnitPrice(plan, addons, selection) : null;
+  const total = unitTotal !== null && validEstimate ? unitTotal * estimateQuantity : null;
   const money = (amount: number, currency = plan?.currency ?? 'EUR') => new Intl.NumberFormat(i18n.language, { style: 'currency', currency }).format(amount);
   const priceText = (item: BillingPlan) => item.priceMonthly > 0 ? money(item.priceMonthly, item.currency) : t('commercial.pricePending');
   const pendingPayment = params.get('checkout') === 'success' && !paid;
   const agencyValid = selection?.profile !== 'agency' || (!!selection.agencyName?.trim() && selection.agencyName.trim().length <= 200);
-  const canPay = total !== null && agencyValid && !!plan?.purchasable && selection?.addons.every(code => addons.some(a => a.code === code && a.purchasable)) === true;
+  const canPay = unitTotal !== null && agencyValid && !!plan?.purchasable && selection?.addons.every(code => addons.some(a => a.code === code && a.purchasable)) === true;
 
   useEffect(() => {
     document.getElementById('commercial-title')?.focus();
@@ -69,6 +75,7 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
 
   function chooseProfile(value: SignupProfile) {
     if (value === 'supplier') { navigate('/register'); return; }
+    setRoomEstimate('1');
     setSelection({ profile: value, planTier: value === 'agency' ? 'Agency' : 'Starter', rooms: 1, addons: [] });
     setError(null);
     setStep('features');
@@ -170,8 +177,7 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
                 <p className="rounded-xl bg-[#edf2ef] p-4 text-sm">{t('commercial.agency.admin')}</p>
                 <h3 className="font-semibold">{t('commercial.agency.title')}</h3>
                 <p className="text-sm text-muted-foreground">{t('commercial.agency.explanation')}</p>
-                <div className="rounded-xl bg-[#edf2ef] p-4 text-sm">{t('commercial.agency.example')}</div>
-                <label className="block space-y-2 text-sm font-medium" htmlFor="signup-rooms"><span>{t('commercial.agency.rooms')}</span><input id="signup-rooms" type="number" min={1} max={10000} step={1} value={selection.rooms} onChange={event => { const value = event.target.valueAsNumber; setSelection({ ...selection, rooms: Number.isInteger(value) ? Math.max(1, Math.min(10000, value)) : 1 }); }} className="block min-h-11 w-32 rounded-lg border bg-background px-3 text-base" /></label>
+                <label className="block space-y-2 text-sm font-medium" htmlFor="signup-rooms"><span>{t('commercial.agency.rooms')}</span><input id="signup-rooms" type="number" min={1} max={10000} step={1} value={roomEstimate} onChange={event => setRoomEstimate(event.target.value)} className="block min-h-11 w-32 rounded-lg border bg-background px-3 text-base" /></label>
                 {plan && <p className="font-semibold">{priceText(plan)}{t('commercial.perRoomMonth')}</p>}
               </section> : <section className="space-y-3">
                 <h2 className="text-lg font-semibold">{t('commercial.choosePlan')}</h2>
@@ -203,7 +209,6 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
             {currentStep === 'summary' && (!consenting ? <section className="space-y-5 rounded-2xl border bg-white p-6">
               <h2 className="text-xl font-semibold">{t('commercial.yourSetup')}</h2>{selection.profile === 'agency' && <p className="font-medium">{selection.agencyName}</p>}
               <dl className="space-y-4 text-sm">{[{ label: t('commercial.labels.profile'), value: t(`commercial.profiles.${selection.profile}.title`) }, { label: t('commercial.labels.area'), value: t(selection.profile === 'long-rent' ? 'commercial.longRent' : 'commercial.shortRent') }, { label: t('commercial.labels.plan'), value: plan?.displayName ?? selection.planTier }].map(({ label, value }) => <div key={label} className="flex flex-wrap justify-between gap-2 border-b pb-3"><dt className="text-muted-foreground">{label}</dt><dd className="font-medium">{value}</dd></div>)}</dl>
-              {selection.profile === 'agency' && <p>{t('commercial.agency.count', { count: selection.rooms })}</p>}
               <h3 className="font-semibold">{t('commercial.selectedExtras')}</h3>
               {selection.addons.length ? <ul className="space-y-2 text-sm">{selection.addons.map(code => <li key={code} className="flex items-center gap-2"><Check className="size-4" />{t(`commercial.addons.${code}.title`)}</li>)}</ul> : <p className="text-sm text-muted-foreground">{t('commercial.noExtras')}</p>}
               <p className="rounded-xl bg-[#edf2ef] p-4 text-sm">{t('commercial.secondModule')}</p>
@@ -230,18 +235,18 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
               <Button loading={busy} onClick={() => void enter()}>{t('commercial.enter')}<ArrowRight className="size-4" /></Button>
             </section>}
           </div>
-          <aside aria-label={t('commercial.orderSummary')} className={`${currentStep === 'summary' || currentStep === 'payment' ? 'order-first lg:order-last' : ''} space-y-5 rounded-2xl border border-[#1f3a3d]/15 bg-white p-6 shadow-sm lg:sticky lg:top-6`}>
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t('commercial.orderSummary')}</p>
+          {showEstimate && <aside aria-label={t(isAgency ? 'commercial.agency.estimate' : 'commercial.orderSummary')} className={`${currentStep === 'summary' || currentStep === 'payment' ? 'order-first lg:order-last' : ''} space-y-5 rounded-2xl border border-[#1f3a3d]/15 bg-white p-6 shadow-sm lg:sticky lg:top-6`}>
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t(isAgency ? 'commercial.agency.estimate' : 'commercial.orderSummary')}</p>
             <h2 className="text-xl font-semibold">{plan?.displayName ?? selection.planTier}</h2>
             <p className="text-sm text-muted-foreground">{t(selection.profile === 'long-rent' ? 'commercial.longRent' : 'commercial.shortRent')}</p>
-            {selection.profile === 'agency' && <p className="rounded-lg bg-[#edf2ef] p-3 text-sm">{t('commercial.agency.count', { count: billingQuantity(selection) })}</p>}
-            <ul className="space-y-3 text-sm"><li className="flex justify-between gap-2"><span>{t('commercial.basePlan')}</span><span>{plan && plan.priceMonthly > 0 ? money(plan.priceMonthly * billingQuantity(selection)) : t('commercial.pricePending')}</span></li>{selection.addons.map(code => {
+            {isAgency && validEstimate && <p className="rounded-lg bg-[#edf2ef] p-3 text-sm">{t('commercial.agency.count', { count: estimateQuantity })}</p>}
+            <ul className="space-y-3 text-sm"><li className="flex justify-between gap-2"><span>{t('commercial.basePlan')}</span><span>{plan && plan.priceMonthly > 0 && validEstimate ? money(plan.priceMonthly * estimateQuantity) : t('commercial.pricePending')}</span></li>{selection.addons.map(code => {
               const addon = addons.find(item => item.code === code);
-              return <li key={code} className="flex justify-between gap-2"><span>{t(`commercial.addons.${code}.title`)}</span><span className="shrink-0">{addon?.priceMonthly != null ? money(addon.priceMonthly * billingQuantity(selection), addon.currency) : t('commercial.pricePending')}</span></li>;
+              return <li key={code} className="flex justify-between gap-2"><span>{t(`commercial.addons.${code}.title`)}</span><span className="shrink-0">{addon?.priceMonthly != null && validEstimate ? money(addon.priceMonthly * estimateQuantity, addon.currency) : t('commercial.pricePending')}</span></li>;
             })}</ul>
-            <div className="border-t pt-4" aria-live="polite"><p className="text-sm">{t('commercial.total')}</p><p className="mt-2 text-3xl font-semibold">{total === null ? <span className="text-lg">{t('commercial.pricePending')}</span> : money(total)}</p><p className="mt-1 text-xs text-muted-foreground">{t('commercial.taxNote')}</p></div>
+            <div className="border-t pt-4" aria-live="polite"><p className="text-sm">{t(isAgency ? 'commercial.agency.total' : 'commercial.total')}</p><p className="mt-2 text-3xl font-semibold">{total === null ? <span className="text-lg">{t(validEstimate ? 'commercial.pricePending' : 'commercial.agency.enterRooms')}</span> : money(total)}</p><p className="mt-1 text-xs text-muted-foreground">{t('commercial.taxNote')}</p></div>
             <p className="text-xs leading-relaxed text-muted-foreground">{t('commercial.changeLater')}</p>
-          </aside>
+          </aside>}
         </div>}
       </div>
     </main>

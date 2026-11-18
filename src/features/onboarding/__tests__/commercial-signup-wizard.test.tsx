@@ -3,8 +3,13 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import '@/i18n/config';
+import { UsersApi } from '@/api/users.api';
 import { CommercialSignupWizard } from '../commercial-signup-wizard';
 const checkout = vi.fn();
+vi.mock('@/api/users.api', () => ({ UsersApi: { postOnboarding: vi.fn(async () => ({ orgProvisioned: false })) } }));
+vi.mock('../components/consents-step', () => ({
+  ConsentsStep: ({ onContinue }: { onContinue: () => void }) => <button onClick={onContinue}>Conferma consensi</button>,
+}));
 vi.mock('@/hooks/use-auth', () => ({ useAuth: () => ({ refreshAccessToken: vi.fn() }) }));
 vi.mock('@/queries/use-billing', () => ({
   useBillingPlans: () => ({ data: ['Starter', 'Pro', 'Agency'].map(tier => ({ tier, displayName: tier, priceMonthly: tier === 'Agency' ? 12 : 20, currency: 'EUR', unitAllowance: 3, features: ['Calendario'], purchasable: true })) }),
@@ -41,12 +46,22 @@ describe('commercial profile and configuration', () => {
     fireEvent.change(screen.getByLabelText('Nome dell’agenzia'), { target: { value: 'Nuova Agenzia' } });
     expect(screen.getByRole('button', { name: 'Vai al riepilogo' })).toBeEnabled();
   });
-  it('shows three rooms as three billable units and updates the summary', async () => {
+  it('updates the estimate for three rooms without changing the commercial selection', async () => {
     start(); fireEvent.click(screen.getByTestId('signup-profile-agency'));
     fireEvent.change(screen.getByLabelText('Nome dell’agenzia'), { target: { value: 'Nuova Agenzia' } });
     fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '3' } });
     fireEvent.click(await screen.findByRole('checkbox'));
-    expect(screen.getByText('3 camere fatturate')).toBeVisible();
+    expect(screen.getByText('3 camere ipotizzate')).toBeVisible();
     expect(screen.getByText(/45,00/)).toBeVisible();
+    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '' } });
+    expect(screen.getByText(/Inserisci da 1 a 10/)).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Vai al riepilogo' })).toBeEnabled();
+    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '800' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Vai al riepilogo' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Continua al pagamento' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Conferma consensi' }));
+    expect(UsersApi.postOnboarding).toHaveBeenCalledWith(expect.objectContaining({
+      commercialSignup: expect.objectContaining({ profile: 'agency', rooms: 1, addons: ['channels'] }),
+    }));
   });
 });
