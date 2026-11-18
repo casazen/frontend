@@ -209,7 +209,7 @@ export async function mockAlloggiatiApi(page: Page): Promise<void> {
   });
 }
 
-export async function mockBookingDetailApi(page: Page): Promise<void> {
+export async function mockBookingDetailApi(page: Page, source?: 'Direct'): Promise<void> {
   await page.route(`**/api/bookings/${DEMO_BOOKING_ID}`, async (route) => {
     if (route.request().method() !== 'GET') {
       await route.fallback();
@@ -220,6 +220,7 @@ export async function mockBookingDetailApi(page: Page): Promise<void> {
       contentType: 'application/json',
       body: JSON.stringify({
         id: DEMO_BOOKING_ID,
+        source,
         propertyId: 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee',
         status: 'Confirmed',
         checkInDate: '2026-07-01T14:00:00Z',

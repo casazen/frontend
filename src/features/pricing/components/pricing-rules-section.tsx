@@ -75,11 +75,11 @@ interface MonthPickerProps {
   onToggle: (month: number) => void;
 }
 
-/** The twelve months in two rows on a phone, one row on a computer: every month is a 44 px target. */
+/** Put the months on one row only when the season panel has room. */
 function MonthPicker({ season, selected, disabled, onToggle }: MonthPickerProps) {
   const { t, i18n } = useTranslation();
   return (
-    <div className="grid grid-cols-6 gap-1.5 lg:grid-cols-12" role="group" aria-label={t(`pricing.config.${season}Season`)}>
+    <div className="grid grid-cols-6 gap-1.5 @2xl:grid-cols-12" role="group" aria-label={t(`pricing.config.${season}Season`)}>
       {MONTHS.map((month) => {
         const active = selected.includes(month);
         return (
@@ -177,8 +177,8 @@ export function PricingRulesSection({ config, isSaving, onToggle, onSave }: Pric
   }
 
   return (
-    <PlainSection title={t('pricing.config.rulesLabel')} data-testid="pricing-rules">
-      <div className="max-w-2xl space-y-8 pt-2">
+    <PlainSection title={t('pricing.config.rulesLabel')} className="@container" data-testid="pricing-rules">
+      <div className="min-w-0 space-y-8 pt-2">
         {/* On or off */}
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 space-y-1">
@@ -207,8 +207,8 @@ export function PricingRulesSection({ config, isSaving, onToggle, onSave }: Pric
         </p>
 
         {/* Seasons */}
-        <div className="space-y-5">
-          <div className="flex min-h-11 items-center gap-3">
+        <div className="grid grid-cols-1 gap-5 @5xl:grid-cols-2">
+          <div className="flex min-h-11 items-center gap-3 @5xl:col-span-2">
             <Checkbox
               id="include-seasonality"
               className="size-5"
@@ -223,7 +223,7 @@ export function PricingRulesSection({ config, isSaving, onToggle, onSave }: Pric
           {SEASONS.map((season) => {
             const high = season === 'high';
             return (
-              <div key={season} className="space-y-3">
+              <div key={season} className="@container min-w-0 space-y-3">
                 <p className="text-sm font-medium">{t(`pricing.config.${season}Season`)}</p>
                 <MonthPicker
                   season={season}

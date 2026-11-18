@@ -60,7 +60,7 @@ export function CredentialsStep({ read, values, errors, onChange, onSave, busy, 
         )}
       </p>
 
-      <div className="max-w-md space-y-3" data-testid="sender-credentials-fields" onKeyDown={saveOnEnter(onSave)}>
+      <div className="@container min-w-0 space-y-3" data-testid="sender-credentials-fields" onKeyDown={saveOnEnter(onSave)}>
         <QuesturaCredentialsFields values={values} errors={errors} onChange={onChange} />
         <p className="text-xs text-muted-foreground">{t('questuraCredentials.writeOnlyHint')}</p>
         <p className="text-xs text-muted-foreground" data-testid="sender-credentials-draft-note">

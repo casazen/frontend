@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { CONTAINER_COLUMNS } from '@/components/layout/page-columns';
 import { Button } from '@/components/ui/button';
 import { PlainSection } from '@/components/shared/calm';
 import { RecordPaymentDialog } from '@/features/payments/components/record-payment-dialog';
@@ -45,32 +46,34 @@ export function BookingPaymentTab({ booking }: { booking: Booking }) {
 
   return (
     <div className="space-y-8">
-      <PlainSection title={t('booking.detailPage.paymentSummaryTitle')}>
-        <div className="max-w-xl space-y-3">
-          {breakdown ? (
-            <dl className="space-y-2">
-              <Amount label={t('booking.detailPage.lodgingPerNight', { count: breakdown.nights, perNight: money(breakdown.perNight) })} labelTestId="booking-price-per-night">
-                {money(breakdown.lodging)}
-              </Amount>
-              {breakdown.cleaningFee > 0 ? <Amount label={t('booking.detailPage.cleaningFee')}>{money(breakdown.cleaningFee)}</Amount> : null}
-              {breakdown.touristTax > 0 ? <Amount label={t('booking.detailPage.touristTax')}>{money(breakdown.touristTax)}</Amount> : null}
-            </dl>
-          ) : (
-            <p className="text-sm text-foreground/70" data-testid="booking-price-no-breakdown">
-              {t('booking.detailPage.noPriceBreakdown')}
-            </p>
-          )}
+      <PlainSection title={t('booking.detailPage.paymentSummaryTitle')} className="@container">
+        <div className={booking.paymentState ? CONTAINER_COLUMNS : 'grid grid-cols-1'}>
+          <div className="min-w-0 space-y-3">
+            {breakdown ? (
+              <dl className="space-y-2">
+                <Amount label={t('booking.detailPage.lodgingPerNight', { count: breakdown.nights, perNight: money(breakdown.perNight) })} labelTestId="booking-price-per-night">
+                  {money(breakdown.lodging)}
+                </Amount>
+                {breakdown.cleaningFee > 0 ? <Amount label={t('booking.detailPage.cleaningFee')}>{money(breakdown.cleaningFee)}</Amount> : null}
+                {breakdown.touristTax > 0 ? <Amount label={t('booking.detailPage.touristTax')}>{money(breakdown.touristTax)}</Amount> : null}
+              </dl>
+            ) : (
+              <p className="text-sm text-foreground/70" data-testid="booking-price-no-breakdown">
+                {t('booking.detailPage.noPriceBreakdown')}
+              </p>
+            )}
 
-          <dl className="flex min-w-0 items-baseline justify-between gap-4 pt-1">
-            <dt className="font-semibold">{t('booking.detailPage.total')}</dt>
-            <dd className="text-2xl font-bold tabular-nums" data-testid="booking-price-total">
-              {money(booking.totalPrice)}
-            </dd>
-          </dl>
-          <AmountSourceLine source={sources.total} />
+            <dl className="flex min-w-0 items-baseline justify-between gap-4 pt-1">
+              <dt className="font-semibold">{t('booking.detailPage.total')}</dt>
+              <dd className="text-2xl font-bold tabular-nums" data-testid="booking-price-total">
+                {money(booking.totalPrice)}
+              </dd>
+            </dl>
+            <AmountSourceLine source={sources.total} />
+          </div>
 
           {booking.paymentState ? (
-            <dl className="space-y-2 pt-3">
+            <dl className="min-w-0 space-y-2">
               <Amount label={t('booking.detailPage.paymentState')}>
                 <span data-testid="booking-payment-state" data-state={booking.paymentState}>
                   {t(`booking.list.payment.${booking.paymentState}`)}
@@ -88,16 +91,16 @@ export function BookingPaymentTab({ booking }: { booking: Booking }) {
               ) : null}
             </dl>
           ) : null}
-
-          {canRecord ? (
-            <div className="pt-2">
-              <Button type="button" variant="outline" onClick={() => setRecordOpen(true)} data-testid="booking-record-payment">
-                {t('booking.detailPage.recordPayment')}
-              </Button>
-              <RecordPaymentDialog bookingId={booking.id} balance={balance} open={recordOpen} onOpenChange={setRecordOpen} />
-            </div>
-          ) : null}
         </div>
+
+        {canRecord ? (
+          <div className="pt-2">
+            <Button type="button" variant="outline" onClick={() => setRecordOpen(true)} data-testid="booking-record-payment">
+              {t('booking.detailPage.recordPayment')}
+            </Button>
+            <RecordPaymentDialog bookingId={booking.id} balance={balance} open={recordOpen} onOpenChange={setRecordOpen} />
+          </div>
+        ) : null}
       </PlainSection>
 
       {/* FIS-05, NF-85: everything collected for the booking, line by line; not there for who may not read payments (nothing is asked for them). */}
