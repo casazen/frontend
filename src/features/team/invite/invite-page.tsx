@@ -63,7 +63,7 @@ function InviteWizard() {
 
   // The checks of the steps know who is in the team and who is already invited, and which roles this person may give.
   const memberData = members.data?.items;
-  const ownerAreas = Array.isArray(memberData) ? memberData.find((member) => member.role === 'Owner')?.areas : undefined;
+  const ownerAreas = Array.isArray(memberData) ? memberData.find((member) => member.role === 'Owner' && member.status === 'Active')?.areas : undefined;
   const availableAreas = useMemo(() => RENTAL_AREAS.filter((area) => ownerAreas?.includes(area)), [ownerAreas]);
   const invitationData = invitations.data;
   const roleData = roles.data?.roles;
