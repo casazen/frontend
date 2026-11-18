@@ -3,7 +3,7 @@ import { confirmWorkspaceAccess } from './confirm-workspace-access';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, ArrowRight, Building2, Check, Home, KeyRound, LockKeyhole, ShieldCheck, Sparkles, Wrench } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Building2, Check, Home, LockKeyhole, ShieldCheck, Sparkles, Wrench } from 'lucide-react';
 import { CasaZenLogo } from '@/components/brand/casazen-mark';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
@@ -12,7 +12,7 @@ import { CommercialSignupApi } from '@/api/commercial-signup.api';
 import { useBillingPlans, useBillingSubscription, useOpenBillingPortal, useStartCheckout } from '@/queries/use-billing';
 import { getProblemMessage } from '@/lib/api-errors';
 import { getFirstPropertyRoute, getHomeRouteForRentalType, getStaleConsentDocuments } from '@/lib/onboarding';
-import type { BillingPlan, UserDetail } from '@/types';
+import type { BillingPlan, RentalType, UserDetail } from '@/types';
 import type { OnboardingConsentsPayload } from '@/types/onboarding.types';
 import { ConsentsStep } from './components/consents-step';
 import { allowsExtras, applicableAddons, commercialUnitPrice, signupRentalType, type CommercialSelection, type SignupProfile } from './commercial-model';
@@ -23,8 +23,14 @@ import { toBillingProfileRequest } from '@/features/billing/billing-profile.sche
 
 const PROFILES = [
   { id: 'agency', icon: Building2 }, { id: 'owner', icon: Home },
-  { id: 'supplier', icon: Wrench }, { id: 'long-rent', icon: KeyRound },
+  { id: 'supplier', icon: Wrench },
 ] as const;
+const RENTAL_AREA_LABEL = {
+  ShortTerm: 'commercial.shortRent',
+  LongTerm: 'commercial.longRent',
+  Both: 'commercial.bothAreas',
+} as const satisfies Record<RentalType, string>;
+const RENTAL_AREAS = ['ShortTerm', 'LongTerm', 'Both'] as const;
 const STEPS = ['profile', 'features', 'summary', 'payment', 'ready'] as const;
 type Step = typeof STEPS[number];
 
@@ -56,7 +62,8 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
   const paid = subscription.data?.status === 'active' || subscription.data?.status === 'trialing';
   const currentStep = paid ? 'ready' : step;
   const plan = plans.data?.find(item => item.tier === selection?.planTier);
-  const addons = applicableAddons(catalog.data ?? [], selection?.profile ?? 'owner');
+  const rentalArea = selection ? signupRentalType(selection) : 'ShortTerm';
+  const addons = applicableAddons(catalog.data ?? [], rentalArea);
   const isAgency = selection?.profile === 'agency';
   const showEstimate = !isAgency || step === 'features' || step === 'summary';
   const estimateQuantity = isAgency ? Number(roomEstimate) : 1;
@@ -76,9 +83,15 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
   function chooseProfile(value: SignupProfile) {
     if (value === 'supplier') { navigate('/register'); return; }
     setRoomEstimate('1');
-    setSelection({ profile: value, planTier: value === 'agency' ? 'Agency' : 'Starter', rooms: 1, addons: [] });
+    setSelection({ profile: value, rentalArea: 'ShortTerm', planTier: value === 'agency' ? 'Agency' : 'Starter', rooms: 1, addons: [] });
     setError(null);
     setStep('features');
+  }
+
+  function chooseRentalArea(area: RentalType) {
+    if (!selection) return;
+    const eligible = applicableAddons(catalog.data ?? [], area);
+    setSelection({ ...selection, rentalArea: area, addons: selection.addons.filter(code => eligible.some(addon => addon.code === code)) });
   }
 
   function choosePlan(tier: BillingPlan['tier']) {
@@ -90,7 +103,7 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
     if (!selection) return;
     setBusy(true); setError(null);
     try {
-      const result = await UsersApi.postOnboarding({ rentalType: signupRentalType(selection.profile), commercialSignup: selection, consents });
+      const result = await UsersApi.postOnboarding({ rentalType: rentalArea, commercialSignup: selection, consents });
       if (result.orgProvisioned) { markSignupAttributionReady(); await syncSignupAttribution(); }
       setProvisioned(true);
       setConsenting(false);
@@ -115,8 +128,7 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
       const me = await UsersApi.getMe();
       if (me.commercialSetupRequired) { setError(t('commercial.paymentPending')); return; }
       await client.invalidateQueries({ queryKey: ['me'] });
-      const rentalType = signupRentalType(selection.profile);
-      const target = me.hasProperties === false ? getFirstPropertyRoute(rentalType) : getHomeRouteForRentalType(rentalType);
+      const target = me.hasProperties === false ? getFirstPropertyRoute(rentalArea) : getHomeRouteForRentalType(rentalArea);
       await confirmWorkspaceAccess(client, target);
       void auth.refreshAccessToken().catch(() => undefined);
       navigate(target, { replace: true });
@@ -155,20 +167,28 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
         {error && <p role="alert" className="mb-5 rounded-xl border border-destructive/30 bg-white p-4 text-sm text-destructive">{error}</p>}
 
         {currentStep === 'profile' && <>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {PROFILES.map(({ id, icon: Icon }) => <button key={id} type="button" onClick={() => chooseProfile(id)} data-testid={`signup-profile-${id}`} className="group flex min-h-44 items-start gap-5 rounded-2xl border border-[#1f3a3d]/15 bg-white p-6 text-left shadow-sm transition hover:border-[#1f3a3d] hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#1f3a3d] sm:p-7">
               <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#edf2ef]"><Icon className="size-6" aria-hidden="true" /></span>
               <span className="flex-1 space-y-2"><span className="block text-xl font-semibold">{t(`commercial.profiles.${id}.title`)}</span><span className="block text-sm leading-relaxed text-muted-foreground">{t(`commercial.profiles.${id}.text`)}</span><span className="block pt-1 text-xs font-medium text-[#b34d25]">{t(`commercial.profiles.${id}.hint`)}</span></span>
               <ArrowRight className="mt-1 size-5 shrink-0 transition-transform group-hover:translate-x-1" aria-hidden="true" />
             </button>)}
           </div>
-          <p className="mt-6 max-w-3xl text-sm leading-relaxed text-muted-foreground">{t('commercial.secondModule')}</p>
           <p className="mt-3 text-sm text-muted-foreground">{t('commercial.invitationOnly')}</p>
         </>}
 
         {selection && currentStep !== 'profile' && <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="min-w-0 space-y-6">
             {currentStep === 'features' && <>
+              <fieldset className="space-y-3">
+                <legend className="text-lg font-semibold">{t('commercial.chooseRentalArea')}</legend>
+                <div className="flex flex-wrap gap-3">
+                  {RENTAL_AREAS.map(area => <label key={area} className="flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border bg-white px-4">
+                    <input type="radio" name="rental-area" value={area} checked={rentalArea === area} onChange={() => chooseRentalArea(area)} className="accent-[#1f3a3d]" />
+                    {t(RENTAL_AREA_LABEL[area])}
+                  </label>)}
+                </div>
+              </fieldset>
               {(plans.isPending || catalog.isPending) && <p role="status">{t('commercial.loading')}</p>}
               {(plans.isError || catalog.isError) && <div role="alert" className="rounded-xl border bg-white p-5"><p>{t('commercial.catalogError')}</p><Button variant="outline" className="mt-3" onClick={() => { void plans.refetch(); void catalog.refetch(); }}>{t('commercial.retry')}</Button></div>}
               {selection.profile === 'agency' ? <section className="space-y-4 rounded-2xl border bg-white p-6">
@@ -189,17 +209,18 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
               </section>}
               <section className="rounded-2xl border bg-white p-6">
                 <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold"><Check className="size-5" aria-hidden="true" />{t('commercial.included')}</h2>
-                <ul className="grid gap-3 text-sm sm:grid-cols-2">{[t(selection.profile === 'long-rent' ? 'commercial.baseLong' : 'commercial.baseShort'), t('commercial.baseCommon'), ...(plan?.features ?? [])].map(feature => <li key={feature} className="flex gap-2"><Check className="mt-0.5 size-4 shrink-0 text-[#467b67]" aria-hidden="true" />{feature}</li>)}</ul>
+                <ul className="grid gap-3 text-sm sm:grid-cols-2">{[...(rentalArea === 'LongTerm' ? [] : [t('commercial.baseShort')]), ...(rentalArea === 'ShortTerm' ? [] : [t('commercial.baseLong')]), t('commercial.baseCommon'), ...(plan?.features ?? [])].map(feature => <li key={feature} className="flex gap-2"><Check className="mt-0.5 size-4 shrink-0 text-[#467b67]" aria-hidden="true" />{feature}</li>)}</ul>
               </section>
               <section className="space-y-3">
                 <h2 className="flex items-center gap-2 text-lg font-semibold"><Sparkles className="size-5" aria-hidden="true" />{t('commercial.extras')}</h2>
                 <p className="text-sm text-muted-foreground">{t('commercial.extrasDescription')}</p>
                 {!allowsExtras(selection.planTier) && <p className="flex gap-2 rounded-xl bg-[#efe8dc] p-4 text-sm"><LockKeyhole className="size-4 shrink-0" aria-hidden="true" />{t('commercial.proRequired')}</p>}
                 <div className="grid gap-3 sm:grid-cols-2">{addons.map(addon => {
-                  const disabled = !allowsExtras(selection.planTier) || !addon.purchasable;
-                  return <label key={addon.code} className={`flex gap-3 rounded-xl border bg-white p-5 ${disabled ? 'opacity-70' : 'cursor-pointer hover:border-[#1f3a3d]'} ${selection.addons.includes(addon.code) ? 'ring-1 ring-[#1f3a3d]' : ''}`}>
-                    <input type="checkbox" disabled={disabled} checked={selection.addons.includes(addon.code)} onChange={event => setSelection({ ...selection, addons: event.target.checked ? [...selection.addons, addon.code] : selection.addons.filter(code => code !== addon.code) })} className="mt-1 size-4 shrink-0 accent-[#1f3a3d]" />
-                    <span className="space-y-1"><span className="block text-sm font-semibold">{t(`commercial.addons.${addon.code}.title`)}</span><span className="block text-xs leading-relaxed text-muted-foreground">{t(`commercial.addons.${addon.code}.text`)}</span><span className="block pt-1 text-xs font-medium">{!addon.purchasable ? t('commercial.unavailable') : addon.priceMonthly === null ? t('commercial.pricePending') : `${money(addon.priceMonthly, addon.currency)}${t(selection.profile === 'agency' ? 'commercial.perRoomMonth' : 'commercial.monthSuffix')}`}</span></span>
+                  const selected = selection.addons.includes(addon.code);
+                  const disabled = !selected && (!allowsExtras(selection.planTier) || !addon.purchasable || addon.priceMonthly === null);
+                  return <label key={addon.code} className={`flex gap-3 rounded-xl border bg-white p-5 ${disabled ? 'opacity-70' : 'cursor-pointer hover:border-[#1f3a3d]'} ${selected ? 'ring-1 ring-[#1f3a3d]' : ''}`}>
+                    <input type="checkbox" disabled={disabled} checked={selected} onChange={event => setSelection({ ...selection, addons: event.target.checked ? [...selection.addons, addon.code] : selection.addons.filter(code => code !== addon.code) })} className="mt-1 size-4 shrink-0 accent-[#1f3a3d]" />
+                    <span className="space-y-1"><span className="block text-sm font-semibold">{t(`commercial.addons.${addon.code}.title`)}</span><span className="block text-xs leading-relaxed text-muted-foreground">{t(`commercial.addons.${addon.code}.text`)}</span><span className="block pt-1 text-xs font-medium">{addon.priceMonthly === null ? t('commercial.pricePending') : !addon.purchasable ? t('commercial.unavailable') : `${money(addon.priceMonthly, addon.currency)}${t(selection.profile === 'agency' ? 'commercial.perRoomMonth' : 'commercial.monthSuffix')}`}</span></span>
                   </label>;
                 })}</div>
               </section>
@@ -208,10 +229,9 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
 
             {currentStep === 'summary' && (!consenting ? <section className="space-y-5 rounded-2xl border bg-white p-6">
               <h2 className="text-xl font-semibold">{t('commercial.yourSetup')}</h2>{selection.profile === 'agency' && <p className="font-medium">{selection.agencyName}</p>}
-              <dl className="space-y-4 text-sm">{[{ label: t('commercial.labels.profile'), value: t(`commercial.profiles.${selection.profile}.title`) }, { label: t('commercial.labels.area'), value: t(selection.profile === 'long-rent' ? 'commercial.longRent' : 'commercial.shortRent') }, { label: t('commercial.labels.plan'), value: plan?.displayName ?? selection.planTier }].map(({ label, value }) => <div key={label} className="flex flex-wrap justify-between gap-2 border-b pb-3"><dt className="text-muted-foreground">{label}</dt><dd className="font-medium">{value}</dd></div>)}</dl>
+              <dl className="space-y-4 text-sm">{[{ label: t('commercial.labels.profile'), value: t(`commercial.profiles.${selection.profile}.title`) }, { label: t('commercial.labels.area'), value: t(RENTAL_AREA_LABEL[rentalArea]) }, { label: t('commercial.labels.plan'), value: plan?.displayName ?? selection.planTier }].map(({ label, value }) => <div key={label} className="flex flex-wrap justify-between gap-2 border-b pb-3"><dt className="text-muted-foreground">{label}</dt><dd className="font-medium">{value}</dd></div>)}</dl>
               <h3 className="font-semibold">{t('commercial.selectedExtras')}</h3>
               {selection.addons.length ? <ul className="space-y-2 text-sm">{selection.addons.map(code => <li key={code} className="flex items-center gap-2"><Check className="size-4" />{t(`commercial.addons.${code}.title`)}</li>)}</ul> : <p className="text-sm text-muted-foreground">{t('commercial.noExtras')}</p>}
-              <p className="rounded-xl bg-[#edf2ef] p-4 text-sm">{t('commercial.secondModule')}</p>
               <div className="flex flex-wrap justify-between gap-3"><Button variant="outline" onClick={() => setStep('features')}>{t('commercial.edit')}</Button><Button onClick={() => setConsenting(true)} disabled={!canPay}>{t('commercial.continuePayment')}<ArrowRight className="size-4" /></Button></div>
               {!canPay && <p role="status" className="text-sm text-muted-foreground">{t('commercial.notPurchasable')}</p>}
             </section> : <ConsentsStep key={consentsAttempt} onBack={() => setConsenting(false)} onContinue={payload => void provision(payload)} isLoading={busy} continueLabel={t('commercial.continuePayment')} />)}
@@ -238,7 +258,7 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
           {showEstimate && <aside aria-label={t(isAgency ? 'commercial.agency.estimate' : 'commercial.orderSummary')} className={`${currentStep === 'summary' || currentStep === 'payment' ? 'order-first lg:order-last' : ''} space-y-5 rounded-2xl border border-[#1f3a3d]/15 bg-white p-6 shadow-sm lg:sticky lg:top-6`}>
             <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t(isAgency ? 'commercial.agency.estimate' : 'commercial.orderSummary')}</p>
             <h2 className="text-xl font-semibold">{plan?.displayName ?? selection.planTier}</h2>
-            <p className="text-sm text-muted-foreground">{t(selection.profile === 'long-rent' ? 'commercial.longRent' : 'commercial.shortRent')}</p>
+            <p className="text-sm text-muted-foreground">{t(RENTAL_AREA_LABEL[rentalArea])}</p>
             {isAgency && validEstimate && <p className="rounded-lg bg-[#edf2ef] p-3 text-sm">{t('commercial.agency.estimateCount', { count: estimateQuantity })}</p>}
             {validEstimate && <ul className="space-y-3 text-sm"><li className="flex justify-between gap-2"><span>{t('commercial.basePlan')}</span><span>{plan && plan.priceMonthly > 0 ? money(plan.priceMonthly * estimateQuantity) : t('commercial.pricePending')}</span></li>{selection.addons.map(code => {
               const addon = addons.find(item => item.code === code);

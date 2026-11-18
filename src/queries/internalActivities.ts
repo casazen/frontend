@@ -44,15 +44,16 @@ export function useUpdateActivityStatus() {
 }
 
 /**
+ * Open items excluding routine reminders, filtered by the server before pagination.
  * The caller's open "To do" items (E04/F01/US01/T01), already sorted by the server: the most urgent first, then by deadline. The
  * screens render this array as it is and never sort it again (ADR-026-R5). It is read again when a screen that shows it opens (a list
  * that other screens change: the client does not refetch on mount by default), after every successful write of the app
  * (`queryClient`, ADR-026-R7), on the window focus, and every {@link TODO_POLL_MS} while the page is visible.
  */
-export function useActivities({ enabled = true, excludeRoutineTasks = false }: { enabled?: boolean; excludeRoutineTasks?: boolean } = {}) {
+export function useActivities({ enabled = true }: { enabled?: boolean } = {}) {
   return useQuery({
-    queryKey: [INTERNAL_ACTIVITIES_KEY, 'todo', ...(excludeRoutineTasks ? ['dashboard'] : [])],
-    queryFn: () => internalActivitiesApi.getPending(excludeRoutineTasks),
+    queryKey: [INTERNAL_ACTIVITIES_KEY, 'todo'],
+    queryFn: () => internalActivitiesApi.getPending(true),
     enabled,
     staleTime: 30_000,
     refetchOnMount: true,
@@ -62,14 +63,15 @@ export function useActivities({ enabled = true, excludeRoutineTasks = false }: {
 }
 
 /**
+ * Excludes routine reminders, as the list does.
  * The number on the nav badge: how many of the caller's items are urgent (`High`). It answers `{ count }`; a screen that gets
  * anything else shows no number. The nav is always on screen, so it is the one that keeps the number fresh: on focus, when the
  * network comes back and every {@link TODO_POLL_MS}.
  */
-export function useActivityCount({ enabled = true, excludeRoutineTasks = false }: { enabled?: boolean; excludeRoutineTasks?: boolean } = {}) {
+export function useActivityCount({ enabled = true }: { enabled?: boolean } = {}) {
   return useQuery({
-    queryKey: [INTERNAL_ACTIVITIES_KEY, 'todo-count', ...(excludeRoutineTasks ? ['dashboard'] : [])],
-    queryFn: () => internalActivitiesApi.getUrgentCount(excludeRoutineTasks),
+    queryKey: [INTERNAL_ACTIVITIES_KEY, 'todo-count'],
+    queryFn: () => internalActivitiesApi.getUrgentCount(true),
     enabled,
     staleTime: 30_000,
     refetchOnMount: true,

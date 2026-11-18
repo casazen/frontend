@@ -117,7 +117,7 @@ test.describe('Onboarding L3 (real stack)', () => {
       await page.goto(entry.host);
       await signInAtIdp(page, email);
 
-      await expect(page.getByTestId(/^signup-profile-/)).toHaveCount(4);
+      await expect(page.getByTestId(/^signup-profile-/)).toHaveCount(3);
       await expectNoHorizontalOverflow(page, 'onboarding choice');
       await shot(page, 'host-1-choice');
       await completeCommercialSignup(page, 'owner');

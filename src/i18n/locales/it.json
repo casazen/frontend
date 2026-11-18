@@ -15789,6 +15789,9 @@
     "listLabel": "Elenco delle notifiche",
     "toastOpen": "Apri",
     "types": {
+      "routineOwner": "Una routine ha notificato il titolare per questa prenotazione.",
+      "routineStaff": "Una routine ti ha notificato come responsabile dell’immobile.",
+      "routineTeam": "Una routine ha aggiornato il team su questa prenotazione.",
       "newBooking": "Hai una nuova prenotazione.",
       "guestMessage": "Un ospite ti ha scritto un messaggio.",
       "guestCheckinCompleted": "Un ospite ha completato il check-in online.",
@@ -24352,6 +24355,8 @@
   "routines": {
     "dashboardActive_one": "{{count}} routine attiva",
     "dashboardActive_other": "{{count}} routine attive",
+    "tag": "Tag del profilo ospite",
+    "savedTemplate": "Modello salvato",
     "aiCondition": "Condizione per l’agente AI (facoltativa)",
     "aiExample": "Es. Solo per soggiorni di almeno tre notti",
     "aiFacts": "L’agente può valutare canale, stato della prenotazione, numero di ospiti e notti. Lascia vuoto per eseguire sempre l’azione.",
@@ -24492,6 +24497,7 @@
     "hours": "ore",
     "inactiveTab": "Inattive",
     "library": {
+      "needsTemplate": "Scegli un modello nella routine prima di attivare l’invio.",
       "activate": "Attiva",
       "activating": "Creazione…",
       "atTheTime": "All'ora dell'evento",
@@ -24527,6 +24533,13 @@
         "waiting": "In attesa"
       },
       "code": {
+        "accessCodeUnavailable": "Il codice di accesso non è disponibile per questo soggiorno.",
+        "crmProfileMissing": "Il profilo CRM dell’ospite non è ancora disponibile.",
+        "messageUnconfirmed": "Il canale non ha confermato l’invio del messaggio.",
+        "emailQueueFailed": "L’email non è stata accodata per l’invio.",
+        "messageTemplateMissing": "Il modello messaggio è assente o disattivato.",
+        "noConversation": "La prenotazione non ha una conversazione attiva.",
+        "routineContactMissing": "Il contatto dell’ospite non è disponibile.",
         "accessCodeNeedsIdVerification": "Il codice di accesso parte solo dopo la verifica dell'identità dell'ospite.",
         "actionError": "Un'azione non è riuscita per un problema nostro: CasaZen riprova da solo.",
         "actionNotAvailable": "L'azione non è ancora disponibile: non ha fatto nulla.",
@@ -24573,7 +24586,7 @@
       "unknownAction": "Azione sconosciuta"
     },
     "messageTemplate": "Modello messaggio",
-    "messageTemplatePlaceholder": "ID del modello o testo",
+    "messageTemplatePlaceholder": "Scegli un modello",
     "name": "Nome",
     "namePlaceholder": "Es: Invia istruzioni 2 giorni prima",
     "noActions": "Nessuna azione configurata. Aggiungi almeno un'azione.",
@@ -24582,6 +24595,8 @@
     "noInactiveRoutines": "Non hai routine inattive",
     "noTestRoutines": "Non hai routine in modalità test",
     "problem": {
+      "messageTemplate": "Seleziona un modello messaggio.",
+      "tag": "Inserisci il tag da aggiungere al profilo ospite.",
       "activityDue": "La scadenza è un numero intero di giorni, da 0 a 60.",
       "activityText": "Scrivi il testo dell'attività (al massimo 140 caratteri).",
       "condition": "Completa il valore di ogni condizione.",
@@ -31957,7 +31972,7 @@
       },
       "owner": {
         "title": "Proprietario privato",
-        "text": "Gestisco i miei appartamenti per affitti brevi e soggiorni turistici.",
+        "text": "Gestisco gli immobili di mia proprietà.",
         "hint": "Tariffe del piano · extra da Pro"
       },
       "supplier": {
@@ -31971,7 +31986,8 @@
         "hint": "Attiva solo l’area Affitti lungo termine"
       }
     },
-    "secondModule": "Per ora attiviamo una sola area di gestione. Potrai aggiungere l’altra in seguito da Amministrazione → Fatturazione e piano, con il gestore del piano.",
+    "chooseRentalArea": "Quali affitti vuoi gestire?",
+    "bothAreas": "Affitti brevi e lunghi",
     "pricePending": "Prezzo da configurare",
     "perRoomMonth": " / camera / mese",
     "perMonth": "al mese, IVA esclusa",

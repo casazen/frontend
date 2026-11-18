@@ -84,8 +84,8 @@ export function DashboardPage() {
   // passi»): its first item is the step to do now, unless what carries a risk of a sanction already holds the one highlighted block of the page.
   // The server cuts the list at 50: how many are urgent is the number of the tab «Da fare» (`/count`, which counts them all), and a list that long
   // is told as "the first ones", with no total.
-  const activities = useActivities({ excludeRoutineTasks: true });
-  const urgentActivities = useActivityCount({ excludeRoutineTasks: true });
+  const activities = useActivities();
+  const urgentActivities = useActivityCount();
   const todoItems = useMemo(() => (Array.isArray(activities.data) ? activities.data : []), [activities.data]);
   const complianceFines = useComplianceFineCount(canReadBookings);
   // With the traffic light on (NF-52) the compliance reaches the "Adesso" block through this very list (the feeder keeps it in step with the cockpit):

@@ -157,6 +157,7 @@ export interface ActionDraft {
   dueInDays: string;
   /** `MessageToGuest`: the template, as typed. */
   templateId: string;
+  tag: string;
   aiCondition: string;
   /** The members of the stored configuration that the editor has no field for. */
   rest: RoutineActionConfig;
@@ -168,11 +169,12 @@ const EDITED_MEMBERS: Partial<Record<RoutineActionType, readonly string[]>> = {
   Wait: ['days', 'hours'],
   CreateActivity: ['text', 'dueInDays'],
   MessageToGuest: ['templateId'],
+  AddTag: ['tag'],
 };
 
 /** A new line of the list for `type`: a wait of one day, otherwise everything empty. */
 export function newActionDraft(key: number, type: RoutineActionType | ''): ActionDraft {
-  return { key, type, days: type === 'Wait' ? '1' : '0', hours: '0', text: '', dueInDays: '', templateId: '', aiCondition: '', rest: {} };
+  return { key, type, days: type === 'Wait' ? '1' : '0', hours: '0', text: '', dueInDays: '', templateId: '', tag: '', aiCondition: '', rest: {} };
 }
 
 const asText = (value: unknown) => (typeof value === 'string' ? value : typeof value === 'number' ? String(value) : '');
@@ -190,6 +192,7 @@ export function actionToDraft(key: number, action: RoutineAction): ActionDraft {
     text: asText(config.text),
     dueInDays: asText(config.dueInDays),
     templateId: asText(config.templateId),
+    tag: asText(config.tag),
     aiCondition: asText(config.aiCondition),
     rest,
   };
@@ -232,6 +235,8 @@ export function draftToAction(draft: ActionDraft): RoutineAction {
     case 'CreateCleaningRequest':
     case 'RequestReview':
       return { type: draft.type, config: { ...draft.rest, ...(draft.aiCondition.trim() ? { aiCondition: draft.aiCondition.trim() } : {}) } };
+    case 'AddTag':
+      return { type: draft.type, config: { ...draft.rest, tag: draft.tag.trim() } };
     case 'MessageToGuest': {
       const templateId = draft.templateId.trim();
       return { type: 'MessageToGuest', config: { ...draft.rest, ...(templateId ? { templateId } : {}) } };
@@ -480,6 +485,13 @@ const EXECUTION_CODES: ReadonlyArray<{ code: string; labelKey: string }> = [
   { code: 'routine_actions_invalid', labelKey: 'routines.log.code.actionsInvalid' },
   { code: 'routine_inactive', labelKey: 'routines.log.code.inactive' },
   { code: 'routine_ai_condition_unknown', labelKey: 'routines.aiUnknown' },
+  { code: 'routine_access_code_unavailable', labelKey: 'routines.log.code.accessCodeUnavailable' },
+  { code: 'routine_crm_profile_missing', labelKey: 'routines.log.code.crmProfileMissing' },
+  { code: 'routine_message_unconfirmed', labelKey: 'routines.log.code.messageUnconfirmed' },
+  { code: 'routine_email_queue_failed', labelKey: 'routines.log.code.emailQueueFailed' },
+  { code: 'message_template_not_found', labelKey: 'routines.log.code.messageTemplateMissing' },
+  { code: 'no_conversation', labelKey: 'routines.log.code.noConversation' },
+  { code: 'contact_info_unavailable', labelKey: 'routines.log.code.routineContactMissing' },
   { code: 'routine_ai_condition_false', labelKey: 'routines.aiFalse' },
   { code: 'routine_ai_unavailable', labelKey: 'routines.aiUnavailable' },
   { code: 'routine_action_error', labelKey: 'routines.log.code.actionError' },

@@ -20,7 +20,7 @@ test.describe('Business Golden Path', () => {
     await page.goto(demoUrl('/onboarding', 'onboarding'));
 
     await expect(page.getByRole('heading', { name: /Come vuoi usare CasaZen|How will you use CasaZen/i })).toBeVisible();
-    await expect(page.getByTestId(/^signup-profile-/)).toHaveCount(4);
+    await expect(page.getByTestId(/^signup-profile-/)).toHaveCount(3);
 
     await completeOnboardingFromRentalChoice(page, 0);
 

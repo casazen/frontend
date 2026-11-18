@@ -4,6 +4,7 @@ export type SignupProfile = 'agency' | 'owner' | 'supplier' | 'long-rent';
 export interface CommercialSelection {
   profile: Exclude<SignupProfile, 'supplier'>;
   planTier: PlanTier;
+  rentalArea?: RentalType;
   rooms: number;
   agencyName?: string;
   addons: string[];
@@ -15,11 +16,11 @@ export interface CommercialAddon {
   currency: string;
   purchasable: boolean;
 }
-export const signupRentalType = (profile: SignupProfile): RentalType => profile === 'long-rent' ? 'LongTerm' : 'ShortTerm';
+export const signupRentalType = (selection: CommercialSelection): RentalType => selection.rentalArea ?? (selection.profile === 'long-rent' ? 'LongTerm' : 'ShortTerm');
 export const allowsExtras = (tier: PlanTier) => tier !== 'Starter';
-export function applicableAddons(addons: CommercialAddon[], profile: SignupProfile) {
-  const context = profile === 'long-rent' ? 'long-rent' : 'short-rent';
-  return addons.filter(addon => addon.context === 'all' || addon.context === context);
+export function applicableAddons(addons: CommercialAddon[], area: RentalType) {
+  const context = area === 'LongTerm' ? 'long-rent' : 'short-rent';
+  return addons.filter(addon => area === 'Both' || addon.context === 'all' || addon.context === context);
 }
 /** Unknown display prices never become a zero euro promise. Stripe remains authoritative. */
 export function commercialUnitPrice(plan: BillingPlan | undefined, addons: CommercialAddon[], selection: CommercialSelection): number | null {

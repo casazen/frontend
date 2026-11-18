@@ -15789,6 +15789,9 @@
     "listLabel": "Notifications list",
     "toastOpen": "Open",
     "types": {
+      "routineOwner": "A routine notified the owner about this booking.",
+      "routineStaff": "A routine notified you as the person responsible for the property.",
+      "routineTeam": "A routine notified the team about this booking.",
       "newBooking": "You have a new booking.",
       "guestMessage": "A guest sent you a message.",
       "guestCheckinCompleted": "A guest completed the online check-in.",
@@ -24352,6 +24355,8 @@
   "routines": {
     "dashboardActive_one": "{{count}} active routine",
     "dashboardActive_other": "{{count}} active routines",
+    "tag": "Guest profile tag",
+    "savedTemplate": "Saved template",
     "aiCondition": "AI agent condition (optional)",
     "aiExample": "E.g. Only for stays of at least three nights",
     "aiFacts": "The agent can assess the booking channel, status, guest count and number of nights. Leave blank to always run the action.",
@@ -24492,6 +24497,7 @@
     "hours": "hours",
     "inactiveTab": "Inactive",
     "library": {
+      "needsTemplate": "Choose a template in the routine before enabling delivery.",
       "activate": "Activate",
       "activating": "Creating…",
       "atTheTime": "At the time of the event",
@@ -24527,6 +24533,13 @@
         "waiting": "Waiting"
       },
       "code": {
+        "accessCodeUnavailable": "The access code is unavailable for this stay.",
+        "crmProfileMissing": "The guest CRM profile is unavailable.",
+        "messageUnconfirmed": "The channel has yet to confirm the message delivery.",
+        "emailQueueFailed": "The email could not be queued for delivery.",
+        "messageTemplateMissing": "The message template is missing or inactive.",
+        "noConversation": "The booking has no active conversation.",
+        "routineContactMissing": "The guest contact is unavailable.",
         "accessCodeNeedsIdVerification": "The access code goes out only after the guest's identity is verified.",
         "actionError": "An action failed because of a problem on our side: CasaZen tries again by itself.",
         "actionNotAvailable": "The action is not available yet: it did nothing.",
@@ -24573,7 +24586,7 @@
       "unknownAction": "Unknown action"
     },
     "messageTemplate": "Message template",
-    "messageTemplatePlaceholder": "Template ID or text",
+    "messageTemplatePlaceholder": "Choose a template",
     "name": "Name",
     "namePlaceholder": "E.g.: Send instructions 2 days before",
     "noActions": "No actions configured. Add at least one action.",
@@ -24582,6 +24595,8 @@
     "noInactiveRoutines": "You have no inactive routines",
     "noTestRoutines": "You have no routines in test mode",
     "problem": {
+      "messageTemplate": "Select a message template.",
+      "tag": "Enter a tag to add to the guest profile.",
       "activityDue": "The deadline is a whole number of days, from 0 to 60.",
       "activityText": "Write the text of the task (140 characters at most).",
       "condition": "Complete the value of every condition.",
@@ -31957,7 +31972,7 @@
       },
       "owner": {
         "title": "Private owner",
-        "text": "I manage my own apartments for short stays and holiday rentals.",
+        "text": "I manage properties that I own.",
         "hint": "Plan pricing · extras from Pro"
       },
       "supplier": {
@@ -31971,7 +31986,8 @@
         "hint": "Activate the Long-term rentals area only"
       }
     },
-    "secondModule": "We start with one rental area. Your plan administrator can add the other later in Administration → Billing and plan.",
+    "chooseRentalArea": "Which rentals do you manage?",
+    "bothAreas": "Short- and long-term rentals",
     "pricePending": "Price not configured",
     "perRoomMonth": " / room / month",
     "perMonth": "per month, excluding tax",
