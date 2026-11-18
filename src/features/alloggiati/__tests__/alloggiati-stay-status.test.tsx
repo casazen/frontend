@@ -140,6 +140,17 @@ describe('AlloggiatiBookingPanel: a stay entrusted to the channel manager', () =
     expect(screen.queryByTestId('booking-alloggiati-deadline')).not.toBeInTheDocument();
   });
 
+  it.each(['DaInviare', 'DaInviareManualmente', 'InviatoManualmente'] as const)('manual receipt covers %s without another send action', async (status) => {
+    renderPanel(statusOf(status, block({ sender: 'Manual', state: 'NotApplicable', guests: [], light: 'Green', reason: 'receipt_archived', receiptCoverage: { archived: true, source: 'manual_upload', archivedAt: '2026-11-14T12:00:00Z' } }), { isOverdue: true }));
+    expect(await badge()).toHaveTextContent('Ricevuta archiviata');
+    expect(screen.queryByText(i18n.t('alloggiati.waitingArrivalNotice'))).not.toBeInTheDocument();
+    expect(screen.queryByText(i18n.t('alloggiati.declaredNotice'))).not.toBeInTheDocument();
+    expect(screen.queryByTestId('alloggiati-resend-button')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('alloggiati-manual-notice')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('booking-alloggiati-deadline')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('alloggiati-overdue-badge')).not.toBeInTheDocument();
+  });
+
   // The brief and the dictionary of the states give the receipt that is missing no tone of its own: it has the one a red line has in the product (warning, danger once the term passed).
   it('panel_EntrustedAndTheServerSaysRed_IsToldAsAReceiptNotInTheArchiveInTheDangerToneOnceTheTermHasPassed', async () => {
     renderPanel(statusOf('EntrustedToChannelManager', block({ light: 'Red', reason: 'receipt_missing' }), { isOverdue: true }));
@@ -348,7 +359,7 @@ describe('the words of the stay on the channel manager', () => {
     expect(stayChannelViewOf({ status: 'EntrustedToChannelManager' })).toBe('entrusted');
     // A write that failed is to correct whatever else exists, an archived receipt included.
     expect(stayChannelViewOf(statusOf('ChannelManagerWriteFailed', archived))).toBe('toCorrect');
-    expect(stayChannelViewOf(statusOf('DaInviareManualmente', archived))).toBeNull();
+    expect(stayChannelViewOf(statusOf('DaInviareManualmente', archived))).toBe('receiptArchived');
     expect(stayChannelViewOf(statusOf('Inviato', null))).toBeNull();
   });
 

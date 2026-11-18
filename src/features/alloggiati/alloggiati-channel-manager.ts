@@ -19,16 +19,15 @@ const RETRY_ACTION = 'RetryOctorateWrite';
 export type StayChannelView = 'entrusted' | 'receiptArchived' | 'receiptMissing' | 'toCorrect';
 
 /**
- * The view of a stay, or `null` when the stay is not on the channel manager (any other status: the page tells it as it always did). `ChannelManagerWriteFailed` is to
- * correct whatever else exists; an entrusted stay is green only when the server says an archived receipt covers it, and a receipt that is missing when the server says its light is
- * red (the receipt did not come in time). The client never works a light out.
+ * An archived receipt covers a stay unless the communication failed or is not due.
+ * Entrusted stays without a receipt use the server's light to distinguish waiting from missing.
  */
 export function stayChannelViewOf(status: Pick<AlloggiatiStatusDto, 'status' | 'channelManager'>): StayChannelView | null {
   if (status.status === 'ChannelManagerWriteFailed') return 'toCorrect';
-  if (status.status !== 'EntrustedToChannelManager') return null;
-
   const block = status.channelManager;
-  if (block?.receiptCoverage?.archived === true) return 'receiptArchived';
+  const failure = status.status === 'Errore' || status.status === 'Rifiutato';
+  if (status.status !== 'NotDue' && !failure && block?.receiptCoverage?.archived === true) return 'receiptArchived';
+  if (status.status !== 'EntrustedToChannelManager') return null;
   return block?.light === 'Red' ? 'receiptMissing' : 'entrusted';
 }
 

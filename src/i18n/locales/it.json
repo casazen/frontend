@@ -1561,7 +1561,7 @@
       "Errore": "Errore nella preparazione della comunicazione: inviala dal portale della Questura.",
       "Rifiutato": "Il portale ha rifiutato la comunicazione: correggi i dati e inviala di nuovo dal portale della Questura."
     },
-    "notDueNotice": "Gli ospiti non sono arrivati: per questo soggiorno non c'è nessuna comunicazione alla Questura da fare.",
+    "notDueNotice": "Per questo soggiorno non è prevista nessuna comunicazione alla Questura italiana. Gli adempimenti di altri paesi si consultano nella sezione dedicata.",
     "statusError": "Impossibile caricare lo stato della comunicazione Alloggiati.",
     "statusNotFound": "Non troviamo lo stato Alloggiati di questo soggiorno: potrebbe non esistere più o non essere tuo.",
     "summaryError": "Impossibile caricare le comunicazioni Alloggiati.",
@@ -26695,7 +26695,7 @@
       },
       "NotDue": {
         "label": "Non dovuta",
-        "explain": "Gli ospiti non sono arrivati: per questo soggiorno non c'è nessuna comunicazione alla Questura da fare."
+        "explain": "Per questo soggiorno non è prevista nessuna comunicazione alla Questura italiana. Gli adempimenti di altri paesi si consultano nella sezione dedicata."
       },
       "Rifiutato": {
         "label": "Rifiutato",

@@ -90,15 +90,15 @@ export function AlloggiatiBookingPanel({ bookingId, checkInDate }: AlloggiatiBoo
                 </div>
               )}
 
-              {status.status === 'DaInviareManualmente' && (
+              {status.status === 'DaInviareManualmente' && !receiptArchived && (
                 <Alert variant="warning" data-testid="alloggiati-manual-notice">
                   {t('alloggiati.manualNotice')}
                 </Alert>
               )}
-              {status.status === 'DaInviare' && (
+              {status.status === 'DaInviare' && !receiptArchived && (
                 <p className="text-sm text-muted-foreground">{t('alloggiati.waitingArrivalNotice')}</p>
               )}
-              {status.status === 'InviatoManualmente' && (
+              {status.status === 'InviatoManualmente' && !receiptArchived && (
                 <p className="text-sm text-muted-foreground">{t('alloggiati.declaredNotice')}</p>
               )}
               {status.status === 'Inviato' && status.confirmationNumber && (
@@ -128,14 +128,16 @@ export function AlloggiatiBookingPanel({ bookingId, checkInDate }: AlloggiatiBoo
         </>
       )}
 
-      <div className="pt-2">
-        <AlloggiatiGuestSummary
-          bookingId={bookingId}
-          canEdit={hasPermission('short-rent', 'booking.write')}
-          canRevealDocuments={hasPermission('short-rent', 'guest.read')}
-          canDownloadRecordFile={hasPermission('short-rent', 'guest.read')}
-        />
-      </div>
+      {status && !isAlloggiatiNotDue(status.status) && (
+        <div className="pt-2">
+          <AlloggiatiGuestSummary
+            bookingId={bookingId}
+            canEdit={hasPermission('short-rent', 'booking.write')}
+            canRevealDocuments={hasPermission('short-rent', 'guest.read')}
+            canDownloadRecordFile={hasPermission('short-rent', 'guest.read')}
+          />
+        </div>
+      )}
     </div>
   );
 }
