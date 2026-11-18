@@ -95,7 +95,8 @@ test.describe('Change of rental mode (PM-03)', () => {
       await expect(wizard(page)).toHaveCount(0);
     }
     await page.goto(demoUrl(`${SHORT_PAGE}/mode?from=account&step=date`, 'short-stay'), { waitUntil: 'domcontentloaded' });
-    await expect(page).toHaveURL(/\/app\/account\/properties$/);
+    // The short-stay demo user has no Account grant; the protected route redirects to its workspace.
+    await expect(page).toHaveURL(/\/app\/short-rent$/);
     expect(previews).toEqual([]);
     expect(mock.schedules).toEqual([]);
   });
@@ -175,7 +176,7 @@ test.describe('Change of rental mode (PM-03)', () => {
     await expect(page.getByTestId('wizard-done-secondary')).toHaveAttribute('href', '/app/long-rent/properties');
   });
 
-  test('PM-03: opened from the account, the way out and the way back lead to the list of the account', async ({ page }) => {
+  test('PM-03: a short-stay demo host without Account access can still withdraw a historical change', async ({ page }) => {
     const mock = await openShortProperty(page, { scheduledFor: addDays(todayInRome(), 20) });
     await page.goto(demoUrl(`${SHORT_PAGE}/mode?from=account`, 'short-stay'), { waitUntil: 'domcontentloaded' });
 
@@ -186,8 +187,8 @@ test.describe('Change of rental mode (PM-03)', () => {
     await page.getByTestId('property-mode-scheduled-cancel').click();
     await page.getByRole('dialog').getByRole('button', { name: 'Annulla il passaggio' }).click();
 
-    // Withdrawn: back to where the person began (the list of the account, which the area of the account will build).
-    await expect(page).toHaveURL(/\/app\/account\/properties$/, { timeout: 20_000 });
+    // The Account destination requires org.members.manage, which the demo does not grant.
+    await expect(page).toHaveURL(/\/app\/short-rent$/, { timeout: 20_000 });
     expect(mock.cancels).toEqual(['change-e2e-0']);
   });
 
