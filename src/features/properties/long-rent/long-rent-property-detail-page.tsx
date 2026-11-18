@@ -69,7 +69,7 @@ export function LongRentPropertyDetailPage() {
   // The leases of this property only: the server narrows them (LR-01). Read again when the page opens, a lease is made elsewhere.
   const leases = useLeases({ propertyId: id }, { enabled: canReadLeases && id !== '', refetchOnMount: 'always' });
   // What the server says of the property that the two lists do not: the lease that holds it even when it renewed by itself (LR-07a).
-  const aggregate = useLongRentPropertyAggregate({ fresh: true });
+  const aggregate = useLongRentPropertyAggregate({ fresh: true, canReadLeases });
   // "Cambia modalità" in the menu "⋯" (PM-03): none for who may not write the property.
   const modeChangeItems = useModeChangeMenuItems('long-rent', id);
 
@@ -103,8 +103,9 @@ export function LongRentPropertyDetailPage() {
   if (property.rentalMode === 'Short') return <Navigate to={`/app/short-rent/properties/${property.id}`} replace />;
 
   // What the leases say of the property, with the rule of the list: let when a registered lease is in force, free otherwise.
-  const row = leases.data ? longRentPropertyRows([property], leases.data, todayInRome(), aggregate.data)[0] : null;
-  const leasesFailed = leases.isError && leases.data === undefined;
+  const visibleLeases = canReadLeases ? leases.data : undefined;
+  const row = visibleLeases ? longRentPropertyRows([property], visibleLeases, todayInRome(), aggregate.data)[0] : null;
+  const leasesFailed = canReadLeases && leases.isError && leases.data === undefined;
 
   // A free property without a lease has its "Crea contratto" in the highlighted block; any other has it here, for another tenant.
   const blockCreatesLease = row?.status === 'Free' && !leaseOfRow(row);
@@ -160,9 +161,9 @@ export function LongRentPropertyDetailPage() {
 
       {/* UI-07 Tabs: links with the tab in the address (`?tab=`), a menu on a phone. */}
       <Tabs label={t('longRentProperties.detail.tabsLabel')} items={tabs} value={panel} selectTestId="long-rent-property-tabs-select">
-        {panel === 'contracts' && <ContractsPanel leases={leases.data} propertyId={property.id} canCreateLease={canCreateLease} />}
+        {panel === 'contracts' && <ContractsPanel leases={visibleLeases} propertyId={property.id} canCreateLease={canCreateLease} />}
         {panel === 'expenses' && <CondominiumManagement propertyId={property.id} />}
-        {panel === 'maintenance' && <MaintenancePanel leases={leases.data} />}
+        {panel === 'maintenance' && <MaintenancePanel leases={visibleLeases} />}
         {panel === 'documents' && <DocumentsPanel propertyId={property.id} documents={documents} />}
         {panel === 'requests' && <LongRentServiceRequests propertyId={property.id} />}
         {panel === 'data' && <DataPanel property={property} />}

@@ -44,7 +44,7 @@ export async function mockArrivalJourney(page: Page) {
   await page.route(`**/api/bookings/${bookingId}/checkin-session`, (route) =>
     route.fulfill({ json: { status: 'InCompilazione', canIssueLink: false } }));
   await page.route(`**/api/alloggiati/${bookingId}/status`, (route) =>
-    route.fulfill({ json: demoAlloggiatiStatus({ bookingId, dataComplete: false, deadlineAt: `${checkout}T09:00:00Z` }) }));
+    route.fulfill({ json: demoAlloggiatiStatus({ bookingId, dataComplete: false, deadlineAt: `${addDays(today, 1)}T09:00:00Z` }) }));
   await page.route(`**/api/alloggiati/${bookingId}/guest-summary`, (route) =>
     route.fulfill({ json: { ...demoAlloggiatiGuestSummary, bookingId, arrivalDate: today, dataComplete: false, exportReady: false, guests: [] } }));
 }

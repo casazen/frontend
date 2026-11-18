@@ -5715,7 +5715,7 @@
       "expiresAt": "Scade il {{date}}",
       "expired": "Il link è scaduto: invia un sollecito o genera un nuovo link da copiare.",
       "completed": "L’ospite ha inviato il modulo di check-in online. Puoi verificare i dati degli ospiti nella sezione Alloggiati Web qui sotto.",
-      "notEligible": "Il link di check-in è disponibile solo per prenotazioni confermate o in corso.",
+      "notEligible": "Al momento non è possibile emettere un nuovo link per questa prenotazione.",
       "sendByEmail": "Invia link via email",
       "generateToCopy": "Genera link da copiare",
       "replaceWarning": "Un nuovo link sostituisce quello attuale, che smette di funzionare.",
@@ -24973,6 +24973,10 @@
   },
   "site": {
     "tour": {
+      "shortIntro": "Apri una prenotazione di esempio e verifica il check-in in due passaggi, senza account.",
+      "longIntro": "Apri un immobile di esempio e verifica contratto e canone in due passaggi, senza account.",
+      "shortIntro": "Demo con dati sintetici. Controlla un arrivo in due passaggi, senza account.",
+      "longIntro": "Demo con dati sintetici. Verifica un contratto in due passaggi, senza account.",
       "shortCta": "Vedi gli arrivi di oggi",
       "longCta": "Controlla un contratto",
       "intro": "Scegli una demo con dati sintetici. In due passaggi puoi controllare un arrivo o un contratto, senza creare un account.",

@@ -16,10 +16,10 @@ export function AskCasaZenButton() {
       title={t('ask.title')}
       data-testid="ask-casazen"
       onClick={(event) => ask.open('search', event.currentTarget)}
-      className="shrink-0 rounded-full max-md:size-11 max-md:px-0"
+      className="shrink-0 rounded-full max-xl:size-11 max-xl:px-0"
     >
       <Sparkles className="size-[18px]" aria-hidden="true" />
-      <span className="max-md:sr-only">{t('ask.title')}</span>
+      <span className="max-xl:sr-only">{t('ask.title')}</span>
     </Button>
   );
 }

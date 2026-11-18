@@ -16,6 +16,7 @@ export type ArrivalCheckInState = NonNullable<DashboardTodayStay['checkIn']>['st
 
 interface ArrivalReference {
   bookingId: string;
+  bookingCode?: string;
   propertyId: string;
   propertyName: string;
   checkInDate: string;
@@ -29,6 +30,18 @@ export interface ArrivalsAnswer {
   scopedCount: number;
   rows: ArrivalReference[];
   partial: boolean;
+}
+
+/** Two rows that read the same need a booking reference, including in the link's accessible name. */
+export function disambiguatingBookingReference(row: ArrivalReference, rows: ArrivalReference[]): string | null {
+  const sameStayDates = rows.some(
+    (other) =>
+      other.bookingId !== row.bookingId &&
+      other.propertyName === row.propertyName &&
+      other.checkInDate === row.checkInDate &&
+      other.checkOutDate === row.checkOutDate,
+  );
+  return sameStayDates ? row.bookingCode || row.bookingId : null;
 }
 
 export function manualArrivalsPath(propertyId: string | null) {
@@ -98,6 +111,7 @@ export function summarizeArrivals(data: DashboardToday, propertyId: string | nul
     // No names, messages, financial data or guest records in the assistant result.
     rows.push({
       bookingId: stay.bookingId,
+      bookingCode: stay.bookingCode,
       propertyId: stay.propertyId,
       propertyName: stay.propertyName,
       checkInDate: stay.checkInDate,

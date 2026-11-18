@@ -229,7 +229,7 @@ export function BookingDetailPage() {
             </summary>
             <div className="pb-3">{nextStep}</div>
           </details>
-        ) : nextStep}
+        ) : activeTab !== 'guest' && nextStep}
 
         {/* UI-07 Tabs: links with the tab in the address (`?tab=`), a menu on a phone. */}
         <Tabs
@@ -257,6 +257,7 @@ export function BookingDetailPage() {
                   <DemoTourContact />
                 </CheckInLinkPanel>
               </PlainSection>
+              {nextStep}
               <div ref={alloggiatiRef} className="scroll-mt-6">
                 <PlainSection title={t('booking.detailPage.alloggiatiWeb')}>
                   <AlloggiatiBookingPanel bookingId={booking.id} checkInDate={booking.checkInDate} />

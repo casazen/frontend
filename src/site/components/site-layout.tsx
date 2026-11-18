@@ -56,10 +56,10 @@ export function SiteLayout({ current, legal, year, showLogin, children }: SiteLa
       <header className="sticky top-0 z-30 border-b border-ink-700/10 bg-cream-50/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2 sm:gap-x-8 sm:gap-y-2 sm:px-5 sm:py-3">
           <a href="/" aria-label={t('site.nav.home')} className="shrink-0 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-terra-700">
-            <CasaZenLogo size={36} />
+            <CasaZenLogo size={32} />
           </a>
           <nav aria-label={t('site.nav.main')} className="order-3 w-full md:order-none md:w-auto md:flex-1">
-            <ul className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-medium sm:gap-x-6 sm:text-[0.95rem]">
+            <ul className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-medium sm:gap-x-6 sm:text-[0.95rem]">
               {/* Four entries, like the headers of the tools the hosts already know: the audiences go under one menu. The
                   menu is a native <details>: it works in the prerendered HTML, before any script runs. */}
               <li className="relative">

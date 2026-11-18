@@ -10,7 +10,7 @@ import { addDays, todayInRome } from '@/lib/stay-dates';
 import type { DashboardToday, DashboardTodayStay } from '@/types/dashboard.types';
 import { AskProvider } from '../ask-provider';
 import { AskArrivalsButton, AskBookingDraftButton, AskCasaZenButton } from '../ask-trigger';
-import { asksForIncompleteArrivals, summarizeArrivals } from '../arrivals-capability';
+import { asksForIncompleteArrivals, disambiguatingBookingReference, summarizeArrivals } from '../arrivals-capability';
 
 vi.mock('@/hooks/use-auth', () => ({ useAuth: () => ({ logout: vi.fn() }) }));
 vi.mock('@/config/demo.config', async (original) => ({ ...(await original<object>()), isDemoMode: false }));
@@ -120,6 +120,18 @@ describe('read arrivals in context', () => {
     expect(answer.partial).toBe(true);
     expect(JSON.stringify(answer)).not.toContain(stay.guestName);
     expect(() => summarizeArrivals({} as DashboardToday, null)).toThrow();
+  });
+
+  it('adds a reference only when the property and dates would identify two arrivals equally', () => {
+    const { rows } = summarizeArrivals(
+      today([
+        { ...stay, bookingCode: 'AQ123-4402A' },
+        { ...stay, bookingId: 'b2' },
+        { ...stay, bookingId: 'b3', checkOutDate: addDays(day, 4) },
+      ]),
+      null,
+    );
+    expect(rows.map((row) => disambiguatingBookingReference(row, rows))).toEqual(['AQ123-4402A', 'b2', null]);
   });
 
   it('shows the authoritative empty state, then retries an unavailable service without replaying an old result', async () => {

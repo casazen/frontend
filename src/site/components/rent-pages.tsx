@@ -47,7 +47,7 @@ export function ShortRentPage({ legal }: { legal: SiteLegal }) {
   return (
     <>
       <PageHeader title={t('site.shortRent.title')} intro={t('site.shortRent.intro')}>
-        <p className="w-full text-ink-600">{t('site.tour.intro')}</p>
+        <p className="w-full text-ink-600">{t('site.tour.shortIntro')}</p>
         <TourEntry area="short" />
         <SecondaryLink href={sitePageById('longRent').path}>{t('site.shortRent.otherLink')}</SecondaryLink>
       </PageHeader>
@@ -91,7 +91,7 @@ export function LongRentPage({ legal }: { legal: SiteLegal }) {
   return (
     <>
       <PageHeader title={t('site.longRent.title')} intro={t('site.longRent.intro')}>
-        <p className="w-full text-ink-600">{t('site.tour.intro')}</p>
+        <p className="w-full text-ink-600">{t('site.tour.longIntro')}</p>
         <TourEntry area="long" />
         <SecondaryLink href={sitePageById('shortRent').path}>{t('site.longRent.otherLink')}</SecondaryLink>
       </PageHeader>

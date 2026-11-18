@@ -42,7 +42,11 @@ function shortReads(path: string, day: string, params: Record<string, string>): 
       declaredGuests: booking.numberOfGuests, dataComplete: false, exportReady: false, missingCodeTables: [], guests: [],
     } satisfies AlloggiatiGuestSummaryDto;
     case '/compliance/summary': return {
-      propertiesPending: empty, guestCheckInsIncomplete: empty, checkoutsDue: empty,
+      propertiesPending: empty, checkoutsDue: empty,
+      guestCheckInsIncomplete: { count: 1, items: [{
+        id: booking.id, label: `${booking.guest.firstName} ${booking.guest.lastName}`, action: 'CompleteGuestCheckIn',
+        propertyId: booking.propertyId, bookingId: booking.id,
+      }] },
       alloggiatiFailures: empty, alloggiatiManualRequired: empty, turnoversPending: empty,
     };
     case '/dashboard/ical-feeds':

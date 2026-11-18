@@ -35,7 +35,11 @@ export function sampleDay(day: string): DashboardToday {
   const stay = sampleBooking(day);
   const empty = { count: 0, items: [] };
   return {
-    today: day, departures: empty, todo: empty, approvals: empty, services: empty,
+    today: day, departures: empty, approvals: empty, services: empty,
+    todo: { count: 1, items: [{
+      action: 'CompleteGuestCheckIn', priority: 1, dueAt: null, label: `${stay.guest.firstName} ${stay.guest.lastName}`,
+      propertyId: stay.propertyId, propertyName: sampleVilla.name, bookingId: stay.id, serviceRequestId: null, missing: [],
+    }] },
     arrivals: { count: 1, items: [{
       bookingId: stay.id, guestName: `${stay.guest.firstName} ${stay.guest.lastName}`,
       propertyId: stay.propertyId, propertyName: sampleVilla.name, numberOfGuests: stay.numberOfGuests,

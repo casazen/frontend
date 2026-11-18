@@ -187,7 +187,8 @@ test.describe('Long-rent information architecture', () => {
     await expect(page.getByTestId('condominium-bank-link')).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'Canoni', exact: true })).toHaveCount(0);
 
-    await page.goto(demoUrl(`/app/long-rent/leases/${LEASE_ID}?tab=pagamenti`, 'long-term'), { waitUntil: 'domcontentloaded' });
+    await page.getByRole('link', { name: 'Verifica i canoni' }).click();
+    await expect(page).toHaveURL(new RegExp('/leases/' + LEASE_ID + '\\?tab=pagamenti$'));
 
     await page.getByTestId('lease-tab-inquilini').click();
     await expect(page.getByTestId('lease-tenants')).toContainText('Giulia Verdi');

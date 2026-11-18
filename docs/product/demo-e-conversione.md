@@ -34,6 +34,20 @@ I contatori demo non contengono nomi ospite, ID prenotazione, email o testo digi
 
 **Baseline non disponibile.** Il checkout dà accesso ai contratti degli eventi e alla logica di fatturazione. Per questa analisi non sono disponibili un export dei lead, traffico Plausible, un collegamento lead → account o una serie di pagamenti attribuiti alla demo. Mancano sia numeratore sia denominatore storico. In attesa delle prime coorti, monitorare separatamente ingressi, raggiungimento del primo risultato, click invito e richieste effettivamente ricevute.
 
+## Verifiche complementari in browser
+
+Su Chromium locale con API simulate, 6 casi Playwright su 6 superati in 4,3 minuti. Le possibili interruzioni in tabella sono ipotesi di usabilità. I test riproducono azioni e stati dell'interfaccia.
+
+| Ruolo | Passi riprodotti e risultato | Possibile interruzione | Test |
+| --- | --- | --- | --- |
+| Staff piattaforma | Una navigazione diretta al modulo invito agenzia mostra il campo per il fondatore e il titolo atteso | Confondere un invito allo staff di un cliente con l'invito del titolare di una nuova organizzazione | [Invito agenzia](../../e2e/admin-supplier-invite.spec.ts) |
+| Ospite | Due prove sul link di check-in. Un token sconosciuto mostra l'errore. Un link con fixture valida apre il wizard con nome dell'immobile e progressione | Il link può essere vecchio o inoltrato al destinatario sbagliato | [Portale check-in](../../e2e/guest-checkin-portal.spec.ts) |
+| Nuovo cliente | L'apertura dell'onboarding permette di scegliere tra i tre profili del percorso testato | Dubbi su quale profilo avrà accesso alle funzioni desiderate | [Profili onboarding](../../e2e/onboarding.spec.ts) |
+| Fornitore | La posta del profilo fornitore è raggiungibile nel viewport mobile della suite | Il passaggio da richiesta alla prossima azione va convalidato con richieste reali del ruolo | [Posta mobile](../../e2e/supplier-layout.spec.ts) |
+| Inquilino | «Apri il contratto» → «Paga la scadenza» → dichiarazione del bonifico. La fixture mostra «Inviata» e la rata ancora «Da pagare» | Una dichiarazione inviata potrebbe essere interpretata come saldo verificato | [Contratto e canoni](../../e2e/tenant-canoni.spec.ts) |
+
+La mappa di navigazione copre anche gli ingressi condizionati da ruoli, feature flag e abbonamenti. [Mappa delle aree](navigazione-operativa.md)
+
 ## Criteri UX e prossime priorità
 
 La scelta Brevi/Lunghi anticipa l'attività da provare. La Home e il dettaglio danno un nome al compito, mostrano immobile, periodo e prossimo passo, e mantengono il collegamento manuale all'origine. La CTA commerciale arriva dopo il risultato. Per la gerarchia mobile contano la visibilità del compito a 320 px, la lettura senza scorrimento orizzontale e la facilità del ritorno all'elenco. Per le prestazioni usare la stessa vista, viewport, fixture e stato della cache nei confronti. Verificare i dati sul campo quando il traffico lo consente. [Guida UX/UI di Algoritma](https://www.algoritma.it/user-experience-e-user-interface/)

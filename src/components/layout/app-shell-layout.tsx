@@ -82,7 +82,7 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
               <Header
                 search={(
                   <div className="flex items-center gap-1 md:gap-3">
-                    <CommandPaletteTrigger />
+                    <CommandPaletteTrigger className="min-w-0 md:flex-1" />
                     <AskCasaZenButton />
                   </div>
                 )}

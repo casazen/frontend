@@ -119,6 +119,28 @@ describe('public site render (SEO-VETRINA)', () => {
     expect(html).toContain("l&#x27;accesso è solo su invito");
   });
 
+  it('opens independent, read-only rental examples from the normal public build', () => {
+    const home = render('home');
+    expect(home).toContain('href="/affitti-brevi#demo"');
+    expect(home).toContain('href="/affitti-lunghi#demo"');
+    for (const [page, detail] of [['shortRent', 'Piet Jansen'], ['longRent', 'Casa dei Tigli']] as const) {
+      const doc = new DOMParser().parseFromString(render(page), 'text/html');
+      const sample = doc.querySelector('#demo details');
+      expect(sample?.querySelector('summary')?.textContent).toContain(detail);
+      expect(sample?.querySelector('a')?.getAttribute('href')).toMatch(/^mailto:info@example.com/);
+      expect(sample?.querySelector('a[href^="/app/"]')).toBeNull();
+    }
+  });
+
+  it('offers a referral draft and an existing invitation without collecting or forwarding an invitation in a query', () => {
+    const doc = new DOMParser().parseFromString(render('shortRent', { ...LEGAL, email: null }), 'text/html');
+    const sample = doc.querySelector('#demo details');
+    expect(sample?.querySelector('a')?.getAttribute('href')).toMatch(/^mailto:\?subject=/);
+    const input = sample?.querySelector('input[type=url]');
+    expect(input).toBeTruthy();
+    expect(input?.hasAttribute('name')).toBe(false);
+  });
+
   it('render_suppliers_offersAnInvitationNotARegistration', () => {
     const html = render('suppliers');
     expect(html).toContain('Richiedi un invito');

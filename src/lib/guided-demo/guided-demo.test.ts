@@ -40,8 +40,8 @@ describe('invitation from the public example', () => {
       .toBe('https://app.example.test/invito-host/example-token');
   });
   it.each(['https://other.example.test/invito-host/example-token', 'https://app.example.test/signup',
-    'https://app.example.test/invito-host/short', 'https://app.example.test/invito-host/some%2Fother%2Fpath'])
-  ('refuses an unrelated domain, route or malformed invitation (%s)', input => {
+    'https://app.example.test/invito-host/short', 'https://app.example.test/invito-host/some%2Fother%2Fpath'])(
+    'refuses an unrelated domain, route or malformed invitation (%s)', input => {
     expect(invitationDestination(input, allowed)).toBeNull();
   });
 });

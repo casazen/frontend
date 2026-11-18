@@ -2,7 +2,7 @@
 
 ## Prima e dopo
 
-Il confronto parte dalla revisione `f4b9f7e` di frontend. Il manifesto contiene 167 destinazioni nelle cinque aree, incluse nove rotte di attivazione da `onboarding-routes.ts`. Le tabelle riportano il menu del checkout per entrambe le versioni. Le differenze si concentrano sugli ingressi dal compito, l’orientamento su telefono e la visibilità per abbonamento.
+Il confronto parte dalla revisione `92c71f3e` di frontend. Il manifesto contiene 167 destinazioni nelle cinque aree, incluse nove rotte di attivazione da `onboarding-routes.ts`. Le tabelle riportano il menu del checkout per entrambe le versioni. Le differenze si concentrano sugli ingressi dal compito, l’orientamento su telefono e la visibilità per abbonamento.
 
 | Compito e ruolo | Percorso precedente | Percorso consegnato | Attrito ed evidenza |
 |---|---|---|---|
@@ -29,7 +29,7 @@ L’evidenza di navigazione deriva dal router, dai componenti e dai test con fix
 
 | Superficie / destinatario | Entrata → destinazione | Ambito e azioni |
 |---|---|---|
-| Vetrina CasaZen / prospect | Home, Affitti brevi, Affitti lunghi, Funzionalità, Fornitori, Chi siamo → demo o richiesta commerciale | Pagine IT/EN del sito SSR. Il percorso di attivazione commerciale usa il signup pubblico configurato. |
+| Vetrina CasaZen / prospect | Home, Affitti brevi, Affitti lunghi, Funzionalità, Fornitori, Chi siamo → demo o richiesta commerciale | Pagine IT/EN del sito SSR. La vetrina accetta una richiesta di invito. L’attivazione passa da un invito personale. |
 | Nuovo host / persona invitata | Login, signup o invito → verifica → onboarding → scelta area o pagina iniziale assegnata | Consensi, organizzazione e ruoli determinano i passi seguenti. Un’organizzazione già attiva può aprire la Guida; l’attivazione Octorate usa il proprio flag. |
 | Sito dell’host / ospite | `/book/:orgSlug` o dominio dell’host → immobile → checkout → esito della prenotazione | Ricerca, prenotazioni dell’ospite, recensione e annullamento hanno ingressi specifici. Il pagamento ha un esito distinto dalla prenotazione. |
 | Check-in / ospite | Link ricevuto `/checkin/:token` o QR `/checkin/porta/:doorToken` → sessione di check-in | L’host legge lo stato nel PMS. Il portale ha solo il contesto autorizzato dal link verificato dal servizio. |
@@ -196,7 +196,7 @@ Prefisso di ogni destinazione `/app/account`. La barra indica il posto da sinist
 | Bonifici proprietari / Owner Wire Transfers | `wire-transfers` | Tab · `owner-close` | Come desktop | Area · flag `agencyTier` · gestore piano¹ |
 | Ritenute d'acconto / Withholding tax | `withholding` | Tab · `owner-close` | Come desktop | Area · flag `agencyTier` · gestore piano¹ |
 
-### Fornitori / Suppliers
+### Portale fornitori / Supplier portal
 
 Prefisso di ogni destinazione `/app/supplier`. La barra indica il posto da sinistra.
 

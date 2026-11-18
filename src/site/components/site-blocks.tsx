@@ -178,7 +178,7 @@ export function PageHeader({ title, intro, children }: { title: string; intro: s
       <div className="relative mx-auto max-w-6xl px-5 py-8 sm:py-20">
         <h1 className="max-w-3xl font-display text-4xl font-semibold tracking-tight text-ink-800 sm:text-5xl">{title}</h1>
         <p className="mt-5 max-w-3xl text-lg leading-relaxed text-ink-500">{intro}</p>
-        {children && <div className="mt-8 flex flex-wrap gap-3">{children}</div>}
+        {children && <div className="mt-5 flex flex-wrap gap-3 sm:mt-8">{children}</div>}
       </div>
     </section>
   );

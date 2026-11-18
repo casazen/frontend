@@ -5,7 +5,12 @@ import { ArrowUpRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { dashboardApi } from '@/api/dashboard.api';
 import { formatStayDate, todayInRome } from '@/lib/stay-dates';
-import { arrivalsCapability, manualArrivalsPath, summarizeArrivals } from './arrivals-capability';
+import {
+  arrivalsCapability,
+  disambiguatingBookingReference,
+  manualArrivalsPath,
+  summarizeArrivals,
+} from './arrivals-capability';
 
 export function ArrivalsResult({
   scope,
@@ -62,25 +67,31 @@ export function ArrivalsResult({
                   <p>{t(emptyKey)}</p>
                 ) : (
                   <ul className="divide-y rounded-lg border px-3">
-                    {data.rows.map((stay) => (
-                      <li key={stay.bookingId}>
-                        <Link
-                          to={`/app/short-rent/bookings/${encodeURIComponent(stay.bookingId)}?tab=guest`}
-                          onClick={onNavigate}
-                          className="flex min-h-11 items-center justify-between gap-2 rounded py-2 focus-visible:outline-2 focus-visible:outline-ring"
-                        >
-                          <span className="min-w-0">
-                            <strong className="block break-words">{stay.propertyName}</strong>
-                            <span className="block">
-                              {format(stay.checkInDate)} – {format(stay.checkOutDate)}
+                    {data.rows.map((stay) => {
+                      const reference = disambiguatingBookingReference(stay, data.rows);
+                      return (
+                        <li key={stay.bookingId}>
+                          <Link
+                            to={`/app/short-rent/bookings/${encodeURIComponent(stay.bookingId)}?tab=guest`}
+                            onClick={onNavigate}
+                            className="flex min-h-11 items-center justify-between gap-2 rounded py-2 focus-visible:outline-2 focus-visible:outline-ring"
+                          >
+                            <span className="min-w-0">
+                              <strong className="block break-words">{stay.propertyName}</strong>
+                              <span className="block">
+                                {format(stay.checkInDate)} – {format(stay.checkOutDate)}
+                              </span>
+                              <span className="text-foreground/75">{t(`ask.states.${stay.state}`)}</span>
+                              {reference && (
+                                <span className="block break-all">{t('ask.bookingReference', { reference })}</span>
+                              )}
+                              <span className="sr-only"> · {t('ask.openBooking')}</span>
                             </span>
-                            <span className="text-foreground/75">{t(`ask.states.${stay.state}`)}</span>
-                            <span className="sr-only"> · {t('ask.openBooking')}</span>
-                          </span>
-                          <ArrowUpRight className="size-4 shrink-0" aria-hidden="true" />
-                        </Link>
-                      </li>
-                    ))}
+                            <ArrowUpRight className="size-4 shrink-0" aria-hidden="true" />
+                          </Link>
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </>

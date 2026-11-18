@@ -5715,7 +5715,7 @@
       "expiresAt": "Expires on {{date}}",
       "expired": "The link has expired: send a reminder or generate a new link to copy.",
       "completed": "The guest has submitted the online check-in form. You can review the guest details in the Alloggiati Web section below.",
-      "notEligible": "The check-in link is available only for confirmed or checked-in bookings.",
+      "notEligible": "A new check-in link is currently unavailable for this booking.",
       "sendByEmail": "Send link by email",
       "generateToCopy": "Generate link to copy",
       "replaceWarning": "A new link replaces the current one, which stops working.",
@@ -24973,6 +24973,10 @@
   },
   "site": {
     "tour": {
+      "shortIntro": "Open a sample booking and check its check-in status in two steps. No account needed.",
+      "longIntro": "Open a sample property and check its lease and rent in two steps. No account needed.",
+      "shortIntro": "Synthetic demo. Check an arrival in two steps, without an account.",
+      "longIntro": "Synthetic demo. Check a lease in two steps, without an account.",
       "shortCta": "See today’s arrivals",
       "longCta": "Check a lease",
       "intro": "Choose a demo with synthetic data. Check an arrival or a lease in two steps, without creating an account.",

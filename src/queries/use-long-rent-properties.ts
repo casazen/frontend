@@ -9,9 +9,9 @@ export const LONG_RENT_PROPERTY_AGGREGATE_KEY = ['properties', 'long-rent-aggreg
  * lease that holds each one and when it is free again, the change of mode programmed. `fresh`: read again every time the page of the list
  * opens (a lease is made or ended on other pages). A failure is not fatal for the page: it works without these extras.
  */
-export function useLongRentPropertyAggregate({ fresh = false }: { fresh?: boolean } = {}) {
+export function useLongRentPropertyAggregate({ fresh = false, canReadLeases }: { fresh?: boolean; canReadLeases: boolean }) {
   return useQuery({
-    queryKey: LONG_RENT_PROPERTY_AGGREGATE_KEY,
+    queryKey: [...LONG_RENT_PROPERTY_AGGREGATE_KEY, canReadLeases],
     queryFn: () => longRentPropertiesApi.getAll(),
     ...(fresh ? { refetchOnMount: 'always' as const } : {}),
   });
