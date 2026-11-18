@@ -39,9 +39,9 @@ const FOOTER_LINK = 'text-ink-200 hover:text-white hover:underline underline-off
 /** Header, main area and footer of every page of the public site (SEO-VETRINA). Plain links: no client-side router. */
 export function SiteLayout({ current, legal, year, showLogin, children }: SiteLayoutProps) {
   const { t, i18n } = useTranslation();
-  // The invitation request in the header (only with a contact address): on the production site, where there is no "Accedi",
-  // it is the one action the header offers.
-  const inviteLink = inviteHref(legal.email, t('site.invite.subject'));
+  // The home and rental pages offer a guided first task and the invitation in their own content.
+  const offersTour = current === 'home' || current === 'shortRent' || current === 'longRent';
+  const inviteLink = offersTour ? null : inviteHref(legal.email, t('site.invite.subject'));
 
   const switchLanguage = () => {
     const next = i18n.language === 'en' ? 'it' : 'en';
@@ -54,12 +54,12 @@ export function SiteLayout({ current, legal, year, showLogin, children }: SiteLa
   return (
     <div className="flex min-h-screen flex-col bg-cream-50 text-ink-700">
       <header className="sticky top-0 z-30 border-b border-ink-700/10 bg-cream-50/90 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-8 gap-y-2 px-5 py-3">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2 sm:gap-x-8 sm:gap-y-2 sm:px-5 sm:py-3">
           <a href="/" aria-label={t('site.nav.home')} className="shrink-0 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-terra-700">
             <CasaZenLogo size={36} />
           </a>
           <nav aria-label={t('site.nav.main')} className="order-3 w-full md:order-none md:w-auto md:flex-1">
-            <ul className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.95rem] font-medium sm:gap-x-6">
+            <ul className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-medium sm:gap-x-6 sm:text-[0.95rem]">
               {/* Four entries, like the headers of the tools the hosts already know: the audiences go under one menu. The
                   menu is a native <details>: it works in the prerendered HTML, before any script runs. */}
               <li className="relative">
@@ -115,12 +115,12 @@ export function SiteLayout({ current, legal, year, showLogin, children }: SiteLa
               </li>
             </ul>
           </nav>
-          <div className="ml-auto flex items-center gap-4 text-sm font-medium">
+          <div className="ml-auto flex items-center gap-3 text-sm font-medium">
             <button
               type="button"
               onClick={switchLanguage}
               aria-label={t('site.nav.switchLanguageLabel')}
-              className="text-ink-500 hover:text-ink-800"
+              className="min-h-11 text-ink-500 hover:text-ink-800"
             >
               {t('site.nav.switchLanguage')}
             </button>

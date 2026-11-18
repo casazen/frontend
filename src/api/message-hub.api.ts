@@ -69,7 +69,7 @@ export const messageHubApi = {
     ApiClient.post<MessageHubReply>(`${threadPath(threadKey)}/reply`, { text }, idempotent(idempotencyKey)),
 
   /** `GET /api/bookings/{id}/contact-options`: through which channel the guest of the booking is reached now; never an address or a number. */
-  getContactOptions: (bookingId: string) => ApiClient.get<MessageContactOptions>(`${bookingPath(bookingId)}/contact-options`),
+  getContactOptions: (bookingId: string, signal?: AbortSignal) => ApiClient.get<MessageContactOptions>(`${bookingPath(bookingId)}/contact-options`, undefined, { signal }),
 
   /**
    * `POST /api/bookings/{id}/messages/new`: the first message to the guest of a booking, through the channel the contact options name.
@@ -79,11 +79,11 @@ export const messageHubApi = {
     ApiClient.post<MessageHubReply>(`${bookingPath(bookingId)}/messages/new`, { text }, idempotent(idempotencyKey)),
 
   /** `GET /api/message-templates?activeOnly=true`: the templates of the organization the composer offers. */
-  listTemplates: () => ApiClient.get<HostMessageTemplate[]>('/message-templates', { activeOnly: true }),
+  listTemplates: (signal?: AbortSignal) => ApiClient.get<HostMessageTemplate[]>('/message-templates', { activeOnly: true }, { signal }),
 
   /** `POST /api/message-templates/{id}/render`: the text of a template for a conversation. 422 `template_variable_missing` names the variable that has no value. */
-  renderTemplate: (templateId: string, threadKey: string) =>
-    ApiClient.post<RenderedMessageTemplate>(`/message-templates/${encodeURIComponent(templateId)}/render`, { threadKey }),
+  renderTemplate: (templateId: string, threadKey: string, signal?: AbortSignal) =>
+    ApiClient.post<RenderedMessageTemplate>(`/message-templates/${encodeURIComponent(templateId)}/render`, { threadKey }, { signal }),
 
   /** `GET /api/messages/threads/{threadKey}/channel-templates`: the templates the channel keeps for the conversation, read only. */
   listChannelTemplates: (threadKey: string) => ApiClient.get<ChannelMessageTemplate[]>(`${threadPath(threadKey)}/channel-templates`),

@@ -17,6 +17,8 @@ import { ContextSidebar } from './context-sidebar';
 import { FirstRunWizard } from '@/features/guide/first-run-wizard';
 import { GuideButton } from '@/features/guide/guide-panel';
 import { NotificationBell } from '@/features/notifications/notification-bell';
+import { AskProvider } from '@/features/assistant/ask/ask-provider';
+import { AskCasaZenButton } from '@/features/assistant/ask/ask-trigger';
 import { Header } from './header';
 import { LegalConsentsNotice } from './legal-consents-notice';
 import { MoreSheet } from './more-sheet';
@@ -67,44 +69,55 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
 
   return (
     <AppShellContext.Provider value={shell}>
-      {/* The global search (UI-06): Ctrl/Cmd+K from anywhere in the shell, and the button of the header. The server search (UI-13) is handed to it as `remoteSource` once it is built. */}
-      <CommandPaletteProvider contextKey={contextKey} userId={user?.id ?? null}>
-        <SkipLink targetId={MAIN_CONTENT_ID} />
-        <div className="flex min-h-dvh" data-testid="app-shell" data-context={contextKey}>
-          <ContextSidebar contextKey={contextKey} organizationName={organizationName} />
-          <MoreSheet contextKey={contextKey} organizationName={organizationName} />
-          <div className="flex min-w-0 flex-1 flex-col lg:has-[>main>[data-app-viewport]]:h-dvh">
-            <DemoBanner />
-            {/* The notifications bell (UI-12) and the guide (the help of UI-08 is inside it) are handed to the header here too, each only when its function exists. */}
-            <Header search={<CommandPaletteTrigger />} notifications={<NotificationBell />} help={<GuideButton contextKey={contextKey} />} />
-            <main
-              id={MAIN_CONTENT_ID}
-              ref={mainRef}
-              tabIndex={-1}
-              className={cn(
-                'flex flex-1 flex-col p-4 pb-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom))] outline-none md:pb-6 md:p-6',
-                'lg:has-[>[data-app-viewport]]:min-h-0 lg:has-[>[data-app-viewport]]:overflow-y-auto',
-                mobilePrimaryVisible &&
-                  'max-md:pb-[calc(var(--bottom-nav-height)+var(--mobile-primary-height)+env(safe-area-inset-bottom))]',
-              )}
-            >
-              {contextKey === 'supplier' ? <SupplierSuspendedBanner /> : null}
-              <LegalConsentsNotice />
-              {/* The way back from the Cassetto Compliance (CHK-15): puts the host back where they left and says «Bentornato». Nothing on the page otherwise. */}
-              <ComplianceDrawerReturn />
-              {children}
-            </main>
-            <BottomNav contextKey={contextKey} />
+      <AskProvider area={contextKey} userId={user?.id ?? null} orgId={org?.id ?? null} orgName={organizationName}>
+        {/* The global search (UI-06): Ctrl/Cmd+K from anywhere in the shell, and the button of the header. The server search (UI-13) is handed to it as `remoteSource` once it is built. */}
+        <CommandPaletteProvider contextKey={contextKey} userId={user?.id ?? null}>
+          <SkipLink targetId={MAIN_CONTENT_ID} />
+          <div className="flex min-h-dvh" data-testid="app-shell" data-context={contextKey}>
+            <ContextSidebar contextKey={contextKey} organizationName={organizationName} />
+            <MoreSheet contextKey={contextKey} organizationName={organizationName} />
+            <div className="flex min-w-0 flex-1 flex-col lg:has-[>main>[data-app-viewport]]:h-dvh">
+              <DemoBanner />
+              {/* The notifications bell (UI-12) and the guide (the help of UI-08 is inside it) are handed to the header here too, each only when its function exists. */}
+              <Header
+                search={(
+                  <div className="flex items-center gap-1 md:gap-3">
+                    <CommandPaletteTrigger />
+                    <AskCasaZenButton />
+                  </div>
+                )}
+                notifications={<NotificationBell />}
+                help={<GuideButton contextKey={contextKey} />}
+              />
+              <main
+                id={MAIN_CONTENT_ID}
+                ref={mainRef}
+                tabIndex={-1}
+                className={cn(
+                  'flex flex-1 flex-col p-4 pb-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom))] outline-none md:pb-6 md:p-6',
+                  'lg:has-[>[data-app-viewport]]:min-h-0 lg:has-[>[data-app-viewport]]:overflow-y-auto',
+                  mobilePrimaryVisible &&
+                    'max-md:pb-[calc(var(--bottom-nav-height)+var(--mobile-primary-height)+env(safe-area-inset-bottom))]',
+                )}
+              >
+                {contextKey === 'supplier' ? <SupplierSuspendedBanner /> : null}
+                <LegalConsentsNotice />
+                {/* The way back from the Cassetto Compliance (CHK-15): puts the host back where they left and says «Bentornato». Nothing on the page otherwise. */}
+                <ComplianceDrawerReturn />
+                {children}
+              </main>
+              <BottomNav contextKey={contextKey} />
+            </div>
           </div>
-        </div>
-        <RouteFocus mainRef={mainRef} />
-        {/* The one detail drawer of the app (UI-15): it opens from `?detail=<kind>:<id>` on any page of the shell. It is a dialog in a portal, so it takes no room in the layout, and draws nothing while it is closed. */}
-        <DetailDrawerHost />
-        {/* The popup alerts (ADR-025): one at a time, over the content, and not while a wizard is open. Only for a signed-in user of the real app (the bell's conditions). */}
-        <AlertPopup />
-        {/* «Inizia con CasaZen» as the first wizard of a new host: a layer of its own, once, at the first access to Affitti brevi. */}
-        {contextKey === 'short-rent' ? <FirstRunWizard /> : null}
-      </CommandPaletteProvider>
+          <RouteFocus mainRef={mainRef} />
+          {/* The one detail drawer of the app (UI-15): it opens from `?detail=<kind>:<id>` on any page of the shell. It is a dialog in a portal, so it takes no room in the layout, and draws nothing while it is closed. */}
+          <DetailDrawerHost />
+          {/* The popup alerts (ADR-025): one at a time, over the content, and not while a wizard is open. Only for a signed-in user of the real app (the bell's conditions). */}
+          <AlertPopup />
+          {/* «Inizia con CasaZen» as the first wizard of a new host: a layer of its own, once, at the first access to Affitti brevi. */}
+          {contextKey === 'short-rent' ? <FirstRunWizard /> : null}
+        </CommandPaletteProvider>
+      </AskProvider>
     </AppShellContext.Provider>
   );
 }

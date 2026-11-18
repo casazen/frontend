@@ -11,19 +11,9 @@ import { isTransientRequestError } from '@/lib/api-errors';
  * login also returns to the invite page, which carries the token in its address.
  */
 
-export const HOST_INVITE_PATH_PREFIX = '/invito-host/';
-
+export { HOST_INVITE_PATH_PREFIX, hostInvitePath, isWellFormedHostInviteToken } from './host-invite-path';
+import { isWellFormedHostInviteToken } from './host-invite-path';
 const STORAGE_KEY = 'cz-host-invite';
-/** Same shape as the other tokens of the platform: URL-safe, no separators. */
-const TOKEN_PATTERN = /^[\w.~%+=-]{8,512}$/;
-
-export function isWellFormedHostInviteToken(token: string): boolean {
-  return TOKEN_PATTERN.test(token);
-}
-
-export function hostInvitePath(token: string): string {
-  return `${HOST_INVITE_PATH_PREFIX}${encodeURIComponent(token)}`;
-}
 
 export function savePendingHostInvite(token: string): void {
   if (!isWellFormedHostInviteToken(token)) return;

@@ -1,3 +1,4 @@
+import { useCommercialRouteAccess } from '@/hooks/use-commercial-profile';
 import { useContext } from 'react';
 import { QueryClientContext } from '@tanstack/react-query';
 import { useInRouterContext, useLocation } from 'react-router-dom';
@@ -43,12 +44,14 @@ function SectionTabs({ className }: NavSectionTabsProps) {
   const { pathname } = useLocation();
   const workspace = useContext(WorkspaceContext);
   const { flags } = useFeatureFlags();
+  const canOpenPath = useCommercialRouteAccess();
   const hasQueryClient = useContext(QueryClientContext) !== undefined;
 
   const section = getNavSection(
     pathname,
     workspace ? (contextKey: AppContextKey, permission: string) => workspace.hasPermission(contextKey, permission) : undefined,
     flags,
+    canOpenPath,
   );
   const [head, ...pages] = section;
   if (!head || !TAB_AREAS.includes(head.context)) return null;

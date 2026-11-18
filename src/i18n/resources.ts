@@ -1,3 +1,4 @@
+import { askMessages } from './ask-messages';
 import { ownerMandateWizardMessages } from './owner-mandate-messages';
 import onboardingAccessIt from './locales/it-onboarding-access.json';
 import onboardingAccessEn from './locales/en-onboarding-access.json';
@@ -17,6 +18,7 @@ import priceEstimateEn from './locales/price-estimate.en.json';
 export const APP_RESOURCES = {
   it: { translation: {
     ...onboardingAccessIt,
+    ask: askMessages.it,
     ...it,
     listingAi: listingAiIt,
     propertySetup: propertySetupIt,
@@ -34,6 +36,7 @@ export const APP_RESOURCES = {
   } },
   en: { translation: {
     ...onboardingAccessEn,
+    ask: askMessages.en,
     ...en,
     listingAi: listingAiEn,
     propertySetup: propertySetupEn,

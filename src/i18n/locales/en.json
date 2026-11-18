@@ -5714,7 +5714,7 @@
       "retry": "Retry",
       "expiresAt": "Expires on {{date}}",
       "expired": "The link has expired: send a reminder or generate a new link to copy.",
-      "completed": "The guest has completed the check-in. To correct the data use the Alloggiati tab.",
+      "completed": "The guest has submitted the online check-in form. You can review the guest details in the Alloggiati Web section below.",
       "notEligible": "The check-in link is available only for confirmed or checked-in bookings.",
       "sendByEmail": "Send link by email",
       "generateToCopy": "Generate link to copy",
@@ -8409,10 +8409,12 @@
       "today": "The day could not be loaded."
     },
     "filter": {
-      "allProperties": "All properties",
+      "allProperties": "All assigned properties",
       "label": "Home filters",
-      "period": "Period",
-      "property": "Property"
+      "period": "Reporting period",
+      "property": "Property",
+      "requestedProperty": "Property from link",
+      "reset": "Clear filters"
     },
     "first": {
       "body": "Once it is active, you will find the day, the things to do and the numbers here. We save everything as you go: you can stop whenever you like.",
@@ -8590,10 +8592,8 @@
     },
     "today": {
       "action": {
-        "registerArrival": "Register arrival",
-        "registerDeparture": "Register departure",
-        "resendLink": "Send again",
-        "sendLink": "Send check-in link"
+        "openCheckIn": "View check-in",
+        "registerDeparture": "Register departure"
       },
       "arrivalLoadFailed": "The booking could not be opened. Try again.",
       "filterLabel": "Show by type",
@@ -8618,12 +8618,25 @@
         "arrived": "Arrival registered",
         "cleaning": "Cleaning: {{status}}",
         "departed": "Departure registered",
-        "docsOk": "Documents ok",
+        "docsOk": "Check-in details complete",
+        "submittedIncomplete": "Form submitted · guest details incomplete",
         "linkNotSent": "Check-in link not sent yet",
         "linkSent": "Link sent: waiting for the guest",
-        "noCleaning": "No cleaning requested"
+        "noCleaning": "No cleaning requested",
+        "inProgress": "Online check-in in progress",
+        "expired": "Check-in link expired",
+        "unknown": "Check-in status unavailable"
       },
-      "title": "Today"
+      "title": "Today",
+      "partial": "The dashboard shows only part of today’s activity.",
+      "empty": {
+        "arrivals": "No arrivals today for the selected properties.",
+        "departures": "No departures today for the selected properties.",
+        "cleaning": "No cleaning today for the selected properties.",
+        "jobs": "No service jobs today for the selected properties."
+      },
+      "readOnlyArrival": "When the guest arrives, a team member with booking access can register their arrival. You can review the online check-in status here.",
+      "arrivalsLabel": "Today’s arrivals"
     },
     "otaStatus": {
       "title": "OTA Channel Status",
@@ -13520,6 +13533,7 @@
       "createLease": "Create lease"
     },
     "contracts": {
+      "openProperties": "Open properties",
       "all": "All leases",
       "title": "Your leases"
     },
@@ -13631,6 +13645,9 @@
       "description": "Update the details of {{name}}"
     },
     "detail": {
+      "viewRequests": "View all service requests",
+      "viewTenants": "Open the tenant directory",
+      "openRentSchedule": "Check rent payments",
       "address": "Address",
       "apeMissing": "No APE uploaded. The energy performance certificate is required to create a lease: upload it below.",
       "apePresent": "APE on file: you can create a lease for this property.",
@@ -20659,7 +20676,8 @@
         "steps": [
           "Sign in and complete the required profile and consent steps. If invited to an organisation, open the invitation with the intended recipient account.",
           "Choose Short-term rentals, Long-term rentals, Administration or Suppliers. Available areas and actions depend on your role and assigned properties.",
-          "Check the organisation shown in the header. Use the sidebar on desktop or the bottom bar and More on mobile. Global search helps you find accessible pages.",
+          "Check the area and organization at the top. On a phone, open More to switch areas. On a computer, use the sidebar selector. Choose Search to find pages you can access.",
+          "Ask CasaZen finds accessible pages by name. In short-term rentals, ask which arrivals today have incomplete check-in. Check the scope shown and open a booking to verify it. The demo uses sample records. You can also open arrivals directly from the Dashboard.",
           "To start operations: prepare properties, check availability and rates, enter bookings, complete guest details and review upcoming reporting tasks."
         ]
       },
@@ -20678,6 +20696,7 @@
         "keywords": "arrivals departures check in checkout blocks",
         "steps": [
           "Open Bookings to use the list or calendar. Check the property, dates, party size, status and amounts before creating or editing a stay.",
+          "From the Dashboard, under Today, choose one property or all assigned properties. In arrivals, select the check-in link to open Documents for the booking. Check the property, dates and status. If data is partial, open the source record before acting. Arrival dates use Rome time.",
           "Use manual calendar blocks to close unavailable dates. A calendar block does not necessarily include a full booking or guest details.",
           "Check booking details before recording arrival. The check-in link lets guests complete required information; completing it does not submit an Alloggiati report.",
           "At departure, open the check-out flow and review the information shown. Check stay status and payment status separately."
@@ -20718,6 +20737,7 @@
         "keywords": "stripe refunds revenue conversation",
         "steps": [
           "Open Payments or the booking to check amounts and status. Distinguish pending from successful payments and verify any refund outcome.",
+          "When the booking offers arrival instructions, review and edit the draft, then copy it to Messages. To send it, use Messages and check the recipient, channel and text.",
           "Available methods depend on your organisation and booking site configuration. A booking or payment request alone does not prove payment was received.",
           "In the Payment tab of the booking you find the Invoice data: who the invoice is made out to and where the data comes from (your channel manager, the guest at check-in, edited by you). Check or correct the data with the button of the section; people who do not manage payments can read it but not change it. The guest can ask for an invoice at check-in and write their data: if they leave it empty, add it yourself.",
           "For supported direct bookings, open the conversation from the booking to message the guest. It remains writable through the seventh day after check-out, then becomes read-only.",
@@ -20738,7 +20758,7 @@
         "title": "Long-term rentals and leases",
         "keywords": "landlords tenants energy certificate rli rent signature",
         "steps": [
-          "In Long-term rentals, select a property and start the guided lease flow. Complete landlords, tenants, financial terms and required documents, including the energy certificate where applicable.",
+          "In Long-term rentals, open Properties and choose a home. For a rented home, Check rent payments opens the installments for its current lease. The Leases tab also shows leases in preparation.",
           "Resume a saved draft and review missing information before confirmation. If two tabs edit the same draft, reload the latest data before retrying.",
           "Review the lease before downloading it for signature. Downloading is not proof that it has been signed or registered.",
           "Check registration statuses, available receipts and rent payments in the lease record. Generating a file does not complete registration; verify the actual outcome through the channel used."
@@ -24836,7 +24856,8 @@
       "savedHint": "You can change them from the “Cookies” link at the bottom of the page."
     },
     "demoBanner": {
-      "message": "Demo Mode - No authentication required. All data is simulated."
+      "message": "Demo · Sample data",
+      "guided": "Demo · Read-only sample data"
     },
     "confirm": "Confirm",
     "cancel": "Cancel",
@@ -24951,6 +24972,30 @@
     "continue": "Continue to sign up"
   },
   "site": {
+    "tour": {
+      "shortCta": "See today’s arrivals",
+      "longCta": "Check a lease",
+      "intro": "Choose a demo with synthetic data. Check an arrival or a lease in two steps, without creating an account.",
+      "sampleDay": "Demo · Synthetic data for {{day}}",
+      "shortTitle": "Arrivals for the day",
+      "longTitle": "Rental property",
+      "openStay": "Open the booking for {{guest}} · {{property}}",
+      "openProperty": "Open {{property}}",
+      "checkInState": "Online check-in in progress",
+      "checkInStep": "The guest has started entering their details. Check that their documents are complete before registering the arrival.",
+      "leaseState": "Registered, active lease",
+      "rentState": "Monthly rent {{rent}} EUR. No overdue instalments in this example.",
+      "contactTitle": "Use CasaZen for your properties",
+      "inviteText": "Request an invitation. An email will open for you to review and send.",
+      "referralText": "Access is by invitation. You can write to the host who introduced you to CasaZen. Add their address in your email app.",
+      "referralBody": "Hi, I tried the CasaZen demo. Could you invite me as a host?",
+      "referralCta": "Email your referring host",
+      "haveInvite": "Already have an invitation?",
+      "inviteOnlyText": "Open the original link in your email or paste the host invitation link for this site here.",
+      "inviteLabel": "CasaZen invitation link",
+      "inviteError": "Use the full host invitation link you received for this site.",
+      "openInvite": "Open your invitation"
+    },
     "meta": {
       "home": {
         "title": "CasaZen | Rental management for short- and long-term lets in Italy",

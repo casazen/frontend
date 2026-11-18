@@ -1,5 +1,6 @@
 import axios, { isAxiosError } from 'axios';
 import type { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import { isGuidedDemo } from '@/lib/guided-demo/session';
 import { apiConfig } from '@/config/api.config';
 import { ACCOUNT_INACTIVE_CODE, AuthTokenUnavailableError, getProblemCode } from '@/lib/api-errors';
 
@@ -123,6 +124,10 @@ function auth0ErrorCode(error: unknown): string {
 }
 
 async function attachAccessToken(config: InternalAxiosRequestConfig): Promise<InternalAxiosRequestConfig> {
+  if (isGuidedDemo()) {
+    config.adapter = (await import('@/lib/guided-demo/adapter')).guidedDemoAdapter;
+    return config;
+  }
   if (config.public) return config;
 
   const getAccessToken = authHandlers?.getAccessToken;

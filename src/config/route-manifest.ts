@@ -1969,13 +1969,17 @@ export function getDefaultRoute(contextKey: AppContextKey): string {
   return ROUTE_MANIFEST.find((entry) => entry.context === contextKey && entry.isDefault)?.path ?? '/app/choose-context';
 }
 
+/** Access to a product module for this account, in addition to the area's permissions and rollout flags. */
+type PathAccess = (path: string) => boolean;
+
 /** True when the user may open the page: permissions, and the feature flag when the page has one. */
 function isEntryAvailable(
   entry: RouteManifestEntry,
   hasPermission?: PermissionPredicate,
   features?: Partial<FeatureFlags>,
+  canOpenPath?: PathAccess,
 ): boolean {
-  return hasEntryPermission(entry, hasPermission) && isEntryFeatureEnabled(entry, features);
+  return hasEntryPermission(entry, hasPermission) && isEntryFeatureEnabled(entry, features) && (canOpenPath?.(entry.path) ?? true);
 }
 
 const PLACEMENT_RANK: Record<NavPlacement, number> = { primary: 0, secondary: 1, footer: 2 };
@@ -2009,12 +2013,13 @@ function resolveNavEntries(
   contextKey: AppContextKey,
   hasPermission?: PermissionPredicate,
   features?: Partial<FeatureFlags>,
+  canOpenPath?: PathAccess,
 ): ContextNavEntries {
   const available = ROUTE_MANIFEST.filter(
     (entry) =>
       entry.context === contextKey &&
       (entry.navPlacement !== undefined || entry.navParent !== undefined) &&
-      isEntryAvailable(entry, hasPermission, features),
+      isEntryAvailable(entry, hasPermission, features, canOpenPath),
   );
   const menuPaths = new Set(available.filter((entry) => entry.navPlacement !== undefined).map((entry) => entry.path));
 
@@ -2038,8 +2043,9 @@ export function getVisibleNavEntries(
   contextKey: AppContextKey,
   hasPermission?: PermissionPredicate,
   features?: Partial<FeatureFlags>,
+  canOpenPath?: PathAccess,
 ): RouteManifestEntry[] {
-  return resolveNavEntries(contextKey, hasPermission, features).menu;
+  return resolveNavEntries(contextKey, hasPermission, features, canOpenPath).menu;
 }
 
 export function getPrimaryNavEntries(
@@ -2077,8 +2083,9 @@ export function getBottomNavEntries(
   contextKey: AppContextKey,
   hasPermission?: PermissionPredicate,
   features?: Partial<FeatureFlags>,
+  canOpenPath?: PathAccess,
 ): RouteManifestEntry[] {
-  return getVisibleNavEntries(contextKey, hasPermission, features)
+  return getVisibleNavEntries(contextKey, hasPermission, features, canOpenPath)
     .filter((entry) => entry.navBottom !== undefined)
     .sort((a, b) => (a.navBottom ?? 0) - (b.navBottom ?? 0));
 }
@@ -2091,9 +2098,10 @@ export function getNavChildren(
   parentPath: string,
   hasPermission?: PermissionPredicate,
   features?: Partial<FeatureFlags>,
+  canOpenPath?: PathAccess,
 ): RouteManifestEntry[] {
   return ROUTE_MANIFEST.filter(
-    (entry) => entry.navParent === parentPath && isEntryAvailable(entry, hasPermission, features),
+    (entry) => entry.navParent === parentPath && isEntryAvailable(entry, hasPermission, features, canOpenPath),
   ).sort(byNavOrder);
 }
 
@@ -2107,15 +2115,16 @@ export function getNavSection(
   pathname: string,
   hasPermission?: PermissionPredicate,
   features?: Partial<FeatureFlags>,
+  canOpenPath?: PathAccess,
 ): RouteManifestEntry[] {
   const place = pathname.replace(/\/+$/, '') || '/';
   const page = ROUTE_MANIFEST.find((entry) => entry.path === place);
   if (!page) return [];
 
   const head = page.navParent === undefined ? page : ROUTE_MANIFEST.find((entry) => entry.path === page.navParent);
-  if (!head || head.navParent !== undefined || !isEntryAvailable(head, hasPermission, features)) return [];
+  if (!head || head.navParent !== undefined || !isEntryAvailable(head, hasPermission, features, canOpenPath)) return [];
 
-  const section = [head, ...getNavChildren(head.path, hasPermission, features)];
+  const section = [head, ...getNavChildren(head.path, hasPermission, features, canOpenPath)];
   return section.length > 1 && section.includes(page) ? section : [];
 }
 
@@ -2127,8 +2136,9 @@ export function getNavMatchEntries(
   contextKey: AppContextKey,
   hasPermission?: PermissionPredicate,
   features?: Partial<FeatureFlags>,
+  canOpenPath?: PathAccess,
 ): RouteManifestEntry[] {
-  const { menu, hanging } = resolveNavEntries(contextKey, hasPermission, features);
+  const { menu, hanging } = resolveNavEntries(contextKey, hasPermission, features, canOpenPath);
   return [...menu, ...hanging];
 }
 
@@ -2154,12 +2164,12 @@ export function getContextNav(
   contextKey: AppContextKey,
   hasPermission?: PermissionPredicate,
   features?: Partial<FeatureFlags>,
-  options: { withoutBottom?: boolean } = {},
+  options: { withoutBottom?: boolean; canOpenPath?: PathAccess } = {},
 ): ContextNav {
   const sections: NavSection[] = [];
   const more: RouteManifestEntry[] = [];
   const footer: RouteManifestEntry[] = [];
-  for (const entry of getVisibleNavEntries(contextKey, hasPermission, features)) {
+  for (const entry of getVisibleNavEntries(contextKey, hasPermission, features, options.canOpenPath)) {
     if (options.withoutBottom && entry.navBottom !== undefined) continue;
     if (entry.navPlacement === 'footer') {
       footer.push(entry);

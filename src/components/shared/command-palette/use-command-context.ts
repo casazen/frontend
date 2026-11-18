@@ -1,3 +1,4 @@
+import { useCommercialRouteAccess } from '@/hooks/use-commercial-profile';
 import { useContext, useMemo } from 'react';
 import { QueryClientContext } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -19,6 +20,7 @@ export function useCommandContext(activeArea: AppContextKey): CommandContext {
   const { t } = useTranslation();
   const { locale, setLocale } = useAppLocale();
   const { contexts, hasPermission, getDefaultRoute } = useWorkspace();
+  const canOpenPath = useCommercialRouteAccess();
   const { flags } = useFeatureFlags();
   const { logout } = useAuth();
   const queryClient = useContext(QueryClientContext) ?? null;
@@ -31,6 +33,7 @@ export function useCommandContext(activeArea: AppContextKey): CommandContext {
       areas: getAccessibleAreas(contexts),
       hasPermission,
       flags,
+      canOpenPath,
       getDefaultRoute,
       queryClient,
       supportEmail: supportConfig.email,
@@ -43,6 +46,6 @@ export function useCommandContext(activeArea: AppContextKey): CommandContext {
         },
       },
     }),
-    [t, locale, activeArea, contexts, hasPermission, flags, getDefaultRoute, queryClient, setLocale, logout],
+    [t, locale, activeArea, contexts, hasPermission, flags, canOpenPath, getDefaultRoute, queryClient, setLocale, logout],
   );
 }

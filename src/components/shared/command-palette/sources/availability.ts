@@ -15,7 +15,7 @@ import type { CommandContext } from '../types';
  */
 export function openablePage(context: CommandContext, pattern: string): RouteManifestEntry | undefined {
   const entry = getManifestEntry(pattern);
-  if (!entry) return undefined;
+  if (!entry || context.canOpenPath?.(entry.path) === false) return undefined;
   if (!context.areas.some((area) => area.key === entry.context)) return undefined;
   if (!hasEntryPermission(entry, context.hasPermission)) return undefined;
   return isEntryFeatureEnabled(entry, context.flags) ? entry : undefined;

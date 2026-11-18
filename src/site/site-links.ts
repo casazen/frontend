@@ -9,3 +9,8 @@
 export function inviteHref(email: string | null, subject: string): string | null {
   return email ? `mailto:${email}?subject=${encodeURIComponent(subject)}` : null;
 }
+
+/** The visitor picks their referring host as the recipient in their own mail client. */
+export function referralHref(subject: string, body: string): string {
+  return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}

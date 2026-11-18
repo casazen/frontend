@@ -1,13 +1,12 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Check, type LucideIcon } from 'lucide-react';
+import { Check, ChevronRight, type LucideIcon } from 'lucide-react';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import { useDetailDrawer } from '@/components/shared/detail-drawer/use-detail-drawer';
 import { UnreadMessagesBadge } from '@/components/shared/unread-messages-badge';
 import { Button } from '@/components/ui/button';
 import { useApproveBookingRequest, useDeclineBookingRequest } from '@/queries/use-bookings';
-import { useResendCheckInLink } from '@/queries/use-checkin';
 import { useRefreshDashboard } from '@/queries/use-dashboard';
 import { cn } from '@/lib/utils';
 import type { HomeRow, RowAction } from '../lib/home-model';
@@ -18,17 +17,6 @@ const TOUCH = 'h-auto min-h-11 whitespace-normal py-2 text-center leading-tight'
 // The title and the line under it are one control, as wide as the column and at least 44 px high.
 const OPEN =
   'group/open flex min-h-11 min-w-0 flex-col justify-center rounded-md text-left outline-hidden ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
-
-/** "Invia link check-in" / "Invia di nuovo": the email goes at once and the toast says what really happened. */
-function SendLinkButton({ action, ariaLabel }: { action: Extract<RowAction, { kind: 'sendLink' }>; ariaLabel: string }) {
-  const send = useResendCheckInLink(action.bookingId);
-  const refresh = useRefreshDashboard();
-  return (
-    <Button variant="outline" size="sm" className={TOUCH} loading={send.isPending} aria-label={ariaLabel} onClick={() => send.mutate(undefined, { onSettled: refresh })}>
-      {action.label}
-    </Button>
-  );
-}
 
 /** Accept a "pay at the property" request, or decline it after a confirmation (the guest is emailed and the dates are released). */
 function RespondButtons({ action, name }: { action: Extract<RowAction, { kind: 'respond' }>; name: string }) {
@@ -72,7 +60,7 @@ function RespondButtons({ action, name }: { action: Extract<RowAction, { kind: '
   );
 }
 
-function RowActionControl({ action, name, onRegisterArrival }: { action: RowAction; name: string; onRegisterArrival?: (bookingId: string) => void }) {
+function RowActionControl({ action, name }: { action: RowAction; name: string }) {
   const { t } = useTranslation();
   // Several rows say the same ("Registra arrivo"): the name of the guest tells them apart, after the label.
   const ariaLabel = t('dashboard.row.actionFor', { action: action.label, name });
@@ -85,14 +73,6 @@ function RowActionControl({ action, name, onRegisterArrival }: { action: RowActi
           </Link>
         </Button>
       );
-    case 'registerArrival':
-      return (
-        <Button variant="outline" size="sm" className={TOUCH} aria-label={ariaLabel} onClick={() => onRegisterArrival?.(action.bookingId)}>
-          {action.label}
-        </Button>
-      );
-    case 'sendLink':
-      return <SendLinkButton action={action} ariaLabel={ariaLabel} />;
     case 'respond':
       return <RespondButtons action={action} name={name} />;
   }
@@ -105,17 +85,39 @@ interface HomeRowItemProps {
   /** The deadline above the title ("Da fare"), instead of under it. */
   noteFirst?: boolean;
   className?: string;
-  onRegisterArrival?: (bookingId: string) => void;
 }
 
 /**
  * A row of "Oggi" or "Da fare": what it is about (a link to its page, or to its drawer when the booking has one), a line
  * with a tone and, on the right, the one button that does what it asks.
  */
-export function HomeRowItem({ row, icon: Icon, noteFirst = false, className, onRegisterArrival }: HomeRowItemProps) {
+export function HomeRowItem({ row, icon: Icon, noteFirst = false, className }: HomeRowItemProps) {
+  const { t } = useTranslation();
   const drawer = useDetailDrawer();
+  const { search } = useLocation();
   const note = row.note ? <NoteLine note={row.note} /> : null;
   const done = row.done === true;
+
+  if (row.kind === 'arrivals') {
+    return (
+      <li data-testid="home-row" data-kind={row.kind} data-done={done || undefined}>
+        <Link
+          to={row.to}
+          state={{ arrivalsSearch: search }}
+          className={cn('group grid min-h-11 gap-1 rounded-md py-3 hover:bg-muted/60 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-x-4', className)}
+        >
+          <span className="min-w-0 space-y-1">
+            <span className="block break-words font-semibold">{row.title}</span>
+            <span className="block break-words text-sm text-foreground/75">{row.sub}</span>
+            {note}
+          </span>
+          <span className="inline-flex items-center gap-1 self-center text-sm font-semibold text-primary-text group-hover:underline">
+            {t('dashboard.today.action.openCheckIn')}<ChevronRight aria-hidden="true" className="size-4" />
+          </span>
+        </Link>
+      </li>
+    );
+  }
 
   return (
     <li
@@ -158,7 +160,7 @@ export function HomeRowItem({ row, icon: Icon, noteFirst = false, className, onR
 
       {row.action ? (
         <div className={cn('flex flex-wrap items-center gap-2 pt-1 sm:justify-end sm:pt-0', Icon ? 'col-start-2 sm:col-start-3' : 'col-start-1 sm:col-start-2')}>
-          <RowActionControl action={row.action} name={row.subject ?? row.title} onRegisterArrival={onRegisterArrival} />
+          <RowActionControl action={row.action} name={row.subject ?? row.title} />
         </div>
       ) : null}
     </li>

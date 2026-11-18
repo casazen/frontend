@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Check, Clock, Copy, Link2, Loader2, Send, TriangleAlert, type LucideIcon } from 'lucide-react';
@@ -9,6 +9,7 @@ import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { getHttpStatus } from '@/lib/api-errors';
 import { cn, copyTextToClipboard, formatDateTime } from '@/lib/utils';
 import { getCheckInSessionStatusLabel } from '@/lib/i18n-labels';
+import { useAlloggiatiStatus } from '@/queries/use-alloggiati';
 import { useCheckInLinkDelivery } from '@/queries/use-checkin-link-delivery';
 import {
   checkInEmailErrorLabel,
@@ -43,6 +44,8 @@ interface CheckInLinkPanelProps {
   bookingId: string;
   /** The host may generate and send links (booking.write). */
   canWrite: boolean;
+  /** Contextual actions are offered only after the session status has loaded. */
+  children?: ReactNode;
 }
 
 /** State of the link email, as recorded by the API: never "sent" when nothing left (A5-26). */
@@ -138,10 +141,12 @@ function DeliveryState({ delivery, line, link, copied, busy, onCopy }: DeliveryS
  * waiting for the chat, for the conversation or for the IP addresses, or failed, and offers «Copia link» to who may copy a link (`booking.write`). With the
  * connector off, or both flags off, it reads and shows nothing of it.
  */
-export function CheckInLinkPanel({ bookingId, canWrite }: CheckInLinkPanelProps) {
+export function CheckInLinkPanel({ bookingId, canWrite, children }: CheckInLinkPanelProps) {
   const { t } = useTranslation();
   const { flags } = useFeatureFlags();
   const { data: session, isLoading, isError, refetch } = useBookingCheckInSession(bookingId);
+  const submitted = session?.status === 'Completo' || session?.status === 'AlloggiatiInviato';
+  const guestData = useAlloggiatiStatus(bookingId, submitted);
   // The delivery runs in the backend only while the connector of the channel manager is on AND one of the two flags is (`ChatOn`, `ContactOn` of `CheckInLinkDeliveryService`). With the
   // connector off what the server still records is not for a screen: nothing is asked and nothing is drawn, and the panel is what it was.
   const deliveryOn = flags.octorateConnector && (flags.portalChatCheckInLink || flags.guestContactInfo);
@@ -172,7 +177,7 @@ export function CheckInLinkPanel({ bookingId, canWrite }: CheckInLinkPanelProps)
   }
 
   const status = session.status ?? null;
-  const completed = status === 'Completo' || status === 'AlloggiatiInviato';
+  const completed = submitted;
   const hasLink = status !== null && !completed;
   const busy = resend.isPending || create.isPending;
 
@@ -224,7 +229,11 @@ export function CheckInLinkPanel({ bookingId, canWrite }: CheckInLinkPanelProps)
         )}
       </div>
 
-      {completed && <p className="text-sm text-muted-foreground">{t('checkin.link.completed')}</p>}
+      {completed && (
+        <p className="text-sm text-foreground/75">
+          {t(guestData.isSuccess && guestData.data.dataComplete === false ? 'dashboard.today.note.submittedIncomplete' : 'checkin.link.completed')}
+        </p>
+      )}
       {deliveryData && deliveryLine ? (
         <DeliveryState
           delivery={deliveryData}
@@ -301,6 +310,7 @@ export function CheckInLinkPanel({ bookingId, canWrite }: CheckInLinkPanelProps)
           )}
         </div>
       )}
+      {children}
     </div>
   );
 }

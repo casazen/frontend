@@ -26,6 +26,7 @@ import { SEO_FEATURED_GUIDES, SEO_FEATURED_TAX_PAGES, SEO_HUB_PATH, type SeoFeat
 import { sitePageById } from '../site-pages';
 import type { SiteLegal } from '../site-config';
 import { inviteHref } from '../site-links';
+import { TourEntry } from './demo-tour';
 import { HomeSearch } from './home-search';
 import { ChannelsCatalogue, ChannelsStrip, ProductShowcase, SiteExamples } from './home-showcase';
 import { HeroArt, ThemeSwatches } from './site-art';
@@ -135,11 +136,11 @@ export function HomePage({ legal }: { legal: SiteLegal }) {
               <span className="block text-terra-700">{t('site.home.hero.title3')}</span>
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-500">{t('site.home.hero.subtitle')}</p>
-            <div className="mt-9 flex flex-wrap items-center gap-3">
-              <InviteCta legal={legal} />
-              <SecondaryLink href="#come-funziona">{t('site.home.hero.ctaHow')}</SecondaryLink>
+            <p className="mt-4 max-w-xl text-base text-ink-600">{t('site.tour.intro')}</p>
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <TourEntry area="short" />
+              <TourEntry area="long" secondary />
             </div>
-            {legal.email && <p className="mt-5 text-sm text-ink-500">{t('site.invite.notice')}</p>}
           </div>
           <HeroArt />
         </div>

@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/layout/page-header';
 import type { PageHeaderMenuItem } from '@/components/layout/page-header-actions';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
+import { DemoTourContact } from '@/components/shared/demo-tour-contact';
 import { StatusBadge } from '@/components/shared/status/status-badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -108,7 +109,9 @@ export function LongRentPropertyDetailPage() {
   // A free property without a lease has its "Crea contratto" in the highlighted block; any other has it here, for another tenant.
   const blockCreatesLease = row?.status === 'Free' && !leaseOfRow(row);
   const menu: PageHeaderMenuItem[] = [
-    { label: t('longRentProperties.detail.edit'), icon: Pencil, to: longRentPropertyEditPath(property.id), testId: 'long-rent-property-edit' },
+    ...(hasPermission('long-rent', 'property.write')
+      ? [{ label: t('longRentProperties.detail.edit'), icon: Pencil, to: longRentPropertyEditPath(property.id), testId: 'long-rent-property-edit' }]
+      : []),
     ...(canCreateLease && !blockCreatesLease
       ? [{ label: t('longRentProperties.detail.newLease'), icon: FilePlus2, to: newLeaseForPropertyPath(property.id), testId: 'long-rent-property-new-lease' }]
       : []),
@@ -152,6 +155,8 @@ export function LongRentPropertyDetailPage() {
       ) : row ? (
         <LongRentPropertyNextStep row={row} canCreateLease={canCreateLease} />
       ) : null}
+
+      {row && <DemoTourContact area="long" />}
 
       {/* UI-07 Tabs: links with the tab in the address (`?tab=`), a menu on a phone. */}
       <Tabs label={t('longRentProperties.detail.tabsLabel')} items={tabs} value={panel} selectTestId="long-rent-property-tabs-select">

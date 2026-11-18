@@ -55,6 +55,14 @@ Esegue `vite build --mode demo` con `VITE_DEMO_MODE=true`. È rifiutata sull'amb
 - ⚠️ **Chiamate API**: partono con il token finto `demo-token` e il backend reale le rifiuta (401): le pagine con
   dati mostrano un errore, salvo i mock di Playwright
 
+## Dalla vetrina al primo compito
+
+Nella build normale i due pulsanti della vetrina aprono `/affitti-brevi#demo` e `/affitti-lunghi#demo`. Gli esempi si espandono direttamente nella pagina pubblica, con dati sintetici e senza iniziare una sessione PMS. L’HTML prerenderizzato ha un giorno di esempio dichiarato. Con JavaScript la data segue il calendario di Roma.
+
+Con `npm run dev:demo` o `npm run build:demo`, gli stessi pulsanti aprono le schermate operative della persona scelta. L’arrivo alla Villa del Lago e il contratto della Casa dei Tigli sono fixture di sola lettura. La demo guidata è attivata da `demoTour=1` su una rotta `/app/`, solo nella build demo. Anche le richieste senza fixture e le scritture terminano localmente. I normali test Playwright senza il parametro continuano a usare i mock HTTP. Per uscire dal tour, aprire l’area con `?demoTour=0` o aprire un profilo esplicito senza `demoTour=1` in una nuova navigazione.
+
+Dopo il primo compito, quando `VITE_SUPPORT_EMAIL` contiene un indirizzo valido, «Richiedi un invito» apre una bozza email. Se manca il recapito, nella vetrina chi ha già un invito host può aprirne il link verificato sul dominio CasaZen da cui proviene. Nel PMS dimostrativo può scrivere all’host che lo ha invitato, inserendo il destinatario nella sua app di posta. La pagina specifica quale passaggio sta offrendo. L’apertura della bozza non conferma una richiesta ricevuta.
+
 ## Vedere la nuova interfaccia (redesign)
 
 La nuova interfaccia (neutri caldi, un accento per area, font Inter) è l'unico aspetto dell'app: non c'è nessun

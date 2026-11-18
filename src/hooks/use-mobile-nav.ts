@@ -1,3 +1,4 @@
+import { useCommercialRouteAccess } from './use-commercial-profile';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { getAccessibleAreas } from '@/config/areas';
@@ -36,10 +37,11 @@ export function useMobileNav(contextKey: AppContextKey) {
   const permissionCheck = (ctx: AppContextKey, permission: string) =>
     hasPermission(ctx, permission);
 
-  const bottomEntries = getBottomNavEntries(contextKey, permissionCheck, flags);
-  const matchEntries = getNavMatchEntries(contextKey, permissionCheck, flags);
+  const canOpenPath = useCommercialRouteAccess();
+  const bottomEntries = getBottomNavEntries(contextKey, permissionCheck, flags, canOpenPath);
+  const matchEntries = getNavMatchEntries(contextKey, permissionCheck, flags, canOpenPath);
   // What the bar does not list: the sheet of "Altro" holds it, and the counters of these entries show on "Altro".
-  const moreEntries = getVisibleNavEntries(contextKey, permissionCheck, flags).filter((entry) => entry.navBottom === undefined);
+  const moreEntries = getVisibleNavEntries(contextKey, permissionCheck, flags, canOpenPath).filter((entry) => entry.navBottom === undefined);
   const hasMore = moreEntries.length > 0 || getAccessibleAreas(contexts).length > 1;
 
   const hasBar = bottomEntries.length > 0 || hasMore;

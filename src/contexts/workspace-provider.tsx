@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { contextsApi, type ContextBootstrapDto } from '@/api/contexts';
 import { AREA_ORDER } from '@/config/areas';
 import { getDefaultRoute, type AppContextKey } from '@/config/route-manifest';
+import { isGuidedDemo } from '@/lib/guided-demo/session';
 import { getDemoUser, isDemoMode } from '@/config/demo.config';
 import { useAuth } from '@/hooks/use-auth';
 import { isAccountInactiveError } from '@/lib/api-errors';
@@ -145,7 +146,10 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       const authUser: UserWithRoles = { roles: roleSignature ? roleSignature.split('|') : [] };
 
       if (isDemoMode) {
-        const fallback = deriveContextsFromRoles(authUser);
+        const derived = deriveContextsFromRoles(authUser);
+        const fallback = isGuidedDemo() ? derived.map((context) => ({
+          ...context, permissions: context.permissions.filter((permission) => permission.endsWith('.read')),
+        })) : derived;
         if (!mounted) return;
         setContexts(fallback);
         const stored = readStoredContext();

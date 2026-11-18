@@ -70,7 +70,7 @@ export function Section({ title, intro, children, tone = 'plain', icon, tint = '
       {tone === 'ink' ? (
         <CasaZenRing size={420} color="#ff9b6b" className="pointer-events-none absolute -right-24 -top-28 opacity-[0.12]" />
       ) : null}
-      <div className="relative mx-auto max-w-6xl px-5 py-16 sm:py-20">
+      <div className="relative mx-auto max-w-6xl px-5 py-8 sm:py-20">
         {icon ? (
           <div className="mb-6">
             <IconTile icon={icon} tint={tint} large />
@@ -148,23 +148,23 @@ export function BulletList({ items }: { items: string[] }) {
 const BUTTON = 'inline-flex items-center justify-center rounded-full px-6 py-3 text-base font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2';
 
 /** The call to action. `inverse` is the same button on a dark band. */
-export function PrimaryLink({ href, children, inverse = false }: { href: string; children: ReactNode; inverse?: boolean }) {
+export function PrimaryLink({ href, children, inverse = false, onClick }: { href: string; children: ReactNode; inverse?: boolean; onClick?: () => void }) {
   const colors = inverse
     ? 'bg-terra-400 text-ink-800 hover:bg-terra-300 focus-visible:outline-white'
     : 'bg-terra-600 text-white hover:bg-terra-800 focus-visible:outline-terra-700';
   return (
-    <a href={href} className={`${BUTTON} ${colors} shadow-sm`}>
+    <a href={href} onClick={onClick} className={`${BUTTON} ${colors} shadow-sm`}>
       {children}
     </a>
   );
 }
 
-export function SecondaryLink({ href, children, inverse = false }: { href: string; children: ReactNode; inverse?: boolean }) {
+export function SecondaryLink({ href, children, inverse = false, onClick }: { href: string; children: ReactNode; inverse?: boolean; onClick?: () => void }) {
   const colors = inverse
     ? 'border border-white/40 text-white hover:bg-white/10 focus-visible:outline-white'
     : 'border border-ink-700/25 bg-white/70 text-ink-800 hover:border-ink-700/60 hover:bg-white focus-visible:outline-terra-700';
   return (
-    <a href={href} className={`${BUTTON} ${colors}`}>
+    <a href={href} onClick={onClick} className={`${BUTTON} ${colors}`}>
       {children}
     </a>
   );
@@ -175,7 +175,7 @@ export function PageHeader({ title, intro, children }: { title: string; intro: s
   return (
     <section className="relative overflow-hidden border-b border-ink-700/10 bg-gradient-to-b from-terra-50 to-cream-50">
       <CasaZenRing size={360} className="pointer-events-none absolute -right-20 -top-24 opacity-[0.09]" />
-      <div className="relative mx-auto max-w-6xl px-5 py-16 sm:py-20">
+      <div className="relative mx-auto max-w-6xl px-5 py-8 sm:py-20">
         <h1 className="max-w-3xl font-display text-4xl font-semibold tracking-tight text-ink-800 sm:text-5xl">{title}</h1>
         <p className="mt-5 max-w-3xl text-lg leading-relaxed text-ink-500">{intro}</p>
         {children && <div className="mt-8 flex flex-wrap gap-3">{children}</div>}
