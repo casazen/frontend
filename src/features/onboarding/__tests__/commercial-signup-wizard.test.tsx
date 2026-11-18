@@ -105,9 +105,10 @@ describe('commercial profile and configuration', () => {
     expect(screen.getByText(/Ne sarai titolare e amministratore/)).toBeVisible();
     const name = screen.getByRole('textbox', { name: 'Nome dell’agenzia' });
     expect(name).toBeRequired();
-    expect(name).toHaveAccessibleDescription('Inserisci il nome dell’agenzia per continuare.');
+    expect(name).toHaveAccessibleDescription('Inserisci il nome dell’agenzia per andare al riepilogo.');
     fireEvent.change(name, { target: { value: '   ' } });
-    expect(screen.getByRole('button', { name: 'Vai al riepilogo' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Vai al riepilogo' }));
+    expect(name).toHaveFocus();
     fireEvent.change(name, { target: { value: 'Nuova Agenzia' } });
     expect(screen.getByRole('button', { name: 'Vai al riepilogo' })).toBeEnabled();
   });

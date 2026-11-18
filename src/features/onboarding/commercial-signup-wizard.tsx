@@ -328,7 +328,7 @@ function SignupFlow({ profile }: { profile: UserDetail | undefined }) {
                   </label>;
                 })}</div>
               </section>
-              <div className="flex justify-between gap-3"><Button variant="ghost" onClick={() => setStep('profile')}><ArrowLeft className="size-4" />{t('commercial.back')}</Button><Button onClick={review} disabled={!plan || plans.isError || catalog.isPending || catalog.isError}>{t('commercial.review')}<ArrowRight className="size-4" /></Button></div>
+              <div className="flex justify-end gap-3"><Button onClick={review} disabled={!plan || plans.isError || catalog.isPending || catalog.isError}>{t('commercial.review')}<ArrowRight className="size-4" /></Button></div>
             </>}
 
             {currentStep === 'summary' && (!consenting ? <section className="space-y-5 rounded-2xl border bg-white p-6">
