@@ -2,7 +2,7 @@
 
 ## Prima e dopo
 
-Il confronto parte dalla revisione `92c71f3e` di frontend. Il manifesto contiene 167 destinazioni nelle cinque aree, incluse nove rotte di attivazione da `onboarding-routes.ts`. Le tabelle riportano il menu del checkout per entrambe le versioni. Le differenze si concentrano sugli ingressi dal compito, l’orientamento su telefono e la visibilità per abbonamento.
+Il confronto parte dalla revisione `92c71f3e` di frontend. La mappa finale comprende anche le impostazioni AI integrate da `develop` nella revisione `12315b61`. Il manifesto passa da 167 a 168 destinazioni nelle cinque aree, incluse nove rotte di attivazione da `onboarding-routes.ts`. Le differenze si concentrano sugli ingressi dal compito, l’orientamento su telefono e la visibilità per abbonamento.
 
 | Compito e ruolo | Percorso precedente | Percorso consegnato | Attrito ed evidenza |
 |---|---|---|---|
@@ -22,6 +22,7 @@ L’evidenza di navigazione deriva dal router, dai componenti e dai test con fix
 - Il backend restituisce aree e permessi in `/api/me/contexts`. L’accesso a un immobile o a una prenotazione si verifica anche sul server. Tutti i permessi elencati in una cella sono necessari. “Area” indica il solo accesso a quell’area. I flag elencati con “o” sono alternativi. I moduli commerciali di un nuovo account si aggiungono a questi controlli.
 - L'intestazione offre ricerca, Guida, menu profilo e Chiedi a CasaZen nelle aree operative. Il profilo apre anche lingua e uscita. La Guida apre `/app/<area>/help` per l’area corrente. Il selettore mostra le sole aree disponibili. Le schermate non autorizzate usano la pagina riservata o il redirect previsto dal guard.
 - Desktop usa gruppi laterali con nomi e contatori. Da 768 a 1023 px la sidebar è una barra di icone con nomi accessibili. Sotto 768 px la barra inferiore ha fino a quattro destinazioni più Altro. I tab di sezione diventano un selettore sulle larghezze strette. Per il fornitore le pagine figlie sono collegamenti nell’intestazione della sezione.
+- In Affitti brevi le impostazioni Assistente e AI Agents, prima collegate direttamente a Impostazioni, si aprono da Impostazioni → AI. Il collaboratore con scrittura sugli immobili può aprire AI da Altro. La sezione mostra i moduli abilitati al rilascio, con un collegamento operativo per i moduli inclusi. La gestione del piano è riservata agli amministratori autorizzati. Sul record di ciascun modulo, la barra laterale evidenzia la voce accessibile da cui discende.
 - Una pagina figlia con permesso e modulo attivi il cui padre è inaccessibile passa ad Altro su telefono e desktop. La stessa visibilità alimenta ricerca e contatori. I link di record richiedono un record visibile e un identificatore assegnato dal servizio. Gli indirizzi di compatibilità portano alla funzione attuale.
 - ¹ Il gestore del piano è determinato dalla policy di fatturazione dell’organizzazione. Dove previsto, un accesso diretto di un altro membro mostra chi può intervenire. Nel contesto Staff il controllo è quello della piattaforma.
 
@@ -64,7 +65,7 @@ Prefisso di ogni destinazione `/app/short-rent`. La barra indica il posto da sin
 | Alloggiati / Alloggiati | `alloggiati` | Tab · `compliance` | Come desktop | `booking.read` |
 | Report Alloggiati / Alloggiati reports | `alloggiati/reports` | Tab · `compliance` | Come desktop | `booking.read` |
 | Coda di approvazione / Approval Queue (tab Da approvare / To approve) | `approval-queue` | Tab · `/` | Come desktop | `approval.decide` |
-| Automazioni / Automations | `automations` | Tab · `settings/organization` | Come desktop | `property.write` · flag `routines` |
+| AI Agents / AI Agents | `automations` | Tab · `settings/ai` | Come desktop | `property.write` · flag `routines` · modulo `ai-agents` |
 | Scheda prenotazione / Booking details | `bookings/:id` | Prenotazioni, calendario, arrivi o risultato assistente | Come desktop | `booking.read` |
 | Check-in / Check-in | `bookings/:id/check-in` | Scheda prenotazione → check-in | Come desktop | `booking.write` |
 | Check-out / Check-out | `bookings/:id/checkout` | Scheda prenotazione → partenza | Come desktop | `booking.write` |
@@ -125,7 +126,8 @@ Prefisso di ogni destinazione `/app/short-rent`. La barra indica il posto da sin
 | Riscossioni / Collections | `reports/collections` | Report → apri | Come desktop | `payment.read` |
 | Imposta di soggiorno / Tourist tax | `reports/tourist-tax` | Report → apri | Come desktop | `payment.read` |
 | Recensioni / Reviews | `reviews` | Tab · `bookings` | Come desktop | `booking.read` |
-| Assistente / Assistant | `settings/assistant` | Tab · `settings/organization` | Come desktop | `property.write` · flag `messageAssistant` |
+| AI / AI | `settings/ai` | Tab · `settings/organization` | Come desktop | `property.write` |
+| Assistente / Assistant | `settings/assistant` | Tab · `settings/ai` | Come desktop | `property.write` · flag `messageAssistant` · modulo `messages-ai` |
 | Fatturazione / Billing | `settings/billing` | Piano → fatturazione | Come desktop | Area · gestore piano¹ |
 | Dominio pubblico / Public domain | `settings/domain` | Tab · `vetrina` | Come desktop | `property.write` |
 | Integrazione / Integration | `settings/integration` | Tab · `settings/organization` | Come desktop | Area · flag `octorateOnboarding` · gestore piano¹ |

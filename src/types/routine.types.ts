@@ -84,6 +84,7 @@ export interface RoutineCondition {
 }
 
 export interface Routine {
+  agentObjective?: string | null;
   id: string;
   orgId: string;
   name: string;
@@ -96,6 +97,7 @@ export interface Routine {
 }
 
 export interface CreateRoutineDto {
+  agentObjective?: string | null;
   name: string;
   eventType: RoutineEventType;
   eventConfig?: RoutineEventConfig;
@@ -108,6 +110,7 @@ export interface CreateRoutineDto {
 
 /** A change to a routine: what is left out stays as it is (a condition the editor cannot show is left out, so it stays). */
 export interface UpdateRoutineDto {
+  agentObjective?: string | null;
   name?: string;
   eventType?: RoutineEventType;
   eventConfig?: RoutineEventConfig;
@@ -179,6 +182,7 @@ export interface RoutineActionCatalogItem {
 }
 
 export interface RoutineLibraryTemplate {
+  agentObjective: string;
   name: string;
   description: string;
   eventType: RoutineEventType;

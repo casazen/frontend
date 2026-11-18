@@ -80,6 +80,7 @@ describe('public site render (SEO-VETRINA)', () => {
       // Plain links with the words of the search, one click from the home page.
       expect(html, lng).toContain(`<a href="/p/affitti-brevi/lombardia/como"`);
       expect(html, lng).toContain(guide);
+      expect(html, lng).toContain('AI Agents');
       expect(html, lng).toContain(`<a href="/p/tassa-soggiorno/como"`);
       expect(html, lng).toContain(tax);
       for (const page of SEO_FEATURED_GUIDES) expect(html, `${lng} ${page.path}`).toContain(`href="${page.path}"`);

@@ -433,6 +433,9 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
     // «Impostazioni»: the organization, then the integration, the assistant and the automations (each behind its flag).
     '/app/short-rent/settings/organization': [
       '/app/short-rent/settings/integration',
+      '/app/short-rent/settings/ai',
+    ],
+    '/app/short-rent/settings/ai': [
       '/app/short-rent/settings/assistant',
       '/app/short-rent/automations',
     ],
@@ -509,7 +512,7 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
     expect(hanging.map((entry) => entry.path).sort()).toEqual(Object.values(SECTIONS).flat().sort());
   });
 
-  it('hangs only from an entry of the menus of the same area, and never from another page that hangs', () => {
+  it('reaches a menu or the profile within the same area, without a navigation cycle', () => {
     for (const entry of hanging) {
       const parent = entryOf(entry.navParent!);
       expect(parent.context, entry.path).toBe(entry.context);
@@ -517,10 +520,12 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
         // The one parent that is in no menu: the profile of the area, which the menu of the user leads to (below). Its pages are tabs of it.
         expect(parent.navPlacement, `${entry.path} hangs from ${parent.path}`).toBeUndefined();
         expect(parent.requiredPermissions, `${entry.path} hangs from ${parent.path}`).toEqual([]);
+      } else if (parent.navParent) {
+        expect(entryOf(parent.navParent).navPlacement).toBeDefined();
+        expect(parent.navParent).not.toBe(entry.path);
       } else {
         expect(parent.navPlacement, `${entry.path} hangs from ${parent.path}`).toBeDefined();
       }
-      expect(parent.navParent, `${entry.path} hangs from ${parent.path}`).toBeUndefined();
       // A child gets no independent menu or mobile bar entry. «Da fare» carries its counter in the section tabs.
       expect(entry.navPlacement, entry.path).toBeUndefined();
       expect(entry.navGroup, entry.path).toBeUndefined();
@@ -641,7 +646,6 @@ describe('route-manifest sections as tabs (UI-04a)', () => {
     for (const pathname of [
       '/app/short-rent/bookings/calendar',
       '/app/short-rent/marketplace',
-      '/app/short-rent/settings/organization', // the integration, the assistant and the automations are behind their flags, off here
       '/app/short-rent/bookings/create',
       '/app/short-rent/payments/6f1c9a52-1111-4222-8333-944455556666',
       '/app/long-rent/properties',
