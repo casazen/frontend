@@ -689,6 +689,8 @@
       },
       "path": {
         "now": "Adesso",
+        "scheduled": "Programmato",
+        "scheduledFor": "Programmato per {{when}}",
         "open": "Apri",
         "title": "I tuoi prossimi passi"
       },
