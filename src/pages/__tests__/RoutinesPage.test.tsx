@@ -190,9 +190,9 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       vi.mocked(routinesApi.getAll).mockResolvedValue([]);
       renderPage();
 
-      expect(await screen.findByTestId('routines-empty')).toHaveTextContent('Nessuna routine per ora');
+      expect(await screen.findByTestId('routines-empty')).toHaveTextContent('Nessun agente configurato');
       // One sentence on what a routine is, under the title.
-      expect(screen.getByText(/CasaZen esegue l’operazione in autonomia/)).toBeInTheDocument();
+      expect(screen.getByText(/l’AI valuta il soggiorno/)).toBeInTheDocument();
 
       fireEvent.click(within(screen.getByTestId('routines-empty')).getByRole('button', { name: 'Apri la libreria' }));
       expect(await screen.findByTestId('library-template-0')).toBeInTheDocument();
@@ -682,6 +682,7 @@ describe('the routines page (E01/F04/US02/T01)', () => {
 
       await waitFor(() => expect(routinesApi.create).toHaveBeenCalledTimes(1));
       expect(routinesApi.create).toHaveBeenCalledWith({
+        agentObjective: expect.any(String),
         name: 'Istruzioni prima dell\'arrivo',
         eventType: 'BeforeCheckin',
         eventConfig: { days: 2, hours: 0 },
@@ -712,6 +713,7 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       await waitFor(() => expect(routinesApi.create).toHaveBeenCalledTimes(1));
       // The action of the cleaning at check-out (no more a To do of the host), a time event with no delay (the time of the check-out of the property), and nothing to configure.
       expect(routinesApi.create).toHaveBeenCalledWith({
+        agentObjective: expect.any(String),
         name: 'Pulizia al check-out',
         eventType: 'AfterCheckout',
         eventConfig: { days: 0, hours: 0 },
@@ -732,6 +734,7 @@ describe('the routines page (E01/F04/US02/T01)', () => {
 
       await waitFor(() => expect(routinesApi.create).toHaveBeenCalledTimes(1));
       expect(routinesApi.create).toHaveBeenCalledWith({
+        agentObjective: expect.any(String),
         name: 'Richiesta di recensione',
         eventType: 'AfterCheckout',
         eventConfig: { days: 1, hours: 0 },
@@ -985,11 +988,11 @@ describe('the route of the routines page (E01/F04/US02/T01, behind the flag rout
     expect(entry?.requiredPermissions).toEqual(['property.write']);
     expect(entry?.featureFlag).toBe('routines');
     expect(entry?.navKey).toBe('nav.routines');
-    expect(entry?.navParent).toBe('/app/short-rent/settings/organization');
+    expect(entry?.navParent).toBe('/app/short-rent/settings/ai');
     // Not in "Altro" for who may open «Impostazioni»: the menus have no such section any more.
     expect(entry?.navPlacement).toBeUndefined();
-    expect(i18n.getFixedT('it')('nav.routines')).toBe('Automazioni');
-    expect(i18n.getFixedT('en')('nav.routines')).toBe('Automations');
+    expect(i18n.getFixedT('it')('nav.routines')).toBe('AI Agents');
+    expect(i18n.getFixedT('en')('nav.routines')).toBe('AI Agents');
   });
 
   it('RoutinesRoute_Flag_IsOffByDefaultWhileLoadingAndWhenTheAnswerIsNotTrue', () => {
@@ -1007,7 +1010,7 @@ describe('the route of the routines page (E01/F04/US02/T01, behind the flag rout
       expect(entry && isEntryFeatureEnabled(entry, features)).toBe(false);
       expect(getVisibleNavEntries('short-rent', everything, features).map((page) => page.path)).not.toContain(ROUTINES_PATH);
       expect(getSecondaryNavEntries('short-rent', everything, features).map((page) => page.path)).not.toContain(ROUTINES_PATH);
-      expect(getNavChildren('/app/short-rent/settings/organization', everything, features).map((page) => page.path)).not.toContain(ROUTINES_PATH);
+      expect(getNavChildren('/app/short-rent/settings/ai', everything, features).map((page) => page.path)).not.toContain(ROUTINES_PATH);
     }
   });
 
@@ -1020,9 +1023,9 @@ describe('the route of the routines page (E01/F04/US02/T01, behind the flag rout
     expect(entry && hasEntryPermission(entry, writer)).toBe(true);
     expect(entry && hasEntryPermission(entry, reader)).toBe(false);
     // The organization administrator finds it as a tab of «Impostazioni»; who may write the properties but not open «Impostazioni» finds it in "Altro".
-    expect(getNavChildren('/app/short-rent/settings/organization', admin, ON).map((page) => page.path)).toContain(ROUTINES_PATH);
+    expect(getNavChildren('/app/short-rent/settings/ai', admin, ON).map((page) => page.path)).toContain(ROUTINES_PATH);
     expect(getSecondaryNavEntries('short-rent', admin, ON).map((page) => page.path)).not.toContain(ROUTINES_PATH);
-    expect(getSecondaryNavEntries('short-rent', writer, ON).map((page) => page.path)).toContain(ROUTINES_PATH);
+    expect(getSecondaryNavEntries('short-rent', writer, ON).map((page) => page.path)).toContain('/app/short-rent/settings/ai');
     expect(getSecondaryNavEntries('short-rent', reader, ON).map((page) => page.path)).not.toContain(ROUTINES_PATH);
   });
 

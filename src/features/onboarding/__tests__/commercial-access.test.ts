@@ -9,6 +9,9 @@ describe('purchased modules and guided setup', () => {
     expect(commercialRouteAllowed(profile, '/app/short-rent/channels')).toBe(true);
     expect(commercialRouteAllowed(profile, '/app/short-rent/interventions')).toBe(false);
     expect(commercialRouteAllowed(profile, '/app/short-rent/fiscal')).toBe(false);
+    expect(commercialRouteAllowed(profile, '/app/short-rent/automations')).toBe(false);
+    expect(commercialRouteAllowed({ ...profile, commercialEnabledAddons: ['ai-agents'] }, '/app/short-rent/automations')).toBe(true);
+    expect(commercialRouteAllowed(profile, '/app/short-rent/settings/ai')).toBe(true);
   });
   it('does not recommend configuring extras the organization has not purchased', () => {
     expect(commercialPartAllowed(profile, 'properties')).toBe(true);

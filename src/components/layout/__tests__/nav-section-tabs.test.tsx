@@ -138,7 +138,7 @@ describe('NavSectionTabs (UI-04a)', () => {
   it('NavSectionTabs_Impostazioni_NamesTheTabOfThePageNotTheSection', () => {
     renderAt('/app/short-rent/settings/organization', { flags: { octorateOnboarding: true, messageAssistant: true } });
 
-    expect(labelsOf('Sezioni di Impostazioni')).toEqual(['Organizzazione', 'Integrazione', 'Assistente']);
+    expect(labelsOf('Sezioni di Impostazioni')).toEqual(['Organizzazione', 'Integrazione', 'AI']);
   });
 
   it('NavSectionTabs_StaffConsoleAndAmministrazione_HaveTabsTooAndTheSupplierAreaKeepsItsLinks', () => {

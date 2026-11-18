@@ -15694,7 +15694,7 @@
     "activities": "Activities",
     "inviteQr": "Invite QR codes",
     "reviews": "Reviews",
-    "routines": "Automations",
+    "routines": "AI Agents",
     "channelCommissions": "Channel commissions",
     "channels": "Channels and calendars",
     "verifications": "Verifications",
@@ -24352,9 +24352,22 @@
     "Supplier": "Supplier",
     "None": "Not activated"
   },
+  "aiSettings": {
+    "cleaningGoal": "Arrange cleaning after check-out for stays that took place.",
+    "instructionsGoal": "Send arrival instructions for confirmed bookings.",
+    "reviewGoal": "Invite guests to review completed direct stays.",
+    "documentReminderGoal": "Remind guests of document requirements before arrival for confirmed bookings.",
+    "title": "AI",
+    "provider": "Manage the platform provider, models and budget.",
+    "objective": "Agent objective",
+    "example": "Schedule cleaning for stays of at least three nights. For shorter stays, notify staff.",
+    "hint": "Use the booking channel, status, stay length and guest count. Leave blank to request all configured actions.",
+    "invalidPlan": "AI returned an invalid action plan. Execution stopped.",
+    "notSelected": "The agent skipped this action for this event."
+  },
   "routines": {
-    "dashboardActive_one": "{{count}} active routine",
-    "dashboardActive_other": "{{count}} active routines",
+    "dashboardActive_one": "{{count}} active AI agent",
+    "dashboardActive_other": "{{count}} active AI agents",
     "tag": "Guest profile tag",
     "savedTemplate": "Saved template",
     "aiCondition": "AI agent condition (optional)",
@@ -24451,10 +24464,10 @@
     },
     "conditions": "Conditions",
     "conditionsHint": "Without conditions the routine runs for every booking. Add some to narrow it down.",
-    "create": "Create routine",
+    "create": "Create agent",
     "createError": "Cannot create routine",
     "createSuccess": "Routine created successfully",
-    "createTitle": "New routine",
+    "createTitle": "New AI agent",
     "days": "days",
     "deactivatedSuccess": "Routine deactivated",
     "delete": "Delete",
@@ -24463,12 +24476,12 @@
     "deleteLogGoes": "The log of its runs is deleted too.",
     "deleteSuccess": "Routine deleted",
     "deleteTitle": "Delete the routine?",
-    "description": "When the configured event occurs, CasaZen carries out the operation automatically. For example, it can schedule cleaning with the property's cleaner at check-out.",
-    "editorDescription": "Choose when the routine starts and what CasaZen will do automatically. Results appear in the execution log.",
-    "editTitle": "Edit routine",
+    "description": "Choose an agent or build your own. At each event, AI assesses the stay and selects which of your authorized operations to run.",
+    "editorDescription": "Define the objective, trigger and allowed actions. Review decisions in the execution log.",
+    "editTitle": "Edit AI agent",
     "empty": {
-      "description": "Start from a ready routine in the library, or create your own.",
-      "title": "No routines yet"
+      "description": "Choose an agent from the library or create your first AI agent.",
+      "title": "No agents configured"
     },
     "events": {
       "activityCompleted": "Activity completed",
@@ -24507,7 +24520,7 @@
       "createInTestMode": "Create in test mode",
       "daysCount_one": "{{count}} day",
       "daysCount_other": "{{count}} days",
-      "description": "Start from a ready routine: you can edit it after creating it.",
+      "description": "Choose an agent and customize its objective.",
       "documentReminderDescription": "Reminds your guests to send their documents 3 days before check-in. It goes to every guest, also to those who already sent them: routines do not read the state of the documents yet.",
       "documentReminderTitle": "Documents reminder before arrival",
       "hoursCount_one": "{{count}} hour",
@@ -24518,7 +24531,7 @@
       "reviewDescription": "One day after check-out it asks for a review the guest who booked on your site, once for each booking. Bookings from the portals, cancelled ones and ones with no email address get no invitation, and the log says why.",
       "reviewTitle": "Review request",
       "setupCleaners": "Set who cleans",
-      "title": "Routine library",
+      "title": "AI Agents library",
       "unavailableNote": "It holds actions that are not available yet: you can only create it in test mode, where it is simulated and nothing is sent."
     },
     "loadError": "Cannot load routines",
@@ -24590,10 +24603,10 @@
     "name": "Name",
     "namePlaceholder": "E.g.: Send instructions 2 days before",
     "noActions": "No actions configured. Add at least one action.",
-    "noActiveRoutines": "You have no active routines. Create one or activate one from the library.",
+    "noActiveRoutines": "No active agents. Choose one from the library or create your own.",
     "noExecutions": "No executions recorded",
-    "noInactiveRoutines": "You have no inactive routines",
-    "noTestRoutines": "You have no routines in test mode",
+    "noInactiveRoutines": "No inactive agents",
+    "noTestRoutines": "No agents in test mode",
     "problem": {
       "messageTemplate": "Select a message template.",
       "tag": "Enter a tag to add to the guest profile.",
@@ -24612,7 +24625,7 @@
     "testModeOnSuccess": "Test mode enabled",
     "testTab": "Test",
     "timing": "Timing",
-    "title": "Automation routines",
+    "title": "AI Agents",
     "toggleActiveError": "Cannot change routine status",
     "toggleTestModeError": "Cannot change test mode",
     "unavailable": {
@@ -32066,6 +32079,10 @@
       "identification": {
         "title": "Guest identification",
         "text": "Guide guests through verification and check-in."
+      },
+      "ai-agents": {
+        "title": "AI Agents",
+        "text": "Ready-made and custom agents that manage stays, schedule cleaning and contact guests autonomously."
       },
       "messages-ai": {
         "title": "Messaging and AI assistant",

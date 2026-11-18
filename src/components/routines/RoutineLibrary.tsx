@@ -44,6 +44,7 @@ function buildTemplates(t: TFunction): LibraryEntry[] {
       setsCleaners: true,
       template: {
         name: t('routines.library.cleaningTitle'),
+        agentObjective: t('aiSettings.cleaningGoal'),
         description: t('routines.library.cleaningDescription'),
         eventType: 'AfterCheckout',
         // No delay: the cleaning is made at the time of the check-out of the property, as the server expects the ready routine (`{ hours: 0 }`).
@@ -55,6 +56,7 @@ function buildTemplates(t: TFunction): LibraryEntry[] {
       icon: MessageSquare,
       template: {
         name: t('routines.library.instructionsTitle'),
+        agentObjective: t('aiSettings.instructionsGoal'),
         description: t('routines.library.instructionsDescription'),
         eventType: 'BeforeCheckin',
         eventConfig: { days: 2, hours: 0 },
@@ -65,6 +67,7 @@ function buildTemplates(t: TFunction): LibraryEntry[] {
       icon: Star,
       template: {
         name: t('routines.library.reviewTitle'),
+        agentObjective: t('aiSettings.reviewGoal'),
         description: t('routines.library.reviewDescription'),
         eventType: 'AfterCheckout',
         eventConfig: { days: 1, hours: 0 },
@@ -77,6 +80,7 @@ function buildTemplates(t: TFunction): LibraryEntry[] {
       icon: FileWarning,
       template: {
         name: t('routines.library.documentReminderTitle'),
+        agentObjective: t('aiSettings.documentReminderGoal'),
         description: t('routines.library.documentReminderDescription'),
         eventType: 'BeforeCheckin',
         eventConfig: { days: 3, hours: 0 },

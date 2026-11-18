@@ -25,7 +25,7 @@ describe('route manifest: the settings of the assistant (E05/F05/US04/T02, behin
     expect(entry?.context).toBe('short-rent');
     expect(entry?.requiredPermissions).toEqual(['property.write']);
     expect(entry?.navKey).toBe('nav.assistant');
-    expect(entry?.navParent).toBe('/app/short-rent/settings/organization');
+    expect(entry?.navParent).toBe('/app/short-rent/settings/ai');
     expect(entry?.navPlacement).toBeUndefined();
     expect(entry?.featureFlag).toBe('messageAssistant');
   });
@@ -57,9 +57,9 @@ describe('route manifest: the settings of the assistant (E05/F05/US04/T02, behin
     expect(entry && hasEntryPermission(entry, writer)).toBe(true);
     expect(entry && hasEntryPermission(entry, reader)).toBe(false);
     // The organization administrator finds it as a tab of «Impostazioni»; who may write the properties but not open «Impostazioni» finds it in "Altro".
-    expect(getNavChildren('/app/short-rent/settings/organization', admin, ON).map((page) => page.path)).toContain(ASSISTANT_PATH);
+    expect(getNavChildren('/app/short-rent/settings/ai', admin, ON).map((page) => page.path)).toContain(ASSISTANT_PATH);
     expect(getSecondaryNavEntries('short-rent', admin, ON).map((page) => page.path)).not.toContain(ASSISTANT_PATH);
-    expect(getSecondaryNavEntries('short-rent', writer, ON).map((page) => page.path)).toContain(ASSISTANT_PATH);
+    expect(getSecondaryNavEntries('short-rent', writer, ON).map((page) => page.path)).toContain('/app/short-rent/settings/ai');
     expect(getSecondaryNavEntries('short-rent', reader, ON).map((page) => page.path)).not.toContain(ASSISTANT_PATH);
   });
 

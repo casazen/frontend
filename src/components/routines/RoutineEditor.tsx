@@ -71,6 +71,7 @@ export function RoutineEditor({ routine, availability, onSave, onCancel, isSavin
     };
   });
 
+  const [objective, setObjective] = useState(routine?.agentObjective ?? '');
   const [name, setName] = useState(initial.name);
   const [eventType, setEventType] = useState<RoutineEventType>(initial.eventType);
   const [days, setDays] = useState(initial.days);
@@ -127,6 +128,7 @@ export function RoutineEditor({ routine, availability, onSave, onCancel, isSavin
 
     const dto: CreateRoutineDto | UpdateRoutineDto = {
       name: name.trim(),
+      ...(objective.trim() || routine?.agentObjective ? { agentObjective: objective.trim() } : {}),
       eventType,
       eventConfig: isTimeBasedEvent ? { days: dayCount ?? 0, hours: hourCount ?? 0 } : {},
       ...(conditionToSend === undefined ? {} : { condition: conditionToSend }),
@@ -151,6 +153,14 @@ export function RoutineEditor({ routine, availability, onSave, onCancel, isSavin
           required
           data-testid="routine-name-input"
         />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="agent-objective">{t('aiSettings.objective')}</Label>
+        <textarea id="agent-objective" className="w-full rounded-md border bg-background p-3 text-sm"
+          rows={3} maxLength={500} value={objective} onChange={event => setObjective(event.target.value)}
+          placeholder={t('aiSettings.example')} aria-describedby="agent-objective-hint" />
+        <p id="agent-objective-hint" className="text-xs text-muted-foreground">{t('aiSettings.hint')}</p>
       </div>
 
       {/* Event Type */}

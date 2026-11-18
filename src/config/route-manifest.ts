@@ -563,6 +563,16 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
+    path: '/app/short-rent/settings/ai',
+    context: 'short-rent',
+    requiredPermissions: ['property.write'],
+    navParent: '/app/short-rent/settings/organization',
+    navKey: 'aiSettings.title',
+    navOrder: 2,
+    icon: 'Sparkles',
+    component: async () => ({ default: (await import('@/features/settings/ai-settings-page')).AiSettingsPage }),
+  },
+  {
     // The assistant of the guests' messages (E05/F05/US04/T02, NF-66): its rules, its properties and its situations, a tab of «Impostazioni». Only with the flag
     // `messageAssistant` (backend `MessageAssistant`, off by default): while it is off the tab is not there, the address leads to the home of the area and the server
     // answers 404 to every endpoint of the assistant. The page asks `property.write` (the exceptions and the answers of a property are written with it); inside it, the
@@ -573,7 +583,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: ['property.write'],
     featureFlag: 'messageAssistant',
     navKey: 'nav.assistant',
-    navParent: '/app/short-rent/settings/organization',
+    navParent: '/app/short-rent/settings/ai',
     navOrder: 2,
     icon: 'Sparkles',
     component: async () => ({ default: (await import('@/features/assistant/assistant-settings-page')).AssistantSettingsPage }),
@@ -590,7 +600,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: ['property.write'],
     featureFlag: 'routines',
     navKey: 'nav.routines',
-    navParent: '/app/short-rent/settings/organization',
+    navParent: '/app/short-rent/settings/ai',
     navOrder: 3,
     icon: 'Repeat',
     component: async () => ({ default: (await import('@/pages/RoutinesPage')).RoutinesPage }),
@@ -2016,7 +2026,7 @@ function resolveNavEntries(
       (entry.navPlacement !== undefined || entry.navParent !== undefined) &&
       isEntryAvailable(entry, hasPermission, features),
   );
-  const menuPaths = new Set(available.filter((entry) => entry.navPlacement !== undefined).map((entry) => entry.path));
+  const availablePaths = new Set(available.map((entry) => entry.path));
 
   // The profile of the area is no entry of a menu: the menu of the user leads to it, and nobody is without it (it asks no permission). The
   // pages that hang from it (Notifiche) are its tabs, found from the profile itself, so they take no place in the menus or in "Altro".
@@ -2026,8 +2036,8 @@ function resolveNavEntries(
   const hanging: RouteManifestEntry[] = [];
   for (const entry of available) {
     if (entry.navPlacement !== undefined) menu.push(entry);
-    else if (entry.navParent !== undefined && menuPaths.has(entry.navParent)) hanging.push(entry);
     else if (entry.navParent === profilePath) continue;
+    else if (entry.navParent !== undefined && availablePaths.has(entry.navParent)) hanging.push(entry);
     else menu.push({ ...entry, navPlacement: 'secondary' });
   }
   return { menu: menu.sort(byMenuOrder), hanging: hanging.sort(byNavOrder) };
@@ -2113,7 +2123,7 @@ export function getNavSection(
   if (!page) return [];
 
   const head = page.navParent === undefined ? page : ROUTE_MANIFEST.find((entry) => entry.path === page.navParent);
-  if (!head || head.navParent !== undefined || !isEntryAvailable(head, hasPermission, features)) return [];
+  if (!head || !isEntryAvailable(head, hasPermission, features)) return [];
 
   const section = [head, ...getNavChildren(head.path, hasPermission, features)];
   return section.length > 1 && section.includes(page) ? section : [];
