@@ -18,6 +18,19 @@ export interface CommercialAddon {
   agencyIncluded?: boolean;
   agencyPurchasable?: boolean;
   agencyPriceMonthly?: number | null;
+  includedInPlans?: PlanTier[];
+  ownerOffer?: { priceMonthly: number | null; purchasable: boolean };
+}
+export function addonsForTier(catalog: CommercialAddon[], tier: PlanTier): CommercialAddon[] {
+  if (tier === 'Agency') return catalog.map(addon => ({
+    ...addon,
+    purchasable: addon.agencyPurchasable === true,
+    priceMonthly: addon.agencyIncluded ? 0 : addon.agencyPriceMonthly ?? null,
+    includedInPlans: addon.agencyIncluded && addon.agencyPurchasable ? ['Agency'] : [],
+  }));
+  return catalog.map(addon => addon.includedInPlans?.includes(tier)
+    ? { ...addon, priceMonthly: 0, purchasable: true }
+    : (tier === 'Pro' || tier === 'Scale') && addon.ownerOffer ? { ...addon, ...addon.ownerOffer } : addon);
 }
 export const signupRentalType = (selection: CommercialSelection): RentalType => selection.rentalArea ?? (selection.profile === 'long-rent' ? 'LongTerm' : 'ShortTerm');
 export const allowsExtras = (tier: PlanTier) => tier !== 'Starter';

@@ -22,7 +22,7 @@ import { AreaPropertyPicker } from '../area-property-picker';
 import { RoleCard } from '../role-card';
 import { areaName } from '../team-labels';
 import { assignableRoles } from '../team-roles';
-import { usePickerProperties } from '../team-properties';
+import { usePickerProperties, type RentalArea } from '../team-properties';
 import { ACCOUNT_ROLES_PATH } from '../team-paths';
 import { hasFullAccess, inviteScopeOf, type InviteValues } from './invite-model';
 
@@ -96,7 +96,7 @@ export function WhoStep() {
 }
 
 /** Step 2, «Che ruolo avrà?»: the roles the caller may give, each with what it can and cannot do. */
-export function RoleStep() {
+export function RoleStep({ availableAreas }: { availableAreas: readonly RentalArea[] }) {
   const { t } = useTranslation();
   const { register, formState } = useFormContext<InviteValues>();
   const roles = useOrgRoles();
@@ -123,7 +123,7 @@ export function RoleStep() {
     <div className="space-y-3">
       <ChoiceGroup legend={t('team.invite.role.legend')} minCardWidth={16}>
         {assignable.map((role) => (
-          <RoleCard key={role.role} info={role} data-testid={`invite-role-${role.role}`} {...register('role')} />
+          <RoleCard availableAreas={availableAreas} key={role.role} info={role} data-testid={`invite-role-${role.role}`} {...register('role')} />
         ))}
       </ChoiceGroup>
       <FormFieldError error={formState.errors.role} />
@@ -142,7 +142,7 @@ export function RoleStep() {
 }
 
 /** Step 3, «Dove potrà lavorare?»: the areas and, for a collaborator, all the properties or only some. */
-export function WhereStep() {
+export function WhereStep({ availableAreas }: { availableAreas: readonly RentalArea[] }) {
   const { control, setValue, formState } = useFormContext<InviteValues>();
   const role = useWatch({ control, name: 'role' });
   const areas = useWatch({ control, name: 'areas' });
@@ -157,6 +157,7 @@ export function WhereStep() {
   return (
     <div className="space-y-3">
       <AreaPropertyPicker
+        availableAreas={availableAreas}
         fullAccess={hasFullAccess(role)}
         scopeSupported={scopeSupported}
         areas={areas ?? []}
@@ -178,7 +179,7 @@ export function WhereStep() {
  * Step 4, «Controlla e invia l'invito»: what was answered (each with its «Modifica»), what the person will be able to see, and what it
  * will receive. The invitation only leaves when the last button is pressed.
  */
-export function ReviewStep() {
+export function ReviewStep({ availableAreas }: { availableAreas: readonly RentalArea[] }) {
   const { t } = useTranslation();
   const wizard = useOptionalWizard();
   const { control } = useFormContext<InviteValues>();
@@ -187,7 +188,7 @@ export function ReviewStep() {
   const members = useOrgMembers(true, { fresh: true });
   const { properties } = usePickerProperties();
 
-  const { areas, scope, propertyIds } = inviteScopeOf(values, properties);
+  const { areas, scope, propertyIds } = inviteScopeOf(values, properties, availableAreas);
   const role = roles.data?.roles.find((candidate) => candidate.role === values.role);
   const propertyNames = propertyIds.map((id) => properties?.find((property) => property.id === id)?.name).filter((name): name is string => Boolean(name));
   const seats = members.data?.seats;
@@ -246,7 +247,7 @@ export function ReviewStep() {
 
       <PlainSection title={t('team.preview.titleInvited')}>
         {role ? (
-          <AccessPreview role={role} areas={areas} />
+          <AccessPreview role={role} areas={areas} availableAreas={availableAreas} />
         ) : roles.isPending ? (
           <SkeletonLine lines={3} />
         ) : (

@@ -66,6 +66,18 @@ describe('commercial profile and configuration', () => {
     expect(screen.getByRole('checkbox', { name: /Non ancora acquistabile/ })).toBeDisabled();
     expect(screen.getByRole('checkbox', { name: /3,00/ })).toBeEnabled();
   });
+  it('adds included and separately priced modules to the same owner plan', async () => {
+    vi.mocked(CommercialSignupApi.getCatalog).mockResolvedValueOnce([
+      { code: 'direct-booking', context: 'short-rent', priceMonthly: null, currency: 'EUR', purchasable: false, includedInPlans: ['Pro', 'Scale'] },
+      { code: 'fiscal', context: 'all', priceMonthly: null, currency: 'EUR', purchasable: false, ownerOffer: { priceMonthly: 3, purchasable: true } },
+    ]);
+    start();
+    fireEvent.click(screen.getByTestId('signup-profile-owner'));
+    fireEvent.click(await screen.findByRole('button', { name: /Pro/ }));
+    fireEvent.click(await screen.findByRole('checkbox', { name: /Incluso nel piano/ }));
+    fireEvent.click(screen.getByRole('checkbox', { name: /3,00/ }));
+    expect(screen.getByText(/23,00/)).toBeVisible();
+  });
   it('requires an agency name and explains founder administration and invite-only membership', async () => {
     start(); fireEvent.click(screen.getByTestId('signup-profile-agency'));
     await screen.findByRole('checkbox');
