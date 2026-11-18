@@ -8,6 +8,7 @@ import ownerSetupEn from './locales/property-owner-en.json';
 import { listingAiIt, listingAiEn } from './listing-ai';
 import propertySetupIt from './locales/property-setup.it.json';
 import propertySetupEn from './locales/property-setup.en.json';
+import { storefrontChatMessages } from './storefront-chat-messages';
 import { userRemovalMessages } from './user-removal-messages';
 import priceEstimateIt from './locales/price-estimate.it.json';
 import priceEstimateEn from './locales/price-estimate.en.json';
@@ -20,6 +21,7 @@ export const APP_RESOURCES = {
     listingAi: listingAiIt,
     propertySetup: propertySetupIt,
     userRemoval: userRemovalMessages.it,
+    storefrontChat: storefrontChatMessages.it,
     propertyWizard: { ...it.propertyWizard, ...ownerSetupIt.propertyWizard },
     apiErrors: { ...it.apiErrors, codes: {
       ...it.apiErrors.codes,
@@ -36,6 +38,7 @@ export const APP_RESOURCES = {
     listingAi: listingAiEn,
     propertySetup: propertySetupEn,
     userRemoval: userRemovalMessages.en,
+    storefrontChat: storefrontChatMessages.en,
     propertyWizard: { ...en.propertyWizard, ...ownerSetupEn.propertyWizard },
     apiErrors: { ...en.apiErrors, codes: {
       ...en.apiErrors.codes,

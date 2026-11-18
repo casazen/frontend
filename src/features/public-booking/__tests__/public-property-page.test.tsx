@@ -3,6 +3,7 @@ import { cleanup, configure, fireEvent, render, screen, waitFor } from '@testing
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom';
 import i18n from '@/i18n/config';
+import { ApiClient } from '@/api/client';
 import { publicOrgApi } from '@/api/public-org.api';
 import { publicBookingApi } from '@/api/public-booking.api';
 import { freezeClock } from '@/test/clock';
@@ -111,6 +112,37 @@ describe('PublicPropertyPage', () => {
     expect(screen.getByLabelText(i18n.t('hostContact.nameLabel'))).toBeInTheDocument();
     expect(screen.getByLabelText(i18n.t('hostContact.emailLabel'))).toBeInTheDocument();
     expect(publicBookingApi.quoteDirectBooking).not.toHaveBeenCalled();
+  });
+
+  it('starts a pre-booking chat and displays the reply from the host', async () => {
+    const post = vi.spyOn(ApiClient, 'post').mockResolvedValue(undefined);
+    const get = vi.spyOn(ApiClient, 'get').mockResolvedValue([
+      { id: 'guest', fromHost: false, text: 'Avete una culla?', sentAt: '2026-10-05T10:00:00Z' },
+      { id: 'host', fromHost: true, text: 'Sì, su richiesta.', sentAt: '2026-10-05T10:01:00Z' },
+    ]);
+    const storageKey = `casazen:storefront-chat:${PROPERTY_ID}`;
+    vi.mocked(publicOrgApi.getOrgProperty).mockResolvedValue({ ...property, acceptsBookings: false });
+    renderPage('', { ...org, storefrontChatEnabled: true });
+
+    try {
+      fireEvent.click(await screen.findByTestId('property-host-chat'));
+      fireEvent.change(screen.getByLabelText(i18n.t('hostContact.nameLabel')), { target: { value: 'Mario Rossi' } });
+      fireEvent.change(screen.getByLabelText(i18n.t('hostContact.emailLabel')), { target: { value: 'mario@example.test' } });
+      fireEvent.change(screen.getByLabelText(i18n.t('hostContact.messageLabel')), { target: { value: 'Avete una culla?' } });
+      fireEvent.click(screen.getByRole('checkbox', { name: i18n.t('storefrontChat.consent') }));
+      fireEvent.click(screen.getByRole('button', { name: i18n.t('hostContact.send') }));
+
+      expect(await screen.findByText('Sì, su richiesta.')).toBeInTheDocument();
+      expect(post).toHaveBeenCalledWith(`/public/orgs/demo-casazen/properties/${PROPERTY_ID}/chat`, {
+        name: 'Mario Rossi', email: 'mario@example.test', text: 'Avete una culla?', consent: true,
+      }, expect.objectContaining({ public: true, headers: expect.objectContaining({
+        'X-Storefront-Chat': localStorage.getItem(storageKey),
+      }) }));
+    } finally {
+      localStorage.removeItem(storageKey);
+      post.mockRestore();
+      get.mockRestore();
+    }
   });
 
   it('PublicPropertyPage_HomeWithoutRichData_ShowsNoEmptyBlocks', async () => {

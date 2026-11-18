@@ -6,12 +6,12 @@
 import type { BookingStatus } from './booking.types';
 
 /** Where the conversation lives: the one with the guest of a direct booking, or one of a channel. */
-export type MessageHubSource = 'Direct' | 'Ota';
+export type MessageHubSource = 'Direct' | 'Ota' | 'Storefront';
 
 /** The channel of a conversation: the direct one, or one of the four channels that have an integrated chat. */
-export type MessageHubChannel = 'Direct' | 'Airbnb' | 'Booking' | 'Vrbo' | 'Expedia';
+export type MessageHubChannel = 'Direct' | 'Airbnb' | 'Booking' | 'Vrbo' | 'Expedia' | 'Storefront';
 
-export const MESSAGE_HUB_CHANNELS: readonly MessageHubChannel[] = ['Direct', 'Airbnb', 'Booking', 'Vrbo', 'Expedia'];
+export const MESSAGE_HUB_CHANNELS: readonly MessageHubChannel[] = ['Direct', 'Airbnb', 'Booking', 'Vrbo', 'Expedia', 'Storefront'];
 
 /** What the conversation is about: a reservation, or a request with no booking yet (an inquiry). */
 export type MessageHubThreadKind = 'Reservation' | 'Request';
@@ -181,6 +181,7 @@ export interface MessageHubThreadDetail {
   propertyName?: string | null;
   unassigned: boolean;
   guestName?: string | null;
+  visitorEmail?: string | null;
   unreadCount: number;
   needsReply: boolean;
   /** The guest asked for the erasure of its data: the names are gone. */
