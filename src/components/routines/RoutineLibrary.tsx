@@ -34,7 +34,7 @@ interface LibraryEntry {
  * The ready routines (AC-NF26-12, AC-NF26-13). Each one is a valid routine of the API as it stands: the configuration of every action is the one its type takes
  * (`RoutineActionRules`) and the condition, when it has one, is on a field a routine reads. The cleaning is the action `CreateCleaningRequest` (E24/F01/US01/T02): at the time of the check-out it makes the
  * cleaning for whoever cleans the property (a supplier at the agreed price, or a member of the staff), once for each stay; a property with no cleaner is left as it is. The review is the action
- * `RequestReview` (E26/F01/US01/T01): a day after the check-out, once for each direct booking. The messages need an action that cannot run yet, so they are created in test mode until it can.
+ * `RequestReview` (E26/F01/US01/T01): a day after the check-out, once for each direct booking. The message routines start in test mode so the host can first choose a template.
  */
 function buildTemplates(t: TFunction): LibraryEntry[] {
   return [
@@ -104,6 +104,7 @@ export function RoutineLibrary({ availability, onCreate, isCreating, onSetupClea
       <div className="grid gap-4 md:grid-cols-2">
         {templates.map(({ template, icon: Icon, noteKey, setsCleaners }, index) => {
           const cannotRun = unavailableActionTypes(availability, template.actions).length > 0;
+          const needsTemplate = template.actions.some(action => action.type === 'MessageToGuest' && !action.config?.templateId);
           return (
             <Card key={template.name} data-testid={`library-template-${index}`}>
               <CardHeader>
@@ -152,11 +153,11 @@ export function RoutineLibrary({ availability, onCreate, isCreating, onSetupClea
                     </Button>
                   ) : null}
 
-                  {cannotRun ? (
+                  {cannotRun || needsTemplate ? (
                     <>
                       <div className="space-y-1" data-testid={`template-unavailable-${index}`}>
-                        <Badge variant="outline">{t('routines.action.unavailable')}</Badge>
-                        <p className="text-xs text-muted-foreground">{t('routines.library.unavailableNote')}</p>
+                        <Badge variant="outline">{t(cannotRun ? 'routines.action.unavailable' : 'routines.messageTemplate')}</Badge>
+                        <p className="text-xs text-muted-foreground">{t(cannotRun ? 'routines.library.unavailableNote' : 'routines.library.needsTemplate')}</p>
                       </div>
                       <Button
                         variant="outline"
