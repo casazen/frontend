@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/layout/page-header';
 import { FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { WizardShell, type WizardStep } from '@/components/shared/wizard/wizard-shell';
+import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { useOrgSettings } from '@/features/settings/organization/use-org-settings';
 import { ACCOUNT_BILLING_PATH } from '@/lib/billing-routes';
@@ -15,7 +16,7 @@ import type { OrgInvitationLanguage, OrgInvitationSent } from '@/types/org-team.
 import { ACCOUNT_PEOPLE_PATH } from '../../account/account-home-model';
 import { problemCodeOf, SEAT_LIMIT_CODE } from '../team-errors';
 import { assignableRoles } from '../team-roles';
-import { usePickerProperties } from '../team-properties';
+import { RENTAL_AREAS, usePickerProperties } from '../team-properties';
 import { InviteDone } from './invite-done';
 import {
   INVITE_DRAFT_EXCLUDE,
@@ -62,15 +63,18 @@ function InviteWizard() {
 
   // The checks of the steps know who is in the team and who is already invited, and which roles this person may give.
   const memberData = members.data?.items;
+  const ownerAreas = Array.isArray(memberData) ? memberData.find((member) => member.role === 'Owner')?.areas : undefined;
+  const availableAreas = useMemo(() => RENTAL_AREAS.filter((area) => ownerAreas?.includes(area)), [ownerAreas]);
   const invitationData = invitations.data;
   const roleData = roles.data?.roles;
   const schemas = useMemo(
     () =>
       inviteStepSchemas(
         knownEmails(Array.isArray(memberData) ? memberData : undefined, Array.isArray(invitationData) ? invitationData : undefined),
+        availableAreas,
         roleData ? assignableRoles(roleData).map((role) => role.role) : undefined,
       ),
-    [memberData, invitationData, roleData],
+    [memberData, invitationData, roleData, availableAreas],
   );
 
   // `?property=` needs the properties to know the area of the one it names: the wizard opens when they are there (or failed).
@@ -79,11 +83,19 @@ function InviteWizard() {
   const waitingForSettings = settings.isPending;
   const accountLanguage = settings.data?.defaultLanguage;
   const defaults = useMemo(
-    () => inviteDefaults(searchParams, accountLanguage ?? interfaceLanguage(i18n.language), properties),
-    [searchParams, accountLanguage, i18n.language, properties],
+    () => inviteDefaults(searchParams, accountLanguage ?? interfaceLanguage(i18n.language), properties, availableAreas),
+    [searchParams, accountLanguage, i18n.language, properties, availableAreas],
   );
   if (profile?.org?.isAgency === false) return <div role="alert" className="p-6">{t('admin.staffInvite.privateTeam')}</div>;
-  if (waitingForProperties || waitingForSettings) return <LoadingScreen message={t('team.invite.loading')} className="h-auto flex-1" />;
+  if (members.isPending || waitingForProperties || waitingForSettings) return <LoadingScreen message={t('team.invite.loading')} className="h-auto flex-1" />;
+
+  if (members.isError || !availableAreas.length) {
+    return (
+      <Alert variant="warning" action={<Button type="button" variant="outline" onClick={() => void members.refetch()}>{t('team.retry')}</Button>}>
+        {t('team.invite.areasUnavailable')}
+      </Alert>
+    );
+  }
 
   const steps: WizardStep<InviteValues>[] = [
     {
@@ -100,7 +112,7 @@ function InviteWizard() {
       title: t('team.invite.steps.role.title'),
       purpose: t('team.invite.steps.role.purpose'),
       schema: schemas.role,
-      render: () => <RoleStep />,
+      render: () => <RoleStep availableAreas={availableAreas} />,
     },
     {
       id: 'where',
@@ -108,14 +120,14 @@ function InviteWizard() {
       title: t('team.invite.steps.where.title'),
       purpose: t('team.invite.steps.where.purpose'),
       schema: schemas.where,
-      render: () => <WhereStep />,
+      render: () => <WhereStep availableAreas={availableAreas} />,
     },
     {
       id: 'review',
       label: t('team.invite.steps.review.label'),
       title: t('team.invite.steps.review.title'),
       purpose: t('team.invite.steps.review.purpose'),
-      render: () => <ReviewStep />,
+      render: () => <ReviewStep availableAreas={availableAreas} />,
     },
   ];
 
@@ -128,14 +140,15 @@ function InviteWizard() {
       finishFailedMessage={t('team.invite.errors.sendFailed')}
       onFinish={async (values) => {
         try {
-          return await create.mutateAsync(toInvitationRequest(values, properties));
+          return await create.mutateAsync(toInvitationRequest(values, properties, availableAreas));
         } catch (error) {
           setSeatLimitHit(problemCodeOf(error) === SEAT_LIMIT_CODE);
           throw error;
         }
       }}
       // An address that asks for something (`?role=accountant`) is not given the answers of an older visit instead.
-      draft={{ exclude: INVITE_DRAFT_EXCLUDE, accept: () => !defaults.prefilled }}
+      draft={{ exclude: INVITE_DRAFT_EXCLUDE, accept: (draft) => !defaults.prefilled && Array.isArray(draft.values.areas)
+        && draft.values.areas.every((area) => availableAreas.includes(area)) }}
       onExit={() => navigate(ACCOUNT_PEOPLE_PATH)}
       renderDone={({ result, values }) => <InviteDone sent={result} values={values} />}
       aboveFooter={seatLimitHit ? <SeatLimitWay /> : null}

@@ -30457,6 +30457,7 @@
     },
     "invitationsUnavailable": "Non riusciamo a leggere gli inviti: l'elenco mostra solo chi fa già parte del team.",
     "invite": {
+      "areasUnavailable": "Per inviare l’invito serve almeno un’area attiva dell’agenzia.",
       "cta": "Invita",
       "done": {
         "account": "La password la sceglie la persona invitata: tu non la vedi mai. Entrando accetta di nuovo Termini, Privacy e DPA.",
@@ -30596,7 +30597,7 @@
       "areasLegend": "In quali aree?",
       "chosenCount_one": "{{count}} immobile scelto",
       "chosenCount_other": "{{count}} immobili scelti",
-      "fullAccessText": "Vede tutte le aree e tutti gli immobili. Per limitarlo scegli un altro ruolo.",
+      "fullAccessText": "Vede tutte le aree attive dell’agenzia e i relativi immobili. Per limitarlo scegli un altro ruolo.",
       "fullAccessTitle": "Un amministratore vede tutto",
       "longRentHint": "Contratti, inquilini e canoni.",
       "noAreaChosen": "Scegli prima almeno un’area.",
