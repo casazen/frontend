@@ -11,7 +11,7 @@ import { SubprocessorPurpose } from '@/features/legal/subprocessor-purpose';
 import type { LegalDocumentMeta, OnboardingConsentsPayload } from '@/types/onboarding.types';
 
 interface ConsentsStepProps {
-  onBack: () => void;
+  onBack?: () => void;
   onContinue: (consents: OnboardingConsentsPayload) => void;
   isLoading?: boolean;
   /** The words of the two buttons when the step is not the one of the onboarding (the acceptance of an invitation to an org says what it does). */
@@ -52,9 +52,9 @@ export function ConsentsStep({ onBack, onContinue, isLoading, backLabel, continu
             {t('onboarding.cannotLoadLegalDocs')}
           </p>
           <div className="flex flex-wrap justify-center gap-3">
-            <Button type="button" variant="outline" onClick={onBack} disabled={isLoading}>
+            {onBack && <Button type="button" variant="outline" onClick={onBack} disabled={isLoading}>
               {backLabel ?? t('onboarding.back')}
-            </Button>
+            </Button>}
             <Button type="button" data-testid="onboarding-consents-retry" onClick={retry} disabled={isRetrying}>
               {isRetrying ? t('onboarding.loadingLegalDocs') : t('onboarding.retry')}
             </Button>
@@ -161,9 +161,9 @@ export function ConsentsStep({ onBack, onContinue, isLoading, backLabel, continu
       </Card>
 
       <div className="flex flex-wrap justify-center gap-3">
-        <Button type="button" variant="outline" onClick={onBack} disabled={isLoading}>
+        {onBack && <Button type="button" variant="outline" onClick={onBack} disabled={isLoading}>
           {backLabel ?? t('onboarding.back')}
-        </Button>
+        </Button>}
         <Button
           type="button"
           data-testid="onboarding-consents-continue"

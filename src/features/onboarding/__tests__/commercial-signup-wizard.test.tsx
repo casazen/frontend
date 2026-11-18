@@ -7,11 +7,12 @@ import { CommercialSignupApi } from '@/api/commercial-signup.api';
 import { UsersApi } from '@/api/users.api';
 import { CommercialSignupWizard } from '../commercial-signup-wizard';
 const checkout = vi.fn();
-vi.mock('@/api/users.api', () => ({ UsersApi: { postOnboarding: vi.fn(async () => ({ orgProvisioned: false })) } }));
+const refreshAccessToken = vi.fn();
+vi.mock('@/api/users.api', () => ({ UsersApi: { postOnboarding: vi.fn(async () => ({ orgProvisioned: false, rolesSynced: true })) } }));
 vi.mock('../components/consents-step', () => ({
   ConsentsStep: ({ onContinue }: { onContinue: () => void }) => <button onClick={onContinue}>Conferma consensi</button>,
 }));
-vi.mock('@/hooks/use-auth', () => ({ useAuth: () => ({ refreshAccessToken: vi.fn() }) }));
+vi.mock('@/hooks/use-auth', () => ({ useAuth: () => ({ refreshAccessToken }) }));
 vi.mock('@/queries/use-billing', () => ({
   useBillingPlans: () => ({ data: ['Starter', 'Pro', 'Scale', 'Agency'].map(tier => ({ tier, displayName: tier, priceMonthly: tier === 'Agency' ? 11 : 20, agencyTariff: tier === 'Agency' ? { purchasable: true, minimum: 100, quoteFrom: 400, bands: [{ upTo: 49, unitPrice: 11 }, { upTo: 149, unitPrice: 9.9 }, { upTo: 399, unitPrice: 8.8 }] } : null, currency: 'EUR', unitAllowance: 3, features: ['Calendario'], purchasable: true })) }),
   useBillingSubscription: () => ({ data: { status: 'none' } }),
@@ -96,12 +97,17 @@ describe('commercial profile and configuration', () => {
     await screen.findByText('Sincronizzazione automatica con i portali OTA', { selector: 'li' });
     expect(screen.getByRole('button', { name: 'Vai al riepilogo' })).toBeDisabled();
     expect(screen.getByText(/Ne sarai titolare e amministratore/)).toBeVisible();
-    fireEvent.change(screen.getByLabelText('Nome dell’agenzia'), { target: { value: 'Nuova Agenzia' } });
+    const name = screen.getByRole('textbox', { name: 'Nome dell’agenzia' });
+    expect(name).toBeRequired();
+    expect(name).toHaveAccessibleDescription('Inserisci il nome dell’agenzia per continuare.');
+    fireEvent.change(name, { target: { value: '   ' } });
+    expect(screen.getByRole('button', { name: 'Vai al riepilogo' })).toBeDisabled();
+    fireEvent.change(name, { target: { value: 'Nuova Agenzia' } });
     expect(screen.getByRole('button', { name: 'Vai al riepilogo' })).toBeEnabled();
   });
   it('updates the estimate for three rooms without changing the commercial selection', async () => {
     start(); fireEvent.click(screen.getByTestId('signup-profile-agency'));
-    fireEvent.change(screen.getByLabelText('Nome dell’agenzia'), { target: { value: 'Nuova Agenzia' } });
+    fireEvent.change(screen.getByRole('textbox', { name: 'Nome dell’agenzia' }), { target: { value: 'Nuova Agenzia' } });
     fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '3' } });
     expect(await screen.findByText('Sincronizzazione automatica con i portali OTA', { selector: 'li' })).toBeVisible();
     expect(screen.getByText('3 camere ipotizzate')).toBeVisible();
@@ -116,5 +122,7 @@ describe('commercial profile and configuration', () => {
     expect(UsersApi.postOnboarding).toHaveBeenCalledWith(expect.objectContaining({
       commercialSignup: expect.objectContaining({ profile: 'agency', rooms: 1, addons: ['channels'] }),
     }));
+    expect(await screen.findByRole('combobox', { name: 'Paese' })).toBeVisible();
+    expect(refreshAccessToken).not.toHaveBeenCalled();
   });
 });
