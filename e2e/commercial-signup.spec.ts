@@ -10,10 +10,10 @@ test.beforeEach(async ({ page }) => {
     { code: 'operations', context: 'all', priceMonthly: 2, currency: 'EUR', purchasable: true },
   ] }));
 });
-test('four profiles, Starter lock and per-room agency summary on desktop and mobile', async ({ page }) => {
+test('three profiles, Starter lock and per-room agency summary on desktop and mobile', async ({ page }) => {
   await page.goto(demoUrl('/onboarding', 'onboarding'));
   await expect(page.getByTestId('commercial-signup')).toBeVisible();
-  await expect(page.getByTestId(/^signup-profile-/)).toHaveCount(4);
+  await expect(page.getByTestId(/^signup-profile-/)).toHaveCount(3);
   await page.getByTestId('signup-profile-owner').click();
   await expect(page.getByRole('checkbox').first()).toBeDisabled();
   await page.getByRole('button', { name: /Pro/ }).click();
@@ -37,18 +37,19 @@ test('checkout request carries the chosen rooms and modules; a success URL alone
   await page.route('**/api/users/me', route => route.fulfill({ json: currentProfile }));
   await page.route('**/api/users/onboarding', async route => {
     const body = route.request().postDataJSON(); selection = body.commercialSignup;
-    expect(body.rentalType).toBe('ShortTerm');
-    currentProfile = { ...currentProfile, role: 'PropertyOwner', rentalType: 'ShortTerm', orgId: 'org-test', org: { id: 'org-test', name: 'Demo', slug: 'demo', planTier: 'Starter' }, onboardingCompletedAt: '2026-11-16T22:00:00Z', consentsAccepted: true, commercialSetupRequired: true, commercialSignup: selection };
-    await route.fulfill({ json: { orgId: 'org-test', orgProvisioned: true, rentalType: 'ShortTerm', rolesAssigned: ['PropertyOwner'], rolesSynced: true } });
+    expect(body.rentalType).toBe('Both');
+    currentProfile = { ...currentProfile, role: 'PropertyOwner', rentalType: 'Both', orgId: 'org-test', org: { id: 'org-test', name: 'Demo', slug: 'demo', planTier: 'Starter' }, onboardingCompletedAt: '2026-11-16T22:00:00Z', consentsAccepted: true, commercialSetupRequired: true, commercialSignup: selection };
+    await route.fulfill({ json: { orgId: 'org-test', orgProvisioned: true, rentalType: 'Both', rolesAssigned: ['PropertyOwner', 'LongTermLandlord'], rolesSynced: true } });
   });
   await page.route('**/api/billing/subscription', route => route.fulfill({ json: { status: 'none', planTier: 'Starter', billingCountry: null, vatId: null, currentPeriodEnd: null, seats: 1 } }));
   await page.route('**/api/billing/checkout-session', async route => {
-    expect(route.request().postDataJSON()).toMatchObject({ planTier: 'Agency', billingCountry: 'IT', returnPath: '/onboarding', commercialSignup: { profile: 'agency', rooms: 3, addons: ['channels'] } });
+    expect(route.request().postDataJSON()).toMatchObject({ planTier: 'Agency', billingCountry: 'IT', returnPath: '/onboarding', commercialSignup: { profile: 'agency', rentalArea: 'Both', rooms: 3, addons: ['channels'] } });
     await route.fulfill({ json: { checkoutUrl: 'https://checkout.stripe.com/c/test-commercial' } });
   });
   await page.route('https://checkout.stripe.com/**', route => route.fulfill({ contentType: 'text/html', body: '<p>Sandbox checkout placeholder</p>' }));
   await page.goto(demoUrl('/onboarding', 'onboarding'));
   await page.getByTestId('signup-profile-agency').click();
+  await page.getByRole('radio', { name: 'Affitti brevi e lunghi' }).check();
   await page.locator('#signup-agency-name').fill('Demo Agency');
   await page.getByRole('spinbutton').fill('3');
   await page.getByRole('checkbox').first().check();

@@ -31957,7 +31957,7 @@
       },
       "owner": {
         "title": "Proprietario privato",
-        "text": "Gestisco i miei appartamenti per affitti brevi e soggiorni turistici.",
+        "text": "Gestisco gli immobili di mia proprietà.",
         "hint": "Tariffe del piano · extra da Pro"
       },
       "supplier": {
@@ -31971,7 +31971,8 @@
         "hint": "Attiva solo l’area Affitti lungo termine"
       }
     },
-    "secondModule": "Per ora attiviamo una sola area di gestione. Potrai aggiungere l’altra in seguito da Amministrazione → Fatturazione e piano, con il gestore del piano.",
+    "chooseRentalArea": "Quali affitti vuoi gestire?",
+    "bothAreas": "Affitti brevi e lunghi",
     "pricePending": "Prezzo da configurare",
     "perRoomMonth": " / camera / mese",
     "perMonth": "al mese, IVA esclusa",

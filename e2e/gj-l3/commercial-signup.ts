@@ -29,13 +29,14 @@ export async function provisionLegacyCommercialSignup(page: Page, profile: 'owne
 export async function completeCommercialSignup(page: Page, profile: 'owner' | 'long-rent'): Promise<void> {
   // Platform administrators can voluntarily create an organization through the existing onboarding.
   const legacyHeading = page.getByRole('heading', { name: /Da dove vuoi iniziare/i });
-  const profileCard = page.getByTestId(`signup-profile-${profile}`);
+  const profileCard = page.getByTestId('signup-profile-owner');
   await expect(legacyHeading.or(profileCard)).toBeVisible({ timeout: 30_000 });
   const legacy = await legacyHeading.isVisible();
   if (legacy) {
     await provisionLegacyCommercialSignup(page, profile);
   } else {
     await profileCard.click();
+    if (profile === 'long-rent') await page.locator('input[name="rental-area"][value="LongTerm"]').check();
     await page.getByRole('button', { name: /^Pro\b/ }).click();
     if (profile === 'owner') {
       for (const name of ['Prenotazioni dirette', 'Adempimenti automatici', 'Interventi e fornitori']) {
@@ -53,9 +54,9 @@ export async function completeCommercialSignup(page: Page, profile: 'owner' | 'l
   const headers = { Authorization: `Bearer ${token}` };
   const response = await page.request.get(`${stack.apiUrl}/users/me`, { headers });
   expect(response.ok()).toBeTruthy();
-  const me = await response.json() as { orgId: string; commercialSignup: { profile: string; planTier: string; rooms: number; agencyName: string | null; addons: string[] } };
+  const me = await response.json() as { orgId: string; commercialSignup: { profile: string; planTier: string; rooms: number; agencyName: string | null; addons: string[]; rentalArea?: string } };
   const s = me.commercialSignup;
-  const fingerprint = createHash('sha256').update(JSON.stringify({ Profile: s.profile, PlanTier: s.planTier, Rooms: s.rooms, AgencyName: s.agencyName ?? null, Addons: s.addons })).digest('hex').toUpperCase();
+  const fingerprint = createHash('sha256').update(JSON.stringify({ Profile: s.profile, PlanTier: s.planTier, Rooms: s.rooms, AgencyName: s.agencyName ?? null, Addons: s.addons, RentalArea: s.rentalArea })).digest('hex').toUpperCase();
   const prices: Record<string, string> = { 'direct-booking': 'price_e2e_direct', compliance: 'price_e2e_compliance', operations: 'price_e2e_operations' };
   const item = (price: string) => ({ id: `si_${randomUUID()}`, object: 'subscription_item', quantity: 1, price: { id: price, object: 'price' } });
   const body = JSON.stringify({ id: `evt_${randomUUID()}`, object: 'event', api_version: '2025-12-15.clover', request: null, created: Math.floor(Date.now() / 1000), livemode: false, pending_webhooks: 1, type: 'customer.subscription.created', data: { object: { id: `sub_${randomUUID()}`, object: 'subscription', status: 'active', customer: `cus_${randomUUID()}`, metadata: { orgId: me.orgId, commercialConfiguration: fingerprint }, items: { object: 'list', data: [item(s.planTier === 'Starter' ? 'price_e2e_starter' : 'price_e2e_pro'), ...s.addons.map(a => item(prices[a]))] } } } });

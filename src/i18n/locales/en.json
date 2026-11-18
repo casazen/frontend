@@ -31957,7 +31957,7 @@
       },
       "owner": {
         "title": "Private owner",
-        "text": "I manage my own apartments for short stays and holiday rentals.",
+        "text": "I manage properties that I own.",
         "hint": "Plan pricing · extras from Pro"
       },
       "supplier": {
@@ -31971,7 +31971,8 @@
         "hint": "Activate the Long-term rentals area only"
       }
     },
-    "secondModule": "We start with one rental area. Your plan administrator can add the other later in Administration → Billing and plan.",
+    "chooseRentalArea": "Which rentals do you manage?",
+    "bothAreas": "Short- and long-term rentals",
     "pricePending": "Price not configured",
     "perRoomMonth": " / room / month",
     "perMonth": "per month, excluding tax",
