@@ -12,7 +12,7 @@ import { publicCheckinApi } from '@/api/checkin.api';
 import type { PublicCheckInContextDto, PublicCheckInGuestPrefill } from '@/types/public-checkin.types';
 
 vi.mock('@/api/checkin.api', () => ({
-  publicCheckinApi: { getContext: vi.fn(), submit: vi.fn(), searchCodes: vi.fn(), setLanguage: vi.fn() },
+  publicCheckinApi: { getContext: vi.fn(), requestInvoice: vi.fn(), readDocument: vi.fn(), submit: vi.fn(), searchCodes: vi.fn(), setLanguage: vi.fn() },
 }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
@@ -63,7 +63,7 @@ function httpError(status: number, data?: unknown): AxiosError {
   });
 }
 
-function renderPage() {
+function renderPage(search = '') {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const view = render(
     createElement(
@@ -71,7 +71,7 @@ function renderPage() {
       { client },
       createElement(
         MemoryRouter,
-        { initialEntries: [`/checkin/${TOKEN}`] },
+        { initialEntries: [`/checkin/${TOKEN}${search}`] },
         createElement(Routes, null, createElement(Route, { path: '/checkin/:token', element: createElement(CheckInPage) })),
       ),
     ),
@@ -142,20 +142,17 @@ function fillDocument(index: number) {
 /** Last step: the privacy notice is only shown (legal obligation, no checkbox to tick), then the form is sent. */
 async function acceptAndSubmit() {
   await goToConsents();
-  fireEvent.click(screen.getByTestId('checkin-submit'));
+  acknowledgePrivacy();
+    fireEvent.click(screen.getByTestId('checkin-submit'));
 }
 
-/** The step «Ti serve la fattura?» (FIS-01) is after the document and before the privacy notice. */
-async function goToInvoice() {
-  fireEvent.click(screen.getByRole('button', { name: /Avanti/ }));
-  await screen.findByTestId('checkin-invoice-step');
-}
-
-/** From the document to the privacy notice, passing the invoice step as a guest does who has nothing to say there: with no answer. */
 async function goToConsents() {
-  await goToInvoice();
   fireEvent.click(screen.getByRole('button', { name: /Avanti/ }));
   await screen.findByTestId('checkin-privacy-notice');
+}
+
+function acknowledgePrivacy() {
+  fireEvent.click(within(screen.getByTestId('checkin-privacy-notice')).getByRole('checkbox'));
 }
 
 async function submitSingleGuest() {
@@ -184,7 +181,7 @@ beforeEach(() => {
 });
 
 describe('CheckInPage', () => {
-  it('consentStep_alloggiatiIsALegalObligation_showsTheNoticeWithoutAnyRequiredCheckbox', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+  it('consentStep_alloggiatiIsALegalObligation_requiresAcknowledgementBeforeSubmitting', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
     vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ ...openContext, privacyNoticeVersion: 'notice-2026-10' });
     vi.mocked(publicCheckinApi.submit).mockResolvedValue({ sessionId: openContext.sessionId!, message: 'ok' });
     renderPage();
@@ -198,9 +195,10 @@ describe('CheckInPage', () => {
     expect(notice).toHaveTextContent('obbligo di legge (art. 109 TULPS)');
     expect(notice).toHaveTextContent("art. 6, par. 1, lett. c) del GDPR e non richiede il tuo consenso");
     expect(notice).toHaveTextContent('Versione dell’informativa: notice-2026-10');
-    expect(within(notice).queryByRole('checkbox')).not.toBeInTheDocument();
-    expect(screen.queryAllByRole('checkbox')).toHaveLength(0);
+    expect(within(notice).getByRole('checkbox')).not.toBeChecked();
+    expect(screen.getByTestId('checkin-submit')).toBeDisabled();
 
+    acknowledgePrivacy();
     fireEvent.click(screen.getByTestId('checkin-submit'));
 
     await waitFor(() => expect(publicCheckinApi.submit).toHaveBeenCalledTimes(1));
@@ -230,6 +228,7 @@ describe('CheckInPage', () => {
     const emailInput = await screen.findByLabelText(/il tuo indirizzo email/i);
     fireEvent.change(emailInput, { target: { value: 'guest@example.com' } });
 
+    acknowledgePrivacy();
     fireEvent.click(screen.getByTestId('checkin-submit'));
 
     await waitFor(() => expect(publicCheckinApi.submit).toHaveBeenCalledTimes(1));
@@ -347,18 +346,21 @@ describe('CheckInPage', () => {
   });
 
   it('addGuestAndStayKind_changesTheKindOfTheOtherGuests', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+    vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ ...openContext, declaredGuests: 2 });
     renderPage();
     await screen.findByTestId('checkin-document-step');
     fireEvent.click(screen.getByTestId('checkin-enter-manually'));
     await screen.findByTestId('stay-guest-0');
 
+    expect(screen.queryByTestId('checkin-add-guest')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('stay-guest-1-remove'));
     fireEvent.click(screen.getByTestId('checkin-add-guest'));
     expect(await screen.findByTestId('stay-guest-1-type')).toHaveTextContent('Ospite singolo');
 
     change(guestCard(0), /^Chi soggiorna/, 'HeadOfGroup');
     await waitFor(() => expect(screen.getByTestId('stay-guest-1-type')).toHaveTextContent('Membro del gruppo'));
     expect(screen.getByTestId('stay-guest-0-type')).toHaveTextContent('Capogruppo');
-    expect(screen.getByTestId('checkin-guest-count-mismatch')).toHaveTextContent('1 ospite');
+    expect(screen.queryByTestId('checkin-guest-count-mismatch')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('stay-guest-1-remove'));
     await waitFor(() => expect(screen.queryByTestId('stay-guest-1')).not.toBeInTheDocument());
@@ -782,11 +784,9 @@ describe('CheckInPage', () => {
       setField('guest-0-documentNumber', 'CA12345AB');
       setField('guest-0-documentIssuePlaceName', 'Firenze');
       fireEvent.click(screen.getByRole('button', { name: /Weiter/ }));
-      // The invoice step is optional: it is passed without an answer.
-      await screen.findByTestId('checkin-invoice-step');
-      fireEvent.click(screen.getByRole('button', { name: /Weiter/ }));
       await screen.findByTestId('checkin-privacy-notice');
-      fireEvent.click(screen.getByTestId('checkin-submit'));
+      acknowledgePrivacy();
+    fireEvent.click(screen.getByTestId('checkin-submit'));
 
       // In the language of the page, from the key of the message.
       expect(await screen.findByText('Die Dokumentnummer darf nur Buchstaben und Ziffern enthalten, höchstens 20.')).toBeInTheDocument();
@@ -818,43 +818,32 @@ describe('CheckInPage', () => {
    */
   describe('invoice step (FIS-01)', () => {
     const FISCAL_CODE = 'RSSMRA80A01H501U';
-    const OK = { sessionId: openContext.sessionId!, message: 'ok' };
+
 
     async function toInvoiceStep() {
-      renderPage();
-      await screen.findByTestId('checkin-page');
-      fillGuest(0, { firstName: 'Giulia' });
-      await goToDocuments();
-      fillDocument(0);
-      await goToInvoice();
+      renderPage('?invoice=1');
+      await screen.findByTestId('checkin-invoice-step');
     }
 
     const field = (name: string) => screen.getByTestId(`checkin-invoice-${name}`) as HTMLInputElement;
     const type = (name: string, value: string) => fireEvent.change(field(name), { target: { value } });
-    const next = () => fireEvent.click(screen.getByRole('button', { name: /Avanti/ }));
+    const next = () => fireEvent.click(screen.getByRole('button', { name: /Salva risposta/ }));
 
     /** From the invoice step to the send, and the payload that went out. */
     async function sendFromInvoiceStep() {
-      const sentBefore = vi.mocked(publicCheckinApi.submit).mock.calls.length;
       next();
-      await screen.findByTestId('checkin-privacy-notice');
-      fireEvent.click(screen.getByTestId('checkin-submit'));
-      await waitFor(() => expect(vi.mocked(publicCheckinApi.submit).mock.calls.length).toBeGreaterThan(sentBefore));
-      const calls = vi.mocked(publicCheckinApi.submit).mock.calls;
-      return calls[calls.length - 1][1];
+      await screen.findByText(i18n.t('checkin.invoiceFinished'));
+      expect(publicCheckinApi.submit).not.toHaveBeenCalled();
+      const invoice = vi.mocked(publicCheckinApi.requestInvoice).mock.lastCall?.[1];
+      return invoice ? { invoice } : {};
     }
 
-    beforeEach(() => {
-      vi.mocked(publicCheckinApi.submit).mockResolvedValue(OK);
-    });
-
-    it('invoiceStep_FifthStepOfFive_AsksTheQuestionAndShowsNoFieldBeforeAnAnswer', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
+    it('invoiceLink_AsksTheQuestionAndShowsNoFieldBeforeAnAnswer', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
       await toInvoiceStep();
 
       expect(screen.getByRole('group', { name: 'Ti serve la fattura?' })).toBeInTheDocument();
       expect(screen.getByTestId('checkin-invoice-step')).toHaveTextContent('Facoltativo');
-      expect(screen.getByText(i18n.t('checkin.stepOf', { step: 4, total: 5 }))).toBeInTheDocument();
-      expect(screen.getByTestId('checkin-progress').children).toHaveLength(5);
+      expect(screen.queryByTestId('checkin-progress')).not.toBeInTheDocument();
       expect(screen.getByTestId('checkin-invoice-yes')).not.toBeChecked();
       expect(screen.getByTestId('checkin-invoice-no')).not.toBeChecked();
       // One step, one topic: nothing of the fields is there until the guest says yes.
@@ -868,7 +857,7 @@ describe('CheckInPage', () => {
       const payload = await sendFromInvoiceStep();
 
       expect(payload).not.toHaveProperty('invoice');
-      expect(payload.guests).toHaveLength(1);
+      expect(publicCheckinApi.requestInvoice).not.toHaveBeenCalled();
     });
 
     it('invoiceStep_ANo_SendsNoDataAtAllAndShowsNoField', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
@@ -1021,7 +1010,7 @@ describe('CheckInPage', () => {
     });
 
     it('invoiceStep_ServerRefusesTheBlock_BringsTheGuestBackToTheStepWithTheDataKeptAndNoToast', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
-      vi.mocked(publicCheckinApi.submit)
+      vi.mocked(publicCheckinApi.requestInvoice)
         .mockRejectedValueOnce(
           httpError(422, {
             code: 'invoice_data_fiscal_code_invalid',
@@ -1029,16 +1018,14 @@ describe('CheckInPage', () => {
             errors: [{ field: 'fiscalCode', code: 'invoice_data_fiscal_code_invalid' }],
           }),
         )
-        .mockResolvedValueOnce(OK);
+        .mockResolvedValueOnce(undefined);
       await toInvoiceStep();
       fireEvent.click(screen.getByTestId('checkin-invoice-yes'));
       type('name', 'Mario Rossi');
       type('fiscalCode', FISCAL_CODE);
       type('city', 'Roma');
       next();
-      await screen.findByTestId('checkin-privacy-notice');
 
-      fireEvent.click(screen.getByTestId('checkin-submit'));
 
       // Back on the invoice step, with the error on the field the server named and everything the guest typed still there.
       expect(await screen.findByText(/Il codice fiscale non è valido/)).toBeInTheDocument();
@@ -1054,24 +1041,8 @@ describe('CheckInPage', () => {
       type('fiscalCode', 'rssmra80a01h501u');
       const payload = await sendFromInvoiceStep();
       expect(payload.invoice).toMatchObject({ needInvoice: true, name: 'Mario Rossi', fiscalCode: FISCAL_CODE, city: 'Roma' });
-      expect(payload.guests[0]).toMatchObject({ firstName: 'Giulia' });
-      expect(await screen.findByTestId('checkin-success')).toBeInTheDocument();
-    });
+      expect(publicCheckinApi.submit).not.toHaveBeenCalled();
 
-    it('invoiceStep_GoingBackAndForth_KeepsWhatTheGuestTyped', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
-      await toInvoiceStep();
-      fireEvent.click(screen.getByTestId('checkin-invoice-yes'));
-      type('name', 'Mario Rossi');
-      type('fiscalCode', FISCAL_CODE);
-      next();
-      await screen.findByTestId('checkin-privacy-notice');
-
-      fireEvent.click(screen.getByRole('button', { name: /Indietro/ }));
-
-      await screen.findByTestId('checkin-invoice-step');
-      expect(screen.getByTestId('checkin-invoice-yes')).toBeChecked();
-      expect(field('name').value).toBe('Mario Rossi');
-      expect(field('fiscalCode').value).toBe(FISCAL_CODE);
     });
 
     it('invoiceStep_TheGuestSaidYesBefore_StartsAnsweredAndAsksForTheFields', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
@@ -1137,33 +1108,14 @@ describe('CheckInPage', () => {
 
     it('invoiceStep_InTheLanguageOfThePage_AsksAndExplainsInGerman', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
       vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ ...openContext, language: 'de' });
-      renderPage();
-      await screen.findByRole('heading', { name: 'Gäste-Check-in' });
-      fireEvent.click(screen.getByTestId('checkin-enter-manually'));
-      await screen.findByLabelText(/^Vorname/);
-      const setField = (id: string, value: string) => fireEvent.change(window.document.getElementById(id)!, { target: { value } });
-      setField('guest-0-firstName', 'Giulia');
-      setField('guest-0-lastName', 'Bianchi');
-      setField('guest-0-gender', 'Female');
-      setField('guest-0-dateOfBirth', '1992-03-08');
-      setField('guest-0-bornInItaly', 'no');
-      setField('guest-0-birthCountryName', 'Francia');
-      setField('guest-0-citizenship', 'Italia');
-      fireEvent.click(screen.getByRole('button', { name: /Weiter/ }));
-      await screen.findByTestId('stay-guest-0-document');
-      setField('guest-0-documentType', 'IdentityCard');
-      setField('guest-0-documentNumber', 'CA12345AB');
-      setField('guest-0-documentIssuePlaceName', 'Firenze');
-      fireEvent.click(screen.getByRole('button', { name: /Weiter/ }));
-      await screen.findByTestId('checkin-invoice-step');
-
+      await toInvoiceStep();
       expect(screen.getByRole('group', { name: 'Benötigen Sie eine Rechnung?' })).toBeInTheDocument();
       expect(screen.getByTestId('checkin-invoice-step')).toHaveTextContent('Freiwillig');
       fireEvent.click(screen.getByTestId('checkin-invoice-yes'));
       expect(screen.getByLabelText(/Steuernummer \(codice fiscale\)/)).toBeInTheDocument();
       expect(screen.getByText(/Warum wir fragen: Der Vermieter braucht sie/)).toHaveTextContent('Beispiel: RSSMRA80A01H501U');
       type('fiscalCode', 'XYZ');
-      fireEvent.click(screen.getByRole('button', { name: /Weiter/ }));
+      fireEvent.click(screen.getByRole('button', { name: /Antwort speichern/ }));
 
       // The error is in German too, and no word of Italian or English is on the step.
       expect(await screen.findByText(/Die Steuernummer \(codice fiscale\) ist ungültig/)).toBeInTheDocument();

@@ -88,6 +88,7 @@ export interface PublicCheckInContextDto {
   availableCodeTables?: AlloggiatiCodeTable[];
   /** Version of the privacy notice shown (art. 13 GDPR); absent when not configured. */
   privacyNoticeVersion?: string;
+  privacyNoticeOrgSlug?: string;
   /** Version of the optional marketing consent text; absent when the consent is not offered. */
   marketingConsentVersion?: string;
   /**
@@ -185,6 +186,7 @@ export interface PublicCheckInInvoiceRequest extends InvoiceDataText {
  * NF-05 adds per-channel consent with a separate marketing email.
  */
 export interface PublicCheckInSubmitRequest {
+  privacyNoticeAcknowledged?: boolean;
   guests: StayGuestSubmit[];
   /** Guest ticked the email marketing channel (NF-05). */
   marketingConsentEmail: boolean;
@@ -211,6 +213,8 @@ export interface AlloggiatiCodeEntryDto {
 
 /** Answer of `POST /public/checkin/{token}/read-document`. The photo is not returned. */
 export interface CheckInDocumentReadResult {
+  guestPosition?: number | null;
+  confirmGuest?: boolean;
   read: boolean;
   reason?: string | null;
   guest?: {
@@ -225,6 +229,8 @@ export interface CheckInDocumentReadResult {
     documentKind?: string | null;
     documentNumber?: string | null;
     issuePlace?: string | null;
+    documentIssuedOn?: string | null;
+    documentExpiresOn?: string | null;
   } | null;
 }
 

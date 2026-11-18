@@ -104,6 +104,7 @@ interface StayGuestPersonalFieldsProps {
   requiredFields?: readonly StatisticalGuestField[];
   /** First guest only: the kind of the whole stay changed (single, family, group). */
   onLeaderTypeChange?: (type: StayGuestType) => void;
+  bookedName?: { firstName?: string | null; lastName?: string | null };
   onRemove?: () => void;
 }
 
@@ -118,6 +119,7 @@ export function StayGuestPersonalFields({
   source,
   requiredFields = [],
   onLeaderTypeChange,
+  bookedName,
   onRemove,
 }: StayGuestPersonalFieldsProps) {
   const { t } = useTranslation();
@@ -167,12 +169,12 @@ export function StayGuestPersonalFields({
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor={id('firstName')}>{t('checkin.firstName')}</Label>
-          <Input {...register(`guests.${index}.firstName`)} {...a11y(FIELD.firstName)} />
+          <Input readOnly={!!bookedName?.firstName?.trim()} {...register(`guests.${index}.firstName`)} {...a11y(FIELD.firstName)} />
           <FormFieldError id={`${id('firstName')}-error`} error={errorOf('firstName')} />
         </div>
         <div className="space-y-2">
           <Label htmlFor={id('lastName')}>{t('checkin.lastName')}</Label>
-          <Input {...register(`guests.${index}.lastName`)} {...a11y(FIELD.lastName)} />
+          <Input readOnly={!!bookedName?.lastName?.trim()} {...register(`guests.${index}.lastName`)} {...a11y(FIELD.lastName)} />
           <FormFieldError id={`${id('lastName')}-error`} error={errorOf('lastName')} />
         </div>
         <div className="space-y-2">

@@ -229,7 +229,7 @@ describe('IdentityStep: the consent (E03/F04/US03/T01, AC-NF50-7, AC-NF50-3)', (
     expect(screen.getByTestId('checkin-identity-document')).toBeInTheDocument();
   });
 
-  it('IdentityStep_TheRegistryServesADraft_ShowsTheDraftBadgeAndAgreesToThatVersion', async () => {
+  it('IdentityStep_TheRegistryServesADraft_ShowsTheServedTextAndAgreesToThatVersion', async () => {
     vi.mocked(publicCheckinApi.getLegalTexts).mockResolvedValue(servedTexts({ draft: true }));
     vi.mocked(publicCheckinApi.postBiometricConsent).mockResolvedValue({
       consentRecorded: true,
@@ -240,7 +240,7 @@ describe('IdentityStep: the consent (E03/F04/US03/T01, AC-NF50-7, AC-NF50-3)', (
     });
     renderStep();
 
-    expect(await screen.findByTestId('checkin-consent-text-draft')).toHaveTextContent('Bozza');
+    expect(screen.queryByTestId('checkin-consent-text-draft')).not.toBeInTheDocument();
     await waitForTheConsentText();
     fireEvent.click(screen.getByTestId('checkin-biometric-accept'));
 
@@ -346,7 +346,6 @@ describe('IdentityStep: the consent (E03/F04/US03/T01, AC-NF50-7, AC-NF50-3)', (
     });
     renderStep(state({ step: 'operator', biometricOffered: false }));
 
-    fireEvent.click(screen.getByTestId('identity-ask-operator'));
 
     expect(await screen.findByTestId('checkin-identity-problem')).toHaveTextContent(i18n.t('checkin.identity.problem.network'));
     // Nobody was told: the step is not over, and the guest tries again.
@@ -358,7 +357,7 @@ describe('IdentityStep: the consent (E03/F04/US03/T01, AC-NF50-7, AC-NF50-3)', (
     expect(screen.queryByTestId('checkin-identity-problem')).not.toBeInTheDocument();
   });
 
-  it('IdentityStep_NotOfferedForThisStay_SaysAPersonVerifiesAndOnlyTheGuestAskingConcludesTheStep', async () => {
+  it('IdentityStep_NotOfferedForThisStay_SaysAPersonVerifiesAndAutomaticallyHandsOffAndConcludesTheStep', async () => {
     vi.mocked(publicCheckinApi.requestOperator).mockResolvedValue({
       result: 'operator',
       operatorPathOpen: true,
@@ -368,13 +367,9 @@ describe('IdentityStep: the consent (E03/F04/US03/T01, AC-NF50-7, AC-NF50-3)', (
 
     expect(stage()).toBe('operator');
     expect(screen.getByTestId('identity-operator-text')).toHaveTextContent(i18n.t('checkin.identity.result.operator.notOffered'));
-    // Nobody was asked yet: the step is not over, the guest asks with the button.
-    expect(screen.getByTestId('harness-concluded')).toHaveTextContent('false');
-    fireEvent.click(screen.getByTestId('identity-ask-operator'));
-
     await waitFor(() => expect(screen.getByTestId('harness-concluded')).toHaveTextContent('true'));
     expect(publicCheckinApi.requestOperator).toHaveBeenCalledWith(TOKEN);
-    expect(screen.getByTestId('identity-ask-operator')).toBeDisabled();
+    expect(screen.queryByTestId('identity-ask-operator')).not.toBeInTheDocument();
   });
 });
 
@@ -463,7 +458,7 @@ describe('IdentityStep: a photo being made ready (one call at a time)', () => {
 
     // Nothing can be started while it is made ready: not a second photo, not a person asked, and the page keeps Back and Next disabled (it reads busy).
     await waitFor(() => expect(screen.getByTestId('checkin-identity-document-pick')).toBeDisabled());
-    expect(screen.getByTestId('checkin-identity-document-operator')).toBeDisabled();
+    expect(screen.queryByTestId('checkin-identity-document-operator')).not.toBeInTheDocument();
     expect(screen.getByTestId('checkin-identity-document-file')).toBeDisabled();
     expect(screen.getByTestId('harness-busy')).toHaveTextContent('true');
     expect(publicCheckinApi.postDocument).not.toHaveBeenCalled();
@@ -677,7 +672,7 @@ describe('IdentityStep: the selfie (AC-NF50-1, ADR-013-R11, R12)', () => {
 
     expect(await screen.findByTestId('identity-operator-text')).toHaveTextContent(i18n.t('checkin.identity.result.operator.text'));
     expect(screen.queryByText('1111')).not.toBeInTheDocument();
-    expect(screen.getByTestId('identity-ask-operator')).toBeInTheDocument();
+    expect(screen.queryByTestId('identity-ask-operator')).not.toBeInTheDocument();
   });
 
   it('IdentityStep_NetworkErrorOnTheSelfie_KeepsThePictureSoTheGuestSendsItAgainWithoutTakingItAgain', async () => {
@@ -852,17 +847,12 @@ describe('IdentityStep: the camera and the picture are let go (ADR-013-R2, R11)'
     expect(stop).toHaveBeenCalledTimes(1);
   });
 
-  it('IdentityStep_TheGuestAsksForAPersonWithTheLivePreview_TheCameraIsSwitchedOffWhenTheStepChanges', async () => {
+  it('keeps the live selfie as the main path and stops the camera on exit', async () => {
     const { stop } = stubCamera();
-    vi.mocked(publicCheckinApi.requestOperator).mockResolvedValue({ result: 'operator', operatorPathOpen: true, state: state({ step: 'operator', operatorRequested: true }) });
-    renderStep(selfieState);
+    const view = renderStep(selfieState);
     await waitForPreview();
-    expect(stop).not.toHaveBeenCalled();
-
-    fireEvent.click(screen.getByTestId('selfie-ask-operator'));
-
-    await waitFor(() => expect(stage()).toBe('operator'));
-    expect(screen.queryByTestId('checkin-selfie-capture')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('selfie-ask-operator')).not.toBeInTheDocument();
+    view.unmount();
     expect(stop).toHaveBeenCalledTimes(1);
   });
 

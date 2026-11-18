@@ -135,7 +135,7 @@ export function IdentityResult({
         </p>
       )}
 
-      <div>
+      {!operatorRequested && <div>
         <Button
           type="button"
           size="lg"
@@ -147,7 +147,7 @@ export function IdentityResult({
         >
           {t('checkin.identity.operator.ask')}
         </Button>
-      </div>
+      </div>}
     </section>
   );
 }

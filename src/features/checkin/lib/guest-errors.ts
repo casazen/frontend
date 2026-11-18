@@ -8,6 +8,8 @@ type TranslateFn = (key: string) => string;
  * keys are written out so that the i18n test finds a missing translation, and the subset files of German, French and Spanish carry them.
  */
 export const GUEST_ERROR_KEYS: Record<string, string> = {
+  CheckInBookedGuestMismatch: 'checkin.scanMismatch',
+  CheckInDocumentNumberPlausibility: 'checkin.documentNumberPlausibility',
   CheckInFieldRequired: 'checkin.errors.fieldRequired',
   CheckInFieldMaxLength: 'checkin.errors.fieldMaxLength',
   CheckInGenderInvalid: 'checkin.errors.genderInvalid',

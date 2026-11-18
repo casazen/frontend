@@ -155,8 +155,8 @@ describe('CheckInPage with the identity verification (E03/F04/US03/T01)', () => 
     await goToTheStepAfterTheDocument();
 
     await screen.findByTestId('checkin-identity-step');
-    expect(stepLabel()).toBe('Passo 4 di 6');
-    expect(screen.getByTestId('checkin-progress').children).toHaveLength(6);
+    expect(stepLabel()).toBe('Passo 4 di 5');
+    expect(screen.getByTestId('checkin-progress').children).toHaveLength(5);
     expect(screen.getByRole('heading', { name: i18n.t('checkin.stepIdentity') })).toBeInTheDocument();
     // One consent, once: whatever the guests of the stay are, only the guest who leaves the document does this step.
     expect(screen.getAllByTestId('checkin-biometric-consent')).toHaveLength(1);
@@ -171,10 +171,10 @@ describe('CheckInPage with the identity verification (E03/F04/US03/T01)', () => 
 
     await goToTheStepAfterTheDocument();
 
-    await screen.findByTestId('checkin-invoice-step');
-    expect(stepLabel()).toBe('Passo 4 di 5');
+    await screen.findByTestId('checkin-privacy-notice');
+    expect(stepLabel()).toBe('Passo 4 di 4');
     expect(screen.queryByTestId('checkin-identity-step')).not.toBeInTheDocument();
-    expect(screen.getByTestId('checkin-progress').children).toHaveLength(5);
+    expect(screen.getByTestId('checkin-progress').children).toHaveLength(4);
   });
 
   it('identityStep_TheGuestRefusesTheConsent_APersonHasItSoTheGuestGoesOnToTheInvoice', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
@@ -193,8 +193,8 @@ describe('CheckInPage with the identity verification (E03/F04/US03/T01)', () => 
     await waitFor(() => expect(screen.getByTestId('checkin-next')).toBeEnabled());
     fireEvent.click(screen.getByTestId('checkin-next'));
 
-    await screen.findByTestId('checkin-invoice-step');
-    expect(stepLabel()).toBe('Passo 5 di 6');
+    await screen.findByTestId('checkin-privacy-notice');
+    expect(stepLabel()).toBe('Passo 5 di 5');
     expect(publicCheckinApi.postBiometricConsent).toHaveBeenCalledWith(TOKEN, { consentGiven: false });
   });
 
@@ -211,7 +211,7 @@ describe('CheckInPage with the identity verification (E03/F04/US03/T01)', () => 
     fireEvent.click(await screen.findByTestId('checkin-biometric-decline'));
     await waitFor(() => expect(screen.getByTestId('checkin-next')).toBeEnabled());
     fireEvent.click(screen.getByTestId('checkin-next'));
-    await screen.findByTestId('checkin-invoice-step');
+    await screen.findByTestId('checkin-privacy-notice');
 
     // Back to the identity step: it is where the guest left it, not asked again.
     fireEvent.click(screen.getByRole('button', { name: /Indietro/ }));
@@ -281,7 +281,7 @@ describe('CheckInPage opened through the door of the property (E22/F02/US01/T01)
     renderPage('?step=identity');
 
     await screen.findByTestId('checkin-identity-step');
-    expect(stepLabel()).toBe('Passo 4 di 6');
+    expect(stepLabel()).toBe('Passo 4 di 5');
     expect(await screen.findByTestId('checkin-consent-text')).toHaveTextContent('Il tuo selfie non viene mai salvato.');
     expect(publicCheckinApi.getLegalTexts).toHaveBeenCalledWith(TOKEN, 'it');
   });
@@ -291,7 +291,7 @@ describe('CheckInPage opened through the door of the property (E22/F02/US01/T01)
 
     await screen.findByTestId('checkin-page');
     expect(screen.queryByTestId('checkin-identity-step')).not.toBeInTheDocument();
-    expect(stepLabel()).toBe('Passo 1 di 6');
+    expect(stepLabel()).toBe('Passo 1 di 5');
   });
 
   it('doorEntry_TheVerificationIsOffForTheStay_StartsAtTheFirstStepWhateverTheAddressSays', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
@@ -300,7 +300,7 @@ describe('CheckInPage opened through the door of the property (E22/F02/US01/T01)
 
     await screen.findByTestId('checkin-page');
     expect(screen.queryByTestId('checkin-identity-step')).not.toBeInTheDocument();
-    expect(stepLabel()).toBe('Passo 1 di 5');
+    expect(stepLabel()).toBe('Passo 1 di 4');
   });
 
   it('doorEntry_SendingWithTheDataNeverTyped_TakesTheGuestToTheStepThatHoldsIt', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
@@ -316,13 +316,12 @@ describe('CheckInPage opened through the door of the property (E22/F02/US01/T01)
     fireEvent.click(await screen.findByTestId('checkin-biometric-decline'));
     await waitFor(() => expect(screen.getByTestId('checkin-next')).toBeEnabled());
     fireEvent.click(screen.getByTestId('checkin-next'));
-    fireEvent.click(await screen.findByTestId('checkin-invoice-no'));
-    fireEvent.click(screen.getByTestId('checkin-next'));
+    fireEvent.click(within(await screen.findByTestId('checkin-privacy-notice')).getByRole('checkbox'));
     fireEvent.click(await screen.findByTestId('checkin-submit'));
 
     // The page does not stay at a button that seems to do nothing: it takes the guest to the first step with a field to correct.
     await screen.findByTestId('stay-guest-0');
-    expect(stepLabel()).toBe('Passo 2 di 6');
+    expect(stepLabel()).toBe('Passo 2 di 5');
     expect(publicCheckinApi.submit).not.toHaveBeenCalled();
   });
 });

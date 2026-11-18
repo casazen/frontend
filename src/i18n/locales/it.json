@@ -5603,12 +5603,12 @@
     "successDescription": "I tuoi dati sono stati registrati. Grazie!",
     "alreadyCompletedTitle": "Check-in già completato",
     "alreadyCompletedDescription": "I dati di questo soggiorno sono già stati inviati. Per proteggere la tua privacy non vengono più mostrati. Per correggerli contatta il gestore della struttura.",
-    "marketingConsent": "[SEGNAPOSTO – testo del consenso fornito dal titolare] Acconsento a ricevere comunicazioni promozionali (facoltativo).",
+    "marketingConsent": "Acconsento a ricevere comunicazioni promozionali (facoltativo).",
     "marketingConsentVersion": "Facoltativo. Versione del testo: {{version}}",
     "privacyNotice": {
       "title": "Informativa sul trattamento dei dati personali (art. 13 GDPR)",
       "legalObligation": "La comunicazione dei dati di ogni ospite alla Questura tramite Alloggiati Web è un obbligo di legge (art. 109 TULPS): il trattamento si basa sull'art. 6, par. 1, lett. c) del GDPR e non richiede il tuo consenso. Senza questi dati il soggiorno non può essere registrato.",
-      "body": "[SEGNAPOSTO – il testo completo dell'informativa sarà fornito dal titolare del trattamento: identità del titolare, finalità, basi giuridiche, destinatari (Questura), periodo di conservazione e diritti dell'interessato.]",
+      "body": "La struttura utilizza questi dati per registrare il soggiorno e comunicarli alle autorità competenti. Puoi contattarla tramite la prenotazione per consultare l’informativa completa ed esercitare i tuoi diritti.",
       "version": "Versione dell’informativa: {{version}}"
     },
     "sessionLabel": "Stato check-in ospite",
@@ -5624,12 +5624,21 @@
     },
     "stepScan": "Documento",
     "scanIntro": "Per prima cosa carica la foto del documento di ogni ospite. I dati vengono letti in automatico: nel passo successivo li controlli e li correggi.",
-    "scanHint": "JPG, PNG o WebP, massimo 5 MB. La foto non viene conservata: serve solo a compilare i campi.",
+    "scanHint": "JPG, PNG o WebP, massimo 5 MB. Se scegli la verifica online e dai il consenso, potrai usare la stessa foto per verificare il documento.",
     "scanButton": "Scatta o carica la foto",
     "scanReading": "Lettura del documento…",
     "scanAnother": "Carica il documento di un altro ospite",
     "scanManual": "Inserisci i dati a mano",
     "scanReadOk": "Dati letti per {{name}}. Controllali prima di inviare.",
+    "invoiceSave": "Salva risposta",
+    "invoiceFinished": "Operazione completata.",
+    "scanMismatch": "Il documento non corrisponde a un ospite identificabile nella prenotazione. Controlla la foto. Per correggere un nominativo contatta la struttura.",
+    "scanConfirm": "Sul documento è stato letto «{{read}}». Confermi che si tratta di {{name}}, come nella prenotazione?",
+    "scanConfirmButton": "Confermo il nominativo della prenotazione",
+    "privacyOpen": "Apri l’informativa della struttura",
+    "privacyRead": "Ho preso visione dell’informativa.",
+    "marketingOptIn": "Desidero ricevere comunicazioni promozionali.",
+    "documentNumberPlausibility": "Controlla il numero stampato sul documento. Deve contenere almeno quattro caratteri e una cifra.",
     "scanUnread": "Non sono riuscito a leggere il documento. Puoi caricarne un altro o inserire i dati a mano.",
     "scanUnavailable": "La lettura automatica non è disponibile in questo momento. Inserisci i dati a mano.",
     "stepGuests": "Ospiti",
@@ -5679,7 +5688,7 @@
       },
       "consent": {
         "accept": "Acconsento al controllo del volto",
-        "decline": "Non acconsento: mi verificherà una persona",
+        "decline": "Non acconsento",
         "draft": "Bozza",
         "loadFailed": "Non riusciamo a mostrarti il testo del consenso",
         "loading": "Carichiamo il testo del consenso...",
@@ -5889,7 +5898,7 @@
         "retake_picture": "La foto non si legge: scattala di nuovo.",
         "retake_selfie": "Scatta di nuovo il selfie, guardando dritto la fotocamera.",
         "show_document_photo": "Inquadra il lato del documento con la tua foto.",
-        "show_whole_document": "Inquadra tutto il lato del documento, con le due righe di lettere in basso.",
+        "show_whole_document": "Mostra tutto il lato del documento con le righe di lettere e numeri.",
         "show_your_face": "Mostra il viso: nella foto non si vedeva.",
         "tip_remove_glasses": "Togli gli occhiali.",
         "tip_remove_mask": "Togli la mascherina o qualsiasi cosa copra il viso.",
@@ -5898,7 +5907,7 @@
         "use_valid_document": "Il documento è scaduto: usa un documento valido."
       },
       "intro": "A questo passo partecipa solo l'ospite che lascia il documento d'identità. Gli altri ospiti non devono scattare un selfie.",
-      "nextHint": "Completa questo passo per andare avanti. Se preferisci, chiedi la verifica di un operatore.",
+      "nextHint": "Completa la verifica per proseguire.",
       "operator": {
         "ask": "Chiedi la verifica di un operatore",
         "requested": "Abbiamo avvisato chi gestisce la struttura. Verificherà la tua identità e il codice di accesso ti arriva dopo la sua decisione."
@@ -9735,6 +9744,7 @@
         "Marketing": "Consenso marketing"
       },
       "action": {
+        "NoticeAcknowledged": "Presa visione confermata",
         "NoticePresented": "Informativa mostrata",
         "Granted": "Consenso dato",
         "Withdrawn": "Consenso revocato",

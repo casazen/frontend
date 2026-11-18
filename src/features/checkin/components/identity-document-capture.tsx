@@ -107,11 +107,11 @@ export function IdentityDocumentCapture({ refused, guidanceCodes, side, twoSided
         </Button>
       </div>
 
-      <div>
+      {refused && <div>
         <Button type="button" variant="ghost" disabled={busy} onClick={onRequestOperator} data-testid="checkin-identity-document-operator">
           {t('checkin.identity.operator.ask')}
         </Button>
-      </div>
+      </div>}
     </section>
   );
 }
