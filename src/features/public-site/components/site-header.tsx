@@ -6,7 +6,7 @@ import { CasaZenLogo } from '@/components/brand/casazen-mark';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { FavoritesMenu } from '@/features/public-site/favorites/favorites-menu';
-import { FROM_TABLET_QUERY, useMediaQuery } from '@/hooks/use-media-query';
+import { FROM_DESKTOP_QUERY, useMediaQuery } from '@/hooks/use-media-query';
 import type { PublicOrgDto } from '@/types';
 import { LanguageSwitch } from './language-switch';
 import { SiteNav } from './site-nav';
@@ -45,13 +45,12 @@ interface SiteHeaderProps {
 /**
  * Header of an org's booking site, in the theme of the host. It sticks to the top (the page makes room for it: the scroll
  * padding of the window is `--header-height`), reads on any theme (the surface of the theme, the text on it) and has one
- * way to act: the call to action where there is something to check, and "Le mie prenotazioni", a link on a tablet or a
- * desktop and a sheet from the bottom on a phone.
+ * way to act: the call to action where there is something to check, and "Le mie prenotazioni", a desktop link or an item in the compact menu.
  */
 export function SiteHeader({ org, loading = false, basePath, showBookingCta, themeId, fontId, colorStyle }: SiteHeaderProps) {
   const { t } = useTranslation();
   // One of the two exists at a time, so that the link to "Le mie prenotazioni" is in the page once.
-  const fromTablet = useMediaQuery(FROM_TABLET_QUERY);
+  const fromDesktop = useMediaQuery(FROM_DESKTOP_QUERY);
   // The menu of a site with several homes (DB-07b): the results and the sections of the home.
   const navItems = useSiteNavItems(org?.slug, basePath);
 
@@ -76,11 +75,11 @@ export function SiteHeader({ org, loading = false, basePath, showBookingCta, the
                 {t('publicSite.mobileBookingCta')}
               </Button>
             ) : null}
-            {/* From a desktop up; a phone finds it in the menu, a tablet at the foot of the page (and every size there). */}
+            {/* Below the desktop breakpoint the language switch is in the same menu as the navigation links. */}
             <LanguageSwitch className="hidden lg:inline-flex" />
             {/* The homes the guest saved with the heart (DB-02b): only on a site with several homes. */}
             {org.slug ? <FavoritesMenu site={org.slug} /> : null}
-            {fromTablet ? (
+            {fromDesktop ? (
               <Link
                 to={`${basePath}/my-bookings`}
                 className="public-site-outline inline-flex h-10 items-center gap-2 px-4 text-sm"

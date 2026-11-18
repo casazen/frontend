@@ -31,6 +31,42 @@ test.describe('Branded booking site (#215)', () => {
     await expect(page).not.toHaveURL(/\/login/);
   });
 
+  for (const { width, language, hasZones } of [
+    { width: 1280, language: 'it', hasZones: false },
+    { width: 820, language: 'it', hasZones: true },
+    { width: 390, language: 'en', hasZones: false },
+  ]) {
+    test(`booking navigation survives the homes link at ${width}px (#959)`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 800 });
+      const compact = width < 1024;
+      const english = language === 'en';
+      if (hasZones) {
+        const cards = mockStayCards();
+        cards[1].comune = 'Firenze';
+        await page.route(`**/api/public/orgs/${DEMO_ORG_SLUG}/stays**`, (route) => route.fulfill({ json: mockStaysResult(cards) }));
+      }
+      const homes = english ? 'Homes' : 'Le case';
+      const faq = english ? 'Questions' : 'Domande frequenti';
+      const openMenu = page.getByRole('button', { name: english ? 'Open menu' : 'Apri menu' });
+      const navigation = compact ? page.getByRole('dialog') : page.getByTestId('public-site-nav');
+
+      await page.goto(`/book/${DEMO_ORG_SLUG}?lang=${language}`);
+      await page.getByTestId('cookie-consent-banner').getByRole('button', { name: english ? 'Accept' : 'Accetta', exact: true }).click();
+      if (compact) await openMenu.click();
+      await navigation.getByRole('link', { name: homes, exact: true }).click();
+      await expect(page).toHaveURL(/\/search$/);
+
+      if (compact) await openMenu.click();
+      await expect(navigation.getByRole('link', { name: english ? 'Why book here' : 'Perché prenotare qui' })).toBeVisible();
+      const zones = navigation.getByRole('link', { name: english ? 'Areas' : 'Zone', exact: true });
+      await expect(zones).toHaveCount(hasZones ? 1 : 0);
+      await (hasZones ? zones : navigation.getByRole('link', { name: faq, exact: true })).click();
+      const section = hasZones ? 'zone' : 'domande';
+      await expect(page).toHaveURL(`/book/${DEMO_ORG_SLUG}?sezione=${section}`);
+      await expect(page.locator(`[data-section="${section}"]`)).toBeInViewport();
+    });
+  }
+
   test('AC4: unknown org slug shows branded 404', async ({ page }) => {
     await page.goto('/book/unknown-org-xyz');
 
