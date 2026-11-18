@@ -44,11 +44,11 @@ export function InboxPane({ selectedKey, compact = false, noConversation, canWri
   );
 
   return (
-    <div className="min-w-0" data-testid="messages-inbox">
-      <div className="border-b p-3 sm:p-4">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col" data-testid="messages-inbox">
+      <div className="shrink-0 border-b p-3 sm:p-4">
         <InboxFilters state={state} onChange={update} properties={propertyOptions} />
       </div>
-      <div className="p-2 lg:max-h-[min(38rem,70dvh)] lg:overflow-y-auto lg:overscroll-contain">
+      <div className="min-h-0 flex-1 p-2 lg:overflow-y-auto lg:overscroll-contain">
         <ThreadList
           page={threads.data}
           loading={threads.isPending}

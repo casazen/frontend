@@ -43,8 +43,8 @@ interface AppShellLayoutProps {
  * the children, so the header and the menus are not mounted again.
  *
  * The window scrolls (not an inner region): the header and the sidebar are sticky, the bottom bar is fixed, and the
- * minimum height is dynamic (`dvh`) so that the browser bars of a phone do not leave a gap. A page that needs the whole
- * height under the header sizes itself (see `vetrina-page.tsx`).
+ * minimum height is dynamic (`dvh`) so that the browser bars of a phone do not leave a gap. On desktop, a direct child
+ * of `main` with `data-app-viewport` can use the remaining height under the header and scroll its own panes.
  */
 export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
   const mainRef = useRef<HTMLElement>(null);
@@ -73,7 +73,7 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
         <div className="flex min-h-dvh" data-testid="app-shell" data-context={contextKey}>
           <ContextSidebar contextKey={contextKey} organizationName={organizationName} />
           <MoreSheet contextKey={contextKey} organizationName={organizationName} />
-          <div className="flex min-w-0 flex-1 flex-col">
+          <div className="flex min-w-0 flex-1 flex-col lg:has-[>main>[data-app-viewport]]:h-dvh">
             <DemoBanner />
             {/* The notifications bell (UI-12) and the guide (the help of UI-08 is inside it) are handed to the header here too, each only when its function exists. */}
             <Header search={<CommandPaletteTrigger />} notifications={<NotificationBell />} help={<GuideButton contextKey={contextKey} />} />
@@ -83,6 +83,7 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
               tabIndex={-1}
               className={cn(
                 'flex flex-1 flex-col p-4 pb-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom))] outline-none md:pb-6 md:p-6',
+                'lg:has-[>[data-app-viewport]]:min-h-0 lg:has-[>[data-app-viewport]]:overflow-y-auto',
                 mobilePrimaryVisible &&
                   'max-md:pb-[calc(var(--bottom-nav-height)+var(--mobile-primary-height)+env(safe-area-inset-bottom))]',
               )}

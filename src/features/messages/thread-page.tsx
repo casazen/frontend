@@ -88,8 +88,8 @@ function Conversation({ threadKey, thread, title, listPath, bookingDetails, item
   const stateWord = thread.state === 'Closed' ? t('messages.thread.closed') : thread.state === 'Archived' ? t('messages.thread.archived') : null;
 
   return (
-    <section className="min-w-0 lg:border-l" aria-label={t('messages.thread.title')} data-testid="messages-conversation">
-      <header className="space-y-2 border-b px-4 py-3 sm:px-5">
+    <section className="flex min-h-0 min-w-0 flex-col lg:border-l" aria-label={t('messages.thread.title')} data-testid="messages-conversation">
+      <header className="shrink-0 space-y-2 border-b px-4 py-3 sm:px-5">
         <Link to={listPath} className="inline-flex min-h-11 items-center gap-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:hidden">
           <ArrowLeft className="size-4" aria-hidden="true" />
           {t('messages.thread.backToList')}
@@ -116,7 +116,7 @@ function Conversation({ threadKey, thread, title, listPath, bookingDetails, item
         </div>
       </header>
 
-      <div className="space-y-2 p-3 sm:p-5">
+      <div className="flex min-h-0 flex-1 flex-col gap-2 p-3 sm:p-5">
         {thread.anonymized ? (
           <p className="text-sm text-muted-foreground" data-testid="thread-anonymized">
             {t('messages.actions.anonymized')}
@@ -128,14 +128,14 @@ function Conversation({ threadKey, thread, title, listPath, bookingDetails, item
           items={items}
           label={t('messages.thread.logLabel', { name })}
           emptyText={t('messages.thread.empty')}
-          className="max-h-[min(30rem,55dvh)] min-h-48 rounded-xl border-transparent bg-muted/25 p-3 sm:p-4"
+          className="max-h-[min(30rem,55dvh)] min-h-48 flex-1 rounded-xl border-transparent bg-muted/25 p-3 sm:p-4 lg:max-h-none lg:min-h-0 lg:overscroll-contain"
           renderItem={(item) => (
             <MessageBubble item={item} threadKey={threadKey} hostLanguage={hostLanguage} canWrite={canWrite} resent={resent} actions={actions} />
           )}
         />
       </div>
 
-      <div className="space-y-3 border-t bg-muted/15 p-3 sm:p-5">
+      <div className="shrink-0 space-y-3 border-t bg-muted/15 p-3 sm:p-5 lg:max-h-[55%] lg:overflow-y-auto lg:overscroll-contain">
         {!allowedActions.canReply ? (
           <CannotReply>
             <p>{t(cannotReplyKey(allowedActions.reason))}</p>
@@ -255,9 +255,9 @@ function ThreadView({ threadKey }: { threadKey: string }) {
       </p>
     );
     content = (
-      <div className="grid min-w-0 overflow-hidden rounded-2xl border bg-card lg:grid-cols-[minmax(18rem,22rem)_minmax(0,1fr)] 2xl:grid-cols-[minmax(18rem,22rem)_minmax(0,1fr)_minmax(16rem,23%)]">
+      <div className="grid min-w-0 flex-1 overflow-hidden rounded-2xl border bg-card lg:min-h-[26rem] lg:grid-cols-[minmax(18rem,22rem)_minmax(0,1fr)] lg:grid-rows-[minmax(0,1fr)] 2xl:grid-cols-[minmax(18rem,22rem)_minmax(0,1fr)_minmax(16rem,23%)]" data-testid="messages-workspace">
         {withList ? (
-          <aside aria-label={t('messages.inbox.title')} className="min-w-0">
+          <aside aria-label={t('messages.inbox.title')} className="flex min-h-0 min-w-0 flex-col">
             <InboxPane selectedKey={threadKey} compact canWrite={canWrite} />
           </aside>
         ) : null}
@@ -292,14 +292,14 @@ function ThreadView({ threadKey }: { threadKey: string }) {
           }}
           busy={busy}
         />
-        {withBookingPane ? <aside aria-label={t('messages.bookingCard.details')} className="min-w-0 border-l bg-muted/20 p-3">{booking}</aside> : null}
+        {withBookingPane ? <aside aria-label={t('messages.bookingCard.details')} className="min-h-0 min-w-0 overflow-y-auto border-l bg-muted/20 p-3">{booking}</aside> : null}
       </div>
     );
   }
 
   return (
     <AppShell>
-      <div className="space-y-4" data-testid="messages-thread-page">
+      <div className="flex flex-1 flex-col gap-4" data-app-viewport data-testid="messages-thread-page">
         {!data ? <PageHeader title={title} crumbs="auto" /> : null}
         {thread.isError && data ? (
           <p className="text-sm text-destructive" role="alert">
