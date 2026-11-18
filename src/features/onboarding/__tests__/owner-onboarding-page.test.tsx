@@ -177,7 +177,7 @@ function Arrived() {
 }
 
 function renderAt(path: string, element: ReactNode, { agencyTier = true, client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } }) } = {}) {
-  const flags = { ...DEFAULT_FEATURE_FLAGS, octorateOnboarding: true, agencyTier };
+  const flags = { ...DEFAULT_FEATURE_FLAGS, octorateOnboarding: true, octorateConnector: true, agencyTier };
   const view = render(
     <I18nextProvider i18n={i18n}>
       <FeatureFlagsContext.Provider value={{ flags, isLoading: false }}>

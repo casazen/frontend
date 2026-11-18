@@ -69,6 +69,7 @@ test('scelta manuale · confermare, uscire, riprendere dalla Home e aprire il co
   const next = page.getByTestId('onboarding-plan-current').getByTestId('onboarding-part-octorateConnection-open');
   await expect(preference).toContainText('Invio manuale');
   await expect(next).toHaveAttribute('href', connectionTaskPath);
+  await expect(next).toBeFocused();
   expect(saved).toEqual([{ sender: 'Manual', expectedLastChangedAt: null, confirmed: true, delegationConsent: false }]);
   await expectNoAxeViolations(page, { include: '[data-testid="onboarding-plan-page"]' });
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));

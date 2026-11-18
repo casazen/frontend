@@ -21,7 +21,11 @@ const methods = [
 
 type Stage = 'saved' | 'choice' | 'review';
 
-export function OrgSenderPreference() {
+interface OrgSenderPreferenceProps {
+  onFirstSaved?: () => void;
+}
+
+export function OrgSenderPreference({ onFirstSaved }: OrgSenderPreferenceProps) {
   const { t } = useTranslation();
   const read = useOrgComplianceSender();
   if (read.isLoading) return <p role="status">{t('orgComplianceSender.loading')}</p>;
@@ -36,10 +40,10 @@ export function OrgSenderPreference() {
       </Alert>
     );
   }
-  return <PreferenceForm key={`${read.data.sender}-${read.data.lastChangedAt}-${read.data.delegationTextVersion}`} read={read.data} />;
+  return <PreferenceForm key={`${read.data.sender}-${read.data.lastChangedAt}-${read.data.delegationTextVersion}`} read={read.data} onFirstSaved={onFirstSaved} />;
 }
 
-function PreferenceForm({ read }: { read: OrgComplianceSender }) {
+function PreferenceForm({ read, onFirstSaved }: { read: OrgComplianceSender } & OrgSenderPreferenceProps) {
   const { t } = useTranslation();
   const client = useQueryClient();
   const [stage, setStage] = useState<Stage>(read.sender ? 'saved' : 'choice');
@@ -59,6 +63,7 @@ function PreferenceForm({ read }: { read: OrgComplianceSender }) {
     mutationFn: orgComplianceSenderApi.set,
     gcTime: 0,
     onSuccess: (answer) => {
+      if (read.sender === null && answer.sender !== null) onFirstSaved?.();
       client.setQueryData(ORG_COMPLIANCE_SENDER_KEY, answer);
       void client.invalidateQueries({ queryKey: [PROPERTY_SENDER_KEY] });
       void client.invalidateQueries({ queryKey: ['compliance'] });

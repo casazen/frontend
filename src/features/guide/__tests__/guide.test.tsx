@@ -57,7 +57,7 @@ function renderWith(node: React.ReactNode, at = '/app/short-rent', octorateOnboa
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <I18nextProvider i18n={i18n}>
-      <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, octorateOnboarding }, isLoading: false }}>
+      <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, octorateOnboarding, octorateConnector: true }, isLoading: false }}>
         <QueryClientProvider client={client}>
           <MemoryRouter initialEntries={[at]}>
             <Routes>

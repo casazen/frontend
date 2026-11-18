@@ -11,6 +11,7 @@ import { PageHeader } from '@/components/layout/page-header';
 import { ErrorState } from '@/components/shared/error-state';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { isEntryFeatureEnabled } from '@/config/route-manifest';
 import { supportConfig } from '@/config/support.config';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
@@ -54,6 +55,8 @@ export function OnboardingPlanPage() {
   const navigate = useNavigate();
   const { hash } = useLocation();
   const handledAnchor = useRef('');
+  const focusAfterSenderSave = useRef(false);
+  const nextPanel = useRef<HTMLElement>(null);
   const { contexts, getDefaultRoute, hasPermission } = useWorkspace();
   const isAdmin = isOrgBillingAdmin(contexts);
   const { flags } = useFeatureFlags();
@@ -77,7 +80,7 @@ export function OnboardingPlanPage() {
   const needs = useMemo(() => knownNeeds(plan.data), [plan.data]);
   function mayLaunch(part: OnboardingPart) {
     const destination = resolveLaunchTarget(part.launchTarget, null, null, hasPermission, part.reason, flags);
-    return Boolean(destination && commercialRouteAllowed(commercial, destination.entry.path));
+    return Boolean(destination && isEntryFeatureEnabled(destination.entry, flags) && commercialRouteAllowed(commercial, destination.entry.path));
   }
   const focus = plan.isError ? null : firstOpenPart(parts.filter(mayLaunch));
   const featured = senderPrimary ? null : focus;
@@ -109,6 +112,16 @@ export function OnboardingPlanPage() {
       target.scrollIntoView?.({ block: 'nearest' });
     }
   }, [hash, plan.isPending, plan.isError, isAdmin, sender.isPending, senderMissing, requestedAvailable, featured, userId, orgId]);
+
+  useEffect(() => {
+    if (!focusAfterSenderSave.current || senderPrimary || plan.isPending) return;
+    focusAfterSenderSave.current = false;
+    // The first link is the featured task. A finished or waiting plan has only its heading.
+    const destination = nextPanel.current?.querySelector<HTMLAnchorElement>('a[href]')
+      ?? nextPanel.current?.querySelector<HTMLHeadingElement>('h2')
+      ?? document.getElementById('org-sender-title');
+    destination?.focus();
+  }, [senderPrimary, plan.isPending]);
 
   function goHome() {
     const resume = requestedAvailable?.code ?? (senderMissing ? 'mittente' : focus?.code);
@@ -204,12 +217,12 @@ export function OnboardingPlanPage() {
   const senderPanel = isAdmin && (
     <div key="sender" id="mittente" tabIndex={-1} className={cn(panel, 'scroll-mt-5 outline-none focus-visible:ring-2 focus-visible:ring-ring',
       senderPrimary ? `${mainTask} p-4 shadow-sm sm:p-6` : 'order-4 p-4 lg:col-start-2 lg:row-start-3')} data-testid="onboarding-plan-sender">
-      <OrgSenderPreference />
+      <OrgSenderPreference onFirstSaved={() => { focusAfterSenderSave.current = true; }} />
     </div>
   );
   const currentPanel = planReady && (
-    <section key="next" className={cn(panel, mainTask, 'space-y-4 p-4 shadow-sm sm:p-6')} data-testid="onboarding-plan-current">
-      <h2 className="text-sm font-semibold text-primary-text">{t('onboardingPlan.workspace.upNext')}</h2>
+    <section key="next" ref={nextPanel} className={cn(panel, mainTask, 'space-y-4 p-4 shadow-sm sm:p-6')} data-testid="onboarding-plan-current">
+      <h2 tabIndex={-1} className="text-sm font-semibold text-primary-text">{t('onboardingPlan.workspace.upNext')}</h2>
       {featured ? <ol role="list">{partRow(featured, true)}</ol> :
         <p className="text-lg font-semibold">{t(available.length > 0 && complete === available.length ? 'onboardingPlan.workspace.finished' : 'onboardingPlan.workspace.waiting')}</p>}
     </section>

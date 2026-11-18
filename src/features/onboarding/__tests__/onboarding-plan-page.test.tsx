@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { createElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
@@ -8,6 +8,9 @@ import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { orgComplianceSenderApi, type OrgComplianceSender } from '@/api/org-compliance-sender.api';
 import { readPlanResume } from '../plan-resume';
+import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
+import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
+import { ORG_COMPLIANCE_SENDER_KEY } from '@/queries/use-org-compliance-sender';
 import { onboardingApi } from '@/api/onboarding.api';
 import { ONBOARDING_PART_KEYS, type OnboardingPart, type OnboardingPartKey } from '@/types/onboarding.types';
 import { partPath, partTitleKey } from '@/lib/onboarding-parts';
@@ -50,21 +53,25 @@ function Arrived() {
   return <p data-testid="arrived">{useLocation().pathname}</p>;
 }
 
-function renderPage(hash = '') {
+function renderPage(hash = '', { octorateConnector = true } = {}) {
+  const flags = { ...DEFAULT_FEATURE_FLAGS, octorateOnboarding: true, octorateConnector };
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   client.setQueryData(['me'], { id: 'person', orgId: 'org', org: { id: 'org' } });
-  return render(
+  const result = render(
     <I18nextProvider i18n={i18n}>
       <QueryClientProvider client={client}>
-        <MemoryRouter initialEntries={[`/app/short-rent/onboarding${hash}`]}>
-          <Routes>
-            <Route path="/app/short-rent/onboarding" element={<OnboardingPlanPage />} />
-            <Route path="*" element={<Arrived />} />
-          </Routes>
-        </MemoryRouter>
+        <FeatureFlagsContext.Provider value={{ flags, isLoading: false }}>
+          <MemoryRouter initialEntries={[`/app/short-rent/onboarding${hash}`]}>
+            <Routes>
+              <Route path="/app/short-rent/onboarding" element={<OnboardingPlanPage />} />
+              <Route path="*" element={<Arrived />} />
+            </Routes>
+          </MemoryRouter>
+        </FeatureFlagsContext.Provider>
       </QueryClientProvider>
     </I18nextProvider>,
   );
+  return { ...result, client };
 }
 
 async function rows(): Promise<HTMLElement[]> {
@@ -129,8 +136,33 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Salva preferenza' }));
       const current = await screen.findByTestId('onboarding-plan-current');
       expect(within(current).getByTestId('onboarding-part-properties-open')).toHaveAttribute('href', partPath('properties'));
+      await waitFor(() => expect(within(current).getByTestId('onboarding-part-properties-open')).toHaveFocus());
       expect(orgComplianceSenderApi.set).toHaveBeenCalledTimes(1);
       expect(progress).toHaveAttribute('value', '1');
+    });
+
+    it('keeps external keyboard focus when a refetch discovers an already saved preference', async () => {
+      vi.mocked(orgComplianceSenderApi.get).mockResolvedValueOnce({ ...manualSender, sender: null }).mockResolvedValue(manualSender);
+      const { client } = renderPage();
+      await screen.findByRole('radio', { name: 'Invio manuale' });
+      const exit = screen.getByTestId('onboarding-plan-exit');
+      exit.focus();
+      await act(async () => { await client.invalidateQueries({ queryKey: ORG_COMPLIANCE_SENDER_KEY }); });
+      await screen.findByTestId('onboarding-plan-current');
+      expect(exit).toHaveFocus();
+      expect(orgComplianceSenderApi.set).not.toHaveBeenCalled();
+    });
+
+    it('promotes the next accessible task when the Octorate connector flag is disabled', async () => {
+      vi.mocked(onboardingApi.getPlan).mockResolvedValue(plan({
+        octorateConnection: { state: 'open', launchTarget: 'connect' },
+        properties: { state: 'open', launchTarget: 'listings' },
+      }));
+      renderPage('', { octorateConnector: false });
+      const current = await screen.findByTestId('onboarding-plan-current');
+      expect(within(current).getByTestId('onboarding-part-properties-open')).toHaveAttribute('href', partPath('properties'));
+      await rows();
+      expect(within(row('octorateConnection')).getByRole('link')).toHaveTextContent(i18n.t('onboardingPlan.workspace.details'));
     });
 
     it('restores an accessible part outside the spotlight with the outline open and the keyboard there', async () => {
@@ -147,6 +179,8 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
       await rows();
       expect(screen.queryByTestId('onboarding-plan-sender')).not.toBeInTheDocument();
       expect(orgComplianceSenderApi.get).not.toHaveBeenCalled();
+      expect(screen.queryByTestId('org-sender-save')).not.toBeInTheDocument();
+      expect(orgComplianceSenderApi.set).not.toHaveBeenCalled();
       expect(within(screen.getByTestId('onboarding-plan-current')).queryByRole('link')).not.toBeInTheDocument();
       expect(within(row('properties')).getByRole('link')).toHaveTextContent(i18n.t('onboardingPlan.workspace.details'));
     });
