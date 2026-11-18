@@ -791,18 +791,18 @@ describe('the routines page (E01/F04/US02/T01)', () => {
 
     it('RoutineLibrary_CatalogThatCannotBeRead_MarksNothingAndTheServerDecidesWithoutAFalseSuccess', async () => {
       vi.mocked(routinesApi.getActionCatalog).mockRejectedValue(httpError(500));
-      vi.mocked(routinesApi.create).mockRejectedValue(httpError(422, { code: 'routine_action_not_available', actions: ['MessageToGuest'] }));
+      vi.mocked(routinesApi.create).mockRejectedValue(httpError(422, { code: 'routine_action_not_available', actions: ['RequestReview'] }));
       renderPage();
 
       fireEvent.click(await screen.findByTestId('open-library-button'));
       // Nothing is known of the actions, so nothing is marked; the activation is the server's to refuse, and it does.
-      fireEvent.click(await screen.findByTestId('activate-template-1'));
-      expect(screen.queryByTestId('template-unavailable-1')).not.toBeInTheDocument();
+      fireEvent.click(await screen.findByTestId('activate-template-2'));
+      expect(screen.queryByTestId('template-unavailable-2')).not.toBeInTheDocument();
 
-      await waitFor(() => expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('Invia messaggio all\'ospite')));
+      await waitFor(() => expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('Richiedi recensione')));
       expect(toast.success).not.toHaveBeenCalled();
       // The library stays open on the same template: nothing was made.
-      expect(screen.getByTestId('library-template-1')).toBeInTheDocument();
+      expect(screen.getByTestId('library-template-2')).toBeInTheDocument();
     });
 
     it('RoutineLibrary_CreationInFlight_DisablesEveryButtonOfTheLibrary', async () => {

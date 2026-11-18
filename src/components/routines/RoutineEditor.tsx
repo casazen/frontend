@@ -1,3 +1,4 @@
+import { useMessageTemplates } from '@/queries/use-message-thread';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, X } from 'lucide-react';
@@ -90,7 +91,14 @@ export function RoutineEditor({ routine, availability, onSave, onCancel, isSavin
   const builtCondition = conditionFromRules(condition.operator, condition.rules);
   const conditionComplete = builtCondition !== undefined;
 
-  const actionProblems = actions.map(actionProblemKey);
+  const { data: templates = [] } = useMessageTemplates(actions.some(action => action.type === 'MessageToGuest'));
+  const actionProblems = actions.map(action => {
+    if (action.type && active && !testMode && !isActionUnavailable(availability, action.type)) {
+      if (action.type === 'MessageToGuest' && !action.templateId.trim()) return 'routines.problem.messageTemplate';
+      if (action.type === 'AddTag' && !action.tag.trim()) return 'routines.problem.tag';
+    }
+    return actionProblemKey(action);
+  });
   const unavailable = unavailableActionTypes(availability, actions.flatMap(({ type }) => type ? [{ type }] : []));
   const anyActionUnavailableInCatalog = ACTION_TYPES.some((action) => isActionUnavailable(availability, action.type));
   // A routine that runs for real holds only actions that can run: it is switched off for the person, who is told why, and can still save it (in test mode it runs as a simulation).
@@ -390,13 +398,26 @@ export function RoutineEditor({ routine, availability, onSave, onCancel, isSavin
                     <Label htmlFor={`template-${index}`} className="text-sm">
                       {t('routines.messageTemplate')}
                     </Label>
-                    <Input
+                    <Select
                       id={`template-${index}`}
                       value={action.templateId}
                       onChange={(e) => changeAction(action.key, (draft) => ({ ...draft, templateId: e.target.value }))}
-                      placeholder={t('routines.messageTemplatePlaceholder')}
                       data-testid={`template-id-${index}`}
-                    />
+                    >
+                      <option value="">{t('routines.messageTemplatePlaceholder')}</option>
+                      {action.templateId && !templates.some(template => template.id === action.templateId) && (
+                        <option value={action.templateId}>{t('routines.savedTemplate')}</option>
+                      )}
+                      {templates.map(template => <option key={template.id} value={template.id}>{template.name} ({template.language})</option>)}
+                    </Select>
+                  </div>
+                )}
+
+                {action.type === 'AddTag' && (
+                  <div className="mt-3 space-y-1">
+                    <Label htmlFor={`routine-tag-${index}`}>{t('routines.tag')}</Label>
+                    <Input id={`routine-tag-${index}`} value={action.tag} maxLength={40}
+                      onChange={e => changeAction(action.key, draft => ({ ...draft, tag: e.target.value }))} />
                   </div>
                 )}
 
