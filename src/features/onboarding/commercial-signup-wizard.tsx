@@ -136,8 +136,8 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
       setProvisioned(true);
       setConsenting(false);
       setStep('payment');
-      // DB memberships are already persisted; Auth0 synchronization must not block payment/setup.
-      void auth.refreshAccessToken().catch(() => undefined);
+      // Database memberships let checkout continue when Auth0 has no new role claims to fetch.
+      if (result.rolesSynced) void auth.refreshAccessToken().catch(() => undefined);
       // Keep the draft server-side through the profile query, including after Stripe or a browser refresh.
       await client.invalidateQueries({ queryKey: ['me'] });
     } catch (err) {
@@ -158,7 +158,6 @@ export function CommercialSignupWizard({ profile }: { profile: UserDetail | unde
       await client.invalidateQueries({ queryKey: ['me'] });
       const target = me.hasProperties === false ? getFirstPropertyRoute(rentalArea) : getHomeRouteForRentalType(rentalArea);
       await confirmWorkspaceAccess(client, target);
-      void auth.refreshAccessToken().catch(() => undefined);
       navigate(target, { replace: true });
     } catch (err) { setError(getProblemMessage(err, t) ?? t('onboardingAccess.description')); }
     finally { setBusy(false); }
