@@ -15,6 +15,7 @@ test('three profiles, Starter lock and per-room agency summary on desktop and mo
   await expect(page.getByTestId('commercial-signup')).toBeVisible();
   await expect(page.getByTestId(/^signup-profile-/)).toHaveCount(3);
   await page.getByTestId('signup-profile-owner').click();
+  await expect(page.getByRole('radio')).toHaveCount(3);
   await expect(page.getByRole('checkbox').first()).toBeDisabled();
   await page.getByRole('button', { name: /Pro/ }).click();
   await expect(page.getByRole('checkbox').first()).toBeEnabled();

@@ -19,15 +19,13 @@ test.describe('Role-based onboarding (#198)', () => {
     await expect(page.getByRole('heading', { name: /Come vuoi usare CasaZen/i })).toBeVisible();
   });
 
-  test('AC2 onboarding shows three profiles followed by the rental areas', async ({ page }) => {
+  test('AC2 onboarding shows the three account profiles', async ({ page }) => {
     await page.goto(demoUrl('/onboarding', 'onboarding'));
 
     await expect(page.getByTestId(/^signup-profile-/)).toHaveCount(3);
     await expect(page.getByTestId('signup-profile-agency')).toBeVisible();
     await expect(page.getByTestId('signup-profile-owner')).toBeVisible();
     await expect(page.getByTestId('signup-profile-supplier')).toBeVisible();
-    await page.getByTestId('signup-profile-owner').click();
-    await expect(page.getByRole('radio')).toHaveCount(3);
   });
 
   test('AC3 short-term choice navigates to short-rent home', async ({ page }) => {
