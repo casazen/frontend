@@ -114,6 +114,8 @@ describe('the guide of the header', () => {
     expect(within(setup).getByTestId('guide-setup-all')).toHaveAttribute('href', '/app/short-rent/onboarding');
 
     const todo = await within(panel).findByTestId('guide-todo');
+    expect(internalActivitiesApi.getPending).toHaveBeenCalledWith(true);
+    expect(internalActivitiesApi.getUrgentCount).toHaveBeenCalledWith(true);
     expect(todo).toHaveTextContent('Ricevuta da recuperare');
     expect(todo).toHaveTextContent('Villa del Lago');
     expect(within(todo).getByTestId('guide-todo-all')).toHaveAttribute('href', '/app/short-rent/activities');
