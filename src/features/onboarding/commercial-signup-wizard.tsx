@@ -180,8 +180,8 @@ function SignupFlow({ profile }: { profile: UserDetail | undefined }) {
       setProvisioned(true);
       setConsenting(false);
       setStep('payment');
-      // DB memberships are already persisted; Auth0 synchronization must not block payment/setup.
-      void auth.refreshAccessToken().catch(() => undefined);
+      // Database memberships let checkout continue when Auth0 has no new role claims to fetch.
+      if (result.rolesSynced) void auth.refreshAccessToken().catch(() => undefined);
       // Keep the draft server-side through the profile query, including after Stripe or a browser refresh.
       await client.invalidateQueries({ queryKey: ['me'] });
     } catch (err) {
@@ -201,7 +201,6 @@ function SignupFlow({ profile }: { profile: UserDetail | undefined }) {
         const area = me.commercialSignup ? signupRentalType(me.commercialSignup) : me.rentalType ?? rentalArea;
         return me.hasProperties === false ? getFirstPropertyRoute(area) : getHomeRouteForRentalType(area);
       });
-      void auth.refreshAccessToken().catch(() => undefined);
       navigate(target, { replace: true });
     } catch (err) {
       setError(err instanceof Error && err.message === PAYMENT_REQUIRED
