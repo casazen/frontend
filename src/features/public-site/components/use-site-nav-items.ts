@@ -1,9 +1,11 @@
 import { useTranslation } from 'react-i18next';
-import { useHomeSections, type HomeSectionId } from '@/features/public-site/home/home-sections';
-import { useOrgProperties } from '@/queries/use-public-org';
+import { comuniOf } from '@/features/public-site/home/home-model';
+import { homeSectionIds, type HomeSectionId } from '@/features/public-site/home/home-sections';
+import { DEFAULT_GUESTS } from '@/lib/booking-url';
+import { useOrgStays } from '@/queries/use-public-stays';
 
 export interface SiteNavItem {
-  id: 'homes' | HomeSectionId;
+  id: HomeSectionId;
   label: string;
   to: string;
 }
@@ -15,20 +17,14 @@ const SECTION_LABEL: Record<HomeSectionId, string> = {
   domande: 'siteHome.nav.faq',
 };
 
-/**
- * The links of the menu of a booking site with several homes (DB-07b): «Le case» (the results) on every page, and, on the home,
- * the sections it has drawn: «Zone», «Perché prenotare qui», «Domande frequenti». A site with one home has no menu: there is
- * nothing to choose between. The homes are the list the header already reads for the hearts (no new request).
- */
+/** Section links open the unfiltered home. Read its cards even when entering another page directly. */
 export function useSiteNavItems(slug: string | undefined, basePath: string): SiteNavItem[] {
   const { t } = useTranslation();
-  const sections = useHomeSections();
-  const properties = useOrgProperties(slug);
-  if ((properties.data?.length ?? 0) < 2) return [];
-  return [
-    { id: 'homes', label: t('siteHome.nav.homes'), to: `${basePath}/search` },
-    ...sections
-      .filter((id) => id !== 'case')
-      .map((id) => ({ id, label: t(SECTION_LABEL[id]), to: `${basePath}?sezione=${id}` })),
-  ];
+  const { data } = useOrgStays(slug, { adults: DEFAULT_GUESTS, children: 0 });
+  const cards = data?.items ?? [];
+  return homeSectionIds(cards.length, comuniOf(cards).length).map((id) => ({
+    id,
+    label: t(SECTION_LABEL[id]),
+    to: id === 'case' ? `${basePath}/search` : `${basePath}?sezione=${id}`,
+  }));
 }

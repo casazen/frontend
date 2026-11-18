@@ -8,6 +8,7 @@ import type { PublicOrgDto } from '@/types';
 import { PublicSiteShell } from '../PublicSiteShell';
 
 vi.mock('@/queries/use-public-org', () => ({ usePublicOrg: vi.fn(), useOrgProperties: () => ({ data: undefined }) }));
+vi.mock('@/queries/use-public-stays', () => ({ useOrgStays: () => ({ data: undefined }) }));
 vi.mock('@/components/shared/cookie-consent-banner', () => ({ CookieConsentBanner: () => null }));
 vi.mock('@/features/public-site/components/Footer', () => ({ Footer: () => null }));
 
