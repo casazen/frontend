@@ -3,7 +3,7 @@ import { expect, type Page } from '@playwright/test';
 /** Completes the new host signup with a simulated payment on the demo-only browser suite. */
 export async function completeOnboardingFromRentalChoice(page: Page, rentalButtonIndex: number): Promise<void> {
   const rentalType = rentalButtonIndex === 1 ? 'LongTerm' : 'ShortTerm';
-  const profile = rentalType === 'LongTerm' ? 'long-rent' : 'owner';
+  const profile = 'owner';
   let created = false;
   let confirmed = false;
   let selection: unknown;
@@ -34,11 +34,12 @@ export async function completeOnboardingFromRentalChoice(page: Page, rentalButto
   let paid = false;
   await page.route('**/api/billing/subscription', route => route.fulfill({ json: { status: paid ? 'active' : 'none', planTier: 'Starter', billingCountry: null, vatId: null, currentPeriodEnd: null, seats: 1 } }));
   await page.route('**/api/billing/checkout-session', route => {
-    expect(route.request().postDataJSON()).toMatchObject({ planTier: 'Starter', billingCountry: 'IT', commercialSignup: { profile } });
+    expect(route.request().postDataJSON()).toMatchObject({ planTier: 'Starter', billingCountry: 'IT', commercialSignup: { profile, rentalArea: rentalType } });
     return route.fulfill({ json: { checkoutUrl: 'https://checkout.stripe.com/c/test-commercial' } });
   });
   await page.route('https://checkout.stripe.com/**', route => route.fulfill({ contentType: 'text/html', body: '<p>Stripe test checkout</p>' }));
-  await page.getByTestId(`signup-profile-${profile}`).click();
+  await page.getByTestId('signup-profile-owner').click();
+  await page.locator(`input[name="rental-area"][value="${rentalType}"]`).check();
   await page.getByRole('button', { name: 'Vai al riepilogo' }).click();
   await page.getByRole('button', { name: 'Continua al pagamento' }).click();
   await completeOnboardingConsents(page);

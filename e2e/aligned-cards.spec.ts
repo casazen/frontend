@@ -67,9 +67,8 @@ test.describe('Aligned cards', () => {
         await page.setViewportSize({ width, height: 900 });
         await page.goto(demoUrl('/onboarding', 'onboarding'));
         const cards = page.getByTestId(/^signup-profile-/);
-        await expect(cards).toHaveCount(4);
-        await expectAligned([cards.nth(0), cards.nth(1)], 'first row');
-        await expectAligned([cards.nth(2), cards.nth(3)], 'second row');
+        await expect(cards).toHaveCount(3);
+        await expectAligned(await cards.all(), 'profile choices');
       });
     }
   });

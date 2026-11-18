@@ -8,7 +8,7 @@ import type {
   OrgPropertyScope,
   OrgRole,
 } from '@/types/org-team.types';
-import { isRentalArea, RENTAL_AREAS, type PickerProperty, type RentalArea } from '../team-properties';
+import { isRentalArea, type PickerProperty, type RentalArea } from '../team-properties';
 
 /** The roles an invitation can give: never the owner. Whether the caller may give each one is for the matrix of the roles to say. */
 export const INVITE_ROLES = ['Admin', 'PropertyManager', 'Collaborator', 'Accountant'] as const;
@@ -23,7 +23,7 @@ export interface InviteValues {
   /** The language of the emails of the invitation. */
   language: OrgInvitationLanguage;
   role: InviteRole;
-  /** `short-rent`, `long-rent`: at least one (an administrator has both). */
+  /** `short-rent`, `long-rent`: at least one (an administrator has every active area). */
   areas: string[];
   scope: OrgPropertyScope;
   /** The properties of a collaborator «Solo alcuni». */
@@ -63,7 +63,7 @@ export function knownEmails(members: readonly OrgMember[] | undefined, invitatio
  * has to be one the caller may give (`assignable`, from the matrix; unknown until it is read, and then the backend decides): an
  * administrator cannot nominate another administrator, and an address that asks for it does not get past the step.
  */
-export function inviteStepSchemas(known: KnownEmails, assignable?: readonly OrgRole[]): { who: StepSchema; role: StepSchema; where: StepSchema } {
+export function inviteStepSchemas(known: KnownEmails, availableAreas: readonly RentalArea[], assignable?: readonly OrgRole[]): { who: StepSchema; role: StepSchema; where: StepSchema } {
   return {
     who: z.object({
       name: z
@@ -90,7 +90,7 @@ export function inviteStepSchemas(known: KnownEmails, assignable?: readonly OrgR
     // An administrator has every area whatever was ticked (the picker does not even offer them): it needs none of its own.
     where: z
       .object({ role: z.string(), areas: z.array(z.string()) })
-      .refine((values) => values.role === 'Admin' || values.areas.length > 0, { path: ['areas'], error: 'team.invite.errors.areaRequired' }),
+      .refine((values) => availableAreas.some((area) => values.role === 'Admin' || values.areas.includes(area)), { path: ['areas'], error: 'team.invite.errors.areaRequired' }),
   };
 }
 
@@ -113,27 +113,27 @@ export interface InviteDefaults {
  * says otherwise: `?role=accountant`, `?area=long-rent`, `?property=<id>` (a collaborator limited to that property). `properties` is
  * what the org has, to know the area of `?property`; without it that part of the address is left out.
  */
-export function inviteDefaults(search: URLSearchParams, language: OrgInvitationLanguage, properties: readonly PickerProperty[] | undefined): InviteDefaults {
-  const values: InviteValues = { name: '', email: '', language, role: 'Collaborator', areas: ['short-rent'], scope: 'All', propertyIds: [] };
+export function inviteDefaults(search: URLSearchParams, language: OrgInvitationLanguage, properties: readonly PickerProperty[] | undefined, availableAreas: readonly RentalArea[]): InviteDefaults {
+  const values: InviteValues = { name: '', email: '', language, role: 'Collaborator', areas: availableAreas.slice(0, 1), scope: 'All', propertyIds: [] };
   let prefilled = false;
 
   const roleParam = search.get('role');
   if (roleParam && Object.hasOwn(ROLE_FROM_ADDRESS, roleParam)) {
     values.role = ROLE_FROM_ADDRESS[roleParam];
-    // Everything but the collaborator works wherever the org has something: both areas, the person can take one off.
-    if (values.role !== 'Collaborator') values.areas = [...RENTAL_AREAS];
+    // Everything but the collaborator works wherever the org has something: all active areas, the person can take one off.
+    if (values.role !== 'Collaborator') values.areas = [...availableAreas];
     prefilled = true;
   }
 
   const areaParam = search.get('area');
-  if (areaParam && isRentalArea(areaParam)) {
+  if (areaParam && isRentalArea(areaParam) && availableAreas.includes(areaParam)) {
     values.areas = [areaParam];
     prefilled = true;
   }
 
   const propertyParam = search.get('property');
   const property = propertyParam ? properties?.find((candidate) => candidate.id === propertyParam) : undefined;
-  if (property) {
+  if (property && availableAreas.includes(property.area)) {
     values.role = 'Collaborator';
     values.areas = [property.area];
     values.scope = 'Selected';
@@ -144,7 +144,7 @@ export function inviteDefaults(search: URLSearchParams, language: OrgInvitationL
   return { values, prefilled };
 }
 
-/** The role sees everything: the administrator. Its areas are both, whatever was ticked, and it cannot be limited. */
+/** The role sees everything: the administrator. Its areas are all the active ones, whatever was ticked, and it cannot be limited. */
 export function hasFullAccess(role: OrgRole): boolean {
   return role === 'Owner' || role === 'Admin';
 }
@@ -157,8 +157,8 @@ export interface InviteScope {
   propertyIds: string[];
 }
 
-export function inviteScopeOf(values: InviteValues, properties: readonly PickerProperty[] | undefined): InviteScope {
-  const areas = hasFullAccess(values.role) ? [...RENTAL_AREAS] : RENTAL_AREAS.filter((area) => values.areas.includes(area));
+export function inviteScopeOf(values: InviteValues, properties: readonly PickerProperty[] | undefined, availableAreas: readonly RentalArea[]): InviteScope {
+  const areas = hasFullAccess(values.role) ? [...availableAreas] : availableAreas.filter((area) => values.areas.includes(area));
   const limited = values.role === 'Collaborator' && values.scope === 'Selected';
   const propertyIds = limited
     ? values.propertyIds.filter((id) => {
@@ -170,8 +170,8 @@ export function inviteScopeOf(values: InviteValues, properties: readonly PickerP
 }
 
 /** The body of `POST /api/orgs/me/invitations`. */
-export function toInvitationRequest(values: InviteValues, properties: readonly PickerProperty[] | undefined): CreateOrgInvitationRequest {
-  const { areas, scope, propertyIds } = inviteScopeOf(values, properties);
+export function toInvitationRequest(values: InviteValues, properties: readonly PickerProperty[] | undefined, availableAreas: readonly RentalArea[]): CreateOrgInvitationRequest {
+  const { areas, scope, propertyIds } = inviteScopeOf(values, properties, availableAreas);
   return {
     name: values.name.trim(),
     email: values.email.trim(),

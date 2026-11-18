@@ -30482,6 +30482,7 @@
     },
     "invitationsUnavailable": "We could not read the invitations: the list shows only the people who are already in the team.",
     "invite": {
+      "areasUnavailable": "At least one active agency area is required to send an invitation.",
       "cta": "Invite",
       "done": {
         "account": "The invited person chooses their own password: you never see it. On entering they accept the Terms, the Privacy notice and the DPA again.",
@@ -30621,7 +30622,7 @@
       "areasLegend": "Which areas?",
       "chosenCount_one": "{{count}} property chosen",
       "chosenCount_other": "{{count}} properties chosen",
-      "fullAccessText": "They see every area and every property. To limit them, choose another role.",
+      "fullAccessText": "They see every active agency area and its properties. To limit them, choose another role.",
       "fullAccessTitle": "An administrator sees everything",
       "longRentHint": "Contracts, tenants and rents.",
       "noAreaChosen": "Choose at least one area first.",
@@ -31982,7 +31983,7 @@
       },
       "owner": {
         "title": "Private owner",
-        "text": "I manage my own apartments for short stays and holiday rentals.",
+        "text": "I manage properties that I own.",
         "hint": "Plan pricing · extras from Pro"
       },
       "supplier": {
@@ -31996,7 +31997,8 @@
         "hint": "Activate the Long-term rentals area only"
       }
     },
-    "secondModule": "We start with one rental area. Your plan administrator can add the other later in Administration → Billing and plan.",
+    "chooseRentalArea": "Which rentals do you manage?",
+    "bothAreas": "Short- and long-term rentals",
     "pricePending": "Price not configured",
     "perRoomMonth": " / room / month",
     "perMonth": "per month, excluding tax",
