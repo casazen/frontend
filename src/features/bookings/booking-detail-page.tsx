@@ -81,6 +81,7 @@ export function BookingDetailPage() {
   const hasMessages = booking !== undefined && hasPermission('short-rent', 'booking.read') && bookingHasMessages(booking);
   const unreadMessages = useBookingThread(id!, hasMessages).data?.unreadCount ?? 0;
   const activeTab: BookingPanel = requestedTab === 'messages' && !hasMessages ? 'details' : requestedTab;
+  const showMessages = activeTab === 'messages';
 
   // The links of the arrival and of the cockpit ask for Alloggiati Web (`?tab=alloggiati`): Documenti opens at its section.
   const alloggiatiRef = useRef<HTMLDivElement>(null);
@@ -185,10 +186,22 @@ export function BookingDetailPage() {
     { value: 'payment', label: t('booking.detailPage.tabs.payment'), testId: 'booking-tab-payment' },
     { value: 'history', label: t('booking.detailPage.tabs.history'), testId: 'booking-tab-history' },
   ];
+  const nextStep = (
+    <BookingNextStep
+      booking={booking}
+      canWrite={canWrite}
+      onConfirm={() => setConfirmOpen(true)}
+      onDecline={() => setDeclineOpen(true)}
+      onArrival={() => setArrivalOpen(true)}
+    />
+  );
 
   return (
     <AppShell>
-      <div className="min-w-0 space-y-6">
+      <div
+        className={showMessages ? 'flex min-w-0 flex-1 flex-col gap-6 lg:min-h-0' : 'min-w-0 space-y-6'}
+        data-app-viewport={showMessages ? '' : undefined}
+      >
         {/* The trail (Affitti brevi › Prenotazioni › this booking) and, on a phone, the link back to the list as the user left it (UI-05). */}
         <PageHeader
           crumbs="auto"
@@ -200,22 +213,30 @@ export function BookingDetailPage() {
 
         <OtaReviewNotice booking={booking} canWrite={canWrite} />
 
-        <BookingNextStep
-          booking={booking}
-          canWrite={canWrite}
-          onConfirm={() => setConfirmOpen(true)}
-          onDecline={() => setDeclineOpen(true)}
-          onArrival={() => setArrivalOpen(true)}
-        />
+        {showMessages ? (
+          <details className="shrink-0 rounded-lg border bg-card px-4">
+            <summary className="cursor-pointer rounded-sm py-3 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              {t('booking.next.heading')}
+            </summary>
+            <div className="pb-3">{nextStep}</div>
+          </details>
+        ) : nextStep}
 
         {/* UI-07 Tabs: links with the tab in the address (`?tab=`), a menu on a phone. */}
-        <Tabs label={t('booking.detailPage.tabsLabel')} items={tabs} defaultValue="details" value={activeTab} selectTestId="booking-tabs-select">
+        <Tabs
+          label={t('booking.detailPage.tabsLabel')}
+          items={tabs}
+          defaultValue="details"
+          value={activeTab}
+          selectTestId="booking-tabs-select"
+          className={showMessages ? 'lg:flex lg:min-h-[26rem] lg:flex-1 lg:flex-col' : undefined}
+          panelClassName={showMessages ? 'lg:flex lg:min-h-0 lg:flex-1 lg:flex-col' : undefined}
+        >
           {activeTab === 'details' && <BookingStayTab booking={booking} />}
 
-          {/* The conversation and the history are as wide as the page, as the inbox is: no narrow column with the tab empty beside it. */}
-          {activeTab === 'messages' && (
-            <PlainSection title={t('booking.messages.title')}>
-              <BookingMessagesSection booking={booking} />
+          {showMessages && (
+            <PlainSection title={t('booking.messages.title')} className="lg:flex lg:min-h-0 lg:flex-1 lg:flex-col">
+              <BookingMessagesSection booking={booking} expanded />
             </PlainSection>
           )}
 

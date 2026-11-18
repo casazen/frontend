@@ -36,6 +36,7 @@ export interface TabsProps<T extends string> {
   /** The content of the tab that is shown: what the page renders for it. It sits in the panel that the tabs control. */
   children?: React.ReactNode;
   className?: string;
+  panelClassName?: string;
   /** Test ids for the panel and, on a phone, for the menu that replaces the tabs. */
   panelTestId?: string;
   selectTestId?: string;
@@ -65,6 +66,7 @@ export function Tabs<T extends string>({
   value,
   children,
   className,
+  panelClassName,
   panelTestId,
   selectTestId,
 }: TabsProps<T>) {
@@ -180,7 +182,7 @@ export function Tabs<T extends string>({
           role={isPhone ? undefined : 'tabpanel'}
           aria-labelledby={isPhone ? undefined : tabId(active)}
           data-testid={panelTestId}
-          className="min-w-0"
+          className={cn('min-w-0', panelClassName)}
         >
           {children}
         </div>

@@ -9,11 +9,14 @@ import { useOnlineStatus } from '@/hooks/use-online-status';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getProblemMessage, getRetryAfterSeconds } from '@/lib/api-errors';
 import { messagesOfBookingPath } from '@/lib/message-hub-routes';
+import { cn } from '@/lib/utils';
 import { useBookingThread, useMarkThreadRead, useSendBookingMessage } from '@/queries/use-booking-messages';
 import { GUEST_MESSAGE_MAX_LENGTH, type Booking } from '@/types';
 
 interface BookingMessagesSectionProps {
   booking: Booking;
+  /** Fill the booking detail tab on desktop. The drawer keeps its compact history. */
+  expanded?: boolean;
 }
 
 /**
@@ -40,7 +43,7 @@ function MessagesLink({ bookingId }: { bookingId: string }) {
  * text and reads it in the area of its booking. A closed thread (the seventh day after the check-out) can be read and not written. The
  * text of the messages is the guest's personal data: shown as plain text, never kept anywhere but in the memory of the page.
  */
-export function BookingMessagesSection({ booking }: BookingMessagesSectionProps) {
+export function BookingMessagesSection({ booking, expanded = false }: BookingMessagesSectionProps) {
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();
   const canWrite = hasPermission('short-rent', 'booking.write');
@@ -121,12 +124,13 @@ export function BookingMessagesSection({ booking }: BookingMessagesSectionProps)
   }
 
   return (
-    <div className="space-y-3" data-testid="booking-messages">
+    <div className={cn('space-y-3', expanded && 'lg:flex lg:min-h-0 lg:flex-1 lg:flex-col lg:gap-3 lg:space-y-0')} data-testid="booking-messages">
       <MessageThread
         items={items}
         label={t('booking.messages.logLabel', { name: guestName })}
         emptyText={t('booking.messages.empty', { name: firstName })}
         onRetry={retry}
+        className={expanded ? 'lg:min-h-0 lg:max-h-none lg:flex-1 lg:overscroll-contain' : undefined}
       />
 
       {sendProblem && (
@@ -141,7 +145,7 @@ export function BookingMessagesSection({ booking }: BookingMessagesSectionProps)
           <p className="text-sm text-muted-foreground">{t('booking.messages.closedDescription')}</p>
         </div>
       ) : canWrite ? (
-        <div className="space-y-1">
+        <div className={cn('space-y-1', expanded && 'lg:max-h-[55%] lg:shrink-0 lg:overflow-y-auto')}>
           <MessageComposer
             label={t('booking.messages.composerLabel', { name: firstName })}
             placeholder={t('booking.messages.placeholder')}

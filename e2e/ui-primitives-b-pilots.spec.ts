@@ -128,15 +128,44 @@ test.describe('DataView in the list of guests (pilot)', () => {
 // ---------------------------------------------------------------------------------------------------------------------------
 // Tabs: the booking detail
 
-async function openBooking(page: Page, width: number, search = '') {
+async function openBooking(page: Page, width: number, search = '', source?: 'Direct') {
   await mockAlloggiatiApi(page);
-  await mockBookingDetailApi(page);
+  await mockBookingDetailApi(page, source);
   await page.setViewportSize({ width, height: 800 });
   await page.goto(demoUrl(`/app/short-rent/bookings/${DEMO_BOOKING_ID}${search}`, 'short-stay'), { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Mario Rossi', { timeout: 15_000 });
 }
 
 test.describe('Tabs in the booking detail (pilot)', () => {
+  test('the booking messages history fills the available height and keeps the reply visible', async ({ page }) => {
+    await page.route(`**/api/bookings/${DEMO_BOOKING_ID}/messages`, (route) => route.fulfill({ json: {
+      state: 'Open',
+      unreadCount: 0,
+      needsReply: false,
+      messages: Array.from({ length: 24 }, (_, index) => ({
+        id: `message-${index}`,
+        sender: index % 2 === 0 ? 'Guest' : 'Host',
+        text: `Messaggio di prova ${index + 1}`,
+        createdAt: '2026-07-01T14:00:00Z',
+      })),
+    } }));
+    await openBooking(page, 1600, '?tab=messages', 'Direct');
+    await page.setViewportSize({ width: 1600, height: 1100 });
+
+    const history = page.getByRole('log');
+    const reply = page.getByTestId('booking-messages').getByRole('textbox');
+    await expect(reply).toBeVisible();
+    expect((await history.boundingBox())!.height).toBeGreaterThan(390);
+    expect(await history.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(true);
+    const panel = (await page.getByTestId('booking-messages').boundingBox())!;
+    expect(panel.y + panel.height).toBeGreaterThan(1050);
+    const composer = (await reply.boundingBox())!;
+    expect(composer.y + composer.height).toBeLessThan(1100);
+    await expect(page.getByTestId('booking-next-step')).toBeHidden();
+    await page.locator('summary').filter({ hasText: 'Cosa succede ora' }).click();
+    await expect(page.getByTestId('booking-next-step')).toBeVisible();
+  });
+
   test('invoice data fills the payment tab on desktop and stacks on mobile', async ({ page }) => {
     await page.route(`**/api/bookings/${DEMO_BOOKING_ID}/invoice-data`, (route) => route.fulfill({ json: {
       bookingId: DEMO_BOOKING_ID,
