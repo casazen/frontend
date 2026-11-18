@@ -28,7 +28,10 @@ export function InvoiceStep({ hasInvoiceData }: InvoiceStepProps) {
   const step = useWatch({ control, name: 'invoice' }) ?? emptyInvoiceStep();
   const asking = step.answer === 'yes';
 
-  const answer = (next: InvoiceAnswer) => setValue('invoice.answer', next, { shouldDirty: true });
+  const answer = (next: InvoiceAnswer) => {
+    clearErrors('invoice');
+    setValue('invoice.answer', next, { shouldDirty: true });
+  };
   const change = (field: InvoiceDataField, value: string) => {
     if (field === 'recipientKind') setValue('invoice.recipientKind', value === 'Company' ? 'Company' : 'Guest', { shouldDirty: true });
     else setValue(`invoice.${field}`, value, { shouldDirty: true });

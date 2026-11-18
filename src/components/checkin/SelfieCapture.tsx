@@ -250,11 +250,7 @@ export function SelfieCapture({ onCapture, attemptsRemaining = null, isProcessin
             )}
           </div>
 
-          <div>
-            <Button type="button" variant="ghost" onClick={onRequestOperator} disabled={isProcessing} data-testid="selfie-ask-operator">
-              {t('checkin.identity.operator.ask')}
-            </Button>
-          </div>
+
         </>
       )}
     </section>

@@ -398,7 +398,7 @@ export type InvoiceAnswer = (typeof INVOICE_ANSWERS)[number];
  * (`@/lib/invoice-data-schema`, the same rules as the server). Only a «yes» is checked, and only when the guest wrote something: a «yes» with
  * nothing written leaves the data to the host and never blocks the check-in, as the server accepts it. A «no», or no answer, is not checked at all.
  */
-const invoiceStepSchema = z.object({ answer: z.enum(INVOICE_ANSWERS), ...invoiceDataFormShape }).superRefine((values, context) => {
+export const invoiceStepSchema = z.object({ answer: z.enum(INVOICE_ANSWERS), ...invoiceDataFormShape }).superRefine((values, context) => {
   if (values.answer === 'yes') addInvoiceDataIssues(values, { requireIdentification: true, onlyWhenTyped: true }, context);
 });
 
@@ -452,7 +452,7 @@ export function toPublicCheckInInvoice(step: InvoiceStepValues | undefined): Pub
 
 /**
  * The guest portal form. No consent is asked for the Alloggiati registration (CO-15, A5-15): it is a legal obligation
- * (art. 109 TULPS, art. 6.1.c GDPR) and the privacy notice is only shown. The marketing consent is optional (NF-05).
+ * (art. 109 TULPS, art. 6.1.c GDPR) and receipt of the privacy notice is acknowledged separately. The marketing consent is optional (NF-05).
  * `required` lists the statistical fields the region requires (the `requiredGuestFields` of the public view).
  */
 export function createPublicCheckInFormSchema(required: readonly StatisticalGuestField[] = []) {
@@ -469,6 +469,12 @@ export function createPublicCheckInFormSchema(required: readonly StatisticalGues
       marketingEmail: z.string().optional(),
     })
     .superRefine((data, ctx) => {
+      data.guests.forEach((guest, index) => {
+        const number = normalizeDocumentNumber(guest.documentNumber);
+        if (requiresDocument(guest.type) && number && (number.length < 4 || !/\d/.test(number))) {
+          ctx.addIssue({ code: 'custom', path: ['guests', index, 'documentNumber'], message: 'checkin.documentNumberPlausibility' });
+        }
+      });
       // Marketing email is required when any channel is ticked (NF-05).
       if ((data.marketingConsentEmail || data.marketingConsentWhatsApp) && !data.marketingEmail?.trim()) {
         ctx.addIssue({
@@ -478,7 +484,7 @@ export function createPublicCheckInFormSchema(required: readonly StatisticalGues
         });
       }
       // Validate email format when provided.
-      if (data.marketingEmail?.trim()) {
+      if ((data.marketingConsentEmail || data.marketingConsentWhatsApp) && data.marketingEmail?.trim()) {
         const email = data.marketingEmail.trim();
         if (email.length > 255 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
           ctx.addIssue({
@@ -567,7 +573,7 @@ export function initialStayGuests(
   declaredGuests: number | undefined,
 ): StayGuestFormValues[] {
   const declared = Math.min(MAX_STAY_GUESTS, Math.max(1, declaredGuests ?? 1));
-  const guests = (prefills ?? []).slice(0, MAX_STAY_GUESTS).map((prefill) => stayGuestDefaults(prefill.type, prefill));
+  const guests = (prefills ?? []).slice(0, declared).map((prefill) => stayGuestDefaults(prefill.type, prefill));
   if (guests.length === 0) guests.push(stayGuestDefaults(declared > 1 ? 'HeadOfFamily' : 'SingleGuest'));
   if (!isLeaderType(guests[0].type)) guests[0].type = declared > 1 ? 'HeadOfFamily' : 'SingleGuest';
   while (guests.length < declared) guests.push(stayGuestDefaults(followerTypeOf(guests[0].type)));

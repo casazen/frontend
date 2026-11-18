@@ -5,7 +5,7 @@ export type GuestDataCategory = 'DocumentScans' | 'AlloggiatiData' | 'Marketing'
 export type GuestConsentPurpose = 'PrivacyNotice' | 'Marketing';
 
 /** What happened (API enum `GuestConsentAction`): a notice is only presented, never "accepted". */
-export type GuestConsentAction = 'NoticePresented' | 'Granted' | 'Withdrawn' | 'Expired';
+export type GuestConsentAction = 'NoticePresented' | 'NoticeAcknowledged' | 'Granted' | 'Withdrawn' | 'Expired';
 
 /** Who recorded the event (API enum `GuestConsentSource`). */
 export type GuestConsentSource = 'GuestPortal' | 'HostOnGuestRequest' | 'RetentionPolicy';

@@ -609,7 +609,7 @@ describe('CheckInPage and the tourist tax', () => {
     renderPage();
     await screen.findByTestId('checkin-page');
 
-    expect(screen.getByTestId('checkin-progress').children).toHaveLength(5);
+    expect(screen.getByTestId('checkin-progress').children).toHaveLength(4);
     expect(publicCheckinApi.getTouristTax).not.toHaveBeenCalled();
     expect(screen.queryByTestId('checkin-tourist-tax-step')).not.toBeInTheDocument();
   });
@@ -620,24 +620,22 @@ describe('CheckInPage and the tourist tax', () => {
     await screen.findByTestId('checkin-page');
     await waitFor(() => expect(publicCheckinApi.getTouristTax).toHaveBeenCalledWith(TOKEN));
 
-    expect(screen.getByTestId('checkin-progress').children).toHaveLength(5);
+    expect(screen.getByTestId('checkin-progress').children).toHaveLength(4);
   });
 
   it('flagOn_TheStepComesAfterTheDocumentAndBeforeTheInvoiceAndTheConsents', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
     renderPage({ touristTaxOnlinePayment: true });
     await fillGuestAndDocument();
-    await waitFor(() => expect(screen.getByTestId('checkin-progress').children).toHaveLength(6));
+    await waitFor(() => expect(screen.getByTestId('checkin-progress').children).toHaveLength(5));
 
     fireEvent.click(screen.getByRole('button', { name: /Avanti/ }));
     const step = await screen.findByTestId('checkin-tourist-tax-step');
     expect(screen.getAllByText('Tassa di soggiorno').length).toBeGreaterThan(0);
     // The lines are positions: the guest typed a name in the step before, and it is not here.
     expect(step).not.toHaveTextContent(/Mario|Rossi|Giulia|Bianchi/);
-    expect(screen.getByText('Passo 4 di 6')).toBeInTheDocument();
+    expect(screen.getByText('Passo 4 di 5')).toBeInTheDocument();
 
     // The organization did not ask for the tax before the code: the guest goes on without paying, and the invoice step and the privacy notice follow.
-    fireEvent.click(screen.getByTestId('checkin-next'));
-    await screen.findByTestId('checkin-invoice-step');
     fireEvent.click(screen.getByTestId('checkin-next'));
     await screen.findByTestId('checkin-privacy-notice');
   });
@@ -646,7 +644,7 @@ describe('CheckInPage and the tourist tax', () => {
     vi.mocked(publicCheckinApi.getTouristTax).mockResolvedValue(taxView({ requiredBeforeAccessCode: true }));
     renderPage({ touristTaxOnlinePayment: true });
     await fillGuestAndDocument();
-    await waitFor(() => expect(screen.getByTestId('checkin-progress').children).toHaveLength(6));
+    await waitFor(() => expect(screen.getByTestId('checkin-progress').children).toHaveLength(5));
 
     fireEvent.click(screen.getByRole('button', { name: /Avanti/ }));
     await screen.findByTestId('checkin-tourist-tax-step');
@@ -663,7 +661,7 @@ describe('CheckInPage and the tourist tax', () => {
     stripe.confirmPayment.mockReturnValue(new Promise((resolve) => (finish = resolve)));
     renderPage({ touristTaxOnlinePayment: true });
     await fillGuestAndDocument();
-    await waitFor(() => expect(screen.getByTestId('checkin-progress').children).toHaveLength(6));
+    await waitFor(() => expect(screen.getByTestId('checkin-progress').children).toHaveLength(5));
     fireEvent.click(screen.getByRole('button', { name: /Avanti/ }));
 
     fireEvent.click(await screen.findByRole('button', { name: /^Paga 9,00\s*CHF$/ }));
@@ -690,7 +688,7 @@ describe('CheckInPage and the tourist tax', () => {
     stripe.confirmPayment.mockReturnValue(new Promise((resolve) => (finish = resolve)));
     renderPage({ touristTaxOnlinePayment: true });
     await fillGuestAndDocument();
-    await waitFor(() => expect(screen.getByTestId('checkin-progress').children).toHaveLength(6));
+    await waitFor(() => expect(screen.getByTestId('checkin-progress').children).toHaveLength(5));
     fireEvent.click(screen.getByRole('button', { name: /Avanti/ }));
     const pay = await screen.findByRole('button', { name: /^Paga 9,00\s*CHF$/ });
     expect(screen.getByTestId('checkin-next')).toBeDisabled();

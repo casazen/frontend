@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
 import { Alert } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { GUEST_LOCALES } from '@/features/checkin/lib/guest-locale';
 import { sanitizeHtml } from '@/lib/sanitize-html';
@@ -26,11 +25,6 @@ function LegalTextBlock({ text, testId, pageLanguage }: LegalTextBlockProps) {
 
   return (
     <div className="space-y-2 rounded-lg bg-muted p-4" data-testid={testId} data-version={text.version} data-draft={text.isDraft ? 'true' : 'false'}>
-      {text.isDraft && (
-        <Badge variant="warning" data-testid={`${testId}-draft`}>
-          {t('checkin.biometric.consent.draft')}
-        </Badge>
-      )}
       <article
         lang={served || undefined}
         className="prose prose-sm prose-neutral max-w-none dark:prose-invert prose-p:text-muted-foreground prose-li:text-muted-foreground"

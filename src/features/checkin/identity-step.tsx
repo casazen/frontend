@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BiometricConsent, SelfieCapture } from '@/components/checkin';
 import { useGuestLegalTexts } from '@/queries/use-checkin';
@@ -12,6 +12,7 @@ interface IdentityStepProps {
   identity: IdentityVerificationController;
   /** The token of the check-in link: the legal texts of the stay are asked with it. */
   token: string;
+  takeFront?: () => File | null;
 }
 
 /**
@@ -20,7 +21,7 @@ interface IdentityStepProps {
  * sides of a card) with the guidance of what to change, the selfie with the camera only, and the answer. One topic at a time, one stay one selfie: the other adults of the stay are
  * never asked for one. Whatever is typed in the other steps of the page is untouched by anything that happens here.
  */
-export function IdentityStep({ identity, token }: IdentityStepProps) {
+export function IdentityStep({ identity, token, takeFront }: IdentityStepProps) {
   const { t, i18n } = useTranslation();
   const { progress } = identity;
   const stage = progress?.stage;
@@ -34,6 +35,19 @@ export function IdentityStep({ identity, token }: IdentityStepProps) {
     // The registry no longer serves the version that was on the screen: the guest reads what it serves now before answering.
     if (textsChanged) void readTextsAgain();
   }, [textsChanged, readTextsAgain]);
+
+  useEffect(() => {
+    if (stage !== 'document' || progress?.documentSideNeeded !== 'front' || identity.busy) return;
+    const front = takeFront?.();
+    if (front) void identity.sendDocument(front);
+  }, [stage, progress?.documentSideNeeded, identity, takeFront]);
+
+  const handoffStarted = useRef(false);
+  useEffect(() => {
+    if (stage !== 'operator' || progress?.operatorRequested || handoffStarted.current) return;
+    handoffStarted.current = true;
+    void identity.askOperator();
+  }, [identity, progress?.operatorRequested, stage]);
 
   if (!progress) return null;
 

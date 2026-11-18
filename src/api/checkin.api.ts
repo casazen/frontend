@@ -17,6 +17,7 @@ import type {
   IdentityOperatorResponse,
   IdentitySelfieResponse,
   PublicCheckInContextDto,
+  PublicCheckInInvoiceRequest,
   PublicCheckInLanguageResponse,
   PublicCheckInSubmitRequest,
 } from '@/types/public-checkin.types';
@@ -28,6 +29,9 @@ import type {
 const PUBLIC_MULTIPART: ApiRequestOptions = { public: true, headers: { 'Content-Type': 'multipart/form-data' } };
 
 export const publicCheckinApi = {
+  requestInvoice: async (token: string, request: PublicCheckInInvoiceRequest) => {
+    await axios.post(`/public/checkin/${token}/invoice`, request, { public: true });
+  },
   /**
    * The context of the link: what the form starts from. For the invoice step (FIS-01) it carries two flags, `invoiceRequested` and
    * `hasInvoiceData`, and never the invoice data itself: that is write-only from this page, because the link is anonymous.

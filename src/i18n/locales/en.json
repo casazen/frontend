@@ -5603,12 +5603,12 @@
     "successDescription": "Your details have been recorded. Thank you!",
     "alreadyCompletedTitle": "Check-in already completed",
     "alreadyCompletedDescription": "The details for this stay have already been submitted. To protect your privacy they are no longer shown. To correct them, contact the property manager.",
-    "marketingConsent": "[PLACEHOLDER – consent text provided by the controller] I agree to receive promotional communications (optional).",
+    "marketingConsent": "I agree to receive promotional communications (optional).",
     "marketingConsentVersion": "Optional. Text version: {{version}}",
     "privacyNotice": {
       "title": "Notice on the processing of personal data (art. 13 GDPR)",
       "legalObligation": "Reporting every guest to the police (Questura) through Alloggiati Web is a legal obligation (art. 109 TULPS): the processing is based on art. 6(1)(c) GDPR and does not require your consent. Without this data the stay cannot be registered.",
-      "body": "[PLACEHOLDER – the full notice will be provided by the data controller: identity of the controller, purposes, legal bases, recipients (police), retention period and rights of the data subject.]",
+      "body": "The property uses these details to register your stay and report it to the relevant authorities. Contact the property through your booking for its full privacy notice or to exercise your rights.",
       "version": "Notice version: {{version}}"
     },
     "sessionLabel": "Guest check-in status",
@@ -5624,12 +5624,20 @@
     },
     "stepScan": "Document",
     "scanIntro": "Start by uploading a photo of each guest's identity document. The details are read automatically: you check and correct them on the next step.",
-    "scanHint": "JPG, PNG or WebP, up to 5 MB. The photo is not kept: it is only used to fill in the fields.",
+    "scanHint": "JPG, PNG or WebP, up to 5 MB. If you choose online verification and give consent, you can use the same photo to verify your document.",
     "scanButton": "Take or upload a photo",
     "scanReading": "Reading the document…",
     "scanAnother": "Upload another guest's document",
     "scanManual": "Enter the details by hand",
     "scanReadOk": "Details read for {{name}}. Check them before sending.",
+    "invoiceSave": "Save answer",
+    "invoiceFinished": "Done.",
+    "scanMismatch": "This document could not be matched to a named guest on the booking. Check the photo or contact the property to correct a name.",
+    "scanConfirm": "The document reads “{{read}}”. Is this {{name}} on the booking?",
+    "scanConfirmButton": "Confirm the booked name",
+    "privacyRead": "I have read the privacy notice.",
+    "marketingOptIn": "I would like to receive promotional messages.",
+    "documentNumberPlausibility": "Check the number printed on the document. Enter at least four characters including a digit.",
     "scanUnread": "The document could not be read. Upload another photo or enter the details by hand.",
     "scanUnavailable": "Automatic reading is unavailable right now. Enter the details by hand.",
     "stepGuests": "Guests",
@@ -5679,7 +5687,7 @@
       },
       "consent": {
         "accept": "I agree to the face check",
-        "decline": "I do not agree: a person will check me",
+        "decline": "I decline",
         "draft": "Draft",
         "loadFailed": "We could not show you the text of the consent",
         "loading": "Loading the text of the consent...",
@@ -5889,7 +5897,7 @@
         "retake_picture": "The picture could not be read: please take it again.",
         "retake_selfie": "Take the selfie again, looking straight at the camera.",
         "show_document_photo": "Show the side of the document with your photo.",
-        "show_whole_document": "Show the whole side of the document with the two lines of letters at the bottom.",
+        "show_whole_document": "Show the entire side with the lines of letters and numbers.",
         "show_your_face": "Show your face: we could not see it in the picture.",
         "tip_remove_glasses": "Take off your glasses.",
         "tip_remove_mask": "Take off any mask or anything that covers your face.",
@@ -5898,7 +5906,7 @@
         "use_valid_document": "The document is expired: use a valid one."
       },
       "intro": "Only the guest who leaves the identity document takes part in this step. The other guests do not need to take a selfie.",
-      "nextHint": "Finish this step to go on. If you prefer, ask an operator to verify you.",
+      "nextHint": "Complete verification to continue.",
       "operator": {
         "ask": "Ask an operator to verify me",
         "requested": "We told the host. They will verify your identity and the access code reaches you after their decision."
@@ -9735,6 +9743,7 @@
         "Marketing": "Marketing consent"
       },
       "action": {
+        "NoticeAcknowledged": "Notice acknowledged",
         "NoticePresented": "Notice shown",
         "Granted": "Consent given",
         "Withdrawn": "Consent withdrawn",

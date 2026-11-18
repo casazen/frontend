@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 
 interface DocumentReadStepProps {
   reading: boolean;
+  review: string | null;
+  onConfirm: () => void;
   message: string | null;
   readCount: number;
   onFile: (file: File) => void;
@@ -13,7 +15,7 @@ interface DocumentReadStepProps {
 }
 
 /** First step of check-in: a photo of the identity document, read before the guest confirms the fields. */
-export function DocumentReadStep({ reading, message, readCount, onFile, onManual, onContinue }: DocumentReadStepProps) {
+export function DocumentReadStep({ review, onConfirm, reading, message, readCount, onFile, onManual, onContinue }: DocumentReadStepProps) {
   const { t } = useTranslation();
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -27,6 +29,7 @@ export function DocumentReadStep({ reading, message, readCount, onFile, onManual
         <input
           ref={inputRef}
           id={inputId}
+          disabled={reading}
           type="file"
           accept="image/jpeg,image/png,image/webp"
           className="sr-only"
@@ -41,17 +44,21 @@ export function DocumentReadStep({ reading, message, readCount, onFile, onManual
           {reading ? t('checkin.scanReading') : readCount > 0 ? t('checkin.scanAnother') : t('checkin.scanButton')}
         </Button>
       </div>
+      {review && <div role="status" className="space-y-2">
+        <p>{review}</p>
+        <Button type="button" onClick={onConfirm} disabled={reading}>{t('checkin.scanConfirmButton')}</Button>
+      </div>}
       {message && (
         <p className="text-sm" role="status" data-testid="checkin-document-message">
           {message}
         </p>
       )}
       <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
-        <Button type="button" variant="ghost" onClick={onManual} data-testid="checkin-enter-manually">
+        <Button type="button" variant="ghost" disabled={reading} onClick={onManual} data-testid="checkin-enter-manually">
           {t('checkin.scanManual')}
         </Button>
         {readCount > 0 && (
-          <Button type="button" onClick={onContinue} data-testid="checkin-scan-continue">
+          <Button type="button" disabled={reading || !!review} onClick={onContinue} data-testid="checkin-scan-continue">
             {t('checkin.next')}
           </Button>
         )}

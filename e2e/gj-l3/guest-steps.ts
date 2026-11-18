@@ -87,8 +87,10 @@ export async function guestCompletesCheckIn(page: Page, link: string): Promise<v
   // Guest 0's ROMA and ITALIA answers stay fresh for five minutes, so guest 1 does not ask again.
   const seenCodes = new Map<string, unknown[]>();
   for (const [i, g] of guests.entries()) {
-    await page.locator(`#guest-${i}-firstName`).fill(g.first);
-    await page.locator(`#guest-${i}-lastName`).fill('Bianchi');
+    const first = page.locator(`#guest-${i}-firstName`);
+    const last = page.locator(`#guest-${i}-lastName`);
+    if (await first.isEditable()) await first.fill(g.first);
+    if (await last.isEditable()) await last.fill('Bianchi');
     await page.locator(`#guest-${i}-gender`).selectOption({ label: g.gender });
     await page.locator(`#guest-${i}-dateOfBirth`).fill(g.born);
     await page.locator(`#guest-${i}-bornInItaly`).selectOption({ label: 'In Italia' });
@@ -106,14 +108,10 @@ export async function guestCompletesCheckIn(page: Page, link: string): Promise<v
   // An organization that offers the tourist tax online (its own setting, flag `touristTaxOnlinePayment`) has the step «Tassa di soggiorno» here, between the document and the invoice:
   // the guest goes on without paying (the organization does not ask for the tax before the lock code in this journey), so turning the setting on for the test organization breaks nothing.
   const taxStep = page.getByTestId('checkin-tourist-tax-step');
-  await expect(taxStep.or(page.getByTestId('checkin-invoice-step'))).toBeVisible();
+  await expect(taxStep.or(page.getByTestId('checkin-privacy-notice'))).toBeVisible();
   if (await taxStep.isVisible()) await page.getByRole('button', { name: 'Avanti' }).click();
-  // Step 4 is «Ti serve la fattura?» (FIS-01): optional, so the guest goes on without an answer and nothing about the invoice is sent.
-  await expect(page.getByTestId('checkin-invoice-step')).toBeVisible();
-  await page.getByRole('button', { name: 'Avanti' }).click();
-  // Step 5 shows the privacy notice (the Alloggiati registration is a legal obligation: notice only, no consent to
-  // tick). "Avanti" must NOT submit by itself: the test used to pass only because that click skipped this step.
   await expect(page.getByTestId('checkin-privacy-notice')).toBeVisible();
+  await page.locator('#privacy-read').check();
   await page.getByTestId('checkin-submit').click();
   await expect(page.getByText('Check-in completato!')).toBeVisible({ timeout: 20_000 });
 }

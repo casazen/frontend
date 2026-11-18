@@ -2,24 +2,19 @@ import { useTranslation } from 'react-i18next';
 import { ConsentForm } from './components/ConsentForm';
 
 interface ConsentStepProps {
+  privacyRead: boolean;
+  onPrivacyRead: (checked: boolean) => void;
   /** Privacy notice version shown to the guest. */
   privacyNoticeVersion?: string;
   /** Marketing consent version; when absent, no consent is offered. */
   marketingConsentVersion?: string;
 }
 
-/**
- * Consent step of the check-in flow (NF-05). Appears after mandatory check-in steps.
- * Shows the privacy notice (legal obligation, no checkbox) and the optional marketing consent
- * (email/WhatsApp channels with separate marketing email input). Checkboxes are unchecked by default.
- * Check-in can complete without consent (skip allowed).
- */
-export function ConsentStep({ privacyNoticeVersion, marketingConsentVersion }: ConsentStepProps) {
+export function ConsentStep({ privacyRead, onPrivacyRead, privacyNoticeVersion, marketingConsentVersion }: ConsentStepProps) {
   const { t } = useTranslation();
 
   return (
     <div className="space-y-4">
-      {/* Privacy notice: legal obligation (CO-15, A5-15), no checkbox required */}
       <section
         className="rounded-md border p-4 space-y-2 text-sm"
         aria-labelledby="checkin-privacy-notice-title"
@@ -35,6 +30,10 @@ export function ConsentStep({ privacyNoticeVersion, marketingConsentVersion }: C
             {t('checkin.privacyNotice.version', { version: privacyNoticeVersion })}
           </p>
         )}
+        <label className="flex items-center gap-2" htmlFor="privacy-read">
+          <input id="privacy-read" type="checkbox" checked={privacyRead} onChange={event => onPrivacyRead(event.target.checked)} />
+          {t('checkin.privacyRead')}
+        </label>
       </section>
 
       {/* Marketing consent: optional, offered only when context has marketingConsentVersion */}
