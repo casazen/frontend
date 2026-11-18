@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ArrowRight, Building2, Check, Home, LockKeyhole, ShieldCheck, Sparkles, Wrench } from 'lucide-react';
 import { CasaZenLogo } from '@/components/brand/casazen-mark';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/use-auth';
 import { UsersApi } from '@/api/users.api';
 import { CommercialSignupApi } from '@/api/commercial-signup.api';
 import { useBillingPlans, useBillingSubscription, useOpenBillingPortal, useStartCheckout } from '@/queries/use-billing';
@@ -46,7 +45,6 @@ function SignupFlow({ profile }: { profile: UserDetail | undefined }) {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const client = useQueryClient();
-  const auth = useAuth();
   const existing = profile?.commercialSignup;
   const scope = useMemo(() => profile?.id ? { userId: profile.id, orgId: profile.orgId ?? null } : null, [profile?.id, profile?.orgId]);
   const [restored] = useState(() => scope && !existing ? readCommercialDraft(scope) : null);
@@ -95,7 +93,7 @@ function SignupFlow({ profile }: { profile: UserDetail | undefined }) {
       ? [t('commercial.otaSync'), t('commercial.otaContentSync'), t('commercial.otaMessaging')]
       : [t(`commercial.addons.${addon.code}.title`)]),
   ];
-  const showEstimate = currentStep !== 'ready' && (!isAgency || step === 'features' || step === 'summary');
+  const showEstimate = currentStep !== 'ready' && (!isAgency || (!provisioned && (step === 'features' || step === 'summary')));
   const estimateQuantity = isAgency ? Number(roomEstimate) : 1;
   const validEstimate = roomEstimate !== '' && Number.isSafeInteger(estimateQuantity) && estimateQuantity >= 0 && estimateQuantity <= 10000;
   const unitTotal = selection ? commercialUnitPrice(plan, addons, selection) : null;
@@ -107,6 +105,8 @@ function SignupFlow({ profile }: { profile: UserDetail | undefined }) {
   const money = (amount: number, currency = plan?.currency ?? 'EUR') => new Intl.NumberFormat(i18n.language, { style: 'currency', currency }).format(amount);
   const priceText = (item: BillingPlan) => item.priceMonthly > 0 ? money(item.priceMonthly, item.currency) : t('commercial.pricePending');
   const pendingPayment = params.get('checkout') === 'success' && !paid;
+  const canGoBack = currentStep === 'features' || (currentStep === 'summary' && !provisioned) ||
+    (currentStep === 'payment' && !pendingPayment);
   const agencyValid = selection?.profile !== 'agency' || (!!selection.agencyName?.trim() && selection.agencyName.trim().length <= 200);
   const pricingError = plans.isError || catalog.isError;
   const loadingPrices = plans.isPending || catalog.isPending;
@@ -152,6 +152,14 @@ function SignupFlow({ profile }: { profile: UserDetail | undefined }) {
     setStep('features');
   }
 
+  function goBack() {
+    setError(null);
+    if (consenting) setConsenting(false);
+    else if (currentStep === 'payment') setStep('summary');
+    else if (currentStep === 'summary') setStep('features');
+    else setStep('profile');
+  }
+
   function chooseRentalArea(area: RentalType) {
     if (!selection) return;
     const eligible = applicableAddons(catalog.data ?? [], area);
@@ -177,13 +185,11 @@ function SignupFlow({ profile }: { profile: UserDetail | undefined }) {
       setSelection(signup);
       if (scope) clearCommercialDraft(scope);
       if (result.orgProvisioned) { markSignupAttributionReady(); await syncSignupAttribution(); }
+      // Memberships are already saved in the database. Resolve the profile before opening billing.
+      await client.invalidateQueries({ queryKey: ['me'] });
       setProvisioned(true);
       setConsenting(false);
       setStep('payment');
-      // Database memberships let checkout continue when Auth0 has no new role claims to fetch.
-      if (result.rolesSynced) void auth.refreshAccessToken().catch(() => undefined);
-      // Keep the draft server-side through the profile query, including after Stripe or a browser refresh.
-      await client.invalidateQueries({ queryKey: ['me'] });
     } catch (err) {
       if (getStaleConsentDocuments(err)) {
         setConsentsAttempt(attempt => attempt + 1);
@@ -249,6 +255,9 @@ function SignupFlow({ profile }: { profile: UserDetail | undefined }) {
           })}
         </ol>
         <p className="mb-4 text-sm font-medium sm:hidden">{t('commercial.stepPosition', { current: STEPS.indexOf(currentStep) + 1, total: STEPS.length, step: t(isAgency && currentStep === 'payment' ? 'commercial.agency.billing' : `commercial.steps.${currentStep}`) })}</p>
+        {canGoBack && <Button type="button" variant="outline" className="mb-5" onClick={goBack} disabled={busy || checkout.isPending || checkout.isSuccess || portal.isPending}>
+          <ArrowLeft className="size-4" aria-hidden="true" />{t('commercial.back')}
+        </Button>}
         <div className="mb-8 max-w-2xl space-y-3">
           <h1 id="commercial-title" tabIndex={-1} className="text-3xl font-semibold tracking-tight outline-none sm:text-4xl">{t(isAgency && consenting ? 'commercial.agency.consents' : `commercial.headings.${headingKey}`)}</h1>
           <p className="text-base leading-relaxed text-muted-foreground">{t(descriptionKey)}</p>
@@ -327,11 +336,11 @@ function SignupFlow({ profile }: { profile: UserDetail | undefined }) {
               <dl className="space-y-4 text-sm">{[{ label: t('commercial.labels.profile'), value: t(`commercial.profiles.${selection.profile}.title`) }, { label: t('commercial.labels.area'), value: t(RENTAL_AREA_LABEL[rentalArea]) }, { label: t('commercial.labels.plan'), value: plan?.displayName ?? selection.planTier }].map(({ label, value }) => <div key={label} className="flex flex-wrap justify-between gap-2 border-b pb-3"><dt className="text-muted-foreground">{label}</dt><dd className="font-medium">{value}</dd></div>)}</dl>
               <h3 className="font-semibold">{t('commercial.selectedExtras')}</h3>
               {selectedExtras.length ? <ul className="space-y-2 text-sm">{selectedExtras.map(code => <li key={code} className="flex items-center gap-2"><Check className="size-4" />{t(`commercial.addons.${code}.title`)}</li>)}</ul> : <p className="text-sm text-muted-foreground">{t('commercial.noExtras')}</p>}
-              <div className="flex flex-wrap justify-between gap-3"><Button variant="outline" onClick={() => setStep('features')}>{t('commercial.edit')}</Button><Button onClick={() => { setShowRestored(false); setConsenting(true); }} disabled={!canPay}>{activationLabel}<ArrowRight className="size-4" /></Button></div>
-              {!canPay && !pricingError && !loadingPrices && <p role="status" className="text-sm text-muted-foreground">{t('commercial.notPurchasable')}</p>}
+              <div className="flex flex-wrap justify-between gap-3"><Button variant="outline" onClick={() => setStep('features')}>{t('commercial.edit')}</Button><Button onClick={() => { setShowRestored(false); if (provisioned) setStep('payment'); else setConsenting(true); }} disabled={!provisioned && !canPay}>{provisioned ? t('onboardingAccess.backToBilling') : activationLabel}<ArrowRight className="size-4" /></Button></div>
+              {!provisioned && !canPay && !pricingError && !loadingPrices && <p role="status" className="text-sm text-muted-foreground">{t('commercial.notPurchasable')}</p>}
             </section> : <ConsentsStep key={consentsAttempt} onBack={() => setConsenting(false)} onContinue={payload => void provision(payload)} isLoading={busy} continueLabel={activationLabel} />)}
 
-            {currentStep === 'payment' && <section className="space-y-5 rounded-2xl border bg-white p-6">
+            {(currentStep === 'payment' || (currentStep === 'summary' && provisioned)) && <section hidden={currentStep !== 'payment'} className="space-y-5 rounded-2xl border bg-white p-6">
               {agencyRates}
               {pendingPayment ? <div role="status" className="space-y-4"><ShieldCheck className="size-10 text-[#467b67]" aria-hidden="true" /><h2 className="text-lg font-semibold">{t(isAgency ? 'commercial.agency.pending' : 'commercial.paymentPending')}</h2><p className="text-sm text-muted-foreground">{t(isAgency ? 'commercial.agency.setupDescription' : 'commercial.paymentPendingText')}</p><Button variant="outline" onClick={() => void subscription.refetch()}>{t(isAgency ? 'commercial.agency.check' : 'commercial.checkPayment')}</Button></div> : <>
                 {params.get('checkout') === 'cancel' && <p role="status" className="rounded-xl bg-[#efe8dc] p-4 text-sm">{t(isAgency ? 'commercial.agency.canceled' : 'commercial.paymentCanceled')}</p>}

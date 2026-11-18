@@ -36,6 +36,7 @@ test('three profiles, Starter lock and per-room agency summary on desktop and mo
 test('checkout request carries the chosen modules independently of the room estimate; a success URL alone never grants access', async ({ page }) => {
   let currentProfile: Record<string, unknown> = { id: 'demo|onboarding', email: 'demo@example.test', firstName: 'Demo', lastName: 'User', role: 'None', rentalType: null, isActive: true, orgId: null, org: null, onboardingCompletedAt: null };
   let selection: unknown;
+  let checkoutRequests = 0;
   await page.route('**/api/users/me', route => route.fulfill({ json: currentProfile }));
   await page.route('**/api/users/onboarding', async route => {
     const body = route.request().postDataJSON(); selection = body.commercialSignup;
@@ -45,6 +46,7 @@ test('checkout request carries the chosen modules independently of the room esti
   });
   await page.route('**/api/billing/subscription', route => route.fulfill({ json: { status: 'none', planTier: 'Starter', billingCountry: null, vatId: null, currentPeriodEnd: null, seats: 1 } }));
   await page.route('**/api/billing/checkout-session', async route => {
+    checkoutRequests += 1;
     expect(route.request().postDataJSON()).toMatchObject({ planTier: 'Agency', billingCountry: 'IT', returnPath: '/onboarding', commercialSignup: { profile: 'agency', rentalArea: 'Both', rooms: 1, addons: ['channels'] } });
     await route.fulfill({ json: { checkoutUrl: 'https://checkout.stripe.com/c/test-commercial' } });
   });
@@ -58,7 +60,17 @@ test('checkout request carries the chosen modules independently of the room esti
   await page.getByRole('button', { name: 'Vai al riepilogo' }).click();
   await page.getByRole('button', { name: 'Continua all’attivazione' }).click();
   await completeOnboardingConsents(page);
-  await page.locator('#signup-billing-country').selectOption('IT');
+  const country = page.locator('#signup-billing-country');
+  await expect(country).toHaveAttribute('required', '');
+  const document = await page.evaluateHandle(() => window.document);
+  await country.selectOption('IT');
+  await page.getByRole('button', { name: 'Indietro', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'La tua configurazione' })).toBeVisible();
+  await expect(country).toBeHidden();
+  await page.getByRole('button', { name: 'Torna alla fatturazione' }).click();
+  await expect(country).toHaveValue('IT');
+  expect(await page.evaluate(previous => previous === window.document, document)).toBe(true);
+  expect(checkoutRequests).toBe(0);
   await page.getByRole('button', { name: 'Configura la fatturazione su Stripe' }).click();
   await expect(page).toHaveURL(/checkout.stripe.com/);
   await page.goto(demoUrl('/onboarding?checkout=success', 'onboarding'), { waitUntil: 'domcontentloaded' });
