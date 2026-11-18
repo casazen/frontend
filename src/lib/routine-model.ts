@@ -120,12 +120,6 @@ export function unavailableActionTypes(availability: ActionAvailability | undefi
   return found;
 }
 
-/** The action a new line of the list starts from: the To do, which runs today (and so with no catalog), else the first one of the editor's order that runs, else the wait. */
-export function defaultActionType(availability: ActionAvailability | undefined): RoutineActionType {
-  const others = ACTION_TYPES.map((action) => action.type).filter((type) => type !== 'CreateActivity' && type !== 'Wait');
-  return (['CreateActivity', ...others, 'Wait'] as const).find((type) => !isActionUnavailable(availability, type)) ?? 'CreateActivity';
-}
-
 export function parseActions(actionsJson: string | undefined): RoutineAction[] {
   try {
     const parsed: unknown = JSON.parse(actionsJson || '[]');
@@ -154,7 +148,7 @@ export function parseWhole(text: string): number | null {
 export interface ActionDraft {
   /** The identity of the line in the list (the position changes when one is removed). */
   key: number;
-  type: RoutineActionType;
+  type: RoutineActionType | '';
   /** `Wait`: how long, as typed. */
   days: string;
   hours: string;
@@ -163,19 +157,22 @@ export interface ActionDraft {
   dueInDays: string;
   /** `MessageToGuest`: the template, as typed. */
   templateId: string;
+  aiCondition: string;
   /** The members of the stored configuration that the editor has no field for. */
   rest: RoutineActionConfig;
 }
 
 const EDITED_MEMBERS: Partial<Record<RoutineActionType, readonly string[]>> = {
+  CreateCleaningRequest: ['aiCondition'],
+  RequestReview: ['aiCondition'],
   Wait: ['days', 'hours'],
   CreateActivity: ['text', 'dueInDays'],
   MessageToGuest: ['templateId'],
 };
 
 /** A new line of the list for `type`: a wait of one day, otherwise everything empty. */
-export function newActionDraft(key: number, type: RoutineActionType): ActionDraft {
-  return { key, type, days: type === 'Wait' ? '1' : '0', hours: '0', text: '', dueInDays: '', templateId: '', rest: {} };
+export function newActionDraft(key: number, type: RoutineActionType | ''): ActionDraft {
+  return { key, type, days: type === 'Wait' ? '1' : '0', hours: '0', text: '', dueInDays: '', templateId: '', aiCondition: '', rest: {} };
 }
 
 const asText = (value: unknown) => (typeof value === 'string' ? value : typeof value === 'number' ? String(value) : '');
@@ -193,6 +190,7 @@ export function actionToDraft(key: number, action: RoutineAction): ActionDraft {
     text: asText(config.text),
     dueInDays: asText(config.dueInDays),
     templateId: asText(config.templateId),
+    aiCondition: asText(config.aiCondition),
     rest,
   };
 }
@@ -202,6 +200,7 @@ export function actionToDraft(key: number, action: RoutineAction): ActionDraft {
  * hour to 365 days; the To do has words (1 to 140 characters) and a deadline of 0 to 60 days, or none.
  */
 export function actionProblemKey(draft: ActionDraft): string | null {
+  if (!draft.type) return 'routines.chooseAction';
   if (draft.type === 'Wait') {
     const days = parseWhole(draft.days || '0');
     const hours = parseWhole(draft.hours || '0');
@@ -223,12 +222,16 @@ export function actionProblemKey(draft: ActionDraft): string | null {
 /** The action a valid line stands for, with the numbers as numbers (the server refuses a number written as a text). */
 export function draftToAction(draft: ActionDraft): RoutineAction {
   switch (draft.type) {
+    case '': throw new Error('Select a routine action before saving');
     case 'Wait':
       return { type: 'Wait', config: { ...draft.rest, days: parseWhole(draft.days || '0') ?? 0, hours: parseWhole(draft.hours || '0') ?? 0 } };
     case 'CreateActivity': {
       const due = draft.dueInDays.trim() === '' ? null : parseWhole(draft.dueInDays);
       return { type: 'CreateActivity', config: { ...draft.rest, text: draft.text.trim(), ...(due === null ? {} : { dueInDays: due }) } };
     }
+    case 'CreateCleaningRequest':
+    case 'RequestReview':
+      return { type: draft.type, config: { ...draft.rest, ...(draft.aiCondition.trim() ? { aiCondition: draft.aiCondition.trim() } : {}) } };
     case 'MessageToGuest': {
       const templateId = draft.templateId.trim();
       return { type: 'MessageToGuest', config: { ...draft.rest, ...(templateId ? { templateId } : {}) } };
@@ -476,6 +479,9 @@ const EXECUTION_CODES: ReadonlyArray<{ code: string; labelKey: string }> = [
   { code: 'routine_action_not_available', labelKey: 'routines.log.code.actionNotAvailable' },
   { code: 'routine_actions_invalid', labelKey: 'routines.log.code.actionsInvalid' },
   { code: 'routine_inactive', labelKey: 'routines.log.code.inactive' },
+  { code: 'routine_ai_condition_unknown', labelKey: 'routines.aiUnknown' },
+  { code: 'routine_ai_condition_false', labelKey: 'routines.aiFalse' },
+  { code: 'routine_ai_unavailable', labelKey: 'routines.aiUnavailable' },
   { code: 'routine_action_error', labelKey: 'routines.log.code.actionError' },
   { code: 'routine_wait_not_scheduled', labelKey: 'routines.log.code.waitNotScheduled' },
   { code: 'routine_activity_needs_booking', labelKey: 'routines.log.code.activityNeedsBooking' },

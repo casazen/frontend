@@ -8,6 +8,7 @@ import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { useComplianceFineCount, useComplianceLightsOn } from '@/features/compliance/use-compliance';
 import type { TodoActivity } from '@/api/internal-activities.api';
+import { useRoutines } from '@/queries/routines';
 import { useActivities, useActivityCount } from '@/queries/internalActivities';
 import { DashboardPage } from '../dashboard-page';
 
@@ -27,6 +28,7 @@ vi.mock('@/queries/use-properties', () => {
   const properties = [{ id: 'p-1', name: 'Casa Mare' }];
   return { useProperties: () => ({ data: properties, isSuccess: true }) };
 });
+vi.mock('@/queries/routines', () => ({ useRoutines: vi.fn() }));
 vi.mock('@/queries/internalActivities', () => ({ useActivities: vi.fn(), useActivityCount: vi.fn() }));
 vi.mock('@/features/compliance/use-compliance', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/features/compliance/use-compliance')>()),
@@ -60,11 +62,11 @@ const LIST: TodoActivity[] = [
   todo({ id: 'third', activityType: 'FiscalDocument', action: 'ReviewBooking', urgency: 'Low' }),
 ];
 
-function renderDashboard() {
+function renderDashboard(routines = false) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={queryClient}>
-      <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS }, isLoading: false }}>
+      <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, routines }, isLoading: false }}>
         <MemoryRouter>
           <DashboardPage />
         </MemoryRouter>
@@ -81,6 +83,7 @@ describe('DashboardPage To do list', () => {
     vi.mocked(useActivityCount).mockReturnValue({ data: { count: 2 } } as unknown as ReturnType<typeof useActivityCount>);
     vi.mocked(useComplianceFineCount).mockReturnValue(0);
     vi.mocked(useComplianceLightsOn).mockReturnValue(false);
+    vi.mocked(useRoutines).mockReturnValue({ isSuccess: true, data: [] } as unknown as ReturnType<typeof useRoutines>);
     reads.canReadBookings = true;
     await i18n.changeLanguage('it');
   });
@@ -106,6 +109,22 @@ describe('DashboardPage To do list', () => {
     expect(within(road).getByTestId('home-todo-see-all')).toHaveAttribute('href', '/app/short-rent/activities');
     // No tinted block: the guide does not look like an error.
     expect(screen.queryByTestId('home-todo-focus')).not.toBeInTheDocument();
+  });
+
+  it('shows one quiet link for live routines and requests a reminder-free dashboard list and count', () => {
+    vi.mocked(useActivities).mockReturnValue({ data: [] } as unknown as ReturnType<typeof useActivities>);
+    vi.mocked(useRoutines).mockReturnValue({ isSuccess: true, data: [
+      { active: true, testMode: false }, { active: true, testMode: true }, { active: false, testMode: false },
+    ] } as unknown as ReturnType<typeof useRoutines>);
+    renderDashboard(true);
+    expect(useActivities).toHaveBeenCalledWith({ excludeRoutineTasks: true });
+    expect(useActivityCount).toHaveBeenCalledWith({ excludeRoutineTasks: true });
+    expect(screen.queryByTestId('home-todo-path')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '1 routine attiva' })).toHaveAttribute('href', '/app/short-rent/automations');
+    cleanup();
+    renderDashboard(false);
+    expect(useRoutines).toHaveBeenLastCalledWith(false);
+    expect(screen.queryByRole('link', { name: '1 routine attiva' })).not.toBeInTheDocument();
   });
 
   it('DashboardPage_ListCutByTheServer_SaysTheFirstOnesAndTakesTheUrgentCountFromTheMenu', () => {

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { RoutineActionAssist } from './RoutineActionAssist';
 import { RoutineConditionEditor, type ConditionDraft } from '@/components/routines/RoutineConditionEditor';
 import { useProperties } from '@/queries/use-properties';
 import {
@@ -20,7 +21,6 @@ import {
   actionProblemKey,
   actionToDraft,
   conditionFromRules,
-  defaultActionType,
   draftToAction,
   eventLabelKey,
   eventOptionsFor,
@@ -91,7 +91,7 @@ export function RoutineEditor({ routine, availability, onSave, onCancel, isSavin
   const conditionComplete = builtCondition !== undefined;
 
   const actionProblems = actions.map(actionProblemKey);
-  const unavailable = unavailableActionTypes(availability, actions);
+  const unavailable = unavailableActionTypes(availability, actions.flatMap(({ type }) => type ? [{ type }] : []));
   const anyActionUnavailableInCatalog = ACTION_TYPES.some((action) => isActionUnavailable(availability, action.type));
   // A routine that runs for real holds only actions that can run: it is switched off for the person, who is told why, and can still save it (in test mode it runs as a simulation).
   const activationBlocked = unavailable.length > 0 && !testMode;
@@ -102,13 +102,13 @@ export function RoutineEditor({ routine, availability, onSave, onCancel, isSavin
 
   const handleAddAction = () => {
     if (actions.length >= MAX_ACTIONS) return;
-    setActions([...actions, newActionDraft(nextKeyOf(actions), defaultActionType(availability))]);
+    setActions([...actions, newActionDraft(nextKeyOf(actions), '')]);
   };
 
   const handleRemoveAction = (key: number) => setActions(actions.filter((action) => action.key !== key));
 
   const changeAction = (key: number, change: (draft: ActionDraft) => ActionDraft) =>
-    setActions(actions.map((action) => (action.key === key ? change(action) : action)));
+    setActions(current => current.map(action => action.key === key ? change(action) : action));
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -250,7 +250,7 @@ export function RoutineEditor({ routine, availability, onSave, onCancel, isSavin
         <div className="space-y-3">
           {actions.map((action, index) => {
             const problemKey = actionProblems[index];
-            const typeUnavailable = isActionUnavailable(availability, action.type);
+            const typeUnavailable = action.type && isActionUnavailable(availability, action.type);
             return (
               <div key={action.key} className="rounded-md border p-4" data-testid={`action-item-${index}`}>
                 <div className="flex gap-3">
@@ -262,6 +262,7 @@ export function RoutineEditor({ routine, availability, onSave, onCancel, isSavin
                       onChange={(e) => changeAction(action.key, (draft) => newActionDraft(draft.key, e.target.value as RoutineActionType))}
                       data-testid={`action-type-select-${index}`}
                     >
+                      {!action.type && <option value="" disabled>{t('routines.chooseAction')}</option>}
                       {ACTION_TYPES.map(({ type, labelKey }) => {
                         const cannotRun = isActionUnavailable(availability, type);
                         return (
@@ -288,6 +289,24 @@ export function RoutineEditor({ routine, availability, onSave, onCancel, isSavin
                     <X className="h-4 w-4" aria-hidden="true" />
                   </Button>
                 </div>
+
+                {(!action.type || action.type === 'CreateActivity') && (
+                  <RoutineActionAssist
+                    key={action.type}
+                    initialText={action.text}
+                    onApply={type => changeAction(action.key, draft => newActionDraft(draft.key, type))}
+                  />
+                )}
+
+                {(action.type === 'CreateCleaningRequest' || action.type === 'RequestReview') && (
+                  <div className="mt-3 space-y-1">
+                    <Label htmlFor={`ai-condition-${index}`}>{t('routines.aiCondition')}</Label>
+                    <Input id={`ai-condition-${index}`} value={action.aiCondition} maxLength={500}
+                      placeholder={t('routines.aiExample')}
+                      onChange={e => changeAction(action.key, draft => ({ ...draft, aiCondition: e.target.value }))} />
+                    <p className="text-sm text-muted-foreground">{t('routines.aiFacts')}</p>
+                  </div>
+                )}
 
                 {/* Action-specific configuration */}
                 {action.type === 'Wait' && (
@@ -381,7 +400,7 @@ export function RoutineEditor({ routine, availability, onSave, onCancel, isSavin
                   </div>
                 )}
 
-                {problemKey && (
+                {action.type && problemKey && (
                   <p className="mt-2 text-sm text-destructive" data-testid={`action-problem-${index}`}>
                     {t(problemKey)}
                   </p>

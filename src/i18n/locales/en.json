@@ -827,7 +827,7 @@
           "why": "The connection with the channel manager was lost."
         },
         "RoutineTask": {
-          "title": "Task made by a routine",
+          "title": "Manual reminder from a routine",
           "why": "A routine you set up asks you to take care of this booking."
         },
         "TouristTaxDeadline": {
@@ -24350,6 +24350,24 @@
     "None": "Not activated"
   },
   "routines": {
+    "dashboardActive_one": "{{count}} active routine",
+    "dashboardActive_other": "{{count}} active routines",
+    "aiCondition": "AI agent condition (optional)",
+    "aiExample": "E.g. Only for stays of at least three nights",
+    "aiFacts": "The agent can assess the booking channel, status, guest count and number of nights. Leave blank to always run the action.",
+    "aiUnknown": "The available facts do not support a decision. The action was blocked for this event.",
+    "aiFalse": "The booking does not meet the AI condition.",
+    "aiUnavailable": "The AI service is unavailable to evaluate the condition.",
+    "chooseAction": "Choose what CasaZen should do",
+    "assist": {
+      "label": "Or describe one operation for AI",
+      "example": "E.g. Schedule cleaning with the usual cleaner",
+      "suggest": "Find operation",
+      "loading": "Looking up operation…",
+      "use": "Use “{{action}}”",
+      "noMatch": "No available operation matches this request.",
+      "unavailable": "AI suggestions are unavailable. Choose an operation from the list."
+    },
     "action": {
       "activeBlocked": "This routine holds actions that are not available yet: remove them to switch it on, or try it in test mode.",
       "notAvailableNamed": "It cannot be switched on: it holds actions that are not available yet ({{actions}}). You can try it in test mode.",
@@ -24360,7 +24378,7 @@
     "actions": "Actions",
     "actionTypes": {
       "addTag": "Add tag",
-      "createActivity": "Create activity",
+      "createActivity": "Create a manual reminder",
       "createCleaningRequest": "Create the cleaning",
       "messageToGuest": "Send message to guest",
       "notifyOwner": "Notify owner",
@@ -24440,8 +24458,8 @@
     "deleteLogGoes": "The log of its runs is deleted too.",
     "deleteSuccess": "Routine deleted",
     "deleteTitle": "Delete the routine?",
-    "description": "A routine does something by itself when something happens to a stay: for example, after check-out it adds a task for you.",
-    "editorDescription": "Configure the event that triggers the routine, conditions, and actions to execute",
+    "description": "When the configured event occurs, CasaZen carries out the operation automatically. For example, it can schedule cleaning with the property's cleaner at check-out.",
+    "editorDescription": "Choose when the routine starts and what CasaZen will do automatically. Results appear in the execution log.",
     "editTitle": "Edit routine",
     "empty": {
       "description": "Start from a ready routine in the library, or create your own.",

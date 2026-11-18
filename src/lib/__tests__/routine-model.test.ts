@@ -10,7 +10,6 @@ import {
   actionReasonKey,
   actionToDraft,
   conditionFromRules,
-  defaultActionType,
   draftToAction,
   eventOptionsFor,
   executionCodeKey,
@@ -260,12 +259,8 @@ describe('what the catalog says of the actions', () => {
     expect(unavailableActionTypes(undefined, [{ type: 'NotifyOwner' }])).toEqual([]);
   });
 
-  it('defaultActionType_StartsFromAnActionThatRuns', () => {
-    expect(defaultActionType(catalog)).toBe('CreateActivity');
-    expect(defaultActionType(undefined)).toBe('CreateActivity');
-    // Were the To do not to run, the first action of the editor that does, and the wait last of all.
-    expect(defaultActionType(toAvailability([{ type: 'CreateActivity', available: false, code: 'x' }, { type: 'MessageToGuest', available: false, code: 'x' }, { type: 'NotifyOwner', available: true, code: null }]))).toBe('NotifyOwner');
-    expect(defaultActionType(toAvailability(['CreateActivity', 'CreateCleaningRequest', 'MessageToGuest', 'NotifyOwner', 'NotifyStaff', 'NotifyTeam', 'SendAccessCode', 'RequestReview', 'AddTag'].map((type) => ({ type: type as 'AddTag', available: false, code: 'x' }))))).toBe('Wait');
+  it('requires an explicit operation for a new step', () => {
+    expect(actionProblemKey(newActionDraft(1, ''))).toBe('routines.chooseAction');
   });
 });
 
