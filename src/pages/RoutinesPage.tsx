@@ -109,6 +109,7 @@ export function RoutinesPage() {
   const handleCreateFromTemplate = (template: RoutineLibraryTemplate, { testMode }: { testMode: boolean }) => {
     const dto: CreateRoutineDto = {
       name: template.name,
+      agentObjective: template.agentObjective,
       eventType: template.eventType,
       ...(template.eventConfig ? { eventConfig: template.eventConfig } : {}),
       ...(template.condition ? { condition: template.condition } : {}),

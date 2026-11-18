@@ -153,7 +153,7 @@ export function OrganizationSettingsContent({
  */
 export function OrganizationSettings({ showSiteAppearanceLink = false }: { showSiteAppearanceLink?: boolean }) {
   const { t } = useTranslation();
-  const { contexts } = useWorkspace();
+  const { contexts, activeContext } = useWorkspace();
   const isAdmin = isOrgBillingAdmin(contexts);
   const { user, org } = useCurrentUser();
   const settingsQuery = useOrgSettings(isAdmin);
@@ -435,7 +435,7 @@ export function OrganizationSettings({ showSiteAppearanceLink = false }: { showS
       </div>
       {/* The identity check of the guests (E22/F02/US01/T02): only while the identity verification is on; with it off the page has nothing more than it always had. */}
       <div className={FIELD_COLUMNS}>
-        <BiometricSettingsCard />
+        {activeContext === 'long-rent' && <BiometricSettingsCard />}
       </div>
     </div>
   );

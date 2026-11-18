@@ -15694,7 +15694,7 @@
     "activities": "Attività",
     "inviteQr": "QR di invito",
     "reviews": "Recensioni",
-    "routines": "Automazioni",
+    "routines": "AI Agents",
     "channelCommissions": "Commissioni dei canali",
     "channels": "Canali e calendari",
     "verifications": "Verifiche",
@@ -24352,9 +24352,22 @@
     "Supplier": "Fornitore",
     "None": "Da attivare"
   },
+  "aiSettings": {
+    "cleaningGoal": "Organizza la pulizia dopo il check-out per i soggiorni che hanno avuto luogo.",
+    "instructionsGoal": "Invia le istruzioni di arrivo alle prenotazioni confermate.",
+    "reviewGoal": "Invita alla recensione gli ospiti di soggiorni diretti conclusi.",
+    "documentReminderGoal": "Ricorda gli adempimenti documentali prima dell’arrivo per le prenotazioni confermate.",
+    "title": "AI",
+    "provider": "Gestisci il provider, i modelli e il budget della piattaforma.",
+    "objective": "Obiettivo dell’agente",
+    "example": "Per soggiorni di almeno tre notti organizza la pulizia. Per gli altri, avvisa lo staff.",
+    "hint": "Puoi usare canale, stato, durata e numero di ospiti. Lascia vuoto per richiedere tutte le azioni configurate.",
+    "invalidPlan": "La risposta dell’AI non identifica azioni valide. Esecuzione interrotta.",
+    "notSelected": "L’agente ha escluso questa azione per questo evento."
+  },
   "routines": {
-    "dashboardActive_one": "{{count}} routine attiva",
-    "dashboardActive_other": "{{count}} routine attive",
+    "dashboardActive_one": "{{count}} agente AI attivo",
+    "dashboardActive_other": "{{count}} agenti AI attivi",
     "tag": "Tag del profilo ospite",
     "savedTemplate": "Modello salvato",
     "aiCondition": "Condizione per l’agente AI (facoltativa)",
@@ -24451,10 +24464,10 @@
     },
     "conditions": "Condizioni",
     "conditionsHint": "Senza condizioni la routine parte per ogni prenotazione. Aggiungine per limitarla.",
-    "create": "Crea routine",
+    "create": "Crea agente",
     "createError": "Impossibile creare la routine",
     "createSuccess": "Routine creata con successo",
-    "createTitle": "Nuova routine",
+    "createTitle": "Nuovo agente AI",
     "days": "giorni",
     "deactivatedSuccess": "Routine disattivata",
     "delete": "Elimina",
@@ -24463,12 +24476,12 @@
     "deleteLogGoes": "Si cancella anche il registro delle sue esecuzioni.",
     "deleteSuccess": "Routine eliminata",
     "deleteTitle": "Eliminare la routine?",
-    "description": "Quando si verifica l’evento configurato, CasaZen esegue l’operazione in autonomia. Per esempio, al check-out può organizzare la pulizia con l’addetto dell’immobile.",
-    "editorDescription": "Scegli quando deve partire la routine e quali operazioni CasaZen eseguirà automaticamente. Ritrovi gli esiti nel registro.",
-    "editTitle": "Modifica routine",
+    "description": "Scegli un agente pronto o creane uno tuo. A ogni evento, l’AI valuta il soggiorno e decide quali operazioni eseguire tra quelle che hai autorizzato.",
+    "editorDescription": "Definisci obiettivo, evento e azioni consentite. Puoi verificare le decisioni nel registro.",
+    "editTitle": "Modifica agente AI",
     "empty": {
-      "description": "Parti da una routine pronta della libreria, oppure creane una tua.",
-      "title": "Nessuna routine per ora"
+      "description": "Scegli un agente dalla libreria o crea il tuo primo agente AI.",
+      "title": "Nessun agente configurato"
     },
     "events": {
       "activityCompleted": "Attività completata",
@@ -24507,7 +24520,7 @@
       "createInTestMode": "Crea in modalità test",
       "daysCount_one": "{{count}} giorno",
       "daysCount_other": "{{count}} giorni",
-      "description": "Parti da una routine pronta: puoi modificarla dopo averla creata.",
+      "description": "Scegli un agente e personalizza il suo obiettivo.",
       "documentReminderDescription": "Ricorda ai tuoi ospiti di mandare i documenti 3 giorni prima del check-in. Arriva a tutti, anche a chi li ha già mandati: le routine non leggono ancora lo stato dei documenti.",
       "documentReminderTitle": "Promemoria documenti prima dell'arrivo",
       "hoursCount_one": "{{count}} ora",
@@ -24518,7 +24531,7 @@
       "reviewDescription": "Un giorno dopo il check-out chiede una recensione all'ospite che ha prenotato dal tuo sito, una volta sola per prenotazione. Le prenotazioni dei portali, quelle annullate e quelle senza indirizzo email restano senza invito, e il registro dice perché.",
       "reviewTitle": "Richiesta di recensione",
       "setupCleaners": "Imposta chi pulisce",
-      "title": "Libreria routine",
+      "title": "Libreria AI Agents",
       "unavailableNote": "Contiene azioni non ancora disponibili: puoi crearla solo in modalità test, dove si simula senza inviare nulla."
     },
     "loadError": "Impossibile caricare le routine",
@@ -24590,10 +24603,10 @@
     "name": "Nome",
     "namePlaceholder": "Es: Invia istruzioni 2 giorni prima",
     "noActions": "Nessuna azione configurata. Aggiungi almeno un'azione.",
-    "noActiveRoutines": "Non hai routine attive. Creane una o attivane una dalla libreria.",
+    "noActiveRoutines": "Nessun agente attivo. Scegline uno dalla libreria o creane uno tuo.",
     "noExecutions": "Nessuna esecuzione registrata",
-    "noInactiveRoutines": "Non hai routine inattive",
-    "noTestRoutines": "Non hai routine in modalità test",
+    "noInactiveRoutines": "Nessun agente inattivo",
+    "noTestRoutines": "Nessun agente in prova",
     "problem": {
       "messageTemplate": "Seleziona un modello messaggio.",
       "tag": "Inserisci il tag da aggiungere al profilo ospite.",
@@ -24612,7 +24625,7 @@
     "testModeOnSuccess": "Modalità test attivata",
     "testTab": "Test",
     "timing": "Temporizzazione",
-    "title": "Routine di automazione",
+    "title": "AI Agents",
     "toggleActiveError": "Impossibile modificare lo stato della routine",
     "toggleTestModeError": "Impossibile modificare la modalità test",
     "unavailable": {
@@ -25075,6 +25088,8 @@
       },
       "operations": {
         "title": "Il lavoro di tutti i giorni",
+        "agentsTitle": "AI Agents",
+        "agentsText": "Con il modulo opzionale AI Agents puoi assegnare a un agente la pulizia dopo il check-out o le istruzioni di arrivo. Scegli un agente pronto o definisci il tuo obiettivo e le azioni che può eseguire.",
         "calendarTitle": "Calendario e iCal",
         "calendarText": "Prenotazioni, blocchi e sincronizzazione dei calendari iCal di Airbnb, Booking.com e altri portali, aggiornata circa ogni 15 minuti.",
         "suppliersTitle": "Fornitori della zona",
@@ -32082,6 +32097,10 @@
       "identification": {
         "title": "Identificazione ospiti",
         "text": "Accompagna gli ospiti nella verifica e nel check-in."
+      },
+      "ai-agents": {
+        "title": "AI Agents",
+        "text": "Agenti preimpostati e personalizzati per gestire soggiorni, organizzare pulizie e comunicare con gli ospiti in autonomia."
       },
       "messages-ai": {
         "title": "Messaggi e assistente AI",

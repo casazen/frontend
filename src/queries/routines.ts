@@ -1,3 +1,5 @@
+import { useCommercialProfile } from '@/hooks/use-commercial-profile';
+import { commercialRouteAllowed } from '@/features/onboarding/commercial-access';
 import { useMemo } from 'react';
 import { useMutation, useMutationState, useQuery, useQueryClient } from '@tanstack/react-query';
 import { routinesApi } from '@/api/routines.api';
@@ -16,10 +18,11 @@ const ROUTINE_WRITE_KEY = [ROUTINES_KEY, 'write'] as const;
 const ROUTINES_STALE_TIME = 30 * 1000;
 
 export function useRoutines(enabled = true) {
+  const profile = useCommercialProfile();
   return useQuery({
     queryKey: [ROUTINES_KEY],
     queryFn: () => routinesApi.getAll(),
-    enabled,
+    enabled: enabled && commercialRouteAllowed(profile, '/app/short-rent/automations'),
     staleTime: ROUTINES_STALE_TIME,
     // The page is opened from a menu and read again every time: a routine changed or deleted elsewhere must not stay on screen.
     refetchOnMount: 'always',

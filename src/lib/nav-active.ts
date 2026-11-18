@@ -30,9 +30,13 @@ export function resolveActiveNavEntry(
       best = entry;
     }
   }
-  if (!best?.navParent) return best;
-  const parentPath = best.navParent;
-  return navEntries.find((entry) => entry.path === parentPath && !entry.navParent) ?? best;
+  while (best?.navParent) {
+    const parentPath: string = best.navParent;
+    const parent = navEntries.find(entry => entry.path === parentPath);
+    if (!parent) break;
+    best = parent;
+  }
+  return best;
 }
 
 /**
