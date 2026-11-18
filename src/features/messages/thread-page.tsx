@@ -299,7 +299,7 @@ function ThreadView({ threadKey }: { threadKey: string }) {
 
   return (
     <AppShell>
-      <div className="flex flex-1 flex-col gap-4" data-app-viewport data-testid="messages-thread-page">
+      <div className="flex flex-1 flex-col gap-4 lg:min-h-0" data-app-viewport data-testid="messages-thread-page">
         {!data ? <PageHeader title={title} crumbs="auto" /> : null}
         {thread.isError && data ? (
           <p className="text-sm text-destructive" role="alert">
