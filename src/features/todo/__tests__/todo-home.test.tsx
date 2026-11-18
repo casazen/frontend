@@ -79,6 +79,33 @@ describe('the To do list on the Home as a road (NF-07, ADR-026-R8)', () => {
     expect(rows[1]).toHaveTextContent('(da fare)');
   });
 
+  it('TodoPath_FutureScheduledWork_IsPlannedInsteadOfHighlightedAsSomethingToDoNow', () => {
+    const future = todo({ id: 'future', activityType: 'RoutineTask', action: 'ReviewBooking', scheduledAt: '2099-01-19T08:00:00Z' });
+    wrap(<TodoPath items={[future]} urgent={0} propertyNames={NAMES} />);
+
+    const [first] = steps();
+    expect(first).not.toHaveAttribute('aria-current');
+    expect(first).toHaveTextContent('Programmato');
+    expect(first).toHaveTextContent('Programmato per');
+    expect(first).not.toHaveTextContent('Adesso');
+    expect(within(first).getByRole('link', { name: /^Apri:/ })).toHaveAttribute('href', '/app/short-rent/bookings/b-1');
+    expect(screen.queryByTestId('home-todo-do-now')).not.toBeInTheDocument();
+  });
+
+  it('TodoPath_AFutureDeadlineAlone_DoesNotPostponeWorkScheduledForNow', () => {
+    wrap(<TodoPath items={[todo({ id: 'today', scheduledAt: '2000-01-19T08:00:00Z' })]} urgent={0} propertyNames={NAMES} />);
+
+    expect(steps()[0]).toHaveAttribute('aria-current', 'step');
+    expect(steps()[0]).toHaveTextContent('Adesso');
+  });
+
+  it('TodoPath_AnOverdueDeadline_RemainsActionableEvenWithAnInconsistentFutureSchedule', () => {
+    wrap(<TodoPath items={[todo({ id: 'overdue', scheduledAt: '2099-01-19T08:00:00Z', dueAt: '2000-01-19T08:00:00Z' })]} urgent={0} propertyNames={NAMES} />);
+
+    expect(steps()[0]).toHaveAttribute('aria-current', 'step');
+    expect(steps()[0]).toHaveTextContent('Scaduta:');
+  });
+
   it('TodoPath_NoFocus_ListsTheRoadWithNoCurrentStep', () => {
     // What carries a risk of a sanction holds the one highlight of the Home: the road has no step to do now of its own.
     wrap(<TodoPath items={LIST} urgent={2} propertyNames={NAMES} focus={false} />);

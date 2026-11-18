@@ -6,6 +6,8 @@ import type { TodoActivity } from '@/api/internal-activities.api';
 import { GuidePath, type CalmTone, type GuidePathStep } from '@/components/shared/calm';
 import type { PermissionPredicate } from '@/config/route-manifest';
 import { cn } from '@/lib/utils';
+import { useNow } from '@/hooks/use-now';
+import { formatRomeDateTime } from '@/lib/stay-dates';
 import { todoActionRoute } from './activity-card';
 import { TODO_LIST_LIMIT, TODO_LIST_PATH, describeTodo, isTruncatedList, type TodoText } from './lib/todo-model';
 
@@ -13,7 +15,7 @@ import { TODO_LIST_LIMIT, TODO_LIST_PATH, describeTodo, isTruncatedList, type To
 export const TODO_PATH_ITEMS = 4;
 
 interface TodoPathProps {
-  /** The items in the order the server sent them (ADR-026-R5): the first is the one to do now. */
+  /** The items in the order the server sent them (ADR-026-R5): the first can be current once its planned time has come. */
   items: readonly TodoActivity[];
   /** How many urgent items wait: the number of the server (it counts them all, the list is cut). `null` when it is not known. */
   urgent: number | null;
@@ -44,6 +46,7 @@ function noteToneOf(text: TodoText): CalmTone {
 export function TodoPath({ items, urgent, propertyNames, hasPermission, focus = true, limit = TODO_PATH_ITEMS, className }: TodoPathProps) {
   const { t, i18n } = useTranslation();
   const titleId = useId();
+  const now = useNow();
   const context = { t, exists: (key: string) => i18n.exists(key), locale: i18n.language, propertyNames };
   // A list of the length the server cuts at may have more items behind it: no total is told from it.
   const truncated = isTruncatedList(items.length);
@@ -51,22 +54,27 @@ export function TodoPath({ items, urgent, propertyNames, hasPermission, focus = 
   const steps: GuidePathStep[] = items.slice(0, limit).map((activity, index) => {
     const text = describeTodo(activity, context);
     const route = todoActionRoute(activity, hasPermission);
-    const current = focus && index === 0;
+    const scheduledTime = activity.scheduledAt ? new Date(activity.scheduledAt) : null;
+    const programmed = scheduledTime !== null && Number.isFinite(scheduledTime.getTime())
+      && scheduledTime.getTime() > now && !text.deadline?.overdue;
+    const current = focus && index === 0 && !programmed;
     return {
       id: activity.id,
       title: text.title,
       // The step to do now says why it matters; the others only what they are about, so the road stays short.
       detail: current && text.why ? `${text.why} · ${text.object}` : text.object,
-      note: text.deadline?.text ?? (text.urgency === 'High' ? text.urgencyLabel : undefined),
+      note: programmed
+        ? t('activity.todo.path.scheduledFor', { when: formatRomeDateTime(activity.scheduledAt!, i18n.language) })
+        : text.deadline?.text ?? (text.urgency === 'High' ? text.urgencyLabel : undefined),
       noteTone: noteToneOf(text),
-      kicker: current ? t('activity.todo.path.now') : undefined,
+      kicker: current ? t('activity.todo.path.now') : programmed ? t('activity.todo.path.scheduled') : undefined,
       state: current ? 'current' : 'upcoming',
       // The button is the way in. An item whose page the person cannot open leads to the list, where it is told in full.
       action: route
         ? {
-            label: t('activity.todo.actions.doNow'),
+            label: t(programmed ? 'activity.todo.path.open' : 'activity.todo.actions.doNow'),
             href: route,
-            ariaLabel: t('activity.todo.actions.doNowFor', { title: text.title }),
+            ariaLabel: programmed ? `${t('activity.todo.path.open')}: ${text.title}` : t('activity.todo.actions.doNowFor', { title: text.title }),
             testId: current ? 'home-todo-do-now' : undefined,
           }
         : { label: t('activity.todo.path.open'), href: TODO_LIST_PATH, ariaLabel: `${t('activity.todo.path.open')}: ${text.title}` },
