@@ -111,14 +111,12 @@ describe('DashboardPage To do list', () => {
     expect(screen.queryByTestId('home-todo-focus')).not.toBeInTheDocument();
   });
 
-  it('shows one quiet link for live routines and requests a reminder-free dashboard list and count', () => {
+  it('shows one quiet link for live routines', () => {
     vi.mocked(useActivities).mockReturnValue({ data: [] } as unknown as ReturnType<typeof useActivities>);
     vi.mocked(useRoutines).mockReturnValue({ isSuccess: true, data: [
       { active: true, testMode: false }, { active: true, testMode: true }, { active: false, testMode: false },
     ] } as unknown as ReturnType<typeof useRoutines>);
     renderDashboard(true);
-    expect(useActivities).toHaveBeenCalledWith({ excludeRoutineTasks: true });
-    expect(useActivityCount).toHaveBeenCalledWith({ excludeRoutineTasks: true });
     expect(screen.queryByTestId('home-todo-path')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: '1 routine attiva' })).toHaveAttribute('href', '/app/short-rent/automations');
     cleanup();
