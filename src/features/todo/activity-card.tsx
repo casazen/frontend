@@ -171,6 +171,13 @@ export const ACTION_ROUTE_MAP = {
     route: { path: '/app/short-rent/fiscal/documents', onlyFor: [FISCAL_DOCUMENT], entityParam: 'document', search: { step: 'correct' } },
     fallback: { path: '/app/short-rent/fiscal' },
   },
+  // A self-billed invoice (TD17) waits for the agency (FIX/BE-TD17-ALERTS, `ActivityAction` 32): one the SDI rejected (`SelfBillingRejected`, about the document) or the drafts of a month to check and issue
+  // (`SelfBillingDraftsToReview`, about the month): the page of the self-billed invoices of the account. That page takes no document and no month in its address, so the address carries none. It is the page
+  // of the organization billing administrator (`orgBillingAdmin`, no other permission: the owner and the administrators hold `agency.invoice.manage`, the permission the server asks to list these items), and it has no
+  // read-only twin: whoever is not one is offered no button.
+  ReviewSelfBilling: {
+    route: { path: '/app/account/self-billing' },
+  },
   // The actions the traffic light of the cockpit raises (E03/F02/US01/T03, NF-52): the feeder opens a "To do" for each red or yellow item, with the
   // action of the cockpit. They lead where the cockpit leads (`COMPLIANCE_ACTION_TARGETS` of `lib/compliance-routes.ts`), so the «Adesso» block of the
   // Home and the page of the adempimenti end in the same place. `UploadIstatProof` and `VerifyIdentity` above were there before it.
