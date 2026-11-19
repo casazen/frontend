@@ -369,6 +369,16 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/reports/tourist-tax/tourist-tax-summary-page')).TouristTaxSummaryPage }),
   },
   {
+    // The tourist tax at year end (E18/F01/US02/T03, NF-117): the year's figures of the Italian comuni and the three files an agency hands over (the declaration to the comuni, the account of the agent, the count of the nights
+    // of Ticino). A page of the list of reports (its row «Apri» leads here), in no menu and no tab. It asks what the API asks at its door, `payment.read`; the files need the whole organization and the server says so when
+    // they do not get it. It exists only while the flag `taxReportingExports` is on: off, there is no row in the list, the address leads to the home of the area and the backend answers 404 to every file.
+    path: '/app/short-rent/reports/tourist-tax/year-end',
+    context: 'short-rent',
+    requiredPermissions: ['payment.read'],
+    featureFlag: 'taxReportingExports',
+    component: async () => ({ default: (await import('@/features/reports/tourist-tax/tourist-tax-year-end-page')).TouristTaxYearEndPage }),
+  },
+  {
     // What came in, what is still to collect and what reached the account (NF-97, REP-02): by date, payment method and channel, the balances
     // of the stays and the credits. A page of the list of reports (its row "Apri" leads here), in no menu and no tab; money in aggregate, so
     // it asks for `payment.read`, as the backend does for every read, and the server limits it to the properties the person reaches.

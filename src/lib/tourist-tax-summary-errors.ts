@@ -44,6 +44,14 @@ function errorCode(error: unknown): string | undefined {
 }
 
 /**
+ * True for the answer of a server that has no JSON of the year-end reads yet: 400 `report_invalid_format` to `?format=json` (the backend that adds it is not deployed in that environment). It is not a failure of the call
+ * to tell a person about: the files are there, and the page says only that the figures are not available yet.
+ */
+export function isYearEndJsonUnavailable(error: unknown): boolean {
+  return isAxiosError(error) && error.response?.status === 400 && errorCode(error) === 'report_invalid_format';
+}
+
+/**
  * The text that explains a failed call of the tourist tax summary: the one of its server code (`reports.touristTax.errors.*`), else
  * the generic reading of the error (a session that ended, a missing permission, no network). Undefined when the error says nothing
  * more useful than the caller's own sentence.

@@ -19,6 +19,7 @@ import { ASSIST_REQUESTS_KEY } from '@/queries/use-onboarding-assist';
 import { invalidateOnboarding } from '@/queries/use-onboarding-plan';
 import { PANEL_STEPS_KEY } from '@/queries/use-onboarding-panel-step';
 import { PAYMENTS_KEY } from '@/queries/use-payments';
+import { TOURIST_TAX_SUMMARY_KEY } from '@/queries/use-tourist-tax-summary';
 import { VERIFICATION_KEY } from '@/queries/verification';
 import { ACCOUNTANT_PACKAGE_KEY } from '@/queries/use-accountant-package';
 import type { PendingAlert } from '@/types/alert';
@@ -185,12 +186,15 @@ const FISCAL_DOCUMENT_SDI_REJECTED = 'fiscal-document-sdi-rejected';
  * (E15/F02/US01/T01), which counts the documents issued to the guests. A page open in front of the host shows the new number and state without a reload. The bulk issue and the daily run send
  * nothing (one message per document would flood the bell): the page that asked for the bulk issue reads its own answer. A rejection of the SDI (E17/F03/US01/T02) reads the same things: the state of the document
  * and its SDI panel (`['fiscal', 'documents', 'sdi', …]` are under the key) and the list «Da fare», which holds the item «Correggi la fattura».
+ * The tourist tax summaries are read again too (`TOURIST_TAX_SUMMARY_KEY`, under which the reads of the year end are): the count of the nights in Ticino (E18/F01/US02/T03) is made of the documents issued, so the page
+ * of the tourist tax at year end, open in front of the host, shows the new count without a reload.
  */
 function refreshFiscalDocuments(queryClient: QueryClient): void {
   void queryClient.invalidateQueries({ queryKey: FISCAL_DOCUMENTS_KEY });
   void queryClient.invalidateQueries({ queryKey: [INTERNAL_ACTIVITIES_KEY] });
   void queryClient.invalidateQueries({ queryKey: [PAYMENTS_KEY] });
   void queryClient.invalidateQueries({ queryKey: [ACCOUNTANT_PACKAGE_KEY] });
+  void queryClient.invalidateQueries({ queryKey: [TOURIST_TAX_SUMMARY_KEY] });
 }
 
 /**

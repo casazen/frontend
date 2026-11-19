@@ -1,10 +1,11 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { ListView } from '@/components/shared/list-view/list-view';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useListViewsScope } from '@/hooks/use-list-views-scope';
-import { REPORTS, isDownloadable, type DownloadableReport, type ReportDefinition } from '@/features/reports/report-catalog';
+import { isDownloadable, reportsFor, type DownloadableReport, type ReportDefinition } from '@/features/reports/report-catalog';
 import { ReportDownloadDialog } from '@/features/reports/report-download-dialog';
 import { ReportsOverview } from '@/features/reports/overview/reports-overview';
 import { useReportsList } from '@/features/reports/reports-list';
@@ -22,6 +23,9 @@ import { useReportsList } from '@/features/reports/reports-list';
 export function ReportsPage() {
   const { t } = useTranslation();
   const viewsScope = useListViewsScope();
+  // The rows of the pages behind a flag (the year-end tourist tax) are in the list only while the flag is on.
+  const { flags } = useFeatureFlags();
+  const rows = useMemo(() => reportsFor(flags), [flags]);
   const [downloading, setDownloading] = useState<DownloadableReport | null>(null);
 
   const openDownload = useCallback((report: ReportDefinition) => {
@@ -37,7 +41,7 @@ export function ReportsPage() {
 
         <ReportsOverview />
 
-        <ListView list={list} rows={REPORTS} viewsScope={viewsScope} testId="reports-list" />
+        <ListView list={list} rows={rows} viewsScope={viewsScope} testId="reports-list" />
 
         <ReportDownloadDialog report={downloading} onClose={closeDownload} />
       </div>

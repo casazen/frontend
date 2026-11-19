@@ -125,6 +125,7 @@ Prefisso di ogni destinazione `/app/short-rent`. La barra indica il posto da sin
 | Costi canali / Channel costs | `reports/channel-costs` | Report → apri | Come desktop | `payment.read` |
 | Riscossioni / Collections | `reports/collections` | Report → apri | Come desktop | `payment.read` |
 | Imposta di soggiorno / Tourist tax | `reports/tourist-tax` | Report → apri | Come desktop | `payment.read` |
+| Imposta di soggiorno, fine anno / Tourist tax, year end | `reports/tourist-tax/year-end` | Report → apri | Come desktop | `payment.read` · flag `taxReportingExports` |
 | Recensioni / Reviews | `reviews` | Tab · `bookings` | Come desktop | `booking.read` |
 | AI / AI | `settings/ai` | Tab · `settings/organization` | Come desktop | `property.write` |
 | Assistente / Assistant | `settings/assistant` | Tab · `settings/ai` | Come desktop | `property.write` · flag `messageAssistant` · modulo `messages-ai` |
