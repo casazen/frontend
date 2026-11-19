@@ -145,6 +145,8 @@ const BACKEND_TYPES = [
   // The self-billed invoices (TD17) of the agency (FIX/FE-TD17-TODO): one the SDI rejected, and the drafts of a month to check and issue.
   'SelfBillingRejected',
   'SelfBillingDraftsToReview',
+  // The cleaning recharged to an owner at its cost whose VAT the cost source does not say (E14/F01/US02/T01, `ActivityType` 140).
+  'CleaningVatToState',
 ] as const;
 
 describe('describeTodo for every type of the backend', () => {
@@ -194,6 +196,36 @@ describe('describeTodo and the self-billed invoices (TD17)', () => {
       expect(text.object).toBe(fixed('activity.todo.object.organization'));
     }
     await i18n.changeLanguage('it');
+  });
+});
+
+// The cleaning recharged to an owner at its cost with no VAT stated (E14/F01/US02/T01, NF-114, ⚖ I13): the item the backend raises when the agency posts the month. It is told with its own words, not as an
+// «Attività da completare», in both languages: the title says what is missing, the sentence says what to do, and the two languages do not say the same words.
+describe('describeTodo and the cleaning recharge with no VAT stated', () => {
+  const item = activity('CleaningVatToState', { action: 'ReviewBooking', urgency: 'Medium' });
+
+  it.each([
+    ['it', /IVA/],
+    ['en', /VAT/],
+  ] as const)('describeTodo_CleaningVatToState_SaysWhatIsMissingAndWhatToDoIn_%s', async (lng, vat) => {
+    await i18n.changeLanguage(lng);
+    const generic = describeTodo(activity('SomethingNew'), contextOf(lng));
+
+    const text = describeTodo(item, contextOf(lng));
+
+    expect(text.title).toMatch(vat);
+    expect(text.title).not.toBe(generic.title);
+    expect(text.why).toMatch(vat);
+    expect(text.why).not.toBe(generic.why);
+    await i18n.changeLanguage('it');
+  });
+
+  it('describeTodo_CleaningVatToState_HasDifferentWordsInTheTwoLanguages', () => {
+    const inItalian = describeTodo(item, contextOf('it'));
+    const inEnglish = describeTodo(item, contextOf('en'));
+
+    expect(inItalian.title).not.toBe(inEnglish.title);
+    expect(inItalian.why).not.toBe(inEnglish.why);
   });
 });
 
