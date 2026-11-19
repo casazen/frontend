@@ -1777,12 +1777,15 @@
       "documentBookingNotDirect": "Questo documento non è collegato a una prenotazione, quindi non si può emettere da qui.",
       "documentConfirmationRequired": "Serve la tua conferma per emettere il documento: riprova.",
       "documentDraftOutdated": "La bozza è stata fatta con regole o dati che nel frattempo sono cambiati. Premi «Aggiorna» sulla bozza, controlla gli importi e poi emetti di nuovo.",
+      "documentEmailNotSent": "L’e-mail non è partita: il servizio di invio non è disponibile adesso e non è stato mandato niente. Riprova tra poco.",
       "documentInvoiceDataMissing": "Mancano i dati di chi riceve il documento: completali nei dati di fatturazione della prenotazione.",
       "documentIssueFailed": "Il documento non è stato emesso per un nostro problema: è ancora una bozza, riprova tra poco.",
       "documentIssuerConflict": "Per questa prenotazione ha già emesso un altro soggetto: CasaZen non emette un secondo documento.",
       "documentNotCreditable": "Si può fare una nota di credito solo di una fattura o di una ricevuta già emessa.",
       "documentNotDraft": "Il documento non è più una bozza. Aggiorna l’elenco.",
+      "documentNotIssued": "Al cliente si manda solo un documento già emesso: una bozza, o una bozza scartata, non si invia.",
       "documentReadOnly": "Questo documento è in sola lettura: non lo emette CasaZen.",
+      "documentRecipientEmailInvalid": "L’ospite non ha un indirizzo e-mail a cui si possa scrivere (manca, non è valido o è un indirizzo di prova): non è stato mandato niente. Correggilo nella prenotazione e riprova.",
       "documentRuleNotConfigured": "Mancano le regole fiscali di questo documento (aliquote e tipo di documento): completa la configurazione della fatturazione.",
       "fatturapaXmlInvalid": "Il file della fattura elettronica non è valido: controlla i dati di chi emette e di chi riceve il documento.",
       "guestUnreachable": "L'ospite non ha un indirizzo email registrato: non abbiamo inviato nulla.",
@@ -9398,6 +9401,23 @@
       "done": "Bozza scartata.",
       "failed": "Non siamo riusciti a scartare la bozza. Riprova tra poco.",
       "title": "Scartare la bozza?"
+    },
+    "email": {
+      "consequenceAgain": "Ogni conferma manda un’altra e-mail con un nuovo link: quelli già inviati funzionano fino alla loro scadenza.",
+      "consequenceReal": "L’e-mail va a una persona vera, all’indirizzo lasciato nella prenotazione.",
+      "description": "L’ospite della prenotazione riceve un’e-mail con il link per aprire e scaricare {{document}}. Il documento non è allegato.",
+      "failed": "Non siamo riusciti a mettere in coda l’e-mail. Riprova tra poco.",
+      "queued": "E-mail in coda: parte a breve. Il link vale fino al {{date}}.",
+      "queuedNote": "E-mail in coda. Il link vale fino al {{date}}.",
+      "refused": "L’e-mail non è stata messa in coda: il server non ha accettato la richiesta.",
+      "resend": "Rinvia e-mail",
+      "resendConfirm": "Rinvia l’e-mail",
+      "resendLabel": "Rinvia al cliente l’e-mail di {{document}}",
+      "resendTitle": "Rinviare l’e-mail al cliente?",
+      "send": "Invia al cliente",
+      "sendConfirm": "Invia l’e-mail",
+      "sendLabel": "Invia {{document}} al cliente per e-mail",
+      "sendTitle": "Inviare il documento al cliente?"
     },
     "issue": {
       "confirm": "Emetti",
@@ -23126,6 +23146,7 @@
   "publicFiscalDocument": {
     "description": "Qui trovi il riepilogo del documento che hai ricevuto. Scarica il PDF per conservarlo.",
     "download": "Scarica il PDF",
+    "downloadFailed": "Non siamo riusciti a scaricare il PDF: controlla la connessione e riprova.",
     "invalid": {
       "description": "Questo link non è valido o è scaduto. Chiedi un nuovo invio alla struttura.",
       "title": "Link non valido o scaduto"
@@ -23135,6 +23156,10 @@
       "invoice": "Fattura",
       "other": "Documento",
       "receipt": "Ricevuta"
+    },
+    "loadFailed": {
+      "description": "In questo momento non riusciamo a caricare il documento: può essere la connessione o un problema nostro. Riprova tra poco.",
+      "title": "Non riusciamo a caricare il documento"
     },
     "loading": "Carico il documento…",
     "noCurrency": "La valuta non è indicata nel documento: l'importo è mostrato senza simbolo.",

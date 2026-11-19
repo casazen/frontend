@@ -1777,12 +1777,15 @@
       "documentBookingNotDirect": "This document is not linked to a booking, so it cannot be issued from here.",
       "documentConfirmationRequired": "Your confirmation is needed to issue the document: try again.",
       "documentDraftOutdated": "The draft was made with rules or data that have changed since. Press «Refresh» on the draft, check the amounts and then issue it again.",
+      "documentEmailNotSent": "The e-mail did not go out: the sending service is not available right now and nothing was sent. Try again in a moment.",
       "documentInvoiceDataMissing": "The details of who receives the document are missing: complete them in the invoicing details of the booking.",
       "documentIssueFailed": "The document was not issued because of a problem on our side: it is still a draft, try again in a moment.",
       "documentIssuerConflict": "Someone else has already issued the document of this booking: CasaZen does not issue a second one.",
       "documentNotCreditable": "A credit note can only be made of an invoice or a receipt that was already issued.",
       "documentNotDraft": "The document is no longer a draft. Refresh the list.",
+      "documentNotIssued": "Only a document that was already issued is sent to the customer: a draft, or a discarded draft, is not.",
       "documentReadOnly": "This document is read-only: CasaZen did not issue it.",
+      "documentRecipientEmailInvalid": "The guest has no e-mail address we can write to (it is missing, not valid, or a test address): nothing was sent. Fix it in the booking and try again.",
       "documentRuleNotConfigured": "The tax rules of this document (rates and kind of document) are missing: complete the invoicing setup.",
       "fatturapaXmlInvalid": "The electronic invoice file is not valid: check the details of who issues and who receives the document.",
       "guestUnreachable": "The guest has no e-mail address on file: nothing was sent.",
@@ -9398,6 +9401,23 @@
       "done": "Draft discarded.",
       "failed": "We could not discard the draft. Try again in a moment.",
       "title": "Discard the draft?"
+    },
+    "email": {
+      "consequenceAgain": "Every confirmation sends one more e-mail with a new link: the ones already sent keep working until they expire.",
+      "consequenceReal": "The e-mail goes to a real person, at the address left in the booking.",
+      "description": "The guest of the booking gets an e-mail with a link to open and download {{document}}. The document is not attached.",
+      "failed": "We could not queue the e-mail. Try again in a moment.",
+      "queued": "E-mail queued: it goes out shortly. The link works until {{date}}.",
+      "queuedNote": "E-mail queued. The link works until {{date}}.",
+      "refused": "The e-mail was not queued: the server did not accept the request.",
+      "resend": "Resend e-mail",
+      "resendConfirm": "Send the e-mail again",
+      "resendLabel": "Send the e-mail of {{document}} to the customer again",
+      "resendTitle": "Send the e-mail to the customer again?",
+      "send": "Send to customer",
+      "sendConfirm": "Send the e-mail",
+      "sendLabel": "E-mail {{document}} to the customer",
+      "sendTitle": "Send the document to the customer?"
     },
     "issue": {
       "confirm": "Issue",
@@ -23126,6 +23146,7 @@
   "publicFiscalDocument": {
     "description": "Here is the summary of the document you received. Download the PDF to keep it.",
     "download": "Download the PDF",
+    "downloadFailed": "We could not download the PDF. Check your connection and try again.",
     "invalid": {
       "description": "This link is not valid or has expired. Ask the property to send it again.",
       "title": "Link not valid or expired"
@@ -23135,6 +23156,10 @@
       "invoice": "Invoice",
       "other": "Document",
       "receipt": "Receipt"
+    },
+    "loadFailed": {
+      "description": "We cannot load the document right now: it may be your connection or a problem on our side. Please try again shortly.",
+      "title": "We cannot load the document"
     },
     "loading": "Loading the document…",
     "noCurrency": "The currency is not stated in the document: the amount is shown without a symbol.",
