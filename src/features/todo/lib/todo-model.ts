@@ -78,6 +78,10 @@ const TYPE_KEYS: Record<string, TypeKeys> = {
   // The stay of a company tenant in the property of a private owner (E18/F01/US03/T01, NF-117, ⚖ I7): about the booking, and a person decides whether it stays a short let (the withholding) or not. The reason is the fixed
   // sentence of the server with the two readings of the rule; «Fallo ora» opens the dialog of the decision.
   CompanyTenantDecision: { titleKey: 'activity.todo.type.CompanyTenantDecision.title', whyKey: 'activity.todo.type.CompanyTenantDecision.why' },
+  // The self-billed invoices (TD17) of the agency (FIX/BE-TD17-ALERTS): a TD17 the SDI rejected (it counts as not issued, and has no correction yet), and the drafts of a month made by the monthly run, to check and issue.
+  // Both are about the organization, never a property, and the server lists them only to who holds `agency.invoice.manage`; «Fallo ora» opens the page of the self-billed invoices (`ReviewSelfBilling`).
+  SelfBillingRejected: { titleKey: 'activity.todo.type.SelfBillingRejected.title', whyKey: 'activity.todo.type.SelfBillingRejected.why' },
+  SelfBillingDraftsToReview: { titleKey: 'activity.todo.type.SelfBillingDraftsToReview.title', whyKey: 'activity.todo.type.SelfBillingDraftsToReview.why' },
 };
 
 const UNKNOWN_TYPE_KEYS: TypeKeys = { titleKey: 'activity.todo.type.unknown.title', whyKey: 'activity.todo.type.unknown.why' };
