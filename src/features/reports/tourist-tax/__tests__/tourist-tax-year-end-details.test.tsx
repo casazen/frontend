@@ -7,7 +7,7 @@ import i18n from '@/i18n/config';
 import axios from '@/lib/axios';
 import { expectNoAxeViolations } from '@/test/axe';
 import { freezeClock, NOON_UTC } from '@/test/clock';
-import type { TicinoYearlyCount, TouristTaxAgentAccount, TouristTaxDeclaration } from '@/types';
+import type { TicinoYearlyCount, TouristTaxAgentAccount, TouristTaxDeclaration, TouristTaxSummary } from '@/types';
 import { TouristTaxYearEndPage } from '../tourist-tax-year-end-page';
 import {
   agentAccountOf,
@@ -43,6 +43,8 @@ const SUMMARY_PATH = '/tourist-tax/summary';
 type Params = { params?: Record<string, string> };
 
 interface Served {
+  /** The summary of the year, the Italian figures at the top of the page, when a test gives its own. */
+  summary?: (year: number) => TouristTaxSummary;
   declaration?: TouristTaxDeclaration;
   account?: (by: 'month' | 'quarter') => TouristTaxAgentAccount;
   ticino?: TicinoYearlyCount;
@@ -52,7 +54,7 @@ interface Served {
 function serve(served: Served = {}) {
   get.mockImplementation(async (path: string, config?: Params) => {
     const params = config?.params;
-    if (path === SUMMARY_PATH) return { status: 200, data: summaryOf(Number(params?.from.slice(0, 4))), headers: {} };
+    if (path === SUMMARY_PATH) return { status: 200, data: (served.summary ?? summaryOf)(Number(params?.from.slice(0, 4))), headers: {} };
     if (params?.format !== 'json') return { status: 200, data: new Blob(['a;b'], { type: 'text/csv' }), headers: {} };
     const kind = path.split('/')[4];
     const by = params.by === 'quarter' ? 'quarter' : 'month';
@@ -206,6 +208,31 @@ describe('the declaration to the comuni on screen (money rule: the figures of th
     expect(total).not.toHaveTextContent('44.345,50');
   });
 
+  it('YearEndFigures_Totals_AreTheServers_NotTheSumOfTheComuni', async () => {
+    const full = summaryOf(2026);
+    const milano = full.comuni[0]!;
+    // Two comuni that add up to 14 nights, 44.345,50 due, 32.000,00 remitted and 12.345,50 left, and totals that do not: the figures at the top say what the server sent, and the note of an incomplete amount follows the
+    // server's own count of the stays with no tax recorded.
+    const roma = { ...milano, comune: 'Roma', nights: 5, owed: 12000, owedCents: 1200000, paid: 12000, paidCents: 1200000, balance: 0, balanceCents: 0, status: 'Paid' as const };
+    serve({
+      summary: (year) =>
+        summaryOf(year, {
+          comuni: [milano, roma],
+          total: { ...full.total, nights: 98, owed: 99999.99, owedCents: 9999999, paid: 11111.11, paidCents: 1111111, balance: -0.05, balanceCents: -5, staysWithoutAmount: 0 },
+        }),
+    });
+    renderPage();
+
+    await screen.findByTestId('year-end-figures');
+
+    expect(screen.getByTestId('year-end-nights')).toHaveTextContent('98');
+    expect(screen.getByTestId('year-end-owed')).toHaveTextContent('99.999,99 €');
+    expect(screen.getByTestId('year-end-paid')).toHaveTextContent('11.111,11 €');
+    expect(screen.getByTestId('year-end-balance')).toHaveTextContent('-0,05 €');
+    expect(screen.getByTestId('year-end-figures')).not.toHaveTextContent('44.345,50');
+    expect(screen.queryByTestId('year-end-incomplete')).toBeNull();
+  });
+
   it.each([
     ['EUR', '32.345,50 €', '12.000,00 €'],
     ['CHF', '32.345,50 CHF', '12.000,00 CHF'],
@@ -327,6 +354,24 @@ describe('the account of the agent on screen (the figures of the server by comun
 
     expect(await screen.findByTestId('year-end-account-remittances-empty')).toHaveTextContent(label('reports.touristTax.yearEnd.account.remittances.empty', { year: 2026 }));
     expect(screen.getByTestId('year-end-account-table')).toBeInTheDocument();
+  });
+
+  it('YearEndAccount_Total_IsTheServers_NotTheSumOfTheLinesOfTheYear', async () => {
+    const account = agentAccountOf(2026);
+    // Totals that are not the sum of the lines of the year of the two comuni (44.345,50 collected, 32.000,00 remitted, 6 stays): whatever the page shows is what the server sent, and the note of an incomplete amount follows
+    // the server's own count of the stays with no tax recorded.
+    serve({ account: (by) => agentAccountOf(2026, by, { total: { ...account.total, stays: 99, nights: 98, guests: 97, owedCents: 9999999, paidCents: 1111111, balanceCents: -5, staysWithoutAmount: 0 } }) });
+    renderPage();
+
+    const total = await screen.findByTestId('year-end-account-total');
+    const [stays, nights, guests, collected, remitted, balance] = cellsOf(total);
+
+    expect([stays, nights, guests].map((cell) => cell.textContent)).toEqual(['99', '98', '97']);
+    expect(collected).toHaveTextContent('99.999,99 €');
+    expect(remitted).toHaveTextContent('11.111,11 €');
+    expect(balance).toHaveTextContent('-0,05 €');
+    expect(total).not.toHaveTextContent('44.345,50');
+    expect(within(total).queryByTestId('year-end-account-incomplete')).toBeNull();
   });
 });
 
