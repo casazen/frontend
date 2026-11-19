@@ -23,6 +23,7 @@ export async function mockOnboardingPlanScreen(page: Page) {
     await target.route('**/api/public/features', route => route.fulfill({ json: { octorateOnboarding: true, octorateConnector: true } }));
     await target.route('**/api/onboarding/plan', route => route.fulfill({ json: activation }));
     await target.route('**/api/onboarding/path', route => route.fulfill({ json: activation.path }));
+    await target.route('**/api/wizards/OnboardingActivation/draft**', route => route.fulfill({ status: 404, json: {} }));
     await target.route('**/api/octorate/connection', route => route.fulfill({ json: { status: 'Disconnected' } }));
     await target.route('**/api/orgs/me/compliance-sender', async route => {
       if (route.request().method() === 'PUT') {
