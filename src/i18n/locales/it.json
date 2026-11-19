@@ -7007,6 +7007,7 @@
       },
       "choice": {
         "istat": "Lo stesso invio si occupa anche delle statistiche regionali (ISTAT), dove richieste.",
+        "istatSeeNotice": "Per l'ISTAT vale quanto dice l'avviso qui sopra.",
         "legend": "Chi invia i dati degli ospiti alla Polizia?",
         "notAvailable": "Non ancora disponibile.",
         "now": "Adesso: {{sender}}",
@@ -7058,6 +7059,7 @@
           "lead": "Il tuo channel manager conferma che invia i dati alla Polizia.",
           "points": {
             "istat": "Lo stesso invio si occupa delle statistiche regionali (ISTAT), dove richieste.",
+            "istatSeeNotice": "Per l'ISTAT guarda l'avviso sulla tua regione: non è detto che lo invii il channel manager.",
             "send": "Ogni giorno il tuo channel manager invia alla Polizia i dati degli ospiti."
           },
           "title": "Invio automatico attivo"
@@ -7223,6 +7225,7 @@
         },
         "istat": "Statistiche ISTAT",
         "istatFollows": "Le invia lo stesso servizio, dove richieste",
+        "istatSeeNotice": "Dipende dalla tua regione: vedi l'avviso sull'ISTAT",
         "property": "Immobile",
         "switch": {
           "automaticToAutomatic": "L'invio automatico in corso verrà spento: due invii automatici insieme farebbero partire i dati due volte. Se oggi invia il tuo channel manager, spegni l'invio automatico anche nel suo pannello. Finché lo stato del nuovo invio non è «Attivo» continui a inviare tu.",
@@ -7956,6 +7959,7 @@
         "Unknown": "Controlla nel pannello del tuo channel manager che il collegamento con la Polizia sia attivo e che l'invio automatico giornaliero sia acceso, poi torna qui e controlla di nuovo."
       }
     },
+    "istatSeeNotice": "Se l'ISTAT parte dal channel manager dipende dalla tua regione: vedi l'avviso qui sotto.",
     "lastRun": "Ultimo invio automatico: {{when}}",
     "loadError": "Non riusciamo a leggere lo stato dell'invio.",
     "loading": "Leggo lo stato dell'invio…",
@@ -10587,6 +10591,7 @@
     "detail": {
       "covered": "Il tuo channel manager invia i dati ISTAT di questa regione, dopo che lo hai collegato nel suo pannello.",
       "notCovered": "I dati ISTAT di questa regione non li invia il tuo channel manager: li comunichi tu dal portale regionale.",
+      "otherSender": "Adesso l'invio di questo immobile non lo fa il channel manager: l'ISTAT della tua regione si comunica dal suo portale.",
       "toVerify": "Non sappiamo ancora se il tuo channel manager invia i dati ISTAT di questa regione: finché non è verificato non lo diamo per scontato."
     },
     "loadError": "Non riusciamo a leggere se il tuo channel manager invia l'ISTAT per la tua regione: per ora è da verificare.",
@@ -10605,6 +10610,7 @@
     "title": {
       "covered": "ISTAT: lo invia il tuo channel manager",
       "notCovered": "ISTAT: non lo invia il tuo channel manager",
+      "otherSender": "ISTAT: per questo immobile non passa dal channel manager",
       "toVerify": "ISTAT: da verificare"
     },
     "unverified": "Questi dati vengono dal nostro elenco e non sono ancora verificati."

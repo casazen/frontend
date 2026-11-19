@@ -896,6 +896,74 @@ describe('SenderWizardPage: the regional ISTAT credentials of the credentials st
     expect(screen.getByLabelText(text('questuraCredentials.fields.username'))).toHaveValue(TYPED.username);
   });
 
+  // The fixed sentences that say the same sender takes care of the ISTAT (the note of the first step, the line of the summary, the green point of the result) are said only where the table says the
+  // channel manager sends the ISTAT of the region: where it does not, or nobody verified it, they point to the notice and are never a green check.
+  const NOT_SENT: Array<[string, Partial<PropertyIstatCoverage>]> = [
+    ['ARegionTheChannelManagerDoesNotCover', { coverage: 'NotCovered', nextStep: 'ManualPortal' }],
+    ['ARegionNobodyVerified', { coverage: 'Unknown', nextStep: 'AskSupport', verifiedAt: null }],
+  ];
+
+  it.each(NOT_SENT)('SenderWizardPage_%s_PointsToTheNoticeInsteadOfSayingTheSameSenderHandlesTheIstat', async (_what, change) => {
+    vi.mocked(istatApi.getCoverage).mockResolvedValue(coverageOf(change));
+    await open();
+
+    await screen.findByTestId('istat-coverage-notice', undefined, WAIT);
+    await waitFor(() => expect(screen.getByTestId('sender-istat-note')).toHaveTextContent(text('compliance.sender.choice.istatSeeNotice')), WAIT);
+    expect(screen.getByTestId('sender-istat-note')).not.toHaveTextContent(text('compliance.sender.choice.istat'));
+
+    click('sender-option-ChannelManager');
+    await screen.findByTestId('sender-delegation-consent');
+    click('sender-delegation-consent');
+    fireEvent.click(primary());
+    await onStep('summary');
+    const summary = screen.getByTestId('sender-summary-step');
+    expect(summary).toHaveTextContent(text('compliance.sender.summary.istatSeeNotice'));
+    expect(summary).not.toHaveTextContent(text('compliance.sender.summary.istatFollows'));
+  });
+
+  it('SenderWizardPage_RegionTheChannelManagerCovers_KeepsTheFixedSentenceAboutTheIstat', async () => {
+    await open();
+
+    await screen.findByTestId('istat-coverage-notice', undefined, WAIT);
+    await waitFor(() => expect(screen.getByTestId('sender-istat-note')).toHaveTextContent(text('compliance.sender.choice.istat')), WAIT);
+  });
+
+  it('SenderWizardPage_ActivationFlagOff_KeepsTheFixedSentenceAboutTheIstatAsItWasAndAsksNothing', async () => {
+    featureFlags.octorateOnboarding = false;
+    await open();
+
+    expect(screen.getByTestId('sender-istat-note')).toHaveTextContent(text('compliance.sender.choice.istat'));
+    expect(istatApi.getCoverage).not.toHaveBeenCalled();
+  });
+
+  async function toTheResult() {
+    await open();
+    await toTheTest();
+    click('sender-test-run');
+    await waitFor(() => expect(screen.getByTestId('sender-test-state')).toHaveAttribute('data-state', 'active'), WAIT);
+    fireEvent.click(screen.getByTestId('sender-finish'));
+    const done = await screen.findByTestId('sender-wizard-done', undefined, WAIT);
+    expect(done).toHaveAttribute('data-outcome', 'active');
+    return done;
+  }
+
+  it.each(NOT_SENT)('SenderWizardPage_VerifiedSenderIn%s_DoesNotGiveTheIstatPointOfTheResultTheGreenCheck', async (_what, change) => {
+    vi.mocked(istatApi.getCoverage).mockResolvedValue(coverageOf(change));
+    const done = await toTheResult();
+
+    // The point about the police send is green (the server verified it); the one about the ISTAT points to the notice and is not.
+    expect(within(done).getByTestId('sender-done-point-send')).toHaveAttribute('data-tone', 'done');
+    await waitFor(() => expect(within(done).getByTestId('sender-done-point-istatSeeNotice')).toHaveAttribute('data-tone', 'attention'), WAIT);
+    expect(within(done).queryByTestId('sender-done-point-istat')).not.toBeInTheDocument();
+  });
+
+  it('SenderWizardPage_VerifiedSenderInARegionTheChannelManagerCovers_KeepsTheGreenIstatPointOfTheResult', async () => {
+    const done = await toTheResult();
+
+    await waitFor(() => expect(within(done).getByTestId('sender-done-point-istat')).toHaveAttribute('data-tone', 'done'), WAIT);
+    expect(within(done).queryByTestId('sender-done-point-istatSeeNotice')).not.toBeInTheDocument();
+  });
+
   it('SenderWizardPage_ActivationFlagOn_ShowsTheIstatBlockWriteOnlyUnderThePoliceCredentials', async () => {
     vi.mocked(onboardingAssistApi.getIstatCredentialsStatus).mockResolvedValue({ configured: true, configuredAt: '2026-11-10T10:30:00Z' });
     await open();

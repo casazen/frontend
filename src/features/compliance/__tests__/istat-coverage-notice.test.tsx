@@ -97,7 +97,7 @@ function wrap(children: ReactNode) {
   return { client, ...view };
 }
 
-const renderNotice = (showProof = false, options: { inWizard?: boolean } = {}) => wrap(<IstatCoverageNotice propertyId={PROPERTY_ID} showProof={showProof} {...options} />);
+const renderNotice = (showProof = false, options: { inWizard?: boolean; senderOpen?: boolean } = {}) => wrap(<IstatCoverageNotice propertyId={PROPERTY_ID} showProof={showProof} {...options} />);
 
 beforeEach(async () => {
   vi.clearAllMocks();
@@ -297,6 +297,51 @@ describe('IstatCoverageNotice: the step of the panel inside and outside a wizard
   });
 });
 
+// The coverage of the region is what the channel manager does there; who sends the ISTAT of this property is another word (`istatSender`): a property whose ISTAT is sent by the host or by CasaZen is
+// never told «lo invia il tuo channel manager», except on the first step of the wizard, where the sender is still to be chosen.
+describe('IstatCoverageNotice: it accounts for who sends the ISTAT of the property', () => {
+  const OTHER_SENDERS: Array<['Manual' | 'CasaZen']> = [['Manual'], ['CasaZen']];
+
+  it.each(OTHER_SENDERS)('IstatCoverageNotice_CoveredRegionWhoseIstatIsSentBy%s_NeverSaysTheChannelManagerSendsIt', async (sender) => {
+    vi.mocked(istatApi.getCoverage).mockResolvedValue(coverageOf({ istatSender: sender }));
+    renderNotice();
+
+    const notice = await screen.findByTestId('istat-coverage-notice');
+    expect(notice).toHaveAttribute('data-coverage', 'otherSender');
+    expect(notice).toHaveTextContent(text('istatCoverage.title.otherSender'));
+    expect(notice).not.toHaveTextContent(text('istatCoverage.title.covered'));
+    expect(notice).not.toHaveTextContent(text('istatCoverage.detail.covered'));
+    // No step of the panel and no request to support (both are about linking the channel manager): the guide of the portal is what there is.
+    expect(screen.queryByTestId('istat-coverage-panel-step')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('assist-request-button')).not.toBeInTheDocument();
+    expect(within(notice).getByTestId('istat-coverage-portal')).toHaveAttribute('href', 'https://portale.example.com/guida');
+  });
+
+  it('IstatCoverageNotice_IstatSentByTheHostAndNoPortalStated_OffersNoActionAtAll', async () => {
+    vi.mocked(istatApi.getCoverage).mockResolvedValue(coverageOf({ istatSender: 'Manual', portalUrl: null }));
+    renderNotice();
+
+    const notice = await screen.findByTestId('istat-coverage-notice');
+    expect(notice).toHaveAttribute('data-coverage', 'otherSender');
+    expect(notice.querySelector('a[href]')).toBeNull();
+    expect(screen.queryByTestId('assist-request-button')).not.toBeInTheDocument();
+  });
+
+  it('IstatCoverageNotice_FirstStepOfTheWizardWhereTheSenderIsToBeChosen_TellsWhatTheChannelManagerDoesWhoeverSendsToday', async () => {
+    vi.mocked(istatApi.getCoverage).mockResolvedValue(coverageOf({ istatSender: 'Manual' }));
+    renderNotice(false, { inWizard: true, senderOpen: true });
+
+    expect(await screen.findByTestId('istat-coverage-notice')).toHaveAttribute('data-coverage', 'covered');
+  });
+
+  it('IstatCoverageNotice_SenderThisVersionDoesNotKnow_IsToVerifyAndNeverCovered', async () => {
+    vi.mocked(istatApi.getCoverage).mockResolvedValue(coverageOf({ istatSender: 'Somebody' as never }));
+    renderNotice();
+
+    expect(await screen.findByTestId('istat-coverage-notice')).toHaveAttribute('data-coverage', 'toVerify');
+  });
+});
+
 describe('IstatCoverageNotice: flag, property and failed reads', () => {
   it('IstatCoverageNotice_ActivationFlagOff_DrawsNothingAndAsksNothing', async () => {
     session.flags = { octorateOnboarding: false };
@@ -411,8 +456,54 @@ describe('IstatCoverageNotice: on the page of the property', () => {
     session.flags = { octorateOnboarding: false };
     wrap(<ConnectionHealthPanel propertyId={PROPERTY_ID} timeZone="Europe/Rome" />);
 
-    await screen.findByTestId('connection-health-Istat');
+    // The row of the ISTAT is what the state of the police connection says, as it was.
+    expect(await screen.findByTestId('connection-health-Istat')).toHaveAttribute('data-state', 'Active');
     expect(screen.queryByTestId('istat-coverage-notice')).not.toBeInTheDocument();
     expect(istatApi.getCoverage).not.toHaveBeenCalled();
+  });
+});
+
+// The row of the ISTAT of the panel is computed from the state of the police connection alone: it says «Attivo – il tuo channel manager invia i dati» whatever the region. It may only say so
+// where the table says the channel manager sends the ISTAT; otherwise it points to the notice below and is never green.
+describe('ConnectionHealthPanel: the row of the ISTAT says «Attivo» only where the table says the channel manager sends it', () => {
+  const NOT_SENT: Array<[string, Partial<PropertyIstatCoverage>]> = [
+    ['ARegionTheChannelManagerDoesNotCover', { coverage: 'NotCovered', nextStep: 'ManualPortal' }],
+    ['ARegionNobodyVerified', { coverage: 'Unknown', nextStep: 'AskSupport', verifiedAt: null }],
+    ['AnIstatSentByTheHost', { istatSender: 'Manual' }],
+  ];
+
+  it.each(NOT_SENT)('ConnectionHealthPanel_%s_NeverGivesTheIstatRowTheGreenActiveAndPointsToTheNotice', async (_what, change) => {
+    vi.mocked(istatApi.getCoverage).mockResolvedValue(coverageOf(change));
+    wrap(<ConnectionHealthPanel propertyId={PROPERTY_ID} timeZone="Europe/Rome" />);
+
+    const panel = await screen.findByTestId('connection-health-panel');
+    await within(panel).findByTestId('istat-coverage-notice');
+    const row = within(panel).getByTestId('connection-health-Istat');
+    expect(row).toHaveAttribute('data-state', 'Unknown');
+    expect(row).toHaveTextContent(text('connectionHealth.istatSeeNotice'));
+    expect(row).not.toHaveTextContent(text('connectionHealth.state.Active'));
+    expect(row).not.toHaveTextContent(text('connectionHealth.sender.ChannelManager'));
+    expect(within(panel).queryByTestId('connection-health-Istat-state')).not.toBeInTheDocument();
+    // The police row keeps what the connection says.
+    expect(within(panel).getByTestId('connection-health-Alloggiati')).toHaveAttribute('data-state', 'Active');
+  });
+
+  it('ConnectionHealthPanel_CoverageReadFails_DoesNotGiveTheIstatRowTheGreenActiveEither', async () => {
+    vi.mocked(istatApi.getCoverage).mockRejectedValue(problem(500));
+    wrap(<ConnectionHealthPanel propertyId={PROPERTY_ID} timeZone="Europe/Rome" />);
+
+    const panel = await screen.findByTestId('connection-health-panel');
+    await within(panel).findByTestId('istat-coverage-error');
+    expect(within(panel).getByTestId('connection-health-Istat')).toHaveAttribute('data-state', 'Unknown');
+    expect(within(panel).queryByTestId('connection-health-Istat-state')).not.toBeInTheDocument();
+  });
+
+  it('ConnectionHealthPanel_RegionTheChannelManagerCovers_KeepsTheRowAsTheStateOfTheConnectionSaysIt', async () => {
+    wrap(<ConnectionHealthPanel propertyId={PROPERTY_ID} timeZone="Europe/Rome" />);
+
+    const panel = await screen.findByTestId('connection-health-panel');
+    await within(panel).findByTestId('istat-coverage-notice');
+    await waitFor(() => expect(within(panel).getByTestId('connection-health-Istat')).toHaveAttribute('data-state', 'Active'));
+    expect(within(panel).getByTestId('connection-health-Istat-state')).toHaveTextContent(text('connectionHealth.state.Active'));
   });
 });

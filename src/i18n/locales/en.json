@@ -7007,6 +7007,7 @@
       },
       "choice": {
         "istat": "The same sender also handles the regional statistics (ISTAT), where required.",
+        "istatSeeNotice": "For the ISTAT, what the notice above says applies.",
         "legend": "Who sends the guests' data to the police?",
         "notAvailable": "Not available yet.",
         "now": "Now: {{sender}}",
@@ -7058,6 +7059,7 @@
           "lead": "Your channel manager confirms that it sends the data to the police.",
           "points": {
             "istat": "The same sender handles the regional statistics (ISTAT), where required.",
+            "istatSeeNotice": "For the ISTAT, see the notice about your region: the channel manager may not send it.",
             "send": "Every day your channel manager sends the guests' data to the police."
           },
           "title": "Automatic sending is active"
@@ -7223,6 +7225,7 @@
         },
         "istat": "ISTAT statistics",
         "istatFollows": "The same service sends them, where required",
+        "istatSeeNotice": "It depends on your region: see the ISTAT notice",
         "property": "Property",
         "switch": {
           "automaticToAutomatic": "The current automatic sending will be switched off: two automatic senders at once would send the data twice. If your channel manager sends today, switch its automatic sending off in its panel too. Until the state of the new sender is «Active» you keep sending it yourself.",
@@ -7956,6 +7959,7 @@
         "Unknown": "Check in the panel of your channel manager that the connection with the police is active and that the daily automatic submission is on, then come back here and check again."
       }
     },
+    "istatSeeNotice": "Whether the channel manager sends the ISTAT depends on your region: see the notice below.",
     "lastRun": "Last automatic submission: {{when}}",
     "loadError": "We couldn't read the state of the submission.",
     "loading": "Reading the state of the submission…",
@@ -10587,6 +10591,7 @@
     "detail": {
       "covered": "Your channel manager sends the ISTAT data of this region, once you have connected it in its panel.",
       "notCovered": "Your channel manager does not send the ISTAT data of this region: you send it yourself from the regional portal.",
+      "otherSender": "Right now the sending of this property is not done by the channel manager: the ISTAT of your region is communicated through its portal.",
       "toVerify": "We do not know yet whether your channel manager sends the ISTAT data of this region: until it is verified we do not take it for granted."
     },
     "loadError": "We cannot read whether your channel manager sends the ISTAT for your region: for now it is to be verified.",
@@ -10605,6 +10610,7 @@
     "title": {
       "covered": "ISTAT: your channel manager sends it",
       "notCovered": "ISTAT: your channel manager does not send it",
+      "otherSender": "ISTAT: for this property it does not go through the channel manager",
       "toVerify": "ISTAT: to be verified"
     },
     "unverified": "This data comes from our list and is not verified yet."

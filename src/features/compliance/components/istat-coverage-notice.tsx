@@ -15,7 +15,7 @@ import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { todayInRome } from '@/lib/stay-dates';
 import { useIstatCoverage } from '@/queries/use-istat-regions';
 import { formatPeriod, listedMonths } from '../lib/archive-model';
-import { coverageShown, deadlineShown, isVerified, noticeActionOf, portalAddress, regionShown } from '../lib/istat-coverage-model';
+import { deadlineShown, isVerified, noticeActionOf, noticeShown, portalAddress, regionShown } from '../lib/istat-coverage-model';
 
 /** The permission of the guided step of the panel and of the wizard that leads to it: whoever may not write the property is not offered the link (the step is also the organization administrator's). */
 const PANEL_STEP_PERMISSION = 'property.write';
@@ -32,6 +32,11 @@ interface IstatCoverageNoticeProps {
    * step is told in words and no link leaves the wizard. The request to support and the guide of the regional portal (another tab) stay.
    */
   inWizard?: boolean;
+  /**
+   * The first step of the wizard, where the sender is still to be chosen: the notice tells what the channel manager does in the region, whoever sends the ISTAT today. Everywhere else it
+   * accounts for who sends it: a property whose ISTAT is sent by the host or by CasaZen is never told «lo invia il tuo channel manager».
+   */
+  senderOpen?: boolean;
 }
 
 /**
@@ -42,13 +47,13 @@ interface IstatCoverageNoticeProps {
  * where it also leads to the upload of the proof of the month. It never names the channel manager. Behind the flag `octorateOnboarding`, like the endpoint: with the flag off nothing is
  * drawn and nothing is asked.
  */
-export function IstatCoverageNotice({ propertyId, showProof = false, inWizard = false }: IstatCoverageNoticeProps) {
+export function IstatCoverageNotice({ propertyId, showProof = false, inWizard = false, senderOpen = false }: IstatCoverageNoticeProps) {
   const { flags } = useFeatureFlags();
 
-  return flags.octorateOnboarding && propertyId !== '' ? <Notice propertyId={propertyId} showProof={showProof} inWizard={inWizard} /> : null;
+  return flags.octorateOnboarding && propertyId !== '' ? <Notice propertyId={propertyId} showProof={showProof} inWizard={inWizard} senderOpen={senderOpen} /> : null;
 }
 
-function Notice({ propertyId, showProof, inWizard }: Required<IstatCoverageNoticeProps>) {
+function Notice({ propertyId, showProof, inWizard, senderOpen }: Required<IstatCoverageNoticeProps>) {
   const { t, i18n } = useTranslation();
   const { contexts, hasPermission } = useWorkspace();
   const coverage = useIstatCoverage(propertyId);
@@ -86,7 +91,7 @@ function Notice({ propertyId, showProof, inWizard }: Required<IstatCoverageNotic
   // A property outside Italy has no regional flow: the screen that holds the notice says so.
   if (!data.applies) return null;
 
-  const shown = coverageShown(data);
+  const shown = noticeShown(data, senderOpen);
   const region = regionShown(data);
   const deadline = deadlineShown(data);
   const action = noticeActionOf(shown, data);
@@ -145,7 +150,7 @@ function Notice({ propertyId, showProof, inWizard }: Required<IstatCoverageNotic
 
   return (
     <div className="min-w-0 space-y-2" data-testid="istat-coverage-notice" data-coverage={shown}>
-      <Alert variant={shown === 'covered' ? 'info' : 'warning'} title={t(`istatCoverage.title.${shown}`)} action={step}>
+      <Alert variant={shown === 'covered' || shown === 'otherSender' ? 'info' : 'warning'} title={t(`istatCoverage.title.${shown}`)} action={step}>
         <p data-testid="istat-coverage-region">
           {region.kind === 'named'
             ? t('istatCoverage.region.named', { region: region.region, system: region.system })
