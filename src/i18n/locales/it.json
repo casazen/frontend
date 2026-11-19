@@ -10599,7 +10599,8 @@
     "portalMissing": "L'indirizzo del portale della tua regione non è ancora indicato.",
     "proof": {
       "action": "Carica la prova ISTAT di {{month}}",
-      "lead": "Ogni mese si conserva la prova che i dati sono stati comunicati."
+      "lead": "Ogni mese si conserva la prova che i dati sono stati comunicati.",
+      "open": "Apri l'archivio delle prove di {{month}}"
     },
     "region": {
       "named": "La tua regione ({{region}}) usa {{system}}.",

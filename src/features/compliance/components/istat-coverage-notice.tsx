@@ -9,7 +9,7 @@ import { AssistRequestButton } from '@/features/onboarding/components/assist-req
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getHttpStatus } from '@/lib/api-errors';
-import { complianceActionRoute } from '@/lib/compliance-routes';
+import { COMPLIANCE_ACTION_TARGETS, complianceActionRoute } from '@/lib/compliance-routes';
 import { panelStepPath } from '@/lib/onboarding-panel';
 import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { todayInRome } from '@/lib/stay-dates';
@@ -147,6 +147,8 @@ function Notice({ propertyId, showProof, inWizard, senderOpen }: Required<IstatC
   // The proof of the month that is over: the existing upload of the archive, opened on the ISTAT proof of this property and that month.
   const period = listedMonths(todayInRome())[1];
   const proofRoute = showProof ? complianceActionRoute({ action: 'UploadIstatProof', propertyId, bookingId: null, period }, hasPermission) : null;
+  // The archive opens for whoever may read the bookings, but only who may submit the Alloggiati can upload to it: the others are told «Apri», as the cockpit does, never asked to upload.
+  const canUploadProof = hasPermission('short-rent', COMPLIANCE_ACTION_TARGETS.UploadIstatProof.write);
 
   return (
     <div className="min-w-0 space-y-2" data-testid="istat-coverage-notice" data-coverage={shown}>
@@ -179,7 +181,7 @@ function Notice({ propertyId, showProof, inWizard, senderOpen }: Required<IstatC
         <p className="text-sm" data-testid="istat-coverage-proof">
           {t('istatCoverage.proof.lead')}{' '}
           <Link to={proofRoute} className="inline-block min-h-11 py-2.5 font-medium text-primary-text underline underline-offset-4" data-testid="istat-coverage-proof-link">
-            {t('istatCoverage.proof.action', { month: formatPeriod(period, i18n.language) })}
+            {t(canUploadProof ? 'istatCoverage.proof.action' : 'istatCoverage.proof.open', { month: formatPeriod(period, i18n.language) })}
           </Link>
         </p>
       ) : null}

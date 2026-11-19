@@ -417,13 +417,27 @@ describe('IstatCoverageNotice: on the page of the property', () => {
     // Only the clock: the timers stay real, so the page and the queries settle as they do.
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(new Date('2026-11-15T10:00:00Z'));
+    // Who may submit the Alloggiati is who may upload to the archive.
+    session.permissions = [...session.permissions, 'alloggiati.submit'];
     renderNotice(true);
 
     const link = await screen.findByTestId('istat-coverage-proof-link');
     expect(link).toHaveAttribute('href', `/app/short-rent/alloggiati/reports?kind=IstatProof&property=${PROPERTY_ID}&period=2026-10`);
-    expect(link).toHaveTextContent('ottobre 2026');
+    expect(link).toHaveTextContent(text('istatCoverage.proof.action', { month: 'ottobre 2026' }));
     // The proof is offered in every state of the coverage: also when the region is to verify.
     expect(screen.getByTestId('istat-coverage-proof')).toHaveTextContent(text('istatCoverage.proof.lead'));
+  });
+
+  it('IstatCoverageNotice_ProofForWhoMayOpenTheArchiveButNotUploadToIt_IsToldOpenAndNeverUpload', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-11-15T10:00:00Z'));
+    // `booking.read` opens the archive; without `alloggiati.submit` the page has no upload (the default permissions of these tests).
+    renderNotice(true);
+
+    const link = await screen.findByTestId('istat-coverage-proof-link');
+    expect(link).toHaveAttribute('href', `/app/short-rent/alloggiati/reports?kind=IstatProof&property=${PROPERTY_ID}&period=2026-10`);
+    expect(link).toHaveTextContent(text('istatCoverage.proof.open', { month: 'ottobre 2026' }));
+    expect(link).not.toHaveTextContent(text('istatCoverage.proof.action', { month: 'ottobre 2026' }));
   });
 
   it('IstatCoverageNotice_WithoutTheProofProp_OffersNoUploadLikeTheWizard', async () => {

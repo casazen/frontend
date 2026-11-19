@@ -10599,7 +10599,8 @@
     "portalMissing": "The address of the portal of your region is not stated yet.",
     "proof": {
       "action": "Upload the ISTAT proof of {{month}}",
-      "lead": "Each month the proof that the data was sent is kept."
+      "lead": "Each month the proof that the data was sent is kept.",
+      "open": "Open the proof archive for {{month}}"
     },
     "region": {
       "named": "Your region ({{region}}) uses {{system}}.",
