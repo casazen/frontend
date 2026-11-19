@@ -31282,13 +31282,14 @@
     "loadErrorCurrency": "Impossibile caricare i pagamenti in {{currency}}",
     "loading": "Caricamento bonifici...",
     "noPayouts": "Nessun pagamento da inviare in banca",
-    "noPayoutsDescription": "I pagamenti compaiono qui quando li confermi nella chiusura mensile dei proprietari.",
+    "noPayoutsDescription": "Un pagamento compare qui solo se l'hai confermato nella chiusura mensile dei proprietari, se il suo rendiconto è stato pubblicato al proprietario e se l'importo netto è maggiore di zero.",
     "notCreated": "File in {{currency}} non creato",
     "notFound": "Pagamenti non trovati",
     "notFoundPayout": "Non troviamo uno dei pagamenti scelti: l'elenco è stato aggiornato.",
     "openClose": "Vai alla chiusura mensile",
     "openOwner": "Apri i dati finanziari",
-    "payoutsHint": "I pagamenti confermati ai proprietari che non sono ancora in nessun file, per l'importo netto dopo la ritenuta. Un pagamento va in un solo file: quando lo inserisci in un file, esce da questo elenco.",
+    "payoutsCapNote": "Sono elencati al massimo {{limit}} pagamenti in {{currency}}, i più vecchi: gli altri compaiono qui quando ne metti alcuni in un file.",
+    "payoutsHint": "I pagamenti confermati ai proprietari che non sono ancora in nessun file, per l'importo netto dopo la ritenuta. Compaiono solo quelli con il rendiconto già pubblicato al proprietario e con un importo netto maggiore di zero. Un pagamento va in un solo file: quando lo inserisci in un file, esce da questo elenco.",
     "refused": {
       "description": "L'elenco riguarda i proprietari di tutta l'organizzazione e il server lo mostra solo con un accesso a tutte le strutture. Se il tuo accesso è limitato ad alcune strutture, chiedi a un amministratore di aprire questa pagina.",
       "title": "Questi pagamenti non sono disponibili per il tuo accesso"
