@@ -271,13 +271,16 @@ export async function discardSelfBilling(id: string): Promise<void> {
 /**
  * «Correggi e rimanda» (`POST api/fiscal/self-billing/{id}/correct`, no body, behind the flags of the issuance and of the sending, `agency.invoice.manage`, the whole organization): the TD17 the SDI rejected counts as not
  * issued, so it is discarded (its number stays on it for the history) and a draft that holds its series and number replaces it. Nothing is issued and nothing is sent to the SDI by it. 201 with the replacement, the detail of
- * `GET {id}` (a second call answers the same draft). The answer is `null` when the call went through but its body is not a TD17 this client can read: the correction was made, and the draft is in the list.
+ * `GET {id}` (a second call answers the same draft). Only that 201 proves the server acted: the answer is `null` when the server answered 201 but its body is not a TD17 this client can read (the correction was made,
+ * and the draft is in the list). Any other success status (a 200 with the page of the app served in place of the API, a 204) is not the answer of the endpoint: it is an `UnexpectedApiResponseError`, a call that failed, told
+ * as such and asked again (a second call answers the same draft), never as «done».
  * 404 `fiscal_document_not_found` (another organization, not a TD17, unknown; also while a flag is off, with no code), 422 `self_billing_not_correctable` (not issued and rejected, or an issued credit note), 403.
  * A 403 of a write never sends the app to the page of no access (the shared client does that for reads only): the screen that asked tells it.
  */
 export async function startSelfBillingCorrection(id: string): Promise<SelfBillingDetail | null> {
   const path = `${PATH}/${encodeURIComponent(id)}/correct`;
   const response = await axios.post<unknown>(path);
+  if (response.status !== 201) throw new UnexpectedApiResponseError(path);
   try {
     return detailOf(response.data, path);
   } catch (error) {

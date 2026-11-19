@@ -213,6 +213,38 @@ describe('the original a correction discarded is history, and the draft that rep
     expect(screen.getByTestId('self-billing-replaces')).toHaveTextContent(NUMBER);
   });
 
+  it('SelfBillingCorrection_TheDetailOfTheDiscardedOriginal_SaysItWasReplaced_HasNoActionButTheWayToItsReplacement', async () => {
+    // The answer of the correction cannot be read, so the detail stays on the invoice, which the server now holds as the original that was replaced (the same happens when another administrator corrected it).
+    let corrected = false;
+    list.mockImplementation(async () => (corrected ? [original(), replacement()] : [rejected()]));
+    read.mockImplementation(async (id) => detail(id === REPLACEMENT_ID ? replacement() : corrected ? original() : rejected()));
+    correct.mockImplementation(async () => {
+      corrected = true;
+      return null;
+    });
+    renderPage();
+
+    fireEvent.click(within(await rowOf(REJECTED_ID)).getByTestId('self-billing-row-open'));
+    const { confirm } = await openCorrection(await screen.findByTestId('self-billing-correct'));
+    fireEvent.click(confirm);
+
+    const replaced = await screen.findByTestId('self-billing-replaced');
+    expect(toast.warning).toHaveBeenCalledWith(i18n.t('selfBilling.correct.unreadable'));
+    expect(replaced).toHaveTextContent(i18n.t('selfBilling.detail.replaced.title'));
+    // History, as in its row: «Sostituita», its rejection, and no action but the way to its replacement.
+    const body = screen.getByTestId('self-billing-detail');
+    expect(body).toHaveAttribute('data-status', 'Discarded');
+    expect(within(body).getByTestId('self-billing-status')).toHaveAttribute('data-status', 'Replaced');
+    expect(within(body).getByTestId('self-billing-detail-sdi')).toHaveAttribute('data-state', 'rejected');
+    for (const testId of ['self-billing-issue', 'self-billing-discard', 'self-billing-correct', 'self-billing-pdf', 'self-billing-xml']) expect(screen.queryByTestId(testId)).toBeNull();
+
+    fireEvent.click(within(replaced).getByTestId('self-billing-replacement-open'));
+    expect(await screen.findByTestId('self-billing-replaces')).toHaveTextContent(NUMBER);
+    expect(read).toHaveBeenCalledWith(REPLACEMENT_ID);
+    expect(screen.getByTestId('self-billing-detail')).toHaveAttribute('data-status', 'Draft');
+    expect(screen.queryByTestId('self-billing-replaced')).toBeNull();
+  });
+
   it('SelfBillingCorrection_TheReplacementDraft_IsIssuedWithTheIssueOfThePageAndNeverOfferedForTheDiscard', async () => {
     list.mockResolvedValue([original(), replacement()]);
     read.mockResolvedValue(detail(replacement()));

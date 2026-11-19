@@ -878,7 +878,7 @@
         },
         "SelfBillingRejected": {
           "title": "Self-billed invoice rejected by the SDI",
-          "why": "The tax office counts the self-billed invoice as not issued: open it in the self-billed invoices, see why the SDI rejected it and decide with your accountant how to put it right."
+          "why": "The tax office counts the self-billed invoice as not issued: open it in the self-billed invoices, see why the SDI rejected it and press «Correct and resend» to make it again with the same number. If it already has a credit note, your accountant decides."
         },
         "TouristTaxDeadline": {
           "title": "Tourist tax due",
@@ -32148,7 +32148,7 @@
       "done": "Draft no. {{number}} is ready: it replaces the rejected self-billed invoice. Fix what the SDI refused, then issue it.",
       "doneUnknown": "Draft ready: it replaces the rejected self-billed invoice. Fix what the SDI refused, then issue it.",
       "problem": {
-        "failed": "We could not correct the self-billed invoice: it is still the rejected one and nothing changed. Try again in a moment.",
+        "failed": "We could not confirm the correction: check the list and try again.",
         "forbidden": "You cannot correct self-billed invoices: you need to manage the invoices of the whole organization. Nothing changed.",
         "notCorrectable": "This self-billed invoice cannot be corrected from here: the SDI did not reject it, or it already has a credit note. We updated the list.",
         "notFound": "We cannot find this self-billed invoice any more: we updated the list.",
@@ -32201,6 +32201,11 @@
       "loadError": "The self-billed invoice could not be loaded.",
       "loading": "Loading the self-billed invoice…",
       "pdf": "PDF",
+      "replaced": {
+        "body": "The SDI rejected it, so for the tax office it was never issued: a self-billed invoice with the same number replaces it. This one stays in the history, with no actions.",
+        "open": "Open the replacement",
+        "title": "Replaced by another self-billed invoice"
+      },
       "replaces": {
         "body": "The SDI rejected it, so for the tax office it was never issued. This draft keeps the same number and cannot be discarded: fix what the SDI refused and issue it.",
         "title": "Replaces self-billed invoice no. {{number}}",

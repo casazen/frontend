@@ -878,7 +878,7 @@
         },
         "SelfBillingRejected": {
           "title": "Autofattura scartata dallo SDI",
-          "why": "Per il fisco l'autofattura non risulta emessa: aprila tra le autofatture, guarda perché lo SDI l'ha scartata e decidi con il commercialista come rimediare."
+          "why": "Per il fisco l'autofattura non risulta emessa: aprila tra le autofatture, guarda perché lo SDI l'ha scartata e premi «Correggi e rimanda» per rifarla con lo stesso numero. Se ha già una nota di credito, decide il commercialista."
         },
         "TouristTaxDeadline": {
           "title": "Imposta di soggiorno in scadenza",
@@ -32148,7 +32148,7 @@
       "done": "Bozza n. {{number}} pronta: sostituisce l’autofattura scartata. Correggi ciò che lo SDI ha rifiutato e poi emettila.",
       "doneUnknown": "Bozza pronta: sostituisce l’autofattura scartata. Correggi ciò che lo SDI ha rifiutato e poi emettila.",
       "problem": {
-        "failed": "Non siamo riusciti a correggere l’autofattura: è ancora quella scartata e non è cambiato niente. Riprova tra poco.",
+        "failed": "Non siamo riusciti a confermare la correzione: controlla l’elenco e riprova.",
         "forbidden": "Non puoi correggere le autofatture: serve poter gestire le fatture di tutta l’organizzazione. Non è cambiato niente.",
         "notCorrectable": "Questa autofattura non si può correggere da qui: lo SDI non l’ha scartata, oppure ha già una nota di credito. Abbiamo aggiornato l’elenco.",
         "notFound": "Non troviamo più questa autofattura: abbiamo aggiornato l’elenco.",
@@ -32201,6 +32201,11 @@
       "loadError": "Impossibile caricare l’autofattura.",
       "loading": "Carico l’autofattura…",
       "pdf": "PDF",
+      "replaced": {
+        "body": "Lo SDI l’ha scartata, quindi per il fisco non è mai stata emessa: la sostituisce un’autofattura con lo stesso numero. Questa resta nello storico, senza azioni.",
+        "open": "Apri la sostitutiva",
+        "title": "Sostituita da un’altra autofattura"
+      },
       "replaces": {
         "body": "Lo SDI l’ha scartata, quindi per il fisco non è mai stata emessa. Questa bozza tiene lo stesso numero e non si può scartare: correggi ciò che lo SDI ha rifiutato ed emettila.",
         "title": "Sostituisce l’autofattura n. {{number}}",

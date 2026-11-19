@@ -188,7 +188,7 @@ function SelfBillingBody() {
       {generation ? <GenerationReport generation={generation} /> : null}
       {content}
 
-      <SelfBillingDrawer id={openId} onClose={() => setOpenId(null)} mayCorrect={mayCorrect} onCorrect={setCorrecting} onRedoDrafts={redoDrafts} />
+      <SelfBillingDrawer id={openId} onClose={() => setOpenId(null)} mayCorrect={mayCorrect} onCorrect={setCorrecting} onRedoDrafts={redoDrafts} onOpenReplacement={setOpenId} />
 
       {correcting !== null ? (
         <CorrectDialog
@@ -406,16 +406,20 @@ interface DrawerProps {
   mayCorrect: boolean;
   onCorrect: (item: SelfBillingListItem) => void;
   onRedoDrafts: (year: number, month: number) => void;
+  onOpenReplacement: (id: string) => void;
 }
 
-/** The detail of a TD17 in a drawer: the lines and the totals, the review before the issue and the issue, the discard of a draft, the correction of a rejected one, and for an issued one its files and its state towards the SDI. */
-function SelfBillingDrawer({ id, onClose, mayCorrect, onCorrect, onRedoDrafts }: DrawerProps) {
+/**
+ * The detail of a TD17 in a drawer: the lines and the totals, the review before the issue and the issue, the discard of a draft, the correction of a rejected one, and for an issued one its files and its state towards the SDI.
+ * The original a correction discarded is history here too: «Sostituita», with the way to its replacement and no other action.
+ */
+function SelfBillingDrawer({ id, onClose, mayCorrect, onCorrect, onRedoDrafts, onOpenReplacement }: DrawerProps) {
   const { t } = useTranslation();
   return (
     <Sheet open={id !== null} onOpenChange={(open) => !open && onClose()}>
       <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-xl" data-testid="self-billing-drawer">
         {id !== null ? (
-          <DrawerBody key={id} id={id} onClose={onClose} mayCorrect={mayCorrect} onCorrect={onCorrect} onRedoDrafts={onRedoDrafts} />
+          <DrawerBody key={id} id={id} onClose={onClose} mayCorrect={mayCorrect} onCorrect={onCorrect} onRedoDrafts={onRedoDrafts} onOpenReplacement={onOpenReplacement} />
         ) : (
           <SheetHeader>
             <SheetTitle>{t('selfBilling.detail.title')}</SheetTitle>
@@ -437,9 +441,10 @@ interface DrawerBodyProps {
   mayCorrect: boolean;
   onCorrect: (item: SelfBillingListItem) => void;
   onRedoDrafts: (year: number, month: number) => void;
+  onOpenReplacement: (id: string) => void;
 }
 
-function DrawerBody({ id, onClose, mayCorrect, onCorrect, onRedoDrafts }: DrawerBodyProps) {
+function DrawerBody({ id, onClose, mayCorrect, onCorrect, onRedoDrafts, onOpenReplacement }: DrawerBodyProps) {
   const { t, i18n } = useTranslation();
   const { month } = useOwnerFormat();
   const query = useSelfBillingDetail(id);
@@ -475,9 +480,12 @@ function DrawerBody({ id, onClose, mayCorrect, onCorrect, onRedoDrafts }: Drawer
     const issued = invoice.status === 'Issued';
     const draft = invoice.status === 'Draft';
     // A draft that holds the number of a rejected TD17 is issued, never discarded; one that is kept (nothing gives it a TD17 now) can be neither, and says why. A rejected TD17 is corrected when the server says it can be.
+    // The original a correction discarded is history, as in its row: «Sostituita», its rejection, the way to what replaces it, and no action.
     const issuable = draft && canManage && canIssueDraft(invoice);
     const discardable = draft && canManage && canDiscardDraft(invoice);
     const correctable = mayCorrect && invoice.canCorrect;
+    const original = isCorrectedOriginal(invoice);
+    const replacementId = invoice.replacedByDocumentId;
     const money2 = (amount: number) => money(amount, invoice.currency, i18n.language);
     content = (
       <div className="space-y-5" data-testid="self-billing-detail" data-status={invoice.status}>
@@ -487,8 +495,8 @@ function DrawerBody({ id, onClose, mayCorrect, onCorrect, onRedoDrafts }: Drawer
           </p>
           {hasCurrencyCode(invoice.currency) ? null : <CurrencyMissing />}
           <div className="flex flex-wrap items-center gap-2">
-            <StatusBadge status={invoice.status} />
-            {issued ? <StatePill state={sdiStateOf({ sdiStatus: invoice.sdiStatus, sdiErrorCode: null })} testId="self-billing-detail-sdi" /> : null}
+            <StatusBadge status={original ? 'Replaced' : invoice.status} />
+            {issued || original ? <StatePill state={sdiStateOf({ sdiStatus: invoice.sdiStatus, sdiErrorCode: null })} testId="self-billing-detail-sdi" /> : null}
           </div>
           <p className="break-words text-sm text-foreground/70">{t('selfBilling.detail.holder', { holder: invoice.holderName, portal: invoice.portalName })}</p>
         </div>
@@ -529,7 +537,20 @@ function DrawerBody({ id, onClose, mayCorrect, onCorrect, onRedoDrafts }: Drawer
           </Alert>
         ) : null}
         {detail.ruleVersion ? <p className="text-xs text-foreground/70">{t('selfBilling.detail.rule', { version: detail.ruleVersion })}</p> : null}
-        {invoice.keptReason !== null ? (
+        {original && replacementId !== null ? (
+          <Alert
+            variant="info"
+            title={t('selfBilling.detail.replaced.title')}
+            data-testid="self-billing-replaced"
+            action={
+              <Button type="button" size="sm" variant="outline" onClick={() => onOpenReplacement(replacementId)} data-testid="self-billing-replacement-open">
+                {t('selfBilling.detail.replaced.open')}
+              </Button>
+            }
+          >
+            {t('selfBilling.detail.replaced.body')}
+          </Alert>
+        ) : invoice.keptReason !== null ? (
           <Alert variant="warning" title={t('selfBilling.detail.kept.title')} data-testid="self-billing-kept" data-reason={invoice.keptReason}>
             {t(keptKeyOf(invoice.keptReason), { code: invoice.keptReason })}
           </Alert>

@@ -39,7 +39,10 @@ export function canDiscardDraft(item: Pick<SelfBillingListItem, 'status' | 'repl
   return item.status === 'Draft' && item.replacesDocumentId === null;
 }
 
-/** What the correction of a rejected TD17 can come back with when it does not work, each with its own words: the call that failed is the only one that can be tried again as it is. */
+/**
+ * What the correction of a rejected TD17 can come back with when it does not work, each with its own words: the call that failed is the only one that can be tried again as it is. Its words never say that nothing
+ * changed (the outcome is not known: the server may have committed before the answer was lost): they ask to check the list and try again, which is safe because a second call answers the same draft.
+ */
 export type CorrectionProblem = 'notFound' | 'unavailable' | 'notCorrectable' | 'forbidden' | 'failed';
 
 const NOT_FOUND_CODE = 'fiscal_document_not_found';
@@ -53,7 +56,8 @@ function problemCodeOf(error: unknown): string | undefined {
 /**
  * What a refusal or a failure of `POST api/fiscal/self-billing/{id}/correct` is, from its status and its code. 403: the person has not the whole organization (the app is not sent anywhere). 404 with
  * `fiscal_document_not_found`: the TD17 is not there (another organization's, not a TD17, gone); a 404 with no such code is the endpoint itself not being open (a flag is off). 422 `self_billing_not_correctable`:
- * it is not issued and rejected by the SDI any more, or it has an issued credit note. Anything else is a call that failed (a 5xx, no answer, a session that ended): nothing is known to have happened, and it can be tried again.
+ * it is not issued and rejected by the SDI any more, or it has an issued credit note. Anything else is a call that failed (a 5xx, no answer, a session that ended, a success status that is not the 201 of the endpoint): the
+ * outcome is not known, so it is told as «not confirmed» (never as «nothing changed», and never as done), the list behind it is read again, and it can be tried again.
  */
 export function correctionProblemOf(error: unknown): CorrectionProblem {
   const status = getHttpStatus(error);

@@ -80,3 +80,28 @@ describe('what the correction of a rejected TD17 comes back with when it does no
     expect(isDraftOutdated(new Error('Network Error'))).toBe(false);
   });
 });
+
+describe('the words around the correction of a rejected TD17 (the «Da fare» names the button, a call that failed never says nothing changed, a replaced original has words of its own)', () => {
+  it.each(['it', 'en'] as const)('theTodoOfARejectedTd17_NamesTheButtonThePageOffers_In_%s', (lng) => {
+    const t = i18n.getFixedT(lng);
+
+    // The «Da fare» that opens the page says what to press there: when the button is renamed the sentence follows, never the other way round.
+    expect(t('activity.todo.type.SelfBillingRejected.why')).toContain(t('selfBilling.correct.button'));
+  });
+
+  it('theWordsOfACallThatFailed_AskToCheckTheListAndNeverSayNothingChanged_BecauseTheOutcomeIsNotKnown', () => {
+    expect(it_('selfBilling.correct.problem.failed')).not.toMatch(/non è cambiato|è ancora quella/i);
+    expect(en('selfBilling.correct.problem.failed')).not.toMatch(/nothing changed|still the rejected/i);
+    expect(it_('selfBilling.correct.problem.failed')).toMatch(/elenco/i);
+    expect(en('selfBilling.correct.problem.failed')).toMatch(/list/i);
+    expect(it_('selfBilling.correct.problem.failed')).not.toBe(en('selfBilling.correct.problem.failed'));
+  });
+
+  it.each(['title', 'body', 'open'])('theWordsOfAReplacedOriginalInItsDetail_%s_AreDifferentInTheTwoLanguages', (member) => {
+    const key = `selfBilling.detail.replaced.${member}`;
+
+    expect(it_(key).length).toBeGreaterThan(5);
+    expect(en(key).length).toBeGreaterThan(5);
+    expect(it_(key)).not.toBe(en(key));
+  });
+});
