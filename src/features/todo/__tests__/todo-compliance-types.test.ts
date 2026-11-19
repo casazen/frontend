@@ -140,6 +140,8 @@ const BACKEND_TYPES = [
   'CleaningDateChanged',
   'CheckInLinkToSend',
   'CompanyTenantDecision',
+  // A message of a routine that could not go out to a guest (E05/F07/US01/T03, NF-71).
+  'ScheduledMessageIssue',
 ] as const;
 
 describe('describeTodo for every type of the backend', () => {

@@ -39,6 +39,8 @@ describe('notification model', () => {
       'checkin-link-failed',
       // E20/F03/US01/T02: the host reopened a request support closed («Non funziona»), and support closed one of the host's (verified, or declared).
       'assist-reopened', 'assist-verified', 'assist-declared',
+      // E05/F07/US01: a scheduled message of a booking was held back, failed, skipped or sent outside the send window.
+      'scheduled-message-issue',
     ];
     for (const type of backend) expect(notificationKind(type).textKey, type).not.toBe('notifications.types.generic');
   });
@@ -64,6 +66,20 @@ describe('notification model', () => {
     for (const locale of [it_, en]) {
       const sentence = lookup(locale, 'notifications.types.checkinLinkFailed');
       expect(typeof sentence).toBe('string');
+      expect(sentence as string).not.toMatch(/octorate/i);
+    }
+  });
+
+  // E05/F07/US01 (NF-71): the push of a scheduled message that needs a look is for the people who reach the property; its entity is the booking, which opens on the tab Soggiorno with the timeline of its messages.
+  it('notificationKind_ScheduledMessageIssue_SaysItInBothLanguagesWithoutTheNameOfAnySupplierAndOpensTheBooking', () => {
+    expect(KNOWN_NOTIFICATION_TYPES).toContain('scheduled-message-issue');
+    expect(notificationKind('scheduled-message-issue').textKey).toBe('notifications.types.scheduledMessageIssue');
+    expect(notificationRoute({ type: 'scheduled-message-issue', entityId: 'b-1' }, 'short-rent')).toBe('/app/short-rent/bookings/b-1');
+    expect(notificationRoute({ type: 'scheduled-message-issue', entityId: null }, 'short-rent')).toBeNull();
+    for (const locale of [it_, en]) {
+      const sentence = lookup(locale, 'notifications.types.scheduledMessageIssue');
+      expect(typeof sentence).toBe('string');
+      expect(sentence).not.toBe(lookup(locale, 'notifications.types.generic'));
       expect(sentence as string).not.toMatch(/octorate/i);
     }
   });

@@ -382,7 +382,24 @@ describe('ROUTE_MAP_BY_TYPE: the decision about a company tenant', () => {
   });
 });
 
-// Every `ActivityAction` of the backend (`Casazen.Core/Entities/Enums/ActivityAction.cs`, today 23 values): the map has an entry for each, or the action is
+// E05/F07/US02 (NF-71): a scheduled message of a booking is held back or failed. The item is about the booking and «Fallo ora» opens the page of the booking, whose tab Soggiorno lists its messages;
+// whoever cannot read the bookings is not offered a button that ends on «nessun accesso», and the id of something that is not a booking opens nothing.
+describe('ACTION_ROUTE_MAP: a scheduled message that needs a look', () => {
+  const item = { action: 'FixScheduledMessage', entityType: 'Booking', entityId: BOOKING_ID, propertyId: PROPERTY_ID as string | null };
+
+  it('todoActionRoute_FixScheduledMessage_OpensThePageOfTheBooking', () => {
+    expect(todoActionRoute(item)).toBe(`/app/short-rent/bookings/${BOOKING_ID}`);
+    expect(todoActionRoute(item, permissions(['booking.read']))).toBe(`/app/short-rent/bookings/${BOOKING_ID}`);
+  });
+
+  it('todoActionRoute_FixScheduledMessage_NeverOffersAPageThePersonCannotOpenOrTheIdOfSomethingThatIsNotABooking', () => {
+    expect(todoActionRoute(item, permissions(['property.read']))).toBeNull();
+    expect(todoActionRoute({ ...item, entityType: 'Property' })).toBeNull();
+    expect(todoActionRoute({ ...item, entityId: NO_ID })).toBeNull();
+  });
+});
+
+// Every `ActivityAction` of the backend (`Casazen.Core/Entities/Enums/ActivityAction.cs`, today 24 values): the map has an entry for each, or the action is
 // in the list of those whose page does not exist yet. An action that is in neither is a "To do" with no button that nobody noticed; the task that builds
 // the page adds the entry and takes the action out of the list (the test below fails until it does).
 const BACKEND_ACTIONS = [
@@ -409,6 +426,7 @@ const BACKEND_ACTIONS = [
   'ReviewOwnerStay',
   'RenewOwnerDocument',
   'CopyCheckInLink',
+  'FixScheduledMessage',
 ] as const;
 
 /** The actions whose page does not exist in the app yet: the mapping of the listings of the channel manager and the stays and documents of the owner portal. */

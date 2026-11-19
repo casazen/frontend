@@ -1,0 +1,443 @@
+import { useState, type ReactNode } from 'react';
+import { Link, generatePath } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { Loader2 } from 'lucide-react';
+import { PlainSection } from '@/components/shared/calm';
+import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { getManifestEntry, hasEntryPermission, isEntryFeatureEnabled } from '@/config/route-manifest';
+import { useCommercialRouteAccess } from '@/hooks/use-commercial-profile';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
+import { useWorkspace } from '@/hooks/use-workspace';
+import { getHttpStatus } from '@/lib/api-errors';
+import { messageThreadPath } from '@/lib/message-hub-routes';
+import {
+  useEditScheduledMessage,
+  useScheduledMessageIdsBeingWritten,
+  useScheduledMessages,
+  useSendScheduledMessageNow,
+  useSkipScheduledMessage,
+} from '@/queries/use-scheduled-messages';
+import type { Booking, ScheduledMessage } from '@/types';
+import { describeScheduledMessageError } from '../lib/scheduled-message-errors';
+import {
+  FIX_LABEL_KEYS,
+  channelLineOf,
+  endedReasonOf,
+  failureReasonOf,
+  formatOnPropertyClock,
+  missingCodesOf,
+  missingItemOf,
+  sortedInTimeOrder,
+  statusViewOf,
+  type FixPlace,
+} from '../lib/scheduled-messages';
+import { ScheduledMessageEditDialog } from './scheduled-message-edit-dialog';
+import { ScheduledMessageText } from './scheduled-message-text';
+
+/** The links of the app that complete what a blocked message waits for: `null` where the page does not exist for this person (no permission, a flag off, a module the account does not have). */
+type FixLinks = Record<FixPlace, string | null>;
+
+/** A link that is at least 44 px high, on a phone and on a laptop, and underlined at rest: a line of text that leads somewhere must not look like the ones that do not. */
+const LINK_CLASS =
+  'inline-flex min-h-11 items-center rounded-sm text-sm font-medium underline decoration-foreground/40 underline-offset-4 hover:decoration-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
+
+/**
+ * The pages a message that waits can be completed on, built from the routes of the app (`ROUTE_MANIFEST`) and opened only for who can open them: the same test the menu uses (the permissions of the page,
+ * its flag and the module the account has), so that a link never leads to a page that answers «nessun accesso». The tab Documenti of the booking and the tax step of its check-in are pages of this booking;
+ * the property and the routines are other pages.
+ */
+function useFixLinks(booking: Booking): FixLinks {
+  const { hasPermission } = useWorkspace();
+  const { flags } = useFeatureFlags();
+  const commercialAccess = useCommercialRouteAccess();
+
+  const pageOf = (pattern: string, params?: { id: string }): string | null => {
+    const entry = getManifestEntry(pattern);
+    if (!entry || !hasEntryPermission(entry, hasPermission) || !isEntryFeatureEnabled(entry, flags) || !commercialAccess(pattern)) return null;
+    return params ? generatePath(entry.path, params) : entry.path;
+  };
+
+  const bookingPage = pageOf('/app/short-rent/bookings/:id', { id: booking.id });
+  const checkInPage = pageOf('/app/short-rent/bookings/:id/check-in', { id: booking.id });
+  return {
+    guest: bookingPage ? `${bookingPage}?tab=guest` : null,
+    tax: checkInPage ? `${checkInPage}?step=tax` : null,
+    property: pageOf('/app/short-rent/properties/:id', { id: booking.propertyId }),
+    routines: pageOf('/app/short-rent/automations'),
+  };
+}
+
+interface BookingScheduledMessagesProps {
+  booking: Booking;
+  /** The person may change the messages (`booking.write`): without it the timeline is only read, whatever the server says each message allows. */
+  canWrite: boolean;
+}
+
+/**
+ * The messages the routines will send to the guest of this booking, in time order (E05/F07/US02, NF-71, MSG-11): when each goes out on the clock of the property, the routine that holds it,
+ * the channel it will use and its state in words (scheduled, sent with a link to the conversation, skipped by a person or by CasaZen with the reason, blocked with what it waits for and where to
+ * complete it, failed, expired, cancelled), «Modificato» when the host changed the text and «Inviato fuori orario» when it applies, and the text as it will read. For who may write the booking, «Modifica»,
+ * «Salta» and «Invia ora» on the messages the server says can still change.
+ *
+ * The caller draws it only with the flag `scheduledMessages` on and the permission `booking.read`. A failed read is an unknown state, never the list that was there before (the query keeps old data
+ * when a read fails), and a 404 is said as one.
+ */
+export function BookingScheduledMessages({ booking, canWrite }: BookingScheduledMessagesProps) {
+  const { t } = useTranslation();
+  const query = useScheduledMessages(booking.id, true);
+  const links = useFixLinks(booking);
+
+  let body: ReactNode;
+  if (query.isError) {
+    const gone = getHttpStatus(query.error) === 404;
+    body = (
+      <div role="alert" className="space-y-2" data-testid="scheduled-messages-error">
+        <p className="text-sm text-destructive">{t(gone ? 'booking.scheduledMessages.loadErrorGone' : 'booking.scheduledMessages.loadError')}</p>
+        {gone ? null : (
+          <Button variant="outline" size="sm" className="min-h-11" loading={query.isFetching} onClick={() => void query.refetch()} data-testid="scheduled-messages-retry">
+            {t('booking.scheduledMessages.retry')}
+          </Button>
+        )}
+      </div>
+    );
+  } else if (query.data === undefined) {
+    body = (
+      <p role="status" className="flex items-center gap-2 text-sm text-foreground/70" data-testid="scheduled-messages-loading">
+        <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+        {t('booking.scheduledMessages.loading')}
+      </p>
+    );
+  } else if (query.data.length === 0) {
+    body = (
+      <div className="space-y-1" data-testid="scheduled-messages-empty">
+        <p className="max-w-prose text-sm text-foreground/70">{t('booking.scheduledMessages.empty')}</p>
+        {/* The routines are where messages are switched on: the link is offered only to who may open that page, and only while the routines exist. Without it the sentence stands alone. */}
+        {links.routines ? (
+          <Link to={links.routines} className={LINK_CLASS} data-testid="scheduled-messages-routines-link">
+            {t('booking.scheduledMessages.emptyLink')}
+          </Link>
+        ) : null}
+      </div>
+    );
+  } else {
+    body = (
+      <ol role="list" aria-label={t('booking.scheduledMessages.listLabel')} className="divide-y divide-border" data-testid="scheduled-messages-list">
+        {sortedInTimeOrder(query.data).map((message) => (
+          <ScheduledMessageItem key={message.id} message={message} canWrite={canWrite} links={links} />
+        ))}
+      </ol>
+    );
+  }
+
+  return (
+    <PlainSection title={t('booking.scheduledMessages.title')} data-testid="booking-scheduled-messages">
+      {body}
+    </PlainSection>
+  );
+}
+
+/** Which of the three dialogs of a message is open. */
+type DialogKind = 'edit' | 'skip' | 'send';
+
+interface ScheduledMessageItemProps {
+  message: ScheduledMessage;
+  canWrite: boolean;
+  links: FixLinks;
+}
+
+function ScheduledMessageItem({ message, canWrite, links }: ScheduledMessageItemProps) {
+  const { t, i18n } = useTranslation();
+  const [dialog, setDialog] = useState<DialogKind | null>(null);
+  const [problem, setProblem] = useState<string | null>(null);
+  const edit = useEditScheduledMessage();
+  const skip = useSkipScheduledMessage();
+  const sendNow = useSendScheduledMessageNow();
+  // The buttons of a card wait for ANY write of that card, not only the one of the hook that pressed them: an edit that is on its way must not be crossed by a skip or a send.
+  const busy = useScheduledMessageIdsBeingWritten().has(message.id);
+
+  const view = statusViewOf(message.status);
+  const planned = formatOnPropertyClock(message.plannedAtUtc, message.timeZone, i18n.language);
+  const sentAt = formatOnPropertyClock(message.sentAt, message.timeZone, i18n.language, false);
+  const name = message.routineName.trim() || t('booking.scheduledMessages.routineUnnamed');
+  // What each button is called for a screen reader: the same words as the button, then which message it is about (the buttons of every message say the same).
+  const editLabel = t('booking.scheduledMessages.edit.actionLabel', { name, when: planned });
+  const skipLabel = t('booking.scheduledMessages.skip.actionLabel', { name, when: planned });
+  const sendLabel = t('booking.scheduledMessages.sendNow.actionLabel', { name, when: planned });
+  const ended = endedReasonOf(message);
+  const failure = message.status === 'Failed' ? failureReasonOf(message.blockedReason) : null;
+  const missing = missingCodesOf(message);
+  const channel = channelLineOf(message);
+
+  // What the server lets a person do with this message, and only for who may write the booking. The dialogs follow it: one that is open on a message that can no longer change closes with it.
+  const may = { edit: canWrite && message.canEdit, skip: canWrite && message.canSkip, send: canWrite && message.canSendNow };
+  const allowed: Record<DialogKind, boolean> = { edit: may.edit, skip: may.skip, send: may.send };
+  const activeDialog = dialog !== null && allowed[dialog] ? dialog : null;
+  const openDialog = (kind: DialogKind) => {
+    setProblem(null);
+    setDialog(kind);
+  };
+  const closeDialog = () => {
+    setProblem(null);
+    setDialog(null);
+  };
+
+  // Each write lets go of its mutation when it is over (`reset`): a hook keeps the last one it ran, with the text that was sent, for as long as the card is on the page.
+  const saveText = async (text: string | null) => {
+    setProblem(null);
+    try {
+      await edit.mutateAsync({ bookingId: message.bookingId, id: message.id, text });
+      setDialog(null);
+    } catch (error) {
+      setProblem(describeScheduledMessageError(error, t));
+    } finally {
+      edit.reset();
+    }
+  };
+
+  // A refusal is said inside the dialog, which stays open (a failed confirmation closes nothing), and again on the card when the dialog was closed while the request was on its way.
+  const confirmSkip = async () => {
+    setProblem(null);
+    try {
+      await skip.mutateAsync({ bookingId: message.bookingId, id: message.id });
+    } catch (error) {
+      setProblem(describeScheduledMessageError(error, t));
+      throw error;
+    } finally {
+      skip.reset();
+    }
+  };
+
+  const confirmSendNow = async () => {
+    setProblem(null);
+    try {
+      await sendNow.mutateAsync({ bookingId: message.bookingId, id: message.id });
+    } catch (error) {
+      setProblem(describeScheduledMessageError(error, t));
+      throw error;
+    } finally {
+      sendNow.reset();
+    }
+  };
+
+  const problemInDialog = problem ? (
+    <p role="alert" className="text-sm text-destructive" data-testid="scheduled-message-dialog-problem">
+      {problem}
+    </p>
+  ) : null;
+
+  return (
+    <li className="space-y-3 py-4 first:pt-0 last:pb-0" data-testid="scheduled-message" data-status={message.status} data-message-id={message.id}>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+        <time dateTime={message.plannedAtUtc} className="text-sm font-semibold" data-testid="scheduled-message-time">
+          {planned}
+        </time>
+        <Badge variant={view.badge} className="gap-1.5" data-testid="scheduled-message-status">
+          <view.Icon className="size-3.5" aria-hidden="true" />
+          {t(view.labelKey)}
+        </Badge>
+        {message.edited ? (
+          <Badge variant="outline" data-testid="scheduled-message-edited">
+            {t('booking.scheduledMessages.edited')}
+          </Badge>
+        ) : null}
+        {message.outsideHours ? (
+          <Badge variant="outline" data-testid="scheduled-message-outside-hours">
+            {t('booking.scheduledMessages.outsideHours')}
+          </Badge>
+        ) : null}
+      </div>
+      <p className="break-words text-sm text-foreground/70" data-testid="scheduled-message-routine">
+        {t('booking.scheduledMessages.routine', { name })}
+      </p>
+
+      {message.status === 'Sent' ? (
+        <p className="text-sm" data-testid="scheduled-message-sent">
+          {sentAt ? t('booking.scheduledMessages.sent.at', { when: sentAt }) : t('booking.scheduledMessages.sent.done')}
+          {message.sentThreadKey ? (
+            <>
+              {' '}
+              <Link to={messageThreadPath(message.sentThreadKey)} className={LINK_CLASS} data-testid="scheduled-message-conversation">
+                {t('booking.scheduledMessages.sent.openConversation')}
+              </Link>
+            </>
+          ) : null}
+        </p>
+      ) : null}
+
+      {ended ? (
+        <div className="space-y-1 text-sm" data-testid="scheduled-message-ended">
+          {/* Who ended it: a person of the team says it all with its sentence; CasaZen says so first and then why. */}
+          {message.status === 'Skipped' && !ended.byPerson ? <p className="font-medium">{t('booking.scheduledMessages.reason.bySystem')}</p> : null}
+          <p>{t(ended.reasonKey)}</p>
+          {/* A skip that landed while the send was under way: the message did go out, so it is never said that the guest will not get it. */}
+          {message.status === 'Skipped' && sentAt ? <p>{t('booking.scheduledMessages.sent.skippedAfterSend', { when: sentAt })}</p> : null}
+        </div>
+      ) : null}
+
+      {failure ? (
+        <p className="text-sm" data-testid="scheduled-message-failure">
+          {t(failure.reasonKey)}
+        </p>
+      ) : null}
+
+      {missing.length > 0 ? (
+        <div className="space-y-1" data-testid="scheduled-message-missing">
+          <p className="text-sm font-medium">{t('booking.scheduledMessages.blocked.heading')}</p>
+          <ul className="list-disc space-y-0.5 pl-5 text-sm">
+            {missing.map((code) => {
+              const item = missingItemOf(code);
+              const href = item.fix ? links[item.fix] : null;
+              return (
+                <li key={code} data-code={code}>
+                  {t(item.itemKey)}
+                  {item.fix && href ? (
+                    <>
+                      {' '}
+                      <Link to={href} className={LINK_CLASS} data-testid={`scheduled-message-fix-${item.fix}`}>
+                        {t(FIX_LABEL_KEYS[item.fix])}
+                      </Link>
+                    </>
+                  ) : null}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ) : null}
+
+      {channel ? (
+        <p className="text-sm text-foreground/70" data-testid="scheduled-message-channel">
+          {channel.reasonKey
+            ? t('booking.scheduledMessages.channel.lineNone', { reason: t(channel.reasonKey) })
+            : t('booking.scheduledMessages.channel.line', { channel: t(channel.channelKey) })}
+        </p>
+      ) : null}
+
+      {message.text ? (
+        <div className="space-y-1">
+          <p className="text-xs font-medium text-foreground/70">{t('booking.scheduledMessages.textLabel')}</p>
+          <ScheduledMessageText text={message.text} />
+        </div>
+      ) : isOpenWithoutText(message) ? (
+        <p className="text-sm text-foreground/70" data-testid="scheduled-message-no-text">
+          {t('booking.scheduledMessages.textMissing')}
+        </p>
+      ) : null}
+
+      {may.edit || may.skip || may.send ? (
+        <div className="flex flex-wrap gap-2" data-testid="scheduled-message-actions">
+          {may.edit ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="min-h-11"
+              disabled={busy}
+              aria-label={editLabel}
+              onClick={() => openDialog('edit')}
+              data-testid="scheduled-message-edit"
+            >
+              {t('booking.scheduledMessages.edit.action')}
+            </Button>
+          ) : null}
+          {may.skip ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="min-h-11"
+              disabled={busy}
+              aria-label={skipLabel}
+              onClick={() => openDialog('skip')}
+              data-testid="scheduled-message-skip"
+            >
+              {t('booking.scheduledMessages.skip.action')}
+            </Button>
+          ) : null}
+          {may.send ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="min-h-11"
+              disabled={busy}
+              aria-label={sendLabel}
+              onClick={() => openDialog('send')}
+              data-testid="scheduled-message-send-now"
+            >
+              {t('booking.scheduledMessages.sendNow.action')}
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
+
+      {problem && activeDialog === null ? (
+        <p role="alert" className="text-sm text-destructive" data-testid="scheduled-message-problem">
+          {problem}
+        </p>
+      ) : null}
+
+      {may.edit ? (
+        <ScheduledMessageEditDialog
+          message={message}
+          open={activeDialog === 'edit'}
+          onOpenChange={(open) => (open ? setDialog('edit') : closeDialog())}
+          onSave={saveText}
+          busy={busy}
+          problem={problem}
+          onProblemSeen={() => setProblem(null)}
+        />
+      ) : null}
+
+      {may.skip ? (
+        <ConfirmationDialog
+          open={activeDialog === 'skip'}
+          onOpenChange={(open) => (open ? setDialog('skip') : closeDialog())}
+          title={t('booking.scheduledMessages.skip.title')}
+          description={t('booking.scheduledMessages.skip.description', { name, when: planned })}
+          consequences={[
+            t('booking.scheduledMessages.skip.consequenceGuest'),
+            t('booking.scheduledMessages.skip.consequenceFinal'),
+            t('booking.scheduledMessages.skip.consequenceTeam'),
+          ]}
+          confirmLabel={t('booking.scheduledMessages.skip.confirm')}
+          variant="destructive"
+          isLoading={busy}
+          onConfirm={confirmSkip}
+        >
+          {problemInDialog}
+        </ConfirmationDialog>
+      ) : null}
+
+      {may.send ? (
+        <ConfirmationDialog
+          open={activeDialog === 'send'}
+          onOpenChange={(open) => (open ? setDialog('send') : closeDialog())}
+          title={t('booking.scheduledMessages.sendNow.title')}
+          description={t('booking.scheduledMessages.sendNow.description', { name, when: planned })}
+          consequences={[t('booking.scheduledMessages.sendNow.consequenceNow'), t('booking.scheduledMessages.sendNow.consequenceGuest')]}
+          confirmLabel={t('booking.scheduledMessages.sendNow.confirm')}
+          isLoading={busy}
+          onConfirm={confirmSendNow}
+        >
+          {problemInDialog ??
+            (missing.length > 0 ? (
+              <div className="space-y-1" data-testid="scheduled-message-send-now-missing">
+                <p className="text-sm font-medium">{t('booking.scheduledMessages.sendNow.stillMissing')}</p>
+                <ul className="list-disc space-y-0.5 pl-5 text-sm">
+                  {missing.map((code) => (
+                    <li key={code}>{t(missingItemOf(code).itemKey)}</li>
+                  ))}
+                </ul>
+                <p className="text-sm text-foreground/70">{t('booking.scheduledMessages.sendNow.blockedNote')}</p>
+              </div>
+            ) : null)}
+        </ConfirmationDialog>
+      ) : null}
+    </li>
+  );
+}
+
+/** A message that can still go whose text the server could not give (the template of its routine is gone): it is said, not left as an empty space. */
+function isOpenWithoutText(message: ScheduledMessage): boolean {
+  return (message.status === 'Scheduled' || message.status === 'Blocked' || message.status === 'Failed') && !message.text;
+}

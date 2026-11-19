@@ -96,7 +96,8 @@ const FISCAL_DOCUMENT = 'FiscalDocument';
  *   (epic E10), told apart by the entity (`onlyFor`): a guided step of the panel opens its own page (it finds its kind from the id of the step), a
  *   part put off or left half way, and a «Fallo per me» request, open the plan (their items know the id of a stored row, not the part). The flow to
  *   complete opens the summary of the activation (its item knows a derived id, not the flow, so the table opens on all the flows);
- * - `CopyCheckInLink`: the tab Documenti of the booking (`?tab=guest`), where the panel of the check-in link says where the link stands and has «Copia link» (E23/F01, NF-122).
+ * - `CopyCheckInLink`: the tab Documenti of the booking (`?tab=guest`), where the panel of the check-in link says where the link stands and has «Copia link» (E23/F01, NF-122);
+ * - `FixScheduledMessage`: the page of the booking, whose tab Soggiorno (the first one) holds the timeline of its scheduled messages with what a blocked one waits for and «Modifica», «Salta» and «Invia ora» (E05/F07, NF-71).
  *
  * A route filled with the id of the entity (`target: 'entity'`) names the kind of entity the item must be about (`entityType`, `Booking`
  * for the page of a booking): `ApproveAiDraft` may be about a queue item, whose id is not a booking's, so such an item gets no booking address from it (the button is left
@@ -196,6 +197,11 @@ export const ACTION_ROUTE_MAP = {
   // why it has not gone by itself and has «Copia link». The item is about the booking.
   CopyCheckInLink: {
     route: { path: '/app/short-rent/bookings/:id', target: 'entity', entityType: BOOKING, tab: 'guest' },
+  },
+  // A scheduled message of a booking is held back or failed (E05/F07/US01/T03, `ActivityAction` 120, NF-71): the page of the booking, where the tab Soggiorno lists its messages and says what the blocked
+  // one waits for, with «Modifica», «Salta» and «Invia ora». The item is about the booking (one item for each booking, shared by its blocked messages).
+  FixScheduledMessage: {
+    route: { path: '/app/short-rent/bookings/:id', target: 'entity', entityType: BOOKING },
   },
 } satisfies Record<string, TodoActionTarget>;
 
