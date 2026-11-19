@@ -46,7 +46,7 @@ export function IstatStep({ propertyId, istat, busy, onKeyDown }: IstatStepProps
         <p className="text-sm text-foreground/70">{t('compliance.sender.credentials.istat.why')}</p>
       </div>
 
-      <IstatCoverageNotice propertyId={propertyId} />
+      <IstatCoverageNotice propertyId={propertyId} inWizard />
 
       {istat.configured !== null ? (
         <p className="flex items-center gap-2 text-sm" data-testid="sender-istat-status" data-configured={istat.configured}>

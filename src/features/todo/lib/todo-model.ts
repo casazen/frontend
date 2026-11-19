@@ -63,6 +63,12 @@ const TYPE_KEYS: Record<string, TypeKeys> = {
   OwnerStayToReview: { titleKey: 'activity.todo.type.OwnerStayToReview.title', whyKey: 'activity.todo.type.OwnerStayToReview.why' },
   OwnerStaySyncFailed: { titleKey: 'activity.todo.type.OwnerStaySyncFailed.title', whyKey: 'activity.todo.type.OwnerStaySyncFailed.why' },
   OwnerDocumentExpiring: { titleKey: 'activity.todo.type.OwnerDocumentExpiring.title', whyKey: 'activity.todo.type.OwnerDocumentExpiring.why' },
+  // The owner could not be told by e-mail that a statement was published (E13/F01/US02/T02): about the version of the statement, whose page «Rendiconto» is where the agency tells the owner by hand. The statement is published
+  // whatever happens. The reason it carries is a code (`owner_statement_notice_failed`), so the words are the type's.
+  OwnerStatementNoticeFailed: {
+    titleKey: 'activity.todo.type.OwnerStatementNoticeFailed.title',
+    whyKey: 'activity.todo.type.OwnerStatementNoticeFailed.why',
+  },
   // The To do that the action «Crea attività» of a routine of the host makes (E01/F04/US01/T02, NF-21): about a booking, with the words the host wrote in the routine as its reason.
   RoutineTask: { titleKey: 'activity.todo.type.RoutineTask.title', whyKey: 'activity.todo.type.RoutineTask.why' },
   // The automatic cleaning at check-out (E24/F01/US01/T02, NF-120): the dates of a stay changed after the supplier took the cleaning, so it stays on the old day and the host decides. About the booking.
@@ -81,6 +87,7 @@ const UNKNOWN_TYPE_KEYS: TypeKeys = { titleKey: 'activity.todo.type.unknown.titl
 // Same for the kinds of entity (`EntityType` is a free string): `activity.todo.entity.<Type>` is added by the task that raises the item.
 const ENTITY_KEYS: Record<string, { labelKey: string }> = {
   Booking: { labelKey: 'activity.todo.entity.Booking' },
+  OwnerStatementVersion: { labelKey: 'activity.todo.entity.OwnerStatementVersion' },
   Property: { labelKey: 'activity.todo.entity.Property' },
 };
 

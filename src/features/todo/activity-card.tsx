@@ -22,6 +22,8 @@ export type TodoRouteTarget = 'entity' | 'property' | 'thread';
 export interface TodoRoute {
   path: string;
   target?: TodoRouteTarget;
+  /** The name of the `:param` of the page that the id of `target` fills, when it is not `:id` (`versionId` of the page of a statement). */
+  idParam?: string;
   /**
    * The kind of entity an item must be about for `target: 'entity'` to fill the page with its id (`Booking` for the page of a booking).
    * The id of an item about anything else (a queue item, a message thread) is not the id of a booking: it gets no address from this route.
@@ -74,6 +76,9 @@ const ONBOARDING_FLOW = 'OnboardingFlow';
 
 /** The `entityType` of the items about a fiscal document (`FiscalDocumentTodos.EntityType`): the id of the entity is the document. */
 const FISCAL_DOCUMENT = 'FiscalDocument';
+
+/** The `entityType` of the items about a statement of an owner (`OwnerStatementDocuments.OwnerStatementVersionEntityType`): the id of the entity is the version of the statement. */
+const OWNER_STATEMENT_VERSION = 'OwnerStatementVersion';
 
 /**
  * Where the "Do now" button of an item leads, by the `action` the server sends (ADR-026-R6): the single registry of the app. The task that
@@ -203,6 +208,12 @@ export const ACTION_ROUTE_MAP = {
   FixScheduledMessage: {
     route: { path: '/app/short-rent/bookings/:id', target: 'entity', entityType: BOOKING },
   },
+  // The owner could not be told by e-mail that a statement was published (E13/F01/US02/T02, `ActivityAction` 50, type `OwnerStatementNoticeFailed`): the statement of that version, in the Amministrazione
+  // (`/app/account/owner-close/versions/:versionId`), where the agency sees what the owner was to be told and tells the owner by hand. The item is about the version of the statement (`OwnerStatementVersion`),
+  // never a booking. The page is the one of the organization administrator (`orgBillingAdmin`, on the agency plan): anyone else gets no button, and no other page stands in for it.
+  ReviewOwnerStatement: {
+    route: { path: '/app/account/owner-close/versions/:versionId', target: 'entity', entityType: OWNER_STATEMENT_VERSION, idParam: 'versionId' },
+  },
 } satisfies Record<string, TodoActionTarget>;
 
 /**
@@ -263,7 +274,7 @@ function buildRoute(route: TodoRoute, activity: TodoRouteSubject, hasPermission?
   } else if (route.target) {
     const id = route.target === 'property' ? propertyOf(activity) : entityOf(route, activity);
     if (!id) return null;
-    path = generatePath(entry.path, { id });
+    path = generatePath(entry.path, { [route.idParam ?? 'id']: id });
   }
 
   const query = new URLSearchParams();

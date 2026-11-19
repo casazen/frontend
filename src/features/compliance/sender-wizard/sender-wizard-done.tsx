@@ -7,6 +7,7 @@ import { ErrorState } from '@/components/shared/error-state';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CONNECTION_HEALTH_SECTION } from '@/features/compliance/lib/connection-health-model';
+import { useIstatClaim } from '@/features/compliance/lib/use-istat-claim';
 import { cn } from '@/lib/utils';
 import { useSender } from '@/queries/use-property-sender';
 import { outcomeOfSender, type SenderOutcome } from './sender-wizard-model';
@@ -56,6 +57,8 @@ export function SenderWizardDone({ propertyId }: { propertyId: string }) {
   const returnTo = propertySetupReturn(params, 'compliance');
   const sender = useSender(propertyId);
   const propertyName = useSenderPropertyName(propertyId, !!sender.data);
+  // The green point about the ISTAT only where the table says the channel manager sends it for this property: otherwise it points to the notice and is never green.
+  const istatClaim = useIstatClaim(propertyId, { channelManagerSends: true });
   const titleRef = useRef<HTMLHeadingElement>(null);
   const titleId = useId();
   const whatNextId = useId();
@@ -80,7 +83,8 @@ export function SenderWizardDone({ propertyId }: { propertyId: string }) {
   }
 
   const outcome = outcomeOfSender(sender.data);
-  const { tone, points } = OUTCOMES[outcome];
+  const { tone } = OUTCOMES[outcome];
+  const points = OUTCOMES[outcome].points.map((point) => (outcome === 'active' && point.key === 'istat' && istatClaim === 'seeNotice' ? { key: 'istatSeeNotice', tone: 'attention' as const } : point));
   const { Icon, className } = DISC[tone];
   const settled = tone === 'done';
   const propertyPage = `${PROPERTIES_PATH}/${encodeURIComponent(propertyId)}`;
@@ -122,7 +126,7 @@ export function SenderWizardDone({ propertyId }: { propertyId: string }) {
           {points.map((point) => {
             const { Icon: PointIcon, className: pointClass } = POINT_ICON[point.tone];
             return (
-              <li key={point.key} className="flex min-w-0 items-start gap-2 text-sm" data-tone={point.tone}>
+              <li key={point.key} className="flex min-w-0 items-start gap-2 text-sm" data-tone={point.tone} data-testid={`sender-done-point-${point.key}`}>
                 <PointIcon aria-hidden="true" className={cn('mt-0.5 size-4 shrink-0', pointClass)} />
                 <span className="min-w-0 break-words">{t(`compliance.sender.done.${outcome}.points.${point.key}`)}</span>
               </li>

@@ -6,6 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ChoiceCard, ChoiceGroup } from '@/components/ui/choice-card';
 import { Label } from '@/components/ui/label';
 import { IstatCoverageNotice } from '@/features/compliance/components/istat-coverage-notice';
+import { useIstatClaim } from '@/features/compliance/lib/use-istat-claim';
 import type { PropertySender } from '@/types';
 import { SenderStateBadge } from '../sender-state-badge';
 import { delegationTextKey, isAutomaticSender, outcomeOfSender, senderOptions, type SenderWizardValues } from '../sender-wizard-model';
@@ -74,12 +75,13 @@ export function SenderChoiceStep({ read }: SenderChoiceStepProps) {
   const chosen = useWatch({ control, name: 'sender' });
   const options = senderOptions(read);
   const automatic = isAutomaticSender(chosen);
+  const istatClaim = useIstatClaim(read.propertyId);
 
   return (
     <div className="flex flex-col gap-6" data-testid="sender-choice-step">
       {read.source === 'OrganizationDefault' ? <Alert variant="info">{t('orgComplianceSender.inherited')} <Link className="underline underline-offset-4" to="/app/short-rent/onboarding">{t('orgComplianceSender.editAccount')}</Link></Alert> : null}
       {/* Whether the channel manager sends the ISTAT of the region of the property, said at once, before anything is asked (CHK-05 point 3). Behind the flag of the activation: with it off nothing is drawn. */}
-      <IstatCoverageNotice propertyId={read.propertyId} />
+      <IstatCoverageNotice propertyId={read.propertyId} inWizard senderOpen />
 
       <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 text-sm" data-testid="sender-current">
         <span className="text-foreground/70">
@@ -111,8 +113,9 @@ export function SenderChoiceStep({ read }: SenderChoiceStepProps) {
         </p>
       ) : null}
 
+      {/* The same sender «si occupa anche dell'ISTAT» only where the table says the channel manager sends it: otherwise the notice above is what to read (a state that is not checked is never said). */}
       <p className="break-words text-sm text-foreground/70" data-testid="sender-istat-note">
-        {t('compliance.sender.choice.istat')}
+        {istatClaim === 'seeNotice' ? t('compliance.sender.choice.istatSeeNotice') : t('compliance.sender.choice.istat')}
       </p>
     </div>
   );

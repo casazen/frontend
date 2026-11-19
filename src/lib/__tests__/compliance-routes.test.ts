@@ -129,8 +129,10 @@ describe('complianceActionRoute (CO-04, A5-09)', () => {
     expect(COMPLIANCE_ACTION_TARGETS.EnterMunicipalityTaxRate.write).toBe('property.write');
     // A tax receipt is a record of money.
     expect(COMPLIANCE_ACTION_TARGETS.DeclareTouristTax.write).toBe('payment.write');
+    // The archive of the proofs lets only who may submit the Alloggiati upload one: reading the bookings opens the page, and no more (the notice of the ISTAT asks the same permission).
+    expect(COMPLIANCE_ACTION_TARGETS.UploadIstatProof.write).toBe('alloggiati.submit');
     for (const action of COMPLIANCE_COCKPIT_ACTIONS) {
-      expect(['property.write', 'booking.write', 'payment.write']).toContain(COMPLIANCE_ACTION_TARGETS[action].write);
+      expect(['property.write', 'booking.write', 'payment.write', 'alloggiati.submit']).toContain(COMPLIANCE_ACTION_TARGETS[action].write);
     }
   });
 

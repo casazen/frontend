@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -19,6 +19,7 @@ import { OwnerAccountingError } from '@/features/owner-accounting/components/own
 import { OWNER_CLOSE_PATH, messageOf, parsePeriod, periodParam, shiftPeriod, shortId, statementPath } from '@/features/owner-accounting/owner-accounting-model';
 import { useOwnerFormat } from '@/features/owner-accounting/use-owner-format';
 import { InvoiceSettlement } from './invoice-settlement';
+import { OwnerInvoiceDrawer } from './owner-invoice-drawer';
 import { isDraft, isIssued } from './owner-invoice-model';
 import { hasNoCurrency, useInvoiceMoney } from './use-invoice-money';
 
@@ -54,6 +55,8 @@ function OwnerInvoicesBody() {
   const owners = useOwnerNames();
   const invoices = useOwnerInvoices({ period, ownerId });
   const pdf = useDownloadOwnerInvoicePdf();
+  // The invoice opened in the drawer (its lines and totals, read by its id). Only the id is kept: what the drawer shows is read, and read again, from the server.
+  const [opened, setOpened] = useState<string | null>(null);
   const header = <PageHeader title={t('ownerInvoice.page.title')} description={t('ownerInvoice.page.description')} crumbs="auto" />;
 
   const setFilter = (key: 'period' | 'owner', value: string) => {
@@ -101,6 +104,7 @@ function OwnerInvoicesBody() {
                 invoice={invoice}
                 downloading={pdf.isPending && pdf.variables?.invoiceId === invoice.id}
                 locked={pdf.isPending}
+                onOpen={() => setOpened(invoice.id)}
                 onPdf={() =>
                   pdf.mutate(
                     { invoiceId: invoice.id, fileName: `fattura-${(invoice.number ?? invoice.id).replace(/[\\/]/g, '-')}.pdf` },
@@ -126,6 +130,7 @@ function OwnerInvoicesBody() {
         onOwner={(value) => setFilter('owner', value)}
       />
       {content}
+      <OwnerInvoiceDrawer invoiceId={opened} onClose={() => setOpened(null)} />
     </div>
   );
 }
@@ -183,11 +188,13 @@ interface InvoiceRowProps {
   downloading: boolean;
   /** Some PDF is being saved: the others wait for it. */
   locked: boolean;
+  /** Opens the lines and the totals of the invoice. */
+  onOpen: () => void;
   onPdf: () => void;
 }
 
-/** One invoice: its number (a draft has none yet), owner and month, the total in its own currency, its state and how it is paid, and the PDF of an issued one. */
-function InvoiceRow({ invoice, downloading, locked, onPdf }: InvoiceRowProps) {
+/** One invoice: its number (a draft has none yet), owner and month, the total in its own currency, its state and how it is paid, the way to its lines, and the PDF of an issued one. */
+function InvoiceRow({ invoice, downloading, locked, onOpen, onPdf }: InvoiceRowProps) {
   const { t } = useTranslation();
   const { month } = useOwnerFormat();
   const money = useInvoiceMoney();
@@ -219,6 +226,17 @@ function InvoiceRow({ invoice, downloading, locked, onPdf }: InvoiceRowProps) {
         </p>
       </div>
       <div className="flex flex-wrap items-center gap-2 self-start">
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          disabled={locked}
+          onClick={onOpen}
+          data-testid="owner-invoice-row-open"
+          aria-label={t('ownerInvoice.detail.openLabel', { name: invoice.number ? t('ownerInvoice.page.row.number', { number: invoice.number }) : t('ownerInvoice.page.row.draft') })}
+        >
+          {t('ownerInvoice.detail.open')}
+        </Button>
         {isIssued(invoice) ? (
           <Button type="button" size="sm" variant="outline" loading={downloading} disabled={locked && !downloading} onClick={onPdf} data-testid="owner-invoice-row-pdf" aria-label={t('ownerInvoice.page.row.pdfLabel', { number: invoice.number ?? '' })}>
             {t('ownerInvoice.panel.pdf')}

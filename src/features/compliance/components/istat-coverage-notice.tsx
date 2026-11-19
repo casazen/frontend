@@ -9,15 +9,15 @@ import { AssistRequestButton } from '@/features/onboarding/components/assist-req
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getHttpStatus } from '@/lib/api-errors';
-import { complianceActionRoute } from '@/lib/compliance-routes';
+import { COMPLIANCE_ACTION_TARGETS, complianceActionRoute } from '@/lib/compliance-routes';
 import { panelStepPath } from '@/lib/onboarding-panel';
 import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { todayInRome } from '@/lib/stay-dates';
 import { useIstatCoverage } from '@/queries/use-istat-regions';
 import { formatPeriod, listedMonths } from '../lib/archive-model';
-import { coverageShown, deadlineShown, isVerified, noticeActionOf, portalAddress, regionShown } from '../lib/istat-coverage-model';
+import { deadlineShown, isVerified, noticeActionOf, noticeShown, portalAddress, regionShown } from '../lib/istat-coverage-model';
 
-/** The permission of the guided step of the panel and of the wizard that leads to it: whoever may not write the property is not offered the link. */
+/** The permission of the guided step of the panel and of the wizard that leads to it: whoever may not write the property is not offered the link (the step is also the organization administrator's). */
 const PANEL_STEP_PERMISSION = 'property.write';
 
 /** The words of the button of the request to support: «Chiedi al supporto» (a code of the button, not a text). */
@@ -27,6 +27,16 @@ interface IstatCoverageNoticeProps {
   propertyId: string;
   /** The property page also offers the upload of the proof of the month; the wizard, which activates the sending, does not. */
   showProof?: boolean;
+  /**
+   * Drawn inside a wizard. A wizard never takes the person out of the process, and what was typed in it (the credentials are in its state only) is lost when the page is left: so the next
+   * step is told in words and no link leaves the wizard. The request to support and the guide of the regional portal (another tab) stay.
+   */
+  inWizard?: boolean;
+  /**
+   * The first step of the wizard, where the sender is still to be chosen: the notice tells what the channel manager does in the region, whoever sends the ISTAT today. Everywhere else it
+   * accounts for who sends it: a property whose ISTAT is sent by the host or by CasaZen is never told «lo invia il tuo channel manager».
+   */
+  senderOpen?: boolean;
 }
 
 /**
@@ -37,13 +47,13 @@ interface IstatCoverageNoticeProps {
  * where it also leads to the upload of the proof of the month. It never names the channel manager. Behind the flag `octorateOnboarding`, like the endpoint: with the flag off nothing is
  * drawn and nothing is asked.
  */
-export function IstatCoverageNotice({ propertyId, showProof = false }: IstatCoverageNoticeProps) {
+export function IstatCoverageNotice({ propertyId, showProof = false, inWizard = false, senderOpen = false }: IstatCoverageNoticeProps) {
   const { flags } = useFeatureFlags();
 
-  return flags.octorateOnboarding && propertyId !== '' ? <Notice propertyId={propertyId} showProof={showProof} /> : null;
+  return flags.octorateOnboarding && propertyId !== '' ? <Notice propertyId={propertyId} showProof={showProof} inWizard={inWizard} senderOpen={senderOpen} /> : null;
 }
 
-function Notice({ propertyId, showProof }: Required<IstatCoverageNoticeProps>) {
+function Notice({ propertyId, showProof, inWizard, senderOpen }: Required<IstatCoverageNoticeProps>) {
   const { t, i18n } = useTranslation();
   const { contexts, hasPermission } = useWorkspace();
   const coverage = useIstatCoverage(propertyId);
@@ -81,7 +91,7 @@ function Notice({ propertyId, showProof }: Required<IstatCoverageNoticeProps>) {
   // A property outside Italy has no regional flow: the screen that holds the notice says so.
   if (!data.applies) return null;
 
-  const shown = coverageShown(data);
+  const shown = noticeShown(data, senderOpen);
   const region = regionShown(data);
   const deadline = deadlineShown(data);
   const action = noticeActionOf(shown, data);
@@ -90,13 +100,29 @@ function Notice({ propertyId, showProof }: Required<IstatCoverageNoticeProps>) {
 
   let step: ReactNode = null;
   if (action === 'panelStep') {
-    step = canWrite ? (
-      <Button asChild size="sm" className="min-h-11">
-        <Link to={panelStepPath({ kind: 'istatConnection', propertyId })} data-testid="istat-coverage-panel-step">
-          {t('istatCoverage.action.panelStep')}
-        </Link>
-      </Button>
-    ) : null;
+    if (inWizard) {
+      // A wizard never leaves the process: here the step is told in words (it is done from the property page once the wizard is over), and no link takes the person away from what they typed.
+      step = (
+        <p className="text-sm" data-testid="istat-coverage-panel-step-later">
+          {t('istatCoverage.action.panelStepInWizard')}
+        </p>
+      );
+    } else if (canWrite && isOrgBillingAdmin(contexts)) {
+      step = (
+        <Button asChild size="sm" className="min-h-11">
+          <Link to={panelStepPath({ kind: 'istatConnection', propertyId })} data-testid="istat-coverage-panel-step">
+            {t('istatCoverage.action.panelStep')}
+          </Link>
+        </Button>
+      );
+    } else if (canWrite) {
+      // The guided step of the panel is the organization administrator's (the page of the step says so to anyone else): here the person is told who does it, not led to a page with nothing to press.
+      step = (
+        <p className="text-sm" data-testid="istat-coverage-panel-step-admin-only">
+          {t('onboardingPlan.panel.adminOnly')}
+        </p>
+      );
+    }
   } else if (action === 'portalGuide' && portal !== null) {
     step = (
       <Button asChild size="sm" variant="outline" className="min-h-11">
@@ -121,10 +147,12 @@ function Notice({ propertyId, showProof }: Required<IstatCoverageNoticeProps>) {
   // The proof of the month that is over: the existing upload of the archive, opened on the ISTAT proof of this property and that month.
   const period = listedMonths(todayInRome())[1];
   const proofRoute = showProof ? complianceActionRoute({ action: 'UploadIstatProof', propertyId, bookingId: null, period }, hasPermission) : null;
+  // The archive opens for whoever may read the bookings, but only who may submit the Alloggiati can upload to it: the others are told «Apri», as the cockpit does, never asked to upload.
+  const canUploadProof = hasPermission('short-rent', COMPLIANCE_ACTION_TARGETS.UploadIstatProof.write);
 
   return (
     <div className="min-w-0 space-y-2" data-testid="istat-coverage-notice" data-coverage={shown}>
-      <Alert variant={shown === 'covered' ? 'info' : 'warning'} title={t(`istatCoverage.title.${shown}`)} action={step}>
+      <Alert variant={shown === 'covered' || shown === 'otherSender' ? 'info' : 'warning'} title={t(`istatCoverage.title.${shown}`)} action={step}>
         <p data-testid="istat-coverage-region">
           {region.kind === 'named'
             ? t('istatCoverage.region.named', { region: region.region, system: region.system })
@@ -153,7 +181,7 @@ function Notice({ propertyId, showProof }: Required<IstatCoverageNoticeProps>) {
         <p className="text-sm" data-testid="istat-coverage-proof">
           {t('istatCoverage.proof.lead')}{' '}
           <Link to={proofRoute} className="inline-block min-h-11 py-2.5 font-medium text-primary-text underline underline-offset-4" data-testid="istat-coverage-proof-link">
-            {t('istatCoverage.proof.action', { month: formatPeriod(period, i18n.language) })}
+            {t(canUploadProof ? 'istatCoverage.proof.action' : 'istatCoverage.proof.open', { month: formatPeriod(period, i18n.language) })}
           </Link>
         </p>
       ) : null}

@@ -3,8 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { PlainSection } from '@/components/shared/calm';
 import { Button } from '@/components/ui/button';
+import { TouristTaxRows } from '@/features/owner-portal/statement-parts';
 import { useDownloadVersionFile } from '@/queries/use-owner-accounting';
-import type { OwnerLedgerEntry, OwnerStatementVersion } from '@/types';
+import type { OwnerLedgerEntry, OwnerPortalTouristTax, OwnerStatementVersion } from '@/types';
 import { messageOf, statementGroupsOf } from '../owner-accounting-model';
 import { useOwnerFormat } from '../use-owner-format';
 
@@ -20,14 +21,20 @@ interface SummaryRow {
 interface StatementGroupsProps {
   version: OwnerStatementVersion;
   entries: readonly OwnerLedgerEntry[];
+  /**
+   * The stays of the tourist tax box with their amounts, as the server sends them (`touristTax` of the version): the very rows the owner portal shows. Left out, the box keeps its
+   * text only and says nothing of the amounts (a server that does not send them yet): an empty list says that the agency collected none.
+   */
+  touristTax?: readonly OwnerPortalTouristTax[];
 }
 
 /**
  * The statement grouped as its PDF is (E13/F02/US01/T02, NF-110, NF-115): the stays, what the channels kept, the withholding, the commission of the property manager, the recharges
- * and expenses, the net; and the tourist tax in a box of its own, which is never part of the net. Every amount is in the currency of the version, as the server wrote it (the lines
- * are added up in cents, nothing is worked out), and the files are the ones the owner gets: the PDF and the CSV of this version, downloaded through CasaZen.
+ * and expenses, the net; and the tourist tax in a box of its own, which is never part of the net, with the amount of each stay in the currency it was collected in (the rows, the sums
+ * and their writing are the owner portal's: one place groups them). Every amount of the parts is in the currency of the version, as the server wrote it (the lines are added up in
+ * cents, nothing is worked out), and the files are the ones the owner gets: the PDF and the CSV of this version, downloaded through CasaZen.
  */
-export function StatementGroups({ version, entries }: StatementGroupsProps) {
+export function StatementGroups({ version, entries, touristTax }: StatementGroupsProps) {
   const { t, i18n } = useTranslation();
   const { money } = useOwnerFormat();
   const download = useDownloadVersionFile();
@@ -75,6 +82,7 @@ export function StatementGroups({ version, entries }: StatementGroupsProps) {
       <div role="note" className="min-w-0 space-y-1 rounded-md border border-border p-3 text-sm" data-testid="statement-tourist-tax">
         <p className="font-medium">{t('ownerAccounting.summary.touristTax.title')}</p>
         <p className="break-words text-foreground/70">{t('ownerAccounting.summary.touristTax.body')}</p>
+        {touristTax ? <TouristTaxRows rows={touristTax} /> : null}
       </div>
 
       <div className="flex flex-wrap gap-2">

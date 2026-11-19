@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Check } from 'lucide-react';
@@ -36,18 +36,40 @@ function rateInForce(rates: readonly TouristTaxRate[], city: string, today: stri
 /**
  * The tourist tax of a Swiss issuer: for each portal, who collects it. A portal that collects it leaves no line on the document of its bookings; for the others the document
  * carries the line, with the rule of the canton. Every portal is answered, so that nobody confirms a choice by not making it: the server has a default for an issuer that
- * has not confirmed (the configuration of the tourist tax), and it is confirmed here, with the person's own answer.
+ * has not confirmed (the configuration of the tourist tax), and it is confirmed here, with the person's own answer. The portals that default says collect it (`proposed`) are
+ * already chosen for an issuer that has not answered, so that only the others are left to answer: the person checks them and changes them if they are not right.
  */
-function SwissTouristTax() {
+function SwissTouristTax({ proposed }: { proposed: readonly string[] }) {
   const { t } = useTranslation();
   const {
     register,
+    getValues,
+    setValue,
     formState: { errors },
   } = useFormContext<BillingWizardValues>();
+
+  // The proposal goes into the answer of a portal that has none yet and never over one that has: not what the setup saved (nothing is proposed then), not what the person chose. The form starts
+  // from the setup as it was when the wizard opened, so an issuer that chose its country in this very wizard has its proposal only now, when the step opens.
+  const proposal = proposed.join('|');
+  useEffect(() => {
+    for (const portal of PORTAL_SOURCES) {
+      if (proposal.split('|').includes(portal) && getValues(`touristTaxCollectors.${portal}`) === '') setValue(`touristTaxCollectors.${portal}`, 'portal');
+    }
+  }, [proposal, getValues, setValue]);
 
   return (
     <>
       <p className="text-sm text-foreground/80">{t('billingWizard.touristTax.swiss.intro')}</p>
+      {proposed.length > 0 ? (
+        <p className="text-sm text-foreground/80" data-testid="billing-tourist-tax-proposed">
+          {t('billingWizard.touristTax.swiss.proposed', {
+            choice: t('billingWizard.touristTax.swiss.portal'),
+            portals: PORTAL_SOURCES.filter((portal) => proposed.includes(portal))
+              .map((portal) => t(`booking.source.${portal}`))
+              .join(', '),
+          })}
+        </p>
+      ) : null}
       <div className="grid gap-5 sm:grid-cols-2" data-testid="billing-tourist-tax-swiss">
         {PORTAL_SOURCES.map((portal) => (
           <Field key={portal} label={t(`booking.source.${portal}`)} error={errors.touristTaxCollectors?.[portal]}>
@@ -135,12 +157,17 @@ function ItalianTouristTax() {
 interface TouristTaxStepProps {
   /** The country of the issuer, as answered in the first step: the step is the portals' for Switzerland and a reading of the municipal rules for Italy. */
   country: string;
+  /**
+   * The portals the server says collect the Swiss tourist tax by default, while the issuer has not confirmed its own list (`platformDefaultsOf` of the setup): they are chosen for the
+   * portals that have no answer yet. None once the issuer has saved a list.
+   */
+  proposed?: readonly string[];
 }
 
-/** Step 4, «Tassa di soggiorno»: Switzerland asks who collects it for every portal; Italy only shows the municipal rules that exist. */
-export function TouristTaxStep({ country }: TouristTaxStepProps) {
+/** Step 4, «Tassa di soggiorno»: Switzerland asks who collects it for every portal (the ones that collect it by default already chosen); Italy only shows the municipal rules that exist. */
+export function TouristTaxStep({ country, proposed = [] }: TouristTaxStepProps) {
   const { t } = useTranslation();
-  if (country === 'CH') return <SwissTouristTax />;
+  if (country === 'CH') return <SwissTouristTax proposed={proposed} />;
   if (country === 'IT') return <ItalianTouristTax />;
   return <p className="text-sm text-foreground/70">{t('billingWizard.touristTax.noCountry')}</p>;
 }
