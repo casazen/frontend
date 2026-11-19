@@ -220,6 +220,9 @@ async function getFile(url: string): Promise<Blob> {
 }
 
 export const ownerPortalApi = {
+  /** Confirm the session can access the portal before leaving invitation activation. */
+  checkAccess: () => ApiClient.get<unknown>(`${BASE}/properties`, undefined, { localAuthRecovery: true }),
+
   /**
    * List properties with occupancy and revenue (ADR-011-R8).
    * Filtered by PropertyOwnership.OwnerUserId AND period active.

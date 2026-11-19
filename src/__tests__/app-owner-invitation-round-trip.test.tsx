@@ -78,6 +78,7 @@ describe('App: the secret of an owner invitation across the sign-in (E10/F03/US0
     await i18n.changeLanguage('it');
     signIn.getAccessTokenSilently.mockResolvedValue('a-new-access-token');
     vi.mocked(axios.post).mockResolvedValue({ data: ACCEPTED });
+    vi.mocked(axios.get).mockResolvedValue({ data: [] });
     await getRouter().navigate('/', { replace: true });
   });
 

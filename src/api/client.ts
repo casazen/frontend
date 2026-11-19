@@ -30,6 +30,8 @@ export interface ApiRequestOptions {
    * token. Leave unset for every authenticated endpoint.
    */
   public?: boolean;
+  /** Keep auth failures on the calling screen so it can recover locally. */
+  localAuthRecovery?: boolean;
   /**
    * Extra request headers. The anonymous endpoints that carry a credential of their own use it (the guest area sends the
    * token of its session as `Authorization: Bearer`, see `guest-session.api.ts`), and the call that records a payment sends its
