@@ -10,6 +10,7 @@ import i18n from '@/i18n/config';
 import { getProblemMessage } from '@/lib/api-errors';
 import { COMPLIANCE_KEY } from '@/features/compliance/use-compliance';
 import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
+import { classifyVideoCallError, videoCallProblemKey } from '@/features/verification/lib/video-call-model';
 import { retryTransientErrors } from '@/lib/query-client';
 
 /** Root of the verification queries: the queue and the figures. A decision, and a guest who hands a verification over, make the whole root stale. */
@@ -88,8 +89,10 @@ export function useRequestNewPhoto() {
 /**
  * Proposes a video call to the guest of a verification (E22/F02/US01/T02): the address of the meeting goes to the guest by e-mail, and the verification keeps waiting for the decision of the
  * operator after the call. The address is in the variables of the call, so the mutation does not outlive the card (`gcTime: 0`) and what it keeps of a failure is the answer without the request
- * (`withoutRequest`). Nothing is said here about a failure: the dialog tells why next to the field (an address that is refused, a guest with no e-mail, an e-mail that did not leave), and
- * the queue is read again either way (a verification that another operator decided in the meantime is gone from it).
+ * (`withoutRequest`). A failure is told in the dialog, next to the field (an address that is refused, a guest with no e-mail, an e-mail that did not leave), and also by a toast, so that it is
+ * never lost when the card is gone before the answer comes (the dialog cannot be closed while the e-mail is queued, but the page can be left): `onError` is an option of the mutation, which
+ * runs whether or not the card is still there. The words are the dialog's own, so an answer nobody can confirm (a server that failed, no answer at all) never says that nothing was sent. An
+ * address the server refuses is told in the dialog only: the operator is looking at its field. The queue is read again either way (a verification that another operator decided in the meantime is gone from it).
  */
 export function useProposeVideoCall() {
   const refresh = useRefreshAfterDecision();
@@ -106,6 +109,10 @@ export function useProposeVideoCall() {
     },
     onSuccess: () => {
       toast.success(i18n.t('verification.videoCall.sent'));
+    },
+    onError: (error) => {
+      const problem = classifyVideoCallError(error);
+      if (problem !== 'invalid_url') toast.error(i18n.t(videoCallProblemKey(problem)));
     },
     onSettled: refresh,
   });

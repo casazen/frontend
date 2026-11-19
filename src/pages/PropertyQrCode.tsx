@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -8,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import { isFeatureEnabled } from '@/config/feature-flags';
+import { FEATURE_FLAGS_QUERY_KEY } from '@/contexts/feature-flags-context';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getHttpStatus } from '@/lib/api-errors';
@@ -223,11 +225,24 @@ function DoorEntranceQr({ propertyId }: { propertyId: string }) {
  * Printable QR code for property entrance (NF-13, E06/F03/US01/T02, E22/F02/US01/T01).
  * With the identity verification on it is the code of the door of the property (the guest who arrives types the booking code and the arrival date, `/checkin/porta/:doorToken`), which the host
  * can replace; without it, it is the static code it always was (AC-NF13-7, AC-NF13-8).
+ *
+ * Which of the two it is depends on the flag, so the page waits for it: while the flags are read, or when they could not be read, it shows no code at all. Every flag is off in both of those
+ * states, and the static code leads to a page that does not exist: a host could print it before the flag was known.
  */
 export function PropertyQrCodePage() {
+  const { t } = useTranslation();
   const { propertyId } = useParams<{ propertyId: string }>();
-  const { flags } = useFeatureFlags();
+  const { flags, isLoading, isError } = useFeatureFlags();
+  const queryClient = useQueryClient();
 
   if (!propertyId) return <MissingProperty />;
+  if (isLoading) return <LoadingScreen message={t('property.qr.loading')} />;
+  if (isError) {
+    return (
+      <DoorQrMessage title={t('property.qr.error')} onRetry={() => void queryClient.refetchQueries({ queryKey: FEATURE_FLAGS_QUERY_KEY })}>
+        {t('property.qr.flagsUnreadable')}
+      </DoorQrMessage>
+    );
+  }
   return isFeatureEnabled(flags, 'checkInIdentityVerification') ? <DoorEntranceQr propertyId={propertyId} /> : <EntranceQr propertyId={propertyId} />;
 }

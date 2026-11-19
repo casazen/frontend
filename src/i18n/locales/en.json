@@ -21375,6 +21375,7 @@
       "download": "Download PNG",
       "error": "Error",
       "errorDescription": "Property ID missing or invalid.",
+      "flagsUnreadable": "We cannot tell which QR code to print right now. Try again in a moment.",
       "hint": "Print or download this QR code and place it at the property entrance to facilitate guest check-in.",
       "instructions": "Scan this QR code to start your stay verification",
       "loading": "Generating QR code...",

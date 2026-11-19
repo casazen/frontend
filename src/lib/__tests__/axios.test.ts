@@ -327,6 +327,25 @@ describe('response interceptor: 403 → no-access page (A9-22)', () => {
   });
 });
 
+describe('response interceptor: the host reads of the identity verification keep their 403 on their own screen (post-merge review of E22/F02/US01)', () => {
+  it.each([
+    ['theDoorQrOfAProperty', '/properties/p1/door-qr', async () => (await import('@/api/checkin.api')).propertyDoorQrApi.get('p1')],
+    ['theSettingsOfTheIdentityCheck', '/settings/biometrics', async () => (await import('@/api/biometric-settings.api')).biometricSettingsApi.get()],
+    ['theStateOfTheModels', '/admin/biometrics/status', async () => (await import('@/api/biometric-settings.api')).biometricSettingsApi.getModelsStatus()],
+  ])('response403_%s_isLeftToItsScreenAndNeverOpensNoAccess', async (_name, url, read) => {
+    // A 403 with no code on a protected read opens «no access» for the whole app (above): these three reads sit on pages with other things on them, which say it themselves.
+    const ctx = await load(() => ({ status: 403 }));
+
+    await expect(read()).rejects.toMatchObject({ response: { status: 403 } });
+
+    expect(ctx.calls).toHaveLength(1);
+    expect(ctx.calls[0].url).toBe(url);
+    // Still the call of a signed-in person: nothing here is public.
+    expect(ctx.authorization(0)).toBe('Bearer cached-token');
+    expect(ctx.onForbidden).not.toHaveBeenCalled();
+  });
+});
+
 describe('response interceptor: 403 account_inactive → account disabled page (PL-03)', () => {
   const inactive = { status: 403, data: { status: 403, code: 'account_inactive', detail: 'Account disattivato' } };
 
