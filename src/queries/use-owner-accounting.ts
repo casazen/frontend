@@ -2,10 +2,8 @@ import { useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { ownerAccountingApi } from '@/api/owner-accounting.api';
 import { isRunOver } from '@/features/owner-accounting/bulk-close-model';
-import { profileFactsOf } from '@/features/owner-accounting/owner-accounting-model';
 import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
 import { saveBlobAs } from '@/lib/file-download';
-import { todayInRome } from '@/lib/stay-dates';
 import type {
   OwnerAccountingPolicyCommand,
   OwnerAddressCommand,
@@ -29,7 +27,6 @@ export const ownerAccountingKeys = {
   owners: [OWNER_ACCOUNTING_KEY, 'owners'] as const,
   mandates: (ownerId: string) => [OWNER_ACCOUNTING_KEY, 'mandates', ownerId] as const,
   address: (ownerId: string) => [OWNER_ACCOUNTING_KEY, 'address', ownerId] as const,
-  profileFacts: (ownerId: string) => [OWNER_ACCOUNTING_KEY, 'profile-facts', ownerId] as const,
   onboarding: [OWNER_ACCOUNTING_KEY, 'onboarding-readiness'] as const,
   readiness: (year: number, month: number) => [OWNER_ACCOUNTING_KEY, 'readiness', year, month] as const,
   versions: (year: number, month: number, ownerId: string) => [OWNER_ACCOUNTING_KEY, 'versions', year, month, ownerId] as const,
@@ -58,35 +55,22 @@ function invalidateAll(queryClient: QueryClient) {
 // ── Reads ─────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 /**
- * The owners of the agency's registry: their names. A list that other pages change (the activation adds owners), read again every time a page asks for it. `enabled: false` for who is not the agency's
- * administrator: the registry is refused to anyone else with a 403, which a read sends to the page of no access, so nothing is asked for them.
+ * The owners of the agency's registry: their names and, for each, what a row of the list draws (the properties, the kind and the currency of the fiscal profile, the mandate in force). A list that
+ * other pages change (the activation adds owners, a mandate or a profile is written), read again every time a page asks for it and soon after (`staleTime`), so a list that stays open shows the
+ * terms in force. `enabled: false` for who is not the agency's administrator: the registry is refused to anyone else with a 403, which a read sends to the page of no access, so nothing is asked for them.
  */
 export function useOwnerNames(enabled = true) {
-  return useQuery({ queryKey: ownerAccountingKeys.owners, queryFn: () => ownerAccountingApi.listOwners(), enabled, refetchOnMount: 'always' as const });
+  return useQuery({ queryKey: ownerAccountingKeys.owners, queryFn: () => ownerAccountingApi.listOwners(), enabled, refetchOnMount: 'always' as const, staleTime: 30_000 });
 }
 
 /**
  * The versions of an owner's mandate, the newest first. The mandates change on this page and from the standard mandate of the wizard: read again every time a page asks for them, and
- * soon after (`staleTime`), so a page that stays open shows the terms in force.
+ * soon after (`staleTime`), so a page that stays open shows the terms in force. A row of the list of the owners asks for them only when the list could not settle its mandate (`enabled`).
  */
 export function useOwnerMandates(ownerId: string | undefined, enabled = true) {
   return useQuery({
     queryKey: ownerAccountingKeys.mandates(ownerId ?? ''),
     queryFn: () => ownerAccountingApi.listMandates(ownerId ?? ''),
-    enabled: enabled && Boolean(ownerId),
-    refetchOnMount: 'always' as const,
-    staleTime: 30_000,
-  });
-}
-
-/**
- * The kind and the settlement currency of an owner, from the profile in force: what the list of the owners shows. The profile is read whole (it comes with the identifiers, the address and the
- * bank account) and reduced to these two facts in the query itself, so only they are kept by the cache.
- */
-export function useOwnerProfileFacts(ownerId: string | undefined, enabled = true) {
-  return useQuery({
-    queryKey: ownerAccountingKeys.profileFacts(ownerId ?? ''),
-    queryFn: async () => profileFactsOf(await ownerAccountingApi.listFiscalProfiles(ownerId ?? ''), todayInRome()),
     enabled: enabled && Boolean(ownerId),
     refetchOnMount: 'always' as const,
     staleTime: 30_000,

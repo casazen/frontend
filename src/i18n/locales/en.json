@@ -705,6 +705,7 @@
       },
       "entity": {
         "Booking": "Booking",
+        "OwnerStatementVersion": "Owner statement",
         "Property": "Property"
       },
       "filter": {
@@ -842,6 +843,10 @@
         "OwnerDocumentExpiring": {
           "title": "Owner document expiring",
           "why": "A document shared with the owner (an insurance, a mandate) expires within 30 days or already has: upload the new one."
+        },
+        "OwnerStatementNoticeFailed": {
+          "title": "Owner to be told by hand",
+          "why": "We could not tell the owner by e-mail that the statement was published: open it and tell the owner yourself. The statement is published anyway."
         },
         "OwnerStaySyncFailed": {
           "title": "Owner stay block not accepted",
@@ -3702,7 +3707,8 @@
         "host": "I collect it",
         "intro": "For each portal you say who collects the tourist tax. If the portal collects it, the document carries no line for it. If you collect it, the line is there, with the rule of the canton.",
         "note": "Answer for every portal: we do not save a choice you have not made.",
-        "portal": "The portal collects it"
+        "portal": "The portal collects it",
+        "proposed": "For {{portals}} we have already chosen «{{choice}}»: the portal usually collects the tourist tax. Check it, and change it if that is not so for you."
       }
     },
     "vat": {
@@ -18545,6 +18551,8 @@
       "focusBody": "Closing balance {{balance}}. Version cut on {{cutoff}}.",
       "focusTitle": "Version {{version}} · {{status}}",
       "formula": "Closing balance = opening balance {{opening}} + revenue {{revenue}} + commissions and costs {{costs}} + payments and withholdings {{paid}} + corrections {{corrections}} = {{closing}}.",
+      "immutableBody": "The recorded lines no longer add up to the totals saved in this version. So that you are never shown wrong figures we do not show it, nor its files: trying again will not help. Write to support with the month and the owner.",
+      "immutableTitle": "This statement cannot be shown",
       "kicker": "Statement of {{period}}",
       "loadError": "We cannot read the statement.",
       "loading": "Reading the statement…",
@@ -18867,6 +18875,18 @@
   },
   "ownerInvoice": {
     "currencyMissing": "For some invoice the server did not give the currency: the amounts are written without a symbol.",
+    "detail": {
+      "creditNote": "Credit note",
+      "description": "The lines of the invoice and its totals, as they are saved.",
+      "forbidden": "This invoice is not visible with your access: it is seen by the account owner and by the administrators of the organization, with access to every property.",
+      "forbiddenTitle": "Invoice not available to you",
+      "issuedOn": "Issued on {{date}}",
+      "notFound": "This invoice is no longer there",
+      "notFoundBody": "It does not exist, or it belongs to another organization. Close this and refresh the list.",
+      "open": "Open the lines",
+      "openLabel": "Open the lines and totals of: {{name}}",
+      "title": "Invoice to the owner"
+    },
     "issue": {
       "confirm": "Issue the invoice",
       "consequenceFinal": "Once issued, the invoice can no longer be changed.",
@@ -20254,16 +20274,17 @@
     "row": {
       "kindAndCurrency": "{{kind}} · currency {{currency}}",
       "kindNoCurrency": "{{kind}} · settlement currency missing",
-      "loading": "Reading the profile…",
       "mandateActive": "Commission {{percent}} {{vat}}, from {{from}}",
       "mandateError": "We cannot read the mandate.",
       "mandateLoading": "Reading the mandate…",
       "mandateMissing": "The mandate is missing",
       "mandateUpcoming": "Mandate from {{from}}: commission {{percent}}",
       "noProfile": "No fiscal profile",
+      "noProperties": "No properties",
       "open": "Financial data",
       "openLabel": "Open the financial data of {{owner}}",
-      "profileError": "We cannot read the fiscal profile."
+      "properties_one": "{{count}} property",
+      "properties_other": "{{count}} properties"
     },
     "title": "Owners"
   },
