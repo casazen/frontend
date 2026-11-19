@@ -10733,9 +10733,14 @@
     "portal": "Portal",
     "save": "Save",
     "source": "Source",
+    "stale": {
+      "changed": "This row was changed by someone else after you opened it: close it and open it again to see the current values. Old values are not saved.",
+      "unreadable": "We cannot read the table again: values that may be old are not saved. Close this and try again in a moment."
+    },
     "summary": "To be verified: {{pending}} of {{total}}.",
     "title": "ISTAT regions",
     "toast": {
+      "rereadFailed": "We cannot read the current row: try again.",
       "saved": "{{region}}: row saved.",
       "saveFailed": "We could not save the row."
     }

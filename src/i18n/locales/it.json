@@ -10733,9 +10733,14 @@
     "portal": "Portale",
     "save": "Salva",
     "source": "Fonte",
+    "stale": {
+      "changed": "Questa riga è stata modificata da un'altra persona dopo che l'hai aperta: chiudi e riaprila per vedere i valori attuali. Non salviamo valori vecchi.",
+      "unreadable": "Non riusciamo a rileggere la tabella: non salviamo valori che potrebbero essere vecchi. Chiudi e riprova tra un momento."
+    },
     "summary": "Da verificare: {{pending}} su {{total}}.",
     "title": "Regioni ISTAT",
     "toast": {
+      "rereadFailed": "Non riusciamo a leggere la riga aggiornata: riprova.",
       "saved": "{{region}}: riga salvata.",
       "saveFailed": "Non siamo riusciti a salvare la riga."
     }
