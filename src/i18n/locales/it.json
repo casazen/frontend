@@ -10575,6 +10575,7 @@
     "action": {
       "newTab": "(si apre in una nuova scheda)",
       "panelStep": "Collega l'ISTAT nel pannello",
+      "panelStepInWizard": "L'ISTAT si collega dal pannello dell'immobile, a invio concluso.",
       "portalGuide": "Apri il portale della tua regione",
       "supportAdminOnly": "Per chiedere aiuto al supporto serve l'amministratore dell'organizzazione."
     },

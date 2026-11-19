@@ -876,6 +876,26 @@ describe('SenderWizardPage: the regional ISTAT credentials of the credentials st
     expect(notice).not.toHaveTextContent(text('istatCoverage.title.covered'));
   });
 
+  // A wizard never leaves the process, and what was typed in it lives in its state only: nothing in the notice (first step, ISTAT block) takes the person to another page.
+  it('SenderWizardPage_CoveredRegion_NothingOfTheNoticeLeavesTheWizardAndWhatWasTypedStays', async () => {
+    await open();
+    const first = await screen.findByTestId('istat-coverage-notice', undefined, WAIT);
+    expect(first.querySelector('a[href]')).toBeNull();
+    expect(within(first).getByTestId('istat-coverage-panel-step-later')).toHaveTextContent(text('istatCoverage.action.panelStepInWizard'));
+
+    await toTheCredentials();
+    typeCredentials();
+    const block = await screen.findByTestId('sender-istat-credentials');
+    const notice = await within(block).findByTestId('istat-coverage-notice', undefined, WAIT);
+    expect(notice).toHaveAttribute('data-coverage', 'covered');
+    expect(notice.querySelector('a[href]')).toBeNull();
+    expect(screen.queryByTestId('istat-coverage-panel-step')).not.toBeInTheDocument();
+    expect(within(notice).getByTestId('istat-coverage-panel-step-later')).toHaveTextContent(text('istatCoverage.action.panelStepInWizard'));
+    // What was typed in the step is still in its fields.
+    expect(screen.getByLabelText(text('questuraCredentials.fields.password'))).toHaveValue(SECRET);
+    expect(screen.getByLabelText(text('questuraCredentials.fields.username'))).toHaveValue(TYPED.username);
+  });
+
   it('SenderWizardPage_ActivationFlagOn_ShowsTheIstatBlockWriteOnlyUnderThePoliceCredentials', async () => {
     vi.mocked(onboardingAssistApi.getIstatCredentialsStatus).mockResolvedValue({ configured: true, configuredAt: '2026-11-10T10:30:00Z' });
     await open();

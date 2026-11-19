@@ -97,7 +97,7 @@ function wrap(children: ReactNode) {
   return { client, ...view };
 }
 
-const renderNotice = (showProof = false) => wrap(<IstatCoverageNotice propertyId={PROPERTY_ID} showProof={showProof} />);
+const renderNotice = (showProof = false, options: { inWizard?: boolean } = {}) => wrap(<IstatCoverageNotice propertyId={PROPERTY_ID} showProof={showProof} {...options} />);
 
 beforeEach(async () => {
   vi.clearAllMocks();
@@ -261,6 +261,39 @@ describe('IstatCoverageNotice: the three next steps, one action each', () => {
     expect(within(notice).getByTestId('istat-coverage-support-admin-only')).toHaveTextContent(text('istatCoverage.action.supportAdminOnly'));
     expect(screen.queryByTestId('assist-request-button')).not.toBeInTheDocument();
     expect(onboardingApi.requestAssist).not.toHaveBeenCalled();
+  });
+});
+
+// A wizard never takes the person out of the process, and what was typed in it (the credentials are in its state only) is lost when the page is left: inside a wizard the step of the panel
+// is told in words and no link leaves it; outside it the link is the organization administrator's, and whoever may only write the property is told who does the step.
+describe('IstatCoverageNotice: the step of the panel inside and outside a wizard', () => {
+  it('IstatCoverageNotice_CoveredRegionInAWizard_SaysTheNextStepInWordsAndLeadsNowhere', async () => {
+    renderNotice(false, { inWizard: true });
+
+    const notice = await screen.findByTestId('istat-coverage-notice');
+    expect(notice).toHaveAttribute('data-coverage', 'covered');
+    expect(within(notice).getByTestId('istat-coverage-panel-step-later')).toHaveTextContent(text('istatCoverage.action.panelStepInWizard'));
+    expect(screen.queryByTestId('istat-coverage-panel-step')).not.toBeInTheDocument();
+    expect(notice.querySelector('a[href]')).toBeNull();
+  });
+
+  it('IstatCoverageNotice_CoveredRegionOutsideAWizardForWhoIsNotTheOrganizationAdministrator_SaysWhoDoesTheStepAndLinksNowhere', async () => {
+    session.contexts = COLLABORATOR;
+    renderNotice();
+
+    const notice = await screen.findByTestId('istat-coverage-notice');
+    expect(notice).toHaveAttribute('data-coverage', 'covered');
+    expect(within(notice).getByTestId('istat-coverage-panel-step-admin-only')).toHaveTextContent(text('onboardingPlan.panel.adminOnly'));
+    expect(screen.queryByTestId('istat-coverage-panel-step')).not.toBeInTheDocument();
+    expect(notice.querySelector('a[href]')).toBeNull();
+  });
+
+  it('IstatCoverageNotice_CoveredRegionOutsideAWizardForTheOrganizationAdministrator_LeadsToTheGuidedStep', async () => {
+    renderNotice();
+
+    const notice = await screen.findByTestId('istat-coverage-notice');
+    expect(within(notice).getByTestId('istat-coverage-panel-step')).toHaveAttribute('href', PANEL_STEP_ADDRESS);
+    expect(within(notice).queryByTestId('istat-coverage-panel-step-admin-only')).not.toBeInTheDocument();
   });
 });
 

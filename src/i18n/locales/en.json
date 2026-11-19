@@ -10575,6 +10575,7 @@
     "action": {
       "newTab": "(opens in a new tab)",
       "panelStep": "Connect the ISTAT in the panel",
+      "panelStepInWizard": "The ISTAT is connected from the property panel, once the setup is done.",
       "portalGuide": "Open the portal of your region",
       "supportAdminOnly": "Only the administrator of the organization can ask support for help."
     },

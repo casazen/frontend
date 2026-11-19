@@ -79,7 +79,7 @@ export function SenderChoiceStep({ read }: SenderChoiceStepProps) {
     <div className="flex flex-col gap-6" data-testid="sender-choice-step">
       {read.source === 'OrganizationDefault' ? <Alert variant="info">{t('orgComplianceSender.inherited')} <Link className="underline underline-offset-4" to="/app/short-rent/onboarding">{t('orgComplianceSender.editAccount')}</Link></Alert> : null}
       {/* Whether the channel manager sends the ISTAT of the region of the property, said at once, before anything is asked (CHK-05 point 3). Behind the flag of the activation: with it off nothing is drawn. */}
-      <IstatCoverageNotice propertyId={read.propertyId} />
+      <IstatCoverageNotice propertyId={read.propertyId} inWizard />
 
       <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 text-sm" data-testid="sender-current">
         <span className="text-foreground/70">
