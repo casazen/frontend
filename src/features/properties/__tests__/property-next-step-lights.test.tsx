@@ -23,7 +23,7 @@ vi.mock('@/hooks/use-workspace', () => ({
 }));
 
 const PROPERTY_ID = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee';
-const HOST = ['property.read', 'property.write', 'booking.read', 'booking.write'];
+const HOST = ['property.read', 'property.write', 'booking.read', 'booking.write', 'alloggiati.submit'];
 const PHOTO = 'https://ref.supabase.co/storage/v1/object/public/casazen-test-public/properties/p/photos/a.jpg';
 
 const property = (photos: string[] = [PHOTO]): PropertyDetailDto =>
@@ -327,6 +327,17 @@ describe('PropertyNextStep and the compliance lights of the property', () => {
     workspace.granted = ['property.read', 'booking.read'];
     vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryOf({ periodItems: section(item('UploadIstatProof', 'Red', 'deadline_overdue', { period: '2026-08' })) }));
     renderStep({ canWrite: false });
+
+    const action = await screen.findByTestId('property-next-compliance');
+    expect(action).toHaveTextContent('Apri');
+    expect(screen.getByTestId('property-next-step')).not.toHaveTextContent('Tocca a te');
+  });
+
+  it('PropertyNextStep_IstatProofForWhoMayWriteTheBookingsButNotSubmitTheAlloggiati_IsLedToTheArchiveNotToldToUpload', async () => {
+    // The archive lets only who may submit the Alloggiati upload a proof: `booking.write` alone opens the page («Apri») and the block does not say it is their turn.
+    workspace.granted = ['property.read', 'property.write', 'booking.read', 'booking.write'];
+    vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryOf({ periodItems: section(item('UploadIstatProof', 'Red', 'deadline_overdue', { period: '2026-08' })) }));
+    renderStep();
 
     const action = await screen.findByTestId('property-next-compliance');
     expect(action).toHaveTextContent('Apri');

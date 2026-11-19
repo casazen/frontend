@@ -26,6 +26,30 @@ export function coverageShown(coverage: CoverageFields): CoverageShown {
   return 'toVerify';
 }
 
+/** What the notice shows: the coverage of the region, or that the ISTAT of the property does not go through the channel manager at all. */
+export type NoticeShown = CoverageShown | 'otherSender';
+
+/**
+ * What the notice says (`coverageShown`), unless the ISTAT of the property is not sent by the channel manager (the host sends it, or CasaZen is the sender): then it says that it does not go
+ * through the channel manager, and never «lo invia il tuo channel manager» of a property whose sending does not pass through it. `senderOpen` is the first step of the wizard, where the sender
+ * is still to be chosen: there the notice tells what the channel manager does in the region, whoever sends today. A sender this version does not know is «da verificare».
+ */
+export function noticeShown(coverage: CoverageFields & Pick<PropertyIstatCoverage, 'istatSender'>, senderOpen = false): NoticeShown {
+  if (senderOpen || coverage.istatSender === 'ChannelManager') return coverageShown(coverage);
+  if (coverage.istatSender === 'Manual' || coverage.istatSender === 'CasaZen') return 'otherSender';
+  return 'toVerify';
+}
+
+/**
+ * Whether the fixed sentences of the screens (the sender «si occupa anche dell'ISTAT», the green point of the end of the wizard, the row «Attivo» of the panel of the property) may say that the
+ * ISTAT is taken care of: only when the table says the channel manager sends it (`coverageShown` is «covered»), and, where the sender in force is what the sentence is about
+ * (`channelManagerSends`), only when that sender is the channel manager. A property outside Italy has no regional flow to say anything of.
+ */
+export function istatTakenCareOf(coverage: CoverageFields & Pick<PropertyIstatCoverage, 'applies' | 'istatSender'>, channelManagerSends = false): boolean {
+  if (coverage.applies !== true || coverageShown(coverage) !== 'covered') return false;
+  return !channelManagerSends || coverage.istatSender === 'ChannelManager';
+}
+
 /** How the notice names the region and the portal of its system: the system is never guessed, so a region without one says so. */
 export type RegionShown = { kind: 'named'; region: string; system: string } | { kind: 'noSystem'; region: string } | { kind: 'unknown' };
 
@@ -48,8 +72,8 @@ export function deadlineShown(coverage: Pick<PropertyIstatCoverage, 'deadlineKin
   return { kind: 'toVerify' };
 }
 
-/** The one action of the notice: the guided step of the panel, the portal of the region, or the request to support. */
-export type NoticeAction = 'panelStep' | 'portalGuide' | 'support';
+/** The one action of the notice: the guided step of the panel, the portal of the region, the request to support, or none (the sending does not go through the channel manager and no portal is stated). */
+export type NoticeAction = 'panelStep' | 'portalGuide' | 'support' | 'none';
 
 /** The address of the portal of the region as the notice may link it: https only, whatever the answer says (a value of the table is data, never a link to trust). */
 export function portalAddress(coverage: Pick<PropertyIstatCoverage, 'portalUrl'>): string | null {
@@ -59,10 +83,12 @@ export function portalAddress(coverage: Pick<PropertyIstatCoverage, 'portalUrl'>
 /**
  * What the host does next, one action for each case: connect the ISTAT in the panel where the channel manager covers the region, the guide of the regional portal where it does not (with
  * the address the staff configured), and the request to support for everything that is not verified. A region the channel manager does not cover whose portal has no address in the
- * table has no guide to open: the host is led to support, never to an address nobody gave.
+ * table has no guide to open: the host is led to support, never to an address nobody gave. Where the sending does not go through the channel manager the guide of the portal is the only
+ * action (the request to support is about linking the channel manager).
  */
-export function noticeActionOf(shown: CoverageShown, coverage: Pick<PropertyIstatCoverage, 'portalUrl'>): NoticeAction {
+export function noticeActionOf(shown: NoticeShown, coverage: Pick<PropertyIstatCoverage, 'portalUrl'>): NoticeAction {
   if (shown === 'covered') return 'panelStep';
+  if (shown === 'otherSender') return portalAddress(coverage) !== null ? 'portalGuide' : 'none';
   if (shown === 'notCovered' && portalAddress(coverage) !== null) return 'portalGuide';
   return 'support';
 }
