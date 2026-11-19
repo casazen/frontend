@@ -867,6 +867,14 @@
           "title": "Promemoria manuale della routine",
           "why": "Una routine che hai impostato ti chiede di occuparti di questa prenotazione."
         },
+        "SelfBillingDraftsToReview": {
+          "title": "Autofatture da controllare ed emettere",
+          "why": "Le autofatture (TD17) del mese sono pronte in bozza: controlla gli importi con le fatture dei portali ed emettile entro la scadenza."
+        },
+        "SelfBillingRejected": {
+          "title": "Autofattura scartata dallo SDI",
+          "why": "Per il fisco l'autofattura non risulta emessa: aprila tra le autofatture, guarda perché lo SDI l'ha scartata e decidi con il commercialista come rimediare."
+        },
         "TouristTaxDeadline": {
           "title": "Imposta di soggiorno in scadenza",
           "why": "L'imposta del periodo va dichiarata e pagata, con le ricevute archiviate."

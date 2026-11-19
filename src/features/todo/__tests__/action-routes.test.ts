@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { matchPath } from 'react-router-dom';
-import { ROUTE_MANIFEST, type AppContextKey } from '@/config/route-manifest';
+import type { ContextBootstrapDto } from '@/api/contexts';
+import { ROUTE_MANIFEST, type AppContextKey, type PermissionPredicate } from '@/config/route-manifest';
 import { BOOKING_TABS } from '@/features/bookings/lib/booking-tabs';
 import { COMPLIANCE_ACTION_TARGETS } from '@/lib/compliance-routes';
-import { ORG_BILLING_ADMIN_PERMISSION } from '@/lib/org-billing-admin';
+import { ORG_BILLING_ADMIN_PERMISSION, isOrgBillingAdmin } from '@/lib/org-billing-admin';
+import { MEMBER_ROLE_KEYS, contextOf } from '@/test/org-contexts';
 import { ACTION_ROUTE_MAP, todoActionRoute } from '../activity-card';
 
 const BOOKING_ID = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
@@ -11,6 +13,9 @@ const PROPERTY_ID = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee';
 const NO_ID = '00000000-0000-0000-0000-000000000000';
 const DOCUMENT_ID = 'dddddddd-dddd-dddd-dddd-dddddddddddd';
 const OWNER_ID = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
+
+/** The areas whose pages the map opens: Affitti brevi, and the account for the agency's own work (the self-billed invoices, `ReviewSelfBilling`). */
+const CONTEXTS_OF_THE_PAGES: readonly AppContextKey[] = ['short-rent', 'account'];
 
 /** Every `ActivityAction` of ADR-026-R6: the map has an entry for each (the later epics append theirs). */
 const R6_ACTIONS = [
@@ -75,13 +80,13 @@ describe('ACTION_ROUTE_MAP (ADR-026-R6)', () => {
     }
   });
 
-  it.each(Object.entries(ACTION_ROUTE_MAP))('actionRouteMap_%s_PagesAreRoutesOfTheManifestInShortRent', (_action, target) => {
+  it.each(Object.entries(ACTION_ROUTE_MAP))('actionRouteMap_%s_PagesAreRoutesOfTheManifestInShortRentOrTheAccount', (_action, target) => {
     type RouteOfEntry = { path: string; target?: string; entityType?: string; tab?: string; propertyParam?: string };
     const targetOfEntry = target as { route: RouteOfEntry; fallback?: RouteOfEntry | RouteOfEntry[] };
     const fallbacks = targetOfEntry.fallback === undefined ? [] : Array.isArray(targetOfEntry.fallback) ? targetOfEntry.fallback : [targetOfEntry.fallback];
     for (const candidate of [targetOfEntry.route, ...fallbacks]) {
       expect(
-        ROUTE_MANIFEST.some((entry) => entry.path === candidate.path && entry.context === 'short-rent'),
+        ROUTE_MANIFEST.some((entry) => entry.path === candidate.path && CONTEXTS_OF_THE_PAGES.includes(entry.context)),
         `${candidate.path} is not a route of the ROUTE_MANIFEST`,
       ).toBe(true);
       // A page with `:id` (or the `:threadKey` of a conversation) says whose id fills it, and a page without it does not ask for one (but for the property in its address).
@@ -382,7 +387,54 @@ describe('ROUTE_MAP_BY_TYPE: the decision about a company tenant', () => {
   });
 });
 
-// Every `ActivityAction` of the backend (`Casazen.Core/Entities/Enums/ActivityAction.cs`, today 23 values): the map has an entry for each, or the action is
+// FIX/FE-TD17-TODO (backend FIX/BE-TD17-ALERTS, `ActivityAction` 32): a self-billed invoice (TD17) the SDI rejected, or the drafts of a month to check and issue. Both items are about the organization (no property) and the server
+// lists them only to who holds `agency.invoice.manage`. «Fallo ora» opens the page of the self-billed invoices, the page of the organization billing administrator, which has no read-only twin to fall back on.
+describe('ACTION_ROUTE_MAP: the self-billed invoices (TD17)', () => {
+  const ORGANIZATION_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+  const rejected = { action: 'ReviewSelfBilling', activityType: 'SelfBillingRejected', entityType: 'FiscalDocument', entityId: DOCUMENT_ID, propertyId: null as string | null };
+  const drafts = { action: 'ReviewSelfBilling', activityType: 'SelfBillingDraftsToReview', entityType: 'SelfBillingPeriod:2026-10', entityId: ORGANIZATION_ID, propertyId: null as string | null };
+
+  // What the workspace answers for the roles of a person (`hasPermission` of the `WorkspaceProvider`), never a predicate that says yes: a context the person does not hold says no, the pseudo-permission of the organization
+  // billing administrator comes from the role keys of their contexts, the rest from the permissions of the context.
+  const workspaceOf =
+    (contexts: ContextBootstrapDto[]): PermissionPredicate =>
+    (contextKey, permission) => {
+      const context = contexts.find((candidate) => candidate.contextKey === contextKey);
+      if (!context) return false;
+      if (permission === ORG_BILLING_ADMIN_PERMISSION) return isOrgBillingAdmin(contexts);
+      return context.permissions.includes(permission);
+    };
+  const EVERYTHING_OF_THE_HOST_AREA = ['property.read', 'property.write', 'booking.read', 'booking.write', 'payment.read', 'payment.write'];
+
+  it('todoActionRoute_ReviewSelfBilling_TheOwnerAndTheAdministratorsOfTheOrganizationAreSentToThePageOfTheSelfBilledInvoices', () => {
+    // The page takes no document and no month in its address: both items open the page itself, and the address carries no id. Without a predicate the button is always offered.
+    expect(todoActionRoute(rejected)).toBe('/app/account/self-billing');
+    expect(todoActionRoute(drafts)).toBe('/app/account/self-billing');
+    for (const roleKey of ['org_owner', 'org_admin']) {
+      const person = workspaceOf([contextOf('account', roleKey)]);
+
+      expect(todoActionRoute(rejected, person), roleKey).toBe('/app/account/self-billing');
+      expect(todoActionRoute(drafts, person), roleKey).toBe('/app/account/self-billing');
+    }
+  });
+
+  it('todoActionRoute_ReviewSelfBilling_WhoCannotOpenThePageIsOfferedNoButtonAndNoOtherPage', () => {
+    // A member of the organization holds the account area and everything of the host area, and is still not the organization billing administrator: the page is not theirs.
+    for (const roleKey of MEMBER_ROLE_KEYS) {
+      const member = workspaceOf([contextOf('account', roleKey), contextOf('short-rent', roleKey, EVERYTHING_OF_THE_HOST_AREA)]);
+
+      expect(todoActionRoute(rejected, member), roleKey).toBeNull();
+      expect(todoActionRoute(drafts, member), roleKey).toBeNull();
+    }
+    // The owner of a rental area who holds no account area has no such page either.
+    const rentalOwnerOnly = workspaceOf([contextOf('short-rent', 'property_owner', EVERYTHING_OF_THE_HOST_AREA)]);
+
+    expect(todoActionRoute(rejected, rentalOwnerOnly)).toBeNull();
+    expect(todoActionRoute(drafts, rentalOwnerOnly)).toBeNull();
+  });
+});
+
+// Every `ActivityAction` of the backend (`Casazen.Core/Entities/Enums/ActivityAction.cs`, the 24 values this version of the app knows): the map has an entry for each, or the action is
 // in the list of those whose page does not exist yet. An action that is in neither is a "To do" with no button that nobody noticed; the task that builds
 // the page adds the entry and takes the action out of the list (the test below fails until it does).
 const BACKEND_ACTIONS = [
@@ -406,6 +458,7 @@ const BACKEND_ACTIONS = [
   'RenewPoliceCredentials',
   'ReviewFiscalDocument',
   'CorrectInvoice',
+  'ReviewSelfBilling',
   'ReviewOwnerStay',
   'RenewOwnerDocument',
   'CopyCheckInLink',
