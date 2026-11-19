@@ -412,8 +412,10 @@ describe('what the host may do', () => {
     expect(some.queryByTestId('scheduled-message-skip')).not.toBeInTheDocument();
     expect(some.getByTestId('scheduled-message-send-now')).toBeInTheDocument();
     expect((await cardOf('m-none')).queryByTestId('scheduled-message-actions')).not.toBeInTheDocument();
-    // Each button says which message it is about, starting with its own words.
-    expect(all.getByTestId('scheduled-message-edit')).toHaveAccessibleName('Modifica il messaggio «Messaggio di arrivo» di mar 24 nov, 08:00 CET');
+    // Each button says which message it is about, starting with its own words (the way the date is written belongs to the locale data of the machine, so only the time is read).
+    expect(all.getByTestId('scheduled-message-edit')).toHaveAccessibleName(/^Modifica il messaggio «Messaggio di arrivo» di .*08:00/);
+    expect(all.getByTestId('scheduled-message-skip')).toHaveAccessibleName(/^Salta il messaggio «Messaggio di arrivo» di .*08:00/);
+    expect(all.getByTestId('scheduled-message-send-now')).toHaveAccessibleName(/^Invia ora il messaggio «Messaggio di arrivo» di .*08:00/);
   });
 
   it('skip_Confirmation_SaysTheGuestWillNotReceiveItAndSkipsOnlyWhenConfirmed', async () => {
