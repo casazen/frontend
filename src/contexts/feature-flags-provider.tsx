@@ -21,9 +21,10 @@ export function FeatureFlagsProvider({ children }: { children: React.ReactNode }
     () => ({
       flags: query.data === undefined ? DEFAULT_FEATURE_FLAGS : parseFeatureFlags(query.data),
       isLoading: query.isLoading,
+      isError: query.isError && query.data === undefined,
       live: true,
     }),
-    [query.data, query.isLoading],
+    [query.data, query.isError, query.isLoading],
   );
 
   return <FeatureFlagsContext.Provider value={value}>{children}</FeatureFlagsContext.Provider>;

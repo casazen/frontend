@@ -21375,6 +21375,7 @@
       "download": "Scarica PNG",
       "error": "Errore",
       "errorDescription": "ID immobile mancante o non valido.",
+      "flagsUnreadable": "Per ora non riusciamo a capire quale codice QR stampare. Riprova tra poco.",
       "hint": "Stampa o scarica questo codice QR e posizionalo all'ingresso della struttura per facilitare il check-in dei tuoi ospiti.",
       "instructions": "Scansiona questo codice QR per iniziare la verifica del tuo soggiorno",
       "loading": "Generazione codice QR...",
