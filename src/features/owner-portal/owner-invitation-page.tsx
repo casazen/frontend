@@ -168,23 +168,25 @@ export function OwnerInvitationPage() {
     };
   }, []);
 
-  const openPortal = useCallback(async (afterLogin = false) => {
-    try {
-      if (!afterLogin) await refreshAccessToken();
-      if (!onPage.current) return;
-      await ownerPortalApi.checkAccess();
-    } catch {
-      if (!onPage.current) return;
-      if (!afterLogin) {
-        // A top-level Auth0 session can issue a fresh token even when the browser blocks silent auth.
-        // Resume the access check without carrying or submitting the accepted invitation again.
-        login({ returnTo: PORTAL_LOGIN_RETURN });
-        return;
-      }
-      setStage('tokenPending');
-      return;
-    }
-    if (onPage.current) navigate(OWNER_PORTAL_HOME_PATH, { replace: true });
+  const openPortal = useCallback((afterLogin = false) => {
+    const refresh = afterLogin ? Promise.resolve() : refreshAccessToken();
+    return refresh.then(() => {
+      if (onPage.current) return ownerPortalApi.checkAccess();
+    }).then(
+      () => {
+        if (onPage.current) navigate(OWNER_PORTAL_HOME_PATH, { replace: true });
+      },
+      () => {
+        if (!onPage.current) return;
+        if (!afterLogin) {
+          // A top-level Auth0 session can issue a fresh token even when the browser blocks silent auth.
+          // Resume the access check without carrying or submitting the accepted invitation again.
+          login({ returnTo: PORTAL_LOGIN_RETURN });
+          return;
+        }
+        setStage('tokenPending');
+      },
+    );
   }, [login, navigate, refreshAccessToken]);
 
   const finish = useCallback(
