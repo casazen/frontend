@@ -125,6 +125,37 @@ describe('the wire page and a 403 (permission rule: a refusal is told in the pag
     expect(within(panel).queryByTestId('wire-batch-payouts-count')).toBeNull();
   });
 
+  // Only the two codes of the account are told otherwise (the next group): every other 403 stays the refusal in words, whatever its body. A code of the server that is not one of the
+  // account (`forbidden`), and the page of HTML that a proxy or a firewall serves (no code at all), must neither run a handler of the account nor become a failure of the read.
+  it.each([
+    { name: 'a code that is not one of the account', body: { code: 'forbidden' } },
+    { name: 'the page of HTML of a proxy or a firewall', body: '<!doctype html><html><head><title>403 Forbidden</title></head><body><h1>Forbidden</h1></body></html>' },
+  ])('WirePage_Reads403WithAnyOtherBody_StaysTheRefusalInWords_NoHandlerOfTheAccountRuns ($name)', async ({ body }) => {
+    reply = (request) => (request.path === PAYABLE || request.path === FILE_PAYOUTS ? { status: 403, data: body } : serverInOrder(request));
+
+    renderPage();
+
+    expect(await screen.findByTestId('wire-payouts-refused')).toHaveTextContent('Questi pagamenti non sono disponibili per il tuo accesso');
+    // Not the handler of the deactivated account, not the one of the onboarding, not the no-access page; and not a failure of the read, nor the words of the account.
+    expect(onAccountInactive).not.toHaveBeenCalled();
+    expect(onOnboardingRequired).not.toHaveBeenCalled();
+    expect(onForbidden).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('wire-load-error')).toBeNull();
+    expect(screen.queryByTestId('wire-load-error-CHF')).toBeNull();
+    expect(screen.queryByTestId('wire-load-error-EUR')).toBeNull();
+    expect(screen.queryByText('Il tuo account è stato disattivato.')).toBeNull();
+    expect(screen.queryByText(/Completa l'attivazione dell'account/)).toBeNull();
+    expect(screen.queryByTestId('wire-create')).toBeNull();
+
+    // The payouts of a file are another read with the same rule: the refusal in the card, with no handler either.
+    const panel = await openPayoutsOfTheFile();
+    expect(await within(panel).findByTestId('wire-batch-payouts-refused')).toHaveTextContent('Questi pagamenti non sono disponibili per il tuo accesso');
+    expect(within(panel).queryByTestId('wire-batch-payouts-error')).toBeNull();
+    expect(onAccountInactive).not.toHaveBeenCalled();
+    expect(onOnboardingRequired).not.toHaveBeenCalled();
+    expect(onForbidden).not.toHaveBeenCalled();
+  });
+
   it('theClientOfTheApp_A403OnAnyOtherRead_SendsTheAppToNoAccess', async () => {
     // The control of the tests above: the handler is wired and the transport rejects as the real one does, so its silence there is the doing of the wire reads.
     reply = () => ({ status: 403, data: '' });
