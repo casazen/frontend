@@ -31247,13 +31247,14 @@
     "loadErrorCurrency": "Could not load the payments in {{currency}}",
     "loading": "Loading wire transfers...",
     "noPayouts": "No payments to send to the bank",
-    "noPayoutsDescription": "Payments appear here once you confirm them in the month-end close of the owners.",
+    "noPayoutsDescription": "A payment appears here only once you have confirmed it in the month-end close of the owners, its statement has been published to the owner and its net amount is above zero.",
     "notCreated": "{{currency}} file not created",
     "notFound": "Payments not found",
     "notFoundPayout": "We cannot find one of the chosen payments: the list has been updated.",
     "openClose": "Go to the month-end close",
     "openOwner": "Open the financial details",
-    "payoutsHint": "The confirmed payments to the owners that are not in any file yet, for the net amount after the withholding. A payment goes into one file only: once you put it in a file, it leaves this list.",
+    "payoutsCapNote": "At most {{limit}} payments in {{currency}} are listed, the oldest ones: the others appear here once you put some of these in a file.",
+    "payoutsHint": "The confirmed payments to the owners that are not in any file yet, for the net amount after the withholding. Only the ones whose statement has already been published to the owner, and whose net amount is above zero, are listed. A payment goes into one file only: once you put it in a file, it leaves this list.",
     "refused": {
       "description": "The list covers the owners of the whole organization and the server only shows it with access to every property. If your access is limited to some properties, ask an administrator to open this page.",
       "title": "These payments are not available to your access"

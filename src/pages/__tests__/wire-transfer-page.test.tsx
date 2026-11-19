@@ -3,6 +3,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testi
 import { createElement } from 'react';
 import { focusManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
+import { isListCapped, WIRE_PAYABLE_LIST_CAP } from '@/components/finance/wire-model';
 import i18n from '@/i18n/config';
 import { addDays, formatStayDate, todayInRome } from '@/lib/stay-dates';
 import type { CreateBatchRequest, CreateBatchResponse, WireBatch, WireBatchPayouts, WireCurrency, WirePayout } from '@/types';
@@ -404,6 +405,89 @@ describe('a payout that is in a batch is not on the list: it leaves at once and 
 
     await waitFor(() => expect(screen.queryByTestId(`wire-payout-${CHF_A.payoutId}`)).not.toBeInTheDocument());
     expect(api.listPayablePayouts).toHaveBeenCalledTimes(4);
+  });
+
+  it('WirePage_FileMadeButTheListsReadAgainStillHoldThePayout_ReplicaLag_TheRowDoesNotComeBack_NorCanItBeChosen', async () => {
+    // The server made the file, but the lists it answers next are those of before (a replica that is behind): the payout is still on them. The page put it in a file in this visit,
+    // so it is never offered again, whatever a list read again says (the second line of defence; the server's refusal, `payouts_already_in_batch`, is the last).
+    const LATE = wirePayout({ payoutId: 'c0000000-0000-4000-8000-000000000006', ownerId: OWNER_A, ownerName: 'Marta Rossi', currency: 'CHF', amount: 55 });
+    api.createBatch.mockImplementation(async (request: CreateBatchRequest) => {
+      const before: Record<WireCurrency, WirePayout[]> = { CHF: [...payable.CHF], EUR: [...payable.EUR] };
+      const made = serverMakesTheBatch(request);
+      payable = before;
+      return made;
+    });
+    const client = renderPage();
+
+    await makeTheFiles([CHF_A]);
+
+    // The lists were read again after the request and the page holds their answer, which still has the payout: not a row of the page, and nothing to choose.
+    expect(client.getQueryData<WirePayout[]>(['wire-transfers', 'payable', 'CHF'])?.map((item) => item.payoutId)).toContain(CHF_A.payoutId);
+    expect(screen.queryByTestId(`wire-payout-${CHF_A.payoutId}`)).not.toBeInTheDocument();
+    expect(screen.getByTestId(`wire-payout-${CHF_B.payoutId}`)).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('wire-select-group-CHF'));
+    expect(screen.getByTestId('wire-selection')).toHaveTextContent('1 pagamento scelto in CHF');
+    expect(screen.queryByTestId(`wire-payout-${CHF_A.payoutId}`)).not.toBeInTheDocument();
+
+    // The window gets the focus back and the lists are read again, still with the payout (and with a payout confirmed meanwhile, which tells that the answer is on the page).
+    payable.CHF = [...payable.CHF, LATE];
+    act(() => focusManager.setFocused(false));
+    act(() => focusManager.setFocused(true));
+
+    expect(await screen.findByTestId(`wire-payout-${LATE.payoutId}`)).toBeInTheDocument();
+    expect(screen.queryByTestId(`wire-payout-${CHF_A.payoutId}`)).not.toBeInTheDocument();
+    expect(screen.getByTestId('wire-selection')).toHaveTextContent('1 pagamento scelto in CHF');
+  });
+});
+
+describe('a list as long as the server gives it may not be the whole of it (the cap of the server) and the texts say what a payout needs to be on it', () => {
+  it('WirePage_ListWithTheCapOfRows_SaysThereMayBeMore_AndAShortListSaysNothing', async () => {
+    const many = Array.from({ length: WIRE_PAYABLE_LIST_CAP }, (_, index) =>
+      wirePayout({ payoutId: `f0000000-0000-4000-8000-${String(index).padStart(12, '0')}`, ownerId: OWNER_A, ownerName: 'Marta Rossi', currency: 'CHF', amount: 10 + index }),
+    );
+    payable = { CHF: many, EUR: [EUR_B] };
+
+    renderPage();
+
+    const note = await screen.findByTestId('wire-cap-note-CHF', undefined, { timeout: 15_000 });
+    expect(note).toHaveTextContent('Sono elencati al massimo 1000 pagamenti in CHF, i più vecchi');
+    expect(within(screen.getByTestId('wire-group-CHF')).getByTestId('wire-cap-note-CHF')).toBe(note);
+    // The euro list is short: nothing is said about it.
+    expect(screen.getByTestId(`wire-payout-${EUR_B.payoutId}`)).toBeInTheDocument();
+    expect(screen.queryByTestId('wire-cap-note-EUR')).not.toBeInTheDocument();
+  });
+
+  it('isListCapped_OneRowBelowTheCapOrNoList_IsNotCapped_TheCapIs', () => {
+    expect(isListCapped(new Array(WIRE_PAYABLE_LIST_CAP - 1))).toBe(false);
+    expect(isListCapped(new Array(WIRE_PAYABLE_LIST_CAP))).toBe(true);
+    expect(isListCapped([])).toBe(false);
+    expect(isListCapped(null)).toBe(false);
+    expect(isListCapped(undefined)).toBe(false);
+  });
+
+  const PUBLICATION_TEXTS = [
+    { language: 'it', published: /pubblicato al proprietario/, positive: /maggiore di zero/ },
+    { language: 'en', published: /published to the owner/, positive: /above zero/ },
+  ];
+
+  it.each(PUBLICATION_TEXTS)('WirePage_NoPayoutToPay_SaysThatTheStatementMustBePublishedToTheOwnerAndTheNetAboveZero ($language)', async ({ language, published, positive }) => {
+    await i18n.changeLanguage(language);
+    payable = { CHF: [], EUR: [] };
+
+    renderPage();
+
+    const description = await screen.findByText(published);
+    expect(description).toHaveTextContent(positive);
+  });
+
+  it.each(PUBLICATION_TEXTS)('WirePage_ListOfPayouts_SaysThatOnlyThePayoutsOfAPublishedStatementAndOfANetAboveZeroAreListed ($language)', async ({ language, published, positive }) => {
+    await i18n.changeLanguage(language);
+
+    renderPage();
+
+    const hint = await screen.findByText(published);
+    expect(hint).toHaveTextContent(positive);
+    expect(screen.getByTestId(`wire-payout-${CHF_A.payoutId}`)).toBeInTheDocument();
   });
 });
 
