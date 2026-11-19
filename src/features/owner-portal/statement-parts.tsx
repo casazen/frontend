@@ -157,13 +157,59 @@ export function StatementSectionBlock({ section, currency }: { section: OwnerPor
 }
 
 /**
+ * The stays of the tourist tax box and what they add up to, or the sentence that says there is none: the part of the box that the owner portal and the statement of the agency draw the same
+ * way (one place groups and writes it). Each stay carries the currency the tax was collected in (its amount is written in that one, not in the one of the statement), and a sum never
+ * mixes two currencies; a row with no currency has no symbol and the box says so.
+ */
+export function TouristTaxRows({ rows }: { rows: readonly OwnerPortalTouristTax[] }) {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language;
+  const totals = touristTaxTotals(rows);
+  if (rows.length === 0) {
+    return (
+      <p className="text-sm" data-testid="owner-tourist-tax-empty">
+        {t('ownerPortal.accounting.touristTax.empty')}
+      </p>
+    );
+  }
+  return (
+    <>
+      <ul className="divide-y">
+        {rows.map((row, index) => {
+          const details = [
+            stayDays(row.checkIn, row.checkOut, locale),
+            row.channel,
+            row.bookingCode ? t('ownerPortal.accounting.line.bookingCode', { code: row.bookingCode }) : null,
+          ].filter(Boolean);
+          return (
+            <li key={`${row.bookingCode ?? ''}-${row.checkIn}-${index}`} className="flex min-w-0 flex-col gap-1 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4" data-testid="owner-tourist-tax-row">
+              <div className="min-w-0 space-y-0.5">
+                {row.property ? <p className="break-words text-sm font-medium">{row.property}</p> : null}
+                <p className="break-words text-sm text-muted-foreground">{details.join(' · ')}</p>
+              </div>
+              <p className="shrink-0 whitespace-nowrap text-sm font-semibold tabular-nums sm:text-right">{formatMoney(row.amount, row.currency, locale)}</p>
+            </li>
+          );
+        })}
+      </ul>
+      <dl className="divide-y border-t text-sm">
+        {totals.map((total) => (
+          <AmountRow key={total.currency ?? 'none'} label={t('ownerPortal.accounting.touristTax.total')} value={formatMoney(total.total, total.currency, locale)} testId="owner-tourist-tax-total" />
+        ))}
+      </dl>
+      {rows.some((row) => !currencyCode(row.currency)) ? (
+        <MoneyNote testId="owner-tourist-tax-currency-missing">{t('ownerPortal.accounting.touristTax.currencyMissing')}</MoneyNote>
+      ) : null}
+    </>
+  );
+}
+
+/**
  * The tourist tax of the stays of the statement: for information, outside the net. Each stay carries the currency the tax was collected in (its amount is written in that one,
  * not in the one of the statement), and a sum never mixes two currencies.
  */
 export function TouristTaxBox({ rows }: { rows: readonly OwnerPortalTouristTax[] }) {
-  const { t, i18n } = useTranslation();
-  const locale = i18n.language;
-  const totals = touristTaxTotals(rows);
+  const { t } = useTranslation();
   return (
     <section aria-labelledby="owner-tourist-tax-title" className="space-y-3 rounded-md border bg-card p-4" data-testid="owner-tourist-tax">
       <div className="space-y-1">
@@ -172,40 +218,7 @@ export function TouristTaxBox({ rows }: { rows: readonly OwnerPortalTouristTax[]
         </h2>
         <p className="text-sm text-muted-foreground">{t('ownerPortal.accounting.touristTax.description')}</p>
       </div>
-      {rows.length === 0 ? (
-        <p className="text-sm" data-testid="owner-tourist-tax-empty">
-          {t('ownerPortal.accounting.touristTax.empty')}
-        </p>
-      ) : (
-        <>
-          <ul className="divide-y">
-            {rows.map((row, index) => {
-              const details = [
-                stayDays(row.checkIn, row.checkOut, locale),
-                row.channel,
-                row.bookingCode ? t('ownerPortal.accounting.line.bookingCode', { code: row.bookingCode }) : null,
-              ].filter(Boolean);
-              return (
-                <li key={`${row.bookingCode ?? ''}-${row.checkIn}-${index}`} className="flex min-w-0 flex-col gap-1 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4" data-testid="owner-tourist-tax-row">
-                  <div className="min-w-0 space-y-0.5">
-                    {row.property ? <p className="break-words text-sm font-medium">{row.property}</p> : null}
-                    <p className="break-words text-sm text-muted-foreground">{details.join(' · ')}</p>
-                  </div>
-                  <p className="shrink-0 whitespace-nowrap text-sm font-semibold tabular-nums sm:text-right">{formatMoney(row.amount, row.currency, locale)}</p>
-                </li>
-              );
-            })}
-          </ul>
-          <dl className="divide-y border-t text-sm">
-            {totals.map((total) => (
-              <AmountRow key={total.currency ?? 'none'} label={t('ownerPortal.accounting.touristTax.total')} value={formatMoney(total.total, total.currency, locale)} testId="owner-tourist-tax-total" />
-            ))}
-          </dl>
-          {rows.some((row) => !currencyCode(row.currency)) ? (
-            <MoneyNote testId="owner-tourist-tax-currency-missing">{t('ownerPortal.accounting.touristTax.currencyMissing')}</MoneyNote>
-          ) : null}
-        </>
-      )}
+      <TouristTaxRows rows={rows} />
     </section>
   );
 }

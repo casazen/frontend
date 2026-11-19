@@ -705,6 +705,7 @@
       },
       "entity": {
         "Booking": "Prenotazione",
+        "OwnerStatementVersion": "Rendiconto del proprietario",
         "Property": "Immobile"
       },
       "filter": {
@@ -842,6 +843,10 @@
         "OwnerDocumentExpiring": {
           "title": "Documento del proprietario in scadenza",
           "why": "Un documento condiviso con il proprietario (un'assicurazione, un mandato) scade entro 30 giorni o è già scaduto: carica quello nuovo."
+        },
+        "OwnerStatementNoticeFailed": {
+          "title": "Proprietario da avvisare a mano",
+          "why": "Non siamo riusciti ad avvisare il proprietario con l'e-mail che il rendiconto è stato pubblicato: aprilo e avvisa tu il proprietario. Il rendiconto è pubblicato comunque."
         },
         "OwnerStaySyncFailed": {
           "title": "Blocco del soggiorno del proprietario non accettato",
@@ -3702,7 +3707,8 @@
         "host": "La incasso io",
         "intro": "Per ogni portale dici chi incassa la tassa di soggiorno. Se la incassa il portale, sul documento non compare la riga. Se la incassi tu, compare con la regola del cantone.",
         "note": "Rispondi per ogni portale: non salviamo una scelta che non hai fatto.",
-        "portal": "La incassa il portale"
+        "portal": "La incassa il portale",
+        "proposed": "Per {{portals}} abbiamo già scelto «{{choice}}»: di solito la tassa la incassa il portale. Controlla, e cambia se per te non è così."
       }
     },
     "vat": {
@@ -18558,6 +18564,8 @@
       "focusBody": "Saldo di chiusura {{balance}}. Versione tagliata il {{cutoff}}.",
       "focusTitle": "Versione {{version}} · {{status}}",
       "formula": "Saldo di chiusura = saldo di apertura {{opening}} + incassi {{revenue}} + commissioni e costi {{costs}} + pagamenti e ritenute {{paid}} + rettifiche {{corrections}} = {{closing}}.",
+      "immutableBody": "Le righe registrate non danno più i totali salvati in questa versione. Per non mostrarti cifre sbagliate non la mostriamo, e nemmeno i suoi file: riprovare non serve. Scrivi all'assistenza indicando il mese e il proprietario.",
+      "immutableTitle": "Questo rendiconto non si può mostrare",
       "kicker": "Rendiconto di {{period}}",
       "loadError": "Non riusciamo a leggere il rendiconto.",
       "loading": "Leggo il rendiconto…",
@@ -18880,6 +18888,18 @@
   },
   "ownerInvoice": {
     "currencyMissing": "Per qualche fattura il server non ha indicato la valuta: gli importi sono scritti senza simbolo.",
+    "detail": {
+      "creditNote": "Nota di credito",
+      "description": "Le righe della fattura e i suoi totali, come sono salvati.",
+      "forbidden": "Con il tuo accesso questa fattura non si vede: la vedono il titolare e chi amministra l'organizzazione, con accesso a tutti gli immobili.",
+      "forbiddenTitle": "Fattura non accessibile",
+      "issuedOn": "Emessa il {{date}}",
+      "notFound": "Questa fattura non c'è più",
+      "notFoundBody": "Non esiste, oppure appartiene a un'altra organizzazione. Chiudi e aggiorna l'elenco.",
+      "open": "Apri le righe",
+      "openLabel": "Apri le righe e i totali di: {{name}}",
+      "title": "Fattura al proprietario"
+    },
     "issue": {
       "confirm": "Emetti la fattura",
       "consequenceFinal": "Una volta emessa la fattura non si modifica più.",
@@ -20267,16 +20287,17 @@
     "row": {
       "kindAndCurrency": "{{kind}} · valuta {{currency}}",
       "kindNoCurrency": "{{kind}} · valuta di liquidazione mancante",
-      "loading": "Leggo il profilo…",
       "mandateActive": "Provvigione {{percent}} {{vat}}, dal {{from}}",
       "mandateError": "Non riusciamo a leggere il mandato.",
       "mandateLoading": "Leggo il mandato…",
       "mandateMissing": "Manca il mandato",
       "mandateUpcoming": "Mandato dal {{from}}: provvigione {{percent}}",
       "noProfile": "Nessun profilo fiscale",
+      "noProperties": "Nessun immobile",
       "open": "Dati finanziari",
       "openLabel": "Apri i dati finanziari di {{owner}}",
-      "profileError": "Non riusciamo a leggere il profilo fiscale."
+      "properties_one": "{{count}} immobile",
+      "properties_other": "{{count}} immobili"
     },
     "title": "Proprietari"
   },

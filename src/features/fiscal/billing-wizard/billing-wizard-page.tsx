@@ -54,6 +54,7 @@ import {
   lastMonthOf,
   missingItemsOf,
   ownerIssuersMissing,
+  platformDefaultsOf,
   portalSettingsChanged,
   problemsOf,
   sectionOf,
@@ -61,6 +62,7 @@ import {
   stepSave,
   taxProfileAddition,
   textOf,
+  withProposal,
   type FormProblem,
 } from './billing-wizard-model';
 import {
@@ -162,6 +164,10 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
   // The wizard starts from the setup as it was when the page opened: a later read of it (the window comes back, a save) does not change the answers under the person's hands.
   const [today] = useState(() => todayInRome());
   const [defaults] = useState(() => initialValues(setup, { organizationName: org?.name ?? '', today }));
+  // The portals the server says collect the Swiss tourist tax by default, read from the setup as it is now (a country chosen in this wizard has its own). They are proposed in the step, and what a
+  // draft compares the answers with already holds them: a proposal the person left as it was is not something they wrote.
+  const proposedCollectors = readOnly ? [] : platformDefaultsOf(setup);
+  const baseline = withProposal(defaults, proposedCollectors);
   const [problems, setProblems] = useState<FormProblem[]>([]);
   const settle = useCallback((name: string) => setProblems((current) => (current.some((problem) => problem.name === name) ? current.filter((problem) => problem.name !== name) : current)), []);
 
@@ -217,7 +223,7 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
         }
         return { sent };
       }
-      const step = stepSave(id, values, { draft, onRecord, initial: defaults });
+      const step = stepSave(id, values, { draft, onRecord, initial: baseline });
       if (step && Object.keys(step.request).length > 0) {
         await save.mutateAsync(step);
         sent = true;
@@ -238,7 +244,7 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
         try {
           const { sent } = await saveStep(stepId as BillingStepId, values, true);
           // «Salvato» only for what is true: part of what was written may have been left out (not valid, or terms the step never saves), and a draft may have had nothing to send.
-          const left = draftLeftOut(stepId as BillingStepId, values, { initial: defaults, onRecord, accountant: accountantSettings });
+          const left = draftLeftOut(stepId as BillingStepId, values, { initial: baseline, onRecord, accountant: accountantSettings });
           if (left.length === 0) toast.success(t(sent ? 'billingWizard.exit.saved' : 'billingWizard.exit.nothingNew'));
           else if (stepId === BILLING_STEPS.mandate) toast.warning(t('billingWizard.exit.mandateNotSaved'));
           else toast.warning(t(sent ? 'billingWizard.exit.savedPartly' : 'billingWizard.exit.notSaved'));
@@ -292,7 +298,12 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
       case BILLING_STEPS.numbering:
         return { ...base, schema: checked(numberingStepSchema), render: () => frame(id, <NumberingStep year={year} />) };
       case BILLING_STEPS.touristTax:
-        return { ...base, schema: values.countryCode === 'CH' ? checked(touristTaxStepSchema) : undefined, render: () => frame(id, <TouristTaxStep country={values.countryCode} />) };
+        return {
+          ...base,
+          schema: values.countryCode === 'CH' ? checked(touristTaxStepSchema) : undefined,
+          // The proposal is read from the setup as it is now (the country may have been chosen in this wizard, and the portals that collect the tax by default are the server's answer for it).
+          render: () => frame(id, <TouristTaxStep country={values.countryCode} proposed={proposedCollectors} />),
+        };
       case BILLING_STEPS.channels:
         return {
           ...base,

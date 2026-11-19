@@ -111,6 +111,33 @@ function isMissing(setup: BillingSetup | undefined, key: string): boolean {
   return Boolean(setup?.sections.some((section) => section.missing.some((item) => item.key === key)));
 }
 
+/**
+ * The portals the step «Tassa di soggiorno» proposes as the ones that collect the tourist tax, for an issuer that has not said its own answer yet: the ones the server lists in
+ * `defaultPlatformCollectedTouristTaxChannels` of the section `touristTax` (the shipped default of the Swiss tourist tax, which is what the guest documents assume until the issuer confirms:
+ * the wizard and the documents never disagree). It is a proposal and never an answer: it is read, never saved by itself (the issuer's own list is `platformCollectedTouristTaxChannels`), and
+ * once the issuer has confirmed a list, even an empty one, nothing is proposed and what the issuer saved is what the step shows. Only the portals the step asks about are kept.
+ */
+export function platformDefaultsOf(setup: BillingSetup | undefined): Array<(typeof PORTAL_SOURCES)[number]> {
+  const tourist = sectionOf(setup, 'touristTax')?.values;
+  if (flagOf(tourist, 'confirmed') || listOf(tourist, 'platformCollectedTouristTaxChannels') !== null) return [];
+  const proposed = listOf(tourist, 'defaultPlatformCollectedTouristTaxChannels') ?? [];
+  return PORTAL_SOURCES.filter((portal) => proposed.includes(portal));
+}
+
+/**
+ * The answers of the wizard as they stand for a person who has not touched the step «Tassa di soggiorno»: the ones it opened with, and the proposal (`proposed`, from `platformDefaultsOf` of the
+ * setup as it is now) in the portals that have no answer. The proposal may arrive after the wizard opened (the country is chosen in it), and it is not something the person wrote: a draft
+ * that leaves the step as it is must not take it for an answer (nothing is saved for it), nor tell the person that something they wrote was left out.
+ */
+export function withProposal(values: BillingWizardValues, proposed: readonly string[]): BillingWizardValues {
+  if (proposed.length === 0) return values;
+  const touristTaxCollectors = { ...values.touristTaxCollectors };
+  for (const portal of PORTAL_SOURCES) {
+    if (proposed.includes(portal) && touristTaxCollectors[portal] === '') touristTaxCollectors[portal] = 'portal';
+  }
+  return { ...values, touristTaxCollectors };
+}
+
 /** What of the tax profile the organization has already: the VAT number and the fiscal code the server read from it. */
 export function identityOnRecord(setup: BillingSetup | undefined): BillingIdentityOnRecord {
   const values = sectionOf(setup, 'issuer')?.values;
@@ -143,6 +170,8 @@ export function initialValues(setup: BillingSetup, context: { organizationName: 
   const countryChosen = isCountry(country) && !isMissing(setup, 'country_missing');
   const regime = textOf(vat, 'regime');
   const collected = listOf(tourist, 'platformCollectedTouristTaxChannels');
+  // What the issuer saved is what the step shows; for an issuer that has saved nothing the portals the server says collect it by default are chosen (and the others left to answer).
+  const proposed = platformDefaultsOf(setup);
   const holder = textOf(channels, 'portalAccountHolder');
   const stay = textOf(vat, 'stayVatTreatment');
   const cleaning = textOf(vat, 'cleaningFeeTreatment');
@@ -165,7 +194,9 @@ export function initialValues(setup: BillingSetup, context: { organizationName: 
     cleaningFeeTreatment: cleaning === 'Service' ? 'Service' : 'FollowsStay',
     guestDocumentSeries: textOf(numbering, 'guestDocumentSeries') || textOf(numbering, 'defaultGuestDocumentSeries'),
     ownerInvoiceSeries: textOf(numbering, 'ownerInvoiceSeries') || textOf(numbering, 'defaultOwnerInvoiceSeries'),
-    touristTaxCollectors: Object.fromEntries(PORTAL_SOURCES.map((portal) => [portal, collected === null ? '' : collected.includes(portal) ? 'portal' : 'host'])),
+    touristTaxCollectors: Object.fromEntries(
+      PORTAL_SOURCES.map((portal) => [portal, collected !== null ? (collected.includes(portal) ? 'portal' : 'host') : proposed.includes(portal) ? 'portal' : '']),
+    ),
     portalAccountHolder: holder === 'Agency' ? 'Agency' : 'Owner',
     rechargePortalCommissions: flagOf(channels, 'rechargePortalCommissions', true),
     holderChanges: {},
