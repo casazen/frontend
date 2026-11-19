@@ -22,6 +22,7 @@ import { INVOICE_DATA_KEY, useInvoiceData } from '@/queries/use-invoice-data';
 import { NOTIFICATIONS_QUERY, UNREAD_COUNT_KEY } from '@/queries/use-notifications';
 import { PAYMENTS_KEY } from '@/queries/use-payments';
 import { SCHEDULED_MESSAGES_KEY } from '@/queries/use-scheduled-messages';
+import { TOURIST_TAX_SUMMARY_KEY } from '@/queries/use-tourist-tax-summary';
 import { VERIFICATION_KEY } from '@/queries/verification';
 import type { PendingAlert } from '@/types/alert';
 import type { NotificationsChange, RealtimeClient, RealtimeState } from '../realtime-client';
@@ -236,9 +237,10 @@ describe('useNotificationsRealtime', () => {
     act(() => client.setState('connecting'));
     act(() => client.setState('connected'));
 
-    // A document issued while the socket was down sent no message: the pages that show it read the documents again.
+    // A document issued while the socket was down sent no message: the pages that show it read the documents again, and so does the count of Ticino at year end.
     const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
     expect(keys).toContainEqual([...FISCAL_DOCUMENTS_KEY]);
+    expect(keys).toContainEqual([TOURIST_TAX_SUMMARY_KEY]);
   });
 
   // E05/F07/US02 (NF-71): a scheduled message that was held back or skipped while the socket was down sent no message either: every timeline that is open and the «To do» list are read again.
@@ -663,6 +665,8 @@ describe('applyNotificationsChange', () => {
     expect(keys).toContainEqual([PAYMENTS_KEY]);
     // The summary of the page «Commercialista» counts the documents issued to the guests (E15/F02/US01/T01): an open page reads it again too.
     expect(keys).toContainEqual([ACCOUNTANT_PACKAGE_KEY]);
+    // The count of the nights in Ticino at year end is made of the documents issued (E18/F01/US02/T03), and the reads of the year end are under the key of the tourist tax summaries: an open page reads them again too.
+    expect(keys).toContainEqual([TOURIST_TAX_SUMMARY_KEY]);
     expect(keys).not.toContainEqual([CHECKIN_SESSION_KEY]);
     expect(keys).not.toContainEqual([VERIFICATION_KEY]);
   });

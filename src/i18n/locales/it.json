@@ -9541,7 +9541,8 @@
         "none": "Il documento non ha righe.",
         "quantity": "Quantità",
         "rate": "IVA",
-        "title": "Righe"
+        "title": "Righe",
+        "toCollectAtProperty": "Da pagare in struttura"
       },
       "lineType": {
         "Accommodation": "Soggiorno",
@@ -9556,10 +9557,12 @@
       "loadError": "Non riusciamo a caricare il documento.",
       "loading": "Carico il documento…",
       "payment": {
+        "noCurrency": "La valuta non è indicata nel documento: gli importi sono mostrati senza simbolo.",
         "paid": "Pagato",
         "paidPortal": "Pagato tramite il portale",
         "title": "Pagamento",
         "toCollect": "Da incassare",
+        "toCollectAtProperty": "Imposta di soggiorno da pagare in struttura",
         "unrecognized": "Incasso: {{code}}"
       },
       "rate": {
@@ -24138,6 +24141,10 @@
         "description": "Comune per comune: quanto è dovuta, quanto hai versato e le ricevute. Qui registri anche i versamenti.",
         "name": "Imposta di soggiorno: dovuta e versata"
       },
+      "touristTaxYearEnd": {
+        "description": "I file di fine anno: la dichiarazione ai comuni, il conto dell'agente e il conteggio delle notti in Ticino.",
+        "name": "Imposta di soggiorno: fine anno"
+      },
       "withholding": {
         "description": "Le ritenute trattenute da Airbnb e Booking.com sugli incassi.",
         "name": "Ritenute dei portali"
@@ -24351,7 +24358,131 @@
         "ToPay": "Da versare"
       },
       "title": "Imposta di soggiorno: dovuta e versata",
-      "total": "Totale"
+      "total": "Totale",
+      "yearEnd": {
+        "account": {
+          "by": {
+            "label": "Suddivisione",
+            "month": "Mese per mese",
+            "quarter": "Trimestre per trimestre"
+          },
+          "caption": "Conto dell'agente {{year}}: {{cut}}, comune per comune",
+          "columns": {
+            "collected": "Riscossa",
+            "period": "Periodo"
+          },
+          "description": "Per ogni comune, l'imposta riscossa e quella versata mese per mese o trimestre per trimestre, con la riga dell'anno e l'elenco dei versamenti.",
+          "empty": "Nessun soggiorno in Italia con check-in nel {{year}} e nessun versamento registrato: il conto dell'agente non ha righe.",
+          "period": {
+            "quarter": "{{quarter}}º trimestre {{year}}",
+            "year": "Anno {{year}}"
+          },
+          "remittances": {
+            "empty": "Nessun versamento registrato nel {{year}}.",
+            "title": "Versamenti dell'anno"
+          },
+          "title": "Conto dell'agente {{year}}"
+        },
+        "columns": {
+          "guests": "Ospiti",
+          "nights": "Notti"
+        },
+        "declaration": {
+          "caption": "Dichiarazione ai comuni {{year}}, comune per comune",
+          "counts": {
+            "guestNights_one": "{{count}} notte-ospite",
+            "guestNights_other": "{{count}} notti-ospite",
+            "guests_one": "{{count}} ospite",
+            "guests_other": "{{count}} ospiti",
+            "stays_one": "{{count}} soggiorno",
+            "stays_other": "{{count}} soggiorni"
+          },
+          "description": "Per ogni comune: notti e ospiti, soggiorni con e senza imposta, imposta dovuta, versata e differenza, con i versamenti.",
+          "details": {
+            "exemptions": "Ospiti esenti",
+            "none": "Nessuno",
+            "staysWithoutAmount": "Soggiorni senza importo",
+            "taxedStays": "Soggiorni con imposta"
+          },
+          "empty": "Nessun soggiorno in Italia con check-in nel {{year}} e nessun versamento registrato: la dichiarazione ai comuni non ha righe.",
+          "exemptionReason": {
+            "erased": "Motivo cancellato con i dati dell'ospite",
+            "minor_age": "Minorenni (esenti per età)",
+            "restricted": "dettaglio dei motivi riservato"
+          },
+          "reasons": "Le esenzioni sono contate per motivo: mai un ospite, mai un nome.",
+          "reasonsRestricted": "Il dettaglio dei motivi delle esenzioni è riservato a chi può leggere i dati degli ospiti: nel file trovi le esenzioni per età e una sola riga, «dettaglio dei motivi riservato», con gli stessi conteggi.",
+          "stayReason": {
+            "collected_by_channel": "Imposta incassata dal portale",
+            "exempt": "Tutti gli ospiti esenti",
+            "no_tax_due": "Nessuna imposta dovuta",
+            "not_calculated": "Imposta non calcolata"
+          },
+          "title": "Dichiarazione ai comuni {{year}}"
+        },
+        "description": "I dati da consegnare ai comuni e all'ente turistico del Ticino. CasaZen prepara i file e non invia niente: la dichiarazione la presenti tu o il tuo commercialista.",
+        "details": {
+          "error": "Impossibile caricare queste cifre.",
+          "loading": "Carico le cifre…",
+          "noAccess": "Queste cifre non sono disponibili per il tuo accesso: servono il permesso sui pagamenti e l'accesso a tutti gli immobili dell'organizzazione.",
+          "notFound": "Queste cifre non ci sono.",
+          "unavailable": "Le cifre a schermo (dichiarazione, conto dell'agente e Ticino) non sono ancora disponibili: intanto puoi scaricare i file qui sopra."
+        },
+        "figures": {
+          "balance": "Saldo",
+          "byComune": "Apri il riepilogo per comune",
+          "currencyMissing": "Per questi importi il servizio non indica la valuta: sono scritti senza simbolo.",
+          "empty": "Nessun soggiorno in Italia con check-in nel {{year}} e nessun versamento registrato: la dichiarazione ai comuni non ha righe.",
+          "error": "Impossibile caricare le cifre dell'anno.",
+          "label": "Cifre del {{year}}",
+          "loading": "Carico le cifre dell'anno…",
+          "nights": "Notti",
+          "notFound": "Le cifre di questo anno non ci sono.",
+          "owed": "Imposta dovuta",
+          "paid": "Versata",
+          "partial": "Il tuo accesso copre solo alcuni immobili: la dichiarazione di fine anno riguarda tutta l'organizzazione, quindi qui non ne vedi le cifre.",
+          "refused": "Le cifre dell'anno non sono disponibili per il tuo accesso.",
+          "title": "Italia: il {{year}} in breve"
+        },
+        "files": {
+          "failed": "Non è stato possibile preparare il file. Riprova.",
+          "format": {
+            "csv": "Scarica CSV",
+            "xlsx": "Scarica Excel"
+          },
+          "formatFor": "{{format}}: {{title}}",
+          "noAccess": "Non puoi scaricare questo file: servono il permesso sui pagamenti e l'accesso a tutti gli immobili dell'organizzazione.",
+          "note": "CasaZen prepara i dati e non invia niente: i moduli li compila e li consegna chi di dovere, tu o il tuo commercialista.",
+          "title": "File da consegnare"
+        },
+        "ticino": {
+          "cantonUnknown": "Un immobile in Svizzera di cui non si conosce il cantone (manca il comune svizzero o non è riconosciuto) è nel conteggio con una nota nell'ultima colonna, perché potrebbe essere in Ticino. Completa i dati dell'immobile e scarica di nuovo il file.",
+          "caption": "Conteggio delle notti in Ticino {{year}}, immobile per immobile",
+          "columns": {
+            "property": "Immobile",
+            "taxed": "Con imposta",
+            "touristTax": "Imposta di soggiorno",
+            "untaxed": "Senza imposta",
+            "withoutDocument": "Senza documento"
+          },
+          "currencyMissing": "Per alcuni immobili il servizio non indica la valuta: i loro importi sono scritti senza simbolo.",
+          "description": "Per ogni immobile in Ticino: soggiorni e notti dell'anno, con e senza imposta di soggiorno secondo i documenti emessi, e gli importi in franchi. Da consegnare all'ente turistico entro il 5 gennaio {{deadlineYear}}.",
+          "due": "Da consegnare all'ente turistico entro il {{date}}.",
+          "empty": "Nessun immobile in Ticino, e nessuno di cantone non noto, nel {{year}}: il conteggio non ha righe.",
+          "legend": "«Con imposta» e «Senza imposta» vengono dal documento emesso per ogni soggiorno. «Senza documento» sono i soggiorni per cui non ne è stato ancora emesso uno: non sono contati come senza imposta.",
+          "nights_one": "{{count}} notte",
+          "nights_other": "{{count}} notti",
+          "openProperties": "Apri gli immobili",
+          "title": "Conteggio delle notti in Ticino {{year}}",
+          "unknown": {
+            "marker": "Cantone non noto",
+            "note_one": "{{count}} immobile in Svizzera ha il cantone non noto: potrebbe essere in Ticino, quindi è nel conteggio ed è segnato. Finché non indichi il suo comune svizzero nei dati dell'immobile, il conteggio può comprendere un immobile di un altro cantone.",
+            "note_other": "{{count}} immobili in Svizzera hanno il cantone non noto: potrebbero essere in Ticino, quindi sono nel conteggio e sono segnati. Finché non indichi il loro comune svizzero nei dati di ogni immobile, il conteggio può comprendere immobili di altri cantoni."
+          }
+        },
+        "title": "Imposta di soggiorno: fine anno",
+        "year": "Anno"
+      }
     },
     "type": {
       "financial": "Finanziario",
