@@ -27,6 +27,7 @@ import {
   endedReasonOf,
   failureReasonOf,
   formatOnPropertyClock,
+  isOpenStatus,
   missingCodesOf,
   missingItemOf,
   sortedInTimeOrder,
@@ -439,5 +440,5 @@ function ScheduledMessageItem({ message, canWrite, links }: ScheduledMessageItem
 
 /** A message that can still go whose text the server could not give (the template of its routine is gone): it is said, not left as an empty space. */
 function isOpenWithoutText(message: ScheduledMessage): boolean {
-  return (message.status === 'Scheduled' || message.status === 'Blocked' || message.status === 'Failed') && !message.text;
+  return isOpenStatus(message.status) && !message.text;
 }
