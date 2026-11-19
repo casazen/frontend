@@ -12,6 +12,8 @@ declare module 'axios' {
      * requires a token and is not sent at all when none can be obtained.
      */
     public?: boolean;
+    /** The calling screen handles authentication failures without a global redirect. */
+    localAuthRecovery?: boolean;
     /** Internal: the request was already replayed once after a forced token refresh. */
     authRetried?: boolean;
   }
@@ -138,7 +140,7 @@ async function attachAccessToken(config: InternalAxiosRequestConfig): Promise<In
     token = await getAccessToken();
   } catch (error) {
     const reason = auth0ErrorCode(error);
-    if (INTERACTIVE_LOGIN_ERRORS.has(reason)) requestRelogin();
+    if (!config.localAuthRecovery && INTERACTIVE_LOGIN_ERRORS.has(reason)) requestRelogin();
     throw new AuthTokenUnavailableError(reason, { cause: error });
   }
 
@@ -167,7 +169,7 @@ const axiosInstance: AxiosInstance = axios.create({
 });
 
 async function handleResponseError(error: unknown): Promise<AxiosResponse> {
-  if (!isAxiosError(error) || !error.response || !error.config || error.config.public) {
+  if (!isAxiosError(error) || !error.response || !error.config || error.config.public || error.config.localAuthRecovery) {
     throw error;
   }
 

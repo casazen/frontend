@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
+import { ownerPortalApi } from '@/api/ownerPortal.api';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { supportConfig } from '@/config/support.config';
@@ -26,6 +27,7 @@ import type { OwnerInvitationAccepted } from '@/types/owner-onboarding.types';
 
 /** At least 44 px high on every device, and a long label wraps instead of pushing the page sideways. */
 const TOUCH_TARGET = 'h-auto min-h-11 w-full whitespace-normal py-2 text-center leading-tight';
+const PORTAL_LOGIN_RETURN = `${OWNER_INVITATION_PATH}?resume=portal`;
 
 /**
  * `Referrer-Policy: no-referrer` for this page: a link that leaves it (the sign-in, the support address) says nothing of the page it was on. The secret is out
@@ -117,8 +119,8 @@ type Stage = 'opening' | 'claimsPending' | 'tokenPending';
  *
  * The secret of the link is read once, taken out of the address bar at once, kept in memory only while the person signs in (it travels in the `appState` of the
  * Auth0 login) and sent once, in the body of `POST /owner-invitations/accept`, when the person is signed in. The server consumes it idempotently: this page never
- * sends it twice for one attempt. When the claims of the owner portal reached the identity provider the page forgets the secret, asks Auth0 for a new token and
- * replaces the address with the portal. When they did not, it says so, never a success that did not happen, and the secret stays in memory (nowhere else) for a new
+ * sends it twice for one attempt. When the claims reach the identity provider, the page forgets the secret and obtains a fresh Auth0 session. It replaces
+ * the address with the portal only after the API confirms access. If publishing the claims fails, the secret stays in memory (nowhere else) for a new
  * try: the server hands the claims over again every time the same account accepts the same invitation, so «Riprova» accepts again, and only a portal opened without
  * the claims would be refused. The secret is forgotten when the claims are published, when the link is refused for good and when the person leaves the page. A link
  * that is expired, withdrawn, used by another account or invalid, an account whose e-mail is not the invited one and a portal that is off each have their own
@@ -135,6 +137,7 @@ export function OwnerInvitationPage() {
   // Read once, when the page opens: the link of the e-mail, or the one handed over after the sign-in. A link that carries a `token` that is not one does not work,
   // and an older token is not put in its place.
   const [token] = useState(() => (searchParams.has('token') ? normalizeOwnerInvitationToken(searchParams.get('token')) : peekOwnerInvitationToken()));
+  const [resumingPortal] = useState(() => !searchParams.has('token') && searchParams.get('resume') === 'portal');
 
   // The secret leaves the address bar (and the history entry) as soon as the page has it. It waits in memory for the sign-in.
   useEffect(() => {
@@ -165,17 +168,26 @@ export function OwnerInvitationPage() {
     };
   }, []);
 
-  /** A new token from Auth0 (the old one has no owner claims) and the portal in place of this address; a failure of either is told, not hidden. */
-  const openPortal = useCallback(async () => {
-    setStage('opening');
-    try {
-      await refreshAccessToken();
-    } catch {
-      setStage('tokenPending');
-      return;
-    }
-    navigate(OWNER_PORTAL_HOME_PATH, { replace: true });
-  }, [navigate, refreshAccessToken]);
+  const openPortal = useCallback((afterLogin = false) => {
+    const refresh = afterLogin ? Promise.resolve() : refreshAccessToken();
+    return refresh.then(() => {
+      if (onPage.current) return ownerPortalApi.checkAccess();
+    }).then(
+      () => {
+        if (onPage.current) navigate(OWNER_PORTAL_HOME_PATH, { replace: true });
+      },
+      () => {
+        if (!onPage.current) return;
+        if (!afterLogin) {
+          // A top-level Auth0 session can issue a fresh token even when the browser blocks silent auth.
+          // Resume the access check without carrying or submitting the accepted invitation again.
+          login({ returnTo: PORTAL_LOGIN_RETURN });
+          return;
+        }
+        setStage('tokenPending');
+      },
+    );
+  }, [login, navigate, refreshAccessToken]);
 
   const finish = useCallback(
     (accepted: OwnerInvitationAccepted) => {
@@ -189,10 +201,13 @@ export function OwnerInvitationPage() {
         setStage('claimsPending');
         return;
       }
-      // Published: the secret is forgotten for good and the portal opens in place of this address.
+      // Claims were published. Forget the secret before checking access with a fresh session.
       keepsSecret.current = false;
       clearOwnerInvitationToken();
-      void openPortal();
+      if (onPage.current) {
+        setStage('opening');
+        void openPortal();
+      }
     },
     [openPortal, reset],
   );
@@ -216,9 +231,14 @@ export function OwnerInvitationPage() {
 
   // Signed in with the secret in hand: accept, once for each attempt (a render, a development remount or a second effect never sends it again).
   useEffect(() => {
-    if (authLoading || !isAuthenticated || !token || started.current) return;
-    start(token);
-  }, [authLoading, isAuthenticated, start, token]);
+    if (authLoading || !isAuthenticated || started.current) return;
+    if (resumingPortal) {
+      started.current = true;
+      void openPortal(true);
+    } else if (token) {
+      start(token);
+    }
+  }, [authLoading, isAuthenticated, openPortal, resumingPortal, start, token]);
 
   /** A new acceptance with the same secret, only because the person asked: after a failure that is worth trying again and while the claims of the portal are not published. */
   const again = () => {
@@ -229,8 +249,7 @@ export function OwnerInvitationPage() {
     start(token);
   };
 
-  if (authLoading) return <WaitingCard title={t('ownerInvitation.loading')} />;
-  if (stage === 'opening') return <WaitingCard title={t('ownerInvitation.opening')} />;
+  if (authLoading || stage === 'opening') return <WaitingCard title={t('ownerInvitation.opening')} />;
 
   if (stage === 'claimsPending') {
     // The invitation is accepted but the claims of the portal did not reach the identity provider: the portal would refuse the person, so this is not a success and
@@ -246,13 +265,24 @@ export function OwnerInvitationPage() {
   }
 
   if (stage === 'tokenPending') {
-    // The claims are published but a new token could not be asked for: this is not a success either, and asking again is all there is to do.
+    // Auth0 returned but the API still did not confirm access.
     return (
       <InviteAcceptCard tone="attention" title={t('ownerInvitation.tokenPending.title')} description={t('ownerInvitation.tokenPending.description')}>
-        <Button className={TOUCH_TARGET} onClick={() => void openPortal()} data-testid="owner-invitation-open-portal">
+        <Button className={TOUCH_TARGET} onClick={() => login({ returnTo: PORTAL_LOGIN_RETURN, authorizationParams: { prompt: 'login' } })} data-testid="owner-invitation-open-portal">
           {t('ownerInvitation.openPortal')}
         </Button>
         <SupportLink />
+      </InviteAcceptCard>
+    );
+  }
+
+  if (resumingPortal) {
+    if (isAuthenticated) return <WaitingCard title={t('ownerInvitation.opening')} />;
+    return (
+      <InviteAcceptCard title={t('ownerInvitation.opening')}>
+        <Button className={TOUCH_TARGET} onClick={() => login({ returnTo: PORTAL_LOGIN_RETURN })}>
+          {t('ownerInvitation.invite.login')}
+        </Button>
       </InviteAcceptCard>
     );
   }
@@ -267,7 +297,7 @@ export function OwnerInvitationPage() {
   const switchAccount = () =>
     login({ returnTo: OWNER_INVITATION_PATH, appState: { [OWNER_INVITATION_APP_STATE_KEY]: token }, authorizationParams: { prompt: 'login' } });
   if (failure) return <FailureCard failure={failure} onRetry={again} onSwitchAccount={switchAccount} onNewLogin={signInAgain} />;
-  return <WaitingCard title={t('ownerInvitation.accepting')} />;
+  return <WaitingCard title={t('ownerInvitation.opening')} />;
 }
 
 interface FailureCardProps {
