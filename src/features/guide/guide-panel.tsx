@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import type { AppContextKey } from '@/config/route-manifest';
 import { supportConfig } from '@/config/support.config';
+import { currentReturnTo } from '@/lib/auth-return-to';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { useActivities, useActivityCount } from '@/queries/internalActivities';
 import { useProperties } from '@/queries/use-properties';
@@ -120,6 +121,9 @@ function HelpSection({ contextKey }: { contextKey: AppContextKey }) {
   const { t } = useTranslation();
   const titleId = useId();
   const helpEmail = supportConfig.email;
+  const location = useLocation();
+  const manual = `/app/${contextKey}/help`;
+  const returnState = location.pathname === manual ? location.state : { guideReturnTo: currentReturnTo(location) };
 
   return (
     <section aria-labelledby={titleId} className="space-y-2" data-testid="guide-help">
@@ -128,7 +132,7 @@ function HelpSection({ contextKey }: { contextKey: AppContextKey }) {
       </h3>
       <p className="text-sm text-foreground/70">{t('guide.help.text')}</p>
       <div className="flex flex-col items-start">
-        <Link to={`/app/${contextKey}/help`} className={PANEL_LINK} data-testid="guide-help-manual">
+        <Link to={manual} state={returnState} className={PANEL_LINK} data-testid="guide-help-manual">
           <BookOpen aria-hidden="true" className="size-4" />
           {t('guide.help.manual')}
         </Link>

@@ -4,20 +4,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { BookCheck, MessageSquare, Star, FileWarning, type LucideIcon } from 'lucide-react';
-import { eventLabelKey, unavailableActionTypes, type ActionAvailability } from '@/lib/routine-model';
+import { actionLabelKey, unavailableActionTypes, type ActionAvailability } from '@/lib/routine-model';
+import { routineTrigger } from '@/lib/routine-trigger';
 import type { RoutineLibraryTemplate } from '@/types';
 
 interface RoutineLibraryProps {
   suggested?: string | null;
   /** What the catalog says of each action: a template that holds an action that cannot run yet cannot be switched on, only created in test mode. */
   availability?: ActionAvailability;
-  /** Creates the routine of a template: on (`testMode` false) or as a simulation (`testMode` true). */
-  onCreate: (template: RoutineLibraryTemplate, options: { testMode: boolean }) => void;
-  /** A routine is being created: every button of the library waits for it. */
-  isCreating?: boolean;
+  onConfigure: (template: RoutineLibraryTemplate) => void;
   /**
    * Opens the layer that says who cleans for many properties at once. The ready cleaning routine acts on every property that has a cleaner (a property with none is left as it is), so its card
-   * offers it: with it the agency sets the cleaner of its properties and switches the routine on in one go. Not offered when it is not given.
+   * offers it: with it the agency can set the cleaner of its properties. Not offered when it is not given.
    */
   onSetupCleaners?: () => void;
 }
@@ -91,16 +89,7 @@ function buildTemplates(t: TFunction): LibraryEntry[] {
   ];
 }
 
-/** The delay of a time event in words: «1 giorno», «2 ore», or «all'ora dell'evento» when there is none. */
-function offsetText(t: TFunction, days: number, hours: number): string {
-  const parts = [
-    ...(days > 0 ? [t('routines.library.daysCount', { count: days })] : []),
-    ...(hours > 0 ? [t('routines.library.hoursCount', { count: hours })] : []),
-  ];
-  return parts.length > 0 ? parts.join(' ') : t('routines.library.atTheTime');
-}
-
-export function RoutineLibrary({ availability, onCreate, isCreating, onSetupCleaners, suggested }: RoutineLibraryProps) {
+export function RoutineLibrary({ availability, onConfigure, onSetupCleaners, suggested }: RoutineLibraryProps) {
   const { t } = useTranslation();
   const templates = buildTemplates(t).map((entry, index) => ({ ...entry, index }));
   const desired = ['cleaning', 'arrival', 'review', 'documents'].indexOf(suggested ?? '');
@@ -127,19 +116,10 @@ export function RoutineLibrary({ availability, onCreate, isCreating, onSetupClea
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="text-xs text-muted-foreground">
-                    <p>
-                      <span className="font-medium">{t('routines.eventType')}:</span> {t(eventLabelKey(template.eventType))}
-                    </p>
-                    {template.eventConfig && (
-                      <p>
-                        <span className="font-medium">{t('routines.timing')}:</span> {offsetText(t, template.eventConfig.days ?? 0, template.eventConfig.hours ?? 0)}
-                      </p>
-                    )}
-                    <p>
-                      <span className="font-medium">{t('routines.actions')}:</span> {template.actions.length}
-                    </p>
-                  </div>
+                  <dl className="space-y-2 rounded-lg bg-muted/60 p-3 text-sm">
+                    <div><dt className="text-xs text-muted-foreground">{t('routines.flow.when')}</dt><dd className="font-medium">{routineTrigger(t, template.eventType, template.eventConfig)}</dd></div>
+                    <div><dt className="text-xs text-muted-foreground">{t('routines.flow.what')}</dt><dd>{template.actions.map(action => t(actionLabelKey(action.type) ?? 'routines.log.unknownAction')).join(', ')}</dd></div>
+                  </dl>
 
                   {noteKey ? (
                     <p className="text-xs text-muted-foreground" data-testid={`template-note-${index}`}>
@@ -153,42 +133,19 @@ export function RoutineLibrary({ availability, onCreate, isCreating, onSetupClea
                       size="sm"
                       className="w-full"
                       onClick={onSetupCleaners}
-                      disabled={isCreating}
                       data-testid={`setup-cleaners-${index}`}
                     >
                       {t('routines.library.setupCleaners')}
                     </Button>
                   ) : null}
 
-                  {cannotRun || needsTemplate ? (
-                    <>
-                      <div className="space-y-1" data-testid={`template-unavailable-${index}`}>
-                        <Badge variant="outline">{t(cannotRun ? 'routines.action.unavailable' : 'routines.messageTemplate')}</Badge>
-                        <p className="text-xs text-muted-foreground">{t(cannotRun ? 'routines.library.unavailableNote' : 'routines.library.needsTemplate')}</p>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
-                        onClick={() => onCreate(template, { testMode: true })}
-                        disabled={isCreating}
-                        data-testid={`test-template-${index}`}
-                      >
-                        {isCreating ? t('routines.library.activating') : t('routines.library.createInTestMode')}
-                      </Button>
-                    </>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full"
-                      onClick={() => onCreate(template, { testMode: false })}
-                      disabled={isCreating}
-                      data-testid={`activate-template-${index}`}
-                    >
-                      {isCreating ? t('routines.library.activating') : t('routines.library.activate')}
-                    </Button>
-                  )}
+                  {(cannotRun || needsTemplate) && <div className="space-y-1" data-testid={`template-unavailable-${index}`}>
+                    <Badge variant="outline">{t(cannotRun ? 'routines.action.unavailable' : 'routines.messageTemplate')}</Badge>
+                    <p className="text-sm text-muted-foreground">{t(cannotRun ? 'routines.library.unavailableNote' : 'routines.library.needsTemplate')}</p>
+                  </div>}
+                  <Button type="button" variant="outline" className="min-h-11 w-full" onClick={() => onConfigure(template)} data-testid={`configure-template-${index}`}>
+                    {t('routines.flow.configure')}
+                  </Button>
                 </div>
               </CardContent>
             </Card>

@@ -139,6 +139,25 @@ test.describe('Add property wizard', () => {
     await mockReportingSetup(page, state);
   });
 
+  test('saving and closing restores the named property and step from the list after reload', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(demoUrl('/app/short-rent/properties/create', 'short-stay'));
+    const created = await createPropertyWithWizard(page, {
+      name: 'Casa Glicine', address: 'Via Garibaldi 42', comune: 'Milano', postalCode: '20100',
+    });
+    expect(created.status()).toBe(201);
+    await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'photos');
+    await page.getByTestId('property-wizard-save-close').click();
+    await expect(page).toHaveURL(/\/app\/short-rent\/properties(?:\?|$)/);
+    await page.reload();
+    const resume = page.getByTestId('property-setup-resume');
+    await expect(resume).toBeVisible();
+    await expect(resume).toHaveAttribute('href', new RegExp('propertyId=' + NEW_PROPERTY_ID + '&step=photos'));
+    await resume.click();
+    await expect(page.getByRole('heading', { name: 'Configura Casa Glicine' })).toBeVisible();
+    await expect(page.getByTestId('property-wizard')).toHaveAttribute('data-step', 'photos');
+  });
+
   test('the manual default must be explicitly saved through the reporting wizard before property setup continues', async ({ page }) => {
     state.senderSaved = false;
     await goToComplianceStep(page);

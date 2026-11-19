@@ -83,7 +83,7 @@ async function mockBookings(page: Page, all = BOOKINGS, viewOf = VIEW_OF) {
 }
 
 const rows = (page: Page) => page.locator('tbody tr').filter({ hasText: 'Rossi' });
-const search = (page: Page) => page.getByPlaceholder(/Cerca|Search/);
+const search = (page: Page) => page.getByRole('main').getByPlaceholder(/Cerca|Search/);
 const chip = (page: Page, name: string) => page.getByRole('button', { name, exact: true });
 /** The booking of Mario, whichever way the list shows it (a row of the table, a card on a phone): its name opens the drawer of the booking (UI-15). */
 const marioOpener = (page: Page) => page.getByRole('button', { name: 'Mario Rossi', exact: true }).first();

@@ -33,6 +33,8 @@ export function DocumentReadStep({ review, onConfirm, reading, message, readCoun
           type="file"
           accept="image/jpeg,image/png,image/webp"
           className="sr-only"
+          tabIndex={-1}
+          aria-label={t('checkin.scanButton')}
           data-testid="checkin-document-file"
           onChange={(event) => {
             const file = event.target.files?.[0];

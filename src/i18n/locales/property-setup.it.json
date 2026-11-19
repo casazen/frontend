@@ -1,4 +1,14 @@
 {
+  "unspecifiedType": "Non specificato",
+  "overview": { "noPhotos": "Nessuna foto caricata." },
+  "resume": {
+    "listTitle": "Configurazione di {{name}}",
+    "lastStep": "Ultimo passaggio aperto · {{step}}",
+    "action": "Riprendi configurazione",
+    "title": "Configura {{name}}",
+    "description": "I dati dei passaggi confermati sono salvati nell’immobile.",
+    "statusError": "Impossibile verificare lo stato dell’immobile."
+  },
   "loading": "Controllo la configurazione salvata…",
   "loadError": "Non riesco a leggere la configurazione. Riprova prima di continuare.",
   "configure": "Configura ora",

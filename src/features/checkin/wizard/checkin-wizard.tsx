@@ -52,11 +52,6 @@ import { GuestsStep } from './steps/guests-step';
 import { SendStep } from './steps/send-step';
 import { TaxStep } from './steps/tax-step';
 
-/** The page of a booking: where "Save and exit" and the no-show leave to. */
-function stayPath(bookingId: string): string {
-  return `${BOOKINGS_PATH}/${bookingId}`;
-}
-
 /**
  * Puts the problems the server found in the data of the guests on the fields of the form of the wizard (the form is where this is rendered).
  * A refused save opens the step the field is on, and the shell clears the errors of the form each time the step changes, in the same pass as
@@ -122,10 +117,11 @@ function StepHelp({ step }: { step: CheckInWizardStepId }) {
 
 interface NoShowActionProps {
   bookingId: string;
+  returnPath: string;
 }
 
 /** "The guest did not arrive" (NF-45): asks for a confirmation, marks the stay as a no-show and leaves to the booking. */
-function NoShowAction({ bookingId }: NoShowActionProps) {
+function NoShowAction({ bookingId, returnPath }: NoShowActionProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const noShow = useMarkNoShow(bookingId);
@@ -137,7 +133,7 @@ function NoShowAction({ bookingId }: NoShowActionProps) {
     try {
       await noShow.mutateAsync();
       setOpen(false);
-      navigate(stayPath(bookingId));
+      navigate(returnPath);
     } catch (error) {
       setProblem(getProblemMessage(error, t) ?? t('checkin.wizard.noShow.failed'));
     }
@@ -187,14 +183,15 @@ function NoShowAction({ bookingId }: NoShowActionProps) {
 
 interface CheckInWizardFormProps {
   bookingId: string;
+  returnPath: string;
   state: CheckInWizardState;
 }
 
 /** The five steps of an open wizard, on the state the server gave when it opened. */
-function CheckInWizardForm({ bookingId, state }: CheckInWizardFormProps) {
+function CheckInWizardForm({ bookingId, state, returnPath }: CheckInWizardFormProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [, setSearchParams] = useSearchParams();
+  const [params, setSearchParams] = useSearchParams();
   const wizard = useCheckInWizardState(bookingId, true, false);
   const save = useSaveCheckInGuests(bookingId);
   const confirm = useConfirmCheckIn(bookingId);
@@ -260,7 +257,7 @@ function CheckInWizardForm({ bookingId, state }: CheckInWizardFormProps) {
         setExiting(false);
       }
     }
-    navigate(stayPath(bookingId));
+    navigate(returnPath);
   };
 
   const stepText = (id: CheckInWizardStepId) => ({
@@ -362,10 +359,15 @@ function CheckInWizardForm({ bookingId, state }: CheckInWizardFormProps) {
       // The server is the draft: each step saves what it owns before moving on, and no personal data sit in the browser.
       draft={false}
       renderDone={({ result, values }) => {
-        if (!result) return <Navigate to={{ search: '' }} replace />;
+        if (!result) {
+          const next = new URLSearchParams(params);
+          next.delete('step');
+          next.delete(FOCUS_PARAM);
+          return <Navigate to={{ search: next.toString() }} replace />;
+        }
         const first = values.guests[0];
         const guestName = `${first?.firstName ?? ''} ${first?.lastName ?? ''}`.trim() || t('compliance.checkout.guestFallback');
-        return <CheckInWizardDone bookingId={bookingId} guestName={guestName} result={result} />;
+        return <CheckInWizardDone bookingId={bookingId} guestName={guestName} result={result} returnPath={returnPath} />;
       }}
       aboveFooter={
         <>
@@ -394,6 +396,8 @@ export function CheckInWizardPage() {
   const { id } = useParams<{ id: string }>();
   const { t, i18n } = useTranslation();
   const bookingId = id!;
+  const [params] = useSearchParams();
+  const returnPath = `${BOOKINGS_PATH}/${bookingId}${params.get('return') === 'documents' ? '?tab=guest' : ''}`;
   const stateQuery = useCheckInWizardState(bookingId);
   const state = stateQuery.data;
 
@@ -423,7 +427,7 @@ export function CheckInWizardPage() {
 
   const toBooking = (
     <Button variant="ghost" asChild>
-      <Link to={stayPath(bookingId)}>
+      <Link to={returnPath}>
         <ArrowLeft className="mr-2 h-4 w-4" />
         {t('checkin.wizard.toBooking')}
       </Link>
@@ -457,9 +461,9 @@ export function CheckInWizardPage() {
         <PageHeader
           title={t('checkin.wizard.title')}
           description={t('checkin.wizard.description', { property: state.booking.propertyName, dates })}
-          action={state.capabilities.canMarkNoShow ? <NoShowAction bookingId={bookingId} /> : undefined}
+          action={state.capabilities.canMarkNoShow ? <NoShowAction bookingId={bookingId} returnPath={returnPath} /> : undefined}
         />
-        <CheckInWizardForm key={bookingId} bookingId={bookingId} state={state} />
+        <CheckInWizardForm key={bookingId} bookingId={bookingId} state={state} returnPath={returnPath} />
       </div>
     </AppShell>
   );

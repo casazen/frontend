@@ -260,7 +260,7 @@ export function CheckInLinkPanel({ bookingId, canWrite, children }: CheckInLinkP
         </p>
       )}
 
-      {issued && (
+      {issued && canWrite && session.canIssueLink && !completed && status !== 'Scaduto' && (
         <div className="space-y-1" data-testid="checkin-link-issued">
           <p className="text-sm font-medium">{t('checkin.link.copyTitle')}</p>
           <div className="flex items-center gap-2">
@@ -268,6 +268,7 @@ export function CheckInLinkPanel({ bookingId, canWrite, children }: CheckInLinkP
             <Button
               variant="outline"
               size="icon"
+              disabled={busy}
               onClick={() => void copy(issued.checkInLink, 'issued')}
               aria-label={t('checkin.copyLink')}
               data-testid="checkin-link-copy"

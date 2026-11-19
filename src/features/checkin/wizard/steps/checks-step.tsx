@@ -1,4 +1,4 @@
-import { AlertTriangle, CheckCircle2, CircleAlert } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Alert } from '@/components/ui/alert';
@@ -38,39 +38,51 @@ interface IssueListProps {
 
 function IssueList({ issues, state, tone, onFix }: IssueListProps) {
   const { t } = useTranslation();
-  const Icon = tone === 'blocking' ? CircleAlert : AlertTriangle;
+  const byGuest = new Map<number | null, CheckInIssue[]>();
+  for (const issue of issues) {
+    const group = byGuest.get(issue.position);
+    if (group) group.push(issue);
+    else byGuest.set(issue.position, [issue]);
+  }
 
   return (
-    <ul className="space-y-2" data-testid={`checkin-wizard-issues-${tone}`}>
-      {issues.map((issue, index) => {
-        const sentence = issueSentence(issue, state, t);
+    <div className="space-y-4" data-testid={`checkin-wizard-issues-${tone}`}>
+      {Array.from(byGuest, ([position, group]) => {
+        const label = position === null ? t('checkin.wizard.checks.entireStay') : guestLabel(state, position, t);
+        const headingId = `checkin-issues-${tone}-${position ?? -1}`;
         return (
-          <li
-            key={`${issue.code}-${issue.position ?? 'stay'}-${issue.field ?? 'none'}-${index}`}
-            className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-md border p-3"
-            data-testid="checkin-wizard-issue"
-            data-blocking={issue.blocking}
-          >
-            <Icon
-              aria-hidden="true"
-              className={tone === 'blocking' ? 'size-5 shrink-0 text-destructive' : 'size-5 shrink-0 text-orange-600'}
-            />
-            <span className="min-w-0 flex-1 break-words text-sm">{sentence}</span>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              className="min-h-11"
-              aria-label={t('checkin.wizard.checks.fixFor', { problem: sentence })}
-              onClick={() => onFix(issue)}
-              data-testid="checkin-wizard-issue-fix"
-            >
-              {t('checkin.wizard.checks.fix')}
-            </Button>
-          </li>
+          <section key={headingId} aria-labelledby={headingId} className="rounded-lg border border-border">
+            <h4 id={headingId} className="break-words border-b border-border bg-muted/50 px-3 py-2 font-semibold">{label}</h4>
+            <ul className="divide-y divide-border">
+              {group.map((issue, index) => {
+                const sentence = issueSentence(issue, state, t);
+                return (
+                  <li
+                    key={`${issue.code}-${issue.field ?? 'none'}-${index}`}
+                    data-testid="checkin-wizard-issue"
+                    data-blocking={issue.blocking}
+                    className="grid min-w-0 items-center gap-x-4 px-3 py-2 text-sm sm:grid-cols-[minmax(0,1fr)_auto]"
+                  >
+                    <span className="break-words">{sentence}</span>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="link"
+                      className="min-h-11 justify-self-start px-0 text-primary-text"
+                      aria-label={t('checkin.wizard.checks.fixFor', { problem: sentence })}
+                      onClick={() => onFix(issue)}
+                      data-testid="checkin-wizard-issue-fix"
+                    >
+                      {t('checkin.wizard.checks.fix')}
+                    </Button>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
         );
       })}
-    </ul>
+    </div>
   );
 }
 

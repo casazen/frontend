@@ -437,7 +437,6 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
     ],
     '/app/short-rent/settings/ai': [
       '/app/short-rent/settings/assistant',
-      '/app/short-rent/automations',
     ],
     // The month of the owners of an agency, in the order of its steps.
     // The invoices to the owners (E13/F02/US01/T03, behind their flag) come right after the statements they are made from, at 1.5; the self-billed invoices TD17 (E17/F03/US01/T02, behind the flag of the

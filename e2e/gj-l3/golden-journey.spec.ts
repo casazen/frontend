@@ -179,21 +179,41 @@ async function runGoldenJourney(browser: Browser, stack: StackEnv, request: impo
     });
 
     await step('Host asks the supplier for a cleaning of the stay', async () => {
-      await host.goto(`/app/short-rent/bookings/${ids.bookingId}`);
-      await host.getByTestId('request-supplier-btn').click();
-      await host.locator('#sr-supplier').selectOption({ label: supplierName });
-      await host.locator('#sr-notes').fill(`Pulizia di fine soggiorno ${run}`);
-      await host.getByTestId('service-request-start-time').fill('10:00');
-      await host.getByTestId('service-request-duration').selectOption('120');
-      await host.getByTestId('submit-service-request').click();
-      await expect(host.getByText('In attesa che il fornitore accetti o rifiuti.')).toBeVisible({ timeout: 20_000 });
+      const stayPath = `/app/short-rent/bookings/${ids.bookingId}`;
+      await host.goto(stayPath);
+      await host.getByTestId('booking-request-cleaning').click();
+      await expect(host.getByTestId('cleaning-brief')).toContainText(PROPERTY.name);
+      const supplierOption = host.getByTestId(`request-supplier-${ids.supplierOrgId}`);
+      const supplierChoice = host.locator('label').filter({ has: supplierOption });
+      await expect(supplierChoice).toContainText(supplierName);
+      await supplierChoice.click();
+      await host.getByTestId('request-next').click();
+      await expect(host.getByTestId('request-stay')).toHaveValue(ids.bookingId);
+      // The date appears after selecting the service.
+      await host.locator('label').filter({ has: host.getByTestId('request-service-custom') }).click();
+      await expect(host.getByTestId('request-day')).toHaveValue(checkOut);
+      await host.getByTestId('request-start-time').fill('10:00');
+      await host.getByTestId('request-duration').selectOption('120');
+      const notes = `Pulizia di fine soggiorno ${run}`;
+      await host.getByTestId('request-notes').fill(notes);
+      await host.getByTestId('request-next').click();
+      await expect(host.getByTestId('request-wizard')).toHaveAttribute('data-step', 'review');
+      await expect(host.getByTestId('request-wizard')).toContainText(notes);
+      await host.getByTestId('request-finish').click();
+      await expect(host.getByTestId('request-done')).toContainText(supplierName, { timeout: 20_000 });
       const requests = await hostApi.get<ServiceRequest[] | { items: ServiceRequest[] }>(
         `/service-requests?bookingId=${ids.bookingId}`,
       );
       const list = Array.isArray(requests) ? requests : requests.items;
-      expect(list, 'one service request for the stay').toHaveLength(1);
-      expect(list[0].status).toBe('Richiesto');
+      expect(list, 'one cleaning request for this stay and supplier').toHaveLength(1);
+      expect(list[0]).toMatchObject({
+        status: 'Richiesto', bookingId: ids.bookingId, supplierOrgId: ids.supplierOrgId, propertyId: ids.propertyId, category: 'cleaning',
+      });
       ids.serviceRequestId = list[0].id;
+      await expect(host.getByTestId('wizard-done-primary')).toHaveAttribute('href', `/app/short-rent/interventions/${ids.serviceRequestId}`);
+      await host.getByTestId('wizard-done-secondary').click();
+      await expect(host).toHaveURL(new RegExp(stayPath + '$'));
+      await expect(host.getByTestId(`service-request-${ids.serviceRequestId}`)).toContainText('In attesa che il fornitore accetti o rifiuti.');
     });
 
     await step('F1: supplier (phone) takes the request in charge from the inbox', async () => {

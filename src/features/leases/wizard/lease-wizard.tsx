@@ -17,6 +17,7 @@ import type { LandlordDefaults, LeaseDraft, LeaseDraftFlow, LeaseReading, LongRe
 import { DatesStep } from './dates-step';
 import { ImportStep } from './import-step';
 import { LeaseWizardFrame, WIZARD_BUTTON } from './lease-wizard-frame';
+import { DraftExitGuard } from './draft-exit-guard';
 import { LeaseWizardStepper } from './lease-wizard-stepper';
 import { MissingNote, type MissingItem } from './missing-note';
 import { PartiesStep } from './parties-step';
@@ -453,6 +454,7 @@ export function LeaseWizard({ draft, defaults, rules, onReload, reading = null }
     <ReadingProvider reading={arrived ? null : reading} flow={flow} leaseId={draft.id}>
       <ReadingBanner reading={reading ?? undefined} flow={flow} held={arrived} />
       {arrived ? <ReadingArrivedNotice onShow={() => void showReading()} busy={showing} /> : null}
+      <DraftExitGuard hasPending={saver.hasPending} flush={flush} discard={saver.discard} stopped={stopped} />
       <LeaseWizardFrame
         stepper={<LeaseWizardStepper entries={entries} current={current} />}
         position={{ current: position + 1, total: steps.length }}

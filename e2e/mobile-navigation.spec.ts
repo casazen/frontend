@@ -132,7 +132,9 @@ test.describe('Mobile navigation (UI-04b)', () => {
       await page.keyboard.press('Enter');
       await expect(sheet(page)).toBeFocused();
 
-      // The first Tab reaches the first tile (Messaggi); focus must stay inside the sheet.
+      // The first Tab reaches the scoped search, then the first link.
+      await page.keyboard.press('Tab');
+      await expect(sheet(page).getByRole('searchbox', { name: 'Cerca nel menu' })).toBeFocused();
       await page.keyboard.press('Tab');
       await expect(sheet(page).getByRole('link', { name: 'Messaggi', exact: true })).toBeFocused();
       for (let i = 0; i < 14; i += 1) {

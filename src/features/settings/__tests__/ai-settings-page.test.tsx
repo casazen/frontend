@@ -32,7 +32,7 @@ describe('AI settings module cards', () => {
 
   it('explains unavailable modules to a property writer without an account billing destination', () => {
     openSettings();
-    expect(screen.getByRole('heading', { name: 'AI Agents' })).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'Routine AI' })).toBeVisible();
     expect(screen.getAllByText(i18n.t('commercial.moduleRequiredText'))).toHaveLength(2);
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
   });
@@ -40,13 +40,14 @@ describe('AI settings module cards', () => {
   it('links a licensed writer directly to the included module', () => {
     access.addons = ['ai-agents'];
     openSettings();
-    expect(screen.getByRole('link', { name: /AI Agents/ })).toHaveAttribute('href', '/app/short-rent/automations');
+    expect(screen.getByRole('link', { name: i18n.t('aiSettings.openRoutines') })).toHaveAttribute('href', '/app/short-rent/automations');
+    expect(screen.getByRole('link', { name: i18n.t('aiSettings.browseTemplates') })).toHaveAttribute('href', '/app/short-rent/automations?view=library');
     expect(screen.queryByRole('link', { name: /Assistente/ })).not.toBeInTheDocument();
   });
 
   it('gives the billing administrator an entry to the plan for an excluded module', () => {
     access.accountBilling = true;
     openSettings();
-    expect(screen.getByRole('link', { name: /AI Agents/ })).toHaveAttribute('href', '/app/account/billing');
+    expect(screen.getByRole('link', { name: i18n.t('commercial.managePlan'), exact: true })).toHaveAttribute('href', '/app/account/billing');
   });
 });

@@ -1,6 +1,46 @@
 import { test, expect } from './test';
+import { bookingId, mockArrivalJourney, property } from './helpers/arrival-journey';
+import { demoUrl } from './helpers/demo-profile';
 
 test.describe('Guest check-in portal', () => {
+  test('a link issued by the host opens the same stay in a fresh guest browser', async ({ page, browser, baseURL }) => {
+    test.slow();
+    await mockArrivalJourney(page);
+    const publicLink = new URL('/checkin/issued-stay', baseURL).href;
+    let issued = false;
+    await page.route(`**/api/bookings/${bookingId}/checkin-session`, route => route.fulfill({
+      json: { canIssueLink: true, status: issued ? 'Inviato' : null, emailStatus: 'NotRequested' },
+    }));
+    await page.route(`**/api/bookings/${bookingId}/checkin/link`, route => {
+      expect(route.request().method()).toBe('POST');
+      issued = true;
+      return route.fulfill({ json: { checkInLink: publicLink, expiresAt: '2027-12-31T12:00:00Z', emailStatus: 'NotRequested' } });
+    });
+
+    await page.goto(demoUrl(`/app/short-rent/bookings/${bookingId}?tab=guest`, 'short-stay'), { waitUntil: 'domcontentloaded' });
+    await page.getByTestId('checkin-generate-button').click();
+    const handoff = page.getByTestId('checkin-link-issued').getByRole('textbox');
+    await expect(handoff).toHaveValue(publicLink);
+    const guest = await browser.newContext({ locale: 'it-IT' });
+    try {
+      await guest.route('**/api/public/checkin/issued-stay', route => {
+        expect(route.request().headers()).not.toHaveProperty('authorization');
+        return route.fulfill({ json: {
+          completed: false, status: 'InCompilazione', language: 'it', propertyName: property.name,
+          declaredGuests: 1, guests: [{ type: 'SingleGuest', firstName: 'Piet', lastName: 'Jansen' }],
+        } });
+      });
+      const guestPage = await guest.newPage();
+      await guestPage.goto(await handoff.inputValue(), { waitUntil: 'domcontentloaded' });
+      await expect(guestPage.getByRole('heading', { name: 'Check-in ospite' })).toBeVisible();
+      await expect(guestPage.getByText(property.name)).toBeVisible();
+      await guestPage.getByTestId('checkin-enter-manually').click();
+      await expect(guestPage.locator('#guest-0-firstName')).toHaveValue('Piet');
+    } finally {
+      await guest.close();
+    }
+  });
+
   test('shows invalid link for unknown token', async ({ page }) => {
     // L2 has no backend: the API answers 404 for a token it does not know, as the real one does.
     await page.route('**/api/public/checkin/**', async (route) => {
@@ -11,7 +51,45 @@ test.describe('Guest check-in portal', () => {
       });
     });
     await page.goto('/checkin/invalid-token-00000000000000000000000000000000');
-    await expect(page.getByText(/invalid|non valido/i)).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('checkin-invalid-link')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole('heading', { name: /invalid|non valido/i })).toBeVisible();
+    await expect(page.getByTestId('guest-data-form')).toHaveCount(0);
+  });
+
+  test('retries a temporary interruption and resumes from server data on a narrow phone', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 740 });
+    let available = false;
+    await page.route('**/api/public/checkin/returning-stay', (route) => available
+      ? route.fulfill({ json: {
+        completed: false, status: 'InCompilazione', language: 'it', declaredGuests: 1,
+        propertyName: 'Villa Demo', guests: [{ type: 'SingleGuest', firstName: 'Alba', lastName: 'Rossi' }],
+      } })
+      : route.fulfill({ status: 503, json: { status: 503 } }));
+    await page.goto('/checkin/returning-stay');
+    const problem = page.getByTestId('checkin-load-problem');
+    await expect(problem).toBeVisible({ timeout: 20_000 });
+    available = true;
+    await problem.getByRole('button', { name: /Riprova|Try again/i }).click();
+    await page.getByTestId('checkin-enter-manually').click();
+    const name = page.locator('#guest-0-firstName');
+    await expect(name).toHaveValue('Alba');
+    const birthDate = page.locator('#guest-0-dateOfBirth');
+    await birthDate.fill('1994-02-12');
+    await expect(page).toHaveURL(/\?resume=guests$/);
+    await page.reload();
+    await expect(page.getByTestId('checkin-resumed')).toBeVisible();
+    await expect(name).toHaveValue('Alba');
+    await expect(birthDate).toHaveValue('');
+    await expect(page.locator('[aria-current=step]')).toHaveAccessibleName('Ospiti');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  });
+
+  test('reopening an already submitted link shows the receipt without another form', async ({ page }) => {
+    await page.route('**/api/public/checkin/recorded', (route) => route.fulfill({ json: { completed: true, status: 'Completo' } }));
+    await page.goto('/checkin/recorded?resume=guests');
+    await expect(page.getByTestId('checkin-success')).toBeVisible();
+    await expect(page.getByRole('heading', { name: /già completato|already completed/i })).toBeVisible();
+    await expect(page.getByTestId('guest-data-form')).toHaveCount(0);
   });
 
   test('renders wizard progress on mocked context', async ({ page }) => {

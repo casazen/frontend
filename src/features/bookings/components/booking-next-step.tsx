@@ -105,8 +105,8 @@ export function BookingNextStep({ booking, canWrite, viewingCheckIn, onConfirm, 
       : null;
   // The host may fill the guest data in himself, whoever the link is waiting for: a stay whose data are incomplete leads to the wizard.
   const completeInWizard: CalmAction | null =
-    canWrite && booking.status === 'Confirmed' && guestData.data?.dataComplete === false
-      ? { label: t('booking.next.completeGuestData.action'), href: checkInWizardPath(booking.id), testId: 'booking-next-check-in-wizard' }
+    canWrite && hasPermission('short-rent', 'alloggiati.submit') && booking.status === 'Confirmed' && guestData.data?.dataComplete === false
+      ? { label: t('booking.next.completeGuestData.action'), href: checkInWizardPath(booking.id, viewingCheckIn), testId: 'booking-next-check-in-wizard' }
       : null;
   const sendCheckInLink: CalmAction | null =
     canWrite && link?.canIssueLink
@@ -141,7 +141,7 @@ export function BookingNextStep({ booking, canWrite, viewingCheckIn, onConfirm, 
           body: t('booking.next.registerArrival.body', { date: arrival }),
           who: myTurn,
           primary: canWrite ? { label: t('booking.arrival.action'), onClick: onArrival, testId: 'open-register-arrival' } : toBookings,
-          secondary: checkOut ?? completeInWizard ?? undefined,
+          secondary: checkOut ?? (viewingCheckIn ? undefined : completeInWizard ?? undefined),
         };
       case 'sendLink':
         return {
