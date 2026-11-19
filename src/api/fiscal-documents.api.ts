@@ -10,6 +10,7 @@ import type {
   FiscalDocumentChange,
   FiscalDocumentCriteria,
   FiscalDocumentDetail,
+  FiscalDocumentEmailQueued,
   FiscalDocumentEntry,
   FiscalDocumentExportFormat,
   FiscalDocumentFile,
@@ -59,6 +60,8 @@ export const FISCAL_DOCUMENT_ERROR = {
   octoratePdfUnavailable: 'octorate_pdf_unavailable',
   /** 422: the FatturaPA schema is not installed yet, so no XML is made: an operator adds it. */
   schemaUnavailable: 'fatturapa_schema_unavailable',
+  /** 422: the e-mail of a document to its guest could not be queued (no e-mail provider, no public address of the web app, the queue is down): nothing was sent, and the call may be repeated. */
+  emailNotSent: 'document_email_not_sent',
 } as const;
 
 /**
@@ -424,6 +427,26 @@ export async function createCreditNote(id: string, request: FiscalCreditNoteRequ
 /** The draft discarded (`DELETE api/fiscal/documents/{id}`): no number was consumed. */
 export async function discardDraft(id: string): Promise<void> {
   await axios.delete(`${PATH}/${encodeURIComponent(id)}`);
+}
+
+/** An instant of the server (a UTC time, `...Z`) kept as it came, or `null` when it is not an instant: the day a link stops opening is never made up. */
+const instantOf = (value: unknown): string | null => (typeof value === 'string' && !Number.isNaN(new Date(value).getTime()) ? value : null);
+
+/**
+ * The e-mail of an issued guest document, queued for the guest of its booking (`POST api/fiscal/documents/{id}/send-email`): the guest gets a signed link to the page of the document, never the document as an
+ * attachment. The answer says the e-mail is QUEUED (`queued: true`, and the last instant the link in it opens) and never that it was delivered; every call sends one more e-mail, with a new link. It needs `payment.write`
+ * and the `FiscalDocumentIssuance` flag of the server (a 404 while it is off). 404 `fiscal_document_not_found`; 422 `document_not_issued` (a draft or a dropped draft), `document_owner_invoice`, `document_self_billing`,
+ * `document_read_only` (a document of the channel manager), `document_recipient_email_invalid` (the guest has no address that can be written to) and `document_email_not_sent` (nothing was queued). An answer that does
+ * not say `queued: true` is a load error, never a success.
+ */
+export async function sendDocumentEmail(id: string): Promise<FiscalDocumentEmailQueued> {
+  const path = `${PATH}/${encodeURIComponent(id)}/send-email`;
+  const response = await axios.post<unknown>(path);
+  const data = response.data;
+  if (!isRecord(data) || data.queued !== true || typeof data.documentId !== 'string') throw new UnexpectedApiResponseError(path);
+  const linkExpiresAt = instantOf(data.linkExpiresAt);
+  if (linkExpiresAt === null) throw new UnexpectedApiResponseError(path);
+  return { documentId: data.documentId, linkExpiresAt };
 }
 
 /**
