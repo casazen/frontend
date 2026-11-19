@@ -10,6 +10,7 @@ export const OWNER_INVOICES_KEY = 'owner-invoices';
 
 export const ownerInvoiceKeys = {
   list: (criteria: OwnerInvoiceCriteria) => [OWNER_INVOICES_KEY, 'list', criteria.period ?? 'all', criteria.ownerId ?? 'all'] as const,
+  detail: (invoiceId: string) => [OWNER_INVOICES_KEY, 'detail', invoiceId] as const,
 };
 
 /**
@@ -32,6 +33,21 @@ export function useOwnerInvoices(criteria: OwnerInvoiceCriteria, enabled = true)
     queryKey: ownerInvoiceKeys.list(criteria),
     queryFn: () => ownerInvoicesApi.list(criteria),
     enabled,
+    refetchOnMount: 'always' as const,
+    staleTime: 30_000,
+  });
+}
+
+/**
+ * One invoice with its lines, read by its id (`enabled` only while a screen asks to see it). It changes under the person's hands (another one issues or discards it, a version is made again),
+ * so it is read again every time it is opened and soon after (`staleTime`), and a write of the invoices reads it again where it is open (it is under their root key). `null` when the server
+ * refuses it to the caller; a 404 is an invoice that is no longer there (or the module off), whatever the cache still holds from an earlier read.
+ */
+export function useOwnerInvoice(invoiceId: string | null, enabled = true) {
+  return useQuery({
+    queryKey: ownerInvoiceKeys.detail(invoiceId ?? ''),
+    queryFn: () => ownerInvoicesApi.get(invoiceId ?? ''),
+    enabled: enabled && invoiceId !== null,
     refetchOnMount: 'always' as const,
     staleTime: 30_000,
   });

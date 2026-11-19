@@ -107,7 +107,7 @@ describe('describeTodo and the month of a property', () => {
   });
 });
 
-// Every `ActivityType` of the backend (`Casazen.Core/Entities/Enums/ActivityType.cs`, today 29 values) has its own words in both languages, not «Attività da completare».
+// Every `ActivityType` of the backend (`Casazen.Core/Entities/Enums/ActivityType.cs`) that this version of the app knows has its own words in both languages, not «Attività da completare».
 const BACKEND_TYPES = [
   'CheckInPending',
   'CheckOutPending',
@@ -135,11 +135,16 @@ const BACKEND_TYPES = [
   'OwnerStayToReview',
   'OwnerStaySyncFailed',
   'OwnerDocumentExpiring',
+  // The owner could not be told by e-mail that a statement was published (E13/F01/US02/T02): the agency tells the owner by hand.
+  'OwnerStatementNoticeFailed',
   'RoutineTask',
   // The automatic cleaning at check-out (E24/F01/US01/T02): the dates of the stay changed after the supplier took the cleaning.
   'CleaningDateChanged',
   'CheckInLinkToSend',
   'CompanyTenantDecision',
+  // The self-billed invoices (TD17) of the agency (FIX/FE-TD17-TODO): one the SDI rejected, and the drafts of a month to check and issue.
+  'SelfBillingRejected',
+  'SelfBillingDraftsToReview',
   // The cleaning recharged to an owner at its cost whose VAT the cost source does not say (E14/F01/US02/T01, `ActivityType` 140).
   'CleaningVatToState',
 ] as const;
@@ -161,6 +166,35 @@ describe('describeTodo for every type of the backend', () => {
     }
     // No two types share a title: the host tells them apart in the list.
     expect(titles.size).toBe(BACKEND_TYPES.length);
+    await i18n.changeLanguage('it');
+  });
+});
+
+// The two items of the self-billed invoices (TD17, FIX/FE-TD17-TODO) as the server sends them: about the organization, never a property, and the drafts of a month carry the month in the kind of entity
+// (`SelfBillingPeriod:yyyy-MM`). Their words are the app's own, in the language of the person, and the object line says the account: never «un immobile», never the raw kind of entity.
+describe('describeTodo and the self-billed invoices (TD17)', () => {
+  const ITEMS = [
+    {
+      item: activity('SelfBillingRejected', { action: 'ReviewSelfBilling', entityType: 'FiscalDocument', entityId: 'd-1', propertyId: null }),
+      titles: { it: 'Autofattura scartata dallo SDI', en: 'Self-billed invoice rejected by the SDI' },
+    },
+    {
+      item: activity('SelfBillingDraftsToReview', { action: 'ReviewSelfBilling', entityType: 'SelfBillingPeriod:2026-10', entityId: 'o-1', propertyId: null, urgency: 'Medium' }),
+      titles: { it: 'Autofatture da controllare ed emettere', en: 'Self-billed invoices to check and issue' },
+    },
+  ] as const;
+
+  it.each(['it', 'en'] as const)('describeTodo_SelfBillingItems_SayTheirOwnWordsAboutTheAccountIn_%s', async (lng) => {
+    await i18n.changeLanguage(lng);
+    const fixed = i18n.getFixedT(lng);
+
+    for (const { item, titles } of ITEMS) {
+      const text = describeTodo(item, contextOf(lng));
+
+      expect(text.title).toBe(titles[lng]);
+      expect(text.why).toBe(fixed(`activity.todo.type.${item.activityType}.why`));
+      expect(text.object).toBe(fixed('activity.todo.object.organization'));
+    }
     await i18n.changeLanguage('it');
   });
 });

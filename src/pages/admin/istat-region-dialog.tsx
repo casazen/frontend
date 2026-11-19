@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -11,7 +12,7 @@ import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { getProblemMessage } from '@/lib/api-errors';
 import { todayInRome } from '@/lib/stay-dates';
-import { useSaveIstatRegion } from '@/queries/use-istat-regions';
+import { useRereadIstatRegions, useSaveIstatRegion } from '@/queries/use-istat-regions';
 import { ISTAT_COVERAGES, ISTAT_DEADLINE_KINDS, ISTAT_GUEST_FIELDS, type IstatCoverage, type IstatDeadlineKind, type IstatRegionRule } from '@/types/istat.types';
 import {
   ISTAT_REGION_LIMITS,
@@ -27,25 +28,42 @@ import {
 const FIELDS_MODES: readonly FieldsMode[] = ['toVerify', 'none', 'some'];
 
 interface IstatRegionDialogProps {
+  /** The row the form starts from: the one the server held when the form was opened (the page reads the table again first). */
   rule: IstatRegionRule;
+  /** The same row as the table of the page holds it now, or `null` when the page has no table: a row that is not the one of `rule` was saved by someone else since. */
+  live: IstatRegionRule | null;
+  /** The table could not be read again: what the form holds may be old. */
+  readFailed: boolean;
   onClose: () => void;
 }
+
+/** Why a save is stopped: the row was changed by someone else since the form was opened, or the table cannot be read to tell. */
+type StaleReason = 'changed' | 'unreadable';
 
 /**
  * The form of one row of the ISTAT region table (E21/F01/US02/T01): the system and the portal of the region, its deadline, the statistical fields it requires, whether the channel manager
  * sends it, the source the values were read from and the day they were checked. A save REPLACES the row, so the form holds every value of it and sends them all: nothing is left out to be
  * erased. The source is required and has to be an https address (the server refuses anything else); the day of the check starts as today and is never in the future. A refusal of the server is
  * told in words and the form stays open with what was typed. Mount it with a `key` per row so the fields start from that row.
+ *
+ * A save replaces the whole row and the API has no version, so a form made from an old read would put old values back and stamp them «verified today». Nothing is saved from one: before the save the
+ * table is read again, and when the row is not the one the form started from (`updatedAt` changed) or the table cannot be read, the save is stopped and the person is told (the same as soon as
+ * the page itself learns it). Old values are never stamped.
  */
-export function IstatRegionDialog({ rule, onClose }: IstatRegionDialogProps) {
+export function IstatRegionDialog({ rule, live, readFailed, onClose }: IstatRegionDialogProps) {
   const { t } = useTranslation();
   const today = todayInRome();
   const save = useSaveIstatRegion();
+  const reread = useRereadIstatRegions();
   const [values, setValues] = useState<RegionFormValues>(() => formOf(rule, today));
   const [errors, setErrors] = useState<RegionFormErrors>({});
-  // The request is in flight: nothing of the form can be pressed again meanwhile, and the dialog does not close under it.
-  const busy = save.isPending;
+  const [checking, setChecking] = useState(false);
+  const [stopped, setStopped] = useState<StaleReason | null>(null);
+  // The request is in flight (the table read again before the save, or the save): nothing of the form can be pressed again meanwhile, and the dialog does not close under it.
+  const busy = save.isPending || checking;
   const name = territoryName(rule);
+  // What the page knows now, or what the last attempt found: a table that cannot be read says nothing about the row, and a row that is not the one of the form is not what the form holds.
+  const stale: StaleReason | null = readFailed ? 'unreadable' : live !== null && live.updatedAt !== rule.updatedAt ? 'changed' : stopped;
 
   const change = <K extends keyof RegionFormValues>(field: K, value: RegionFormValues[K]) => {
     setValues((current) => ({ ...current, [field]: value }));
@@ -54,10 +72,29 @@ export function IstatRegionDialog({ rule, onClose }: IstatRegionDialogProps) {
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    if (busy) return;
+    if (busy || stale !== null) return;
     const found = validateRegionForm(values, today);
     setErrors(found);
     if (Object.keys(found).length > 0) return;
+
+    // The table is read again first: the save goes only on the row the form started from.
+    setChecking(true);
+    try {
+      const current = (await reread()).find((row) => row.id === rule.id);
+      if (!current) {
+        setStopped('unreadable');
+        return;
+      }
+      if (current.updatedAt !== rule.updatedAt) {
+        setStopped('changed');
+        return;
+      }
+    } catch {
+      setStopped('unreadable');
+      return;
+    } finally {
+      setChecking(false);
+    }
 
     try {
       await save.mutateAsync(requestOf(rule, values));
@@ -78,6 +115,12 @@ export function IstatRegionDialog({ rule, onClose }: IstatRegionDialogProps) {
             <DialogTitle>{t('istatRegions.dialog.title', { region: name })}</DialogTitle>
             <DialogDescription>{t('istatRegions.dialog.description')}</DialogDescription>
           </DialogHeader>
+
+          {stale ? (
+            <Alert variant="warning" data-testid="istat-region-stale" data-reason={stale}>
+              {t(`istatRegions.stale.${stale}`)}
+            </Alert>
+          ) : null}
 
           <Field label={t('istatRegions.form.system')} optional>
             <Input value={values.system} maxLength={ISTAT_REGION_LIMITS.system} disabled={busy} onChange={(event) => change('system', event.target.value)} data-testid="istat-region-system" />
@@ -195,7 +238,7 @@ export function IstatRegionDialog({ rule, onClose }: IstatRegionDialogProps) {
             <Button type="button" variant="outline" disabled={busy} onClick={onClose} data-testid="istat-region-cancel">
               {t('istatRegions.cancel')}
             </Button>
-            <Button type="submit" loading={busy} disabled={busy} data-testid="istat-region-save">
+            <Button type="submit" loading={busy} disabled={busy || stale !== null} data-testid="istat-region-save">
               {t('istatRegions.save')}
             </Button>
           </DialogFooter>

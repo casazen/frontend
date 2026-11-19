@@ -1,5 +1,5 @@
 import axios from '@/lib/axios';
-import { UnexpectedApiResponseError } from '@/lib/api-errors';
+import { getHttpStatus, UnexpectedApiResponseError } from '@/lib/api-errors';
 import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
 import { ApiClient } from './client';
 import type { DownloadedFile } from './file.api';
@@ -28,6 +28,18 @@ export interface PublicFiscalDocument {
 
 /** A PDF is a few hundred kB: more than the 30 s of every other call, on a connection that is not fast (as for the host's own download). */
 const DOWNLOAD_TIMEOUT_MS = 120_000;
+
+/** The statuses that say the LINK does not open: the 404 `document_link_invalid` the API gives for every token that is wrong, expired or foreign and for a document that is not there, and a 401 or a 403 (a refusal of the same kind). */
+const LINK_REFUSAL_STATUSES: readonly number[] = [401, 403, 404];
+
+/**
+ * Whether a failed call says the link does not open: the server refused it (401, 403 or 404, the same answer for every reason). Any other failure (no answer, a server that failed, too many calls in a minute,
+ * an answer that is not what the server gives) says nothing about the link: it is a passing error, the guest may ask again, and the page never tells such a guest that the link has expired.
+ */
+export function isLinkRefusal(error: unknown): boolean {
+  const status = getHttpStatus(error);
+  return status !== undefined && LINK_REFUSAL_STATUSES.includes(status);
+}
 
 const enc = encodeURIComponent;
 

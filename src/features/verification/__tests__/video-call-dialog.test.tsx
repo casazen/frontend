@@ -196,6 +196,29 @@ describe('the video call dialog: what the operator sends', () => {
     expect(screen.getByRole('button', { name: i18n.t('shared.cancel') })).toBeDisabled();
   });
 
+  it('VideoCallDialog_TheEmailIsBeingQueued_CannotBeClosedByTheCrossNorTheEscapeKey', () => {
+    renderAction(vi.fn(), { pending: true });
+    openDialog();
+
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('shared.close') }));
+    fireEvent.keyDown(screen.getByTestId('verification-video-call-form'), { key: 'Escape' });
+
+    // What the server answers is told in this dialog: a dialog that had gone would take the answer with it.
+    expect(screen.getByTestId('verification-video-call-form')).toBeInTheDocument();
+  });
+
+  it('VideoCallDialog_NothingIsBeingSent_TheCrossAndTheEscapeKeyCloseIt', async () => {
+    renderAction(vi.fn());
+    openDialog();
+
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('shared.close') }));
+    await waitFor(() => expect(screen.queryByTestId('verification-video-call-form')).not.toBeInTheDocument());
+
+    openDialog();
+    fireEvent.keyDown(screen.getByTestId('verification-video-call-form'), { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByTestId('verification-video-call-form')).not.toBeInTheDocument());
+  });
+
   it('VideoCallDialog_AnotherWriteOfTheCardIsInFlight_TheActionStaysDisabled', () => {
     renderAction(vi.fn(), { busy: true });
 
@@ -302,5 +325,58 @@ describe('the card of the verification with the video call', () => {
     // Nothing of the link is on the page but the box the operator typed it in; no write of the card is left in flight.
     expect(document.body.textContent ?? '').not.toContain('room-1234');
     expect(screen.getByTestId('verification-decide')).toBeEnabled();
+  });
+
+  it.each([
+    [httpError(409, { code: 'video_call_not_sent' }), 'not_sent'],
+    [httpError(409, { code: 'guest_unreachable' }), 'unreachable'],
+    [httpError(404, { code: 'no_pending_verification' }), 'not_pending'],
+    // An answer nobody can confirm (a server that failed, no answer at all) never says that nothing was sent.
+    [httpError(500), 'outcome_unknown'],
+    [httpError(undefined, undefined, AxiosError.ERR_NETWORK), 'outcome_unknown'],
+  ])('VerificationItem_TheCallFails_%#_TellsTheOperatorByAToastAsWell', async (error, problem) => {
+    vi.mocked(verificationApi.proposeVideoCall).mockRejectedValue(error);
+    render(withProviders(<VerificationItem verification={waiting} />));
+    openDialog();
+    typeLink(MEETING);
+
+    send();
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(i18n.t(videoCallProblemKey(problem as (typeof VIDEO_CALL_PROBLEMS)[number]))));
+    expect(toast.error).toHaveBeenCalledTimes(1);
+    expect(toast.success).not.toHaveBeenCalled();
+  });
+
+  it('VerificationItem_TheServerRefusesTheAddress_IsToldNextToTheFieldOnlyAndNotByAToast', async () => {
+    vi.mocked(verificationApi.proposeVideoCall).mockRejectedValue(httpError(422, { code: 'video_call_url_invalid' }));
+    render(withProviders(<VerificationItem verification={waiting} />));
+    openDialog();
+    typeLink(MEETING);
+
+    send();
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(i18n.t('verification.videoCall.errors.invalid_url'));
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+
+  it('VerificationItem_TheCardIsGoneBeforeTheAnswerComes_AFailureIsStillToldAndNeverLooksLikeASend', async () => {
+    let fail: (reason: unknown) => void = () => undefined;
+    vi.mocked(verificationApi.proposeVideoCall).mockReturnValue(
+      new Promise((_resolve, reject) => {
+        fail = reject;
+      }),
+    );
+    const { unmount } = render(withProviders(<VerificationItem verification={waiting} />));
+    openDialog();
+    typeLink(MEETING);
+    send();
+    await waitFor(() => expect(verificationApi.proposeVideoCall).toHaveBeenCalledTimes(1));
+
+    // The page is left, or the queue is drawn again without the card, while the e-mail is queued: nothing of the dialog is there to say what happened.
+    unmount();
+    fail(httpError(409, { code: 'video_call_not_sent' }));
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(i18n.t('verification.videoCall.errors.not_sent')));
+    expect(toast.success).not.toHaveBeenCalled();
   });
 });

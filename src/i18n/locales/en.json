@@ -705,6 +705,7 @@
       },
       "entity": {
         "Booking": "Booking",
+        "OwnerStatementVersion": "Owner statement",
         "Property": "Property"
       },
       "filter": {
@@ -847,6 +848,10 @@
           "title": "Owner document expiring",
           "why": "A document shared with the owner (an insurance, a mandate) expires within 30 days or already has: upload the new one."
         },
+        "OwnerStatementNoticeFailed": {
+          "title": "Owner to be told by hand",
+          "why": "We could not tell the owner by e-mail that the statement was published: open it and tell the owner yourself. The statement is published anyway."
+        },
         "OwnerStaySyncFailed": {
           "title": "Owner stay block not accepted",
           "why": "The channel manager did not accept the block of the dates: the stay is not confirmed until you send it again."
@@ -870,6 +875,14 @@
         "RoutineTask": {
           "title": "Manual reminder from a routine",
           "why": "A routine you set up asks you to take care of this booking."
+        },
+        "SelfBillingDraftsToReview": {
+          "title": "Self-billed invoices to check and issue",
+          "why": "The self-billed invoices (TD17) of the month are ready as drafts: check the amounts against the portals' invoices and issue them by the deadline."
+        },
+        "SelfBillingRejected": {
+          "title": "Self-billed invoice rejected by the SDI",
+          "why": "The tax office counts the self-billed invoice as not issued: open it in the self-billed invoices, see why the SDI rejected it and decide with your accountant how to put it right."
         },
         "TouristTaxDeadline": {
           "title": "Tourist tax due",
@@ -1776,12 +1789,15 @@
       "documentBookingNotDirect": "This document is not linked to a booking, so it cannot be issued from here.",
       "documentConfirmationRequired": "Your confirmation is needed to issue the document: try again.",
       "documentDraftOutdated": "The draft was made with rules or data that have changed since. Press «Refresh» on the draft, check the amounts and then issue it again.",
+      "documentEmailNotSent": "The e-mail did not go out: the sending service is not available right now and nothing was sent. Try again in a moment.",
       "documentInvoiceDataMissing": "The details of who receives the document are missing: complete them in the invoicing details of the booking.",
       "documentIssueFailed": "The document was not issued because of a problem on our side: it is still a draft, try again in a moment.",
       "documentIssuerConflict": "Someone else has already issued the document of this booking: CasaZen does not issue a second one.",
       "documentNotCreditable": "A credit note can only be made of an invoice or a receipt that was already issued.",
       "documentNotDraft": "The document is no longer a draft. Refresh the list.",
+      "documentNotIssued": "Only a document that was already issued is sent to the customer: a draft, or a discarded draft, is not.",
       "documentReadOnly": "This document is read-only: CasaZen did not issue it.",
+      "documentRecipientEmailInvalid": "The guest has no e-mail address we can write to (it is missing, not valid, or a test address): nothing was sent. Fix it in the booking and try again.",
       "documentRuleNotConfigured": "The tax rules of this document (rates and kind of document) are missing: complete the invoicing setup.",
       "fatturapaXmlInvalid": "The electronic invoice file is not valid: check the details of who issues and who receives the document.",
       "guestUnreachable": "The guest has no e-mail address on file: nothing was sent.",
@@ -3706,7 +3722,8 @@
         "host": "I collect it",
         "intro": "For each portal you say who collects the tourist tax. If the portal collects it, the document carries no line for it. If you collect it, the line is there, with the rule of the canton.",
         "note": "Answer for every portal: we do not save a choice you have not made.",
-        "portal": "The portal collects it"
+        "portal": "The portal collects it",
+        "proposed": "For {{portals}} we have already chosen «{{choice}}»: the portal usually collects the tourist tax. Check it, and change it if that is not so for you."
       }
     },
     "vat": {
@@ -7011,6 +7028,7 @@
       },
       "choice": {
         "istat": "The same sender also handles the regional statistics (ISTAT), where required.",
+        "istatSeeNotice": "For the ISTAT, what the notice above says applies.",
         "legend": "Who sends the guests' data to the police?",
         "notAvailable": "Not available yet.",
         "now": "Now: {{sender}}",
@@ -7062,6 +7080,7 @@
           "lead": "Your channel manager confirms that it sends the data to the police.",
           "points": {
             "istat": "The same sender handles the regional statistics (ISTAT), where required.",
+            "istatSeeNotice": "For the ISTAT, see the notice about your region: the channel manager may not send it.",
             "send": "Every day your channel manager sends the guests' data to the police."
           },
           "title": "Automatic sending is active"
@@ -7227,6 +7246,7 @@
         },
         "istat": "ISTAT statistics",
         "istatFollows": "The same service sends them, where required",
+        "istatSeeNotice": "It depends on your region: see the ISTAT notice",
         "property": "Property",
         "switch": {
           "automaticToAutomatic": "The current automatic sending will be switched off: two automatic senders at once would send the data twice. If your channel manager sends today, switch its automatic sending off in its panel too. Until the state of the new sender is «Active» you keep sending it yourself.",
@@ -7960,6 +7980,7 @@
         "Unknown": "Check in the panel of your channel manager that the connection with the police is active and that the daily automatic submission is on, then come back here and check again."
       }
     },
+    "istatSeeNotice": "Whether the channel manager sends the ISTAT depends on your region: see the notice below.",
     "lastRun": "Last automatic submission: {{when}}",
     "loadError": "We couldn't read the state of the submission.",
     "loading": "Reading the state of the submission…",
@@ -9345,7 +9366,8 @@
         "none": "The document has no lines.",
         "quantity": "Quantity",
         "rate": "VAT",
-        "title": "Lines"
+        "title": "Lines",
+        "toCollectAtProperty": "Payable at the property"
       },
       "lineType": {
         "Accommodation": "Stay",
@@ -9360,10 +9382,12 @@
       "loadError": "We cannot load the document.",
       "loading": "Loading the document…",
       "payment": {
+        "noCurrency": "The currency is not stated in the document: the amounts are shown without a symbol.",
         "paid": "Paid",
         "paidPortal": "Paid through the portal",
         "title": "Payment",
         "toCollect": "To collect",
+        "toCollectAtProperty": "Tourist tax payable at the property",
         "unrecognized": "Collection: {{code}}"
       },
       "rate": {
@@ -9392,6 +9416,23 @@
       "done": "Draft discarded.",
       "failed": "We could not discard the draft. Try again in a moment.",
       "title": "Discard the draft?"
+    },
+    "email": {
+      "consequenceAgain": "Every confirmation sends one more e-mail with a new link: the ones already sent keep working until they expire.",
+      "consequenceReal": "The e-mail goes to a real person, at the address left in the booking.",
+      "description": "The guest of the booking gets an e-mail with a link to open and download {{document}}. The document is not attached.",
+      "failed": "We could not queue the e-mail. Try again in a moment.",
+      "queued": "E-mail queued: it goes out shortly. The link works until {{date}}.",
+      "queuedNote": "E-mail queued. The link works until {{date}}.",
+      "refused": "The e-mail was not queued: the server did not accept the request.",
+      "resend": "Resend e-mail",
+      "resendConfirm": "Send the e-mail again",
+      "resendLabel": "Send the e-mail of {{document}} to the customer again",
+      "resendTitle": "Send the e-mail to the customer again?",
+      "send": "Send to customer",
+      "sendConfirm": "Send the e-mail",
+      "sendLabel": "E-mail {{document}} to the customer",
+      "sendTitle": "Send the document to the customer?"
     },
     "issue": {
       "confirm": "Issue",
@@ -10579,6 +10620,7 @@
     "action": {
       "newTab": "(opens in a new tab)",
       "panelStep": "Connect the ISTAT in the panel",
+      "panelStepInWizard": "The ISTAT is connected from the property panel, once the setup is done.",
       "portalGuide": "Open the portal of your region",
       "supportAdminOnly": "Only the administrator of the organization can ask support for help."
     },
@@ -10590,6 +10632,7 @@
     "detail": {
       "covered": "Your channel manager sends the ISTAT data of this region, once you have connected it in its panel.",
       "notCovered": "Your channel manager does not send the ISTAT data of this region: you send it yourself from the regional portal.",
+      "otherSender": "Right now the sending of this property is not done by the channel manager: the ISTAT of your region is communicated through its portal.",
       "toVerify": "We do not know yet whether your channel manager sends the ISTAT data of this region: until it is verified we do not take it for granted."
     },
     "loadError": "We cannot read whether your channel manager sends the ISTAT for your region: for now it is to be verified.",
@@ -10597,7 +10640,8 @@
     "portalMissing": "The address of the portal of your region is not stated yet.",
     "proof": {
       "action": "Upload the ISTAT proof of {{month}}",
-      "lead": "Each month the proof that the data was sent is kept."
+      "lead": "Each month the proof that the data was sent is kept.",
+      "open": "Open the proof archive for {{month}}"
     },
     "region": {
       "named": "Your region ({{region}}) uses {{system}}.",
@@ -10608,6 +10652,7 @@
     "title": {
       "covered": "ISTAT: your channel manager sends it",
       "notCovered": "ISTAT: your channel manager does not send it",
+      "otherSender": "ISTAT: for this property it does not go through the channel manager",
       "toVerify": "ISTAT: to be verified"
     },
     "unverified": "This data comes from our list and is not verified yet."
@@ -10730,9 +10775,14 @@
     "portal": "Portal",
     "save": "Save",
     "source": "Source",
+    "stale": {
+      "changed": "This row was changed by someone else after you opened it: close it and open it again to see the current values. Old values are not saved.",
+      "unreadable": "We cannot read the table again: values that may be old are not saved. Close this and try again in a moment."
+    },
     "summary": "To be verified: {{pending}} of {{total}}.",
     "title": "ISTAT regions",
     "toast": {
+      "rereadFailed": "We cannot read the current row: try again.",
       "saved": "{{region}}: row saved.",
       "saveFailed": "We could not save the row."
     }
@@ -18549,6 +18599,8 @@
       "focusBody": "Closing balance {{balance}}. Version cut on {{cutoff}}.",
       "focusTitle": "Version {{version}} · {{status}}",
       "formula": "Closing balance = opening balance {{opening}} + revenue {{revenue}} + commissions and costs {{costs}} + payments and withholdings {{paid}} + corrections {{corrections}} = {{closing}}.",
+      "immutableBody": "The recorded lines no longer add up to the totals saved in this version. So that you are never shown wrong figures we do not show it, nor its files: trying again will not help. Write to support with the month and the owner.",
+      "immutableTitle": "This statement cannot be shown",
       "kicker": "Statement of {{period}}",
       "loadError": "We cannot read the statement.",
       "loading": "Reading the statement…",
@@ -18871,6 +18923,18 @@
   },
   "ownerInvoice": {
     "currencyMissing": "For some invoice the server did not give the currency: the amounts are written without a symbol.",
+    "detail": {
+      "creditNote": "Credit note",
+      "description": "The lines of the invoice and its totals, as they are saved.",
+      "forbidden": "This invoice is not visible with your access: it is seen by the account owner and by the administrators of the organization, with access to every property.",
+      "forbiddenTitle": "Invoice not available to you",
+      "issuedOn": "Issued on {{date}}",
+      "notFound": "This invoice is no longer there",
+      "notFoundBody": "It does not exist, or it belongs to another organization. Close this and refresh the list.",
+      "open": "Open the lines",
+      "openLabel": "Open the lines and totals of: {{name}}",
+      "title": "Invoice to the owner"
+    },
     "issue": {
       "confirm": "Issue the invoice",
       "consequenceFinal": "Once issued, the invoice can no longer be changed.",
@@ -20258,16 +20322,17 @@
     "row": {
       "kindAndCurrency": "{{kind}} · currency {{currency}}",
       "kindNoCurrency": "{{kind}} · settlement currency missing",
-      "loading": "Reading the profile…",
       "mandateActive": "Commission {{percent}} {{vat}}, from {{from}}",
       "mandateError": "We cannot read the mandate.",
       "mandateLoading": "Reading the mandate…",
       "mandateMissing": "The mandate is missing",
       "mandateUpcoming": "Mandate from {{from}}: commission {{percent}}",
       "noProfile": "No fiscal profile",
+      "noProperties": "No properties",
       "open": "Financial data",
       "openLabel": "Open the financial data of {{owner}}",
-      "profileError": "We cannot read the fiscal profile."
+      "properties_one": "{{count}} property",
+      "properties_other": "{{count}} properties"
     },
     "title": "Owners"
   },
@@ -21379,6 +21444,7 @@
       "download": "Download PNG",
       "error": "Error",
       "errorDescription": "Property ID missing or invalid.",
+      "flagsUnreadable": "We cannot tell which QR code to print right now. Try again in a moment.",
       "hint": "Print or download this QR code and place it at the property entrance to facilitate guest check-in.",
       "instructions": "Scan this QR code to start your stay verification",
       "loading": "Generating QR code...",
@@ -23095,6 +23161,7 @@
   "publicFiscalDocument": {
     "description": "Here is the summary of the document you received. Download the PDF to keep it.",
     "download": "Download the PDF",
+    "downloadFailed": "We could not download the PDF. Check your connection and try again.",
     "invalid": {
       "description": "This link is not valid or has expired. Ask the property to send it again.",
       "title": "Link not valid or expired"
@@ -23104,6 +23171,10 @@
       "invoice": "Invoice",
       "other": "Document",
       "receipt": "Receipt"
+    },
+    "loadFailed": {
+      "description": "We cannot load the document right now: it may be your connection or a problem on our side. Please try again shortly.",
+      "title": "We cannot load the document"
     },
     "loading": "Loading the document…",
     "noCurrency": "The currency is not stated in the document: the amount is shown without a symbol.",
@@ -23894,6 +23965,10 @@
         "description": "Municipality by municipality: what is owed, what you paid and the receipts. You also record payments here.",
         "name": "Tourist tax: owed and paid"
       },
+      "touristTaxYearEnd": {
+        "description": "The year-end files: the declaration to the municipalities, the agent's account and the count of nights in Ticino.",
+        "name": "Tourist tax: year end"
+      },
       "withholding": {
         "description": "The withholdings kept by Airbnb and Booking.com on your payouts.",
         "name": "Portal withholdings"
@@ -24107,7 +24182,131 @@
         "ToPay": "To pay"
       },
       "title": "Tourist tax: owed and paid",
-      "total": "Total"
+      "total": "Total",
+      "yearEnd": {
+        "account": {
+          "by": {
+            "label": "Breakdown",
+            "month": "Month by month",
+            "quarter": "Quarter by quarter"
+          },
+          "caption": "Agent's account {{year}}: {{cut}}, municipality by municipality",
+          "columns": {
+            "collected": "Collected",
+            "period": "Period"
+          },
+          "description": "For each municipality, the tax collected and the tax paid month by month or quarter by quarter, with the line of the year and the list of payments.",
+          "empty": "No stay in Italy checks in during {{year}} and no payment is recorded: the agent's account has no rows.",
+          "period": {
+            "quarter": "Q{{quarter}} {{year}}",
+            "year": "Year {{year}}"
+          },
+          "remittances": {
+            "empty": "No payment is recorded in {{year}}.",
+            "title": "Payments of the year"
+          },
+          "title": "Agent's account {{year}}"
+        },
+        "columns": {
+          "guests": "Guests",
+          "nights": "Nights"
+        },
+        "declaration": {
+          "caption": "Declaration to the municipalities {{year}}, municipality by municipality",
+          "counts": {
+            "guestNights_one": "{{count}} guest-night",
+            "guestNights_other": "{{count}} guest-nights",
+            "guests_one": "{{count}} guest",
+            "guests_other": "{{count}} guests",
+            "stays_one": "{{count}} stay",
+            "stays_other": "{{count}} stays"
+          },
+          "description": "For each municipality: nights and guests, stays with and without tax, tax due, paid and the difference, with the payments.",
+          "details": {
+            "exemptions": "Exempt guests",
+            "none": "None",
+            "staysWithoutAmount": "Stays with no amount",
+            "taxedStays": "Stays with tax"
+          },
+          "empty": "No stay in Italy checks in during {{year}} and no payment is recorded: the declaration to the municipalities has no rows.",
+          "exemptionReason": {
+            "erased": "Reason erased with the guest's data",
+            "minor_age": "Minors (exempt by age)",
+            "restricted": "reason detail restricted"
+          },
+          "reasons": "Exemptions are counted by reason: never a guest, never a name.",
+          "reasonsRestricted": "The detail of the exemption reasons is reserved to people who may read guest data: the file has the exemptions by age and a single row, “reason detail restricted”, with the same counts.",
+          "stayReason": {
+            "collected_by_channel": "Tax collected by the portal",
+            "exempt": "Every guest exempt",
+            "no_tax_due": "No tax due",
+            "not_calculated": "Tax not calculated"
+          },
+          "title": "Declaration to the municipalities {{year}}"
+        },
+        "description": "The data to hand to the municipalities and to the tourist board of Ticino. CasaZen prepares the files and sends nothing: you or your accountant file the declaration.",
+        "details": {
+          "error": "These figures could not be loaded.",
+          "loading": "Loading the figures…",
+          "noAccess": "These figures are not available for your access: it takes the permission on payments and access to all the properties of the organization.",
+          "notFound": "These figures are not there.",
+          "unavailable": "The figures on screen (declaration, agent's account and Ticino) are not available yet: meanwhile you can download the files above."
+        },
+        "figures": {
+          "balance": "Balance",
+          "byComune": "Open the summary by municipality",
+          "currencyMissing": "The service does not state the currency of these amounts: they are written without a symbol.",
+          "empty": "No stay in Italy checks in during {{year}} and no payment is recorded: the declaration to the municipalities has no rows.",
+          "error": "The figures of the year could not be loaded.",
+          "label": "Figures of {{year}}",
+          "loading": "Loading the figures of the year…",
+          "nights": "Nights",
+          "notFound": "The figures of this year are not there.",
+          "owed": "Tax due",
+          "paid": "Paid",
+          "partial": "Your access covers only some of the properties: the year-end declaration is about the whole organization, so you do not see its figures here.",
+          "refused": "The figures of the year are not available for your access.",
+          "title": "Italy: {{year}} at a glance"
+        },
+        "files": {
+          "failed": "The file could not be prepared. Try again.",
+          "format": {
+            "csv": "Download CSV",
+            "xlsx": "Download Excel"
+          },
+          "formatFor": "{{format}}: {{title}}",
+          "noAccess": "You cannot download this file: it takes the permission on payments and access to all the properties of the organization.",
+          "note": "CasaZen prepares the data and sends nothing: whoever has to, you or your accountant, fills in and hands over the forms.",
+          "title": "Files to hand over"
+        },
+        "ticino": {
+          "cantonUnknown": "A property in Switzerland whose canton is not known (the Swiss municipality is missing or not recognized) is in the count with a note in the last column, because it may be in Ticino. Complete the property's data and download the file again.",
+          "caption": "Count of nights in Ticino {{year}}, property by property",
+          "columns": {
+            "property": "Property",
+            "taxed": "With tax",
+            "touristTax": "Tourist tax",
+            "untaxed": "Without tax",
+            "withoutDocument": "Without a document"
+          },
+          "currencyMissing": "The service does not state the currency of some properties: their amounts are written without a symbol.",
+          "description": "For each property in Ticino: the stays and nights of the year, with and without tourist tax according to the documents issued, and the amounts in francs. Due to the tourist board by 5 January {{deadlineYear}}.",
+          "due": "Due to the tourist board by {{date}}.",
+          "empty": "No property in Ticino, and none of unknown canton, in {{year}}: the count has no rows.",
+          "legend": "“With tax” and “Without tax” come from the document issued for each stay. “Without a document” are the stays with none issued yet: they are not counted as without tax.",
+          "nights_one": "{{count}} night",
+          "nights_other": "{{count}} nights",
+          "openProperties": "Open the properties",
+          "title": "Count of nights in Ticino {{year}}",
+          "unknown": {
+            "marker": "Canton not known",
+            "note_one": "{{count}} property in Switzerland has a canton that is not known: it may be in Ticino, so it is in the count and marked. Until you give its Swiss municipality in the property's data, the count may include a property of another canton.",
+            "note_other": "{{count}} properties in Switzerland have a canton that is not known: they may be in Ticino, so they are in the count and marked. Until you give their Swiss municipality in the data of each property, the count may include properties of other cantons."
+          }
+        },
+        "title": "Tourist tax: year end",
+        "year": "Year"
+      }
     },
     "type": {
       "financial": "Financial",
@@ -31251,13 +31450,14 @@
     "loadErrorCurrency": "Could not load the payments in {{currency}}",
     "loading": "Loading wire transfers...",
     "noPayouts": "No payments to send to the bank",
-    "noPayoutsDescription": "Payments appear here once you confirm them in the month-end close of the owners.",
+    "noPayoutsDescription": "A payment appears here only once you have confirmed it in the month-end close of the owners, its statement has been published to the owner and its net amount is above zero.",
     "notCreated": "{{currency}} file not created",
     "notFound": "Payments not found",
     "notFoundPayout": "We cannot find one of the chosen payments: the list has been updated.",
     "openClose": "Go to the month-end close",
     "openOwner": "Open the financial details",
-    "payoutsHint": "The confirmed payments to the owners that are not in any file yet, for the net amount after the withholding. A payment goes into one file only: once you put it in a file, it leaves this list.",
+    "payoutsCapNote": "At most {{limit}} payments in {{currency}} are listed, the oldest ones: the others appear here once you put some of these in a file.",
+    "payoutsHint": "The confirmed payments to the owners that are not in any file yet, for the net amount after the withholding. Only the ones whose statement has already been published to the owner, and whose net amount is above zero, are listed. A payment goes into one file only: once you put it in a file, it leaves this list.",
     "refused": {
       "description": "The list covers the owners of the whole organization and the server only shows it with access to every property. If your access is limited to some properties, ask an administrator to open this page.",
       "title": "These payments are not available to your access"

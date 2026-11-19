@@ -20,10 +20,15 @@ import {
   formatDocumentAmount,
   formatDocumentDay,
   formatDocumentRate,
+  hasCurrencyCode,
+  LINE_AT_PROPERTY_STATE,
   lineTypeKey,
+  paymentSplitOf,
   paymentWordsOf,
   vatSummaryOf,
   type DocumentIntent,
+  type PaymentPart,
+  type PaymentSplit,
 } from './document-model';
 import { DocumentSdiPanel } from './document-sdi-panel';
 import { DocumentStateBadge, StatePill } from './document-state-badge';
@@ -57,7 +62,10 @@ const TH_NUM = 'px-2 py-2 text-right font-medium text-foreground/70';
 const TD = 'px-2 py-2 align-top';
 const TD_NUM = 'px-2 py-2 text-right align-top tabular-nums';
 
-/** The lines of the document, each with its type when the server says it, its amount without VAT and its rate. Every amount is in the currency of the document. */
+/**
+ * The lines of the document, each with its type when the server says it, its amount without VAT and its rate. Every amount is in the currency of the document. The line of tourist tax that the portal left to
+ * the host is marked «Da pagare in struttura» when, and only when, the server says so (`toCollectAtProperty`): the line stays what it is and so does its amount.
+ */
 function LinesBlock({ detail, language }: { detail: FiscalDocumentDetail; language: string }) {
   const { t } = useTranslation();
   const money = (amount: number) => formatDocumentAmount(amount, detail.currency, language);
@@ -98,6 +106,11 @@ function LinesBlock({ detail, language }: { detail: FiscalDocumentDetail; langua
                       {line.lineType !== null ? (
                         <span className="block text-xs text-foreground/70" data-testid="fiscal-document-line-type">
                           {typeKey ? t(typeKey) : line.lineType}
+                        </span>
+                      ) : null}
+                      {line.toCollectAtProperty ? (
+                        <span className="mt-1 block">
+                          <StatePill state={LINE_AT_PROPERTY_STATE} testId="fiscal-document-line-at-property" />
                         </span>
                       ) : null}
                     </td>
@@ -199,6 +212,43 @@ function TotalsBlock({ detail, language }: { detail: FiscalDocumentDetail; langu
   );
 }
 
+/** One part of a payment the server splits in two: how it stands (words, tone and an icon, never color alone) on the left, its amount on the right, as the neighbouring figures are drawn. */
+function PaymentPartRow({ part, amount, testId }: { part: PaymentPart; amount: string; testId: string }) {
+  return (
+    <div className="flex min-w-0 items-center justify-between gap-4" data-testid={testId}>
+      <dt className="min-w-0">
+        <StatePill state={part.state} testId={`${testId}-state`} />
+      </dt>
+      <dd className="whitespace-nowrap font-medium tabular-nums" data-testid={`${testId}-amount`}>
+        {amount}
+      </dd>
+    </div>
+  );
+}
+
+/**
+ * The payment of a document the server says is split in two (the portal collected the stay and left the tourist tax to the host): what the portal collected, when it collected something, and the tourist tax still
+ * to pay at the property, with the amounts the server wrote in the currency of the document. A document whose currency is not a code has its amounts written without a symbol, and the block says so.
+ */
+function PaymentSplitRows({ split, currency, language }: { split: PaymentSplit; currency: string; language: string }) {
+  const { t } = useTranslation();
+  const money = (amount: number) => formatDocumentAmount(amount, currency, language);
+
+  return (
+    <div className="space-y-2">
+      <dl className="space-y-2 text-sm" data-testid="fiscal-document-payment-split">
+        {split.portal ? <PaymentPartRow part={split.portal} amount={money(split.portal.amount)} testId="fiscal-document-payment-portal" /> : null}
+        <PaymentPartRow part={split.atProperty} amount={money(split.atProperty.amount)} testId="fiscal-document-payment-property" />
+      </dl>
+      {hasCurrencyCode(currency) ? null : (
+        <p className="text-sm text-foreground/70" data-testid="fiscal-document-payment-no-currency">
+          {t('fiscalDocuments.detail.payment.noCurrency')}
+        </p>
+      )}
+    </div>
+  );
+}
+
 /** Who issued the document as it was when it was issued: the snapshot when the server sends it, else a pointer to the PDF, which is made from it. Nothing for a draft or a document of the channel manager. */
 function IssuerBlock({ detail }: { detail: FiscalDocumentDetail }) {
   const { t } = useTranslation();
@@ -250,6 +300,7 @@ function DrawerBody({ documentId, flags, canWrite, canReadBookings, intent, onCl
   const sourceKey = detail ? documentSourceKey(detail.source) : null;
   const purposeKey = detail ? documentPurposeKey(detail.purpose) : null;
   const payment = detail ? paymentWordsOf(detail) : null;
+  const paymentSplit = detail ? paymentSplitOf(detail) : null;
   const bookingHref = detail ? bookingLinkOf(detail, canReadBookings) : null;
   // The guided correction exists only while the sending to the SDI is on and the person may change the documents of the guests.
   const canCorrect = canWrite && isFeatureEnabled(flags, 'sdiSubmission');
@@ -328,9 +379,14 @@ function DrawerBody({ documentId, flags, canWrite, canReadBookings, intent, onCl
             <VatBlock detail={detail} language={language} />
             <TotalsBlock detail={detail} language={language} />
 
-            {payment ? (
+            {/* The two parts of a payment the server splits (what the portal collected, the tourist tax still to pay at the property) take the place of the single state; any other document keeps what it had. */}
+            {paymentSplit || payment ? (
               <Block title={t('fiscalDocuments.detail.payment.title')} testId="fiscal-document-payment-block">
-                <StatePill state={payment} testId="fiscal-document-detail-payment" />
+                {paymentSplit ? (
+                  <PaymentSplitRows split={paymentSplit} currency={detail.currency} language={language} />
+                ) : payment ? (
+                  <StatePill state={payment} testId="fiscal-document-detail-payment" />
+                ) : null}
               </Block>
             ) : null}
 
@@ -383,7 +439,8 @@ interface DocumentDetailDrawerProps {
 
 /**
  * The detail of a document, opened from its row (E12/F02/US01/T01): the total in the currency of the document, its state, its lines with their type (when the server says it), the VAT per rate, the
- * totals, how it stands on the money («Pagato tramite il portale», «Pagato», «Da incassare»), who issued it as it was when it was issued, and the actions of its state next to the PDF and the XML (the
+ * totals, how it stands on the money («Pagato tramite il portale», «Pagato», «Da incassare», or, when the server splits the payment of a portal document that left the tourist tax to the host, the part the portal
+ * collected and the tourist tax «da pagare in struttura», each with its amount), who issued it as it was when it was issued, and the actions of its state next to the PDF and the XML (the
  * XML only when CasaZen holds one). It reads the document again whenever it opens and shows nothing it did not read: a failed read is a failed read, a 404 is «not found» whatever was in the cache.
  * A document drawn here is read, never edited: what can be changed goes through the dialogs of its actions.
  */

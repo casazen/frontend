@@ -17,6 +17,9 @@ import {
   documentsReadOf,
   documentStatesOf,
   documentWriteActionsOf,
+  emailLinkDayOf,
+  emailProblemOf,
+  emailRetryableOf,
   exportBlockOf,
   exportFileName,
   formatDocumentAmount,
@@ -319,28 +322,83 @@ describe('reads', () => {
 });
 
 describe('documentWriteActionsOf (what may be changed, by state)', () => {
-  const none = { issue: false, refresh: false, discard: false, credit: false };
+  const none = { issue: false, refresh: false, discard: false, credit: false, email: false };
 
   it('DocumentWriteActionsOf_WithoutTheRightToChange_IsNothingWhateverTheDocument', () => {
     for (const candidate of [document(), draft(), importedDocument(), draft({ kind: 'CreditNote' })]) expect(documentWriteActionsOf(candidate, false)).toEqual(none);
   });
 
   it.each([
-    ['a draft of CasaZen', draft(), { issue: true, refresh: true, discard: true, credit: false }],
+    ['a draft of CasaZen', draft(), { ...none, issue: true, refresh: true, discard: true }],
     // A credit note that is a draft is the amounts of the document it credits: it is issued or dropped, never made again from a booking.
-    ['a credit note that is a draft', draft({ kind: 'CreditNote' }), { issue: true, refresh: false, discard: true, credit: false }],
-    ['an invoice that was issued', document(), { ...none, credit: true }],
-    ['a receipt that was issued', document({ kind: 'Receipt' }), { ...none, credit: true }],
-    ['a credit note that was issued', document({ kind: 'CreditNote' }), none],
-    // An invoice the SDI rejected never was issued: it is corrected from its panel, and the server refuses a credit note of it every time (422 `document_rejected_use_correction`).
+    ['a credit note that is a draft', draft({ kind: 'CreditNote' }), { ...none, issue: true, discard: true }],
+    // An issued document is e-mailed to the guest: the e-mail is a write on the document, behind the same right and the same flag.
+    ['an invoice that was issued', document(), { ...none, credit: true, email: true }],
+    ['a receipt that was issued', document({ kind: 'Receipt' }), { ...none, credit: true, email: true }],
+    ['a credit note that was issued', document({ kind: 'CreditNote' }), { ...none, email: true }],
+    // An invoice the SDI rejected never was issued: it is corrected from its panel, and the server refuses a credit note of it every time (422 `document_rejected_use_correction`); the guest gets the corrected one.
     ['an invoice the SDI rejected', document({ sdiStatus: 'rejected', sdiErrorCode: '00404' }), none],
-    ['an invoice the SDI delivered', document({ sdiStatus: 'delivered' }), { ...none, credit: true }],
+    ['an invoice the SDI delivered', document({ sdiStatus: 'delivered' }), { ...none, credit: true, email: true }],
     // The draft that replaces a rejected invoice holds its number: it is issued and made again from the data, never dropped (422 `document_replacement_holds_number`).
-    ['the draft that replaces a rejected invoice', draft({ replacesDocumentId: 'd0000000-0000-4000-8000-0000000000aa' }), { issue: true, refresh: true, discard: false, credit: false }],
+    ['the draft that replaces a rejected invoice', draft({ replacesDocumentId: 'd0000000-0000-4000-8000-0000000000aa' }), { ...none, issue: true, refresh: true }],
     ['a dropped draft', draft({ status: 'Discarded' }), none],
     ['a document of the channel manager', importedDocument({ status: 'Draft' }), none],
+    ['a document of the channel manager that is issued', importedDocument({ status: 'Issued' }), none],
+    // The server refuses these with 422 every time (`document_owner_invoice`, `document_self_billing`): their own pages send them.
+    ['an invoice to an owner', document({ purpose: 'OwnerInvoice' }), none],
+    ['a self-billed invoice', document({ purpose: 'SelfBilling' }), none],
+    // A kind this client has no words for (the server is newer) or a proforma is not e-mailed to the guest.
+    ['a proforma that was issued', document({ kind: 'Proforma' }), none],
+    ['a kind of the future that was issued', document({ kind: 'Estimate' }), none],
   ])('DocumentWriteActionsOf_%s_IsRead', (_case, candidate, expected) => {
     expect(documentWriteActionsOf(candidate, true)).toEqual(expected);
+  });
+});
+
+describe('the e-mail of a document to its guest (E12/F01/US02/T01): what it says and whether asking again helps', () => {
+  const t = i18n.getFixedT('it');
+
+  /** A failed call as the client of axios gives it: with the answer of the server, or none at all (the network). */
+  const failedCall = (status: number | undefined, body: unknown = {}) => (status === undefined ? new AxiosError('Network Error', AxiosError.ERR_NETWORK) : failure(status, body));
+
+  it.each([
+    ['no answer at all (the network)', failedCall(undefined), true],
+    ['a server that failed (500)', failedCall(500), true],
+    ['too many calls (429)', failedCall(429, { code: 'rate_limited' }), true],
+    ['the queue could not take the e-mail (422 document_email_not_sent): nothing was sent', failedCall(422, { code: FISCAL_DOCUMENT_ERROR.emailNotSent }), true],
+    ['a draft (422 document_not_issued)', failedCall(422, { code: 'document_not_issued' }), false],
+    ['a guest with no address that can be written to (422)', failedCall(422, { code: 'document_recipient_email_invalid' }), false],
+    ['a document that is not found (404)', failedCall(404, { code: 'fiscal_document_not_found' }), false],
+    ['a person who may not (403)', failedCall(403, ''), false],
+  ])('EmailRetryableOf_%s_IsRead', (_case, error, expected) => {
+    expect(emailRetryableOf(error)).toBe(expected);
+  });
+
+  it('EmailProblemOf_EachRefusalCodeHasItsOwnWords_AndNoneSaysTheEmailWasSent', () => {
+    const codes = ['document_not_issued', 'document_owner_invoice', 'document_self_billing', 'document_read_only', 'document_recipient_email_invalid', 'document_email_not_sent', 'fiscal_document_not_found'];
+    const messages = codes.map((code) => emailProblemOf(failedCall(422, { code }), t).message);
+
+    // Seven refusals, seven different sentences, none of them the generic one.
+    expect(new Set(messages).size).toBe(codes.length);
+    for (const message of messages) {
+      expect(message).not.toBe(t('fiscalDocuments.email.failed'));
+      expect(message).not.toBe(t('fiscalDocuments.email.refused'));
+      expect(message).not.toMatch(/in coda|consegnat/i);
+    }
+  });
+
+  it('EmailProblemOf_ADeniedCallAndAFailedCall_AreToldInTheirOwnWords', () => {
+    expect(emailProblemOf(failedCall(403, ''), t)).toEqual({ retry: false, message: t('apiErrors.forbidden') });
+    expect(emailProblemOf(failedCall(undefined), t)).toEqual({ retry: true, message: t('apiErrors.network') });
+    // A 5xx has no words of its own (its free text is never shown): the sentence says the call may be repeated; a refusal with no code says it may not.
+    expect(emailProblemOf(failedCall(500, 'Internal error'), t)).toEqual({ retry: true, message: t('fiscalDocuments.email.failed') });
+    expect(emailProblemOf(failedCall(404, ''), t)).toEqual({ retry: false, message: t('fiscalDocuments.email.refused') });
+  });
+
+  it('EmailLinkDayOf_IsTheRomeDayOfTheInstantTheServerGives_InTheLanguageOfThePerson', () => {
+    // 23:30 UTC of the 18th is already the 19th in Rome.
+    expect(emailLinkDayOf({ linkExpiresAt: '2026-12-18T23:30:00Z' }, 'it')).toBe(formatDocumentDay('2026-12-19', 'it'));
+    expect(emailLinkDayOf({ linkExpiresAt: '2026-12-18T23:30:00Z' }, 'en')).toBe(formatDocumentDay('2026-12-19', 'en'));
   });
 });
 

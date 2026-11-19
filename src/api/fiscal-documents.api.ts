@@ -10,6 +10,7 @@ import type {
   FiscalDocumentChange,
   FiscalDocumentCriteria,
   FiscalDocumentDetail,
+  FiscalDocumentEmailQueued,
   FiscalDocumentEntry,
   FiscalDocumentExportFormat,
   FiscalDocumentFile,
@@ -59,6 +60,8 @@ export const FISCAL_DOCUMENT_ERROR = {
   octoratePdfUnavailable: 'octorate_pdf_unavailable',
   /** 422: the FatturaPA schema is not installed yet, so no XML is made: an operator adds it. */
   schemaUnavailable: 'fatturapa_schema_unavailable',
+  /** 422: the e-mail of a document to its guest could not be queued (no e-mail provider, no public address of the web app, the queue is down): nothing was sent, and the call may be repeated. */
+  emailNotSent: 'document_email_not_sent',
 } as const;
 
 /**
@@ -84,6 +87,9 @@ const isOptionalText = (value: unknown) => value === undefined || value === null
 const textOf = (value: unknown): string | null => (typeof value === 'string' && value !== '' ? value : null);
 
 const isFiniteNumber = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
+
+/** An amount the API leaves out when it does not apply: missing, `null` or a number. */
+const isOptionalAmount = (value: unknown) => value === undefined || value === null || isFiniteNumber(value);
 
 /** A whole number the API leaves out when it has none: anything else is read as none (a member this client does not need must never fail the whole answer). */
 const integerOf = (value: unknown): number | null => (typeof value === 'number' && Number.isInteger(value) ? value : null);
@@ -172,7 +178,10 @@ function ensurePage(data: unknown): FiscalDocumentPage {
   return { items: items as FiscalDocumentEntry[], totalCount: page.totalCount, page: page.page, pageSize: page.pageSize };
 }
 
-/** A line of a document: the amounts are the ones stored (net of VAT), the type and the VAT of the line only when the server says them. */
+/**
+ * A line of a document: the amounts are the ones stored (net of VAT), the type and the VAT of the line only when the server says them. The mark of the line of tourist tax to pay at the property is
+ * kept only when the server says `true` (it leaves the member out of every other line): the line is never marked on any other ground.
+ */
 function lineOf(value: unknown): FiscalDocumentLine | null {
   if (
     !isRecord(value) ||
@@ -195,6 +204,7 @@ function lineOf(value: unknown): FiscalDocumentLine | null {
     vatNatureCode: textOf(value.vatNatureCode),
     lineType: textOf(value.lineType),
     vatAmount: isFiniteNumber(value.vatAmount) ? value.vatAmount : null,
+    ...(value.toCollectAtProperty === true ? { toCollectAtProperty: true } : {}),
   };
 }
 
@@ -209,7 +219,9 @@ function issuerOf(value: unknown): FiscalDocumentIssuer | null {
 
 /**
  * One document with its lines, reduced like the list: the recipient is kept by name only (its fiscal code, VAT number, address and PEC are in the answer and are not kept). A member that
- * is not one is a load error for the whole answer, never a line left out: a document that silently misses a line would show a total that does not add up.
+ * is not one is a load error for the whole answer, never a line left out: a document that silently misses a line would show a total that does not add up. That holds for the two amounts of
+ * the split of a portal document (`amountPaidViaPortal`, `amountToCollectAtProperty`) too: they are kept as the numbers the server wrote when it says them, and an answer whose amount is not a
+ * number is a load error, never a document shown as paid in full over a split that could not be read.
  */
 function detailOf(value: unknown): FiscalDocumentDetail | null {
   const entry = entryOf(value);
@@ -219,7 +231,9 @@ function detailOf(value: unknown): FiscalDocumentDetail | null {
     !isFiniteNumber(value.taxableBase) ||
     !isFiniteNumber(value.vatAmount) ||
     !isFiniteNumber(value.stampDuty) ||
-    !Array.isArray(value.lines)
+    !Array.isArray(value.lines) ||
+    !isOptionalAmount(value.amountPaidViaPortal) ||
+    !isOptionalAmount(value.amountToCollectAtProperty)
   ) {
     return null;
   }
@@ -233,6 +247,9 @@ function detailOf(value: unknown): FiscalDocumentDetail | null {
     lines: (lines as FiscalDocumentLine[]).sort((a, b) => a.lineNumber - b.lineNumber),
     paymentChannel: textOf(value.paymentChannel),
     issuer: issuerOf(value.issuer),
+    // What the portal collected and the tourist tax still to pay at the property: only when the server says them, as it wrote them (the client works nothing out, and an older server says none).
+    ...(isFiniteNumber(value.amountPaidViaPortal) ? { amountPaidViaPortal: value.amountPaidViaPortal } : {}),
+    ...(isFiniteNumber(value.amountToCollectAtProperty) ? { amountToCollectAtProperty: value.amountToCollectAtProperty } : {}),
   };
 }
 
@@ -424,6 +441,26 @@ export async function createCreditNote(id: string, request: FiscalCreditNoteRequ
 /** The draft discarded (`DELETE api/fiscal/documents/{id}`): no number was consumed. */
 export async function discardDraft(id: string): Promise<void> {
   await axios.delete(`${PATH}/${encodeURIComponent(id)}`);
+}
+
+/** An instant of the server (a UTC time, `...Z`) kept as it came, or `null` when it is not an instant: the day a link stops opening is never made up. */
+const instantOf = (value: unknown): string | null => (typeof value === 'string' && !Number.isNaN(new Date(value).getTime()) ? value : null);
+
+/**
+ * The e-mail of an issued guest document, queued for the guest of its booking (`POST api/fiscal/documents/{id}/send-email`): the guest gets a signed link to the page of the document, never the document as an
+ * attachment. The answer says the e-mail is QUEUED (`queued: true`, and the last instant the link in it opens) and never that it was delivered; every call sends one more e-mail, with a new link. It needs `payment.write`
+ * and the `FiscalDocumentIssuance` flag of the server (a 404 while it is off). 404 `fiscal_document_not_found`; 422 `document_not_issued` (a draft or a dropped draft), `document_owner_invoice`, `document_self_billing`,
+ * `document_read_only` (a document of the channel manager), `document_recipient_email_invalid` (the guest has no address that can be written to) and `document_email_not_sent` (nothing was queued). An answer that does
+ * not say `queued: true` is a load error, never a success.
+ */
+export async function sendDocumentEmail(id: string): Promise<FiscalDocumentEmailQueued> {
+  const path = `${PATH}/${encodeURIComponent(id)}/send-email`;
+  const response = await axios.post<unknown>(path);
+  const data = response.data;
+  if (!isRecord(data) || data.queued !== true || typeof data.documentId !== 'string') throw new UnexpectedApiResponseError(path);
+  const linkExpiresAt = instantOf(data.linkExpiresAt);
+  if (linkExpiresAt === null) throw new UnexpectedApiResponseError(path);
+  return { documentId: data.documentId, linkExpiresAt };
 }
 
 /**

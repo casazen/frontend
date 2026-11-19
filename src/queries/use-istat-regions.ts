@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { istatApi } from '@/api/istat.api';
 import type { IstatRegionRule, SaveIstatRegionRequest } from '@/types/istat.types';
@@ -23,6 +24,16 @@ export function useIstatRegions() {
     refetchOnMount: 'always',
     staleTime: 30_000,
   });
+}
+
+/**
+ * Reads the whole table again now, whatever the age of what the page holds (`staleTime: 0`), and puts the answer in the table of the page. It fails when the read fails: the answer of the server
+ * or nothing, never the older rows. A save replaces a whole row and the API has no version, so the form of a row starts from this read and is saved only after another one.
+ */
+export function useRereadIstatRegions() {
+  const queryClient = useQueryClient();
+
+  return useCallback(() => queryClient.fetchQuery({ queryKey: ISTAT_REGIONS_KEY, queryFn: () => istatApi.listRegions(), staleTime: 0 }), [queryClient]);
 }
 
 /**

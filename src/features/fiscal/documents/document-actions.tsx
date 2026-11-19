@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { FileDown, Lock, RefreshCw, Send, Trash2, Undo2 } from 'lucide-react';
+import { FileDown, Lock, Mail, RefreshCw, Send, Trash2, Undo2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import type { FeatureFlags } from '@/config/feature-flags';
 import { useDocumentsBusy, useDownloadFiscalDocument, useRefreshFiscalDocument } from '@/queries/use-fiscal-documents';
-import type { FiscalDocumentEntry } from '@/types';
-import { CreditNoteDialog, DiscardDraftDialog, IssueDocumentDialog } from './document-dialogs';
-import { documentActionsOf, documentNameOf, documentWriteActionsOf, unavailabilityOf, type Unavailable } from './document-model';
+import type { FiscalDocumentEmailQueued, FiscalDocumentEntry } from '@/types';
+import { CreditNoteDialog, DiscardDraftDialog, IssueDocumentDialog, SendDocumentEmailDialog } from './document-dialogs';
+import { documentActionsOf, documentNameOf, documentWriteActionsOf, emailLinkDayOf, unavailabilityOf, type Unavailable } from './document-model';
 
 /** What happened to the document of a bar, for the screen that keeps something about it (a selection, an open detail). */
 export type DocumentChange = 'issued' | 'discarded' | 'credited';
@@ -23,8 +23,9 @@ interface DocumentActionBarProps {
 /**
  * What can be done with a document, in a row, in a card and in the detail (FIS-04, FIS-07, E12/F02/US01/T01): its PDF and, for a document CasaZen issued, its XML; and, for who may write
  * payments with the issuance on, the actions of its state: a draft is issued (after a confirmation that says the series, the number and the total), made again from its booking or
- * discarded; an invoice or a receipt that was issued is credited, in whole or in part. A document of the channel manager is «sola lettura»: it has a PDF button only when the channel manager
- * holds one and the endpoint exists here, and nothing can be done to it.
+ * discarded; an invoice or a receipt that was issued is credited, in whole or in part; a document that was issued is e-mailed to the guest of its booking, after a confirmation (the e-mail goes to a real
+ * person): «Invia al cliente» until this screen has queued one, «Rinvia e-mail» after (the server keeps no «sent» state). It says «in coda», never «consegnata»: the server only queues it. A document of the
+ * channel manager is «sola lettura»: it has a PDF button only when the channel manager holds one and the endpoint exists here, and nothing can be done to it.
  *
  * The buttons of a document wait for each other: while any write or download of this document runs, wherever it was started (this row, its detail, the card of its booking), every one of them
  * is disabled, so a second click cannot start a second write. A document that is not found any more (404) is told as such and has no button left; an XML that the server says it does not have
@@ -32,11 +33,13 @@ interface DocumentActionBarProps {
  * why and the person may ask again.
  */
 export function DocumentActionBar({ document, flags, canWrite, onChanged }: DocumentActionBarProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { mutate, isPending, variables } = useDownloadFiscalDocument();
   const refresh = useRefreshFiscalDocument();
   const busy = useDocumentsBusy({ documentIds: [document.id] });
-  const [dialog, setDialog] = useState<'issue' | 'credit' | 'discard' | null>(null);
+  const [dialog, setDialog] = useState<'issue' | 'credit' | 'discard' | 'email' | null>(null);
+  // What the server said when this screen last queued the e-mail of the document: the server keeps no «sent» state, so «Rinvia» is only ever said of an e-mail this screen saw queued.
+  const [emailed, setEmailed] = useState<FiscalDocumentEmailQueued | null>(null);
   const [gone, setGone] = useState<ReadonlySet<Unavailable>>(() => new Set());
   const actions = documentActionsOf(document, flags);
   const write = documentWriteActionsOf(document, canWrite);
@@ -126,6 +129,20 @@ export function DocumentActionBar({ document, flags, canWrite, onChanged }: Docu
             {t('fiscalDocuments.list.actions.credit')}
           </Button>
         ) : null}
+        {write.email ? (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={busy}
+            onClick={() => setDialog('email')}
+            aria-label={t(emailed ? 'fiscalDocuments.email.resendLabel' : 'fiscalDocuments.email.sendLabel', { document: name })}
+            data-testid="fiscal-document-email"
+          >
+            <Mail className="size-4" aria-hidden="true" />
+            {t(emailed ? 'fiscalDocuments.email.resend' : 'fiscalDocuments.email.send')}
+          </Button>
+        ) : null}
         {showPdf ? (
           <Button
             type="button"
@@ -173,10 +190,16 @@ export function DocumentActionBar({ document, flags, canWrite, onChanged }: Docu
           {t('fiscalDocuments.list.xmlUnavailable')}
         </span>
       ) : null}
+      {write.email && emailed ? (
+        <span className="text-xs text-foreground/70" data-testid="fiscal-document-email-queued">
+          {t('fiscalDocuments.email.queuedNote', { date: emailLinkDayOf(emailed, i18n.language) })}
+        </span>
+      ) : null}
 
       {dialog === 'issue' ? <IssueDocumentDialog document={dialogDocument} onClose={close} onIssued={(id) => onChanged?.(id, 'issued')} /> : null}
       {dialog === 'discard' ? <DiscardDraftDialog document={dialogDocument} onClose={close} onDiscarded={(id) => onChanged?.(id, 'discarded')} /> : null}
       {dialog === 'credit' ? <CreditNoteDialog document={dialogDocument} onClose={close} onCredited={(id) => onChanged?.(id, 'credited')} /> : null}
+      {dialog === 'email' ? <SendDocumentEmailDialog document={dialogDocument} resend={emailed !== null} onClose={close} onQueued={setEmailed} /> : null}
     </div>
   );
 }

@@ -705,6 +705,7 @@
       },
       "entity": {
         "Booking": "Prenotazione",
+        "OwnerStatementVersion": "Rendiconto del proprietario",
         "Property": "Immobile"
       },
       "filter": {
@@ -847,6 +848,10 @@
           "title": "Documento del proprietario in scadenza",
           "why": "Un documento condiviso con il proprietario (un'assicurazione, un mandato) scade entro 30 giorni o è già scaduto: carica quello nuovo."
         },
+        "OwnerStatementNoticeFailed": {
+          "title": "Proprietario da avvisare a mano",
+          "why": "Non siamo riusciti ad avvisare il proprietario con l'e-mail che il rendiconto è stato pubblicato: aprilo e avvisa tu il proprietario. Il rendiconto è pubblicato comunque."
+        },
         "OwnerStaySyncFailed": {
           "title": "Blocco del soggiorno del proprietario non accettato",
           "why": "Il gestionale dei canali non ha accettato il blocco delle date: il soggiorno non è confermato finché non lo invii di nuovo."
@@ -870,6 +875,14 @@
         "RoutineTask": {
           "title": "Promemoria manuale della routine",
           "why": "Una routine che hai impostato ti chiede di occuparti di questa prenotazione."
+        },
+        "SelfBillingDraftsToReview": {
+          "title": "Autofatture da controllare ed emettere",
+          "why": "Le autofatture (TD17) del mese sono pronte in bozza: controlla gli importi con le fatture dei portali ed emettile entro la scadenza."
+        },
+        "SelfBillingRejected": {
+          "title": "Autofattura scartata dallo SDI",
+          "why": "Per il fisco l'autofattura non risulta emessa: aprila tra le autofatture, guarda perché lo SDI l'ha scartata e decidi con il commercialista come rimediare."
         },
         "TouristTaxDeadline": {
           "title": "Imposta di soggiorno in scadenza",
@@ -1776,12 +1789,15 @@
       "documentBookingNotDirect": "Questo documento non è collegato a una prenotazione, quindi non si può emettere da qui.",
       "documentConfirmationRequired": "Serve la tua conferma per emettere il documento: riprova.",
       "documentDraftOutdated": "La bozza è stata fatta con regole o dati che nel frattempo sono cambiati. Premi «Aggiorna» sulla bozza, controlla gli importi e poi emetti di nuovo.",
+      "documentEmailNotSent": "L’e-mail non è partita: il servizio di invio non è disponibile adesso e non è stato mandato niente. Riprova tra poco.",
       "documentInvoiceDataMissing": "Mancano i dati di chi riceve il documento: completali nei dati di fatturazione della prenotazione.",
       "documentIssueFailed": "Il documento non è stato emesso per un nostro problema: è ancora una bozza, riprova tra poco.",
       "documentIssuerConflict": "Per questa prenotazione ha già emesso un altro soggetto: CasaZen non emette un secondo documento.",
       "documentNotCreditable": "Si può fare una nota di credito solo di una fattura o di una ricevuta già emessa.",
       "documentNotDraft": "Il documento non è più una bozza. Aggiorna l’elenco.",
+      "documentNotIssued": "Al cliente si manda solo un documento già emesso: una bozza, o una bozza scartata, non si invia.",
       "documentReadOnly": "Questo documento è in sola lettura: non lo emette CasaZen.",
+      "documentRecipientEmailInvalid": "L’ospite non ha un indirizzo e-mail a cui si possa scrivere (manca, non è valido o è un indirizzo di prova): non è stato mandato niente. Correggilo nella prenotazione e riprova.",
       "documentRuleNotConfigured": "Mancano le regole fiscali di questo documento (aliquote e tipo di documento): completa la configurazione della fatturazione.",
       "fatturapaXmlInvalid": "Il file della fattura elettronica non è valido: controlla i dati di chi emette e di chi riceve il documento.",
       "guestUnreachable": "L'ospite non ha un indirizzo email registrato: non abbiamo inviato nulla.",
@@ -3706,7 +3722,8 @@
         "host": "La incasso io",
         "intro": "Per ogni portale dici chi incassa la tassa di soggiorno. Se la incassa il portale, sul documento non compare la riga. Se la incassi tu, compare con la regola del cantone.",
         "note": "Rispondi per ogni portale: non salviamo una scelta che non hai fatto.",
-        "portal": "La incassa il portale"
+        "portal": "La incassa il portale",
+        "proposed": "Per {{portals}} abbiamo già scelto «{{choice}}»: di solito la tassa la incassa il portale. Controlla, e cambia se per te non è così."
       }
     },
     "vat": {
@@ -7011,6 +7028,7 @@
       },
       "choice": {
         "istat": "Lo stesso invio si occupa anche delle statistiche regionali (ISTAT), dove richieste.",
+        "istatSeeNotice": "Per l'ISTAT vale quanto dice l'avviso qui sopra.",
         "legend": "Chi invia i dati degli ospiti alla Polizia?",
         "notAvailable": "Non ancora disponibile.",
         "now": "Adesso: {{sender}}",
@@ -7062,6 +7080,7 @@
           "lead": "Il tuo channel manager conferma che invia i dati alla Polizia.",
           "points": {
             "istat": "Lo stesso invio si occupa delle statistiche regionali (ISTAT), dove richieste.",
+            "istatSeeNotice": "Per l'ISTAT guarda l'avviso sulla tua regione: non è detto che lo invii il channel manager.",
             "send": "Ogni giorno il tuo channel manager invia alla Polizia i dati degli ospiti."
           },
           "title": "Invio automatico attivo"
@@ -7227,6 +7246,7 @@
         },
         "istat": "Statistiche ISTAT",
         "istatFollows": "Le invia lo stesso servizio, dove richieste",
+        "istatSeeNotice": "Dipende dalla tua regione: vedi l'avviso sull'ISTAT",
         "property": "Immobile",
         "switch": {
           "automaticToAutomatic": "L'invio automatico in corso verrà spento: due invii automatici insieme farebbero partire i dati due volte. Se oggi invia il tuo channel manager, spegni l'invio automatico anche nel suo pannello. Finché lo stato del nuovo invio non è «Attivo» continui a inviare tu.",
@@ -7960,6 +7980,7 @@
         "Unknown": "Controlla nel pannello del tuo channel manager che il collegamento con la Polizia sia attivo e che l'invio automatico giornaliero sia acceso, poi torna qui e controlla di nuovo."
       }
     },
+    "istatSeeNotice": "Se l'ISTAT parte dal channel manager dipende dalla tua regione: vedi l'avviso qui sotto.",
     "lastRun": "Ultimo invio automatico: {{when}}",
     "loadError": "Non riusciamo a leggere lo stato dell'invio.",
     "loading": "Leggo lo stato dell'invio…",
@@ -9345,7 +9366,8 @@
         "none": "Il documento non ha righe.",
         "quantity": "Quantità",
         "rate": "IVA",
-        "title": "Righe"
+        "title": "Righe",
+        "toCollectAtProperty": "Da pagare in struttura"
       },
       "lineType": {
         "Accommodation": "Soggiorno",
@@ -9360,10 +9382,12 @@
       "loadError": "Non riusciamo a caricare il documento.",
       "loading": "Carico il documento…",
       "payment": {
+        "noCurrency": "La valuta non è indicata nel documento: gli importi sono mostrati senza simbolo.",
         "paid": "Pagato",
         "paidPortal": "Pagato tramite il portale",
         "title": "Pagamento",
         "toCollect": "Da incassare",
+        "toCollectAtProperty": "Imposta di soggiorno da pagare in struttura",
         "unrecognized": "Incasso: {{code}}"
       },
       "rate": {
@@ -9392,6 +9416,23 @@
       "done": "Bozza scartata.",
       "failed": "Non siamo riusciti a scartare la bozza. Riprova tra poco.",
       "title": "Scartare la bozza?"
+    },
+    "email": {
+      "consequenceAgain": "Ogni conferma manda un’altra e-mail con un nuovo link: quelli già inviati funzionano fino alla loro scadenza.",
+      "consequenceReal": "L’e-mail va a una persona vera, all’indirizzo lasciato nella prenotazione.",
+      "description": "L’ospite della prenotazione riceve un’e-mail con il link per aprire e scaricare {{document}}. Il documento non è allegato.",
+      "failed": "Non siamo riusciti a mettere in coda l’e-mail. Riprova tra poco.",
+      "queued": "E-mail in coda: parte a breve. Il link vale fino al {{date}}.",
+      "queuedNote": "E-mail in coda. Il link vale fino al {{date}}.",
+      "refused": "L’e-mail non è stata messa in coda: il server non ha accettato la richiesta.",
+      "resend": "Rinvia e-mail",
+      "resendConfirm": "Rinvia l’e-mail",
+      "resendLabel": "Rinvia al cliente l’e-mail di {{document}}",
+      "resendTitle": "Rinviare l’e-mail al cliente?",
+      "send": "Invia al cliente",
+      "sendConfirm": "Invia l’e-mail",
+      "sendLabel": "Invia {{document}} al cliente per e-mail",
+      "sendTitle": "Inviare il documento al cliente?"
     },
     "issue": {
       "confirm": "Emetti",
@@ -10579,6 +10620,7 @@
     "action": {
       "newTab": "(si apre in una nuova scheda)",
       "panelStep": "Collega l'ISTAT nel pannello",
+      "panelStepInWizard": "L'ISTAT si collega dal pannello dell'immobile, a invio concluso.",
       "portalGuide": "Apri il portale della tua regione",
       "supportAdminOnly": "Per chiedere aiuto al supporto serve l'amministratore dell'organizzazione."
     },
@@ -10590,6 +10632,7 @@
     "detail": {
       "covered": "Il tuo channel manager invia i dati ISTAT di questa regione, dopo che lo hai collegato nel suo pannello.",
       "notCovered": "I dati ISTAT di questa regione non li invia il tuo channel manager: li comunichi tu dal portale regionale.",
+      "otherSender": "Adesso l'invio di questo immobile non lo fa il channel manager: l'ISTAT della tua regione si comunica dal suo portale.",
       "toVerify": "Non sappiamo ancora se il tuo channel manager invia i dati ISTAT di questa regione: finché non è verificato non lo diamo per scontato."
     },
     "loadError": "Non riusciamo a leggere se il tuo channel manager invia l'ISTAT per la tua regione: per ora è da verificare.",
@@ -10597,7 +10640,8 @@
     "portalMissing": "L'indirizzo del portale della tua regione non è ancora indicato.",
     "proof": {
       "action": "Carica la prova ISTAT di {{month}}",
-      "lead": "Ogni mese si conserva la prova che i dati sono stati comunicati."
+      "lead": "Ogni mese si conserva la prova che i dati sono stati comunicati.",
+      "open": "Apri l'archivio delle prove di {{month}}"
     },
     "region": {
       "named": "La tua regione ({{region}}) usa {{system}}.",
@@ -10608,6 +10652,7 @@
     "title": {
       "covered": "ISTAT: lo invia il tuo channel manager",
       "notCovered": "ISTAT: non lo invia il tuo channel manager",
+      "otherSender": "ISTAT: per questo immobile non passa dal channel manager",
       "toVerify": "ISTAT: da verificare"
     },
     "unverified": "Questi dati vengono dal nostro elenco e non sono ancora verificati."
@@ -10730,9 +10775,14 @@
     "portal": "Portale",
     "save": "Salva",
     "source": "Fonte",
+    "stale": {
+      "changed": "Questa riga è stata modificata da un'altra persona dopo che l'hai aperta: chiudi e riaprila per vedere i valori attuali. Non salviamo valori vecchi.",
+      "unreadable": "Non riusciamo a rileggere la tabella: non salviamo valori che potrebbero essere vecchi. Chiudi e riprova tra un momento."
+    },
     "summary": "Da verificare: {{pending}} su {{total}}.",
     "title": "Regioni ISTAT",
     "toast": {
+      "rereadFailed": "Non riusciamo a leggere la riga aggiornata: riprova.",
       "saved": "{{region}}: riga salvata.",
       "saveFailed": "Non siamo riusciti a salvare la riga."
     }
@@ -18549,6 +18599,8 @@
       "focusBody": "Saldo di chiusura {{balance}}. Versione tagliata il {{cutoff}}.",
       "focusTitle": "Versione {{version}} · {{status}}",
       "formula": "Saldo di chiusura = saldo di apertura {{opening}} + incassi {{revenue}} + commissioni e costi {{costs}} + pagamenti e ritenute {{paid}} + rettifiche {{corrections}} = {{closing}}.",
+      "immutableBody": "Le righe registrate non danno più i totali salvati in questa versione. Per non mostrarti cifre sbagliate non la mostriamo, e nemmeno i suoi file: riprovare non serve. Scrivi all'assistenza indicando il mese e il proprietario.",
+      "immutableTitle": "Questo rendiconto non si può mostrare",
       "kicker": "Rendiconto di {{period}}",
       "loadError": "Non riusciamo a leggere il rendiconto.",
       "loading": "Leggo il rendiconto…",
@@ -18871,6 +18923,18 @@
   },
   "ownerInvoice": {
     "currencyMissing": "Per qualche fattura il server non ha indicato la valuta: gli importi sono scritti senza simbolo.",
+    "detail": {
+      "creditNote": "Nota di credito",
+      "description": "Le righe della fattura e i suoi totali, come sono salvati.",
+      "forbidden": "Con il tuo accesso questa fattura non si vede: la vedono il titolare e chi amministra l'organizzazione, con accesso a tutti gli immobili.",
+      "forbiddenTitle": "Fattura non accessibile",
+      "issuedOn": "Emessa il {{date}}",
+      "notFound": "Questa fattura non c'è più",
+      "notFoundBody": "Non esiste, oppure appartiene a un'altra organizzazione. Chiudi e aggiorna l'elenco.",
+      "open": "Apri le righe",
+      "openLabel": "Apri le righe e i totali di: {{name}}",
+      "title": "Fattura al proprietario"
+    },
     "issue": {
       "confirm": "Emetti la fattura",
       "consequenceFinal": "Una volta emessa la fattura non si modifica più.",
@@ -20258,16 +20322,17 @@
     "row": {
       "kindAndCurrency": "{{kind}} · valuta {{currency}}",
       "kindNoCurrency": "{{kind}} · valuta di liquidazione mancante",
-      "loading": "Leggo il profilo…",
       "mandateActive": "Provvigione {{percent}} {{vat}}, dal {{from}}",
       "mandateError": "Non riusciamo a leggere il mandato.",
       "mandateLoading": "Leggo il mandato…",
       "mandateMissing": "Manca il mandato",
       "mandateUpcoming": "Mandato dal {{from}}: provvigione {{percent}}",
       "noProfile": "Nessun profilo fiscale",
+      "noProperties": "Nessun immobile",
       "open": "Dati finanziari",
       "openLabel": "Apri i dati finanziari di {{owner}}",
-      "profileError": "Non riusciamo a leggere il profilo fiscale."
+      "properties_one": "{{count}} immobile",
+      "properties_other": "{{count}} immobili"
     },
     "title": "Proprietari"
   },
@@ -21379,6 +21444,7 @@
       "download": "Scarica PNG",
       "error": "Errore",
       "errorDescription": "ID immobile mancante o non valido.",
+      "flagsUnreadable": "Per ora non riusciamo a capire quale codice QR stampare. Riprova tra poco.",
       "hint": "Stampa o scarica questo codice QR e posizionalo all'ingresso della struttura per facilitare il check-in dei tuoi ospiti.",
       "instructions": "Scansiona questo codice QR per iniziare la verifica del tuo soggiorno",
       "loading": "Generazione codice QR...",
@@ -23095,6 +23161,7 @@
   "publicFiscalDocument": {
     "description": "Qui trovi il riepilogo del documento che hai ricevuto. Scarica il PDF per conservarlo.",
     "download": "Scarica il PDF",
+    "downloadFailed": "Non siamo riusciti a scaricare il PDF: controlla la connessione e riprova.",
     "invalid": {
       "description": "Questo link non è valido o è scaduto. Chiedi un nuovo invio alla struttura.",
       "title": "Link non valido o scaduto"
@@ -23104,6 +23171,10 @@
       "invoice": "Fattura",
       "other": "Documento",
       "receipt": "Ricevuta"
+    },
+    "loadFailed": {
+      "description": "In questo momento non riusciamo a caricare il documento: può essere la connessione o un problema nostro. Riprova tra poco.",
+      "title": "Non riusciamo a caricare il documento"
     },
     "loading": "Carico il documento…",
     "noCurrency": "La valuta non è indicata nel documento: l'importo è mostrato senza simbolo.",
@@ -23894,6 +23965,10 @@
         "description": "Comune per comune: quanto è dovuta, quanto hai versato e le ricevute. Qui registri anche i versamenti.",
         "name": "Imposta di soggiorno: dovuta e versata"
       },
+      "touristTaxYearEnd": {
+        "description": "I file di fine anno: la dichiarazione ai comuni, il conto dell'agente e il conteggio delle notti in Ticino.",
+        "name": "Imposta di soggiorno: fine anno"
+      },
       "withholding": {
         "description": "Le ritenute trattenute da Airbnb e Booking.com sugli incassi.",
         "name": "Ritenute dei portali"
@@ -24107,7 +24182,131 @@
         "ToPay": "Da versare"
       },
       "title": "Imposta di soggiorno: dovuta e versata",
-      "total": "Totale"
+      "total": "Totale",
+      "yearEnd": {
+        "account": {
+          "by": {
+            "label": "Suddivisione",
+            "month": "Mese per mese",
+            "quarter": "Trimestre per trimestre"
+          },
+          "caption": "Conto dell'agente {{year}}: {{cut}}, comune per comune",
+          "columns": {
+            "collected": "Riscossa",
+            "period": "Periodo"
+          },
+          "description": "Per ogni comune, l'imposta riscossa e quella versata mese per mese o trimestre per trimestre, con la riga dell'anno e l'elenco dei versamenti.",
+          "empty": "Nessun soggiorno in Italia con check-in nel {{year}} e nessun versamento registrato: il conto dell'agente non ha righe.",
+          "period": {
+            "quarter": "{{quarter}}º trimestre {{year}}",
+            "year": "Anno {{year}}"
+          },
+          "remittances": {
+            "empty": "Nessun versamento registrato nel {{year}}.",
+            "title": "Versamenti dell'anno"
+          },
+          "title": "Conto dell'agente {{year}}"
+        },
+        "columns": {
+          "guests": "Ospiti",
+          "nights": "Notti"
+        },
+        "declaration": {
+          "caption": "Dichiarazione ai comuni {{year}}, comune per comune",
+          "counts": {
+            "guestNights_one": "{{count}} notte-ospite",
+            "guestNights_other": "{{count}} notti-ospite",
+            "guests_one": "{{count}} ospite",
+            "guests_other": "{{count}} ospiti",
+            "stays_one": "{{count}} soggiorno",
+            "stays_other": "{{count}} soggiorni"
+          },
+          "description": "Per ogni comune: notti e ospiti, soggiorni con e senza imposta, imposta dovuta, versata e differenza, con i versamenti.",
+          "details": {
+            "exemptions": "Ospiti esenti",
+            "none": "Nessuno",
+            "staysWithoutAmount": "Soggiorni senza importo",
+            "taxedStays": "Soggiorni con imposta"
+          },
+          "empty": "Nessun soggiorno in Italia con check-in nel {{year}} e nessun versamento registrato: la dichiarazione ai comuni non ha righe.",
+          "exemptionReason": {
+            "erased": "Motivo cancellato con i dati dell'ospite",
+            "minor_age": "Minorenni (esenti per età)",
+            "restricted": "dettaglio dei motivi riservato"
+          },
+          "reasons": "Le esenzioni sono contate per motivo: mai un ospite, mai un nome.",
+          "reasonsRestricted": "Il dettaglio dei motivi delle esenzioni è riservato a chi può leggere i dati degli ospiti: nel file trovi le esenzioni per età e una sola riga, «dettaglio dei motivi riservato», con gli stessi conteggi.",
+          "stayReason": {
+            "collected_by_channel": "Imposta incassata dal portale",
+            "exempt": "Tutti gli ospiti esenti",
+            "no_tax_due": "Nessuna imposta dovuta",
+            "not_calculated": "Imposta non calcolata"
+          },
+          "title": "Dichiarazione ai comuni {{year}}"
+        },
+        "description": "I dati da consegnare ai comuni e all'ente turistico del Ticino. CasaZen prepara i file e non invia niente: la dichiarazione la presenti tu o il tuo commercialista.",
+        "details": {
+          "error": "Impossibile caricare queste cifre.",
+          "loading": "Carico le cifre…",
+          "noAccess": "Queste cifre non sono disponibili per il tuo accesso: servono il permesso sui pagamenti e l'accesso a tutti gli immobili dell'organizzazione.",
+          "notFound": "Queste cifre non ci sono.",
+          "unavailable": "Le cifre a schermo (dichiarazione, conto dell'agente e Ticino) non sono ancora disponibili: intanto puoi scaricare i file qui sopra."
+        },
+        "figures": {
+          "balance": "Saldo",
+          "byComune": "Apri il riepilogo per comune",
+          "currencyMissing": "Per questi importi il servizio non indica la valuta: sono scritti senza simbolo.",
+          "empty": "Nessun soggiorno in Italia con check-in nel {{year}} e nessun versamento registrato: la dichiarazione ai comuni non ha righe.",
+          "error": "Impossibile caricare le cifre dell'anno.",
+          "label": "Cifre del {{year}}",
+          "loading": "Carico le cifre dell'anno…",
+          "nights": "Notti",
+          "notFound": "Le cifre di questo anno non ci sono.",
+          "owed": "Imposta dovuta",
+          "paid": "Versata",
+          "partial": "Il tuo accesso copre solo alcuni immobili: la dichiarazione di fine anno riguarda tutta l'organizzazione, quindi qui non ne vedi le cifre.",
+          "refused": "Le cifre dell'anno non sono disponibili per il tuo accesso.",
+          "title": "Italia: il {{year}} in breve"
+        },
+        "files": {
+          "failed": "Non è stato possibile preparare il file. Riprova.",
+          "format": {
+            "csv": "Scarica CSV",
+            "xlsx": "Scarica Excel"
+          },
+          "formatFor": "{{format}}: {{title}}",
+          "noAccess": "Non puoi scaricare questo file: servono il permesso sui pagamenti e l'accesso a tutti gli immobili dell'organizzazione.",
+          "note": "CasaZen prepara i dati e non invia niente: i moduli li compila e li consegna chi di dovere, tu o il tuo commercialista.",
+          "title": "File da consegnare"
+        },
+        "ticino": {
+          "cantonUnknown": "Un immobile in Svizzera di cui non si conosce il cantone (manca il comune svizzero o non è riconosciuto) è nel conteggio con una nota nell'ultima colonna, perché potrebbe essere in Ticino. Completa i dati dell'immobile e scarica di nuovo il file.",
+          "caption": "Conteggio delle notti in Ticino {{year}}, immobile per immobile",
+          "columns": {
+            "property": "Immobile",
+            "taxed": "Con imposta",
+            "touristTax": "Imposta di soggiorno",
+            "untaxed": "Senza imposta",
+            "withoutDocument": "Senza documento"
+          },
+          "currencyMissing": "Per alcuni immobili il servizio non indica la valuta: i loro importi sono scritti senza simbolo.",
+          "description": "Per ogni immobile in Ticino: soggiorni e notti dell'anno, con e senza imposta di soggiorno secondo i documenti emessi, e gli importi in franchi. Da consegnare all'ente turistico entro il 5 gennaio {{deadlineYear}}.",
+          "due": "Da consegnare all'ente turistico entro il {{date}}.",
+          "empty": "Nessun immobile in Ticino, e nessuno di cantone non noto, nel {{year}}: il conteggio non ha righe.",
+          "legend": "«Con imposta» e «Senza imposta» vengono dal documento emesso per ogni soggiorno. «Senza documento» sono i soggiorni per cui non ne è stato ancora emesso uno: non sono contati come senza imposta.",
+          "nights_one": "{{count}} notte",
+          "nights_other": "{{count}} notti",
+          "openProperties": "Apri gli immobili",
+          "title": "Conteggio delle notti in Ticino {{year}}",
+          "unknown": {
+            "marker": "Cantone non noto",
+            "note_one": "{{count}} immobile in Svizzera ha il cantone non noto: potrebbe essere in Ticino, quindi è nel conteggio ed è segnato. Finché non indichi il suo comune svizzero nei dati dell'immobile, il conteggio può comprendere un immobile di un altro cantone.",
+            "note_other": "{{count}} immobili in Svizzera hanno il cantone non noto: potrebbero essere in Ticino, quindi sono nel conteggio e sono segnati. Finché non indichi il loro comune svizzero nei dati di ogni immobile, il conteggio può comprendere immobili di altri cantoni."
+          }
+        },
+        "title": "Imposta di soggiorno: fine anno",
+        "year": "Anno"
+      }
     },
     "type": {
       "financial": "Finanziario",
@@ -31251,13 +31450,14 @@
     "loadErrorCurrency": "Impossibile caricare i pagamenti in {{currency}}",
     "loading": "Caricamento bonifici...",
     "noPayouts": "Nessun pagamento da inviare in banca",
-    "noPayoutsDescription": "I pagamenti compaiono qui quando li confermi nella chiusura mensile dei proprietari.",
+    "noPayoutsDescription": "Un pagamento compare qui solo se l'hai confermato nella chiusura mensile dei proprietari, se il suo rendiconto è stato pubblicato al proprietario e se l'importo netto è maggiore di zero.",
     "notCreated": "File in {{currency}} non creato",
     "notFound": "Pagamenti non trovati",
     "notFoundPayout": "Non troviamo uno dei pagamenti scelti: l'elenco è stato aggiornato.",
     "openClose": "Vai alla chiusura mensile",
     "openOwner": "Apri i dati finanziari",
-    "payoutsHint": "I pagamenti confermati ai proprietari che non sono ancora in nessun file, per l'importo netto dopo la ritenuta. Un pagamento va in un solo file: quando lo inserisci in un file, esce da questo elenco.",
+    "payoutsCapNote": "Sono elencati al massimo {{limit}} pagamenti in {{currency}}, i più vecchi: gli altri compaiono qui quando ne metti alcuni in un file.",
+    "payoutsHint": "I pagamenti confermati ai proprietari che non sono ancora in nessun file, per l'importo netto dopo la ritenuta. Compaiono solo quelli con il rendiconto già pubblicato al proprietario e con un importo netto maggiore di zero. Un pagamento va in un solo file: quando lo inserisci in un file, esce da questo elenco.",
     "refused": {
       "description": "L'elenco riguarda i proprietari di tutta l'organizzazione e il server lo mostra solo con un accesso a tutte le strutture. Se il tuo accesso è limitato ad alcune strutture, chiedi a un amministratore di aprire questa pagina.",
       "title": "Questi pagamenti non sono disponibili per il tuo accesso"

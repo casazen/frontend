@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { createElement, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
+import { toast } from 'sonner';
 import * as api from '@/api/fiscal-documents.api';
 import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import { BookingFiscalDocumentCard } from '@/features/bookings/components/booking-fiscal-document-card';
@@ -26,6 +27,7 @@ vi.mock('@/api/fiscal-documents.api', async (importOriginal) => {
     issueDocument: vi.fn(),
     createCreditNote: vi.fn(),
     discardDraft: vi.fn(),
+    sendDocumentEmail: vi.fn(),
     issueBatch: vi.fn(),
     listDraftsForBatch: vi.fn(),
     downloadPdf: vi.fn(),
@@ -51,12 +53,13 @@ const READ = ['payment.read', 'property.read', 'booking.read'];
 const WRITE = [...READ, 'payment.write'];
 const BOOKING_ID = 'b0000000-0000-4000-8000-000000000001';
 
-/** Every button and box that changes a document or starts to: the draft, the issued invoice, the bulk issue. None of them may be drawn without the right to write payments. */
+/** Every button and box that changes a document or starts to (or sends it to a real person): the draft, the issued invoice, its e-mail to the guest, the bulk issue. None of them may be drawn without the right to write payments. */
 const CHANGING = [
   'fiscal-document-issue',
   'fiscal-document-refresh',
   'fiscal-document-discard',
   'fiscal-document-credit',
+  'fiscal-document-email',
   'fiscal-document-select',
   'fiscal-documents-select-page',
   'fiscal-documents-select-period',
@@ -140,6 +143,83 @@ describe('no write action without payment.write (permission rule)', () => {
   });
 });
 
+describe('the e-mail of an issued document to its guest (permission rule: only who may write payments, and only an issued document)', () => {
+  const ISSUED_ID = document().id;
+  const DRAFT_ID = draft().id;
+
+  /** Opens the confirmation of the e-mail of the issued row. */
+  async function openTheEmailOfTheIssuedRow() {
+    const [draftRow, issuedRow] = within(await screen.findByRole('table')).getAllByTestId('fiscal-document-row');
+    fireEvent.click(within(issuedRow).getByTestId('fiscal-document-email'));
+    return { draftRow, dialog: await screen.findByRole('dialog') };
+  }
+
+  it('FiscalDocumentsPage_WithTheRightToWrite_OffersTheEmailOnTheIssuedDocumentNotOnTheDraft_AndTheClickSendsNothingBeforeTheConfirmation', async () => {
+    env.permissions = new Set(WRITE);
+    renderInProviders(createElement(FiscalDocumentsPage));
+
+    const { draftRow, dialog } = await openTheEmailOfTheIssuedRow();
+
+    expect(within(draftRow).queryByTestId('fiscal-document-email')).not.toBeInTheDocument();
+    // The e-mail goes to a real guest: the button asks first, it sends nothing.
+    expect(within(dialog).getByText('Inviare il documento al cliente?')).toBeInTheDocument();
+    expect(api.sendDocumentEmail).not.toHaveBeenCalled();
+  });
+
+  it('FiscalDocumentsPage_TheConfirmedEmail_GoesOutForTheIssuedDocumentAndNeverForTheDraft_SaysQueuedNeverDeliveredAndOffersToSendItAgain', async () => {
+    env.permissions = new Set(WRITE);
+    vi.mocked(api.sendDocumentEmail).mockResolvedValue({ documentId: ISSUED_ID, linkExpiresAt: '2026-12-19T10:00:00Z' });
+    renderInProviders(createElement(FiscalDocumentsPage));
+
+    const { dialog } = await openTheEmailOfTheIssuedRow();
+    fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('fiscalDocuments.email.sendConfirm') }));
+
+    await waitFor(() => expect(api.sendDocumentEmail).toHaveBeenCalledTimes(1));
+    expect(api.sendDocumentEmail).toHaveBeenCalledWith(ISSUED_ID);
+    expect(api.sendDocumentEmail).not.toHaveBeenCalledWith(DRAFT_ID);
+    // «In coda» with the last day of the link, and never «consegnata»: the server only queues the e-mail.
+    await waitFor(() => expect(toast.success).toHaveBeenCalledTimes(1));
+    const told = String(vi.mocked(toast.success).mock.calls[0]?.[0]);
+    expect(told).toContain('E-mail in coda');
+    expect(told).toMatch(/19 dic/);
+    expect(told).not.toMatch(/consegnat/i);
+    // The documents are read again, and the row that queued the e-mail says so and offers the same call as «Rinvia e-mail».
+    await waitFor(() => expect(vi.mocked(api.listDocuments).mock.calls.length).toBeGreaterThan(1));
+    const [, issuedRow] = within(await screen.findByRole('table')).getAllByTestId('fiscal-document-row');
+    expect(await within(issuedRow).findByTestId('fiscal-document-email-queued')).toHaveTextContent('E-mail in coda');
+    expect(within(issuedRow).getByTestId('fiscal-document-email-queued')).not.toHaveTextContent(/consegnat/i);
+    expect(within(issuedRow).getByTestId('fiscal-document-email')).toHaveTextContent('Rinvia e-mail');
+  });
+
+  it('FiscalDocumentsPage_ADocumentTheServerRefusesToSend_IsToldInTheDialogNeverAsQueued', async () => {
+    env.permissions = new Set(WRITE);
+    vi.mocked(api.sendDocumentEmail).mockRejectedValue(new Error('refused'));
+    renderInProviders(createElement(FiscalDocumentsPage));
+
+    const { dialog } = await openTheEmailOfTheIssuedRow();
+    fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('fiscalDocuments.email.sendConfirm') }));
+
+    expect(await within(dialog).findByTestId('fiscal-document-email-problem')).toBeInTheDocument();
+    expect(toast.success).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('fiscal-document-email-queued')).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ['a draft', draft()],
+    ['an invoice the SDI rejected', document({ sdiStatus: 'rejected', sdiErrorCode: '00404' })],
+    ['an invoice of an owner', document({ purpose: 'OwnerInvoice' })],
+    ['a self-billed invoice', document({ purpose: 'SelfBilling' })],
+    ['a document of the channel manager', document({ source: 'Octorate' })],
+  ])('FiscalDocumentsPage_%s_HasNoEmailEvenForWhoMayWrite', async (_case, candidate) => {
+    env.permissions = new Set(WRITE);
+    vi.mocked(api.listDocuments).mockResolvedValue(page([candidate]));
+    renderInProviders(createElement(FiscalDocumentsPage));
+
+    const [row] = within(await screen.findByRole('table')).getAllByTestId('fiscal-document-row');
+    expect(within(row).queryByTestId('fiscal-document-email')).not.toBeInTheDocument();
+  });
+});
+
 describe('the card of the booking (permission and flag rule)', () => {
   it('BookingFiscalDocumentCard_ForWhoMayOnlyRead_ShowsTheDocumentsAndNoButtonThatCreatesOrIssues', async () => {
     renderInProviders(createElement(BookingFiscalDocumentCard, { bookingId: BOOKING_ID }));
@@ -183,7 +263,7 @@ describe('nothing is written without the right to write', () => {
     renderInProviders(createElement(FiscalDocumentsPage));
     await screen.findByRole('table');
 
-    for (const write of [api.createDraft, api.refreshDraft, api.issueDocument, api.createCreditNote, api.discardDraft, api.issueBatch, api.listDraftsForBatch])
+    for (const write of [api.createDraft, api.refreshDraft, api.issueDocument, api.createCreditNote, api.discardDraft, api.sendDocumentEmail, api.issueBatch, api.listDraftsForBatch])
       expect(write).not.toHaveBeenCalled();
   });
 });

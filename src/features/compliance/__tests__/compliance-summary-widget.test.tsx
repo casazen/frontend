@@ -32,7 +32,7 @@ vi.mock('@/hooks/use-workspace', () => ({
   }),
 }));
 
-const HOST_PERMISSIONS = ['property.read', 'property.write', 'booking.read', 'booking.write'];
+const HOST_PERMISSIONS = ['property.read', 'property.write', 'booking.read', 'booking.write', 'alloggiati.submit'];
 const PROPERTY_ID = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee';
 const CHECKIN_BOOKING_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 const CHECKOUT_BOOKING_ID = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';

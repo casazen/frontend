@@ -22,6 +22,8 @@ export type TodoRouteTarget = 'entity' | 'property' | 'thread';
 export interface TodoRoute {
   path: string;
   target?: TodoRouteTarget;
+  /** The name of the `:param` of the page that the id of `target` fills, when it is not `:id` (`versionId` of the page of a statement). */
+  idParam?: string;
   /**
    * The kind of entity an item must be about for `target: 'entity'` to fill the page with its id (`Booking` for the page of a booking).
    * The id of an item about anything else (a queue item, a message thread) is not the id of a booking: it gets no address from this route.
@@ -74,6 +76,9 @@ const ONBOARDING_FLOW = 'OnboardingFlow';
 
 /** The `entityType` of the items about a fiscal document (`FiscalDocumentTodos.EntityType`): the id of the entity is the document. */
 const FISCAL_DOCUMENT = 'FiscalDocument';
+
+/** The `entityType` of the items about a statement of an owner (`OwnerStatementDocuments.OwnerStatementVersionEntityType`): the id of the entity is the version of the statement. */
+const OWNER_STATEMENT_VERSION = 'OwnerStatementVersion';
 
 /**
  * Where the "Do now" button of an item leads, by the `action` the server sends (ADR-026-R6): the single registry of the app. The task that
@@ -166,6 +171,13 @@ export const ACTION_ROUTE_MAP = {
     route: { path: '/app/short-rent/fiscal/documents', onlyFor: [FISCAL_DOCUMENT], entityParam: 'document', search: { step: 'correct' } },
     fallback: { path: '/app/short-rent/fiscal' },
   },
+  // A self-billed invoice (TD17) waits for the agency (FIX/BE-TD17-ALERTS, `ActivityAction` 32): one the SDI rejected (`SelfBillingRejected`, about the document) or the drafts of a month to check and issue
+  // (`SelfBillingDraftsToReview`, about the month): the page of the self-billed invoices of the account. That page takes no document and no month in its address, so the address carries none. It is the page
+  // of the organization billing administrator (`orgBillingAdmin`, no other permission: the owner and the administrators hold `agency.invoice.manage`, the permission the server asks to list these items), and it has no
+  // read-only twin: whoever is not one is offered no button.
+  ReviewSelfBilling: {
+    route: { path: '/app/account/self-billing' },
+  },
   // The actions the traffic light of the cockpit raises (E03/F02/US01/T03, NF-52): the feeder opens a "To do" for each red or yellow item, with the
   // action of the cockpit. They lead where the cockpit leads (`COMPLIANCE_ACTION_TARGETS` of `lib/compliance-routes.ts`), so the «Adesso» block of the
   // Home and the page of the adempimenti end in the same place. `UploadIstatProof` and `VerifyIdentity` above were there before it.
@@ -196,6 +208,12 @@ export const ACTION_ROUTE_MAP = {
   // why it has not gone by itself and has «Copia link». The item is about the booking.
   CopyCheckInLink: {
     route: { path: '/app/short-rent/bookings/:id', target: 'entity', entityType: BOOKING, tab: 'guest' },
+  },
+  // The owner could not be told by e-mail that a statement was published (E13/F01/US02/T02, `ActivityAction` 50, type `OwnerStatementNoticeFailed`): the statement of that version, in the Amministrazione
+  // (`/app/account/owner-close/versions/:versionId`), where the agency sees what the owner was to be told and tells the owner by hand. The item is about the version of the statement (`OwnerStatementVersion`),
+  // never a booking. The page is the one of the organization administrator (`orgBillingAdmin`, on the agency plan): anyone else gets no button, and no other page stands in for it.
+  ReviewOwnerStatement: {
+    route: { path: '/app/account/owner-close/versions/:versionId', target: 'entity', entityType: OWNER_STATEMENT_VERSION, idParam: 'versionId' },
   },
 } satisfies Record<string, TodoActionTarget>;
 
@@ -257,7 +275,7 @@ function buildRoute(route: TodoRoute, activity: TodoRouteSubject, hasPermission?
   } else if (route.target) {
     const id = route.target === 'property' ? propertyOf(activity) : entityOf(route, activity);
     if (!id) return null;
-    path = generatePath(entry.path, { id });
+    path = generatePath(entry.path, { [route.idParam ?? 'id']: id });
   }
 
   const query = new URLSearchParams();
