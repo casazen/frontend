@@ -12,12 +12,15 @@ import {
   failureReasonOf,
   formatOnPropertyClock,
   isAboutToChange,
+  isTemplateVariable,
   missingCodesOf,
   missingCodesOfProblem,
+  missingFromText,
   missingItemOf,
   sortedInTimeOrder,
   splitPlaceholders,
   statusViewOf,
+  variablesUsedIn,
   withVariablesInPlaceOfStandIns,
 } from '../lib/scheduled-messages';
 
@@ -286,6 +289,32 @@ describe('the text of a scheduled message', () => {
       'review_link',
     ]);
     expect(new Set(TEMPLATE_VARIABLES.map((variable) => variable.labelKey)).size).toBe(13);
+  });
+
+  it('isTemplateVariable_OnlyTheThirteenNamesAreVariables_TheCodesOfTheServerAreNot', () => {
+    for (const name of VARIABLES) expect(isTemplateVariable(name), name).toBe(true);
+    for (const code of ['template_missing', 'message_text_invalid', 'constructor', '', 'Guest_Name']) expect(isTemplateVariable(code), code).toBe(false);
+  });
+
+  // DATA: the server takes a variable it has no value for OUT of the text it gives, so a text saved from it would go without the datum.
+  describe('missingFromText: the data the text lacks', () => {
+    const lacking = { missingVariables: ['check_in_time', 'property_address', 'template_missing'] };
+
+    it('variablesUsedIn_ReadsTheVariablesTheWayTheServerDoes_SpacesAndCapitalsIncluded_AndAStandInIsTheVariableItStandsFor', () => {
+      expect([...variablesUsedIn('Ciao {{guest_name}}, {{ Check_In_Time }} e [check_in_link] {{review_link}}')].sort()).toEqual(['check_in_link', 'check_in_time', 'guest_name', 'review_link']);
+      expect([...variablesUsedIn('Nessuna variabile {nome} [nota]')]).toEqual([]);
+    });
+
+    it('TheDataTheBookingLacksAndTheTextDoesNotName_AreTheOnesThatWouldGoMissing', () => {
+      expect(missingFromText(lacking, 'Il check-in è dalle.')).toEqual(['check_in_time', 'property_address']);
+      expect(missingFromText(lacking, 'Dalle {{check_in_time}} in {{ property_address }}.')).toEqual([]);
+      expect(missingFromText(lacking, 'In {{property_address}}.')).toEqual(['check_in_time']);
+    });
+
+    it('ACodeThatIsNotAVariable_IsNeverSomethingToPutBack', () => {
+      expect(missingFromText({ missingVariables: ['template_missing', 'message_text_invalid'] }, 'Ciao')).toEqual([]);
+      expect(missingFromText({ missingVariables: [] }, 'Ciao')).toEqual([]);
+    });
   });
 });
 

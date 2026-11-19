@@ -660,3 +660,110 @@ describe('the edit of a message', () => {
     await waitFor(() => expect(screen.queryByTestId('scheduled-message-edited')).not.toBeInTheDocument());
   });
 });
+
+// DATA: the server takes OUT of the text every variable the booking has no value for (`missingVariables`: «Il check-in è dalle {{check_in_time}}.» arrives as «Il check-in è dalle.»). A text saved from it would go
+// without the datum, and the message, no longer held back for it, would go out with a gap in its sentence. The dialog says which data the text lacks, highlights the button that puts each one back, and does
+// not save without them until the host has said that the message may go without.
+describe('the edit of a message whose booking lacks data', () => {
+  const blocked = () => msg({ status: 'Blocked', blockedReason: 'variable_missing:check_in_time', missingVariables: ['check_in_time'], text: 'Il check-in è dalle.' });
+
+  it('edit_ATextThatLacksData_SaysWhichAndIsNotSavedWithoutThemUntilTheHostAgrees', async () => {
+    list.mockResolvedValue([blocked()]);
+    edit.mockResolvedValue(msg({ edited: true, text: 'Il check-in è dalle. A presto!' }));
+    renderSection();
+
+    fireEvent.click(await screen.findByTestId('scheduled-message-edit'));
+    const dialog = await screen.findByRole('dialog');
+    const notice = within(dialog).getByTestId('scheduled-message-edit-missing');
+    expect(notice).toHaveTextContent("l'orario di arrivo dell'immobile");
+    expect(notice).toHaveTextContent('Se salvi così, il messaggio parte senza questi dati.');
+    // The datum is not in the text the server gave, and the button that puts it back is the one that stands out.
+    expect(within(dialog).getByTestId('scheduled-message-edit-text')).toHaveValue('Il check-in è dalle.');
+    expect(within(dialog).getByTestId('scheduled-message-variable-check_in_time')).toHaveAttribute('data-missing', 'true');
+    expect(within(dialog).getByTestId('scheduled-message-variable-guest_name')).not.toHaveAttribute('data-missing');
+    // The data already filled in are told to become fixed text.
+    expect(within(dialog).getByTestId('scheduled-message-edit-fixed-note')).toHaveTextContent('diventano testo fisso e non seguono più la prenotazione');
+
+    fireEvent.change(within(dialog).getByTestId('scheduled-message-edit-text'), { target: { value: 'Il check-in è dalle. A presto!' } });
+    // The text is changed, and still there is no silent save: the host has to say that the message may go without the datum.
+    expect(within(dialog).getByTestId('scheduled-message-edit-save')).toBeDisabled();
+
+    fireEvent.click(within(dialog).getByTestId('scheduled-message-edit-missing-accept'));
+    await waitFor(() => expect(within(dialog).getByTestId('scheduled-message-edit-save')).toBeEnabled());
+    fireEvent.click(within(dialog).getByTestId('scheduled-message-edit-save'));
+
+    await waitFor(() => expect(edit).toHaveBeenCalledTimes(1));
+    expect(edit).toHaveBeenCalledWith('m-1', 'Il check-in è dalle. A presto!');
+  });
+
+  it('edit_TheHostPutsTheMissingVariableBack_NeedsNoAgreement_AndSavesTheVariable', async () => {
+    list.mockResolvedValue([blocked()]);
+    edit.mockResolvedValue(msg({ edited: true }));
+    renderSection();
+
+    fireEvent.click(await screen.findByTestId('scheduled-message-edit'));
+    const dialog = await screen.findByRole('dialog');
+    const field = within(dialog).getByTestId('scheduled-message-edit-text') as HTMLTextAreaElement;
+    fireEvent.change(field, { target: { value: 'Il check-in è dalle .' } });
+    field.focus();
+    field.setSelectionRange(20, 20);
+    fireEvent.click(within(dialog).getByTestId('scheduled-message-variable-check_in_time'));
+
+    await waitFor(() => expect(field).toHaveValue('Il check-in è dalle {{check_in_time}}.'));
+    // The datum is back in the text: nothing is left to agree to, the notice goes and the text can be saved.
+    expect(within(dialog).queryByTestId('scheduled-message-edit-missing')).not.toBeInTheDocument();
+    expect(within(dialog).getByTestId('scheduled-message-variable-check_in_time')).not.toHaveAttribute('data-missing');
+    await waitFor(() => expect(within(dialog).getByTestId('scheduled-message-edit-save')).toBeEnabled());
+    fireEvent.click(within(dialog).getByTestId('scheduled-message-edit-save'));
+
+    await waitFor(() => expect(edit).toHaveBeenCalledWith('m-1', 'Il check-in è dalle {{check_in_time}}.'));
+  });
+
+  it('edit_AVariableTypedByHand_CountsAsPutBack_WhateverTheSpacesAndTheCapitals', async () => {
+    list.mockResolvedValue([blocked()]);
+    renderSection();
+
+    fireEvent.click(await screen.findByTestId('scheduled-message-edit'));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByTestId('scheduled-message-edit-missing')).toBeInTheDocument();
+    fireEvent.change(within(dialog).getByTestId('scheduled-message-edit-text'), { target: { value: 'Il check-in è dalle {{ Check_In_Time }}.' } });
+
+    await waitFor(() => expect(within(dialog).queryByTestId('scheduled-message-edit-missing')).not.toBeInTheDocument());
+    await waitFor(() => expect(within(dialog).getByTestId('scheduled-message-edit-save')).toBeEnabled());
+  });
+
+  it('edit_AMessageThatLacksNothingOrOnlyACodeThatIsNotAVariable_ShowsNoNoticeButTellsTheDataBecomeFixedText', async () => {
+    list.mockResolvedValue([
+      msg({ id: 'm-complete' }),
+      msg({ id: 'm-no-template', plannedAtUtc: '2026-11-25T07:00:00Z', status: 'Blocked', blockedReason: 'template_missing', missingVariables: ['template_missing'], text: null }),
+    ]);
+    renderSection();
+
+    for (const id of ['m-complete', 'm-no-template']) {
+      fireEvent.click((await cardOf(id)).getByTestId('scheduled-message-edit'));
+      const dialog = await screen.findByRole('dialog');
+      expect(within(dialog).queryByTestId('scheduled-message-edit-missing')).not.toBeInTheDocument();
+      expect(within(dialog).getByTestId('scheduled-message-edit-fixed-note')).toBeInTheDocument();
+      fireEvent.click(within(dialog).getByRole('button', { name: 'Annulla' }));
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    }
+  });
+
+  it('edit_TheNoticeAndTheNoteAboutFixedText_AreWrittenInEnglishToo', async () => {
+    await i18n.changeLanguage('en');
+    try {
+      list.mockResolvedValue([blocked()]);
+      renderSection();
+
+      fireEvent.click(await screen.findByTestId('scheduled-message-edit'));
+      const dialog = await screen.findByRole('dialog');
+      const notice = within(dialog).getByTestId('scheduled-message-edit-missing');
+      expect(notice).toHaveTextContent('The text below lacks these details');
+      expect(notice).toHaveTextContent('the check-in time of the property');
+      expect(notice).toHaveTextContent('If you save it like this, the message goes out without these details.');
+      expect(within(dialog).getByTestId('scheduled-message-edit-fixed-note')).toHaveTextContent('become fixed text and no longer follow the booking');
+    } finally {
+      await i18n.changeLanguage('it');
+    }
+  });
+});

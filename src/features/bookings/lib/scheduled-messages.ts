@@ -291,6 +291,31 @@ export const TEMPLATE_VARIABLES: ReadonlyArray<{ name: string; labelKey: string 
   { name: 'review_link', labelKey: 'booking.scheduledMessages.edit.variable.reviewLink' },
 ];
 
+/** True for one of the thirteen names: `variable_missing:` is for those, while `template_missing` and `message_text_invalid` are codes of the server that are not variables. */
+export function isTemplateVariable(name: string): boolean {
+  return TEMPLATE_VARIABLES.some((variable) => variable.name === name);
+}
+
+/** A variable as a template writes it, `{{name}}` (the server allows spaces inside the braces and any case, and so does this). */
+const VARIABLE_PATTERN = /\{\{([^{}]*)\}\}/g;
+
+/** The names of the variables a text uses, read the way the server reads them. A stand-in of the preview (`[check_in_link]`) counts as the variable it stands for, since that is what is saved. */
+export function variablesUsedIn(text: string): Set<string> {
+  const used = new Set<string>();
+  for (const match of withVariablesInPlaceOfStandIns(text).matchAll(VARIABLE_PATTERN)) used.add((match[1] ?? '').trim().toLowerCase());
+  return used;
+}
+
+/**
+ * The data the booking has no value for that the text, as the host has it now, does not name. The server takes a variable it has no value for OUT of the text it gives (`FillKnown`: «Il check-in è dalle {{check_in_time}}.» arrives
+ * as «Il check-in è dalle.»), so a text saved from it goes without that datum, and the message, no longer held back for it, goes out with the gap. Only the variables of a template count: the other codes the server
+ * lists (`template_missing`, `message_text_invalid`) are not data that can be put back.
+ */
+export function missingFromText(message: Pick<ScheduledMessage, 'missingVariables'>, text: string): string[] {
+  const used = variablesUsedIn(text);
+  return message.missingVariables.filter((name) => isTemplateVariable(name) && !used.has(name));
+}
+
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Time
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
