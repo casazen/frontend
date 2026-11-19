@@ -144,4 +144,21 @@ describe('the list of the owners draws each row from the list itself (E13/F02/US
     // An owner with no profile and no property says both.
     expect(line(await rowOf('aa000000-0000-4000-8000-000000000003'))).toBe(plain(`${text('owners.row.noProfile')} · ${text('owners.row.noProperties')}`));
   });
+
+  // Data rule: a fact the list did not write is not a fact the owner lacks. `null` is the server saying the owner has no profile, and it is told; an absent member (a server older than the list) is not
+  // told at all, so the row never says «nessun profilo fiscale» about an owner whose profile it could not read.
+  it('OwnersList_AProfileTheServerDidNotWrite_IsNeverToldAsNoProfile_WhileAnOwnerTheServerSaysHasNoneIs', async () => {
+    const olderServerRow: PropertyOwnerSummary = { id: UNSETTLED_ID, firstName: 'Luca', lastName: 'Bianchi', ibanMasked: null };
+    api.listOwners.mockResolvedValue([owner({ entityKind: null, settlementCurrency: null, propertyCount: 0 }), olderServerRow]);
+    renderPage();
+
+    const noProfile = await rowOf(SETTLED_ID);
+    expect(plain(within(noProfile).getByTestId('owner-profile-line').textContent ?? '')).toBe(plain(`${text('owners.row.noProfile')} · ${text('owners.row.noProperties')}`));
+
+    const older = await rowOf(UNSETTLED_ID);
+    // Nothing is told of the kind, the currency or the properties: no line at all, and no «nessun profilo fiscale» nor «nessun immobile».
+    expect(within(older).queryByTestId('owner-profile-line')).toBeNull();
+    expect(older).not.toHaveTextContent(text('owners.row.noProfile'));
+    expect(older).not.toHaveTextContent(text('owners.row.noProperties'));
+  });
 });

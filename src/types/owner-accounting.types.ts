@@ -545,7 +545,8 @@ export interface OwnerMandateInForce {
 
 /**
  * The owner of a property in the registry of the agency (`GET api/owners`): only what the pages show. Besides the person it carries what a row of «Proprietari» needs to be drawn without any other
- * read (`propertyCount`, `entityKind`, `settlementCurrency`, `mandateInForce`): the server writes them all, and a member that is absent (a server older than that list) is read as «none».
+ * read (`propertyCount`, `entityKind`, `settlementCurrency`, `mandateInForce`): the server writes them all, `null` being its own «none». A member that is absent (a server older than that list) is not
+ * «none»: it was not told, and the row says nothing of it (for the mandate, the versions of the owner's mandate are read).
  */
 export interface PropertyOwnerSummary {
   id: string;

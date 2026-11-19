@@ -107,15 +107,18 @@ function OwnerRow({ owner }: { owner: PropertyOwnerSummary }) {
   const name = nameOf(owner, (id) => t('ownerAccounting.owner.unnamed', { id }));
   const state = mandateOfRow(settled, mandates.isError ? undefined : mandates.data, today);
 
-  let profileLine: string;
-  if (!owner.entityKind) profileLine = t('owners.row.noProfile');
-  else {
+  // What the list says of the profile and the properties. `null` is the server saying the owner has no profile, and it is told; an absent member is a server that did not write it (one older than
+  // the list), and nothing is told of it: a fact that was not read is never said as «no profile».
+  const facts: string[] = [];
+  if (owner.entityKind === null) facts.push(t('owners.row.noProfile'));
+  else if (owner.entityKind !== undefined) {
     const kind = t(`ownerProfile.options.entityKind.${owner.entityKind}`);
-    profileLine = owner.settlementCurrency ? t('owners.row.kindAndCurrency', { kind, currency: owner.settlementCurrency }) : t('owners.row.kindNoCurrency', { kind });
+    facts.push(owner.settlementCurrency ? t('owners.row.kindAndCurrency', { kind, currency: owner.settlementCurrency }) : t('owners.row.kindNoCurrency', { kind }));
   }
   if (typeof owner.propertyCount === 'number') {
-    profileLine = `${profileLine} · ${owner.propertyCount > 0 ? t('owners.row.properties', { count: owner.propertyCount }) : t('owners.row.noProperties')}`;
+    facts.push(owner.propertyCount > 0 ? t('owners.row.properties', { count: owner.propertyCount }) : t('owners.row.noProperties'));
   }
+  const profileLine = facts.join(' · ');
 
   let mandateLine;
   if (settled === null && mandates.isPending) {
@@ -157,9 +160,11 @@ function OwnerRow({ owner }: { owner: PropertyOwnerSummary }) {
             {name}
           </Link>
         </h3>
-        <p className="break-words text-sm text-foreground/70" data-testid="owner-profile-line">
-          {profileLine}
-        </p>
+        {profileLine ? (
+          <p className="break-words text-sm text-foreground/70" data-testid="owner-profile-line">
+            {profileLine}
+          </p>
+        ) : null}
         <div className="break-words text-sm" data-testid="owner-mandate-line">
           {mandateLine}
         </div>

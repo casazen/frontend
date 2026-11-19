@@ -115,13 +115,17 @@ export function useOwnerVersions(year: number, month: number, ownerId: string, e
   });
 }
 
-/** A version with its ledger lines. */
+/**
+ * A version with its ledger lines and its tourist tax box. The box is worked out when it is read (from the channels the issuer confirmed and the tax of the stays: a change of either moves it
+ * without a new version), so it is read again every time a page asks for it and soon after (`staleTime`): a statement left open shows the amounts of now when the person comes back to it.
+ */
 export function useVersionDetail(versionId: string | undefined) {
   return useQuery({
     queryKey: ownerAccountingKeys.version(versionId ?? ''),
     queryFn: () => ownerAccountingApi.getVersion(versionId ?? ''),
     enabled: Boolean(versionId),
     refetchOnMount: 'always' as const,
+    staleTime: 30_000,
   });
 }
 
