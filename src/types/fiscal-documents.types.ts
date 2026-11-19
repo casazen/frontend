@@ -128,6 +128,11 @@ export interface FiscalDocumentLine {
   vatNatureCode: string | null;
   lineType: string | null;
   vatAmount: number | null;
+  /**
+   * `true` for the line of tourist tax that the portal left to the host and that nobody recorded as collected: the guest pays it at the property and the document does not declare it paid. Only there when the
+   * server says it (it leaves the member out of every other line, and of every answer of an older server): the client never works out which line it is.
+   */
+  toCollectAtProperty?: boolean;
 }
 
 /** Who issued the document as it was when it was issued (the snapshot), as far as the server says it: `null` while the answer carries none. */
@@ -149,6 +154,14 @@ export interface FiscalDocumentDetail extends FiscalDocumentEntry {
   lines: FiscalDocumentLine[];
   paymentChannel: string | null;
   issuer: FiscalDocumentIssuer | null;
+  /**
+   * What the portal collected of the guest document of a booking whose portal left the tourist tax to the host, and the part of that tax still to pay at the property: both in `currency`, as the server wrote
+   * them (FIX/BE-PORTAL-TAXLINE). They are there only when the server says the document is split that way, and both are left out of every other document and of every answer of an older server, which
+   * then says what it said. The client never works them out, and never adds them to anything: they do not always add up to `total` (a part of the tax that the collection of the stay records as collected is
+   * on neither), and `paymentState` stays the one the server stored.
+   */
+  amountPaidViaPortal?: number;
+  amountToCollectAtProperty?: number;
 }
 
 /** What a write on a document answers, reduced to what the screens use: the document and the number it has now (a draft has none). */

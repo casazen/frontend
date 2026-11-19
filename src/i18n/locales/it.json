@@ -9354,7 +9354,8 @@
         "none": "Il documento non ha righe.",
         "quantity": "Quantità",
         "rate": "IVA",
-        "title": "Righe"
+        "title": "Righe",
+        "toCollectAtProperty": "Da pagare in struttura"
       },
       "lineType": {
         "Accommodation": "Soggiorno",
@@ -9369,10 +9370,12 @@
       "loadError": "Non riusciamo a caricare il documento.",
       "loading": "Carico il documento…",
       "payment": {
+        "noCurrency": "La valuta non è indicata nel documento: gli importi sono mostrati senza simbolo.",
         "paid": "Pagato",
         "paidPortal": "Pagato tramite il portale",
         "title": "Pagamento",
         "toCollect": "Da incassare",
+        "toCollectAtProperty": "Imposta di soggiorno da pagare in struttura",
         "unrecognized": "Incasso: {{code}}"
       },
       "rate": {
