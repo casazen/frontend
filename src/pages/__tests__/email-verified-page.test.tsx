@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import i18n from '@/i18n/config';
+import { savePendingHostInvite } from '@/lib/host-invite';
 import { emailVerificationOutcome } from '../email-verification-outcome';
 
 const auth0 = vi.hoisted(() => ({
@@ -56,6 +57,7 @@ describe('EmailVerifiedPage', () => {
     auth0.isAuthenticated = false;
     auth0.verified = true;
     auth0.loginWithRedirect.mockClear();
+    sessionStorage.clear();
     await i18n.changeLanguage('it');
   });
 
@@ -93,6 +95,18 @@ describe('EmailVerifiedPage', () => {
     expect(auth0.loginWithRedirect).toHaveBeenCalledWith(expect.objectContaining({
       appState: { returnTo: '/invite/accept' },
       authorizationParams: expect.objectContaining({ prompt: 'login' }),
+    }));
+  });
+
+  it('resumes the pending host invitation after successful verification', () => {
+    const token = 'a'.repeat(64);
+    savePendingHostInvite(token);
+    renderPage('?success=true&code=success');
+
+    fireEvent.click(screen.getByTestId('email-verified-sign-in'));
+
+    expect(auth0.loginWithRedirect).toHaveBeenCalledWith(expect.objectContaining({
+      appState: expect.objectContaining({ returnTo: `/invito-host/${token}` }),
     }));
   });
 

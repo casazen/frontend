@@ -17,6 +17,7 @@ vi.mock('@/api/host-invites.api', () => ({ lookupHostInvite: vi.fn(), acceptHost
 let TOKEN = '';
 let counter = 0;
 const login = vi.fn();
+const refreshAccessToken = vi.fn(async () => "fresh-token");
 
 function mockAuth(authenticated: boolean, isLoading = false) {
   vi.mocked(useAuth).mockReturnValue({
@@ -24,6 +25,7 @@ function mockAuth(authenticated: boolean, isLoading = false) {
     isAuthenticated: authenticated,
     user: authenticated ? { email: 'nuovo@example.com' } : undefined,
     login,
+    refreshAccessToken,
   } as unknown as ReturnType<typeof useAuth>);
 }
 
@@ -199,6 +201,24 @@ describe('HostInvitePage', () => {
     );
     expect(screen.queryByRole('button', { name: 'Riprova' })).not.toBeInTheDocument();
     expect(acceptHostInvite).toHaveBeenCalledTimes(1);
+    expect(readPendingHostInvite()).toBeNull();
+  });
+
+  it('keeps a Super Admin invitation and refreshes the session after email verification', async () => {
+    mockAuth(true);
+    vi.mocked(lookupHostInvite).mockResolvedValue({ ...VALID, isAgency: true });
+    vi.mocked(acceptHostInvite)
+      .mockRejectedValueOnce(problem(403, 'host_invite_email_not_verified'))
+      .mockResolvedValue(undefined);
+    renderPage();
+
+    const retry = await screen.findByRole('button', { name: 'Riprova' });
+    expect(readPendingHostInvite()).toBe(TOKEN);
+    fireEvent.click(retry);
+
+    expect(await screen.findByText('Invito accettato')).toBeInTheDocument();
+    expect(refreshAccessToken).toHaveBeenCalledOnce();
+    expect(acceptHostInvite).toHaveBeenCalledTimes(2);
     expect(readPendingHostInvite()).toBeNull();
   });
 

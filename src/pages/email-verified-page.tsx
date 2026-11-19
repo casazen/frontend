@@ -5,6 +5,7 @@ import { MailCheck, LogIn, MailWarning } from 'lucide-react';
 import { ORG_INVITE_ACCEPT_PATH, readOrgInviteToken } from '@/lib/org-invitation';
 import { useLoginHandoff } from '@/hooks/use-login-handoff';
 import { useAuth } from '@/hooks/use-auth';
+import { hostInvitePath, readPendingHostInvite } from '@/lib/host-invite';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { emailVerificationOutcome } from './email-verification-outcome';
@@ -22,13 +23,15 @@ export function EmailVerifiedPage() {
   const pendingInvite = Boolean(readOrgInviteToken(new URLSearchParams()));
   const outcome = emailVerificationOutcome(searchParams);
   const failed = outcome === 'failed';
-  const needsFreshSession = pendingInvite && isAuthenticated && user && 'email_verified' in user && user.email_verified === false;
+  const pendingHostInvite = outcome === 'verified' ? readPendingHostInvite() : null;
+  const returnTo = pendingInvite ? ORG_INVITE_ACCEPT_PATH : pendingHostInvite ? hostInvitePath(pendingHostInvite) : undefined;
+  const needsFreshSession = Boolean(returnTo && isAuthenticated && user && 'email_verified' in user && user.email_verified === false);
 
   useEffect(() => {
-    if (!isLoading && isAuthenticated && pendingInvite && !failed && !needsFreshSession) {
-      navigate(ORG_INVITE_ACCEPT_PATH, { replace: true });
+    if (!isLoading && isAuthenticated && returnTo && !failed && !needsFreshSession) {
+      navigate(returnTo, { replace: true });
     }
-  }, [isAuthenticated, isLoading, navigate, pendingInvite, failed, needsFreshSession]);
+  }, [isAuthenticated, isLoading, navigate, returnTo, failed, needsFreshSession]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/40 px-4">
@@ -52,14 +55,14 @@ export function EmailVerifiedPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           {handoff.status === 'failed' || handoff.status === 'delayed' ? <p role="alert" className="text-sm">{t('login.handoffFailed')}</p> : null}
-          {!failed && !pendingInvite && <p className="text-sm text-muted-foreground">{t('emailVerified.inviteTab')}</p>}
+          {!failed && !returnTo && <p className="text-sm text-muted-foreground">{t('emailVerified.inviteTab')}</p>}
           <Button className="w-full" size="lg" disabled={isLoading || handoff.busy} onClick={() => {
-            if (isAuthenticated && !pendingInvite) {
+            if (isAuthenticated && !returnTo) {
               navigate('/app/choose-context', { replace: true });
               return;
             }
-            handoff.start(pendingInvite ? {
-              returnTo: ORG_INVITE_ACCEPT_PATH,
+            handoff.start(returnTo ? {
+              returnTo,
               ...(needsFreshSession ? { authorizationParams: { prompt: 'login' } } : {}),
             } : undefined);
           }} data-testid="email-verified-sign-in">
