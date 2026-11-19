@@ -169,7 +169,6 @@ export function OwnerInvitationPage() {
   }, []);
 
   const openPortal = useCallback(async (afterLogin = false) => {
-    setStage('opening');
     try {
       if (!afterLogin) await refreshAccessToken();
       if (!onPage.current) return;
@@ -203,7 +202,10 @@ export function OwnerInvitationPage() {
       // Claims were published. Forget the secret before checking access with a fresh session.
       keepsSecret.current = false;
       clearOwnerInvitationToken();
-      if (onPage.current) void openPortal();
+      if (onPage.current) {
+        setStage('opening');
+        void openPortal();
+      }
     },
     [openPortal, reset],
   );
