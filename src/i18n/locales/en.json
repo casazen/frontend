@@ -876,6 +876,14 @@
           "title": "Scheduled message to fix",
           "why": "An automatic message for a guest did not go out or needs you: open the booking, complete what is missing or send it yourself."
         },
+        "SelfBillingDraftsToReview": {
+          "title": "Self-billed invoices to check and issue",
+          "why": "The self-billed invoices (TD17) of the month are ready as drafts: check the amounts against the portals' invoices and issue them by the deadline."
+        },
+        "SelfBillingRejected": {
+          "title": "Self-billed invoice rejected by the SDI",
+          "why": "The tax office counts the self-billed invoice as not issued: open it in the self-billed invoices, see why the SDI rejected it and decide with your accountant how to put it right."
+        },
         "TouristTaxDeadline": {
           "title": "Tourist tax due",
           "why": "The tax of the period has to be declared and paid, with the receipts archived."
