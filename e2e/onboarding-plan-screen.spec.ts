@@ -95,7 +95,8 @@ test('scelta manuale · confermare, uscire, riprendere dalla Home e aprire il co
   await expect(fresh).toHaveURL(new RegExp('#passo-octorateConnection$'));
   await fresh.getByTestId('onboarding-plan-current').getByTestId('onboarding-part-octorateConnection-open').press('Enter');
   await expect(fresh).toHaveURL(new RegExp(connectionTaskPath + '$'));
-  await fresh.getByTestId('part-launch-primary').press('Enter');
+  await fresh.getByTestId('part-entry-newInventory').check();
+  await fresh.getByTestId('part-entry-continue').press('Enter');
   await expect(fresh).toHaveURL(url => url.pathname.endsWith('/integrations/octorate') && url.searchParams.get('step') === 'consent');
   await expect(fresh.getByTestId('octorate-consent-step')).toHaveAttribute('data-phase', 'ready');
   await fresh.getByTestId('octorate-connect-save-exit').press('Enter');
