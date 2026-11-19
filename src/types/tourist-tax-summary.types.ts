@@ -77,6 +77,118 @@ export interface TouristTaxSummary {
   total: TouristTaxSummaryTotals;
 }
 
+// The tourist tax at year end (E18/F01/US02/T03, NF-117): the three reads of `GET /api/tourist-tax/year-end/{year}/declaration|agent-account|ticino?format=json`, the very data of the CSV and Excel files of the same addresses.
+// Every amount is a number in the `currency` of the answer, to the cent (the euro of the Italian tax; the currency of the property for the count of Ticino): the page adds nothing up and works no reason out.
+
+/**
+ * A reason with the stays, the guests and the nights it counts (backend `TouristTaxReasonCountDto`). `reason` is the server's word, a code that is never renamed: the page tells it in words and never decides one.
+ */
+export interface TouristTaxReasonCount {
+  reason: string;
+  stays: number;
+  guests: number;
+  /** The nights of the stay for each guest, added up. */
+  guestNights: number;
+}
+
+/** One comune of the declaration of the year. */
+export interface TouristTaxDeclarationComune {
+  /** The comune in the year as `GET summary` gives it, with the payments always there: the year-end reads need the whole organization. */
+  summary: TouristTaxComuneSummary;
+  /** Stays with a recorded amount above zero. */
+  taxedStays: number;
+  /** The stays with no amount, by reason (`exempt`, `collected_by_channel`, `not_calculated`, `no_tax_due`): their sum is `summary.staysWithoutAmount`. */
+  staysWithoutAmount: TouristTaxReasonCount[];
+  /**
+   * The exempt guests by reason, a count and never a guest. The reason can reveal a health condition (art. 9 GDPR), so the server decides who gets it: a caller who holds `guest.read` for the whole organization
+   * gets the codes of the catalogue (`resident`, `health_care`...) or `erased`; everybody else gets `minor_age` (the age) and one `restricted` row that counts the other exempt guests.
+   */
+  exemptions: TouristTaxReasonCount[];
+}
+
+/** The annual declaration data of the tourist tax per comune (backend `TouristTaxDeclarationDto`). */
+export interface TouristTaxDeclaration {
+  year: number;
+  /** Always the euro: only the properties in Italy are in the declaration. */
+  currency: string;
+  comuni: TouristTaxDeclarationComune[];
+  total: TouristTaxSummaryTotals;
+}
+
+/** How the account of the agent is cut, as the server names it (the `by` of the request is `month` or `quarter`). */
+export type TouristTaxAccountPeriod = 'Month' | 'Quarter';
+
+/** One comune in one period of the account of the agent, or in the whole year (`isYear`). */
+export interface TouristTaxAgentAccountRow {
+  comune: string;
+  /** The label of the period: `2026-03`, `2026-Q1`, or the year for the line of the year. */
+  period: string;
+  /** First day of the period (`YYYY-MM-DD`). */
+  from: string;
+  /** Last day of the period, included. */
+  to: string;
+  isYear: boolean;
+  stays: number;
+  nights: number;
+  guests: number;
+  /** The tax the stays record as owed to the comune in the period: the tax the agent collects. */
+  collected: number;
+  /** Stays with no amount, counted apart: above zero, `collected` may be incomplete. */
+  staysWithoutAmount: number;
+  /** The payments whose declared period lies inside the period. */
+  remitted: number;
+  /** `collected` less `remitted`. */
+  balance: number;
+}
+
+/** The account of the agent («conto giudiziale») for the year (backend `TouristTaxAgentAccountDto`). */
+export interface TouristTaxAgentAccount {
+  year: number;
+  by: TouristTaxAccountPeriod;
+  /** Always the euro. */
+  currency: string;
+  /** The comuni, by name, each with its periods in order and, last, the line of the year. */
+  rows: TouristTaxAgentAccountRow[];
+  /** Every payment of the year, by comune and period. */
+  remittances: TouristTaxRemittance[];
+  total: TouristTaxSummaryTotals;
+}
+
+/** The count of the nights of one property in Ticino (backend `TicinoPropertyCountDto`). */
+export interface TicinoPropertyCount {
+  propertyId: string;
+  propertyName: string;
+  address: string;
+  city: string;
+  /** The Swiss municipality code stored on the property; `null` when there is none. */
+  municipalityCode: string | null;
+  /** The currency of the property and of `touristTax`: the franc for a house in Switzerland. */
+  currency: string;
+  stays: number;
+  nights: number;
+  taxedStays: number;
+  taxedNights: number;
+  untaxedStays: number;
+  untaxedNights: number;
+  /** Stays with no document issued yet: told apart, never counted as untaxed. */
+  staysWithoutDocument: number;
+  nightsWithoutDocument: number;
+  /** The tourist tax of the issued documents of those stays, credit notes taken away, in `currency`: never a calculation. */
+  touristTax: number;
+  /** A property in Switzerland whose canton is not known (no Swiss municipality on it, or one the registry lacks): it may be in Ticino, so it is counted and flagged. */
+  cantonUnknown: boolean;
+}
+
+/** The yearly count of the nights of the properties in Ticino for the regional tourist organization (backend `TicinoYearlyCountDto`). */
+export interface TicinoYearlyCount {
+  year: number;
+  /** The day the count is due: 5 January of the next year (`YYYY-MM-DD`). */
+  dueDate: string;
+  /** How many of the properties have a canton that is not known: the server says it, so the screen does not count. */
+  cantonUnknownCount: number;
+  properties: TicinoPropertyCount[];
+}
+
 /** What the host sends to record a payment (`POST /api/tourist-tax/remittances`, `multipart/form-data`). */
 export interface RecordTouristTaxRemittanceInput {
   /** One of the comuni of the properties of the org, in Italy. */

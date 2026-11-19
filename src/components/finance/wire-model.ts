@@ -11,6 +11,12 @@ export const WIRE_CURRENCIES: readonly WireCurrency[] = ['CHF', 'EUR'];
 /** The server compares currencies without the case or the spaces of the stored code, and so does the page. */
 export const currencyOf = (value: string | null | undefined): string => (value ?? '').trim().toUpperCase();
 
+/** The most payouts the server gives in ONE list of payable payouts (`payable-payouts?currency=`, the oldest first): a list of this length may hold only the first of them. */
+export const WIRE_PAYABLE_LIST_CAP = 1000;
+
+/** Whether a list of the server is as long as it can be, so that more payouts may be waiting behind it: the page says so, it never shows a cut list as the whole of it. */
+export const isListCapped = (payouts: readonly unknown[] | null | undefined): boolean => (payouts?.length ?? 0) >= WIRE_PAYABLE_LIST_CAP;
+
 /** A payout the page offers: who is paid, for which statement, how much of which currency, and whether the owner has an IBAN (a yes or a no: the account itself never comes). */
 export interface PayableRow {
   id: string;

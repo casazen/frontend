@@ -15,13 +15,17 @@ function Probe() {
   return <p>{isLoading ? 'loading' : `ota=${flags.otaPartnerApi}`}</p>;
 }
 
-function renderProvider() {
+/** Says whether the flags are known, which is what tells «off» from «could not be read». */
+function ErrorProbe() {
+  const { isLoading, isError } = useFeatureFlags();
+  return <p>{isLoading ? 'loading' : `unreadable=${isError === true}`}</p>;
+}
+
+function renderProvider(probe = <Probe />) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={queryClient}>
-      <FeatureFlagsProvider>
-        <Probe />
-      </FeatureFlagsProvider>
+      <FeatureFlagsProvider>{probe}</FeatureFlagsProvider>
     </QueryClientProvider>,
   );
 }
@@ -46,6 +50,22 @@ describe('FeatureFlagsProvider', () => {
     renderProvider();
 
     await waitFor(() => expect(screen.getByText('ota=false')).toBeInTheDocument());
+  });
+
+  it('says that the flags are not known when the first read fails, so a screen can tell «off» from «unreadable»', async () => {
+    vi.mocked(featuresApi.getFeatures).mockRejectedValue(new Error('network'));
+
+    renderProvider(<ErrorProbe />);
+
+    expect(await screen.findByText('unreadable=true')).toBeInTheDocument();
+  });
+
+  it('does not say it when the flags were read', async () => {
+    vi.mocked(featuresApi.getFeatures).mockResolvedValue({ otaPartnerApi: false });
+
+    renderProvider(<ErrorProbe />);
+
+    expect(await screen.findByText('unreadable=false')).toBeInTheDocument();
   });
 
   it('is off without a provider', () => {

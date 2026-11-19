@@ -158,6 +158,25 @@ function isAccessDenied(config: InternalAxiosRequestConfig, data: unknown): bool
 }
 
 /**
+ * The two 403 of an account that the app answers with a page of its own, whatever the method: the account that was deactivated (`account_inactive`, PL-03) and the host who
+ * has not finished the onboarding (`onboarding_required`, PL-02). Runs the handler of the one the body names and says whether it was one; `account_inactive` goes first, an
+ * inactive account takes precedence over every other 403 code. The response interceptor below calls it for a rejected 403. A read that takes a 403 as an answer
+ * (`validateStatus`) never reaches that interceptor, which only sees rejected responses: such a read calls this itself, before it tells the refusal in its own words.
+ */
+export function handleAccountStateForbidden(data: unknown): boolean {
+  const code = getProblemCode(data);
+  if (code === ACCOUNT_INACTIVE_CODE) {
+    accountInactiveHandler?.();
+    return true;
+  }
+  if (code === ONBOARDING_REQUIRED_CODE) {
+    onboardingRequiredHandler?.();
+    return true;
+  }
+  return false;
+}
+
+/**
  * Create axios instance with base configuration
  */
 const axiosInstance: AxiosInstance = axios.create({
@@ -190,13 +209,8 @@ async function handleResponseError(error: unknown): Promise<AxiosResponse> {
       if (refreshed) return axiosInstance.request(config);
     }
     requestRelogin();
-  } else if (status === 403 && getProblemCode(data) === ACCOUNT_INACTIVE_CODE) {
-    // Deactivated account (PL-03): whatever the method, never the no-access page nor a re-login. Keep this branch
-    // before every other 403 code (onboarding_required included): an inactive account takes precedence.
-    accountInactiveHandler?.();
-  } else if (status === 403 && getProblemCode(data) === ONBOARDING_REQUIRED_CODE) {
-    onboardingRequiredHandler?.();
-  } else if (status === 403 && isAccessDenied(config, data)) {
+  } else if (status === 403 && !handleAccountStateForbidden(data) && isAccessDenied(config, data)) {
+    // A 403 of the account (deactivated, onboarding) has its own page and never the no-access page nor a re-login: it was handled just above, before the generic 403.
     forbiddenHandler?.();
   }
 

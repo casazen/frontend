@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { ExternalLink, Pencil } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import { PageHeader } from '@/components/layout/page-header';
 import { ErrorState } from '@/components/shared/error-state';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +11,7 @@ import { SkeletonLine } from '@/components/ui/skeleton';
 import { deadlineShown } from '@/features/compliance/lib/istat-coverage-model';
 import { isHttpsAddress } from '@/lib/onboarding-panel';
 import { formatDate } from '@/lib/utils';
-import { useIstatRegions } from '@/queries/use-istat-regions';
+import { useIstatRegions, useRereadIstatRegions } from '@/queries/use-istat-regions';
 import { ISTAT_COVERAGES, type IstatCoverage, type IstatRegionRule } from '@/types/istat.types';
 import { IstatRegionDialog } from './istat-region-dialog';
 import { territoryName } from './istat-region-form';
@@ -46,7 +47,7 @@ function TableLink({ href, label, testId }: { href: string | null; label: string
   );
 }
 
-function RegionRow({ row, onEdit }: { row: IstatRegionRule; onEdit: () => void }) {
+function RegionRow({ row, onEdit, busy, reading }: { row: IstatRegionRule; onEdit: () => void; busy: boolean; reading: boolean }) {
   const { t } = useTranslation();
   const coverage = coverageOf(row.octorateCoverage);
   const deadline = deadlineShown(row);
@@ -75,7 +76,7 @@ function RegionRow({ row, onEdit }: { row: IstatRegionRule; onEdit: () => void }
         <TableLink href={row.sourceUrl} label={t('istatRegions.source')} testId={`istat-region-source-link-${rowId(row)}`} />
       </td>
       <td className="px-3 py-2 text-right">
-        <Button type="button" variant="ghost" size="sm" className="min-h-11" onClick={onEdit} data-testid={`istat-region-edit-${rowId(row)}`}>
+        <Button type="button" variant="ghost" size="sm" className="min-h-11" onClick={onEdit} loading={reading} disabled={busy} data-testid={`istat-region-edit-${rowId(row)}`}>
           <Pencil aria-hidden="true" className="mr-1 size-4" />
           {t('istatRegions.edit')}
           <span className="sr-only"> {territoryName(row)}</span>
@@ -95,7 +96,25 @@ function RegionRow({ row, onEdit }: { row: IstatRegionRule; onEdit: () => void }
 export function IstatRegionsPage() {
   const { t } = useTranslation();
   const regions = useIstatRegions();
+  const reread = useRereadIstatRegions();
   const [editing, setEditing] = useState<IstatRegionRule | null>(null);
+  // The row whose form is being opened: the table is read again first, and nothing else can be opened meanwhile.
+  const [opening, setOpening] = useState<string | null>(null);
+
+  // A save replaces the whole row and the API has no version: the form starts from the row the server holds now, never from an older read, and when the table cannot be read nothing opens.
+  const edit = async (row: IstatRegionRule) => {
+    if (opening !== null) return;
+    setOpening(row.id);
+    try {
+      const fresh = (await reread()).find((candidate) => candidate.id === row.id);
+      if (fresh) setEditing(fresh);
+      else toast.error(t('istatRegions.toast.rereadFailed'));
+    } catch {
+      toast.error(t('istatRegions.toast.rereadFailed'));
+    } finally {
+      setOpening(null);
+    }
+  };
 
   let body: ReactNode;
   if (regions.isError) {
@@ -150,7 +169,7 @@ export function IstatRegionsPage() {
             </thead>
             <tbody>
               {rows.map((row) => (
-                <RegionRow key={row.id} row={row} onEdit={() => setEditing(row)} />
+                <RegionRow key={row.id} row={row} onEdit={() => void edit(row)} busy={opening !== null} reading={opening === row.id} />
               ))}
             </tbody>
           </table>
@@ -165,7 +184,15 @@ export function IstatRegionsPage() {
       <Card>
         <CardContent className="space-y-3 pt-6">{body}</CardContent>
       </Card>
-      {editing ? <IstatRegionDialog key={editing.id} rule={editing} onClose={() => setEditing(null)} /> : null}
+      {editing ? (
+        <IstatRegionDialog
+          key={editing.id}
+          rule={editing}
+          live={regions.data?.find((row) => row.id === editing.id) ?? null}
+          readFailed={regions.isError}
+          onClose={() => setEditing(null)}
+        />
+      ) : null}
     </div>
   );
 }

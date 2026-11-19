@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AxiosError, AxiosHeaders } from 'axios';
 import type { InternalAxiosRequestConfig } from 'axios';
@@ -11,6 +11,8 @@ import { PublicFiscalDocumentPage } from '../PublicFiscalDocumentPage';
 
 // E12/F02/US02: the guest opens the document from the link of the e-mail. The privacy rule of these tests: the token of the link is the only access check,
 // so it is read once, taken out of the address bar, sent in the body of the two public calls and nowhere else (no storage, no key, no variable, no error kept).
+// FIX/FE-RESEND-DOC-EMAIL: what the page says of a failure depends on what the server answered. A refusal (401, 403, 404 `document_link_invalid`) is the invalid-link page; a passing error
+// (no answer, 5xx, 429, an answer that is not what the server gives) is never told as an expired link: «Riprova» reads again, or repeats the download next to the summary.
 vi.mock('@/lib/axios', () => ({ default: { post: vi.fn() } }));
 vi.mock('@/lib/file-download', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/file-download')>()),
@@ -132,34 +134,85 @@ describe('PublicFiscalDocumentPage (E12/F02/US02)', () => {
     expect(keptByTheCaches(client)).not.toContain(TOKEN);
   });
 
+  // The server says the link does not open (the 404 `document_link_invalid` of the API contract, or a 401 or a 403): the calm «Link non valido o scaduto» page.
   it.each([
-    ['a link that does not open (404)', failure(404)],
-    ['a link the guest has too many times (429)', failure(429, { code: 'rate_limited' })],
-    ['a server error (500)', failure(500, {})],
-    ['no answer at all', failure()],
-    ['an answer that is not a summary', { data: { id: DOCUMENT_ID } }],
-    ['an answer that is the page of the app', { data: '<!doctype html><html></html>' }],
-  ])('PublicDocumentPage_ReadFails_%s_ShowsTheSameInvalidLinkPageAndKeepsNoToken', async (_name, outcome) => {
-    if (outcome instanceof AxiosError) post.mockRejectedValueOnce(outcome);
-    else post.mockResolvedValueOnce(outcome);
+    ['a link that does not open (404 document_link_invalid)', failure(404)],
+    ['a refused request (401)', failure(401, '')],
+    ['a forbidden request (403)', failure(403, '')],
+  ])('PublicDocumentPage_ReadRefusedByTheServer_%s_ShowsTheInvalidLinkPageAndKeepsNoToken', async (_name, outcome) => {
+    post.mockRejectedValueOnce(outcome);
 
     const client = renderPage();
 
     await waitFor(() => expect(screen.getByTestId('public-document-page')).toHaveAttribute('data-state', 'invalid'));
     expect(screen.getByRole('heading', { name: 'Link non valido o scaduto' })).toBeInTheDocument();
     expect(screen.getByTestId('public-document-page')).toHaveTextContent('Questo link non è valido o è scaduto. Chiedi un nuovo invio alla struttura.');
-    // Nothing of a document and no way to ask for one.
+    // Nothing of a document and no way to ask for one or to try again.
+    expect(screen.queryByTestId('public-document-summary')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('public-document-download')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('public-document-retry')).not.toBeInTheDocument();
+    expect(keptByTheBrowser()).not.toContain(TOKEN);
+    expect(keptByTheCaches(client)).not.toContain(TOKEN);
+  });
+
+  // A passing error says nothing about the link: never the expired-link page, and «Riprova» reads again.
+  it.each([
+    ['too many calls in a minute (429)', failure(429, { code: 'rate_limited' })],
+    ['a server error (500)', failure(500, {})],
+    ['a gateway that does not answer (503)', failure(503, '')],
+    ['no answer at all', failure()],
+    ['an answer that is not a summary', { data: { id: DOCUMENT_ID } }],
+    ['an answer that is the page of the app', { data: '<!doctype html><html></html>' }],
+  ])('PublicDocumentPage_ReadFailsForAPassingReason_%s_ShowsTheErrorPageWithRiprova_NeverTheExpiredLinkPage_AndKeepsNoToken', async (_name, outcome) => {
+    if (outcome instanceof AxiosError) post.mockRejectedValueOnce(outcome);
+    else post.mockResolvedValueOnce(outcome);
+
+    const client = renderPage();
+
+    await waitFor(() => expect(screen.getByTestId('public-document-page')).toHaveAttribute('data-state', 'error'));
+    expect(screen.getByRole('heading', { name: 'Non riusciamo a caricare il documento' })).toBeInTheDocument();
+    expect(screen.queryByText('Link non valido o scaduto')).not.toBeInTheDocument();
+    expect(screen.getByTestId('public-document-page')).not.toHaveTextContent('è scaduto');
+    expect(screen.getByRole('button', { name: 'Riprova' })).toBeInTheDocument();
+    // Nothing of a document, and no download.
     expect(screen.queryByTestId('public-document-summary')).not.toBeInTheDocument();
     expect(screen.queryByTestId('public-document-download')).not.toBeInTheDocument();
     expect(keptByTheBrowser()).not.toContain(TOKEN);
     expect(keptByTheCaches(client)).not.toContain(TOKEN);
   });
 
+  it('PublicDocumentPage_RiprovaAfterAFailedRead_ReadsTheSummaryAgainWithTheSameCall', async () => {
+    post.mockRejectedValueOnce(failure(500, {})).mockResolvedValueOnce({ data: SUMMARY });
+
+    const client = renderPage();
+    fireEvent.click(await screen.findByRole('button', { name: 'Riprova' }));
+
+    expect(await screen.findByTestId('public-document-summary')).toHaveTextContent('2026/12');
+    expect(screen.getByTestId('public-document-page')).toHaveAttribute('data-state', 'ready');
+    // The same call twice: the token never left the memory of the page, and the guest did not have to open the link again.
+    expect(post).toHaveBeenCalledTimes(2);
+    expect(post.mock.calls[1]).toEqual(post.mock.calls[0]);
+    expect(post.mock.calls[1]![0]).toBe(`/public/fiscal-documents/${DOCUMENT_ID}`);
+    expect(post.mock.calls[1]![1]).toEqual({ token: TOKEN });
+    expect(keptByTheBrowser()).not.toContain(TOKEN);
+    expect(keptByTheCaches(client)).not.toContain(TOKEN);
+  });
+
+  it('PublicDocumentPage_RiprovaThatMeetsARefusal_ShowsTheInvalidLinkPage', async () => {
+    post.mockRejectedValueOnce(failure(500, {})).mockRejectedValueOnce(failure(404));
+
+    renderPage();
+    fireEvent.click(await screen.findByRole('button', { name: 'Riprova' }));
+
+    await waitFor(() => expect(screen.getByTestId('public-document-page')).toHaveAttribute('data-state', 'invalid'));
+    expect(screen.getByRole('heading', { name: 'Link non valido o scaduto' })).toBeInTheDocument();
+    expect(screen.queryByTestId('public-document-retry')).not.toBeInTheDocument();
+  });
+
   it.each([
     ['the link stopped working meanwhile (404)', () => post.mockRejectedValueOnce(failure(404))],
-    ['a failed download (500)', () => post.mockRejectedValueOnce(failure(500, {}))],
-    ['an answer that is not a PDF', () => post.mockResolvedValueOnce(pdf('text/html'))],
-  ])('PublicDocumentPage_DownloadFails_%s_ReplacesTheSummaryWithTheSameInvalidLinkPage', async (_name, failDownload) => {
+    ['the link is refused meanwhile (403)', () => post.mockRejectedValueOnce(failure(403, ''))],
+  ])('PublicDocumentPage_DownloadRefusedByTheServer_%s_ReplacesTheSummaryWithTheInvalidLinkPage', async (_name, failDownload) => {
     post.mockResolvedValueOnce({ data: SUMMARY });
     failDownload();
 
@@ -168,12 +221,92 @@ describe('PublicFiscalDocumentPage (E12/F02/US02)', () => {
 
     await waitFor(() => expect(screen.getByTestId('public-document-page')).toHaveAttribute('data-state', 'invalid'));
     expect(screen.getByRole('heading', { name: 'Link non valido o scaduto' })).toBeInTheDocument();
-    // No data of the document stays on the page, and a file that is not a PDF is never saved as one.
+    // No data of the document stays on the page, and nothing is saved.
     expect(screen.queryByTestId('public-document-summary')).not.toBeInTheDocument();
     expect(screen.getByTestId('public-document-page')).not.toHaveTextContent('2026/12');
     expect(save).not.toHaveBeenCalled();
     expect(keptByTheBrowser()).not.toContain(TOKEN);
     expect(keptByTheCaches(client)).not.toContain(TOKEN);
+  });
+
+  // The link is good (the summary was just read): a download that fails for a passing reason is told as such, next to the summary, and «Riprova» repeats the same call.
+  it.each([
+    ['a server error (500)', () => post.mockRejectedValueOnce(failure(500, {}))],
+    ['too many calls in a minute (429)', () => post.mockRejectedValueOnce(failure(429, { code: 'rate_limited' }))],
+    ['no answer at all', () => post.mockRejectedValueOnce(failure())],
+    ['an answer that is not a PDF', () => post.mockResolvedValueOnce(pdf('text/html'))],
+  ])('PublicDocumentPage_DownloadFailsForAPassingReason_%s_KeepsTheSummaryNeverSaysTheLinkExpiredAndRiprovaRepeatsTheDownload', async (_name, failDownload) => {
+    post.mockResolvedValueOnce({ data: SUMMARY });
+    failDownload();
+    post.mockResolvedValueOnce(pdf());
+
+    const client = renderPage();
+    fireEvent.click(await screen.findByTestId('public-document-download'));
+
+    const failed = await screen.findByTestId('public-document-download-failed');
+    expect(failed).toHaveTextContent('Non siamo riusciti a scaricare il PDF');
+    expect(screen.getByTestId('public-document-page')).toHaveAttribute('data-state', 'ready');
+    expect(screen.getByTestId('public-document-summary')).toHaveTextContent('2026/12');
+    expect(screen.queryByText('Link non valido o scaduto')).not.toBeInTheDocument();
+    expect(screen.getByTestId('public-document-page')).not.toHaveTextContent('è scaduto');
+    expect(save).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Riprova' }));
+
+    await waitFor(() => expect(save).toHaveBeenCalledTimes(1));
+    expect(save).toHaveBeenCalledWith(expect.any(Blob), 'documento-FT-2026-12.pdf');
+    await waitFor(() => expect(screen.queryByTestId('public-document-download-failed')).not.toBeInTheDocument());
+    expect(screen.getByTestId('public-document-download')).toHaveTextContent('Scarica il PDF');
+    // The same call twice: the summary, the failed download, the repeated download. The repeat has the same address, body and options as the first.
+    expect(post).toHaveBeenCalledTimes(3);
+    expect(post.mock.calls[2]).toEqual(post.mock.calls[1]);
+    expect(post.mock.calls[2]![0]).toBe(`/public/fiscal-documents/${DOCUMENT_ID}/pdf`);
+    expect(post.mock.calls[2]![1]).toEqual({ token: TOKEN });
+    expect(keptByTheBrowser()).not.toContain(TOKEN);
+    expect(keptByTheCaches(client)).not.toContain(TOKEN);
+  });
+
+  it('PublicDocumentPage_AnInvalidTokenAndAFailedDownload_ShowDifferentScreens_AndRiprovaRepeatsTheDownload', async () => {
+    // A token the server refuses: the page of the expired link, with nothing to press.
+    post.mockRejectedValueOnce(failure(404));
+    renderPage();
+    await waitFor(() => expect(screen.getByTestId('public-document-page')).toHaveAttribute('data-state', 'invalid'));
+    expect(screen.getByRole('heading', { name: 'Link non valido o scaduto' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Riprova' })).not.toBeInTheDocument();
+    cleanup();
+
+    // A good token whose download fails: not that page. The summary, the failure, and a «Riprova» that downloads again.
+    post.mockReset();
+    post.mockResolvedValueOnce({ data: SUMMARY }).mockRejectedValueOnce(failure(500, {})).mockResolvedValueOnce(pdf());
+    renderPage();
+    fireEvent.click(await screen.findByTestId('public-document-download'));
+    expect(await screen.findByTestId('public-document-download-failed')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Link non valido o scaduto' })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Riprova' }));
+
+    await waitFor(() => expect(save).toHaveBeenCalledTimes(1));
+    expect(post).toHaveBeenCalledTimes(3);
+    expect(post.mock.calls[1]![0]).toBe(`/public/fiscal-documents/${DOCUMENT_ID}/pdf`);
+    expect(post.mock.calls[2]![0]).toBe(`/public/fiscal-documents/${DOCUMENT_ID}/pdf`);
+  });
+
+  it('PublicDocumentPage_WhileTheSummaryIsRead_SaysSoAndNeitherTheInvalidLinkNorTheErrorPage', async () => {
+    let answer: (value: unknown) => void = () => {};
+    post.mockReturnValueOnce(new Promise((resolve) => (answer = resolve)));
+
+    renderPage();
+
+    const page = screen.getByTestId('public-document-page');
+    expect(page).toHaveAttribute('data-state', 'loading');
+    expect(within(page).getByRole('status')).toHaveTextContent('Carico il documento');
+    expect(screen.queryByRole('heading', { name: 'Link non valido o scaduto' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Riprova' })).not.toBeInTheDocument();
+
+    await act(async () => {
+      answer({ data: SUMMARY });
+    });
+    expect(await screen.findByTestId('public-document-summary')).toBeInTheDocument();
   });
 
   it('PublicDocumentPage_NoToken_ShowsTheInvalidLinkPageWithoutCallingTheApi', async () => {

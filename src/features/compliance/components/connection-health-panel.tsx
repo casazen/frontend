@@ -14,6 +14,7 @@ import type { ConnectionHealthLine, ConnectionHealthState } from '@/types';
 import type { ComplianceHandoffTopic } from '@/types/compliance-handoff.types';
 import { ComplianceDrawerButton } from '../compliance-drawer/compliance-drawer-button';
 import { CONNECTION_HEALTH_SECTION, describeHealthLine, formatRunTime, healthDetailKey, healthInstructionsKey, senderWizardPath } from '../lib/connection-health-model';
+import { useIstatClaim } from '../lib/use-istat-claim';
 import { IstatCoverageNotice } from './istat-coverage-notice';
 
 /** The look of a state: an icon, a word and a colour together (the colour is never the only sign). The tones are the semantic tokens, with an AA fallback. */
@@ -112,6 +113,23 @@ function HealthRow({ topic, line, applies, propertyId, timeZone, wizardPath }: H
   );
 }
 
+/**
+ * The row of the ISTAT while the table does not say that the channel manager sends it for this property (the region is not covered, not verified, not read, or the sending does not go through the
+ * channel manager): no sender and no green «Attivo» that the state of the police connection would give it, only the pointer to the notice below. The state is `Unknown` for who looks for it.
+ */
+function IstatSeeNoticeRow() {
+  const { t } = useTranslation();
+
+  return (
+    <li className="space-y-2 py-4 first:pt-0 last:pb-0" data-testid="connection-health-Istat" data-state="Unknown">
+      <h3 className="break-words font-medium">{t('connectionHealth.topic.Istat')}</h3>
+      <p className="text-sm" data-testid="connection-health-Istat-detail">
+        {t('connectionHealth.istatSeeNotice')}
+      </p>
+    </li>
+  );
+}
+
 function CredentialsLine({ stored, usable, archivePath }: { stored: boolean; usable: boolean; archivePath: string }) {
   const { t } = useTranslation();
   // «Usable» is the API's word and it is never true in this release: nothing here says the receipts come by themselves unless it says so.
@@ -148,6 +166,8 @@ export function ConnectionHealthPanel({ propertyId, timeZone }: ConnectionHealth
   const { hasPermission } = useWorkspace();
   const canRead = hasPermission('short-rent', 'property.read');
   const health = useConnectionHealth(propertyId, canRead);
+  // The row of the ISTAT is computed from the state of the police connection alone (it says «Attivo» whatever the region): it may only say that the channel manager sends the ISTAT where the table does.
+  const istatClaim = useIstatClaim(propertyId, { channelManagerSends: true, enabled: canRead });
   if (!canRead) return null;
 
   const archivePath = `/app/short-rent/alloggiati/reports?${new URLSearchParams({ property: propertyId, tab: 'proofs' }).toString()}`;
@@ -179,7 +199,11 @@ export function ConnectionHealthPanel({ propertyId, timeZone }: ConnectionHealth
       <>
         <ul className="divide-y divide-border">
           <HealthRow topic="Alloggiati" line={data.alloggiati} applies={data.applies} propertyId={propertyId} timeZone={timeZone} wizardPath={wizardPath} />
-          <HealthRow topic="Istat" line={data.istat} applies={data.applies} propertyId={propertyId} timeZone={timeZone} wizardPath={wizardPath} />
+          {data.applies && istatClaim === 'seeNotice' ? (
+            <IstatSeeNoticeRow />
+          ) : (
+            <HealthRow topic="Istat" line={data.istat} applies={data.applies} propertyId={propertyId} timeZone={timeZone} wizardPath={wizardPath} />
+          )}
         </ul>
         {/* What the region table says of the ISTAT of this property (E21/F01/US02/T01): whether the channel manager sends it, the deadline, the one thing to do next and the upload of the proof of the month. Behind the flag of the activation. */}
         {data.applies ? <IstatCoverageNotice propertyId={propertyId} showProof /> : null}
