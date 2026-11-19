@@ -9,10 +9,11 @@ import { expectNoAxeViolations } from '@/test/axe';
 import { freezeClock, NOON_UTC } from '@/test/clock';
 import type { TouristTaxSummary } from '@/types';
 import { TouristTaxYearEndPage } from '../tourist-tax-year-end-page';
-import { summaryOf } from './tourist-tax-year-end-fixtures';
+import { summaryOf, yearEndJsonOf } from './tourist-tax-year-end-fixtures';
 
 // The page with the real hooks, the real API module and the real download code: only the HTTP client, the permissions, the frame of the app and the saving of a file are replaced. What is under test is what the page
-// shows (the years, the figures of the server in the currency of the answer, what the caller is told about the reasons of the exemptions) and what it asks the server for.
+// shows (the years, the figures of the server in the currency of the answer, what the caller is told about the reasons of the exemptions) and what it asks the server for. The three results on screen have their own tests
+// (`tourist-tax-year-end-details.test.tsx`); here the server simply answers their JSON in order.
 const granted = vi.hoisted(() => new Set<string>());
 const saved = vi.hoisted(() => vi.fn());
 
@@ -37,14 +38,26 @@ const GUEST_READ = 'short-rent:guest.read';
 
 const file = (name: string) => ({ status: 200, data: new Blob(['a;b'], { type: 'text/csv' }), headers: { 'content-disposition': `attachment; filename="${name}"` } });
 
-/** The answers of a server that is in order: the summary of the year that was asked for, and a file for each export. */
-function serverInOrder(summary: (year: number) => TouristTaxSummary = summaryOf) {
-  get.mockImplementation(async (path: string, config?: { params?: Record<string, string> }) => {
-    if (path === SUMMARY_PATH) return { status: 200, data: summary(Number(config?.params?.from.slice(0, 4))), headers: {} };
-    if (path.startsWith('/tourist-tax/year-end/')) return file(`${path.split('/').slice(-1)[0]}.csv`);
-    throw new Error(`unexpected read: ${path}`);
-  });
+type Params = { params?: Record<string, string> };
+
+/** What a server that is in order answers to a read: the summary of the year that was asked for, the JSON of a year-end result (`format=json`), or a file for each export. */
+function answerOf(path: string, config?: Params, summary: (year: number) => TouristTaxSummary = summaryOf) {
+  if (path === SUMMARY_PATH) return { status: 200, data: summary(Number(config?.params?.from.slice(0, 4))), headers: {} };
+  if (path.startsWith('/tourist-tax/year-end/')) {
+    return config?.params?.format === 'json' ? { status: 200, data: yearEndJsonOf(path, config.params), headers: {} } : file(`${path.split('/').slice(-1)[0]}.csv`);
+  }
+  throw new Error(`unexpected read: ${path}`);
 }
+
+function serverInOrder(summary: (year: number) => TouristTaxSummary = summaryOf) {
+  get.mockImplementation(async (path: string, config?: Params) => answerOf(path, config, summary));
+}
+
+/** The reads made so far as the address says them (`path?query`), in alphabetical order: the page asks several at once, and the order they leave in is not what is under test. */
+const readsMade = () => get.mock.calls.map(([path, config]) => `${path}?${new URLSearchParams(config?.params as Record<string, string> | undefined).toString()}`).sort();
+
+/** The files asked for so far: every read that is neither the summary nor the JSON of a result. */
+const filesAsked = () => get.mock.calls.filter(([path, config]) => path !== SUMMARY_PATH && (config?.params as Record<string, string> | undefined)?.format !== 'json');
 
 function renderPage() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } } });
@@ -83,8 +96,16 @@ describe('the year of the page (a declaration is for one year, and the figures o
     expect(select).toHaveValue('2026');
 
     await screen.findByTestId('year-end-figures');
-    // The days of the whole year and nothing else in the address; no file is asked for until someone presses its button.
-    expect(get.mock.calls.map(([path, config]) => [path, config?.params])).toEqual([[SUMMARY_PATH, { from: '2026-01-01', to: '2026-12-31' }]]);
+    await screen.findByTestId('year-end-ticino-table');
+    // The days of the whole year and the JSON of the three results (the account by month, the cut it opens on): the year, the format and the cut, nothing else in an address.
+    expect(readsMade()).toEqual([
+      `${SUMMARY_PATH}?from=2026-01-01&to=2026-12-31`,
+      '/tourist-tax/year-end/2026/agent-account?by=month&format=json',
+      '/tourist-tax/year-end/2026/declaration?format=json',
+      '/tourist-tax/year-end/2026/ticino?format=json',
+    ]);
+    // No file is asked for until someone presses its button.
+    expect(filesAsked()).toEqual([]);
   });
 
   it('YearEndPage_WithTheFiguresAndTheThreeFiles_HasNoAccessibilityViolationAxeCanFind', async () => {
@@ -99,9 +120,9 @@ describe('the year of the page (a declaration is for one year, and the figures o
     await screen.findByTestId('year-end-figures');
 
     let answer!: (value: unknown) => void;
-    get.mockImplementation(async (path: string, config?: { params?: Record<string, string> }) => {
+    get.mockImplementation(async (path: string, config?: Params) => {
       if (path === SUMMARY_PATH && config?.params?.from === '2025-01-01') return new Promise((resolve) => (answer = resolve));
-      return { status: 200, data: summaryOf(2026), headers: {} };
+      return answerOf(path, config);
     });
     fireEvent.change(screen.getByTestId('year-end-year'), { target: { value: '2025' } });
 
@@ -111,7 +132,8 @@ describe('the year of the page (a declaration is for one year, and the figures o
 
     answer({ status: 200, data: summaryOf(2025, { currency: 'EUR' }), headers: {} });
     expect(await screen.findByTestId('year-end-figures')).toBeInTheDocument();
-    expect(get).toHaveBeenLastCalledWith(SUMMARY_PATH, expect.objectContaining({ params: { from: '2025-01-01', to: '2025-12-31' } }));
+    // The whole of the year that was chosen, and the three results of that year too.
+    expect(readsMade()).toEqual(expect.arrayContaining([`${SUMMARY_PATH}?from=2025-01-01&to=2025-12-31`, '/tourist-tax/year-end/2025/declaration?format=json', '/tourist-tax/year-end/2025/ticino?format=json']));
   });
 });
 
@@ -203,8 +225,10 @@ describe('the reasons of the exemptions (privacy rule, art. 9 GDPR: only who hol
   it('YearEndDeclaration_TheFileGoesToTheDiskAsItCame_ThePageNeverOpensItToReadOrRework', async () => {
     const blob = new Blob(['comune;esenti\nMilano;1'], { type: 'text/csv' });
     const reads = (['text', 'arrayBuffer', 'slice'] as const).map((method) => vi.spyOn(blob, method));
-    get.mockImplementation(async (path: string) =>
-      path === SUMMARY_PATH ? { status: 200, data: summaryOf(2026), headers: {} } : { status: 200, data: blob, headers: { 'content-disposition': 'attachment; filename="dichiarazione.csv"' } },
+    get.mockImplementation(async (path: string, config?: Params) =>
+      path === SUMMARY_PATH || config?.params?.format === 'json'
+        ? answerOf(path, config)
+        : { status: 200, data: blob, headers: { 'content-disposition': 'attachment; filename="dichiarazione.csv"' } },
     );
     renderPage();
 
@@ -226,7 +250,7 @@ describe('the files of the year (one at a time, each in the format and for the y
     await makeFile('year-end-agent-account-xlsx', 3);
     await makeFile('year-end-ticino-csv', 4);
 
-    const asked = get.mock.calls.filter(([path]) => path !== SUMMARY_PATH).map(([path, config]) => [path, config?.params]);
+    const asked = filesAsked().map(([path, config]) => [path, config?.params]);
     expect(asked).toEqual([
       ['/tourist-tax/year-end/2026/declaration', { format: 'xlsx' }],
       ['/tourist-tax/year-end/2026/agent-account', { by: 'month', format: 'csv' }],
@@ -240,7 +264,10 @@ describe('the files of the year (one at a time, each in the format and for the y
 
   it('YearEndFiles_ADoubleClickAsksOnce_AndWhileOneIsOnItsWayNoOtherFileCanBeAsked', async () => {
     let finish!: (value: ReturnType<typeof file>) => void;
-    get.mockImplementation(async (path: string) => (path === SUMMARY_PATH ? { status: 200, data: summaryOf(2026), headers: {} } : new Promise((done) => (finish = done))));
+    // Only the files wait: the figures on screen are answered at once.
+    get.mockImplementation(async (path: string, config?: Params) =>
+      path === SUMMARY_PATH || config?.params?.format === 'json' ? answerOf(path, config) : new Promise((done) => (finish = done)),
+    );
     renderPage();
     await waitFor(() => expect(screen.getByTestId('year-end-ticino-csv')).toBeEnabled());
 
@@ -250,7 +277,7 @@ describe('the files of the year (one at a time, each in the format and for the y
 
     await waitFor(() => expect(screen.getByTestId('year-end-ticino-csv')).toBeDisabled());
     expect(screen.getByTestId('year-end-agent-account-xlsx')).toBeDisabled();
-    await waitFor(() => expect(get.mock.calls.filter(([path]) => path !== SUMMARY_PATH)).toHaveLength(1));
+    await waitFor(() => expect(filesAsked()).toHaveLength(1));
 
     finish(file('dichiarazione.csv'));
     await waitFor(() => expect(screen.getByTestId('year-end-ticino-csv')).toBeEnabled());

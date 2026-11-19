@@ -1,11 +1,13 @@
+import type { TFunction } from 'i18next';
 import type { YearEndAccountCut } from '@/api/tourist-tax-summary.api';
 import type { ReportFileFormat } from '@/api/report-files';
 import { formatMoney } from '@/features/fiscal/fiscal-format';
-import { todayInRome } from '@/lib/stay-dates';
+import { formatStayDate, todayInRome } from '@/lib/stay-dates';
+import type { TouristTaxAgentAccountRow } from '@/types';
 
 /**
- * Pure helpers of the page of the tourist tax at year end (E18/F01/US02/T03, NF-117): which years it offers, what a file is called when the page cannot read the name the server gives it, and how a figure of the year is
- * written. The files are the server's: nothing here reads one, adds up a figure or decides a reason of an exemption.
+ * Pure helpers of the page of the tourist tax at year end (E18/F01/US02/T03, NF-117): which years it offers, what a file is called when the page cannot read the name the server gives it, and how a figure, a period and a
+ * reason of the year are written. The files and the figures are the server's: nothing here reads a file, adds up a figure or decides a reason of an exemption.
  */
 
 /** The years the page offers: the current one and the three before it. */
@@ -55,12 +57,83 @@ export function hasYearEndCurrency(currency: string | null | undefined): currenc
 }
 
 /**
- * A figure of the year from the cents the server sends, in the currency the answer itself names, never in an assumed one. An answer that names none is written as the figure alone, two decimals and no symbol, and the page
- * says so in words (`hasYearEndCurrency`).
+ * An amount of the year as the server sends it (a number to the cent), in the currency the answer itself names, never in an assumed one: the euro of the Italian tax, the franc of a house in Switzerland. An answer that names
+ * none is written as the figure alone, two decimals and no symbol, and the page says so in words (`hasYearEndCurrency`).
  */
-export function yearEndMoney(cents: number, currency: string | null | undefined, locale: string): string {
-  const amount = cents / 100;
+export function yearEndAmount(amount: number, currency: string | null | undefined, locale: string): string {
   return hasYearEndCurrency(currency)
     ? formatMoney(amount, locale, currency.trim().toUpperCase())
     : new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
+}
+
+/** A figure of the year from the cents the server sends (`*Cents`, exact), written as `yearEndAmount` writes an amount. */
+export function yearEndMoney(cents: number, currency: string | null | undefined, locale: string): string {
+  return yearEndAmount(cents / 100, currency, locale);
+}
+
+interface AccountGroup {
+  comune: string;
+  rows: TouristTaxAgentAccountRow[];
+}
+
+/**
+ * The rows of the account of the agent comune by comune, in the order the server gives them (each comune with its periods in order and, last, the line of the year): the page puts the rows that follow one another under
+ * their comune, and sorts, drops and adds up nothing.
+ */
+export function accountGroups(rows: readonly TouristTaxAgentAccountRow[]): AccountGroup[] {
+  const groups: AccountGroup[] = [];
+  for (const row of rows) {
+    const last = groups[groups.length - 1];
+    if (last && last.comune === row.comune) last.rows.push(row);
+    else groups.push({ comune: row.comune, rows: [row] });
+  }
+  return groups;
+}
+
+const MONTH_LABEL = /^\d{4}-\d{2}$/;
+const QUARTER_LABEL = /^\d{4}-Q([1-4])$/;
+
+/**
+ * How a period of the account of the agent is written for a person: the line of the year, a month by its name («marzo 2026»), a quarter by its number («1º trimestre 2026»). A label the page does not know is written as the
+ * server wrote it (`2026-03`, `2026-Q1`), never guessed.
+ */
+export function accountPeriodLabel(row: Pick<TouristTaxAgentAccountRow, 'period' | 'from' | 'isYear'>, locale: string, t: TFunction): string {
+  if (row.isYear) return t('reports.touristTax.yearEnd.account.period.year', { year: row.from.slice(0, 4) });
+  if (MONTH_LABEL.test(row.period)) return formatStayDate(row.from, locale, { month: 'long', year: 'numeric' }) || row.period;
+  const quarter = QUARTER_LABEL.exec(row.period);
+  return quarter ? t('reports.touristTax.yearEnd.account.period.quarter', { quarter: quarter[1], year: row.period.slice(0, 4) }) : row.period;
+}
+
+/**
+ * The words of the reasons the server names for an exempt guest: the catalogue the host chooses from (the words of the check-in), the age, the reason that went with the data of the guest and the single row that stands for every
+ * reason a caller may not read (art. 9 GDPR). It is a table of words and never a rule: the reasons are the server's, and a reason the page has no words for is written as the server wrote it.
+ */
+const EXEMPTION_REASON_KEYS: Readonly<Record<string, string>> = {
+  resident: 'touristTax.exemption.resident',
+  health_care: 'touristTax.exemption.health_care',
+  disability_companion: 'touristTax.exemption.disability_companion',
+  public_service: 'touristTax.exemption.public_service',
+  host_family: 'touristTax.exemption.host_family',
+  other: 'touristTax.exemption.other',
+  minor_age: 'reports.touristTax.yearEnd.declaration.exemptionReason.minor_age',
+  erased: 'reports.touristTax.yearEnd.declaration.exemptionReason.erased',
+  restricted: 'reports.touristTax.yearEnd.declaration.exemptionReason.restricted',
+};
+
+/** Why a stay has no amount, in the words of the codes of the declaration: written as the server wrote it when the page has no words for it. */
+const STAY_REASON_KEYS: Readonly<Record<string, string>> = {
+  exempt: 'reports.touristTax.yearEnd.declaration.stayReason.exempt',
+  collected_by_channel: 'reports.touristTax.yearEnd.declaration.stayReason.collected_by_channel',
+  not_calculated: 'reports.touristTax.yearEnd.declaration.stayReason.not_calculated',
+  no_tax_due: 'reports.touristTax.yearEnd.declaration.stayReason.no_tax_due',
+};
+
+/** The reason of an exemption the server gave, in words; `restricted` is the row the server gives to a caller who may not read the reasons. */
+export function exemptionReasonLabel(reason: string, t: TFunction): string {
+  return Object.hasOwn(EXEMPTION_REASON_KEYS, reason) ? t(EXEMPTION_REASON_KEYS[reason]) : reason;
+}
+
+/** The reason a stay has no amount, in words. */
+export function stayReasonLabel(reason: string, t: TFunction): string {
+  return Object.hasOwn(STAY_REASON_KEYS, reason) ? t(STAY_REASON_KEYS[reason]) : reason;
 }

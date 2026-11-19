@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { UseQueryResult } from '@tanstack/react-query';
+import type { YearEndAccountCut } from '@/api/tourist-tax-summary.api';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { StaleReadNotice } from '@/components/finance/stale-read-notice';
@@ -14,6 +15,7 @@ import { useWorkspace } from '@/hooks/use-workspace';
 import { getHttpStatus } from '@/lib/api-errors';
 import { useTouristTaxYearSummary } from '@/queries/use-tourist-tax-year-end';
 import type { TouristTaxSummary } from '@/types';
+import { YearEndDetails } from './year-end-details';
 import { YearEndFiles } from './year-end-files';
 import { hasYearEndCurrency, yearEndMoney, yearEndYears } from './tourist-tax-year-end-model';
 
@@ -130,17 +132,20 @@ function FiguresSection({ year, query }: FiguresSectionProps) {
 }
 
 /**
- * The tourist tax at year end (E18/F01/US02/T03, NF-117): the year to hand over, the Italian figures it is made of, and the three files for the comuni and for Ticino. It is a page of the list of reports behind the flag
- * `taxReportingExports` (the backend answers 404 without it) and for who may read payments, as the API asks at its door; the files need the whole organization, and the server says so when they do not get it.
+ * The tourist tax at year end (E18/F01/US02/T03, NF-117): the year to hand over, the Italian figures it is made of, the three files for the comuni and for Ticino, and under them the same three results on screen. It is a page
+ * of the list of reports behind the flag `taxReportingExports` (the backend answers 404 without it) and for who may read payments, as the API asks at its door; the year-end results need the whole organization, and the
+ * server says so when they do not get it.
  *
- * The figures are the year's summary from `GET /api/tourist-tax/summary`; the files are the year-end exports, which the server gives only as CSV or Excel, so the page offers them and never opens them. Who may read the
- * reasons of the exemptions is the server's (`guest.read`): the page tells which of the two files the caller will get, and shows no reason at all.
+ * The figures at the top are the year's summary from `GET /api/tourist-tax/summary`. The files are the year-end exports as CSV or Excel, which the page offers and never opens. The sections under them are the data of those
+ * same files as JSON (`YearEndDetails`), shown as the server gives it: who may read the reasons of the exemptions is the server's (`guest.read`, art. 9 GDPR), and the page never works one out.
  */
 export function TouristTaxYearEndPage() {
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();
   const years = yearEndYears();
   const [year, setYear] = useState(years[0]);
+  // The account of the agent is cut by month or by quarter: one choice for the file and for the account on screen.
+  const [by, setBy] = useState<YearEndAccountCut>('month');
   const summary = useTouristTaxYearSummary(year);
 
   return (
@@ -168,7 +173,9 @@ export function TouristTaxYearEndPage() {
 
         <FiguresSection year={year} query={summary} />
 
-        <YearEndFiles year={year} canReadReasons={hasPermission('short-rent', 'guest.read')} />
+        <YearEndFiles year={year} by={by} onByChange={setBy} canReadReasons={hasPermission('short-rent', 'guest.read')} />
+
+        <YearEndDetails year={year} by={by} onByChange={setBy} />
       </div>
     </AppShell>
   );

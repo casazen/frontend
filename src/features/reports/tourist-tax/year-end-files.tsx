@@ -91,23 +91,25 @@ function FileRow({ id, title, description, control, pending, disabled, failure, 
 
 interface YearEndFilesProps {
   year: number;
+  /** How the account of the agent is cut: the choice is the page's, because the account on screen is cut the same way. */
+  by: YearEndAccountCut;
+  onByChange: (by: YearEndAccountCut) => void;
   /** The caller holds `guest.read`: the declaration then counts the exemptions by reason; without it the server gives the age and one restricted row (art. 9 GDPR). The server decides again. */
   canReadReasons: boolean;
 }
 
 /**
  * The three files of the tourist tax at year end that the agency hands over (E18/F01/US02/T03, NF-117): the declaration to the comuni, the account of the agent (by month or by quarter) and the yearly count of the nights
- * of Ticino, each as a CSV or an Excel file. CasaZen prepares the data and files nothing, and says so. There is no screen version of them at the server (it answers files only), so the page never reads one: the bytes go to
- * the disk as they came, the server neutralizes the cells that a spreadsheet would run as formulas, and the reasons of an exemption are the server's (they are in the file only for who holds `guest.read`: the page says
- * which of the two the caller gets, it never works a reason out).
+ * of Ticino, each as a CSV or an Excel file. CasaZen prepares the data and files nothing, and says so. The same data is on screen in the sections of the page (`YearEndDetails`), but a file is never opened: the bytes go
+ * to the disk as they came, the server neutralizes the cells that a spreadsheet would run as formulas, and the reasons of an exemption are the server's (they are in the file only for who holds `guest.read`: the page
+ * says which of the two the caller gets, it never works a reason out).
  *
  * While one is on its way no other is asked, a second click does nothing, and a failure is told under the file it belongs to in words (a caller who does not reach the whole organization, a year the server does not
  * take), never as a file that is empty. A failure belongs to the year and the cut it was asked for.
  */
-export function YearEndFiles({ year, canReadReasons }: YearEndFilesProps) {
+export function YearEndFiles({ year, by, onByChange, canReadReasons }: YearEndFilesProps) {
   const { t } = useTranslation();
   const download = useDownloadTouristTaxYearEndFile();
-  const [by, setBy] = useState<YearEndAccountCut>('month');
   const scope = `${year}-${by}`;
   const [asked, setFailure] = useState<{ row: YearEndRow; message: string; scope: string } | null>(null);
   const failure = asked?.scope === scope ? asked : null;
@@ -162,7 +164,7 @@ export function YearEndFiles({ year, canReadReasons }: YearEndFilesProps) {
           failure={failureOf('agentAccount')}
           control={
             <Field label={t('reports.touristTax.yearEnd.account.by.label')} className="w-full sm:w-56">
-              <Select value={by} onChange={(event) => setBy(event.target.value as YearEndAccountCut)} data-testid="year-end-agent-account-by">
+              <Select value={by} onChange={(event) => onByChange(event.target.value as YearEndAccountCut)} data-testid="year-end-agent-account-by">
                 {YEAR_END_ACCOUNT_CUTS.map((cut) => (
                   <option key={cut} value={cut}>
                     {t(`reports.touristTax.yearEnd.account.by.${cut}`)}
