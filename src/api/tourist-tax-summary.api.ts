@@ -2,11 +2,19 @@ import axios from '@/lib/axios';
 import { UnexpectedApiResponseError } from '@/lib/api-errors';
 import { withJsonErrorBody } from '@/lib/file-download';
 import type { RecordTouristTaxRemittanceInput, TouristTaxRemittance, TouristTaxSummary } from '@/types';
+import { acceptsRefusal } from './accept-refusal';
 import { ApiClient } from './client';
+import type { DownloadedFile } from './file.api';
 import type { ReportPeriod } from './reports.api';
+import type { ReportFileFormat } from './report-files';
+import { getTaxFile } from './tax-file';
 
 const SUMMARY_PATH = '/tourist-tax/summary';
 const REMITTANCES_PATH = '/tourist-tax/remittances';
+const YEAR_END_PATH = '/tourist-tax/year-end';
+
+/** How the account of the agent is cut (backend `by`): twelve months or four quarters. */
+export type YearEndAccountCut = 'month' | 'quarter';
 
 /** Explicit multipart: the client's default JSON content type would serialize the FormData as JSON. */
 const MULTIPART_UPLOAD = {
@@ -56,6 +64,32 @@ export const touristTaxSummaryApi = {
     const res = await axios.get<unknown>(SUMMARY_PATH, { params: { from: period.from, to: period.to } });
     return asSummary(res.data);
   },
+
+  /**
+   * The summary of a whole calendar year, the figures the year-end declaration is made of (the server builds both from the same read, and the page works out nothing). `null` when the server refuses it to this
+   * caller (403): the page tells it in words, because a 403 on a read would send the whole app to the page of no access.
+   */
+  getYear: async (year: number): Promise<TouristTaxSummary | null> => {
+    const res = await axios.get<unknown>(SUMMARY_PATH, { params: { from: `${year}-01-01`, to: `${year}-12-31` }, validateStatus: acceptsRefusal });
+    return res.status === 403 ? null : asSummary(res.data);
+  },
+
+  /**
+   * The annual declaration data of the year per comune as a CSV or an Excel file (E18/F01/US02/T03, behind `taxReportingExports`, `payment.read`, the whole organization: 403 otherwise): nights and guests, the stays
+   * with and without a tax, the exempt guests by reason (the reasons only for who holds `guest.read`: the others get the age and one restricted row), the tax due, the tax remitted and the difference. There is no JSON
+   * of it, and the page never reads the file: the server neutralizes the cells that a spreadsheet would run as formulas, the bytes go to the disk as they came.
+   */
+  downloadYearEndDeclaration: (year: number, format: ReportFileFormat): Promise<DownloadedFile> => getTaxFile(`${YEAR_END_PATH}/${year}/declaration`, { format }),
+
+  /** The account of the agent of the year as a CSV or an Excel file: for each comune the tax collected and remitted by month or by quarter, the line of the year and every payment. Same gate and reach as the declaration. */
+  downloadYearEndAgentAccount: (year: number, by: YearEndAccountCut, format: ReportFileFormat): Promise<DownloadedFile> =>
+    getTaxFile(`${YEAR_END_PATH}/${year}/agent-account`, { by, format }),
+
+  /**
+   * The yearly count of the nights of the properties in Ticino as a CSV or an Excel file, due by 5 January of the next year: stays and nights of the year, taxed and untaxed by the documents issued, and the francs of
+   * the documents. A property in Switzerland whose canton is not known is in it with a note in the last column. Same gate and reach as the declaration.
+   */
+  downloadYearEndTicinoCount: (year: number, format: ReportFileFormat): Promise<DownloadedFile> => getTaxFile(`${YEAR_END_PATH}/${year}/ticino`, { format }),
 
   /** The same summary as a CSV; a problem body (JSON Blob) is parsed so `getProblemMessage` can read it. */
   downloadCsv: async (period: ReportPeriod): Promise<Blob> => {

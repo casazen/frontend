@@ -23890,6 +23890,10 @@
         "description": "Municipality by municipality: what is owed, what you paid and the receipts. You also record payments here.",
         "name": "Tourist tax: owed and paid"
       },
+      "touristTaxYearEnd": {
+        "description": "The year-end files: the declaration to the municipalities, the agent's account and the count of nights in Ticino.",
+        "name": "Tourist tax: year end"
+      },
       "withholding": {
         "description": "The withholdings kept by Airbnb and Booking.com on your payouts.",
         "name": "Portal withholdings"
@@ -24103,7 +24107,60 @@
         "ToPay": "To pay"
       },
       "title": "Tourist tax: owed and paid",
-      "total": "Total"
+      "total": "Total",
+      "yearEnd": {
+        "account": {
+          "by": {
+            "label": "Breakdown",
+            "month": "Month by month",
+            "quarter": "Quarter by quarter"
+          },
+          "description": "For each municipality, the tax collected and the tax paid month by month or quarter by quarter, with the line of the year and the list of payments.",
+          "title": "Agent's account {{year}}"
+        },
+        "declaration": {
+          "description": "For each municipality: nights and guests, stays with and without tax, tax due, paid and the difference, with the payments.",
+          "reasons": "Exemptions are counted by reason: never a guest, never a name.",
+          "reasonsRestricted": "The detail of the exemption reasons is reserved to people who may read guest data: the file has the exemptions by age and a single row, “reason detail restricted”, with the same counts.",
+          "title": "Declaration to the municipalities {{year}}"
+        },
+        "description": "The data to hand to the municipalities and to the tourist board of Ticino. CasaZen prepares the files and sends nothing: you or your accountant file the declaration.",
+        "figures": {
+          "balance": "Balance",
+          "byComune": "Open the summary by municipality",
+          "currencyMissing": "The service does not state the currency of these amounts: they are written without a symbol.",
+          "empty": "No stay in Italy checks in during {{year}} and no payment is recorded: the declaration to the municipalities has no rows.",
+          "error": "The figures of the year could not be loaded.",
+          "label": "Figures of {{year}}",
+          "loading": "Loading the figures of the year…",
+          "nights": "Nights",
+          "notFound": "The figures of this year are not there.",
+          "owed": "Tax due",
+          "paid": "Paid",
+          "partial": "Your access covers only some of the properties: the year-end declaration is about the whole organization, so you do not see its figures here.",
+          "refused": "The figures of the year are not available for your access.",
+          "title": "Italy: {{year}} at a glance"
+        },
+        "files": {
+          "failed": "The file could not be prepared. Try again.",
+          "format": {
+            "csv": "Download CSV",
+            "xlsx": "Download Excel"
+          },
+          "formatFor": "{{format}}: {{title}}",
+          "noAccess": "You cannot download this file: it takes the permission on payments and access to all the properties of the organization.",
+          "note": "CasaZen prepares the data and sends nothing: whoever has to, you or your accountant, fills in and hands over the forms.",
+          "title": "Files to hand over"
+        },
+        "ticino": {
+          "cantonUnknown": "A property in Switzerland whose canton is not known (the Swiss municipality is missing or not recognized) is in the count with a note in the last column, because it may be in Ticino. Complete the property's data and download the file again.",
+          "description": "For each property in Ticino: the stays and nights of the year, with and without tourist tax according to the documents issued, and the amounts in francs. Due to the tourist board by 5 January {{deadlineYear}}.",
+          "openProperties": "Open the properties",
+          "title": "Count of nights in Ticino {{year}}"
+        },
+        "title": "Tourist tax: year end",
+        "year": "Year"
+      }
     },
     "type": {
       "financial": "Financial",
