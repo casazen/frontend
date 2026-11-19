@@ -795,6 +795,10 @@
           "title": "Cleaning to arrange",
           "why": "The stay is over and no cleaning was asked for: declare the property ready or request a cleaning before the next arrival."
         },
+        "CleaningVatToState": {
+          "title": "Cleaning recharge with no VAT stated",
+          "why": "The cleaning you recharge to the owner has no VAT stated: state it, with the amount if that is missing, before you close the statement."
+        },
         "CompanyTenantDecision": {
           "title": "Company tenant to decide",
           "why": "The tenant is a company and the property belongs to a private owner: decide whether the stay stays a short let, with the withholding, or not."
