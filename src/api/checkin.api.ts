@@ -149,9 +149,12 @@ export const publicCheckinApi = {
  * The QR code of the door of a property, for the host (E22/F01/US02/T01): it leads the guest who arrives to `/checkin/porta/{doorToken}`. The token is made the first time it is asked and
  * is replaced by `rotate` («Rigenera»), after which the printed code stops working at once. `property.write` is needed (403 otherwise; 404 `property_not_found` for another org's property).
  * Behind the flag `checkInIdentityVerification` (404 while it is off). The answers hold the door token: private, never cached.
+ *
+ * The read keeps a 403 on its page (`localAuthRecovery`): the page tells that the permission is missing, as it does for the people the permission of the context already leaves out, instead of
+ * the app opening «no access» for a read of a property the person may see but not write (a collaborator «Solo alcuni» without it).
  */
 export const propertyDoorQrApi = {
-  get: (propertyId: string) => ApiClient.get<DoorQr>(`/properties/${encodeURIComponent(propertyId)}/door-qr`),
+  get: (propertyId: string) => ApiClient.get<DoorQr>(`/properties/${encodeURIComponent(propertyId)}/door-qr`, undefined, { localAuthRecovery: true }),
 
   rotate: (propertyId: string) => ApiClient.post<DoorQr>(`/properties/${encodeURIComponent(propertyId)}/door-qr/rotate`),
 };
