@@ -9341,7 +9341,8 @@
         "none": "The document has no lines.",
         "quantity": "Quantity",
         "rate": "VAT",
-        "title": "Lines"
+        "title": "Lines",
+        "toCollectAtProperty": "Payable at the property"
       },
       "lineType": {
         "Accommodation": "Stay",
@@ -9356,10 +9357,12 @@
       "loadError": "We cannot load the document.",
       "loading": "Loading the document…",
       "payment": {
+        "noCurrency": "The currency is not stated in the document: the amounts are shown without a symbol.",
         "paid": "Paid",
         "paidPortal": "Paid through the portal",
         "title": "Payment",
         "toCollect": "To collect",
+        "toCollectAtProperty": "Tourist tax payable at the property",
         "unrecognized": "Collection: {{code}}"
       },
       "rate": {

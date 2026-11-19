@@ -626,12 +626,17 @@ export function vatSummaryOf(detail: Pick<FiscalDocumentDetail, 'lines' | 'taxab
   return rows.map((row) => ({ ...row, taxable: row.taxable / 100, vat: row.vat / 100 }));
 }
 
+/** Whether a document has a line about the money at all: only an issued invoice or receipt does (a draft, a dropped draft, a credit note and a proforma have none). */
+function hasCollectionLine(document: Pick<FiscalDocumentDetail, 'kind' | 'status'>): boolean {
+  return document.status === 'Issued' && document.kind !== 'CreditNote' && document.kind !== 'Proforma';
+}
+
 /**
  * How a document stands on the money, in words, for the detail: «Pagato tramite il portale» when the portal collected it (the server says `Portal` as the channel), «Pagato», «Da incassare», and a state
  * nobody knows as it came. `null` when nothing is claimed: the server does not say, or the document has no collection (a draft, a credit note, a proforma).
  */
 export function paymentWordsOf(document: Pick<FiscalDocumentDetail, 'kind' | 'status' | 'paymentState' | 'paymentChannel'>): DocumentState | null {
-  if (document.status !== 'Issued' || document.kind === 'CreditNote' || document.kind === 'Proforma') return null;
+  if (!hasCollectionLine(document)) return null;
   switch (document.paymentState) {
     case 'Unknown':
       return null;
@@ -642,6 +647,46 @@ export function paymentWordsOf(document: Pick<FiscalDocumentDetail, 'kind' | 'st
     default:
       return { key: 'fiscalDocuments.detail.payment.unrecognized', tone: 'neutral', icon: 'circle-dashed', detail: document.paymentState };
   }
+}
+
+/** One of the two parts of a payment that is split in two: how it stands, in words with a tone and an icon, and its amount as the server wrote it (in the currency of the document). */
+export interface PaymentPart {
+  state: DocumentState;
+  amount: number;
+}
+
+/** The part of the payment that the portal collected, and the part (the tourist tax the portal left to the host) that is still to pay at the property. */
+export interface PaymentSplit {
+  /** `null` when nothing of the document was collected through the portal (it bills nothing but the tax): nothing is said of the portal then, as the PDF says nothing of it. */
+  portal: PaymentPart | null;
+  atProperty: PaymentPart;
+}
+
+const PORTAL_PART: DocumentState = { key: 'fiscalDocuments.detail.payment.paidPortal', tone: 'success', icon: 'check-circle' };
+const PROPERTY_PART: DocumentState = { key: 'fiscalDocuments.detail.payment.toCollectAtProperty', tone: 'warning', icon: 'clock' };
+
+/** The mark of the line of tourist tax that is paid at the property: «Da pagare in struttura», with a clock as the part of the payment has, so it is never told by color alone. */
+export const LINE_AT_PROPERTY_STATE: DocumentState = { key: 'fiscalDocuments.detail.lines.toCollectAtProperty', tone: 'warning', icon: 'clock' };
+
+/**
+ * The payment of a document in the two parts the server says for the guest document of a portal that left the tourist tax to the host (FIX/FE-PORTAL-TAX-SPLIT): what the portal collected and the tourist tax still
+ * to pay at the property, each with its words and its amount exactly as the server wrote it. Nothing is added, subtracted or rounded here, and nobody infers who collected what: the two parts do not always add up
+ * to the total (a part of the tax that the collection of the stay records as collected is on neither), and the server, which knows, is the only one that says it. They replace the single state of
+ * `paymentWordsOf` where that state would be drawn.
+ *
+ * `null` when the server says no such split (it leaves both amounts out of every other document: the document is then shown as it always was), and for a document that has no line about the money
+ * (a draft, a dropped draft, a credit note, a proforma). The split is made by the part still to pay at the property: with nothing to pay there the document is not split. The portal part is left out
+ * when it is not above zero: a document that bills nothing but the tax never says «paid through the portal» for nothing.
+ */
+export function paymentSplitOf(document: Pick<FiscalDocumentDetail, 'kind' | 'status' | 'amountPaidViaPortal' | 'amountToCollectAtProperty'>): PaymentSplit | null {
+  if (!hasCollectionLine(document)) return null;
+  const atProperty = document.amountToCollectAtProperty;
+  if (atProperty === undefined || !(atProperty > 0)) return null;
+  const portal = document.amountPaidViaPortal;
+  return {
+    portal: portal !== undefined && portal > 0 ? { state: PORTAL_PART, amount: portal } : null,
+    atProperty: { state: PROPERTY_PART, amount: atProperty },
+  };
 }
 
 // ---------------------------------------------------------------------------------------------------------------------------------

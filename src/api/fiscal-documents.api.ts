@@ -85,6 +85,9 @@ const textOf = (value: unknown): string | null => (typeof value === 'string' && 
 
 const isFiniteNumber = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
 
+/** An amount the API leaves out when it does not apply: missing, `null` or a number. */
+const isOptionalAmount = (value: unknown) => value === undefined || value === null || isFiniteNumber(value);
+
 /** A whole number the API leaves out when it has none: anything else is read as none (a member this client does not need must never fail the whole answer). */
 const integerOf = (value: unknown): number | null => (typeof value === 'number' && Number.isInteger(value) ? value : null);
 
@@ -172,7 +175,10 @@ function ensurePage(data: unknown): FiscalDocumentPage {
   return { items: items as FiscalDocumentEntry[], totalCount: page.totalCount, page: page.page, pageSize: page.pageSize };
 }
 
-/** A line of a document: the amounts are the ones stored (net of VAT), the type and the VAT of the line only when the server says them. */
+/**
+ * A line of a document: the amounts are the ones stored (net of VAT), the type and the VAT of the line only when the server says them. The mark of the line of tourist tax to pay at the property is
+ * kept only when the server says `true` (it leaves the member out of every other line): the line is never marked on any other ground.
+ */
 function lineOf(value: unknown): FiscalDocumentLine | null {
   if (
     !isRecord(value) ||
@@ -195,6 +201,7 @@ function lineOf(value: unknown): FiscalDocumentLine | null {
     vatNatureCode: textOf(value.vatNatureCode),
     lineType: textOf(value.lineType),
     vatAmount: isFiniteNumber(value.vatAmount) ? value.vatAmount : null,
+    ...(value.toCollectAtProperty === true ? { toCollectAtProperty: true } : {}),
   };
 }
 
@@ -209,7 +216,9 @@ function issuerOf(value: unknown): FiscalDocumentIssuer | null {
 
 /**
  * One document with its lines, reduced like the list: the recipient is kept by name only (its fiscal code, VAT number, address and PEC are in the answer and are not kept). A member that
- * is not one is a load error for the whole answer, never a line left out: a document that silently misses a line would show a total that does not add up.
+ * is not one is a load error for the whole answer, never a line left out: a document that silently misses a line would show a total that does not add up. That holds for the two amounts of
+ * the split of a portal document (`amountPaidViaPortal`, `amountToCollectAtProperty`) too: they are kept as the numbers the server wrote when it says them, and an answer whose amount is not a
+ * number is a load error, never a document shown as paid in full over a split that could not be read.
  */
 function detailOf(value: unknown): FiscalDocumentDetail | null {
   const entry = entryOf(value);
@@ -219,7 +228,9 @@ function detailOf(value: unknown): FiscalDocumentDetail | null {
     !isFiniteNumber(value.taxableBase) ||
     !isFiniteNumber(value.vatAmount) ||
     !isFiniteNumber(value.stampDuty) ||
-    !Array.isArray(value.lines)
+    !Array.isArray(value.lines) ||
+    !isOptionalAmount(value.amountPaidViaPortal) ||
+    !isOptionalAmount(value.amountToCollectAtProperty)
   ) {
     return null;
   }
@@ -233,6 +244,9 @@ function detailOf(value: unknown): FiscalDocumentDetail | null {
     lines: (lines as FiscalDocumentLine[]).sort((a, b) => a.lineNumber - b.lineNumber),
     paymentChannel: textOf(value.paymentChannel),
     issuer: issuerOf(value.issuer),
+    // What the portal collected and the tourist tax still to pay at the property: only when the server says them, as it wrote them (the client works nothing out, and an older server says none).
+    ...(isFiniteNumber(value.amountPaidViaPortal) ? { amountPaidViaPortal: value.amountPaidViaPortal } : {}),
+    ...(isFiniteNumber(value.amountToCollectAtProperty) ? { amountToCollectAtProperty: value.amountToCollectAtProperty } : {}),
   };
 }
 
