@@ -5,6 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { WizardSummary, type WizardSummaryItem } from '@/components/shared/wizard/wizard-summary';
+import { useIstatClaim } from '@/features/compliance/lib/use-istat-claim';
 import type { PropertySender } from '@/types';
 import {
   SENDER_STEP,
@@ -93,6 +94,8 @@ export function SenderSummaryStep({ read, canChangeAutoSend = false, busy = fals
   const onlyTheSetting = canChangeAutoSend && values.sender === 'ChannelManager' && autoSendAsked(values, read) !== undefined;
   // The change is about one property: the summary says which (its name is read after the sender, so only for a property the caller reaches).
   const propertyName = useSenderPropertyName(read.propertyId, true);
+  // «Le invia lo stesso servizio» only where the table says the channel manager sends the ISTAT of the region: otherwise the notice of the first step is what to read.
+  const istatClaim = useIstatClaim(read.propertyId);
 
   let delegation: string | null = null;
   if (!automatic) delegation = t('compliance.sender.summary.delegation.notNeeded');
@@ -107,7 +110,7 @@ export function SenderSummaryStep({ read, canChangeAutoSend = false, busy = fals
       value: values.sender ? t(`compliance.sender.choice.options.${values.sender}.title`) : null,
       stepId: SENDER_STEP.choice,
     },
-    { id: 'istat', label: t('compliance.sender.summary.istat'), value: t('compliance.sender.summary.istatFollows') },
+    { id: 'istat', label: t('compliance.sender.summary.istat'), value: t(istatClaim === 'seeNotice' ? 'compliance.sender.summary.istatSeeNotice' : 'compliance.sender.summary.istatFollows') },
     { id: 'delegation', label: t('compliance.sender.summary.delegation.label'), value: delegation, stepId: automatic ? SENDER_STEP.choice : undefined },
   ];
 

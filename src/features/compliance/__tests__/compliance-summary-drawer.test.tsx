@@ -204,7 +204,7 @@ function renderWidget(connector = true) {
 }
 
 beforeEach(() => {
-  permissions.granted = ['property.read', 'property.write', 'booking.read', 'booking.write'];
+  permissions.granted = ['property.read', 'property.write', 'booking.read', 'booking.write', 'alloggiati.submit'];
   vi.mocked(fetchComplianceSummary).mockResolvedValue(summary);
   readBooking.mockResolvedValue({ id: RECEIPT_BOOKING_ID, propertyId: PROPERTY_ID } as Booking);
   startHandoff.mockResolvedValue(HANDOFF);

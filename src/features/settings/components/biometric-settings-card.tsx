@@ -249,7 +249,8 @@ export function BiometricSettingsCard() {
           <h2 id="biometric-settings-title" className="text-base font-semibold">
             {t('biometricSettings.title')}
           </h2>
-          {settings.data?.provisional ? (
+          {/* A read that failed leaves the older answer in memory, and the body of the card says it cannot be read: the badge is part of what is not known then. */}
+          {!settings.isError && settings.data?.provisional ? (
             <Badge variant="warning" data-testid="biometric-provisional">
               {t('biometricSettings.provisional.badge')}
             </Badge>

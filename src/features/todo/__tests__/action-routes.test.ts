@@ -14,9 +14,6 @@ const NO_ID = '00000000-0000-0000-0000-000000000000';
 const DOCUMENT_ID = 'dddddddd-dddd-dddd-dddd-dddddddddddd';
 const OWNER_ID = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
 
-/** The areas whose pages the map opens: Affitti brevi, and the account for the agency's own work (the self-billed invoices, `ReviewSelfBilling`). */
-const CONTEXTS_OF_THE_PAGES: readonly AppContextKey[] = ['short-rent', 'account'];
-
 /** Every `ActivityAction` of ADR-026-R6: the map has an entry for each (the later epics append theirs). */
 const R6_ACTIONS = [
   'ReviewBooking',
@@ -33,6 +30,9 @@ const R6_ACTIONS = [
 ] as const;
 
 type R6Action = (typeof R6_ACTIONS)[number];
+
+/** The actions whose page is not in Affitti brevi but in the Amministrazione (the area `account`): the statement of an owner, and the agency's own work (the self-billed invoices, `ReviewSelfBilling`). */
+const ACTIONS_OF_THE_ACCOUNT_AREA: readonly string[] = ['ReviewOwnerStatement', 'ReviewSelfBilling'];
 
 /** An item as the API sends it: the entity it is about, its property when it has one. */
 function itemFor(action: string, overrides: Partial<{ entityType: string; entityId: string; propertyId: string | null }> = {}) {
@@ -80,17 +80,21 @@ describe('ACTION_ROUTE_MAP (ADR-026-R6)', () => {
     }
   });
 
-  it.each(Object.entries(ACTION_ROUTE_MAP))('actionRouteMap_%s_PagesAreRoutesOfTheManifestInShortRentOrTheAccount', (_action, target) => {
-    type RouteOfEntry = { path: string; target?: string; entityType?: string; tab?: string; propertyParam?: string };
+  it.each(Object.entries(ACTION_ROUTE_MAP))('actionRouteMap_%s_PagesAreRoutesOfTheManifestOfTheirArea', (action, target) => {
+    type RouteOfEntry = { path: string; target?: string; entityType?: string; tab?: string; propertyParam?: string; idParam?: string };
     const targetOfEntry = target as { route: RouteOfEntry; fallback?: RouteOfEntry | RouteOfEntry[] };
     const fallbacks = targetOfEntry.fallback === undefined ? [] : Array.isArray(targetOfEntry.fallback) ? targetOfEntry.fallback : [targetOfEntry.fallback];
+    // The pages of the host are in Affitti brevi; the statement of an owner is a page of the Amministrazione (the area `account`), and so are the actions that lead there.
+    const area = ACTIONS_OF_THE_ACCOUNT_AREA.includes(action) ? 'account' : 'short-rent';
     for (const candidate of [targetOfEntry.route, ...fallbacks]) {
       expect(
-        ROUTE_MANIFEST.some((entry) => entry.path === candidate.path && CONTEXTS_OF_THE_PAGES.includes(entry.context)),
-        `${candidate.path} is not a route of the ROUTE_MANIFEST`,
+        ROUTE_MANIFEST.some((entry) => entry.path === candidate.path && entry.context === area),
+        `${candidate.path} is not a route of the ROUTE_MANIFEST in ${area}`,
       ).toBe(true);
-      // A page with `:id` (or the `:threadKey` of a conversation) says whose id fills it, and a page without it does not ask for one (but for the property in its address).
-      expect(candidate.path.includes(':id') || candidate.path.includes(':threadKey'), candidate.path).toBe(candidate.target !== undefined);
+      // A page with `:id` (or the `:threadKey` of a conversation, or the `:versionId` of a statement) says whose id fills it, and a page without it does not ask for one (but for the property in its address).
+      expect(/:[A-Za-z]+/.test(candidate.path), candidate.path).toBe(candidate.target !== undefined);
+      // A page that does not call its parameter `id` says which one the id fills, and the name is one of the page.
+      if (candidate.idParam !== undefined) expect(candidate.path, candidate.path).toContain(`:${candidate.idParam}`);
       if (candidate.propertyParam !== undefined) expect(candidate.target, candidate.path).toBeUndefined();
       // A page filled with the id of the entity says which kind of entity that is: the id of anything else is not a booking's. A conversation also says its kind.
       expect(candidate.entityType !== undefined, candidate.path).toBe(candidate.target === 'entity' || candidate.target === 'thread');
@@ -434,7 +438,51 @@ describe('ACTION_ROUTE_MAP: the self-billed invoices (TD17)', () => {
   });
 });
 
-// Every `ActivityAction` of the backend (`Casazen.Core/Entities/Enums/ActivityAction.cs`, the 24 values this version of the app knows): the map has an entry for each, or the action is
+// E13/F01/US02/T02: the owner could not be told by e-mail that a statement was published (`ActivityAction` 50, `ReviewOwnerStatement`, type `OwnerStatementNoticeFailed`). The item is about the version of the
+// statement and «Fallo ora» opens that statement in the Amministrazione. The page is the one of the organization administrator (`orgBillingAdmin`): the test of a person is the one of the workspace, made from the
+// memberships they hold, so a role that is not the administrator's is never sent to a page that would tell it to ask one.
+describe('ACTION_ROUTE_MAP: the owner who could not be told that a statement was published', () => {
+  const VERSION_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+  const item = { action: 'ReviewOwnerStatement', activityType: 'OwnerStatementNoticeFailed', entityType: 'OwnerStatementVersion', entityId: VERSION_ID, propertyId: null as string | null };
+  const statement = `/app/account/owner-close/versions/${VERSION_ID}`;
+
+  /** What the workspace answers (`hasPermission` of `WorkspaceProvider`) for the memberships a person holds: the pseudo-permission of the administrator comes from the roles, any other from the context. */
+  const workspaceOf =
+    (contexts: ContextBootstrapDto[]) =>
+    (contextKey: AppContextKey, permission: string): boolean => {
+      const context = contexts.find((candidate) => candidate.contextKey === contextKey);
+      if (!context) return false;
+      if (!permission) return true;
+      if (permission === ORG_BILLING_ADMIN_PERMISSION) return isOrgBillingAdmin(contexts);
+      return context.permissions.includes(permission);
+    };
+  const HOST_PERMISSIONS = ['booking.read', 'property.read', 'property.write', 'payment.read'];
+
+  it('todoActionRoute_ReviewOwnerStatement_OpensTheStatementOfTheVersionTheItemIsAbout', () => {
+    expect(todoActionRoute(item)).toBe(statement);
+  });
+
+  it.each(['org_owner', 'org_admin'])('todoActionRoute_ReviewOwnerStatement_TheAdministrator_%s_IsSentToTheStatement', (roleKey) => {
+    expect(todoActionRoute(item, workspaceOf([contextOf('account', roleKey), contextOf('short-rent', 'property_manager', HOST_PERMISSIONS)]))).toBe(statement);
+  });
+
+  // A permission rule: the statement is the administrator's page. A role that holds every permission of the host and is not the administrator gets no button (and no other page in its place).
+  it.each([
+    ['a property manager with every permission of the host', [contextOf('short-rent', 'property_manager', HOST_PERMISSIONS)]],
+    ['a member of the account that is not its administrator', [contextOf('account', 'org_member'), contextOf('short-rent', 'property_manager', HOST_PERMISSIONS)]],
+    ['a person with no membership', []],
+  ])('todoActionRoute_ReviewOwnerStatement_%s_IsOfferedNoButton', (_who, contexts) => {
+    expect(todoActionRoute(item, workspaceOf(contexts))).toBeNull();
+  });
+
+  it('todoActionRoute_ReviewOwnerStatement_AnItemThatIsNotAboutAStatement_NeverNamesOne', () => {
+    // The id of a booking is not the id of a version of a statement, and an item with no id has no address.
+    expect(todoActionRoute({ ...item, entityType: 'Booking' })).toBeNull();
+    expect(todoActionRoute({ ...item, entityId: NO_ID })).toBeNull();
+  });
+});
+
+// Every `ActivityAction` of the backend (`Casazen.Core/Entities/Enums/ActivityAction.cs`, today 25 values): the map has an entry for each, or the action is
 // in the list of those whose page does not exist yet. An action that is in neither is a "To do" with no button that nobody noticed; the task that builds
 // the page adds the entry and takes the action out of the list (the test below fails until it does).
 const BACKEND_ACTIONS = [
@@ -461,6 +509,7 @@ const BACKEND_ACTIONS = [
   'ReviewSelfBilling',
   'ReviewOwnerStay',
   'RenewOwnerDocument',
+  'ReviewOwnerStatement',
   'CopyCheckInLink',
 ] as const;
 

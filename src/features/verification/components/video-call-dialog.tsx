@@ -116,10 +116,18 @@ interface VideoCallDialogProps extends Omit<VideoCallFormProps, 'onCancel'> {
 /**
  * The dialog of the video call (E22/F02/US01/T02): the operator pastes the address of a meeting they made with the tool they use, and CasaZen sends it to the guest by e-mail. Then the verification
  * waits as it did: the decision after the call is the usual approval or rejection, with its note. The address is not kept here once it has gone, and not shown again.
+ *
+ * While the e-mail is being queued the dialog cannot be closed by any way a dialog has (the cross, the Escape key, a click outside, the grip of the sheet on a phone, which all ask `onOpenChange`
+ * with `false`): what the server answers, a refusal included, is told in this dialog, and a dialog that had gone would take the answer with it.
  */
 export function VideoCallDialog({ open, onOpenChange, guestName, pending, onSend }: VideoCallDialogProps) {
+  const requestOpen = (next: boolean) => {
+    if (!next && pending) return;
+    onOpenChange(next);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={requestOpen}>
       <DialogContent>
         <VideoCallForm
           guestName={guestName}

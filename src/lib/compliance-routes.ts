@@ -37,7 +37,7 @@ export interface ComplianceActionTarget {
   /** Read-only screen for a user without the permissions of `route` (the guard would send them to the dashboard). */
   fallback?: ComplianceActionRoute;
   /** The permission that does what the action asks: whoever lacks it is led to the page ("Apri"), not told to do it. */
-  write: 'property.write' | 'booking.write' | 'payment.write';
+  write: 'property.write' | 'booking.write' | 'payment.write' | 'alloggiati.submit';
 }
 
 /**
@@ -118,11 +118,12 @@ export const COMPLIANCE_ACTION_TARGETS: Record<ComplianceCockpitAction, Complian
     route: { path: '/app/short-rent/bookings/:id', tab: 'alloggiati' },
     write: 'booking.write',
   },
-  // The proof of an ISTAT period and the tax of a month: the archive of the proofs, opened on the kind, the property and the month.
+  // The proof of an ISTAT period and the tax of a month: the archive of the proofs, opened on the kind, the property and the month. The archive lets only who may submit the Alloggiati upload a proof
+  // (`alloggiati.submit`, the page itself asks it): whoever may only read the bookings is led to the page and told "Apri", never asked to upload what the page will not let them.
   UploadIstatProof: {
     target: 'property',
     route: { path: '/app/short-rent/alloggiati/reports', query: { kind: 'IstatProof', property: true, period: true } },
-    write: 'booking.write',
+    write: 'alloggiati.submit',
   },
   EnterMunicipalityTaxRate: {
     target: 'property',

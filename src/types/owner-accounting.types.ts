@@ -9,6 +9,8 @@
  * owner holds ids, amounts and codes only.
  */
 
+import type { OwnerPortalTouristTax } from './owner-portal-statements.types';
+
 /** What a line of the owner ledger records. A positive amount is owed to the owner, a negative one reduces it. */
 export type OwnerLedgerEntryType =
   | 'BookingRevenue'
@@ -147,10 +149,15 @@ export interface OwnerStatementVersion {
   createdAt: string;
 }
 
-/** A version with its lines (the drill-down to the sources). */
+/**
+ * A version with its lines (the drill-down to the sources) and its tourist tax box. `touristTax` is the box of the statement with its amounts: one row for each stay whose tax the agency
+ * collects, for information only and outside every total, the very rows the owner portal reads for the same version (one source builds both). Absent only on a server older than that box,
+ * where the page keeps the text of the box and says nothing of its amounts.
+ */
 export interface OwnerStatementVersionDetail {
   version: OwnerStatementVersion;
   entries: OwnerLedgerEntry[];
+  touristTax?: OwnerPortalTouristTax[];
 }
 
 /** The month of an owner: the close with its reconciliation or waiver, the retention and the legal hold. */
@@ -522,13 +529,39 @@ export interface OwnerAccountingPolicyCommand {
   parameters: OwnerAccountingRuleParameters;
 }
 
-/** The owner of a property in the registry of the agency (`GET api/owners`): only what the pages show. */
+/**
+ * The mandate of an owner in force today as the list of the owners carries it (`mandateInForce` of `GET api/owners`): what a row draws and nothing more. It is the mandate of the owner as
+ * a whole (a version with no ownership of its own) that covers today, the latest start when more do: a mandate of a single property and one that starts later are not in it, so a `null`
+ * does not say «no mandate» (the versions of the mandate, `mandateStateOn`, answer that).
+ */
+export interface OwnerMandateInForce {
+  id: string;
+  validFrom: string;
+  validTo: string | null;
+  commissionPercent: number;
+  commissionBase: CommissionBase;
+  commissionIncludesVat: boolean;
+}
+
+/**
+ * The owner of a property in the registry of the agency (`GET api/owners`): only what the pages show. Besides the person it carries what a row of «Proprietari» needs to be drawn without any other
+ * read (`propertyCount`, `entityKind`, `settlementCurrency`, `mandateInForce`): the server writes them all, `null` being its own «none». A member that is absent (a server older than that list) is not
+ * «none»: it was not told, and the row says nothing of it (for the mandate, the versions of the owner's mandate are read).
+ */
 export interface PropertyOwnerSummary {
   id: string;
   firstName: string;
   lastName: string;
   /** The IBAN as the registry answers it, already masked to its last four characters (`****3456`); `null` when the owner has none. Never the full account. */
   ibanMasked?: string | null;
+  /** The properties the owner holds today or will hold (an ownership not ended, on a property that still exists), each counted once. */
+  propertyCount?: number;
+  /** The kind of the fiscal profile in force today (the newest when none is in force, as the page of the owner reads it); `null` for an owner with no profile. */
+  entityKind?: OwnerEntityKind | null;
+  /** The settlement currency of that profile; `null` when it has none or the owner has no profile. */
+  settlementCurrency?: string | null;
+  /** The mandate of the owner in force today; `null` when the list has none to say (see {@link OwnerMandateInForce}: it does not mean «no mandate»). */
+  mandateInForce?: OwnerMandateInForce | null;
 }
 
 /** One missing or wrong fact of an owner or of a property: a code and the name of the field, never a value. */

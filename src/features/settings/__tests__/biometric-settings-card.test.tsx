@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, configure, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, configure, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
 import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios';
@@ -18,6 +18,7 @@ import { expectNoAxeViolations } from '@/test/axe';
 import type { BiometricSettings, BiometricsStatus } from '@/types/biometric-settings.types';
 import { BiometricSettingsCard } from '../components/biometric-settings-card';
 import { MODEL_REASON_CODES, MODEL_STATES, modelReasonKey, modelStateKey, validateBiometricForm } from '../lib/biometric-settings-model';
+import { BIOMETRIC_SETTINGS_QUERY_KEY } from '../use-biometric-settings';
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock('@/api/biometric-settings.api', () => ({
@@ -67,7 +68,7 @@ function renderCard({ flag = true, contexts = [contextOf('short-rent')] }: { fla
       </QueryClientProvider>
     </I18nextProvider>
   );
-  return render(wrap(<BiometricSettingsCard />));
+  return { ...render(wrap(<BiometricSettingsCard />)), client };
 }
 
 const field = (testId: string) => screen.getByTestId(testId) as HTMLInputElement;
@@ -193,6 +194,24 @@ describe('the card «Verifica dell\'identità» of the organization settings (E2
 
     fireEvent.click(within(screen.getByTestId('biometric-settings-error')).getByRole('button'));
     await loaded();
+  });
+
+  it('BiometricSettingsCard_AReadThatFailsAfterAGoodOne_IsAnErrorAndTheProvisionalLabelOfTheOldAnswerIsNotDrawn', async () => {
+    const { client } = renderCard();
+    await loaded();
+    // The first read said that the thresholds are provisional.
+    expect(screen.getByTestId('biometric-provisional')).toBeInTheDocument();
+
+    vi.mocked(biometricSettingsApi.get).mockRejectedValue(httpError(403));
+    await act(async () => {
+      await client.refetchQueries({ queryKey: BIOMETRIC_SETTINGS_QUERY_KEY });
+    });
+
+    // The query keeps the older answer in memory, but the card says it cannot be read: what the older answer said about the thresholds is not known any more, the label included.
+    expect(client.getQueryData(BIOMETRIC_SETTINGS_QUERY_KEY)).toBeDefined();
+    expect(await screen.findByTestId('biometric-settings-error')).toBeInTheDocument();
+    expect(screen.queryByTestId('biometric-settings-form')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('biometric-provisional')).not.toBeInTheDocument();
   });
 
   it('BiometricSettingsCard_NoRowOfItsOwn_SaysTheDefaultsAreInForce', async () => {

@@ -135,6 +135,8 @@ const BACKEND_TYPES = [
   'OwnerStayToReview',
   'OwnerStaySyncFailed',
   'OwnerDocumentExpiring',
+  // The owner could not be told by e-mail that a statement was published (E13/F01/US02/T02): the agency tells the owner by hand.
+  'OwnerStatementNoticeFailed',
   'RoutineTask',
   // The automatic cleaning at check-out (E24/F01/US01/T02): the dates of the stay changed after the supplier took the cleaning.
   'CleaningDateChanged',

@@ -705,6 +705,7 @@
       },
       "entity": {
         "Booking": "Booking",
+        "OwnerStatementVersion": "Owner statement",
         "Property": "Property"
       },
       "filter": {
@@ -842,6 +843,10 @@
         "OwnerDocumentExpiring": {
           "title": "Owner document expiring",
           "why": "A document shared with the owner (an insurance, a mandate) expires within 30 days or already has: upload the new one."
+        },
+        "OwnerStatementNoticeFailed": {
+          "title": "Owner to be told by hand",
+          "why": "We could not tell the owner by e-mail that the statement was published: open it and tell the owner yourself. The statement is published anyway."
         },
         "OwnerStaySyncFailed": {
           "title": "Owner stay block not accepted",
@@ -3710,7 +3715,8 @@
         "host": "I collect it",
         "intro": "For each portal you say who collects the tourist tax. If the portal collects it, the document carries no line for it. If you collect it, the line is there, with the rule of the canton.",
         "note": "Answer for every portal: we do not save a choice you have not made.",
-        "portal": "The portal collects it"
+        "portal": "The portal collects it",
+        "proposed": "For {{portals}} we have already chosen «{{choice}}»: the portal usually collects the tourist tax. Check it, and change it if that is not so for you."
       }
     },
     "vat": {
@@ -7015,6 +7021,7 @@
       },
       "choice": {
         "istat": "The same sender also handles the regional statistics (ISTAT), where required.",
+        "istatSeeNotice": "For the ISTAT, what the notice above says applies.",
         "legend": "Who sends the guests' data to the police?",
         "notAvailable": "Not available yet.",
         "now": "Now: {{sender}}",
@@ -7066,6 +7073,7 @@
           "lead": "Your channel manager confirms that it sends the data to the police.",
           "points": {
             "istat": "The same sender handles the regional statistics (ISTAT), where required.",
+            "istatSeeNotice": "For the ISTAT, see the notice about your region: the channel manager may not send it.",
             "send": "Every day your channel manager sends the guests' data to the police."
           },
           "title": "Automatic sending is active"
@@ -7231,6 +7239,7 @@
         },
         "istat": "ISTAT statistics",
         "istatFollows": "The same service sends them, where required",
+        "istatSeeNotice": "It depends on your region: see the ISTAT notice",
         "property": "Property",
         "switch": {
           "automaticToAutomatic": "The current automatic sending will be switched off: two automatic senders at once would send the data twice. If your channel manager sends today, switch its automatic sending off in its panel too. Until the state of the new sender is «Active» you keep sending it yourself.",
@@ -7964,6 +7973,7 @@
         "Unknown": "Check in the panel of your channel manager that the connection with the police is active and that the daily automatic submission is on, then come back here and check again."
       }
     },
+    "istatSeeNotice": "Whether the channel manager sends the ISTAT depends on your region: see the notice below.",
     "lastRun": "Last automatic submission: {{when}}",
     "loadError": "We couldn't read the state of the submission.",
     "loading": "Reading the state of the submission…",
@@ -10583,6 +10593,7 @@
     "action": {
       "newTab": "(opens in a new tab)",
       "panelStep": "Connect the ISTAT in the panel",
+      "panelStepInWizard": "The ISTAT is connected from the property panel, once the setup is done.",
       "portalGuide": "Open the portal of your region",
       "supportAdminOnly": "Only the administrator of the organization can ask support for help."
     },
@@ -10594,6 +10605,7 @@
     "detail": {
       "covered": "Your channel manager sends the ISTAT data of this region, once you have connected it in its panel.",
       "notCovered": "Your channel manager does not send the ISTAT data of this region: you send it yourself from the regional portal.",
+      "otherSender": "Right now the sending of this property is not done by the channel manager: the ISTAT of your region is communicated through its portal.",
       "toVerify": "We do not know yet whether your channel manager sends the ISTAT data of this region: until it is verified we do not take it for granted."
     },
     "loadError": "We cannot read whether your channel manager sends the ISTAT for your region: for now it is to be verified.",
@@ -10601,7 +10613,8 @@
     "portalMissing": "The address of the portal of your region is not stated yet.",
     "proof": {
       "action": "Upload the ISTAT proof of {{month}}",
-      "lead": "Each month the proof that the data was sent is kept."
+      "lead": "Each month the proof that the data was sent is kept.",
+      "open": "Open the proof archive for {{month}}"
     },
     "region": {
       "named": "Your region ({{region}}) uses {{system}}.",
@@ -10612,6 +10625,7 @@
     "title": {
       "covered": "ISTAT: your channel manager sends it",
       "notCovered": "ISTAT: your channel manager does not send it",
+      "otherSender": "ISTAT: for this property it does not go through the channel manager",
       "toVerify": "ISTAT: to be verified"
     },
     "unverified": "This data comes from our list and is not verified yet."
@@ -10734,9 +10748,14 @@
     "portal": "Portal",
     "save": "Save",
     "source": "Source",
+    "stale": {
+      "changed": "This row was changed by someone else after you opened it: close it and open it again to see the current values. Old values are not saved.",
+      "unreadable": "We cannot read the table again: values that may be old are not saved. Close this and try again in a moment."
+    },
     "summary": "To be verified: {{pending}} of {{total}}.",
     "title": "ISTAT regions",
     "toast": {
+      "rereadFailed": "We cannot read the current row: try again.",
       "saved": "{{region}}: row saved.",
       "saveFailed": "We could not save the row."
     }
@@ -18553,6 +18572,8 @@
       "focusBody": "Closing balance {{balance}}. Version cut on {{cutoff}}.",
       "focusTitle": "Version {{version}} · {{status}}",
       "formula": "Closing balance = opening balance {{opening}} + revenue {{revenue}} + commissions and costs {{costs}} + payments and withholdings {{paid}} + corrections {{corrections}} = {{closing}}.",
+      "immutableBody": "The recorded lines no longer add up to the totals saved in this version. So that you are never shown wrong figures we do not show it, nor its files: trying again will not help. Write to support with the month and the owner.",
+      "immutableTitle": "This statement cannot be shown",
       "kicker": "Statement of {{period}}",
       "loadError": "We cannot read the statement.",
       "loading": "Reading the statement…",
@@ -18875,6 +18896,18 @@
   },
   "ownerInvoice": {
     "currencyMissing": "For some invoice the server did not give the currency: the amounts are written without a symbol.",
+    "detail": {
+      "creditNote": "Credit note",
+      "description": "The lines of the invoice and its totals, as they are saved.",
+      "forbidden": "This invoice is not visible with your access: it is seen by the account owner and by the administrators of the organization, with access to every property.",
+      "forbiddenTitle": "Invoice not available to you",
+      "issuedOn": "Issued on {{date}}",
+      "notFound": "This invoice is no longer there",
+      "notFoundBody": "It does not exist, or it belongs to another organization. Close this and refresh the list.",
+      "open": "Open the lines",
+      "openLabel": "Open the lines and totals of: {{name}}",
+      "title": "Invoice to the owner"
+    },
     "issue": {
       "confirm": "Issue the invoice",
       "consequenceFinal": "Once issued, the invoice can no longer be changed.",
@@ -20262,16 +20295,17 @@
     "row": {
       "kindAndCurrency": "{{kind}} · currency {{currency}}",
       "kindNoCurrency": "{{kind}} · settlement currency missing",
-      "loading": "Reading the profile…",
       "mandateActive": "Commission {{percent}} {{vat}}, from {{from}}",
       "mandateError": "We cannot read the mandate.",
       "mandateLoading": "Reading the mandate…",
       "mandateMissing": "The mandate is missing",
       "mandateUpcoming": "Mandate from {{from}}: commission {{percent}}",
       "noProfile": "No fiscal profile",
+      "noProperties": "No properties",
       "open": "Financial data",
       "openLabel": "Open the financial data of {{owner}}",
-      "profileError": "We cannot read the fiscal profile."
+      "properties_one": "{{count}} property",
+      "properties_other": "{{count}} properties"
     },
     "title": "Owners"
   },
@@ -21383,6 +21417,7 @@
       "download": "Download PNG",
       "error": "Error",
       "errorDescription": "Property ID missing or invalid.",
+      "flagsUnreadable": "We cannot tell which QR code to print right now. Try again in a moment.",
       "hint": "Print or download this QR code and place it at the property entrance to facilitate guest check-in.",
       "instructions": "Scan this QR code to start your stay verification",
       "loading": "Generating QR code...",
@@ -31255,13 +31290,14 @@
     "loadErrorCurrency": "Could not load the payments in {{currency}}",
     "loading": "Loading wire transfers...",
     "noPayouts": "No payments to send to the bank",
-    "noPayoutsDescription": "Payments appear here once you confirm them in the month-end close of the owners.",
+    "noPayoutsDescription": "A payment appears here only once you have confirmed it in the month-end close of the owners, its statement has been published to the owner and its net amount is above zero.",
     "notCreated": "{{currency}} file not created",
     "notFound": "Payments not found",
     "notFoundPayout": "We cannot find one of the chosen payments: the list has been updated.",
     "openClose": "Go to the month-end close",
     "openOwner": "Open the financial details",
-    "payoutsHint": "The confirmed payments to the owners that are not in any file yet, for the net amount after the withholding. A payment goes into one file only: once you put it in a file, it leaves this list.",
+    "payoutsCapNote": "At most {{limit}} payments in {{currency}} are listed, the oldest ones: the others appear here once you put some of these in a file.",
+    "payoutsHint": "The confirmed payments to the owners that are not in any file yet, for the net amount after the withholding. Only the ones whose statement has already been published to the owner, and whose net amount is above zero, are listed. A payment goes into one file only: once you put it in a file, it leaves this list.",
     "refused": {
       "description": "The list covers the owners of the whole organization and the server only shows it with access to every property. If your access is limited to some properties, ask an administrator to open this page.",
       "title": "These payments are not available to your access"
