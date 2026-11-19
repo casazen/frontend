@@ -157,6 +157,15 @@ export interface FiscalDocumentChange {
   number: string | null;
 }
 
+/**
+ * What `POST api/fiscal/documents/{id}/send-email` answers when the e-mail with the link to the document is QUEUED for the guest of the booking: never that it was delivered (the queue delivers it, and
+ * retries). `linkExpiresAt` is the last instant (UTC, ISO 8601) the link in the e-mail opens. The answer holds no address and no token, and nothing else of it is kept.
+ */
+export interface FiscalDocumentEmailQueued {
+  documentId: string;
+  linkExpiresAt: string;
+}
+
 /** One document of a bulk issue: issued with its number, or not with the stable code of why (`errorCode`). */
 export interface FiscalDocumentBatchRow {
   id: string;

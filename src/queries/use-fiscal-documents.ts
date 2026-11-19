@@ -19,10 +19,11 @@ import {
   listDocuments,
   listDraftsForBatch,
   refreshDraft,
+  sendDocumentEmail,
   startDocumentCorrection,
   submitDocumentSdi,
 } from '@/api/fiscal-documents.api';
-import { BATCH_MAX, documentFileName, exportFileName, isAwaitingSdi, isPeriodDraft, type NumberedDocument } from '@/features/fiscal/documents/document-model';
+import { BATCH_MAX, documentFileName, emailLinkDayOf, exportFileName, isAwaitingSdi, isPeriodDraft, type NumberedDocument } from '@/features/fiscal/documents/document-model';
 import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
 import { useNow } from '@/hooks/use-now';
 import i18n from '@/i18n/config';
@@ -364,6 +365,32 @@ export function useDiscardFiscalDocument() {
     gcTime: 0,
     onSuccess: () => {
       toast.success(i18n.t('fiscalDocuments.discard.done'));
+    },
+    onSettled: () => afterWrite(queryClient),
+  });
+}
+
+/**
+ * E-mails an issued guest document to the guest of its booking (`POST .../send-email`, E12/F01/US02/T01). Every call sends one more e-mail to a real person, so it is never repeated by itself (the writes of the app
+ * never retry) and the buttons of the document wait for it (`FISCAL_DOCUMENT_MUTATION_KEY`). What it says on success is «in coda» with the last day the link opens: the e-mail is QUEUED, the queue delivers it, and the
+ * server never says it was delivered. A failure is told by the dialog the person pressed the button in, with the words of its code. Nothing is kept once nobody watches it (`gcTime: 0`), a failure is kept without its request
+ * (`withoutRequest`), and the documents are read again whatever the answer was.
+ */
+export function useSendFiscalDocumentEmail() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: FISCAL_DOCUMENT_MUTATION_KEY,
+    mutationFn: async ({ documentId }: { documentId: string }) => {
+      try {
+        return await sendDocumentEmail(documentId);
+      } catch (error) {
+        throw withoutRequest(error);
+      }
+    },
+    gcTime: 0,
+    onSuccess: (queued) => {
+      toast.success(i18n.t('fiscalDocuments.email.queued', { date: emailLinkDayOf(queued, i18n.language) }));
     },
     onSettled: () => afterWrite(queryClient),
   });
