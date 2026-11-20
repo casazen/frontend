@@ -63,6 +63,13 @@ export interface PublicCheckInGuestPrefill {
   residenceProvince?: string | null;
   residenceCountryCode?: string | null;
   residenceCountryName?: string | null;
+  /**
+   * The home of the guest (NF-132, E30/F01/US02): street and house number, postal code, town; null when not on file. Given back with the
+   * guest so that a page that sends the guests whole does not clear them: the server takes the list as the whole truth.
+   */
+  residenceStreet?: string | null;
+  residencePostalCode?: string | null;
+  residenceCityName?: string | null;
   /** Statistical fields (NF-40), codes of the closed lists, asked only where the region requires them. */
   tourismType?: string | null;
   travelWay?: string | null;
@@ -92,10 +99,17 @@ export interface PublicCheckInContextDto {
   /** Version of the optional marketing consent text; absent when the consent is not offered. */
   marketingConsentVersion?: string;
   /**
-   * The statistical fields the region requires (`TourismType`, `TravelWay`, `EducationLevel`): the page asks these and no other
-   * (NF-40, data minimization). Empty when the region requires none.
+   * The guest fields the regime of the property requires: the page asks these and no other (NF-40, data minimization), as names of the
+   * properties of a guest. The statistical fields the region requires (`TourismType`, `TravelWay`, `EducationLevel`; none when the region
+   * requires none) and, for a property in canton Ticino (NF-132), `DocumentType` and `DocumentNumber` (of every adult), `ResidenceStreet`,
+   * `ResidencePostalCode`, `ResidenceCityName` and `ResidenceCountryName` (the home and the state of residence: asked, optional).
    */
   requiredGuestFields?: string[];
+  /**
+   * The page asks the plate of the car, once for the stay and optional (NF-132): the property is in canton Ticino. Open session only; absent
+   * (false) everywhere else, and then nothing about a plate is shown or sent.
+   */
+  askVehiclePlate?: boolean;
   /** The language to open the page in (`it`, `en`, `de`, `fr`, `es`): the guest's earlier choice, else the browser's, else `it`. Open session only. */
   language?: string;
   /** The languages the guest can choose. Open session only. */
@@ -158,6 +172,14 @@ export interface StayGuestSubmit {
   residenceProvince?: string | null;
   residenceCountryName?: string | null;
   residenceCountryCode?: string | null;
+  /**
+   * The home of the guest (NF-132): street and house number, postal code, town. Present only where the regime asks them (`requiredGuestFields`)
+   * or, on the host's entries, where the host holds a value, so that a save never erases it: the server takes the list as the whole truth.
+   * `null` is an empty field the guest left blank. Absent on every Italian request.
+   */
+  residenceStreet?: string | null;
+  residencePostalCode?: string | null;
+  residenceCityName?: string | null;
   /** Statistical fields (NF-40): present only when the region requires them (absent otherwise, never sent empty). */
   tourismType?: string | null;
   travelWay?: string | null;
@@ -199,6 +221,11 @@ export interface PublicCheckInSubmitRequest {
    * block at all, and the check-in is never blocked by it.
    */
   invoice?: PublicCheckInInvoiceRequest;
+  /**
+   * The plate of the car of the stay (NF-132), once for the stay: sent only when the guest typed one, where the context says `askVehiclePlate`.
+   * Absent keeps the plate the server holds (the page never reads it back); the text is as typed, the server removes the spaces and upper-cases it.
+   */
+  vehiclePlate?: string;
 }
 
 /** One entry of an official Alloggiati table. */

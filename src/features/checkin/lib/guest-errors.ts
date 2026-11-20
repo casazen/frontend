@@ -30,6 +30,7 @@ export const GUEST_ERROR_KEYS: Record<string, string> = {
   CheckInDocumentIssuedOnInvalid: 'checkin.errors.documentIssuedOnInvalid',
   CheckInDocumentExpiresBeforeIssue: 'checkin.errors.documentExpiresBeforeIssue',
   CheckInStatisticalValueInvalid: 'checkin.errors.statisticalValueInvalid',
+  CheckInVehiclePlateInvalid: 'checkin.errors.vehiclePlateInvalid',
 };
 
 /**

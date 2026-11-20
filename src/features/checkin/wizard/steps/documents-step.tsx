@@ -6,7 +6,7 @@ import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { StayGuestDocumentFields } from '@/features/checkin/components/stay-guest-fields';
 import type { CodeTableSource } from '@/features/checkin/components/code-table';
-import { requiresDocument } from '@/features/checkin/schemas/checkin.schema';
+import { asksSwissDocument, documentLevelsOf } from '@/features/checkin/schemas/checkin.schema';
 import { getProblemMessage } from '@/lib/api-errors';
 import { useReadCheckInDocument } from '@/queries/use-checkin-wizard';
 import type { CheckInWizardState, DocumentReading } from '@/types/checkin-wizard.types';
@@ -14,6 +14,7 @@ import {
   ISSUE_FIELD_LABEL_KEYS,
   formValuesFromReading,
   mergeReading,
+  swissRulesOfState,
   type CheckInWizardValues,
   type ReadableGuestField,
   type ReadingMerge,
@@ -202,14 +203,17 @@ interface DocumentsStepProps {
 }
 
 /**
- * The documents step: for each guest who needs a document (the single guest, the head of family or group) the photo, when the reading is
- * open, and the manual fields, which are always there and are the only way while the reading is closed.
+ * The documents step: for each guest who needs a document (the single guest, the head of family or group and, in Switzerland, every other guest the
+ * police file notifies, who gives the type and the number) the photo, when the reading is open, and the manual fields, which are always there and are
+ * the only way while the reading is closed.
  */
 export function DocumentsStep({ bookingId, form, state, source }: DocumentsStepProps) {
   const { t } = useTranslation();
   useFocusFromAddress();
   const guests = useWatch({ control: form.control, name: 'guests' });
-  const leaders = guests.map((guest, index) => ({ guest, index })).filter(({ guest }) => requiresDocument(guest.type));
+  const swiss = swissRulesOfState(state);
+  const levels = documentLevelsOf(guests, swiss);
+  const leaders = levels.flatMap((level, index) => (level === null ? [] : [{ index, level }]));
 
   if (leaders.length === 0) {
     return (
@@ -221,11 +225,13 @@ export function DocumentsStep({ bookingId, form, state, source }: DocumentsStepP
 
   return (
     <div className="space-y-4" data-testid="checkin-wizard-documents">
-      <p className="text-sm text-muted-foreground">{t('checkin.documentIntro')}</p>
-      {leaders.map(({ index }) => (
+      <p className="text-sm text-muted-foreground">
+        {asksSwissDocument(swiss) ? t('checkin.swiss.documentIntro') : t('checkin.documentIntro')}
+      </p>
+      {leaders.map(({ index, level }) => (
         <div key={index} className="space-y-3">
           {state.capabilities.documentReading && <DocumentPhotoReader bookingId={bookingId} form={form} index={index} />}
-          <StayGuestDocumentFields index={index} source={source} />
+          <StayGuestDocumentFields index={index} source={source} level={level} />
         </div>
       ))}
     </div>

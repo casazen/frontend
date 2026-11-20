@@ -320,6 +320,113 @@ describe('AlloggiatiGuestSummary (CO-11, CO-12)', () => {
     });
     // The statistical fields the guest holds travel back too, though no region asks for them: left out, the save would erase them.
     expect(guests[1]).toMatchObject({ tourismType: 'holiday' });
+    // An Italian stay sends what it always has: no home and no plate, so the stored plate (none) stays as it is.
+    expect(guests[0]).not.toHaveProperty('residenceStreet');
+    expect(vi.mocked(alloggiatiApi.replaceStayGuests).mock.calls[0]).toHaveLength(2);
+    expect(dialog.queryByLabelText(/^Targa/)).not.toBeInTheDocument();
+  });
+
+  describe('a property in Switzerland (NF-132, E30/F01/US02)', () => {
+    /** What the API names for a property in canton Ticino. */
+    const ticinoFields = ['DocumentType', 'DocumentNumber', 'ResidenceStreet', 'ResidencePostalCode', 'ResidenceCityName', 'ResidenceCountryName'];
+
+    /** A family of two adults: the head and an adult member, who has no document in the Italian record. */
+    const swissSummary: AlloggiatiGuestSummaryDto = {
+      ...summary,
+      guests: [summary.guests[0], { ...summary.guests[1], isMinor: false, dateOfBirth: '1984-02-02T00:00:00Z' }],
+    };
+
+    const swissState = {
+      booking: { vehiclePlate: 'TI123456' },
+      askVehiclePlate: true,
+      requiredGuestFields: ticinoFields,
+      guests: [
+        wizardGuest(0, {
+          type: 'HeadOfFamily',
+          residenceInItaly: false,
+          residenceCountryName: 'Svizzera',
+          residenceStreet: 'Via Nassa 5',
+          residencePostalCode: '6900',
+          residenceCityName: 'Lugano',
+          taxExemptionCode: 'resident',
+        }),
+        wizardGuest(1, { type: 'FamilyMember' }),
+      ],
+    } as unknown as CheckInWizardState;
+
+    it('editGuests_SwissStay_AsksTheHomeThePlateAndTheDocumentOfEveryAdultAndNoItalianResidence', { timeout: 30_000 }, async () => {
+      vi.mocked(alloggiatiApi.getGuestSummary).mockResolvedValue(swissSummary);
+      vi.mocked(alloggiatiApi.getDocumentNumbers).mockResolvedValue([{ position: 0, stayGuestId: 'g1', documentNumber: 'CA12345AB' }]);
+      vi.mocked(checkInWizardApi.getState).mockResolvedValue(swissState);
+      renderSummary(true);
+
+      fireEvent.click(await screen.findByTestId('alloggiati-edit-guests'));
+      const dialog = within(await screen.findByTestId('stay-guests-edit-dialog'));
+      const head = within(await dialog.findByTestId('stay-guest-0'));
+
+      // The home on file starts the form; the state of residence is the one of the stay, and no Italian residence is asked.
+      expect(head.getByLabelText(/^Via e numero civico/)).toHaveValue('Via Nassa 5');
+      expect(head.getByLabelText(/^CAP/)).toHaveValue('6900');
+      expect(head.getByLabelText(/^Località/)).toHaveValue('Lugano');
+      expect(head.getByLabelText(/^Stato di residenza/)).toHaveValue('Svizzera');
+      expect(head.queryByLabelText(/^Residenza/)).not.toBeInTheDocument();
+      expect(dialog.getByLabelText(/^Targa/)).toHaveValue('TI123456');
+      // The head gives the whole document, the adult member its type and number.
+      expect(within(dialog.getByTestId('stay-guest-0-document')).getByLabelText(/^Luogo di rilascio/)).toBeInTheDocument();
+      const memberDocument = within(dialog.getByTestId('stay-guest-1-document'));
+      expect(memberDocument.getByLabelText(/^Numero documento/)).toBeInTheDocument();
+      expect(memberDocument.queryByLabelText(/^Luogo di rilascio/)).not.toBeInTheDocument();
+    });
+
+    it('editGuests_SwissStay_SavingSendsTheHomeBackTheMembersDocumentAndThePlate', { timeout: 30_000 }, async () => {
+      // The server takes the list as the whole truth: a save that left the home out would erase it.
+      vi.mocked(alloggiatiApi.getGuestSummary).mockResolvedValue(swissSummary);
+      vi.mocked(alloggiatiApi.getDocumentNumbers).mockResolvedValue([{ position: 0, stayGuestId: 'g1', documentNumber: 'CA12345AB' }]);
+      vi.mocked(alloggiatiApi.replaceStayGuests).mockResolvedValue(swissSummary);
+      vi.mocked(checkInWizardApi.getState).mockResolvedValue(swissState);
+      renderSummary(true);
+
+      fireEvent.click(await screen.findByTestId('alloggiati-edit-guests'));
+      const dialog = within(await screen.findByTestId('stay-guests-edit-dialog'));
+      expect(await dialog.findByLabelText(/^Targa/)).toHaveValue('TI123456');
+      fireEvent.change(within(dialog.getByTestId('stay-guest-0-document')).getByLabelText(/^Luogo di rilascio/), { target: { value: 'Milano' } });
+      const memberDocument = within(dialog.getByTestId('stay-guest-1-document'));
+      fireEvent.change(memberDocument.getByLabelText(/^Tipo documento/), { target: { value: 'Passport' } });
+      fireEvent.change(memberDocument.getByLabelText(/^Numero documento/), { target: { value: 'x1234567' } });
+      fireEvent.change(dialog.getByLabelText(/^Targa/), { target: { value: 'zh 99 99' } });
+      fireEvent.click(dialog.getByTestId('stay-guests-save'));
+
+      await waitFor(() => expect(alloggiatiApi.replaceStayGuests).toHaveBeenCalledTimes(1));
+      const [bookingId, guests, plate] = vi.mocked(alloggiatiApi.replaceStayGuests).mock.calls[0];
+      expect(bookingId).toBe(BOOKING_ID);
+      expect(plate).toBe('ZH9999');
+      expect(guests[0]).toMatchObject({
+        residenceStreet: 'Via Nassa 5',
+        residencePostalCode: '6900',
+        residenceCityName: 'Lugano',
+        residenceInItaly: false,
+        residenceCountryName: 'Svizzera',
+        taxExemptionCode: 'resident',
+      });
+      // The home the host never entered for the member is sent as null: the whole truth, never a key that is left out.
+      expect(guests[1]).toMatchObject({ residenceStreet: null, documentType: 'Passport', documentNumber: 'X1234567' });
+    });
+
+    it('editGuests_SwissStay_AnAdultMemberWithoutADocumentIsNotSaved', { timeout: 30_000 }, async () => {
+      vi.mocked(alloggiatiApi.getGuestSummary).mockResolvedValue(swissSummary);
+      vi.mocked(alloggiatiApi.getDocumentNumbers).mockResolvedValue([{ position: 0, stayGuestId: 'g1', documentNumber: 'CA12345AB' }]);
+      vi.mocked(checkInWizardApi.getState).mockResolvedValue(swissState);
+      renderSummary(true);
+
+      fireEvent.click(await screen.findByTestId('alloggiati-edit-guests'));
+      const dialog = within(await screen.findByTestId('stay-guests-edit-dialog'));
+      fireEvent.change(await dialog.findByLabelText(/^Targa/), { target: { value: 'TI123456' } });
+      fireEvent.change(within(dialog.getByTestId('stay-guest-0-document')).getByLabelText(/^Luogo di rilascio/), { target: { value: 'Milano' } });
+      fireEvent.click(dialog.getByTestId('stay-guests-save'));
+
+      await waitFor(() => expect(within(dialog.getByTestId('stay-guest-1-document')).getByLabelText(/^Numero documento/)).toHaveAttribute('aria-invalid', 'true'));
+      expect(alloggiatiApi.replaceStayGuests).not.toHaveBeenCalled();
+    });
   });
 
   it('editGuests_TheFieldsTheSummaryLacksCannotBeRead_NoFormThatCouldEraseThemIsOpened', async () => {

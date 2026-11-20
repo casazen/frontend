@@ -36,6 +36,17 @@ export const demoPublicCheckInContext: PublicCheckInContextDto = {
   ],
 };
 
+/**
+ * The same stay on a property in canton Ticino (NF-132, E30/F01/US02): the API names the Swiss fields in `requiredGuestFields` (the document of every adult, the
+ * home of each guest and the state of residence) and says `askVehiclePlate`. The guest page then asks the home instead of the Italian residence, and the plate.
+ */
+export const demoSwissPublicCheckInContext: PublicCheckInContextDto = {
+  ...demoPublicCheckInContext,
+  propertyName: 'Casa Lugano',
+  requiredGuestFields: ['DocumentType', 'DocumentNumber', 'ResidenceStreet', 'ResidencePostalCode', 'ResidenceCityName', 'ResidenceCountryName'],
+  askVehiclePlate: true,
+};
+
 export const demoAlloggiatiSummary: AlloggiatiSummaryDto[] = [
   {
     bookingId: DEMO_BOOKING_ID,
@@ -129,14 +140,15 @@ export const demoAlloggiatiGuestSummary: AlloggiatiGuestSummaryDto = {
   ],
 };
 
-export async function mockCheckInApi(page: Page): Promise<void> {
+/** The check-in link of the demo stay: the Italian one unless a context is given (`demoSwissPublicCheckInContext`). */
+export async function mockCheckInApi(page: Page, context: PublicCheckInContextDto = demoPublicCheckInContext): Promise<void> {
   await page.route(`**/api/public/checkin/${DEMO_CHECKIN_TOKEN}`, async (route) => {
     const method = route.request().method();
     if (method === 'GET') {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify(demoPublicCheckInContext),
+        body: JSON.stringify(context),
       });
       return;
     }
@@ -145,7 +157,7 @@ export async function mockCheckInApi(page: Page): Promise<void> {
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({
-          sessionId: demoPublicCheckInContext.sessionId,
+          sessionId: context.sessionId,
           message: 'ok',
         }),
       });

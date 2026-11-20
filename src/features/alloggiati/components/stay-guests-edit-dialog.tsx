@@ -29,27 +29,29 @@ import {
   DOCUMENT_KINDS,
   MAX_STAY_GUESTS,
   createStayGuestsFormSchema,
+  documentLevelsOf,
   followerTypeOf,
   guestFormPathOf,
   requiredStatisticalFields,
-  requiresDocument,
   stayGuestDefaults,
-  toStayGuestSubmit,
+  swissRulesOf,
   type StatisticalGuestField,
   type StayGuestFormValues,
   type StayGuestsFormValues,
+  type SwissStayRules,
 } from '@/features/checkin/schemas/checkin.schema';
-import { StayGuestDocumentFields, StayGuestPersonalFields } from '@/features/checkin/components/stay-guest-fields';
+import { StayGuestDocumentFields, StayGuestPersonalFields, VehiclePlateField } from '@/features/checkin/components/stay-guest-fields';
 import type { CodeTableSource } from '@/features/checkin/components/code-table';
+import { toGuestsSave } from '@/features/checkin/wizard/lib/checkin-wizard-model';
 
 const ALL_TABLES: AlloggiatiCodeTable[] = ['Comuni', 'Stati', 'Documenti', 'TipiAlloggiato'];
 
 /**
  * Form values of a registered guest, as the host sees it (codes found in the tables). The full document number comes from
  * the audited API call made when the form opens; without it the field starts empty with the masked number as a hint.
- * The residence, the document dates, the statistical fields and the tourist tax exemption are not in the row of the summary: they
- * come from the guest of the check-in wizard of the same position. The server takes the list as the whole truth, so a field the form
- * did not carry would be erased by a save.
+ * The residence (and, in Switzerland, the home: street, postal code, town), the document dates, the statistical fields and the tourist tax
+ * exemption are not in the row of the summary: they come from the guest of the check-in wizard of the same position. The server takes
+ * the list as the whole truth, so a field the form did not carry would be erased by a save.
  */
 function stayGuestValuesFromRow(
   row: AlloggiatiGuestRowDto,
@@ -86,6 +88,9 @@ function stayGuestValuesFromRow(
     residenceProvince: saved?.residenceProvince ?? '',
     residenceCountryName: saved?.residenceCountryName ?? '',
     residenceCountryCode: saved?.residenceCountryCode ?? null,
+    residenceStreet: saved?.residenceStreet ?? '',
+    residencePostalCode: saved?.residencePostalCode ?? '',
+    residenceCityName: saved?.residenceCityName ?? '',
     tourismType: saved?.tourismType ?? '',
     travelWay: saved?.travelWay ?? '',
     educationLevel: saved?.educationLevel ?? '',
@@ -123,6 +128,8 @@ export function StayGuestsEditDialog({ bookingId, summary, open, onOpenChange }:
   const saved = useCheckInWizardState(bookingId, open);
   const requiredGuestFields = saved.data?.requiredGuestFields;
   const statisticalFields = useMemo(() => requiredStatisticalFields(requiredGuestFields), [requiredGuestFields]);
+  // A property in Switzerland (NF-132) asks the home of each guest, the document of every adult and the plate of the car, as the guest page does.
+  const swiss = useMemo(() => swissRulesOf(requiredGuestFields, summary.arrivalDate), [requiredGuestFields, summary.arrivalDate]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -161,6 +168,9 @@ export function StayGuestsEditDialog({ bookingId, summary, open, onOpenChange }:
             documentNumbers={numbers.data}
             savedGuests={saved.data?.guests}
             statisticalFields={statisticalFields}
+            swiss={swiss}
+            // The plate of the stay is a field of the form only where the regime asks it; the plate on file starts it.
+            vehiclePlate={saved.data?.askVehiclePlate === true ? (saved.data.booking.vehiclePlate ?? '') : undefined}
             onDone={() => onOpenChange(false)}
           />
         )}
@@ -177,10 +187,14 @@ interface StayGuestsEditFormProps {
   savedGuests: CheckInWizardGuest[] | undefined;
   /** The statistical fields the region requires (`requiredGuestFields` of the wizard): asked here too, and sent. */
   statisticalFields: readonly StatisticalGuestField[];
+  /** What a property in Switzerland asks on top of the record (NF-132): the home, the document of every adult. Nothing for an Italian stay. */
+  swiss: SwissStayRules;
+  /** The plate of the car on file, where the regime asks one (`askVehiclePlate`): the form then has the field and a save sends it; `undefined` where none is asked. */
+  vehiclePlate: string | undefined;
   onDone: () => void;
 }
 
-function StayGuestsEditForm({ bookingId, summary, documentNumbers, savedGuests, statisticalFields, onDone }: StayGuestsEditFormProps) {
+function StayGuestsEditForm({ bookingId, summary, documentNumbers, savedGuests, statisticalFields, swiss, vehiclePlate, onDone }: StayGuestsEditFormProps) {
   const { t } = useTranslation();
   const replace = useReplaceStayGuests(bookingId);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -190,14 +204,15 @@ function StayGuestsEditForm({ bookingId, summary, documentNumbers, savedGuests, 
     const savedByPosition = new Map((savedGuests ?? []).filter((g) => g.saved).map((g) => [g.position, g]));
     const guests = summary.guests.map((row) => stayGuestValuesFromRow(row, byPosition.get(row.position), savedByPosition.get(row.position)));
     if (guests.length === 0) guests.push(stayGuestDefaults('SingleGuest'));
-    return { guests };
-  }, [summary.guests, documentNumbers, savedGuests]);
+    return vehiclePlate === undefined ? { guests } : { guests, vehiclePlate };
+  }, [summary.guests, documentNumbers, savedGuests, vehiclePlate]);
 
-  const schema = useMemo(() => createStayGuestsFormSchema(statisticalFields), [statisticalFields]);
+  const schema = useMemo(() => createStayGuestsFormSchema(statisticalFields, swiss), [statisticalFields, swiss]);
   const form = useForm<StayGuestsFormValues>({ resolver: zodResolver(schema), defaultValues: initial });
   const { control, getValues, setValue, setError, handleSubmit } = form;
   const { fields, append, remove } = useFieldArray({ control, name: 'guests' });
   const guests = useWatch({ control, name: 'guests' });
+  const documentLevels = documentLevelsOf(guests ?? [], swiss);
 
   const source = useMemo<CodeTableSource>(
     () => ({
@@ -218,11 +233,9 @@ function StayGuestsEditForm({ bookingId, summary, documentNumbers, savedGuests, 
   const onSubmit = handleSubmit(async (values) => {
     setSaveError(null);
     try {
-      // The exemption of the tourist tax and the statistical fields travel with the guest as they were received: the server takes the
-      // list as the whole truth, so a save that left them out would erase them.
-      await replace.mutateAsync(
-        values.guests.map((guest) => toStayGuestSubmit(guest, { statisticalFields, withTaxExemption: true, keepStatistical: true })),
-      );
+      // The exemption of the tourist tax, the statistical fields and the home of the guests travel with the guest as they were received: the
+      // server takes the list as the whole truth, so a save that left them out would erase them. The plate goes with them where the regime asks it.
+      await replace.mutateAsync(toGuestsSave(values, statisticalFields, swiss));
       onDone();
     } catch (error) {
       const serverErrors = getServerFieldErrorsByPath(error, t('checkin.validation.invalidValue'));
@@ -241,21 +254,23 @@ function StayGuestsEditForm({ bookingId, summary, documentNumbers, savedGuests, 
   return (
     <FormProvider {...form}>
       <form onSubmit={onSubmit} className="space-y-4" data-testid="stay-guests-edit-form">
-        {fields.map((field, index) => (
-          <div key={field.id} className="space-y-3">
-            <StayGuestPersonalFields
-              index={index}
-              arrivalDate={summary.arrivalDate}
-              source={source}
-              requiredFields={statisticalFields}
-              onLeaderTypeChange={index === 0 ? changeLeaderType : undefined}
-              onRemove={index > 0 ? () => remove(index) : undefined}
-            />
-            {guests[index] && requiresDocument(guests[index].type) && (
-              <StayGuestDocumentFields index={index} source={source} />
-            )}
-          </div>
-        ))}
+        {fields.map((field, index) => {
+          const level = documentLevels[index] ?? null;
+          return (
+            <div key={field.id} className="space-y-3">
+              <StayGuestPersonalFields
+                index={index}
+                arrivalDate={summary.arrivalDate}
+                source={source}
+                requiredFields={statisticalFields}
+                swiss={swiss}
+                onLeaderTypeChange={index === 0 ? changeLeaderType : undefined}
+                onRemove={index > 0 ? () => remove(index) : undefined}
+              />
+              {level !== null && <StayGuestDocumentFields index={index} source={source} level={level} />}
+            </div>
+          );
+        })}
         {fields.length < MAX_STAY_GUESTS && (
           <Button
             type="button"
@@ -267,6 +282,7 @@ function StayGuestsEditForm({ bookingId, summary, documentNumbers, savedGuests, 
             {t('checkin.addGuest')}
           </Button>
         )}
+        {vehiclePlate !== undefined && <VehiclePlateField />}
         {saveError && (
           <p role="alert" className="text-sm text-destructive" data-testid="stay-guests-save-error">
             {saveError}

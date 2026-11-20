@@ -5615,14 +5615,23 @@
       "educationLevel": {
         "required": "Seleziona il titolo di studio"
       },
+      "residencePostalCode": {
+        "maxLength": "Al massimo 20 caratteri"
+      },
       "residenceProvince": {
         "invalid": "Inserisci la sigla di due lettere (es. RM)"
+      },
+      "residenceStreet": {
+        "maxLength": "Al massimo 200 caratteri"
       },
       "tourismType": {
         "required": "Seleziona il motivo del viaggio"
       },
       "travelWay": {
         "required": "Seleziona il mezzo usato per arrivare"
+      },
+      "vehiclePlate": {
+        "invalid": "Inserisci una targa valida: lettere, cifre e trattini, al massimo 20 caratteri."
       }
     },
     "loading": "Caricamento check-in...",
@@ -5927,7 +5936,8 @@
       "statisticalValueInvalid": "Il valore scelto non è tra quelli ammessi.",
       "summary_one": "C'è 1 campo da controllare",
       "summary_other": "Ci sono {{count}} campi da controllare",
-      "tooManyRequests": "Troppe richieste in poco tempo: attendi qualche istante e riprova."
+      "tooManyRequests": "Troppe richieste in poco tempo: attendi qualche istante e riprova.",
+      "vehiclePlateInvalid": "La targa non è valida: usa lettere, cifre e trattini, al massimo 20 caratteri."
     },
     "guestKind": {
       "FamilyMember": "Familiare",
@@ -6116,12 +6126,21 @@
     },
     "residence": {
       "abroad": "All'estero",
+      "city": "Località",
       "comune": "Comune di residenza",
       "country": "Stato di residenza",
       "hint": "Facoltativo: dove vive abitualmente l’ospite.",
+      "homeHint": "Facoltativo: l’indirizzo dove vive l’ospite. Fa parte della notifica del soggiorno alla polizia.",
       "inItaly": "In Italia",
       "label": "Residenza",
-      "province": "Provincia di residenza (due lettere)"
+      "postalCode": "CAP",
+      "province": "Provincia di residenza (due lettere)",
+      "street": "Via e numero civico"
+    },
+    "swiss": {
+      "documentIntro": "Tipo e numero del documento d’identità di ogni adulto. Il capofamiglia o il capogruppo indica anche il luogo di rilascio.",
+      "guestsIntro": "Inserisci tutti gli ospiti che soggiornano, minorenni compresi. Ogni adulto indicherà anche il proprio documento d’identità nel passo successivo.",
+      "stayKindHint": "Per una famiglia o un gruppo il primo ospite è il capofamiglia o il capogruppo. Il documento d’identità si chiede a ogni adulto (per un gruppo di sei o più, solo al capogruppo)."
     },
     "toast": {
       "saved": "Dati del check-in salvati.",
@@ -6176,6 +6195,10 @@
       "plane": "Aereo",
       "ship": "Nave",
       "train": "Treno"
+    },
+    "vehiclePlate": {
+      "hint": "Una sola targa per tutto il soggiorno, se arrivi in auto. Lettere, cifre e trattini.",
+      "label": "Targa dell’auto (facoltativa)"
     },
     "wizard": {
       "checks": {

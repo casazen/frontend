@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { NOON_UTC, freezeClock } from '@/test/clock';
+import { toStayGuestSubmit } from '@/features/checkin/schemas/checkin.schema';
 import type {
   CheckInConfirmation,
   CheckInIssue,
@@ -23,9 +24,11 @@ import {
   sortedIssues,
   statisticalFieldsOf,
   stepOfGuestField,
+  swissRulesOfState,
   taxBreakdownOf,
   taxOutlook,
   toGuestsPayload,
+  toGuestsSave,
   wizardValuesFromState,
 } from '../lib/checkin-wizard-model';
 
@@ -224,6 +227,173 @@ describe('the rules of the steps', () => {
 
   it('statisticalFieldsOf_RegionRequirement_IsReadFromTheState', () => {
     expect(statisticalFieldsOf(state({ requiredGuestFields: ['TravelWay'] }))).toEqual(['travelWay']);
+  });
+});
+
+describe('a property in Switzerland (NF-132, E30/F01/US02)', () => {
+  /** What the API names for a property in canton Ticino. */
+  const TICINO = ['DocumentType', 'DocumentNumber', 'ResidenceStreet', 'ResidencePostalCode', 'ResidenceCityName', 'ResidenceCountryName'];
+
+  /** A stay of Ticino: the head and an adult family member, the plate on file. */
+  function swissState(overrides: Partial<CheckInWizardState> = {}): CheckInWizardState {
+    return state({
+      requiredGuestFields: TICINO,
+      askVehiclePlate: true,
+      booking: { ...state().booking, declaredGuests: 2, vehiclePlate: 'TI123456' },
+      guests: [
+        guest(0, {
+          type: 'HeadOfFamily',
+          residenceInItaly: false,
+          residenceCountryName: 'Svizzera',
+          residenceStreet: 'Via Nassa 5',
+          residencePostalCode: '6900',
+          residenceCityName: 'Lugano',
+        }),
+        guest(1, { type: 'FamilyMember', documentType: null, documentNumberMasked: null, documentIssuePlaceName: '' }),
+      ],
+      ...overrides,
+    });
+  }
+
+  it('swissRulesOfState_TicinoList_IsTheRegimeOfTheStayOnItsArrivalDay', () => {
+    const rules = swissRulesOfState(swissState());
+
+    expect(rules.asked.has('residenceStreet')).toBe(true);
+    expect(rules.arrivalDate).toBe('2026-10-10');
+    expect(swissRulesOfState(state()).asked.size).toBe(0);
+  });
+
+  it('guestValuesFromWizard_HomeOnFile_StartsTheFormWithIt', () => {
+    expect(guestValuesFromWizard(swissState().guests[0])).toMatchObject({
+      residenceStreet: 'Via Nassa 5',
+      residencePostalCode: '6900',
+      residenceCityName: 'Lugano',
+      residenceInItaly: 'no',
+      residenceCountryName: 'Svizzera',
+    });
+    expect(guestValuesFromWizard(guest(0))).toMatchObject({ residenceStreet: '', residencePostalCode: '', residenceCityName: '' });
+  });
+
+  it('wizardValuesFromState_PlateAsked_StartsTheFormWithThePlateOnFile', () => {
+    expect(wizardValuesFromState(swissState()).vehiclePlate).toBe('TI123456');
+    expect(wizardValuesFromState(swissState({ booking: { ...state().booking, vehiclePlate: null } })).vehiclePlate).toBe('');
+  });
+
+  it('wizardValuesFromState_PlateNotAsked_HasNoPlateInTheFormAtAll', () => {
+    expect(wizardValuesFromState(state())).not.toHaveProperty('vehiclePlate');
+    // A plate on file is not asked again where the regime does not ask one.
+    expect(wizardValuesFromState(state({ booking: { ...state().booking, vehiclePlate: 'TI123456' } }))).not.toHaveProperty('vehiclePlate');
+  });
+
+  it('toGuestsPayload_SwissHost_SendsTheHomeAsReceivedAndABlankOneAsNull', () => {
+    const rules = swissRulesOfState(swissState());
+    const values = wizardValuesFromState(swissState());
+
+    const [head, member] = toGuestsPayload(values, [], rules);
+
+    expect(head).toMatchObject({ residenceStreet: 'Via Nassa 5', residencePostalCode: '6900', residenceCityName: 'Lugano', residenceCountryName: 'Svizzera' });
+    expect(member).toMatchObject({ residenceStreet: null, residencePostalCode: null, residenceCityName: null });
+  });
+
+  it('toGuestsPayload_HostEntryHoldingAHomeWhileTheRegimeNamesNone_StillSendsItBack', () => {
+    // A save never erases what the guest has on file, whatever the list of fields says (a regime that changed, a state read without them).
+    const values = wizardValuesFromState(swissState({ requiredGuestFields: [], askVehiclePlate: false }));
+
+    const [head, member] = toGuestsPayload(values, []);
+
+    expect(head).toMatchObject({ residenceStreet: 'Via Nassa 5', residenceCityName: 'Lugano' });
+    expect(member).not.toHaveProperty('residenceStreet');
+  });
+
+  it('toGuestsPayload_ItalianHost_HasNoKeyOfTheHome', () => {
+    const [body] = toGuestsPayload(wizardValuesFromState(state()), []);
+
+    expect(body).not.toHaveProperty('residenceStreet');
+    expect(body).not.toHaveProperty('residencePostalCode');
+    expect(body).not.toHaveProperty('residenceCityName');
+  });
+
+  it('toGuestsPayload_SwissAdultMember_SendsItsTypeAndNumber', () => {
+    const rules = swissRulesOfState(swissState());
+    const values = wizardValuesFromState(swissState());
+    values.guests[1].documentType = 'IdentityCard';
+    values.guests[1].documentNumber = 'ca 12345 ab';
+
+    expect(toGuestsPayload(values, [], rules)[1]).toMatchObject({ documentType: 'IdentityCard', documentNumber: 'CA12345AB' });
+    // The same list of an Italian stay: a member has no document in the record.
+    expect(toGuestsPayload(values, [])[1]).toMatchObject({ documentType: null, documentNumber: null });
+  });
+
+  it('toGuestsSave_PlateAsked_SendsItNormalizedAndAnEmptyOneClearsIt', () => {
+    const rules = swissRulesOfState(swissState());
+    const values = wizardValuesFromState(swissState());
+
+    values.vehiclePlate = ' zh 99 99 ';
+    expect(toGuestsSave(values, [], rules).vehiclePlate).toBe('ZH9999');
+    values.vehiclePlate = '';
+    expect(toGuestsSave(values, [], rules)).toHaveProperty('vehiclePlate', '');
+    expect(toGuestsSave(values, [], rules).guests).toHaveLength(2);
+  });
+
+  it('toGuestsSave_PlateNotAsked_HasNoPlateSoTheStoredOneStays', () => {
+    expect(toGuestsSave(wizardValuesFromState(state()), [])).not.toHaveProperty('vehiclePlate');
+  });
+
+  it('guestsSignature_PlateTyped_IsAChangeOfTheGuestsToSave', () => {
+    const rules = swissRulesOfState(swissState());
+    const values = wizardValuesFromState(swissState());
+    const before = guestsSignature(values, [], rules);
+    values.vehiclePlate = 'ZH9999';
+
+    expect(guestsSignature(values, [], rules)).not.toBe(before);
+    // Spaces and case are not a change: the API stores the plate normalized.
+    values.vehiclePlate = 'ti 123 456';
+    expect(guestsSignature(values, [], rules)).toBe(before);
+  });
+
+  it('guestsSignature_ItalianStay_IsStillTheTextOfTheListOfGuestsAlone', () => {
+    const values = wizardValuesFromState(state());
+
+    expect(guestsSignature(values, [])).toBe(JSON.stringify(values.guests.map((entry) => toStayGuestSubmit(entry, { statisticalFields: [] }))));
+  });
+
+  it('documentsReadyToSave_SwissAdultMemberWithoutADocument_IsNotReadyUntilItsTypeAndNumberAreTyped', () => {
+    freezeClock(NOON_UTC);
+    const rules = swissRulesOfState(swissState());
+    const values = wizardValuesFromState(swissState());
+    values.guests[0].documentNumber = 'CA12345AB';
+
+    expect(documentsReadyToSave(values, rules)).toBe(false);
+    // Italy has no document of a member: the same values are ready there.
+    expect(documentsReadyToSave(values)).toBe(true);
+
+    values.guests[1].documentType = 'IdentityCard';
+    values.guests[1].documentNumber = 'CA54321AB';
+    expect(documentsReadyToSave(values, rules)).toBe(true);
+  });
+
+  it('documentsStepSchema_SwissAdultMember_IsAskedItsDocumentOnItsOwnFields', () => {
+    freezeClock(NOON_UTC);
+    const rules = swissRulesOfState(swissState());
+    const values = wizardValuesFromState(swissState());
+    values.guests[0].documentNumber = 'CA12345AB';
+
+    const result = documentsStepSchema(() => false, rules).safeParse(values);
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.map((issue) => issue.path.join('.'))).toEqual(['guests.1.documentType', 'guests.1.documentNumber']);
+  });
+
+  it('guestsStepSchema_PlateThatIsNotOne_IsRefusedOnTheStepOfTheGuests', () => {
+    freezeClock(NOON_UTC);
+    const rules = swissRulesOfState(swissState());
+    const values = wizardValuesFromState(swissState());
+
+    expect(guestsStepSchema([], rules).safeParse(values).success).toBe(true);
+    values.vehiclePlate = 'no/plate';
+    const refused = guestsStepSchema([], rules).safeParse(values);
+    expect(refused.success).toBe(false);
+    expect(refused.error?.issues[0]).toMatchObject({ path: ['vehiclePlate'], message: 'checkin.validation.vehiclePlate.invalid' });
   });
 });
 
