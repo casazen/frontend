@@ -12,6 +12,7 @@ import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { buildEmbedMessage, parseEmbedMessage, type EmbedMessage, type EmbedMessageType } from '@/embed/protocol';
 import type { PublicOrgDto } from '@/types';
+import { embedWidgetHandle, useEmbed } from '../embed-context';
 import { EmbedShell } from '../embed-shell';
 import { useEmbedBridge, type EmbedBridge } from '../use-embed-bridge';
 
@@ -108,10 +109,15 @@ const seen = vi.fn<(bridge: EmbedBridge) => void>();
 /** A widget that reads the bridge. */
 function BridgeProbe() {
   const bridge = useEmbedBridge();
+  const embed = useEmbed();
   useEffect(() => {
     seen(bridge);
   }, [bridge]);
-  return <p data-testid="bridge">{`${bridge.active ? 'active' : 'inactive'}-${bridge.attached ? 'attached' : 'detached'}`}</p>;
+  return (
+    <p data-testid="bridge" data-widget={embed?.widget}>
+      {`${bridge.active ? 'active' : 'inactive'}-${bridge.attached ? 'attached' : 'detached'}`}
+    </p>
+  );
 }
 
 const bridgeNow = () => seen.mock.lastCall?.[0] as EmbedBridge;
@@ -122,10 +128,16 @@ const sent = (type?: EmbedMessageType) => posts().map(([message]) => message).fi
 
 function renderFramed(entry: string, { siteEmbed = true }: { siteEmbed?: boolean } = {}) {
   seen.mockReset();
+  // One layout for the two widgets, as the routes of the app have it: the shell stays mounted when the guest moves from one to the other.
   const router = createMemoryRouter(
     [
-      { path: '/embed/:orgSlug/booking', element: <EmbedShell widget="booking" mode="platform" />, children: [{ index: true, element: <BridgeProbe /> }] },
-      { path: '/embed/:orgSlug/property/:propertySlugOrId', element: <EmbedShell widget="property" mode="platform" />, children: [{ index: true, element: <BridgeProbe /> }] },
+      {
+        element: <EmbedShell mode="platform" />,
+        children: [
+          { path: '/embed/:orgSlug/booking', handle: embedWidgetHandle('booking'), element: <BridgeProbe /> },
+          { path: '/embed/:orgSlug/property/:propertySlugOrId', handle: embedWidgetHandle('property'), element: <BridgeProbe /> },
+        ],
+      },
     ],
     { initialEntries: [entry] },
   );
@@ -311,6 +323,26 @@ describe('what the frame says to the page: ready, error, resize, url', () => {
     });
     expect(sent('url')).toHaveLength(2);
     expect((sent('url')[1] as EmbedMessage<'url'>).query).toBe('checkin=2026-12-02');
+  });
+});
+
+describe('moving from one widget to another inside the frame', () => {
+  it('embedBridge_MovingFromBookingToProperty_KeepsTheConversation_OneReadyAnUrlAndTheBridgeStaysAttached', async () => {
+    const router = renderFramed(`/embed/villa-rossi/booking?${ADDRESS}`);
+    await screen.findByTestId('bridge');
+    pageSays(buildEmbedMessage('config', {}));
+    expect(screen.getByTestId('bridge')).toHaveAttribute('data-widget', 'booking');
+    expect(sent('ready')).toHaveLength(1);
+
+    await act(async () => {
+      await router.navigate(`/embed/villa-rossi/property/casa-mare?from=booking&checkin=2026-12-01&${ADDRESS}`);
+    });
+
+    // The cards of the booking widget lead to the property widget in the same frame: the page hears the new address, and nothing starts again.
+    expect(screen.getByTestId('bridge')).toHaveAttribute('data-widget', 'property');
+    expect(screen.getByTestId('bridge')).toHaveTextContent('active-attached');
+    expect(sent('ready')).toEqual([{ source: 'casazen', v: 1, type: 'ready', widget: 'booking' }]);
+    expect(sent('url')).toEqual([{ source: 'casazen', v: 1, type: 'url', path: '/property/casa-mare', query: 'from=booking&checkin=2026-12-01' }]);
   });
 });
 

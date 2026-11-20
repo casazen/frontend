@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 import type { RouteObject } from 'react-router-dom';
-import type { EmbedHostMode, EmbedWidget } from '@/features/embed/embed-context';
+import { embedWidgetHandle, type EmbedHostMode, type EmbedWidget } from '@/features/embed/embed-context';
 import { EmbedSkeleton } from '@/features/embed/embed-states';
 import { NOT_REDESIGNED_ROUTE_HANDLE } from '@/lib/ui-version';
 
@@ -12,10 +12,11 @@ import { NOT_REDESIGNED_ROUTE_HANDLE } from '@/lib/ui-version';
  * - `host`, an agency's own domain: `/embed/booking`, `/embed/property/:propertySlugOrId`, `/embed/guest-access` (in
  *   `buildHostSiteRoutes`). There the org is the one of the host, never a parameter of the address.
  *
- * Every route is a frame with no app chrome: `EmbedShell` is its layout, outside `PublicSiteShell` (no header, footer, cookie banner, skip
- * link or favourites). The elements are loaded when a route is first needed, so the widgets stay out of the main bundle of the app; until then
- * the skeleton is on the screen. No other address under `/embed` exists: the layout has no path of its own, so `/embed` alone and any other
- * path are «not found».
+ * One frame with no app chrome for the three of them: `EmbedShell` is the layout, outside `PublicSiteShell` (no header, footer, cookie banner, skip
+ * link or favourites), and it stays mounted when the guest moves from one widget to another inside the frame (the cards of the booking widget lead to
+ * the property widget), so the conversation with the page (`ready` once, `attached`, the height, the address) never starts again. The layout has no path
+ * of its own, so it never matches by itself: `/embed` alone and every address that is not one of the three widgets are «not found». The elements are
+ * loaded when a route is first needed, so the widgets stay out of the main bundle of the app; until then the skeleton is on the screen.
  */
 interface EmbedWidgetRoute {
   widget: EmbedWidget;
@@ -55,16 +56,17 @@ const WIDGET_ROUTES: readonly EmbedWidgetRoute[] = [
 export function buildEmbedRoutes(mode: EmbedHostMode): RouteObject[] {
   const base = mode === 'host' ? '/embed' : '/embed/:orgSlug';
 
-  return WIDGET_ROUTES.map(({ widget, path, load }) => ({
-    path: `${base}/${path}`,
-    // The page of a guest-facing frame keeps its look until it is redesigned (like the booking site): the redesign of the console never reaches it.
-    handle: NOT_REDESIGNED_ROUTE_HANDLE,
-    // What the frame shows while the shell is being loaded.
-    HydrateFallback: EmbedSkeleton,
-    lazy: async () => {
-      const { EmbedShell } = await import('@/features/embed/embed-shell');
-      return { element: <EmbedShell widget={widget} mode={mode} /> };
+  return [
+    {
+      // The page of a guest-facing frame keeps its look until it is redesigned (like the booking site): the redesign of the console never reaches it.
+      handle: NOT_REDESIGNED_ROUTE_HANDLE,
+      // What the frame shows while the shell is being loaded.
+      HydrateFallback: EmbedSkeleton,
+      lazy: async () => {
+        const { EmbedShell } = await import('@/features/embed/embed-shell');
+        return { element: <EmbedShell mode={mode} /> };
+      },
+      children: WIDGET_ROUTES.map(({ widget, path, load }) => ({ path: `${base}/${path}`, handle: embedWidgetHandle(widget), lazy: load })),
     },
-    children: [{ index: true, lazy: load }],
-  }));
+  ];
 }

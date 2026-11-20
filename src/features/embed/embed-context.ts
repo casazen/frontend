@@ -10,6 +10,20 @@ import type { AppLocale } from '@/i18n/locale-storage';
 /** The widgets served as frames: the booking engine, one home and the entry of the guest area. */
 export type EmbedWidget = 'booking' | 'property' | 'guest-access';
 
+/** `handle` of the route of each widget: the shell reads which one it frames from the route that matched. */
+export function embedWidgetHandle(widget: EmbedWidget): { embedWidget: EmbedWidget } {
+  return { embedWidget: widget };
+}
+
+/** The widget of the route that matched (`useMatches()` of the shell: the last match that names one), or null when none does. */
+export function embedWidgetOf(matches: readonly { handle?: unknown }[]): EmbedWidget | null {
+  for (const match of [...matches].reverse()) {
+    const widget = (match.handle as { embedWidget?: unknown } | undefined)?.embedWidget;
+    if (widget === 'booking' || widget === 'property' || widget === 'guest-access') return widget;
+  }
+  return null;
+}
+
 /** Where the frame is served: an agency's own domain (`host`: `/embed/booking`) or the CasaZen domain (`platform`: `/embed/<orgSlug>/booking`). */
 export type EmbedHostMode = 'host' | 'platform';
 

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, type CSSProperties, type ReactNode } from 'react';
-import { Outlet, useParams, useSearchParams } from 'react-router-dom';
+import { Outlet, useMatches, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
@@ -17,11 +17,11 @@ import {
   EMBED_VERSION_QUERY_KEY,
   EmbedContext,
   embedBaseOf,
+  embedWidgetOf,
   isSupportedEmbedVersion,
   parseParentOrigin,
   type EmbedContextValue,
   type EmbedHostMode,
-  type EmbedWidget,
 } from '@/features/embed/embed-context';
 import { EmbedError, EmbedNotFound, EmbedSkeleton, EmbedUnavailable } from '@/features/embed/embed-states';
 import { EmbedBridgeContext, useEmbedBridgeController, type EmbedErrorCode } from '@/features/embed/use-embed-bridge';
@@ -30,9 +30,7 @@ import '@/styles/public-tokens.css';
 import '@/styles/public-brand.css';
 
 interface EmbedShellProps {
-  /** The widget of the route this shell is the layout of. */
-  widget: EmbedWidget;
-  /** Where the route is served (see `EmbedHostMode`). */
+  /** Where the routes are served (see `EmbedHostMode`). */
   mode: EmbedHostMode;
 }
 
@@ -88,13 +86,17 @@ function useTransparentDocument() {
 /**
  * The frame every embeddable page lives in (NF-144, NF-145): no header, footer, cookie banner or skip link, the theme of the org's site, the
  * language of the address, and nothing written to the browser. It is the layout route of the three widgets and gives them `{ org }` through the
- * outlet, as `PublicSiteShell` does for the pages of the booking site, and the bridge to the page that frames it (`useEmbedBridge`). The frame is
- * as tall as its content: nothing here uses `100vh`, and the height it reports is the one of its own wrapper.
+ * outlet, as `PublicSiteShell` does for the pages of the booking site, and the bridge to the page that frames it (`useEmbedBridge`). It stays
+ * mounted while the guest moves from one widget to another inside the frame. The frame is as tall as its content: nothing here uses `100vh`, and
+ * the height it reports is the one of its own wrapper.
  */
-export function EmbedShell({ widget, mode }: EmbedShellProps) {
+export function EmbedShell({ mode }: EmbedShellProps) {
   const { t } = useTranslation();
   const params = useParams<{ orgSlug: string }>();
   const [searchParams] = useSearchParams();
+  const matchedWidget = embedWidgetOf(useMatches());
+  // A route of the frame always names its widget; one that does not has nothing to show.
+  const widget = matchedWidget ?? 'booking';
   const wrapperRef = useRef<HTMLDivElement>(null);
   const hostSite = mode === 'host' ? getHostSite() : null;
   // On the agency's domain the org is the one of the host, whatever the address says; on the CasaZen domain it is the slug of the address.
@@ -106,14 +108,17 @@ export function EmbedShell({ widget, mode }: EmbedShellProps) {
 
   const { gate, retry: retryGate } = useEmbedGate(mode);
   // Nothing asks the server for the org until the widgets are known to be on, for a version this app speaks, on a site that has an org.
-  const orgRequested = versionSupported && gate === 'on' && orgSlug !== '';
+  const orgRequested = matchedWidget !== null && versionSupported && gate === 'on' && orgSlug !== '';
   const { data: org, isLoading, isError, error, refetch } = usePublicOrg(orgRequested ? orgSlug : undefined);
 
   // What the shell shows, and, when it shows no content, why: the page that frames it is told with the same code.
   let state: EmbedState;
   let errorCode: EmbedErrorCode | null = null;
   let retry = retryGate;
-  if (!versionSupported) {
+  if (matchedWidget === null) {
+    state = 'unavailable';
+    errorCode = 'not_found';
+  } else if (!versionSupported) {
     state = 'unavailable';
     errorCode = 'bad_version';
   } else if (mode === 'host' && !hostSite) {

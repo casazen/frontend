@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider, createMemoryRouter, matchRoutes, useOutletContext, type RouteObject } from 'react-router-dom';
 import { AxiosError, AxiosHeaders } from 'axios';
@@ -16,7 +16,7 @@ import type { ResolveHostResponse } from '@/types/domain.types';
 import { appRoutes } from '@/routes';
 import { buildEmbedRoutes } from '@/routes/embed-routes';
 import { buildHostSiteRoutes } from '@/routes/host-site-routes';
-import { isSupportedEmbedVersion, parseParentOrigin, useEmbed, type EmbedHostMode } from '../embed-context';
+import { embedWidgetHandle, embedWidgetOf, isSupportedEmbedVersion, parseParentOrigin, useEmbed, type EmbedHostMode } from '../embed-context';
 import { EmbedShell } from '../embed-shell';
 
 /**
@@ -149,11 +149,37 @@ describe('the shell of the widgets on the CasaZen domain (AC1, AC7)', () => {
     }
   });
 
-  it('embedShell_EveryWidgetRoute_IsMarkedAsNotRedesigned', () => {
+  it.each([
+    ['platform', ['/embed/:orgSlug/booking', '/embed/:orgSlug/property/:propertySlugOrId', '/embed/:orgSlug/guest-access']],
+    ['host', ['/embed/booking', '/embed/property/:propertySlugOrId', '/embed/guest-access']],
+  ] as const)('buildEmbedRoutes_%s_IsOneFrameWithTheThreeWidgetsAndNothingElse', (mode, paths) => {
+    const [frame, ...others] = buildEmbedRoutes(mode);
+
+    expect(others).toEqual([]);
+    // The layout has no path of its own: it never matches by itself, so `/embed` alone is not a page of a widget.
+    expect(frame.path).toBeUndefined();
+    expect(frame.index).toBeUndefined();
+    expect(frame.children?.map((child) => child.path)).toEqual(paths);
+    expect(frame.children?.map((child) => embedWidgetOf([child]))).toEqual(['booking', 'property', 'guest-access']);
     // The redesign of the console (`data-ui="v2"`) never reaches a page of guests.
-    for (const route of buildEmbedRoutes('platform')) {
-      expect(isNotRedesignedMatch([{ route }])).toBe(true);
-    }
+    expect(isNotRedesignedMatch([{ route: frame }])).toBe(true);
+  });
+
+  it('embedShell_MovingFromOneWidgetToAnother_KeepsTheShellMounted', async () => {
+    const { router } = renderEmbed(`/embed/villa-rossi/booking?${ADDRESS}`);
+    const shell = await screen.findByTestId('embed-shell');
+    await screen.findByTestId('embed-widget-booking');
+    expect(shell).toHaveAttribute('data-widget', 'booking');
+
+    await act(async () => {
+      await router.navigate(`/embed/villa-rossi/property/casa-mare?from=booking&${ADDRESS}`);
+    });
+    await screen.findByTestId('embed-widget-property');
+
+    // The same element: the conversation with the page (the first `ready`, the bridge that is attached) is not started again.
+    expect(screen.getByTestId('embed-shell')).toBe(shell);
+    expect(shell).toHaveAttribute('data-widget', 'property');
+    expect(getPublicOrg).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -259,9 +285,8 @@ function Probe() {
 function probeRoutes(mode: EmbedHostMode): RouteObject[] {
   return [
     {
-      path: mode === 'host' ? '/embed/booking' : '/embed/:orgSlug/booking',
-      element: <EmbedShell widget="booking" mode={mode} />,
-      children: [{ index: true, element: <Probe /> }],
+      element: <EmbedShell mode={mode} />,
+      children: [{ path: mode === 'host' ? '/embed/booking' : '/embed/:orgSlug/booking', handle: embedWidgetHandle('booking'), element: <Probe /> }],
     },
   ];
 }
@@ -296,6 +321,17 @@ describe('what the shell gives the widget it frames', () => {
     const probe = await screen.findByTestId('probe');
 
     expect(JSON.parse(probe.textContent ?? '').embed.parentOrigin).toBeNull();
+  });
+
+  it('embedShell_ARouteThatNamesNoWidget_HasNothingToShowAndAsksNothing', async () => {
+    const routes: RouteObject[] = [{ element: <EmbedShell mode="platform" />, children: [{ path: '/embed/:orgSlug/booking', element: <Probe /> }] }];
+    renderEmbed(`/embed/villa-rossi/booking?${ADDRESS}`, { routes });
+
+    const shell = await screen.findByTestId('embed-shell');
+
+    expect(shell).toHaveAttribute('data-state', 'unavailable');
+    expect(screen.queryByTestId('probe')).not.toBeInTheDocument();
+    expect(getPublicOrg).not.toHaveBeenCalled();
   });
 
   it('useEmbed_OutsideAWidget_IsNull', () => {
