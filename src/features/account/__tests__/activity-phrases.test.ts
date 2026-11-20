@@ -35,6 +35,20 @@ describe('activityPhrase', () => {
     expect(activityPhrase(entry({ details: { reminders: 'something' } }), context)).toBe("Modifica all'account");
   });
 
+  // FIX/BE-V2-NO-RECHARGE: the confirmed waiver of the recharge of the portal commissions is a line `OrgSettingsChanged` with the part `portalCommissionRechargeWaiver`. The list says what it is, and who
+  // confirmed it and when are the actor and the instant of the line that the list shows under the sentence.
+  it('activityPhrase_TheConfirmedWaiverOfTheRecharge_SaysWhatItIs_AndAnyOtherChangeOfTheCompanyKeepsItsSentence', async () => {
+    const waiver = entry({ type: 'OrgSettingsChanged', subjectType: 'Org', details: { part: 'portalCommissionRechargeWaiver' } });
+    const context = { t: i18n.t, memberName: (userId: string) => (userId === 'auth0|owner' ? 'Anna Rossi' : undefined) };
+
+    expect(activityPhrase(waiver, context)).toBe("Le commissioni dei portali non sono più riaddebitate ai proprietari: le sostiene l'agenzia");
+    expect(activityActor(waiver, context)).toBe('Anna Rossi');
+    expect(activityPhrase(entry({ type: 'OrgSettingsChanged', subjectType: 'Org', details: { part: 'legalName' } }), context)).toBe("Dati dell'azienda modificati");
+    expect(activityPhrase(entry({ type: 'OrgSettingsChanged', subjectType: 'Org', details: {} }), context)).toBe("Dati dell'azienda modificati");
+    await i18n.changeLanguage('en');
+    expect(activityPhrase(waiver, context)).toBe('Portal commissions are no longer recharged to the owners: the agency pays them');
+  });
+
   // E20/F03/US01/T01: every opening of a credential of the support vault is a line of the log that the host reads, with the kind of credential and never its value or the reason.
   describe('the «Do it for me» lines', () => {
     const context = { t: i18n.t, memberName: () => undefined };

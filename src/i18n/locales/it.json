@@ -100,6 +100,7 @@
       "other": "Modifica all'account",
       "planChanged": "Piano cambiato: da {{from}} a {{to}}",
       "propertyActivatedWithReminders": "Immobile attivato con {{reminders}} da completare",
+      "rechargeWaiver": "Le commissioni dei portali non sono più riaddebitate ai proprietari: le sostiene l'agenzia",
       "reminder": {
         "documents": "i documenti",
         "documents_safety": "i documenti e la scheda di sicurezza",
@@ -1804,6 +1805,7 @@
       "issuerRegimeCountryMismatch": "Il regime scelto non vale per il paese di chi emette. Controlla il paese e il regime.",
       "noPendingVerification": "Questa verifica non è più in attesa.",
       "ownerMandateOwnersEmpty": "Non c’è nessun proprietario a cui applicare il mandato.",
+      "rechargeWaiverNotAcknowledged": "Non abbiamo salvato: per smettere di riaddebitare ai proprietari le commissioni dei portali serve la tua conferma.",
       "reportInvalidPeriod": "Il periodo non è valido: controlla le date.",
       "reportPeriodTooLong": "Il periodo è troppo lungo: scegline uno di al massimo 24 mesi.",
       "routineActionNotAvailable": "Questa routine contiene azioni non ancora disponibili: non si può attivare, ma puoi provarla in modalità test.",
@@ -3217,6 +3219,14 @@
         "description": "La commissione che il portale ha fatturato all’agenzia entra nella fattura al proprietario, con l’IVA del compenso. Da confermare con il commercialista.",
         "legend": "Commissioni dei portali pagate dall’agenzia",
         "title": "Riaddebita le commissioni dei portali al proprietario"
+      },
+      "waiver": {
+        "confirm": "Confermo: le sostiene l’agenzia",
+        "description": "Da ora la commissione dei portali pagata dall’agenzia è un costo suo e non viene addebitata al proprietario.",
+        "mandate": "Controlla che il mandato lo consenta: l’agenzia rinuncia al rimborso che la legge le riconosce per queste spese e al documento che giustificherebbe la detrazione.",
+        "notRetroactive": "Non cambia i rendiconti già fatti: vale per quelli ancora da fare.",
+        "recorded": "CasaZen registra chi ha confermato e quando.",
+        "title": "Confermi che l’agenzia sostiene le commissioni dei portali?"
       }
     },
     "description": "Imposta come CasaZen emette i tuoi documenti: pochi passi, uno alla volta. Ogni passo si salva da solo e puoi riprendere quando vuoi.",
@@ -18512,12 +18522,14 @@
         "AgencyVat": "IVA che la fattura dell'agenzia aggiunge alla provvigione e ai riaddebiti. Si toglie dal saldo.",
         "BookingRevenue": "Incasso della prenotazione, al netto dei rimborsi, per la quota del proprietario. Si somma al saldo.",
         "ChannelFee": "Commissione trattenuta dal canale sulla prenotazione, per la quota del proprietario. Si toglie dal saldo.",
+        "ChannelFeeBorneByAgency": "Commissione del portale pagata dall'agenzia, che non la riaddebita al proprietario. È solo un'informazione: non si toglie dal saldo e non entra in nessun totale.",
         "Correction": "Rettifica fatta a mano, con il suo motivo: sostituisce una riga o ne aggiunge una.",
         "OwnerCharge": "Addebito dell'agenzia al proprietario, per la sua quota. Si toglie dal saldo.",
         "OwnerExpense": "Spesa pagata dall'agenzia per conto del proprietario, per la sua quota. Si toglie dal saldo.",
         "OwnerPayment": "Bonifico pagato al proprietario: salda quello che gli si doveva. Si toglie dal saldo.",
         "Withholding": "Ritenuta trattenuta sul pagamento e destinata al fisco. Si toglie dal saldo."
       },
+      "informational": "Solo informativa",
       "open": {
         "attachment": "Apri l'allegato",
         "attachmentText": "Allegato: {{reference}}",
@@ -18541,6 +18553,8 @@
       "steps": {
         "fx": "Cambio",
         "fxSource": "Cambio preso da: {{source}}, del {{date}}",
+        "informationalOriginal": "Commissione per la quota del proprietario",
+        "informationalResult": "A carico dell'agenzia, non nel rendiconto",
         "original": "Importo del proprietario",
         "rate": "1 {{from}} = {{rate}} {{to}}",
         "result": "Importo nel rendiconto",
@@ -18555,6 +18569,7 @@
         "AgencyVat": "IVA sulla fattura dell'agenzia",
         "BookingRevenue": "Incasso di una prenotazione",
         "ChannelFee": "Commissione del canale",
+        "ChannelFeeBorneByAgency": "Commissione del portale sostenuta dall'agenzia, non addebitata al proprietario",
         "Correction": "Rettifica",
         "OwnerCharge": "Addebito dell'agenzia",
         "OwnerExpense": "Spesa per il proprietario",
@@ -18741,6 +18756,11 @@
       "downloadCsvLabel": "Scarica il CSV del rendiconto",
       "downloadPdf": "PDF",
       "downloadPdfLabel": "Scarica il PDF del rendiconto",
+      "informational": {
+        "label": "Commissione del portale sostenuta dall'agenzia, non addebitata al proprietario",
+        "note_one": "{{count}} riga solo informativa, fuori dal totale",
+        "note_other": "{{count}} righe solo informative, fuori dal totale"
+      },
       "lines_one": "{{count}} riga",
       "lines_other": "{{count}} righe",
       "net": "Netto: saldo di chiusura",
@@ -19564,6 +19584,9 @@
       "invoicesTitle": "Fatture collegate",
       "line": {
         "bookingCode": "Prenotazione {{code}}",
+        "borneByAgency": "Commissione del portale sostenuta dall’agenzia, non addebitata al proprietario",
+        "chargedOnAgencyAccount": "Commissione del portale su un account intestato all’agenzia, addebitata a te senza riaddebito in fattura",
+        "informational": "Solo informativa",
         "kind": {
           "cleaning": "Pulizie",
           "linen": "Biancheria"

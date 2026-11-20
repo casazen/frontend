@@ -100,6 +100,7 @@
       "other": "Change to the account",
       "planChanged": "Plan changed: from {{from}} to {{to}}",
       "propertyActivatedWithReminders": "Property activated with {{reminders}} still to complete",
+      "rechargeWaiver": "Portal commissions are no longer recharged to the owners: the agency pays them",
       "reminder": {
         "documents": "the documents",
         "documents_safety": "the documents and the safety sheet",
@@ -1804,6 +1805,7 @@
       "issuerRegimeCountryMismatch": "The regime you chose does not apply to the country of the issuer. Check the country and the regime.",
       "noPendingVerification": "This verification is no longer waiting.",
       "ownerMandateOwnersEmpty": "There is no owner to apply the mandate to.",
+      "rechargeWaiverNotAcknowledged": "Not saved: to stop recharging the portal commissions to the owners we need your confirmation.",
       "reportInvalidPeriod": "The period is not valid: check the dates.",
       "reportPeriodTooLong": "The period is too long: choose one of at most 24 months.",
       "routineActionNotAvailable": "This routine holds actions that are not available yet: it cannot be switched on, but you can try it in test mode.",
@@ -3217,6 +3219,14 @@
         "description": "The commission the portal invoiced to the agency goes into the invoice to the owner, with the VAT of the fee. To be confirmed with your accountant.",
         "legend": "Portal commissions paid by the agency",
         "title": "Recharge the portal commissions to the owner"
+      },
+      "waiver": {
+        "confirm": "I confirm: the agency pays them",
+        "description": "From now on, the portal commission the agency pays is its own cost and is not charged to the owner.",
+        "mandate": "Check that the mandate allows it: the agency gives up the reimbursement the law grants it for these expenses, and the document that would justify the deduction.",
+        "notRetroactive": "It does not change the statements already made: it applies to the ones still to be made.",
+        "recorded": "CasaZen records who confirmed and when.",
+        "title": "Confirm that the agency pays the portal commissions?"
       }
     },
     "description": "Set up how CasaZen issues your documents: a few steps, one at a time. Every step saves itself and you can pick it up whenever you like.",
@@ -18512,12 +18522,14 @@
         "AgencyVat": "VAT the invoice of the agency adds to the commission and the recharges. It is taken off the balance.",
         "BookingRevenue": "Payment collected for the booking, net of refunds, for the owner's share. It is added to the balance.",
         "ChannelFee": "Commission kept by the channel on the booking, for the owner's share. It is taken off the balance.",
+        "ChannelFeeBorneByAgency": "Portal commission paid by the agency, which does not recharge it to the owner. For information only: it is not taken off the balance and is in no total.",
         "Correction": "Manual correction with its reason: it replaces a line or adds one.",
         "OwnerCharge": "Charge of the agency to the owner, for his share. It is taken off the balance.",
         "OwnerExpense": "Expense paid by the agency on behalf of the owner, for his share. It is taken off the balance.",
         "OwnerPayment": "Transfer paid to the owner: it settles what was owed. It is taken off the balance.",
         "Withholding": "Withholding kept from the payment and due to the tax authority. It is taken off the balance."
       },
+      "informational": "For information only",
       "open": {
         "attachment": "Open the attachment",
         "attachmentText": "Attachment: {{reference}}",
@@ -18541,6 +18553,8 @@
       "steps": {
         "fx": "Exchange rate",
         "fxSource": "Rate taken from: {{source}}, of {{date}}",
+        "informationalOriginal": "Commission for the owner's share",
+        "informationalResult": "Paid by the agency, not in the statement",
         "original": "Owner's amount",
         "rate": "1 {{from}} = {{rate}} {{to}}",
         "result": "Amount in the statement",
@@ -18555,6 +18569,7 @@
         "AgencyVat": "VAT on the invoice of the agency",
         "BookingRevenue": "Revenue of a booking",
         "ChannelFee": "Channel fee",
+        "ChannelFeeBorneByAgency": "Portal commission paid by the agency, not charged to the owner",
         "Correction": "Correction",
         "OwnerCharge": "Agency charge",
         "OwnerExpense": "Expense for the owner",
@@ -18741,6 +18756,11 @@
       "downloadCsvLabel": "Download the CSV of the statement",
       "downloadPdf": "PDF",
       "downloadPdfLabel": "Download the PDF of the statement",
+      "informational": {
+        "label": "Portal commission paid by the agency, not charged to the owner",
+        "note_one": "{{count}} line for information only, outside the total",
+        "note_other": "{{count}} lines for information only, outside the total"
+      },
       "lines_one": "{{count}} line",
       "lines_other": "{{count}} lines",
       "net": "Net: closing balance",
@@ -19564,6 +19584,9 @@
       "invoicesTitle": "Linked invoices",
       "line": {
         "bookingCode": "Booking {{code}}",
+        "borneByAgency": "Portal commission paid by the agency, not charged to the owner",
+        "chargedOnAgencyAccount": "Portal commission on an account held by the agency, charged to you with no recharge on an invoice",
+        "informational": "For information only",
         "kind": {
           "cleaning": "Cleaning",
           "linen": "Linen"

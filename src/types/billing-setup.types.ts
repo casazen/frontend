@@ -136,10 +136,15 @@ export type BillingSetupField = (typeof BILLING_SETUP_FIELDS)[number];
 export const PORTAL_ACCOUNT_HOLDERS = ['Owner', 'Agency'] as const;
 export type PortalAccountHolder = (typeof PORTAL_ACCOUNT_HOLDERS)[number];
 
-/** `PUT api/billing-setup/channels`: a member left out keeps its value. */
+/**
+ * `PUT api/billing-setup/channels`: a member left out keeps its value. `acknowledgeRechargeWaiver` is the explicit confirmation of the waiver of the recharge (FIX/BE-V2-NO-RECHARGE): a save that
+ * turns the recharge off while the agency holds an account, or makes the agency the default holder while the recharge is off, is refused (422 `recharge_waiver_not_acknowledged`) without it. It is
+ * sent ONLY after the person confirmed in the dialog that says what the waiver is, never by default and never in the first request of a save.
+ */
 export interface PortalAccountSettingsRequest {
   portalAccountHolder?: PortalAccountHolder;
   rechargePortalCommissions?: boolean;
+  acknowledgeRechargeWaiver?: boolean;
 }
 
 /** The holder of a listing on a portal where it differs from the default of the organization (`GET api/billing-setup/channel-account-holders`). */
