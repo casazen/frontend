@@ -10124,8 +10124,8 @@
     "duty": {
       "answeredNotRequired": "You answered: I do not have to notify.",
       "answeredRequired": "You answered: I have to notify.",
-      "askQuestion": "Do you have to notify the guests of this property?",
-      "askTitle": "The sources do not say for certain whether the rule applies to whoever lets a private home, so you decide.",
+      "askQuestion": "Do you have to notify the guests of this property? It is up to you.",
+      "askTitle": "The sources do not say for certain whether the rule applies to whoever lets a private home.",
       "change": "Change answer",
       "mustNotNotify": "I do not have to notify",
       "mustNotify": "I have to notify",

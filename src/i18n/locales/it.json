@@ -10124,8 +10124,8 @@
     "duty": {
       "answeredNotRequired": "Hai risposto: non devo notificare.",
       "answeredRequired": "Hai risposto: devo notificare.",
-      "askQuestion": "Per questa struttura devi notificare gli ospiti?",
-      "askTitle": "Le fonti non dicono con certezza se la regola vale per chi affitta una casa privata, quindi decidi tu.",
+      "askQuestion": "Per questa struttura devi notificare gli ospiti? Decidi tu.",
+      "askTitle": "Le fonti non dicono con certezza se la regola vale per chi affitta una casa privata.",
       "change": "Cambia risposta",
       "mustNotNotify": "Non devo notificare",
       "mustNotify": "Devo notificare",

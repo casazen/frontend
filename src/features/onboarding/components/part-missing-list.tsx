@@ -31,7 +31,7 @@ export function PartMissingList({ target, items, totalMissing }: PartMissingList
   const { t } = useTranslation();
   const { hasPermission } = useWorkspace();
   const { flags } = useFeatureFlags();
-  const properties = useProperties({ mode: 'short' });
+  const properties = useProperties({ mode: 'short' }, { fresh: true });
   const names = useMemo(
     () => new Map((properties.isError ? [] : (properties.data ?? [])).map((property) => [property.id, { name: property.name, city: property.city }] as const)),
     [properties.data, properties.isError],
