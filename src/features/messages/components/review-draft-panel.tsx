@@ -72,7 +72,8 @@ function ReviewDraftPanelBody({ threadKey, canAsk }: ReviewDraftPanelProps) {
   const request = useRequestReviewDraft(threadKey);
   const busy = useIsMutating() > 0;
 
-  const [editing, setEditing] = useState(false);
+  // The draft the host opened the editor on (`null` while it is not open): it keeps the editor, and the words written in it, when the queue cannot be read.
+  const [editing, setEditing] = useState<ApprovalQueueItem | null>(null);
   const [publishing, setPublishing] = useState<Publishing | null>(null);
   const [rejecting, setRejecting] = useState<ApprovalQueueItem | null>(null);
   // Why the last approval of a draft failed (the code of its action), until the next try.
@@ -81,6 +82,11 @@ function ReviewDraftPanelBody({ threadKey, canAsk }: ReviewDraftPanelProps) {
 
   // A reading of the queue that failed is not «no draft» and not the draft of the last reading: the panel says it could not read.
   const draft = useMemo(() => (pending.isError ? null : pendingReviewDraftOf(pending.data, threadKey)), [pending.isError, pending.data, threadKey]);
+  // What the panel works on. While the host writes in the editor, a reading of the queue that fails does not take the editor away (the words written and not saved would be lost with
+  // it): the draft it was opened on stays and the failed reading is told above it. A reading that works and no longer holds the draft (decided by someone else) does take it away.
+  const shown = draft ?? (pending.isError ? editing : null);
+  // The editor is open on the draft that is shown (the one it was opened on): another draft, which may come after this one is gone, does not open it by itself.
+  const editingShown = editing !== null && shown !== null && editing.id === shown.id;
   const failureText = (code: string) => reasonText(code, t) ?? originErrorMessage(code, t);
 
   const publish = async (target: Publishing) => {
@@ -90,7 +96,7 @@ function ReviewDraftPanelBody({ threadKey, canAsk }: ReviewDraftPanelProps) {
     try {
       const approved =
         target.kind === 'approve' ? await approve.mutateAsync(target.item.id) : await saveAndApprove.mutateAsync({ id: target.item.id, text: target.text });
-      setEditing(false);
+      setEditing(null);
       const outcome = approvalOutcome(approved);
       setNotice({ tone: outcome.tone, key: outcome.key });
     } catch (error) {
@@ -98,12 +104,28 @@ function ReviewDraftPanelBody({ threadKey, canAsk }: ReviewDraftPanelProps) {
       const code = originActionErrorOf(error);
       if (code !== undefined) {
         setFailure({ id: target.item.id, code });
-        setEditing(false);
+        setEditing(null);
       }
     } finally {
       invalidateReviews(queryClient);
     }
   };
+
+  // A reading of the queue that failed, with a retry: it stands in place of the panel, or above the editor while the host is writing in it.
+  const loadError = (
+    <Alert
+      variant="danger"
+      icon={AlertCircle}
+      data-testid="review-draft-load-error"
+      action={
+        <Button type="button" variant="outline" size="sm" onClick={() => void pending.refetch()}>
+          {t('shared.errorFallback.tryAgain')}
+        </Button>
+      }
+    >
+      {t('reviews.thread.draft.loadError')}
+    </Alert>
+  );
 
   let body: ReactNode;
   if (pending.isPending) {
@@ -113,27 +135,13 @@ function ReviewDraftPanelBody({ threadKey, canAsk }: ReviewDraftPanelProps) {
         <Skeleton aria-hidden="true" className="h-24 w-full rounded-lg motion-reduce:animate-none" />
       </div>
     );
-  } else if (pending.isError) {
-    body = (
-      <Alert
-        variant="danger"
-        icon={AlertCircle}
-        data-testid="review-draft-load-error"
-        action={
-          <Button type="button" variant="outline" size="sm" onClick={() => void pending.refetch()}>
-            {t('shared.errorFallback.tryAgain')}
-          </Button>
-        }
-      >
-        {t('reviews.thread.draft.loadError')}
-      </Alert>
-    );
-  } else if (draft !== null) {
-    const failureCode = failure?.id === draft.id ? failure.code : failureCodeOf(draft);
-    const edited = isEdited(draft);
+  } else if (shown !== null) {
+    const failureCode = failure?.id === shown.id ? failure.code : failureCodeOf(shown);
+    const edited = isEdited(shown);
 
     body = (
       <div className="space-y-3">
+        {pending.isError ? loadError : null}
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <Badge variant="secondary" className="flex items-center gap-1">
             <Sparkles aria-hidden="true" className="h-3 w-3" />
@@ -146,21 +154,21 @@ function ReviewDraftPanelBody({ threadKey, canAsk }: ReviewDraftPanelProps) {
           ) : null}
         </div>
 
-        {editing ? (
+        {editingShown ? (
           <ReviewDraftEditor
             // A new text of the same draft (the queue read again after a save) starts a new editor only when the host opens it again.
-            key={draft.id}
-            item={draft}
+            key={shown.id}
+            item={shown}
             edit={edit}
             busy={busy}
             publishing={saveAndApprove.isPending}
-            onPublish={(text) => setPublishing({ kind: 'saveAndApprove', item: draft, text })}
-            onClose={() => setEditing(false)}
+            onPublish={(text) => setPublishing({ kind: 'saveAndApprove', item: shown, text })}
+            onClose={() => setEditing(null)}
           />
         ) : (
           <>
             <div className="max-h-72 overflow-y-auto whitespace-pre-wrap break-words rounded-md bg-muted p-3 text-sm" data-testid="review-draft-text">
-              {finalTextOf(draft)}
+              {finalTextOf(shown)}
             </div>
 
             {failureCode ? (
@@ -173,17 +181,17 @@ function ReviewDraftPanelBody({ threadKey, canAsk }: ReviewDraftPanelProps) {
             <div className="flex flex-wrap items-center gap-2">
               <Button
                 type="button"
-                onClick={() => setPublishing({ kind: 'approve', item: draft })}
+                onClick={() => setPublishing({ kind: 'approve', item: shown })}
                 loading={approve.isPending}
                 disabled={busy && !approve.isPending}
                 data-testid="review-draft-approve"
               >
                 {failureCode ? t('approval.action.retry') : t('reviews.thread.draft.approve')}
               </Button>
-              <Button type="button" variant="outline" onClick={() => setEditing(true)} disabled={busy} data-testid="review-draft-edit">
+              <Button type="button" variant="outline" onClick={() => setEditing(shown)} disabled={busy} data-testid="review-draft-edit">
                 {t('reviews.thread.draft.edit')}
               </Button>
-              <Button type="button" variant="danger-outline" onClick={() => setRejecting(draft)} disabled={busy} data-testid="review-draft-reject">
+              <Button type="button" variant="danger-outline" onClick={() => setRejecting(shown)} disabled={busy} data-testid="review-draft-reject">
                 {t('reviews.thread.draft.reject')}
               </Button>
             </div>
@@ -191,6 +199,8 @@ function ReviewDraftPanelBody({ threadKey, canAsk }: ReviewDraftPanelProps) {
         )}
       </div>
     );
+  } else if (pending.isError) {
+    body = loadError;
   } else {
     body = (
       <div className="space-y-3">
@@ -220,7 +230,7 @@ function ReviewDraftPanelBody({ threadKey, canAsk }: ReviewDraftPanelProps) {
   // What the last request for a draft ended in is the state of the panel only while there is no draft: once one is there it is the draft that counts. A decision that is not `Drafted`
   // says why it is not, and is never a success.
   const notDrafted = request.data && request.data.status !== 'Drafted' ? request.data : null;
-  const requestError = request.isError && draft === null ? request.error : null;
+  const requestError = request.isError && shown === null ? request.error : null;
 
   return (
     <section aria-label={t('reviews.thread.draft.title')} className="space-y-3 rounded-xl border bg-card p-4" data-testid="review-draft-panel">
@@ -237,7 +247,7 @@ function ReviewDraftPanelBody({ threadKey, canAsk }: ReviewDraftPanelProps) {
         </Alert>
       ) : null}
 
-      {notDrafted && draft === null ? (
+      {notDrafted && shown === null ? (
         <Alert variant="warning" data-testid="review-draft-outcome">
           {draftReasonText(notDrafted.reason, t)}
         </Alert>

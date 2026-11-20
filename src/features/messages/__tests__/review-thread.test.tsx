@@ -504,5 +504,49 @@ describe('the page of a review (E05/F06/US02, NF-69)', () => {
       expect(await screen.findByTestId('review-draft-load-error')).toHaveTextContent('Non è stato possibile leggere le bozze in attesa');
       expect(screen.queryByTestId('review-draft-none')).not.toBeInTheDocument();
     });
+
+    it('ReviewThreadView_ReadingOfTheQueueFailsWhileTheHostEditsTheDraft_KeepsTheEditorWithTheWordsAndSaysItCouldNotRead', async () => {
+      vi.mocked(approvalQueueApi.getPending).mockResolvedValue([draft()]);
+      const { client } = renderReview(OTA_KEY, { assistant: true });
+      await screen.findByTestId('review-draft-text');
+
+      fireEvent.click(screen.getByTestId('review-draft-edit'));
+      fireEvent.change(within(await screen.findByTestId('review-draft-editor')).getByRole('textbox'), { target: { value: 'Grazie di cuore, a presto da tutti noi!' } });
+
+      // The reading of the queue fails (the poll of the minute): it is told above the editor, which stays with the words that were not saved yet.
+      vi.mocked(approvalQueueApi.getPending).mockRejectedValue(httpError(500));
+      await client.invalidateQueries({ queryKey: ['approval-queue'] });
+      expect(await screen.findByTestId('review-draft-load-error')).toHaveTextContent('Non è stato possibile leggere le bozze in attesa');
+      expect(within(screen.getByTestId('review-draft-editor')).getByRole('textbox')).toHaveValue('Grazie di cuore, a presto da tutti noi!');
+      // It is neither «no draft» nor the draft of the reading before.
+      expect(screen.queryByTestId('review-draft-none')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('review-draft-text')).not.toBeInTheDocument();
+
+      // The queue is read again: it is the same editor, with the same words, and the warning is gone.
+      vi.mocked(approvalQueueApi.getPending).mockResolvedValue([draft()]);
+      await client.invalidateQueries({ queryKey: ['approval-queue'] });
+      await waitFor(() => expect(screen.queryByTestId('review-draft-load-error')).not.toBeInTheDocument());
+      expect(within(screen.getByTestId('review-draft-editor')).getByRole('textbox')).toHaveValue('Grazie di cuore, a presto da tutti noi!');
+    });
+
+    it('ReviewThreadView_DraftDecidedElsewhereWhileTheHostEdits_TheEditorGoesWhenTheQueueIsReadWithoutItAndDoesNotOpenOnTheNextDraft', async () => {
+      vi.mocked(approvalQueueApi.getPending).mockResolvedValue([draft()]);
+      const { client } = renderReview(OTA_KEY, { assistant: true });
+      await screen.findByTestId('review-draft-text');
+      fireEvent.click(screen.getByTestId('review-draft-edit'));
+      await screen.findByTestId('review-draft-editor');
+
+      // A reading that works and no longer holds the draft: there is nothing left to edit.
+      vi.mocked(approvalQueueApi.getPending).mockResolvedValue([]);
+      await client.invalidateQueries({ queryKey: ['approval-queue'] });
+      expect(await screen.findByTestId('review-draft-none')).toBeInTheDocument();
+      expect(screen.queryByTestId('review-draft-editor')).not.toBeInTheDocument();
+
+      // Another draft, which comes after, is shown to be read: the editor does not open by itself on it.
+      vi.mocked(approvalQueueApi.getPending).mockResolvedValue([draft({ id: 'a2', contentText: 'Un altro testo.' })]);
+      await client.invalidateQueries({ queryKey: ['approval-queue'] });
+      expect(await screen.findByTestId('review-draft-text')).toHaveTextContent('Un altro testo.');
+      expect(screen.queryByTestId('review-draft-editor')).not.toBeInTheDocument();
+    });
   });
 });
