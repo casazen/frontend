@@ -121,6 +121,8 @@ interface Section {
 const SECTIONS: readonly Section[] = [
   { field: 'alloggiatiFailures', testKey: 'alloggiati', icon: AlertCircle, group: 'stay', badge: { kind: 'alloggiati', status: 'Errore' } },
   { field: 'alloggiatiManualRequired', testKey: 'alloggiati-manual', icon: Send, group: 'stay', badge: { kind: 'alloggiati', status: 'DaInviareManualmente' } },
+  // casazen/backend#979: the guests of a Ticino property to notify to the cantonal police, an arrival day per row.
+  { field: 'ticinoNotifications', testKey: 'ticino', icon: Send, group: 'propertyItem' },
   { field: 'manualSendsRequired', testKey: 'manual-sends', icon: Send, group: 'stay' },
   { field: 'receiptsToUpload', testKey: 'receipts', icon: FileCheck, group: 'stay' },
   { field: 'guestCheckInsIncomplete', testKey: 'checkins', icon: Users, group: 'stay' },

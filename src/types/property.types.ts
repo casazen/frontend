@@ -208,6 +208,8 @@ export interface CreatePropertyDto {
   quietHoursTo?: string | null;
   extraGuestFeePerNight?: number | null;
   cinCode?: string | null;
+  /** casazen/backend#979: the «Numero identificativo LEAR / NO-LEAR» for the Ticino police file; null or blank clears it. */
+  ticinoStructureId?: string | null;
   timezone?: string;
   cancellationPolicyId?: string | null;
   cancellationFullRefundHours?: number | null;
@@ -565,6 +567,10 @@ export interface PropertyDetailDto {
   damageDeposit: number;
   cinCode: string | null;
   cinStatus: CinStatus;
+  /** casazen/backend#979: the «Numero identificativo LEAR / NO-LEAR» of the structure (Ticino police portal); null until entered. */
+  ticinoStructureId?: string | null;
+  /** The property is in canton Ticino: its guests go to the cantonal police (notifiche.ti.ch), not to Alloggiati Web. */
+  isInTicino?: boolean;
   /** The CIN is valid and its ISTAT comune differs from the property's chosen comune: a non-blocking warning (SU-04). */
   cinIstatMismatch?: boolean;
   /** ISTAT code of the comune chosen from the official list; null until chosen. */
