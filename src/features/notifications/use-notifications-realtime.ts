@@ -123,6 +123,16 @@ function refreshCheckInLinkDelivery(queryClient: QueryClient): void {
 }
 
 /**
+ * CasaZen did a step of a stay in the host's place (`PushTypes.BookingFlowStep`, casazen/backend#978): registered the arrival or the departure, or declared the property ready once the
+ * cleaning was done; its `entityId` is the booking. The booking and its step, Alloggiati Web, the cockpit, the Home and the «To do» list show it without a reload.
+ */
+const BOOKING_FLOW_STEP = 'booking-flow-step';
+
+function refreshBookingFlowStep(queryClient: QueryClient): void {
+  [BOOKINGS_KEY, ALLOGGIATI_KEY, COMPLIANCE_KEY, DASHBOARD_KEY, INTERNAL_ACTIVITIES_KEY].forEach((root) => void queryClient.invalidateQueries({ queryKey: [root] }));
+}
+
+/**
  * The notifications that say a light of the compliance cockpit changed (`PushTypes` of the stay alerts and of the alerts about a period or the
  * connection of a property, E03/F02/US02): the guest data missing, the deadline of Alloggiati Web near or past, a communication that failed, the
  * departure to close, the receipt missing, a short stay at risk, a stay over 30 nights, ISTAT and the tourist tax of a month, the police send that is
@@ -259,6 +269,7 @@ export function applyNotificationsChange(queryClient: QueryClient, change: Notif
   }
   if (change.type === GUEST_CHECKIN_COMPLETED) refreshCheckInData(queryClient);
   else if (change.type === CHECKIN_LINK_FAILED) refreshCheckInLinkDelivery(queryClient);
+  else if (change.type === BOOKING_FLOW_STEP) refreshBookingFlowStep(queryClient);
   else if (change.type !== null && COMPLIANCE_ALERT_TYPES.has(change.type)) refreshComplianceLights(queryClient, change.type);
   if (change.type === VERIFICATION_REQUIRED) refreshVerifications(queryClient);
   if (change.type === ASSIST_REQUESTED || change.type === ASSIST_REOPENED) refreshAssistQueue(queryClient);

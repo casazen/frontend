@@ -409,6 +409,18 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/reviews/host-reviews-page')).HostReviewsPage }),
   },
   {
+    // The steps of a booking (casazen/backend#978): which ones CasaZen does by itself (the check-in link, the arrival, the departure, the property ready) and which ones the
+    // host does. The last tab of Prenotazioni: whoever reads the bookings reads it, only the organization administrator changes it (the server checks it again).
+    path: '/app/short-rent/bookings/flow',
+    context: 'short-rent',
+    requiredPermissions: ['booking.read'],
+    navKey: 'nav.bookingFlow',
+    navParent: '/app/short-rent/bookings',
+    navOrder: 4,
+    icon: 'ListChecks',
+    component: async () => ({ default: (await import('@/features/bookings/booking-flow-page')).BookingFlowPage }),
+  },
+  {
     // The calendars of all the properties in one list (SR-10b): the channel, when each was last read, what needs a look and "Sincronizza ora";
     // "Collega" leads to the tab Calendari of the property, where calendars are linked. A tab of Immobili, whose calendars it lists.
     // Who may read the properties sees the state; only who may write them gets the buttons.
@@ -831,6 +843,15 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({
       default: (await import('@/features/compliance/sender-wizard/sender-wizard')).SenderWizardPage,
     }),
+  },
+  {
+    // «Notifica alla polizia (Ticino)» (casazen/backend#979): the guided notification of the guests of a property in canton Ticino to the cantonal
+    // police (`?property=<id>&date=yyyy-MM-dd`): download the official file, upload it on notifiche.ti.ch, record the receipt. In no menu (most hosts have no
+    // Ticino property): the cockpit item `NotifyTicinoPolice` and the property page lead here. It reads guest data (`booking.read`; the API also asks `guest.read`).
+    path: '/app/short-rent/compliance/ticino',
+    context: 'short-rent',
+    requiredPermissions: ['booking.read'],
+    component: async () => ({ default: (await import('@/pages/SwissCompliancePage')).SwissCompliancePage }),
   },
   {
     path: '/app/short-rent/bookings/:id',

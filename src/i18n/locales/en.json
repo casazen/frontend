@@ -4902,6 +4902,19 @@
       "confirmManual": {
         "title": "Confirm the booking"
       },
+      "linkScheduled": {
+        "title": "The online check-in link goes out by itself",
+        "body": "CasaZen sends it to the guest on {{date}}. If you prefer, send it now.",
+        "action": "Send it now"
+      },
+      "arrivalAutomatic": {
+        "title": "{{guest}}'s arrival: CasaZen takes care of it",
+        "body": "At the end of the arrival day ({{date}}) CasaZen registers it by itself. If the guest does not arrive, report the no-show."
+      },
+      "departureAutomatic": {
+        "title": "{{guest}}'s departure: CasaZen takes care of it",
+        "body": "At the check-out time CasaZen registers the departure and goes on with the cleaning and the property ready. If you prefer, close the stay yourself."
+      },
       "heading": "What happens now",
       "registerArrival": {
         "body": "When the guest is at the property, confirm the arrival here. Check-in: {{date}}.",
@@ -6815,6 +6828,7 @@
       }
     },
     "item": {
+      "NotifyTicinoPolice": "Police notification of the arrivals of {{period}}",
       "ActivateOctorateSend": "Automatic send to the Questura",
       "ActivateProperty": "Property activation",
       "CheckOut": "Departure",
@@ -8570,6 +8584,10 @@
       "requests_other": "{{count}} requests to approve"
     },
     "todo": {
+      "NotifyTicinoPolice": {
+        "cta": "Notify",
+        "title": "Notify the police of the guests who arrived on {{period}}: {{label}}"
+      },
       "ActivateOctorateSend": {
         "cta": "Check the send",
         "title": "Activate the automatic send to the Questura: {{label}}"
@@ -15717,6 +15735,77 @@
       "use": "Use the translation"
     }
   },
+  "bookingFlow": {
+    "title": "Booking flow",
+    "intro": "Every booking goes through these steps. The automatic ones are done by CasaZen and no longer land in your «To do» list.",
+    "loadFailed": "We cannot read the booking flow. Try again in a moment.",
+    "save": "Save the flow",
+    "saved": "Booking flow saved.",
+    "saveFailed": "We could not save the flow. Try again.",
+    "readOnly": "Only the administrator of the organization can change these steps.",
+    "mode": {
+      "Automatic": "Automatic",
+      "Manual": "You do it"
+    },
+    "errors": {
+      "days": "Choose a number of days from 0 to {{max}}."
+    },
+    "steps": {
+      "confirmation": {
+        "title": "Confirmation",
+        "who": "Automatic",
+        "fixed": "Bookings from the portals and the ones paid on your site are confirmed by themselves. Booking requests wait for your answer."
+      },
+      "checkInLink": {
+        "title": "Online check-in link",
+        "automatic": "CasaZen sends the guest the online check-in link (e-mail, booking confirmation or the portal chat). If it cannot reach the guest, it tells you.",
+        "manual": "You send the link to the guest from the booking page.",
+        "days": {
+          "label": "Days before the arrival",
+          "hint": "From 0 (the arrival day) to {{max}}: the link stays valid for {{max}} days."
+        }
+      },
+      "guestData": {
+        "title": "Guest data",
+        "who": "The guest",
+        "fixed": "The guest enters them with the online check-in. If they are missing, you complete them from the booking."
+      },
+      "arrival": {
+        "title": "Arrival",
+        "automatic": "CasaZen registers the arrival at the end of the arrival day. Until then you can register it yourself or report a no-show.",
+        "manual": "You register the arrival from the booking."
+      },
+      "alloggiati": {
+        "title": "Alloggiati Web communication",
+        "who": "You do it",
+        "fixed": "It is a legal duty: CasaZen prepares the data, you send them to the police within the deadline."
+      },
+      "departure": {
+        "title": "Departure",
+        "automatic": "CasaZen registers the departure at the check-out time of the property (10:00 if you set none).",
+        "manual": "You register the departure with the check-out procedure."
+      },
+      "cleaning": {
+        "title": "Cleaning",
+        "who": "On each property",
+        "fixed": "The cleaning at check-out is set on each property: who cleans, at what time and at what price."
+      },
+      "propertyReady": {
+        "title": "Property ready for the next guest",
+        "automatic": "CasaZen declares the property ready for the next guest.",
+        "manual": "You declare the property ready after the check-out.",
+        "trigger": {
+          "label": "When",
+          "CleaningDone": "When the cleaning is done",
+          "CheckOut": "At the check-out",
+          "hint": {
+            "CleaningDone": "If no cleaning is planned for a stay, we remind you in the «To do» list.",
+            "CheckOut": "The property is ready as soon as the guest leaves, even with no cleaning recorded."
+          }
+        }
+      }
+    }
+  },
   "nav": {
     "accountant": "Accountant",
     "accountHome": "Home",
@@ -15840,6 +15929,7 @@
     "activities": "Activities",
     "inviteQr": "Invite QR codes",
     "reviews": "Reviews",
+    "bookingFlow": "Flow",
     "routines": "AI Agents",
     "channelCommissions": "Channel commissions",
     "channels": "Channels and calendars",
@@ -15941,6 +16031,7 @@
       "newBooking": "You have a new booking.",
       "guestMessage": "A guest sent you a message.",
       "guestCheckinCompleted": "A guest completed the online check-in.",
+      "bookingFlowStep": "CasaZen did a step of a booking for you.",
       "guestDataMissing": "A guest's data is still missing.",
       "alloggiatiDeadline": "An Alloggiati Web submission is about to expire.",
       "alloggiatiOverdue": "An Alloggiati Web submission is overdue.",
@@ -30727,46 +30818,74 @@
     }
   },
   "swiss": {
-    "description": "Compliance files for Canton Ticino: daily police notification and OTR report.",
-    "otr": {
-      "description": "Overnight stays report for the period (OTR CSV).",
-      "download": "Download OTR report",
-      "downloadFailed": "Unable to download OTR report.",
-      "downloading": "Downloading...",
-      "fromDate": "From date",
-      "title": "OTR Report",
-      "toDate": "To date"
+    "title": "Police notification (Ticino)",
+    "description": "In Ticino every guest must be notified to the cantonal police within 24 hours of the arrival. CasaZen prepares the official file: you upload it on the notification portal and keep the receipt here.",
+    "noProperty": "Open this page from Compliance or from the page of a property in Ticino.",
+    "backToCompliance": "Go to Compliance",
+    "loading": "Loading…",
+    "loadFailed": "The notification could not be loaded. Try again shortly.",
+    "notInTicino": "This property is not in canton Ticino: the Ticino police notification does not apply.",
+    "day": {
+      "title": "Arrivals of {{day}}",
+      "none": "No arrivals on this day.",
+      "due": "To notify by {{when}} (24 hours from the arrival).",
+      "notified": "Receipt of the portal archived: day notified.",
+      "notifiedDone": "The guests of this day are notified.",
+      "otherDays": "Other days to notify:"
     },
-    "police": {
-      "date": "Notification date",
-      "description": "Daily police notification (Ticino XML).",
-      "download": "Download police notification",
-      "downloadFailed": "Unable to download notification.",
-      "downloading": "Downloading...",
-      "title": "Police Notification"
+    "structureId": {
+      "title": "Identification number of the property",
+      "missing": "It is needed for the file: the number Ticino Turismo gave you when the property was registered.",
+      "label": "LEAR / NO-LEAR identification number",
+      "hint": "Letters and digits, with single hyphens (e.g. NL-12345678).",
+      "invalid": "Invalid number: 3 to 20 letters and digits, with single hyphens (e.g. NL-12345678).",
+      "save": "Save",
+      "saving": "Saving…"
     },
-    "propertyIdPlaceholder": "Property ID",
+    "file": {
+      "title": "1. Download the file",
+      "ready_one": "{{count}} person in the file",
+      "ready_other": "{{count}} people in the file",
+      "minors_one": "(plus {{count}} minor counted on a parent)",
+      "minors_other": "(plus {{count}} minors counted on a parent)",
+      "download": "Download the file",
+      "downloadXml": "Download as XML",
+      "downloading": "Downloading…",
+      "downloadFailed": "The file could not be downloaded."
+    },
+    "issues": {
+      "title_one": "{{count}} guest is not in the file: data is missing",
+      "title_other": "{{count}} guests are not in the file: data is missing",
+      "body": "Complete the data in the booking (or ask the guest to complete the check-in) and download the file again. If that is not possible, notify the guest by hand on the portal («Notifiche → Nuova»).",
+      "missing": {
+        "firstName": "first name",
+        "lastName": "last name",
+        "birthDate": "date of birth",
+        "nationality": "nationality",
+        "documentType": "document type",
+        "guests": "data of all the guests of the booking"
+      }
+    },
+    "portal": {
+      "title": "2. Upload it on the notification portal",
+      "body": "Sign in to notifiche.ti.ch with your credentials and the code of the authenticator app, open «Notifiche → Invio», choose the file and press «Invia». The portal shows the outcome of every guest.",
+      "open": "Open the notification portal"
+    },
     "receipt": {
-      "date": "Report date",
-      "description": "Upload receipt from cantonal portal.",
-      "file": "Receipt file",
-      "reference": "Reference",
-      "referencePlaceholder": "Confirmation number or reference",
-      "title": "Upload Receipt",
-      "type": "Type",
-      "typeOtr": "OTR",
-      "typePolice": "Police",
-      "upload": "Upload receipt",
-      "uploadFailed": "Unable to upload receipt.",
-      "uploadSuccess": "Receipt uploaded successfully.",
-      "uploading": "Uploading..."
+      "title": "3. Keep the receipt",
+      "body": "Save the summary page of the portal (PDF or image) and upload it here: the day will be notified.",
+      "file": "Summary of the portal",
+      "upload": "Mark as notified",
+      "uploading": "Uploading…",
+      "uploadFailed": "The receipt could not be uploaded.",
+      "uploadSuccess": "Receipt archived: day notified."
     },
-    "reminder": {
-      "description": "You will receive notifications 24 hours before configured deadlines.",
-      "title": "Deadline Reminders"
-    },
-    "selectProperty": "Select property",
-    "title": "Swiss Compliance"
+    "property": {
+      "title": "Police notification (Ticino)",
+      "description": "The guests of this property must be notified to the cantonal police within 24 hours of the arrival, with the identification number of the property.",
+      "noId": "Identification number not entered.",
+      "open": "Notify the guests to the police"
+    }
   },
   "taxRates": {
     "title": "Tourist Tax Rates",
