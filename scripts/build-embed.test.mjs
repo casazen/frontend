@@ -107,13 +107,15 @@ test('the build writes its files and the manifest and leaves every other file as
 
   const written = await buildEmbed({ outDir, env: { VITE_API_BASE_URL: 'https://casazen-api.example.test/api/' } });
 
-  assert.deepEqual(written.map(({ file }) => file.split('/').pop()).sort(), ['embed.js', 'manifest.json']);
+  assert.deepEqual(written.map(({ file }) => file.split('/').pop()).sort(), ['embed.js', 'manifest.json', 'search.js']);
   for (const { gzip } of written) assert.ok(gzip > 0);
   assert.deepEqual(JSON.parse(await readFile(join(outDir, 'manifest.json'), 'utf8')), buildManifest({ apiBase: 'https://casazen-api.example.test/api' }));
   const loader = await readFile(join(outDir, 'embed.js'), 'utf8');
   assert.ok(loader.includes('CasaZenEmbed'));
+  // The search bar is written next to the loader, and registers itself with it.
+  assert.ok((await readFile(join(outDir, 'search.js'), 'utf8')).includes('register'));
   // Nothing else was written, and nothing was deleted.
-  assert.deepEqual((await readdir(outDir)).sort(), ['embed.js', 'keep.txt', 'later', 'manifest.json']);
+  assert.deepEqual((await readdir(outDir)).sort(), ['embed.js', 'keep.txt', 'later', 'manifest.json', 'search.js']);
   assert.equal(await readFile(join(outDir, 'keep.txt'), 'utf8'), 'kept');
   assert.equal(await readFile(join(outDir, 'later', 'other.js'), 'utf8'), '// kept too');
   assert.equal(await readFile(join(folder, 'dist', 'index.html'), 'utf8'), '<html></html>');

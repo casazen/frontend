@@ -203,7 +203,8 @@ describe('the frame (AC2)', () => {
     await loadLoader();
 
     expect(placeholderOf(element)?.textContent).toBe('Caricamento…');
-    expect(frameOf(element).style.visibility).toBe('hidden');
+    expect(frameOf(element).style.opacity).toBe('0');
+    expect(frameOf(element).getAttribute('aria-hidden')).toBe('true');
   });
 
   it.each([
@@ -441,7 +442,8 @@ describe('the messages of the frame (AC3)', () => {
     post(frame, null);
 
     expect(frame.style.height).toBe('360px');
-    expect(frame.style.visibility).toBe('hidden');
+    expect(frame.style.opacity).toBe('0');
+    expect(frame.getAttribute('aria-hidden')).toBe('true');
     expect(placeholderOf(element)).not.toBeNull();
     expect(send).not.toHaveBeenCalled();
   });
@@ -482,7 +484,8 @@ describe('the messages of the frame (AC3)', () => {
     post(frame, buildEmbedMessage('ready', { widget: 'booking' }));
 
     expect(placeholderOf(element)).toBeNull();
-    expect(frame.style.visibility).toBe('');
+    expect(frame.style.opacity).toBe('');
+    expect(frame.hasAttribute('aria-hidden')).toBe(false);
     expect(send).toHaveBeenCalledTimes(1);
     expect(send).toHaveBeenCalledWith({ source: 'casazen', v: 1, type: 'config', lang: 'en', theme: { primary: '#0a7d5a', radius: '12px', font: 'moderno' } }, BASE);
   });
@@ -933,7 +936,8 @@ describe('the link that takes the place of a frame (AC7)', () => {
     expect(link.textContent).toBe('Prenota su prenota.quokka360.com');
     expect(link.href).toBe(`${SITE}/?lang=it&utm_source=agency-site&utm_medium=embed`);
     // The frame is still there, and now in sight: it may be slow, not dead.
-    expect(frameOf(element).style.visibility).toBe('');
+    expect(frameOf(element).style.opacity).toBe('');
+    expect(frameOf(element).hasAttribute('aria-hidden')).toBe(false);
     expect(placeholderOf(element)).toBeNull();
   });
 
@@ -1116,9 +1120,91 @@ describe('the search bar is loaded when a page has one (AC7)', () => {
       maxGuests: '8',
       base: BASE,
       org: '',
+      emit: expect.any(Function),
+      preview: false,
     });
-    expect(mount).toHaveBeenNthCalledWith(2, second, { lang: 'it', target: null, destinations: null, theme: undefined, maxGuests: null, base: BASE, org: '' });
+    expect(mount).toHaveBeenNthCalledWith(2, second, {
+      lang: 'it',
+      target: null,
+      destinations: null,
+      theme: undefined,
+      maxGuests: null,
+      base: BASE,
+      org: '',
+      emit: expect.any(Function),
+      preview: false,
+    });
     expect(document.querySelectorAll('iframe')).toHaveLength(0);
+  });
+
+  it('embedLoader_Search_Emit_FiresTheEventOnTheContainerLikeTheEventsOfAFrame', async () => {
+    const element = widget('search');
+    await loadLoader();
+    const mount = vi.fn();
+    api().register('search', mount);
+    const heard: CustomEvent[] = [];
+    listen((event) => heard.push(event as CustomEvent));
+    const { emit } = mount.mock.calls[0][1] as { emit: (name: string, params: Record<string, unknown>) => void };
+
+    emit('search', { search_term: 'Lugano', start_date: '2026-12-01', end_date: '2026-12-05', number_of_passengers: 2 });
+
+    expect(heard).toHaveLength(1);
+    expect(heard[0].target).toBe(element);
+    expect(heard[0].detail).toEqual({ name: 'search', params: { search_term: 'Lugano', start_date: '2026-12-01', end_date: '2026-12-05', number_of_passengers: 2 }, widget: 'search' });
+    // The page did not ask for the data layer: it is not even created.
+    expect(embedWindow.dataLayer).toBeUndefined();
+  });
+
+  it('embedLoader_Search_Emit_PushesToTheDataLayerOnlyWhenThePageAsksForIt', async () => {
+    widget('search', { datalayer: 'true' });
+    const quiet = widget('search');
+    await loadLoader();
+    const mount = vi.fn();
+    api().register('search', mount);
+    type Emit = (name: string, params: Record<string, unknown>) => void;
+
+    (mount.mock.calls[0][1] as { emit: Emit }).emit('search', { search_term: 'Lugano', event: 'purchase' });
+    expect(embedWindow.dataLayer).toEqual([{ search_term: 'Lugano', event: 'search' }]);
+
+    (mount.mock.calls[1][1] as { emit: Emit }).emit('search', { search_term: 'Locarno' });
+    expect(embedWindow.dataLayer).toHaveLength(1);
+    expect(quiet).toBeTruthy();
+  });
+
+  it.each([['purchase'], ['page_view'], ['Search'], ['']])('embedLoader_Search_Emit_%s_IsDropped', async (name) => {
+    widget('search', { datalayer: 'true' });
+    await loadLoader();
+    const mount = vi.fn();
+    api().register('search', mount);
+    const heard = vi.fn();
+    listen(heard);
+
+    (mount.mock.calls[0][1] as { emit: (name: string, params: Record<string, unknown>) => void }).emit(name, { transaction_id: 't1' });
+
+    expect(heard).not.toHaveBeenCalled();
+    expect(embedWindow.dataLayer).toBeUndefined();
+  });
+
+  it('embedLoader_Search_Preview_IsPassedOnlyWhenTheCallerOfMountAsksForIt', async () => {
+    await loadLoader();
+    const mount = vi.fn();
+    api().register('search', mount);
+    const own = document.createElement('div');
+    const plain = document.createElement('div');
+    const other = document.createElement('div');
+    document.body.append(own, plain, other);
+
+    api().mount(own, { widget: 'search', preview: true });
+    api().mount(plain, { widget: 'search' });
+    // An attribute of the page cannot turn it on, and only `true` does.
+    other.setAttribute('data-casazen-preview', 'true');
+    api().mount(other, { widget: 'search', preview: 'true' });
+
+    expect(mount.mock.calls.map(([element, options]) => [element, (options as { preview: boolean }).preview])).toEqual([
+      [own, true],
+      [plain, false],
+      [other, false],
+    ]);
   });
 
   it('embedLoader_Search_AddedAfterTheFileLoaded_IsMountedAtOnceAndLoadsNothingMore', async () => {

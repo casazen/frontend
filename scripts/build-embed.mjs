@@ -21,7 +21,10 @@ export const OUT_DIR = 'dist/embed/v1';
 export const URL_DIR = '/embed/v1';
 
 /** The bundles, in the order they are built. Each is an IIFE with no export; its file is `<name>.js`. */
-export const ENTRIES = [{ name: 'embed', entry: 'src/embed/embed.ts' }];
+export const ENTRIES = [
+  { name: 'embed', entry: 'src/embed/embed.ts' },
+  { name: 'search', entry: 'src/embed/search.ts' },
+];
 
 /** The widgets the manifest lists: three frames and the search bar. */
 export const WIDGETS = ['booking', 'property', 'guest-access', 'search'];

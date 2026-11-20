@@ -72,6 +72,13 @@ export interface SearchOptions {
   base: string;
   /** The org of the CasaZen domain, `''` on an agency's own domain. */
   org: string;
+  /**
+   * Reports an event of the widget to the page, as the events of the frames are reported: a `casazen:event` on the container and, when the page asked for
+   * it (`data-casazen-datalayer="true"`), a push to `window.dataLayer`. A name that is not one of the four of GA4 the contract knows is dropped.
+   */
+  emit: (name: string, params: Record<string, unknown>) => void;
+  /** Set by whoever calls `CasaZenEmbed.mount(element, { preview: true })` (the preview of the backoffice): the bar checks and reports but never navigates. */
+  preview?: boolean;
 }
 
 /** The function a widget that is not framed registers: it draws the widget into `el`. */
@@ -150,9 +157,12 @@ export function createWidget(el: HTMLElement, plan: Plan): Widget {
   frame.setAttribute('loading', 'lazy');
   frame.setAttribute('referrerpolicy', 'origin');
   frame.setAttribute('scrolling', 'no');
-  style(frame, { display: 'block', width: '100%', height: `${plan.minHeight}px`, border: '0', visibility: 'hidden' });
+  // Out of sight (and of assistive technology) until it has its content, so the frame's own loading state is never seen. Transparent, not
+  // `visibility: hidden`: a browser may load a hidden frame at once, and this one is `loading="lazy"` so that a widget far down a page waits for the visitor.
+  frame.setAttribute('aria-hidden', 'true');
+  style(frame, { display: 'block', width: '100%', height: `${plan.minHeight}px`, border: '0', opacity: '0' });
 
-  // The placeholder sits over the frame, which stays out of sight until it has its content: the frame's own loading state is never seen.
+  // The placeholder sits over the frame, with the same size, and takes the clicks of the visitor until the frame is shown.
   const placeholder = document.createElement('div');
   placeholder.setAttribute('role', 'status');
   placeholder.setAttribute('aria-busy', 'true');
@@ -166,7 +176,8 @@ export function createWidget(el: HTMLElement, plan: Plan): Widget {
   el.appendChild(box);
 
   reveal = () => {
-    frame.style.visibility = '';
+    frame.style.opacity = '';
+    frame.removeAttribute('aria-hidden');
     placeholder.remove();
   };
   wait.timer = setTimeout(widget.fail, READY_TIMEOUT_MS);

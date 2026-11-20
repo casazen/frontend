@@ -83,6 +83,11 @@ export function isDate(value: string): boolean {
   return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
 }
 
+/** The `utm_*` of the address `search` that are one of the five names and a plain token, as `[name, value]`: where the guest comes from, nothing else. */
+export function utmParams(search: string): [string, string][] {
+  return [...new URLSearchParams(search)].filter(([name, value]) => UTM_NAME.test(name) && UTM_VALUE.test(value));
+}
+
 /** The stay a widget may be asked to open with: attributes first, then the address of the page. */
 interface OwnStay {
   checkin: unknown;
@@ -110,9 +115,7 @@ export function frameQuery(search: string, own: OwnStay): URLSearchParams {
   if (GUESTS.test(guests)) out.set('guests', guests);
   const where = page.get('where') ?? '';
   if (WHERE.test(where)) out.set('where', where);
-  page.forEach((value, key) => {
-    if (UTM_NAME.test(key) && UTM_VALUE.test(value)) out.set(key, value);
-  });
+  for (const [name, value] of utmParams(search)) out.set(name, value);
   return out;
 }
 

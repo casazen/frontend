@@ -109,7 +109,17 @@ function start(win: EmbedWindow): void {
     // A widget the page draws itself (the search bar): its function is called with the options, once `search.js` has registered it.
     const run = (): void => {
       try {
-        registry.get(widget)?.(host, { lang: plan.lang, target: get('target'), destinations: get('destinations'), theme: plan.theme, maxGuests: get('maxGuests', 'max-guests'), base: plan.base, org });
+        registry.get(widget)?.(host, {
+          lang: plan.lang,
+          target: get('target'),
+          destinations: get('destinations'),
+          theme: plan.theme,
+          maxGuests: get('maxGuests', 'max-guests'),
+          base: plan.base,
+          org,
+          emit: (name, params) => emit(created, name, params),
+          preview: options.preview === true,
+        });
       } catch {
         created.fail();
       }
