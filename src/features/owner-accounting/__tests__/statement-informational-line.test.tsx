@@ -7,7 +7,7 @@ import i18n from '@/i18n/config';
 import type { OwnerLedgerEntry } from '@/types';
 import { isInformational, shownAmount, statementGroupsOf } from '../owner-accounting-model';
 import { StatementDetailPage } from '../statement-detail-page';
-import { BOOKING_ID, OWNER_ID, VERSION_ID, entry, ownerReadiness, readiness, version } from './owner-accounting-fixtures';
+import { BOOKING_ID, OLD_VERSION_ID, OWNER_ID, VERSION_ID, entry, ownerReadiness, readiness, version } from './owner-accounting-fixtures';
 
 const api = vi.hoisted(() => ({
   listOwners: vi.fn(),
@@ -185,6 +185,44 @@ describe('an informational line is in its group and in no total of the statement
     expect(drawer).toHaveTextContent(i18n.t('ownerAccounting.line.steps.informationalResult'));
     expect(drawer).not.toHaveTextContent(i18n.t('ownerAccounting.line.steps.result'));
     expect(within(drawer).getByTestId('line-steps').textContent).not.toMatch(/-\s*(135|67)/);
+  });
+
+  it('StatementDetail_TheLinesAddedSinceThePreviousVersion_NameTheInformationalLineAsTheCommission_NeverWithAMinus', async () => {
+    // This version replaces one made BEFORE the rule (the commission was deducted: channel fees -67.50, closing 198.73) and was cut after it: the commission the agency bears was posted after the
+    // cut-off of the previous version, so the list of what is new in this one names it. It is written as the rest of the page writes it, the commission as a positive figure: nothing is deducted.
+    const previous = version({
+      id: OLD_VERSION_ID,
+      version: 1,
+      status: 'Superseded',
+      currency: 'CHF',
+      cutoffAt: '2025-01-20T08:00:00Z',
+      openingBalance: 0,
+      revenue: 450,
+      channelFees: -67.5,
+      commission: -103.77,
+      charges: -80,
+      closingBalance: 198.73,
+      supersedesVersionId: null,
+      supersededByVersionId: VERSION_ID,
+    });
+    const current = { ...VERSION, supersedesVersionId: OLD_VERSION_ID };
+    // The lines the previous version already held were posted before its cut-off; the commission, after it.
+    const olderLine = (candidate: OwnerLedgerEntry): OwnerLedgerEntry => ({ ...candidate, postedAt: '2025-01-10T08:00:00Z' });
+    api.listVersions.mockResolvedValue([current, previous]);
+    api.getVersion.mockResolvedValue({ version: current, entries: [olderLine(REVENUE), olderLine(COMMISSION), olderLine(VAT), olderLine(CHARGE), { ...BORNE, postedAt: '2025-02-01T08:00:00Z' }] });
+    renderStatement();
+
+    const changes = await screen.findByTestId('statement-changes');
+    // The only line that is new is the commission, and the list writes it with the commission as a positive figure, as the table, the drawer and the groups do.
+    const type = i18n.t('ownerAccounting.line.type.ChannelFeeBorneByAgency');
+    const added = await within(changes).findByText((content) => content.startsWith(type));
+    expect(plain(added.textContent)).toBe(i18n.t('ownerAccounting.changes.addedLine', { type, amount: franc(67.5) }));
+    expect(plain(added.textContent)).not.toMatch(/-\s*67,50/);
+    expect(within(changes).queryByText((content) => content.startsWith(i18n.t('ownerAccounting.line.type.BookingRevenue')))).toBeNull();
+    // The figures that moved are the stored ones of the two versions (the channel fees from -67.50 to 0, the closing from 198.73 to 266.23): nothing is worked out from the lines.
+    const moved = within(changes).getAllByTestId('statement-change-figure').map((figure) => plain(figure.textContent));
+    expect(moved).toHaveLength(2);
+    expect(moved.some((text) => text.includes(franc(198.73)) && text.includes(franc(266.23)))).toBe(true);
   });
 
   it('StatementDetail_AnOlderServer_WithNoInformationalMember_ShowsTheLinesAndTheTotalsAsToday', async () => {

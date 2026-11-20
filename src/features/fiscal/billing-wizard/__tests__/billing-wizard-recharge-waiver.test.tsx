@@ -79,6 +79,8 @@ interface HolderRow {
 /** What the server holds: who holds the accounts by default, whether the commissions are recharged, and the listings where the holder differs. */
 const server: { holder: PortalAccountHolder; recharge: boolean; overrides: HolderRow[] } = { holder: 'Owner', recharge: true, overrides: [] };
 let requests: WireRequest[];
+/** A failure that has nothing to do with the waiver, which the server answers to every write of the settings until a test clears it (nothing is saved, whatever the request carries). */
+let failure: WireReply | null;
 
 const agencyHoldsAnAccount = (holder: PortalAccountHolder, overrides: readonly HolderRow[]) => holder === 'Agency' || overrides.some((row) => row.holder === 'Agency');
 /** A waiver is in place when the recharge is off and the agency holds at least one account (the rule of the backend). */
@@ -116,6 +118,7 @@ function answer(request: WireRequest): WireReply {
   }
 
   if (method === 'PUT' && path === SETTINGS) {
+    if (failure) return failure;
     const body = request.body as { portalAccountHolder?: PortalAccountHolder; rechargePortalCommissions?: boolean; acknowledgeRechargeWaiver?: boolean };
     const holder = body.portalAccountHolder ?? server.holder;
     const recharge = body.rechargePortalCommissions ?? server.recharge;
@@ -197,6 +200,7 @@ async function answerTheDialog(dialog: HTMLElement, button: string) {
 beforeEach(async () => {
   vi.clearAllMocks();
   requests = [];
+  failure = null;
   server.holder = 'Owner';
   server.recharge = true;
   server.overrides = [];
@@ -346,6 +350,53 @@ describe('turning the recharge off asks for the explicit confirmation of the wai
     await waitFor(() => expect(server.recharge).toBe(false), WAIT);
     expect(writes(SETTINGS).map(carriesTheAcknowledgement)).toEqual([false, false, true]);
     expect(toast.error).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('a refusal that is not the question of the waiver never opens it (permission rule, through the real client)', () => {
+  // The question is for ONE answer of the server, the 422 `recharge_waiver_not_acknowledged`. Any other failure of the same write (another 422, a 500) is shown as it always was: nobody is asked
+  // anything, nothing is sent again, and the acknowledgement of the waiver never goes out, whatever the person had just switched off.
+  const OTHER_FAILURES: ReadonlyArray<{ name: string; reply: WireReply; stepMessage: string; exitMessage: string }> = [
+    {
+      name: 'AnotherUnprocessableEntity',
+      reply: { status: 422, data: { status: 422, code: 'billing_channels_invalid', detail: 'I dati sugli account dei portali non sono validi.' } },
+      stepMessage: 'apiErrors.codes.billingChannelsInvalid',
+      exitMessage: 'apiErrors.codes.billingChannelsInvalid',
+    },
+    { name: 'AServerError', reply: { status: 500, data: {} }, stepMessage: 'billingWizard.saveFailed', exitMessage: 'billingWizard.exit.failed' },
+  ];
+
+  it.each(OTHER_FAILURES)('BillingWizard_TheFirstWriteFailsWithAnotherError_NoDialog_OneWrite_NoAcknowledgement_AndTheFailureIsSaid_OnContinueAndOnSaveAndExit_$name', async ({ reply, stepMessage, exitMessage }) => {
+    // The agency holds the accounts and recharges: switching the recharge off WOULD start the waiver on a server that answers the question, but this one fails for another reason.
+    server.holder = 'Agency';
+    server.recharge = true;
+    failure = reply;
+    renderWizard('channels');
+    await onTheChannelsStep();
+
+    fireEvent.click(screen.getByTestId('billing-recharge'));
+    await next();
+
+    // «Continua»: the failure is told on the step, in its own words, and the question never opens (the wait ends on whichever of the two comes first).
+    await waitFor(() => expect(screen.queryByTestId('fiscal-billing-finish-error') ?? screen.queryByRole('dialog')).not.toBeNull(), WAIT);
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.getByTestId('fiscal-billing-finish-error')).toHaveTextContent(i18n.t(stepMessage));
+    expect(wizard()).toHaveAttribute('data-step', 'channels');
+    expect(writes(SETTINGS)).toHaveLength(1);
+    expect(carriesTheAcknowledgement(writes(SETTINGS)[0])).toBe(false);
+    expect(server.recharge).toBe(true);
+
+    // «Salva ed esci»: the same, and said as a failure of the save (an error, never «Salvato»), with the person still on the page.
+    await waitFor(() => expect(screen.getByTestId('billing-save-exit')).toBeEnabled(), WAIT);
+    fireEvent.click(screen.getByTestId('billing-save-exit'));
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(i18n.t(exitMessage)), WAIT);
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(toast.success).not.toHaveBeenCalled();
+    expect(toast.warning).not.toHaveBeenCalled();
+    expect(wizard()).toHaveAttribute('data-step', 'channels');
+    expect(writes(SETTINGS)).toHaveLength(2);
+    expect(requests.some(carriesTheAcknowledgement)).toBe(false);
+    expect(server.recharge).toBe(true);
   });
 });
 
