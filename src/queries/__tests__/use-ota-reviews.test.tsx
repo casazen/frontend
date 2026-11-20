@@ -333,7 +333,7 @@ describe('what a failed send of the words of the host leaves behind', () => {
     const { result, unmount } = renderHook(() => useReplyToReview(OTA_KEY), { wrapper: wrapper(client) });
 
     const failure = await thrownBy(() => result.current.mutateAsync('Il signor Rossi era scortese, grazie lo stesso.'));
-    expect(result.current.isError).toBe(true);
+    await waitFor(() => expect(result.current.isError).toBe(true));
 
     // What a screen turns into words stays: the status and the body of the answer.
     expect(failure.response?.status).toBe(502);
@@ -361,7 +361,7 @@ describe('what a failed send of the words of the host leaves behind', () => {
     const { result, unmount } = renderHook(() => useSendHostReview(OTA_KEY), { wrapper: wrapper(client) });
 
     const failure = await thrownBy(() => result.current.mutateAsync(command));
-    expect(result.current.isError).toBe(true);
+    await waitFor(() => expect(result.current.isError).toBe(true));
 
     expect(failure.response?.status).toBe(409);
     expect(failure.response?.data).toEqual({ code: 'ota_review_window_closed' });
