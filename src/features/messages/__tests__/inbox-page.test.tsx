@@ -113,10 +113,10 @@ describe('InboxPage (NF-61)', () => {
     expect(screen.getByTestId('messages-view-reviews')).toHaveAttribute('aria-pressed', 'true');
     for (const view of ['toRespond', 'all', 'unread']) expect(screen.getByTestId(`messages-view-${view}`), view).toHaveAttribute('aria-pressed', 'false');
 
-    // Pressed again, it goes back to where the page starts.
+    // Pressed again, it goes back to where the page starts (the list of that view is the one already read, so nothing new is asked).
     fireEvent.click(screen.getByTestId('messages-view-reviews'));
-    await waitFor(() => expect(lastFilters()).toEqual({ needsReply: true, page: 1, pageSize: 20 }));
-    expect(screen.getByTestId('messages-view-toRespond')).toHaveAttribute('aria-pressed', 'true');
+    await waitFor(() => expect(screen.getByTestId('messages-view-toRespond')).toHaveAttribute('aria-pressed', 'true'));
+    expect(screen.getByTestId('messages-view-reviews')).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('InboxPage_ReviewsAddress_StartsOnTheReviewsAndAViewPressedLeavesThem', async () => {

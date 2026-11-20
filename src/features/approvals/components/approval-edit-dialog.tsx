@@ -14,6 +14,7 @@ import {
   finalTextOf,
   isCampaign,
   isMessageDraft,
+  isReviewReply,
   itemIsGone,
   originActionErrorOf,
   type EditFields,
@@ -21,6 +22,7 @@ import {
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import type { useEditItem, useSaveAndApproveItem } from '@/queries/approvalQueue';
 import type { ApprovalQueueItem } from '@/types/approval-queue.types';
+import { REVIEW_REPLY_MAX_LENGTH } from '@/types/review.types';
 
 interface ApprovalEditDialogProps {
   /** The item to edit; `null` while the dialog is closed. */
@@ -81,9 +83,11 @@ function EditDialogBody({ item, edit, saveAndApprove, onClose, onApproved, onApp
   const differsFromOriginal = editedTextOf(item, fields) !== editedTextOf(item, original);
   const textLength = fields.text.trim().length;
 
+  const reviewReply = isReviewReply(item);
   let description = t('approval.edit.description');
   if (isMessageDraft(item)) description = t('approval.edit.descriptionMessage');
   else if (campaign) description = t('approval.edit.descriptionCampaign');
+  else if (reviewReply) description = t('approval.edit.descriptionReview');
 
   const update = (patch: Partial<EditFields>) => {
     setFields((current) => ({ ...current, ...patch }));
@@ -170,7 +174,7 @@ function EditDialogBody({ item, edit, saveAndApprove, onClose, onApproved, onApp
         ) : (
           <Field
             label={t('approval.edit.textLabel')}
-            counter={isMessageDraft(item) ? `${textLength}/${MESSAGE_TEXT_MAX_LENGTH}` : undefined}
+            counter={isMessageDraft(item) ? `${textLength}/${MESSAGE_TEXT_MAX_LENGTH}` : reviewReply ? `${textLength}/${REVIEW_REPLY_MAX_LENGTH}` : undefined}
             error={problemFor('text')}
           >
             <Textarea rows={8} value={fields.text} onChange={(event) => update({ text: event.target.value })} readOnly={busy} />

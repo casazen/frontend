@@ -2544,6 +2544,7 @@
       "description": "Change the text before you decide. The original stays below.",
       "descriptionCampaign": "Change the subject line and the text of the campaign before you approve it. The original stays below.",
       "descriptionMessage": "Change the message before it goes to the guest. The original stays below.",
+      "descriptionReview": "Change the reply before it is published under the review. The original stays below.",
       "error": {
         "bodyRequired": "Write the text of the campaign.",
         "empty": "Write the text.",

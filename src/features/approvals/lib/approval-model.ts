@@ -2,6 +2,7 @@ import { isAxiosError } from 'axios';
 import type { TFunction, i18n as I18nInstance } from 'i18next';
 import { getProblemCode, translateErrorCode } from '@/lib/api-errors';
 import { APPROVAL_ITEM_TYPES, type ApprovalQueueItem, type KnownApprovalItemType } from '@/types/approval-queue.types';
+import { REVIEW_REPLY_MAX_LENGTH } from '@/types/review.types';
 
 /*
  * What the page of the approvals needs to say about an item, as plain functions: the type, the situation and the confidence of a draft, the
@@ -187,6 +188,10 @@ export function editProblem(item: Pick<ApprovalQueueItem, 'itemType'>, fields: E
   if (text.length === 0) return { field: 'text', key: 'approval.edit.error.empty' };
   if (isMessageDraft(item) && text.length > MESSAGE_TEXT_MAX_LENGTH) {
     return { field: 'text', key: 'approval.edit.error.tooLong', max: MESSAGE_TEXT_MAX_LENGTH };
+  }
+  // The public reply to a review is shorter than a message to a guest (`ReviewRules.ReplyMaxLength`).
+  if (isReviewReply(item) && text.length > REVIEW_REPLY_MAX_LENGTH) {
+    return { field: 'text', key: 'approval.edit.error.tooLong', max: REVIEW_REPLY_MAX_LENGTH };
   }
   return null;
 }

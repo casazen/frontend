@@ -181,6 +181,15 @@ describe('approval model (NF-68)', () => {
       expect(editProblem(campaign, fields('Offerta', ' \n '))).toEqual({ field: 'body', key: 'approval.edit.error.bodyRequired' });
     });
 
+    it('editProblem_ReplyToAReview_AtMost800CharactersNotTheLimitOfAMessage', () => {
+      const reply = item({ itemType: 'ReviewReply' });
+      const fields = (text: string) => ({ text, subject: '', body: '' });
+
+      expect(editProblem(reply, fields('x'.repeat(800)))).toBeNull();
+      expect(editProblem(reply, fields('x'.repeat(801)))).toEqual({ field: 'text', key: 'approval.edit.error.tooLong', max: 800 });
+      expect(editProblem(reply, fields(' \n '))).toEqual({ field: 'text', key: 'approval.edit.error.empty' });
+    });
+
     it('editProblem_OtherTypes_OnlyHaveToSaySomething', () => {
       const routine = item({ itemType: 'Routine' });
       expect(editProblem(routine, { text: 'x'.repeat(5000), subject: '', body: '' })).toBeNull();
@@ -297,6 +306,7 @@ describe('approval model (NF-68)', () => {
       'approval.action.executed.review',
       'approval.action.executed.reviewVerify',
       'approval.action.approveAndPublish',
+      'approval.edit.descriptionReview',
       'approval.hint.reviewReply',
       'approval.review.open',
       'approval.edit.error.empty',

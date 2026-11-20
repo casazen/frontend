@@ -2544,6 +2544,7 @@
       "description": "Cambia il testo prima di decidere. L'originale resta qui sotto.",
       "descriptionCampaign": "Cambia l'oggetto e il testo della campagna prima di approvarla. L'originale resta qui sotto.",
       "descriptionMessage": "Cambia il messaggio prima che parta verso l'ospite. L'originale resta qui sotto.",
+      "descriptionReview": "Cambia la risposta prima che venga pubblicata sotto la recensione. L'originale resta qui sotto.",
       "error": {
         "bodyRequired": "Scrivi il testo della campagna.",
         "empty": "Scrivi il testo.",
