@@ -14,6 +14,10 @@ type BookingNextStepKind =
   | 'waitingGuestEmail'
   | 'waitingPayment'
   | 'registerArrival'
+  // casazen/backend#978: the booking flow of the org does the step by itself; the host may still do it earlier.
+  | 'arrivalAutomatic'
+  | 'linkScheduled'
+  | 'departureAutomatic'
   | 'sendLink'
   | 'resendLink'
   | 'waitingDocuments'
@@ -48,6 +52,16 @@ interface GuestDataFacts {
   complete: boolean;
 }
 
+/**
+ * What the booking flow of the org does by itself (casazen/backend#978, `GET /settings/booking-flow`): the check-in link, the arrival, the departure. Missing (not read yet,
+ * or not readable): every step is the host's, as before.
+ */
+export interface FlowFacts {
+  sendsLink: boolean;
+  registersArrival: boolean;
+  registersDeparture: boolean;
+}
+
 /** The Alloggiati Web communication of a stay, as `GET /alloggiati/{id}/status` says it. */
 interface AlloggiatiFacts {
   status: AlloggiatiWebStatus;
@@ -70,7 +84,7 @@ export function documentsNeeded(booking: StayFacts, today: string): 'checkIn' | 
 }
 
 /** The steps that have nothing to ask of the host: a compliance item that is not in order is worth more than their «tutto in ordine». */
-const QUIET_STEPS: readonly BookingNextStepKind[] = ['stayInProgress', 'allInOrder', 'completed'];
+const QUIET_STEPS: readonly BookingNextStepKind[] = ['stayInProgress', 'allInOrder', 'completed', 'linkScheduled', 'arrivalAutomatic', 'departureAutomatic'];
 
 /**
  * Whether the step says that all is well («tutto in ordine», «concluso»): until the compliance lights of the stay are read the page does not say it,
@@ -103,7 +117,7 @@ function withCompliance(step: BookingNextStep, today: string, lines: readonly Co
 export function nextStepOf(
   booking: StayFacts,
   today: string,
-  facts: { checkIn?: CheckInFacts; alloggiati?: AlloggiatiFacts; guestData?: GuestDataFacts; compliance?: readonly ComplianceLine[] } = {},
+  facts: { checkIn?: CheckInFacts; alloggiati?: AlloggiatiFacts; guestData?: GuestDataFacts; flow?: FlowFacts; compliance?: readonly ComplianceLine[] } = {},
 ): BookingNextStep {
   return withCompliance(stepOf(booking, today, facts), today, facts.compliance);
 }
@@ -111,8 +125,9 @@ export function nextStepOf(
 function stepOf(
   booking: StayFacts,
   today: string,
-  facts: { checkIn?: CheckInFacts; alloggiati?: AlloggiatiFacts; guestData?: GuestDataFacts },
+  facts: { checkIn?: CheckInFacts; alloggiati?: AlloggiatiFacts; guestData?: GuestDataFacts; flow?: FlowFacts },
 ): BookingNextStep {
+  const flow = facts.flow;
   const alloggiati = facts.alloggiati;
   const alloggiatiToSend = alloggiati !== undefined && ALLOGGIATI_TO_SEND.includes(alloggiati.status);
 
@@ -127,10 +142,12 @@ function stepOf(
       return { kind: 'waitingPayment', tone: 'info' };
 
     case 'Confirmed': {
-      if (canRegisterArrival(booking, today)) return { kind: 'registerArrival', tone: 'neutral' };
+      // A stay whose arrival and departure the flow registers is closed by itself on its departure day (both together).
+      if (flow?.registersArrival && flow.registersDeparture && today >= stayDateOf(booking.checkOutDate)) return { kind: 'departureAutomatic', tone: 'info' };
+      if (canRegisterArrival(booking, today)) return { kind: flow?.registersArrival ? 'arrivalAutomatic' : 'registerArrival', tone: flow?.registersArrival ? 'info' : 'neutral' };
       if (canOpenCheckOut(booking, today)) return { kind: 'registerDeparture', tone: 'neutral' };
       const link = facts.checkIn;
-      if (link?.canIssueLink && link.status === null) return { kind: 'sendLink', tone: 'neutral' };
+      if (link?.canIssueLink && link.status === null) return flow?.sendsLink ? { kind: 'linkScheduled', tone: 'info' } : { kind: 'sendLink', tone: 'neutral' };
       if (link?.canIssueLink && link.status === 'Scaduto') return { kind: 'resendLink', tone: 'warning' };
       if (link?.status === 'Inviato' || link?.status === 'InCompilazione') return { kind: 'waitingDocuments', tone: 'info' };
       // Nothing is owed by the guest, and the data are still incomplete: the host fills them in the wizard "Guest check-in".
@@ -140,7 +157,7 @@ function stepOf(
 
     case 'CheckedIn':
       // The check-out wizard has its own Alloggiati Web step: on the day the stay ends, it is the one thing to do.
-      if (today >= stayDateOf(booking.checkOutDate)) return { kind: 'registerDeparture', tone: 'neutral' };
+      if (today >= stayDateOf(booking.checkOutDate)) return flow?.registersDeparture ? { kind: 'departureAutomatic', tone: 'info' } : { kind: 'registerDeparture', tone: 'neutral' };
       if (alloggiatiToSend) return { kind: 'sendAlloggiati', tone: alloggiati.isOverdue ? 'danger' : 'warning' };
       return { kind: 'stayInProgress', tone: 'neutral' };
 

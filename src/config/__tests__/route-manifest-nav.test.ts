@@ -456,7 +456,8 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
     // The CRM is no tab of Prenotazioni any more: it is an entry of "Altro" behind its flag (below), and its pages hang from it as tabs:
     // for now the merge proposals (E07/F01/US04/T03), the last of the tabs the epic has (the audiences, campaigns and automations come first).
     '/app/short-rent/crm/guests': ['/app/short-rent/crm/merge'],
-    '/app/short-rent/bookings': ['/app/short-rent/guests', '/app/short-rent/reviews'],
+    // The steps of a booking, automatic or by hand (casazen/backend#978), are the last tab of Prenotazioni.
+    '/app/short-rent/bookings': ['/app/short-rent/guests', '/app/short-rent/reviews', '/app/short-rent/bookings/flow'],
     '/app/short-rent/compliance': [
       '/app/short-rent/alloggiati',
       '/app/short-rent/alloggiati/reports',
@@ -611,7 +612,7 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
 
 describe('route-manifest sections as tabs (UI-04a)', () => {
   it('gives every page of a section the same tabs, the entry first', () => {
-    const bookings = ['/app/short-rent/bookings', '/app/short-rent/guests', '/app/short-rent/reviews'];
+    const bookings = ['/app/short-rent/bookings', '/app/short-rent/guests', '/app/short-rent/reviews', '/app/short-rent/bookings/flow'];
     for (const page of bookings) expect(paths(getNavSection(page, allowAll)), page).toEqual(bookings);
 
     const payments = [
@@ -1235,7 +1236,7 @@ describe('route-manifest CRM entries behind the crmMarketing flag (E07/F06/US03/
     const accountant: PermissionPredicate = (_ctx, permission) => ['property.read', 'booking.read', 'payment.read'].includes(permission);
     expect(paths(getVisibleNavEntries('short-rent', accountant, on))).not.toContain('/app/short-rent/crm/guests');
     // It is no tab of Prenotazioni any more.
-    expect(paths(getNavChildren('/app/short-rent/bookings', allowAll, on))).toEqual(['/app/short-rent/guests', '/app/short-rent/reviews']);
+    expect(paths(getNavChildren('/app/short-rent/bookings', allowAll, on))).toEqual(['/app/short-rent/guests', '/app/short-rent/reviews', '/app/short-rent/bookings/flow']);
     // The open CRM page highlights the CRM entry, not Prenotazioni.
     const entries = getNavMatchEntries('short-rent', allowAll, on);
     expect(resolveActiveNavEntry('/app/short-rent/crm/guests', entries)?.path).toBe('/app/short-rent/crm/guests');

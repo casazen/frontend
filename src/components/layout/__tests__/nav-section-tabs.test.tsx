@@ -55,6 +55,7 @@ describe('NavSectionTabs (UI-04a)', () => {
       ['Prenotazioni', '/app/short-rent/bookings'],
       ['Ospiti', '/app/short-rent/guests'],
       ['Recensioni', '/app/short-rent/reviews'],
+      ['Flusso', '/app/short-rent/bookings/flow'],
     ]);
     expect(links[0]).toHaveAttribute('aria-current', 'page');
     expect(links.slice(1).every((link) => !link.hasAttribute('aria-current'))).toBe(true);
@@ -66,7 +67,7 @@ describe('NavSectionTabs (UI-04a)', () => {
   ])('NavSectionTabs_PageOfTheSection_%s_HasTheSameTabsAndMarksItself_%s', (path, current) => {
     renderAt(path);
 
-    expect(labelsOf('Sezioni di Prenotazioni')).toEqual(['Prenotazioni', 'Ospiti', 'Recensioni']);
+    expect(labelsOf('Sezioni di Prenotazioni')).toEqual(['Prenotazioni', 'Ospiti', 'Recensioni', 'Flusso']);
     const open = tabs('Sezioni di Prenotazioni').filter((link) => link.getAttribute('aria-current') === 'page');
     expect(open.map((link) => link.textContent)).toEqual([current]);
   });
@@ -86,7 +87,7 @@ describe('NavSectionTabs (UI-04a)', () => {
     await i18n.changeLanguage('en');
     renderAt('/app/short-rent/guests');
 
-    expect(labelsOf('Sections of Bookings')).toEqual(['Bookings', 'Guests', 'Reviews']);
+    expect(labelsOf('Sections of Bookings')).toEqual(['Bookings', 'Guests', 'Reviews', 'Flow']);
   });
 
   it('NavSectionTabs_UserWhoMayNotOpenAPage_DoesNotSeeItsTab', () => {
@@ -159,7 +160,7 @@ describe('NavSectionTabs (UI-04a)', () => {
   it('NavSectionTabs_NoWorkspace_ShowsEveryPageOfTheSection', () => {
     renderAt('/app/short-rent/bookings', { withWorkspace: false });
 
-    expect(labelsOf('Sezioni di Prenotazioni')).toEqual(['Prenotazioni', 'Ospiti', 'Recensioni']);
+    expect(labelsOf('Sezioni di Prenotazioni')).toEqual(['Prenotazioni', 'Ospiti', 'Recensioni', 'Flusso']);
   });
 
   it('NavSectionTabs_NoRouter_ShowsNothingAndDoesNotFail', () => {

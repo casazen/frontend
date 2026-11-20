@@ -46,6 +46,8 @@ const KINDS: Record<string, NotificationKind> = {
   'guest-message': { icon: MessageSquare, textKey: 'notifications.types.guestMessage', route: bookingTab('messages') },
   // The guest finished the online check-in: Documenti shows the link's state and the guests registered.
   'guest-checkin-completed': { icon: UserCheck, textKey: 'notifications.types.guestCheckinCompleted', route: bookingTab('guest') },
+  // casazen/backend#978: CasaZen registered the arrival or the departure, or declared the property ready, in the host's place (the booking flow): the booking says where it stands.
+  'booking-flow-step': { icon: CalendarClock, textKey: 'notifications.types.bookingFlowStep', route: bookingRoute },
   'guest-data-missing': { icon: ClipboardCheck, textKey: 'notifications.types.guestDataMissing', route: bookingTab('guest') },
   // E23/F01/US01/T01: the check-in link of a stay from a portal did not reach the guest and the host carries it; Documenti shows why and has «Copia link».
   'checkin-link-failed': { icon: AlertTriangle, textKey: 'notifications.types.checkinLinkFailed', route: bookingTab('guest') },
