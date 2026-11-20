@@ -882,7 +882,7 @@
         },
         "SelfBillingRejected": {
           "title": "Autofattura scartata dallo SDI",
-          "why": "Per il fisco l'autofattura non risulta emessa: aprila tra le autofatture, guarda perché lo SDI l'ha scartata e decidi con il commercialista come rimediare."
+          "why": "Per il fisco l'autofattura non risulta emessa: aprila tra le autofatture, guarda perché lo SDI l'ha scartata e premi «Correggi e rimanda» per rifarla con lo stesso numero. Se ha già una nota di credito, decide il commercialista."
         },
         "TouristTaxDeadline": {
           "title": "Imposta di soggiorno in scadenza",
@@ -32140,6 +32140,28 @@
     "title": "Emittente dei documenti dei soggiorni"
   },
   "selfBilling": {
+    "correct": {
+      "button": "Correggi e rimanda",
+      "buttonLabel": "Correggi e rimanda l’autofattura {{title}}",
+      "confirm": "Correggi e rimanda",
+      "consequenceDiscarded": "L’autofattura scartata non conta come emessa e resta nello storico.",
+      "consequenceDraft": "Ne facciamo una bozza con lo stesso numero: non va allo SDI da sola.",
+      "consequenceIssue": "Tu correggi ciò che lo SDI ha rifiutato e poi emetti la bozza: solo allora può andare di nuovo allo SDI.",
+      "description": "Lo SDI ha scartato l’autofattura n. {{number}}: per il fisco è come se non fosse mai stata emessa.",
+      "descriptionUnknown": "Lo SDI ha scartato questa autofattura: per il fisco è come se non fosse mai stata emessa.",
+      "done": "Bozza n. {{number}} pronta: sostituisce l’autofattura scartata. Correggi ciò che lo SDI ha rifiutato e poi emettila.",
+      "doneUnknown": "Bozza pronta: sostituisce l’autofattura scartata. Correggi ciò che lo SDI ha rifiutato e poi emettila.",
+      "problem": {
+        "failed": "Non siamo riusciti a confermare la correzione: controlla l’elenco e riprova.",
+        "forbidden": "Non puoi correggere le autofatture: serve poter gestire le fatture di tutta l’organizzazione. Non è cambiato niente.",
+        "notCorrectable": "Questa autofattura non si può correggere da qui: lo SDI non l’ha scartata, oppure ha già una nota di credito. Abbiamo aggiornato l’elenco.",
+        "notFound": "Non troviamo più questa autofattura: abbiamo aggiornato l’elenco.",
+        "unavailable": "La correzione delle autofatture non è ancora aperta in questo ambiente. Non è cambiato niente."
+      },
+      "reasonTitle": "Perché lo SDI l’ha scartata",
+      "title": "Correggere e rimandare l’autofattura?",
+      "unreadable": "La correzione è stata fatta, ma non riusciamo a leggere la risposta: la bozza è nell’elenco."
+    },
     "currencyMissing": "Per alcuni di questi importi il server non indica la valuta: sono scritti senza simbolo e non sono convertiti.",
     "detail": {
       "description": "Controlla le righe prima di emettere: dopo l’emissione l’autofattura non si modifica più.",
@@ -32166,7 +32188,12 @@
         "done": "Autofattura emessa.",
         "doneNumbered": "Autofattura {{number}} emessa.",
         "failed": "Non siamo riusciti a emettere l’autofattura. Riprova tra poco.",
+        "outdated": "I dati sono cambiati da quando la bozza è stata fatta: rifai le bozze del mese e poi emetti di nuovo.",
+        "redo": "Rifai le bozze del mese",
         "title": "Emettere l’autofattura?"
+      },
+      "kept": {
+        "title": "Per ora questa bozza non si può emettere"
       },
       "lines": {
         "amount": "Imponibile",
@@ -32178,6 +32205,16 @@
       "loadError": "Impossibile caricare l’autofattura.",
       "loading": "Carico l’autofattura…",
       "pdf": "PDF",
+      "replaced": {
+        "body": "Lo SDI l’ha scartata, quindi per il fisco non è mai stata emessa: la sostituisce un’autofattura con lo stesso numero. Questa resta nello storico, senza azioni.",
+        "open": "Apri la sostitutiva",
+        "title": "Sostituita da un’altra autofattura"
+      },
+      "replaces": {
+        "body": "Lo SDI l’ha scartata, quindi per il fisco non è mai stata emessa. Questa bozza tiene lo stesso numero e non si può scartare: correggi ciò che lo SDI ha rifiutato ed emettila.",
+        "title": "Sostituisce l’autofattura n. {{number}}",
+        "titleUnknown": "Sostituisce un’autofattura scartata dallo SDI"
+      },
       "rule": "Regole usate: versione {{version}}",
       "title": "Autofattura",
       "titleFor": "Autofattura di {{month}}",
@@ -32198,6 +32235,10 @@
         "failed_one": "Non possiamo ancora fare la bozza per 1 emittente:",
         "failed_other": "Non possiamo ancora fare la bozza per {{count}} emittenti:",
         "fields": "Mancano: {{fields}}.",
+        "keptRow": "{{holder}} · {{portal}} · autofattura n. {{number}}",
+        "keptRowNoNumber": "{{holder}} · {{portal}}",
+        "kept_one": "1 bozza tiene il numero di un’autofattura scartata e per ora non si può emettere:",
+        "kept_other": "{{count}} bozze tengono il numero di un’autofattura scartata e per ora non si possono emettere:",
         "ledgerNotPosted": "Il mese dei proprietari non è ancora registrato: le bozze si fanno dal libro del mese. Chiudi prima il mese e poi prepara di nuovo le bozze.",
         "notDue": "Commissioni che non si autofatturano:",
         "notDueRow_one": "{{channel}}: {{amount}} per {{count}} soggiorno, {{reason}}.",
@@ -32208,6 +32249,13 @@
     "holder": {
       "Agency": "Agenzia",
       "Owner": "Proprietario"
+    },
+    "kept": {
+      "issuer_profile_incomplete": "Il profilo emittente di chi ha il conto del portale è incompleto: completalo nei dati di fatturazione e poi rifai le bozze del mese. Finché manca, la bozza tiene il numero ma non si può né emettere né scartare.",
+      "ledger_gives_no_td17": "Il libro del mese non dà più nessuna autofattura a questo titolare per questo portale (commissioni stornate, soggiorni non più attivi o titolare non più soggetto): la bozza tiene il numero dell’autofattura scartata e non si può né emettere né scartare. Come usare quel numero lo decide il commercialista.",
+      "owner_issuer_missing": "Il proprietario titolare del conto del portale non ha un profilo emittente: completalo nella sua scheda e poi rifai le bozze del mese. Finché manca, la bozza tiene il numero ma non si può né emettere né scartare.",
+      "portal_not_configured": "Il portale di questa bozza non è più tra quelli configurati nelle impostazioni delle autofatture (paese e partita IVA): scrivi a CasaZen perché lo rimetta a posto. Finché manca, la bozza tiene il numero ma non si può né emettere né scartare.",
+      "unknown": "Questa bozza tiene il numero di un’autofattura scartata dallo SDI e per ora non si può né emettere né scartare (motivo: {{code}})."
     },
     "notDue": {
       "currency_not_supported": "la commissione non è in euro",
@@ -32237,12 +32285,18 @@
       "owner_issuer_missing": "manca il profilo emittente del proprietario"
     },
     "row": {
+      "corrected": "Autofattura {{number}}: scartata dallo SDI e sostituita da un’autofattura con lo stesso numero.",
+      "correctedUnknown": "Autofattura scartata dallo SDI e sostituita da un’autofattura con lo stesso numero.",
       "due": "Da emettere entro il {{date}}",
       "issued": "Autofattura {{number}} del {{date}}",
       "monthAndHolder": "{{month}} · {{holder}} · portale in {{country}}",
       "open": "Apri",
       "openLabel": "Apri l’autofattura {{title}}",
       "parts": "Imponibile {{base}} · IVA {{vat}}",
+      "replacement": "Apri la sostitutiva",
+      "replacementLabel": "Apri la sostitutiva dell’autofattura {{title}}",
+      "replaces": "Sostituisce l’autofattura n. {{number}}, scartata dallo SDI.",
+      "replacesUnknown": "Sostituisce un’autofattura scartata dallo SDI.",
       "review": "Rivedi ed emetti",
       "reviewLabel": "Rivedi ed emetti l’autofattura {{title}}",
       "total": "Totale {{amount}}"
@@ -32250,7 +32304,8 @@
     "status": {
       "Discarded": "Bozza scartata",
       "Draft": "Bozza",
-      "Issued": "Emessa"
+      "Issued": "Emessa",
+      "Replaced": "Sostituita"
     }
   },
   "commercial": {
