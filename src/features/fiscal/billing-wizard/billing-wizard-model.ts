@@ -18,10 +18,13 @@ import type {
   ChannelCommissionRuleInput,
   ChannelCommissionRuleSet,
   CommissionBase,
+  ConfirmPortalTouristTaxComuniRequest,
   DocumentRegime,
   FiscalTaxRule,
+  ItalianPortalProposal,
   OwnerMandateTemplate,
   PortalAccountHolder,
+  PortalTouristTaxComune,
   SaveAccountantPackageSettingsRequest,
   SaveBillingSetupSectionRequest,
 } from '@/types';
@@ -136,6 +139,138 @@ export function withProposal(values: BillingWizardValues, proposed: readonly str
     if (proposed.includes(portal) && touristTaxCollectors[portal] === '') touristTaxCollectors[portal] = 'portal';
   }
   return { ...values, touristTaxCollectors };
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// The tourist tax of the Italian portals (FIX/BE-IT-TOURISTTAX-DEFAULTS): proposals to confirm per comune, the confirmed ones, the hint
+// ---------------------------------------------------------------------------------------------------------------------
+
+/** The members of the values of the section `touristTax` the server adds for an Italian issuer (backend `ItalianTouristTaxSetupKeys`). */
+const PROPOSALS_KEY = 'italianPortalProposals';
+const CONFIRMED_KEY = 'confirmedPortalTouristTaxComuni';
+const CONFLICT_KEY = 'portalTouristTaxConflict';
+
+/** The only status of a proposal that is a question for a person: a status a newer server may add is not asked. */
+const TO_CONFIRM = 'to_confirm';
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function sameComune(a: PortalTouristTaxComune, b: PortalTouristTaxComune): boolean {
+  return a.channel === b.channel && a.comuneIstat === b.comuneIstat;
+}
+
+/**
+ * The pairs of a list the server sent; `null` when it is not a list or when ANY entry of it is not a pair. A confirmation sends the WHOLE list, so a list that could be read only in part
+ * must never be the base of one: it would take the confirmations it could not read away.
+ */
+function pairsOf(value: unknown): PortalTouristTaxComune[] | null {
+  if (!Array.isArray(value)) return null;
+  const pairs: PortalTouristTaxComune[] = [];
+  for (const entry of value) {
+    if (!isRecord(entry) || typeof entry.channel !== 'string' || entry.channel === '' || typeof entry.comuneIstat !== 'string' || entry.comuneIstat === '') return null;
+    const pair = { channel: entry.channel, comuneIstat: entry.comuneIstat };
+    if (!pairs.some((known) => sameComune(known, pair))) pairs.push(pair);
+  }
+  return pairs;
+}
+
+/** The proposals that are questions (`status` `to_confirm`), once each and without the ones that are already confirmed. An entry that is not readable is left out: nothing is asked about it. */
+function proposalsOf(value: unknown, confirmed: readonly PortalTouristTaxComune[]): ItalianPortalProposal[] {
+  if (!Array.isArray(value)) return [];
+  const proposals: ItalianPortalProposal[] = [];
+  for (const entry of value) {
+    if (!isRecord(entry) || entry.status !== TO_CONFIRM) continue;
+    const { channel, comuneIstat, comune } = entry;
+    if (typeof channel !== 'string' || channel === '' || typeof comuneIstat !== 'string' || comuneIstat === '') continue;
+    const pair = { channel, comuneIstat };
+    if (confirmed.some((known) => sameComune(known, pair)) || proposals.some((known) => sameComune(known, pair))) continue;
+    proposals.push({ comuneIstat, comune: typeof comune === 'string' ? comune.trim() : '', channel, status: TO_CONFIRM });
+  }
+  return proposals;
+}
+
+/** What the step «Tassa di soggiorno» of an Italian issuer says of the portals that collect the tourist tax, as the server sent it. */
+export interface ItalianTouristTaxView {
+  /**
+   * The questions: «does this portal collect and pay the tourist tax in this comune?», for the comuni of the properties, none confirmed yet. Never an answer: nothing is preselected.
+   * Empty while the confirmed pairs cannot be read (see `confirmed`).
+   */
+  proposals: ItalianPortalProposal[];
+  /**
+   * The portals the organization already confirmed, one pair for each comune. `null` when the server did not send them, or sent a list that cannot be read: nothing can be answered
+   * or taken away then, because an answer is the whole list and one built on a part of it would take confirmations away.
+   */
+  confirmed: PortalTouristTaxComune[] | null;
+  /** The records of the stays from the portals contradict the rule of the organization for the tourist tax: a hint, never a «Da fare». */
+  conflict: boolean;
+}
+
+/**
+ * The tourist tax of the Italian portals as the section `touristTax` of the setup says it. `null` when the section carries none of the three members: an older server, an issuer that is
+ * not Italian, or a person who does not reach the whole organization (the server leaves them out for them: nothing is shown, and never an error). The reading is tolerant: a member that
+ * is missing or odd leaves its part empty and the rest as it was.
+ */
+export function italianTouristTaxOf(setup: BillingSetup | undefined): ItalianTouristTaxView | null {
+  const values = sectionOf(setup, 'touristTax')?.values;
+  if (!values || !(PROPOSALS_KEY in values || CONFIRMED_KEY in values || CONFLICT_KEY in values)) return null;
+
+  const confirmed = pairsOf(values[CONFIRMED_KEY]);
+  return { proposals: confirmed === null ? [] : proposalsOf(values[PROPOSALS_KEY], confirmed), confirmed, conflict: values[CONFLICT_KEY] === true };
+}
+
+/** What a person does with a portal in a comune: confirms it, or takes the confirmation away. */
+export type PortalComuniChange = { add: PortalTouristTaxComune } | { remove: PortalTouristTaxComune };
+
+/**
+ * The body of the confirmation (`PUT api/billing-setup/touristTax/portal-comuni`): the WHOLE list of the pairs the organization confirms, because the server replaces the list it
+ * had. A confirmation is the pairs already confirmed plus the new one; a removal is the pairs already confirmed without that one (an empty list takes every confirmation away).
+ */
+export function portalComuniRequest(confirmed: readonly PortalTouristTaxComune[], change: PortalComuniChange): ConfirmPortalTouristTaxComuniRequest {
+  const target = 'add' in change ? change.add : change.remove;
+  const others = confirmed.filter((pair) => !sameComune(pair, target));
+  return { comuni: [...others, ...('add' in change ? [target] : [])].map(({ channel, comuneIstat }) => ({ channel, comuneIstat })) };
+}
+
+/** Why a confirmation was not saved, in the words the step has for it. */
+export type PortalComuniFailure = 'wholeOrg' | 'forbidden' | 'invalid' | 'profile' | 'failed';
+
+/**
+ * What a failed confirmation was, from the answer: 403 `fiscal_settings_need_whole_org` (the person reaches only some of the properties), any other 403 (the role may not change the
+ * setup), 422 `issuer_field_invalid` (a portal or a comune the server does not take), 422 `issuer_profile_incomplete` (the issuer step has not created the profile yet); anything else
+ * (no answer, a 5xx, a body that is not the section) is a failed call, which can be tried again.
+ */
+export function portalComuniFailureOf(error: unknown): PortalComuniFailure {
+  if (isAxiosError(error) && error.response) {
+    const { status, data } = error.response;
+    const code = getProblemCode(data);
+    if (status === 403) return code === 'fiscal_settings_need_whole_org' ? 'wholeOrg' : 'forbidden';
+    if (status === 422 && code === 'issuer_field_invalid') return 'invalid';
+    if (status === 422 && code === 'issuer_profile_incomplete') return 'profile';
+  }
+  return 'failed';
+}
+
+/**
+ * The names of the comuni by ISTAT code, for the pairs the organization confirmed (a confirmed pair is no proposal any more, and its comune must still be named): the name the
+ * properties of the organization carry for the code, then the one a proposal gave (the server's), and last the ones a proposal gave earlier in this step (`remembered`). A code with
+ * none of them has no name here: the caller shows the code.
+ */
+export function comuneNamesOf(
+  properties: ReadonlyArray<{ city?: string | null; comuneIstatCode?: string | null }>,
+  proposals: readonly ItalianPortalProposal[],
+  remembered: ReadonlyMap<string, string> = new Map(),
+): Map<string, string> {
+  const names = new Map<string, string>();
+  for (const property of properties) {
+    const code = property.comuneIstatCode?.trim();
+    const city = property.city?.trim();
+    if (code && city && !names.has(code)) names.set(code, city);
+  }
+  for (const [code, name] of remembered) if (name !== '') names.set(code, name);
+  for (const proposal of proposals) if (proposal.comune !== '') names.set(proposal.comuneIstat, proposal.comune);
+  return names;
 }
 
 /** What of the tax profile the organization has already: the VAT number and the fiscal code the server read from it. */

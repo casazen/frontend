@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   applyMandateTemplate,
   canChangeBillingSetup,
+  confirmPortalTouristTaxComuni,
   getBillingPreview,
   getBillingSetup,
   getChannelAccountHolders,
@@ -19,6 +20,7 @@ import type {
   BillingSetupSection,
   ChannelAccountHolderChange,
   ChannelCommissionRuleInput,
+  ConfirmPortalTouristTaxComuniRequest,
   OwnerMandateTemplate,
   PortalAccountSettingsRequest,
   SaveBillingSetupSectionRequest,
@@ -104,6 +106,32 @@ export function useSaveBillingSection() {
     mutationFn: async ({ section, request }: { section: string; request: SaveBillingSetupSectionRequest }) => {
       try {
         return await saveBillingSetupSection(section, request);
+      } catch (error) {
+        throw withoutRequest(error);
+      }
+    },
+    onSuccess: (saved) => {
+      queryClient.setQueryData<BillingSetup | undefined>(BILLING_SETUP_KEY, (current) => withSection(current, saved));
+      afterSave();
+    },
+  });
+}
+
+/**
+ * The portals the person confirms as the ones that collect and pay the tourist tax in a comune (`PUT api/billing-setup/touristTax/portal-comuni`): the whole list of the pairs, which
+ * the server takes in place of the one it had. It is an answer of its own, not saved by «Continua». Like the other saves of the wizard the mutation is dropped as soon as nothing
+ * observes it (`gcTime: 0`) and a failure keeps only the status and the body of the answer (`withoutRequest`). The server answers the section `touristTax` as saved: it is on screen
+ * (the question that was confirmed leaves, the confirmed pair is listed) before the whole setup is read again.
+ */
+export function useConfirmPortalTouristTaxComuni() {
+  const queryClient = useQueryClient();
+  const afterSave = useAfterSave();
+
+  return useMutation({
+    gcTime: 0,
+    mutationFn: async (request: ConfirmPortalTouristTaxComuniRequest) => {
+      try {
+        return await confirmPortalTouristTaxComuni(request);
       } catch (error) {
         throw withoutRequest(error);
       }
