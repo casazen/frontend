@@ -1,13 +1,14 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, renderHook } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, cleanup, renderHook } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import type { ReactNode } from 'react';
 import { toast } from 'sonner';
 import { otaReviewsApi } from '@/api/ota-reviews.api';
 import i18n from '@/i18n/config';
-import type { HostReviewCommand } from '@/types';
-import { useReplyToReview, useSendHostReview } from '../use-ota-reviews';
+import type { BookingReviews, HostReviewCommand } from '@/types';
+import { MESSAGE_HUB_POLL_MS } from '../use-message-hub';
+import { useBookingReviews, useReplyToReview, useSendHostReview } from '../use-ota-reviews';
 
 vi.mock('@/api/ota-reviews.api', () => ({
   otaReviewsApi: {
@@ -26,8 +27,7 @@ const ID = '6f1c9a52-1111-4222-8333-944455556666';
 const OTA_KEY = `otareview:${ID}`;
 const SITE_KEY = `review:${ID}`;
 
-function wrapper() {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+function wrapper(client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })) {
   return ({ children }: { children: ReactNode }) => <QueryClientProvider client={client}>{children}</QueryClientProvider>;
 }
 
@@ -235,5 +235,65 @@ describe('the send of a reply and of the host review does not go out twice (E05/
       expect(toast.success).not.toHaveBeenCalled();
       expect(toast.warning).toHaveBeenCalledWith(expect.stringContaining('Non sappiamo ancora'));
     });
+  });
+});
+
+// A reply that «waits for the check» turns into «published» (or into an error) when the job that reads the channel finds it: no push tells it, so the section of a booking that stays open
+// has to ask again by itself, as the open review does (E05/F06/US02, NF-69).
+describe('the reviews of a booking that stays open are read again by themselves', () => {
+  const reviewsOfTheBooking: BookingReviews = {
+    bookingId: 'b-1',
+    channel: 'Airbnb',
+    channelCapabilities: { canRead: true, canReply: true, canHostReview: true },
+    items: [],
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(otaReviewsApi.getBookingReviews).mockResolvedValue(reviewsOfTheBooking);
+  });
+
+  afterEach(() => {
+    // The page is closed first (its interval stops), then the clock is the real one again.
+    cleanup();
+    vi.useRealTimers();
+  });
+
+  it('useBookingReviews_PageVisible_ReadsTheBookingAgainEveryMinute', async () => {
+    vi.useFakeTimers();
+    renderHook(() => useBookingReviews('b-1', true), { wrapper: wrapper() });
+
+    // The first reading is when the page opens.
+    await vi.advanceTimersByTimeAsync(0);
+    expect(otaReviewsApi.getBookingReviews).toHaveBeenCalledTimes(1);
+
+    await vi.advanceTimersByTimeAsync(MESSAGE_HUB_POLL_MS);
+    expect(otaReviewsApi.getBookingReviews).toHaveBeenCalledTimes(2);
+    await vi.advanceTimersByTimeAsync(MESSAGE_HUB_POLL_MS);
+    expect(otaReviewsApi.getBookingReviews).toHaveBeenCalledTimes(3);
+    expect(otaReviewsApi.getBookingReviews).toHaveBeenCalledWith('b-1');
+  });
+
+  it('useBookingReviews_TabHidden_AsksNothingWhileNobodyLooks', async () => {
+    vi.useFakeTimers();
+    const visibility = vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
+    try {
+      renderHook(() => useBookingReviews('b-1', true), { wrapper: wrapper() });
+      await vi.advanceTimersByTimeAsync(0);
+      expect(otaReviewsApi.getBookingReviews).toHaveBeenCalledTimes(1);
+
+      await vi.advanceTimersByTimeAsync(MESSAGE_HUB_POLL_MS * 3);
+      expect(otaReviewsApi.getBookingReviews).toHaveBeenCalledTimes(1);
+    } finally {
+      visibility.mockRestore();
+    }
+  });
+
+  it('useBookingReviews_NotEnabled_AsksNothingAtAll', async () => {
+    vi.useFakeTimers();
+    renderHook(() => useBookingReviews('b-1', false), { wrapper: wrapper() });
+
+    await vi.advanceTimersByTimeAsync(MESSAGE_HUB_POLL_MS * 2);
+    expect(otaReviewsApi.getBookingReviews).not.toHaveBeenCalled();
   });
 });

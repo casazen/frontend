@@ -53,13 +53,16 @@ export function useReviewThread(threadKey: string, enabled: boolean = true) {
 
 /**
  * The reviews of a booking (`GET /api/bookings/{id}/reviews`, NF-69): the one of the site and the one of the channel, and what the channel of the booking allows when there is none. Read
- * again at every visit, on return to the window and when a review is told by the bell; nothing is asked while `enabled` is false.
+ * again at every visit, on return to the window, when a review is told by the bell and every minute while the page is visible (never while the tab is hidden): that a reply which
+ * «waits for the check» is on the channel now (or has turned into an error) is written by the job that reads the channel and no push tells it, so an open page has to ask. Nothing is
+ * asked while `enabled` is false.
  */
 export function useBookingReviews(bookingId: string, enabled: boolean) {
   return useQuery({
     queryKey: bookingReviewsKeyOf(bookingId),
     queryFn: () => otaReviewsApi.getBookingReviews(bookingId),
     enabled: enabled && Boolean(bookingId),
+    refetchInterval: MESSAGE_HUB_POLL_MS,
     refetchOnMount: 'always',
     refetchOnWindowFocus: true,
     staleTime: 30_000,
