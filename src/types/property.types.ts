@@ -1,5 +1,6 @@
 import type { PropertyModeChange } from './property-mode.types';
 import type { RatingSummary } from './review.types';
+import type { SwissPlace } from './swiss-places.types';
 
 /** How a property is let (PM-01): exclusive, a property is in the short-rent or in the long-rent section, never both. */
 export type RentalMode = 'Short' | 'Long';
@@ -100,6 +101,21 @@ export interface Property {
   regionCode?: string | null;
   /** The CIN is valid and its ISTAT comune differs from `comuneIstatCode`: a non-blocking warning. */
   cinIstatMismatch?: boolean;
+  /**
+   * BFS number (text of digits, `"5192"` is Lugano) of the Swiss municipality the host confirmed in the form (E29/F01/US01/T02, NF-124);
+   * null until confirmed. A municipality derived from the postal code is in `swissPlace`, never here.
+   */
+  swissMunicipalityCode?: string | null;
+  /** Official name of the stored Swiss municipality. Only on `GET /properties/{id}`: null on the lists and when none is stored. */
+  swissMunicipalityName?: string | null;
+  /** The canton (`TI`) of the stored Swiss municipality. Only on `GET /properties/{id}`: null on the lists and when none is stored. */
+  swissCantonCode?: string | null;
+  /**
+   * Where the rules place the property: the stored municipality (`source: 'Stored'`), or, without one, the one its postal code and city
+   * give (`'Derived'`: not stored, the form proposes it for confirmation), or `ambiguous: true` with no municipality when the postal
+   * code leaves several open. Only on `GET /properties/{id}`, for a Swiss property that has a place.
+   */
+  swissPlace?: SwissPlace | null;
   /** IANA time zone, e.g. `Europe/Rome`. */
   timezone: string;
   cancellationPolicyId: string | null;
@@ -176,6 +192,13 @@ export interface CreatePropertyDto {
    * `null` clears it; a city changed without a comune clears the stored one.
    */
   comuneIstatCode?: string | null;
+  /**
+   * BFS number (text of digits) of the Swiss municipality the host confirmed from the official directory (`GET /api/swiss/localities`),
+   * only for a property in Switzerland. On an update `null` clears it and leaving it out keeps it; a city or postal code changed without
+   * it clears the stored one. A create refuses a value (422 `swiss_municipality_not_applicable`: its request has no country), so the
+   * form sends it only for a property it edits.
+   */
+  swissMunicipalityCode?: string | null;
   latitude?: number;
   longitude?: number;
   bedrooms: number;

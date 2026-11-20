@@ -33,6 +33,7 @@ export * from './alloggiati.types';
 export * from './billing.types';
 export * from './campaign.types';
 export * from './comune.types';
+export * from './swiss-places.types';
 export * from './review.types';
 export * from './guest-message.types';
 export * from './guest-cancellation.types';
