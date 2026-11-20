@@ -796,6 +796,10 @@
           "title": "Cleaning to arrange",
           "why": "The stay is over and no cleaning was asked for: declare the property ready or request a cleaning before the next arrival."
         },
+        "CleaningVatToState": {
+          "title": "Cleaning recharge with no VAT stated",
+          "why": "The cleaning you recharge to the owner has no VAT stated: state it, with the amount if that is missing, before you close the statement."
+        },
         "CompanyTenantDecision": {
           "title": "Company tenant to decide",
           "why": "The tenant is a company and the property belongs to a private owner: decide whether the stay stays a short let, with the withholding, or not."
@@ -871,6 +875,14 @@
         "RoutineTask": {
           "title": "Manual reminder from a routine",
           "why": "A routine you set up asks you to take care of this booking."
+        },
+        "SelfBillingDraftsToReview": {
+          "title": "Self-billed invoices to check and issue",
+          "why": "The self-billed invoices (TD17) of the month are ready as drafts: check the amounts against the portals' invoices and issue them by the deadline."
+        },
+        "SelfBillingRejected": {
+          "title": "Self-billed invoice rejected by the SDI",
+          "why": "The tax office counts the self-billed invoice as not issued: open it in the self-billed invoices, see why the SDI rejected it and press «Correct and resend» to make it again with the same number. If it already has a credit note, your accountant decides."
         },
         "TouristTaxDeadline": {
           "title": "Tourist tax due",
@@ -32214,6 +32226,28 @@
     "title": "Issuer of the documents of the stays"
   },
   "selfBilling": {
+    "correct": {
+      "button": "Correct and resend",
+      "buttonLabel": "Correct and resend the self-billed invoice {{title}}",
+      "confirm": "Correct and resend",
+      "consequenceDiscarded": "The rejected invoice does not count as issued and stays in the history.",
+      "consequenceDraft": "We make a draft with the same number from it: it does not go to the SDI by itself.",
+      "consequenceIssue": "You fix what the SDI refused and then issue the draft: only then can it go to the SDI again.",
+      "description": "The SDI rejected self-billed invoice no. {{number}}: for the tax office it was never issued.",
+      "descriptionUnknown": "The SDI rejected this self-billed invoice: for the tax office it was never issued.",
+      "done": "Draft no. {{number}} is ready: it replaces the rejected self-billed invoice. Fix what the SDI refused, then issue it.",
+      "doneUnknown": "Draft ready: it replaces the rejected self-billed invoice. Fix what the SDI refused, then issue it.",
+      "problem": {
+        "failed": "We could not confirm the correction: check the list and try again.",
+        "forbidden": "You cannot correct self-billed invoices: you need to manage the invoices of the whole organization. Nothing changed.",
+        "notCorrectable": "This self-billed invoice cannot be corrected from here: the SDI did not reject it, or it already has a credit note. We updated the list.",
+        "notFound": "We cannot find this self-billed invoice any more: we updated the list.",
+        "unavailable": "The correction of self-billed invoices is not open yet in this environment. Nothing changed."
+      },
+      "reasonTitle": "Why the SDI rejected it",
+      "title": "Correct and resend the self-billed invoice?",
+      "unreadable": "The correction was made, but we could not read the answer: the draft is in the list."
+    },
     "currencyMissing": "The server does not give the currency of some of these amounts: they are written without a symbol and are not converted.",
     "detail": {
       "description": "Check the lines before you issue: after the issue the self-billed invoice does not change any more.",
@@ -32240,7 +32274,12 @@
         "done": "Self-billed invoice issued.",
         "doneNumbered": "Self-billed invoice {{number}} issued.",
         "failed": "We could not issue the self-billed invoice. Try again in a moment.",
+        "outdated": "The data changed since the draft was made: make the drafts of the month again and then issue again.",
+        "redo": "Make the drafts of the month again",
         "title": "Issue the self-billed invoice?"
+      },
+      "kept": {
+        "title": "This draft cannot be issued for now"
       },
       "lines": {
         "amount": "Taxable amount",
@@ -32252,6 +32291,16 @@
       "loadError": "The self-billed invoice could not be loaded.",
       "loading": "Loading the self-billed invoice…",
       "pdf": "PDF",
+      "replaced": {
+        "body": "The SDI rejected it, so for the tax office it was never issued: a self-billed invoice with the same number replaces it. This one stays in the history, with no actions.",
+        "open": "Open the replacement",
+        "title": "Replaced by another self-billed invoice"
+      },
+      "replaces": {
+        "body": "The SDI rejected it, so for the tax office it was never issued. This draft keeps the same number and cannot be discarded: fix what the SDI refused and issue it.",
+        "title": "Replaces self-billed invoice no. {{number}}",
+        "titleUnknown": "Replaces a self-billed invoice rejected by the SDI"
+      },
       "rule": "Rules used: version {{version}}",
       "title": "Self-billed invoice",
       "titleFor": "Self-billed invoice of {{month}}",
@@ -32272,6 +32321,10 @@
         "failed_one": "We cannot make the draft for 1 issuer yet:",
         "failed_other": "We cannot make the draft for {{count}} issuers yet:",
         "fields": "Missing: {{fields}}.",
+        "keptRow": "{{holder}} · {{portal}} · self-billed invoice no. {{number}}",
+        "keptRowNoNumber": "{{holder}} · {{portal}}",
+        "kept_one": "1 draft keeps the number of a rejected self-billed invoice and cannot be issued for now:",
+        "kept_other": "{{count}} drafts keep the number of a rejected self-billed invoice and cannot be issued for now:",
         "ledgerNotPosted": "The month of the owners is not posted yet: the drafts are made from the ledger of the month. Close the month first and then prepare the drafts again.",
         "notDue": "Commissions that are not self-billed:",
         "notDueRow_one": "{{channel}}: {{amount}} for {{count}} stay, {{reason}}.",
@@ -32282,6 +32335,13 @@
     "holder": {
       "Agency": "Agency",
       "Owner": "Owner"
+    },
+    "kept": {
+      "issuer_profile_incomplete": "The issuer profile of the holder of the portal account is incomplete: complete it in the invoicing data and then make the drafts of the month again. Until it is complete the draft keeps its number but can be neither issued nor discarded.",
+      "ledger_gives_no_td17": "The ledger of the month no longer gives this holder any self-billed invoice for this portal (commissions reversed, stays no longer active, or the holder no longer subject): the draft keeps the number of the rejected invoice and can be neither issued nor discarded. What that number is used for is decided by the accountant.",
+      "owner_issuer_missing": "The owner who holds the portal account has no issuer profile: complete it on the owner page and then make the drafts of the month again. Until it is complete the draft keeps its number but can be neither issued nor discarded.",
+      "portal_not_configured": "The portal of this draft is no longer among the ones configured in the self-billing settings (country and VAT number): write to CasaZen to have it put right. While it is missing the draft keeps its number but can be neither issued nor discarded.",
+      "unknown": "This draft keeps the number of a self-billed invoice the SDI rejected and can be neither issued nor discarded for now (reason: {{code}})."
     },
     "notDue": {
       "currency_not_supported": "the commission is not in euro",
@@ -32311,12 +32371,18 @@
       "owner_issuer_missing": "the issuer profile of the owner is missing"
     },
     "row": {
+      "corrected": "Self-billed invoice {{number}}: rejected by the SDI and replaced by another one with the same number.",
+      "correctedUnknown": "Self-billed invoice rejected by the SDI and replaced by another one with the same number.",
       "due": "To be issued by {{date}}",
       "issued": "Self-billed invoice {{number}} of {{date}}",
       "monthAndHolder": "{{month}} · {{holder}} · portal in {{country}}",
       "open": "Open",
       "openLabel": "Open the self-billed invoice {{title}}",
       "parts": "Taxable amount {{base}} · VAT {{vat}}",
+      "replacement": "Open the replacement",
+      "replacementLabel": "Open the replacement of the self-billed invoice {{title}}",
+      "replaces": "Replaces self-billed invoice no. {{number}}, rejected by the SDI.",
+      "replacesUnknown": "Replaces a self-billed invoice rejected by the SDI.",
       "review": "Review and issue",
       "reviewLabel": "Review and issue the self-billed invoice {{title}}",
       "total": "Total {{amount}}"
@@ -32324,7 +32390,8 @@
     "status": {
       "Discarded": "Discarded draft",
       "Draft": "Draft",
-      "Issued": "Issued"
+      "Issued": "Issued",
+      "Replaced": "Replaced"
     }
   },
   "commercial": {
