@@ -84,6 +84,10 @@ const TYPE_KEYS: Record<string, TypeKeys> = {
   // Both are about the organization, never a property, and the server lists them only to who holds `agency.invoice.manage`; «Fallo ora» opens the page of the self-billed invoices (`ReviewSelfBilling`).
   SelfBillingRejected: { titleKey: 'activity.todo.type.SelfBillingRejected.title', whyKey: 'activity.todo.type.SelfBillingRejected.why' },
   SelfBillingDraftsToReview: { titleKey: 'activity.todo.type.SelfBillingDraftsToReview.title', whyKey: 'activity.todo.type.SelfBillingDraftsToReview.why' },
+  // A cleaning recharged to an owner at its cost whose VAT the cost source does not say (E14/F01/US02/T01, NF-114, ⚖ I13; `ActivityType` 140): the backend posts the charge as it is and raises this item when the agency posts the month.
+  // About the stay of the cleaning (action `ReviewBooking`: the page of the stay, where its cleaning request is listed) or, for a cleaning with no stay, about the request itself. No page of the app states the VAT or the amount of a
+  // cleaning yet, so the type has its words and no route of its own: it keeps the button of its action (the stay, for who may open it), and the task that builds that page adds its route to `ROUTE_MAP_BY_TYPE` of `activity-card.tsx`.
+  CleaningVatToState: { titleKey: 'activity.todo.type.CleaningVatToState.title', whyKey: 'activity.todo.type.CleaningVatToState.why' },
 };
 
 const UNKNOWN_TYPE_KEYS: TypeKeys = { titleKey: 'activity.todo.type.unknown.title', whyKey: 'activity.todo.type.unknown.why' };

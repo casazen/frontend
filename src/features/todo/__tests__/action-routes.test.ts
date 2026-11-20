@@ -499,6 +499,30 @@ describe('ACTION_ROUTE_MAP: the owner who could not be told that a statement was
   });
 });
 
+// E14/F01/US02/T01 (NF-114, ⚖ I13): a cleaning recharged to an owner at its cost has no VAT stated. The item carries `ReviewBooking` and is about the stay of the cleaning (the page of the stay lists its cleaning request) or,
+// for a cleaning with no stay, about the request itself. No page of the app states the VAT or the amount of a cleaning yet, so the type has no route of its own: it keeps what its action gives (the stay, for who may open it)
+// and nothing is added or changed.
+describe('ACTION_ROUTE_MAP: the cleaning recharge with no VAT stated', () => {
+  const REQUEST_ID = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
+  const item = { action: 'ReviewBooking', activityType: 'CleaningVatToState', entityType: 'Booking', entityId: BOOKING_ID, propertyId: PROPERTY_ID as string | null };
+
+  it('todoActionRoute_CleaningVatToState_OnlyWhoMayReadTheBookingsIsSentToTheStay', () => {
+    expect(todoActionRoute(item)).toBe(`/app/short-rent/bookings/${BOOKING_ID}`);
+    expect(todoActionRoute(item, permissions(['booking.read']))).toBe(`/app/short-rent/bookings/${BOOKING_ID}`);
+    // A role that manages the properties and the payments but may not read the bookings is not offered a page that ends on «nessun accesso».
+    expect(todoActionRoute(item, permissions(['property.read', 'property.write', 'payment.read']))).toBeNull();
+    expect(todoActionRoute(item, permissions([]))).toBeNull();
+  });
+
+  it('todoActionRoute_CleaningVatToState_AboutARequestWithNoStay_HasNoButtonAndNeverTakesItsIdForABooking', () => {
+    const ofARequest = { ...item, entityType: 'ServiceRequest', entityId: REQUEST_ID };
+
+    expect(todoActionRoute(ofARequest)).toBeNull();
+    expect(todoActionRoute(ofARequest, permissions(['booking.read', 'property.read']))).toBeNull();
+    expect(todoActionRoute({ ...item, entityId: NO_ID })).toBeNull();
+  });
+});
+
 // Every `ActivityAction` of the backend (`Casazen.Core/Entities/Enums/ActivityAction.cs`, today 26 values): the map has an entry for each, or the action is
 // in the list of those whose page does not exist yet. An action that is in neither is a "To do" with no button that nobody noticed; the task that builds
 // the page adds the entry and takes the action out of the list (the test below fails until it does).
