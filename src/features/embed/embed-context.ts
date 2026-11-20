@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react';
+import { EMBED_PROTOCOL_VERSION } from '@/embed/protocol';
 import type { AppLocale } from '@/i18n/locale-storage';
 
 /**
@@ -38,8 +39,8 @@ export const EMBED_PARENT_QUERY_KEY = 'parent';
 /** The query parameter that carries the version of the protocol the page expects (`v=1`). */
 export const EMBED_VERSION_QUERY_KEY = 'v';
 
-/** The only version of the page-frame protocol this app speaks. */
-const SUPPORTED_VERSION = '1';
+/** The only version of the page-frame protocol this app speaks (`src/embed/protocol.ts`), as the address writes it. */
+const SUPPORTED_VERSION = String(EMBED_PROTOCOL_VERSION);
 
 /** The longest origin that can be one: a scheme, a host of 253 characters and a port. */
 const MAX_ORIGIN_LENGTH = 300;

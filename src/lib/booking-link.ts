@@ -17,11 +17,17 @@ import type { PublicUrls } from '@/types/domain.types';
  * stored, and the checkout takes the values from the address.
  */
 
-/** The `utm_source` of a link copied from CasaZen: the API takes a booking made from it as a booking of the site of the agency (`BookingAttribution.AgencySiteSource`). */
-const AGENCY_LINK_SOURCE = 'agency-site';
+/**
+ * The `utm_source` of a link copied from CasaZen: the API takes a booking made from it as a booking of the site of the agency (`BookingAttribution.AgencySiteSource`).
+ * The embeddable widgets (NF-144) use it too, for the link that takes the guest from the frame to the checkout.
+ */
+export const AGENCY_LINK_SOURCE = 'agency-site';
 
 /** The `utm_medium` of such a link. */
 const AGENCY_LINK_MEDIUM = 'link';
+
+/** The `utm_medium` of the link that leaves an embedded widget for the checkout (NF-144): the booking says it came through a frame in the agency's own website. */
+export const EMBED_LINK_MEDIUM = 'embed';
 
 /** What a link says about where the guest comes from, and the parameter that says it. They are the three the booking keeps. */
 const ATTRIBUTION_PARAMS = { source: 'utm_source', medium: 'utm_medium', campaign: 'utm_campaign' } as const;
