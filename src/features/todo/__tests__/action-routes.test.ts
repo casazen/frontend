@@ -5,6 +5,7 @@ import { ROUTE_MANIFEST, type AppContextKey, type PermissionPredicate } from '@/
 import { BOOKING_TABS } from '@/features/bookings/lib/booking-tabs';
 import { COMPLIANCE_ACTION_TARGETS } from '@/lib/compliance-routes';
 import { ORG_BILLING_ADMIN_PERMISSION, isOrgBillingAdmin } from '@/lib/org-billing-admin';
+import { SHORT_RENT_ROLE_KEYS, SHORT_RENT_ROLE_PERMISSIONS, hostContextsOf, workspacePredicateOf } from '@/test/host-roles';
 import { MEMBER_ROLE_KEYS, contextOf } from '@/test/org-contexts';
 import { ACTION_ROUTE_MAP, todoActionRoute } from '../activity-card';
 
@@ -523,7 +524,59 @@ describe('ACTION_ROUTE_MAP: the cleaning recharge with no VAT stated', () => {
   });
 });
 
-// Every `ActivityAction` of the backend (`Casazen.Core/Entities/Enums/ActivityAction.cs`, today 26 values): the map has an entry for each, or the action is
+// FIX/FE-CLEANING-VAT-QUESTION (backend FIX/BE-CLEANING-VAT, `ActivityAction` 140, `StateCleaningVat`): a cleaning recharged to an owner at its cost whose VAT nobody stated. The item is about the cleaning request
+// (`ServiceRequest`) and «Fallo ora» opens the page of that request in the interventions with the question «La ditta di pulizie ha applicato l'IVA su questa fattura?» over it (`?cleaningVat=<request>`). The page is read
+// with `property.read` and the question is answered with `property.write` (what the endpoint asks): the button is for the roles that write the properties, and a role that only reads them is offered nothing.
+describe('ACTION_ROUTE_MAP: the question of the VAT of a cleaning (StateCleaningVat)', () => {
+  const REQUEST_ID = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
+  const item = { action: 'StateCleaningVat', activityType: 'CleaningVatToState', entityType: 'ServiceRequest', entityId: REQUEST_ID, propertyId: PROPERTY_ID as string | null };
+  const question = `/app/short-rent/interventions/${REQUEST_ID}?cleaningVat=${REQUEST_ID}`;
+
+  it('todoActionRoute_StateCleaningVat_OpensTheQuestionOnThePageOfTheRequest', () => {
+    // Without a predicate the button is always offered; the page is a route of Affitti brevi, filled with the id of the request.
+    expect(todoActionRoute(item)).toBe(question);
+    expect(todoActionRoute({ ...item, propertyId: null })).toBe(question);
+    expect(manifestEntryOf(question).entry?.path).toBe('/app/short-rent/interventions/:id');
+  });
+
+  // A permission rule, with the real role keys and the permissions the backend gives them: only the roles that write the properties are offered the button.
+  it.each(SHORT_RENT_ROLE_KEYS)('todoActionRoute_StateCleaningVat_TheButtonFollowsThePermissionToWriteThePropertiesOfTheRole_%s', (roleKey) => {
+    const mayWrite = (SHORT_RENT_ROLE_PERMISSIONS[roleKey] as readonly string[]).includes('property.write');
+
+    expect(todoActionRoute(item, workspacePredicateOf(hostContextsOf(roleKey)))).toBe(mayWrite ? question : null);
+  });
+
+  it.each(['staff', 'accountant'] as const)('todoActionRoute_StateCleaningVat_TheRole_%s_CanReadThePageOfTheRequestButIsOfferedNoButtonAndNoOtherPage', (roleKey) => {
+    const person = workspacePredicateOf(hostContextsOf(roleKey));
+
+    // The page of the request is theirs to read ...
+    expect(person('short-rent', 'property.read')).toBe(true);
+    expect(manifestEntryOf(question).entry?.requiredPermissions).toEqual(['property.read']);
+    // ... and the question is not theirs to answer: no button, and not the page of the stay or of the property in its place.
+    expect(person('short-rent', 'property.write')).toBe(false);
+    expect(todoActionRoute(item, person)).toBeNull();
+  });
+
+  it('todoActionRoute_StateCleaningVat_APersonWhoHoldsNoMembershipOfTheAreaIsOfferedNoButton', () => {
+    expect(todoActionRoute(item, workspacePredicateOf([]))).toBeNull();
+    expect(todoActionRoute(item, workspacePredicateOf([contextOf('long-rent', 'property_manager', ['property.read', 'property.write'])]))).toBeNull();
+  });
+
+  it('todoActionRoute_StateCleaningVat_NeverTakesTheIdOfSomethingThatIsNotARequest', () => {
+    expect(todoActionRoute({ ...item, entityType: 'Booking' })).toBeNull();
+    expect(todoActionRoute({ ...item, entityType: 'Property', entityId: PROPERTY_ID })).toBeNull();
+    expect(todoActionRoute({ ...item, entityId: NO_ID })).toBeNull();
+  });
+
+  it('todoActionRoute_TheItemsOfBefore_ReviewBookingOfTheSameType_KeepTheButtonOfTheirOwnAction', () => {
+    const before = { ...item, action: 'ReviewBooking', entityType: 'Booking', entityId: BOOKING_ID };
+
+    expect(todoActionRoute(before)).toBe(`/app/short-rent/bookings/${BOOKING_ID}`);
+    expect(todoActionRoute(before, workspacePredicateOf(hostContextsOf('property_manager')))).toBe(`/app/short-rent/bookings/${BOOKING_ID}`);
+  });
+});
+
+// Every `ActivityAction` of the backend (`Casazen.Core/Entities/Enums/ActivityAction.cs`, today 27 values): the map has an entry for each, or the action is
 // in the list of those whose page does not exist yet. An action that is in neither is a "To do" with no button that nobody noticed; the task that builds
 // the page adds the entry and takes the action out of the list (the test below fails until it does).
 const BACKEND_ACTIONS = [
@@ -553,6 +606,7 @@ const BACKEND_ACTIONS = [
   'ReviewOwnerStatement',
   'CopyCheckInLink',
   'FixScheduledMessage',
+  'StateCleaningVat',
 ] as const;
 
 /** The actions whose page does not exist in the app yet: the mapping of the listings of the channel manager and the stays and documents of the owner portal. */

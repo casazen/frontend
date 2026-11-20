@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { getManifestEntry, hasEntryPermission, type PermissionPredicate } from '@/config/route-manifest';
 import type { BookingTab } from '@/features/bookings/lib/booking-tabs';
 import { CONNECTION_HEALTH_SECTION } from '@/features/compliance/lib/connection-health-model';
+import { CLEANING_VAT_PARAM, CLEANING_VAT_PERMISSION } from '@/features/owner-accounting/cleaning-vat-model';
 import { messageThreadPath } from '@/lib/message-hub-routes';
 import { cn } from '@/lib/utils';
 import { describeTodo } from './lib/todo-model';
@@ -46,6 +47,11 @@ export interface TodoRoute {
   /** The name of the parameter of the address that carries the id of the entity the item is about (`step` of a guided step of the panel), for a page that finds the rest from it. */
   entityParam?: string;
   /**
+   * The permissions the person needs besides the ones of the page (`requiredPermissions` of its entry), in the area of the page: a page can be read by who cannot do what its item asks (the page of an intervention is read with
+   * `property.read`, the question of the VAT of a cleaning is answered with `property.write`), and the button is offered only to who can do it. Without them in the predicate of the person the route is skipped.
+   */
+  permissions?: readonly string[];
+  /**
    * For `target: 'thread'`: the kind of conversation the key starts with, `ota` (a conversation of a channel, the id of its thread) or `direct` (a direct booking, the id of
    * the booking), as the hub gives them (`ota:{id}`, `direct:{bookingId}`).
    */
@@ -64,6 +70,9 @@ export interface TodoActionTarget {
 
 /** The `entityType` the server sends for an item about a booking. */
 const BOOKING = 'Booking';
+
+/** The `entityType` of the items about a request to a supplier (`ServiceRequest`): the id of the entity is the request, here a cleaning. */
+const SERVICE_REQUEST = 'ServiceRequest';
 
 /** The `entityType` of an item about a conversation of a channel (the thread of the copy of the channel's messages). */
 const OTA_THREAD = 'OtaMessageThread';
@@ -221,6 +230,19 @@ export const ACTION_ROUTE_MAP = {
   ReviewOwnerStatement: {
     route: { path: '/app/account/owner-close/versions/:versionId', target: 'entity', entityType: OWNER_STATEMENT_VERSION, idParam: 'versionId' },
   },
+  // A cleaning recharged to an owner at its cost whose VAT nobody stated (FIX/FE-CLEANING-VAT-QUESTION, backend FIX/BE-CLEANING-VAT, `ActivityAction` 140, type `CleaningVatToState`): the item is about the cleaning request
+  // (`ServiceRequest`), and «Fallo ora» opens the page of that request in the interventions with the question «La ditta di pulizie ha applicato l'IVA su questa fattura?» over it (`?cleaningVat=<request>`, the pattern of
+  // `?decision=<booking>`). The page is read with `property.read` and the question is answered with `property.write` (what the endpoint asks): the button is for who may answer, and no other page stands in for it.
+  // The items raised before that action existed (`ReviewBooking`, type `CleaningVatToState`) keep the button of their own action.
+  StateCleaningVat: {
+    route: {
+      path: '/app/short-rent/interventions/:id',
+      target: 'entity',
+      entityType: SERVICE_REQUEST,
+      entityParam: CLEANING_VAT_PARAM,
+      permissions: [CLEANING_VAT_PERMISSION],
+    },
+  },
 } satisfies Record<string, TodoActionTarget>;
 
 /**
@@ -271,6 +293,8 @@ function buildRoute(route: TodoRoute, activity: TodoRouteSubject, hasPermission?
   // The same test the menu and the route use: the permissions of the page and, for the page of the organization administrator (`orgBillingAdmin`, like the withholding), being one. A person who is not is sent
   // to the next page of the item (the booking), never to a page that tells them to ask an administrator.
   if (hasPermission && !hasEntryPermission(entry, hasPermission)) return null;
+  // What the item asks besides what the page asks: a person who can read the page and not do the thing is offered no button.
+  if (hasPermission && route.permissions?.some((permission) => !hasPermission(entry.context, permission))) return null;
 
   let path = entry.path;
   if (route.target === 'thread') {

@@ -201,10 +201,11 @@ describe('describeTodo and the self-billed invoices (TD17)', () => {
   });
 });
 
-// The cleaning recharged to an owner at its cost with no VAT stated (E14/F01/US02/T01, NF-114, ⚖ I13): the item the backend raises when the agency posts the month. It is told with its own words, not as an
-// «Attività da completare», in both languages: the title says what is missing, the sentence says what to do, and the two languages do not say the same words.
+// The cleaning recharged to an owner at its cost with no VAT stated (E14/F01/US02/T01, NF-114, ⚖ I13): the item the backend raises when the agency posts the month, about the cleaning request with the action `StateCleaningVat`
+// (FIX/BE-CLEANING-VAT; the items raised before carry `ReviewBooking`). It is told with its own words, not as an «Attività da completare», in both languages: the title says what is missing, the sentence says what to do, and the
+// two languages do not say the same words.
 describe('describeTodo and the cleaning recharge with no VAT stated', () => {
-  const item = activity('CleaningVatToState', { action: 'ReviewBooking', urgency: 'Medium' });
+  const item = activity('CleaningVatToState', { action: 'StateCleaningVat', entityType: 'ServiceRequest', urgency: 'Medium' });
 
   it.each([
     ['it', /IVA/],
@@ -228,6 +229,19 @@ describe('describeTodo and the cleaning recharge with no VAT stated', () => {
 
     expect(inItalian.title).not.toBe(inEnglish.title);
     expect(inItalian.why).not.toBe(inEnglish.why);
+  });
+
+  // FIX/FE-CLEANING-VAT-QUESTION: the sentence asks to answer the question of the dialog and says what each of the three answers does.
+  it.each([
+    ['it', ["l'IVA su questa fattura", '«Sì»', '«No»', '«Non lo so»', 'alla chiusura del rendiconto']],
+    ['en', ['charge VAT on this invoice', '«Yes»', '«No»', "«I don't know»", 'when the statement closes']],
+  ] as const)('describeTodo_CleaningVatToState_AsksToAnswerTheQuestionAndSaysWhatEachAnswerDoesIn_%s', async (lng, words) => {
+    await i18n.changeLanguage(lng);
+
+    const text = describeTodo(item, contextOf(lng));
+
+    for (const word of words) expect(text.why, word).toContain(word);
+    await i18n.changeLanguage('it');
   });
 });
 

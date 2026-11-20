@@ -799,7 +799,7 @@
         },
         "CleaningVatToState": {
           "title": "Cleaning recharge with no VAT stated",
-          "why": "The cleaning you recharge to the owner has no VAT stated: state it, with the amount if that is missing, before you close the statement."
+          "why": "Answer the question: did the cleaning company charge VAT on this invoice? «Yes» makes the recharge line carry the company's VAT, «No» keeps it without VAT, and «I don't know» leaves the amount as it is and asks again once, when the statement closes."
         },
         "CompanyTenantDecision": {
           "title": "Company tenant to decide",
@@ -18295,6 +18295,43 @@
       "saved": "Commissions saved. They apply to the stays that end from {{date}} on.",
       "title": "Channel commissions"
     },
+    "cleaningVat": {
+      "answer": {
+        "Applied": "Yes, {{rate}}",
+        "AppliedNoRate": "Yes",
+        "NotApplied": "No, without VAT",
+        "Unknown": "I don't know"
+      },
+      "company": "Company: {{name}}",
+      "country": {
+        "CH": "Switzerland",
+        "IT": "Italy"
+      },
+      "current": "Answer given for this cleaning: {{answer}}. A new answer replaces it.",
+      "currentByCompany": "Answer remembered for this company: {{answer}}. An answer given here replaces it for this cleaning.",
+      "description": "This is the recharge of a cleaning to the owner: your answer decides the VAT on that line of the invoice.",
+      "loadError": "We could not read the question.",
+      "loading": "Reading the question…",
+      "problem": {
+        "answerInvalid": "That answer is not valid: pick one of the three.",
+        "changed": "The request changed in the meantime. We read the question again: check it and answer again.",
+        "failed": "We have no confirmation that the answer was saved. Try again: if it had already arrived, the same answer changes nothing.",
+        "forbidden": "Your role cannot answer this question: it takes the permission to change properties.",
+        "notCompleted": "The cleaning is not completed yet, so there is no invoice from the company to answer about. Come back once it is done.",
+        "notFound": "We cannot find this request: it may be gone, or it is not one you have access to.",
+        "rateUnknown": "We have no VAT rate for the day of this cleaning, so «Yes» cannot be saved. Answer «No» or «I don't know».",
+        "rememberForbidden": "Only whoever manages the whole organization can remember the answer for the company. Answer again without «Remember»: it then applies to this cleaning only.",
+        "rememberUnknown": "«I don't know» cannot be remembered for the company. Answer without «Remember»."
+      },
+      "remember": "Remember for this company",
+      "rememberHint": "It applies to this company's other cleanings that have no answer yet, in every property. It does not apply to «I don't know».",
+      "saved": "Answer saved: {{answer}}.",
+      "sending": "Saving the answer…",
+      "title": "Did the cleaning company charge VAT on this invoice?",
+      "unknownHint": "The amount stays as it is and the question comes back once, when the statement closes.",
+      "when": "Cleaning on {{date}} · {{country}}",
+      "yesUnavailable": "We have no VAT rate for the day of this cleaning: «Yes» is not available."
+    },
     "close": {
       "confirm": "Close the month",
       "consequences": {
@@ -32644,6 +32681,48 @@
     "title": "Issuer of the documents of the stays"
   },
   "selfBilling": {
+    "close": {
+      "button": "Close as no longer due",
+      "buttonLabel": "Close the draft {{title}} as no longer due",
+      "confirm": "Close as no longer due",
+      "consequenceClosed": "The draft is closed for good and is never issued. This cannot be undone.",
+      "consequenceRegister": "The number goes in the register of unused numbers that the accountant gets in the package.",
+      "consequenceReserved": "Its number stays reserved: it will never be given to another invoice.",
+      "description": "Draft no. {{number}} took the number of a self-billed invoice the SDI rejected and cannot be issued for now. If it is no longer due, you can close it: tell us why, and the reason, who closed it and the day are recorded.",
+      "descriptionUnknown": "This draft took the number of a self-billed invoice the SDI rejected and cannot be issued for now. If it is no longer due, you can close it: tell us why, and the reason, who closed it and the day are recorded.",
+      "done": "Draft no. {{number}} closed: it is no longer due. The number stays reserved.",
+      "doneUnknown": "Draft closed: it is no longer due. The number stays reserved.",
+      "note": {
+        "hint": "The note stays in the history and goes in the register the accountant gets: write only what helps to understand.",
+        "label": "Note"
+      },
+      "problem": {
+        "alreadyClosed": "This draft was already closed with another reason: there is nothing to fix. We updated the list.",
+        "failed": "We could not confirm the closing: check the list and try again.",
+        "forbidden": "You cannot close drafts: you need to manage the invoices of the whole organization. Nothing changed.",
+        "notClosable": "This draft cannot be closed from here: it does not replace a rejected self-billed invoice, or the month still supports it and it has to be issued. We updated the list.",
+        "notFound": "We cannot find this draft any more: we updated the list.",
+        "noteTooLong": "The note is too long: {{max}} characters at most.",
+        "reasonRequired": "Choose a reason: the draft cannot be closed without one.",
+        "unavailable": "Closing drafts is not open yet in this environment. Nothing changed."
+      },
+      "reason": {
+        "duplicate_or_error": "It was a duplicate or a mistake",
+        "holder_no_longer_subject": "The account holder is no longer subject to the self-billed invoice",
+        "portal_credit_note": "The portal issued a credit note"
+      },
+      "reasonLegend": "Reason (required)",
+      "title": "Close the draft as no longer due?"
+    },
+    "closed": {
+      "at": "Closed on",
+      "by": "Closed by",
+      "intro": "It took the number {{number}} of a self-billed invoice the SDI rejected. The number stays reserved: no other invoice will ever have it.",
+      "introUnknown": "It took the number of a self-billed invoice the SDI rejected. The number stays reserved: no other invoice will ever have it.",
+      "note": "Note",
+      "reason": "Reason",
+      "title": "This draft was closed"
+    },
     "correct": {
       "button": "Correct and resend",
       "buttonLabel": "Correct and resend the self-billed invoice {{title}}",
@@ -32711,6 +32790,8 @@
       "pdf": "PDF",
       "replaced": {
         "body": "The SDI rejected it, so for the tax office it was never issued: a self-billed invoice with the same number replaces it. This one stays in the history, with no actions.",
+        "closedBody": "The SDI rejected it, so for the tax office it was never issued. The draft that took its number was closed as no longer due: the number stays reserved and this one stays in the history, with no actions.",
+        "closedTitle": "Its replacement draft was closed",
         "open": "Open the replacement",
         "title": "Replaced by another self-billed invoice"
       },
@@ -32755,11 +32836,12 @@
       "Owner": "Owner"
     },
     "kept": {
-      "issuer_profile_incomplete": "The issuer profile of the holder of the portal account is incomplete: complete it in the invoicing data and then make the drafts of the month again. Until it is complete the draft keeps its number but can be neither issued nor discarded.",
-      "ledger_gives_no_td17": "The ledger of the month no longer gives this holder any self-billed invoice for this portal (commissions reversed, stays no longer active, or the holder no longer subject): the draft keeps the number of the rejected invoice and can be neither issued nor discarded. What that number is used for is decided by the accountant.",
-      "owner_issuer_missing": "The owner who holds the portal account has no issuer profile: complete it on the owner page and then make the drafts of the month again. Until it is complete the draft keeps its number but can be neither issued nor discarded.",
-      "portal_not_configured": "The portal of this draft is no longer among the ones configured in the self-billing settings (country and VAT number): write to CasaZen to have it put right. While it is missing the draft keeps its number but can be neither issued nor discarded.",
-      "unknown": "This draft keeps the number of a self-billed invoice the SDI rejected and can be neither issued nor discarded for now (reason: {{code}})."
+      "exit": "If it is no longer due, close it as no longer due: the number stays reserved and is never given to another invoice.",
+      "issuer_profile_incomplete": "The issuer profile of the holder of the portal account is incomplete: complete it in the invoicing data and then make the drafts of the month again. Until it is complete the draft keeps its number but cannot be issued.",
+      "ledger_gives_no_td17": "The ledger of the month no longer gives this holder any self-billed invoice for this portal (commissions reversed, stays no longer active, or the holder no longer subject): the draft keeps the number of the rejected invoice and cannot be issued.",
+      "owner_issuer_missing": "The owner who holds the portal account has no issuer profile: complete it on the owner page and then make the drafts of the month again. Until it is complete the draft keeps its number but cannot be issued.",
+      "portal_not_configured": "The portal of this draft is no longer among the ones configured in the self-billing settings (country and VAT number): write to CasaZen to have it put right. While it is missing the draft keeps its number but cannot be issued.",
+      "unknown": "This draft keeps the number of a self-billed invoice the SDI rejected and cannot be issued for now (reason: {{code}})."
     },
     "notDue": {
       "currency_not_supported": "the commission is not in euro",
@@ -32790,6 +32872,8 @@
     },
     "row": {
       "corrected": "Self-billed invoice {{number}}: rejected by the SDI and replaced by another one with the same number.",
+      "correctedClosed": "Self-billed invoice {{number}}: rejected by the SDI. The draft that took its number was closed as no longer due: the number stays reserved.",
+      "correctedClosedUnknown": "Self-billed invoice rejected by the SDI. The draft that took its number was closed as no longer due: the number stays reserved.",
       "correctedUnknown": "Self-billed invoice rejected by the SDI and replaced by another one with the same number.",
       "due": "To be issued by {{date}}",
       "issued": "Self-billed invoice {{number}} of {{date}}",
@@ -32806,9 +32890,11 @@
       "total": "Total {{amount}}"
     },
     "status": {
+      "ClosedNotDue": "Closed, no longer due",
       "Discarded": "Discarded draft",
       "Draft": "Draft",
       "Issued": "Issued",
+      "RejectedClosed": "Rejected by the SDI",
       "Replaced": "Replaced"
     }
   },

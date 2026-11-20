@@ -50,6 +50,7 @@ export * from './owner-accounting.types';
 export * from './owner-invoice.types';
 export * from './owner-issuer-profile.types';
 export * from './owner-tax-checks.types';
+export * from './cleaning-vat.types';
 export * from './withholding.types';
 export * from './routine.types';
 export * from './wire-transfer.types';
