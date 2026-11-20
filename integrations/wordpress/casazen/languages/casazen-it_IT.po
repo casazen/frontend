@@ -94,104 +94,104 @@ msgstr "Una riga per ogni lingua del tuo sito, ad esempio it_IT = it. Il valore 
 msgid "Load the CasaZen script on the pages that use it"
 msgstr "Carica lo script di CasaZen nelle pagine che lo usano"
 
-#: includes/class-admin.php:366
+#: includes/class-admin.php:381
 msgid "Connection status"
 msgstr "Stato della connessione"
 
-#: includes/class-admin.php:368
+#: includes/class-admin.php:383
 msgid "No check has been made yet. Use the Test connection button below."
 msgstr "Non è ancora stata fatta nessuna verifica. Usa il pulsante «Prova la connessione» qui sotto."
 
-#: includes/class-admin.php:373
+#: includes/class-admin.php:388
 msgid "Agency"
 msgstr "Agenzia"
 
-#: includes/class-admin.php:377
+#: includes/class-admin.php:392
 msgid "Embedding"
 msgstr "Incorporamento"
 
-#: includes/class-admin.php:381
+#: includes/class-admin.php:396
 msgid "Owner sign-in"
 msgstr "Accesso dei proprietari"
 
-#: includes/class-admin.php:385
+#: includes/class-admin.php:400
 msgid "Last check"
 msgstr "Ultima verifica"
 
-#: includes/class-admin.php:391
+#: includes/class-admin.php:406
 msgid "Script address"
 msgstr "Indirizzo dello script"
 
-#: includes/class-admin.php:406
+#: includes/class-admin.php:421
 msgid "On"
 msgstr "Attivo"
 
-#: includes/class-admin.php:409
+#: includes/class-admin.php:424
 msgid "Off"
 msgstr "Non attivo"
 
-#: includes/class-admin.php:411 includes/class-admin.php:427
+#: includes/class-admin.php:426 includes/class-admin.php:442
 msgid "Unknown"
 msgstr "Sconosciuto"
 
-#: includes/class-admin.php:422
+#: includes/class-admin.php:437
 msgid "Ready"
 msgstr "Pronto"
 
-#: includes/class-admin.php:425
+#: includes/class-admin.php:440
 msgid "Not ready yet"
 msgstr "Non ancora pronto"
 
-#: includes/class-connection.php:239
+#: includes/class-connection.php:262
 msgid "The connection works."
 msgstr "La connessione funziona."
 
-#: includes/class-connection.php:241
+#: includes/class-connection.php:264
 msgid "The connection works, but embedding is not switched on for your agency yet. Ask your CasaZen contact to switch it on."
 msgstr "La connessione funziona, ma l'incorporamento non è ancora attivo per la tua agenzia. Chiedi al tuo referente CasaZen di attivarlo."
 
-#: includes/class-connection.php:243
+#: includes/class-connection.php:266
 msgid "The address could not be reached. Check that it is correct and that the site is online."
 msgstr "L'indirizzo non è raggiungibile. Controlla che sia corretto e che il sito sia online."
 
-#: includes/class-connection.php:245
+#: includes/class-connection.php:268
 msgid "The address answered, but it is not a CasaZen address that supports embedding. Check the address."
 msgstr "L'indirizzo ha risposto, ma non è un indirizzo CasaZen che supporta l'incorporamento. Controlla l'indirizzo."
 
-#: includes/class-connection.php:247
+#: includes/class-connection.php:270
 msgid "CasaZen did not answer the check as expected. Try again in a few minutes."
 msgstr "CasaZen non ha risposto alla verifica come previsto. Riprova tra qualche minuto."
 
-#: includes/class-connection.php:249
+#: includes/class-connection.php:272
 msgid "CasaZen does not know this address or this organisation slug. Check how they are written."
 msgstr "CasaZen non conosce questo indirizzo o questo identificativo. Controlla come sono scritti."
 
-#: includes/class-connection.php:251
+#: includes/class-connection.php:274
 msgid "Set the CasaZen address to start."
 msgstr "Imposta l'indirizzo CasaZen per iniziare."
 
-#: includes/class-settings.php:199
+#: includes/class-settings.php:202
 msgid "The organisation slug is not valid: use lower-case letters, numbers and single hyphens, up to 100 characters. The previous value was kept."
 msgstr "L'identificativo dell'organizzazione non è valido: usa lettere minuscole, numeri e trattini singoli, fino a 100 caratteri. Il valore precedente è stato mantenuto."
 
 #. translators: %s: the first lines of the language mapping that were ignored.
-#: includes/class-settings.php:218
+#: includes/class-settings.php:221
 #, php-format
 msgid "Some lines of the language mapping were ignored because they are not valid: %s"
 msgstr "Alcune righe dell'associazione delle lingue sono state ignorate perché non valide: %s"
 
-#: includes/class-settings.php:440
+#: includes/class-settings.php:443
 msgid "The CasaZen address must start with https://. The previous address was kept."
 msgstr "L'indirizzo CasaZen deve iniziare con https://. L'indirizzo precedente è stato mantenuto."
 
-#: includes/class-settings.php:442
+#: includes/class-settings.php:445
 msgid "Only https addresses are accepted (http works only for local development hosts). The previous address was kept."
 msgstr "Sono accettati solo indirizzi https (http funziona solo sui domini di sviluppo locale). L'indirizzo precedente è stato mantenuto."
 
-#: includes/class-settings.php:444
+#: includes/class-settings.php:447
 msgid "The CasaZen address must not contain a user name or a password. The previous address was kept."
 msgstr "L'indirizzo CasaZen non deve contenere nome utente o password. L'indirizzo precedente è stato mantenuto."
 
-#: includes/class-settings.php:446
+#: includes/class-settings.php:449
 msgid "The CasaZen address is not valid. Use the form https://prenota.example.com. The previous address was kept."
 msgstr "L'indirizzo CasaZen non è valido. Usa il formato https://prenota.example.com. L'indirizzo precedente è stato mantenuto."

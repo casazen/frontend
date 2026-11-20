@@ -91,104 +91,104 @@ msgstr ""
 msgid "Load the CasaZen script on the pages that use it"
 msgstr ""
 
-#: includes/class-admin.php:366
+#: includes/class-admin.php:381
 msgid "Connection status"
 msgstr ""
 
-#: includes/class-admin.php:368
+#: includes/class-admin.php:383
 msgid "No check has been made yet. Use the Test connection button below."
 msgstr ""
 
-#: includes/class-admin.php:373
+#: includes/class-admin.php:388
 msgid "Agency"
 msgstr ""
 
-#: includes/class-admin.php:377
+#: includes/class-admin.php:392
 msgid "Embedding"
 msgstr ""
 
-#: includes/class-admin.php:381
+#: includes/class-admin.php:396
 msgid "Owner sign-in"
 msgstr ""
 
-#: includes/class-admin.php:385
+#: includes/class-admin.php:400
 msgid "Last check"
 msgstr ""
 
-#: includes/class-admin.php:391
+#: includes/class-admin.php:406
 msgid "Script address"
 msgstr ""
 
-#: includes/class-admin.php:406
+#: includes/class-admin.php:421
 msgid "On"
 msgstr ""
 
-#: includes/class-admin.php:409
+#: includes/class-admin.php:424
 msgid "Off"
 msgstr ""
 
-#: includes/class-admin.php:411 includes/class-admin.php:427
+#: includes/class-admin.php:426 includes/class-admin.php:442
 msgid "Unknown"
 msgstr ""
 
-#: includes/class-admin.php:422
+#: includes/class-admin.php:437
 msgid "Ready"
 msgstr ""
 
-#: includes/class-admin.php:425
+#: includes/class-admin.php:440
 msgid "Not ready yet"
 msgstr ""
 
-#: includes/class-connection.php:239
+#: includes/class-connection.php:262
 msgid "The connection works."
 msgstr ""
 
-#: includes/class-connection.php:241
+#: includes/class-connection.php:264
 msgid "The connection works, but embedding is not switched on for your agency yet. Ask your CasaZen contact to switch it on."
 msgstr ""
 
-#: includes/class-connection.php:243
+#: includes/class-connection.php:266
 msgid "The address could not be reached. Check that it is correct and that the site is online."
 msgstr ""
 
-#: includes/class-connection.php:245
+#: includes/class-connection.php:268
 msgid "The address answered, but it is not a CasaZen address that supports embedding. Check the address."
 msgstr ""
 
-#: includes/class-connection.php:247
+#: includes/class-connection.php:270
 msgid "CasaZen did not answer the check as expected. Try again in a few minutes."
 msgstr ""
 
-#: includes/class-connection.php:249
+#: includes/class-connection.php:272
 msgid "CasaZen does not know this address or this organisation slug. Check how they are written."
 msgstr ""
 
-#: includes/class-connection.php:251
+#: includes/class-connection.php:274
 msgid "Set the CasaZen address to start."
 msgstr ""
 
-#: includes/class-settings.php:199
+#: includes/class-settings.php:202
 msgid "The organisation slug is not valid: use lower-case letters, numbers and single hyphens, up to 100 characters. The previous value was kept."
 msgstr ""
 
 #. translators: %s: the first lines of the language mapping that were ignored.
-#: includes/class-settings.php:218
+#: includes/class-settings.php:221
 #, php-format
 msgid "Some lines of the language mapping were ignored because they are not valid: %s"
 msgstr ""
 
-#: includes/class-settings.php:440
+#: includes/class-settings.php:443
 msgid "The CasaZen address must start with https://. The previous address was kept."
 msgstr ""
 
-#: includes/class-settings.php:442
+#: includes/class-settings.php:445
 msgid "Only https addresses are accepted (http works only for local development hosts). The previous address was kept."
 msgstr ""
 
-#: includes/class-settings.php:444
+#: includes/class-settings.php:447
 msgid "The CasaZen address must not contain a user name or a password. The previous address was kept."
 msgstr ""
 
-#: includes/class-settings.php:446
+#: includes/class-settings.php:449
 msgid "The CasaZen address is not valid. Use the form https://prenota.example.com. The previous address was kept."
 msgstr ""
