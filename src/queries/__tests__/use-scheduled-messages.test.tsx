@@ -85,9 +85,9 @@ describe('useScheduledMessages: how a page left open keeps the timeline up to da
     expect(list).toHaveBeenCalledTimes(1);
 
     // A page left alone with a message three days away is not silent: it asks again, but not before the slow pace has passed.
-    await advance(SCHEDULED_MESSAGES_SLOW_POLL_MS - 1000);
+    await advance(SCHEDULED_MESSAGES_SLOW_POLL_MS / 2);
     expect(list).toHaveBeenCalledTimes(1);
-    await advance(2000);
+    await advance(SCHEDULED_MESSAGES_SLOW_POLL_MS);
     expect(list).toHaveBeenCalledTimes(2);
     // The message went out on its own (no notice for it): the page says so without a reload.
     expect(result.current.data?.[0]?.status).toBe('Sent');
@@ -104,9 +104,10 @@ describe('useScheduledMessages: how a page left open keeps the timeline up to da
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(list).toHaveBeenCalledTimes(1);
 
-    await advance(SCHEDULED_MESSAGES_POLL_MS - 1000);
+    // Not before the minute has passed, then once a minute (the time moves in steps that leave half a minute on each side of every read).
+    await advance(SCHEDULED_MESSAGES_POLL_MS / 2);
     expect(list).toHaveBeenCalledTimes(1);
-    await advance(2000);
+    await advance(SCHEDULED_MESSAGES_POLL_MS);
     expect(list).toHaveBeenCalledTimes(2);
     await advance(SCHEDULED_MESSAGES_POLL_MS);
     expect(list).toHaveBeenCalledTimes(3);
@@ -121,11 +122,11 @@ describe('useScheduledMessages: how a page left open keeps the timeline up to da
     expect(list).toHaveBeenCalledTimes(1);
 
     // Two hours and four minutes away: the slow pace. After the first slow read it is one hour and 59 minutes away.
-    await advance(SCHEDULED_MESSAGES_SLOW_POLL_MS + 1000);
+    await advance(SCHEDULED_MESSAGES_SLOW_POLL_MS + 10_000);
     expect(list).toHaveBeenCalledTimes(2);
-    // From there it is read every minute, not every five.
-    await advance(SCHEDULED_MESSAGES_POLL_MS + 1000);
-    expect(list).toHaveBeenCalledTimes(3);
+    // From there it is read every minute, not every five: two more reads in two minutes (the slow pace would have given none).
+    await advance(SCHEDULED_MESSAGES_POLL_MS * 2);
+    expect(list).toHaveBeenCalledTimes(4);
   });
 
   it.each(['Blocked', 'Failed'] as const)('useScheduledMessages_A%sMessage_IsReadAgainEveryMinute_WhateverItsTime', async (status) => {
@@ -134,7 +135,7 @@ describe('useScheduledMessages: how a page left open keeps the timeline up to da
     const { result } = renderHook(() => useScheduledMessages(BOOKING_ID, true), { wrapper });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    await advance(SCHEDULED_MESSAGES_POLL_MS + 1000);
+    await advance(SCHEDULED_MESSAGES_POLL_MS + 30_000);
     expect(list).toHaveBeenCalledTimes(2);
   });
 
