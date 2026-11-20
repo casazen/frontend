@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState, type KeyboardEvent } from 'react';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -14,6 +14,7 @@ import { Field } from '@/components/ui/field';
 import { Select } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { SkeletonCard } from '@/components/ui/skeleton';
+import { Textarea } from '@/components/ui/textarea';
 import { getManifestEntry, hasEntryPermission, isEntryFeatureEnabled } from '@/config/route-manifest';
 import { isFeatureEnabled } from '@/config/feature-flags';
 import { defaultPeriod, parsePeriod, periodParam, shiftPeriod } from '@/features/owner-accounting/owner-accounting-model';
@@ -24,9 +25,10 @@ import { StatePill } from '@/features/fiscal/documents/document-state-badge';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getHttpStatus, getProblemMessage, translateErrorCode } from '@/lib/api-errors';
-import { todayInRome } from '@/lib/stay-dates';
+import { romeDateOf, todayInRome } from '@/lib/stay-dates';
 import { useDocumentSdi, useDownloadFiscalDocument } from '@/queries/use-fiscal-documents';
 import {
+  useCloseSelfBilling,
   useCorrectSelfBilling,
   useCreateSelfBillingDrafts,
   useDiscardSelfBilling,
@@ -37,14 +39,22 @@ import {
 } from '@/queries/use-self-billing';
 import type { SelfBillingDetail, SelfBillingGeneration, SelfBillingListItem } from '@/types';
 import {
+  CLOSE_NOTE_MAX,
+  CLOSE_REASONS,
   SELF_BILLING_PATH,
+  canCloseNotDue,
   canDiscardDraft,
   canIssueDraft,
+  closeProblemOf,
+  closeReasonKeyOf,
+  closeRequestOf,
   correctionProblemOf,
+  isClosedNotDue,
   isCorrectedOriginal,
   isDraftOutdated,
   keptKeyOf,
   replacesAnInvoice,
+  type CloseProblem,
   type CorrectionProblem,
 } from './self-billing-model';
 
@@ -64,6 +74,11 @@ const money = (amount: number, currency: string, language: string) => formatDocu
  * A TD17 the SDI rejected is corrected from here («Correggi e rimanda», FIX/FE-TD17-CORRECTION, backend `POST api/fiscal/self-billing/{id}/correct`): it counts as not issued, stays in the list as history (with a reference to
  * what replaces it, and no action) and a draft with the same number replaces it, which is issued with the issue of the page and can never be discarded. A draft that holds such a number and that nothing gives any more is
  * kept, and says why. The action is for who may use the actions of the page and needs the flag of the sending to the SDI too; with the flag off nothing of it is drawn or asked.
+ *
+ * A kept replacement draft (it holds the number of a rejected TD17 and the month no longer supports it) leaves with «Chiudi come non più dovuta» (FIX/FE-TD17-CLOSE-NOT-DUE, backend
+ * `POST api/fiscal/self-billing/{id}/close-not-due`), for the same people and with the same flags as the correction: the person says why (mandatory, three reasons) and may leave a note, and the draft is closed for
+ * good, its number staying reserved (never given to another invoice, and listed for the accountant in the register of the unused numbers). The closed draft is history in the list and in its detail, with the reason, the
+ * day, the name of the person (nothing when the person is not known any more, never an id) and the note, and with no action.
  */
 export function SelfBillingPage() {
   const { t } = useTranslation();
@@ -86,8 +101,12 @@ function SelfBillingBody() {
   const [openId, setOpenId] = useState<string | null>(null);
   // The rejected TD17 whose «Correggi e rimanda» is being confirmed: kept whole (not looked up in the list), so that a refusal told in the dialog stays there while the list is read again behind it.
   const [correcting, setCorrecting] = useState<SelfBillingListItem | null>(null);
+  // The kept draft whose «Chiudi come non più dovuta» is being confirmed: kept whole for the same reason.
+  const [closing, setClosing] = useState<SelfBillingListItem | null>(null);
   const [generation, setGeneration] = useState<SelfBillingGeneration | null>(null);
   const list = useSelfBilling(period === '' ? undefined : period);
+  // The drafts of the list that were closed as «non più dovuta»: the rejected original they replaced says so (its replacement is not an invoice that will ever carry its number).
+  const closedIds = useMemo(() => new Set((list.data ?? []).filter(isClosedNotDue).map((item) => item.id)), [list.data]);
   const drafts = useCreateSelfBillingDrafts();
   const busy = useSelfBillingBusy();
   const months = useMemo(() => Array.from({ length: MONTHS_OFFERED }, (_, index) => periodParam(shiftPeriod(thisMonth, -index))), [thisMonth]);
@@ -97,6 +116,8 @@ function SelfBillingBody() {
   const entry = getManifestEntry(SELF_BILLING_PATH);
   const mayManage = entry !== undefined && isEntryFeatureEnabled(entry, flags) && hasEntryPermission(entry, hasPermission);
   const mayCorrect = mayManage && isFeatureEnabled(flags, 'sdiSubmission');
+  // «Chiudi come non più dovuta» is behind the same role and the same two flags as the correction that makes the draft it closes.
+  const mayClose = mayCorrect;
 
   const prepare = (target: string) => {
     if (target === '') return;
@@ -148,8 +169,11 @@ function SelfBillingBody() {
               key={item.id}
               item={item}
               mayCorrect={mayCorrect}
+              mayClose={mayClose}
+              replacementClosed={item.replacedByDocumentId !== null && closedIds.has(item.replacedByDocumentId)}
               onOpen={() => setOpenId(item.id)}
               onCorrect={() => setCorrecting(item)}
+              onCloseNotDue={() => setClosing(item)}
               onOpenReplacement={setOpenId}
             />
           ))}
@@ -188,7 +212,17 @@ function SelfBillingBody() {
       {generation ? <GenerationReport generation={generation} /> : null}
       {content}
 
-      <SelfBillingDrawer id={openId} onClose={() => setOpenId(null)} mayCorrect={mayCorrect} onCorrect={setCorrecting} onRedoDrafts={redoDrafts} onOpenReplacement={setOpenId} />
+      <SelfBillingDrawer
+        id={openId}
+        onClose={() => setOpenId(null)}
+        mayCorrect={mayCorrect}
+        mayClose={mayClose}
+        closedIds={closedIds}
+        onCorrect={setCorrecting}
+        onCloseNotDue={setClosing}
+        onRedoDrafts={redoDrafts}
+        onOpenReplacement={setOpenId}
+      />
 
       {correcting !== null ? (
         <CorrectDialog
@@ -201,6 +235,9 @@ function SelfBillingBody() {
           }}
         />
       ) : null}
+
+      {/* Nothing is opened after the closing: the list and the detail are read again and show the closed draft where it is (history, no action). */}
+      {closing !== null ? <CloseNotDueDialog key={closing.id} item={closing} onClose={() => setClosing(null)} /> : null}
     </div>
   );
 }
@@ -300,7 +337,7 @@ function GenerationReport({ generation }: { generation: SelfBillingGeneration })
   );
 }
 
-/** The state of the TD17 itself: a draft, issued, a discarded draft, or an original a correction replaced; a state this client does not know is shown as it came. */
+/** The state of the TD17 itself: a draft, issued, a discarded draft, an original a correction replaced, or a replacement closed as «non più dovuta»; a state this client does not know is shown as it came. */
 function StatusBadge({ status }: { status: string }) {
   const { t, i18n } = useTranslation();
   return (
@@ -315,21 +352,60 @@ function replacesWords(t: TFunction, number: string | null): string {
   return number ? t('selfBilling.row.replaces', { number }) : t('selfBilling.row.replacesUnknown');
 }
 
+/**
+ * What a draft closed as «non più dovuta» says of itself, as history: that it took the number of a rejected TD17 and that the number stays reserved (never given to another invoice), and then, one line each, why it was
+ * closed, the day (Europe/Rome), who (the name; nothing when the person is not known any more, never an id) and the note the person left. A member the server does not give is left out, never filled with a placeholder.
+ * `testId` names the block (`<testId>-intro`, `-reason`, `-at`, `-by`, `-note`): the list and the drawer both draw it.
+ */
+function ClosedDetails({ item, testId }: { item: SelfBillingListItem; testId: string }) {
+  const { t, i18n } = useTranslation();
+  const reasonKey = item.closedReason === null ? null : closeReasonKeyOf(item.closedReason);
+  const day = romeDateOf(item.closedAt);
+  const rows: { key: string; label: string; value: string; className?: string }[] = [];
+  if (item.closedReason !== null) rows.push({ key: 'reason', label: t('selfBilling.closed.reason'), value: reasonKey !== null ? t(reasonKey) : item.closedReason });
+  if (day !== '') rows.push({ key: 'at', label: t('selfBilling.closed.at'), value: formatDocumentDay(day, i18n.language) });
+  if (item.closedBy !== null) rows.push({ key: 'by', label: t('selfBilling.closed.by'), value: item.closedBy });
+  if (item.closedNote !== null) rows.push({ key: 'note', label: t('selfBilling.closed.note'), value: item.closedNote, className: 'whitespace-pre-line' });
+
+  return (
+    <div className="space-y-1 text-sm" data-testid={testId}>
+      <p className="break-words" data-testid={`${testId}-intro`}>
+        {item.number ? t('selfBilling.closed.intro', { number: item.number }) : t('selfBilling.closed.introUnknown')}
+      </p>
+      <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-0.5">
+        {rows.map((row) => (
+          <Fragment key={row.key}>
+            <dt className="text-foreground/70">{row.label}</dt>
+            <dd className={`min-w-0 break-words ${row.className ?? ''}`} data-testid={`${testId}-${row.key}`}>
+              {row.value}
+            </dd>
+          </Fragment>
+        ))}
+      </dl>
+    </div>
+  );
+}
+
 interface RowProps {
   item: SelfBillingListItem;
   /** The person may use «Correggi e rimanda» (role and flags): the button is drawn only with it AND when the server says the row `canCorrect`. */
   mayCorrect: boolean;
+  /** The person may use «Chiudi come non più dovuta» (role and flags): the button is drawn only with it AND for a kept replacement draft. */
+  mayClose: boolean;
+  /** This row is the rejected original of a replacement that was closed as «non più dovuta»: no invoice will ever carry its number, and the row does not say it was replaced by one. */
+  replacementClosed: boolean;
   onOpen: () => void;
   onCorrect: () => void;
+  onCloseNotDue: () => void;
   onOpenReplacement: (id: string) => void;
 }
 
 /**
  * One TD17: who holds the account of the portal (the agency, or an owner) and which portal charges the commission, the month, the day it is due by, its number once it is issued, the amounts in their own currency and where
  * it stands. A TD17 the SDI rejected offers «Correggi e rimanda» when the server says it can be corrected; the original a correction discarded is history, with a reference to what replaces it and no action; a draft that
- * replaces one says which and holds its number; a draft that is kept says why it cannot be issued.
+ * replaces one says which and holds its number; a draft that is kept says why it cannot be issued and offers «Chiudi come non più dovuta»; a draft that was closed that way is history too (reason, day, name, note), with no action.
  */
-function SelfBillingRow({ item, mayCorrect, onOpen, onCorrect, onOpenReplacement }: RowProps) {
+function SelfBillingRow({ item, mayCorrect, mayClose, replacementClosed, onOpen, onCorrect, onCloseNotDue, onOpenReplacement }: RowProps) {
   const { t, i18n } = useTranslation();
   const { month } = useOwnerFormat();
   // The buttons of the card wait while any write on this TD17 (or the drafts of the month, which name none) is on its way.
@@ -337,14 +413,18 @@ function SelfBillingRow({ item, mayCorrect, onOpen, onCorrect, onOpenReplacement
   const issued = item.status === 'Issued';
   const replacementId = item.replacedByDocumentId;
   const original = isCorrectedOriginal(item);
+  const closed = isClosedNotDue(item);
   const reviewable = canIssueDraft(item);
   const correctable = mayCorrect && item.canCorrect;
+  const closable = mayClose && canCloseNotDue(item);
   const title = `${item.holderName} · ${item.portalName}`;
   const opens = issued || !reviewable;
 
   let standing;
-  if (original) standing = item.number ? t('selfBilling.row.corrected', { number: item.number }) : t('selfBilling.row.correctedUnknown');
-  else if (issued && item.number) standing = t('selfBilling.row.issued', { number: item.number, date: item.issueDate ? formatDocumentDay(item.issueDate, i18n.language) : '' });
+  if (original) {
+    if (replacementClosed) standing = item.number ? t('selfBilling.row.correctedClosed', { number: item.number }) : t('selfBilling.row.correctedClosedUnknown');
+    else standing = item.number ? t('selfBilling.row.corrected', { number: item.number }) : t('selfBilling.row.correctedUnknown');
+  } else if (issued && item.number) standing = t('selfBilling.row.issued', { number: item.number, date: item.issueDate ? formatDocumentDay(item.issueDate, i18n.language) : '' });
   else standing = t('selfBilling.row.due', { date: formatDocumentDay(item.dueDate, i18n.language) });
 
   return (
@@ -356,14 +436,21 @@ function SelfBillingRow({ item, mayCorrect, onOpen, onCorrect, onOpenReplacement
         <p className="break-words text-sm text-foreground/70">
           {t('selfBilling.row.monthAndHolder', { month: month(item.periodYear, item.periodMonth), holder: t(`selfBilling.holder.${item.holderKind === 'Owner' ? 'Owner' : 'Agency'}`), country: item.portalCountry })}
         </p>
-        <p className="break-words text-sm text-foreground/70" data-testid={original ? 'self-billing-row-corrected' : 'self-billing-row-due'}>
-          {standing}
-        </p>
-        {replacesAnInvoice(item) ? (
-          <p className="break-words text-sm text-foreground/70" data-testid="self-billing-row-replaces">
-            {replacesWords(t, item.number)}
-          </p>
-        ) : null}
+        {closed ? (
+          // A closed draft is not «da emettere»: it says what it was and why it ended, in place of the line of the due day and of the draft that replaces an invoice.
+          <ClosedDetails item={item} testId="self-billing-row-closed" />
+        ) : (
+          <>
+            <p className="break-words text-sm text-foreground/70" data-testid={original ? 'self-billing-row-corrected' : 'self-billing-row-due'}>
+              {standing}
+            </p>
+            {replacesAnInvoice(item) ? (
+              <p className="break-words text-sm text-foreground/70" data-testid="self-billing-row-replaces">
+                {replacesWords(t, item.number)}
+              </p>
+            ) : null}
+          </>
+        )}
         {item.keptReason !== null ? (
           <p className="break-words text-sm font-medium text-foreground" data-testid="self-billing-row-kept" data-reason={item.keptReason}>
             {t(keptKeyOf(item.keptReason), { code: item.keptReason })}
@@ -374,7 +461,7 @@ function SelfBillingRow({ item, mayCorrect, onOpen, onCorrect, onOpenReplacement
             {t('selfBilling.row.total', { amount: money(item.total, item.currency, i18n.language) })}
           </span>
           <span className="text-foreground/70 tabular-nums">{t('selfBilling.row.parts', { base: money(item.taxableBase, item.currency, i18n.language), vat: money(item.vatAmount, item.currency, i18n.language) })}</span>
-          <StatusBadge status={original ? 'Replaced' : item.status} />
+          <StatusBadge status={original ? 'Replaced' : closed ? 'ClosedNotDue' : item.status} />
           {issued || original ? <StatePill state={sdiStateOf({ sdiStatus: item.sdiStatus, sdiErrorCode: null })} testId="self-billing-row-sdi" /> : null}
         </div>
       </div>
@@ -388,6 +475,11 @@ function SelfBillingRow({ item, mayCorrect, onOpen, onCorrect, onOpenReplacement
             {correctable ? (
               <Button type="button" size="sm" disabled={busy} onClick={onCorrect} aria-label={t('selfBilling.correct.buttonLabel', { title })} data-testid="self-billing-row-correct">
                 {t('selfBilling.correct.button')}
+              </Button>
+            ) : null}
+            {closable ? (
+              <Button type="button" size="sm" variant="outline" disabled={busy} onClick={onCloseNotDue} aria-label={t('selfBilling.close.buttonLabel', { title })} data-testid="self-billing-row-close">
+                {t('selfBilling.close.button')}
               </Button>
             ) : null}
             <Button type="button" size="sm" variant={opens || correctable ? 'outline' : 'default'} onClick={onOpen} aria-label={t(opens ? 'selfBilling.row.openLabel' : 'selfBilling.row.reviewLabel', { title })} data-testid="self-billing-row-open">
@@ -404,22 +496,37 @@ interface DrawerProps {
   id: string | null;
   onClose: () => void;
   mayCorrect: boolean;
+  mayClose: boolean;
+  /** The drafts of the list that were closed as «non più dovuta» (see `replacementClosed` of the rows). */
+  closedIds: ReadonlySet<string>;
   onCorrect: (item: SelfBillingListItem) => void;
+  onCloseNotDue: (item: SelfBillingListItem) => void;
   onRedoDrafts: (year: number, month: number) => void;
   onOpenReplacement: (id: string) => void;
 }
 
 /**
- * The detail of a TD17 in a drawer: the lines and the totals, the review before the issue and the issue, the discard of a draft, the correction of a rejected one, and for an issued one its files and its state towards the SDI.
- * The original a correction discarded is history here too: «Sostituita», with the way to its replacement and no other action.
+ * The detail of a TD17 in a drawer: the lines and the totals, the review before the issue and the issue, the discard of a draft, the correction of a rejected one, the closing of a kept replacement, and for an issued one its
+ * files and its state towards the SDI. The original a correction discarded is history here too: «Sostituita», with the way to its replacement and no other action; so is a draft closed as «non più dovuta».
  */
-function SelfBillingDrawer({ id, onClose, mayCorrect, onCorrect, onRedoDrafts, onOpenReplacement }: DrawerProps) {
+function SelfBillingDrawer({ id, onClose, mayCorrect, mayClose, closedIds, onCorrect, onCloseNotDue, onRedoDrafts, onOpenReplacement }: DrawerProps) {
   const { t } = useTranslation();
   return (
     <Sheet open={id !== null} onOpenChange={(open) => !open && onClose()}>
       <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-xl" data-testid="self-billing-drawer">
         {id !== null ? (
-          <DrawerBody key={id} id={id} onClose={onClose} mayCorrect={mayCorrect} onCorrect={onCorrect} onRedoDrafts={onRedoDrafts} onOpenReplacement={onOpenReplacement} />
+          <DrawerBody
+            key={id}
+            id={id}
+            onClose={onClose}
+            mayCorrect={mayCorrect}
+            mayClose={mayClose}
+            closedIds={closedIds}
+            onCorrect={onCorrect}
+            onCloseNotDue={onCloseNotDue}
+            onRedoDrafts={onRedoDrafts}
+            onOpenReplacement={onOpenReplacement}
+          />
         ) : (
           <SheetHeader>
             <SheetTitle>{t('selfBilling.detail.title')}</SheetTitle>
@@ -439,12 +546,15 @@ interface DrawerBodyProps {
   id: string;
   onClose: () => void;
   mayCorrect: boolean;
+  mayClose: boolean;
+  closedIds: ReadonlySet<string>;
   onCorrect: (item: SelfBillingListItem) => void;
+  onCloseNotDue: (item: SelfBillingListItem) => void;
   onRedoDrafts: (year: number, month: number) => void;
   onOpenReplacement: (id: string) => void;
 }
 
-function DrawerBody({ id, onClose, mayCorrect, onCorrect, onRedoDrafts, onOpenReplacement }: DrawerBodyProps) {
+function DrawerBody({ id, onClose, mayCorrect, mayClose, closedIds, onCorrect, onCloseNotDue, onRedoDrafts, onOpenReplacement }: DrawerBodyProps) {
   const { t, i18n } = useTranslation();
   const { month } = useOwnerFormat();
   const query = useSelfBillingDetail(id);
@@ -479,13 +589,16 @@ function DrawerBody({ id, onClose, mayCorrect, onCorrect, onRedoDrafts, onOpenRe
     const { invoice } = detail;
     const issued = invoice.status === 'Issued';
     const draft = invoice.status === 'Draft';
-    // A draft that holds the number of a rejected TD17 is issued, never discarded; one that is kept (nothing gives it a TD17 now) can be neither, and says why. A rejected TD17 is corrected when the server says it can be.
-    // The original a correction discarded is history, as in its row: «Sostituita», its rejection, the way to what replaces it, and no action.
+    // A draft that holds the number of a rejected TD17 is issued, never discarded; one that is kept (nothing gives it a TD17 now) can be neither, and says why, and is closed as «non più dovuta» by who may. A rejected TD17
+    // is corrected when the server says it can be. The original a correction discarded is history, as in its row: «Sostituita», its rejection, the way to what replaces it, and no action; a draft that was closed is history too.
     const issuable = draft && canManage && canIssueDraft(invoice);
     const discardable = draft && canManage && canDiscardDraft(invoice);
     const correctable = mayCorrect && invoice.canCorrect;
+    const closable = mayClose && canCloseNotDue(invoice);
+    const closed = isClosedNotDue(invoice);
     const original = isCorrectedOriginal(invoice);
     const replacementId = invoice.replacedByDocumentId;
+    const replacementClosed = replacementId !== null && closedIds.has(replacementId);
     const money2 = (amount: number) => money(amount, invoice.currency, i18n.language);
     content = (
       <div className="space-y-5" data-testid="self-billing-detail" data-status={invoice.status}>
@@ -495,7 +608,7 @@ function DrawerBody({ id, onClose, mayCorrect, onCorrect, onRedoDrafts, onOpenRe
           </p>
           {hasCurrencyCode(invoice.currency) ? null : <CurrencyMissing />}
           <div className="flex flex-wrap items-center gap-2">
-            <StatusBadge status={original ? 'Replaced' : invoice.status} />
+            <StatusBadge status={original ? 'Replaced' : closed ? 'ClosedNotDue' : invoice.status} />
             {issued || original ? <StatePill state={sdiStateOf({ sdiStatus: invoice.sdiStatus, sdiErrorCode: null })} testId="self-billing-detail-sdi" /> : null}
           </div>
           <p className="break-words text-sm text-foreground/70">{t('selfBilling.detail.holder', { holder: invoice.holderName, portal: invoice.portalName })}</p>
@@ -540,15 +653,20 @@ function DrawerBody({ id, onClose, mayCorrect, onCorrect, onRedoDrafts, onOpenRe
         {original && replacementId !== null ? (
           <Alert
             variant="info"
-            title={t('selfBilling.detail.replaced.title')}
+            title={t(replacementClosed ? 'selfBilling.detail.replaced.closedTitle' : 'selfBilling.detail.replaced.title')}
             data-testid="self-billing-replaced"
+            data-replacement-closed={replacementClosed ? 'true' : undefined}
             action={
               <Button type="button" size="sm" variant="outline" onClick={() => onOpenReplacement(replacementId)} data-testid="self-billing-replacement-open">
                 {t('selfBilling.detail.replaced.open')}
               </Button>
             }
           >
-            {t('selfBilling.detail.replaced.body')}
+            {t(replacementClosed ? 'selfBilling.detail.replaced.closedBody' : 'selfBilling.detail.replaced.body')}
+          </Alert>
+        ) : closed ? (
+          <Alert variant="info" title={t('selfBilling.closed.title')} data-testid="self-billing-closed-alert">
+            <ClosedDetails item={invoice} testId="self-billing-closed" />
           </Alert>
         ) : invoice.keptReason !== null ? (
           <Alert variant="warning" title={t('selfBilling.detail.kept.title')} data-testid="self-billing-kept" data-reason={invoice.keptReason}>
@@ -578,6 +696,11 @@ function DrawerBody({ id, onClose, mayCorrect, onCorrect, onRedoDrafts, onOpenRe
           {correctable ? (
             <Button type="button" size="sm" disabled={busy} onClick={() => onCorrect(invoice)} aria-label={t('selfBilling.correct.buttonLabel', { title: `${invoice.holderName} · ${invoice.portalName}` })} data-testid="self-billing-correct">
               {t('selfBilling.correct.button')}
+            </Button>
+          ) : null}
+          {closable ? (
+            <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => onCloseNotDue(invoice)} aria-label={t('selfBilling.close.buttonLabel', { title: `${invoice.holderName} · ${invoice.portalName}` })} data-testid="self-billing-close">
+              {t('selfBilling.close.button')}
             </Button>
           ) : null}
           {issued ? (
@@ -789,6 +912,127 @@ function CorrectDialog({ item, onClose, onCorrected }: { item: SelfBillingListIt
       ) : null}
       {problem ? (
         <Alert variant="danger" data-testid="self-billing-correct-problem" data-problem={problem.kind}>
+          {problem.words}
+        </Alert>
+      ) : null}
+    </ConfirmationDialog>
+  );
+}
+
+/** The closing cannot be undone: choosing a reason with the keyboard never confirms it (Enter on a radio would submit the form of the dialog); the confirmation is the button. */
+const keepFromSubmitting = (event: KeyboardEvent<HTMLInputElement>) => {
+  if (event.key === 'Enter') event.preventDefault();
+};
+
+/**
+ * The confirmation of «Chiudi come non più dovuta» of a kept replacement draft (the draft that holds the number of a rejected TD17 when the month no longer supports it): the person says why (one of three reasons, mandatory:
+ * the confirmation stays off until one is chosen) and may leave a note (500 characters, with its count), and the dialog says plainly what the closing does: the draft is closed for good, its number stays reserved (it is
+ * never given to another invoice) and goes in the register of the unused numbers that the accountant receives, and it cannot be undone. Every refusal has its own words and the dialog stays open: what the server refused is
+ * not offered again (not found, already closed, not closable, no access, not open), a reason or a note the server found missing or too long is put right in place, and a call that failed can be asked again with «Riprova» (the
+ * same call again with the same reason answers the closed draft, so a double click is not an error). On a 200 the dialog closes and the list and the detail, read again, show the closed draft; nothing is told as done
+ * before the server answers. The note is free text that can name a person: it is in the state of this dialog and in the body of the call only, never in the address, the storage or a log.
+ */
+function CloseNotDueDialog({ item, onClose }: { item: SelfBillingListItem; onClose: () => void }) {
+  const { t } = useTranslation();
+  const close = useCloseSelfBilling();
+  const busy = useSelfBillingBusy([item.id]);
+  const [reason, setReason] = useState('');
+  const [note, setNote] = useState('');
+  const [problem, setProblem] = useState<{ kind: CloseProblem; words: string } | null>(null);
+  // What the person can put right in the dialog (a missing reason, a note that is too long) does not keep the confirmation off, and is told away as soon as they touch the form; what the server refused and asking again as it is
+  // will not change does keep it off (the dialog can still be left).
+  const putRight = problem?.kind === 'reasonRequired' || problem?.kind === 'noteTooLong';
+  const refused = problem !== null && problem.kind !== 'failed' && !putRight;
+
+  const wordsOf = (kind: CloseProblem, error: unknown): string => {
+    switch (kind) {
+      case 'reasonRequired':
+        return t('selfBilling.close.problem.reasonRequired');
+      case 'noteTooLong':
+        return t('selfBilling.close.problem.noteTooLong', { max: CLOSE_NOTE_MAX });
+      case 'alreadyClosed':
+        return t('selfBilling.close.problem.alreadyClosed');
+      case 'notClosable':
+        return t('selfBilling.close.problem.notClosable');
+      case 'notFound':
+        return t('selfBilling.close.problem.notFound');
+      case 'unavailable':
+        return t('selfBilling.close.problem.unavailable');
+      case 'forbidden':
+        return t('selfBilling.close.problem.forbidden');
+      default:
+        return getProblemMessage(error, t) ?? t('selfBilling.close.problem.failed');
+    }
+  };
+
+  return (
+    <ConfirmationDialog
+      open
+      onOpenChange={(open) => {
+        // While the call is on its way the dialog stays (Esc, the cross and a click outside included): closed, it would leave a failure with nowhere to be told.
+        if (!open && !close.isPending) onClose();
+      }}
+      title={t('selfBilling.close.title')}
+      description={item.number ? t('selfBilling.close.description', { number: item.number }) : t('selfBilling.close.descriptionUnknown')}
+      confirmLabel={problem?.kind === 'failed' ? t('shared.errorState.retry') : t('selfBilling.close.confirm')}
+      variant="destructive"
+      // Taller than the other confirmations of the page (the reasons, the note and three consequences): on a short window it scrolls inside, and the confirmation is never out of reach.
+      contentClassName="sm:max-h-[90dvh] sm:overflow-y-auto"
+      consequences={[t('selfBilling.close.consequenceClosed'), t('selfBilling.close.consequenceReserved'), t('selfBilling.close.consequenceRegister')]}
+      confirmDisabled={reason === '' || refused || busy}
+      isLoading={close.isPending}
+      onConfirm={async () => {
+        setProblem(null);
+        let closed: SelfBillingDetail;
+        try {
+          closed = await close.mutateAsync({ documentId: item.id, request: closeRequestOf(reason, note) });
+        } catch (error) {
+          const kind = closeProblemOf(error);
+          setProblem({ kind, words: wordsOf(kind, error) });
+          throw error;
+        }
+        toast.success(closed.invoice.number ? t('selfBilling.close.done', { number: closed.invoice.number }) : t('selfBilling.close.doneUnknown'));
+      }}
+    >
+      <fieldset className="grid gap-1" data-testid="self-billing-close-reasons">
+        <legend className="mb-1 text-sm font-medium">{t('selfBilling.close.reasonLegend')}</legend>
+        {CLOSE_REASONS.map((code) => (
+          <label key={code} className="flex min-h-11 cursor-pointer items-start gap-2 py-2 text-sm">
+            <input
+              type="radio"
+              name="self-billing-close-reason"
+              className="mt-0.5 size-4 shrink-0 accent-primary"
+              value={code}
+              checked={reason === code}
+              disabled={close.isPending}
+              onKeyDown={keepFromSubmitting}
+              onChange={() => {
+                setReason(code);
+                if (putRight) setProblem(null);
+              }}
+              data-testid={`self-billing-close-reason-${code}`}
+            />
+            <span className="min-w-0 break-words">{t(`selfBilling.close.reason.${code}`)}</span>
+          </label>
+        ))}
+      </fieldset>
+
+      <Field label={t('selfBilling.close.note.label')} hint={t('selfBilling.close.note.hint')} optional counter={`${note.length}/${CLOSE_NOTE_MAX}`}>
+        <Textarea
+          rows={3}
+          maxLength={CLOSE_NOTE_MAX}
+          value={note}
+          disabled={close.isPending}
+          onChange={(event) => {
+            setNote(event.target.value);
+            if (putRight) setProblem(null);
+          }}
+          data-testid="self-billing-close-note"
+        />
+      </Field>
+
+      {problem ? (
+        <Alert variant="danger" data-testid="self-billing-close-problem" data-problem={problem.kind}>
           {problem.words}
         </Alert>
       ) : null}

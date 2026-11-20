@@ -1,7 +1,24 @@
 import { describe, expect, it } from 'vitest';
 import i18n from '@/i18n/config';
-import { KEPT_REASONS, canDiscardDraft, canIssueDraft, correctionProblemOf, isCorrectedOriginal, isDraftOutdated, keptKeyOf, replacesAnInvoice } from '../self-billing-model';
-import { failure, item, original, replacement } from './self-billing-fixtures';
+import {
+  CLOSE_NOTE_MAX,
+  CLOSE_REASONS,
+  KEPT_REASONS,
+  canCloseNotDue,
+  canDiscardDraft,
+  canIssueDraft,
+  closeProblemOf,
+  closeReasonKeyOf,
+  closeRequestOf,
+  correctionProblemOf,
+  isClosedNotDue,
+  isCorrectedOriginal,
+  isDraftOutdated,
+  keptKeyOf,
+  replacesAnInvoice,
+  type CloseProblem,
+} from '../self-billing-model';
+import { closed, failure, item, kept, original, rejected, replacement } from './self-billing-fixtures';
 
 /** The text of a key in each language, asked when the test runs (not when the file is read). */
 const it_ = (key: string, options?: Record<string, unknown>): string => i18n.getFixedT('it')(key, options);
@@ -103,5 +120,127 @@ describe('the words around the correction of a rejected TD17 (the «Da fare» na
     expect(it_(key).length).toBeGreaterThan(5);
     expect(en(key).length).toBeGreaterThan(5);
     expect(it_(key)).not.toBe(en(key));
+  });
+});
+
+describe('«Chiudi come non più dovuta»: what is offered, and the reasons of the closing (each has its words, in two different languages)', () => {
+  it('canCloseNotDue_OnlyADraftThatReplacesARejectedInvoiceAndThatTheServerSaysIsKept', () => {
+    expect(canCloseNotDue(kept())).toBe(true);
+    // A replacement the month still supports is issued, not closed; an ordinary draft is not a replacement; whatever is not a draft is history or issued.
+    expect(canCloseNotDue(replacement())).toBe(false);
+    expect(canCloseNotDue(item())).toBe(false);
+    expect(canCloseNotDue(item({ keptReason: 'ledger_gives_no_td17' }))).toBe(false);
+    expect(canCloseNotDue(kept({ status: 'Issued' }))).toBe(false);
+    expect(canCloseNotDue(rejected())).toBe(false);
+    expect(canCloseNotDue(original())).toBe(false);
+    expect(canCloseNotDue(closed())).toBe(false);
+  });
+
+  it('isClosedNotDue_OnlyADiscardedDraftThatSaysHowItWasClosed', () => {
+    expect(isClosedNotDue(closed())).toBe(true);
+    expect(isClosedNotDue(original())).toBe(false);
+    expect(isClosedNotDue(kept())).toBe(false);
+    expect(isClosedNotDue(item({ status: 'Discarded' }))).toBe(false);
+  });
+
+  it.each(CLOSE_REASONS)('closeReasonKeyOf_%s_HasItsWordsInItalianAndInEnglishAndTheyAreNotTheSame', (code) => {
+    const key = closeReasonKeyOf(code);
+
+    expect(key).toBe(`selfBilling.close.reason.${code}`);
+    expect(it_(key as string).length).toBeGreaterThan(15);
+    expect(en(key as string).length).toBeGreaterThan(15);
+    expect(it_(key as string)).not.toBe(en(key as string));
+    // Words a host understands, never the code.
+    expect(it_(key as string)).not.toContain(code);
+    expect(en(key as string)).not.toContain(code);
+  });
+
+  it('closeReasonKeyOf_ACodeThisClientDoesNotKnow_HasNoWords_SoThePageShowsTheCodeAsItCame', () => {
+    expect(closeReasonKeyOf('a_reason_of_the_future')).toBeNull();
+    expect(closeReasonKeyOf('')).toBeNull();
+    expect(new Set(CLOSE_REASONS.map((code) => it_(`selfBilling.close.reason.${code}`))).size).toBe(CLOSE_REASONS.length);
+  });
+
+  it.each([
+    ['403, no body', failure(403), 'forbidden'],
+    ['404 fiscal_document_not_found', failure(404, 'fiscal_document_not_found'), 'notFound'],
+    ['404 with no code (a flag is off)', failure(404), 'unavailable'],
+    ['404 with another code', failure(404, 'not_found'), 'unavailable'],
+    ['422 close_reason_required', failure(422, 'close_reason_required'), 'reasonRequired'],
+    ['422 close_note_too_long', failure(422, 'close_note_too_long'), 'noteTooLong'],
+    ['422 self_billing_already_closed', failure(422, 'self_billing_already_closed'), 'alreadyClosed'],
+    ['422 self_billing_not_closable', failure(422, 'self_billing_not_closable'), 'notClosable'],
+    ['422 with a code of the correction', failure(422, 'self_billing_not_correctable'), 'failed'],
+    ['422 with the name of a member of an object', failure(422, 'constructor'), 'failed'],
+    ['409', failure(409, 'document_draft_outdated'), 'failed'],
+    ['500', failure(500), 'failed'],
+    ['no answer at all', new Error('Network Error'), 'failed'],
+  ] as const)('closeProblemOf_%s_Is_%s', (_name, error, expected) => {
+    expect(closeProblemOf(error)).toBe(expected);
+  });
+
+  it('closeRequestOf_CarriesTheReasonAndTheNoteOnlyWhenThereIsOne_TrimmedAndNeverAnEmptyOne', () => {
+    expect(closeRequestOf('duplicate_or_error', '')).toEqual({ reason: 'duplicate_or_error' });
+    expect(closeRequestOf('duplicate_or_error', '  \n ')).toEqual({ reason: 'duplicate_or_error' });
+    expect(closeRequestOf('portal_credit_note', '  nota di credito n. 55  ')).toEqual({ reason: 'portal_credit_note', note: 'nota di credito n. 55' });
+    expect(Object.keys(closeRequestOf('portal_credit_note', ''))).toEqual(['reason']);
+    expect(CLOSE_NOTE_MAX).toBe(500);
+  });
+
+  it.each(['it', 'en'] as const)('theEightProblemsOfTheClosing_EachHaveTheirOwnWords_AndNoneSaysNothingChangedWhenTheOutcomeIsNotKnown_In_%s', (lng) => {
+    const t = i18n.getFixedT(lng);
+    const kinds: CloseProblem[] = ['reasonRequired', 'noteTooLong', 'alreadyClosed', 'notClosable', 'notFound', 'unavailable', 'forbidden', 'failed'];
+    const sentences = kinds.map((kind) => t(`selfBilling.close.problem.${kind}`, { max: CLOSE_NOTE_MAX }));
+
+    expect(new Set(sentences).size).toBe(kinds.length);
+    for (const sentence of sentences) expect(sentence.length).toBeGreaterThan(20);
+    // A call that failed does not know the outcome: it asks to check the list and to try again, and never says that nothing changed.
+    expect(t('selfBilling.close.problem.failed')).toMatch(lng === 'it' ? /elenco/i : /list/i);
+    expect(t('selfBilling.close.problem.failed')).not.toMatch(/non è cambiato|nothing changed/i);
+    // An «already closed» draft has nothing to fix, and says so.
+    expect(t('selfBilling.close.problem.alreadyClosed')).toMatch(lng === 'it' ? /nulla da correggere/i : /nothing to fix/i);
+    // The note is cut at 500 characters, and the sentence says the figure the server uses.
+    expect(t('selfBilling.close.problem.noteTooLong', { max: CLOSE_NOTE_MAX })).toContain(String(CLOSE_NOTE_MAX));
+  });
+
+  it.each([
+    'button',
+    'confirm',
+    'title',
+    'description',
+    'descriptionUnknown',
+    'consequenceClosed',
+    'consequenceReserved',
+    'consequenceRegister',
+    'done',
+    'doneUnknown',
+    'reasonLegend',
+    'note.label',
+    'note.hint',
+  ])('theWordsOfTheDialogOfTheClosing_%s_AreDifferentInTheTwoLanguages', (member) => {
+    const key = `selfBilling.close.${member}`;
+
+    expect(it_(key, { number: 'AF-2026/1', title: 'x' }).length).toBeGreaterThan(3);
+    expect(en(key, { number: 'AF-2026/1', title: 'x' }).length).toBeGreaterThan(3);
+    expect(it_(key, { number: 'AF-2026/1', title: 'x' })).not.toBe(en(key, { number: 'AF-2026/1', title: 'x' }));
+  });
+
+  it('theDialogSaysThePlainFacts_TheNumberStaysReserved_ItIsInTheRegisterOfTheAccountant_AndItCannotBeUndone_In_BothLanguages', () => {
+    expect(it_('selfBilling.close.consequenceReserved')).toMatch(/riservato/i);
+    expect(en('selfBilling.close.consequenceReserved')).toMatch(/reserved/i);
+    expect(it_('selfBilling.close.consequenceRegister')).toMatch(/registro dei numeri non utilizzati/i);
+    expect(en('selfBilling.close.consequenceRegister')).toMatch(/register of unused numbers/i);
+    expect(it_('selfBilling.close.consequenceClosed')).toMatch(/non si può annullare/i);
+    expect(en('selfBilling.close.consequenceClosed')).toMatch(/cannot be undone/i);
+  });
+
+  it.each(['it', 'en'] as const)('theClosedStateAndItsStatus_HaveWords_In_%s', (lng) => {
+    const t = i18n.getFixedT(lng);
+
+    // «Chiusa, non più dovuta»: the outcome of the draft; not «scarto confermato», which is a fact of the SDI.
+    expect(t('selfBilling.status.ClosedNotDue')).toBe(lng === 'it' ? 'Chiusa, non più dovuta' : 'Closed, no longer due');
+    for (const member of ['reason', 'at', 'by', 'note', 'title', 'intro', 'introUnknown']) expect(t(`selfBilling.closed.${member}`, { number: 'AF-2026/1' }).length).toBeGreaterThan(2);
+    expect(t('selfBilling.closed.intro', { number: 'AF-2026/1' })).toContain('AF-2026/1');
+    expect(t('selfBilling.closed.introUnknown')).not.toContain('{{');
   });
 });

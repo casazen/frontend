@@ -42,6 +42,17 @@ export interface SelfBillingListItem {
    * came). Such a draft can be neither issued nor discarded; `null` on every other row.
    */
   keptReason: string | null;
+  /**
+   * Why the replacement draft of a rejected TD17 was closed as «non più dovuta» (`POST api/fiscal/self-billing/{id}/close-not-due`): `portal_credit_note`, `holder_no_longer_subject` or `duplicate_or_error` (a code this
+   * client does not know is shown as it came). Set only on that closed draft (`status` `Discarded`, its number kept and reserved); `null` on every other row, and so are the three members that follow.
+   */
+  closedReason: string | null;
+  /** The instant the draft was closed (UTC). */
+  closedAt: string | null;
+  /** The NAME of the person who closed it; `null` when that person is not known any more: nothing is shown then, never an id. */
+  closedBy: string | null;
+  /** The free note the person left (at most 500 characters), when there is one. */
+  closedNote: string | null;
 }
 
 /** A line of a TD17: the commission of one property, its net, the rate and the VAT integrated on it. */
@@ -131,4 +142,13 @@ export interface SelfBillingGeneration {
 /** `POST api/fiscal/self-billing/{id}/issue`: the confirmation, and the acceptance of the estimated part of the amount when there is one (without it the server refuses and numbers nothing). */
 export interface SelfBillingIssueRequest {
   acceptEstimate: boolean;
+}
+
+/**
+ * `POST api/fiscal/self-billing/{id}/close-not-due`: why the replacement draft of a rejected TD17 is closed as «non più dovuta» (`reason`, mandatory: one of the codes of `SelfBillingListItem.closedReason`) and, when the
+ * person wrote one, a free `note` of at most 500 characters. The user and the day are the server's, never a value of the request.
+ */
+export interface SelfBillingCloseRequest {
+  reason: string;
+  note?: string;
 }

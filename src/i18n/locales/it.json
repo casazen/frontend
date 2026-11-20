@@ -32259,6 +32259,48 @@
     "title": "Emittente dei documenti dei soggiorni"
   },
   "selfBilling": {
+    "close": {
+      "button": "Chiudi come non più dovuta",
+      "buttonLabel": "Chiudi come non più dovuta la bozza {{title}}",
+      "confirm": "Chiudi come non più dovuta",
+      "consequenceClosed": "La bozza si chiude per sempre e non si emette più. Non si può annullare.",
+      "consequenceRegister": "Il numero compare nel registro dei numeri non utilizzati che il commercialista riceve nel pacchetto.",
+      "consequenceReserved": "Il suo numero resta riservato: non verrà mai dato a un’altra fattura.",
+      "description": "La bozza n. {{number}} ha preso il numero di un’autofattura scartata dallo SDI e per ora non si può emettere. Se non è più dovuta, puoi chiuderla: dicci perché, restano registrati il motivo, chi l’ha chiusa e il giorno.",
+      "descriptionUnknown": "Questa bozza ha preso il numero di un’autofattura scartata dallo SDI e per ora non si può emettere. Se non è più dovuta, puoi chiuderla: dicci perché, restano registrati il motivo, chi l’ha chiusa e il giorno.",
+      "done": "Bozza n. {{number}} chiusa: non è più dovuta. Il numero resta riservato.",
+      "doneUnknown": "Bozza chiusa: non è più dovuta. Il numero resta riservato.",
+      "note": {
+        "hint": "La nota resta nello storico e finisce nel registro che riceve il commercialista: scrivi solo ciò che serve a capire.",
+        "label": "Nota"
+      },
+      "problem": {
+        "alreadyClosed": "Questa bozza è già stata chiusa con un altro motivo: non c’è nulla da correggere. Abbiamo aggiornato l’elenco.",
+        "failed": "Non siamo riusciti a confermare la chiusura: controlla l’elenco e riprova.",
+        "forbidden": "Non puoi chiudere le bozze: serve poter gestire le fatture di tutta l’organizzazione. Non è cambiato niente.",
+        "notClosable": "Questa bozza non si può chiudere da qui: non sostituisce un’autofattura scartata, oppure il mese la sostiene ancora e va emessa. Abbiamo aggiornato l’elenco.",
+        "notFound": "Non troviamo più questa bozza: abbiamo aggiornato l’elenco.",
+        "noteTooLong": "La nota è troppo lunga: al massimo {{max}} caratteri.",
+        "reasonRequired": "Scegli il motivo: senza non si può chiudere la bozza.",
+        "unavailable": "La chiusura delle bozze non è ancora aperta in questo ambiente. Non è cambiato niente."
+      },
+      "reason": {
+        "duplicate_or_error": "Era un doppione o un errore",
+        "holder_no_longer_subject": "Il titolare del conto non è più soggetto all’autofattura",
+        "portal_credit_note": "Il portale ha emesso una nota di credito"
+      },
+      "reasonLegend": "Motivo (obbligatorio)",
+      "title": "Chiudere la bozza come non più dovuta?"
+    },
+    "closed": {
+      "at": "Chiusa il",
+      "by": "Chiusa da",
+      "intro": "Aveva preso il numero {{number}} di un’autofattura scartata dallo SDI. Il numero resta riservato: non lo avrà mai un’altra fattura.",
+      "introUnknown": "Aveva preso il numero di un’autofattura scartata dallo SDI. Il numero resta riservato: non lo avrà mai un’altra fattura.",
+      "note": "Nota",
+      "reason": "Motivo",
+      "title": "Questa bozza è stata chiusa"
+    },
     "correct": {
       "button": "Correggi e rimanda",
       "buttonLabel": "Correggi e rimanda l’autofattura {{title}}",
@@ -32326,6 +32368,8 @@
       "pdf": "PDF",
       "replaced": {
         "body": "Lo SDI l’ha scartata, quindi per il fisco non è mai stata emessa: la sostituisce un’autofattura con lo stesso numero. Questa resta nello storico, senza azioni.",
+        "closedBody": "Lo SDI l’ha scartata, quindi per il fisco non è mai stata emessa. La bozza che ne aveva preso il numero è stata chiusa come non più dovuta: il numero resta riservato e questa resta nello storico, senza azioni.",
+        "closedTitle": "La sua bozza sostitutiva è stata chiusa",
         "open": "Apri la sostitutiva",
         "title": "Sostituita da un’altra autofattura"
       },
@@ -32405,6 +32449,8 @@
     },
     "row": {
       "corrected": "Autofattura {{number}}: scartata dallo SDI e sostituita da un’autofattura con lo stesso numero.",
+      "correctedClosed": "Autofattura {{number}}: scartata dallo SDI. La bozza che ne aveva preso il numero è stata chiusa come non più dovuta: il numero resta riservato.",
+      "correctedClosedUnknown": "Autofattura scartata dallo SDI. La bozza che ne aveva preso il numero è stata chiusa come non più dovuta: il numero resta riservato.",
       "correctedUnknown": "Autofattura scartata dallo SDI e sostituita da un’autofattura con lo stesso numero.",
       "due": "Da emettere entro il {{date}}",
       "issued": "Autofattura {{number}} del {{date}}",
@@ -32421,6 +32467,7 @@
       "total": "Totale {{amount}}"
     },
     "status": {
+      "ClosedNotDue": "Chiusa, non più dovuta",
       "Discarded": "Bozza scartata",
       "Draft": "Bozza",
       "Issued": "Emessa",
