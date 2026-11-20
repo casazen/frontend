@@ -13,6 +13,10 @@ export interface HostSite {
   /** Current public slug of the org served on this host: the `/book/:orgSlug` of its pages. */
   slug: string;
   displayName: string;
+  /** The embeddable pages (`/embed/*`) answer on this host (`resolve-host`, NF-144); absent or false: they say «not available». */
+  embedEnabled?: boolean;
+  /** The agency's Google Tag Manager container, as `resolve-host` gives it (NF-149); absent when it says nothing. */
+  tracking?: { gtmContainerId: string | null };
 }
 
 /** What the start-up found out about the host the page was opened on. */
@@ -66,7 +70,17 @@ export async function resolveHostSite(
     const resolved = await resolveHost(host);
     const slug = resolved.slug?.trim();
     if (!slug) return { kind: 'not-found' };
-    return { kind: 'site', site: { host, slug, displayName: resolved.branding?.displayName ?? slug } };
+    return {
+      kind: 'site',
+      site: {
+        host,
+        slug,
+        displayName: resolved.branding?.displayName ?? slug,
+        // Only what the backend says, so that an older answer gives the same site as before.
+        ...(resolved.embedEnabled === true ? { embedEnabled: true } : {}),
+        ...(resolved.tracking ? { tracking: { gtmContainerId: resolved.tracking.gtmContainerId ?? null } } : {}),
+      },
+    };
   } catch (error) {
     // Only a clear "no such host" is "not found"; a network or server failure is not a verdict on the domain.
     return isAxiosError(error) && error.response?.status === 404 ? { kind: 'not-found' } : { kind: 'error' };

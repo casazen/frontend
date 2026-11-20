@@ -82,6 +82,10 @@ export interface ResolveHostResponse {
   slug: string;
   publicHostMode: PublicHostMode;
   planTier: string;
+  /** The embeddable pages (`/embed/*`) are on for this host: the flag `SiteEmbed` and the plan allow them (E40, NF-144). Absent on an older backend: off. */
+  embedEnabled?: boolean;
+  /** What the agency set for tracking: its Google Tag Manager container, or null when it set none (E40, NF-149). Absent on an older backend. */
+  tracking?: { gtmContainerId: string | null } | null;
   branding: {
     logoUrl?: string | null;
     primaryColor?: string | null;

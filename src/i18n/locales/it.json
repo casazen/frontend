@@ -9269,6 +9269,22 @@
     "failedDescription": "Il link è già stato usato, è scaduto, oppure la pagina di ritorno non è tra gli indirizzi consentiti. Se l'email risulta già confermata, accedi. Altrimenti richiedi un nuovo messaggio dalla schermata di accesso.",
     "signIn": "Accedi"
   },
+  "embed": {
+    "error": {
+      "description": "Non siamo riusciti a raggiungere il server. Riprova tra poco.",
+      "title": "Non riusciamo a caricare i contenuti"
+    },
+    "loading": "Caricamento in corso…",
+    "notFound": {
+      "description": "Non troviamo il sito di prenotazione che questo widget dovrebbe mostrare.",
+      "title": "Sito non trovato"
+    },
+    "title": "Prenota · {{name}}",
+    "unavailable": {
+      "description": "Questa funzione non è attiva per il sito, oppure l'indirizzo non è corretto.",
+      "title": "Questo widget non è disponibile"
+    }
+  },
   "favorites": {
     "add": "Salva {{name}} nei preferiti",
     "description": "Salvati su questo dispositivo: non serve un account.",
