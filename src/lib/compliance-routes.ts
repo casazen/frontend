@@ -10,6 +10,9 @@ type ComplianceArchiveKind = 'AlloggiatiReceipt' | 'IstatProof' | 'TouristTaxDec
 /** The months of the periods the backend sends (`yyyy-MM`): the only shape the address of the archive takes. */
 const PERIOD = /^\d{4}-(0[1-9]|1[0-2])$/;
 
+/** The arrival day of a Ticino police notification (`yyyy-MM-dd`). */
+const DAY = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
+
 /**
  * Parameters a page of the cockpit opens with, for a page that shows its content already filtered (the archive of the proofs): a fixed
  * `kind`, and, when asked, the `property` and the `period` (`yyyy-MM`) of the item. A parameter the item cannot give is left out: the page then
@@ -19,6 +22,8 @@ interface ComplianceActionQuery {
   kind?: ComplianceArchiveKind;
   property?: boolean;
   period?: boolean;
+  /** casazen/backend#979: the arrival day (`period` yyyy-MM-dd) as `date`. */
+  day?: boolean;
   section?: typeof CONNECTION_HEALTH_SECTION;
 }
 
@@ -142,6 +147,12 @@ export const COMPLIANCE_ACTION_TARGETS: Record<ComplianceCockpitAction, Complian
     route: { path: '/app/short-rent/alloggiati' },
     write: 'booking.write',
   },
+  // casazen/backend#979: the guided notification of a Ticino property to the cantonal police, on the arrival day of the item.
+  NotifyTicinoPolice: {
+    target: 'property',
+    route: { path: '/app/short-rent/compliance/ticino', query: { property: true, day: true } },
+    write: 'alloggiati.submit',
+  },
 };
 
 function buildRoute(
@@ -162,6 +173,7 @@ function buildRoute(
   if (route.query?.property && item.propertyId) params.set('property', item.propertyId);
   if (route.query?.period && item.period && PERIOD.test(item.period)) params.set('period', item.period);
   if (route.query?.section) params.set('section', route.query.section);
+  if (route.query?.day && item.period && DAY.test(item.period)) params.set('date', item.period);
   const query = params.toString();
   return query ? `${path}?${query}` : path;
 }

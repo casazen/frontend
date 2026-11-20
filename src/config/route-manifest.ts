@@ -833,6 +833,15 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
+    // «Notifica alla polizia (Ticino)» (casazen/backend#979): the guided notification of the guests of a property in canton Ticino to the cantonal
+    // police (`?property=<id>&date=yyyy-MM-dd`): download the official file, upload it on notifiche.ti.ch, record the receipt. In no menu (most hosts have no
+    // Ticino property): the cockpit item `NotifyTicinoPolice` and the property page lead here. It reads guest data (`booking.read`; the API also asks `guest.read`).
+    path: '/app/short-rent/compliance/ticino',
+    context: 'short-rent',
+    requiredPermissions: ['booking.read'],
+    component: async () => ({ default: (await import('@/pages/SwissCompliancePage')).SwissCompliancePage }),
+  },
+  {
     path: '/app/short-rent/bookings/:id',
     context: 'short-rent',
     requiredPermissions: ['booking.read'],

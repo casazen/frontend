@@ -6775,6 +6775,7 @@
       }
     },
     "item": {
+      "NotifyTicinoPolice": "Notifica alla polizia degli arrivi del {{period}}",
       "ActivateOctorateSend": "Invio automatico alla Questura",
       "ActivateProperty": "Attivazione dell'immobile",
       "CheckOut": "Partenza",
@@ -8530,6 +8531,10 @@
       "requests_other": "{{count}} richieste da approvare"
     },
     "todo": {
+      "NotifyTicinoPolice": {
+        "cta": "Notifica",
+        "title": "Notifica alla polizia gli ospiti arrivati il {{period}}: {{label}}"
+      },
       "ActivateOctorateSend": {
         "cta": "Controlla l'invio",
         "title": "Attiva l'invio automatico alla Questura: {{label}}"
@@ -30509,46 +30514,74 @@
     }
   },
   "swiss": {
-    "description": "File di conformità per il Canton Ticino: notifica giornaliera alla polizia e rapporto OTR.",
-    "otr": {
-      "description": "Rapporto pernottamenti per il periodo (OTR CSV).",
-      "download": "Scarica rapporto OTR",
-      "downloadFailed": "Impossibile scaricare il rapporto OTR.",
-      "downloading": "Download in corso...",
-      "fromDate": "Data inizio",
-      "title": "Rapporto OTR",
-      "toDate": "Data fine"
+    "title": "Notifica alla polizia (Ticino)",
+    "description": "In Ticino ogni ospite va notificato alla polizia cantonale entro 24 ore dall'arrivo. CasaZen prepara il file ufficiale: tu lo carichi sul portale delle notifiche e conservi qui la ricevuta.",
+    "noProperty": "Apri questa pagina dagli Adempimenti o dalla scheda di una struttura in Ticino.",
+    "backToCompliance": "Vai agli Adempimenti",
+    "loading": "Caricamento…",
+    "loadFailed": "Impossibile caricare la notifica. Riprova tra poco.",
+    "notInTicino": "Questa struttura non risulta nel Canton Ticino: la notifica alla polizia ticinese non si applica.",
+    "day": {
+      "title": "Arrivi di {{day}}",
+      "none": "Nessun arrivo in questo giorno.",
+      "due": "Da notificare entro {{when}} (24 ore dall'arrivo).",
+      "notified": "Ricevuta del portale archiviata: giorno notificato.",
+      "notifiedDone": "Gli ospiti di questo giorno sono notificati.",
+      "otherDays": "Altri giorni da notificare:"
     },
-    "police": {
-      "date": "Data notifica",
-      "description": "Notifica giornaliera alla polizia (XML Ticino).",
-      "download": "Scarica notifica polizia",
-      "downloadFailed": "Impossibile scaricare la notifica.",
-      "downloading": "Download in corso...",
-      "title": "Notifica polizia"
+    "structureId": {
+      "title": "Numero identificativo della struttura",
+      "missing": "Serve per creare il file: è il numero che Ticino Turismo ti ha dato con la registrazione della struttura.",
+      "label": "Numero identificativo LEAR / NO-LEAR",
+      "hint": "Lettere e cifre, con trattini singoli (es. NL-12345678).",
+      "invalid": "Numero non valido: da 3 a 20 lettere e cifre, con trattini singoli (es. NL-12345678).",
+      "save": "Salva",
+      "saving": "Salvataggio…"
     },
-    "propertyIdPlaceholder": "ID immobile",
+    "file": {
+      "title": "1. Scarica il file",
+      "ready_one": "{{count}} persona nel file",
+      "ready_other": "{{count}} persone nel file",
+      "minors_one": "(più {{count}} minore conteggiato su un genitore)",
+      "minors_other": "(più {{count}} minori conteggiati su un genitore)",
+      "download": "Scarica il file",
+      "downloadXml": "Scarica in formato XML",
+      "downloading": "Download in corso…",
+      "downloadFailed": "Impossibile scaricare il file."
+    },
+    "issues": {
+      "title_one": "{{count}} ospite non è nel file: mancano dei dati",
+      "title_other": "{{count}} ospiti non sono nel file: mancano dei dati",
+      "body": "Completa i dati nella prenotazione (o chiedi all'ospite di completare il check-in) e scarica di nuovo il file. Se non è possibile, notifica l'ospite a mano sul portale («Notifiche → Nuova»).",
+      "missing": {
+        "firstName": "nome",
+        "lastName": "cognome",
+        "birthDate": "data di nascita",
+        "nationality": "nazionalità",
+        "documentType": "tipo di documento",
+        "guests": "dati di tutti gli ospiti della prenotazione"
+      }
+    },
+    "portal": {
+      "title": "2. Caricalo sul portale delle notifiche",
+      "body": "Accedi a notifiche.ti.ch con le tue credenziali e il codice dell'app di autenticazione, apri «Notifiche → Invio», scegli il file e premi «Invia». Il portale mostra l'esito di ogni ospite.",
+      "open": "Apri il portale delle notifiche"
+    },
     "receipt": {
-      "date": "Data rapporto",
-      "description": "Carica la ricevuta dal portale cantonale.",
-      "file": "File ricevuta",
-      "reference": "Riferimento",
-      "referencePlaceholder": "Numero conferma o riferimento",
-      "title": "Carica ricevuta",
-      "type": "Tipo",
-      "typeOtr": "OTR",
-      "typePolice": "Polizia",
-      "upload": "Carica ricevuta",
+      "title": "3. Conserva la ricevuta",
+      "body": "Salva la pagina di riepilogo del portale (PDF o immagine) e caricala qui: il giorno risulterà notificato.",
+      "file": "Riepilogo del portale",
+      "upload": "Segna come notificato",
+      "uploading": "Caricamento…",
       "uploadFailed": "Impossibile caricare la ricevuta.",
-      "uploadSuccess": "Ricevuta caricata con successo.",
-      "uploading": "Caricamento in corso..."
+      "uploadSuccess": "Ricevuta archiviata: giorno notificato."
     },
-    "reminder": {
-      "description": "Riceverai notifiche 24 ore prima delle scadenze configurate.",
-      "title": "Promemoria scadenze"
-    },
-    "selectProperty": "Seleziona immobile",
-    "title": "Conformità Svizzera"
+    "property": {
+      "title": "Notifica alla polizia (Ticino)",
+      "description": "Gli ospiti di questa struttura vanno notificati alla polizia cantonale entro 24 ore dall'arrivo, con il numero identificativo della struttura.",
+      "noId": "Numero identificativo non inserito.",
+      "open": "Notifica gli ospiti alla polizia"
+    }
   },
   "taxRates": {
     "title": "Aliquote Tassa di Soggiorno",

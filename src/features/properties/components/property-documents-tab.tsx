@@ -1,10 +1,12 @@
 import { requiresItalianCin } from '@/lib/cin-format';
 import { SwissRegistrationGuidance } from './swiss-registration-guidance';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { Pencil } from 'lucide-react';
 import { PlainSection } from '@/components/shared/calm';
 import { Button } from '@/components/ui/button';
 import { IstatCredentialsCard } from '@/features/compliance/components/istat-credentials-card';
+import { TicinoStructureIdForm } from '@/features/compliance/ticino/ticino-structure-id-form';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import type { PropertyDetailDto } from '@/types';
 import { PropertyCinBadge } from './property-cin-badge';
@@ -42,6 +44,24 @@ export function PropertyDocumentsTab({ property, canWrite, onEditCin }: Property
         </div>
         <p className="mt-2 text-sm text-foreground/70">{t('property.detail.cinDescription')}</p>
       </PlainSection> : <SwissRegistrationGuidance />}
+
+      {property.isInTicino ? (
+        <PlainSection title={t('swiss.property.title')}>
+          <p className="mb-3 text-sm text-foreground/70">{t('swiss.property.description')}</p>
+          {canWrite ? (
+            <TicinoStructureIdForm propertyId={property.id} value={property.ticinoStructureId} />
+          ) : (
+            <p className="text-sm">{property.ticinoStructureId ?? t('swiss.property.noId')}</p>
+          )}
+          <Link
+            to={`/app/short-rent/compliance/ticino?property=${property.id}`}
+            className="mt-3 inline-flex min-h-11 items-center text-sm text-primary hover:underline"
+            data-testid="ticino-police-link"
+          >
+            {t('swiss.property.open')}
+          </Link>
+        </PlainSection>
+      ) : null}
 
       <PropertyDocumentsSection plain propertyId={property.id} documents={property.documents} />
 
