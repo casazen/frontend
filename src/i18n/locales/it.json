@@ -2001,6 +2001,17 @@
       "swissMunicipalityNotApplicable": "Il comune svizzero si può indicare solo per un immobile in Svizzera.",
       "swissMunicipalityUnknown": "Il comune scelto non è nell'elenco ufficiale dei comuni svizzeri: scegli di nuovo la località.",
       "swissPlacesUnavailable": "L'elenco ufficiale delle località svizzere non è disponibile in questo momento: riprova più tardi.",
+      "swissReceiptDateTooOld": "Il giorno di questo documento è più vecchio di 5 anni: non si può archiviare.",
+      "swissReceiptFileInvalid": "Il file è vuoto oppure troppo grande: al massimo 10 MB.",
+      "swissReceiptTypeInvalid": "Il tipo di documento non è valido.",
+      "ticinoDayAlreadyDeclared": "Questo giorno risulta già caricato sul portale: se scarichi di nuovo il file, il portale potrebbe creare delle notifiche doppie.",
+      "ticinoDeclarationDayInFuture": "Questo giorno non è ancora iniziato: non si può dichiarare il caricamento.",
+      "ticinoDeclarationReceiptInvalid": "La ricevuta non è di questa struttura o di questo giorno.",
+      "ticinoFileFormatInvalid": "Il formato del file non è valido: scegli CSV o XML.",
+      "ticinoNotAGroup": "Questo soggiorno non è un gruppo di sei o più persone: non c'è una scheda del gruppo.",
+      "ticinoNotificationEmpty": "Nessun ospite di questo giorno ha i dati completi: completali e scarica di nuovo il file.",
+      "ticinoStructureIdMissing": "Manca il numero identificativo della struttura: inseriscilo per creare il file.",
+      "ticinoXmlNotAvailable": "Il file XML non si può creare per questo giorno: scarica il CSV.",
       "videoCallNotSent": "L'email non è partita e nulla è stato inviato. Riprova.",
       "videoCallUrlInvalid": "Il link della riunione non è valido: deve cominciare con https://, senza spazi né password.",
       "xlsxTooManyRows": "Troppe righe: un foglio di un file Excel può avere al massimo 10.000 righe. Scegli un periodo più breve e riprova.",
@@ -2269,6 +2280,7 @@
       "calendarTooManyProperties": "Una modifica può riguardare al massimo 50 immobili.",
       "calendarWindowTooLarge": "Il periodo è troppo lungo per essere letto in una volta.",
       "propertyNotFound": "Non troviamo l'immobile, oppure non hai accesso.",
+      "propertyNotInTicino": "Questa struttura non risulta nel Canton Ticino: la notifica alla polizia ticinese non si applica.",
       "propertyModeBlockedByBookings": "In quel giorno ci sono ancora soggiorni o date occupate sui portali. Scegli un giorno più avanti.",
       "propertyModeBlockedByDraftLease": "C'è una bozza di contratto: va eliminata prima del passaggio.",
       "propertyModeBlockedByLease": "In quel giorno c'è ancora un contratto in corso. Scegli il giorno dopo la sua fine.",
@@ -30861,73 +30873,169 @@
     }
   },
   "swiss": {
-    "title": "Notifica alla polizia (Ticino)",
-    "description": "In Ticino ogni ospite va notificato alla polizia cantonale entro 24 ore dall'arrivo. CasaZen prepara il file ufficiale: tu lo carichi sul portale delle notifiche e conservi qui la ricevuta.",
-    "noProperty": "Apri questa pagina dagli Adempimenti o dalla scheda di una struttura in Ticino.",
-    "backToCompliance": "Vai agli Adempimenti",
-    "loading": "Caricamento…",
-    "loadFailed": "Impossibile caricare la notifica. Riprova tra poco.",
-    "notInTicino": "Questa struttura non risulta nel Canton Ticino: la notifica alla polizia ticinese non si applica.",
-    "day": {
-      "title": "Arrivi di {{day}}",
-      "none": "Nessun arrivo in questo giorno.",
-      "due": "Da notificare entro {{when}} (24 ore dall'arrivo).",
-      "notified": "Ricevuta del portale archiviata: giorno notificato.",
-      "notifiedDone": "Gli ospiti di questo giorno sono notificati.",
-      "otherDays": "Altri giorni da notificare:"
+    "actions": {
+      "next": "Avanti"
     },
-    "structureId": {
-      "title": "Numero identificativo della struttura",
-      "missing": "Serve per creare il file: è il numero che Ticino Turismo ti ha dato con la registrazione della struttura.",
-      "label": "Numero identificativo LEAR / NO-LEAR",
-      "hint": "Lettere e cifre, con trattini singoli (es. NL-12345678).",
-      "invalid": "Numero non valido: da 3 a 20 lettere e cifre, con trattini singoli (es. NL-12345678).",
-      "save": "Salva",
-      "saving": "Salvataggio…"
+    "day": {
+      "closedByReceipt": "Ricevuta del portale archiviata: il giorno è notificato.",
+      "declared": "Già caricato il {{when}} da {{who}}.",
+      "declaredAnonymous": "Già caricato il {{when}}.",
+      "due": "Da notificare entro {{when}} (24 ore dall'arrivo).",
+      "future": "Questo giorno non è ancora iniziato: potrai dichiarare il caricamento dal giorno dell'arrivo.",
+      "none": "Nessun arrivo in questo giorno.",
+      "otherDays": "Altri giorni da notificare:",
+      "overdue": "Le 24 ore per notificare questo giorno sono passate ({{when}}): notifica appena puoi.",
+      "title": "Arrivi di {{day}}"
+    },
+    "declare": {
+      "action": "Ho caricato il file",
+      "alreadyDone": "Il giorno risultava già dichiarato come caricato.",
+      "body": "Quando il portale ha accettato il file, dillo qui: il giorno esce dagli adempimenti e chi lavora con te lo vede subito.",
+      "done": "Fatto: il giorno è dichiarato come caricato.",
+      "failed": "Impossibile registrare il caricamento. Riprova.",
+      "needsSubmit": "Dichiarare il caricamento spetta a chi può inviare le comunicazioni alla polizia: chiedilo a chi gestisce la struttura.",
+      "notYet": "Non l'hai ancora caricato? Torna al passo «Carica sul portale».",
+      "undo": "Non l'ho caricato: riapri il giorno",
+      "undoFailed": "Impossibile annullare la dichiarazione. Riprova.",
+      "undone": "Dichiarazione annullata."
     },
     "file": {
-      "title": "1. Scarica il file",
-      "ready_one": "{{count}} persona nel file",
-      "ready_other": "{{count}} persone nel file",
+      "download": "Scarica il file (CSV)",
+      "downloaded": "File scaricato: ora caricalo sul portale.",
+      "downloadFailed": "Impossibile scaricare il file.",
+      "downloadXml": "Scarica in formato XML",
+      "duplicates": "Se carichi di nuovo il file, il portale potrebbe creare delle notifiche doppie.",
+      "generated_one": "Il file di questo giorno è stato scaricato {{count}} volta (l'ultima il {{when}}).",
+      "generated_other": "Il file di questo giorno è stato scaricato {{count}} volte (l'ultima il {{when}}).",
+      "groupSheet": "Scarica la scheda del gruppo di {{name}}",
+      "groupSheetDownloaded": "Scheda del gruppo scaricata: conservala per 5 anni.",
+      "groupSheetFailed": "Impossibile scaricare la scheda del gruppo.",
+      "groupSheetHint": "Per i gruppi di 6 o più persone nel file c'è solo il responsabile: la scheda con tutti i componenti va conservata per 5 anni, a disposizione della polizia.",
+      "needsGuestRead": "Per scaricare il file serve il permesso di leggere i dati degli ospiti.",
+      "none": "Il file si crea quando almeno un ospite ha i dati completi."
+    },
+    "guests": {
+      "group": "Gruppo di {{count}} persone",
       "minors_one": "(più {{count}} minore conteggiato su un genitore)",
       "minors_other": "(più {{count}} minori conteggiati su un genitore)",
-      "download": "Scarica il file",
-      "downloadXml": "Scarica in formato XML",
-      "downloading": "Download in corso…",
-      "downloadFailed": "Impossibile scaricare il file."
+      "none": "Nessun ospite di questo giorno ha ancora i dati completi: il file non si può creare.",
+      "ready_one": "{{count}} persona nel file",
+      "ready_other": "{{count}} persone nel file",
+      "transliterated_one": "{{count}} lettera dei nomi non ha il suo accento nel file: il file la scrive senza. Controlla i nomi sul portale.",
+      "transliterated_other": "{{count}} lettere dei nomi non hanno il loro accento nel file: il file le scrive senza. Controlla i nomi sul portale."
     },
     "issues": {
-      "title_one": "{{count}} ospite non è nel file: mancano dei dati",
-      "title_other": "{{count}} ospiti non sono nel file: mancano dei dati",
-      "body": "Completa i dati nella prenotazione (o chiedi all'ospite di completare il check-in) e scarica di nuovo il file. Se non è possibile, notifica l'ospite a mano sul portale («Notifiche → Nuova»).",
+      "body": "Completa i dati qui (o chiedi all'ospite di completare il check-in): il file si aggiorna. Se non è possibile, notifica l'ospite a mano sul portale («Notifiche → Nuova»).",
+      "complete": "Completa i dati",
+      "completeFor": "Completa i dati: {{name}}",
       "missing": {
-        "firstName": "nome",
-        "lastName": "cognome",
         "birthDate": "data di nascita",
-        "nationality": "nazionalità",
         "documentType": "tipo di documento",
-        "guests": "dati di tutti gli ospiti della prenotazione"
-      }
+        "firstName": "nome",
+        "guests": "dati di tutti gli ospiti della prenotazione",
+        "lastName": "cognome",
+        "nationality": "nazionalità"
+      },
+      "openBooking": "Apri la prenotazione",
+      "openBookingFor": "Apri la prenotazione: {{name}}",
+      "title_one": "{{count}} ospite non è nel file: mancano dei dati",
+      "title_other": "{{count}} ospiti non sono nel file: mancano dei dati"
+    },
+    "layer": {
+      "forbidden": "Non hai il permesso di vedere gli ospiti di questa struttura.",
+      "intro": "In Ticino ogni ospite va notificato alla polizia cantonale entro 24 ore dall'arrivo. CasaZen prepara il file ufficiale: lo carichi tu sul portale e poi dichiari qui che è fatto.",
+      "later": "Continua più tardi",
+      "loadFailed": "Impossibile caricare la notifica.",
+      "loading": "Caricamento della notifica…",
+      "notFound": "Non troviamo questa struttura, oppure non hai accesso.",
+      "notInTicino": "Questa struttura non risulta nel Canton Ticino: la notifica alla polizia ticinese non si applica.",
+      "steps": "Passi della notifica",
+      "title": "Notifica alla polizia (Ticino)",
+      "titleFor": "Notifica alla polizia: {{property}}"
     },
     "portal": {
-      "title": "2. Caricalo sul portale delle notifiche",
+      "accents": "Dopo il primo caricamento controlla sul portale che gli accenti dei nomi si leggano bene.",
       "body": "Accedi a notifiche.ti.ch con le tue credenziali e il codice dell'app di autenticazione, apri «Notifiche → Invio», scegli il file e premi «Invia». Il portale mostra l'esito di ogni ospite.",
-      "open": "Apri il portale delle notifiche"
-    },
-    "receipt": {
-      "title": "3. Conserva la ricevuta",
-      "body": "Salva la pagina di riepilogo del portale (PDF o immagine) e caricala qui: il giorno risulterà notificato.",
-      "file": "Riepilogo del portale",
-      "upload": "Segna come notificato",
-      "uploading": "Caricamento…",
-      "uploadFailed": "Impossibile caricare la ricevuta.",
-      "uploadSuccess": "Ricevuta archiviata: giorno notificato."
+      "newTab": "si apre in una nuova scheda",
+      "open": "Apri il portale delle notifiche",
+      "privacy": "CasaZen non accede al portale e non conosce le tue credenziali: il caricamento lo fai tu."
     },
     "property": {
-      "title": "Notifica alla polizia (Ticino)",
       "description": "Gli ospiti di questa struttura vanno notificati alla polizia cantonale entro 24 ore dall'arrivo, con il numero identificativo della struttura.",
       "noId": "Numero identificativo non inserito.",
-      "open": "Notifica gli ospiti alla polizia"
+      "open": "Notifica gli ospiti alla polizia",
+      "title": "Notifica alla polizia (Ticino)"
+    },
+    "receipt": {
+      "body": "Salva la pagina di riepilogo del portale (PDF o immagine) o il suo CSV e caricala qui: la conserviamo per 5 anni. Il giorno si chiude anche senza ricevuta.",
+      "file": "Riepilogo del portale",
+      "group": {
+        "body": "Scarica la scheda al passo «Scarica il file», fai compilare i dati dei componenti e conservala qui per 5 anni.",
+        "file": "Scheda del gruppo",
+        "success": "Scheda del gruppo archiviata.",
+        "title": "Scheda del gruppo: {{name}}",
+        "upload": "Archivia la scheda"
+      },
+      "have_one": "{{count}} ricevuta archiviata per questo giorno.",
+      "have_other": "{{count}} ricevute archiviate per questo giorno.",
+      "needsSubmit": "Aggiungere una ricevuta spetta a chi può inviare le comunicazioni alla polizia: chiedilo a chi gestisce la struttura.",
+      "parental": {
+        "body": "I minorenni che viaggiano senza un adulto hanno bisogno dell'autorizzazione scritta dei genitori: conservala qui per 5 anni. Se manca, la polizia va avvisata subito.",
+        "file": "Autorizzazione dei genitori",
+        "success": "Autorizzazione archiviata.",
+        "title": "Autorizzazione dei genitori",
+        "upload": "Archivia l'autorizzazione"
+      },
+      "tooBig": "Il file è troppo grande: al massimo 10 MB.",
+      "upload": "Aggiungi la ricevuta",
+      "uploadFailed": "Impossibile archiviare il documento.",
+      "uploading": "Caricamento…",
+      "uploadSuccess": "Ricevuta archiviata: giorno notificato.",
+      "uploadSuccessNotDeclared": "Ricevuta archiviata. La dichiarazione non è stata registrata, ma la ricevuta chiude comunque il giorno."
+    },
+    "regenerate": {
+      "cancel": "Non scaricare",
+      "confirm": "Scarica di nuovo",
+      "consequence": "Gli ospiti già notificati potrebbero comparire due volte sul portale.",
+      "risk": "Se carichi di nuovo il file, il portale potrebbe creare delle notifiche doppie.",
+      "title": "Scaricare di nuovo il file?"
+    },
+    "steps": {
+      "declare": {
+        "title": "Ho caricato il file"
+      },
+      "file": {
+        "title": "Scarica il file"
+      },
+      "guests": {
+        "title": "Ospiti da notificare"
+      },
+      "portal": {
+        "title": "Carica sul portale"
+      },
+      "receipt": {
+        "title": "Aggiungi la ricevuta"
+      },
+      "state": {
+        "attention": "Da completare",
+        "done": "Fatto",
+        "optional": "Facoltativo",
+        "todo": "Da fare"
+      }
+    },
+    "structureId": {
+      "hint": "Lettere e cifre, con trattini singoli (es. NL-12345678).",
+      "invalid": "Numero non valido: da 3 a 20 lettere e cifre, con trattini singoli (es. NL-12345678).",
+      "label": "Numero identificativo LEAR / NO-LEAR",
+      "missing": "Serve per creare il file: è il numero che Ticino Turismo ti ha dato con la registrazione della struttura.",
+      "readOnly": "Chiedi a chi gestisce la struttura di inserire il numero identificativo: senza non si può creare il file.",
+      "save": "Salva",
+      "saving": "Salvataggio…",
+      "title": "Numero identificativo della struttura"
+    },
+    "warnings": {
+      "group_sheet_incomplete": "Nella scheda di un gruppo manca il nome o la nazionalità di un componente: completa i dati degli ospiti.",
+      "parental_authorization_needed": "Ci sono minorenni senza un adulto: serve l'autorizzazione scritta dei genitori, da conservare per 5 anni (aggiungila all'ultimo passo). Se manca, avvisa subito la polizia."
     }
   },
   "swissPlace": {

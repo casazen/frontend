@@ -845,9 +845,10 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
-    // «Notifica alla polizia (Ticino)» (casazen/backend#979): the guided notification of the guests of a property in canton Ticino to the cantonal
-    // police (`?property=<id>&date=yyyy-MM-dd`): download the official file, upload it on notifiche.ti.ch, record the receipt. In no menu (most hosts have no
-    // Ticino property): the cockpit item `NotifyTicinoPolice` and the property page lead here. It reads guest data (`booking.read`; the API also asks `guest.read`).
+    // «Notifica alla polizia (Ticino)» (casazen/backend#979): the guided notification of the guests of a property in canton Ticino to the cantonal police is a LAYER of the
+    // cockpit now (E30/F02/US03/T02: `?detail=ticino:<property>[:<day>]` over `/app/short-rent/compliance`, opened by the cockpit item `NotifyTicinoPolice`, the bell and the
+    // property page). This address is the old page, which stays only so that no link breaks (notifications, e-mails, bookmarks): `?property=<id>&date=yyyy-MM-dd` redirects to
+    // the cockpit with the layer open on that property and day, and the page draws nothing of its own. In no menu. The layer reads guest data (`booking.read`; the API also asks `guest.read`).
     path: '/app/short-rent/compliance/ticino',
     context: 'short-rent',
     requiredPermissions: ['booking.read'],

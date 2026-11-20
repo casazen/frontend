@@ -54,8 +54,8 @@ const EXPECTED: Record<ComplianceCockpitAction, string> = {
   EnterMunicipalityTaxRate: `/app/short-rent/properties/${PROPERTY_ID}`,
   DeclareTouristTax: `/app/short-rent/alloggiati/reports?kind=TouristTaxDeclaration&property=${PROPERTY_ID}`,
   RenewPoliceCredentials: '/app/short-rent/alloggiati',
-  // casazen/backend#979: the guided notification of a Ticino property to the cantonal police; without a day it opens on the oldest one to notify.
-  NotifyTicinoPolice: `/app/short-rent/compliance/ticino?property=${PROPERTY_ID}`,
+  // casazen/backend#979: the guided notification of a Ticino property to the cantonal police is a layer of the cockpit (E30/F02/US03/T02); without a day it opens on the first one to notify.
+  NotifyTicinoPolice: `/app/short-rent/compliance?detail=ticino:${PROPERTY_ID}`,
 };
 
 describe('complianceActionRoute (CO-04, A5-09)', () => {
@@ -177,14 +177,26 @@ describe('complianceActionRoute of the periods (E03/F03/US01/T01, AC-NF52-5)', (
     expect(url).toBe(`/app/short-rent/alloggiati/reports?kind=IstatProof&property=${PROPERTY_ID}`);
   });
 
-  it('complianceActionRoute_NotifyTicinoPolice_OpensTheGuidedNotificationOnTheArrivalDay', () => {
+  it('complianceActionRoute_NotifyTicinoPolice_OpensTheLayerOfTheCockpitOnThePropertyAndTheArrivalDay', () => {
     const url = complianceActionRoute(periodItem('NotifyTicinoPolice', '2026-11-19'));
 
-    expect(url).toBe(`/app/short-rent/compliance/ticino?property=${PROPERTY_ID}&date=2026-11-19`);
-    expect(manifestEntryOf(url!).entry?.path).toBe('/app/short-rent/compliance/ticino');
-    // A month, or anything that is not a day, is left out: the page then opens on the oldest day to notify.
+    // A layer over the page of the cockpit, not a page of its own (E30/F02/US03/T02): the address is the cockpit with `?detail=ticino:<property>:<day>`.
+    expect(url).toBe(`/app/short-rent/compliance?detail=ticino:${PROPERTY_ID}:2026-11-19`);
+    expect(manifestEntryOf(url!).entry?.path).toBe('/app/short-rent/compliance');
+    // A month, or anything that is not a day, is left out: the layer then opens on the first day to notify.
     expect(complianceActionRoute(periodItem('NotifyTicinoPolice', '2026-11'))).toBe(EXPECTED.NotifyTicinoPolice);
+    expect(complianceActionRoute(periodItem('NotifyTicinoPolice', '2026-02-31'))).toBe(EXPECTED.NotifyTicinoPolice);
     expect(complianceActionRoute(periodItem('NotifyTicinoPolice', '2026-11-19/../x'))).toBe(EXPECTED.NotifyTicinoPolice);
+  });
+
+  it('complianceActionRoute_NotifyTicinoPolice_NeedsWhatTheCockpitNeeds_AndWhoMayNotDeclareIsStillLedToTheLayer', () => {
+    const reader = permissions(['property.read', 'booking.read']);
+
+    // The layer is on the cockpit, which asks both reads (its route does): the person who may only read is told «Apri» by the row (the permission to declare is `write`).
+    expect(complianceActionRoute(periodItem('NotifyTicinoPolice', '2026-11-19'), reader)).toBe(`/app/short-rent/compliance?detail=ticino:${PROPERTY_ID}:2026-11-19`);
+    expect(COMPLIANCE_ACTION_TARGETS.NotifyTicinoPolice.write).toBe('alloggiati.submit');
+    expect(complianceActionRoute(periodItem('NotifyTicinoPolice', '2026-11-19'), permissions(['booking.read']))).toBeNull();
+    expect(complianceActionRoute(periodItem('NotifyTicinoPolice', '2026-11-19'), permissions(['property.read']))).toBeNull();
   });
 
   it('complianceActionRoute_PeriodOnAnActionThatTakesNone_IsNotInTheAddress', () => {
