@@ -236,9 +236,10 @@ class Test_Connection extends WP_UnitTestCase {
 	}
 
 	/**
-	 * A development host is reached with the plain request, which the safe variant would refuse.
+	 * A development host is reached with the plain request, which the safe variant would refuse, on a development site.
 	 */
 	public function test_a_development_host_uses_the_plain_request() {
+		add_filter( 'casazen_allow_development_hosts', '__return_true' );
 		$this->reply( '/embed/v1/manifest.json', 200, $this->manifest( array( 'apiBase' => 'http://localhost:5000' ) ) );
 		$this->reply( '/api/public/resolve-host', 200, $this->resolved() );
 
@@ -252,6 +253,49 @@ class Test_Connection extends WP_UnitTestCase {
 		foreach ( $this->requests as $request ) {
 			$this->assertFalse( $request['args']['reject_unsafe_urls'] );
 		}
+	}
+
+	/**
+	 * A site that is not a development site never uses the plain request: an address on a development host is reached with
+	 * the safe request too, and its manifest cannot name an http API address. On a network a site administrator could
+	 * otherwise aim the server at its own loopback services.
+	 */
+	public function test_a_site_that_is_not_a_development_site_never_uses_the_plain_request() {
+		add_filter( 'casazen_allow_development_hosts', '__return_false' );
+
+		// An http API address is refused, and the only request made is the safe one.
+		$this->reply( '/embed/v1/manifest.json', 200, $this->manifest( array( 'apiBase' => 'http://localhost:5000' ) ) );
+		$result = Connection::test( 'http://localhost:5173', '' );
+		$this->assertSame( 'manifest_invalid', $result['code'] );
+		$this->assertCount( 1, $this->requests );
+		$this->assertTrue( $this->requests[0]['args']['reject_unsafe_urls'], 'The development address is reached with the safe request.' );
+
+		// An https API address is reached with the safe request as well.
+		$this->requests = array();
+		$this->reply( '/embed/v1/manifest.json', 200, $this->manifest() );
+		$this->reply( '/api/public/resolve-host', 200, $this->resolved() );
+		$result = Connection::test( 'http://localhost:5173', '' );
+		$this->assertSame( 'ok', $result['code'] );
+		$this->assertCount( 2, $this->requests );
+		foreach ( $this->requests as $request ) {
+			$this->assertTrue( $request['args']['reject_unsafe_urls'] );
+		}
+	}
+
+	/**
+	 * By default only a site whose environment type is local or development may reach a development host; the filter is the
+	 * way to opt in or out.
+	 */
+	public function test_development_hosts_are_allowed_by_default_only_on_a_development_site() {
+		$expected = in_array( wp_get_environment_type(), array( 'local', 'development' ), true );
+		$this->assertSame( $expected, Connection::allows_development_hosts() );
+
+		add_filter( 'casazen_allow_development_hosts', '__return_true' );
+		$this->assertTrue( Connection::allows_development_hosts() );
+		remove_filter( 'casazen_allow_development_hosts', '__return_true' );
+
+		add_filter( 'casazen_allow_development_hosts', '__return_false' );
+		$this->assertFalse( Connection::allows_development_hosts() );
 	}
 
 	/**

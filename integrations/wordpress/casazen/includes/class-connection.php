@@ -80,8 +80,9 @@ class Connection {
 		$host = wp_parse_url( $address, PHP_URL_HOST );
 		$host = is_string( $host ) ? strtolower( $host ) : '';
 
-		// Only an address that is itself a development host may reach other development hosts.
-		$development = Settings::is_development_host( $host );
+		// The plain request and an http API address are for an address that is itself a development host, and only on a site
+		// that is a development site: on any other site every request is the safe one.
+		$development = Settings::is_development_host( $host ) && self::allows_development_hosts();
 
 		// (a) The manifest of the address (contract v1).
 		$reply = self::get_json( $address . '/embed/v1/manifest.json', $development );
@@ -228,6 +229,28 @@ class Connection {
 	}
 
 	/**
+	 * Whether this site may reach a development host (localhost, 127.0.0.1, `*.test`, `*.localhost`) with the plain request.
+	 *
+	 * The plain request does not refuse loopback addresses and unusual ports, and it follows redirects without checking them,
+	 * so it is for a development site only: WordPress says so with the environment type `local` or `development`. On any
+	 * other site, and on a network for any site administrator, the safe request is the only one: an address on a development
+	 * host is then reported as not reachable, and its manifest cannot name an http API address. A setup that cannot set the
+	 * environment type opts in with the filter `casazen_allow_development_hosts`.
+	 *
+	 * @return bool
+	 */
+	public static function allows_development_hosts() {
+		$allowed = in_array( wp_get_environment_type(), array( 'local', 'development' ), true );
+
+		/**
+		 * Filters whether development hosts may be reached with the plain request.
+		 *
+		 * @param bool $allowed True when the environment type of the site is local or development.
+		 */
+		return (bool) apply_filters( 'casazen_allow_development_hosts', $allowed );
+	}
+
+	/**
 	 * The text for a result code, in the language of the admin. Built when it is printed, never before init.
 	 *
 	 * @param string $code One of the CODES.
@@ -330,7 +353,8 @@ class Connection {
 	 * Checks a manifest of the contract v1 and returns its API address.
 	 *
 	 * Valid: `v` equal to 1, `widgets` an array and `apiBase` an https URL (http only when the agency address itself is a
-	 * development host: a hostile manifest must not aim the server at its own http services).
+	 * development host on a development site, and then only on a development host: a hostile manifest must not aim the server
+	 * at its own http services).
 	 *
 	 * @param array $manifest          The decoded JSON.
 	 * @param bool  $allow_development Whether an http API address on a development host is accepted.
@@ -389,8 +413,9 @@ class Connection {
 	 * object leave this function.
 	 *
 	 * @param string $url         The address to read.
-	 * @param bool   $development Whether the agency address is a development host: only then may the plain request, which
-	 *                            reaches loopback addresses and unusual ports, be used (and only for a development host).
+	 * @param bool   $development Whether the agency address is a development host on a site that may reach development hosts
+	 *                            (allows_development_hosts()): only then may the plain request, which reaches loopback
+	 *                            addresses and unusual ports, be used (and only for a development host).
 	 * @return array|null { status: int, data: array|null }, or null when the request failed (no answer, refused address).
 	 */
 	private static function get_json( $url, $development ) {
