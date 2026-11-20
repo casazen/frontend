@@ -3738,8 +3738,43 @@
       "italy": {
         "empty": "You have no properties yet: the comuni of your properties will appear here with their tourist tax.",
         "intro": "In Italy the tourist tax is worked out with the rules of the comune of each property: CasaZen keeps them and you set nothing here.",
+        "introPortals": "In Italy the tourist tax is worked out with the rules of the comune of each property, which CasaZen keeps. We only ask you one thing: whether a portal collects it on your behalf.",
         "loading": "Reading the rules of the comuni",
         "noRate": "To do: the rate is missing",
+        "portals": {
+          "answerNow": "Answer now",
+          "confirmed": {
+            "effect": "On the guest document the tax of these stays reads as collected by the portal.",
+            "item": "{{portal}} collects and pays the tourist tax in {{comune}}",
+            "remove": "Remove the confirmation for {{comune}}",
+            "title": "You confirmed"
+          },
+          "done": {
+            "confirmed": "Confirmed for {{comune}}.",
+            "removed": "Confirmation removed for {{comune}}."
+          },
+          "failure": {
+            "failed": "We cannot tell whether your answer was saved: check the list and try again.",
+            "forbidden": "Your role cannot change how documents are issued: your answer was not saved.",
+            "invalid": "The portal or the comune of this answer is not valid: your answer was not saved. Refresh the page and try again.",
+            "notSent": "We could not load the current list, so your answer was not sent. Try again.",
+            "profile": "Before answering, complete the issuer’s details in the first step: your answer was not saved.",
+            "retry": "Try again",
+            "wholeOrg": "How documents are issued concerns all the properties of the organization: only someone who sees all of them can change it, and your access sees only some. Your answer was not saved."
+          },
+          "hint": "The records of your portal stays contradict your tourist tax rule: check below.",
+          "proposal": {
+            "confirm": "Yes, I confirm for {{comune}}",
+            "deferred": "You have not answered for {{comune}} yet: the guest document keeps saying the tax is payable at the property. You can answer whenever you like.",
+            "effect": "If {{portal}} collects it, the guest document says the tax was collected by the portal (exemptions are asked of the portal); otherwise it says the tax is payable at the property.",
+            "notNow": "Not now",
+            "notNowFor": "Not now, for {{comune}}",
+            "question": "Does {{portal}} collect and pay the tourist tax in {{comune}}?",
+            "whereAirbnb": "Check it in your Airbnb listing, in the Taxes section, under the taxes Airbnb collects and pays.",
+            "whereOther": "Check it in the settings of your listing on {{portal}}."
+          },
+          "title": "Tourist tax on portal bookings"
+        },
         "toDo_one": "CasaZen adds the rate of the comune of {{comuni}}: we let you know as soon as it is there. You can go on meanwhile.",
         "toDo_other": "CasaZen adds the rates of the comuni of {{comuni}}: we let you know as soon as they are there. You can go on meanwhile.",
         "toDoTitle": "To do",

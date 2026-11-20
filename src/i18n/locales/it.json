@@ -3738,8 +3738,43 @@
       "italy": {
         "empty": "Non hai ancora immobili: qui compariranno i comuni dei tuoi immobili con la loro tassa di soggiorno.",
         "intro": "In Italia la tassa di soggiorno si calcola con le regole del comune di ogni immobile: le tiene CasaZen e qui non devi impostare niente.",
+        "introPortals": "In Italia la tassa di soggiorno si calcola con le regole del comune di ogni immobile: le tiene CasaZen. Ti chiediamo solo una cosa: se un portale la incassa al posto tuo.",
         "loading": "Leggo le regole dei comuni",
         "noRate": "Da fare: manca l’aliquota",
+        "portals": {
+          "answerNow": "Rispondi ora",
+          "confirmed": {
+            "effect": "Sul documento per l’ospite l’imposta di questi soggiorni risulta incassata dal portale.",
+            "item": "{{portal}} incassa e versa l’imposta di soggiorno a {{comune}}",
+            "remove": "Togli la conferma per {{comune}}",
+            "title": "Hai confermato"
+          },
+          "done": {
+            "confirmed": "Confermato per {{comune}}.",
+            "removed": "Conferma tolta per {{comune}}."
+          },
+          "failure": {
+            "failed": "Non siamo sicuri che la tua risposta sia stata salvata: controlla l’elenco e riprova.",
+            "forbidden": "Il tuo ruolo non può cambiare come si emettono i documenti: la risposta non è stata salvata.",
+            "invalid": "Il portale o il comune di questa risposta non sono validi: la risposta non è stata salvata. Aggiorna la pagina e riprova.",
+            "notSent": "Non siamo riusciti a leggere l’elenco aggiornato, quindi non abbiamo inviato la tua risposta. Riprova.",
+            "profile": "Prima di rispondere completa i dati di chi emette, nel primo passo: la risposta non è stata salvata.",
+            "retry": "Riprova",
+            "wholeOrg": "Come si emettono i documenti riguarda tutti gli immobili dell’organizzazione: può cambiarlo solo chi li vede tutti, e il tuo accesso ne vede solo alcuni. La risposta non è stata salvata."
+          },
+          "hint": "I dati dei soggiorni da portale contraddicono la regola dell’imposta di soggiorno: controlla qui sotto.",
+          "proposal": {
+            "confirm": "Sì, confermo per {{comune}}",
+            "deferred": "Per {{comune}} non hai ancora risposto: sul documento per l’ospite l’imposta resta «da pagare in struttura». Puoi rispondere quando vuoi.",
+            "effect": "Se la incassa {{portal}}, il documento per l’ospite dice che l’imposta è stata incassata dal portale (per le esenzioni ci si rivolge al portale); altrimenti dice «da pagare in struttura».",
+            "notNow": "Non ora",
+            "notNowFor": "Non ora, per {{comune}}",
+            "question": "{{portal}} incassa e versa l’imposta di soggiorno a {{comune}}?",
+            "whereAirbnb": "Controllalo nel tuo annuncio su Airbnb, sezione Tasse, voce «Tasse locali riscosse e versate da Airbnb».",
+            "whereOther": "Controllalo nelle impostazioni del tuo annuncio su {{portal}}."
+          },
+          "title": "Imposta di soggiorno sulle prenotazioni da portale"
+        },
         "toDo_one": "CasaZen aggiunge l’aliquota del comune di {{comuni}}: ti avvisiamo appena c’è. Nel frattempo puoi andare avanti.",
         "toDo_other": "CasaZen aggiunge le aliquote dei comuni di {{comuni}}: ti avvisiamo appena ci sono. Nel frattempo puoi andare avanti.",
         "toDoTitle": "Da fare",
