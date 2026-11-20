@@ -1,3 +1,4 @@
+import { isEmbedPath } from '@/lib/embed-path';
 import { FISCAL_DOCUMENT_VIEW_PATH_PREFIX } from '@/lib/fiscal-document-link';
 import { isMarketingLinkPath } from '@/lib/marketing-link-paths';
 
@@ -15,6 +16,8 @@ export function isSecureAuth0Origin(location: Pick<Location, 'protocol' | 'hostn
 export function isPublicUnauthenticatedPath(pathname: string): boolean {
   const path = pathname.split('?')[0] ?? pathname;
   if (path === '/search') return true;
+  // The embeddable widgets (NF-144) are frames of other sites: no sign-in is ever offered there, on the CasaZen domain too.
+  if (isEmbedPath(path)) return true;
   return (
     path.startsWith('/book') ||
     path.startsWith('/p/') ||

@@ -9335,6 +9335,22 @@
     "failedDescription": "The link was already used, it expired, or the return page is not an allowed address. If the email is already confirmed, sign in. Otherwise ask for a new message from the sign-in screen.",
     "signIn": "Sign in"
   },
+  "embed": {
+    "error": {
+      "description": "We could not reach the server. Please try again shortly.",
+      "title": "We could not load the content"
+    },
+    "loading": "Loading…",
+    "notFound": {
+      "description": "We can't find the booking site this widget should show.",
+      "title": "Site not found"
+    },
+    "title": "Book · {{name}}",
+    "unavailable": {
+      "description": "This feature is not turned on for the site, or the address is not right.",
+      "title": "This widget is not available"
+    }
+  },
   "favorites": {
     "add": "Save {{name}} to favourites",
     "description": "Saved on this device: no account needed.",

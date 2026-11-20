@@ -1,4 +1,5 @@
 import { createBrowserRouter, Navigate, Outlet, type RouteObject } from 'react-router-dom';
+import { buildEmbedRoutes } from './embed-routes';
 import { buildHostSiteRoutes } from './host-site-routes';
 import { createHostSiteWindow } from './host-site-window';
 import { getHostSite } from '@/lib/host-site';
@@ -292,6 +293,9 @@ export const appRoutes: RouteObject[] = [
       { path: ':propertySlugOrId', element: <LegacyPropertyBookingRedirect /> },
     ],
   },
+  // The embeddable widgets of an org on the CasaZen domain (NF-144): `/embed/:orgSlug/booking`, `…/property/:propertySlugOrId`, `…/guest-access`. Frames of
+  // other sites with no app chrome, outside `PublicSiteShell`; an agency's own domain serves the same pages without the org in the address.
+  ...buildEmbedRoutes('platform'),
   {
     element: <PublicSiteShell mode="default" />,
     handle: NOT_REDESIGNED_ROUTE_HANDLE,
