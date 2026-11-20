@@ -799,7 +799,7 @@
         },
         "CleaningVatToState": {
           "title": "Riaddebito di pulizia senza IVA indicata",
-          "why": "La pulizia che riaddebiti al proprietario non ha l'IVA indicata: indicala, con l'importo se manca, prima di chiudere il rendiconto."
+          "why": "Rispondi alla domanda: la ditta di pulizie ha applicato l'IVA su questa fattura? Con «Sì» la riga del riaddebito porta l'IVA della ditta, con «No» resta senza IVA, con «Non lo so» l'importo non cambia e la domanda torna una volta, alla chiusura del rendiconto."
         },
         "CompanyTenantDecision": {
           "title": "Conduttore società da decidere",
@@ -1998,6 +1998,9 @@
       "supportVaultSecretMissing": "Queste credenziali non ci sono ancora: salvale prima, oppure chiedile all'utente.",
       "supportVaultTooManyOpenings": "Hai già aperto le credenziali 5 volte nell'ultima ora per questa richiesta: riprova più tardi.",
       "supportVaultValueInvalid": "Utente e password sono obbligatori, al massimo 200 caratteri; il codice aggiuntivo al massimo 100.",
+      "swissMunicipalityNotApplicable": "Il comune svizzero si può indicare solo per un immobile in Svizzera.",
+      "swissMunicipalityUnknown": "Il comune scelto non è nell'elenco ufficiale dei comuni svizzeri: scegli di nuovo la località.",
+      "swissPlacesUnavailable": "L'elenco ufficiale delle località svizzere non è disponibile in questo momento: riprova più tardi.",
       "videoCallNotSent": "L'email non è partita e nulla è stato inviato. Riprova.",
       "videoCallUrlInvalid": "Il link della riunione non è valido: deve cominciare con https://, senza spazi né password.",
       "xlsxTooManyRows": "Troppe righe: un foglio di un file Excel può avere al massimo 10.000 righe. Scegli un periodo più breve e riprova.",
@@ -18293,6 +18296,43 @@
       "saved": "Commissioni salvate. Valgono per i soggiorni che finiscono dal {{date}} in poi.",
       "title": "Commissioni dei canali"
     },
+    "cleaningVat": {
+      "answer": {
+        "Applied": "Sì, {{rate}}",
+        "AppliedNoRate": "Sì",
+        "NotApplied": "No, senza IVA",
+        "Unknown": "Non lo so"
+      },
+      "company": "Ditta: {{name}}",
+      "country": {
+        "CH": "Svizzera",
+        "IT": "Italia"
+      },
+      "current": "Risposta data per questa pulizia: {{answer}}. Una nuova risposta prende il suo posto.",
+      "currentByCompany": "Risposta ricordata per questa ditta: {{answer}}. Una risposta data qui prende il suo posto per questa pulizia.",
+      "description": "È il riaddebito di una pulizia al proprietario: la tua risposta decide l'IVA su quella riga della fattura.",
+      "loadError": "Non riusciamo a leggere la domanda.",
+      "loading": "Leggo la domanda…",
+      "problem": {
+        "answerInvalid": "La risposta non è valida: scegli una delle tre.",
+        "changed": "Nel frattempo la richiesta è cambiata. Abbiamo riletto la domanda: controlla e rispondi di nuovo.",
+        "failed": "Non abbiamo la conferma che la risposta sia stata registrata. Riprova: se era già arrivata, la stessa risposta non cambia nulla.",
+        "forbidden": "Il tuo ruolo non può rispondere a questa domanda: serve il permesso di modificare gli immobili.",
+        "notCompleted": "La pulizia non è ancora conclusa, quindi non c'è ancora una fattura della ditta di cui rispondere. Torna quando è completata.",
+        "notFound": "Non troviamo questa richiesta: potrebbe non esserci più, o non essere tra quelle a cui hai accesso.",
+        "rateUnknown": "Per il giorno di questa pulizia non abbiamo un'aliquota IVA, quindi «Sì» non si può registrare. Rispondi «No» o «Non lo so».",
+        "rememberForbidden": "Solo chi gestisce l'intera organizzazione può ricordare la risposta per la ditta. Rispondi di nuovo senza «Ricorda»: vale solo per questa pulizia.",
+        "rememberUnknown": "«Non lo so» non si può ricordare per la ditta. Rispondi senza «Ricorda»."
+      },
+      "remember": "Ricorda per questa ditta",
+      "rememberHint": "Vale per le altre pulizie di questa ditta che non hanno già una risposta, in tutti gli immobili. Non vale per «Non lo so».",
+      "saved": "Risposta registrata: {{answer}}.",
+      "sending": "Registro la risposta…",
+      "title": "La ditta di pulizie ha applicato l'IVA su questa fattura?",
+      "unknownHint": "L'importo resta com'è e la domanda torna una volta, alla chiusura del rendiconto.",
+      "when": "Pulizia del {{date}} · {{country}}",
+      "yesUnavailable": "Per il giorno di questa pulizia non abbiamo un'aliquota IVA: «Sì» non è disponibile."
+    },
     "close": {
       "confirm": "Chiudi il mese",
       "consequences": {
@@ -21749,6 +21789,9 @@
       },
       "comuneIstatCode": {
         "format": "Il codice ISTAT del comune non è valido: scegli il comune dall'elenco."
+      },
+      "swissMunicipalityCode": {
+        "format": "Il comune svizzero scelto non è valido: scegli di nuovo la località."
       }
     },
     "slug": {
@@ -30937,6 +30980,34 @@
       "open": "Notifica gli ospiti alla polizia"
     }
   },
+  "swissPlace": {
+    "form": {
+      "cityFromPlace": "Città e CAP sono quelli della località scelta. Cancella la scelta per scriverli a mano.",
+      "hint": "Cerca il CAP o il nome della località: ne seguono il comune e il cantone, che dicono quali regole valgono per i tuoi ospiti.",
+      "label": "CAP e località (elenco ufficiale)"
+    },
+    "picker": {
+      "ambiguous": "Il CAP {{postalCode}} vale per più comuni: scegli il tuo, non ne scegliamo uno al posto tuo.",
+      "candidatesLabel": "Comuni con questo CAP",
+      "clear": "Cancella la località scelta",
+      "codeUnknown": "Il comune n. {{code}} non è nell'elenco ufficiale: scegli di nuovo la località.",
+      "confirm": "Conferma",
+      "confirmPrompt": "Conferma il comune: {{place}}",
+      "listLabel": "Località trovate",
+      "minChars": "Scrivi almeno {{min}} caratteri: il CAP o il nome della località.",
+      "municipality": "Comune: {{municipality}} · Cantone: {{canton}}",
+      "municipalityOf": "Comune di {{municipality}}",
+      "noPostalCode": "Non trovo il CAP {{postalCode}} tra le località svizzere: controlla come l'hai scritto.",
+      "noResults": "Nessuna località trovata per «{{query}}». Controlla come l'hai scritto.",
+      "placeholder": "Cerca il CAP o la località (almeno 2 caratteri)",
+      "resultCount_one": "{{count}} località trovata. Usa le frecce e Invio per sceglierla.",
+      "resultCount_other": "{{count}} località trovate. Usa le frecce e Invio per sceglierne una.",
+      "retry": "Riprova",
+      "searchError": "Non riesco a leggere l'elenco delle località: questo non significa che non ci siano risultati.",
+      "searching": "Cerco…",
+      "unavailable": "L'elenco ufficiale delle località non è disponibile in questo momento. Puoi salvare lo stesso: il comune si conferma più tardi."
+    }
+  },
   "taxRates": {
     "title": "Aliquote Tassa di Soggiorno",
     "listTitle": "Elenco aliquote",
@@ -32515,6 +32586,48 @@
     "title": "Emittente dei documenti dei soggiorni"
   },
   "selfBilling": {
+    "close": {
+      "button": "Chiudi come non più dovuta",
+      "buttonLabel": "Chiudi come non più dovuta la bozza {{title}}",
+      "confirm": "Chiudi come non più dovuta",
+      "consequenceClosed": "La bozza si chiude per sempre e non si emette più. Non si può annullare.",
+      "consequenceRegister": "Il numero compare nel registro dei numeri non utilizzati che il commercialista riceve nel pacchetto.",
+      "consequenceReserved": "Il suo numero resta riservato: non verrà mai dato a un’altra fattura.",
+      "description": "La bozza n. {{number}} ha preso il numero di un’autofattura scartata dallo SDI e per ora non si può emettere. Se non è più dovuta, puoi chiuderla: dicci perché, restano registrati il motivo, chi l’ha chiusa e il giorno.",
+      "descriptionUnknown": "Questa bozza ha preso il numero di un’autofattura scartata dallo SDI e per ora non si può emettere. Se non è più dovuta, puoi chiuderla: dicci perché, restano registrati il motivo, chi l’ha chiusa e il giorno.",
+      "done": "Bozza n. {{number}} chiusa: non è più dovuta. Il numero resta riservato.",
+      "doneUnknown": "Bozza chiusa: non è più dovuta. Il numero resta riservato.",
+      "note": {
+        "hint": "La nota resta nello storico e finisce nel registro che riceve il commercialista: scrivi solo ciò che serve a capire.",
+        "label": "Nota"
+      },
+      "problem": {
+        "alreadyClosed": "Questa bozza è già stata chiusa con un altro motivo: non c’è nulla da correggere. Abbiamo aggiornato l’elenco.",
+        "failed": "Non siamo riusciti a confermare la chiusura: controlla l’elenco e riprova.",
+        "forbidden": "Non puoi chiudere le bozze: serve poter gestire le fatture di tutta l’organizzazione. Non è cambiato niente.",
+        "notClosable": "Questa bozza non si può chiudere da qui: non sostituisce un’autofattura scartata, oppure il mese la sostiene ancora e va emessa. Abbiamo aggiornato l’elenco.",
+        "notFound": "Non troviamo più questa bozza: abbiamo aggiornato l’elenco.",
+        "noteTooLong": "La nota è troppo lunga: al massimo {{max}} caratteri.",
+        "reasonRequired": "Scegli il motivo: senza non si può chiudere la bozza.",
+        "unavailable": "La chiusura delle bozze non è ancora aperta in questo ambiente. Non è cambiato niente."
+      },
+      "reason": {
+        "duplicate_or_error": "Era un doppione o un errore",
+        "holder_no_longer_subject": "Il titolare del conto non è più soggetto all’autofattura",
+        "portal_credit_note": "Il portale ha emesso una nota di credito"
+      },
+      "reasonLegend": "Motivo (obbligatorio)",
+      "title": "Chiudere la bozza come non più dovuta?"
+    },
+    "closed": {
+      "at": "Chiusa il",
+      "by": "Chiusa da",
+      "intro": "Aveva preso il numero {{number}} di un’autofattura scartata dallo SDI. Il numero resta riservato: non lo avrà mai un’altra fattura.",
+      "introUnknown": "Aveva preso il numero di un’autofattura scartata dallo SDI. Il numero resta riservato: non lo avrà mai un’altra fattura.",
+      "note": "Nota",
+      "reason": "Motivo",
+      "title": "Questa bozza è stata chiusa"
+    },
     "correct": {
       "button": "Correggi e rimanda",
       "buttonLabel": "Correggi e rimanda l’autofattura {{title}}",
@@ -32582,6 +32695,8 @@
       "pdf": "PDF",
       "replaced": {
         "body": "Lo SDI l’ha scartata, quindi per il fisco non è mai stata emessa: la sostituisce un’autofattura con lo stesso numero. Questa resta nello storico, senza azioni.",
+        "closedBody": "Lo SDI l’ha scartata, quindi per il fisco non è mai stata emessa. La bozza che ne aveva preso il numero è stata chiusa come non più dovuta: il numero resta riservato e questa resta nello storico, senza azioni.",
+        "closedTitle": "La sua bozza sostitutiva è stata chiusa",
         "open": "Apri la sostitutiva",
         "title": "Sostituita da un’altra autofattura"
       },
@@ -32626,11 +32741,12 @@
       "Owner": "Proprietario"
     },
     "kept": {
-      "issuer_profile_incomplete": "Il profilo emittente di chi ha il conto del portale è incompleto: completalo nei dati di fatturazione e poi rifai le bozze del mese. Finché manca, la bozza tiene il numero ma non si può né emettere né scartare.",
-      "ledger_gives_no_td17": "Il libro del mese non dà più nessuna autofattura a questo titolare per questo portale (commissioni stornate, soggiorni non più attivi o titolare non più soggetto): la bozza tiene il numero dell’autofattura scartata e non si può né emettere né scartare. Come usare quel numero lo decide il commercialista.",
-      "owner_issuer_missing": "Il proprietario titolare del conto del portale non ha un profilo emittente: completalo nella sua scheda e poi rifai le bozze del mese. Finché manca, la bozza tiene il numero ma non si può né emettere né scartare.",
-      "portal_not_configured": "Il portale di questa bozza non è più tra quelli configurati nelle impostazioni delle autofatture (paese e partita IVA): scrivi a CasaZen perché lo rimetta a posto. Finché manca, la bozza tiene il numero ma non si può né emettere né scartare.",
-      "unknown": "Questa bozza tiene il numero di un’autofattura scartata dallo SDI e per ora non si può né emettere né scartare (motivo: {{code}})."
+      "exit": "Se non è più dovuta, chiudila come non più dovuta: il numero resta riservato e non viene mai riusato.",
+      "issuer_profile_incomplete": "Il profilo emittente di chi ha il conto del portale è incompleto: completalo nei dati di fatturazione e poi rifai le bozze del mese. Finché manca, la bozza tiene il numero ma non si può emettere.",
+      "ledger_gives_no_td17": "Il libro del mese non dà più nessuna autofattura a questo titolare per questo portale (commissioni stornate, soggiorni non più attivi o titolare non più soggetto): la bozza tiene il numero dell’autofattura scartata e non si può emettere.",
+      "owner_issuer_missing": "Il proprietario titolare del conto del portale non ha un profilo emittente: completalo nella sua scheda e poi rifai le bozze del mese. Finché manca, la bozza tiene il numero ma non si può emettere.",
+      "portal_not_configured": "Il portale di questa bozza non è più tra quelli configurati nelle impostazioni delle autofatture (paese e partita IVA): scrivi a CasaZen perché lo rimetta a posto. Finché manca, la bozza tiene il numero ma non si può emettere.",
+      "unknown": "Questa bozza tiene il numero di un’autofattura scartata dallo SDI e per ora non si può emettere (motivo: {{code}})."
     },
     "notDue": {
       "currency_not_supported": "la commissione non è in euro",
@@ -32661,6 +32777,8 @@
     },
     "row": {
       "corrected": "Autofattura {{number}}: scartata dallo SDI e sostituita da un’autofattura con lo stesso numero.",
+      "correctedClosed": "Autofattura {{number}}: scartata dallo SDI. La bozza che ne aveva preso il numero è stata chiusa come non più dovuta: il numero resta riservato.",
+      "correctedClosedUnknown": "Autofattura scartata dallo SDI. La bozza che ne aveva preso il numero è stata chiusa come non più dovuta: il numero resta riservato.",
       "correctedUnknown": "Autofattura scartata dallo SDI e sostituita da un’autofattura con lo stesso numero.",
       "due": "Da emettere entro il {{date}}",
       "issued": "Autofattura {{number}} del {{date}}",
@@ -32677,9 +32795,11 @@
       "total": "Totale {{amount}}"
     },
     "status": {
+      "ClosedNotDue": "Chiusa, non più dovuta",
       "Discarded": "Bozza scartata",
       "Draft": "Bozza",
       "Issued": "Emessa",
+      "RejectedClosed": "Scartata dallo SDI",
       "Replaced": "Sostituita"
     }
   },

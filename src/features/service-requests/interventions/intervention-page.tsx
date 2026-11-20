@@ -11,6 +11,7 @@ import { StatusBadge } from '@/components/shared/status/status-badge';
 import { StatusPipeline } from '@/components/shared/status/status-pipeline';
 import { Alert } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
+import { CleaningVatQuestionHost } from '@/features/owner-accounting/components/cleaning-vat-dialog';
 import { propertyPath } from '@/features/properties/properties-paths';
 import { clientStatusFromRedirect } from '@/features/public-booking/checkout-outcome';
 import { requestTitle } from '@/features/supplier/requests/request-model';
@@ -144,11 +145,20 @@ function InterventionDetail({ request, returned }: InterventionDetailProps) {
  * menu «⋯» (the property, the stay, a call to the supplier and «Annulla intervento» while it can still be cancelled); under it the way
  * it has gone, the one highlighted block «Prossimo passo», its details, the photos of the work, the supplier and the history. A request
  * outside the host's scope is not found, as on the server.
+ *
+ * The «Da fare» `StateCleaningVat` of a cleaning recharged to the owner opens this page with the question «La ditta di pulizie ha applicato
+ * l'IVA su questa fattura?» over it (`?cleaningVat=<request>`, FIX/FE-CLEANING-VAT-QUESTION), for who may write the properties.
  */
 export function InterventionDetailPage() {
   const { id = '' } = useParams<{ id: string }>();
   // One page per request: what was open (a window, a payment) is not carried over to the next one.
-  return <InterventionPage key={id} id={id} />;
+  return (
+    <>
+      <InterventionPage key={id} id={id} />
+      {/* The question does not depend on what the page says of the request: it is read by its own endpoint, which does not tell Affitti brevi from Affitti lunghi. */}
+      <CleaningVatQuestionHost />
+    </>
+  );
 }
 
 function InterventionPage({ id }: { id: string }) {
