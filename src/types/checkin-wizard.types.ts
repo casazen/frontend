@@ -1,4 +1,10 @@
-import type { GuestGender, StayGuestType, TouristTaxCollectionStatus, TouristTaxNotPayableReason } from './public-checkin.types';
+import type {
+  GuestGender,
+  StayGuestSubmit,
+  StayGuestType,
+  TouristTaxCollectionStatus,
+  TouristTaxNotPayableReason,
+} from './public-checkin.types';
 
 /**
  * Contract of the host wizard "Guest check-in" (E03/F01/US01/T04) and of the tourist tax of a stay (E03/F01/US07/T02). Enums are
@@ -7,6 +13,16 @@ import type { GuestGender, StayGuestType, TouristTaxCollectionStatus, TouristTax
 
 /** Where the guests of a stay are: expected, arrived, departed, a no-show, or no check-in is expected (pending or cancelled booking). */
 export type StayAttendance = 'Expected' | 'Arrived' | 'Departed' | 'NoShow' | 'Inactive';
+
+/**
+ * What a host's save of the guests sends (`PUT /bookings/{id}/checkin-wizard/guests`, `PUT /alloggiati/{bookingId}/stay-guests`): the whole list of
+ * guests and, where the regime asks it (canton Ticino, NF-132), the plate of the car of the stay. Without `vehiclePlate` the server leaves the stored
+ * plate as it is; an empty text clears it.
+ */
+export interface GuestsSave {
+  guests: StayGuestSubmit[];
+  vehiclePlate?: string;
+}
 
 /** The steps of the wizard the server names in `suggestedStep`; `result` is "nothing left to do". */
 export type CheckInSuggestedStep = 'guests' | 'documents' | 'checks' | 'tax' | 'send' | 'result';
@@ -23,6 +39,8 @@ export interface CheckInWizardBooking {
   status: string;
   /** When the host marked the stay as a no-show; null otherwise. */
   noShowAt?: string | null;
+  /** The plate of the car of the stay (NF-132, E30/F01/US02), null when none was given; add-only field: an older API omits it. */
+  vehiclePlate?: string | null;
 }
 
 /** Who entered the data of a guest. */
@@ -52,6 +70,10 @@ export interface CheckInWizardGuest {
   residenceProvince?: string | null;
   residenceCountryCode?: string | null;
   residenceCountryName?: string | null;
+  /** The home of the guest (NF-132): street and house number, postal code, town; null when not entered. Add-only fields: an older API omits them. */
+  residenceStreet?: string | null;
+  residencePostalCode?: string | null;
+  residenceCityName?: string | null;
   documentType?: string | null;
   documentTypeCode?: string | null;
   /** The document number with all but the last characters masked; null without one. */
@@ -238,8 +260,14 @@ export interface CheckInWizardState {
   booking: CheckInWizardBooking;
   attendance: StayAttendance;
   guests: CheckInWizardGuest[];
-  /** The statistical fields the region requires (`TourismType`, `TravelWay`, `EducationLevel`); empty when none. */
+  /**
+   * The guest fields the regime requires: the statistical fields the region requires (`TourismType`, `TravelWay`, `EducationLevel`) and, in
+   * canton Ticino (NF-132), `DocumentType`, `DocumentNumber` (of every guest the police file notifies), `ResidenceStreet`, `ResidencePostalCode`,
+   * `ResidenceCityName` and `ResidenceCountryName`; empty when none.
+   */
   requiredGuestFields: string[];
+  /** The plate of the car is asked for the stay, optional (canton Ticino, NF-132); the plate itself is `booking.vehiclePlate`. Add-only field: an older API omits it. */
+  askVehiclePlate?: boolean;
   issues: CheckInIssue[];
   /** The tourist tax of the stay; null when it cannot be worked out now. */
   tax?: StayTouristTax | null;

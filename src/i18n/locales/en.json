@@ -5615,14 +5615,23 @@
       "educationLevel": {
         "required": "Select the education level"
       },
+      "residencePostalCode": {
+        "maxLength": "At most 20 characters"
+      },
       "residenceProvince": {
         "invalid": "Enter the two-letter code (e.g. RM)"
+      },
+      "residenceStreet": {
+        "maxLength": "At most 200 characters"
       },
       "tourismType": {
         "required": "Select the purpose of the trip"
       },
       "travelWay": {
         "required": "Select how you travelled here"
+      },
+      "vehiclePlate": {
+        "invalid": "Enter a valid plate: letters, digits and hyphens, at most 20 characters."
       }
     },
     "loading": "Loading check-in...",
@@ -5927,7 +5936,8 @@
       "statisticalValueInvalid": "The value you chose is not one of the allowed ones.",
       "summary_one": "1 field needs your attention",
       "summary_other": "{{count}} fields need your attention",
-      "tooManyRequests": "Too many requests in a short time: wait a moment and try again."
+      "tooManyRequests": "Too many requests in a short time: wait a moment and try again.",
+      "vehiclePlateInvalid": "The plate is not valid: use letters, digits and hyphens, at most 20 characters."
     },
     "guestKind": {
       "FamilyMember": "Family member",
@@ -6116,12 +6126,21 @@
     },
     "residence": {
       "abroad": "Abroad",
+      "city": "Town or city",
       "comune": "Municipality of residence",
       "country": "Country of residence",
       "hint": "Optional: where the guest usually lives.",
+      "homeHint": "Optional: the address where the guest lives. It is part of the notification of the stay to the police.",
       "inItaly": "In Italy",
       "label": "Residence",
-      "province": "Province of residence (two letters)"
+      "postalCode": "Postal code",
+      "province": "Province of residence (two letters)",
+      "street": "Street and house number"
+    },
+    "swiss": {
+      "documentIntro": "Type and number of the identity document of every adult. The head of the family or group also gives the place of issue.",
+      "guestsIntro": "Enter every guest staying, minors included. Every adult also gives their identity document on the next step.",
+      "stayKindHint": "For a family or a group the first guest is the head of family or group. The identity document is asked of every adult (for a group of six or more, of the head of the group only)."
     },
     "toast": {
       "saved": "Check-in details saved.",
@@ -6176,6 +6195,10 @@
       "plane": "Plane",
       "ship": "Ship",
       "train": "Train"
+    },
+    "vehiclePlate": {
+      "hint": "One plate for the whole stay, if you come by car. Letters, digits and hyphens.",
+      "label": "Plate of your car (optional)"
     },
     "wizard": {
       "checks": {

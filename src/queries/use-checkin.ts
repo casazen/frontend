@@ -146,11 +146,23 @@ function isFieldValidationProblem(error: unknown): boolean {
   return typeof errors === 'object' && errors !== null && Object.keys(errors).length > 0;
 }
 
+/**
+ * Sends the check-in of the guest. The request holds the personal data of every guest (names, documents and, in Switzerland, the home and the plate of the car):
+ * the mutation is dropped as soon as nothing observes it (`gcTime: 0`) and a refusal is kept without the request that was sent (`withoutRequest`: the status and the
+ * body of the answer stay, which is what the page turns into words on the fields).
+ */
 export function useSubmitGuestCheckIn(token: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: PublicCheckInSubmitRequest) => publicCheckinApi.submit(token, data),
+    gcTime: 0,
+    mutationFn: async (data: PublicCheckInSubmitRequest) => {
+      try {
+        return await publicCheckinApi.submit(token, data);
+      } catch (error) {
+        throw withoutRequest(error);
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [CHECKIN_KEY, token] });
       toast.success(i18n.t('checkin.toast.saved'));
