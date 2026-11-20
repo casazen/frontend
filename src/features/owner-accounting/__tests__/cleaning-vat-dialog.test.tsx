@@ -12,7 +12,9 @@ import i18n from '@/i18n/config';
 import axiosInstance, { setApiAccountInactiveHandler, setApiAuthHandlers, setApiForbiddenHandler } from '@/lib/axios';
 import { cleaningVatKeys } from '@/queries/use-cleaning-vat';
 import { SHORT_RENT_ROLE_KEYS, SHORT_RENT_ROLE_PERMISSIONS, hostContextsOf, workspacePredicateOf } from '@/test/host-roles';
+import { InterventionDetailPage } from '@/features/service-requests/interventions/intervention-page';
 import { TodoActivityCard } from '@/features/todo/activity-card';
+import type { ServiceRequest } from '@/types/service-request';
 import { CleaningVatQuestionHost } from '../components/cleaning-vat-dialog';
 
 // These tests use the real client of the app, with its interceptors and its handler of the 403, the real API of the question and the real hooks: only the transport is replaced. What they prove is what the dialog of
@@ -25,6 +27,10 @@ vi.mock('@/hooks/use-workspace', async () => {
   return { useWorkspace: () => ({ contexts: env.contexts, hasPermission: predicateOf(env.contexts) }) };
 });
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
+// The header of the page of the request is the shell of the app (breadcrumbs, the tabs of the section): only its title matters to these tests, as in the tests of the list of the interventions.
+vi.mock('@/components/layout/page-header', () => ({
+  PageHeader: ({ title }: { title: string }) => createElement('h1', null, title),
+}));
 
 vi.setConfig({ testTimeout: 30_000 });
 
@@ -578,5 +584,105 @@ describe('who is offered the question (permission rule, with the real role keys:
     expect(await screen.findByTestId('address')).toHaveTextContent(`cleaningVat=${REQUEST_ID}`);
     expect(screen.queryByTestId('cleaning-vat-dialog')).toBeNull();
     expect(requests).toEqual([]);
+  });
+});
+
+// The wiring of the first criterion: «Fallo ora» leads to the page of the request in the interventions, and it is that page (the real `InterventionDetailPage` of the route, not a stand-in) that carries the question over
+// it, for who may answer. What the page says of the request is incidental: it reads a request of Affitti brevi and says «not found» for one of Affitti lunghi, and the dialog (its own endpoint) works over both.
+describe('the page of the request carries the question (AC: the «Da fare» opens the question for its request, offered only to who may answer)', () => {
+  const PAGE_PATH = `/service-requests/${REQUEST_ID}`;
+
+  /** The cleaning request as the host reads it: a completed one of Affitti brevi. */
+  const cleaning: ServiceRequest = {
+    id: REQUEST_ID,
+    orgId: 'org-1',
+    propertyId: PROPERTY_ID,
+    propertyName: 'Casa del Lago',
+    supplierOrgId: 'sup-1',
+    supplierName: 'Ditta Esempio SA',
+    category: 'cleaning',
+    urgency: 'Normal',
+    status: 'Completato',
+    chargeToGuest: false,
+    createdAt: '2026-10-12T08:00:00Z',
+    updatedAt: '2026-10-12T10:00:00Z',
+    price: { amountCents: 12000, basis: 'final' },
+    hostAction: { kind: 'pay' },
+    availableActions: ['pay', 'cancel'],
+  };
+
+  /** The server as the page needs it: the request is read (or is not found), and the question is answered as in the tests above. */
+  const serverWithThePage =
+    (found: boolean) =>
+    (request: Request): Reply =>
+      request.method === 'GET' && request.path === PAGE_PATH
+        ? found
+          ? { status: 200, data: cleaning }
+          : { status: 404, data: { code: 'service_request_not_found' } }
+        : serverInOrder(request);
+
+  /** The real page of the route `/app/short-rent/interventions/:id`, opened at an address. */
+  function renderTheRealPage(search: string) {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } } });
+    render(
+      createElement(
+        QueryClientProvider,
+        { client },
+        createElement(
+          MemoryRouter,
+          { initialEntries: [pageOfTheRequest(search)] },
+          createElement(
+            Routes,
+            null,
+            createElement(Route, { path: '/app/short-rent/interventions/:id', element: createElement('div', null, createElement(InterventionDetailPage), createElement(Probe)) }),
+          ),
+        ),
+      ),
+    );
+  }
+
+  it.each(SHORT_RENT_ROLE_KEYS)('InterventionDetailPage_TheAddressOfTheQuestion_OpensItOverTheRequestOnlyForTheRole_%s_WhenItWritesTheProperties', async (roleKey) => {
+    env.contexts = hostContextsOf(roleKey);
+    reply = serverWithThePage(true);
+    const mayWrite = (SHORT_RENT_ROLE_PERMISSIONS[roleKey] as readonly string[]).includes('property.write');
+
+    renderTheRealPage(`?cleaningVat=${REQUEST_ID}`);
+
+    // The page of the request is there for every role that reads the properties ...
+    expect(await screen.findByTestId('intervention-page')).toBeInTheDocument();
+    if (!mayWrite) {
+      // ... and for a role that only reads them the address that asks the question opens nothing and asks nothing of the server.
+      expect(screen.getByTestId('address')).toHaveTextContent(`cleaningVat=${REQUEST_ID}`);
+      expect(screen.queryByTestId('cleaning-vat-dialog')).toBeNull();
+      expect(calls('GET')).toHaveLength(0);
+      return;
+    }
+    // For a role that writes them the question is over the page: the one the page itself mounts.
+    expect(await screen.findByRole('dialog', { name: i18n.t('ownerAccounting.cleaningVat.title') })).toBeInTheDocument();
+    await screen.findByTestId('cleaning-vat-form');
+    expect(calls('GET')).toHaveLength(1);
+    expect(screen.getByTestId('intervention-page')).toBeInTheDocument();
+  });
+
+  it('InterventionDetailPage_ARequestItDoesNotFind_StillHasTheQuestionOverIt_AsForARequestOfAffittiLunghi', async () => {
+    reply = serverWithThePage(false);
+
+    renderTheRealPage(`?cleaningVat=${REQUEST_ID}`);
+
+    // The page says it is not found, as it does for a request of Affitti lunghi, and the question (read by its own endpoint) is over it all the same.
+    expect(await screen.findByText(i18n.t('interventions.detail.notFound'))).toBeInTheDocument();
+    expect(await screen.findByRole('dialog', { name: i18n.t('ownerAccounting.cleaningVat.title') })).toBeInTheDocument();
+    await screen.findByTestId('cleaning-vat-form');
+    expect(screen.queryByTestId('intervention-page')).toBeNull();
+  });
+
+  it('InterventionDetailPage_WithoutTheQuestionInTheAddress_DrawsNoDialogAndAsksNothing', async () => {
+    reply = serverWithThePage(true);
+
+    renderTheRealPage('');
+
+    expect(await screen.findByTestId('intervention-page')).toBeInTheDocument();
+    expect(screen.queryByTestId('cleaning-vat-dialog')).toBeNull();
+    expect(calls('GET')).toHaveLength(0);
   });
 });
