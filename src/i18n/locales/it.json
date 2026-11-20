@@ -4862,6 +4862,19 @@
       "confirmManual": {
         "title": "Conferma la prenotazione"
       },
+      "linkScheduled": {
+        "title": "Il link per il check-in online parte da solo",
+        "body": "CasaZen lo manda all'ospite il {{date}}. Se preferisci, mandalo subito.",
+        "action": "Mandalo ora"
+      },
+      "arrivalAutomatic": {
+        "title": "Arrivo di {{guest}}: ci pensa CasaZen",
+        "body": "Alla fine del giorno di arrivo ({{date}}) CasaZen lo registra da solo. Se l'ospite non arriva, segnala il no-show."
+      },
+      "departureAutomatic": {
+        "title": "Partenza di {{guest}}: ci pensa CasaZen",
+        "body": "All'orario di check-out CasaZen registra la partenza e prosegue con la pulizia e la casa pronta. Se preferisci, chiudi tu il soggiorno."
+      },
       "heading": "Cosa succede ora",
       "registerArrival": {
         "body": "Quando l'ospite è nell'immobile, conferma qui l'arrivo. Check-in: {{date}}.",
@@ -15677,6 +15690,77 @@
       "use": "Usa la traduzione"
     }
   },
+  "bookingFlow": {
+    "title": "Flusso delle prenotazioni",
+    "intro": "Ogni prenotazione passa da questi passaggi. Quelli in automatico li fa CasaZen e non finiscono più nella tua lista «Da fare».",
+    "loadFailed": "Non riusciamo a leggere il flusso delle prenotazioni. Riprova tra poco.",
+    "save": "Salva il flusso",
+    "saved": "Flusso delle prenotazioni salvato.",
+    "saveFailed": "Non siamo riusciti a salvare il flusso. Riprova.",
+    "readOnly": "Solo l'amministratore dell'organizzazione può cambiare questi passaggi.",
+    "mode": {
+      "Automatic": "In automatico",
+      "Manual": "Lo fai tu"
+    },
+    "errors": {
+      "days": "Scegli un numero di giorni da 0 a {{max}}."
+    },
+    "steps": {
+      "confirmation": {
+        "title": "Conferma",
+        "who": "In automatico",
+        "fixed": "Le prenotazioni dei portali e quelle pagate sul tuo sito si confermano da sole. Le richieste di prenotazione aspettano la tua risposta."
+      },
+      "checkInLink": {
+        "title": "Link del check-in online",
+        "automatic": "CasaZen manda all'ospite il link per il check-in online (email, conferma della prenotazione o chat del portale). Se non riesce a raggiungerlo, te lo dice.",
+        "manual": "Mandi tu il link all'ospite dalla pagina della prenotazione.",
+        "days": {
+          "label": "Giorni prima dell'arrivo",
+          "hint": "Da 0 (il giorno dell'arrivo) a {{max}}: il link resta valido {{max}} giorni."
+        }
+      },
+      "guestData": {
+        "title": "Dati degli ospiti",
+        "who": "L'ospite",
+        "fixed": "Li inserisce l'ospite con il check-in online. Se mancano, li completi tu dalla prenotazione."
+      },
+      "arrival": {
+        "title": "Arrivo",
+        "automatic": "CasaZen registra l'arrivo alla fine del giorno di arrivo. Fino ad allora puoi registrarlo tu o segnalare un no-show.",
+        "manual": "Registri tu l'arrivo dalla prenotazione."
+      },
+      "alloggiati": {
+        "title": "Comunicazione ad Alloggiati Web",
+        "who": "La fai tu",
+        "fixed": "È un obbligo di legge: CasaZen prepara i dati, l'invio alla Questura lo fai tu entro i termini."
+      },
+      "departure": {
+        "title": "Partenza",
+        "automatic": "CasaZen registra la partenza all'orario di check-out dell'immobile (alle 10:00 se non ne hai indicato uno).",
+        "manual": "Registri tu la partenza con la procedura di check-out."
+      },
+      "cleaning": {
+        "title": "Pulizia",
+        "who": "Su ogni immobile",
+        "fixed": "La pulizia al check-out si imposta su ogni immobile: chi pulisce, a che ora e a che prezzo."
+      },
+      "propertyReady": {
+        "title": "Casa pronta per il prossimo ospite",
+        "automatic": "CasaZen dichiara la casa pronta per il prossimo ospite.",
+        "manual": "Dichiari tu la casa pronta dopo il check-out.",
+        "trigger": {
+          "label": "Quando",
+          "CleaningDone": "Quando la pulizia è fatta",
+          "CheckOut": "Al check-out",
+          "hint": {
+            "CleaningDone": "Se per un soggiorno non è prevista nessuna pulizia, te lo ricordiamo nella lista «Da fare».",
+            "CheckOut": "La casa è pronta appena l'ospite parte, anche senza una pulizia registrata."
+          }
+        }
+      }
+    }
+  },
   "nav": {
     "accountant": "Commercialista",
     "accountHome": "Home",
@@ -15800,6 +15884,7 @@
     "activities": "Attività",
     "inviteQr": "QR di invito",
     "reviews": "Recensioni",
+    "bookingFlow": "Flusso",
     "routines": "AI Agents",
     "channelCommissions": "Commissioni dei canali",
     "channels": "Canali e calendari",
@@ -15901,6 +15986,7 @@
       "newBooking": "Hai una nuova prenotazione.",
       "guestMessage": "Un ospite ti ha scritto un messaggio.",
       "guestCheckinCompleted": "Un ospite ha completato il check-in online.",
+      "bookingFlowStep": "CasaZen ha fatto un passaggio della prenotazione al posto tuo.",
       "guestDataMissing": "Mancano i dati di un ospite da registrare.",
       "alloggiatiDeadline": "Una comunicazione Alloggiati Web sta per scadere.",
       "alloggiatiOverdue": "Una comunicazione Alloggiati Web è scaduta.",
