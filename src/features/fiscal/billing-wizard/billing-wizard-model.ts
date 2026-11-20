@@ -911,6 +911,15 @@ export function isNeedsWholeOrg(error: unknown): boolean {
   return isAxiosError(error) && error.response?.status === 403 && getProblemCode(error.response.data) === 'fiscal_settings_need_whole_org';
 }
 
+/**
+ * The 422 a write of the portal accounts (the settings of the step, or the bulk write of the holders) gets when it starts the waiver of the recharge (the recharge turned off while the agency
+ * holds an account, or the agency made the default holder or given its first listing while the recharge is off) and does not carry the acknowledgement of the person. Nothing was saved:
+ * the wizard asks, and sends the write again with the acknowledgement only if the person confirms.
+ */
+export function isRechargeWaiverNotAcknowledged(error: unknown): boolean {
+  return isAxiosError(error) && error.response?.status === 422 && getProblemCode(error.response.data) === 'recharge_waiver_not_acknowledged';
+}
+
 /** The form field and the words of a field of the setup the server refused; `null` for a field the wizard cannot put a message on. */
 function problemOfField(field: string, country: string): FormProblem | null {
   switch (field as BillingSetupField) {

@@ -1,15 +1,20 @@
 import { z } from 'zod';
 import {
   MAX_STAY_GUESTS,
+  NO_SWISS_RULES,
   createStayGuestListSchema,
   followerTypeOf,
+  hostVehiclePlateOf,
   isLeaderType,
   normalizeDocumentNumber,
   requiredStatisticalFields,
   stayGuestDefaults,
-  toStayGuestSubmit,
+  stayVehiclePlateSchema,
+  swissRulesOf,
+  toStayGuestSubmits,
   type StatisticalGuestField,
   type StayGuestFormValues,
+  type SwissStayRules,
 } from '@/features/checkin/schemas/checkin.schema';
 import type {
   CheckInConfirmation,
@@ -18,6 +23,7 @@ import type {
   CheckInWizardState,
   DocumentReadingFields,
   GuestExemption,
+  GuestsSave,
   OctorateCheckInSendState,
   StayTouristTax,
 } from '@/types/checkin-wizard.types';
@@ -27,9 +33,13 @@ import type { StayGuestSubmit } from '@/types/public-checkin.types';
 export const CHECKIN_WIZARD_STEPS = ['guests', 'documents', 'checks', 'tax', 'send'] as const;
 export type CheckInWizardStepId = (typeof CHECKIN_WIZARD_STEPS)[number];
 
-/** What the form of the wizard holds: the guests, with the new fields and the tourist tax exemption they came with. */
+/**
+ * What the form of the wizard holds: the guests, with the new fields and the tourist tax exemption they came with, and, where the regime asks it
+ * (`askVehiclePlate`, canton Ticino), the plate of the car of the stay. Without `vehiclePlate` the form does not ask for one and a save sends none.
+ */
 export interface CheckInWizardValues {
   guests: StayGuestFormValues[];
+  vehiclePlate?: string;
 }
 
 /**
@@ -62,6 +72,9 @@ export function guestValuesFromWizard(guest: CheckInWizardGuest): StayGuestFormV
     residenceProvince: guest.residenceProvince ?? '',
     residenceCountryName: guest.residenceCountryName ?? '',
     residenceCountryCode: guest.residenceCountryCode ?? null,
+    residenceStreet: guest.residenceStreet ?? '',
+    residencePostalCode: guest.residencePostalCode ?? '',
+    residenceCityName: guest.residenceCityName ?? '',
     tourismType: guest.tourismType ?? '',
     travelWay: guest.travelWay ?? '',
     educationLevel: guest.educationLevel ?? '',
@@ -88,12 +101,21 @@ export function wizardValuesFromState(state: CheckInWizardState): CheckInWizardV
   if (guests.length === 0) guests.push(stayGuestDefaults(declared > 1 ? 'HeadOfFamily' : 'SingleGuest'));
   if (!isLeaderType(guests[0].type)) guests[0].type = declared > 1 ? 'HeadOfFamily' : 'SingleGuest';
   while (guests.length < declared) guests.push(stayGuestDefaults(followerTypeOf(guests[0].type)));
-  return { guests };
+  // The plate of the stay is a field of the form only where the regime asks it; the plate on file starts it.
+  return state.askVehiclePlate === true ? { guests, vehiclePlate: state.booking.vehiclePlate ?? '' } : { guests };
 }
 
 /** The statistical fields the region of the property requires (the `requiredGuestFields` of the state). */
 export function statisticalFieldsOf(state: CheckInWizardState): StatisticalGuestField[] {
   return requiredStatisticalFields(state.requiredGuestFields);
+}
+
+/**
+ * What a property in Switzerland asks on top of the record (NF-132, the `requiredGuestFields` of the state): the document of every guest the police
+ * file notifies and the home of each guest. None for an Italian stay, whose steps are then the ones they have always been.
+ */
+export function swissRulesOfState(state: CheckInWizardState): SwissStayRules {
+  return swissRulesOf(state.requiredGuestFields, state.booking.checkIn);
 }
 
 /** The step the wizard opens on: the one the server suggests; "nothing left to do" opens the last step, where the host can confirm again. */
@@ -103,37 +125,63 @@ export function initialStepOf(state: CheckInWizardState): CheckInWizardStepId {
   return (CHECKIN_WIZARD_STEPS as readonly string[]).includes(suggested) ? (suggested as CheckInWizardStepId) : 'guests';
 }
 
-/** The request body of `PUT …/checkin-wizard/guests`: every guest, the exemption of the tourist tax as the host received it. */
-export function toGuestsPayload(values: CheckInWizardValues, statisticalFields: readonly StatisticalGuestField[]): StayGuestSubmit[] {
-  return values.guests.map((guest) => toStayGuestSubmit(guest, { statisticalFields, withTaxExemption: true, keepStatistical: true }));
+/**
+ * The request body of `PUT …/checkin-wizard/guests`: every guest, the exemption of the tourist tax as the host received it, and the home the host
+ * holds (NF-132): the server takes the list as the whole truth, so a save that left them out would erase them.
+ */
+export function toGuestsPayload(
+  values: CheckInWizardValues,
+  statisticalFields: readonly StatisticalGuestField[],
+  swiss: SwissStayRules = NO_SWISS_RULES,
+): StayGuestSubmit[] {
+  return toStayGuestSubmits(values.guests, { statisticalFields, swiss, withTaxExemption: true, keepStatistical: true, keepResidenceAddress: true });
+}
+
+/** What a save of the guests sends: the list, and the plate of the stay where the form asks it (an empty one clears it; none leaves the stored one). */
+export function toGuestsSave(
+  values: CheckInWizardValues,
+  statisticalFields: readonly StatisticalGuestField[],
+  swiss: SwissStayRules = NO_SWISS_RULES,
+): GuestsSave {
+  const vehiclePlate = hostVehiclePlateOf(values);
+  return { guests: toGuestsPayload(values, statisticalFields, swiss), ...(vehiclePlate === undefined ? {} : { vehiclePlate }) };
 }
 
 /**
  * What a save would send, as a text, to tell whether the host changed anything since the last save. The tourist tax exemption is left out:
- * it is saved by its own endpoint on the tax step, and travels with the guests only so that a save does not erase it.
+ * it is saved by its own endpoint on the tax step, and travels with the guests only so that a save does not erase it. The plate is part of it.
  */
-export function guestsSignature(values: CheckInWizardValues, statisticalFields: readonly StatisticalGuestField[]): string {
-  return JSON.stringify(values.guests.map((guest) => toStayGuestSubmit(guest, { statisticalFields })));
+export function guestsSignature(
+  values: CheckInWizardValues,
+  statisticalFields: readonly StatisticalGuestField[],
+  swiss: SwissStayRules = NO_SWISS_RULES,
+): string {
+  const guests = toStayGuestSubmits(values.guests, { statisticalFields, swiss, keepResidenceAddress: true });
+  const vehiclePlate = hostVehiclePlateOf(values);
+  return JSON.stringify(vehiclePlate === undefined ? guests : { guests, vehiclePlate });
 }
 
-/** The rules of the guests step: the personal data of each guest, the order of the guests, the statistical fields the region requires. */
-export function guestsStepSchema(statisticalFields: readonly StatisticalGuestField[]) {
-  return z.object({ guests: createStayGuestListSchema(statisticalFields, 'personal') });
+/** The rules of the guests step: the personal data of each guest, the order of the guests, the statistical fields the region requires, the plate. */
+export function guestsStepSchema(statisticalFields: readonly StatisticalGuestField[], swiss: SwissStayRules = NO_SWISS_RULES) {
+  return z.object({ guests: createStayGuestListSchema(statisticalFields, 'personal', swiss), vehiclePlate: stayVehiclePlateSchema });
 }
 
-/** The rules of the document of every guest who needs one, as the server wants them to save. */
-const documentsSchema = createStayGuestListSchema([], 'document');
+/** The rules of the document of every guest who needs one (in Switzerland every guest the police file notifies), as the server wants them to save. */
+function documentsSchemaOf(swiss: SwissStayRules) {
+  return createStayGuestListSchema([], 'document', swiss);
+}
 
 /** True when every guest who needs a document has it complete (the number typed, not only on file): the server saves no guest without it. */
-export function documentsReadyToSave(values: CheckInWizardValues): boolean {
-  return documentsSchema.safeParse(values.guests).success;
+export function documentsReadyToSave(values: CheckInWizardValues, swiss: SwissStayRules = NO_SWISS_RULES): boolean {
+  return documentsSchemaOf(swiss).safeParse(values.guests).success;
 }
 
 /**
  * The rules of the documents step. When the host changed nothing (`isUnchanged`) there is nothing to save, so a document that is only on
  * file (its number masked) is not asked again; as soon as something changed, the list is saved as a whole and the numbers have to be typed.
  */
-export function documentsStepSchema(isUnchanged: (values: CheckInWizardValues) => boolean) {
+export function documentsStepSchema(isUnchanged: (values: CheckInWizardValues) => boolean, swiss: SwissStayRules = NO_SWISS_RULES) {
+  const documentsSchema = documentsSchemaOf(swiss);
   return z
     .object({ guests: z.array(z.any()) })
     .superRefine((values, ctx) => {

@@ -23,7 +23,12 @@ export type OwnerLedgerEntryType =
   | 'Correction'
   | 'Withholding'
   /** The VAT an owner invoice added on top of the commission and the recharges (E14): the statement counts it with the commission. */
-  | 'AgencyVat';
+  | 'AgencyVat'
+  /**
+   * The commission of a portal that the agency bears itself (the agency holds the portal account and does not recharge it, FIX/BE-V2-NO-RECHARGE): a line for information only. It keeps its
+   * amount and its group, the channel fees, and is in no total and no balance of the owner (`informational`).
+   */
+  | 'ChannelFeeBorneByAgency';
 
 /** Where a line of the owner ledger comes from. `MandateFlatFee` is a flat fee of the mandate for a stay, `OwnerInvoice` an owner invoice (or its credit note) of CasaZen. */
 export type OwnerLedgerSourceType = 'Payment' | 'Booking' | 'OwnerCharge' | 'WireBatch' | 'Manual' | 'OwnerPayout' | 'MandateFlatFee' | 'OwnerInvoice';
@@ -116,6 +121,11 @@ export interface OwnerLedgerEntry {
   reversesEntryId: string | null;
   description: string | null;
   postedAt: string;
+  /**
+   * True for a line for information only (today `ChannelFeeBorneByAgency`, the commission of a portal the agency bears): it is shown and left out of every total and of the balance of the owner,
+   * whatever its type. Absent on a server that does not know the rule yet: the line is then one like the others.
+   */
+  informational?: boolean;
 }
 
 /** A version of an owner statement, without its published file. */

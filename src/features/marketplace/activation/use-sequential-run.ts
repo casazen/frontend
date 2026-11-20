@@ -5,11 +5,13 @@ import { AxiosError, AxiosHeaders, isAxiosError, type InternalAxiosRequestConfig
 /**
  * The failure of a call without the request that failed. An error of axios holds the body that was sent (`config.data`), and the body of the start of an activation holds
  * the username and the password of the portal: whatever keeps the error (the state of a step, the cache of the mutations) would keep them. What a screen needs of a failure
- * stays (the status, the code and the body of the answer, which it turns into words); the request does not. An error that is not one of axios is given back as it is.
+ * stays (the status, the code and the body of the answer, which it turns into words, and whether the call was anonymous: `public`, a flag and not data, without which a 401 or a
+ * 403 of a guest who is not signed in would be read as a session that expired); the request does not. An error that is not one of axios is given back as it is.
  */
 export function withoutRequest(error: unknown): unknown {
   if (!isAxiosError(error)) return error;
   const config = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig;
+  if (error.config?.public !== undefined) config.public = error.config.public;
   const { response } = error;
 
   return new AxiosError(

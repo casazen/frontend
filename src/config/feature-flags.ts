@@ -28,7 +28,8 @@ export type FeatureFlagKey =
   | 'portalChatCheckInLink'
   | 'guestContactInfo'
   | 'touristTaxOnlinePayment'
-  | 'checkInIdentityVerification';
+  | 'checkInIdentityVerification'
+  | 'scheduledMessages';
 
 export type FeatureFlags = Record<FeatureFlagKey, boolean>;
 
@@ -160,7 +161,7 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * The sending of the Italian electronic invoices to the SDI through the channel CasaZen has (backend `SdiSubmission`, E17/F01/US02, E17/F03/US01/T02, NF-116, NF-86, D13, D15), off until the product owner turns it on in the test
    * environment together with the credentials of the channel. While it is off nothing changes: the SDI panel of the detail of a document (the state, «Invia», «Dichiara inviato a mano», the reason of a rejection and the guided
    * correction) and the step «Invio allo SDI» of the wizard «Fatturazione» do not exist, and the backend answers 404 to the submission, the declaration and the correction. The state of a document towards the SDI
-   * is still the one the list always showed. The self-billed invoices (TD17) do not depend on it, except for the correction of one the SDI rejected («Correggi e rimanda»): they are behind `fiscalDocumentIssuance`.
+   * is still the one the list always showed. The self-billed invoices (TD17) do not depend on it, except for the correction of one the SDI rejected («Correggi e rimanda») and the closing of its replacement draft («Chiudi come non più dovuta»): they are behind `fiscalDocumentIssuance`.
    */
   sdiSubmission: false,
   /**
@@ -215,6 +216,14 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * While it is off nothing changes: the settings page, the queue and the QR page are the ones they always were, nothing asks the server, and the backend answers 404 to every call of the identification.
    */
   checkInIdentityVerification: false,
+  /**
+   * The scheduled messages of the routines (backend `ScheduledMessages`, E05/F07, NF-71, MSG-11, ADR-022), off until the product owner confirms the send window and the retry times and on in the
+   * test environment only: it turns the routine action `MessageToGuest` into real sending. It decides what the host sees on the page of a booking: the section «Messaggi programmati» of the tab
+   * Soggiorno (the timeline of what the routines will send, with «Modifica», «Salta» and «Invia ora») and the live update of the page when a message is held back. While it is off nothing is drawn,
+   * nothing asks the server, and the backend answers 404 to the three endpoints of the messages and plans nothing. It works on the routines, so the backend needs `routines` on too: with the routines
+   * closed nothing is planned or sent, whatever this flag says, and the section then tells that nothing is scheduled and has no link to the page of the routines.
+   */
+  scheduledMessages: false,
 };
 
 /** Known flags from the API response; anything but `true` is off. */

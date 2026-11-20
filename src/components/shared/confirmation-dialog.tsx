@@ -35,6 +35,11 @@ interface ConfirmationDialogProps {
   consequences?: readonly string[];
   /** What the confirmation needs to know (a date): fields between the description and the consequences, inside the form. */
   children?: ReactNode;
+  /**
+   * Classes of the box of the dialog. A confirmation that carries fields (a reason to choose, a note to write) can be taller than a short window, and a dialog in the middle of the screen does not scroll by itself:
+   * `sm:max-h-[90dvh] sm:overflow-y-auto` makes it scroll inside, as the other dialogs with a form do (under `sm` it is already a sheet that scrolls).
+   */
+  contentClassName?: string;
   /** Keeps the confirm button off, whatever was typed, while what `children` asks for is not valid (nor does Enter confirm). */
   confirmDisabled?: boolean;
   /**
@@ -166,6 +171,7 @@ export function ConfirmationDialog({
   consequences,
   children,
   confirmDisabled,
+  contentClassName,
   onCloseAutoFocus,
 }: ConfirmationDialogProps) {
   const { t } = useTranslation();
@@ -183,7 +189,7 @@ export function ConfirmationDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent onCloseAutoFocus={onCloseAutoFocus}>
+      <DialogContent className={contentClassName} onCloseAutoFocus={onCloseAutoFocus}>
         <ConfirmationForm
           title={title}
           description={description}

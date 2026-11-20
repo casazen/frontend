@@ -100,6 +100,7 @@
       "other": "Change to the account",
       "planChanged": "Plan changed: from {{from}} to {{to}}",
       "propertyActivatedWithReminders": "Property activated with {{reminders}} still to complete",
+      "rechargeWaiver": "Portal commissions are no longer recharged to the owners: the agency pays them",
       "reminder": {
         "documents": "the documents",
         "documents_safety": "the documents and the safety sheet",
@@ -875,6 +876,10 @@
         "RoutineTask": {
           "title": "Manual reminder from a routine",
           "why": "A routine you set up asks you to take care of this booking."
+        },
+        "ScheduledMessageIssue": {
+          "title": "Scheduled message to fix",
+          "why": "An automatic message for a guest did not go out or needs you: open the booking, complete what is missing or send it yourself."
         },
         "SelfBillingDraftsToReview": {
           "title": "Self-billed invoices to check and issue",
@@ -1804,6 +1809,7 @@
       "issuerRegimeCountryMismatch": "The regime you chose does not apply to the country of the issuer. Check the country and the regime.",
       "noPendingVerification": "This verification is no longer waiting.",
       "ownerMandateOwnersEmpty": "There is no owner to apply the mandate to.",
+      "rechargeWaiverNotAcknowledged": "Not saved: to stop recharging the portal commissions to the owners we need your confirmation.",
       "reportInvalidPeriod": "The period is not valid: check the dates.",
       "reportPeriodTooLong": "The period is too long: choose one of at most 24 months.",
       "routineActionNotAvailable": "This routine holds actions that are not available yet: it cannot be switched on, but you can try it in test mode.",
@@ -1992,6 +1998,9 @@
       "supportVaultSecretMissing": "These credentials are not there yet: save them first, or ask the user for them.",
       "supportVaultTooManyOpenings": "You already opened the credentials 5 times in the last hour for this request: try again later.",
       "supportVaultValueInvalid": "User name and password are required, 200 characters at most; the further code 100 at most.",
+      "swissMunicipalityNotApplicable": "A Swiss municipality can only be set for a property in Switzerland.",
+      "swissMunicipalityUnknown": "The municipality you chose is not in the official list of the Swiss municipalities: choose the place again.",
+      "swissPlacesUnavailable": "The official list of the Swiss places is not available right now: try again later.",
       "videoCallNotSent": "The e-mail did not go out and nothing was sent. Try again.",
       "videoCallUrlInvalid": "The link of the meeting is not valid: it has to start with https://, with no spaces or password.",
       "xlsxTooManyRows": "Too many rows: a sheet of an Excel file can have at most 10,000 rows. Choose a shorter period and try again.",
@@ -3217,6 +3226,14 @@
         "description": "The commission the portal invoiced to the agency goes into the invoice to the owner, with the VAT of the fee. To be confirmed with your accountant.",
         "legend": "Portal commissions paid by the agency",
         "title": "Recharge the portal commissions to the owner"
+      },
+      "waiver": {
+        "confirm": "I confirm: the agency pays them",
+        "description": "From now on, the portal commission the agency pays is its own cost and is not charged to the owner.",
+        "mandate": "Check that the mandate allows it: the agency gives up the reimbursement the law grants it for these expenses, and the document that would justify the deduction.",
+        "notRetroactive": "It does not change the statements already made: it applies to the ones still to be made.",
+        "recorded": "CasaZen records who confirmed and when.",
+        "title": "Confirm that the agency pays the portal commissions?"
       }
     },
     "description": "Set up how CasaZen issues your documents: a few steps, one at a time. Every step saves itself and you can pick it up whenever you like.",
@@ -5262,6 +5279,195 @@
       "sendError": "Message not sent. Check your connection and try again.",
       "unread_one": "{{count}} message to read",
       "unread_other": "{{count}} messages to read"
+    },
+    "scheduledMessages": {
+      "blocked": {
+        "fix": {
+          "guest": "Open Documents",
+          "property": "Open the property",
+          "routines": "Open the routines",
+          "tax": "Open the tourist tax"
+        },
+        "heading": "Missing:",
+        "item": {
+          "accessCodeHeld": "the payment of the tourist tax (the access code waits for it)",
+          "checkInInProgress": "the guest to finish the check-in they are filling in",
+          "idNotVerified": "the identity check of the guest (the access code goes out only after it)",
+          "templateMissing": "the template of the message (it is gone: write the text with «Edit» or choose another template in the routine)",
+          "textInvalid": "a valid text (it is empty, too long or the channel does not accept it)",
+          "unknown": "something the message needs before it can go out"
+        },
+        "variable": {
+          "accessCode": "the access code of the property",
+          "bookingCode": "the booking code",
+          "checkInDate": "the arrival date",
+          "checkInLink": "the check-in link",
+          "checkInMethod": "how the guest gets in (the check-in method of the property)",
+          "checkInTime": "the check-in time of the property",
+          "checkOutDate": "the departure date",
+          "checkOutTime": "the check-out time of the property",
+          "guestName": "the name of the guest (the channel has not sent it)",
+          "hostName": "your name as the host",
+          "propertyAddress": "the address of the property",
+          "propertyName": "the name of the property",
+          "reviewLink": "the review link (it exists only for bookings made on your site)"
+        },
+        "willHold": "When the time comes to send it, the message waits until these details are there: the text below does not have them yet."
+      },
+      "channel": {
+        "direct": "direct conversation with the guest",
+        "email": "e-mail",
+        "line": "Channel: {{channel}}",
+        "lineNone": "No way to write to the guest: {{reason}}",
+        "none": "none",
+        "ota": "portal chat",
+        "reason": {
+          "contactInfoUnavailable": "the channel does not give the e-mail of this guest",
+          "mappingNotConfirmed": "the listing of the conversation is not linked to one of your properties yet",
+          "noConversation": "there is no conversation and no other way",
+          "notConnected": "the connection to the channels is not active",
+          "other": "there is no way to reach them right now",
+          "threadClosed": "the conversation is closed",
+          "unknown": "we cannot check it right now"
+        }
+      },
+      "draftKept": "The text you were writing is not lost: it comes back when the messages can be read again.",
+      "edit": {
+        "action": "Edit",
+        "actionLabel": "Edit the message «{{name}}» of {{when}}",
+        "description": "The change is for this booking only: the routine and the other bookings stay as they are.",
+        "fieldHint": "The buttons below put in a detail that CasaZen writes when the message goes out, such as the name of the guest. The detail appears between double curly brackets.",
+        "fieldLabel": "Message text",
+        "fixedNote": "The text starts from how the guest will read it now: the details already filled in (name, dates, times, address) become fixed text and no longer follow the booking if it changes. To make them follow it, insert them with the buttons.",
+        "insertLabel": "Insert a detail",
+        "missingAccept": "I understand: save the text without these details",
+        "missingHeading": "The text below lacks these details, because the booking does not have them yet:",
+        "missingWarning": "If you save it like this, the message goes out without these details. To keep them, put the highlighted button where the detail goes: the message then waits until the detail is there.",
+        "originalSummary": "Text of the routine",
+        "restore": "Put the text of the routine back in the field",
+        "restored": "The message goes back to the text of the routine.",
+        "save": "Save",
+        "saved": "Message edited: the change is for this booking only.",
+        "title": "Edit the message",
+        "useRoutineText": "Use the text of the routine",
+        "useRoutineTextHint": "Clears your change: the message goes back to the text of the routine, with the details of this booking.",
+        "variable": {
+          "accessCode": "Access code",
+          "bookingCode": "Booking code",
+          "checkInDate": "Arrival date",
+          "checkInLink": "Check-in link",
+          "checkInMethod": "How to get in",
+          "checkInTime": "Arrival time",
+          "checkOutDate": "Departure date",
+          "checkOutTime": "Departure time",
+          "guestName": "Guest name",
+          "hostName": "Your name",
+          "propertyAddress": "Address",
+          "propertyName": "Property name",
+          "reviewLink": "Review link"
+        }
+      },
+      "edited": "Edited",
+      "empty": "Nothing is scheduled for this booking. Messages go out on their own only after you activate a routine that contains them.",
+      "emptyLink": "Go to the routines",
+      "errors": {
+        "blocked": "It did not go out: something is still missing.",
+        "blockedNamed": "It did not go out: still missing {{missing}}.",
+        "changed": "Somebody else changed the message while you were editing it: look at how it is now and try again.",
+        "generic": "We could not complete the operation. Try again shortly.",
+        "inProgress": "The message is going out right now: try again shortly.",
+        "notEditable": "The message can no longer be changed: it has already gone out or it will not go out any more.",
+        "notFound": "This message is gone or you cannot see it.",
+        "notSendable": "The message cannot be sent: it has already gone out or it will not go out any more.",
+        "textInvalid": "The text cannot be empty or longer than 2000 characters.",
+        "variableUnknown": "The text has a part between double curly brackets that is not a detail we know: insert them with the buttons."
+      },
+      "failure": {
+        "channelRefused": "It did not go out: the channel reported an error.",
+        "chatNotLicensed": "It did not go out: the portal chat is not active for this listing yet.",
+        "manualVerify": "We do not know whether the message arrived: check the conversation before sending it again.",
+        "other": "It did not go out, for a problem CasaZen cannot explain yet.",
+        "rateLimited": "It did not go out: the channel asked us to wait a little.",
+        "unavailable": "It did not go out: the channel is not answering right now.",
+        "unconfirmed": "The channel has not confirmed that it took the message yet: we do not count it as sent."
+      },
+      "listLabel": "Scheduled messages for this booking, in time order",
+      "loadError": "We cannot read the scheduled messages, so we do not know what is about to go out.",
+      "loadErrorGone": "This booking is gone or you cannot see it, so its scheduled messages are not available.",
+      "loading": "Loading the scheduled messages…",
+      "outsideHours": "Sent outside hours",
+      "placeholder": {
+        "accessCode": "the access code will be added when the message goes out",
+        "checkInLink": "the check-in link will be created when the message goes out",
+        "reviewLink": "the review link will be added when the message goes out"
+      },
+      "reason": {
+        "bookingCancelled": "The booking was cancelled: the message does not go out.",
+        "bySystem": "Skipped by CasaZen.",
+        "campaignNeedsConsent": "The guest has not agreed to receive marketing messages.",
+        "channelRule": "The rules of the channel do not allow this text in this conversation, for example a link in a booking request.",
+        "checkInCompleted": "The guest has already completed the online check-in: the link is no longer needed.",
+        "checkInNotOpen": "The stay has no open check-in (it is not confirmed or it is over): the link is not needed.",
+        "checkInWithOperator": "The identity check is with an operator: a new link would start it over.",
+        "checkOutReached": "It stayed on hold until the guest left: it no longer goes out.",
+        "conditionNotMet": "This booking does not meet the condition of the routine.",
+        "contactUnavailable": "There is no way to write to the guest: there is no conversation, it is closed or there is no address.",
+        "mappingNotConfirmed": "The listing of this conversation is not linked to one of your properties yet: CasaZen does not write until you confirm it.",
+        "missed": "The planned time passed too long ago: we do not send it late.",
+        "otherCancelled": "The message will not go out any more.",
+        "otherExpired": "The time to send it has passed.",
+        "otherSkipped": "CasaZen did not send it.",
+        "person": "Skipped by a person on the team.",
+        "routineInactive": "The routine was switched off or no longer contains this message."
+      },
+      "retry": "Try again",
+      "routine": "Routine: {{name}}",
+      "routineUnnamed": "Unnamed",
+      "sendNow": {
+        "action": "Send now",
+        "actionLabel": "Send now the message «{{name}}» of {{when}}",
+        "blockedNote": "If you do not complete it, the message does not go out.",
+        "confirm": "Send now",
+        "consequenceGuest": "The guest receives it now.",
+        "consequenceNow": "The message goes out at once, without waiting for the planned time.",
+        "description": "You are sending the message «{{name}}», planned for {{when}}, right now.",
+        "done": "Message sent.",
+        "failed": "The message did not go out: see the reason in the list.",
+        "notSent": "The message was not sent: see the reason in the list.",
+        "stillMissing": "Still missing:",
+        "title": "Send the message now?"
+      },
+      "sent": {
+        "at": "Sent on {{when}}.",
+        "done": "Sent.",
+        "openConversation": "Open the conversation",
+        "skippedAfterSend": "The message had already gone out on {{when}}: the guest got it anyway."
+      },
+      "skip": {
+        "action": "Skip",
+        "actionLabel": "Skip the message «{{name}}» of {{when}}",
+        "confirm": "Skip the message",
+        "consequenceFinal": "It cannot be undone: the message will not go out any more.",
+        "consequenceGuest": "The guest will not receive this message.",
+        "consequenceTeam": "The other people who follow the property get a notice.",
+        "description": "You are skipping the message «{{name}}» planned for {{when}}.",
+        "done": "Message skipped: the guest will not receive it.",
+        "notDone": "The message does not show as skipped: see its state in the list.",
+        "title": "Skip this message?"
+      },
+      "status": {
+        "Blocked": "Blocked",
+        "Cancelled": "Cancelled",
+        "Expired": "Expired",
+        "Failed": "Send failed",
+        "Scheduled": "Scheduled",
+        "Sent": "Sent",
+        "Skipped": "Skipped",
+        "unknown": "Unknown state"
+      },
+      "textLabel": "Message text",
+      "textMissing": "The text is not available: the template of the message is gone.",
+      "title": "Scheduled messages"
     }
   },
   "bookingStatus": {
@@ -5650,14 +5856,23 @@
       "educationLevel": {
         "required": "Select the education level"
       },
+      "residencePostalCode": {
+        "maxLength": "At most 20 characters"
+      },
       "residenceProvince": {
         "invalid": "Enter the two-letter code (e.g. RM)"
+      },
+      "residenceStreet": {
+        "maxLength": "At most 200 characters"
       },
       "tourismType": {
         "required": "Select the purpose of the trip"
       },
       "travelWay": {
         "required": "Select how you travelled here"
+      },
+      "vehiclePlate": {
+        "invalid": "Enter a valid plate: letters, digits and hyphens, at most 20 characters."
       }
     },
     "loading": "Loading check-in...",
@@ -5962,7 +6177,8 @@
       "statisticalValueInvalid": "The value you chose is not one of the allowed ones.",
       "summary_one": "1 field needs your attention",
       "summary_other": "{{count}} fields need your attention",
-      "tooManyRequests": "Too many requests in a short time: wait a moment and try again."
+      "tooManyRequests": "Too many requests in a short time: wait a moment and try again.",
+      "vehiclePlateInvalid": "The plate is not valid: use letters, digits and hyphens, at most 20 characters."
     },
     "guestKind": {
       "FamilyMember": "Family member",
@@ -6151,12 +6367,21 @@
     },
     "residence": {
       "abroad": "Abroad",
+      "city": "Town or city",
       "comune": "Municipality of residence",
       "country": "Country of residence",
       "hint": "Optional: where the guest usually lives.",
+      "homeHint": "Optional: the address where the guest lives. It is part of the notification of the stay to the police.",
       "inItaly": "In Italy",
       "label": "Residence",
-      "province": "Province of residence (two letters)"
+      "postalCode": "Postal code",
+      "province": "Province of residence (two letters)",
+      "street": "Street and house number"
+    },
+    "swiss": {
+      "documentIntro": "Type and number of the identity document of every adult. The head of the family or group also gives the place of issue.",
+      "guestsIntro": "Enter every guest staying, minors included. Every adult also gives their identity document on the next step.",
+      "stayKindHint": "For a family or a group the first guest is the head of family or group. The identity document is asked of every adult (for a group of six or more, of the head of the group only)."
     },
     "toast": {
       "saved": "Check-in details saved.",
@@ -6211,6 +6436,10 @@
       "plane": "Plane",
       "ship": "Ship",
       "train": "Train"
+    },
+    "vehiclePlate": {
+      "hint": "One plate for the whole stay, if you come by car. Letters, digits and hyphens.",
+      "label": "Plate of your car (optional)"
     },
     "wizard": {
       "checks": {
@@ -16077,7 +16306,8 @@
       "assistReopened": "A user reopened a «Do it for me» request: it says it does not work.",
       "fiscalDocumentIssued": "A fiscal document was issued for a booking.",
       "fiscalDocumentSdiRejected": "The SDI rejected an invoice: it needs to be corrected.",
-      "touristTaxPaid": "A guest paid the tourist tax online."
+      "touristTaxPaid": "A guest paid the tourist tax online.",
+      "scheduledMessageIssue": "A scheduled message for a guest did not go out or needs you: open the booking to see what happened."
     }
   },
   "octorate": {
@@ -18547,12 +18777,14 @@
         "AgencyVat": "VAT the invoice of the agency adds to the commission and the recharges. It is taken off the balance.",
         "BookingRevenue": "Payment collected for the booking, net of refunds, for the owner's share. It is added to the balance.",
         "ChannelFee": "Commission kept by the channel on the booking, for the owner's share. It is taken off the balance.",
+        "ChannelFeeBorneByAgency": "Portal commission paid by the agency, which does not recharge it to the owner. For information only: it is not taken off the balance and is in no total.",
         "Correction": "Manual correction with its reason: it replaces a line or adds one.",
         "OwnerCharge": "Charge of the agency to the owner, for his share. It is taken off the balance.",
         "OwnerExpense": "Expense paid by the agency on behalf of the owner, for his share. It is taken off the balance.",
         "OwnerPayment": "Transfer paid to the owner: it settles what was owed. It is taken off the balance.",
         "Withholding": "Withholding kept from the payment and due to the tax authority. It is taken off the balance."
       },
+      "informational": "For information only",
       "open": {
         "attachment": "Open the attachment",
         "attachmentText": "Attachment: {{reference}}",
@@ -18576,6 +18808,8 @@
       "steps": {
         "fx": "Exchange rate",
         "fxSource": "Rate taken from: {{source}}, of {{date}}",
+        "informationalOriginal": "Commission for the owner's share",
+        "informationalResult": "Paid by the agency, not in the statement",
         "original": "Owner's amount",
         "rate": "1 {{from}} = {{rate}} {{to}}",
         "result": "Amount in the statement",
@@ -18590,6 +18824,7 @@
         "AgencyVat": "VAT on the invoice of the agency",
         "BookingRevenue": "Revenue of a booking",
         "ChannelFee": "Channel fee",
+        "ChannelFeeBorneByAgency": "Portal commission paid by the agency, not charged to the owner",
         "Correction": "Correction",
         "OwnerCharge": "Agency charge",
         "OwnerExpense": "Expense for the owner",
@@ -18776,6 +19011,11 @@
       "downloadCsvLabel": "Download the CSV of the statement",
       "downloadPdf": "PDF",
       "downloadPdfLabel": "Download the PDF of the statement",
+      "informational": {
+        "label": "Portal commission paid by the agency, not charged to the owner",
+        "note_one": "{{count}} line for information only, outside the total",
+        "note_other": "{{count}} lines for information only, outside the total"
+      },
       "lines_one": "{{count}} line",
       "lines_other": "{{count}} lines",
       "net": "Net: closing balance",
@@ -19599,6 +19839,9 @@
       "invoicesTitle": "Linked invoices",
       "line": {
         "bookingCode": "Booking {{code}}",
+        "borneByAgency": "Portal commission paid by the agency, not charged to the owner",
+        "chargedOnAgencyAccount": "Portal commission on an account held by the agency, charged to you with no recharge on an invoice",
+        "informational": "For information only",
         "kind": {
           "cleaning": "Cleaning",
           "linen": "Linen"
@@ -21528,6 +21771,9 @@
       },
       "comuneIstatCode": {
         "format": "The ISTAT code of the comune is not valid: choose the comune from the list."
+      },
+      "swissMunicipalityCode": {
+        "format": "The Swiss municipality chosen is not valid: choose the place again."
       }
     },
     "slug": {
@@ -30716,6 +30962,34 @@
       "open": "Notify the guests to the police"
     }
   },
+  "swissPlace": {
+    "form": {
+      "cityFromPlace": "The city and the postal code are those of the place you chose. Clear the choice to write them by hand.",
+      "hint": "Search by postal code or by the name of the place: the municipality and the canton follow, and they decide which rules apply to your guests.",
+      "label": "Postal code and place (official list)"
+    },
+    "picker": {
+      "ambiguous": "The postal code {{postalCode}} covers several municipalities: choose yours, we do not pick one for you.",
+      "candidatesLabel": "Municipalities with this postal code",
+      "clear": "Clear the place chosen",
+      "codeUnknown": "Municipality no. {{code}} is not in the official list: choose the place again.",
+      "confirm": "Confirm",
+      "confirmPrompt": "Confirm the municipality: {{place}}",
+      "listLabel": "Places found",
+      "minChars": "Type at least {{min}} characters: the postal code or the name of the place.",
+      "municipality": "Municipality: {{municipality}} · Canton: {{canton}}",
+      "municipalityOf": "Municipality of {{municipality}}",
+      "noPostalCode": "I cannot find the postal code {{postalCode}} among the Swiss places: check how you wrote it.",
+      "noResults": "No place found for «{{query}}». Check how you wrote it.",
+      "placeholder": "Search the postal code or the place (at least 2 characters)",
+      "resultCount_one": "{{count}} place found. Use the arrow keys and Enter to choose it.",
+      "resultCount_other": "{{count}} places found. Use the arrow keys and Enter to choose one.",
+      "retry": "Try again",
+      "searchError": "I cannot read the list of places: this does not mean there are no results.",
+      "searching": "Searching…",
+      "unavailable": "The official list of places is not available right now. You can still save: the municipality is confirmed later."
+    }
+  },
   "taxRates": {
     "title": "Tourist Tax Rates",
     "listTitle": "Rate list",
@@ -32294,6 +32568,48 @@
     "title": "Issuer of the documents of the stays"
   },
   "selfBilling": {
+    "close": {
+      "button": "Close as no longer due",
+      "buttonLabel": "Close the draft {{title}} as no longer due",
+      "confirm": "Close as no longer due",
+      "consequenceClosed": "The draft is closed for good and is never issued. This cannot be undone.",
+      "consequenceRegister": "The number goes in the register of unused numbers that the accountant gets in the package.",
+      "consequenceReserved": "Its number stays reserved: it will never be given to another invoice.",
+      "description": "Draft no. {{number}} took the number of a self-billed invoice the SDI rejected and cannot be issued for now. If it is no longer due, you can close it: tell us why, and the reason, who closed it and the day are recorded.",
+      "descriptionUnknown": "This draft took the number of a self-billed invoice the SDI rejected and cannot be issued for now. If it is no longer due, you can close it: tell us why, and the reason, who closed it and the day are recorded.",
+      "done": "Draft no. {{number}} closed: it is no longer due. The number stays reserved.",
+      "doneUnknown": "Draft closed: it is no longer due. The number stays reserved.",
+      "note": {
+        "hint": "The note stays in the history and goes in the register the accountant gets: write only what helps to understand.",
+        "label": "Note"
+      },
+      "problem": {
+        "alreadyClosed": "This draft was already closed with another reason: there is nothing to fix. We updated the list.",
+        "failed": "We could not confirm the closing: check the list and try again.",
+        "forbidden": "You cannot close drafts: you need to manage the invoices of the whole organization. Nothing changed.",
+        "notClosable": "This draft cannot be closed from here: it does not replace a rejected self-billed invoice, or the month still supports it and it has to be issued. We updated the list.",
+        "notFound": "We cannot find this draft any more: we updated the list.",
+        "noteTooLong": "The note is too long: {{max}} characters at most.",
+        "reasonRequired": "Choose a reason: the draft cannot be closed without one.",
+        "unavailable": "Closing drafts is not open yet in this environment. Nothing changed."
+      },
+      "reason": {
+        "duplicate_or_error": "It was a duplicate or a mistake",
+        "holder_no_longer_subject": "The account holder is no longer subject to the self-billed invoice",
+        "portal_credit_note": "The portal issued a credit note"
+      },
+      "reasonLegend": "Reason (required)",
+      "title": "Close the draft as no longer due?"
+    },
+    "closed": {
+      "at": "Closed on",
+      "by": "Closed by",
+      "intro": "It took the number {{number}} of a self-billed invoice the SDI rejected. The number stays reserved: no other invoice will ever have it.",
+      "introUnknown": "It took the number of a self-billed invoice the SDI rejected. The number stays reserved: no other invoice will ever have it.",
+      "note": "Note",
+      "reason": "Reason",
+      "title": "This draft was closed"
+    },
     "correct": {
       "button": "Correct and resend",
       "buttonLabel": "Correct and resend the self-billed invoice {{title}}",
@@ -32361,6 +32677,8 @@
       "pdf": "PDF",
       "replaced": {
         "body": "The SDI rejected it, so for the tax office it was never issued: a self-billed invoice with the same number replaces it. This one stays in the history, with no actions.",
+        "closedBody": "The SDI rejected it, so for the tax office it was never issued. The draft that took its number was closed as no longer due: the number stays reserved and this one stays in the history, with no actions.",
+        "closedTitle": "Its replacement draft was closed",
         "open": "Open the replacement",
         "title": "Replaced by another self-billed invoice"
       },
@@ -32405,11 +32723,12 @@
       "Owner": "Owner"
     },
     "kept": {
-      "issuer_profile_incomplete": "The issuer profile of the holder of the portal account is incomplete: complete it in the invoicing data and then make the drafts of the month again. Until it is complete the draft keeps its number but can be neither issued nor discarded.",
-      "ledger_gives_no_td17": "The ledger of the month no longer gives this holder any self-billed invoice for this portal (commissions reversed, stays no longer active, or the holder no longer subject): the draft keeps the number of the rejected invoice and can be neither issued nor discarded. What that number is used for is decided by the accountant.",
-      "owner_issuer_missing": "The owner who holds the portal account has no issuer profile: complete it on the owner page and then make the drafts of the month again. Until it is complete the draft keeps its number but can be neither issued nor discarded.",
-      "portal_not_configured": "The portal of this draft is no longer among the ones configured in the self-billing settings (country and VAT number): write to CasaZen to have it put right. While it is missing the draft keeps its number but can be neither issued nor discarded.",
-      "unknown": "This draft keeps the number of a self-billed invoice the SDI rejected and can be neither issued nor discarded for now (reason: {{code}})."
+      "exit": "If it is no longer due, close it as no longer due: the number stays reserved and is never given to another invoice.",
+      "issuer_profile_incomplete": "The issuer profile of the holder of the portal account is incomplete: complete it in the invoicing data and then make the drafts of the month again. Until it is complete the draft keeps its number but cannot be issued.",
+      "ledger_gives_no_td17": "The ledger of the month no longer gives this holder any self-billed invoice for this portal (commissions reversed, stays no longer active, or the holder no longer subject): the draft keeps the number of the rejected invoice and cannot be issued.",
+      "owner_issuer_missing": "The owner who holds the portal account has no issuer profile: complete it on the owner page and then make the drafts of the month again. Until it is complete the draft keeps its number but cannot be issued.",
+      "portal_not_configured": "The portal of this draft is no longer among the ones configured in the self-billing settings (country and VAT number): write to CasaZen to have it put right. While it is missing the draft keeps its number but cannot be issued.",
+      "unknown": "This draft keeps the number of a self-billed invoice the SDI rejected and cannot be issued for now (reason: {{code}})."
     },
     "notDue": {
       "currency_not_supported": "the commission is not in euro",
@@ -32440,6 +32759,8 @@
     },
     "row": {
       "corrected": "Self-billed invoice {{number}}: rejected by the SDI and replaced by another one with the same number.",
+      "correctedClosed": "Self-billed invoice {{number}}: rejected by the SDI. The draft that took its number was closed as no longer due: the number stays reserved.",
+      "correctedClosedUnknown": "Self-billed invoice rejected by the SDI. The draft that took its number was closed as no longer due: the number stays reserved.",
       "correctedUnknown": "Self-billed invoice rejected by the SDI and replaced by another one with the same number.",
       "due": "To be issued by {{date}}",
       "issued": "Self-billed invoice {{number}} of {{date}}",
@@ -32456,9 +32777,11 @@
       "total": "Total {{amount}}"
     },
     "status": {
+      "ClosedNotDue": "Closed, no longer due",
       "Discarded": "Discarded draft",
       "Draft": "Draft",
       "Issued": "Issued",
+      "RejectedClosed": "Rejected by the SDI",
       "Replaced": "Replaced"
     }
   },

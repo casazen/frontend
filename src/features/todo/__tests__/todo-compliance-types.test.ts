@@ -142,6 +142,8 @@ const BACKEND_TYPES = [
   'CleaningDateChanged',
   'CheckInLinkToSend',
   'CompanyTenantDecision',
+  // A message of a routine that could not go out to a guest (E05/F07/US01/T03, NF-71).
+  'ScheduledMessageIssue',
   // The self-billed invoices (TD17) of the agency (FIX/FE-TD17-TODO): one the SDI rejected, and the drafts of a month to check and issue.
   'SelfBillingRejected',
   'SelfBillingDraftsToReview',

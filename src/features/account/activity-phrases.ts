@@ -7,6 +7,9 @@ import { orgRoleLabel } from './account-roles';
 const ASSIST_CREDENTIALS: ReadonlySet<string> = new Set(['panel', 'police', 'regionalIstat']);
 const ASSIST_STATUSES: ReadonlySet<string> = new Set(['inProgress', 'done', 'cancelled']);
 
+/** The `part` of the line `OrgSettingsChanged` that records the confirmed waiver of the recharge of the portal commissions (`PortalAccountErrors.RechargeWaiverActivityPart`). */
+const RECHARGE_WAIVER_PART = 'portalCommissionRechargeWaiver';
+
 /** The types of line that CasaZen support writes: its actor is a platform administrator, never a member of the team. */
 const SUPPORT_ACTOR_TYPES: ReadonlySet<string> = new Set(['OnboardingAssistUpdated']);
 
@@ -65,6 +68,9 @@ export function activityPhrase(entry: OrgActivityEntry, { t, memberName }: Phras
     case 'PlanChanged':
       return t('account.activity.planChanged', { from: getPlanTierLabel(details.fromTier ?? '', t), to: getPlanTierLabel(details.toTier ?? '', t) });
     case 'OrgSettingsChanged':
+      // The agency confirmed that it no longer recharges the commissions of the portals to the owners (FIX/BE-V2-NO-RECHARGE): who confirmed it and when are the actor and the instant of the
+      // line, which the list shows under the sentence.
+      if (details.part === RECHARGE_WAIVER_PART) return t('account.activity.rechargeWaiver');
       // The data of the company changed (AM-08b-b): the log holds the fact, never what the legal name, the office, the phone or the language became.
       return t('account.activity.orgSettingsChanged');
     case 'AdminGrantedConcordatoFacileGift':

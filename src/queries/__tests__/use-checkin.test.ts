@@ -14,8 +14,8 @@ vi.mock('@/api/bookings.api');
 vi.mock('@/api/checkin.api', () => ({ publicCheckinApi: { getContext: vi.fn(), submit: vi.fn(), setLanguage: vi.fn() } }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
-function httpError(status: number, data?: unknown): AxiosError {
-  const config = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig;
+function httpError(status: number, data?: unknown, request: { public?: boolean } = {}): AxiosError {
+  const config = { headers: new AxiosHeaders(), ...request } as InternalAxiosRequestConfig;
   return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, {
     status,
     data,
@@ -87,6 +87,14 @@ describe('useSubmitGuestCheckIn onError (FIS-01)', () => {
     await submitAndFail(httpError(422, { code: 'checkin_rule', detail: 'Questo soggiorno non accetta il check-in online.' }));
 
     expect(toast.error).toHaveBeenCalledWith('Questo soggiorno non accetta il check-in online.');
+  });
+
+  it.each([401, 403])('onError_AnonymousGuestRefusedWith%i_GetsTheGenericMessageAndNeverASessionThatExpired', async (status) => {
+    // The submit of the page is an anonymous call (`public`): the guest has no session, so no refusal of it is one that expired or a missing permission.
+    await submitAndFail(httpError(status, undefined, { public: true }));
+
+    expect(toast.error).toHaveBeenCalledTimes(1);
+    expect(toast.error).toHaveBeenCalledWith(i18n.t('checkin.toast.saveFailed'));
   });
 });
 

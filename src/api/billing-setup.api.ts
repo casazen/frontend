@@ -100,7 +100,9 @@ export async function canChangeBillingSetup(): Promise<boolean> {
 
 /**
  * The defaults of the portal accounts (`PUT api/billing-setup/channels`): who holds the accounts of the portals and whether their commissions are recharged to the owners
- * (⚖ I10, I11). Behind the flag `ownerInvoicing` (404 while it is off). 422 `billing_channels_invalid`; 403 `fiscal_settings_need_whole_org`.
+ * (⚖ I10, I11). Behind the flag `ownerInvoicing` (404 while it is off). 422 `billing_channels_invalid`; 403 `fiscal_settings_need_whole_org`. 422 `recharge_waiver_not_acknowledged` for a
+ * save that starts the waiver of the recharge (the agency then bears the commissions of the portals it pays, and the owner is not charged) unless the request carries
+ * `acknowledgeRechargeWaiver: true`: nothing is saved by the refusal. The member is the person's explicit confirmation and is never added here.
  */
 export async function savePortalAccountSettings(request: PortalAccountSettingsRequest): Promise<BillingSetupSection> {
   const path = `${SETUP_PATH}/channels`;
@@ -115,10 +117,13 @@ export async function getChannelAccountHolders(): Promise<ChannelAccountHolder[]
 /**
  * Writes the holders of the listings named, in bulk (`PUT api/billing-setup/channel-account-holders`): `holder: null` brings a listing back to the default; the listings
  * not named keep theirs. Answers the whole list as saved. 422 `channel_account_holders_invalid` (an empty list, a portal that is not one, a listing named twice), 409
- * `channel_account_holders_conflict`.
+ * `channel_account_holders_conflict`. 422 `recharge_waiver_not_acknowledged` for a write that starts the waiver of the recharge (the recharge off and the first listing of the agency)
+ * unless the request carries `?acknowledgeRechargeWaiver=true` (the body of this endpoint is a list: the confirmation is a query parameter); nothing is written by the refusal.
+ * `acknowledgeRechargeWaiver` is the person's explicit confirmation: it is false, and the parameter is not sent at all, unless the caller passes `true`.
  */
-export async function saveChannelAccountHolders(changes: readonly ChannelAccountHolderChange[]): Promise<ChannelAccountHolder[]> {
-  return ensureList<ChannelAccountHolder>(await ApiClient.put<unknown>(HOLDERS_PATH, changes), HOLDERS_PATH);
+export async function saveChannelAccountHolders(changes: readonly ChannelAccountHolderChange[], acknowledgeRechargeWaiver = false): Promise<ChannelAccountHolder[]> {
+  const path = acknowledgeRechargeWaiver ? `${HOLDERS_PATH}?acknowledgeRechargeWaiver=true` : HOLDERS_PATH;
+  return ensureList<ChannelAccountHolder>(await ApiClient.put<unknown>(path, changes), HOLDERS_PATH);
 }
 
 /**

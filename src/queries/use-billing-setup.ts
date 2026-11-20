@@ -193,7 +193,10 @@ export function useSaveTaxIdentity() {
   });
 }
 
-/** Who holds the accounts of the portals by default and whether their commissions are recharged (`PUT api/billing-setup/channels`). */
+/**
+ * Who holds the accounts of the portals by default and whether their commissions are recharged (`PUT api/billing-setup/channels`). A save that starts the waiver of the recharge is refused
+ * (422 `recharge_waiver_not_acknowledged`) unless its request carries `acknowledgeRechargeWaiver: true`, which the caller adds only after the person confirmed.
+ */
 export function useSavePortalAccountSettings() {
   const afterSave = useAfterSave();
 
@@ -222,16 +225,25 @@ export function useChannelAccountHolders(enabled: boolean) {
   });
 }
 
-/** Writes the holders of many listings at once (`PUT api/billing-setup/channel-account-holders`). */
+/** The holders to write, and whether the person confirmed the waiver of the recharge that the write may start (`acknowledgeRechargeWaiver`, only ever `true`). */
+export interface SaveChannelAccountHoldersRequest {
+  changes: readonly ChannelAccountHolderChange[];
+  acknowledgeRechargeWaiver?: true;
+}
+
+/**
+ * Writes the holders of many listings at once (`PUT api/billing-setup/channel-account-holders`). Without `acknowledgeRechargeWaiver` the request is the plain write; a write that starts the
+ * waiver of the recharge is then refused (422 `recharge_waiver_not_acknowledged`), and it is sent again with the acknowledgement only after the person confirmed.
+ */
 export function useSaveChannelAccountHolders() {
   const queryClient = useQueryClient();
   const afterSave = useAfterSave();
 
   return useMutation({
     gcTime: 0,
-    mutationFn: async (changes: readonly ChannelAccountHolderChange[]) => {
+    mutationFn: async ({ changes, acknowledgeRechargeWaiver }: SaveChannelAccountHoldersRequest) => {
       try {
-        return await saveChannelAccountHolders(changes);
+        return acknowledgeRechargeWaiver ? await saveChannelAccountHolders(changes, true) : await saveChannelAccountHolders(changes);
       } catch (error) {
         throw withoutRequest(error);
       }
