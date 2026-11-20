@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, cleanup, renderHook } from '@testing-library/react';
+import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AxiosError } from 'axios';
+import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios';
 import type { ReactNode } from 'react';
 import { toast } from 'sonner';
 import { otaReviewsApi } from '@/api/ota-reviews.api';
@@ -295,5 +295,81 @@ describe('the reviews of a booking that stays open are read again by themselves'
 
     await vi.advanceTimersByTimeAsync(MESSAGE_HUB_POLL_MS * 2);
     expect(otaReviewsApi.getBookingReviews).not.toHaveBeenCalled();
+  });
+});
+
+// The words of a public reply and of the host's review are personal data (they speak of a guest): a send that fails keeps the answer of the server and nothing of the request that
+// carried them, and what the mutation holds is dropped as soon as nobody watches it (`withoutRequest`, `gcTime: 0`) (E05/F06/US02, privacy).
+describe('what a failed send of the words of the host leaves behind', () => {
+  /** A failure as axios builds it: it holds the request that was sent, and the body of that request holds the words. */
+  function failureOfTheRequest(body: unknown, status: number, code: string): AxiosError {
+    const config = { headers: new AxiosHeaders(), method: 'post', url: '/reviews/ota/x/reply', data: JSON.stringify(body) } as InternalAxiosRequestConfig;
+    return new AxiosError('failed', String(status), config, {}, { status, data: { code }, statusText: '', headers: {}, config });
+  }
+
+  /** What the hook throws for a send that fails. */
+  async function thrownBy(send: () => Promise<unknown>): Promise<AxiosError> {
+    let caught: unknown;
+    await act(async () => {
+      try {
+        await send();
+      } catch (error) {
+        caught = error;
+      }
+    });
+    return caught as AxiosError;
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('useReplyToReview_FailedSend_KeepsTheCodeOfTheAnswerAndNothingOfTheWordsAndTheMutationIsDroppedWhenNobodyWatches', async () => {
+    const original = failureOfTheRequest({ text: 'Il signor Rossi era scortese, grazie lo stesso.' }, 502, 'octorate_unavailable');
+    // The failure that axios throws does hold the words: the check below is about what the hook does with it.
+    expect(original.config?.data).toContain('Rossi');
+    vi.mocked(otaReviewsApi.replyToOtaReview).mockRejectedValue(original);
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+    const { result, unmount } = renderHook(() => useReplyToReview(OTA_KEY), { wrapper: wrapper(client) });
+
+    const failure = await thrownBy(() => result.current.mutateAsync('Il signor Rossi era scortese, grazie lo stesso.'));
+    expect(result.current.isError).toBe(true);
+
+    // What a screen turns into words stays: the status and the body of the answer.
+    expect(failure.response?.status).toBe(502);
+    expect(failure.response?.data).toEqual({ code: 'octorate_unavailable' });
+    // The request does not: not in what is thrown, not in what the mutation holds while it is watched.
+    expect(failure.config?.data).toBeUndefined();
+    expect(JSON.stringify(failure)).not.toMatch(/Rossi/);
+    expect(JSON.stringify(result.current.error)).not.toMatch(/Rossi/);
+
+    // Nobody watches it any more: nothing of it stays in the cache of the mutations.
+    unmount();
+    await waitFor(() => expect(client.getMutationCache().getAll()).toHaveLength(0));
+  });
+
+  it('useSendHostReview_FailedSend_KeepsTheCodeOfTheAnswerAndNothingOfTheWordsAndTheMutationIsDroppedWhenNobodyWatches', async () => {
+    const command: HostReviewCommand = {
+      ratings: [{ category: 'cleanliness', value: 4 }],
+      text: 'Ospite ordinato, il signor Rossi.',
+      privateText: 'Nota privata per il signor Rossi.',
+    };
+    const original = failureOfTheRequest(command, 409, 'ota_review_window_closed');
+    expect(original.config?.data).toContain('Rossi');
+    vi.mocked(otaReviewsApi.sendHostReview).mockRejectedValue(original);
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+    const { result, unmount } = renderHook(() => useSendHostReview(OTA_KEY), { wrapper: wrapper(client) });
+
+    const failure = await thrownBy(() => result.current.mutateAsync(command));
+    expect(result.current.isError).toBe(true);
+
+    expect(failure.response?.status).toBe(409);
+    expect(failure.response?.data).toEqual({ code: 'ota_review_window_closed' });
+    expect(failure.config?.data).toBeUndefined();
+    expect(JSON.stringify(failure)).not.toMatch(/Rossi/);
+    expect(JSON.stringify(result.current.error)).not.toMatch(/Rossi/);
+
+    unmount();
+    await waitFor(() => expect(client.getMutationCache().getAll()).toHaveLength(0));
   });
 });

@@ -453,6 +453,20 @@ describe('the page of a review (E05/F06/US02, NF-69)', () => {
       expect(approvalQueueApi.getPending).not.toHaveBeenCalled();
     });
 
+    it('ReviewThreadView_AssistantOnButNoPermissionToDecideApprovals_DrawsNothingAsksNothingOfTheQueueAndTheHostStillAnswersByHand', async () => {
+      // The host may write the bookings (`booking.write`) and the assistant is on, but deciding approvals is another permission (`approval.decide`): the draft is for who decides it.
+      grants.permissions = new Set(['booking.read', 'booking.write']);
+      renderReview(OTA_KEY, { assistant: true });
+      await screen.findByTestId('review-reply-text');
+
+      await act(async () => {});
+      expect(screen.queryByTestId('review-draft-panel')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('review-draft-ask')).not.toBeInTheDocument();
+      expect(approvalQueueApi.getPending).not.toHaveBeenCalled();
+      expect(otaReviewsApi.requestReviewDraft).not.toHaveBeenCalled();
+      expect(screen.getByRole('button', { name: 'Pubblica la risposta' })).toBeInTheDocument();
+    });
+
     it('ReviewThreadView_PendingDraft_ApprovePublishesOnlyAfterTheQuestionAndOnce', async () => {
       vi.mocked(approvalQueueApi.getPending).mockResolvedValue([draft()]);
       vi.mocked(approvalQueueApi.approve).mockResolvedValue(draft({ status: 'Approved', originActionStatus: 'Executed', originActionResult: 'Sent' }));
