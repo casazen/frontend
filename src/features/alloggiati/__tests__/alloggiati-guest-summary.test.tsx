@@ -326,6 +326,29 @@ describe('AlloggiatiGuestSummary (CO-11, CO-12)', () => {
     expect(dialog.queryByLabelText(/^Targa/)).not.toBeInTheDocument();
   });
 
+  it('editGuests_ItalianStay_ADocumentOnAFamilyMemberOfTheWizardIsNeitherAskedNorSent', { timeout: 30_000 }, async () => {
+    // The document of a member is read from the wizard only to be asked in a Swiss stay: in an Italian one the record has none for a member.
+    const stray = {
+      ...wizardState,
+      guests: [wizardState.guests[0], wizardGuest(1, { type: 'FamilyMember', documentType: 'IdentityCard', documentNumberMasked: '*****5AB' })],
+    } as unknown as CheckInWizardState;
+    vi.mocked(alloggiatiApi.getGuestSummary).mockResolvedValue(summary);
+    vi.mocked(alloggiatiApi.getDocumentNumbers).mockResolvedValue([{ position: 0, stayGuestId: 'g1', documentNumber: 'CA12345AB' }]);
+    vi.mocked(alloggiatiApi.replaceStayGuests).mockResolvedValue(summary);
+    vi.mocked(checkInWizardApi.getState).mockResolvedValue(stray);
+    renderSummary(true);
+
+    fireEvent.click(await screen.findByTestId('alloggiati-edit-guests'));
+    const dialog = within(await screen.findByTestId('stay-guests-edit-dialog'));
+    expect(await dialog.findByLabelText(/^Numero documento/)).toHaveValue('CA12345AB');
+    expect(dialog.queryByTestId('stay-guest-1-document')).not.toBeInTheDocument();
+    fireEvent.change(dialog.getByLabelText(/^Luogo di rilascio/), { target: { value: 'Milano' } });
+    fireEvent.click(dialog.getByTestId('stay-guests-save'));
+
+    await waitFor(() => expect(alloggiatiApi.replaceStayGuests).toHaveBeenCalledTimes(1));
+    expect(vi.mocked(alloggiatiApi.replaceStayGuests).mock.calls[0][1][1]).toMatchObject({ documentType: null, documentNumber: null });
+  });
+
   describe('a property in Switzerland (NF-132, E30/F01/US02)', () => {
     /** What the API names for a property in canton Ticino. */
     const ticinoFields = ['DocumentType', 'DocumentNumber', 'ResidenceStreet', 'ResidencePostalCode', 'ResidenceCityName', 'ResidenceCountryName'];
@@ -410,6 +433,39 @@ describe('AlloggiatiGuestSummary (CO-11, CO-12)', () => {
       });
       // The home the host never entered for the member is sent as null: the whole truth, never a key that is left out.
       expect(guests[1]).toMatchObject({ residenceStreet: null, documentType: 'Passport', documentNumber: 'X1234567' });
+    });
+
+    it('editGuests_SwissStay_AnAdultMemberWithADocumentOnFile_StartsWithItsKindAndItsMaskedNumberAndOnlyTheNumberIsTypedAgain', { timeout: 30_000 }, async () => {
+      // The row of the summary and the audited numbers answer for the heads only: the document of the member is in the guest of the wizard state.
+      const onFile = {
+        ...swissState,
+        guests: [swissState.guests[0], wizardGuest(1, { type: 'FamilyMember', documentType: 'IdentityCard', documentNumberMasked: '*****5AB' })],
+      } as unknown as CheckInWizardState;
+      vi.mocked(alloggiatiApi.getGuestSummary).mockResolvedValue(swissSummary);
+      vi.mocked(alloggiatiApi.getDocumentNumbers).mockResolvedValue([{ position: 0, stayGuestId: 'g1', documentNumber: 'CA12345AB' }]);
+      vi.mocked(alloggiatiApi.replaceStayGuests).mockResolvedValue(swissSummary);
+      vi.mocked(checkInWizardApi.getState).mockResolvedValue(onFile);
+      renderSummary(true);
+
+      fireEvent.click(await screen.findByTestId('alloggiati-edit-guests'));
+      const dialog = within(await screen.findByTestId('stay-guests-edit-dialog'));
+      const memberDocument = within(await dialog.findByTestId('stay-guest-1-document'));
+
+      // The host sees that the document is on file, of what kind, and the end of its number; the full number is not in any answer for a member.
+      expect(memberDocument.getByLabelText(/^Tipo documento/)).toHaveValue('IdentityCard');
+      expect(dialog.getByTestId('stay-guest-1-document-on-file')).toHaveTextContent('*****5AB');
+      expect(memberDocument.getByLabelText(/^Numero documento/)).toHaveValue('');
+
+      // Typing the number again is all the member needs: the kind is already there, and the plate goes with the same save.
+      fireEvent.change(await dialog.findByLabelText(/^Targa/), { target: { value: 'zh 99 99' } });
+      fireEvent.change(within(dialog.getByTestId('stay-guest-0-document')).getByLabelText(/^Luogo di rilascio/), { target: { value: 'Milano' } });
+      fireEvent.change(memberDocument.getByLabelText(/^Numero documento/), { target: { value: 'ca 54321 ab' } });
+      fireEvent.click(dialog.getByTestId('stay-guests-save'));
+
+      await waitFor(() => expect(alloggiatiApi.replaceStayGuests).toHaveBeenCalledTimes(1));
+      const [, guests, plate] = vi.mocked(alloggiatiApi.replaceStayGuests).mock.calls[0];
+      expect(plate).toBe('ZH9999');
+      expect(guests[1]).toMatchObject({ documentType: 'IdentityCard', documentNumber: 'CA54321AB' });
     });
 
     it('editGuests_SwissStay_AnAdultMemberWithoutADocumentIsNotSaved', { timeout: 30_000 }, async () => {

@@ -52,6 +52,9 @@ const ALL_TABLES: AlloggiatiCodeTable[] = ['Comuni', 'Stati', 'Documenti', 'Tipi
  * The residence (and, in Switzerland, the home: street, postal code, town), the document dates, the statistical fields and the tourist tax
  * exemption are not in the row of the summary: they come from the guest of the check-in wizard of the same position. The server takes
  * the list as the whole truth, so a field the form did not carry would be erased by a save.
+ * The row carries the document of a single guest or a head only. A member the police file of a Swiss stay notifies (NF-132) has one too: its kind,
+ * its place of issue and its number masked are read from the guest of the wizard, so that the host sees it is on file. The audited call of the full
+ * numbers answers for the single guests and the heads only, so the number of such a member is typed again.
  */
 function stayGuestValuesFromRow(
   row: AlloggiatiGuestRowDto,
@@ -59,6 +62,9 @@ function stayGuestValuesFromRow(
   saved: CheckInWizardGuest | undefined,
 ): StayGuestFormValues {
   const bornAbroad = row.bornInItaly === false;
+  const documentKindOf = (kind: string | null | undefined) => (kind && (DOCUMENT_KINDS as readonly string[]).includes(kind) ? kind : '');
+  // The guest of the row (`requiresDocument`) or, for any other guest, the one of the wizard: a guest without a document is empty in both.
+  const ofRow = row.requiresDocument;
   return {
     type: row.type,
     firstName: row.firstName,
@@ -73,13 +79,13 @@ function stayGuestValuesFromRow(
     birthCountryCode: bornAbroad ? row.codes.birthCountry : null,
     citizenshipName: row.citizenship,
     citizenshipCode: row.codes.citizenship,
-    documentType: row.documentType && (DOCUMENT_KINDS as readonly string[]).includes(row.documentType) ? row.documentType : '',
-    documentTypeCode: row.codes.documentType,
-    documentTypeLabel: row.codes.documentTypeDescription ?? '',
+    documentType: documentKindOf(ofRow ? row.documentType : saved?.documentType),
+    documentTypeCode: ofRow ? row.codes.documentType : (saved?.documentTypeCode ?? null),
+    documentTypeLabel: ofRow ? (row.codes.documentTypeDescription ?? '') : (saved?.documentTypeCode ?? ''),
     documentNumber: documentNumber ?? '',
-    documentNumberOnFile: documentNumber ? null : row.documentNumberMasked,
-    documentIssuePlaceName: row.documentIssuePlace,
-    documentIssuePlaceCode: row.codes.documentIssuePlace,
+    documentNumberOnFile: documentNumber ? null : ofRow ? row.documentNumberMasked : (saved?.documentNumberMasked ?? null),
+    documentIssuePlaceName: ofRow ? row.documentIssuePlace : (saved?.documentIssuePlaceName ?? ''),
+    documentIssuePlaceCode: ofRow ? row.codes.documentIssuePlace : (saved?.documentIssuePlaceCode ?? null),
     documentIssuedOn: saved?.documentIssuedOn?.slice(0, 10) ?? '',
     documentExpiresOn: saved?.documentExpiresOn?.slice(0, 10) ?? '',
     residenceInItaly: saved?.residenceInItaly === true ? 'yes' : saved?.residenceInItaly === false ? 'no' : '',
@@ -108,8 +114,9 @@ interface StayGuestsEditDialogProps {
 /**
  * Host entry of the guests of the stay (CO-12, CO-09): walk-in guests, a guest who cannot use the check-in link,
  * corrections, official codes to complete. Same rules as the guest portal (kinds and order, document only for a single
- * guest or a head of family or group). Opening the form is the explicit request for the full document numbers (audited
- * by the API); a host who may not read them re-enters the number, as the guest does.
+ * guest or a head of family or group and, in a Swiss stay, for every adult the police file notifies). Opening the form is the explicit request for the
+ * full document numbers (audited by the API: those of the single guests and the heads); a host who may not read them, or the number of such a member,
+ * re-enters the number, as the guest does.
  */
 export function StayGuestsEditDialog({ bookingId, summary, open, onOpenChange }: StayGuestsEditDialogProps) {
   const { t } = useTranslation();
