@@ -79,6 +79,10 @@ const item = (overrides: Partial<SelfBillingListItem> = {}): SelfBillingListItem
   replacesDocumentId: null,
   replacedByDocumentId: null,
   keptReason: null,
+  closedReason: null,
+  closedAt: null,
+  closedBy: null,
+  closedNote: null,
   ...overrides,
 });
 

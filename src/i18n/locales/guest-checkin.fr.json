@@ -88,14 +88,23 @@
       "educationLevel": {
         "required": "Sélectionnez le niveau d'études"
       },
+      "residencePostalCode": {
+        "maxLength": "20 caractères au maximum"
+      },
       "residenceProvince": {
         "invalid": "Saisissez le code de deux lettres (p. ex. RM)"
+      },
+      "residenceStreet": {
+        "maxLength": "200 caractères au maximum"
       },
       "tourismType": {
         "required": "Sélectionnez le motif du voyage"
       },
       "travelWay": {
         "required": "Sélectionnez le moyen de transport"
+      },
+      "vehiclePlate": {
+        "invalid": "Saisissez une plaque valide : lettres, chiffres et tirets, 20 caractères au maximum."
       }
     },
     "loading": "Chargement du check-in…",
@@ -293,7 +302,8 @@
       "statisticalValueInvalid": "La valeur choisie ne fait pas partie des valeurs autorisées.",
       "summary_one": "1 champ à vérifier",
       "summary_other": "{{count}} champs à vérifier",
-      "tooManyRequests": "Trop de demandes en peu de temps : patientez un instant puis réessayez."
+      "tooManyRequests": "Trop de demandes en peu de temps : patientez un instant puis réessayez.",
+      "vehiclePlateInvalid": "La plaque n'est pas valide : utilisez des lettres, des chiffres et des tirets, 20 caractères au maximum."
     },
     "guestKind": {
       "FamilyMember": "Membre de la famille",
@@ -482,12 +492,21 @@
     },
     "residence": {
       "abroad": "À l'étranger",
+      "city": "Localité",
       "comune": "Commune de résidence",
       "country": "Pays de résidence",
       "hint": "Facultatif : où l'invité habite habituellement.",
+      "homeHint": "Facultatif : l'adresse où l'invité habite. Elle fait partie de la déclaration du séjour à la police.",
       "inItaly": "En Italie",
       "label": "Résidence",
-      "province": "Province de résidence (deux lettres)"
+      "postalCode": "Code postal",
+      "province": "Province de résidence (deux lettres)",
+      "street": "Rue et numéro"
+    },
+    "swiss": {
+      "documentIntro": "Type et numéro du document d'identité de chaque adulte. Le chef de famille ou de groupe indique aussi le lieu de délivrance.",
+      "guestsIntro": "Saisissez tous les invités qui séjournent, mineurs compris. Chaque adulte indique aussi son document d'identité à l'étape suivante.",
+      "stayKindHint": "Pour une famille ou un groupe, le premier invité est le chef de famille ou de groupe. Le document d'identité est demandé à chaque adulte (pour un groupe de six personnes ou plus, au chef de groupe seulement)."
     },
     "toast": {
       "saved": "Informations du check-in enregistrées.",
@@ -542,6 +561,10 @@
       "plane": "Avion",
       "ship": "Bateau",
       "train": "Train"
+    },
+    "vehiclePlate": {
+      "hint": "Une seule plaque pour tout le séjour, si vous venez en voiture. Lettres, chiffres et tirets.",
+      "label": "Plaque de votre voiture (facultatif)"
     }
   }
 }
