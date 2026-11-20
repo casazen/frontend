@@ -1,0 +1,176 @@
+/**
+ * One widget of the loader (NF-145): the frame with its placeholder, and the link to the site that takes its place when the frame cannot be shown. All the
+ * values it gets are already checked (`page-params.ts`); everything it writes into the page goes through the CSSOM (`element.style.x = …`), never as an
+ * `style` attribute or a `<style>` element, which a page with a strict content security policy blocks.
+ */
+
+import { LOADER_TEXTS, type EmbedLang } from './texts';
+
+/** How long the frame has to say `ready` before the link appears (AC-NF145-5). A frame that answers later takes the link away again. */
+const READY_TIMEOUT_MS = 8000;
+
+/** What the loader worked out of the attributes of a widget and of the address of the page. */
+export interface Plan {
+  widget: string;
+  /** The widget is one the loader puts in a frame (`booking`, `property`, `guest-access`); the others are drawn by the function registered for them. */
+  framed: boolean;
+  lang: EmbedLang;
+  /** The origin of the site the widget belongs to: `''` when the `base` that was given is not one a frame can be served from. */
+  base: string;
+  /** Where the link may go when `base` is not valid: the origin the loader itself came from, or `''`. */
+  linkBase: string;
+  /** The org of the CasaZen domain (`/embed/<org>/<widget>`), `''` on an agency's own domain. */
+  org: string;
+  /** The property of a `property` widget. */
+  slug: string;
+  /** The org or the property the attributes name is not valid: there is nothing to frame, the link is shown. */
+  invalid: boolean;
+  /** The parameters of the page that go on to the frame (`checkin`, `checkout`, `guests`, `where`, `utm_*`), already checked. */
+  query: URLSearchParams;
+  minHeight: number;
+  theme: Record<string, unknown> | undefined;
+  dataLayer: boolean;
+  sync: boolean;
+  /** The state of the frame the address asks to come back to (`?cz=`), when the widget keeps its state there. */
+  restored: { path: string; query: string } | null;
+}
+
+/** A widget on the page. A widget without a frame (the search bar, a widget that could not be framed) has no `frame` and no `origin`. */
+export interface Widget {
+  el: HTMLElement;
+  widget: string;
+  lang: EmbedLang;
+  theme: Record<string, unknown> | undefined;
+  dataLayer: boolean;
+  sync: boolean;
+  /** The frame is shown, and nothing is wrong with it. */
+  ok: boolean;
+  frame: HTMLIFrameElement | null;
+  /** The origin the frame is served from: what its messages must say and the only one the whole page may be taken to. */
+  origin: string;
+  /** The frame said `ready`: it has its content, so the placeholder and the link are gone. */
+  show: () => void;
+  /** The frame has nothing to show, or not in time: the link to the site is shown (below the frame, when there is one). */
+  fail: () => void;
+}
+
+/**
+ * What the loader hands to the function that `CasaZenEmbed.register(name, fn)` registered for a widget it does not frame (the search bar, `search.js`).
+ * The values come as the page gave them (attributes are text), except the ones the loader has to work out for everybody: the language, the theme, the base.
+ * The function checks the rest itself.
+ */
+export interface SearchOptions {
+  lang: EmbedLang;
+  /** The page the bar leads to (`data-casazen-target`). */
+  target: unknown;
+  /** The destinations to choose from: the JSON of `[{ id, label }]` (`data-casazen-destinations`). */
+  destinations: unknown;
+  theme: Record<string, unknown> | undefined;
+  /** The most guests the bar takes (`data-casazen-max-guests`). */
+  maxGuests: unknown;
+  /** The origin of the site (checked), where the bar leads when it has no target. */
+  base: string;
+  /** The org of the CasaZen domain, `''` on an agency's own domain. */
+  org: string;
+}
+
+/** The function a widget that is not framed registers: it draws the widget into `el`. */
+export type WidgetMount = (el: HTMLElement, options: SearchOptions) => void;
+
+function style(el: HTMLElement, rules: Partial<CSSStyleDeclaration>): void {
+  Object.assign(el.style, rules);
+}
+
+/**
+ * Prepares a widget for `el`. With a valid plan and a frame widget the frame is created and put in; otherwise (the base or the org is not valid, or the
+ * widget is the search bar) nothing is drawn here: the first has already got its link, the second is drawn by `search.js`.
+ */
+export function createWidget(el: HTMLElement, plan: Plan): Widget {
+  const text = LOADER_TEXTS[plan.lang];
+  const site = plan.base || plan.linkBase;
+  const valid = plan.base !== '' && !plan.invalid;
+  let link: HTMLAnchorElement | undefined;
+  let reveal = (): void => undefined;
+  const wait: { timer?: ReturnType<typeof setTimeout> } = {};
+
+  const widget: Widget = {
+    el,
+    widget: plan.widget,
+    lang: plan.lang,
+    theme: plan.theme,
+    dataLayer: plan.dataLayer,
+    sync: plan.sync,
+    ok: valid,
+    frame: null,
+    origin: '',
+    show: () => {
+      clearTimeout(wait.timer);
+      reveal();
+      link?.remove();
+    },
+    fail: () => {
+      reveal();
+      if (!site) return;
+      if (!link) {
+        // The matching page of the site: the home, the property, the guest area (`/book/<org>/…` on the CasaZen domain), carrying what the guest chose and where
+        // they come from (`utm_source=agency-site`, `utm_medium=embed`, the same words the checkout of a frame carries).
+        const home = plan.org ? `/book/${plan.org}` : '';
+        const page = plan.widget === 'property' && plan.slug ? `${home}/property/${plan.slug}` : plan.widget === 'guest-access' ? `${home}/my-bookings` : home || '/';
+        const query = new URLSearchParams(plan.query);
+        query.set('lang', plan.lang);
+        query.set('utm_source', 'agency-site');
+        query.set('utm_medium', 'embed');
+        link = document.createElement('a');
+        link.href = `${site}${page}?${query.toString()}`;
+        link.textContent = `${plan.widget === 'guest-access' ? text.manage : text.book} ${new URL(site).host}`;
+        style(link, { display: 'block', padding: '12px 0', textAlign: 'center' });
+      }
+      if (!widget.frame) el.textContent = '';
+      el.appendChild(link);
+    },
+  };
+
+  if (!valid) {
+    widget.fail();
+    return widget;
+  }
+  if (!plan.framed) return widget;
+
+  // The address of the frame: `<base>/embed/[<org>/]<widget>[/<slug>]`, with the language, the page that frames it and the version of the protocol first.
+  const search = new URLSearchParams({ lang: plan.lang, parent: location.origin, v: '1' });
+  plan.query.forEach((value, key) => search.set(key, value));
+  new URLSearchParams(plan.restored?.query ?? '').forEach((value, key) => {
+    if (key !== 'lang' && key !== 'parent' && key !== 'v') search.set(key, value);
+  });
+  const path = plan.restored?.path ?? (plan.widget === 'property' ? `/property/${plan.slug}` : `/${plan.widget}`);
+
+  const frame = document.createElement('iframe');
+  frame.src = `${plan.base}/embed${plan.org ? `/${plan.org}` : ''}${path}?${search.toString()}`;
+  frame.title = text[plan.widget as 'booking' | 'property' | 'guest-access'];
+  frame.setAttribute('loading', 'lazy');
+  frame.setAttribute('referrerpolicy', 'origin');
+  frame.setAttribute('scrolling', 'no');
+  style(frame, { display: 'block', width: '100%', height: `${plan.minHeight}px`, border: '0', visibility: 'hidden' });
+
+  // The placeholder sits over the frame, which stays out of sight until it has its content: the frame's own loading state is never seen.
+  const placeholder = document.createElement('div');
+  placeholder.setAttribute('role', 'status');
+  placeholder.setAttribute('aria-busy', 'true');
+  placeholder.textContent = text.loading;
+  style(placeholder, { position: 'absolute', top: '0', left: '0', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' });
+
+  const box = document.createElement('div');
+  style(box, { position: 'relative' });
+  box.append(frame, placeholder);
+  el.textContent = '';
+  el.appendChild(box);
+
+  reveal = () => {
+    frame.style.visibility = '';
+    placeholder.remove();
+  };
+  wait.timer = setTimeout(widget.fail, READY_TIMEOUT_MS);
+  widget.frame = frame;
+  widget.origin = plan.base;
+  return widget;
+}

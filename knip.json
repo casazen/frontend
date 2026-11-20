@@ -4,6 +4,7 @@
     "api/*.ts",
     "middleware.ts",
     "src/site/entry-server.ts",
+    "src/embed/embed.ts",
     "scripts/*.mjs",
     "e2e/auth.setup.ts"
   ],
