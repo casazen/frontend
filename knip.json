@@ -49,9 +49,6 @@
     ],
     "src/pages/SegmentsPage.tsx": [
       "exports"
-    ],
-    "src/pages/SwissCompliancePage.tsx": [
-      "exports"
     ]
   },
   "compilers": {

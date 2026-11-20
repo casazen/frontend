@@ -208,6 +208,8 @@ export const COMPLIANCE_COCKPIT_ACTIONS = [
   'EnterMunicipalityTaxRate',
   'DeclareTouristTax',
   'RenewPoliceCredentials',
+  // casazen/backend#979: an arrival day of a property in canton Ticino whose guests are not notified to the cantonal police yet.
+  'NotifyTicinoPolice',
 ] as const;
 export type ComplianceCockpitAction = (typeof COMPLIANCE_COCKPIT_ACTIONS)[number];
 
@@ -326,6 +328,8 @@ export interface ComplianceSummaryResult {
   connectionsToFix?: ComplianceSummarySection;
   /** The ISTAT (`UploadIstatProof`) and tourist tax (`DeclareTouristTax`) of the closed months, with their `period`, and the rates that are not known (`EnterMunicipalityTaxRate`). */
   periodItems?: ComplianceSummarySection;
+  /** The arrival days of the Ticino properties whose guests are not notified to the cantonal police yet (`NotifyTicinoPolice`, the day in `period`, yyyy-MM-dd). */
+  ticinoNotifications?: ComplianceSummarySection;
 }
 
 /** The 5 steps of the check-out wizard, in order (CO-17, A5-24): `steps[].id` and `currentStep` of the API. */

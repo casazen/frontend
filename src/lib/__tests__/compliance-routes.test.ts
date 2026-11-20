@@ -54,6 +54,8 @@ const EXPECTED: Record<ComplianceCockpitAction, string> = {
   EnterMunicipalityTaxRate: `/app/short-rent/properties/${PROPERTY_ID}`,
   DeclareTouristTax: `/app/short-rent/alloggiati/reports?kind=TouristTaxDeclaration&property=${PROPERTY_ID}`,
   RenewPoliceCredentials: '/app/short-rent/alloggiati',
+  // casazen/backend#979: the guided notification of a Ticino property to the cantonal police; without a day it opens on the oldest one to notify.
+  NotifyTicinoPolice: `/app/short-rent/compliance/ticino?property=${PROPERTY_ID}`,
 };
 
 describe('complianceActionRoute (CO-04, A5-09)', () => {
@@ -173,6 +175,16 @@ describe('complianceActionRoute of the periods (E03/F03/US01/T01, AC-NF52-5)', (
     const url = complianceActionRoute(periodItem('UploadIstatProof', period));
 
     expect(url).toBe(`/app/short-rent/alloggiati/reports?kind=IstatProof&property=${PROPERTY_ID}`);
+  });
+
+  it('complianceActionRoute_NotifyTicinoPolice_OpensTheGuidedNotificationOnTheArrivalDay', () => {
+    const url = complianceActionRoute(periodItem('NotifyTicinoPolice', '2026-11-19'));
+
+    expect(url).toBe(`/app/short-rent/compliance/ticino?property=${PROPERTY_ID}&date=2026-11-19`);
+    expect(manifestEntryOf(url!).entry?.path).toBe('/app/short-rent/compliance/ticino');
+    // A month, or anything that is not a day, is left out: the page then opens on the oldest day to notify.
+    expect(complianceActionRoute(periodItem('NotifyTicinoPolice', '2026-11'))).toBe(EXPECTED.NotifyTicinoPolice);
+    expect(complianceActionRoute(periodItem('NotifyTicinoPolice', '2026-11-19/../x'))).toBe(EXPECTED.NotifyTicinoPolice);
   });
 
   it('complianceActionRoute_PeriodOnAnActionThatTakesNone_IsNotInTheAddress', () => {
