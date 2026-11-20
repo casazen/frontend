@@ -312,18 +312,23 @@ class Test_Settings extends WP_UnitTestCase {
 		$this->assertSame( array( 'address', 'language_map', 'load_script', 'org_slug' ), $keys );
 		$this->assertStringNotContainsString( 'sk_live_secret', wp_json_encode( $clean ) );
 
-		// A value that was polluted in the database is read back as the four keys too.
+		// A value that was polluted in the database (written without the sanitisation) is read back as the four keys too.
+		remove_filter( 'sanitize_option_' . Settings::OPTION, array( Settings::class, 'sanitize' ) );
 		update_option( Settings::OPTION, array_merge( $clean, array( 'token' => 'abc', 'api_key' => 'sk_live_secret' ) ) );
+		$this->assertArrayHasKey( 'token', get_option( Settings::OPTION ), 'The polluted value was stored as it is.' );
 		$keys = array_keys( Settings::get() );
 		sort( $keys );
 		$this->assertSame( array( 'address', 'language_map', 'load_script', 'org_slug' ), $keys );
 	}
 
 	/**
-	 * Once the setting is registered, every write to the option goes through the sanitisation.
+	 * The plugin registers the setting on init, in every kind of request, so every write to the option goes through the
+	 * sanitisation: a form, WP-CLI, a cron event or a REST request alike (admin_init does not run in the last three).
 	 */
-	public function test_the_registered_setting_sanitises_every_write() {
-		Settings::register();
+	public function test_the_setting_is_registered_on_init_and_sanitises_every_write() {
+		$this->assertNotFalse( has_action( 'init', array( Settings::class, 'register' ) ), 'The plugin registers the setting on init.' );
+		$this->assertFalse( has_action( 'admin_init', array( Settings::class, 'register' ) ), 'Not only for the admin.' );
+		$this->assertNotFalse( has_filter( 'sanitize_option_' . Settings::OPTION, array( Settings::class, 'sanitize' ) ), 'The sanitisation is attached to the option.' );
 
 		update_option(
 			Settings::OPTION,

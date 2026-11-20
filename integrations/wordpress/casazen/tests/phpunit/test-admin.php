@@ -121,14 +121,17 @@ class Test_Admin extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Stores the settings without running the refresh that a real save runs.
+	 * Stores the values as they are, the way a polluted database would hold them: neither the sanitisation nor the refresh
+	 * that a real save runs take part.
 	 *
 	 * @param array $values The values to change.
 	 */
 	private function store( array $values ) {
+		remove_filter( 'sanitize_option_' . Settings::OPTION, array( Settings::class, 'sanitize' ) );
 		remove_action( 'add_option_' . Settings::OPTION, array( Settings::class, 'on_add' ), 10 );
 		remove_action( 'update_option_' . Settings::OPTION, array( Settings::class, 'on_update' ), 10 );
 		update_option( Settings::OPTION, array_merge( Settings::defaults(), $values ) );
+		add_filter( 'sanitize_option_' . Settings::OPTION, array( Settings::class, 'sanitize' ) );
 		add_action( 'add_option_' . Settings::OPTION, array( Settings::class, 'on_add' ), 10, 2 );
 		add_action( 'update_option_' . Settings::OPTION, array( Settings::class, 'on_update' ), 10, 2 );
 	}

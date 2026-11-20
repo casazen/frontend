@@ -80,7 +80,9 @@ class Settings {
 	 * @return void
 	 */
 	public static function init() {
-		add_action( 'admin_init', array( __CLASS__, 'register' ) );
+		// On init, not on admin_init: a write from WP-CLI, a cron event or a REST request never fires admin_init, and it must
+		// go through sanitize() like a form does.
+		add_action( 'init', array( __CLASS__, 'register' ) );
 		add_action( 'add_option_' . self::OPTION, array( __CLASS__, 'on_add' ), 10, 2 );
 		add_action( 'update_option_' . self::OPTION, array( __CLASS__, 'on_update' ), 10, 2 );
 	}
@@ -150,7 +152,8 @@ class Settings {
 	}
 
 	/**
-	 * Registers the setting with the Settings API (hooked on admin_init).
+	 * Registers the setting with the Settings API (hooked on init, in every kind of request). This is what attaches
+	 * sanitize() to the option, so every write to it is cleaned, whoever makes it. It holds no translated text.
 	 *
 	 * @return void
 	 */
