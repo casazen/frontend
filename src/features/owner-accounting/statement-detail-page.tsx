@@ -15,6 +15,7 @@ import { useWorkspace } from '@/hooks/use-workspace';
 import { getHttpStatus } from '@/lib/api-errors';
 import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { todayInRome } from '@/lib/stay-dates';
+import { cn } from '@/lib/utils';
 import {
   useCloseReadiness,
   useDownloadPublishedFile,
@@ -44,6 +45,7 @@ import {
   changesSince,
   closePath,
   isKnownIssue,
+  isInformational,
   isPeriodOver,
   isSettled,
   issuesOfVersion,
@@ -54,6 +56,7 @@ import {
   primaryActionOf,
   problemFacts,
   shortId,
+  shownAmount,
   sortedEntries,
   statementPath,
   toCents,
@@ -304,20 +307,28 @@ function StatementContent({ version, entries, touristTax }: { version: OwnerStat
                 </tr>
               </thead>
               <tbody>
-                {shown.map((entry) => (
-                  <tr key={entry.id} className="border-b border-border last:border-0" data-testid="statement-line" data-type={entry.type}>
-                    <td className="whitespace-nowrap py-2 pr-3 align-top">{shortDate(entry.recognitionDate)}</td>
-                    <td className="py-2 pr-3 align-top">
-                      <Button type="button" variant="link" className="h-auto min-h-11 whitespace-normal p-0 text-left" onClick={() => setExplained(entry)} data-testid="statement-line-explain">
-                        {t(`ownerAccounting.line.type.${entry.type}`)}
-                      </Button>
-                      {entry.reversesEntryId ? <Badge variant="outline" className="ml-2">{t('ownerAccounting.line.reversal')}</Badge> : null}
-                      <p className="break-words text-foreground/70">{lineSummary(entry, t, money)}</p>
-                    </td>
-                    <td className="whitespace-nowrap py-2 pr-3 text-right align-top tabular-nums">{entry.sharePercent}%</td>
-                    <td className="whitespace-nowrap py-2 text-right align-top tabular-nums">{money(entry.amount, entry.statementCurrency)}</td>
-                  </tr>
-                ))}
+                {shown.map((entry) => {
+                  // A line for information only (the commission of a portal the agency bears) is in the table with its amount as the PDF writes it, a positive figure, quiet, and a badge that says
+                  // it counts in nothing: it is in no total of this page (`statementGroupsOf` leaves it out).
+                  const informational = isInformational(entry);
+                  return (
+                    <tr key={entry.id} className="border-b border-border last:border-0" data-testid="statement-line" data-type={entry.type} data-informational={informational ? 'true' : undefined}>
+                      <td className="whitespace-nowrap py-2 pr-3 align-top">{shortDate(entry.recognitionDate)}</td>
+                      <td className="py-2 pr-3 align-top">
+                        <Button type="button" variant="link" className="h-auto min-h-11 whitespace-normal p-0 text-left" onClick={() => setExplained(entry)} data-testid="statement-line-explain">
+                          {t(`ownerAccounting.line.type.${entry.type}`)}
+                        </Button>
+                        {entry.reversesEntryId ? <Badge variant="outline" className="ml-2">{t('ownerAccounting.line.reversal')}</Badge> : null}
+                        {informational ? <Badge variant="outline" className="ml-2">{t('ownerAccounting.line.informational')}</Badge> : null}
+                        <p className="break-words text-foreground/70">{lineSummary(entry, t, money)}</p>
+                      </td>
+                      <td className="whitespace-nowrap py-2 pr-3 text-right align-top tabular-nums">{entry.sharePercent}%</td>
+                      <td className={cn('whitespace-nowrap py-2 text-right align-top tabular-nums', informational && 'text-foreground/70')} data-testid="statement-line-amount">
+                        {money(shownAmount(entry, entry.amount), entry.statementCurrency)}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -351,7 +362,7 @@ function StatementContent({ version, entries, touristTax }: { version: OwnerStat
                     {changes.added.map((entry) => (
                       <li key={entry.id}>
                         <Button type="button" variant="link" className="h-auto min-h-11 whitespace-normal p-0 text-left" onClick={() => setExplained(entry)}>
-                          {t('ownerAccounting.changes.addedLine', { type: t(`ownerAccounting.line.type.${entry.type}`), amount: money(entry.amount, entry.statementCurrency) })}
+                          {t('ownerAccounting.changes.addedLine', { type: t(`ownerAccounting.line.type.${entry.type}`), amount: money(shownAmount(entry, entry.amount), entry.statementCurrency) })}
                         </Button>
                       </li>
                     ))}
@@ -452,7 +463,7 @@ function lineSummary(entry: OwnerLedgerEntry, t: ReturnType<typeof useTranslatio
   if (entry.type === 'OwnerPayment' || entry.type === 'AgencyPayment' || entry.type === 'Correction' || entry.type === 'Withholding') {
     return entry.description ?? t(`ownerAccounting.line.source.${entry.source}`);
   }
-  return t('ownerAccounting.lines.summary', { share: entry.sharePercent, source: money(entry.sourceAmount, entry.originalCurrency) });
+  return t('ownerAccounting.lines.summary', { share: entry.sharePercent, source: money(shownAmount(entry, entry.sourceAmount), entry.originalCurrency) });
 }
 
 /** The withholding decision of a payout, as recorded when it was confirmed: read when the statement is opened, never computed here. */

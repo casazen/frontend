@@ -68,6 +68,18 @@ export interface OwnerPortalStatementLine {
   reversal: boolean;
   /** True when the portal billed the agency, which recharges the commission to the owner. */
   channelFeeRechargedByAgency: boolean;
+  /**
+   * True when the portal billed the agency, which does not recharge the commission and bears it itself: the owner is not charged. The line is `informational`. Absent on a server older than
+   * that rule, where the flag meant a commission the owner WAS charged on an account of the agency (the labels read both, see `portalFeeNoteOf`).
+   */
+  channelFeeBilledToAgencyNotRecharged?: boolean;
+  /** True for a commission the owner was charged (it is in the totals) on a portal account of the agency that is not recharged now: a line posted before the rule. Absent on an older server. */
+  channelFeeChargedOnAgencyAccount?: boolean;
+  /**
+   * True for a line for information only (today the commission the agency bears): the page shows it and leaves it out of every total, of the net and of the sum of its part (the `total` of the
+   * section is the server's, and does not hold it). Its `amount` is the commission as the ledger writes it, a negative. Absent on an older server: the line is then one like the others.
+   */
+  informational?: boolean;
 }
 
 /** One part of a statement: its name, the sum of its lines and the lines, by day. */

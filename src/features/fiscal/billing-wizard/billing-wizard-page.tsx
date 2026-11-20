@@ -51,6 +51,7 @@ import {
   initialValues,
   isAccountantRefused,
   isNeedsWholeOrg,
+  isRechargeWaiverNotAcknowledged,
   lastMonthOf,
   missingItemsOf,
   ownerIssuersMissing,
@@ -91,6 +92,7 @@ import { StepFrame } from './steps/step-frame';
 import { SummaryStep } from './steps/summary-step';
 import { TouristTaxStep } from './steps/tourist-tax-step';
 import { VatStep } from './steps/vat-step';
+import { useRechargeWaiverConfirmation } from './use-recharge-waiver-confirmation';
 
 /** The name a step has in the texts: the id of the step, with no dash. */
 const stepKeyOf = (id: BillingStepId) => (id === BILLING_STEPS.touristTax ? 'touristTax' : id === BILLING_STEPS.ownerIssuers ? 'ownerIssuers' : id);
@@ -129,6 +131,7 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
   const saveTaxIdentity = useSaveTaxIdentity();
   const savePortalSettings = useSavePortalAccountSettings();
   const saveHolders = useSaveChannelAccountHolders();
+  const waiver = useRechargeWaiverConfirmation();
   const saveRules = useSaveChannelCommissionRules();
   const apply = useApplyMandateTemplate();
   const preview = useBillingPreview();
@@ -178,6 +181,22 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
   const home = flags.octorateOnboarding ? { to: ONBOARDING_PLAN_PATH, label: t('billingWizard.done.toPlan') } : { to: FISCAL_PATH, label: t('billingWizard.done.toFiscal') };
 
   /**
+   * A write that may start the waiver of the recharge of the portal commissions (the settings of the portal accounts, the bulk write of the holders). It is sent WITHOUT the acknowledgement of the
+   * waiver, always: the server alone knows whether the write starts one, and when it does it refuses with 422 `recharge_waiver_not_acknowledged` and saves nothing. Then the person is asked, in the
+   * dialog that says what the waiver is, and the write is sent again, once, WITH the acknowledgement, only after they confirm. After a no the refusal is the answer: nothing was saved and the
+   * wizard says so. Any other failure is the caller's, untouched.
+   */
+  const writeAskingTheWaiver = async <T,>(write: (acknowledgeRechargeWaiver: boolean) => Promise<T>): Promise<T> => {
+    try {
+      return await write(false);
+    } catch (error) {
+      if (!isRechargeWaiverNotAcknowledged(error)) throw error;
+      if (!(await waiver.confirm())) throw error;
+      return write(true);
+    }
+  };
+
+  /**
    * Saves what a step holds on the server. A step that was checked sends every field it asks; a draft (what «Salva ed esci» keeps) sends only what is valid, not empty and
    * changed since the step opened: a proposal left as it was (the owner as the holder of the portal accounts, the percents of the configuration, the series of the server) is
    * not an answer, and leaving must not turn it into one. The VAT number or the fiscal code the tax profile did not have, and the person wrote, go to the tax profile first
@@ -198,12 +217,18 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
       if (id === BILLING_STEPS.channels) {
         if (flags.ownerInvoicing) {
           if (!draft || portalSettingsChanged(values, defaults)) {
-            await savePortalSettings.mutateAsync({ portalAccountHolder: values.portalAccountHolder, rechargePortalCommissions: values.rechargePortalCommissions });
+            await writeAskingTheWaiver((acknowledgeRechargeWaiver) =>
+              savePortalSettings.mutateAsync({
+                portalAccountHolder: values.portalAccountHolder,
+                rechargePortalCommissions: values.rechargePortalCommissions,
+                ...(acknowledgeRechargeWaiver ? { acknowledgeRechargeWaiver: true } : {}),
+              }),
+            );
             sent = true;
           }
           const rows = holderChangesRequest(values.holderChanges, holders.data ?? []);
           if (rows) {
-            await saveHolders.mutateAsync(rows);
+            await writeAskingTheWaiver((acknowledgeRechargeWaiver) => saveHolders.mutateAsync(acknowledgeRechargeWaiver ? { changes: rows, acknowledgeRechargeWaiver: true } : { changes: rows }));
             sent = true;
           }
         }
@@ -407,6 +432,8 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
           finishError: 'fiscal-billing-finish-error',
         }}
       />
+      {/* Outside the wizard and its form: a dialog inside a form would submit it. It opens only when the server asked for the confirmation of the waiver of the recharge. */}
+      {waiver.dialog}
     </>
   );
 }

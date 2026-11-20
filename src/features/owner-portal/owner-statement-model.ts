@@ -2,6 +2,7 @@ import type {
   OwnerPortalInvoice,
   OwnerPortalInvoiceKind,
   OwnerPortalStatement,
+  OwnerPortalStatementLine,
   OwnerPortalStatementSection,
   OwnerPortalStatementSectionName,
   OwnerPortalStatementTotals,
@@ -91,6 +92,54 @@ const STATEMENT_SECTIONS: readonly OwnerPortalStatementSectionName[] = ['stays',
 /** The parts that have lines, in the order of the PDF: an empty part says nothing and is not drawn; a part this page has no words for is not drawn either. */
 export function sectionsWithLines(sections: readonly OwnerPortalStatementSection[]): OwnerPortalStatementSection[] {
   return STATEMENT_SECTIONS.flatMap((name) => sections.filter((section) => section.section === name && section.lines.length > 0));
+}
+
+// ---------------------------------------------------------------- the commission of a portal on a line
+
+/** The type of the ledger line that is the commission of a portal the agency bears: the server writes the type of a line by its name. */
+const BORNE_BY_AGENCY_TYPE = 'ChannelFeeBorneByAgency';
+
+type InformationalFacts = Pick<OwnerPortalStatementLine, 'type' | 'informational'>;
+
+/**
+ * A line for information only (today the commission of a portal that the agency bears, and the owner is not charged): the page shows it and leaves it out of every sum. The server says it
+ * (`informational`), and so does the type that is always one. The totals the page writes (the net, the parts, the balances) are the server's and never hold such a line: the page adds up no
+ * line of the ledger by itself.
+ */
+export function isInformationalLine(line: InformationalFacts): boolean {
+  return line.informational === true || line.type === BORNE_BY_AGENCY_TYPE;
+}
+
+/**
+ * The amount a line is written with. A line for information only is the commission the agency bears, and it is written as the PDF and the CSV of the statement write it, a positive figure
+ * (the ledger holds it as a negative, like a commission of the portal): never with the minus of a deduction, because nothing is deducted. Every other line keeps the sign of the ledger.
+ */
+export function shownLineAmount(line: InformationalFacts & Pick<OwnerPortalStatementLine, 'amount'>): number {
+  if (!isInformationalLine(line)) return line.amount;
+  return line.amount === 0 ? 0 : -line.amount;
+}
+
+/** What a line says of the commission of a portal: who bears it, or whose account it was on. */
+export type PortalFeeNote = 'borneByAgency' | 'rechargedByAgency' | 'chargedOnAgencyAccount';
+
+/**
+ * The sentence a line carries about the commission of a portal, from its four flags (`channelFeeRechargedByAgency`, `channelFeeBilledToAgencyNotRecharged`, `channelFeeChargedOnAgencyAccount`,
+ * `informational`); `null` for the account of the owner (V1: all four are false), where the line says nothing more than it always did.
+ *
+ * - the line for information only: the agency bears the commission and the owner is not charged (`borneByAgency`);
+ * - the agency holds the account and recharges the commission on its invoice (`rechargedByAgency`);
+ * - the owner WAS charged the commission on an account of the agency that is not recharged now, a line posted before the rule (`chargedOnAgencyAccount`): never told as the account of the owner.
+ *
+ * A server older than the rule sent `channelFeeBilledToAgencyNotRecharged` for that last case (the line was in the totals, the owner charged) and no `informational`: it is read as the case it
+ * was, never as the commission the agency bears, which only `informational` says.
+ */
+export function portalFeeNoteOf(
+  line: InformationalFacts & Pick<OwnerPortalStatementLine, 'channelFeeRechargedByAgency' | 'channelFeeBilledToAgencyNotRecharged' | 'channelFeeChargedOnAgencyAccount'>,
+): PortalFeeNote | null {
+  if (isInformationalLine(line)) return 'borneByAgency';
+  if (line.channelFeeRechargedByAgency) return 'rechargedByAgency';
+  if (line.channelFeeChargedOnAgencyAccount === true || line.channelFeeBilledToAgencyNotRecharged === true) return 'chargedOnAgencyAccount';
+  return null;
 }
 
 // ---------------------------------------------------------------- the tourist tax
