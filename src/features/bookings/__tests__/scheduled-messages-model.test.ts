@@ -178,8 +178,24 @@ describe('the words of a scheduled message', () => {
       expect(codes.map((code) => missingItemOf(code).itemKey)).toEqual(['booking.scheduledMessages.blocked.item.unknown']);
     });
 
-    it.each(['Scheduled', 'Sent', 'Failed', 'Skipped'] as const)('%s_WaitsForNothing_EvenWithAReasonOnTheRow', (status) => {
+    it.each(['Sent', 'Skipped', 'Cancelled', 'Expired'] as const)('%s_WaitsForNothing_EvenWithAReasonOnTheRow', (status) => {
       expect(missingCodesOf(message({ status, blockedReason: 'chat_not_licensed', missingVariables: ['guest_name'] }))).toEqual([]);
+    });
+
+    // A planned or a failed message whose booking lacks a datum is held back when its time comes (or when it is tried again): the data are said for every open message. The code that sits on a failed
+    // row is why the last send did not go, which has its own sentence: it is never one of the things the message waits for.
+    it.each(['Scheduled', 'Failed'] as const)('%s_WaitsForTheDataTheBookingLacks_ButNeverForTheReasonOfTheRow', (status) => {
+      expect(missingCodesOf(message({ status, blockedReason: 'chat_not_licensed', missingVariables: ['guest_name', 'check_in_time'] }))).toEqual([
+        'variable_missing:guest_name',
+        'variable_missing:check_in_time',
+      ]);
+      expect(missingCodesOf(message({ status, blockedReason: 'chat_not_licensed', missingVariables: [] }))).toEqual([]);
+    });
+
+    it('ACodeThatIsNotAVariable_InTheMissingVariablesOfTheServer_IsToldWithItsOwnSentence_NotAsAVariable', () => {
+      const codes = missingCodesOf(message({ status: 'Blocked', blockedReason: 'template_missing', missingVariables: ['template_missing'] }));
+      expect(codes).toEqual(['template_missing']);
+      expect(missingItemOf(codes[0] ?? '').itemKey).toBe('booking.scheduledMessages.blocked.item.templateMissing');
     });
 
     it('EveryVariableOfATemplate_HasASentenceOfItsOwn_AndTheOnesOfThePropertyHaveALinkToIt', () => {

@@ -168,17 +168,26 @@ export function missingItemOf(code: string): MissingItem {
   return Object.hasOwn(MISSING_ITEMS, code) ? MISSING_ITEMS[code] : UNKNOWN_ITEM;
 }
 
+/** The code that says what a name the server lists as missing stands for: `variable_missing:{name}` for a variable of a template, and the name itself for a code that is not one (`template_missing`, `message_text_invalid`). */
+function missingCodeOf(name: string): string {
+  return isTemplateVariable(name) ? `variable_missing:${name}` : name;
+}
+
 /**
- * What a blocked message waits for, one code for each thing and each once, in the order the server tells them: the variables the text names that the booking has no value for, then the reason
- * the row is held back unless it is one of those variables already. A message that is not blocked waits for nothing.
+ * What a message that can still go waits for, one code for each thing and each once, in the order the server tells them: the variables the text names that the booking has no value for and, for a blocked
+ * message, the reason the row is held back (unless it is one of those variables already). It is said for every open message, not only the blocked one: a planned or a failed message whose booking lacks
+ * a datum is held back when its time comes (or when it is tried again), and its text, which has the datum taken out, is not what the guest will read. A message that is over waits for nothing.
+ * On a failed message `blockedReason` is why the last send did not go, which has its own sentence, so it is never listed here.
  */
 export function missingCodesOf(message: Pick<ScheduledMessage, 'status' | 'blockedReason' | 'missingVariables'>): string[] {
-  if (message.status !== 'Blocked') return [];
+  if (!isOpenStatus(message.status)) return [];
   const codes = new Set<string>();
-  for (const name of message.missingVariables) codes.add(`variable_missing:${name}`);
-  if (message.blockedReason) codes.add(message.blockedReason);
-  // A message held back for something the server did not name is still held back: it says so, in the generic sentence, instead of showing a state with no reason.
-  if (codes.size === 0) codes.add('unknown');
+  for (const name of message.missingVariables) codes.add(missingCodeOf(name));
+  if (message.status === 'Blocked') {
+    if (message.blockedReason) codes.add(message.blockedReason);
+    // A message held back for something the server did not name is still held back: it says so, in the generic sentence, instead of showing a state with no reason.
+    if (codes.size === 0) codes.add('unknown');
+  }
   return [...codes];
 }
 

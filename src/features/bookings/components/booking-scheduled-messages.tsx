@@ -305,6 +305,12 @@ function ScheduledMessageItem({ message, canWrite, links }: ScheduledMessageItem
               );
             })}
           </ul>
+          {/* A planned or a failed message whose booking lacks a datum is held back when its time comes: its text has the datum taken out, so it is said that this is not what the guest will read yet. */}
+          {message.status !== 'Blocked' ? (
+            <p className="text-sm text-foreground/70" data-testid="scheduled-message-missing-note">
+              {t('booking.scheduledMessages.blocked.willHold')}
+            </p>
+          ) : null}
         </div>
       ) : null}
 

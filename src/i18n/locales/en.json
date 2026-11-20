@@ -5246,7 +5246,8 @@
           "propertyAddress": "the address of the property",
           "propertyName": "the name of the property",
           "reviewLink": "the review link (it exists only for bookings made on your site)"
-        }
+        },
+        "willHold": "When the time comes to send it, the message waits until these details are there: the text below does not have them yet."
       },
       "channel": {
         "direct": "direct conversation with the guest",

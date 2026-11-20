@@ -767,3 +767,54 @@ describe('the edit of a message whose booking lacks data', () => {
     }
   });
 });
+
+// DATA: a planned or a failed message whose booking lacks a datum is held back when its time comes, and the text the server gives has the datum taken out, so it is not what the guest will read yet:
+// «Manca: …» is said for every open message, not only for the blocked one.
+describe('what an open message waits for', () => {
+  it.each([
+    ['Scheduled', null, 'Programmato'],
+    ['Failed', 'chat_not_licensed', 'Invio non riuscito'],
+  ] as const)('section_A%sMessageWhoseBookingLacksADatum_SaysWhatIsMissingAndThatItWillWaitForIt', async (status, blockedReason, word) => {
+    state.granted = new Set(['booking.read', 'booking.write', 'property.read']);
+    list.mockResolvedValue([msg({ status, blockedReason, missingVariables: ['property_address'], text: 'Vi aspetto in .' })]);
+    renderSection();
+
+    const card = await cardOf('m-1');
+    const missing = card.getByTestId('scheduled-message-missing');
+    expect(missing).toHaveTextContent('Manca:');
+    expect(missing).toHaveTextContent("l'indirizzo dell'immobile");
+    expect(card.getByTestId('scheduled-message-fix-property')).toHaveAttribute('href', `/app/short-rent/properties/${PROPERTY_ID}`);
+    expect(card.getByTestId('scheduled-message-missing-note')).toHaveTextContent('resta fermo finché questi dati non ci sono');
+    // The state is still told as it is, and a failed message keeps its own sentence about the last send: the code of the channel is not something the message waits for.
+    expect(card.getByTestId('scheduled-message-status')).toHaveTextContent(word);
+    if (status === 'Failed') expect(card.getByTestId('scheduled-message-failure')).toHaveTextContent('la chat del portale non è ancora attiva');
+    expect(missing.textContent).not.toMatch(/chat/i);
+  });
+
+  it('section_ABlockedMessage_AlreadyWaits_SoItHasNoNoteAboutWaiting', async () => {
+    list.mockResolvedValue([msg({ status: 'Blocked', blockedReason: 'variable_missing:property_address', missingVariables: ['property_address'] })]);
+    renderSection();
+
+    const card = await cardOf('m-1');
+    expect(card.getByTestId('scheduled-message-missing')).toHaveTextContent("l'indirizzo dell'immobile");
+    expect(card.queryByTestId('scheduled-message-missing-note')).not.toBeInTheDocument();
+  });
+
+  it.each(['Sent', 'Skipped', 'Cancelled', 'Expired'] as const)('section_A%sMessage_WaitsForNothing_WhateverTheServerStillListsAsMissing', async (status) => {
+    list.mockResolvedValue([msg({ status, missingVariables: ['property_address'], text: null, canEdit: false, canSkip: false, canSendNow: false, channel: 'None' })]);
+    renderSection();
+
+    const card = await cardOf('m-1');
+    expect(card.queryByTestId('scheduled-message-missing')).not.toBeInTheDocument();
+  });
+
+  it('sendNow_APlannedMessageThatLacksADatum_ShowsWhatIsMissingBeforeTheHostConfirms', async () => {
+    list.mockResolvedValue([msg({ status: 'Scheduled', missingVariables: ['check_in_time'], text: 'Il check-in è dalle.' })]);
+    renderSection();
+
+    fireEvent.click(await screen.findByTestId('scheduled-message-send-now'));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByTestId('scheduled-message-send-now-missing')).toHaveTextContent("l'orario di arrivo dell'immobile");
+    expect(within(dialog).getByTestId('scheduled-message-send-now-missing')).toHaveTextContent('Se non lo completi, il messaggio non parte.');
+  });
+});

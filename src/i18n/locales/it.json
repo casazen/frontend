@@ -5246,7 +5246,8 @@
           "propertyAddress": "l'indirizzo dell'immobile",
           "propertyName": "il nome dell'immobile",
           "reviewLink": "il link per la recensione (c'è solo per le prenotazioni fatte dal tuo sito)"
-        }
+        },
+        "willHold": "Quando arriva il momento di inviarlo, il messaggio resta fermo finché questi dati non ci sono: il testo qui sotto non li ha ancora."
       },
       "channel": {
         "direct": "conversazione diretta con l'ospite",
