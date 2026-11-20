@@ -3725,9 +3725,10 @@
             "removed": "Confirmation removed for {{comune}}."
           },
           "failure": {
-            "failed": "We could not save your answer: nothing has changed. Try again.",
+            "failed": "We cannot tell whether your answer was saved: check the list and try again.",
             "forbidden": "Your role cannot change how documents are issued: your answer was not saved.",
             "invalid": "The portal or the comune of this answer is not valid: your answer was not saved. Refresh the page and try again.",
+            "notSent": "We could not load the current list, so your answer was not sent. Try again.",
             "profile": "Before answering, complete the issuer’s details in the first step: your answer was not saved.",
             "retry": "Try again",
             "wholeOrg": "How documents are issued concerns all the properties of the organization: only someone who sees all of them can change it, and your access sees only some. Your answer was not saved."

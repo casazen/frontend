@@ -233,15 +233,31 @@ export function portalComuniRequest(confirmed: readonly PortalTouristTaxComune[]
   return { comuni: [...others, ...('add' in change ? [target] : [])].map(({ channel, comuneIstat }) => ({ channel, comuneIstat })) };
 }
 
-/** Why a confirmation was not saved, in the words the step has for it. */
-export type PortalComuniFailure = 'wholeOrg' | 'forbidden' | 'invalid' | 'profile' | 'failed';
+/**
+ * Why a confirmation was not saved, in the words the step has for it. `notSent` is the one failure where it is KNOWN that nothing was sent (the list could not be made); `failed` is a call
+ * whose outcome is not known (the server may have saved it before the answer was lost), and the other three are refusals of the server, which saved nothing.
+ */
+export type PortalComuniFailure = 'wholeOrg' | 'forbidden' | 'invalid' | 'profile' | 'notSent' | 'failed';
 
 /**
- * What a failed confirmation was, from the answer: 403 `fiscal_settings_need_whole_org` (the person reaches only some of the properties), any other 403 (the role may not change the
- * setup), 422 `issuer_field_invalid` (a portal or a comune the server does not take), 422 `issuer_profile_incomplete` (the issuer step has not created the profile yet); anything else
- * (no answer, a 5xx, a body that is not the section) is a failed call, which can be tried again.
+ * The confirmation was NOT sent: the setup, read again just before it, could not be read, or did not hold the confirmed portals in full. A confirmation is the WHOLE list and the server
+ * replaces the list it had, so a list made from anything but a fresh and complete reading could take confirmations away: nothing is sent, and the person can try again.
+ */
+export class PortalComuniNotSentError extends Error {
+  constructor() {
+    super('The portals confirmed for the comuni could not be read, so nothing was sent.');
+    this.name = 'PortalComuniNotSentError';
+  }
+}
+
+/**
+ * What a failed confirmation was, from the answer: the list that could not be made (`PortalComuniNotSentError`: nothing was sent), 403 `fiscal_settings_need_whole_org` (the person reaches
+ * only some of the properties), any other 403 (the role may not change the setup), 422 `issuer_field_invalid` (a portal or a comune the server does not take), 422
+ * `issuer_profile_incomplete` (the issuer step has not created the profile yet); anything else (no answer, a 5xx, a body that is not the section) is a failed call whose outcome is not
+ * known, which can be tried again after the list has been read again.
  */
 export function portalComuniFailureOf(error: unknown): PortalComuniFailure {
+  if (error instanceof PortalComuniNotSentError) return 'notSent';
   if (isAxiosError(error) && error.response) {
     const { status, data } = error.response;
     const code = getProblemCode(data);

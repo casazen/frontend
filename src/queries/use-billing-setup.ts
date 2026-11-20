@@ -14,15 +14,22 @@ import {
 } from '@/api/billing-setup.api';
 import { fiscalApi, type FiscalTaxProfileUpdate } from '@/api/fiscal.api';
 import { touristTaxApi } from '@/api/tourist-tax.api';
+import {
+  italianTouristTaxOf,
+  PortalComuniNotSentError,
+  portalComuniFailureOf,
+  portalComuniRequest,
+  type PortalComuniChange,
+} from '@/features/fiscal/billing-wizard/billing-wizard-model';
 import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
 import type {
   BillingSetup,
   BillingSetupSection,
   ChannelAccountHolderChange,
   ChannelCommissionRuleInput,
-  ConfirmPortalTouristTaxComuniRequest,
   OwnerMandateTemplate,
   PortalAccountSettingsRequest,
+  PortalTouristTaxComune,
   SaveBillingSetupSectionRequest,
 } from '@/types';
 import { FISCAL_DOCUMENTS_KEY } from './use-fiscal-documents';
@@ -119,9 +126,13 @@ export function useSaveBillingSection() {
 
 /**
  * The portals the person confirms as the ones that collect and pay the tourist tax in a comune (`PUT api/billing-setup/touristTax/portal-comuni`): the whole list of the pairs, which
- * the server takes in place of the one it had. It is an answer of its own, not saved by «Continua». Like the other saves of the wizard the mutation is dropped as soon as nothing
- * observes it (`gcTime: 0`) and a failure keeps only the status and the body of the answer (`withoutRequest`). The server answers the section `touristTax` as saved: it is on screen
- * (the question that was confirmed leaves, the confirmed pair is listed) before the whole setup is read again.
+ * the server takes in place of the one it had. It is an answer of its own, not saved by «Continua». What the mutation takes is what the person did (`PortalComuniChange`), and the
+ * list is made HERE, from the setup read again just before the call, never from what the page kept: another window, another person, or a call whose answer was lost may have changed
+ * what the server holds, and a list made from an old reading would take those confirmations away. When that reading fails or does not hold the confirmed portals in full nothing is sent
+ * (`PortalComuniNotSentError`). Like the other saves of the wizard the mutation is dropped as soon as nothing observes it (`gcTime: 0`) and a failure keeps only the status and the body
+ * of the answer (`withoutRequest`). The server answers the section `touristTax` as saved: it is on screen (the question that was confirmed leaves, the confirmed pair is listed) before
+ * the whole setup is read again. A refusal saved nothing and the list was read just before it, so nothing on screen is old; any other failure (the read, or a call whose outcome is not
+ * known) leaves the page with a list that may be old, so the setup is read again.
  */
 export function useConfirmPortalTouristTaxComuni() {
   const queryClient = useQueryClient();
@@ -129,9 +140,19 @@ export function useConfirmPortalTouristTaxComuni() {
 
   return useMutation({
     gcTime: 0,
-    mutationFn: async (request: ConfirmPortalTouristTaxComuniRequest) => {
+    mutationFn: async (change: PortalComuniChange) => {
+      let confirmed: PortalTouristTaxComune[] | null;
       try {
-        return await confirmPortalTouristTaxComuni(request);
+        // No retries: the person is waiting, and a read that fails is told as such (they can try again). The reading also replaces the setup the page shows.
+        const fresh = await queryClient.fetchQuery({ queryKey: BILLING_SETUP_KEY, queryFn: () => getBillingSetup(), staleTime: 0, retry: false });
+        confirmed = italianTouristTaxOf(fresh)?.confirmed ?? null;
+      } catch {
+        confirmed = null;
+      }
+      if (confirmed === null) throw new PortalComuniNotSentError();
+
+      try {
+        return await confirmPortalTouristTaxComuni(portalComuniRequest(confirmed, change));
       } catch (error) {
         throw withoutRequest(error);
       }
@@ -139,6 +160,10 @@ export function useConfirmPortalTouristTaxComuni() {
     onSuccess: (saved) => {
       queryClient.setQueryData<BillingSetup | undefined>(BILLING_SETUP_KEY, (current) => withSection(current, saved));
       afterSave();
+    },
+    onError: (error) => {
+      const failure = portalComuniFailureOf(error);
+      if (failure === 'failed' || failure === 'notSent') void queryClient.invalidateQueries({ queryKey: BILLING_SETUP_KEY });
     },
   });
 }

@@ -67,6 +67,8 @@ interface Server {
   reach: 'whole' | 'some';
   /** How the next confirmations are answered instead of saving them (a refusal, a failure, a body that is no section); `undefined` saves them. */
   reply?: (body: unknown) => WireReply;
+  /** How the next reads of the setup are answered instead of telling what the server holds (a failure, a body that is no setup, a section that cannot be read); `undefined` tells it. */
+  setup?: () => WireReply;
 }
 
 let server: Server;
@@ -98,9 +100,14 @@ function setupOfServer(state: Server): BillingSetup {
   return setupOf(italianSetup().sections.map((entry) => (entry.section === 'touristTax' ? touristTaxOf(state) : entry)));
 }
 
+/** The setup of an Italian issuer whose section `touristTax` carries exactly the given values (what a reading that is not the usual one says). */
+function setupWith(values: Record<string, unknown>): BillingSetup {
+  return setupOf(italianSetup().sections.map((entry) => (entry.section === 'touristTax' ? section('touristTax', values, [], false) : entry)));
+}
+
 /** The answers of the server: the setup, the probe of the reach, the lists the Italian step reads and the confirmation. */
 function answer({ method, path, body }: WireRequest): WireReply {
-  if (method === 'GET' && path === '/billing-setup') return { status: 200, data: setupOfServer(server) };
+  if (method === 'GET' && path === '/billing-setup') return server.setup ? server.setup() : { status: 200, data: setupOfServer(server) };
   if (method === 'PUT' && path === '/billing-setup/issuer') {
     return server.reach === 'some' ? { status: 403, data: { code: 'fiscal_settings_need_whole_org' } } : { status: 200, data: section('issuer', {}) };
   }
@@ -392,11 +399,13 @@ describe('a refusal and a failure are each told in their own words, and nothing 
     }
   });
 
-  it('ItalianStep_TheFourRefusalsHaveFourDifferentTexts_InBothLanguages', async () => {
+  it('ItalianStep_EveryRefusalAndFailureHasItsOwnText_InBothLanguages_AndNoneClaimsNothingChangedForACallWhoseOutcomeIsNotKnown', async () => {
     for (const language of ['it', 'en']) {
       await i18n.changeLanguage(language);
-      const failures = ['wholeOrg', 'forbidden', 'invalid', 'profile', 'failed'].map((kind) => text(`billingWizard.touristTax.italy.portals.failure.${kind}`));
-      expect(new Set(failures).size).toBe(5);
+      const failures = ['wholeOrg', 'forbidden', 'invalid', 'profile', 'notSent', 'failed'].map((kind) => text(`billingWizard.touristTax.italy.portals.failure.${kind}`));
+      expect(new Set(failures).size).toBe(6);
+      // A call that timed out, lost its answer or got an unreadable one may have been saved: it never says that nothing changed.
+      expect(text('billingWizard.touristTax.italy.portals.failure.failed')).not.toMatch(/non è cambiato niente|nothing has changed/i);
     }
     // And the two languages do not say the same thing.
     await i18n.changeLanguage('it');
@@ -450,6 +459,115 @@ describe('a refusal and a failure are each told in their own words, and nothing 
     expect(screen.queryByTestId('billing-portal-done')).toBeNull();
     expect(screen.queryByTestId('billing-portal-confirmed')).toBeNull();
     expect(screen.getAllByTestId('billing-portal-proposal')).toHaveLength(2);
+    expect(onForbidden).not.toHaveBeenCalled();
+  });
+});
+
+describe('the list that replaces the one of the server is made from a reading made just before it, never from what the page kept (data rule: another window, another person or a lost answer may have changed it)', () => {
+  it('ItalianStep_AConfirmation_IsMadeFromTheServerAsItIsNow_NotFromWhatThePageKept', async () => {
+    renderWizard();
+    await onTheStep();
+    expect(await screen.findAllByTestId('billing-portal-proposal', undefined, WAIT)).toHaveLength(2);
+
+    // Another window confirmed Rome and Milano after this page was read: the page still asks both questions and knows nothing of them.
+    server.confirmed = [ROMA, pair(MILANO)];
+    expect(screen.getAllByTestId('billing-portal-proposal')).toHaveLength(2);
+    await press('billing-portal-confirm-Airbnb-048017');
+
+    // The body holds what the server has now plus the new pair: nothing that another window confirmed is taken away.
+    await waitFor(() => expect(confirmations).toHaveLength(1), WAIT);
+    expect(confirmations[0]).toEqual(PAIRS(ROMA, pair(MILANO), pair(FIRENZE)));
+    await waitFor(() => expect(screen.getAllByTestId('billing-portal-confirmed-item')).toHaveLength(3), WAIT);
+    expect(server.confirmed).toEqual([ROMA, pair(MILANO), pair(FIRENZE)]);
+  });
+
+  it('ItalianStep_ARemoval_IsMadeFromTheServerAsItIsNow_NotFromWhatThePageKept', async () => {
+    server.confirmed = [pair(MILANO), pair(FIRENZE)];
+    renderWizard();
+    await onTheStep();
+    expect(await screen.findAllByTestId('billing-portal-confirmed-item', undefined, WAIT)).toHaveLength(2);
+
+    // Another window confirmed Rome after this page was read: the page lists two pairs and knows nothing of it.
+    server.confirmed = [pair(MILANO), pair(FIRENZE), ROMA];
+    expect(screen.getAllByTestId('billing-portal-confirmed-item')).toHaveLength(2);
+    await press('billing-portal-remove-Airbnb-015146');
+
+    await waitFor(() => expect(confirmations).toHaveLength(1), WAIT);
+    expect(confirmations[0]).toEqual(PAIRS(pair(FIRENZE), ROMA));
+    await waitFor(() => expect(screen.getAllByTestId('billing-portal-confirmed-item')).toHaveLength(2), WAIT);
+    expect(server.confirmed).toEqual([pair(FIRENZE), ROMA]);
+  });
+
+  // A call that timed out, lost its answer or got an unreadable one may have been saved: it is not told as «nothing changed», and the page reads the setup again, so it never offers a list that is old.
+  it.each([
+    { name: '504AfterTheServerSavedIt', outcome: { status: 504, data: '' } },
+    { name: 'AnUnreadableAnswerAfterTheServerSavedIt', outcome: { status: 200, data: '<!doctype html><html><body>index</body></html>' } },
+  ])('ItalianStep_ACallWhoseOutcomeIsNotKnown_IsReadAgain_AndTheListOnScreenIsNotOld ($name)', async ({ outcome }) => {
+    server.reply = (body) => {
+      server.confirmed = (body as { comuni: Pair[] }).comuni;
+      return outcome;
+    };
+    renderWizard();
+    await onTheStep();
+
+    await press('billing-portal-confirm-Airbnb-048017');
+
+    const alert = await screen.findByTestId('billing-portal-failure', undefined, WAIT);
+    expect(alert).toHaveAttribute('data-failure', 'failed');
+    expect(alert).toHaveTextContent(text('billingWizard.touristTax.italy.portals.failure.failed'));
+    expect(screen.queryByTestId('billing-portal-done')).toBeNull();
+    // The page reads the setup again and shows what the server holds: Firenze is confirmed and no longer a question, so the person can check it.
+    await waitFor(() => expect(screen.getAllByTestId('billing-portal-confirmed-item').map((item) => item.getAttribute('data-comune'))).toEqual(['048017']), WAIT);
+    expect(screen.getAllByTestId('billing-portal-proposal').map((card) => card.getAttribute('data-comune'))).toEqual(['015146']);
+    expect(confirmations).toHaveLength(1);
+  });
+
+  // The list is made from the reading, so a reading that fails or cannot be read in full sends NOTHING: a list made from less would take confirmations away. «Riprova» reads again.
+  it.each([
+    { name: 'TheReadingFails', setup: () => ({ status: 500, data: {} }) },
+    { name: 'TheReadingIsNotTheSetup', setup: () => ({ status: 200, data: '<!doctype html><html><body>index</body></html>' }) },
+    {
+      name: 'TheConfirmedPortalsCannotBeReadInFull',
+      setup: () => ({ status: 200, data: setupWith({ italianPortalProposals: PROPOSALS, confirmedPortalTouristTaxComuni: 'Airbnb', portalTouristTaxConflict: false }) }),
+    },
+  ])('ItalianStep_AReadingThatCannotBeUsed_SendsNothing_AndRetryReadsAgain ($name)', async ({ setup }) => {
+    renderWizard();
+    await onTheStep();
+    expect(await screen.findAllByTestId('billing-portal-proposal', undefined, WAIT)).toHaveLength(2);
+
+    server.setup = setup;
+    await press('billing-portal-confirm-Airbnb-015146');
+
+    const alert = await screen.findByTestId('billing-portal-failure', undefined, WAIT);
+    expect(alert).toHaveAttribute('data-failure', 'notSent');
+    expect(alert).toHaveTextContent(text('billingWizard.touristTax.italy.portals.failure.notSent'));
+    // Nothing was sent, nothing is claimed as saved, and the person can try again.
+    expect(confirmations).toEqual([]);
+    expect(writes()).toEqual([]);
+    expect(screen.queryByTestId('billing-portal-done')).toBeNull();
+    expect(onForbidden).not.toHaveBeenCalled();
+
+    // The server can be read again: «Riprova» reads it, makes the list from that reading and sends it.
+    server.setup = undefined;
+    await press('billing-portal-retry');
+    await waitFor(() => expect(screen.getByTestId('billing-portal-done')).toHaveTextContent('Confermato per Milano.'), WAIT);
+    expect(confirmations).toEqual([PAIRS(pair(MILANO))]);
+    expect(screen.queryByTestId('billing-portal-failure')).toBeNull();
+  });
+
+  it('ItalianStep_AReadingWithoutTheMembers_SendsNothing_AndTheBlockGoesAwayAsForAServerThatSendsNone', async () => {
+    renderWizard();
+    await onTheStep();
+    expect(await screen.findAllByTestId('billing-portal-proposal', undefined, WAIT)).toHaveLength(2);
+
+    // The person no longer reaches the whole organization (or the issuer is no longer Italian): the server leaves the members out, and there is no list to build on.
+    server.setup = () => ({ status: 200, data: setupWith({}) });
+    await press('billing-portal-confirm-Airbnb-015146');
+
+    await waitFor(() => expect(screen.queryByTestId('billing-portal-tax')).toBeNull(), WAIT);
+    expect(confirmations).toEqual([]);
+    expect(writes()).toEqual([]);
+    expect(screen.queryByTestId('fiscal-billing-error')).toBeNull();
     expect(onForbidden).not.toHaveBeenCalled();
   });
 });

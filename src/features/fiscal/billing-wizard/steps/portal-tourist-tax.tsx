@@ -3,23 +3,19 @@ import type { UseMutationResult } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import type { BillingSetupSection, ConfirmPortalTouristTaxComuniRequest, PortalTouristTaxComune } from '@/types';
-import {
-  comuneNamesOf,
-  portalComuniFailureOf,
-  portalComuniRequest,
-  type ItalianTouristTaxView,
-  type PortalComuniChange,
-  type PortalComuniFailure,
-} from '../billing-wizard-model';
+import type { BillingSetupSection, PortalTouristTaxComune } from '@/types';
+import { comuneNamesOf, portalComuniFailureOf, type ItalianTouristTaxView, type PortalComuniChange, type PortalComuniFailure } from '../billing-wizard-model';
 import { PORTAL_SOURCES } from '../billing-wizard-schema';
 
 /** What the block needs of the page. */
 export interface PortalTouristTaxProps {
   /** What the setup says of the portals that collect the tourist tax in the Italian comuni (`italianTouristTaxOf`). */
   view: ItalianTouristTaxView;
-  /** The confirmation of the portals (`PUT api/billing-setup/touristTax/portal-comuni`), which the page owns: it knows when a request of the wizard is on its way. */
-  confirm: UseMutationResult<BillingSetupSection, unknown, ConfirmPortalTouristTaxComuniRequest>;
+  /**
+   * The confirmation of the portals (`PUT api/billing-setup/touristTax/portal-comuni`), which the page owns: it knows when a request of the wizard is on its way. It takes what the person did
+   * and makes the whole list itself, from the setup read again just before the call: what this block shows may be old, and a list made from it could take confirmations away.
+   */
+  confirm: UseMutationResult<BillingSetupSection, unknown, PortalComuniChange>;
   /** A request of the wizard is on its way (this one included): every button of the block waits for it. */
   busy: boolean;
   /** The server said the reach of the person is only some of the properties: the wizard turns read-only, as it does for every other save. */
@@ -41,8 +37,9 @@ const idOf = (pair: PortalTouristTaxComune) => `${pair.channel}-${pair.comuneIst
  * The tourist tax of the portals in the Italian comuni (decision 2 of the fiscal decisions of 2026-11-20, research R2): for each comune of the properties where the server proposes
  * that a portal collects and pays it, a question with two answers («Sì, confermo» and «Non ora»), and the portals already confirmed, each with a way to take the confirmation away. It
  * is never an answer by itself: nothing is preselected, «Non ora» changes nothing and sends nothing, and only «Sì, confermo» sends the confirmation. A confirmation or a removal sends the
- * WHOLE list of the confirmed pairs (the server replaces the list it had), and every refusal and failure is told in its own words where it happened, never as a page of its own: a 403
- * is a refusal in words (never the no-access page), a failed call can be tried again, and an answer that is not the saved section is a failure, never a success.
+ * WHOLE list of the confirmed pairs (the server replaces the list it had), made from the setup read again just before it and never from what this block shows (see `confirm`): when that
+ * list cannot be made nothing is sent. Every refusal and failure is told in its own words where it happened, never as a page of its own: a 403 is a refusal in words (never the no-access
+ * page), a call whose outcome is not known says so and is read again before it can be tried again, and an answer that is not the saved section is a failure, never a success.
  */
 export function PortalTouristTax({ view, properties, confirm, busy, onRefused }: PortalTouristTaxBlockProps) {
   const { t } = useTranslation();
@@ -63,7 +60,7 @@ export function PortalTouristTax({ view, properties, confirm, busy, onRefused }:
   const locked = busy || sending !== null;
 
   const send = async (change: PortalComuniChange, comune: string) => {
-    if (locked || view.confirmed === null) return;
+    if (locked) return;
     const target = 'add' in change ? change.add : change.remove;
     setAttempt({ change, comune });
     setFailure(null);
@@ -71,7 +68,8 @@ export function PortalTouristTax({ view, properties, confirm, busy, onRefused }:
     setSending(keyOf(target));
     if ('add' in change) setRemembered((previous) => new Map(previous).set(target.comuneIstat, comune));
     try {
-      await confirm.mutateAsync(portalComuniRequest(view.confirmed, change));
+      // The mutation reads the setup again and makes the whole list from that reading: it can say «not sent», and «Riprova» reads again.
+      await confirm.mutateAsync(change);
       setDone({ kind: 'add' in change ? 'confirmed' : 'removed', comune });
     } catch (error) {
       // The failure is told below, in its own words: nothing is claimed as saved.
@@ -101,6 +99,8 @@ export function PortalTouristTax({ view, properties, confirm, busy, onRefused }:
         return t('billingWizard.touristTax.italy.portals.failure.invalid');
       case 'profile':
         return t('billingWizard.touristTax.italy.portals.failure.profile');
+      case 'notSent':
+        return t('billingWizard.touristTax.italy.portals.failure.notSent');
       case 'failed':
         return t('billingWizard.touristTax.italy.portals.failure.failed');
     }
@@ -215,7 +215,7 @@ export function PortalTouristTax({ view, properties, confirm, busy, onRefused }:
           data-testid="billing-portal-failure"
           data-failure={failure}
           action={
-            failure === 'failed' && attempt ? (
+            (failure === 'failed' || failure === 'notSent') && attempt ? (
               <Button type="button" size="sm" variant="outline" disabled={locked} onClick={() => void send(attempt.change, attempt.comune)} data-testid="billing-portal-retry">
                 {t('billingWizard.touristTax.italy.portals.failure.retry')}
               </Button>

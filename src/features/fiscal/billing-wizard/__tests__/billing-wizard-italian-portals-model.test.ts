@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios';
 import { UnexpectedApiResponseError } from '@/lib/api-errors';
 import type { BillingSetup } from '@/types';
-import { comuneNamesOf, italianTouristTaxOf, portalComuniFailureOf, portalComuniRequest } from '../billing-wizard-model';
+import { comuneNamesOf, italianTouristTaxOf, PortalComuniNotSentError, portalComuniFailureOf, portalComuniRequest } from '../billing-wizard-model';
 import { emptySetup, italianSetup, section, setupOf, swissSetup } from './billing-fixtures';
 
 const MILANO = { comuneIstat: '015146', comune: 'Milano', channel: 'Airbnb', status: 'to_confirm' };
@@ -129,6 +129,8 @@ describe('portalComuniFailureOf: what the answer of a failed confirmation says',
     { name: '500', error: refused(500, { code: 'fiscal_settings_need_whole_org' }), failure: 'failed' },
     { name: 'NoAnswer', error: refused(null), failure: 'failed' },
     { name: 'AnAnswerThatIsNotTheSection', error: new UnexpectedApiResponseError('/billing-setup/touristTax/portal-comuni'), failure: 'failed' },
+    // The one failure where it is known that nothing was sent: the setup read just before could not be used, so no list was made.
+    { name: 'TheListCouldNotBeMadeSoNothingWasSent', error: new PortalComuniNotSentError(), failure: 'notSent' },
     { name: 'SomethingThatIsNoErrorOfAxios', error: new Error('boom'), failure: 'failed' },
   ])('PortalComuniFailureOf_TheAnswer_IsTheFailureTheStepTells ($name: $failure)', ({ error, failure }) => {
     expect(portalComuniFailureOf(error)).toBe(failure);
