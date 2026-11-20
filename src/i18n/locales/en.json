@@ -5266,6 +5266,7 @@
           "unknown": "we cannot check it right now"
         }
       },
+      "draftKept": "The text you were writing is not lost: it comes back when the messages can be read again.",
       "edit": {
         "action": "Edit",
         "actionLabel": "Edit the message «{{name}}» of {{when}}",

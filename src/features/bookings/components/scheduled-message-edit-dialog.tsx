@@ -25,6 +25,10 @@ interface ScheduledMessageEditDialogProps {
   /** What the server refused, in words: it is shown on the field and goes when the host types again. */
   problem: string | null;
   onProblemSeen: () => void;
+  /** What the host has typed and not saved, kept by the section: the field starts with it when the dialog opens again (an unknown state of the list takes the cards, and this dialog, away for a while). */
+  draft: string | undefined;
+  /** Told the whole text at every change, to be kept. */
+  onDraftChange: (text: string) => void;
 }
 
 /** The button that was pressed and has not been answered yet: it is the one that shows the work in progress. */
@@ -41,21 +45,34 @@ type Pressed = 'save' | 'routine' | null;
  * The server also takes OUT of that text every variable the booking has no value for (`missingVariables`). The dialog says which data the text lacks, highlights the button that puts each one back, and
  * does not save the text without them until the host has said so: a save that loses a variable without the host knowing would release a message held back for it with a gap in its sentence.
  */
-export function ScheduledMessageEditDialog({ message, open, onOpenChange, onSave, busy, problem, onProblemSeen }: ScheduledMessageEditDialogProps) {
+export function ScheduledMessageEditDialog({ message, open, onOpenChange, onSave, busy, problem, onProblemSeen, draft, onDraftChange }: ScheduledMessageEditDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      {open ? <EditDialogBody key={message.id} message={message} onOpenChange={onOpenChange} onSave={onSave} busy={busy} problem={problem} onProblemSeen={onProblemSeen} /> : null}
+      {open ? (
+        <EditDialogBody
+          key={message.id}
+          message={message}
+          onOpenChange={onOpenChange}
+          onSave={onSave}
+          busy={busy}
+          problem={problem}
+          onProblemSeen={onProblemSeen}
+          draft={draft}
+          onDraftChange={onDraftChange}
+        />
+      ) : null}
     </Dialog>
   );
 }
 
-function EditDialogBody({ message, onOpenChange, onSave, busy, problem, onProblemSeen }: Omit<ScheduledMessageEditDialogProps, 'open'>) {
+function EditDialogBody({ message, onOpenChange, onSave, busy, problem, onProblemSeen, draft, onDraftChange }: Omit<ScheduledMessageEditDialogProps, 'open'>) {
   const { t } = useTranslation();
   const variablesLabelId = useId();
   const noticeId = useId();
   // What the field starts with is what the message says now: it is kept, so that «changed» is judged against it and the text of the routine can be put back.
   const [initial] = useState(() => withVariablesInPlaceOfStandIns(message.text ?? ''));
-  const [text, setText] = useState(initial);
+  // The field starts with what the host had typed if the dialog was taken away for a while (the section keeps it), and with the text of the message otherwise.
+  const [text, setText] = useState(draft ?? initial);
   const [pressed, setPressed] = useState<Pressed>(null);
   // The set of missing data the host agreed to leave out (as the text of the names it was given for): a different set, because a variable was taken out of the text again, is a new question.
   const [agreedFor, setAgreedFor] = useState<string | null>(null);
@@ -82,6 +99,7 @@ function EditDialogBody({ message, onOpenChange, onSave, busy, problem, onProble
 
   const write = (value: string) => {
     setText(value);
+    onDraftChange(value);
     onProblemSeen();
   };
 

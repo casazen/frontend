@@ -83,12 +83,27 @@ interface BookingScheduledMessagesProps {
  * «Salta» and «Invia ora» on the messages the server says can still change.
  *
  * The caller draws it only with the flag `scheduledMessages` on and the permission `booking.read`. A failed read is an unknown state, never the list that was there before (the query keeps old data
- * when a read fails), and a 404 is said as one.
+ * when a read fails), and a 404 is said as one. The text the host is writing in the dialog of a message is not part of the list: it is kept here, so that an unknown state does not take it away.
  */
 export function BookingScheduledMessages({ booking, canWrite }: BookingScheduledMessagesProps) {
   const { t } = useTranslation();
   const query = useScheduledMessages(booking.id, true);
   const links = useFixLinks(booking);
+  // Which message the host is editing and what they have typed and not saved. It lives in the section and not in the card: when a read fails (the poll, the focus of the window, the bell) the list gives
+  // way to the unknown state and the cards, with their dialogs, are unmounted; the host's words must survive that and be there when the list is back. A closed dialog (saved or cancelled) forgets them.
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [drafts, setDrafts] = useState<ReadonlyMap<string, string>>(() => new Map());
+  const keepDraft = (id: string, text: string) => setDrafts((current) => new Map(current).set(id, text));
+  const closeEdit = (id: string) => {
+    setEditingId((current) => (current === id ? null : current));
+    setDrafts((current) => {
+      if (!current.has(id)) return current;
+      const next = new Map(current);
+      next.delete(id);
+      return next;
+    });
+  };
+  const draftKept = editingId !== null && drafts.has(editingId);
 
   let body: ReactNode;
   if (query.isError) {
@@ -96,6 +111,12 @@ export function BookingScheduledMessages({ booking, canWrite }: BookingScheduled
     body = (
       <div role="alert" className="space-y-2" data-testid="scheduled-messages-error">
         <p className="text-sm text-destructive">{t(gone ? 'booking.scheduledMessages.loadErrorGone' : 'booking.scheduledMessages.loadError')}</p>
+        {/* The messages are not shown (their state is not known), but what the host was writing is not lost: it comes back with the list. */}
+        {draftKept ? (
+          <p className="text-sm" data-testid="scheduled-messages-draft-kept">
+            {t('booking.scheduledMessages.draftKept')}
+          </p>
+        ) : null}
         {gone ? null : (
           <Button variant="outline" size="sm" className="min-h-11" loading={query.isFetching} onClick={() => void query.refetch()} data-testid="scheduled-messages-retry">
             {t('booking.scheduledMessages.retry')}
@@ -126,7 +147,17 @@ export function BookingScheduledMessages({ booking, canWrite }: BookingScheduled
     body = (
       <ol role="list" aria-label={t('booking.scheduledMessages.listLabel')} className="divide-y divide-border" data-testid="scheduled-messages-list">
         {sortedInTimeOrder(query.data).map((message) => (
-          <ScheduledMessageItem key={message.id} message={message} canWrite={canWrite} links={links} />
+          <ScheduledMessageItem
+            key={message.id}
+            message={message}
+            canWrite={canWrite}
+            links={links}
+            editing={editingId === message.id}
+            draft={drafts.get(message.id)}
+            onEdit={() => setEditingId(message.id)}
+            onEditClosed={() => closeEdit(message.id)}
+            onDraft={(text) => keepDraft(message.id, text)}
+          />
         ))}
       </ol>
     );
@@ -139,18 +170,26 @@ export function BookingScheduledMessages({ booking, canWrite }: BookingScheduled
   );
 }
 
-/** Which of the three dialogs of a message is open. */
-type DialogKind = 'edit' | 'skip' | 'send';
+/** Which of the two confirmations of a message is open (the edit dialog is kept by the section). */
+type ConfirmKind = 'skip' | 'send';
 
 interface ScheduledMessageItemProps {
   message: ScheduledMessage;
   canWrite: boolean;
   links: FixLinks;
+  /** The host is editing the text of this message (the section keeps it, so that it survives an unknown state of the list). */
+  editing: boolean;
+  /** What the host has typed in the dialog and has not saved; `undefined` when nothing. */
+  draft: string | undefined;
+  onEdit: () => void;
+  /** The dialog was closed (saved, cancelled): the section forgets what was typed. */
+  onEditClosed: () => void;
+  onDraft: (text: string) => void;
 }
 
-function ScheduledMessageItem({ message, canWrite, links }: ScheduledMessageItemProps) {
+function ScheduledMessageItem({ message, canWrite, links, editing, draft, onEdit, onEditClosed, onDraft }: ScheduledMessageItemProps) {
   const { t, i18n } = useTranslation();
-  const [dialog, setDialog] = useState<DialogKind | null>(null);
+  const [confirm, setConfirm] = useState<ConfirmKind | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
   const edit = useEditScheduledMessage();
   const skip = useSkipScheduledMessage();
@@ -173,15 +212,24 @@ function ScheduledMessageItem({ message, canWrite, links }: ScheduledMessageItem
 
   // What the server lets a person do with this message, and only for who may write the booking. The dialogs follow it: one that is open on a message that can no longer change closes with it.
   const may = { edit: canWrite && message.canEdit, skip: canWrite && message.canSkip, send: canWrite && message.canSendNow };
-  const allowed: Record<DialogKind, boolean> = { edit: may.edit, skip: may.skip, send: may.send };
-  const activeDialog = dialog !== null && allowed[dialog] ? dialog : null;
-  const openDialog = (kind: DialogKind) => {
+  const editOpen = editing && may.edit;
+  const confirmOpen: ConfirmKind | null = confirm === 'skip' && may.skip ? 'skip' : confirm === 'send' && may.send ? 'send' : null;
+  const dialogOpen = editOpen || confirmOpen !== null;
+  const openEdit = () => {
     setProblem(null);
-    setDialog(kind);
+    onEdit();
   };
-  const closeDialog = () => {
+  const closeEdit = () => {
     setProblem(null);
-    setDialog(null);
+    onEditClosed();
+  };
+  const openConfirm = (kind: ConfirmKind) => {
+    setProblem(null);
+    setConfirm(kind);
+  };
+  const closeConfirm = () => {
+    setProblem(null);
+    setConfirm(null);
   };
 
   // Each write lets go of its mutation when it is over (`reset`): a hook keeps the last one it ran, with the text that was sent, for as long as the card is on the page.
@@ -189,7 +237,7 @@ function ScheduledMessageItem({ message, canWrite, links }: ScheduledMessageItem
     setProblem(null);
     try {
       await edit.mutateAsync({ bookingId: message.bookingId, id: message.id, text });
-      setDialog(null);
+      closeEdit();
     } catch (error) {
       setProblem(describeScheduledMessageError(error, t));
     } finally {
@@ -336,15 +384,7 @@ function ScheduledMessageItem({ message, canWrite, links }: ScheduledMessageItem
       {may.edit || may.skip || may.send ? (
         <div className="flex flex-wrap gap-2" data-testid="scheduled-message-actions">
           {may.edit ? (
-            <Button
-              variant="outline"
-              size="sm"
-              className="min-h-11"
-              disabled={busy}
-              aria-label={editLabel}
-              onClick={() => openDialog('edit')}
-              data-testid="scheduled-message-edit"
-            >
+            <Button variant="outline" size="sm" className="min-h-11" disabled={busy} aria-label={editLabel} onClick={openEdit} data-testid="scheduled-message-edit">
               {t('booking.scheduledMessages.edit.action')}
             </Button>
           ) : null}
@@ -355,7 +395,7 @@ function ScheduledMessageItem({ message, canWrite, links }: ScheduledMessageItem
               className="min-h-11"
               disabled={busy}
               aria-label={skipLabel}
-              onClick={() => openDialog('skip')}
+              onClick={() => openConfirm('skip')}
               data-testid="scheduled-message-skip"
             >
               {t('booking.scheduledMessages.skip.action')}
@@ -368,7 +408,7 @@ function ScheduledMessageItem({ message, canWrite, links }: ScheduledMessageItem
               className="min-h-11"
               disabled={busy}
               aria-label={sendLabel}
-              onClick={() => openDialog('send')}
+              onClick={() => openConfirm('send')}
               data-testid="scheduled-message-send-now"
             >
               {t('booking.scheduledMessages.sendNow.action')}
@@ -377,7 +417,7 @@ function ScheduledMessageItem({ message, canWrite, links }: ScheduledMessageItem
         </div>
       ) : null}
 
-      {problem && activeDialog === null ? (
+      {problem && !dialogOpen ? (
         <p role="alert" className="text-sm text-destructive" data-testid="scheduled-message-problem">
           {problem}
         </p>
@@ -386,19 +426,21 @@ function ScheduledMessageItem({ message, canWrite, links }: ScheduledMessageItem
       {may.edit ? (
         <ScheduledMessageEditDialog
           message={message}
-          open={activeDialog === 'edit'}
-          onOpenChange={(open) => (open ? setDialog('edit') : closeDialog())}
+          open={editOpen}
+          onOpenChange={(open) => (open ? onEdit() : closeEdit())}
           onSave={saveText}
           busy={busy}
           problem={problem}
           onProblemSeen={() => setProblem(null)}
+          draft={draft}
+          onDraftChange={onDraft}
         />
       ) : null}
 
       {may.skip ? (
         <ConfirmationDialog
-          open={activeDialog === 'skip'}
-          onOpenChange={(open) => (open ? setDialog('skip') : closeDialog())}
+          open={confirmOpen === 'skip'}
+          onOpenChange={(open) => (open ? setConfirm('skip') : closeConfirm())}
           title={t('booking.scheduledMessages.skip.title')}
           description={t('booking.scheduledMessages.skip.description', { name, when: planned })}
           consequences={[
@@ -417,8 +459,8 @@ function ScheduledMessageItem({ message, canWrite, links }: ScheduledMessageItem
 
       {may.send ? (
         <ConfirmationDialog
-          open={activeDialog === 'send'}
-          onOpenChange={(open) => (open ? setDialog('send') : closeDialog())}
+          open={confirmOpen === 'send'}
+          onOpenChange={(open) => (open ? setConfirm('send') : closeConfirm())}
           title={t('booking.scheduledMessages.sendNow.title')}
           description={t('booking.scheduledMessages.sendNow.description', { name, when: planned })}
           consequences={[t('booking.scheduledMessages.sendNow.consequenceNow'), t('booking.scheduledMessages.sendNow.consequenceGuest')]}

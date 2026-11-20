@@ -5266,6 +5266,7 @@
           "unknown": "non riusciamo a controllarlo in questo momento"
         }
       },
+      "draftKept": "Il testo che stavi scrivendo non è perso: torna quando i messaggi si leggono di nuovo.",
       "edit": {
         "action": "Modifica",
         "actionLabel": "Modifica il messaggio «{{name}}» di {{when}}",

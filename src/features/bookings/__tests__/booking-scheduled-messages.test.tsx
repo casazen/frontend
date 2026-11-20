@@ -818,3 +818,59 @@ describe('what an open message waits for', () => {
     expect(within(dialog).getByTestId('scheduled-message-send-now-missing')).toHaveTextContent('Se non lo completi, il messaggio non parte.');
   });
 });
+
+// DATA: a read that fails in the background (the poll, the focus of the window, the bell) makes the list give way to the unknown state, and the cards, with the dialog of the edit inside, are unmounted. What the host
+// was writing is the host's own words and is kept by the section, not by the card: the messages stay unknown (never the old list), but the text is there when the list is back.
+describe('the text the host is writing when a read fails', () => {
+  it('edit_ABackgroundReadThatFails_MakesTheMessagesUnknown_ButTheTextTheHostWasWritingIsNotLost', async () => {
+    const written = "Ciao Mario, a presto! Parole riservate dell'host.";
+    list.mockResolvedValueOnce([msg()]);
+    edit.mockResolvedValue(msg({ edited: true, text: written }));
+    const { client } = renderSection();
+
+    fireEvent.click(await screen.findByTestId('scheduled-message-edit'));
+    const first = await screen.findByRole('dialog');
+    fireEvent.change(within(first).getByTestId('scheduled-message-edit-text'), { target: { value: written } });
+
+    list.mockRejectedValueOnce(new Error('boom'));
+    await act(async () => {
+      await client.invalidateQueries({ queryKey: [SCHEDULED_MESSAGES_KEY, BOOKING_ID] });
+    });
+
+    // The messages are an unknown state: no card, no dialog, no old data. The host is told that what was written is not lost.
+    const problem = await screen.findByTestId('scheduled-messages-error');
+    expect(screen.queryByTestId('scheduled-message')).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(within(problem).getByTestId('scheduled-messages-draft-kept')).toHaveTextContent('non è perso');
+
+    // The read works again: the card is back as the server says it is, and the dialog opens on the text the host had written.
+    list.mockResolvedValue([msg()]);
+    fireEvent.click(screen.getByTestId('scheduled-messages-retry'));
+    const second = await screen.findByRole('dialog');
+    expect(within(second).getByTestId('scheduled-message-edit-text')).toHaveValue(written);
+    expect(screen.queryByTestId('scheduled-messages-error')).not.toBeInTheDocument();
+
+    // And it saves as any other text, then forgets it.
+    await waitFor(() => expect(within(second).getByTestId('scheduled-message-edit-save')).toBeEnabled());
+    list.mockResolvedValue([msg({ edited: true, text: written })]);
+    fireEvent.click(within(second).getByTestId('scheduled-message-edit-save'));
+    await waitFor(() => expect(edit).toHaveBeenCalledWith('m-1', written));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    await waitFor(() => expect(client.getMutationCache().getAll()).toHaveLength(0));
+  });
+
+  it('edit_ATextTheHostCancelled_IsForgotten_TheNextTimeTheFieldStartsFromTheMessage', async () => {
+    list.mockResolvedValue([msg()]);
+    renderSection();
+
+    fireEvent.click(await screen.findByTestId('scheduled-message-edit'));
+    const first = await screen.findByRole('dialog');
+    fireEvent.change(within(first).getByTestId('scheduled-message-edit-text'), { target: { value: 'Parole che non servono più' } });
+    fireEvent.click(within(first).getByRole('button', { name: 'Annulla' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('scheduled-message-edit'));
+    const second = await screen.findByRole('dialog');
+    expect(within(second).getByTestId('scheduled-message-edit-text')).toHaveValue('Ciao Mario, benvenuto! Il tuo link: {{check_in_link}}');
+  });
+});
