@@ -137,9 +137,10 @@ export function useCorrectSelfBilling() {
 
 /**
  * «Chiudi come non più dovuta»: the replacement draft of a rejected TD17 that the month no longer supports is closed with the reason and the optional note of the person; it keeps its number. It writes on that draft, so the
- * buttons of its card wait for it (`documentId` is in the variables). The note is free text that can name a person or a document: it lives in the variables of the call only while it is on its way (`gcTime: 0`), and a failure is
- * kept without its request (`withoutRequest`, which carries the body of the call) and reduced to what the screen turns into words (the status and the code of the answer). The lists and the documents are read again whatever
- * the answer was, so a refusal of a state that changed (already closed, not closable any more) is not left stale.
+ * buttons of its card wait for it (`documentId` is in the variables). The note is free text that can name a person or a document: it lives in the variables of the call while the dialog that asked is open (`gcTime: 0` drops the
+ * mutation once nothing watches it, and the dialog resets it as soon as it has read a failure, so the note is not kept while it waits for a retry), and a failure is kept without its request (`withoutRequest`, which carries
+ * the body of the call) and reduced to what the screen turns into words (the status and the code of the answer). The lists and the documents are read again whatever the answer was, so a refusal of a state that changed
+ * (already closed, not closable any more) is not left stale.
  */
 export function useCloseSelfBilling() {
   const queryClient = useQueryClient();

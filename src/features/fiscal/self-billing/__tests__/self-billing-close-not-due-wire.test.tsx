@@ -227,31 +227,65 @@ describe('the closing of a kept replacement through the real client (data rule: 
     expect(screen.getByTestId('self-billing-row-close')).toBeInTheDocument();
   });
 
-  it('SelfBillingClose_TheNoteIsFreeText_AFailureKeepsNothingOfTheRequest_NothingOfItIsInTheAddressOrTheStorage_AndTheCacheOfTheMutationsIsEmptyOnceTheDialogIsGone', async () => {
+  it('SelfBillingClose_TheNoteIsFreeText_AFailureKeepsNothingOfTheCall_NothingOfItIsInTheAddressOrTheStorage_AndTheCacheOfTheMutationsIsEmptyWhileTheDialogWaitsForARetry', async () => {
     const PRIVATE_NOTE = 'Il titolare Mario Bianchi ha restituito la commissione il 3 novembre';
     reply = answering({ status: 422, data: { code: 'self_billing_not_closable' } });
     const client = renderPage();
+    // What the cache of the mutations holds the moment the call fails: the failure the screen reads.
+    const failures: unknown[] = [];
+    const unsubscribe = client.getMutationCache().subscribe((event) => {
+      if (event.type === 'updated' && event.action.type === 'error') failures.push(event.mutation.state.error);
+    });
 
     const { dialog, confirm } = await openClosing();
     await closeWith(dialog, confirm, PRIVATE_NOTE);
 
     await within(dialog).findByTestId('self-billing-close-problem');
+    unsubscribe();
     // The note went out in the body of the call, and only there.
     expect(JSON.parse(calls('POST', CLOSE)[0].body as string).note).toBe(PRIVATE_NOTE);
     for (const request of requests) expect(request.path).not.toContain(PRIVATE_NOTE);
     expect(window.location.href).not.toContain(encodeURIComponent(PRIVATE_NOTE));
     expect(JSON.stringify(window.localStorage) + JSON.stringify(window.sessionStorage)).not.toContain(PRIVATE_NOTE);
-    // The failure the cache of the mutations keeps is reduced to what the screen turns into words: the status and the code of the answer, with no request (the body of which carries the note).
-    const mutations = client.getMutationCache().getAll();
-    expect(mutations).toHaveLength(1);
-    const error = mutations[0].state.error;
+    // The failure is reduced to what the screen turns into words: the status and the code of the answer, with no request (the body of which carries the note).
+    expect(failures).toHaveLength(1);
+    const error = failures[0];
     expect(isAxiosError(error)).toBe(true);
     expect((error as AxiosError).request).toBeUndefined();
     expect((error as AxiosError).response?.status).toBe(422);
     expect(JSON.stringify([error, (error as AxiosError).config?.data, (error as AxiosError).response?.config?.data])).not.toContain(PRIVATE_NOTE);
-    // Once the dialog is gone nothing of the call is kept at all (`gcTime: 0`).
-    fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('shared.cancel') }));
+    // The dialog tells the failure from its own state and drops the mutation at once: its variables, which hold the note, are not kept in the cache of the mutations while the dialog waits for a retry.
     await waitFor(() => expect(client.getMutationCache().getAll()).toHaveLength(0));
+    // The dialog is still there, with the problem told and the form as the person left it, so that a retry needs nothing typed again.
+    expect(within(dialog).getByTestId('self-billing-close-problem')).toBeInTheDocument();
+    expect(within(dialog).getByTestId('self-billing-close-note')).toHaveValue(PRIVATE_NOTE);
+    // And once the dialog is gone nothing of the call is kept either.
+    fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('shared.cancel') }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(client.getMutationCache().getAll()).toHaveLength(0);
+  });
+
+  it('SelfBillingClose_ACallThatFailedAndWasResetByTheDialog_CanBeAskedAgainWithTheSameReasonAndNote_AndItIsOnlyThenThatItWorks', async () => {
+    let failing = true;
+    reply = (request) => (request.method === 'POST' && request.path === CLOSE && failing ? { status: 503, data: '' } : serverInOrder(request));
+    const client = renderPage();
+
+    const { dialog, confirm } = await openClosing();
+    await closeWith(dialog, confirm);
+    await within(dialog).findByTestId('self-billing-close-problem');
+    await waitFor(() => expect(client.getMutationCache().getAll()).toHaveLength(0));
+
+    // The mutation was dropped, but the retry is a new call with the same reason and the same note, and nothing says it was closed before the server answers.
+    const retry = within(dialog).getByRole('button', { name: i18n.t('shared.errorState.retry') });
+    await waitFor(() => expect(retry).toBeEnabled());
+    expect(toast.success).not.toHaveBeenCalled();
+    failing = false;
+    fireEvent.click(retry);
+
+    await waitFor(() => expect(toast.success).toHaveBeenCalledTimes(1));
+    expect(calls('POST', CLOSE)).toHaveLength(2);
+    expect(JSON.parse(calls('POST', CLOSE)[1].body as string)).toEqual({ reason: REASON, note: NOTE });
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
   });
 });
 

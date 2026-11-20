@@ -32414,11 +32414,12 @@
       "Owner": "Owner"
     },
     "kept": {
-      "issuer_profile_incomplete": "The issuer profile of the holder of the portal account is incomplete: complete it in the invoicing data and then make the drafts of the month again. Until it is complete the draft keeps its number but can be neither issued nor discarded.",
-      "ledger_gives_no_td17": "The ledger of the month no longer gives this holder any self-billed invoice for this portal (commissions reversed, stays no longer active, or the holder no longer subject): the draft keeps the number of the rejected invoice and can be neither issued nor discarded. What that number is used for is decided by the accountant.",
-      "owner_issuer_missing": "The owner who holds the portal account has no issuer profile: complete it on the owner page and then make the drafts of the month again. Until it is complete the draft keeps its number but can be neither issued nor discarded.",
-      "portal_not_configured": "The portal of this draft is no longer among the ones configured in the self-billing settings (country and VAT number): write to CasaZen to have it put right. While it is missing the draft keeps its number but can be neither issued nor discarded.",
-      "unknown": "This draft keeps the number of a self-billed invoice the SDI rejected and can be neither issued nor discarded for now (reason: {{code}})."
+      "exit": "If it is no longer due, close it as no longer due: the number stays reserved and is never given to another invoice.",
+      "issuer_profile_incomplete": "The issuer profile of the holder of the portal account is incomplete: complete it in the invoicing data and then make the drafts of the month again. Until it is complete the draft keeps its number but cannot be issued.",
+      "ledger_gives_no_td17": "The ledger of the month no longer gives this holder any self-billed invoice for this portal (commissions reversed, stays no longer active, or the holder no longer subject): the draft keeps the number of the rejected invoice and cannot be issued.",
+      "owner_issuer_missing": "The owner who holds the portal account has no issuer profile: complete it on the owner page and then make the drafts of the month again. Until it is complete the draft keeps its number but cannot be issued.",
+      "portal_not_configured": "The portal of this draft is no longer among the ones configured in the self-billing settings (country and VAT number): write to CasaZen to have it put right. While it is missing the draft keeps its number but cannot be issued.",
+      "unknown": "This draft keeps the number of a self-billed invoice the SDI rejected and cannot be issued for now (reason: {{code}})."
     },
     "notDue": {
       "currency_not_supported": "the commission is not in euro",
@@ -32471,6 +32472,7 @@
       "Discarded": "Discarded draft",
       "Draft": "Draft",
       "Issued": "Issued",
+      "RejectedClosed": "Rejected by the SDI",
       "Replaced": "Replaced"
     }
   },

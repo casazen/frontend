@@ -32414,11 +32414,12 @@
       "Owner": "Proprietario"
     },
     "kept": {
-      "issuer_profile_incomplete": "Il profilo emittente di chi ha il conto del portale è incompleto: completalo nei dati di fatturazione e poi rifai le bozze del mese. Finché manca, la bozza tiene il numero ma non si può né emettere né scartare.",
-      "ledger_gives_no_td17": "Il libro del mese non dà più nessuna autofattura a questo titolare per questo portale (commissioni stornate, soggiorni non più attivi o titolare non più soggetto): la bozza tiene il numero dell’autofattura scartata e non si può né emettere né scartare. Come usare quel numero lo decide il commercialista.",
-      "owner_issuer_missing": "Il proprietario titolare del conto del portale non ha un profilo emittente: completalo nella sua scheda e poi rifai le bozze del mese. Finché manca, la bozza tiene il numero ma non si può né emettere né scartare.",
-      "portal_not_configured": "Il portale di questa bozza non è più tra quelli configurati nelle impostazioni delle autofatture (paese e partita IVA): scrivi a CasaZen perché lo rimetta a posto. Finché manca, la bozza tiene il numero ma non si può né emettere né scartare.",
-      "unknown": "Questa bozza tiene il numero di un’autofattura scartata dallo SDI e per ora non si può né emettere né scartare (motivo: {{code}})."
+      "exit": "Se non è più dovuta, chiudila come non più dovuta: il numero resta riservato e non viene mai riusato.",
+      "issuer_profile_incomplete": "Il profilo emittente di chi ha il conto del portale è incompleto: completalo nei dati di fatturazione e poi rifai le bozze del mese. Finché manca, la bozza tiene il numero ma non si può emettere.",
+      "ledger_gives_no_td17": "Il libro del mese non dà più nessuna autofattura a questo titolare per questo portale (commissioni stornate, soggiorni non più attivi o titolare non più soggetto): la bozza tiene il numero dell’autofattura scartata e non si può emettere.",
+      "owner_issuer_missing": "Il proprietario titolare del conto del portale non ha un profilo emittente: completalo nella sua scheda e poi rifai le bozze del mese. Finché manca, la bozza tiene il numero ma non si può emettere.",
+      "portal_not_configured": "Il portale di questa bozza non è più tra quelli configurati nelle impostazioni delle autofatture (paese e partita IVA): scrivi a CasaZen perché lo rimetta a posto. Finché manca, la bozza tiene il numero ma non si può emettere.",
+      "unknown": "Questa bozza tiene il numero di un’autofattura scartata dallo SDI e per ora non si può emettere (motivo: {{code}})."
     },
     "notDue": {
       "currency_not_supported": "la commissione non è in euro",
@@ -32471,6 +32472,7 @@
       "Discarded": "Bozza scartata",
       "Draft": "Bozza",
       "Issued": "Emessa",
+      "RejectedClosed": "Scartata dallo SDI",
       "Replaced": "Sostituita"
     }
   },

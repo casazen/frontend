@@ -8,10 +8,10 @@ import * as fiscalApi from '@/api/fiscal-documents.api';
 import * as api from '@/api/self-billing.api';
 import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import i18n from '@/i18n/config';
-import type { SelfBillingDetail } from '@/types';
+import type { SelfBillingDetail, SelfBillingKept } from '@/types';
 import { CLOSE_NOTE_MAX } from '../self-billing-model';
 import { SelfBillingPage } from '../self-billing-page';
-import { NUMBER, REJECTED_ID, REPLACEMENT_ID, closed, detail, failure, item, kept, original, rejected, rejectedState, replacement } from './self-billing-fixtures';
+import { NUMBER, REJECTED_ID, REPLACEMENT_ID, closed, detail, failure, generation, item, kept, original, rejected, rejectedState, replacement } from './self-billing-fixtures';
 
 const env = vi.hoisted(() => ({ permissions: new Set<string>(), flags: {} as Record<string, boolean> }));
 
@@ -49,6 +49,7 @@ const read = vi.mocked(api.getSelfBilling);
 const issue = vi.mocked(api.issueSelfBilling);
 const discard = vi.mocked(api.discardSelfBilling);
 const correct = vi.mocked(api.startSelfBillingCorrection);
+const prepare = vi.mocked(api.createSelfBillingDrafts);
 const close = vi.mocked(api.closeSelfBillingNotDue);
 const sdi = vi.mocked(fiscalApi.getDocumentSdi);
 
@@ -108,12 +109,15 @@ describe('«Chiudi come non più dovuta» is offered only to who may, with the f
     renderPage();
 
     const row = await rowOf(REPLACEMENT_ID);
-    // The kept draft is still told, with its reason: only the way out is not drawn.
-    expect(within(row).getByTestId('self-billing-row-kept')).toBeInTheDocument();
+    // The kept draft is still told, with its reason: only the way out is not drawn, and the sentence does not invite to an action that is not there.
+    expect(within(row).getByTestId('self-billing-row-kept')).toHaveTextContent(i18n.t('selfBilling.kept.ledger_gives_no_td17'));
+    expect(within(row).getByTestId('self-billing-row-kept')).not.toHaveTextContent(i18n.t('selfBilling.kept.exit'));
     expect(screen.queryByTestId('self-billing-row-close')).toBeNull();
     fireEvent.click(within(row).getByTestId('self-billing-row-open'));
     await screen.findByTestId('self-billing-detail');
     expect(screen.queryByTestId('self-billing-close')).toBeNull();
+    expect(screen.getByTestId('self-billing-kept')).toHaveTextContent(i18n.t('selfBilling.kept.ledger_gives_no_td17'));
+    expect(screen.getByTestId('self-billing-kept')).not.toHaveTextContent(i18n.t('selfBilling.kept.exit'));
 
     expect(close).not.toHaveBeenCalled();
   });
@@ -133,6 +137,9 @@ describe('«Chiudi come non più dovuta» is offered only to who may, with the f
     const row = await rowOf(REPLACEMENT_ID);
     expect(screen.getAllByTestId('self-billing-row-close')).toHaveLength(1);
     expect(within(row).getByTestId('self-billing-row-close')).toBeEnabled();
+    // The sentence of the kept draft says why it is kept and, for who may, names the way out and that the number is never given again.
+    expect(within(row).getByTestId('self-billing-row-kept')).toHaveTextContent(i18n.t('selfBilling.kept.ledger_gives_no_td17'));
+    expect(within(row).getByTestId('self-billing-row-kept')).toHaveTextContent(i18n.t('selfBilling.kept.exit'));
     expect(close).not.toHaveBeenCalled();
 
     const { dialog, confirm } = await openClosing(within(row).getByTestId('self-billing-row-close'));
@@ -160,9 +167,10 @@ describe('«Chiudi come non più dovuta» is offered only to who may, with the f
     renderPage();
     fireEvent.click(within(await rowOf(REPLACEMENT_ID)).getByTestId('self-billing-row-open'));
     expect(await screen.findByTestId('self-billing-close')).toBeEnabled();
-    // It cannot be issued or discarded: the way out is the closing.
+    // It cannot be issued or discarded: the way out is the closing, and the sentence of the detail says so.
     expect(screen.queryByTestId('self-billing-issue')).toBeNull();
     expect(screen.queryByTestId('self-billing-discard')).toBeNull();
+    expect(screen.getByTestId('self-billing-kept')).toHaveTextContent(i18n.t('selfBilling.kept.exit'));
     cleanup();
 
     list.mockResolvedValue([original(), replacement()]);
@@ -403,6 +411,11 @@ describe('the closed draft is history: the reason, the day, the name and the not
     expect(within(history).getByTestId('self-billing-row-corrected')).toHaveTextContent(i18n.t('selfBilling.row.correctedClosed', { number: NUMBER }));
     expect(within(history).getByTestId('self-billing-row-corrected')).not.toHaveTextContent(i18n.t('selfBilling.row.corrected', { number: NUMBER }));
     expect(within(history).queryByTestId('self-billing-row-correct')).toBeNull();
+    // Nor is it «Sostituita»: no invoice replaces it, and what stays is the rejection of the SDI.
+    const badge = within(history).getByTestId('self-billing-status');
+    expect(badge).toHaveAttribute('data-status', 'RejectedClosed');
+    expect(badge).toHaveTextContent(i18n.t('selfBilling.status.RejectedClosed'));
+    expect(badge).not.toHaveTextContent(i18n.t('selfBilling.status.Replaced'));
     cleanup();
 
     // The detail is open on the rejected invoice when another administrator corrects it and closes its replacement: it is read again as the original, and says the same.
@@ -421,10 +434,90 @@ describe('the closed draft is history: the reason, the day, the name and the not
     expect(replaced).toHaveAttribute('data-replacement-closed', 'true');
     expect(replaced).toHaveTextContent(i18n.t('selfBilling.detail.replaced.closedTitle'));
     expect(replaced).toHaveTextContent(i18n.t('selfBilling.detail.replaced.closedBody'));
+    const detailBadge = within(screen.getByTestId('self-billing-detail')).getByTestId('self-billing-status');
+    expect(detailBadge).toHaveAttribute('data-status', 'RejectedClosed');
+    expect(detailBadge).toHaveTextContent(i18n.t('selfBilling.status.RejectedClosed'));
+    expect(detailBadge).not.toHaveTextContent(i18n.t('selfBilling.status.Replaced'));
     for (const testId of ACTIONS_OF_A_DETAIL) expect(screen.queryByTestId(testId)).toBeNull();
     // The way to the replacement is still there, and it leads to the closed draft.
     fireEvent.click(within(replaced).getByTestId('self-billing-replacement-open'));
     expect(await screen.findByTestId('self-billing-closed')).toBeInTheDocument();
     expect(read).toHaveBeenCalledWith(REPLACEMENT_ID);
+  });
+});
+
+describe('the report of «Prepara le bozze» never contradicts the list below it (data rule)', () => {
+  /** The draft the run of the month kept: it holds the number of the rejected TD17 and nothing gives it a TD17 now. */
+  const held = (): SelfBillingKept => ({ documentId: REPLACEMENT_ID, holderKind: 'Agency', holderOwnerId: null, portalName: 'Portale Uno BV', number: NUMBER, reason: 'ledger_gives_no_td17' });
+
+  /** Presses «Prepara le bozze» once the page is ready and gives the report back. */
+  async function prepareDrafts() {
+    await screen.findAllByTestId('self-billing-row');
+    const button = screen.getByTestId('self-billing-prepare');
+    await waitFor(() => expect(button).toBeEnabled());
+    fireEvent.click(button);
+    return screen.findByTestId('self-billing-report');
+  }
+
+  it('SelfBillingClose_AKeptDraftOfTheReport_IsNoLongerListedAsKeptOnceTheListSaysItWasClosed_AndTheRestOfTheReportStays', async () => {
+    prepare.mockResolvedValue(generation({ updated: 1, kept: [held()] }));
+    close.mockImplementation(async () => {
+      list.mockResolvedValue([original(), closed()]);
+      return detail(closed());
+    });
+    renderPage();
+
+    // The run kept the draft: the report says so, in the warning way, with what to do about it (the person may close it).
+    const report = await prepareDrafts();
+    const heldRows = within(within(report).getByTestId('self-billing-report-kept')).getAllByTestId('self-billing-report-kept-row');
+    expect(heldRows).toHaveLength(1);
+    expect(heldRows[0]).toHaveTextContent(i18n.t('selfBilling.kept.ledger_gives_no_td17'));
+    expect(heldRows[0]).toHaveTextContent(i18n.t('selfBilling.kept.exit'));
+    expect(report.className).toContain('color-warning');
+
+    // The person closes it from the list: the list reads the closed draft, and the report no longer holds it.
+    const row = await rowOf(REPLACEMENT_ID);
+    await waitFor(() => expect(within(row).getByTestId('self-billing-row-close')).toBeEnabled());
+    const { dialog, confirm } = await openClosing(within(row).getByTestId('self-billing-row-close'));
+    await chooseReason(dialog, confirm);
+    fireEvent.click(confirm);
+
+    await waitFor(() => expect(toast.success).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(within(screen.getByTestId('self-billing-report')).queryByTestId('self-billing-report-kept')).toBeNull());
+    // What the run did stays (the counts), and with nothing held any more it is not the warning one.
+    const after = screen.getByTestId('self-billing-report');
+    expect(within(after).getByTestId('self-billing-report-counts')).toBeInTheDocument();
+    expect(after.className).toContain('color-success');
+    expect(after.className).not.toContain('color-warning');
+    expect(within(await rowOf(REPLACEMENT_ID)).getByTestId('self-billing-row-closed')).toBeInTheDocument();
+  });
+
+  it('SelfBillingClose_AKeptDraftOfTheReport_WhoseClosingWasRefused_IsStillListedAsKept', async () => {
+    prepare.mockResolvedValue(generation({ updated: 1, kept: [held()] }));
+    close.mockRejectedValue(failure(422, 'self_billing_not_closable'));
+    renderPage();
+
+    const report = await prepareDrafts();
+    const row = await rowOf(REPLACEMENT_ID);
+    await waitFor(() => expect(within(row).getByTestId('self-billing-row-close')).toBeEnabled());
+    const { dialog, confirm } = await openClosing(within(row).getByTestId('self-billing-row-close'));
+    await chooseReason(dialog, confirm);
+    fireEvent.click(confirm);
+
+    // Nothing was closed: the list still holds the kept draft, so the report still does.
+    await within(dialog).findByTestId('self-billing-close-problem');
+    expect(within(report).getByTestId('self-billing-report-kept')).toHaveTextContent(NUMBER);
+    expect(screen.getByTestId('self-billing-report').className).toContain('color-warning');
+  });
+
+  it('SelfBillingClose_TheReportOfAPersonWhoMayNotClose_SaysWhyTheDraftIsKeptAndDoesNotInviteToTheClosing', async () => {
+    env.flags = { sdiSubmission: false };
+    prepare.mockResolvedValue(generation({ updated: 1, kept: [held()] }));
+    renderPage();
+
+    const report = await prepareDrafts();
+    const heldRow = within(within(report).getByTestId('self-billing-report-kept')).getByTestId('self-billing-report-kept-row');
+    expect(heldRow).toHaveTextContent(i18n.t('selfBilling.kept.ledger_gives_no_td17'));
+    expect(heldRow).not.toHaveTextContent(i18n.t('selfBilling.kept.exit'));
   });
 });

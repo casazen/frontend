@@ -47,6 +47,31 @@ describe('the reasons a draft that holds the number of a rejected TD17 is kept (
     const sentences = new Set(KEPT_REASONS.map((code) => it_(keptKeyOf(code))));
     expect(sentences.size).toBe(KEPT_REASONS.length);
   });
+
+  it.each(['it', 'en'] as const)('theKeptSentences_NoLongerSayThatTheDraftCanBeNeitherIssuedNorDiscardedNorThatTheAccountantDecidesWhatTheNumberIsFor_ButStillSayItCannotBeIssued_In_%s', (lng) => {
+    const t = i18n.getFixedT(lng);
+    const outdated = lng === 'it' ? /né emettere né scartare|lo decide il commercialista/i : /neither issued nor discarded|decided by the accountant/i;
+    const stillTrue = lng === 'it' ? /non si può emettere/i : /cannot be issued/i;
+
+    // The four reasons and the sentence of a code this client does not know: the draft has a way out now (closing it), so none of them leaves the person with «nothing can be done, the accountant decides».
+    for (const key of [...KEPT_REASONS.map((code) => keptKeyOf(code)), keptKeyOf('a_reason_of_the_future')]) {
+      expect(t(key, { code: 'a_reason_of_the_future' })).not.toMatch(outdated);
+      expect(t(key, { code: 'a_reason_of_the_future' })).toMatch(stillTrue);
+    }
+  });
+
+  it('theWayOutOfAKeptDraft_SaysItIsClosedAsNoLongerDue_ThatTheNumberStaysReservedAndIsNeverGivenAgain_AndNamesTheButtonThePageDraws', () => {
+    expect(it_('selfBilling.kept.exit')).toMatch(/chiudila come non più dovuta/i);
+    expect(it_('selfBilling.kept.exit')).toMatch(/riservato/i);
+    expect(it_('selfBilling.kept.exit')).toMatch(/mai riusato/i);
+    expect(en('selfBilling.kept.exit')).toMatch(/close it as no longer due/i);
+    expect(en('selfBilling.kept.exit')).toMatch(/reserved/i);
+    expect(en('selfBilling.kept.exit')).toMatch(/never given to another invoice/i);
+    expect(it_('selfBilling.kept.exit')).not.toBe(en('selfBilling.kept.exit'));
+    // It names the button of the page: when the button is renamed the sentence follows, never the other way round.
+    expect(it_('selfBilling.kept.exit')).toContain(it_('selfBilling.close.button').replace(/^Chiudi /, ''));
+    expect(en('selfBilling.kept.exit')).toContain(en('selfBilling.close.button').replace(/^Close /, ''));
+  });
 });
 
 describe('what a draft is offered (a draft that replaces a rejected TD17 is issued, never discarded; a kept one is neither)', () => {
@@ -239,6 +264,9 @@ describe('«Chiudi come non più dovuta»: what is offered, and the reasons of t
 
     // «Chiusa, non più dovuta»: the outcome of the draft; not «scarto confermato», which is a fact of the SDI.
     expect(t('selfBilling.status.ClosedNotDue')).toBe(lng === 'it' ? 'Chiusa, non più dovuta' : 'Closed, no longer due');
+    // The original whose replacement was closed is not «Sostituita»: no invoice replaces it, and what stays is the rejection of the SDI.
+    expect(t('selfBilling.status.RejectedClosed')).toBe(lng === 'it' ? 'Scartata dallo SDI' : 'Rejected by the SDI');
+    expect(t('selfBilling.status.RejectedClosed')).not.toBe(t('selfBilling.status.Replaced'));
     for (const member of ['reason', 'at', 'by', 'note', 'title', 'intro', 'introUnknown']) expect(t(`selfBilling.closed.${member}`, { number: 'AF-2026/1' }).length).toBeGreaterThan(2);
     expect(t('selfBilling.closed.intro', { number: 'AF-2026/1' })).toContain('AF-2026/1');
     expect(t('selfBilling.closed.introUnknown')).not.toContain('{{');

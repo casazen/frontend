@@ -209,7 +209,7 @@ function SelfBillingBody() {
       </div>
       {period === '' ? <p className="text-sm text-foreground/70">{t('selfBilling.drafts.needMonth')}</p> : null}
 
-      {generation ? <GenerationReport generation={generation} /> : null}
+      {generation ? <GenerationReport generation={generation} closedIds={closedIds} mayClose={mayClose} /> : null}
       {content}
 
       <SelfBillingDrawer
@@ -262,11 +262,13 @@ function codeWords(prefix: string, code: string, t: TFunction, exists: (key: str
  * What the drafts of the month did, in words: the counts, the owner ledger of the month when it is not posted yet (the drafts read it), the holders that need an invoice and cannot get one yet with what their issuer
  * profile misses, the commissions that are not self-billed with the reason, and the drafts that hold the number of a rejected TD17 and that nothing gives now (kept, with their number and why). It says «fatto» only for
  * what was done: a holder that could not get its draft, and a number that is held, are told, never left out and never read as «nothing to do».
+ * The report is what the run found, but a draft it listed as kept that the list says was closed since (`closedIds`) holds nothing any more: it is left out, so the report never contradicts the list below it.
  */
-function GenerationReport({ generation }: { generation: SelfBillingGeneration }) {
+function GenerationReport({ generation, closedIds, mayClose }: { generation: SelfBillingGeneration; closedIds: ReadonlySet<string>; mayClose: boolean }) {
   const { t, i18n } = useTranslation();
   const { month } = useOwnerFormat();
-  const problems = generation.failed.length > 0 || generation.kept.length > 0 || !generation.ledgerPosted;
+  const kept = generation.kept.filter((row) => !closedIds.has(row.documentId));
+  const problems = generation.failed.length > 0 || kept.length > 0 || !generation.ledgerPosted;
 
   return (
     <Alert variant={problems ? 'warning' : 'success'} title={t('selfBilling.drafts.report.title', { month: month(generation.year, generation.month) })} role="status" data-testid="self-billing-report">
@@ -296,18 +298,18 @@ function GenerationReport({ generation }: { generation: SelfBillingGeneration })
             </ul>
           </div>
         ) : null}
-        {generation.kept.length > 0 ? (
+        {kept.length > 0 ? (
           <div data-testid="self-billing-report-kept">
-            <p className="font-medium">{t('selfBilling.drafts.report.kept', { count: generation.kept.length })}</p>
+            <p className="font-medium">{t('selfBilling.drafts.report.kept', { count: kept.length })}</p>
             <ul role="list" className="mt-1 list-disc space-y-1 pl-5">
-              {generation.kept.map((row) => {
+              {kept.map((row) => {
                 const holder = t(`selfBilling.holder.${row.holderKind === 'Owner' ? 'Owner' : 'Agency'}`);
                 return (
                   <li key={row.documentId} className="break-words" data-testid="self-billing-report-kept-row">
                     <span className="font-medium">
                       {row.number ? t('selfBilling.drafts.report.keptRow', { holder, portal: row.portalName, number: row.number }) : t('selfBilling.drafts.report.keptRowNoNumber', { holder, portal: row.portalName })}
                     </span>
-                    <span className="block">{t(keptKeyOf(row.reason), { code: row.reason })}</span>
+                    <span className="block">{keptWords(t, row.reason, mayClose)}</span>
                   </li>
                 );
               })}
@@ -337,7 +339,10 @@ function GenerationReport({ generation }: { generation: SelfBillingGeneration })
   );
 }
 
-/** The state of the TD17 itself: a draft, issued, a discarded draft, an original a correction replaced, or a replacement closed as «non più dovuta»; a state this client does not know is shown as it came. */
+/**
+ * The state of the TD17 itself: a draft, issued, a discarded draft, an original a correction replaced («Sostituita»), an original whose replacement was closed as «non più dovuta» (it is not replaced by any invoice: the
+ * rejection of the SDI stays, `RejectedClosed`), or a replacement closed as «non più dovuta»; a state this client does not know is shown as it came.
+ */
 function StatusBadge({ status }: { status: string }) {
   const { t, i18n } = useTranslation();
   return (
@@ -350,6 +355,15 @@ function StatusBadge({ status }: { status: string }) {
 /** What a draft that replaces a rejected TD17 says of it: its number (the draft holds it) when there is one. */
 function replacesWords(t: TFunction, number: string | null): string {
   return number ? t('selfBilling.row.replaces', { number }) : t('selfBilling.row.replacesUnknown');
+}
+
+/**
+ * Why a draft is kept, in words, and, for a person who may close it, the way out too («chiudila come non più dovuta», the number never given again). Someone who cannot (the flag of the sending is off) is not invited to an
+ * action that is not drawn for them.
+ */
+function keptWords(t: TFunction, code: string, mayClose: boolean): string {
+  const why = t(keptKeyOf(code), { code });
+  return mayClose ? `${why} ${t('selfBilling.kept.exit')}` : why;
 }
 
 /**
@@ -453,7 +467,7 @@ function SelfBillingRow({ item, mayCorrect, mayClose, replacementClosed, onOpen,
         )}
         {item.keptReason !== null ? (
           <p className="break-words text-sm font-medium text-foreground" data-testid="self-billing-row-kept" data-reason={item.keptReason}>
-            {t(keptKeyOf(item.keptReason), { code: item.keptReason })}
+            {keptWords(t, item.keptReason, closable)}
           </p>
         ) : null}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
@@ -461,7 +475,7 @@ function SelfBillingRow({ item, mayCorrect, mayClose, replacementClosed, onOpen,
             {t('selfBilling.row.total', { amount: money(item.total, item.currency, i18n.language) })}
           </span>
           <span className="text-foreground/70 tabular-nums">{t('selfBilling.row.parts', { base: money(item.taxableBase, item.currency, i18n.language), vat: money(item.vatAmount, item.currency, i18n.language) })}</span>
-          <StatusBadge status={original ? 'Replaced' : closed ? 'ClosedNotDue' : item.status} />
+          <StatusBadge status={original ? (replacementClosed ? 'RejectedClosed' : 'Replaced') : closed ? 'ClosedNotDue' : item.status} />
           {issued || original ? <StatePill state={sdiStateOf({ sdiStatus: item.sdiStatus, sdiErrorCode: null })} testId="self-billing-row-sdi" /> : null}
         </div>
       </div>
@@ -608,7 +622,7 @@ function DrawerBody({ id, onClose, mayCorrect, mayClose, closedIds, onCorrect, o
           </p>
           {hasCurrencyCode(invoice.currency) ? null : <CurrencyMissing />}
           <div className="flex flex-wrap items-center gap-2">
-            <StatusBadge status={original ? 'Replaced' : closed ? 'ClosedNotDue' : invoice.status} />
+            <StatusBadge status={original ? (replacementClosed ? 'RejectedClosed' : 'Replaced') : closed ? 'ClosedNotDue' : invoice.status} />
             {issued || original ? <StatePill state={sdiStateOf({ sdiStatus: invoice.sdiStatus, sdiErrorCode: null })} testId="self-billing-detail-sdi" /> : null}
           </div>
           <p className="break-words text-sm text-foreground/70">{t('selfBilling.detail.holder', { holder: invoice.holderName, portal: invoice.portalName })}</p>
@@ -670,7 +684,7 @@ function DrawerBody({ id, onClose, mayCorrect, mayClose, closedIds, onCorrect, o
           </Alert>
         ) : invoice.keptReason !== null ? (
           <Alert variant="warning" title={t('selfBilling.detail.kept.title')} data-testid="self-billing-kept" data-reason={invoice.keptReason}>
-            {t(keptKeyOf(invoice.keptReason), { code: invoice.keptReason })}
+            {keptWords(t, invoice.keptReason, closable)}
           </Alert>
         ) : replacesAnInvoice(invoice) ? (
           <Alert
@@ -930,7 +944,8 @@ const keepFromSubmitting = (event: KeyboardEvent<HTMLInputElement>) => {
  * never given to another invoice) and goes in the register of the unused numbers that the accountant receives, and it cannot be undone. Every refusal has its own words and the dialog stays open: what the server refused is
  * not offered again (not found, already closed, not closable, no access, not open), a reason or a note the server found missing or too long is put right in place, and a call that failed can be asked again with «Riprova» (the
  * same call again with the same reason answers the closed draft, so a double click is not an error). On a 200 the dialog closes and the list and the detail, read again, show the closed draft; nothing is told as done
- * before the server answers. The note is free text that can name a person: it is in the state of this dialog and in the body of the call only, never in the address, the storage or a log.
+ * before the server answers. The note is free text that can name a person: it is in the state of this dialog and in the body of the call only, never in the address, the storage or a log, and the mutation is reset as soon
+ * as a failure has been read (so its variables, which hold the note, do not stay in the cache of the mutations while the dialog waits for a retry).
  */
 function CloseNotDueDialog({ item, onClose }: { item: SelfBillingListItem; onClose: () => void }) {
   const { t } = useTranslation();
@@ -989,6 +1004,9 @@ function CloseNotDueDialog({ item, onClose }: { item: SelfBillingListItem; onClo
         } catch (error) {
           const kind = closeProblemOf(error);
           setProblem({ kind, words: wordsOf(kind, error) });
+          // The failure is told from the state of this dialog, so the mutation is dropped at once: its variables hold the note (free text that can name a person) and must not stay in the cache of the mutations while the
+          // dialog waits for a retry. A retry is a new call with the same reason and note, still in the form.
+          close.reset();
           throw error;
         }
         toast.success(closed.invoice.number ? t('selfBilling.close.done', { number: closed.invoice.number }) : t('selfBilling.close.doneUnknown'));

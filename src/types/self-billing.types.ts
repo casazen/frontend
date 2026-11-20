@@ -39,7 +39,7 @@ export interface SelfBillingListItem {
   replacedByDocumentId: string | null;
   /**
    * Why a draft that holds the number of a rejected TD17 is kept: `portal_not_configured`, `issuer_profile_incomplete`, `owner_issuer_missing` or `ledger_gives_no_td17` (a code this client does not know is shown as it
-   * came). Such a draft can be neither issued nor discarded; `null` on every other row.
+   * came). Such a draft cannot be issued and cannot be discarded: it leaves by being closed as «non più dovuta» (`closedReason`); `null` on every other row.
    */
   keptReason: string | null;
   /**
