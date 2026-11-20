@@ -396,3 +396,12 @@ export function isAboutToChange(messages: readonly ScheduledMessage[] | undefine
     }) ?? false
   );
 }
+
+/**
+ * Whether any message can still change by itself (planned, held back or failed): while it can, an open page keeps reading the list, so that a message that goes out on its own stops saying «Programmato».
+ * `isAboutToChange` says how soon; it cannot say it for good, because TanStack Query asks `refetchInterval` again only when the query or the component is updated, not as the clock moves: a page opened
+ * three hours before a message, and left alone, would never learn that the two hours had begun. A page that shows only messages that are over asks for nothing.
+ */
+export function hasOpenMessage(messages: readonly ScheduledMessage[] | undefined): boolean {
+  return messages?.some((message) => isOpenStatus(message.status)) ?? false;
+}

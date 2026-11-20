@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useMutation, useMutationState, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { scheduledMessagesApi } from '@/api/scheduled-messages.api';
-import { isAboutToChange } from '@/features/bookings/lib/scheduled-messages';
+import { hasOpenMessage, isAboutToChange } from '@/features/bookings/lib/scheduled-messages';
 import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
 import i18n from '@/i18n/config';
 import { INTERNAL_ACTIVITIES_KEY, retryTransientErrors } from '@/lib/query-client';
@@ -20,11 +20,19 @@ export const SCHEDULED_MESSAGES_STALE_MS = 30_000;
 export const SCHEDULED_MESSAGES_POLL_MS = 60_000;
 
 /**
+ * How often an open page reads the list again while a message can still change but is not about to (its time is more than two hours away): slow enough to cost little (each read asks the server for the way
+ * to the guest of every open message), quick enough that a message that goes out on its own stops saying «Programmato» without a reload. Each read is also the moment the page asks again how soon the next
+ * change is, so the page moves to the quick pace by itself when the two hours begin.
+ */
+export const SCHEDULED_MESSAGES_SLOW_POLL_MS = 300_000;
+
+/**
  * The messages the routines will send to the guest of a booking (`GET /api/bookings/{id}/scheduled-messages`, NF-71), in time order. `enabled` is false while the flag
  * `scheduledMessages` is off or the person cannot read the booking: nothing is asked then.
  *
  * It is read again every time the section opens (`refetchOnMount: 'always'`: `true` would read only data that is stale, and the list of the last visit would be shown), on return to the
- * window, when the bell announces a message that was held back (`use-notifications-realtime`) and every minute while a message is about to change by itself. The texts are the words
+ * window, when the bell announces a message that was held back (`use-notifications-realtime`), every minute while a message is about to change by itself and every five minutes while some message can
+ * still change (planned, held back or failed): the pace is chosen again after every read, because the interval is not asked again as the clock moves. The texts are the words
  * of messages written for a guest: the reading is dropped as soon as no page shows it (`gcTime: 0`, the app keeps unobserved data for ten minutes otherwise).
  */
 export function useScheduledMessages(bookingId: string, enabled: boolean) {
@@ -36,7 +44,11 @@ export function useScheduledMessages(bookingId: string, enabled: boolean) {
     gcTime: 0,
     refetchOnMount: 'always',
     refetchOnWindowFocus: true,
-    refetchInterval: (query) => (isAboutToChange(query.state.data, new Date()) ? SCHEDULED_MESSAGES_POLL_MS : false),
+    refetchInterval: (query) => {
+      const messages = query.state.data;
+      if (!hasOpenMessage(messages)) return false;
+      return isAboutToChange(messages, new Date()) ? SCHEDULED_MESSAGES_POLL_MS : SCHEDULED_MESSAGES_SLOW_POLL_MS;
+    },
     retry: retryTransientErrors(1),
   });
 }

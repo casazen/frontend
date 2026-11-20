@@ -11,6 +11,7 @@ import {
   endedReasonOf,
   failureReasonOf,
   formatOnPropertyClock,
+  hasOpenMessage,
   isAboutToChange,
   isTemplateVariable,
   missingCodesOf,
@@ -399,6 +400,20 @@ describe('time', () => {
       }
       expect(isAboutToChange([], now)).toBe(false);
       expect(isAboutToChange(undefined, now)).toBe(false);
+    });
+  });
+
+  // `isAboutToChange` is judged when the query or the component is updated, not as the clock moves: whether the page reads at all is judged by this, which does not depend on the clock.
+  describe('hasOpenMessage: whether any message can still change by itself', () => {
+    it.each(['Scheduled', 'Blocked', 'Failed'] as const)('AMessageThatIs_%s_CanStillChange_HoweverFarItsTime', (status) => {
+      expect(hasOpenMessage([message({ status, plannedAtUtc: '2027-01-01T07:00:00Z' })])).toBe(true);
+    });
+
+    it('OnlyEndedMessagesOrNoMessages_CannotChange', () => {
+      for (const status of ['Sent', 'Skipped', 'Cancelled', 'Expired'] as const) expect(hasOpenMessage([message({ status })]), status).toBe(false);
+      expect(hasOpenMessage([])).toBe(false);
+      expect(hasOpenMessage(undefined)).toBe(false);
+      expect(hasOpenMessage([message({ status: 'Sent' }), message({ id: 'm-2', status: 'Scheduled' })])).toBe(true);
     });
   });
 });
