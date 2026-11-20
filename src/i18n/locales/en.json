@@ -1998,6 +1998,9 @@
       "supportVaultSecretMissing": "These credentials are not there yet: save them first, or ask the user for them.",
       "supportVaultTooManyOpenings": "You already opened the credentials 5 times in the last hour for this request: try again later.",
       "supportVaultValueInvalid": "User name and password are required, 200 characters at most; the further code 100 at most.",
+      "swissMunicipalityNotApplicable": "A Swiss municipality can only be set for a property in Switzerland.",
+      "swissMunicipalityUnknown": "The municipality you chose is not in the official list of the Swiss municipalities: choose the place again.",
+      "swissPlacesUnavailable": "The official list of the Swiss places is not available right now: try again later.",
       "videoCallNotSent": "The e-mail did not go out and nothing was sent. Try again.",
       "videoCallUrlInvalid": "The link of the meeting is not valid: it has to start with https://, with no spaces or password.",
       "xlsxTooManyRows": "Too many rows: a sheet of an Excel file can have at most 10,000 rows. Choose a shorter period and try again.",
@@ -21733,6 +21736,9 @@
       },
       "comuneIstatCode": {
         "format": "The ISTAT code of the comune is not valid: choose the comune from the list."
+      },
+      "swissMunicipalityCode": {
+        "format": "The Swiss municipality chosen is not valid: choose the place again."
       }
     },
     "slug": {
@@ -30919,6 +30925,34 @@
       "description": "The guests of this property must be notified to the cantonal police within 24 hours of the arrival, with the identification number of the property.",
       "noId": "Identification number not entered.",
       "open": "Notify the guests to the police"
+    }
+  },
+  "swissPlace": {
+    "form": {
+      "cityFromPlace": "The city and the postal code are those of the place you chose. Clear the choice to write them by hand.",
+      "hint": "Search by postal code or by the name of the place: the municipality and the canton follow, and they decide which rules apply to your guests.",
+      "label": "Postal code and place (official list)"
+    },
+    "picker": {
+      "ambiguous": "The postal code {{postalCode}} covers several municipalities: choose yours, we do not pick one for you.",
+      "candidatesLabel": "Municipalities with this postal code",
+      "clear": "Clear the place chosen",
+      "codeUnknown": "Municipality no. {{code}} is not in the official list: choose the place again.",
+      "confirm": "Confirm",
+      "confirmPrompt": "Confirm the municipality: {{place}}",
+      "listLabel": "Places found",
+      "minChars": "Type at least {{min}} characters: the postal code or the name of the place.",
+      "municipality": "Municipality: {{municipality}} · Canton: {{canton}}",
+      "municipalityOf": "Municipality of {{municipality}}",
+      "noPostalCode": "I cannot find the postal code {{postalCode}} among the Swiss places: check how you wrote it.",
+      "noResults": "No place found for «{{query}}». Check how you wrote it.",
+      "placeholder": "Search the postal code or the place (at least 2 characters)",
+      "resultCount_one": "{{count}} place found. Use the arrow keys and Enter to choose it.",
+      "resultCount_other": "{{count}} places found. Use the arrow keys and Enter to choose one.",
+      "retry": "Try again",
+      "searchError": "I cannot read the list of places: this does not mean there are no results.",
+      "searching": "Searching…",
+      "unavailable": "The official list of places is not available right now. You can still save: the municipality is confirmed later."
     }
   },
   "taxRates": {

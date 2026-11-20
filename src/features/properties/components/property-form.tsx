@@ -1,5 +1,14 @@
-import { useEffect, useMemo } from 'react';
-import { useForm, type FieldErrors, type Resolver, type UseFormRegister, type UseFormSetValue, type UseFormWatch } from 'react-hook-form';
+import { useEffect, useMemo, type ChangeEvent } from 'react';
+import {
+  useForm,
+  useWatch,
+  type Control,
+  type FieldErrors,
+  type Resolver,
+  type UseFormRegister,
+  type UseFormSetValue,
+  type UseFormWatch,
+} from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -20,6 +29,7 @@ import { AmenityChecklist } from './amenity-checklist';
 import type { CreatePropertyDto, Property } from '@/types';
 import { FormFieldError } from '@/components/shared/form-field-error';
 import { ComunePicker } from '@/components/shared/comune-picker';
+import { SwissLocalityPicker } from './swiss-locality-picker';
 import { useCancellationPolicies } from '@/queries/use-properties';
 import { getProblemMessage } from '@/lib/api-errors';
 import { currencyLabel } from '@/lib/utils';
@@ -86,6 +96,7 @@ export function PropertyForm({
     watch,
     setValue,
     setError,
+    control,
   } = useForm<PropertyFormValues>({
     resolver: zodResolver(shortStay ? propertyFormSchema : longRentPropertyFormSchema) as Resolver<PropertyFormValues>,
     defaultValues: propertyFormDefaults(property, variant),
@@ -116,9 +127,19 @@ export function PropertyForm({
 
   const selectedAmenities = watch('amenities') || [];
   const comuneIstatCode = watch('comuneIstatCode') || null;
+  const swissMunicipalityCode = watch('swissMunicipalityCode') || null;
   const country = watch('country');
   // The prices are asked in the currency of the country (CHF-MONEY): francs for a house in Switzerland.
   const currency = country === 'CH' ? 'CHF' : 'EUR';
+  // The Swiss place picker works on a property that exists: a create has no country (the API makes the property Italian and refuses a
+  // municipality), so there the city and the postal code stay free text and the place is confirmed when the property is edited.
+  const swissPlaceProperty = country === 'CH' ? property : undefined;
+  const swissPlaceConfirmed = !!swissPlaceProperty && !!swissMunicipalityCode;
+
+  // Changing the country to Italy clears the Swiss place (E29/F01/US02/T01): a municipality of the Swiss directory says nothing of an Italian house.
+  const onCountryChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    if (event.target.value !== 'CH') setValue('swissMunicipalityCode', '', { shouldDirty: true });
+  };
 
   const toggleAmenity = (amenity: string) => {
     const current = selectedAmenities;
@@ -220,10 +241,20 @@ export function PropertyForm({
                 )}
                 <FormFieldError error={errors.comuneIstatCode} />
               </div> : null}
+              {swissPlaceProperty ? (
+                <SwissPlaceField
+                  control={control}
+                  setValue={setValue}
+                  property={swissPlaceProperty}
+                  municipalityCode={swissMunicipalityCode}
+                  disabled={!!disabled || !!isLoading}
+                  error={errors.swissMunicipalityCode}
+                />
+              ) : null}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="country">{t('property.country')}</Label>
-                  <select id="country" className={selectClassName} {...register('country')}>
+                  <select id="country" className={selectClassName} {...register('country', { onChange: onCountryChange })}>
                     <option value="" disabled>{t('property.form.chooseCountry')}</option>
                     <option value="IT">{t('property.country.it')}</option>
                     <option value="CH">{t('property.country.ch')}</option>
@@ -254,18 +285,29 @@ export function PropertyForm({
                   <Input
                     id="city"
                     {...register('city')}
-                    readOnly={country === 'IT' && !!comuneIstatCode}
-                    aria-describedby={country === 'IT' && comuneIstatCode ? 'city-from-comune' : undefined}
+                    readOnly={(country === 'IT' && !!comuneIstatCode) || swissPlaceConfirmed}
+                    aria-describedby={
+                      country === 'IT' && comuneIstatCode ? 'city-from-comune' : swissPlaceConfirmed ? 'city-from-swiss-place' : undefined
+                    }
                     placeholder={t('property.form.placeholder.city')}
                   />
                   {country === 'IT' && comuneIstatCode && (
                     <p id="city-from-comune" className="text-xs text-muted-foreground">{t('property.form.comune.cityFromComune')}</p>
                   )}
+                  {swissPlaceConfirmed && (
+                    <p id="city-from-swiss-place" className="text-xs text-muted-foreground">{t('swissPlace.form.cityFromPlace')}</p>
+                  )}
                   <FormFieldError error={errors.city} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="postalCode">{t('property.form.postalCode')}</Label>
-                  <Input id="postalCode" {...register('postalCode')} placeholder={t('property.form.placeholder.postalCode')} />
+                  <Input
+                    id="postalCode"
+                    {...register('postalCode')}
+                    readOnly={swissPlaceConfirmed}
+                    aria-describedby={swissPlaceConfirmed ? 'city-from-swiss-place' : undefined}
+                    placeholder={t('property.form.placeholder.postalCode')}
+                  />
                   <FormFieldError error={errors.postalCode} />
                 </div>
               </div>
@@ -401,6 +443,56 @@ export function PropertyForm({
         </Button>
       </div>
     </form>
+  );
+}
+
+interface SwissPlaceFieldProps {
+  control: Control<PropertyFormValues>;
+  setValue: UseFormSetValue<PropertyFormValues>;
+  property: Property;
+  /** BFS number the host confirmed in the form; null when none is. */
+  municipalityCode: string | null;
+  disabled: boolean;
+  error?: { message?: string };
+}
+
+/**
+ * The place of a house in Switzerland (E29/F01/US02/T01, NF-124), picked or confirmed from the official directory: it fills the postal
+ * code, the city and the municipality (its BFS number, from which the canton follows) that every rule of the guests reads. It never
+ * blocks the save: a place that is not confirmed is only asked for.
+ */
+function SwissPlaceField({ control, setValue, property, municipalityCode, disabled, error }: SwissPlaceFieldProps) {
+  const { t } = useTranslation();
+  // Only this field follows what is typed in the postal code and the city: the form around it does not render at every key.
+  const [postalCode, city] = useWatch({ control, name: ['postalCode', 'city'] });
+
+  return (
+    <div className="space-y-2" data-testid="property-swiss-place-field">
+      <Label htmlFor="swissPlace">{t('swissPlace.form.label')}</Label>
+      <SwissLocalityPicker
+        id="swissPlace"
+        municipalityCode={municipalityCode}
+        postalCode={postalCode ?? ''}
+        city={city ?? ''}
+        stored={{
+          municipalityCode: property.swissMunicipalityCode,
+          municipalityName: property.swissMunicipalityName,
+          cantonCode: property.swissCantonCode,
+        }}
+        disabled={disabled}
+        describedBy="swiss-place-hint"
+        onChange={(place) => {
+          // The place chosen from the official directory gives the postal code, the city (the name of the locality) and the municipality.
+          setValue('swissMunicipalityCode', place?.municipalityCode ?? '', { shouldDirty: true, shouldValidate: true });
+          if (place) {
+            setValue('city', place.name, { shouldDirty: true, shouldValidate: true });
+            setValue('postalCode', place.postalCode, { shouldDirty: true, shouldValidate: true });
+          }
+        }}
+      />
+      <p id="swiss-place-hint" className="text-xs text-muted-foreground">{t('swissPlace.form.hint')}</p>
+      <FormFieldError error={error} />
+    </div>
   );
 }
 

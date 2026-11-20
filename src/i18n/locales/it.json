@@ -1998,6 +1998,9 @@
       "supportVaultSecretMissing": "Queste credenziali non ci sono ancora: salvale prima, oppure chiedile all'utente.",
       "supportVaultTooManyOpenings": "Hai già aperto le credenziali 5 volte nell'ultima ora per questa richiesta: riprova più tardi.",
       "supportVaultValueInvalid": "Utente e password sono obbligatori, al massimo 200 caratteri; il codice aggiuntivo al massimo 100.",
+      "swissMunicipalityNotApplicable": "Il comune svizzero si può indicare solo per un immobile in Svizzera.",
+      "swissMunicipalityUnknown": "Il comune scelto non è nell'elenco ufficiale dei comuni svizzeri: scegli di nuovo la località.",
+      "swissPlacesUnavailable": "L'elenco ufficiale delle località svizzere non è disponibile in questo momento: riprova più tardi.",
       "videoCallNotSent": "L'email non è partita e nulla è stato inviato. Riprova.",
       "videoCallUrlInvalid": "Il link della riunione non è valido: deve cominciare con https://, senza spazi né password.",
       "xlsxTooManyRows": "Troppe righe: un foglio di un file Excel può avere al massimo 10.000 righe. Scegli un periodo più breve e riprova.",
@@ -21733,6 +21736,9 @@
       },
       "comuneIstatCode": {
         "format": "Il codice ISTAT del comune non è valido: scegli il comune dall'elenco."
+      },
+      "swissMunicipalityCode": {
+        "format": "Il comune svizzero scelto non è valido: scegli di nuovo la località."
       }
     },
     "slug": {
@@ -30919,6 +30925,34 @@
       "description": "Gli ospiti di questa struttura vanno notificati alla polizia cantonale entro 24 ore dall'arrivo, con il numero identificativo della struttura.",
       "noId": "Numero identificativo non inserito.",
       "open": "Notifica gli ospiti alla polizia"
+    }
+  },
+  "swissPlace": {
+    "form": {
+      "cityFromPlace": "Città e CAP sono quelli della località scelta. Cancella la scelta per scriverli a mano.",
+      "hint": "Cerca il CAP o il nome della località: ne seguono il comune e il cantone, che dicono quali regole valgono per i tuoi ospiti.",
+      "label": "CAP e località (elenco ufficiale)"
+    },
+    "picker": {
+      "ambiguous": "Il CAP {{postalCode}} vale per più comuni: scegli il tuo, non ne scegliamo uno al posto tuo.",
+      "candidatesLabel": "Comuni con questo CAP",
+      "clear": "Cancella la località scelta",
+      "codeUnknown": "Il comune n. {{code}} non è nell'elenco ufficiale: scegli di nuovo la località.",
+      "confirm": "Conferma",
+      "confirmPrompt": "Conferma il comune: {{place}}",
+      "listLabel": "Località trovate",
+      "minChars": "Scrivi almeno {{min}} caratteri: il CAP o il nome della località.",
+      "municipality": "Comune: {{municipality}} · Cantone: {{canton}}",
+      "municipalityOf": "Comune di {{municipality}}",
+      "noPostalCode": "Non trovo il CAP {{postalCode}} tra le località svizzere: controlla come l'hai scritto.",
+      "noResults": "Nessuna località trovata per «{{query}}». Controlla come l'hai scritto.",
+      "placeholder": "Cerca il CAP o la località (almeno 2 caratteri)",
+      "resultCount_one": "{{count}} località trovata. Usa le frecce e Invio per sceglierla.",
+      "resultCount_other": "{{count}} località trovate. Usa le frecce e Invio per sceglierne una.",
+      "retry": "Riprova",
+      "searchError": "Non riesco a leggere l'elenco delle località: questo non significa che non ci siano risultati.",
+      "searching": "Cerco…",
+      "unavailable": "L'elenco ufficiale delle località non è disponibile in questo momento. Puoi salvare lo stesso: il comune si conferma più tardi."
     }
   },
   "taxRates": {
