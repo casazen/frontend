@@ -30,7 +30,9 @@ import { InboxPane } from './components/inbox-pane';
 import { MessageBubble, type BubbleActions } from './components/message-bubble';
 import { ReplyComposer } from './components/reply-composer';
 import { guestProfilePath } from './lib/guest-profile';
+import { isReviewThreadKey } from './lib/review-model';
 import { buildThreadItems, resendKeyOf, resentMessageIds, type HubThreadItem } from './lib/thread-items';
+import { ReviewThreadView } from './review-thread-page';
 
 /** The sentence for a conversation the host can read and not answer, from the reason the server gives. */
 function cannotReplyKey(reason: string | null | undefined): string {
@@ -319,8 +321,12 @@ function ThreadView({ threadKey }: { threadKey: string }) {
  * guest's messages as read once it is in front of the host.
  *
  * The state of the page (the draft, what was sent again) belongs to the conversation: another one starts clean.
+ *
+ * A key that starts with `otareview:` or `review:` is not a conversation but a review of a guest (E05/F06/US02, NF-69): the page is then `ReviewThreadView`, with its own reading and its own
+ * actions. The endpoints of a conversation answer 404 to such a key, so none of them is asked.
  */
 export function ThreadPage() {
   const { threadKey = '' } = useParams<{ threadKey: string }>();
+  if (isReviewThreadKey(threadKey)) return <ReviewThreadView key={threadKey} threadKey={threadKey} />;
   return <ThreadView key={threadKey} threadKey={threadKey} />;
 }

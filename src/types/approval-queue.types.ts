@@ -3,8 +3,11 @@
  * Items requiring a human decision before they take effect: approving one runs the action it was waiting for.
  */
 
-/** The types of item the queue knows (`ItemType`). The server may send another one later: it is shown as «other». */
-export const APPROVAL_ITEM_TYPES = ['MessageDraft', 'Campaign', 'Routine', 'AiText'] as const;
+/**
+ * The types of item the queue knows (`ItemType`). The server may send another one later: it is shown as «other». `ReviewReply` is the draft of the public reply to a review of a guest
+ * (E05/F06, NF-69): approving it publishes the reply, once, to the channel or to the booking site.
+ */
+export const APPROVAL_ITEM_TYPES = ['MessageDraft', 'Campaign', 'Routine', 'AiText', 'ReviewReply'] as const;
 
 /** An item type of {@link APPROVAL_ITEM_TYPES}. */
 export type KnownApprovalItemType = (typeof APPROVAL_ITEM_TYPES)[number];
@@ -51,7 +54,7 @@ export interface ApprovalQueueItem {
   confidenceScore: number | null;
   /** The situation the assistant recognised in the message of the guest (a snake_case code). */
   situationCode: string | null;
-  /** The conversation of a draft of a message (`ota:…` or `direct:…`). */
+  /** The conversation of a draft of a message (`ota:…` or `direct:…`), or the review a draft of a reply belongs to (`otareview:…` or `review:…`). */
   threadKey: string | null;
   /** The text as the host edited it, or `null` while it was not edited: the one the approval acts with. */
   editedContentText: string | null;

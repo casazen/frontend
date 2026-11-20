@@ -1763,6 +1763,7 @@
       "channelAccountHoldersInvalid": "The changes to the account holders are not valid: check the listings and the portals and try again.",
       "channelCommissionRuleInUse": "A commission rule has already been used in the statements: you can close it but not change its percentage or remove it.",
       "channelCommissionRulesInvalid": "One of the percentages of the portals is not valid. Check it and try again.",
+      "channelNotIntegrated": "This channel does not let CasaZen read the reviews or reply to them.",
       "cleaningSetupBulkEmpty": "Choose at least one property: an empty list does not mean «all».",
       "cleaningSetupBulkTooMany": "You can set at most 200 properties at a time.",
       "cleaningSetupCleanerMismatch": "The supplier or the member of the staff does not match the kind of cleaner chosen: give only what is needed.",
@@ -1808,10 +1809,28 @@
       "guestUnreachable": "The guest has no e-mail address on file: nothing was sent.",
       "issuerRegimeCountryMismatch": "The regime you chose does not apply to the country of the issuer. Check the country and the regime.",
       "noPendingVerification": "This verification is no longer waiting.",
+      "otaReviewActionNotAllowed": "The portal did not allow the action: maybe the reply is already there, or the time is over. Refresh the review to see what happened.",
+      "otaReviewActionUnconfirmed": "We do not know yet whether the portal received the previous send: until we know it cannot be sent again.",
+      "otaReviewBookingNotReviewable": "This stay has no reviews to read: it did not happen, or it is not linked to the portal.",
+      "otaReviewChannelNotSupported": "For this channel CasaZen cannot reply to reviews: answer on the portal.",
+      "otaReviewHostReviewAlreadySent": "You have already written your review of the guest.",
+      "otaReviewHostReviewInvalid": "The review of the guest is not valid: it needs a mark from 1 to 5 for every item and a public text.",
+      "otaReviewNotFound": "Review not found.",
+      "otaReviewNotPublished": "The review of the guest is not published yet: there is nothing to answer.",
+      "otaReviewRefreshTooSoon": "You read the portal a moment ago: try again in a few minutes.",
+      "otaReviewReplyAlreadySent": "You have already answered this review: a reply is published only once.",
+      "otaReviewWindowClosed": "The time to write your review of the guest is over.",
       "ownerMandateOwnersEmpty": "There is no owner to apply the mandate to.",
       "rechargeWaiverNotAcknowledged": "Not saved: to stop recharging the portal commissions to the owners we need your confirmation.",
+      "replyNotDelivered": "The portal did not confirm the reply within an hour: it did not arrive. You can try again.",
       "reportInvalidPeriod": "The period is not valid: check the dates.",
       "reportPeriodTooLong": "The period is too long: choose one of at most 24 months.",
+      "reviewActionNotAllowed": "The portal did not allow the action: maybe the reply is already there, or the time is over. Refresh the review to see what happened.",
+      "reviewNotAvailable": "The portal does not give us the reviews of this listing: usually a permission is missing in your channel manager.",
+      "reviewNotDelivered": "The portal did not confirm your review of the guest within an hour: it did not arrive. You can try again.",
+      "reviewNotFound": "Review not found.",
+      "reviewReplyAlreadySent": "You have already answered this review: you answer only once.",
+      "reviewReplyInvalid": "The reply must be from 1 to 800 characters.",
       "routineActionNotAvailable": "This routine holds actions that are not available yet: it cannot be switched on, but you can try it in test mode.",
       "routineEventNotAvailable": "Nothing starts a routine on this event yet: choose another one.",
       "routineLimitReached": "You have reached the maximum number of routines (50): delete one to create another.",
@@ -2482,6 +2501,7 @@
   "approval": {
     "action": {
       "approve": "Approve",
+      "approveAndPublish": "Approve and publish",
       "approveAndSend": "Approve and send",
       "approved": "Item approved",
       "approveFailed": "Failed to approve item",
@@ -2495,7 +2515,9 @@
         "message": "Message sent to the guest.",
         "messageQueued": "Your channel manager has the message and will send it to the guest.",
         "messageVerify": "We do not know whether the channel received the message: check the conversation before you write it again.",
-        "none": "Approved. There was no action linked to run."
+        "none": "Approved. There was no action linked to run.",
+        "review": "Reply published.",
+        "reviewVerify": "We do not know whether the portal received the reply: check the review before writing it again."
       },
       "originFailed": "The approval could not be completed: the item stays in the queue.",
       "originFailedHint": "You can try again, or edit the text and approve it again.",
@@ -2532,6 +2554,7 @@
       "description": "Change the text before you decide. The original stays below.",
       "descriptionCampaign": "Change the subject line and the text of the campaign before you approve it. The original stays below.",
       "descriptionMessage": "Change the message before it goes to the guest. The original stays below.",
+      "descriptionReview": "Change the reply before it is published under the review. The original stays below.",
       "error": {
         "bodyRequired": "Write the text of the campaign.",
         "empty": "Write the text.",
@@ -2555,7 +2578,8 @@
     },
     "hint": {
       "campaign": "When you approve it, the campaign is approved and, if it already has a send date, scheduled.",
-      "messageDraft": "When you approve it, the message goes to the guest. You can edit it first."
+      "messageDraft": "When you approve it, the message goes to the guest. You can edit it first.",
+      "reviewReply": "Approving it publishes the reply under the review: it is public and can no longer be taken back. You can edit it first."
     },
     "queue": {
       "description": "Items awaiting approval before execution",
@@ -2569,6 +2593,9 @@
     "reject": {
       "reasonRequired": "Write the reason for the rejection.",
       "reasonTooLong": "The reason is too long: {{max}} characters at most."
+    },
+    "review": {
+      "open": "Open the review"
     },
     "situation": {
       "cancellation_or_refund": "Cancellation or refund",
@@ -2602,6 +2629,7 @@
       "campaign": "Campaign",
       "messageDraft": "Message draft",
       "other": "Other",
+      "reviewReply": "Reply to a review",
       "routine": "Routine"
     }
   },
@@ -16307,6 +16335,8 @@
       "fiscalDocumentIssued": "A fiscal document was issued for a booking.",
       "fiscalDocumentSdiRejected": "The SDI rejected an invoice: it needs to be corrected.",
       "touristTaxPaid": "A guest paid the tourist tax online.",
+      "otaReviewActionFailed": "A reply to a review, or your review of a guest, did not reach the portal: try again from the review.",
+      "otaReviewReceived": "A guest left a review.",
       "scheduledMessageIssue": "A scheduled message for a guest did not go out or needs you: open the booking to see what happened."
     }
   },
@@ -25020,6 +25050,182 @@
     "resetFilters": "Reset filters",
     "loading": "Loading analytics...",
     "empty": "No revenue data available"
+  },
+  "reviews": {
+    "booking": {
+      "empty": "No review yet.",
+      "limit": "For this channel CasaZen cannot read the reviews or reply to them: read and answer them on the portal.",
+      "listLabel": "Reviews of this stay",
+      "loadError": "I cannot read the reviews of this stay.",
+      "loading": "Loading the reviews…",
+      "notFound": "The reviews of this stay were not found: they are gone, or they are not one of your properties'.",
+      "open": "Open in Messages",
+      "readAt": "Read from the portal on {{when}}",
+      "readFailed": "The last read from the portal did not work: {{reason}}",
+      "readFailedUnknown": "the portal did not answer.",
+      "refresh": "Refresh",
+      "refreshFailed": "I cannot read the reviews from the portal. Try again in a moment.",
+      "refreshTooSoon_one": "You read the portal a moment ago: you can refresh again in {{count}} minute.",
+      "refreshTooSoon_other": "You read the portal a moment ago: you can refresh again in {{count}} minutes.",
+      "refreshed": "Reviews refreshed.",
+      "reply": {
+        "error": "Reply not published",
+        "manualVerify": "Reply to check",
+        "none": "Not answered",
+        "sent": "Reply published"
+      },
+      "title": "Reviews"
+    },
+    "category": {
+      "accuracy": "Accuracy of the listing",
+      "checkin": "Check-in",
+      "cleanliness": "Cleanliness",
+      "communication": "Communication",
+      "location": "Location",
+      "respect_house_rules": "Respect of the house rules",
+      "value": "Value for money"
+    },
+    "channel": {
+      "noSource": "This booking does not come from a portal or from your site: it has no reviews.",
+      "notIntegrated": "{{channel}} does not let CasaZen read the reviews or reply to them: read and answer them on the portal.",
+      "thisChannel": "This channel"
+    },
+    "hostReview": {
+      "cannot": "For now you cannot write your review of the guest from CasaZen.",
+      "closed": "The time to write your review of the guest is over: it can no longer be written.",
+      "confirm": {
+        "description": "The review will be sent to the portal and published as its rules say.",
+        "once": "It is written once: it cannot be edited or taken back.",
+        "public": "Everybody reads the public part on the portal.",
+        "send": "Send",
+        "title": "Send the review of the guest?"
+      },
+      "error": {
+        "ratings": "Give a mark from 1 to 5 to every item.",
+        "text": "Write your public review.",
+        "tooLong": "The text is too long: {{max}} characters at most."
+      },
+      "errorRetry": "You can change the texts and try again.",
+      "errorUnknown": "The portal did not accept it.",
+      "intro": "You can write a review of the guest on the portal. It is written once, as long as the portal allows it.",
+      "notSent": "The review of the guest was not sent",
+      "offline": "You are offline: you can send the review when you are back online.",
+      "privateHint": "Only the guest sees it: it does not appear on the portal.",
+      "privateText": "Private note for the guest",
+      "publicHint": "Everybody reads it on the portal.",
+      "publicText": "Your public review",
+      "send": "Send the review",
+      "sentAt": "Sent on {{when}}",
+      "title": "Your review of the guest",
+      "toast": {
+        "failed": "I could not send the review. Try again.",
+        "refused": "The portal did not accept the review.",
+        "sent": "Review of the guest sent.",
+        "verify": "We do not know yet whether the portal received the review: do not write it again, we are checking."
+      },
+      "unknown": "The portal has not said yet whether you can write your review of the guest. CasaZen checks every few hours.",
+      "verify": "We do not know yet whether the portal received your review of the guest. CasaZen checks it by itself: until we know you cannot send it again."
+    },
+    "hub": {
+      "empty": "There are no reviews yet",
+      "emptyHint": "When a guest leaves a review, from your site or from a portal, you find it here.",
+      "filter": "Reviews",
+      "noMatch": "No review found",
+      "noMatchHint": "Try another search or remove a filter."
+    },
+    "reason": {
+      "mappingNotConfirmed": "The listing is not linked to one of your properties yet: until it is, CasaZen does not answer reviews from here.",
+      "notConnected": "The connection to the channels is not active: CasaZen neither reads the reviews nor replies to them."
+    },
+    "row": {
+      "noText": "The guest wrote no comment",
+      "notAnswered": "Not answered"
+    },
+    "state": {
+      "error": "Not sent",
+      "manualVerify": "Needs checking",
+      "none": "Not yet",
+      "sent": "Published"
+    },
+    "thread": {
+      "categoryValue": "{{value}} out of {{max}}",
+      "confirm": {
+        "description": "The reply will be visible to everybody under the review.",
+        "once": "It cannot be taken back or edited, and it goes out only once.",
+        "public": "It is public: everybody reads it, not only the guest.",
+        "publish": "Publish",
+        "title": "Publish the reply?"
+      },
+      "draft": {
+        "approve": "Approve and publish",
+        "ask": "Ask the assistant for a draft",
+        "edit": "Edit",
+        "loadError": "The drafts waiting could not be read. Try again.",
+        "loading": "Looking for a draft for this review…",
+        "none": "There is no draft waiting for this review.",
+        "notFound": "This review was not found.",
+        "reason": {
+          "ai_budget_exceeded": "The assistant has reached its usage limit for now: try again later, or answer yourself.",
+          "ai_invalid_answer": "The assistant could not write a usable draft: try again, or answer yourself.",
+          "ai_provider_error": "The assistant could not write the draft right now: try again in a few minutes, or answer yourself.",
+          "ai_provider_not_configured": "The assistant is not available in this environment yet: no draft was written.",
+          "already_answered": "You have already answered this review, or the reply is waiting to be checked: no draft was written.",
+          "already_drafted": "There is already a draft waiting for this review.",
+          "assistant_disabled": "The assistant is off for your organization or for this property: no draft was written.",
+          "draft_rule_violation": "The reply the assistant wrote broke a rule (it cannot promise refunds or discounts, say it is an AI, or hold a link or a phone number) and was not queued. Try again, or answer yourself.",
+          "draft_too_long": "The reply the assistant wrote was too long for a review and was not queued. Try again, or answer yourself.",
+          "ota_review_channel_not_supported": "For this channel CasaZen cannot reply to reviews: answer on the portal.",
+          "ota_review_not_published": "The review of the guest is not published yet: there is nothing to answer.",
+          "reply_not_possible": "For now CasaZen cannot send the reply (the connection to the channels is not active, or the listing is not linked to one of your properties yet): no draft was written.",
+          "unknown": "The assistant did not complete the request: no draft was written. Try again in a moment, or answer yourself."
+        },
+        "reject": "Reject",
+        "rejected": "Draft rejected. Nothing was published.",
+        "requestFailed": "The draft could not be requested. Try again in a moment.",
+        "saveAndPublish": "Save and publish",
+        "title": "Draft of the assistant"
+      },
+      "guest": {
+        "title": "The guest's review"
+      },
+      "loadError": "I cannot load the review.",
+      "loading": "Loading the review…",
+      "noBooking": "The booking of this review is not available.",
+      "noRating": "The guest gave no mark.",
+      "noText": "The guest wrote no comment.",
+      "notFound": "Review not found",
+      "notFoundHint": "The address is not right, or the review is not one of your properties'.",
+      "publishedAt": "Published on {{when}}",
+      "ratingOf": "{{rating}} out of {{max}}",
+      "readAt": "Read from the portal on {{when}}",
+      "readFailed": "The last read from the portal did not work",
+      "readFailedHint": "What you see may not be up to date: CasaZen tries again by itself.",
+      "readFailedUnknown": "The portal did not answer.",
+      "readOnly": "You can read the review, but you do not have permission to answer.",
+      "reply": {
+        "cannot": "For now you cannot answer this review from CasaZen.",
+        "empty": "Write the reply.",
+        "errorRetry": "You can change the text and try again.",
+        "errorUnknown": "The portal did not accept it.",
+        "hint": "It shows under the review, for everybody. Once published it cannot be edited or taken back.",
+        "label": "Your public reply",
+        "notPublished": "The reply was not published",
+        "offline": "You are offline: you can publish the reply when you are back online.",
+        "publish": "Publish the reply",
+        "sentAt": "Published on {{when}}",
+        "title": "Your reply",
+        "tooLong": "The reply is too long: {{max}} characters at most.",
+        "verify": "We do not know yet whether the portal received the reply. CasaZen checks it by itself: until we know you cannot send it again, so that it is not published twice."
+      },
+      "title": "Review",
+      "toast": {
+        "replyFailed": "I could not publish the reply. Try again.",
+        "replyRefused": "The portal did not accept the reply.",
+        "replySent": "Reply published.",
+        "replyVerify": "We do not know yet whether the portal received the reply: do not write it again, we are checking."
+      },
+      "unavailable": "For now we cannot show this review."
+    }
   },
   "roles": {
     "Admin": "Super admin",

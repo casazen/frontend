@@ -61,6 +61,53 @@ describe('ThreadList (NF-61)', () => {
   });
   afterEach(() => cleanup());
 
+  describe('the reviews (E05/F06/US02, NF-69)', () => {
+    const OTA_REVIEW_KEY = 'otareview:6f1c9a52-1111-4222-8333-944455556666';
+    const SITE_REVIEW_KEY = 'review:0c9d2a10-aaaa-4bbb-8ccc-123456789abc';
+    const REVIEWS: InboxState = { ...TO_RESPOND, view: 'reviews' };
+    const reviewsPage: MessageHubPage = {
+      items: [
+        thread({ threadKey: OTA_REVIEW_KEY, source: 'OtaReview', kind: 'Review', rating: 4.5, preview: 'Casa pulita e host gentilissimo.', unreadCount: 0, needsReply: true }),
+        thread({ threadKey: SITE_REVIEW_KEY, source: 'Review', kind: 'Review', channel: 'Direct', rating: 5, preview: 'Tutto perfetto.', guestName: 'Luca Verdi', unreadCount: 0, needsReply: false }),
+      ],
+      totalCount: 2,
+      page: 1,
+      pageSize: 20,
+    };
+
+    it('ThreadList_ReviewsOfBothSources_ShowTheStarsInWordsAThePreviewAndNotAnsweredWhereTheHostHasNotAnswered', () => {
+      renderList({ page: reviewsPage, state: REVIEWS, search: '?view=reviews' });
+
+      const rows = screen.getAllByTestId('message-thread-row');
+      expect(rows).toHaveLength(2);
+      expect(rows[0]).toHaveAttribute('data-kind', 'review');
+      // The row opens the review under its key, with the filter of the list (so the list beside the review is the one of the reviews).
+      expect(rows[0]).toHaveAttribute('href', `/app/short-rent/messages/${encodeURIComponent(OTA_REVIEW_KEY)}?view=reviews`);
+      expect(within(rows[0]).getByTestId('review-row-rating')).toHaveTextContent('4,5 su 5');
+      expect(rows[0]).toHaveTextContent('Casa pulita e host gentilissimo.');
+      expect(rows[0]).toHaveTextContent('Airbnb');
+      expect(within(rows[0]).getByTestId('review-row-not-answered')).toHaveTextContent('Senza risposta');
+      expect(rows[1]).toHaveAttribute('href', `/app/short-rent/messages/${encodeURIComponent(SITE_REVIEW_KEY)}?view=reviews`);
+      expect(rows[1]).toHaveTextContent('Diretto');
+      expect(within(rows[1]).queryByTestId('review-row-not-answered')).not.toBeInTheDocument();
+      // A review is not a conversation: nothing about unread messages.
+      expect(within(rows[0]).queryByText(/da leggere/)).not.toBeInTheDocument();
+    });
+
+    it('ThreadList_NoReviews_SaysSoInItsOwnWordsAndNotThatThereAreNoConversations', () => {
+      renderList({ page: { items: [], totalCount: 0, page: 1, pageSize: 20 }, state: REVIEWS });
+
+      expect(screen.getByText('Non ci sono ancora recensioni')).toBeInTheDocument();
+      expect(screen.queryByText('Nessun messaggio a cui rispondere')).not.toBeInTheDocument();
+    });
+
+    it('ThreadList_ReviewSearchThatFindsNothing_SaysNoReviewWasFound', () => {
+      renderList({ page: { items: [], totalCount: 0, page: 1, pageSize: 20 }, state: { ...REVIEWS, q: 'zzz' } });
+
+      expect(screen.getByText('Nessuna recensione trovata')).toBeInTheDocument();
+    });
+  });
+
   it('ThreadList_ConversationsOfTheChannelsAndDirectOnes_AreOneListOfRowsThatOpenTheThread', () => {
     renderList();
 

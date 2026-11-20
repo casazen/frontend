@@ -10,10 +10,13 @@ import { MESSAGE_HUB_CHANNELS, type MessageHubChannel, type MessageHubFilters } 
  * does not exist, an id that is not an id) is ignored, so a stale link or a typed address never breaks the page.
  */
 
-/** «Da rispondere» is where the page starts (AC-NF61-2); «Tutti» and «Non letti» are the other two views. */
-export type InboxView = 'toRespond' | 'all' | 'unread';
+/**
+ * «Da rispondere» is where the page starts (AC-NF61-2); «Tutte» and «Non lette» are the other two views of the conversations. «Recensioni» (`reviews`, E05/F06/US02, NF-69) lists the
+ * reviews of the guests, of the booking site and of the channels, and nothing else: they are in no other view.
+ */
+export type InboxView = 'toRespond' | 'all' | 'unread' | 'reviews';
 
-export const INBOX_VIEWS: readonly InboxView[] = ['toRespond', 'all', 'unread'];
+export const INBOX_VIEWS: readonly InboxView[] = ['toRespond', 'all', 'unread', 'reviews'];
 
 export const DEFAULT_INBOX_VIEW: InboxView = 'toRespond';
 
@@ -90,6 +93,8 @@ export function inboxFilters(state: InboxState): MessageHubFilters {
   return {
     ...(state.view === 'toRespond' ? { needsReply: true } : {}),
     ...(state.view === 'unread' ? { unread: true } : {}),
+    // The reviews are listed under their own filter (`kind=review`), and only under it: the other views never carry one.
+    ...(state.view === 'reviews' ? { kind: 'Review' as const } : {}),
     ...(state.channel ? { channel: state.channel } : {}),
     ...(state.propertyId ? { propertyId: state.propertyId } : {}),
     ...(state.bookingId ? { bookingId: state.bookingId } : {}),
