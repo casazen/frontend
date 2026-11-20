@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { Link, generatePath } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
@@ -173,6 +173,9 @@ export function BookingScheduledMessages({ booking, canWrite }: BookingScheduled
 /** Which of the two confirmations of a message is open (the edit dialog is kept by the section). */
 type ConfirmKind = 'skip' | 'send';
 
+/** The three writes a card can make on its message. */
+type WriteKind = 'edit' | ConfirmKind;
+
 interface ScheduledMessageItemProps {
   message: ScheduledMessage;
   canWrite: boolean;
@@ -232,43 +235,63 @@ function ScheduledMessageItem({ message, canWrite, links, editing, draft, onEdit
     setConfirm(null);
   };
 
-  // Each write lets go of its mutation when it is over (`reset`): a hook keeps the last one it ran, with the text that was sent, for as long as the card is on the page.
-  const saveText = async (text: string | null) => {
-    setProblem(null);
-    try {
-      await edit.mutateAsync({ bookingId: message.bookingId, id: message.id, text });
-      closeEdit();
-    } catch (error) {
-      setProblem(describeScheduledMessageError(error, t));
-    } finally {
-      edit.reset();
-    }
+  // ONE write of this card at a time, and the same write pressed again gets the answer of the first instead of a second request. `busy` comes from the mutation cache and reaches the screen a moment after the
+  // press (the cache tells React on the next turn of the clock), so two submits in the same instant (a key held down, a double click made by a script) both find the button enabled: this guard does not wait
+  // for the screen. Without it the second request is refused by the server with a 409 that would show on the card, right after the toast that says the first one worked.
+  const inFlight = useRef<{ kind: WriteKind; running: Promise<void> } | null>(null);
+  /** Runs the write unless one is on its way. The same kind pressed again is given the first one's promise; another kind is not started (`null`): nothing is started and nothing is said done. */
+  const once = (kind: WriteKind, write: () => Promise<void>): Promise<void> | null => {
+    const current = inFlight.current;
+    if (current) return current.kind === kind ? current.running : null;
+    const running = write().finally(() => {
+      inFlight.current = null;
+    });
+    inFlight.current = { kind, running };
+    return running;
   };
+  // A confirmation that was not started must not close its dialog as if it had worked: it fails, and the dialog stays open.
+  const notStarted = () => Promise.reject(new Error('Another write of this message is on its way'));
+
+  // Each write lets go of its mutation when it is over (`reset`): a hook keeps the last one it ran, with the text that was sent, for as long as the card is on the page.
+  const saveText = (text: string | null): Promise<void> =>
+    once('edit', async () => {
+      setProblem(null);
+      try {
+        await edit.mutateAsync({ bookingId: message.bookingId, id: message.id, text });
+        closeEdit();
+      } catch (error) {
+        setProblem(describeScheduledMessageError(error, t));
+      } finally {
+        edit.reset();
+      }
+    }) ?? Promise.resolve();
 
   // A refusal is said inside the dialog, which stays open (a failed confirmation closes nothing), and again on the card when the dialog was closed while the request was on its way.
-  const confirmSkip = async () => {
-    setProblem(null);
-    try {
-      await skip.mutateAsync({ bookingId: message.bookingId, id: message.id });
-    } catch (error) {
-      setProblem(describeScheduledMessageError(error, t));
-      throw error;
-    } finally {
-      skip.reset();
-    }
-  };
+  const confirmSkip = (): Promise<void> =>
+    once('skip', async () => {
+      setProblem(null);
+      try {
+        await skip.mutateAsync({ bookingId: message.bookingId, id: message.id });
+      } catch (error) {
+        setProblem(describeScheduledMessageError(error, t));
+        throw error;
+      } finally {
+        skip.reset();
+      }
+    }) ?? notStarted();
 
-  const confirmSendNow = async () => {
-    setProblem(null);
-    try {
-      await sendNow.mutateAsync({ bookingId: message.bookingId, id: message.id });
-    } catch (error) {
-      setProblem(describeScheduledMessageError(error, t));
-      throw error;
-    } finally {
-      sendNow.reset();
-    }
-  };
+  const confirmSendNow = (): Promise<void> =>
+    once('send', async () => {
+      setProblem(null);
+      try {
+        await sendNow.mutateAsync({ bookingId: message.bookingId, id: message.id });
+      } catch (error) {
+        setProblem(describeScheduledMessageError(error, t));
+        throw error;
+      } finally {
+        sendNow.reset();
+      }
+    }) ?? notStarted();
 
   const problemInDialog = problem ? (
     <p role="alert" className="text-sm text-destructive" data-testid="scheduled-message-dialog-problem">

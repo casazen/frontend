@@ -874,3 +874,57 @@ describe('the text the host is writing when a read fails', () => {
     expect(within(second).getByTestId('scheduled-message-edit-text')).toHaveValue('Ciao Mario, benvenuto! Il tuo link: {{check_in_link}}');
   });
 });
+
+// A second submit of a confirmation while the first is on its way. The card learns that a write is on its way a moment after the press (the mutation cache tells React on the next turn of the clock), so two
+// submits in the same instant both find the button enabled: only one request must go, and the second must not come back as a 409 shown on the card after the first one worked.
+describe('a second submit while the first is on its way', () => {
+  it.each([
+    ['skip', 'scheduled-message-skip', 'Salta il messaggio', msg({ status: 'Skipped', skipReason: 'person', text: null, canEdit: false, canSkip: false, canSendNow: false, channel: 'None' })],
+    ['sendNow', 'scheduled-message-send-now', 'Invia ora', msg({ status: 'Sent', sentAt: '2026-11-24T06:10:00Z', sentThreadKey: 'ota:t-1', text: null, canEdit: false, canSkip: false, canSendNow: false, channel: 'None' })],
+  ] as const)('%s_TwoSubmitsInTheSameInstant_SendOneRequest_AndShowNoRefusalAfterTheFirstWorked', async (action, buttonId, confirmName, answer) => {
+    list.mockResolvedValue([msg()]);
+    const call = vi.mocked(action === 'skip' ? skip : sendNow);
+    let finish: (message: ScheduledMessage) => void = () => undefined;
+    call.mockReturnValue(new Promise<ScheduledMessage>((resolve) => (finish = resolve)));
+    renderSection();
+
+    fireEvent.click(await screen.findByTestId(buttonId));
+    const dialog = await screen.findByRole('dialog');
+    const confirm = within(dialog).getByRole('button', { name: confirmName });
+    // Two submits before React has been told that a write is on its way: the button is still enabled for both.
+    fireEvent.click(confirm);
+    fireEvent.click(confirm);
+
+    await waitFor(() => expect(call).toHaveBeenCalledTimes(1));
+    await act(async () => finish(answer));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(call).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId('scheduled-message-problem')).not.toBeInTheDocument();
+    expect(toast.success).toHaveBeenCalledTimes(1);
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+
+  it('skip_ARefusalOfTheFirstSubmit_IsSaidOnceInTheDialog_AndAnotherAttemptIsPossibleAfterwards', async () => {
+    list.mockResolvedValue([msg()]);
+    skip.mockRejectedValueOnce(axiosError(409, { code: 'scheduled_message_in_progress' }));
+    skip.mockResolvedValueOnce(msg({ status: 'Skipped', skipReason: 'person', text: null, canEdit: false, canSkip: false, canSendNow: false, channel: 'None' }));
+    renderSection();
+
+    fireEvent.click(await screen.findByTestId('scheduled-message-skip'));
+    const dialog = await screen.findByRole('dialog');
+    const confirm = within(dialog).getByRole('button', { name: 'Salta il messaggio' });
+    fireEvent.click(confirm);
+    fireEvent.click(confirm);
+
+    // The refusal is told once, in the dialog, which stays open: a second submit that shared the answer did not close it as if it had worked.
+    expect(await within(dialog).findByTestId('scheduled-message-dialog-problem')).toHaveTextContent('sta partendo proprio ora');
+    expect(skip).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+    // The guard is let go when the write is over: the host can try again.
+    await waitFor(() => expect(within(dialog).getByRole('button', { name: 'Salta il messaggio' })).toBeEnabled());
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Salta il messaggio' }));
+    await waitFor(() => expect(skip).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(toast.success).toHaveBeenCalledWith("Messaggio saltato: l'ospite non lo riceverà."));
+  });
+});
