@@ -798,7 +798,7 @@
         },
         "CleaningVatToState": {
           "title": "Riaddebito di pulizia senza IVA indicata",
-          "why": "La pulizia che riaddebiti al proprietario non ha l'IVA indicata: indicala, con l'importo se manca, prima di chiudere il rendiconto."
+          "why": "Rispondi alla domanda: la ditta di pulizie ha applicato l'IVA su questa fattura? Con «Sì» la riga del riaddebito porta l'IVA della ditta, con «No» resta senza IVA, con «Non lo so» l'importo non cambia e la domanda torna una volta, alla chiusura del rendiconto."
         },
         "CompanyTenantDecision": {
           "title": "Conduttore società da decidere",
@@ -18049,6 +18049,43 @@
       "save": "Salva le commissioni",
       "saved": "Commissioni salvate. Valgono per i soggiorni che finiscono dal {{date}} in poi.",
       "title": "Commissioni dei canali"
+    },
+    "cleaningVat": {
+      "answer": {
+        "Applied": "Sì, {{rate}}",
+        "AppliedNoRate": "Sì",
+        "NotApplied": "No, senza IVA",
+        "Unknown": "Non lo so"
+      },
+      "company": "Ditta: {{name}}",
+      "country": {
+        "CH": "Svizzera",
+        "IT": "Italia"
+      },
+      "current": "Risposta data per questa pulizia: {{answer}}. Una nuova risposta prende il suo posto.",
+      "currentByCompany": "Risposta ricordata per questa ditta: {{answer}}. Una risposta data qui prende il suo posto per questa pulizia.",
+      "description": "È il riaddebito di una pulizia al proprietario: la tua risposta decide l'IVA su quella riga della fattura.",
+      "loadError": "Non riusciamo a leggere la domanda.",
+      "loading": "Leggo la domanda…",
+      "problem": {
+        "answerInvalid": "La risposta non è valida: scegli una delle tre.",
+        "changed": "Nel frattempo la richiesta è cambiata. Abbiamo riletto la domanda: controlla e rispondi di nuovo.",
+        "failed": "Non abbiamo la conferma che la risposta sia stata registrata. Riprova: se era già arrivata, la stessa risposta non cambia nulla.",
+        "forbidden": "Il tuo ruolo non può rispondere a questa domanda: serve il permesso di modificare gli immobili.",
+        "notCompleted": "La pulizia non è ancora conclusa, quindi non c'è ancora una fattura della ditta di cui rispondere. Torna quando è completata.",
+        "notFound": "Non troviamo questa richiesta: potrebbe non esserci più, o non essere tra quelle a cui hai accesso.",
+        "rateUnknown": "Per il giorno di questa pulizia non abbiamo un'aliquota IVA, quindi «Sì» non si può registrare. Rispondi «No» o «Non lo so».",
+        "rememberForbidden": "Solo chi gestisce l'intera organizzazione può ricordare la risposta per la ditta. Rispondi di nuovo senza «Ricorda»: vale solo per questa pulizia.",
+        "rememberUnknown": "«Non lo so» non si può ricordare per la ditta. Rispondi senza «Ricorda»."
+      },
+      "remember": "Ricorda per questa ditta",
+      "rememberHint": "Vale per le altre pulizie di questa ditta che non hanno già una risposta, in tutti gli immobili. Non vale per «Non lo so».",
+      "saved": "Risposta registrata: {{answer}}.",
+      "sending": "Registro la risposta…",
+      "title": "La ditta di pulizie ha applicato l'IVA su questa fattura?",
+      "unknownHint": "L'importo resta com'è e la domanda torna una volta, alla chiusura del rendiconto.",
+      "when": "Pulizia del {{date}} · {{country}}",
+      "yesUnavailable": "Per il giorno di questa pulizia non abbiamo un'aliquota IVA: «Sì» non è disponibile."
     },
     "close": {
       "confirm": "Chiudi il mese",
