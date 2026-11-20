@@ -6,15 +6,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState } from '@/components/shared/error-state';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import {
   useTrustedSuppliers,
   useInviteSupplier,
   useUpdateVisibility,
   useRemoveSupplier,
 } from '@/queries/trustedSuppliers';
+import { useProperties } from '@/queries/use-properties';
 
 export function TrustedSuppliersPage() {
   const { t } = useTranslation();
@@ -22,26 +24,29 @@ export function TrustedSuppliersPage() {
   const inviteSupplier = useInviteSupplier();
   const updateVisibility = useUpdateVisibility();
   const removeSupplier = useRemoveSupplier();
+  // The host picks the properties by name (bug #977: the dialog asked for their ids); none picked = all of them.
+  const { data: properties } = useProperties();
+  const propertyList = Array.isArray(properties) ? properties : [];
+  const propertyNames = new Map(propertyList.map((property) => [property.id, property.name]));
 
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
-  const [invitePropertyIds, setInvitePropertyIds] = useState('');
+  const [invitePropertyIds, setInvitePropertyIds] = useState<string[]>([]);
+
+  const toggleInviteProperty = (id: string, checked: boolean) =>
+    setInvitePropertyIds((current) => (checked ? [...current, id] : current.filter((value) => value !== id)));
 
   const handleInvite = () => {
-    if (!inviteEmail) return;
-
-    const propertyIds = invitePropertyIds
-      .split(',')
-      .map((id) => id.trim())
-      .filter((id) => id);
+    const email = inviteEmail.trim();
+    if (!email) return;
 
     inviteSupplier.mutate(
-      { email: inviteEmail, propertyIds },
+      { email, propertyIds: invitePropertyIds },
       {
         onSuccess: () => {
           setInviteDialogOpen(false);
           setInviteEmail('');
-          setInvitePropertyIds('');
+          setInvitePropertyIds([]);
         },
       }
     );
@@ -92,6 +97,7 @@ export function TrustedSuppliersPage() {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>{t('supplier.trusted.inviteTitle')}</DialogTitle>
+                <DialogDescription>{t('supplier.trusted.inviteHint')}</DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
                 <div className="space-y-2">
@@ -105,17 +111,24 @@ export function TrustedSuppliersPage() {
                     data-testid="invite-email-input"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="invite-properties">{t('supplier.trusted.properties')}</Label>
-                  <Input
-                    id="invite-properties"
-                    value={invitePropertyIds}
-                    onChange={(e) => setInvitePropertyIds(e.target.value)}
-                    placeholder={t('supplier.trusted.propertiesPlaceholder')}
-                    data-testid="invite-properties-input"
-                  />
-                  <p className="text-xs text-muted-foreground">{t('supplier.trusted.propertiesHint')}</p>
-                </div>
+                {propertyList.length > 0 && (
+                  <fieldset className="space-y-2" data-testid="invite-properties">
+                    <legend className="text-sm font-medium">{t('supplier.trusted.properties')}</legend>
+                    <p className="text-xs text-muted-foreground">{t('supplier.trusted.propertiesHint')}</p>
+                    {propertyList.map((property) => (
+                      <div key={property.id} className="flex items-center gap-2">
+                        <Checkbox
+                          id={`invite-property-${property.id}`}
+                          checked={invitePropertyIds.includes(property.id)}
+                          onCheckedChange={(checked) => toggleInviteProperty(property.id, checked === true)}
+                        />
+                        <Label htmlFor={`invite-property-${property.id}`} className="font-normal">
+                          {property.name}
+                        </Label>
+                      </div>
+                    ))}
+                  </fieldset>
+                )}
                 <div className="flex justify-end space-x-2">
                   <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
                     {t('common.cancel')}
@@ -189,7 +202,7 @@ export function TrustedSuppliersPage() {
                           className="rounded-md bg-muted px-2 py-1 text-xs"
                           data-testid={`property-${propertyId}`}
                         >
-                          {propertyId}
+                          {propertyNames.get(propertyId) ?? propertyId}
                         </span>
                       ))}
                     </div>
