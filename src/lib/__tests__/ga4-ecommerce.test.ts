@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { buildEmbedMessage, parseEmbedMessage } from '@/embed/protocol';
 import { beginCheckoutEvent, ga4Item, purchaseEvent, searchEvent, viewItemEvent, viewItemListEvent } from '@/lib/ga4-ecommerce';
 
 /**
@@ -73,6 +74,46 @@ describe('viewItemListEvent', () => {
     expect(event.items).toHaveLength(20);
     expect(event.items.map((item) => item.index)).toEqual(Array.from({ length: 20 }, (_, position) => position));
     expect(event.items[19].item_id).toBe('property-19');
+  });
+
+  /** A home as a site really has it: the id is a UUID and the name is a name, not «Casa 0». */
+  const realHome = (position: number, overrides: Record<string, unknown> = {}) =>
+    card(position, { id: `6f1c2b8e-3a4d-4e5f-8a9b-0c1d2e3f4a${10 + position}`, name: `Appartamento Vista Lago ${position}`, ...overrides });
+
+  it('viewItemListEvent_TwentyHomesOfASite_FitTheMessageOfTheProtocolOrAreCutFromTheEnd', () => {
+    // 20 homes with a UUID, a name, a place, a price and the list on each of them are about 4.6 KB; the `params` of an event are at most 4 KB, and a message
+    // the protocol refuses is never posted: the page would hear nothing of the list. 17 homes are 3939 bytes, 18 are 4166.
+    const cards = Array.from({ length: 20 }, (_, position) => realHome(position));
+
+    const event = viewItemListEvent(cards, LIST);
+
+    const message = parseEmbedMessage(buildEmbedMessage('event', { name: 'view_item_list', params: { ...event } }));
+    expect(message).toEqual(buildEmbedMessage('event', { name: 'view_item_list', params: { ...event } }));
+    expect(new TextEncoder().encode(JSON.stringify(event)).length).toBeLessThanOrEqual(4096);
+    // The first ones, in their order and with their position, as many as fit and not one fewer.
+    expect(event.items).toHaveLength(17);
+    expect(event.items.map((item) => item.item_id)).toEqual(cards.slice(0, 17).map((home) => home.id));
+    expect(event.items.map((item) => item.index)).toEqual(Array.from({ length: 17 }, (_, position) => position));
+    expect(event.currency).toBe('CHF');
+    expect(event.items.every((item) => item.price === 960.5)).toBe(true);
+  });
+
+  it('viewItemListEvent_ShortHomesStillAllFit_AndSoDoesAListOfTwenty', () => {
+    const cards = Array.from({ length: 20 }, (_, position) => card(position));
+
+    expect(viewItemListEvent(cards, LIST).items).toHaveLength(20);
+  });
+
+  it('viewItemListEvent_TheHomesCutFromTheEnd_AreNotCountedForTheCurrencyOfTheOnesThatStay', () => {
+    // 19 homes in francs and the last one in euros: all 20 together are one currency too many (no prices) and do not fit; the 17 that fit share a currency,
+    // so the event is those 17 with their prices in francs, not a list of 17 homes that lost their price because of a home that is no longer in it.
+    const cards = [...Array.from({ length: 19 }, (_, position) => realHome(position)), realHome(19, { price: { currency: 'EUR', totalCents: 48000 } })];
+
+    const event = viewItemListEvent(cards, LIST);
+
+    expect(event.items).toHaveLength(17);
+    expect(event.currency).toBe('CHF');
+    expect(event.items.every((item) => item.price === 960.5)).toBe(true);
   });
 
   it('viewItemListEvent_AHomeOfEuros_GivesEuros_NeverAConversion', () => {

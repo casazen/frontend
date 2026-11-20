@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { EMBED_EVENT_NAMES, EMBED_PROTOCOL_VERSION, EMBED_SOURCE, buildEmbedMessage, parseEmbedMessage, type EmbedMessage } from '../protocol';
+import { EMBED_EVENT_NAMES, EMBED_PROTOCOL_VERSION, EMBED_SOURCE, buildEmbedMessage, fitsEmbedEventParams, parseEmbedMessage, type EmbedMessage } from '../protocol';
 
 /**
  * Protocol v1 between the page of an agency's website and the frame of a widget (E41/F01/US01/T02, NF-145). The parser is the only door a message
@@ -274,6 +274,17 @@ describe('the params of an event are plain JSON of at most 4 KB (the proof of pr
 
     expect(parseEmbedMessage({ ...base, params: fits })).not.toBeNull();
     expect(parseEmbedMessage({ ...base, params: tooBig })).toBeNull();
+  });
+
+  it('fitsEmbedEventParams_SaysWhatParseEmbedMessageWouldTake', () => {
+    // For whoever builds the params (the GA4 builders): the same rule as the parser, in one place.
+    const fits = { note: 'x'.repeat(4096 - '{"note":""}'.length) };
+    const tooBig = { note: 'x'.repeat(4096 - '{"note":""}'.length + 1) };
+
+    for (const [params, expected] of [[{}, true], [fits, true], [tooBig, false], [new Map(), false], [[{ item_id: 'p1' }], false], [null, false], ['text', false]] as const) {
+      expect(fitsEmbedEventParams(params)).toBe(expected);
+      expect(parseEmbedMessage({ ...base, params }) !== null).toBe(expected);
+    }
   });
 
   it('protocol_event_CountsTheBytesOfTheTextNotItsCharacters', () => {

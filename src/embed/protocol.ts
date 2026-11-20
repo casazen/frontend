@@ -101,6 +101,14 @@ function readParams(value: unknown): Record<string, unknown> | null {
   return utf8Length(json) <= MAX_PARAMS_BYTES ? (JSON.parse(json) as Record<string, unknown>) : null;
 }
 
+/**
+ * Whether `params` would be taken as the `params` of an `event` message: plain JSON of at most 4 KB, exactly what `parseEmbedMessage` asks. For whoever
+ * builds them (the GA4 builders of the app): a message the parser refuses is never posted, and the page would hear nothing of the event.
+ */
+export function fitsEmbedEventParams(params: unknown): boolean {
+  return readParams(params) !== null;
+}
+
 /** An absolute http(s) address of at most 2048 characters, with no credentials in it; anything else is null. */
 function readUrl(value: unknown): string | null {
   if (typeof value !== 'string' || value.length === 0 || value.length > MAX_URL_LENGTH) return null;

@@ -8,7 +8,11 @@
  * of the data is left out. PRIVACY: an item carries the id, the name and the place of a home, its price, quantity, position and list, and nothing
  * else; no guest, e-mail, phone or booking code can get in, because nothing but those members is ever copied from what the builders are given.
  * The only identifier of a purchase is the id of the booking, never the code the guest is shown.
+ *
+ * SIZE: the `params` of an `event` message are at most 4 KB (`src/embed/protocol.ts`) and a message over it is never posted, silently. The one payload that
+ * can reach it is the list of homes, so `viewItemListEvent` is the one that makes sure it fits (see there).
  */
+import { fitsEmbedEventParams } from '@/embed/protocol';
 
 /** GA4 reads at most this many items of a list; the page of results shows more, the event reports the first of them. */
 const MAX_LIST_ITEMS = 20;
@@ -89,12 +93,11 @@ export interface Ga4ListEvent {
 }
 
 /**
- * `view_item_list`: the first 20 homes of a list of results, with their position. A home with a quote for the stay carries it as its price; when the
- * homes of the list are priced in different currencies (a list may mix `EUR` and `CHF`) no price is sent at all, because GA4 takes one currency per
- * event and a number without its currency would be a wrong one.
+ * The event of the homes `shown` (all of them), in their order. A home with a quote for the stay carries it as its price; when the homes are priced in
+ * different currencies (a list may mix `EUR` and `CHF`) no price is sent at all, because GA4 takes one currency per event and a number without its
+ * currency would be a wrong one.
  */
-export function viewItemListEvent(cards: readonly Ga4Card[], { listId, listName }: { listId: string; listName: string }): Ga4ListEvent {
-  const shown = cards.slice(0, MAX_LIST_ITEMS);
+function listEventOf(shown: readonly Ga4Card[], listId: string, listName: string): Ga4ListEvent {
   const priced = shown.filter((card) => majorUnits(card.price?.totalCents) !== undefined);
   const currencies = new Set(priced.map((card) => currencyOf(card.price?.currency)));
   const currency = currencies.size === 1 ? [...currencies][0] : undefined;
@@ -111,6 +114,24 @@ export function viewItemListEvent(cards: readonly Ga4Card[], { listId, listName 
     }),
   );
   return { item_list_id: listId, item_list_name: listName, ...(currency && priced.length > 0 ? { currency } : {}), items };
+}
+
+/**
+ * `view_item_list`: the first 20 homes of a list of results, with their position (`index`, from 0), and fewer when the message that carries them would
+ * not fit. The `params` of an `event` message are at most 4 KB (`fitsEmbedEventParams`) and a bigger message is never posted, so a page of 20 homes with
+ * the ids (36 characters) and the names a site really has, each with its place, price and list, is over it (about 4.6 KB) and the page would hear nothing
+ * of the list. The homes that do not fit are left out from the END, and the currency and the prices are those of the homes that stay (a list that
+ * mixes currencies only in the homes left out is a list of one currency).
+ */
+export function viewItemListEvent(cards: readonly Ga4Card[], { listId, listName }: { listId: string; listName: string }): Ga4ListEvent {
+  const wanted = cards.slice(0, MAX_LIST_ITEMS);
+
+  for (let count = wanted.length; count > 0; count -= 1) {
+    const event = listEventOf(wanted.slice(0, count), listId, listName);
+    if (fitsEmbedEventParams(event)) return event;
+  }
+  // Not one home fits (only a list named with thousands of characters, and the widgets name theirs with a short constant): the list without homes.
+  return listEventOf([], listId, listName);
 }
 
 interface Ga4PropertyInput {
