@@ -204,6 +204,19 @@ describe('ConfirmationDialog (UI-07: requireText and consequences)', () => {
     });
   });
 
+  describe('the box of the dialog', () => {
+    it('ConfirmationDialog_ContentClassName_IsOnTheBoxOfTheDialogSoATallOneScrollsInsideAndOtherwiseNothingChanges', () => {
+      const { unmount } = render(<Harness contentClassName="sm:max-h-[90dvh] sm:overflow-y-auto" />);
+
+      expect(screen.getByRole('dialog', { name: "Eliminare l'ospite?" })).toHaveClass('sm:max-h-[90dvh]', 'sm:overflow-y-auto');
+      unmount();
+
+      render(<Harness />);
+
+      expect(screen.getByRole('dialog', { name: "Eliminare l'ospite?" })).not.toHaveClass('sm:overflow-y-auto');
+    });
+  });
+
   describe('accessibility', () => {
     it('ConfirmationDialog_WithEverything_HasNoAxeViolations', async () => {
       render(<Harness requireText="ELIMINA" consequences={['Le prenotazioni restano', 'Il rimborso va fatto a mano']} />);

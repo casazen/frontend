@@ -161,7 +161,7 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * The sending of the Italian electronic invoices to the SDI through the channel CasaZen has (backend `SdiSubmission`, E17/F01/US02, E17/F03/US01/T02, NF-116, NF-86, D13, D15), off until the product owner turns it on in the test
    * environment together with the credentials of the channel. While it is off nothing changes: the SDI panel of the detail of a document (the state, «Invia», «Dichiara inviato a mano», the reason of a rejection and the guided
    * correction) and the step «Invio allo SDI» of the wizard «Fatturazione» do not exist, and the backend answers 404 to the submission, the declaration and the correction. The state of a document towards the SDI
-   * is still the one the list always showed. The self-billed invoices (TD17) do not depend on it, except for the correction of one the SDI rejected («Correggi e rimanda»): they are behind `fiscalDocumentIssuance`.
+   * is still the one the list always showed. The self-billed invoices (TD17) do not depend on it, except for the correction of one the SDI rejected («Correggi e rimanda») and the closing of its replacement draft («Chiudi come non più dovuta»): they are behind `fiscalDocumentIssuance`.
    */
   sdiSubmission: false,
   /**

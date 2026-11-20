@@ -33,6 +33,10 @@ export const item = (overrides: Partial<SelfBillingListItem> = {}): SelfBillingL
   replacesDocumentId: null,
   replacedByDocumentId: null,
   keptReason: null,
+  closedReason: null,
+  closedAt: null,
+  closedBy: null,
+  closedNote: null,
   ...overrides,
 });
 
@@ -47,6 +51,21 @@ export const original = (overrides: Partial<SelfBillingListItem> = {}): SelfBill
 /** The draft that replaces the rejected TD17: it holds its number and names it. */
 export const replacement = (overrides: Partial<SelfBillingListItem> = {}): SelfBillingListItem =>
   item({ id: REPLACEMENT_ID, number: NUMBER, replacesDocumentId: REJECTED_ID, ...overrides });
+
+/** The replacement draft the month no longer supports: the server says it is kept (`keptReason`), so «Chiudi come non più dovuta» is offered for it. */
+export const kept = (overrides: Partial<SelfBillingListItem> = {}): SelfBillingListItem => replacement({ keptReason: 'ledger_gives_no_td17', ...overrides });
+
+/** The replacement draft after the closing: `Discarded`, its number kept and reserved, nothing to issue (`sdiStatus` not applicable), and how it was closed. */
+export const closed = (overrides: Partial<SelfBillingListItem> = {}): SelfBillingListItem =>
+  replacement({
+    status: 'Discarded',
+    keptReason: null,
+    closedReason: 'portal_credit_note',
+    closedAt: '2026-11-20T09:30:00Z',
+    closedBy: 'Mario Rossi',
+    closedNote: 'Nota di credito del portale n. 55 del 12 novembre',
+    ...overrides,
+  });
 
 export const detail = (invoice: SelfBillingListItem = item(), overrides: Partial<SelfBillingDetail> = {}): SelfBillingDetail => ({
   invoice,
