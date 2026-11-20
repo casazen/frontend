@@ -23,11 +23,11 @@ export function invalidateMessageHubLists(queryClient: QueryClient): void {
 
 /**
  * The parts of the hub that follow what a guest writes: the list (`threads`), the counters (`unread`), the conversation that is open
- * (`thread`) and the state of the chat of each listing (`channel-status`: a message that arrives says the chat of its listing works; the server answers it
- * from what it stored and asks the channel nothing). The files of the messages, the templates and the ways to reach a guest do not change with a
- * notification, and reading them again costs a request to the channel each: they are left as they are.
+ * (`thread`), the review that is open (`review-thread`: a review that arrives, a reply the channel confirmed or lost, E05/F06/US02) and the state of the chat of each listing
+ * (`channel-status`: a message that arrives says the chat of its listing works; the server answers it from what it stored and asks the channel nothing). The files of the
+ * messages, the templates and the ways to reach a guest do not change with a notification, and reading them again costs a request to the channel each: they are left as they are.
  */
-const LIVE_PARTS: readonly string[] = ['threads', 'unread', 'thread', 'channel-status'];
+const LIVE_PARTS: readonly string[] = ['threads', 'unread', 'thread', 'review-thread', 'channel-status'];
 
 /**
  * A guest's message makes the in-app notifications change (the number on the bell, the pop-up), whether the real-time channel writes the

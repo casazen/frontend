@@ -13,11 +13,12 @@ import {
   isCampaign,
   isEdited,
   isMessageDraft,
+  isReviewReply,
   originErrorMessage,
   parseCampaignText,
   situationLabel,
 } from '@/features/approvals/lib/approval-model';
-import { messageThreadPath } from '@/lib/message-hub-routes';
+import { messageThreadPath, reviewThreadPath } from '@/lib/message-hub-routes';
 import { formatRomeDateTime } from '@/lib/stay-dates';
 import type { ApprovalQueueItem } from '@/types/approval-queue.types';
 
@@ -68,13 +69,18 @@ export function ApprovalItemCard({ item, failureCode, busy, approving, onApprove
   const failure = failureCode ?? failureCodeOf(item);
   const expires = formatRomeDateTime(item.expiresAt, i18n.language, EXPIRY_FORMAT);
 
+  // The reply to a review is public: approving it publishes it, once, and it cannot be taken back (E05/F06).
+  const reviewReply = isReviewReply(item);
+
   let hint: string | null = null;
   if (draft) hint = t('approval.hint.messageDraft');
   else if (isCampaign(item)) hint = t('approval.hint.campaign');
+  else if (reviewReply) hint = t('approval.hint.reviewReply');
 
   let approveLabel = t('approval.action.approve');
   if (failure) approveLabel = t('approval.action.retry');
   else if (draft) approveLabel = t('approval.action.approveAndSend');
+  else if (reviewReply) approveLabel = t('approval.action.approveAndPublish');
 
   return (
     <Card data-testid="approval-item" data-item-id={item.id} data-item-type={item.itemType}>
@@ -155,6 +161,12 @@ export function ApprovalItemCard({ item, failureCode, busy, approving, onApprove
           {draft && item.threadKey ? (
             <Button asChild variant="ghost" size="sm" className="sm:ml-auto">
               <Link to={messageThreadPath(item.threadKey)}>{t('approval.thread.open')}</Link>
+            </Button>
+          ) : null}
+          {/* The review the reply is for: the host reads it before it decides. */}
+          {reviewReply && item.threadKey ? (
+            <Button asChild variant="ghost" size="sm" className="sm:ml-auto">
+              <Link to={reviewThreadPath(item.threadKey)}>{t('approval.review.open')}</Link>
             </Button>
           ) : null}
         </div>

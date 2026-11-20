@@ -61,6 +61,27 @@ describe('the state of the list of the messages (NF-61)', () => {
     expect(inboxFilters(parseInboxState(new URLSearchParams(query)))).toEqual({ bookingId: BOOKING, page: 1, pageSize: INBOX_PAGE_SIZE });
   });
 
+  it('inboxFilters_Reviews_AsksForTheReviewsOfTheGuestsAndNothingElseWhileEveryOtherViewNeverAsksForOne', () => {
+    // The chip «Recensioni» (E05/F06/US02) sets `kind=review`; it has no «da rispondere» or «non lette» of a conversation, and the default view carries no kind at all.
+    expect(inboxFilters(parseInboxState(new URLSearchParams('view=reviews')))).toEqual({ kind: 'Review', page: 1, pageSize: INBOX_PAGE_SIZE });
+    expect(inboxFilters(parseInboxState(new URLSearchParams('view=reviews&channel=Airbnb&q=rossi&page=2')))).toEqual({
+      kind: 'Review',
+      channel: 'Airbnb',
+      q: 'rossi',
+      page: 2,
+      pageSize: INBOX_PAGE_SIZE,
+    });
+    for (const search of ['', 'view=all', 'view=unread']) {
+      expect(inboxFilters(parseInboxState(new URLSearchParams(search))), search).not.toHaveProperty('kind');
+    }
+  });
+
+  it('withInboxState_Reviews_IsWrittenInTheAddressAndTheDefaultViewTakesItOut', () => {
+    expect(withInboxState(new URLSearchParams(''), { view: 'reviews' }).toString()).toBe('view=reviews');
+    expect(parseInboxState(withInboxState(new URLSearchParams('page=3'), { view: 'reviews' })).view).toBe('reviews');
+    expect(withInboxState(new URLSearchParams('view=reviews'), { view: 'toRespond' }).toString()).toBe('');
+  });
+
   it('inboxFilters_UnreadWithChannelPropertyBookingAndSearch_CombinesThemAll', () => {
     const state = parseInboxState(new URLSearchParams(`view=unread&channel=Booking&property=${PROPERTY}&booking=${BOOKING}&q=rossi&page=2`));
 

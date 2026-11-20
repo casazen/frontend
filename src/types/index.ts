@@ -59,6 +59,7 @@ export * from './octorate.types';
 export * from './listing.types';
 export * from './notification-preferences.types';
 export * from './message-hub.types';
+export * from './ota-reviews.types';
 export * from './scheduled-messages.types';
 export * from './assistant-drafts.types';
 export * from './assistant-settings.types';
