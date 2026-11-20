@@ -14,7 +14,7 @@ import { isNotRedesignedMatch } from '@/lib/ui-version';
 import type { PublicOrgDto } from '@/types';
 import type { ResolveHostResponse } from '@/types/domain.types';
 import { appRoutes } from '@/routes';
-import { buildEmbedRoutes } from '@/routes/embed-routes';
+import { EMBED_CATCH_ALL_PATH, buildEmbedRoutes } from '@/routes/embed-routes';
 import { buildHostSiteRoutes } from '@/routes/host-site-routes';
 import { embedWidgetHandle, embedWidgetOf, isSupportedEmbedVersion, parseParentOrigin, useEmbed, type EmbedHostMode } from '../embed-context';
 import { EmbedShell } from '../embed-shell';
@@ -152,15 +152,16 @@ describe('the shell of the widgets on the CasaZen domain (AC1, AC7)', () => {
   it.each([
     ['platform', ['/embed/:orgSlug/booking', '/embed/:orgSlug/property/:propertySlugOrId', '/embed/:orgSlug/guest-access']],
     ['host', ['/embed/booking', '/embed/property/:propertySlugOrId', '/embed/guest-access']],
-  ] as const)('buildEmbedRoutes_%s_IsOneFrameWithTheThreeWidgetsAndNothingElse', (mode, paths) => {
+  ] as const)('buildEmbedRoutes_%s_IsOneFrameWithTheThreeWidgetsAndTheCatchAllOfEmbed', (mode, paths) => {
     const [frame, ...others] = buildEmbedRoutes(mode);
 
     expect(others).toEqual([]);
     // The layout has no path of its own: it never matches by itself, so `/embed` alone is not a page of a widget.
     expect(frame.path).toBeUndefined();
     expect(frame.index).toBeUndefined();
-    expect(frame.children?.map((child) => child.path)).toEqual(paths);
-    expect(frame.children?.map((child) => embedWidgetOf([child]))).toEqual(['booking', 'property', 'guest-access']);
+    // The three widgets and, last, the splat that takes every other address of `/embed` (it names no widget).
+    expect(frame.children?.map((child) => child.path)).toEqual([...paths, EMBED_CATCH_ALL_PATH]);
+    expect(frame.children?.map((child) => embedWidgetOf([child]))).toEqual(['booking', 'property', 'guest-access', null]);
     // The redesign of the console (`data-ui="v2"`) never reaches a page of guests.
     expect(isNotRedesignedMatch([{ route: frame }])).toBe(true);
   });
@@ -464,6 +465,24 @@ describe('the agency domain (AC1, AC2: the proof of the isolation)', () => {
     '/embed/booking/extra',
     '/embed/search',
     '/embed/v1/embed.js',
+    '/embed/v1/anything',
+  ])('embedRoutes_hostDomain_%s_IsTheShellSayingThereIsNothingHere_WithNoWayOutOfTheFrame', async (path) => {
+    renderEmbed(path, { mode: 'host', routes: hostRoutes() });
+
+    // The address of a page that is no widget is served as a frame like the others (`vercel.json`): it must not be the 404 page of the agency's site, whose
+    // button is a link of the router that leads the frame to the whole site (the guest area, the checkout with the payment) inside another website.
+    const shell = await screen.findByTestId('embed-shell');
+    expect(shell).toHaveAttribute('data-state', 'unavailable');
+    expect(screen.getByTestId('embed-unavailable')).toBeInTheDocument();
+    expect(screen.queryByTestId('host-site-page-not-found')).not.toBeInTheDocument();
+    expect(document.querySelectorAll('a, [role="link"]')).toHaveLength(0);
+    expect(getPublicOrg).not.toHaveBeenCalled();
+    expect(robots()).toBe('noindex,nofollow');
+  });
+
+  it.each([
+    '/embedded',
+    '/embed-x/booking',
     '/book/other-org',
     '/book/other-org/property/casa-mare',
     '/login',
@@ -538,10 +557,61 @@ describe('the route table of the CasaZen domain', () => {
     expect(isNotRedesignedMatch(matches)).toBe(true);
   });
 
-  it.each(['/embed', '/embed/booking', '/embed/property/casa-mare', '/embed/villa-rossi', '/embed/villa-rossi/search', '/embed/villa-rossi/booking/extra'])(
-    'appRoutes_%s_IsNotAWidget',
-    (path) => {
-      expect(matchRoutes(appRoutes, path)?.at(-1)?.route.path).toBe('*');
-    },
-  );
+  it.each([
+    '/embed',
+    '/embed/',
+    '/embed/booking',
+    '/embed/property/casa-mare',
+    '/embed/villa-rossi',
+    '/embed/villa-rossi/search',
+    '/embed/villa-rossi/booking/extra',
+    '/embed/v1/embed.js',
+    '/embed/v1/anything',
+  ])('appRoutes_%s_IsTheCatchAllOfTheFrameNeverThe404PageOfTheApp', (path) => {
+    const matches = matchRoutes(appRoutes, path);
+
+    // The splat of the frame, not the `*` of the app: that one is a page with links, which the router follows inside the frame of another website.
+    expect(matches?.at(-1)?.route.path).toBe(EMBED_CATCH_ALL_PATH);
+    expect(embedWidgetOf(matches?.map(({ route }) => route) ?? [])).toBeNull();
+    expect(isNotRedesignedMatch(matches)).toBe(true);
+  });
+
+  it.each(['/embedded', '/embed-x/booking'])('appRoutes_%s_OnlyStartsLikeEmbed_IsTheAppsOwn404', (path) => {
+    expect(matchRoutes(appRoutes, path)?.at(-1)?.route.path).toBe('*');
+  });
+});
+
+describe('an address under /embed that is no widget: the frame never leads to the rest of the site', () => {
+  it.each([
+    '/embed',
+    '/embed/',
+    '/embed/booking',
+    '/embed/villa-rossi',
+    '/embed/villa-rossi/search',
+    '/embed/villa-rossi/booking/extra',
+    '/embed/v1/embed.js',
+    '/embed/v1/anything',
+  ])('embedShell_%s_OnTheCasazenDomain_SaysThereIsNothingHere_WithNoLinkAndAsksNothing', async (path) => {
+    // The routes of the CasaZen domain as the app has them: the frame, then the `*` of the app, a 404 page with links (`NotFoundPage`).
+    const routes: RouteObject[] = [...buildEmbedRoutes('platform'), { path: '*', element: <a href="/">home of the app</a> }];
+    renderEmbed(`${path}${path.includes('?') ? '&' : '?'}${ADDRESS}`, { routes });
+
+    // The address is served as a frame like the others (`vercel.json`): a link of the 404 page is a navigation of the router inside that frame, which no
+    // header looks at again, and it would bring the whole site (the guest area, the checkout) into the frame of another website.
+    const shell = await screen.findByTestId('embed-shell');
+    expect(shell).toHaveAttribute('data-state', 'unavailable');
+    expect(screen.getByTestId('embed-unavailable')).toBeInTheDocument();
+    expect(screen.queryByText('home of the app')).not.toBeInTheDocument();
+    expect(document.querySelectorAll('a, [role="link"]')).toHaveLength(0);
+    expect(getPublicOrg).not.toHaveBeenCalled();
+    expect(robots()).toBe('noindex,nofollow');
+  });
+
+  it('embedShell_ACatchAllAddress_WithTheFeatureOff_IsTheSameStateAndAsksNothing', async () => {
+    renderEmbed(`/embed/villa-rossi/search?${ADDRESS}`, { siteEmbed: false });
+
+    expect(await screen.findByTestId('embed-shell')).toHaveAttribute('data-state', 'unavailable');
+    expect(document.querySelectorAll('a, [role="link"]')).toHaveLength(0);
+    expect(getPublicOrg).not.toHaveBeenCalled();
+  });
 });

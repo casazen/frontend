@@ -95,7 +95,8 @@ export function EmbedShell({ mode }: EmbedShellProps) {
   const params = useParams<{ orgSlug: string }>();
   const [searchParams] = useSearchParams();
   const matchedWidget = embedWidgetOf(useMatches());
-  // A route of the frame always names its widget; one that does not has nothing to show.
+  // A route of the frame names its widget; the one that does not is the catch-all of `/embed` (`EMBED_CATCH_ALL_PATH`: an address that is no widget): the
+  // shell has nothing to show there, says so (no link, no request) and tells the page `not_found`. `widget` is then only a placeholder for the context.
   const widget = matchedWidget ?? 'booking';
   const wrapperRef = useRef<HTMLDivElement>(null);
   const hostSite = mode === 'host' ? getHostSite() : null;

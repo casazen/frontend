@@ -4,13 +4,14 @@ import { useEffect } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { RouterProvider, createMemoryRouter } from 'react-router-dom';
+import { RouterProvider, createMemoryRouter, type RouteObject } from 'react-router-dom';
 import { AxiosError, AxiosHeaders } from 'axios';
 import i18n from '@/i18n/config';
 import { publicOrgApi } from '@/api/public-org.api';
 import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { buildEmbedMessage, parseEmbedMessage, type EmbedMessage, type EmbedMessageType } from '@/embed/protocol';
+import { buildEmbedRoutes } from '@/routes/embed-routes';
 import type { PublicOrgDto } from '@/types';
 import { embedWidgetHandle, useEmbed } from '../embed-context';
 import { EmbedShell } from '../embed-shell';
@@ -126,11 +127,11 @@ const bridgeNow = () => seen.mock.lastCall?.[0] as EmbedBridge;
 const posts = () => parentWindow.postMessage.mock.calls as [EmbedMessage, string][];
 const sent = (type?: EmbedMessageType) => posts().map(([message]) => message).filter((message) => type === undefined || message.type === type);
 
-function renderFramed(entry: string, { siteEmbed = true }: { siteEmbed?: boolean } = {}) {
+function renderFramed(entry: string, { siteEmbed = true, routes }: { siteEmbed?: boolean; routes?: RouteObject[] } = {}) {
   seen.mockReset();
   // One layout for the two widgets, as the routes of the app have it: the shell stays mounted when the guest moves from one to the other.
   const router = createMemoryRouter(
-    [
+    routes ?? [
       {
         element: <EmbedShell mode="platform" />,
         children: [
@@ -211,6 +212,15 @@ describe('what the frame says to the page: ready, error, resize, url', () => {
 
     await waitFor(() => expect(sent('error')).toEqual([{ source: 'casazen', v: 1, type: 'error', code }]));
     expect(sent('ready')).toEqual([]);
+  });
+
+  it('embedBridge_error_AnAddressThatIsNoWidget_PostsNotFoundAndNotReady', async () => {
+    // The catch-all of `/embed` (a widget with a wrong path): the page is told, so that it shows its own fallback; nothing is asked of the server.
+    renderFramed(`/embed/villa-rossi/booking/extra?${ADDRESS}`, { routes: buildEmbedRoutes('platform') });
+
+    await waitFor(() => expect(sent('error')).toEqual([{ source: 'casazen', v: 1, type: 'error', code: 'not_found' }]));
+    expect(sent('ready')).toEqual([]);
+    expect(getPublicOrg).not.toHaveBeenCalled();
   });
 
   it('embedBridge_resize_FollowsTheWrapperWhenItGrowsAndWhenItShrinks', async () => {
