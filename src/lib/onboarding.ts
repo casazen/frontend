@@ -162,6 +162,29 @@ export function needsFirstProperty(
   return !FIRST_PROPERTY_EXEMPT_PATTERNS.some((pattern) => pattern.test(pathname));
 }
 
+/** What `GET /users/me` says about a host whose signup may be over (the fields of {@link OnboardingProfile} and two more). */
+export interface SetUpHostProfile extends OnboardingProfile {
+  isActive?: boolean;
+  /** True while the payment of a commercial signup is still pending: the workspace stays closed until it is confirmed. */
+  commercialSetupRequired?: boolean | null;
+}
+
+/**
+ * The rental type of a host the server has set up: an org, a finished onboarding, a rental type of its own, the current
+ * consents and no payment waiting. Such a host owns its workspace through the persisted memberships, whatever the access token
+ * says: the token is issued before the memberships exist and has no role claims until it is renewed, or never when the roles
+ * could not be synced (`rolesSynced: false`). Back from the payment, the missing claims must not keep it on the onboarding.
+ * `null` for anyone else (a supplier, an invited member with no rental type, a setup that is not finished or is withheld).
+ */
+export function getRentalTypeOfHostSetUpByServer(profile?: SetUpHostProfile | null): RentalType | null {
+  if (!profile?.orgId || !profile.onboardingCompletedAt || !profile.rentalType) return null;
+  if (profile.isActive === false || isLinkedSupplier(profile)) return null;
+  if (profile.onboardingRequired === true || profile.consentsAccepted === false || profile.commercialSetupRequired === true) {
+    return null;
+  }
+  return profile.rentalType;
+}
+
 const RENTAL_TYPE_CONTEXT_PREFIXES: Record<RentalType, string[]> = {
   ShortTerm: ['/app/short-rent'],
   LongTerm: ['/app/long-rent'],
