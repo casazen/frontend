@@ -134,6 +134,30 @@ class Test_Admin extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Keeps a connection result with the given code for the saved address, as a test of the connection would.
+	 *
+	 * @param string $code One of the result codes.
+	 */
+	private function store_result( $code ) {
+		$settings = Settings::get();
+		set_transient(
+			Connection::cache_key( $settings['address'], $settings['org_slug'] ),
+			array(
+				'ok'              => 'ok' === $code || 'embed_disabled' === $code,
+				'code'            => $code,
+				'agency'          => '',
+				'slug'            => '',
+				'apiBase'         => '',
+				'embedEnabled'    => null,
+				'surfaces'        => null,
+				'ownerLoginReady' => null,
+				'checkedAt'       => time(),
+			),
+			HOUR_IN_SECONDS
+		);
+	}
+
+	/**
 	 * Prints the settings page and returns what it printed.
 	 *
 	 * @return string
@@ -386,19 +410,23 @@ class Test_Admin extends WP_UnitTestCase {
 	}
 
 	/**
-	 * The page prints a message for a known result code and nothing for anything else.
+	 * The page prints a message for a known result code that the stored result confirms, and nothing for anything else.
 	 */
 	public function test_result_notice_only_shows_known_codes() {
 		wp_set_current_user( $this->admin_id );
+		$this->store( array( 'address' => 'https://prenota.example.com' ) );
 
+		$this->store_result( 'ok' );
 		$_GET['casazen_result'] = 'ok';
 		$html                   = $this->page_html();
 		$this->assertStringContainsString( 'notice-success', $html );
 		$this->assertStringContainsString( 'The connection works.', $html );
 
+		$this->store_result( 'embed_disabled' );
 		$_GET['casazen_result'] = 'embed_disabled';
 		$this->assertStringContainsString( 'notice-warning', $this->page_html() );
 
+		$this->store_result( 'manifest_unreachable' );
 		$_GET['casazen_result'] = 'manifest_unreachable';
 		$this->assertStringContainsString( 'notice-error', $this->page_html() );
 
@@ -408,5 +436,46 @@ class Test_Admin extends WP_UnitTestCase {
 			$this->assertStringNotContainsString( 'class="notice notice-', $html );
 			$this->assertStringNotContainsString( 'alert(1)', $html );
 		}
+	}
+
+	/**
+	 * The code in the address of the page is only a pointer: the notice is printed only when the stored result says the same,
+	 * so a link typed by hand, or the notice of an earlier test, never shows a success that the saved address does not have.
+	 */
+	public function test_result_notice_is_printed_only_when_the_stored_result_confirms_it() {
+		wp_set_current_user( $this->admin_id );
+		$this->store( array( 'address' => 'https://prenota.example.com' ) );
+
+		// Nothing is stored for the address: no code can be confirmed.
+		$_GET['casazen_result'] = 'ok';
+		$html                   = $this->page_html();
+		$this->assertStringNotContainsString( 'class="notice notice-', $html, 'A success that nothing stored must not be shown.' );
+		$this->assertStringNotContainsString( 'The connection works.', $html );
+
+		// A failure is stored: the success of an earlier test is not shown, the failure is.
+		$this->store_result( 'manifest_unreachable' );
+		$html = $this->page_html();
+		$this->assertStringNotContainsString( 'class="notice notice-', $html, 'A success that the stored failure contradicts must not be shown.' );
+		$this->assertStringNotContainsString( 'notice-success', $html );
+		$this->assertStringNotContainsString( 'The connection works.', $html );
+
+		$_GET['casazen_result'] = 'manifest_unreachable';
+		$this->assertStringContainsString( 'notice-error', $this->page_html() );
+	}
+
+	/**
+	 * A save of the settings brings back the address of the page, with the code of an earlier test in it: the page must not
+	 * show that code as the outcome of the new settings.
+	 */
+	public function test_result_notice_is_not_printed_after_a_settings_save() {
+		wp_set_current_user( $this->admin_id );
+		$this->store( array( 'address' => 'https://prenota.example.com' ) );
+		$this->store_result( 'ok' );
+
+		$_GET['casazen_result'] = 'ok';
+		$this->assertStringContainsString( 'notice-success', $this->page_html(), 'Right after the test the notice is printed.' );
+
+		$_GET['settings-updated'] = 'true';
+		$this->assertStringNotContainsString( 'class="notice notice-', $this->page_html(), 'After a save the earlier notice is not printed.' );
 	}
 }

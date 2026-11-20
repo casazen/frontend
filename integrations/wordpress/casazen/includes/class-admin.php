@@ -321,8 +321,13 @@ class Admin {
 	}
 
 	/**
-	 * After the «Test connection» button: the result of the test. The query string carries only the result code, which is
-	 * checked against the known codes before anything is printed.
+	 * After the «Test connection» button: the result of the test.
+	 *
+	 * The query string only POINTS at the result: it carries the result code and nothing else, and it is not trusted. It
+	 * stays in the address of the page after a save of the settings (the settings form sends the address of the page back to
+	 * WordPress, and WordPress returns to it) and anyone can type it into a link. So the notice is printed only when its code
+	 * is the code of the result that is stored for the saved address, and never right after a save: otherwise it could show
+	 * a success that the saved address never had. The code is also checked against the known codes before it is printed.
 	 *
 	 * @return void
 	 */
@@ -331,9 +336,19 @@ class Admin {
 		if ( ! isset( $_GET['casazen_result'] ) ) {
 			return;
 		}
+		// After a save the settings may have changed: the notice of an earlier test is not about them.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- same as above.
+		if ( isset( $_GET['settings-updated'] ) ) {
+			return;
+		}
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- same as above.
 		$code = sanitize_key( wp_unslash( $_GET['casazen_result'] ) );
 		if ( ! in_array( $code, Connection::CODES, true ) ) {
+			return;
+		}
+		// Nothing stored, or another outcome stored: the code of the address cannot be confirmed, so nothing is claimed.
+		$stored = Connection::cached();
+		if ( null === $stored || $stored['code'] !== $code ) {
 			return;
 		}
 
