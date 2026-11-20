@@ -20,7 +20,7 @@ import { toastUndo } from '@/lib/toast-undo';
 import { ENTITLEMENT_QUERY_KEY } from '@/queries/use-users';
 import { isPlanLimitError } from '@/lib/entitlement-error';
 
-const PROPERTIES_KEY = 'properties';
+export const PROPERTIES_KEY = 'properties';
 /** The reading again of one APE: outside the key of the documents, so that refreshing them never runs the OCR again. */
 const APE_READ_KEY = 'ape-read';
 

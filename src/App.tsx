@@ -5,6 +5,7 @@ import { AppToaster } from '@/components/shared/app-toaster';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
 import { AuthAppProviders, PublicAppProviders } from '@/contexts/auth-bridge';
 import { FeatureFlagsProvider } from '@/contexts/feature-flags-provider';
+import { isEmbedPath } from '@/lib/embed-path';
 import { queryClient } from '@/lib/query-client';
 import {
   ACCOUNT_INACTIVE_PATH,
@@ -101,9 +102,10 @@ function App() {
   const secureOrigin = isSecureAuth0Origin();
 
   useEffect(() => {
-    // SE-03: first page of the visit (landing path, referrer host, UTM) for the signup attribution.
-    if (publicPath) recordLandingTouch();
-  }, [publicPath]);
+    // SE-03: first page of the visit (landing path, referrer host, UTM) for the signup attribution. Never on a page of the embeddable
+    // widgets (NF-144): it is a frame of another site, and `recordLandingTouch` reads the consent from `localStorage`.
+    if (publicPath && !isEmbedPath(pathname)) recordLandingTouch();
+  }, [publicPath, pathname]);
 
   // Direct booking & other public surfaces must never load auth0-spa-js
   // (it throws on http://LAN-IP — see Auth0 SPA FAQ secure origin).

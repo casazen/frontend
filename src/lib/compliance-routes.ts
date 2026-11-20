@@ -2,6 +2,7 @@ import { generatePath } from 'react-router-dom';
 import { getManifestEntry, type PermissionPredicate } from '@/config/route-manifest';
 import type { BookingTab } from '@/features/bookings/lib/booking-tabs';
 import { CONNECTION_HEALTH_SECTION } from '@/features/compliance/lib/connection-health-model';
+import { COMPLIANCE_COCKPIT_PATH, TICINO_LAYER_KIND, ticinoLayerPath } from '@/features/compliance/ticino/ticino-layer-address';
 import type { ComplianceCockpitAction, ComplianceSummaryItem } from '@/types/compliance.types';
 
 /** The kinds of proof the archive page can open on (`ManualProofKind` of the backend): the one a period item is about. */
@@ -10,21 +11,19 @@ type ComplianceArchiveKind = 'AlloggiatiReceipt' | 'IstatProof' | 'TouristTaxDec
 /** The months of the periods the backend sends (`yyyy-MM`): the only shape the address of the archive takes. */
 const PERIOD = /^\d{4}-(0[1-9]|1[0-2])$/;
 
-/** The arrival day of a Ticino police notification (`yyyy-MM-dd`). */
-const DAY = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
-
 /**
  * Parameters a page of the cockpit opens with, for a page that shows its content already filtered (the archive of the proofs): a fixed
  * `kind`, and, when asked, the `property` and the `period` (`yyyy-MM`) of the item. A parameter the item cannot give is left out: the page then
  * shows more than the item, never another thing. `section` is a fixed part of the page to open on (the connection health of the property page).
+ * `layer` is a layer of the page that opens on the item instead of another page (`?detail=ticino:<property>:<day>`, E30/F02/US03): the item names the
+ * property and, in `period`, the arrival day (a month, or anything that is not a day, is left out: the layer then opens on the first day to notify).
  */
 interface ComplianceActionQuery {
   kind?: ComplianceArchiveKind;
   property?: boolean;
   period?: boolean;
-  /** casazen/backend#979: the arrival day (`period` yyyy-MM-dd) as `date`. */
-  day?: boolean;
   section?: typeof CONNECTION_HEALTH_SECTION;
+  layer?: typeof TICINO_LAYER_KIND;
 }
 
 /** A page of the ROUTE_MANIFEST (pattern with `:id`), optionally on a tab of the booking detail or with the filters of the archive. */
@@ -147,10 +146,12 @@ export const COMPLIANCE_ACTION_TARGETS: Record<ComplianceCockpitAction, Complian
     route: { path: '/app/short-rent/alloggiati' },
     write: 'booking.write',
   },
-  // casazen/backend#979: the guided notification of a Ticino property to the cantonal police, on the arrival day of the item.
+  // casazen/backend#979: the guided notification of a Ticino property to the cantonal police, on the arrival day of the item. It is a layer over the cockpit (E30/F02/US03/T02:
+  // `?detail=ticino:<property>:<day>`), not a page: the cockpit asks what its own route asks (`property.read` and `booking.read`), and whoever may not declare the day
+  // (`alloggiati.submit`) is told «Apri» and sees the guests and the file but is not asked to declare it.
   NotifyTicinoPolice: {
     target: 'property',
-    route: { path: '/app/short-rent/compliance/ticino', query: { property: true, day: true } },
+    route: { path: COMPLIANCE_COCKPIT_PATH, query: { layer: TICINO_LAYER_KIND } },
     write: 'alloggiati.submit',
   },
 };
@@ -166,6 +167,8 @@ function buildRoute(
   if (hasPermission && !entry.requiredPermissions.every((permission) => hasPermission(entry.context, permission))) {
     return null;
   }
+  // A layer of the page (the guided notification of a Ticino property): the address is the page with the layer open on the property and the day of the item.
+  if (route.query?.layer === TICINO_LAYER_KIND) return ticinoLayerPath(item.propertyId, item.period);
   const path = generatePath(entry.path, { id });
   const params = new URLSearchParams();
   if (route.tab && route.tab !== 'details') params.set('tab', route.tab);
@@ -173,7 +176,6 @@ function buildRoute(
   if (route.query?.property && item.propertyId) params.set('property', item.propertyId);
   if (route.query?.period && item.period && PERIOD.test(item.period)) params.set('period', item.period);
   if (route.query?.section) params.set('section', route.query.section);
-  if (route.query?.day && item.period && DAY.test(item.period)) params.set('date', item.period);
   const query = params.toString();
   return query ? `${path}?${query}` : path;
 }

@@ -1,8 +1,32 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware';
+import { isEmbedPath } from '@/lib/embed-path';
 
 /** Where the interface preferences of the user are kept between visits (only `sidebarCollapsed` today). */
 export const UI_STORE_STORAGE_KEY = 'casazen:sidebar';
+
+/** What the store keeps on a page of the embeddable widgets (NF-144): the value lives and dies with the page, in this object. */
+const inMemory = new Map<string, string>();
+const IN_MEMORY_STORAGE: StateStorage = {
+  getItem: (name) => inMemory.get(name) ?? null,
+  setItem: (name, value) => {
+    inMemory.set(name, value);
+  },
+  removeItem: (name) => {
+    inMemory.delete(name);
+  },
+};
+
+/**
+ * The storage of the store: the browser's `localStorage`, except on a page of the embeddable widgets. That page is a frame of another site and keeps
+ * nothing in the browser, not even this preference (no widget shows a sidebar): without this, the store reads `localStorage` when it is created, which
+ * is when the app starts, on every page, and writes it at every change. A frame is not a place for the browser to hold a person's preferences, and a
+ * browser that blocks the storage must not even be asked. The address is the one of the document: the store is created once, at start-up.
+ */
+function uiStorage(): StateStorage {
+  if (typeof window !== 'undefined' && isEmbedPath(window.location.pathname)) return IN_MEMORY_STORAGE;
+  return window.localStorage;
+}
 
 interface UiState {
   /**
@@ -62,6 +86,8 @@ export const useUiStore = create<UiState>()(
     }),
     {
       name: UI_STORE_STORAGE_KEY,
+      // `localStorage` as zustand has it by default (a storage that cannot be reached is no storage: the store lives in memory), except on a page of the widgets.
+      storage: createJSONStorage(uiStorage),
       version: 1,
       // The sheet of the phone starts closed on every visit and the bar says by itself that it is there: only the
       // preference is kept.

@@ -142,6 +142,20 @@ describe('vercel.json routing', () => {
       expect(rewriteFor(path, CRAWLERS[0])).toBe('/index.html');
     });
 
+    it.each([
+      '/embed/booking',
+      '/embed/property/casa-mare',
+      '/embed/guest-access',
+      '/embed/villa-rossi/booking',
+      '/embed/villa-rossi/property/casa-mare',
+      '/embed/villa-rossi/guest-access',
+    ])('rewrites_%s_forACrawler_isTheSinglePageAppNeverARenderedPage', (path) => {
+      // The pages of the embeddable widgets (E41) are frames with no content of their own for a search engine (`noindex`): no `api/seo` page, whoever asks.
+      for (const userAgent of [...CRAWLERS, ...PEOPLE]) {
+        expect(rewriteFor(path, userAgent), userAgent).toBe('/index.html');
+      }
+    });
+
     it('rewrites_everyCrawlerDestination_isAcceptedByTheSeoFunction', () => {
       for (const path of ['/', '/property/c-d', '/book/a-b', '/book/a/property/c-d', '/p/affitti-brevi', '/p/affitti-brevi/r/c', '/p/tassa-soggiorno/c']) {
         const destination = rewriteFor(path, CRAWLERS[0])!;

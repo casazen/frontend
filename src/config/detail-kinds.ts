@@ -1,5 +1,6 @@
 import { lazy } from 'react';
 import { registerDetail } from '@/components/shared/detail-drawer/detail-registry';
+import { TICINO_LAYER_KIND } from '@/features/compliance/ticino/ticino-layer-address';
 import { interventionPath } from '@/features/service-requests/interventions/paths';
 
 /**
@@ -32,4 +33,12 @@ registerDetail('intervention', {
   title: lazy(() => import('@/features/service-requests/interventions/intervention-drawer').then((module) => ({ default: module.InterventionDrawerTitle }))),
   Content: lazy(() => import('@/features/service-requests/interventions/intervention-drawer').then((module) => ({ default: module.InterventionDrawerContent }))),
   pageHref: (id) => interventionPath(id),
+});
+
+// The guided notification of the guests of a Ticino property to the cantonal police (E30/F02/US03/T02, casazen/backend#979): `?detail=ticino:<property>[:<day>]` over the cockpit
+// of the adempimenti. The cockpit row, the bell, the page of the property and the old address of the page open it; it has no page of its own (the layer replaced it).
+registerDetail(TICINO_LAYER_KIND, {
+  title: lazy(() => import('@/features/compliance/ticino/ticino-notification-layer').then((module) => ({ default: module.TicinoLayerTitle }))),
+  Content: lazy(() => import('@/features/compliance/ticino/ticino-notification-layer').then((module) => ({ default: module.TicinoLayerContent }))),
+  width: 'wide',
 });

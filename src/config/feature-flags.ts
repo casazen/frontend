@@ -30,7 +30,8 @@ export type FeatureFlagKey =
   | 'guestContactInfo'
   | 'touristTaxOnlinePayment'
   | 'checkInIdentityVerification'
-  | 'scheduledMessages';
+  | 'scheduledMessages'
+  | 'siteEmbed';
 
 export type FeatureFlags = Record<FeatureFlagKey, boolean>;
 
@@ -234,6 +235,12 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * closed nothing is planned or sent, whatever this flag says, and the section then tells that nothing is scheduled and has no link to the page of the routines.
    */
   scheduledMessages: false,
+  /**
+   * The embeddable booking widgets (backend `SiteEmbed`, E40/F01/US01/T01, E41, NF-144, NF-145), off until the product owner turns it on in the test environment. It decides whether the pages
+   * under `/embed/<org>/…` of the CasaZen domain answer: while it is off they say «This widget is not available», nothing asks the server for the org and the backend reports `embedEnabled` false on
+   * the agency domains. On an agency's own domain the pages follow `embedEnabled` of `resolve-host` instead (the plan of the agency decides there). Nothing else changes while it is off.
+   */
+  siteEmbed: false,
 };
 
 /** Known flags from the API response; anything but `true` is off. */

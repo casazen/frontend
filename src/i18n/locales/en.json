@@ -2020,6 +2020,17 @@
       "swissMunicipalityNotApplicable": "A Swiss municipality can only be set for a property in Switzerland.",
       "swissMunicipalityUnknown": "The municipality you chose is not in the official list of the Swiss municipalities: choose the place again.",
       "swissPlacesUnavailable": "The official list of the Swiss places is not available right now: try again later.",
+      "swissReceiptDateTooOld": "The day of this document is more than 5 years ago: it cannot be filed.",
+      "swissReceiptFileInvalid": "The file is empty or too big: 10 MB at most.",
+      "swissReceiptTypeInvalid": "The type of the document is not valid.",
+      "ticinoDayAlreadyDeclared": "This day is already uploaded on the portal: if you download the file again, the portal may create duplicate notifications.",
+      "ticinoDeclarationDayInFuture": "This day has not started yet: the upload cannot be declared.",
+      "ticinoDeclarationReceiptInvalid": "The receipt is not of this property or of this day.",
+      "ticinoFileFormatInvalid": "The format of the file is not valid: choose CSV or XML.",
+      "ticinoNotAGroup": "This stay is not a group of six or more people: there is no group sheet.",
+      "ticinoNotificationEmpty": "No guest of this day has complete data: complete it and download the file again.",
+      "ticinoStructureIdMissing": "The identification number of the property is missing: enter it to create the file.",
+      "ticinoXmlNotAvailable": "The XML file cannot be created for this day: download the CSV.",
       "videoCallNotSent": "The e-mail did not go out and nothing was sent. Try again.",
       "videoCallUrlInvalid": "The link of the meeting is not valid: it has to start with https://, with no spaces or password.",
       "xlsxTooManyRows": "Too many rows: a sheet of an Excel file can have at most 10,000 rows. Choose a shorter period and try again.",
@@ -2290,6 +2301,7 @@
       "calendarTooManyProperties": "A change can cover 50 properties at most.",
       "calendarWindowTooLarge": "The period is too long to be read at once.",
       "propertyNotFound": "We cannot find the property, or you have no access to it.",
+      "propertyNotInTicino": "This property is not in canton Ticino: the Ticino police notification does not apply.",
       "propertyModeBlockedByBookings": "On that day there are still stays or dates taken on the portals. Choose a later day.",
       "propertyModeBlockedByDraftLease": "There is a draft lease: it has to be deleted before the change.",
       "propertyModeBlockedByLease": "On that day there is still a lease running. Choose the day after it ends.",
@@ -9340,6 +9352,22 @@
     "failedTitle": "Email not verified",
     "failedDescription": "The link was already used, it expired, or the return page is not an allowed address. If the email is already confirmed, sign in. Otherwise ask for a new message from the sign-in screen.",
     "signIn": "Sign in"
+  },
+  "embed": {
+    "error": {
+      "description": "We could not reach the server. Please try again shortly.",
+      "title": "We could not load the content"
+    },
+    "loading": "Loading…",
+    "notFound": {
+      "description": "We can't find the booking site this widget should show.",
+      "title": "Site not found"
+    },
+    "title": "Book · {{name}}",
+    "unavailable": {
+      "description": "This feature is not turned on for the site, or the address is not right.",
+      "title": "This widget is not available"
+    }
   },
   "favorites": {
     "add": "Save {{name}} to favourites",
@@ -16445,7 +16473,10 @@
       "touristTaxPaid": "A guest paid the tourist tax online.",
       "otaReviewActionFailed": "A reply to a review, or your review of a guest, did not reach the portal: try again from the review.",
       "otaReviewReceived": "A guest left a review.",
-      "scheduledMessageIssue": "A scheduled message for a guest did not go out or needs you: open the booking to see what happened."
+      "scheduledMessageIssue": "A scheduled message for a guest did not go out or needs you: open the booking to see what happened.",
+      "ticinoNotificationDeclared": "Someone on your team updated the police notification of an arrival in Ticino.",
+      "ticinoNotificationDue": "The guests of an arrival in Ticino must be notified to the cantonal police within 24 hours.",
+      "ticinoNotificationOverdue": "The 24 hours to notify the cantonal police of the guests of an arrival in Ticino have passed."
     }
   },
   "octorate": {
@@ -31259,73 +31290,170 @@
     }
   },
   "swiss": {
-    "title": "Police notification (Ticino)",
-    "description": "In Ticino every guest must be notified to the cantonal police within 24 hours of the arrival. CasaZen prepares the official file: you upload it on the notification portal and keep the receipt here.",
-    "noProperty": "Open this page from Compliance or from the page of a property in Ticino.",
-    "backToCompliance": "Go to Compliance",
-    "loading": "Loading…",
-    "loadFailed": "The notification could not be loaded. Try again shortly.",
-    "notInTicino": "This property is not in canton Ticino: the Ticino police notification does not apply.",
-    "day": {
-      "title": "Arrivals of {{day}}",
-      "none": "No arrivals on this day.",
-      "due": "To notify by {{when}} (24 hours from the arrival).",
-      "notified": "Receipt of the portal archived: day notified.",
-      "notifiedDone": "The guests of this day are notified.",
-      "otherDays": "Other days to notify:"
+    "actions": {
+      "next": "Next"
     },
-    "structureId": {
-      "title": "Identification number of the property",
-      "missing": "It is needed for the file: the number Ticino Turismo gave you when the property was registered.",
-      "label": "LEAR / NO-LEAR identification number",
-      "hint": "Letters and digits, with single hyphens (e.g. NL-12345678).",
-      "invalid": "Invalid number: 3 to 20 letters and digits, with single hyphens (e.g. NL-12345678).",
-      "save": "Save",
-      "saving": "Saving…"
+    "day": {
+      "closedByReceipt": "Receipt of the portal archived: the day is notified.",
+      "declared": "Already uploaded on {{when}} by {{who}}.",
+      "declaredAnonymous": "Already uploaded on {{when}}.",
+      "due": "To notify by {{when}} (24 hours from the arrival).",
+      "future": "This day has not started yet: you will be able to declare the upload from the day of the arrival.",
+      "none": "No arrivals on this day.",
+      "otherDays": "Other days to notify:",
+      "overdue": "The 24 hours to notify this day are over ({{when}}): notify as soon as you can.",
+      "title": "Arrivals of {{day}}"
+    },
+    "declare": {
+      "action": "I uploaded the file",
+      "alreadyDone": "This day was already declared as uploaded.",
+      "body": "Once the portal has accepted the file, say so here: the day leaves the things to do and the people who work with you see it at once.",
+      "done": "Done: the day is declared as uploaded.",
+      "failed": "The upload could not be recorded. Try again.",
+      "needsSubmit": "Declaring the upload is up to whoever can send the communications to the police: ask whoever manages the property.",
+      "notYet": "Not uploaded yet? Go back to the step «Upload on the portal».",
+      "undo": "I did not upload it: reopen the day",
+      "undoFailed": "The declaration could not be undone. Try again.",
+      "undone": "Declaration undone."
     },
     "file": {
-      "title": "1. Download the file",
-      "ready_one": "{{count}} person in the file",
-      "ready_other": "{{count}} people in the file",
+      "download": "Download the file (CSV)",
+      "downloaded": "File downloaded: now upload it on the portal.",
+      "downloadFailed": "The file could not be downloaded.",
+      "downloadXml": "Download as XML",
+      "duplicates": "If you upload the file again, the portal may create duplicate notifications.",
+      "generated_one": "The file of this day was downloaded {{count}} time (last on {{when}}).",
+      "generated_other": "The file of this day was downloaded {{count}} times (last on {{when}}).",
+      "groupSheet": "Download the sheet of the group of {{name}}",
+      "groupSheetDownloaded": "Group sheet downloaded: keep it for 5 years.",
+      "groupSheetFailed": "The group sheet could not be downloaded.",
+      "groupSheetHint": "For groups of 6 or more people the file holds only the leader: the sheet with every member must be kept for 5 years, at the disposal of the police.",
+      "needsGuestRead": "Downloading the file needs the permission to read the guests' data.",
+      "none": "The file is created once at least one guest has complete data."
+    },
+    "guests": {
+      "group": "Group of {{count}} people",
       "minors_one": "(plus {{count}} minor counted on a parent)",
       "minors_other": "(plus {{count}} minors counted on a parent)",
-      "download": "Download the file",
-      "downloadXml": "Download as XML",
-      "downloading": "Downloading…",
-      "downloadFailed": "The file could not be downloaded."
+      "none": "No guest of this day has complete data yet: the file cannot be created.",
+      "ready_one": "{{count}} person in the file",
+      "ready_other": "{{count}} people in the file",
+      "transliterated_one": "{{count}} letter of the names has no accent in the file: the file writes it without. Check the names on the portal.",
+      "transliterated_other": "{{count}} letters of the names have no accent in the file: the file writes them without. Check the names on the portal."
     },
     "issues": {
-      "title_one": "{{count}} guest is not in the file: data is missing",
-      "title_other": "{{count}} guests are not in the file: data is missing",
-      "body": "Complete the data in the booking (or ask the guest to complete the check-in) and download the file again. If that is not possible, notify the guest by hand on the portal («Notifiche → Nuova»).",
+      "body": "Complete the data here (or ask the guest to complete the check-in): the file updates. If that is not possible, notify the guest by hand on the portal («Notifiche → Nuova»).",
+      "complete": "Complete the data",
+      "completeFor": "Complete the data: {{name}}",
       "missing": {
-        "firstName": "first name",
-        "lastName": "last name",
         "birthDate": "date of birth",
-        "nationality": "nationality",
         "documentType": "document type",
-        "guests": "data of all the guests of the booking"
-      }
+        "firstName": "first name",
+        "guests": "data of all the guests of the booking",
+        "lastName": "last name",
+        "nationality": "nationality"
+      },
+      "openBooking": "Open the booking",
+      "openBookingFor": "Open the booking: {{name}}",
+      "title_one": "{{count}} guest is not in the file: data is missing",
+      "title_other": "{{count}} guests are not in the file: data is missing"
+    },
+    "layer": {
+      "forbidden": "You do not have the permission to see the guests of this property.",
+      "intro": "In Ticino every guest must be notified to the cantonal police within 24 hours of the arrival. CasaZen prepares the official file: you upload it on the portal and then declare here that it is done.",
+      "later": "Continue later",
+      "loadFailed": "The notification could not be loaded.",
+      "loading": "Loading the notification…",
+      "notFound": "We cannot find this property, or you have no access to it.",
+      "notInTicino": "This property is not in canton Ticino: the Ticino police notification does not apply.",
+      "refreshFailed": "We cannot refresh this day: what you see is the last reading.",
+      "steps": "Steps of the notification",
+      "title": "Police notification (Ticino)",
+      "titleFor": "Police notification: {{property}}"
     },
     "portal": {
-      "title": "2. Upload it on the notification portal",
+      "accents": "After the first upload, check on the portal that the accents of the names read well.",
       "body": "Sign in to notifiche.ti.ch with your credentials and the code of the authenticator app, open «Notifiche → Invio», choose the file and press «Invia». The portal shows the outcome of every guest.",
-      "open": "Open the notification portal"
-    },
-    "receipt": {
-      "title": "3. Keep the receipt",
-      "body": "Save the summary page of the portal (PDF or image) and upload it here: the day will be notified.",
-      "file": "Summary of the portal",
-      "upload": "Mark as notified",
-      "uploading": "Uploading…",
-      "uploadFailed": "The receipt could not be uploaded.",
-      "uploadSuccess": "Receipt archived: day notified."
+      "newTab": "opens in a new tab",
+      "open": "Open the notification portal",
+      "privacy": "CasaZen does not sign in to the portal and does not know your credentials: you do the upload."
     },
     "property": {
-      "title": "Police notification (Ticino)",
       "description": "The guests of this property must be notified to the cantonal police within 24 hours of the arrival, with the identification number of the property.",
       "noId": "Identification number not entered.",
-      "open": "Notify the guests to the police"
+      "open": "Notify the guests to the police",
+      "title": "Police notification (Ticino)"
+    },
+    "receipt": {
+      "body": "Save the summary page of the portal (PDF or image) or its CSV and upload it here: we keep it for 5 years. The day closes without a receipt too.",
+      "file": "Summary of the portal",
+      "group": {
+        "body": "Download the sheet in the step «Download the file», have the data of the members filled in and keep it here for 5 years.",
+        "file": "Group sheet",
+        "success": "Group sheet filed.",
+        "title": "Group sheet: {{name}}",
+        "upload": "File the sheet"
+      },
+      "have_one": "{{count}} receipt filed for this day.",
+      "have_other": "{{count}} receipts filed for this day.",
+      "needsSubmit": "Adding a receipt is up to whoever can send the communications to the police: ask whoever manages the property.",
+      "parental": {
+        "body": "Minors who travel without an adult need the written authorization of their parents: keep it here for 5 years. Without it, the police must be told at once.",
+        "file": "Authorization of the parents",
+        "success": "Authorization filed.",
+        "title": "Authorization of the parents",
+        "upload": "File the authorization"
+      },
+      "tooBig": "The file is too big: 10 MB at most.",
+      "upload": "Add the receipt",
+      "uploadFailed": "The document could not be filed.",
+      "uploading": "Uploading…",
+      "uploadSuccess": "Receipt archived: day notified.",
+      "uploadSuccessNotDeclared": "Receipt filed. The declaration was not recorded, but the receipt closes the day anyway."
+    },
+    "regenerate": {
+      "cancel": "Do not download",
+      "confirm": "Download again",
+      "consequence": "Guests who were already notified might appear twice on the portal.",
+      "risk": "If you upload the file again, the portal may create duplicate notifications.",
+      "title": "Download the file again?"
+    },
+    "steps": {
+      "declare": {
+        "title": "I uploaded the file"
+      },
+      "file": {
+        "title": "Download the file"
+      },
+      "guests": {
+        "title": "Guests to notify"
+      },
+      "portal": {
+        "title": "Upload on the portal"
+      },
+      "receipt": {
+        "title": "Add the receipt"
+      },
+      "state": {
+        "attention": "To complete",
+        "done": "Done",
+        "optional": "Optional",
+        "todo": "To do"
+      }
+    },
+    "structureId": {
+      "hint": "Letters and digits, with single hyphens (e.g. NL-12345678).",
+      "invalid": "Invalid number: 3 to 20 letters and digits, with single hyphens (e.g. NL-12345678).",
+      "label": "LEAR / NO-LEAR identification number",
+      "missing": "It is needed for the file: the number Ticino Turismo gave you when the property was registered.",
+      "readOnly": "Ask whoever manages the property to enter the identification number: without it the file cannot be created.",
+      "save": "Save",
+      "saving": "Saving…",
+      "title": "Identification number of the property"
+    },
+    "warnings": {
+      "group_sheet_incomplete": "The sheet of a group misses the name or the nationality of a member: complete the data of the guests.",
+      "parental_authorization_needed": "There are minors without an adult: the written authorization of the parents is needed, kept for 5 years (add it in the last step). Without it, tell the police at once."
     }
   },
   "swissPlace": {
