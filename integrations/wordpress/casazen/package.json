@@ -1,0 +1,13 @@
+{
+	"name": "casazen-wordpress-plugin",
+	"version": "0.1.0",
+	"private": true,
+	"description": "Development tooling of the CasaZen WordPress plugin. Not shipped in the plugin ZIP.",
+	"license": "GPL-2.0-or-later",
+	"scripts": {
+		"lint:php-syntax": "node tools/check-php-syntax.mjs"
+	},
+	"devDependencies": {
+		"php-parser": "^3.7.0"
+	}
+}

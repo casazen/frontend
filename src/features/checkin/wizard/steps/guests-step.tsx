@@ -5,14 +5,16 @@ import { Loader2, UserPlus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
-import { StayGuestDocumentFields, StayGuestPersonalFields } from '@/features/checkin/components/stay-guest-fields';
+import { StayGuestDocumentFields, StayGuestPersonalFields, VehiclePlateField } from '@/features/checkin/components/stay-guest-fields';
 import type { CodeTableSource } from '@/features/checkin/components/code-table';
 import {
   MAX_STAY_GUESTS,
+  asksSwissDocument,
   createStayGuestListSchema,
+  documentLevelsOf,
   followerTypeOf,
-  requiresDocument,
   stayGuestDefaults,
+  stayVehiclePlateSchema,
 } from '@/features/checkin/schemas/checkin.schema';
 import { getProblemMessage } from '@/lib/api-errors';
 import { useCheckInWizardState, useSaveCheckInGuests } from '@/queries/use-checkin-wizard';
@@ -20,7 +22,8 @@ import type { CheckInWizardState } from '@/types/checkin-wizard.types';
 import type { StayGuestType } from '@/types/public-checkin.types';
 import {
   statisticalFieldsOf,
-  toGuestsPayload,
+  swissRulesOfState,
+  toGuestsSave,
   wizardValuesFromState,
   type CheckInWizardValues,
 } from '../lib/checkin-wizard-model';
@@ -42,6 +45,9 @@ function GuestsFields({ state, source, withDocuments }: GuestsFieldsProps) {
   const { fields, append, remove } = useFieldArray({ control, name: 'guests' });
   const guests = useWatch({ control, name: 'guests' });
   const statisticalFields = statisticalFieldsOf(state);
+  // A property in Switzerland (NF-132) asks the home of each guest, the document of every adult and the plate of the car; an Italian one nothing more.
+  const swiss = useMemo(() => swissRulesOfState(state), [state]);
+  const documentLevels = documentLevelsOf(guests ?? [], swiss);
   const declared = state.booking.declaredGuests;
 
   const changeLeaderType = (type: StayGuestType) => {
@@ -53,27 +59,31 @@ function GuestsFields({ state, source, withDocuments }: GuestsFieldsProps) {
 
   return (
     <div className="space-y-4" data-testid="checkin-wizard-guests">
-      <p className="text-sm text-muted-foreground">{t('checkin.guestsIntro')}</p>
+      <p className="text-sm text-muted-foreground">
+        {asksSwissDocument(swiss) ? t('checkin.swiss.guestsIntro') : t('checkin.guestsIntro')}
+      </p>
       {fields.length !== declared && (
         <p className="text-sm text-orange-700" data-testid="checkin-wizard-guest-count-mismatch">
           {t('checkin.guestCountMismatch', { count: declared })}
         </p>
       )}
-      {fields.map((field, index) => (
-        <div key={field.id} className="space-y-3">
-          <StayGuestPersonalFields
-            index={index}
-            arrivalDate={state.booking.checkIn}
-            source={source}
-            requiredFields={statisticalFields}
-            onLeaderTypeChange={index === 0 ? changeLeaderType : undefined}
-            onRemove={index > 0 ? () => remove(index) : undefined}
-          />
-          {withDocuments && guests[index] && requiresDocument(guests[index].type) && (
-            <StayGuestDocumentFields index={index} source={source} />
-          )}
-        </div>
-      ))}
+      {fields.map((field, index) => {
+        const level = documentLevels[index] ?? null;
+        return (
+          <div key={field.id} className="space-y-3">
+            <StayGuestPersonalFields
+              index={index}
+              arrivalDate={state.booking.checkIn}
+              source={source}
+              requiredFields={statisticalFields}
+              swiss={swiss}
+              onLeaderTypeChange={index === 0 ? changeLeaderType : undefined}
+              onRemove={index > 0 ? () => remove(index) : undefined}
+            />
+            {withDocuments && level !== null && <StayGuestDocumentFields index={index} source={source} level={level} />}
+          </div>
+        );
+      })}
       {fields.length < MAX_STAY_GUESTS && (
         <Button
           type="button"
@@ -85,6 +95,7 @@ function GuestsFields({ state, source, withDocuments }: GuestsFieldsProps) {
           {t('checkin.addGuest')}
         </Button>
       )}
+      {state.askVehiclePlate === true && <VehiclePlateField />}
     </div>
   );
 }
@@ -103,7 +114,11 @@ function StandaloneGuestsEditor({ bookingId, state, source, onSaved, onDirtyChan
   const save = useSaveCheckInGuests(bookingId);
   const [saveError, setSaveError] = useState<string | null>(null);
   const statisticalFields = useMemo(() => statisticalFieldsOf(state), [state]);
-  const schema = useMemo(() => z.object({ guests: createStayGuestListSchema(statisticalFields) }), [statisticalFields]);
+  const swiss = useMemo(() => swissRulesOfState(state), [state]);
+  const schema = useMemo(
+    () => z.object({ guests: createStayGuestListSchema(statisticalFields, 'all', swiss), vehiclePlate: stayVehiclePlateSchema }),
+    [statisticalFields, swiss],
+  );
   const form = useForm<CheckInWizardValues>({ resolver: zodResolver(schema), defaultValues: wizardValuesFromState(state) });
   const { isDirty } = form.formState;
 
@@ -115,7 +130,7 @@ function StandaloneGuestsEditor({ bookingId, state, source, onSaved, onDirtyChan
   const onSubmit = form.handleSubmit(async (values) => {
     setSaveError(null);
     try {
-      const saved = await save.mutateAsync(toGuestsPayload(values, statisticalFields));
+      const saved = await save.mutateAsync(toGuestsSave(values, statisticalFields, swiss));
       // What the server holds now is the baseline: nothing typed is waiting to be saved.
       form.reset(values);
       onSaved?.(saved);

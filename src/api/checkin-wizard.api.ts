@@ -18,9 +18,16 @@ export const checkInWizardApi = {
   /** Everything the six steps show: the guests (document numbers masked), the issues, the tax, the sender, Octorate and Alloggiati. */
   getState: (bookingId: string) => ApiClient.get<CheckInWizardState>(`/bookings/${bookingId}/checkin-wizard`),
 
-  /** Replaces the guests of the stay with the host as author: the list is the whole truth (the exemption codes included). Answers the new state. */
-  saveGuests: (bookingId: string, guests: StayGuestSubmit[]) =>
-    ApiClient.put<CheckInWizardState>(`/bookings/${bookingId}/checkin-wizard/guests`, { guests }),
+  /**
+   * Replaces the guests of the stay with the host as author: the list is the whole truth (the exemption codes and, in Switzerland, the home of each
+   * guest included). The plate of the car of the stay (NF-132) goes with it when the regime asks it: not sent, the stored one stays; an empty text
+   * clears it. Answers the new state.
+   */
+  saveGuests: (bookingId: string, guests: StayGuestSubmit[], vehiclePlate?: string) =>
+    ApiClient.put<CheckInWizardState>(
+      `/bookings/${bookingId}/checkin-wizard/guests`,
+      vehiclePlate === undefined ? { guests } : { guests, vehiclePlate },
+    ),
 
   /** Reads the photo of a document (JPEG or PNG, 10 MB at most): in memory on the server, never stored. */
   readDocument: (bookingId: string, photo: Blob, fileName: string) => {

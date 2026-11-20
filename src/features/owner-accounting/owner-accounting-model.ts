@@ -942,7 +942,7 @@ export const MAX_FLAT_FEE = 99_999_999.99;
 /**
  * The parts of a statement, in the order of its PDF and its CSV: the stays (the gross without the tourist tax), what the channels kept, the withholding, the commission of the property
  * manager (the VAT its invoice adds is counted with it), the recharges and expenses, the manual corrections, and the payments between the agency and the owner. `other` is a line of a
- * type this client does not know (the server may be newer): it is counted in the total, never dropped.
+ * type this client does not know (the server may be newer): it is counted in the total, never dropped, unless the server says it is for information only (`informational`).
  */
 export type StatementSection = 'stays' | 'channelFees' | 'withholding' | 'commission' | 'recharges' | 'corrections' | 'payments' | 'other';
 
@@ -950,6 +950,7 @@ export type StatementSection = 'stays' | 'channelFees' | 'withholding' | 'commis
 const SECTION_OF: Record<OwnerLedgerEntryType, StatementSection> = {
   BookingRevenue: 'stays',
   ChannelFee: 'channelFees',
+  ChannelFeeBorneByAgency: 'channelFees',
   Withholding: 'withholding',
   AgencyCommission: 'commission',
   AgencyVat: 'commission',
@@ -960,11 +961,30 @@ const SECTION_OF: Record<OwnerLedgerEntryType, StatementSection> = {
   AgencyPayment: 'payments',
 };
 
+/**
+ * A line for information only (`ChannelFeeBorneByAgency`: the commission of a portal the agency bears, and the owner is not charged): the server says it (`informational`), and the type that is
+ * always one says it too. Such a line is shown with its amount and is NEVER added to a part, to the period, to a balance: the ledger of an owner counts only the lines that count
+ * (`OwnerLedgerBalance`), and this client does not know which types do not, so it asks the line.
+ */
+export const isInformational = (entry: Pick<OwnerLedgerEntry, 'type' | 'informational'>): boolean => entry.informational === true || entry.type === 'ChannelFeeBorneByAgency';
+
+/**
+ * An amount of a line as the page writes it. A line for information only is the commission the agency bears, and it is written the way the PDF and the CSV of the statement write it, a positive
+ * figure (the ledger holds it as a negative, like a commission of the portal): never with the minus of a deduction, because nothing is deducted. Every other line keeps the sign of the ledger.
+ */
+export function shownAmount(entry: Pick<OwnerLedgerEntry, 'type' | 'informational'>, amount: number): number {
+  if (!isInformational(entry)) return amount;
+  return amount === 0 ? 0 : -amount;
+}
+
 export interface StatementGroup {
   section: StatementSection;
-  /** The signed total of its lines in the currency of the statement: positive is owed to the owner. */
+  /** The signed total of its lines that count, in the currency of the statement: positive is owed to the owner. A line for information only is never in it. */
   amount: number;
+  /** How many lines are in `amount`. */
   count: number;
+  /** The lines of the part that are for information only: how many, and what they come to written as the PDF writes it (the commission the agency bears, a positive figure). In no total. */
+  informational: { amount: number; count: number };
 }
 
 export interface StatementGroups {
@@ -985,20 +1005,30 @@ const ALWAYS_SHOWN: ReadonlySet<StatementSection> = new Set(['stays', 'channelFe
 
 /**
  * The lines of a version grouped as its PDF groups them. The amounts are the signed amounts of the lines added up in cents (never as floats), the balances the ones the version stores:
- * nothing here works a commission, a fee or a tax out.
+ * nothing here works a commission, a fee or a tax out. A line for information only (`isInformational`) is kept apart: it is counted and written in its part (`informational`) and is in
+ * no `amount`, no `count`, and so not in the period either.
  */
 export function statementGroupsOf(version: Pick<OwnerStatementVersion, 'openingBalance' | 'closingBalance'>, entries: readonly OwnerLedgerEntry[]): StatementGroups {
-  const cents = new Map<StatementSection, { amount: number; count: number }>();
+  const cents = new Map<StatementSection, { amount: number; count: number; informationalAmount: number; informationalCount: number }>();
   for (const entry of entries) {
     const section = SECTION_OF[entry.type] ?? 'other';
-    const current = cents.get(section) ?? { amount: 0, count: 0 };
-    cents.set(section, { amount: current.amount + toCents(entry.amount), count: current.count + 1 });
+    const current = cents.get(section) ?? { amount: 0, count: 0, informationalAmount: 0, informationalCount: 0 };
+    if (isInformational(entry)) {
+      cents.set(section, { ...current, informationalAmount: current.informationalAmount + toCents(shownAmount(entry, entry.amount)), informationalCount: current.informationalCount + 1 });
+    } else {
+      cents.set(section, { ...current, amount: current.amount + toCents(entry.amount), count: current.count + 1 });
+    }
   }
   const group = (section: StatementSection): StatementGroup => {
     const found = cents.get(section);
-    return { section, amount: (found?.amount ?? 0) / 100, count: found?.count ?? 0 };
+    return {
+      section,
+      amount: (found?.amount ?? 0) / 100,
+      count: found?.count ?? 0,
+      informational: { amount: (found?.informationalAmount ?? 0) / 100, count: found?.informationalCount ?? 0 },
+    };
   };
-  const groups = PARTS_IN_ORDER.map(group).filter((candidate) => ALWAYS_SHOWN.has(candidate.section) || candidate.count > 0);
+  const groups = PARTS_IN_ORDER.map(group).filter((candidate) => ALWAYS_SHOWN.has(candidate.section) || candidate.count > 0 || candidate.informational.count > 0);
   const period = groups.reduce((sum, candidate) => sum + toCents(candidate.amount), 0) / 100;
   return { groups, period, payments: group('payments'), opening: version.openingBalance, closing: version.closingBalance };
 }

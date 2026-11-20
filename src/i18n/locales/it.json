@@ -100,6 +100,7 @@
       "other": "Modifica all'account",
       "planChanged": "Piano cambiato: da {{from}} a {{to}}",
       "propertyActivatedWithReminders": "Immobile attivato con {{reminders}} da completare",
+      "rechargeWaiver": "Le commissioni dei portali non sono più riaddebitate ai proprietari: le sostiene l'agenzia",
       "reminder": {
         "documents": "i documenti",
         "documents_safety": "i documenti e la scheda di sicurezza",
@@ -875,6 +876,10 @@
         "RoutineTask": {
           "title": "Promemoria manuale della routine",
           "why": "Una routine che hai impostato ti chiede di occuparti di questa prenotazione."
+        },
+        "ScheduledMessageIssue": {
+          "title": "Messaggio programmato da sistemare",
+          "why": "Un messaggio automatico per un ospite non è partito o ha bisogno di te: apri la prenotazione, completa quello che manca oppure invialo tu."
         },
         "SelfBillingDraftsToReview": {
           "title": "Autofatture da controllare ed emettere",
@@ -1816,6 +1821,7 @@
       "otaReviewReplyAlreadySent": "Hai già risposto a questa recensione: la risposta si pubblica una volta sola.",
       "otaReviewWindowClosed": "Il tempo per scrivere la tua recensione dell'ospite è finito.",
       "ownerMandateOwnersEmpty": "Non c’è nessun proprietario a cui applicare il mandato.",
+      "rechargeWaiverNotAcknowledged": "Non abbiamo salvato: per smettere di riaddebitare ai proprietari le commissioni dei portali serve la tua conferma.",
       "replyNotDelivered": "Il portale non ha confermato la risposta entro un'ora: non è arrivata. Puoi riprovare.",
       "reportInvalidPeriod": "Il periodo non è valido: controlla le date.",
       "reportPeriodTooLong": "Il periodo è troppo lungo: scegline uno di al massimo 24 mesi.",
@@ -2011,6 +2017,9 @@
       "supportVaultSecretMissing": "Queste credenziali non ci sono ancora: salvale prima, oppure chiedile all'utente.",
       "supportVaultTooManyOpenings": "Hai già aperto le credenziali 5 volte nell'ultima ora per questa richiesta: riprova più tardi.",
       "supportVaultValueInvalid": "Utente e password sono obbligatori, al massimo 200 caratteri; il codice aggiuntivo al massimo 100.",
+      "swissMunicipalityNotApplicable": "Il comune svizzero si può indicare solo per un immobile in Svizzera.",
+      "swissMunicipalityUnknown": "Il comune scelto non è nell'elenco ufficiale dei comuni svizzeri: scegli di nuovo la località.",
+      "swissPlacesUnavailable": "L'elenco ufficiale delle località svizzere non è disponibile in questo momento: riprova più tardi.",
       "videoCallNotSent": "L'email non è partita e nulla è stato inviato. Riprova.",
       "videoCallUrlInvalid": "Il link della riunione non è valido: deve cominciare con https://, senza spazi né password.",
       "xlsxTooManyRows": "Troppe righe: un foglio di un file Excel può avere al massimo 10.000 righe. Scegli un periodo più breve e riprova.",
@@ -3245,6 +3254,14 @@
         "description": "La commissione che il portale ha fatturato all’agenzia entra nella fattura al proprietario, con l’IVA del compenso. Da confermare con il commercialista.",
         "legend": "Commissioni dei portali pagate dall’agenzia",
         "title": "Riaddebita le commissioni dei portali al proprietario"
+      },
+      "waiver": {
+        "confirm": "Confermo: le sostiene l’agenzia",
+        "description": "Da ora la commissione dei portali pagata dall’agenzia è un costo suo e non viene addebitata al proprietario.",
+        "mandate": "Controlla che il mandato lo consenta: l’agenzia rinuncia al rimborso che la legge le riconosce per queste spese e al documento che giustificherebbe la detrazione.",
+        "notRetroactive": "Non cambia i rendiconti già fatti: vale per quelli ancora da fare.",
+        "recorded": "CasaZen registra chi ha confermato e quando.",
+        "title": "Confermi che l’agenzia sostiene le commissioni dei portali?"
       }
     },
     "description": "Imposta come CasaZen emette i tuoi documenti: pochi passi, uno alla volta. Ogni passo si salva da solo e puoi riprendere quando vuoi.",
@@ -5255,6 +5272,195 @@
       "sendError": "Messaggio non inviato. Controlla la connessione e riprova.",
       "unread_one": "{{count}} messaggio da leggere",
       "unread_other": "{{count}} messaggi da leggere"
+    },
+    "scheduledMessages": {
+      "blocked": {
+        "fix": {
+          "guest": "Apri Documenti",
+          "property": "Apri l'immobile",
+          "routines": "Apri le routine",
+          "tax": "Apri la tassa di soggiorno"
+        },
+        "heading": "Manca:",
+        "item": {
+          "accessCodeHeld": "il pagamento della tassa di soggiorno (il codice d'accesso aspetta)",
+          "checkInInProgress": "che l'ospite finisca il check-in che sta compilando",
+          "idNotVerified": "la verifica dell'identità dell'ospite (il codice d'accesso parte solo dopo)",
+          "templateMissing": "il modello del messaggio (non c'è più: scrivi il testo con «Modifica» o scegli un altro modello nella routine)",
+          "textInvalid": "un testo valido (è vuoto, troppo lungo o il canale non lo accetta)",
+          "unknown": "un dato che serve per inviarlo"
+        },
+        "variable": {
+          "accessCode": "il codice d'accesso dell'immobile",
+          "bookingCode": "il codice della prenotazione",
+          "checkInDate": "la data di arrivo",
+          "checkInLink": "il link del check-in",
+          "checkInMethod": "come entra l'ospite (il metodo di check-in dell'immobile)",
+          "checkInTime": "l'orario di arrivo dell'immobile",
+          "checkOutDate": "la data di partenza",
+          "checkOutTime": "l'orario di partenza dell'immobile",
+          "guestName": "il nome dell'ospite (il canale non l'ha comunicato)",
+          "hostName": "il tuo nome come host",
+          "propertyAddress": "l'indirizzo dell'immobile",
+          "propertyName": "il nome dell'immobile",
+          "reviewLink": "il link per la recensione (c'è solo per le prenotazioni fatte dal tuo sito)"
+        },
+        "willHold": "Quando arriva il momento di inviarlo, il messaggio resta fermo finché questi dati non ci sono: il testo qui sotto non li ha ancora."
+      },
+      "channel": {
+        "direct": "conversazione diretta con l'ospite",
+        "email": "e-mail",
+        "line": "Canale: {{channel}}",
+        "lineNone": "Nessun modo per scrivere all'ospite: {{reason}}",
+        "none": "nessuno",
+        "ota": "chat del portale",
+        "reason": {
+          "contactInfoUnavailable": "il canale non comunica l'e-mail di questo ospite",
+          "mappingNotConfirmed": "l'annuncio della conversazione non è ancora collegato a un tuo immobile",
+          "noConversation": "non c'è una conversazione e non c'è un altro modo",
+          "notConnected": "il collegamento ai canali non è attivo",
+          "other": "al momento non c'è una via per raggiungerlo",
+          "threadClosed": "la conversazione è chiusa",
+          "unknown": "non riusciamo a controllarlo in questo momento"
+        }
+      },
+      "draftKept": "Il testo che stavi scrivendo non è perso: torna quando i messaggi si leggono di nuovo.",
+      "edit": {
+        "action": "Modifica",
+        "actionLabel": "Modifica il messaggio «{{name}}» di {{when}}",
+        "description": "La modifica vale solo per questa prenotazione: la routine e le altre prenotazioni non cambiano.",
+        "fieldHint": "I pulsanti qui sotto inseriscono un dato che CasaZen scrive al momento dell'invio, come il nome dell'ospite. Il dato compare tra doppie parentesi graffe.",
+        "fieldLabel": "Testo del messaggio",
+        "fixedNote": "Il testo parte da come lo leggerà l'ospite adesso: i dati già compilati (nome, date, orari, indirizzo) diventano testo fisso e non seguono più la prenotazione se questa cambia. Per farli seguire, inseriscili con i pulsanti.",
+        "insertLabel": "Inserisci un dato",
+        "missingAccept": "Ho capito: salvo il testo senza questi dati",
+        "missingHeading": "Nel testo qui sotto mancano questi dati, perché la prenotazione non li ha ancora:",
+        "missingWarning": "Se salvi così, il messaggio parte senza questi dati. Per tenerli, inserisci il pulsante evidenziato dove vanno: il messaggio resta fermo finché il dato non c'è.",
+        "originalSummary": "Testo della routine",
+        "restore": "Rimetti il testo della routine nel campo",
+        "restored": "Il messaggio torna al testo della routine.",
+        "save": "Salva",
+        "saved": "Messaggio modificato: la modifica vale solo per questa prenotazione.",
+        "title": "Modifica il messaggio",
+        "useRoutineText": "Usa il testo della routine",
+        "useRoutineTextHint": "Cancella la tua modifica: il messaggio torna al testo della routine, con i dati di questa prenotazione.",
+        "variable": {
+          "accessCode": "Codice d'accesso",
+          "bookingCode": "Codice prenotazione",
+          "checkInDate": "Data di arrivo",
+          "checkInLink": "Link del check-in",
+          "checkInMethod": "Come si entra",
+          "checkInTime": "Orario di arrivo",
+          "checkOutDate": "Data di partenza",
+          "checkOutTime": "Orario di partenza",
+          "guestName": "Nome dell'ospite",
+          "hostName": "Il tuo nome",
+          "propertyAddress": "Indirizzo",
+          "propertyName": "Nome dell'immobile",
+          "reviewLink": "Link per la recensione"
+        }
+      },
+      "edited": "Modificato",
+      "empty": "Non c'è niente di programmato per questa prenotazione. I messaggi partono da soli solo dopo che attivi una routine che li contiene.",
+      "emptyLink": "Vai alle routine",
+      "errors": {
+        "blocked": "Non è partito: manca ancora qualcosa.",
+        "blockedNamed": "Non è partito: manca ancora {{missing}}.",
+        "changed": "Qualcun altro ha cambiato il messaggio mentre lo modificavi: guarda com'è adesso e riprova.",
+        "generic": "Non siamo riusciti a completare l'operazione. Riprova tra poco.",
+        "inProgress": "Il messaggio sta partendo proprio ora: riprova tra poco.",
+        "notEditable": "Il messaggio non si può più cambiare: è già partito o non partirà più.",
+        "notFound": "Questo messaggio non c'è più o non puoi vederlo.",
+        "notSendable": "Il messaggio non si può inviare: è già partito o non partirà più.",
+        "textInvalid": "Il testo non può essere vuoto né più lungo di 2000 caratteri.",
+        "variableUnknown": "Nel testo c'è una parte tra doppie parentesi graffe che non è un dato che conosciamo: inseriscili con i pulsanti."
+      },
+      "failure": {
+        "channelRefused": "Non è partito: il canale ha segnalato un errore.",
+        "chatNotLicensed": "Non è partito: la chat del portale non è ancora attiva per questo annuncio.",
+        "manualVerify": "Non sappiamo se il messaggio è arrivato: controlla la conversazione prima di inviarlo di nuovo.",
+        "other": "Non è partito, per un problema che CasaZen non sa ancora spiegare.",
+        "rateLimited": "Non è partito: il canale ha chiesto di aspettare un po'.",
+        "unavailable": "Non è partito: il canale non risponde in questo momento.",
+        "unconfirmed": "Il canale non ha ancora confermato di aver preso il messaggio: non lo consideriamo inviato."
+      },
+      "listLabel": "Messaggi programmati per questa prenotazione, in ordine di orario",
+      "loadError": "Non riusciamo a leggere i messaggi programmati: non sappiamo cosa sta per partire.",
+      "loadErrorGone": "Questa prenotazione non c'è più o non puoi vederla: i suoi messaggi programmati non sono disponibili.",
+      "loading": "Carico i messaggi programmati…",
+      "outsideHours": "Inviato fuori orario",
+      "placeholder": {
+        "accessCode": "il codice d'accesso verrà aggiunto quando il messaggio parte",
+        "checkInLink": "il link del check-in verrà creato quando il messaggio parte",
+        "reviewLink": "il link per la recensione verrà aggiunto quando il messaggio parte"
+      },
+      "reason": {
+        "bookingCancelled": "La prenotazione è stata annullata: il messaggio non parte.",
+        "bySystem": "Saltato da CasaZen.",
+        "campaignNeedsConsent": "L'ospite non ha dato il consenso a ricevere messaggi di marketing.",
+        "channelRule": "Le regole del canale non permettono questo testo in questa conversazione, per esempio un link nella richiesta di una prenotazione.",
+        "checkInCompleted": "L'ospite ha già completato il check-in online: il link non serve più.",
+        "checkInNotOpen": "Il soggiorno non ha un check-in aperto (non è confermato o è già finito): il link non serve.",
+        "checkInWithOperator": "La verifica dell'identità è in mano a un operatore: un nuovo link la farebbe ricominciare.",
+        "checkOutReached": "È rimasto fermo fino alla partenza dell'ospite: non parte più.",
+        "conditionNotMet": "Questa prenotazione non rispetta la condizione della routine.",
+        "contactUnavailable": "Non c'è un modo per scrivere all'ospite: manca una conversazione, è chiusa o non c'è un indirizzo.",
+        "mappingNotConfirmed": "L'annuncio di questa conversazione non è ancora collegato a un tuo immobile: CasaZen non scrive finché non lo confermi.",
+        "missed": "L'orario previsto è passato da troppo tempo: non lo mandiamo in ritardo.",
+        "otherCancelled": "Il messaggio non partirà più.",
+        "otherExpired": "Il momento di inviarlo è passato.",
+        "otherSkipped": "CasaZen non l'ha inviato.",
+        "person": "Saltato da una persona del team.",
+        "routineInactive": "La routine è stata spenta o non contiene più questo messaggio."
+      },
+      "retry": "Riprova",
+      "routine": "Routine: {{name}}",
+      "routineUnnamed": "Senza nome",
+      "sendNow": {
+        "action": "Invia ora",
+        "actionLabel": "Invia ora il messaggio «{{name}}» di {{when}}",
+        "blockedNote": "Se non lo completi, il messaggio non parte.",
+        "confirm": "Invia ora",
+        "consequenceGuest": "L'ospite lo riceve adesso.",
+        "consequenceNow": "Il messaggio parte subito, senza aspettare l'orario previsto.",
+        "description": "Stai inviando subito il messaggio «{{name}}», previsto per {{when}}.",
+        "done": "Messaggio inviato.",
+        "failed": "Il messaggio non è partito: guarda il motivo nell'elenco.",
+        "notSent": "Il messaggio non è stato inviato: guarda il motivo nell'elenco.",
+        "stillMissing": "Manca ancora:",
+        "title": "Inviare il messaggio adesso?"
+      },
+      "sent": {
+        "at": "Inviato il {{when}}.",
+        "done": "Inviato.",
+        "openConversation": "Apri la conversazione",
+        "skippedAfterSend": "Il messaggio era già partito il {{when}}: l'ospite l'ha ricevuto lo stesso."
+      },
+      "skip": {
+        "action": "Salta",
+        "actionLabel": "Salta il messaggio «{{name}}» di {{when}}",
+        "confirm": "Salta il messaggio",
+        "consequenceFinal": "Non si può tornare indietro: il messaggio non partirà più.",
+        "consequenceGuest": "L'ospite non riceverà questo messaggio.",
+        "consequenceTeam": "Le altre persone che seguono l'immobile ricevono un avviso.",
+        "description": "Stai saltando il messaggio «{{name}}» previsto per {{when}}.",
+        "done": "Messaggio saltato: l'ospite non lo riceverà.",
+        "notDone": "Il messaggio non risulta saltato: guarda lo stato nell'elenco.",
+        "title": "Saltare questo messaggio?"
+      },
+      "status": {
+        "Blocked": "Bloccato",
+        "Cancelled": "Annullato",
+        "Expired": "Scaduto",
+        "Failed": "Invio non riuscito",
+        "Scheduled": "Programmato",
+        "Sent": "Inviato",
+        "Skipped": "Saltato",
+        "unknown": "Stato sconosciuto"
+      },
+      "textLabel": "Testo del messaggio",
+      "textMissing": "Il testo non è disponibile: il modello del messaggio non c'è più.",
+      "title": "Messaggi programmati"
     }
   },
   "bookingStatus": {
@@ -5643,14 +5849,23 @@
       "educationLevel": {
         "required": "Seleziona il titolo di studio"
       },
+      "residencePostalCode": {
+        "maxLength": "Al massimo 20 caratteri"
+      },
       "residenceProvince": {
         "invalid": "Inserisci la sigla di due lettere (es. RM)"
+      },
+      "residenceStreet": {
+        "maxLength": "Al massimo 200 caratteri"
       },
       "tourismType": {
         "required": "Seleziona il motivo del viaggio"
       },
       "travelWay": {
         "required": "Seleziona il mezzo usato per arrivare"
+      },
+      "vehiclePlate": {
+        "invalid": "Inserisci una targa valida: lettere, cifre e trattini, al massimo 20 caratteri."
       }
     },
     "loading": "Caricamento check-in...",
@@ -5955,7 +6170,8 @@
       "statisticalValueInvalid": "Il valore scelto non è tra quelli ammessi.",
       "summary_one": "C'è 1 campo da controllare",
       "summary_other": "Ci sono {{count}} campi da controllare",
-      "tooManyRequests": "Troppe richieste in poco tempo: attendi qualche istante e riprova."
+      "tooManyRequests": "Troppe richieste in poco tempo: attendi qualche istante e riprova.",
+      "vehiclePlateInvalid": "La targa non è valida: usa lettere, cifre e trattini, al massimo 20 caratteri."
     },
     "guestKind": {
       "FamilyMember": "Familiare",
@@ -6144,12 +6360,21 @@
     },
     "residence": {
       "abroad": "All'estero",
+      "city": "Località",
       "comune": "Comune di residenza",
       "country": "Stato di residenza",
       "hint": "Facoltativo: dove vive abitualmente l’ospite.",
+      "homeHint": "Facoltativo: l’indirizzo dove vive l’ospite. Fa parte della notifica del soggiorno alla polizia.",
       "inItaly": "In Italia",
       "label": "Residenza",
-      "province": "Provincia di residenza (due lettere)"
+      "postalCode": "CAP",
+      "province": "Provincia di residenza (due lettere)",
+      "street": "Via e numero civico"
+    },
+    "swiss": {
+      "documentIntro": "Tipo e numero del documento d’identità di ogni adulto. Il capofamiglia o il capogruppo indica anche il luogo di rilascio.",
+      "guestsIntro": "Inserisci tutti gli ospiti che soggiornano, minorenni compresi. Ogni adulto indicherà anche il proprio documento d’identità nel passo successivo.",
+      "stayKindHint": "Per una famiglia o un gruppo il primo ospite è il capofamiglia o il capogruppo. Il documento d’identità si chiede a ogni adulto (per un gruppo di sei o più, solo al capogruppo)."
     },
     "toast": {
       "saved": "Dati del check-in salvati.",
@@ -6204,6 +6429,10 @@
       "plane": "Aereo",
       "ship": "Nave",
       "train": "Treno"
+    },
+    "vehiclePlate": {
+      "hint": "Una sola targa per tutto il soggiorno, se arrivi in auto. Lettere, cifre e trattini.",
+      "label": "Targa dell’auto (facoltativa)"
     },
     "wizard": {
       "checks": {
@@ -16072,7 +16301,8 @@
       "fiscalDocumentSdiRejected": "Lo SDI ha scartato una fattura: va corretta.",
       "touristTaxPaid": "Un ospite ha pagato online la tassa di soggiorno.",
       "otaReviewActionFailed": "Una risposta a una recensione, o la tua recensione dell'ospite, non è arrivata sul portale: riprova dalla recensione.",
-      "otaReviewReceived": "Un ospite ha lasciato una recensione."
+      "otaReviewReceived": "Un ospite ha lasciato una recensione.",
+      "scheduledMessageIssue": "Un messaggio programmato per un ospite non è partito o ha bisogno di te: apri la prenotazione per vedere cosa è successo."
     }
   },
   "octorate": {
@@ -18542,12 +18772,14 @@
         "AgencyVat": "IVA che la fattura dell'agenzia aggiunge alla provvigione e ai riaddebiti. Si toglie dal saldo.",
         "BookingRevenue": "Incasso della prenotazione, al netto dei rimborsi, per la quota del proprietario. Si somma al saldo.",
         "ChannelFee": "Commissione trattenuta dal canale sulla prenotazione, per la quota del proprietario. Si toglie dal saldo.",
+        "ChannelFeeBorneByAgency": "Commissione del portale pagata dall'agenzia, che non la riaddebita al proprietario. È solo un'informazione: non si toglie dal saldo e non entra in nessun totale.",
         "Correction": "Rettifica fatta a mano, con il suo motivo: sostituisce una riga o ne aggiunge una.",
         "OwnerCharge": "Addebito dell'agenzia al proprietario, per la sua quota. Si toglie dal saldo.",
         "OwnerExpense": "Spesa pagata dall'agenzia per conto del proprietario, per la sua quota. Si toglie dal saldo.",
         "OwnerPayment": "Bonifico pagato al proprietario: salda quello che gli si doveva. Si toglie dal saldo.",
         "Withholding": "Ritenuta trattenuta sul pagamento e destinata al fisco. Si toglie dal saldo."
       },
+      "informational": "Solo informativa",
       "open": {
         "attachment": "Apri l'allegato",
         "attachmentText": "Allegato: {{reference}}",
@@ -18571,6 +18803,8 @@
       "steps": {
         "fx": "Cambio",
         "fxSource": "Cambio preso da: {{source}}, del {{date}}",
+        "informationalOriginal": "Commissione per la quota del proprietario",
+        "informationalResult": "A carico dell'agenzia, non nel rendiconto",
         "original": "Importo del proprietario",
         "rate": "1 {{from}} = {{rate}} {{to}}",
         "result": "Importo nel rendiconto",
@@ -18585,6 +18819,7 @@
         "AgencyVat": "IVA sulla fattura dell'agenzia",
         "BookingRevenue": "Incasso di una prenotazione",
         "ChannelFee": "Commissione del canale",
+        "ChannelFeeBorneByAgency": "Commissione del portale sostenuta dall'agenzia, non addebitata al proprietario",
         "Correction": "Rettifica",
         "OwnerCharge": "Addebito dell'agenzia",
         "OwnerExpense": "Spesa per il proprietario",
@@ -18771,6 +19006,11 @@
       "downloadCsvLabel": "Scarica il CSV del rendiconto",
       "downloadPdf": "PDF",
       "downloadPdfLabel": "Scarica il PDF del rendiconto",
+      "informational": {
+        "label": "Commissione del portale sostenuta dall'agenzia, non addebitata al proprietario",
+        "note_one": "{{count}} riga solo informativa, fuori dal totale",
+        "note_other": "{{count}} righe solo informative, fuori dal totale"
+      },
       "lines_one": "{{count}} riga",
       "lines_other": "{{count}} righe",
       "net": "Netto: saldo di chiusura",
@@ -19594,6 +19834,9 @@
       "invoicesTitle": "Fatture collegate",
       "line": {
         "bookingCode": "Prenotazione {{code}}",
+        "borneByAgency": "Commissione del portale sostenuta dall’agenzia, non addebitata al proprietario",
+        "chargedOnAgencyAccount": "Commissione del portale su un account intestato all’agenzia, addebitata a te senza riaddebito in fattura",
+        "informational": "Solo informativa",
         "kind": {
           "cleaning": "Pulizie",
           "linen": "Biancheria"
@@ -21523,6 +21766,9 @@
       },
       "comuneIstatCode": {
         "format": "Il codice ISTAT del comune non è valido: scegli il comune dall'elenco."
+      },
+      "swissMunicipalityCode": {
+        "format": "Il comune svizzero scelto non è valido: scegli di nuovo la località."
       }
     },
     "slug": {
@@ -30885,6 +31131,34 @@
       "description": "Gli ospiti di questa struttura vanno notificati alla polizia cantonale entro 24 ore dall'arrivo, con il numero identificativo della struttura.",
       "noId": "Numero identificativo non inserito.",
       "open": "Notifica gli ospiti alla polizia"
+    }
+  },
+  "swissPlace": {
+    "form": {
+      "cityFromPlace": "Città e CAP sono quelli della località scelta. Cancella la scelta per scriverli a mano.",
+      "hint": "Cerca il CAP o il nome della località: ne seguono il comune e il cantone, che dicono quali regole valgono per i tuoi ospiti.",
+      "label": "CAP e località (elenco ufficiale)"
+    },
+    "picker": {
+      "ambiguous": "Il CAP {{postalCode}} vale per più comuni: scegli il tuo, non ne scegliamo uno al posto tuo.",
+      "candidatesLabel": "Comuni con questo CAP",
+      "clear": "Cancella la località scelta",
+      "codeUnknown": "Il comune n. {{code}} non è nell'elenco ufficiale: scegli di nuovo la località.",
+      "confirm": "Conferma",
+      "confirmPrompt": "Conferma il comune: {{place}}",
+      "listLabel": "Località trovate",
+      "minChars": "Scrivi almeno {{min}} caratteri: il CAP o il nome della località.",
+      "municipality": "Comune: {{municipality}} · Cantone: {{canton}}",
+      "municipalityOf": "Comune di {{municipality}}",
+      "noPostalCode": "Non trovo il CAP {{postalCode}} tra le località svizzere: controlla come l'hai scritto.",
+      "noResults": "Nessuna località trovata per «{{query}}». Controlla come l'hai scritto.",
+      "placeholder": "Cerca il CAP o la località (almeno 2 caratteri)",
+      "resultCount_one": "{{count}} località trovata. Usa le frecce e Invio per sceglierla.",
+      "resultCount_other": "{{count}} località trovate. Usa le frecce e Invio per sceglierne una.",
+      "retry": "Riprova",
+      "searchError": "Non riesco a leggere l'elenco delle località: questo non significa che non ci siano risultati.",
+      "searching": "Cerco…",
+      "unavailable": "L'elenco ufficiale delle località non è disponibile in questo momento. Puoi salvare lo stesso: il comune si conferma più tardi."
     }
   },
   "taxRates": {

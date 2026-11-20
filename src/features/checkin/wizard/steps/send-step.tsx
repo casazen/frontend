@@ -3,11 +3,11 @@ import { useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Alert } from '@/components/ui/alert';
 import { WizardSummary, type WizardSummaryItem } from '@/components/shared/wizard/wizard-summary';
-import { requiresDocument } from '@/features/checkin/schemas/checkin.schema';
+import { documentLevelsOf } from '@/features/checkin/schemas/checkin.schema';
 import { formatCurrency } from '@/lib/utils';
 import { useStayTouristTax } from '@/queries/use-checkin-wizard';
 import type { CheckInWizardState } from '@/types/checkin-wizard.types';
-import { taxOutlook, type CheckInWizardValues } from '../lib/checkin-wizard-model';
+import { swissRulesOfState, taxOutlook, type CheckInWizardValues } from '../lib/checkin-wizard-model';
 
 interface SendStepProps {
   bookingId: string;
@@ -44,7 +44,9 @@ export function SendStep({ bookingId, form, state }: SendStepProps) {
   const names = guests
     .map((guest, index) => `${guest.firstName} ${guest.lastName}`.trim() || t('checkin.guestHeading', { index: index + 1 }))
     .join(', ');
-  const leaders = guests.filter((guest) => requiresDocument(guest.type));
+  // The guests who give a document: a single guest or a head of family or group and, in Switzerland, every other guest the police file notifies.
+  const levels = documentLevelsOf(guests, swissRulesOfState(state));
+  const leaders = guests.filter((_, index) => levels[index] !== null);
   const withDocument = leaders.filter((guest) => guest.documentNumber.trim() !== '' || guest.documentNumberOnFile).length;
 
   const taxValue = (() => {

@@ -59,9 +59,15 @@ export const alloggiatiApi = {
     }
   },
 
-  /** Replaces the guests of the stay (host entry); answers the updated per-guest summary. */
-  replaceStayGuests: (bookingId: string, guests: StayGuestSubmit[]) =>
-    ApiClient.put<AlloggiatiGuestSummaryDto>(`/alloggiati/${bookingId}/stay-guests`, { guests }),
+  /**
+   * Replaces the guests of the stay (host entry); answers the updated per-guest summary. The plate of the car of the stay (NF-132) goes with it
+   * where the regime asks it: not sent, the stored one stays; an empty text clears it.
+   */
+  replaceStayGuests: (bookingId: string, guests: StayGuestSubmit[], vehiclePlate?: string) =>
+    ApiClient.put<AlloggiatiGuestSummaryDto>(
+      `/alloggiati/${bookingId}/stay-guests`,
+      vehiclePlate === undefined ? { guests } : { guests, vehiclePlate },
+    ),
 
   /** Official Alloggiati codes matching `q` (empty until an admin imports the tables). */
   searchCodes: (list: AlloggiatiCodeList, q: string) =>

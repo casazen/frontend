@@ -18,6 +18,16 @@ export const propertyFormSchema = z.object({
   city: z.string().min(2, 'property.validation.city.required'),
   /** ISTAT code of the comune chosen from the official list (SU-04); '' = none chosen. */
   comuneIstatCode: z.string().regex(/^[0-9]{6}$/, 'property.validation.comuneIstatCode.format').or(z.literal('')),
+  /**
+   * BFS number (one to four digits, text) of the Swiss municipality the host confirmed from the official directory (E29/F01/US02/T01);
+   * '' = none confirmed. Optional on purpose: a Swiss property whose place is not confirmed (old data, a directory that is not loaded)
+   * is saved all the same.
+   */
+  swissMunicipalityCode: z
+    .string()
+    .regex(/^[0-9]{1,4}$/, 'property.validation.swissMunicipalityCode.format')
+    .or(z.literal(''))
+    .optional(),
   postalCode: z.string().min(3, 'property.validation.postalCode.required'),
   /** ISO 3166-1 alpha-2 country code (ADR-001-R7). */
   country: z.enum(['IT', 'CH']),
@@ -125,6 +135,7 @@ export function propertyFormDefaults(
     return {
       ...shortStayDefaults,
       comuneIstatCode: '',
+      swissMunicipalityCode: '',
       country: 'IT' as const,
       currency: 'EUR' as const,
       // Long-term property: no short-stay rate nor guests until the owner lists it for short stays.
@@ -140,6 +151,7 @@ export function propertyFormDefaults(
     unit: property.unit ?? '',
     city: property.city,
     comuneIstatCode: property.comuneIstatCode ?? '',
+    swissMunicipalityCode: property.swissMunicipalityCode ?? '',
     postalCode: property.postalCode,
     latitude: property.latitude,
     longitude: property.longitude,
@@ -176,6 +188,10 @@ export function toPropertyPayload(values: PropertyFormValues, variant: PropertyF
     amenities: values.amenities,
     country: values.country,
     currency: values.currency,
+    // The municipality the host confirmed from the official Swiss directory (E29/F01/US02/T01), only for a property in Switzerland: null
+    // (nothing confirmed) clears the stored one on an update, and a create stores none. A property of Italy never sends it: the server
+    // clears it itself when an imported draft changes country, and a save of another field must not touch what it keeps.
+    ...(values.country === 'CH' ? { swissMunicipalityCode: values.swissMunicipalityCode || null } : {}),
   };
   if (variant === 'long-rent') return payload;
 

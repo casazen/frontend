@@ -17,6 +17,7 @@ import {
   needsOnboarding,
   needsOrgSetup,
   canEditOnboarding,
+  getRentalTypeOfHostSetUpByServer,
 } from '../onboarding';
 
 function httpError(status: number): AxiosError {
@@ -296,5 +297,45 @@ describe('first property pending', () => {
     }
     // Only that page: a path that merely starts with the same letters still leads to the first property.
     expect(needsFirstProperty(host, profile, undefined, '/app/short-rent/integrations/octorate-other')).toBe(true);
+  });
+});
+
+describe('host set up by the server, access token without role claims', () => {
+  const setUp = {
+    orgId: 'org-1',
+    onboardingCompletedAt: '2026-11-20T10:00:00Z',
+    rentalType: 'LongTerm' as const,
+    isActive: true,
+    onboardingRequired: false,
+    consentsAccepted: true,
+    commercialSetupRequired: false,
+  };
+
+  it('getRentalTypeOfHostSetUpByServer_OrgFinishedOnboardingRentalTypeAndNoPaymentWaiting_ReturnsTheRentalType', () => {
+    expect(getRentalTypeOfHostSetUpByServer(setUp)).toBe('LongTerm');
+    expect(getRentalTypeOfHostSetUpByServer({ ...setUp, rentalType: 'Both' })).toBe('Both');
+    // An older backend does not send the flags: only what it does send counts.
+    expect(getRentalTypeOfHostSetUpByServer({ orgId: 'org-1', onboardingCompletedAt: setUp.onboardingCompletedAt, rentalType: 'ShortTerm' })).toBe('ShortTerm');
+    expect(getRentalTypeOfHostSetUpByServer({ ...setUp, onboardingRequired: null, consentsAccepted: null, commercialSetupRequired: null })).toBe('LongTerm');
+  });
+
+  it('getRentalTypeOfHostSetUpByServer_PaymentPendingOrHostFeaturesWithheld_ReturnsNull', () => {
+    expect(getRentalTypeOfHostSetUpByServer({ ...setUp, commercialSetupRequired: true })).toBeNull();
+    expect(getRentalTypeOfHostSetUpByServer({ ...setUp, onboardingRequired: true })).toBeNull();
+    expect(getRentalTypeOfHostSetUpByServer({ ...setUp, consentsAccepted: false })).toBeNull();
+  });
+
+  it('getRentalTypeOfHostSetUpByServer_NoOrgNoFinishedOnboardingNoRentalTypeOrInactive_ReturnsNull', () => {
+    expect(getRentalTypeOfHostSetUpByServer(null)).toBeNull();
+    expect(getRentalTypeOfHostSetUpByServer(undefined)).toBeNull();
+    expect(getRentalTypeOfHostSetUpByServer({ ...setUp, orgId: null })).toBeNull();
+    expect(getRentalTypeOfHostSetUpByServer({ ...setUp, onboardingCompletedAt: null })).toBeNull();
+    // An invited member has no rental type of its own: the roles of its token decide where it goes.
+    expect(getRentalTypeOfHostSetUpByServer({ ...setUp, rentalType: null })).toBeNull();
+    expect(getRentalTypeOfHostSetUpByServer({ ...setUp, isActive: false })).toBeNull();
+  });
+
+  it('getRentalTypeOfHostSetUpByServer_LinkedSupplier_ReturnsNullSoTheSupplierConsoleStaysTheirHome', () => {
+    expect(getRentalTypeOfHostSetUpByServer({ ...setUp, supplierOrgId: 'sup-1' })).toBeNull();
   });
 });

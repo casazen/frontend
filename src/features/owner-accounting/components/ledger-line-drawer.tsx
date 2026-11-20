@@ -2,8 +2,9 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { cn } from '@/lib/utils';
 import type { OwnerLedgerEntry } from '@/types';
-import { attachmentUrlOf, paymentPathOf, shortId, sourcePathOf, stepsOf } from '../owner-accounting-model';
+import { attachmentUrlOf, isInformational, paymentPathOf, shortId, shownAmount, sourcePathOf, stepsOf } from '../owner-accounting-model';
 import { useOwnerFormat } from '../use-owner-format';
 
 interface LedgerLineDrawerProps {
@@ -48,6 +49,10 @@ function LineBody({ entry, propertyName, money, date, dateTime, percent, t }: Li
   const booking = sourcePathOf(entry);
   const payment = paymentPathOf(entry);
   const attachmentUrl = attachmentUrlOf(entry.attachmentReference);
+  // A line for information only (the commission of a portal the agency bears) is not a credit or a debit of the owner: its figures are written as the PDF writes them, positive and quiet, with
+  // the badge that says it is for information, and the steps say what the figures are (the commission, not an amount of the owner's statement).
+  const informational = isInformational(entry);
+  const shown = (amount: number) => shownAmount(entry, amount);
 
   return (
     <div className="space-y-5 pb-6">
@@ -58,10 +63,16 @@ function LineBody({ entry, propertyName, money, date, dateTime, percent, t }: Li
 
       <div className="space-y-5 px-6">
         <p className="flex flex-wrap items-center gap-2">
-          <span className="text-2xl font-semibold tabular-nums" data-testid="line-amount">
-            {money(entry.amount, entry.statementCurrency)}
+          <span className={cn('text-2xl tabular-nums', informational ? 'font-normal text-foreground/70' : 'font-semibold')} data-testid="line-amount">
+            {money(shown(entry.amount), entry.statementCurrency)}
           </span>
-          <Badge variant={steps.credit ? 'success' : 'secondary'}>{steps.credit ? t('ownerAccounting.line.credit') : t('ownerAccounting.line.debit')}</Badge>
+          {informational ? (
+            <Badge variant="outline" data-testid="line-informational">
+              {t('ownerAccounting.line.informational')}
+            </Badge>
+          ) : (
+            <Badge variant={steps.credit ? 'success' : 'secondary'}>{steps.credit ? t('ownerAccounting.line.credit') : t('ownerAccounting.line.debit')}</Badge>
+          )}
           {steps.isReversal ? <Badge variant="outline">{t('ownerAccounting.line.reversal')}</Badge> : null}
         </p>
 
@@ -72,15 +83,15 @@ function LineBody({ entry, propertyName, money, date, dateTime, percent, t }: Li
           <ol className="space-y-2 text-sm" data-testid="line-steps">
             <li className="flex justify-between gap-3">
               <span>{t('ownerAccounting.line.steps.source')}</span>
-              <span className="tabular-nums">{money(entry.sourceAmount, entry.originalCurrency)}</span>
+              <span className="tabular-nums">{money(shown(entry.sourceAmount), entry.originalCurrency)}</span>
             </li>
             <li className="flex justify-between gap-3">
               <span>{t('ownerAccounting.line.steps.share')}</span>
               <span className="tabular-nums">{percent(entry.sharePercent)}</span>
             </li>
             <li className="flex justify-between gap-3">
-              <span>{t('ownerAccounting.line.steps.original')}</span>
-              <span className="tabular-nums">{money(entry.originalAmount, entry.originalCurrency)}</span>
+              <span>{informational ? t('ownerAccounting.line.steps.informationalOriginal') : t('ownerAccounting.line.steps.original')}</span>
+              <span className="tabular-nums">{money(shown(entry.originalAmount), entry.originalCurrency)}</span>
             </li>
             <li className="flex justify-between gap-3">
               <span>{t('ownerAccounting.line.steps.fx')}</span>
@@ -94,8 +105,8 @@ function LineBody({ entry, propertyName, money, date, dateTime, percent, t }: Li
               <li className="break-words text-foreground/70">{t('ownerAccounting.line.steps.fxSource', { source: entry.fxSource, date: date(entry.fxDate) })}</li>
             ) : null}
             <li className="flex justify-between gap-3 border-t border-border pt-2 font-medium">
-              <span>{t('ownerAccounting.line.steps.result')}</span>
-              <span className="tabular-nums">{money(entry.amount, entry.statementCurrency)}</span>
+              <span>{informational ? t('ownerAccounting.line.steps.informationalResult') : t('ownerAccounting.line.steps.result')}</span>
+              <span className="tabular-nums">{money(shown(entry.amount), entry.statementCurrency)}</span>
             </li>
           </ol>
         </section>

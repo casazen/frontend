@@ -1,0 +1,197 @@
+# Italian translation of the CasaZen plugin.
+# Copyright (C) 2026 CasaZen
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: CasaZen 0.1.0\n"
+"Report-Msgid-Bugs-To: https://github.com/casazen/frontend/issues\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-11-20T00:00:00+00:00\n"
+"PO-Revision-Date: 2026-11-20T00:00:00+00:00\n"
+"Last-Translator: CasaZen\n"
+"Language-Team: Italian\n"
+"Language: it_IT\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Domain: casazen\n"
+
+#. Plugin Name of the plugin
+#: casazen.php:3 casazen.php:9
+msgid "CasaZen"
+msgstr "CasaZen"
+
+#. Description of the plugin
+#: casazen.php:5
+msgid "Connects your WordPress site to CasaZen, so that your booking engine and your guest area appear on your own pages."
+msgstr "Collega il tuo sito WordPress a CasaZen, per mostrare il motore di prenotazione e l'area ospite sulle tue pagine."
+
+#: includes/class-admin.php:95
+msgid "Connection"
+msgstr "Connessione"
+
+#: includes/class-admin.php:101
+msgid "CasaZen address"
+msgstr "Indirizzo CasaZen"
+
+#: includes/class-admin.php:109
+msgid "Organisation slug"
+msgstr "Identificativo dell'organizzazione (slug)"
+
+#: includes/class-admin.php:118
+msgid "Display"
+msgstr "Visualizzazione"
+
+#: includes/class-admin.php:124
+msgid "Language mapping"
+msgstr "Associazione delle lingue"
+
+#: includes/class-admin.php:132
+msgid "Script"
+msgstr "Script"
+
+#: includes/class-admin.php:148
+msgid "Settings"
+msgstr "Impostazioni"
+
+#: includes/class-admin.php:171
+msgid "Set the CasaZen address to start using the plugin."
+msgstr "Imposta l'indirizzo CasaZen per iniziare a usare il plugin."
+
+#: includes/class-admin.php:183
+msgid "You do not have permission to do this."
+msgstr "Non hai il permesso di eseguire questa azione."
+
+#: includes/class-admin.php:212
+msgid "You do not have permission to open this page."
+msgstr "Non hai il permesso di aprire questa pagina."
+
+#: includes/class-admin.php:232 includes/class-admin.php:237
+msgid "Test connection"
+msgstr "Prova la connessione"
+
+#: includes/class-admin.php:233
+msgid "Check now that this site can reach your CasaZen address."
+msgstr "Controlla ora che questo sito riesca a raggiungere il tuo indirizzo CasaZen."
+
+#: includes/class-admin.php:250
+msgid "The address where your CasaZen booking site lives. The widgets are loaded by the browser of your visitors straight from this address."
+msgstr "L'indirizzo del tuo sito di prenotazione CasaZen. I widget vengono caricati dal browser dei tuoi visitatori direttamente da questo indirizzo."
+
+#: includes/class-admin.php:267
+msgid "The address of your CasaZen booking site, for example https://prenota.example.com. Only the scheme, the host and the port are kept."
+msgstr "L'indirizzo del tuo sito di prenotazione CasaZen, ad esempio https://prenota.example.com. Vengono conservati solo lo schema, il dominio e la porta."
+
+#: includes/class-admin.php:286
+msgid "Only needed when the address above is the CasaZen domain. Lower-case letters, numbers and hyphens."
+msgstr "Serve solo quando l'indirizzo qui sopra è il dominio di CasaZen. Lettere minuscole, numeri e trattini."
+
+#: includes/class-admin.php:304
+msgid "One line per language of your site, for example it_IT = it. The value is it, en or auto."
+msgstr "Una riga per ogni lingua del tuo sito, ad esempio it_IT = it. Il valore è it, en oppure auto."
+
+#: includes/class-admin.php:319
+msgid "Load the CasaZen script on the pages that use it"
+msgstr "Carica lo script di CasaZen nelle pagine che lo usano"
+
+#: includes/class-admin.php:381
+msgid "Connection status"
+msgstr "Stato della connessione"
+
+#: includes/class-admin.php:383
+msgid "No check has been made yet. Use the Test connection button below."
+msgstr "Non è ancora stata fatta nessuna verifica. Usa il pulsante «Prova la connessione» qui sotto."
+
+#: includes/class-admin.php:388
+msgid "Agency"
+msgstr "Agenzia"
+
+#: includes/class-admin.php:392
+msgid "Embedding"
+msgstr "Incorporamento"
+
+#: includes/class-admin.php:396
+msgid "Owner sign-in"
+msgstr "Accesso dei proprietari"
+
+#: includes/class-admin.php:400
+msgid "Last check"
+msgstr "Ultima verifica"
+
+#: includes/class-admin.php:406
+msgid "Script address"
+msgstr "Indirizzo dello script"
+
+#: includes/class-admin.php:421
+msgid "On"
+msgstr "Attivo"
+
+#: includes/class-admin.php:424
+msgid "Off"
+msgstr "Non attivo"
+
+#: includes/class-admin.php:426 includes/class-admin.php:442
+msgid "Unknown"
+msgstr "Sconosciuto"
+
+#: includes/class-admin.php:437
+msgid "Ready"
+msgstr "Pronto"
+
+#: includes/class-admin.php:440
+msgid "Not ready yet"
+msgstr "Non ancora pronto"
+
+#: includes/class-connection.php:262
+msgid "The connection works."
+msgstr "La connessione funziona."
+
+#: includes/class-connection.php:264
+msgid "The connection works, but embedding is not switched on for your agency yet. Ask your CasaZen contact to switch it on."
+msgstr "La connessione funziona, ma l'incorporamento non è ancora attivo per la tua agenzia. Chiedi al tuo referente CasaZen di attivarlo."
+
+#: includes/class-connection.php:266
+msgid "The address could not be reached. Check that it is correct and that the site is online."
+msgstr "L'indirizzo non è raggiungibile. Controlla che sia corretto e che il sito sia online."
+
+#: includes/class-connection.php:268
+msgid "The address answered, but it is not a CasaZen address that supports embedding. Check the address."
+msgstr "L'indirizzo ha risposto, ma non è un indirizzo CasaZen che supporta l'incorporamento. Controlla l'indirizzo."
+
+#: includes/class-connection.php:270
+msgid "CasaZen did not answer the check as expected. Try again in a few minutes."
+msgstr "CasaZen non ha risposto alla verifica come previsto. Riprova tra qualche minuto."
+
+#: includes/class-connection.php:272
+msgid "CasaZen does not know this address or this organisation slug. Check how they are written."
+msgstr "CasaZen non conosce questo indirizzo o questo identificativo. Controlla come sono scritti."
+
+#: includes/class-connection.php:274
+msgid "Set the CasaZen address to start."
+msgstr "Imposta l'indirizzo CasaZen per iniziare."
+
+#: includes/class-settings.php:202
+msgid "The organisation slug is not valid: use lower-case letters, numbers and single hyphens, up to 100 characters. The previous value was kept."
+msgstr "L'identificativo dell'organizzazione non è valido: usa lettere minuscole, numeri e trattini singoli, fino a 100 caratteri. Il valore precedente è stato mantenuto."
+
+#. translators: %s: the first lines of the language mapping that were ignored.
+#: includes/class-settings.php:221
+#, php-format
+msgid "Some lines of the language mapping were ignored because they are not valid: %s"
+msgstr "Alcune righe dell'associazione delle lingue sono state ignorate perché non valide: %s"
+
+#: includes/class-settings.php:443
+msgid "The CasaZen address must start with https://. The previous address was kept."
+msgstr "L'indirizzo CasaZen deve iniziare con https://. L'indirizzo precedente è stato mantenuto."
+
+#: includes/class-settings.php:445
+msgid "Only https addresses are accepted (http works only for local development hosts). The previous address was kept."
+msgstr "Sono accettati solo indirizzi https (http funziona solo sui domini di sviluppo locale). L'indirizzo precedente è stato mantenuto."
+
+#: includes/class-settings.php:447
+msgid "The CasaZen address must not contain a user name or a password. The previous address was kept."
+msgstr "L'indirizzo CasaZen non deve contenere nome utente o password. L'indirizzo precedente è stato mantenuto."
+
+#: includes/class-settings.php:449
+msgid "The CasaZen address is not valid. Use the form https://prenota.example.com. The previous address was kept."
+msgstr "L'indirizzo CasaZen non è valido. Usa il formato https://prenota.example.com. L'indirizzo precedente è stato mantenuto."

@@ -32,6 +32,12 @@ vi.mock('@/queries/use-comuni', () => ({
   useComune: () => ({ data: undefined, isError: false }),
 }));
 
+// The Swiss place picker of a house in Switzerland reads the official directory (E29/F01/US02/T01): its own suites test it, here it answers nothing.
+vi.mock('@/queries/swissPlaces', () => ({
+  useSwissLocalitySearch: () => ({ data: undefined, isFetching: false, isError: false, isSuccess: false, refetch: vi.fn() }),
+  useSwissMunicipality: () => ({ data: undefined, isFetching: false, isError: false, isSuccess: false, refetch: vi.fn() }),
+}));
+
 const POLICIES: CancellationPolicyOption[] = [
   {
     id: 'policy-flex',
@@ -267,6 +273,8 @@ describe('PropertyForm (A2-04, A2-27)', { timeout: 20_000 }, () => {
     expect(screen.queryByText(i18n.t('property.form.amountsInEuro'))).not.toBeInTheDocument();
     expect(screen.queryByTestId('property-comune-field')).not.toBeInTheDocument();
     expect(screen.queryByTestId('property-cin-input')).not.toBeInTheDocument();
+    // The place of a Swiss house is picked from the Swiss directory, in the place of the Italian comune.
+    expect(screen.getByTestId('property-swiss-place-field')).toBeInTheDocument();
   });
 
   it('PropertyForm_UnknownCountry_RequiresAChoice', () => {

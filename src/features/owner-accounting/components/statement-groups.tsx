@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { PlainSection } from '@/components/shared/calm';
 import { Button } from '@/components/ui/button';
 import { TouristTaxRows } from '@/features/owner-portal/statement-parts';
+import { cn } from '@/lib/utils';
 import { useDownloadVersionFile } from '@/queries/use-owner-accounting';
 import type { OwnerLedgerEntry, OwnerPortalTouristTax, OwnerStatementVersion } from '@/types';
 import { messageOf, statementGroupsOf } from '../owner-accounting-model';
@@ -16,6 +17,8 @@ interface SummaryRow {
   amount: number;
   strong?: boolean;
   note?: string;
+  /** A line for information only under its part: quiet, written as the commission the agency bears, in no total. */
+  quiet?: boolean;
 }
 
 interface StatementGroupsProps {
@@ -50,9 +53,24 @@ export function StatementGroups({ version, entries, touristTax }: StatementGroup
     );
 
   const lines = (count: number) => (count > 0 ? t('ownerAccounting.summary.lines', { count }) : undefined);
-  // The rows of the table, in the order of the PDF: the parts, the total of the period, then the net (opening balance, payments, closing balance).
+  // The rows of the table, in the order of the PDF: the parts, the total of the period, then the net (opening balance, payments, closing balance). A line for information only (the commission
+  // of a portal the agency bears) is a quiet row under its part, with its amount as a positive figure and the words that say it is in no total: it is not in the amount of the part nor in
+  // the total of the period, which `statementGroupsOf` adds up without it.
   const rows: SummaryRow[] = [
-    ...grouped.groups.map((group) => ({ key: group.section, label: t(`ownerAccounting.summary.part.${group.section}`), amount: group.amount, note: lines(group.count) })),
+    ...grouped.groups.flatMap((group): SummaryRow[] => [
+      { key: group.section, label: t(`ownerAccounting.summary.part.${group.section}`), amount: group.amount, note: lines(group.count) },
+      ...(group.informational.count > 0
+        ? [
+            {
+              key: `${group.section}-informational`,
+              label: t('ownerAccounting.summary.informational.label'),
+              amount: group.informational.amount,
+              note: t('ownerAccounting.summary.informational.note', { count: group.informational.count }),
+              quiet: true,
+            },
+          ]
+        : []),
+    ]),
     { key: 'period', label: t('ownerAccounting.summary.period'), amount: grouped.period, strong: true },
     { key: 'opening', label: t('ownerAccounting.summary.opening'), amount: grouped.opening },
     { key: 'payments', label: t('ownerAccounting.summary.payments'), amount: grouped.payments.amount, note: lines(grouped.payments.count) },
@@ -67,12 +85,12 @@ export function StatementGroups({ version, entries, touristTax }: StatementGroup
           <caption className="sr-only">{t('ownerAccounting.summary.caption')}</caption>
           <tbody>
             {rows.map((row) => (
-              <tr key={row.key} className="border-b border-border last:border-0" data-testid={`statement-group-${row.key}`}>
-                <th scope="row" className={`py-2 pr-3 text-left align-top ${row.strong ? 'font-semibold' : 'font-normal'}`}>
+              <tr key={row.key} className="border-b border-border last:border-0" data-testid={`statement-group-${row.key}`} data-informational={row.quiet ? 'true' : undefined}>
+                <th scope="row" className={cn('py-2 pr-3 text-left align-top', row.strong ? 'font-semibold' : 'font-normal', row.quiet && 'pl-4 text-foreground/70')}>
                   {row.label}
                   {row.note ? <span className="block text-foreground/70">{row.note}</span> : null}
                 </th>
-                <td className={`whitespace-nowrap py-2 text-right align-top tabular-nums ${row.strong ? 'font-semibold' : ''}`}>{money(row.amount, version.currency)}</td>
+                <td className={cn('whitespace-nowrap py-2 text-right align-top tabular-nums', row.strong && 'font-semibold', row.quiet && 'text-foreground/70')}>{money(row.amount, version.currency)}</td>
               </tr>
             ))}
           </tbody>

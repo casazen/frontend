@@ -20,6 +20,7 @@ import { ASSIST_REQUESTS_KEY } from '@/queries/use-onboarding-assist';
 import { invalidateOnboarding } from '@/queries/use-onboarding-plan';
 import { PANEL_STEPS_KEY } from '@/queries/use-onboarding-panel-step';
 import { PAYMENTS_KEY } from '@/queries/use-payments';
+import { SCHEDULED_MESSAGES_KEY } from '@/queries/use-scheduled-messages';
 import { TOURIST_TAX_SUMMARY_KEY } from '@/queries/use-tourist-tax-summary';
 import { VERIFICATION_KEY } from '@/queries/verification';
 import { ACCOUNTANT_PACKAGE_KEY } from '@/queries/use-accountant-package';
@@ -229,6 +230,21 @@ function refreshTouristTax(queryClient: QueryClient, bookingId?: string | null):
 }
 
 /**
+ * A scheduled message of a booking was held back, failed, skipped (by CasaZen or by a person of the team) or went out outside the send window (`PushTypes.ScheduledMessageIssue`, E05/F07/US01, NF-71: sent to the
+ * people who reach the property, through their preferences); its `entityId` is the booking. Neither the words of the message nor the guest are in it: the pages read what happened from the messages of the booking.
+ */
+const SCHEDULED_MESSAGE_ISSUE = 'scheduled-message-issue';
+
+/**
+ * What a scheduled message that needs a look changes on screen, apart from the bell: the timeline of the booking (the section «Messaggi programmati» of its tab Soggiorno, which shows the new state and the reason
+ * without a reload) and the «To do» that tells the host to fix it (the list and the number of the nav). Without a booking, every timeline that is open.
+ */
+function refreshScheduledMessages(queryClient: QueryClient, bookingId?: string | null): void {
+  void queryClient.invalidateQueries({ queryKey: bookingId ? [SCHEDULED_MESSAGES_KEY, bookingId] : [SCHEDULED_MESSAGES_KEY] });
+  void queryClient.invalidateQueries({ queryKey: [INTERNAL_ACTIVITIES_KEY] });
+}
+
+/**
  * What a request of help from a host changes on screen: the staff queue of the «Fallo per me» requests (`ADMIN_ASSIST_KEY`, the list and its pages): the
  * page open in front of the staff shows the new request without a reload. The queries of anyone who has no such page do not exist, so nothing is read.
  */
@@ -252,8 +268,9 @@ function refreshAssistOutcome(queryClient: QueryClient): void {
  * the per-booking counters are read again; the thread of the booking in the change is read again too (an open tab shows the new
  * message at once). A change without an entity (read on another device, unknown type) refreshes every open thread. A completed
  * check-in also refreshes the data it changes (`STALE_ON_CHECK_IN`), a link that did not reach the guest the guest panel and the «To do» list
- * (`refreshCheckInLinkDelivery`), a request of help from a host (or reopened by it) the staff queue, a request support closed the requests of the host, and a review of a guest that appeared
- * (or a reply that was lost) the reviews: the section of the booking, the review that is open and the list of the hub (`invalidateReviews`).
+ * (`refreshCheckInLinkDelivery`), a request of help from a host (or reopened by it) the staff queue, a request support closed the requests of the host, a review of a guest that appeared
+ * (or a reply that was lost) the reviews: the section of the booking, the review that is open and the list of the hub (`invalidateReviews`), and a scheduled message that needs
+ * a look the timeline of its booking and the «To do» list (`refreshScheduledMessages`).
  */
 export function applyNotificationsChange(queryClient: QueryClient, change: NotificationsChange): void {
   queryClient.setQueryData(UNREAD_COUNT_KEY, change.unreadCount);
@@ -278,6 +295,7 @@ export function applyNotificationsChange(queryClient: QueryClient, change: Notif
   if (change.type === TOURIST_TAX_PAID) refreshTouristTax(queryClient, change.entityId);
   // What a review that appeared, or a reply that was lost, changes: the section «Recensioni» of the open booking, the review that is open and the list of the reviews of the hub, without a reload.
   if (change.type !== null && OTA_REVIEW_TYPES.has(change.type)) invalidateReviews(queryClient);
+  if (change.type === SCHEDULED_MESSAGE_ISSUE) refreshScheduledMessages(queryClient, change.entityId);
 }
 
 /** After a gap in the channel events may have been missed: everything the channel feeds is read again, the count included. */
@@ -300,6 +318,8 @@ export function refreshAfterGap(queryClient: QueryClient): void {
   refreshTouristTax(queryClient);
   // And for a review that appeared, or a reply that was lost, while the channel was down.
   invalidateReviews(queryClient);
+  // And for a scheduled message that was held back, failed or skipped while it was down: the timelines that are open, and the «To do» list.
+  refreshScheduledMessages(queryClient);
 }
 
 // One connection per tab: every user of the hook shares this client, and the channel closes with the last one.

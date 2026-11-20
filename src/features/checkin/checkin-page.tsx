@@ -14,20 +14,23 @@ import { useCheckInContext, useGuestTouristTax, useSetCheckInLanguage, useSubmit
 import { publicCheckinApi } from '@/api/checkin.api';
 import {
   MAX_STAY_GUESTS,
+  asksSwissDocument,
   createPublicCheckInFormSchema,
+  documentLevelsOf,
   followerTypeOf,
   guestFormPathOf,
   initialStayGuests,
   officialListIssues,
   requiredStatisticalFields,
-  requiresDocument,
   stayGuestDefaults,
+  swissRulesOf,
   toPublicCheckInSubmitRequest,
+  type DocumentLevel,
   type PublicCheckInFormValues,
   type StatisticalGuestField,
   type StayGuestFormValues,
 } from './schemas/checkin.schema';
-import { StayGuestDocumentFields, StayGuestPersonalFields } from './components/stay-guest-fields';
+import { StayGuestDocumentFields, StayGuestPersonalFields, VehiclePlateField } from './components/stay-guest-fields';
 import { DocumentReadStep } from './components/document-read-step';
 import { GuestPageFrame } from './components/guest-page-frame';
 import { GuestInvoiceForm } from './guest-invoice-form';
@@ -94,6 +97,9 @@ const PERSONAL_FIELDS = [
   'residenceComuneName',
   'residenceProvince',
   'residenceCountryName',
+  'residenceStreet',
+  'residencePostalCode',
+  'residenceCityName',
 ] as const satisfies readonly (keyof StayGuestFormValues)[];
 
 /** Fields of a single guest or head checked before leaving the second step (document). */
@@ -105,15 +111,18 @@ const DOCUMENT_FIELDS = [
   'documentExpiresOn',
 ] as const satisfies readonly (keyof StayGuestFormValues)[];
 
+/** What a guest of a Swiss stay the police file notifies (not a head) gives of the document: the kind and the number. */
+const BASIC_DOCUMENT_FIELDS = ['documentType', 'documentNumber'] as const satisfies readonly (keyof StayGuestFormValues)[];
+
 function personalPaths(guests: readonly StayGuestFormValues[], statistical: readonly StatisticalGuestField[]): FormPath[] {
   return guests.flatMap((_, index) =>
     [...PERSONAL_FIELDS, ...statistical].map((field) => `guests.${index}.${field}` as FormPath),
   );
 }
 
-function documentPaths(guests: readonly StayGuestFormValues[]): FormPath[] {
-  return guests.flatMap((guest, index) =>
-    requiresDocument(guest.type) ? DOCUMENT_FIELDS.map((field) => `guests.${index}.${field}` as FormPath) : [],
+function documentPaths(levels: readonly (DocumentLevel | null)[]): FormPath[] {
+  return levels.flatMap((level, index) =>
+    level === null ? [] : (level === 'full' ? DOCUMENT_FIELDS : BASIC_DOCUMENT_FIELDS).map((field) => `guests.${index}.${field}` as FormPath),
   );
 }
 
@@ -122,6 +131,7 @@ function toFormPath(path: string, guestCount: number): FormPath | null {
   if (path === 'marketingConsentEmail') return 'marketingConsentEmail';
   if (path === 'marketingConsentWhatsApp') return 'marketingConsentWhatsApp';
   if (path === 'marketingEmail') return 'marketingEmail';
+  if (path === 'vehiclePlate') return 'vehiclePlate';
   return guestFormPathOf(path, guestCount);
 }
 
@@ -148,6 +158,8 @@ function firstStepWithProblems(errors: FieldErrors<PublicCheckInFormValues>, sta
   const entries = Array.isArray(guestErrors) ? (guestErrors as Array<Record<string, unknown> | undefined>) : [];
   const fieldsInError = new Set(entries.flatMap((entry) => (entry ? Object.keys(entry) : [])));
   if ([...PERSONAL_FIELDS, ...statistical].some((field) => fieldsInError.has(field))) return STEP_GUESTS;
+  // The plate of the car is asked with the guests.
+  if (errors.vehiclePlate) return STEP_GUESTS;
   if (DOCUMENT_FIELDS.some((field) => fieldsInError.has(field))) return STEP_DOCUMENT;
   return null;
 }
@@ -237,7 +249,11 @@ function GuestCheckInFlow({ token }: { token: string }) {
 
   // The statistical fields are asked only where the region requires them (data minimization): none while the page does not know.
   const statisticalFields = useMemo(() => requiredStatisticalFields(context?.requiredGuestFields), [context?.requiredGuestFields]);
-  const schema = useMemo(() => createPublicCheckInFormSchema(statisticalFields), [statisticalFields]);
+  // A property in Switzerland asks the document of every adult, the home of each guest and the plate of the car (NF-132): exactly what the API names in
+  // `requiredGuestFields` and `askVehiclePlate`. For an Italian stay both are empty and the page is the one it has always been.
+  const swiss = useMemo(() => swissRulesOf(context?.requiredGuestFields, context?.checkInDate), [context?.requiredGuestFields, context?.checkInDate]);
+  const askVehiclePlate = context?.askVehiclePlate === true;
+  const schema = useMemo(() => createPublicCheckInFormSchema(statisticalFields, swiss), [statisticalFields, swiss]);
 
   const form = useForm<PublicCheckInFormValues>({
     resolver: zodResolver(schema),
@@ -308,8 +324,8 @@ function GuestCheckInFlow({ token }: { token: string }) {
 
   const stepPaths = (currentStep: number): FormPath[] => {
     const current = getValues('guests');
-    if (currentStep === STEP_GUESTS) return personalPaths(current, statisticalFields);
-    if (currentStep === STEP_DOCUMENT) return documentPaths(current);
+    if (currentStep === STEP_GUESTS) return [...personalPaths(current, statisticalFields), ...(askVehiclePlate ? (['vehiclePlate'] as const) : [])];
+    if (currentStep === STEP_DOCUMENT) return documentPaths(documentLevelsOf(current, swiss));
     if (currentStep === STEP_CONSENTS) return ['marketingConsentEmail', 'marketingConsentWhatsApp', 'marketingEmail'];
     return [];
   };
@@ -439,7 +455,7 @@ function GuestCheckInFlow({ token }: { token: string }) {
       if (current !== STEP_CONSENTS || !privacyRead || (identity.progress && !identity.concluded)) return;
       setSubmitError(null);
       try {
-        await submitCheckIn.mutateAsync({ ...toPublicCheckInSubmitRequest(values, { statisticalFields }), privacyNoticeAcknowledged: privacyRead });
+        await submitCheckIn.mutateAsync({ ...toPublicCheckInSubmitRequest(values, { statisticalFields, swiss }), privacyNoticeAcknowledged: privacyRead });
         setSubmitted(true);
       } catch (error) {
         // Already submitted (e.g. from another tab): reload the context, which now shows the completed state.
@@ -557,9 +573,12 @@ function GuestCheckInFlow({ token }: { token: string }) {
   }
 
   const declaredGuests = context.declaredGuests ?? 1;
+  // The guests who give a document: a single guest or a head of family or group, and, in Switzerland, every other guest the police file notifies.
+  const documentLevels = documentLevelsOf(guests ?? [], swiss);
   const leaders = fields
-    .map((field, index) => ({ field, index }))
-    .filter(({ index }) => guests[index] && requiresDocument(guests[index].type));
+    .map((field, index) => ({ field, index, level: documentLevels[index] ?? null }))
+    .filter((entry): entry is typeof entry & { level: DocumentLevel } => entry.level !== null);
+  const swissDocuments = asksSwissDocument(swiss);
 
   return (
     <GuestPageFrame switcher={switcher} testId="checkin-page">
@@ -599,6 +618,8 @@ function GuestCheckInFlow({ token }: { token: string }) {
                 </p>
                 {current === STEP_SCAN && (
                   <DocumentReadStep
+                    // A property that keeps no document (the API says so, and a Swiss stay is one: only the typed data are kept, D6) says the photo is not stored.
+                    notArchived={context.documentNotArchived === true || swissDocuments}
                     reading={readingDocument}
                     message={scanMessage}
                     readCount={documentsRead}
@@ -620,7 +641,9 @@ function GuestCheckInFlow({ token }: { token: string }) {
                 )}
                 {current === STEP_GUESTS && (
                   <div className="space-y-4">
-                    <p className="text-sm text-muted-foreground">{t('checkin.guestsIntro')}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {swissDocuments ? t('checkin.swiss.guestsIntro') : t('checkin.guestsIntro')}
+                    </p>
                     {fields.length !== declaredGuests && (
                       <p className="text-sm text-orange-700" data-testid="checkin-guest-count-mismatch">
                         {t('checkin.guestCountMismatch', { count: declaredGuests })}
@@ -633,6 +656,7 @@ function GuestCheckInFlow({ token }: { token: string }) {
                         arrivalDate={context.checkInDate}
                         source={codeSource}
                         requiredFields={statisticalFields}
+                        swiss={swiss}
                         bookedName={context.guests?.[index]}
                         onLeaderTypeChange={index === 0 ? changeLeaderType : undefined}
                         onRemove={index > 0 && index >= (context.guests?.length ?? 0) ? () => remove(index) : undefined}
@@ -644,13 +668,16 @@ function GuestCheckInFlow({ token }: { token: string }) {
                         {t('checkin.addGuest')}
                       </Button>
                     )}
+                    {askVehiclePlate && <VehiclePlateField />}
                   </div>
                 )}
                 {current === STEP_DOCUMENT && (
                   <div className="space-y-4">
-                    <p className="text-sm text-muted-foreground">{t('checkin.documentIntro')}</p>
-                    {leaders.map(({ field, index }) => (
-                      <StayGuestDocumentFields key={field.id} index={index} source={codeSource} />
+                    <p className="text-sm text-muted-foreground">
+                      {swissDocuments ? t('checkin.swiss.documentIntro') : t('checkin.documentIntro')}
+                    </p>
+                    {leaders.map(({ field, index, level }) => (
+                      <StayGuestDocumentFields key={field.id} index={index} source={codeSource} level={level} />
                     ))}
                   </div>
                 )}

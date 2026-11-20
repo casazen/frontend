@@ -51,6 +51,9 @@ const KINDS: Record<string, NotificationKind> = {
   'guest-data-missing': { icon: ClipboardCheck, textKey: 'notifications.types.guestDataMissing', route: bookingTab('guest') },
   // E23/F01/US01/T01: the check-in link of a stay from a portal did not reach the guest and the host carries it; Documenti shows why and has «Copia link».
   'checkin-link-failed': { icon: AlertTriangle, textKey: 'notifications.types.checkinLinkFailed', route: bookingTab('guest') },
+  // E05/F07/US01: a scheduled message of a booking was held back, failed, skipped by CasaZen or a person, or went out outside the send window (`PushTypes.ScheduledMessageIssue`, sent to the people who reach the
+  // property through their preferences; the entity is the booking). The booking opens on the tab Soggiorno, whose timeline says which message and why, and the pages that show it read it again as the push arrives.
+  'scheduled-message-issue': { icon: AlertTriangle, textKey: 'notifications.types.scheduledMessageIssue', route: bookingRoute },
   // E03/F04/US02/T03: a guest handed the verification of the identity to a person; the operators open the console.
   'verification-required': { icon: ShieldCheck, textKey: 'notifications.types.verificationRequired', route: () => VERIFICATIONS_ROUTE },
   // E10/F03/US03/T03: a host asked CasaZen support to do a step («Fallo per me»); the entity is the request, and the staff open the queue of the requests.

@@ -88,14 +88,23 @@
       "educationLevel": {
         "required": "Seleccione el nivel de estudios"
       },
+      "residencePostalCode": {
+        "maxLength": "Como máximo 20 caracteres"
+      },
       "residenceProvince": {
         "invalid": "Introduzca el código de dos letras (p. ej. RM)"
+      },
+      "residenceStreet": {
+        "maxLength": "Como máximo 200 caracteres"
       },
       "tourismType": {
         "required": "Seleccione el motivo del viaje"
       },
       "travelWay": {
         "required": "Seleccione el medio de transporte"
+      },
+      "vehiclePlate": {
+        "invalid": "Introduzca una matrícula válida: letras, cifras y guiones, como máximo 20 caracteres."
       }
     },
     "loading": "Cargando el check-in…",
@@ -293,7 +302,8 @@
       "statisticalValueInvalid": "El valor elegido no es uno de los permitidos.",
       "summary_one": "1 campo requiere su atención",
       "summary_other": "{{count}} campos requieren su atención",
-      "tooManyRequests": "Demasiadas solicitudes en poco tiempo: espere un momento e inténtelo de nuevo."
+      "tooManyRequests": "Demasiadas solicitudes en poco tiempo: espere un momento e inténtelo de nuevo.",
+      "vehiclePlateInvalid": "La matrícula no es válida: use letras, cifras y guiones, como máximo 20 caracteres."
     },
     "guestKind": {
       "FamilyMember": "Familiar",
@@ -482,12 +492,21 @@
     },
     "residence": {
       "abroad": "En el extranjero",
+      "city": "Localidad",
       "comune": "Municipio de residencia",
       "country": "País de residencia",
       "hint": "Opcional: dónde vive habitualmente el huésped.",
+      "homeHint": "Opcional: la dirección donde vive el huésped. Forma parte de la notificación de la estancia a la policía.",
       "inItaly": "En Italia",
       "label": "Residencia",
-      "province": "Provincia de residencia (dos letras)"
+      "postalCode": "Código postal",
+      "province": "Provincia de residencia (dos letras)",
+      "street": "Calle y número"
+    },
+    "swiss": {
+      "documentIntro": "Tipo y número del documento de identidad de cada adulto. El cabeza de familia o jefe de grupo indica además el lugar de expedición.",
+      "guestsIntro": "Introduzca a todos los huéspedes que se alojan, menores incluidos. Cada adulto indicará también su documento de identidad en el paso siguiente.",
+      "stayKindHint": "En una familia o un grupo, el primer huésped es el cabeza de familia o el jefe de grupo. El documento de identidad se pide a cada adulto (en un grupo de seis o más personas, solo al jefe de grupo)."
     },
     "toast": {
       "saved": "Datos del check-in guardados.",
@@ -542,6 +561,10 @@
       "plane": "Avión",
       "ship": "Barco",
       "train": "Tren"
+    },
+    "vehiclePlate": {
+      "hint": "Una sola matrícula para toda la estancia, si viene en coche. Letras, cifras y guiones.",
+      "label": "Matrícula de su coche (opcional)"
     }
   }
 }
