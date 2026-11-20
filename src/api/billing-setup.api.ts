@@ -7,6 +7,7 @@ import type {
   ChannelAccountHolderChange,
   ChannelCommissionRuleInput,
   ChannelCommissionRuleSet,
+  ConfirmPortalTouristTaxComuniRequest,
   FiscalIssuerPreview,
   OwnerMandateTemplate,
   OwnerMandateTemplateResult,
@@ -16,6 +17,7 @@ import type {
 import { ApiClient } from './client';
 
 const SETUP_PATH = '/billing-setup';
+const PORTAL_COMUNI_PATH = `${SETUP_PATH}/touristTax/portal-comuni`;
 const HOLDERS_PATH = `${SETUP_PATH}/channel-account-holders`;
 const COMMISSION_RULES_PATH = '/owner-accounting/channel-commission-rules';
 const APPLY_TEMPLATE_PATH = '/owner-mandates/apply-template';
@@ -64,6 +66,20 @@ export async function getBillingSetup(): Promise<BillingSetup> {
 export async function saveBillingSetupSection(section: string, request: SaveBillingSetupSectionRequest): Promise<BillingSetupSection> {
   const path = `${SETUP_PATH}/${encodeURIComponent(section)}`;
   return ensureSection(await ApiClient.put<unknown>(path, request), path);
+}
+
+/**
+ * The portals the organization confirms as the ones that collect and pay the tourist tax in a comune (`PUT api/billing-setup/touristTax/portal-comuni`, `property.write` and the
+ * whole organization): the WHOLE list of the pairs, which replaces the previous one (the pairs already confirmed go in it again; an empty list takes every confirmation away).
+ * It counts only for the properties in that comune and never touches the list of the portals that collect it everywhere. Answers the section `touristTax` as saved, with
+ * `confirmedPortalTouristTaxComuni`: an answer that is not that section is a failure and never a success (the person would be told «confirmed» for what nobody saved). 422
+ * `issuer_field_invalid` (a portal that is not one, a code that is not six digits, a Swiss issuer), `issuer_profile_incomplete` (before the issuer step created the profile); 403
+ * `fiscal_settings_need_whole_org` for a caller who reaches only some of the properties.
+ */
+export async function confirmPortalTouristTaxComuni(request: ConfirmPortalTouristTaxComuniRequest): Promise<BillingSetupSection> {
+  const saved = ensureSection(await ApiClient.put<unknown>(PORTAL_COMUNI_PATH, request), PORTAL_COMUNI_PATH);
+  if (saved.section !== 'touristTax' || !Array.isArray(saved.values.confirmedPortalTouristTaxComuni)) throw new UnexpectedApiResponseError(PORTAL_COMUNI_PATH);
+  return saved;
 }
 
 /**
