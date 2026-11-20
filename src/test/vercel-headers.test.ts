@@ -112,6 +112,15 @@ describe('vercel.json security headers', () => {
     expect(headers['x-robots-tag']).toContain('noindex');
   });
 
+  it.each([...EMBED_FILE_PATHS, '/embed/v1/', '/embed/v1/not-a-file'])('headers_embedFile_%s_cannotBeFramed', (path) => {
+    // The loader files are scripts and data, framed by nobody. But a path under them that is no file is answered with the page of the app (the fallback of
+    // `rewrites`), and that document must not be framable: it would not be a widget, and it holds routes that no widget is meant to show in another site.
+    const headers = headersFor(path);
+
+    expect(headers['x-frame-options']).toBe('DENY');
+    expect(headers['content-security-policy']).toBe("frame-ancestors 'none'");
+  });
+
   it.each([...APP_PATHS, ...CHECKIN_PATHS, ...BOOKING_SITE_PATHS, ...SUPPLIER_SITE_PATHS, ...EMBED_PAGE_PATHS])('headers_%s_haveBaselineHeaders', (path) => {
     const headers = headersFor(path);
 
