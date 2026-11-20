@@ -48,8 +48,29 @@ describe('notification model', () => {
       'scheduled-message-issue',
       // E30/F02/US03/T01: the 24 hours of the notification of a Ticino arrival day to the cantonal police, and the declaration of a day (`PushTypes.IsTicinoNotification`).
       'ticino-notification-due', 'ticino-notification-overdue', 'ticino-notification-declared',
+      // E40/F02/US02 (`be-auth0-host-sync`): the domain of the agency was verified, and the sign-in of the owners on it became active or failed.
+      'domain-verified', 'owner-login-ready', 'owner-login-failed',
     ];
     for (const type of backend) expect(notificationKind(type).textKey, type).not.toBe('notifications.types.generic');
+  });
+
+  // E40/F02/US02: the entity of these pushes is the ORG and the click opens the domain settings of the booking site, which the route manifest registers; an entry without entity opens nothing.
+  it.each([
+    ['domain-verified', 'domainVerified', /verificato/i, /verified/i],
+    ['owner-login-ready', 'ownerLoginReady', /proprietari/i, /owner/i],
+    ['owner-login-failed', 'ownerLoginFailed', /proprietari/i, /owner/i],
+  ] as const)('notificationRoute_%s_OpensTheDomainSettingsWithItsOwnSentenceAndNamesNoSystem', (type, key, italian, english) => {
+    expect(KNOWN_NOTIFICATION_TYPES).toContain(type);
+    expect(notificationRoute({ type, entityId: 'org-1' }, 'short-rent')).toBe('/app/short-rent/settings/domain');
+    expect(notificationRoute({ type, entityId: 'org-1' }, null)).toBe('/app/short-rent/settings/domain');
+    expect(notificationRoute({ type, entityId: null }, 'short-rent')).toBeNull();
+    expect(notificationKind(type).textKey).toBe(`notifications.types.${key}`);
+    for (const [locale, pattern] of [[it_, italian], [en, english]] as const) {
+      const sentence = String(lookup(locale, `notifications.types.${key}`));
+      expect(sentence).toMatch(pattern);
+      expect(sentence).not.toBe(lookup(locale, 'notifications.types.generic'));
+      expect(sentence).not.toMatch(/auth0|octorate|vercel|kross|concordato\s*facile/i);
+    }
   });
 
   it('notificationRoute_GuestMessage_OpensTheBookingOnItsMessages', () => {
