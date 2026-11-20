@@ -3,6 +3,7 @@ import type { FeatureFlags } from '@/config/feature-flags';
 import { getManifestEntry, hasEntryPermission, isEntryFeatureEnabled, type PermissionPredicate, type RouteManifestEntry } from '@/config/route-manifest';
 import { BILLING_SETUP_PATH } from '@/features/fiscal/billing-wizard/billing-wizard-ids';
 import { billingStepOfReason } from '@/lib/onboarding-billing';
+import { GUEST_REGISTRATION_STEP_ID } from '@/types/guest-registration.types';
 import type { OnboardingFlowAction, OnboardingLaunchTarget } from '@/types/onboarding.types';
 
 /**
@@ -84,6 +85,9 @@ const REGISTRY: Readonly<Record<OnboardingLaunchTarget, LaunchEntry>> = {
   fiscal: { general: [{ path: BILLING_SETUP_PATH }], stepOfReason: billingStepOfReason, needsFeatureFlag: true },
   marketplace: { general: [{ path: '/app/short-rent/marketplace' }] },
   summary: { general: [{ path: '/app/short-rent/onboarding/summary' }] },
+  // The notification of the guests in Switzerland (E29/F02/US02/T01): the activation wizard of the property, opened on its step «Notifica degli ospiti» (it works for an active property
+  // too). With no property named the part has no wizard of its own: the list of the properties, where the host chooses (the part page lists the properties that lack something).
+  guestRegistration: { property: [{ path: ACTIVATION, step: GUEST_REGISTRATION_STEP_ID }], general: [{ path: '/app/short-rent/properties' }] },
 };
 
 /** The page a target opens for a person, with the address to go to: the manifest entry that was found and the full address (the property and the step filled in). */

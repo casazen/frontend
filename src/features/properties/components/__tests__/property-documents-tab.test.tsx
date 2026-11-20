@@ -5,13 +5,18 @@ import { I18nextProvider } from 'react-i18next';
 import { MemoryRouter } from 'react-router-dom';
 import i18n from '@/i18n/config';
 import { onboardingApi } from '@/api/onboarding.api';
+import { guestRegistrationApi } from '@/api/guest-registration.api';
 import { onboardingAssistApi } from '@/api/onboarding-assist.api';
+import { propertiesApi } from '@/api/properties.api';
 import { questuraCredentialsApi } from '@/api/questura-credentials.api';
 import { OWNER } from '@/features/onboarding/__tests__/onboarding-fixtures';
 import type { PropertyDetailDto } from '@/types';
 import { PropertyDocumentsTab } from '../property-documents-tab';
+import { card } from './guest-registration-fixtures';
 
 vi.mock('@/api/questura-credentials.api', () => ({ questuraCredentialsApi: { getStatus: vi.fn(), set: vi.fn(), remove: vi.fn() } }));
+vi.mock('@/api/guest-registration.api', () => ({ guestRegistrationApi: { get: vi.fn(), setOverride: vi.fn() } }));
+vi.mock('@/api/properties.api', () => ({ propertiesApi: { getDetail: vi.fn(), update: vi.fn() } }));
 vi.mock('@/api/onboarding-assist.api', () => ({
   onboardingAssistApi: { getIstatCredentialsStatus: vi.fn(), setIstatCredentials: vi.fn(), removeIstatCredentials: vi.fn(), reopenRequest: vi.fn() },
 }));
@@ -30,8 +35,8 @@ vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ contexts: sessi
 
 const PROPERTY_ID = 'pppppppp-pppp-pppp-pppp-pppppppppppp';
 
-function renderTab(country: 'IT' | 'CH' = 'IT', canWrite = true) {
-  const property = { id: PROPERTY_ID, country, cinStatus: 'Missing', cinCode: null, documents: [] } as unknown as PropertyDetailDto;
+function renderTab(country: 'IT' | 'CH' = 'IT', canWrite = true, extra: Partial<PropertyDetailDto> = {}) {
+  const property = { id: PROPERTY_ID, country, cinStatus: 'Missing', cinCode: null, documents: [], ...extra } as unknown as PropertyDetailDto;
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
     <I18nextProvider i18n={i18n}>
@@ -52,6 +57,8 @@ beforeEach(async () => {
   vi.mocked(onboardingAssistApi.getIstatCredentialsStatus).mockReset().mockResolvedValue({ configured: false, configuredAt: null });
   vi.mocked(onboardingApi.listPanelSteps).mockReset().mockResolvedValue([]);
   vi.mocked(onboardingApi.listAssistRequests).mockReset().mockResolvedValue([]);
+  vi.mocked(guestRegistrationApi.get).mockReset().mockResolvedValue(card({ identifierMissing: ['ticino_structure_id_missing'] }));
+  vi.mocked(propertiesApi.getDetail).mockReset().mockResolvedValue({ id: PROPERTY_ID, isInTicino: true, ticinoStructureId: null } as never);
 });
 
 afterEach(cleanup);
@@ -104,5 +111,55 @@ describe('PropertyDocumentsTab, the credentials of the portals under the documen
     expect(await screen.findByTestId('istat-credentials-status')).toBeInTheDocument();
     expect(screen.queryByTestId('istat-credentials-form')).not.toBeInTheDocument();
     expect(screen.queryByTestId('questura-credentials-form')).not.toBeInTheDocument();
+  });
+});
+
+// E29/F02/US02/T01: a property in Switzerland shows the card of the regime of its canton in the place of the general guidance, behind the flag `guestRegistrationRegimes`.
+describe('PropertyDocumentsTab, the notification of the guests of a property in Switzerland', () => {
+  const TICINO = { isInTicino: true, ticinoStructureId: null } as Partial<PropertyDetailDto>;
+
+  it('PropertyDocumentsTab_SwissPropertyWithTheRegimesOn_ShowsTheCardInThePlaceOfTheGuidanceAndAsksTheStructureNumberOnce', async () => {
+    session.flags = { guestRegistrationRegimes: true };
+    renderTab('CH', true, TICINO);
+
+    expect(await screen.findByTestId('guest-registration-summary')).toBeInTheDocument();
+    expect(screen.getByTestId('guest-registration-card')).toHaveAttribute('data-variant', 'page');
+    expect(guestRegistrationApi.get).toHaveBeenCalledWith(PROPERTY_ID);
+    // The old guidance is gone, the portal opens from the card (the page of the property is not a wizard), and the number is asked once: in the card.
+    expect(screen.queryByText(i18n.t('property.swissRegistration.title'))).not.toBeInTheDocument();
+    expect(screen.getByTestId('guest-registration-portal-link')).toHaveAttribute('target', '_blank');
+    expect(await screen.findAllByTestId('ticino-structure-id-form')).toHaveLength(1);
+    expect(screen.getByTestId('guest-registration-missing')).toHaveTextContent(i18n.t('guestRegistration.missing.ticino_structure_id_missing'));
+    // The page of the notification of the police is still one click away.
+    expect(screen.getByTestId('ticino-police-link')).toHaveAttribute('href', `/app/short-rent/compliance/ticino?property=${PROPERTY_ID}`);
+  });
+
+  it('PropertyDocumentsTab_SwissPropertyWithTheRegimesOff_IsTheTabItAlwaysWasAndAsksNothingOfTheRegimes', async () => {
+    session.flags = { guestRegistrationRegimes: false };
+    renderTab('CH', true, TICINO);
+
+    expect(await screen.findByText(i18n.t('property.swissRegistration.title'))).toBeInTheDocument();
+    expect(screen.queryByTestId('guest-registration-card')).not.toBeInTheDocument();
+    expect(await screen.findAllByTestId('ticino-structure-id-form')).toHaveLength(1);
+    expect(screen.getByTestId('ticino-police-link')).toBeInTheDocument();
+    expect(guestRegistrationApi.get).not.toHaveBeenCalled();
+  });
+
+  it('PropertyDocumentsTab_ReaderOfASwissProperty_SeesTheCardWithNoFieldAndNoButtonToWrite', async () => {
+    session.flags = { guestRegistrationRegimes: true };
+    renderTab('CH', false, { isInTicino: true, ticinoStructureId: 'NL-555' });
+
+    expect(await screen.findByTestId('guest-registration-summary')).toBeInTheDocument();
+    expect(screen.queryByTestId('ticino-structure-id-form')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('guest-registration-fix-municipality')).not.toBeInTheDocument();
+  });
+
+  it('PropertyDocumentsTab_PropertyInItalyWithTheRegimesOn_IsUntouched_NoCardAndNoCall', async () => {
+    session.flags = { guestRegistrationRegimes: true };
+    renderTab('IT');
+
+    expect(await screen.findByTestId('questura-credentials-card')).toBeInTheDocument();
+    expect(screen.queryByTestId('guest-registration-card')).not.toBeInTheDocument();
+    expect(guestRegistrationApi.get).not.toHaveBeenCalled();
   });
 });

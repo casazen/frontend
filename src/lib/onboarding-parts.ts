@@ -1,5 +1,6 @@
 import { billingItemTextKey, isBillingItemKey } from '@/lib/onboarding-billing';
 import { addDays, romeWallTimeToUtc, todayInRome } from '@/lib/stay-dates';
+import { GUEST_REGISTRATION_MISSING_CODES } from '@/types/guest-registration.types';
 import {
   ONBOARDING_NEED_CODES,
   ONBOARDING_PART_KEYS,
@@ -9,6 +10,7 @@ import {
   type OnboardingNeedCode,
   type OnboardingPart,
   type OnboardingPartKey,
+  type OnboardingPartMissing,
   type OnboardingPartReason,
   type OnboardingPartState,
   type OnboardingPath,
@@ -18,7 +20,7 @@ import {
 } from '@/types/onboarding.types';
 
 /**
- * The registry of the eleven parts of the plan «Inizia con CasaZen» (E10/F03): their keys in order, the page of each, an icon and the
+ * The registry of the twelve parts of the plan «Inizia con CasaZen» (E10/F03, E29/F02): their keys in order, the page of each, an icon and the
  * keys of their texts. The plan page, the connected path and the wizards of the parts read it, so a part is named in one place.
  */
 
@@ -48,6 +50,7 @@ export type OnboardingPartIconName =
   | 'MessageSquare'
   | 'Receipt'
   | 'Store'
+  | 'Landmark'
   | 'Rocket';
 
 /** The icon of each part, in the order of the plan. It decorates: the title carries the meaning. */
@@ -62,6 +65,7 @@ export const ONBOARDING_PART_ICONS: Record<OnboardingPartKey, OnboardingPartIcon
   messagesAi: 'MessageSquare',
   fiscalDocuments: 'Receipt',
   partners: 'Store',
+  guestRegistration: 'Landmark',
   activation: 'Rocket',
 };
 
@@ -77,7 +81,7 @@ const PART_STATES: ReadonlySet<string> = new Set(ONBOARDING_PART_STATES);
 const PART_REASONS: ReadonlySet<string> = new Set(ONBOARDING_PART_REASONS);
 const NEED_CODES: ReadonlySet<string> = new Set(ONBOARDING_NEED_CODES);
 
-/** True for one of the eleven part codes this version of the app knows. */
+/** True for one of the part codes this version of the app knows. */
 export function isOnboardingPartKey(value: unknown): value is OnboardingPartKey {
   return typeof value === 'string' && PART_KEYS.has(value);
 }
@@ -95,6 +99,30 @@ export function isOnboardingPartReason(value: unknown): value is OnboardingPartR
 export function partReasonTextKey(part: Pick<OnboardingPart, 'code' | 'reason'>): string | null {
   if (part.code === 'fiscalDocuments' && isBillingItemKey(part.reason)) return billingItemTextKey(part.reason);
   return isOnboardingPartReason(part.reason) ? reasonKey(part.reason) : null;
+}
+
+/** The text of one thing a part lacks on a property (`onboardingPlan.reasons.property.<reason>`); a reason this version has no text for reads as a neutral line, never as the code. */
+export function missingReasonKey(reason: string | null | undefined): string {
+  return reason && (GUEST_REGISTRATION_MISSING_CODES as readonly string[]).includes(reason)
+    ? `onboardingPlan.reasons.property.${reason}`
+    : 'onboardingPlan.reasons.property.unknown';
+}
+
+/**
+ * What a part still lacks, property by property, as the plan lists it (`missing`, E29/F02/US01/T02): the items that name a property, once each (the first reason the server gave
+ * for it), in the order the server gave them. An answer without the list, or with anything else in it, is no items: the part then reads as it always did.
+ */
+export function missingItemsOf(part: Pick<OnboardingPart, 'missing'> | null | undefined): OnboardingPartMissing[] {
+  const items = part?.missing;
+  if (!Array.isArray(items)) return [];
+  const seen = new Set<string>();
+  const known: OnboardingPartMissing[] = [];
+  for (const item of items) {
+    if (!item || typeof item.propertyId !== 'string' || item.propertyId === '' || seen.has(item.propertyId)) continue;
+    seen.add(item.propertyId);
+    known.push(item);
+  }
+  return known;
 }
 
 /** True for one of the five codes of «What you need» this version has a text for. */
@@ -125,6 +153,15 @@ export function knownParts(plan: Pick<OnboardingPlan, 'parts'> | null | undefine
     known.push(part);
   }
   return known.sort((a, b) => a.order - b.order);
+}
+
+/**
+ * Whether a part is in the list the host reads. The notification of the guests in Switzerland is for an organization with an active property there: for any other it is `notAvailable`
+ * with the reason `no_swiss_property`, and a row that only says «nothing to do here» would be noise on the plan of a host whose properties are all in Italy. Every other part stays in
+ * the list whatever its state, as it always did; the page of the part itself (its address) is still there.
+ */
+export function partAppliesToOrg(part: Pick<OnboardingPart, 'code' | 'state' | 'reason'>): boolean {
+  return !(part.code === 'guestRegistration' && normalizePartState(part.state) === 'notAvailable' && part.reason === 'no_swiss_property');
 }
 
 /** The things the host needs at hand that this version has a text for, in the order of the plan. */

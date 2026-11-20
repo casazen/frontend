@@ -71,7 +71,7 @@ export function FinishStep({
         </div>
       </details>
 
-      {property.data && !requiresItalianCin(property.data.country) ? <SwissRegistrationGuidance /> : <CinSection
+      {property.data && !requiresItalianCin(property.data.country) ? <SwissRegistrationGuidance propertyId={propertyId} variant="wizard" canWrite /> : <CinSection
         propertyId={propertyId}
         storedCin={property.data?.cinCode ?? null}
         guidanceUrl={steps?.find((step) => step.id === 'cin')?.linkUrl}
