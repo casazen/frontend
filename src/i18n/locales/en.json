@@ -799,7 +799,7 @@
         },
         "CleaningVatToState": {
           "title": "Cleaning recharge with no VAT stated",
-          "why": "The cleaning you recharge to the owner has no VAT stated: state it, with the amount if that is missing, before you close the statement."
+          "why": "Answer the question: did the cleaning company charge VAT on this invoice? «Yes» makes the recharge line carry the company's VAT, «No» keeps it without VAT, and «I don't know» leaves the amount as it is and asks again once, when the statement closes."
         },
         "CompanyTenantDecision": {
           "title": "Company tenant to decide",
@@ -18279,6 +18279,43 @@
       "save": "Save the commissions",
       "saved": "Commissions saved. They apply to the stays that end from {{date}} on.",
       "title": "Channel commissions"
+    },
+    "cleaningVat": {
+      "answer": {
+        "Applied": "Yes, {{rate}}",
+        "AppliedNoRate": "Yes",
+        "NotApplied": "No, without VAT",
+        "Unknown": "I don't know"
+      },
+      "company": "Company: {{name}}",
+      "country": {
+        "CH": "Switzerland",
+        "IT": "Italy"
+      },
+      "current": "Answer given for this cleaning: {{answer}}. A new answer replaces it.",
+      "currentByCompany": "Answer remembered for this company: {{answer}}. An answer given here replaces it for this cleaning.",
+      "description": "This is the recharge of a cleaning to the owner: your answer decides the VAT on that line of the invoice.",
+      "loadError": "We could not read the question.",
+      "loading": "Reading the question…",
+      "problem": {
+        "answerInvalid": "That answer is not valid: pick one of the three.",
+        "changed": "The request changed in the meantime. We read the question again: check it and answer again.",
+        "failed": "We have no confirmation that the answer was saved. Try again: if it had already arrived, the same answer changes nothing.",
+        "forbidden": "Your role cannot answer this question: it takes the permission to change properties.",
+        "notCompleted": "The cleaning is not completed yet, so there is no invoice from the company to answer about. Come back once it is done.",
+        "notFound": "We cannot find this request: it may be gone, or it is not one you have access to.",
+        "rateUnknown": "We have no VAT rate for the day of this cleaning, so «Yes» cannot be saved. Answer «No» or «I don't know».",
+        "rememberForbidden": "Only whoever manages the whole organization can remember the answer for the company. Answer again without «Remember»: it then applies to this cleaning only.",
+        "rememberUnknown": "«I don't know» cannot be remembered for the company. Answer without «Remember»."
+      },
+      "remember": "Remember for this company",
+      "rememberHint": "It applies to this company's other cleanings that have no answer yet, in every property. It does not apply to «I don't know».",
+      "saved": "Answer saved: {{answer}}.",
+      "sending": "Saving the answer…",
+      "title": "Did the cleaning company charge VAT on this invoice?",
+      "unknownHint": "The amount stays as it is and the question comes back once, when the statement closes.",
+      "when": "Cleaning on {{date}} · {{country}}",
+      "yesUnavailable": "We have no VAT rate for the day of this cleaning: «Yes» is not available."
     },
     "close": {
       "confirm": "Close the month",
