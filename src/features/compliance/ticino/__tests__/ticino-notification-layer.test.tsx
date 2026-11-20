@@ -533,6 +533,17 @@ describe('TicinoNotificationLayer (E30/F02/US03/T02)', () => {
       expect(isOpen('declare')).toBe(true);
     });
 
+    it('TicinoLayer_ADeclaredDayWithTheReceiptOfThePortal_OffersNoUndoBecauseTheReceiptKeepsTheDayClosed', async () => {
+      vi.mocked(swissComplianceApi.getTicinoDay).mockResolvedValue(declaredDay({ receiptCount: 1 }));
+      renderLayer();
+      await screen.findByTestId('ticino-layer');
+      openStep('declare');
+
+      // Undoing the declaration would leave the day closed by the receipt and tell the others the day was reopened: the button is not offered.
+      expect(screen.getByTestId('ticino-declared')).toHaveTextContent(/Già caricato il 19 novembre.*da Luca Bianchi/);
+      expect(screen.queryByTestId('ticino-undeclare')).not.toBeInTheDocument();
+    });
+
     it('TicinoLayer_NotUploadedYet_TheLinkGoesBackToThePortalStep', async () => {
       vi.mocked(swissComplianceApi.getTicinoDay).mockResolvedValue(dayOf({ fileGeneratedCount: 1 }));
       renderLayer();

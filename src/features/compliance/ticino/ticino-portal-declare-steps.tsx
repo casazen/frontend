@@ -62,8 +62,8 @@ interface TicinoDeclareStepProps {
 
 /**
  * Step 4 «Ho caricato il file»: the host says the file was uploaded, and the day leaves the days to notify (the cockpit and the counter of the menu read again, and the others
- * of the team are told). A day already declared says who did it and when, and can be reopened by whoever may declare; a day closed by the receipt of the portal alone has
- * nothing to declare.
+ * of the team are told). A day already declared says who did it and when, and can be reopened by whoever may declare, unless the receipt of the portal is filed (it closes the day
+ * by itself, so there is nothing to reopen); a day closed by the receipt alone has nothing to declare.
  */
 export function TicinoDeclareStep({ day, canSubmit, future, busy, onDeclare, onUndeclare, onBackToPortal }: TicinoDeclareStepProps) {
   const { t, i18n } = useTranslation();
@@ -77,7 +77,8 @@ export function TicinoDeclareStep({ day, canSubmit, future, busy, onDeclare, onU
           <CheckCircle2 aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-primary" />
           <span className="min-w-0 break-words">{closed}</span>
         </p>
-        {state === 'declared' && canSubmit ? (
+        {/* With the receipt of the portal filed the day stays closed whatever happens to the declaration (the undo removes only the declaration): nothing would be reopened, and the others of the team would be told it was. */}
+        {state === 'declared' && canSubmit && day.receiptCount === 0 ? (
           <Button type="button" variant="ghost" size="sm" disabled={busy} onClick={onUndeclare} data-testid="ticino-undeclare">
             {t('swiss.declare.undo')}
           </Button>
