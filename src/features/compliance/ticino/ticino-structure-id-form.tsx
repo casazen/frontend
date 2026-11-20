@@ -7,12 +7,12 @@ import { FormFieldError } from '@/components/shared/form-field-error';
 import { useUpdateProperty } from '@/queries/use-properties';
 
 /** The identifier as the backend stores it (`TicinoStructureId.Normalize`): no spaces, uppercase; empty when blank. */
-export function normalizeTicinoStructureId(value: string): string {
+function normalizeTicinoStructureId(value: string): string {
   return value.replace(/\s+/g, '').toUpperCase();
 }
 
 /** 3 to 20 letters and digits, groups joined by single hyphens (`TicinoStructureId.IsValid` of the backend), e.g. `NL-12345678`. */
-export function isValidTicinoStructureId(value: string): boolean {
+function isValidTicinoStructureId(value: string): boolean {
   const normalized = normalizeTicinoStructureId(value);
   return normalized.length >= 3 && normalized.length <= 20 && /^[A-Z0-9]+(-[A-Z0-9]+)*$/.test(normalized);
 }
