@@ -3,6 +3,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import type { DetailContentProps, DetailTitleProps } from '@/components/shared/detail-drawer/detail-registry';
 import { ErrorState } from '@/components/shared/error-state';
+import { Alert } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import { SkeletonLine } from '@/components/ui/skeleton';
 import { getHttpStatus } from '@/lib/api-errors';
 import { ticinoDayKey, useTicinoDay } from '@/queries/swissCompliance';
@@ -18,11 +20,16 @@ export function TicinoLayerTitle({ id }: DetailTitleProps) {
   return <>{name ? t('swiss.layer.titleFor', { property: name }) : t('swiss.layer.title')}</>;
 }
 
+/** What a read that was refused says, in words: not found (404), no permission (403), not in Ticino (422). Any other failure (the line, a 5xx) has no words of its own: `null`. */
+function refusalTextOf(error: unknown): string | null {
+  const status = getHttpStatus(error);
+  return status === 404 ? 'swiss.layer.notFound' : status === 403 ? 'swiss.layer.forbidden' : status === 422 ? 'swiss.layer.notInTicino' : null;
+}
+
 /** What a day that could not be read is told as: not found, no permission, not in Ticino, or a failure to try again. A 404 is «not found» whatever the cache still holds. */
 function TicinoLayerProblem({ error, onRetry }: { error: unknown; onRetry: () => void }) {
   const { t } = useTranslation();
-  const status = getHttpStatus(error);
-  const text = status === 404 ? 'swiss.layer.notFound' : status === 403 ? 'swiss.layer.forbidden' : status === 422 ? 'swiss.layer.notInTicino' : null;
+  const text = refusalTextOf(error);
 
   if (text) {
     return (
@@ -32,6 +39,28 @@ function TicinoLayerProblem({ error, onRetry }: { error: unknown; onRetry: () =>
     );
   }
   return <ErrorState title={t('swiss.layer.loadFailed')} error={error} onRetry={onRetry} testId="ticino-layer-error" />;
+}
+
+/**
+ * The day is on screen and the read that was meant to refresh it failed for a reason that says nothing about the day (the line, a 5xx): the day stays as it was last read, with this
+ * line and a way to read it again. What the person is in the middle of (the guests being completed, the file chosen, the step that is open) goes nowhere.
+ */
+function TicinoLayerStale({ retrying, onRetry }: { retrying: boolean; onRetry: () => void }) {
+  const { t } = useTranslation();
+  return (
+    <Alert
+      variant="warning"
+      className="mb-4"
+      data-testid="ticino-layer-stale"
+      action={
+        <Button type="button" variant="outline" size="sm" disabled={retrying} onClick={onRetry} data-testid="ticino-layer-stale-retry">
+          {t('shared.errorState.retry')}
+        </Button>
+      }
+    >
+      {t('swiss.layer.refreshFailed')}
+    </Alert>
+  );
 }
 
 interface TicinoLayerProps {
@@ -47,11 +76,12 @@ function TicinoLayer({ propertyId, requestedDay, close }: TicinoLayerProps) {
   const [pickedDay, setPickedDay] = useState(requestedDay);
   const query = useTicinoDay(propertyId, pickedDay);
 
-  // An error comes first: a read that failed still holds the answer before it, and a 404 or a 403 must not show the day of a moment ago.
-  if (query.isError) return <TicinoLayerProblem error={query.error} onRetry={() => void query.refetch()} />;
-  if (!query.data) return <SkeletonLine lines={5} label={t('swiss.layer.loading')} />;
-
+  // A refusal comes first: a read that failed still holds the answer before it, and a 404, a 403 or a 422 must not show the day of a moment ago. So does a failure when there is no
+  // day to show. A read that fails for another reason (the line, a 5xx) while the day is on screen is not an answer about the day: it stays, with a line to read it again.
   const day = query.data;
+  if (query.isError && (!day || refusalTextOf(query.error) !== null)) return <TicinoLayerProblem error={query.error} onRetry={() => void query.refetch()} />;
+  if (!day) return <SkeletonLine lines={5} label={t('swiss.layer.loading')} />;
+
   // The day the server picked is the day on screen from the first action on: the answer is kept under the key of that day, so declaring it does not move the layer
   // on to the next one (a read without a date always answers the oldest day still to notify) and nothing is asked twice.
   const pin = () => {
@@ -60,7 +90,12 @@ function TicinoLayer({ propertyId, requestedDay, close }: TicinoLayerProps) {
     setPickedDay(day.day);
   };
 
-  return <TicinoDayView key={day.day} day={day} asOf={query.dataUpdatedAt} onPin={pin} onPickDay={setPickedDay} close={close} />;
+  return (
+    <>
+      {query.isError ? <TicinoLayerStale retrying={query.isFetching} onRetry={() => void query.refetch()} /> : null}
+      <TicinoDayView key={day.day} day={day} asOf={query.dataUpdatedAt} onPin={pin} onPickDay={setPickedDay} close={close} />
+    </>
+  );
 }
 
 /**

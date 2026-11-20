@@ -31227,6 +31227,7 @@
       "loading": "Loading the notification…",
       "notFound": "We cannot find this property, or you have no access to it.",
       "notInTicino": "This property is not in canton Ticino: the Ticino police notification does not apply.",
+      "refreshFailed": "We cannot refresh this day: what you see is the last reading.",
       "steps": "Steps of the notification",
       "title": "Police notification (Ticino)",
       "titleFor": "Police notification: {{property}}"

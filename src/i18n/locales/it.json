@@ -31227,6 +31227,7 @@
       "loading": "Caricamento della notifica…",
       "notFound": "Non troviamo questa struttura, oppure non hai accesso.",
       "notInTicino": "Questa struttura non risulta nel Canton Ticino: la notifica alla polizia ticinese non si applica.",
+      "refreshFailed": "Non riusciamo ad aggiornare questo giorno: quello che vedi è l'ultima lettura.",
       "steps": "Passi della notifica",
       "title": "Notifica alla polizia (Ticino)",
       "titleFor": "Notifica alla polizia: {{property}}"

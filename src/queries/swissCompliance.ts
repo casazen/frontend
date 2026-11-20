@@ -27,7 +27,8 @@ export function isAlreadyDeclaredConflict(error: unknown): boolean {
 /**
  * One arrival day of the Ticino police notification of a property (casazen/backend#979); `date` empty = the oldest day still to notify. The guests of a day change
  * from other screens (a check-in, a booking edited, a co-host declaring it), where this one is not watched: it is read again every time it opens, and what was read a
- * moment ago is not asked twice. The reader looks at `isError` before `data`: TanStack Query keeps the old data of a read that fails, and a 404 is «not found» with it too.
+ * moment ago is not asked twice. The reader looks at a refusal (404, 403, 422) before `data`: TanStack Query keeps the old data of a read that fails, and a 404 is «not found» with it
+ * too. A read that fails for another reason (the line, a 5xx) with the day on screen leaves the day where it is, with a line to read it again.
  */
 export function useTicinoDay(propertyId: string, date?: string) {
   return useQuery({

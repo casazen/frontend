@@ -807,6 +807,78 @@ describe('TicinoNotificationLayer (E30/F02/US03/T02)', () => {
       expect(screen.queryByTestId('ticino-layer')).not.toBeInTheDocument();
     });
 
+    /** The day is read again while it is on screen (an event of the cockpit, the window in front again): the read that fails is what the tests below are about. */
+    const readAgain = async (view: ReturnType<typeof renderLayer>) => {
+      await act(async () => {
+        await view.client.invalidateQueries({ queryKey: ['ticino-police', PROPERTY_ID] });
+      });
+    };
+
+    it('TicinoLayer_AReadThatFailsWhileTheDayIsOnScreen_KeepsTheDayTheOpenStepAndTheFileChosen_AndOffersToReadAgain', async () => {
+      const view = renderLayer();
+      await screen.findByTestId('ticino-layer');
+      openStep('receipt');
+      fireEvent.change(screen.getByTestId('ticino-receipt-police-file'), { target: { files: [new File(['pdf'], 'riepilogo.pdf', { type: 'application/pdf' })] } });
+      expect(screen.getByTestId('ticino-receipt-police-upload')).toBeEnabled();
+
+      // A blip of the line: the day is read again and the read fails.
+      vi.mocked(swissComplianceApi.getTicinoDay).mockRejectedValue(apiError(500));
+      await readAgain(view);
+
+      const notice = await screen.findByTestId('ticino-layer-stale');
+      expect(notice).toHaveTextContent('Non riusciamo ad aggiornare questo giorno');
+      // Nothing the person is in the middle of went with it: the same day, the step that was open and the file that was chosen.
+      expect(screen.getByTestId('ticino-layer')).toBeInTheDocument();
+      expect(screen.queryByTestId('ticino-layer-error')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('ticino-layer-problem')).not.toBeInTheDocument();
+      expect(isOpen('receipt')).toBe(true);
+      expect(screen.getByTestId('ticino-receipt-police-upload')).toBeEnabled();
+
+      // Read again, the day answers: the line goes and the person is where they were.
+      vi.mocked(swissComplianceApi.getTicinoDay).mockResolvedValue(dayOf());
+      const retry = within(notice).getByRole('button', { name: 'Riprova' });
+      await waitFor(() => expect(retry).toBeEnabled());
+      fireEvent.click(retry);
+
+      await waitFor(() => expect(screen.queryByTestId('ticino-layer-stale')).not.toBeInTheDocument());
+      expect(isOpen('receipt')).toBe(true);
+      expect(screen.getByTestId('ticino-receipt-police-upload')).toBeEnabled();
+    });
+
+    it('TicinoLayer_AReadThatFailsWhileTheFormOfTheGuestsIsOpen_LeavesTheFormWhereItIs', async () => {
+      vi.mocked(swissComplianceApi.getTicinoDay).mockResolvedValue(
+        dayOf({ issues: [{ bookingId: OTHER_BOOKING_ID, position: 1, guestName: 'Anna Verdi', missing: ['birthDate'] }] }),
+      );
+      const view = renderLayer();
+      fireEvent.click(await screen.findByTestId('ticino-complete-guest'));
+      expect(await screen.findByTestId('stay-guests-edit-dialog')).toBeInTheDocument();
+
+      vi.mocked(swissComplianceApi.getTicinoDay).mockRejectedValue(apiError(503));
+      await readAgain(view);
+
+      await screen.findByTestId('ticino-layer-stale');
+      // What the host is typing in the form of the guests is not lost with the day.
+      expect(screen.getByTestId('stay-guests-edit-dialog')).toBeInTheDocument();
+      expect(screen.getByTestId('ticino-layer')).toBeInTheDocument();
+    });
+
+    it.each([
+      [403, 'Non hai il permesso di vedere gli ospiti di questa struttura.'],
+      [404, 'Non troviamo questa struttura, oppure non hai accesso.'],
+      [422, 'Questa struttura non risulta nel Canton Ticino'],
+    ])('TicinoLayer_Answer%sToTheReadThatRefreshesTheDayOnScreen_TakesTheDayAwayAtOnce', async (status, words) => {
+      const view = renderLayer();
+      await screen.findByTestId('ticino-layer');
+      vi.mocked(swissComplianceApi.getTicinoDay).mockRejectedValue(apiError(status));
+
+      await readAgain(view);
+
+      // A refusal is the answer about the day (the permission was taken away, the property is gone): the guests it names are not shown any more.
+      expect(await screen.findByTestId('ticino-layer-problem')).toHaveTextContent(words);
+      expect(screen.queryByTestId('ticino-layer')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('ticino-layer-stale')).not.toBeInTheDocument();
+    });
+
     it.each(['', 'a:b:c', 'not a property', '../x'])('TicinoLayer_AnIdTheLayerDoesNotMake_%s_IsNotFoundAndAsksNothing', (id) => {
       renderLayer(id);
 
