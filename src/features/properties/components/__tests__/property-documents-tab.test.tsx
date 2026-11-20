@@ -1,9 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 import i18n from '@/i18n/config';
+import { DetailDrawerHost } from '@/components/shared/detail-drawer/detail-drawer-host';
+import { registerDetail } from '@/components/shared/detail-drawer/detail-registry';
+import { TICINO_LAYER_KIND } from '@/features/compliance/ticino/ticino-layer-address';
+import { settleDrawer } from '@/test/drawer';
 import { onboardingApi } from '@/api/onboarding.api';
 import { onboardingAssistApi } from '@/api/onboarding-assist.api';
 import { questuraCredentialsApi } from '@/api/questura-credentials.api';
@@ -30,14 +34,21 @@ vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ contexts: sessi
 
 const PROPERTY_ID = 'pppppppp-pppp-pppp-pppp-pppppppppppp';
 
-function renderTab(country: 'IT' | 'CH' = 'IT', canWrite = true) {
-  const property = { id: PROPERTY_ID, country, cinStatus: 'Missing', cinCode: null, documents: [] } as unknown as PropertyDetailDto;
+function Where() {
+  const location = useLocation();
+  return <output data-testid="where">{`${location.pathname}${location.search}`}</output>;
+}
+
+function renderTab(country: 'IT' | 'CH' = 'IT', canWrite = true, extra: Partial<PropertyDetailDto> = {}, withDrawer = false) {
+  const property = { id: PROPERTY_ID, country, cinStatus: 'Missing', cinCode: null, documents: [], ...extra } as unknown as PropertyDetailDto;
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
     <I18nextProvider i18n={i18n}>
       <QueryClientProvider client={client}>
-        <MemoryRouter>
+        <MemoryRouter initialEntries={['/app/short-rent/properties/p1?section=documents']}>
           <PropertyDocumentsTab property={property} canWrite={canWrite} onEditCin={vi.fn()} />
+          {withDrawer ? <DetailDrawerHost /> : null}
+          <Where />
         </MemoryRouter>
       </QueryClientProvider>
     </I18nextProvider>,
@@ -104,5 +115,38 @@ describe('PropertyDocumentsTab, the credentials of the portals under the documen
     expect(await screen.findByTestId('istat-credentials-status')).toBeInTheDocument();
     expect(screen.queryByTestId('istat-credentials-form')).not.toBeInTheDocument();
     expect(screen.queryByTestId('questura-credentials-form')).not.toBeInTheDocument();
+  });
+});
+
+// E30/F02/US03/T02: the guided notification to the Ticino police is a layer, not a page: the link of the property opens it where the person is (a drawer of the shell), and where there is none the
+// link is the address of the cockpit with the layer open, so it never leads to a page that is not there.
+describe('PropertyDocumentsTab, the guided notification of a property in Ticino', () => {
+  const ticino = { isInTicino: true, ticinoStructureId: 'NL-12345678' } as Partial<PropertyDetailDto>;
+
+  it('PropertyDocumentsTab_PropertyInTicino_TheLinkIsTheAddressOfTheLayerOverTheCockpit', () => {
+    renderTab('CH', false, ticino);
+
+    expect(screen.getByTestId('ticino-police-link')).toHaveAttribute('href', `/app/short-rent/compliance?detail=ticino:${PROPERTY_ID}`);
+  });
+
+  it('PropertyDocumentsTab_APropertyNotInTicino_HasNoLinkToTheNotification', () => {
+    renderTab('CH', false, { isInTicino: false } as Partial<PropertyDetailDto>);
+
+    expect(screen.queryByTestId('ticino-police-link')).not.toBeInTheDocument();
+  });
+
+  it('PropertyDocumentsTab_PageWithTheDrawer_TheLinkOpensTheLayerInPlaceAndTheAddressKeepsTheOtherParameters', async () => {
+    // The shell mounts the drawer once: here a host and the kind stand for it.
+    const unregister = registerDetail(TICINO_LAYER_KIND, { title: 'swiss.layer.title', Content: () => <p>layer</p> });
+    renderTab('CH', false, ticino, true);
+
+    fireEvent.click(screen.getByTestId('ticino-police-link'));
+
+    // The page is the one the person was on: only the layer was added to its address.
+    await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent(`/app/short-rent/properties/p1?section=documents&detail=ticino:${PROPERTY_ID}`));
+    expect(await screen.findByRole('dialog', { name: 'Notifica alla polizia (Ticino)' })).toBeInTheDocument();
+    unregister();
+    cleanup();
+    await settleDrawer();
   });
 });
