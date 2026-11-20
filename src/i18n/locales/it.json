@@ -16272,7 +16272,10 @@
       "fiscalDocumentIssued": "È stato emesso un documento fiscale per una prenotazione.",
       "fiscalDocumentSdiRejected": "Lo SDI ha scartato una fattura: va corretta.",
       "touristTaxPaid": "Un ospite ha pagato online la tassa di soggiorno.",
-      "scheduledMessageIssue": "Un messaggio programmato per un ospite non è partito o ha bisogno di te: apri la prenotazione per vedere cosa è successo."
+      "scheduledMessageIssue": "Un messaggio programmato per un ospite non è partito o ha bisogno di te: apri la prenotazione per vedere cosa è successo.",
+      "ticinoNotificationDeclared": "Qualcuno del tuo team ha aggiornato la notifica alla polizia di un arrivo in Ticino.",
+      "ticinoNotificationDue": "Gli ospiti di un arrivo in Ticino vanno notificati alla polizia cantonale entro 24 ore.",
+      "ticinoNotificationOverdue": "Sono passate le 24 ore per notificare alla polizia cantonale gli ospiti di un arrivo in Ticino."
     }
   },
   "octorate": {

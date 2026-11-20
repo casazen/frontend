@@ -16272,7 +16272,10 @@
       "fiscalDocumentIssued": "A fiscal document was issued for a booking.",
       "fiscalDocumentSdiRejected": "The SDI rejected an invoice: it needs to be corrected.",
       "touristTaxPaid": "A guest paid the tourist tax online.",
-      "scheduledMessageIssue": "A scheduled message for a guest did not go out or needs you: open the booking to see what happened."
+      "scheduledMessageIssue": "A scheduled message for a guest did not go out or needs you: open the booking to see what happened.",
+      "ticinoNotificationDeclared": "Someone on your team updated the police notification of an arrival in Ticino.",
+      "ticinoNotificationDue": "The guests of an arrival in Ticino must be notified to the cantonal police within 24 hours.",
+      "ticinoNotificationOverdue": "The 24 hours to notify the cantonal police of the guests of an arrival in Ticino have passed."
     }
   },
   "octorate": {

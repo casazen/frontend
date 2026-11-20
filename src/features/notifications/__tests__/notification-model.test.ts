@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { ONBOARDING_ROUTES } from '@/config/onboarding-routes';
+import type { AppContextKey } from '@/config/route-manifest';
 import en from '@/i18n/locales/en.json';
 import it_ from '@/i18n/locales/it.json';
 import { KNOWN_NOTIFICATION_TYPES, badgeText, notificationKind, notificationRoute } from '../notification-model';
+
+const PROPERTY_ID = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee';
 
 function lookup(tree: unknown, key: string): unknown {
   return key.split('.').reduce<unknown>((node, part) => (node && typeof node === 'object' ? (node as Record<string, unknown>)[part] : undefined), tree);
@@ -41,6 +44,8 @@ describe('notification model', () => {
       'assist-reopened', 'assist-verified', 'assist-declared',
       // E05/F07/US01: a scheduled message of a booking was held back, failed, skipped or sent outside the send window.
       'scheduled-message-issue',
+      // E30/F02/US03/T01: the 24 hours of the notification of a Ticino arrival day to the cantonal police, and the declaration of a day (`PushTypes.IsTicinoNotification`).
+      'ticino-notification-due', 'ticino-notification-overdue', 'ticino-notification-declared',
     ];
     for (const type of backend) expect(notificationKind(type).textKey, type).not.toBe('notifications.types.generic');
   });
@@ -82,6 +87,53 @@ describe('notification model', () => {
       expect(sentence).not.toBe(lookup(locale, 'notifications.types.generic'));
       expect(sentence as string).not.toMatch(/octorate/i);
     }
+  });
+
+  // E30/F02/US03/T01 (NF-127): the push types of the backend are lower case with hyphens, and the entity of the bell entry is the PROPERTY (never the day): the click opens the layer of the Ticino notification of
+  // that property over the cockpit, which opens on its first day still to notify.
+  it.each([
+    ['ticino-notification-due', 'ticinoNotificationDue'],
+    ['ticino-notification-overdue', 'ticinoNotificationOverdue'],
+    ['ticino-notification-declared', 'ticinoNotificationDeclared'],
+  ])('notificationKind_%s_HasItsOwnSentenceInBothLanguagesAndNamesNoSupplier', (type, key) => {
+    expect(KNOWN_NOTIFICATION_TYPES).toContain(type);
+    expect(notificationKind(type).textKey).toBe(`notifications.types.${key}`);
+    for (const locale of [it_, en]) {
+      const sentence = lookup(locale, `notifications.types.${key}`);
+      expect(typeof sentence).toBe('string');
+      expect(sentence).not.toBe(lookup(locale, 'notifications.types.generic'));
+      // The authority may be named; no supplier and no guest, no day, no value.
+      expect(sentence as string).not.toMatch(/octorate|concordato\s*facile/i);
+    }
+    expect(lookup(it_, `notifications.types.${key}`)).toMatch(/polizia/i);
+    expect(lookup(en, `notifications.types.${key}`)).toMatch(/police/i);
+  });
+
+  it.each(['ticino-notification-due', 'ticino-notification-overdue', 'ticino-notification-declared'])(
+    'notificationRoute_%s_OpensTheLayerOfThePropertyOverTheCockpit',
+    (type) => {
+      expect(notificationRoute({ type, entityId: PROPERTY_ID }, 'short-rent')).toBe(`/app/short-rent/compliance?detail=ticino:${PROPERTY_ID}`);
+      // Whatever the area the person is in when it arrives.
+      expect(notificationRoute({ type, entityId: PROPERTY_ID }, 'long-rent')).toBe(`/app/short-rent/compliance?detail=ticino:${PROPERTY_ID}`);
+      expect(notificationRoute({ type, entityId: null }, 'short-rent')).toBeNull();
+    },
+  );
+
+  it('notificationRoute_TicinoNotification_WhoMayNotOpenTheCockpitGoesToThePageOfTheProperty', () => {
+    const granted = (...keys: string[]) => (_context: AppContextKey, permission: string) => keys.includes(permission);
+
+    const allowed = granted('property.read', 'booking.read');
+    expect(notificationRoute({ type: 'ticino-notification-due', entityId: PROPERTY_ID }, 'short-rent', allowed)).toBe(`/app/short-rent/compliance?detail=ticino:${PROPERTY_ID}`);
+    // The cockpit asks both permissions (its route): a person who has one of them is led to the page of the property, as before the layer.
+    for (const keys of [['property.read'], ['booking.read'], []]) {
+      expect(notificationRoute({ type: 'ticino-notification-overdue', entityId: PROPERTY_ID }, 'short-rent', granted(...keys))).toBe(`/app/short-rent/properties/${PROPERTY_ID}`);
+    }
+  });
+
+  it('notificationRoute_TicinoNotification_AnEntityThatIsNotAPropertyOfTheAddressOpensTheCockpitAlone', () => {
+    // An id an address cannot hold (a path, a colon) never goes into `?detail=`: the cockpit opens and the bell keeps working.
+    expect(notificationRoute({ type: 'ticino-notification-due', entityId: '../admin' }, 'short-rent')).toBe('/app/short-rent/compliance');
+    expect(notificationRoute({ type: 'ticino-notification-due', entityId: 'a:b' }, 'short-rent')).toBe('/app/short-rent/compliance');
   });
 
   it('notificationRoute_VerificationRequired_OpensTheConsoleOfTheVerifications', () => {

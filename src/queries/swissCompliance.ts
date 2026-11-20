@@ -6,12 +6,13 @@ import { getProblemMessage } from '@/lib/api-errors';
 import { saveBlobAs } from '@/lib/file-download';
 import type { TicinoNotificationRequest, UploadSwissReceiptForm } from '@/types/swissCompliance.types';
 
-const TICINO_KEY = 'ticino-police';
+/** The root of the days of the Ticino police notification (`GET …/swiss/ticino-notification`): an event about the property reads them again (`use-notifications-realtime.ts`). */
+export const TICINO_POLICE_KEY = 'ticino-police';
 
 /** One arrival day of the Ticino police notification of a property (casazen/backend#979); `date` empty = the oldest day still to notify. */
 export function useTicinoDay(propertyId: string, date?: string) {
   return useQuery({
-    queryKey: [TICINO_KEY, propertyId, date ?? ''],
+    queryKey: [TICINO_POLICE_KEY, propertyId, date ?? ''],
     queryFn: () => swissComplianceApi.getTicinoDay(propertyId, date),
     enabled: Boolean(propertyId),
   });
@@ -36,7 +37,7 @@ export function useUploadReceipt(propertyId: string) {
   return useMutation({
     mutationFn: (form: UploadSwissReceiptForm) => swissComplianceApi.uploadReceipt(propertyId, form),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: [TICINO_KEY, propertyId] });
+      void queryClient.invalidateQueries({ queryKey: [TICINO_POLICE_KEY, propertyId] });
       void queryClient.invalidateQueries({ queryKey: ['compliance'] });
       toast.success(i18n.t('swiss.receipt.uploadSuccess'));
     },

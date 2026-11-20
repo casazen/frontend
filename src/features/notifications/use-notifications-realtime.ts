@@ -19,7 +19,9 @@ import { ASSIST_REQUESTS_KEY } from '@/queries/use-onboarding-assist';
 import { invalidateOnboarding } from '@/queries/use-onboarding-plan';
 import { PANEL_STEPS_KEY } from '@/queries/use-onboarding-panel-step';
 import { PAYMENTS_KEY } from '@/queries/use-payments';
+import { PROPERTIES_KEY } from '@/queries/use-properties';
 import { SCHEDULED_MESSAGES_KEY } from '@/queries/use-scheduled-messages';
+import { TICINO_POLICE_KEY } from '@/queries/swissCompliance';
 import { TOURIST_TAX_SUMMARY_KEY } from '@/queries/use-tourist-tax-summary';
 import { VERIFICATION_KEY } from '@/queries/verification';
 import { ACCOUNTANT_PACKAGE_KEY } from '@/queries/use-accountant-package';
@@ -82,8 +84,8 @@ const CHECKIN_LINK_FAILED = 'checkin-link-failed';
  * What a completed check-in changes on screen, apart from the bell: the booking and its page, the link of the online check-in (the
  * step "Cosa succede ora" reads it) and where it stands on its way to the guest (that delivery ends with the check-in), the guests of the stay and
  * Alloggiati Web, the cockpit and the counter of the menu, the Home, the guests of the organisation and the invoice data of the booking (the guest's
- * «yes» to «Ti serve la fattura?» and what the guest wrote, shown in «Dati di fatturazione» of the tab Pagamento). A page open in front of the host
- * shows it without a reload.
+ * «yes» to «Ti serve la fattura?» and what the guest wrote, shown in «Dati di fatturazione» of the tab Pagamento) and the arrival day of the Ticino police
+ * notification (who is in its file, and who still misses data: `TICINO_POLICE_KEY`). A page open in front of the host shows it without a reload.
  */
 const STALE_ON_CHECK_IN: readonly string[] = [
   BOOKINGS_KEY,
@@ -94,6 +96,7 @@ const STALE_ON_CHECK_IN: readonly string[] = [
   DASHBOARD_KEY,
   GUESTS_QUERY,
   INVOICE_DATA_KEY,
+  TICINO_POLICE_KEY,
 ];
 
 /**
@@ -238,6 +241,30 @@ function refreshScheduledMessages(queryClient: QueryClient, bookingId?: string |
 }
 
 /**
+ * The notifications about the notification of the guests of a Ticino arrival day to the cantonal police (`PushTypes.IsTicinoNotification`, E30/F02/US01/T01 and E30/F02/US02/T01, NF-127, NF-128): the
+ * alerts of the 24 hours (`ticino-notification-due`, `ticino-notification-overdue`) and the declaration of a day by a person of the org, or its undo (`ticino-notification-declared`). Their `entityId` is
+ * the PROPERTY, never a booking nor the day.
+ */
+const TICINO_NOTIFICATION_TYPES: ReadonlySet<string> = new Set(['ticino-notification-due', 'ticino-notification-overdue', 'ticino-notification-declared']);
+
+/** Whether a notification is about the Ticino police notification of a property (its `entityId` is the property, not a booking). */
+function isTicinoType(type: string | null): boolean {
+  return type !== null && TICINO_NOTIFICATION_TYPES.has(type);
+}
+
+/**
+ * What a Ticino notification changes on screen, apart from the bell: the cockpit and the counter of the menu (`COMPLIANCE_KEY`: the arrival days still to notify are a section of its summary, so a
+ * day declared by a co-host leaves the red count at once), the days of THAT property that an open layer shows (`TICINO_POLICE_KEY`: the day, its guests, who declared it; the days of every property
+ * when the event names none) and the property queries (`PROPERTIES_KEY`: the list the cockpit reads for its rows, and the page of the property). A page open in front of the host shows the day
+ * closed, reopened or overdue without a reload.
+ */
+function refreshTicinoNotification(queryClient: QueryClient, propertyId?: string | null): void {
+  void queryClient.invalidateQueries({ queryKey: [COMPLIANCE_KEY] });
+  void queryClient.invalidateQueries({ queryKey: propertyId ? [TICINO_POLICE_KEY, propertyId] : [TICINO_POLICE_KEY] });
+  void queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY] });
+}
+
+/**
  * What a request of help from a host changes on screen: the staff queue of the «Fallo per me» requests (`ADMIN_ASSIST_KEY`, the list and its pages): the
  * page open in front of the staff shows the new request without a reload. The queries of anyone who has no such page do not exist, so nothing is read.
  */
@@ -262,15 +289,16 @@ function refreshAssistOutcome(queryClient: QueryClient): void {
  * message at once). A change without an entity (read on another device, unknown type) refreshes every open thread. A completed
  * check-in also refreshes the data it changes (`STALE_ON_CHECK_IN`), a link that did not reach the guest the guest panel and the «To do» list
  * (`refreshCheckInLinkDelivery`), a request of help from a host (or reopened by it) the staff queue, a request support closed the requests of the host, and a scheduled message that needs
- * a look the timeline of its booking and the «To do» list (`refreshScheduledMessages`).
+ * a look the timeline of its booking and the «To do» list (`refreshScheduledMessages`), and one about the Ticino police notification of a property the cockpit, the open days
+ * of that property and the property queries (`refreshTicinoNotification`).
  */
 export function applyNotificationsChange(queryClient: QueryClient, change: NotificationsChange): void {
   queryClient.setQueryData(UNREAD_COUNT_KEY, change.unreadCount);
   void queryClient.invalidateQueries({ queryKey: [NOTIFICATIONS_QUERY], predicate: (query) => query.queryKey[1] !== UNREAD_COUNT_KEY[1] });
   void queryClient.invalidateQueries({ queryKey: [HOST_THREADS_QUERY] });
   void queryClient.invalidateQueries({ queryKey: [UNREAD_MESSAGES_QUERY] });
-  // The entity is a booking, except for a service request and for a request of help.
-  const entityIsBooking = !isServiceRequestType(change.type) && !isAssistType(change.type);
+  // The entity is a booking, except for a service request, for a request of help and for the Ticino notification (a property).
+  const entityIsBooking = !isServiceRequestType(change.type) && !isAssistType(change.type) && !isTicinoType(change.type);
   if (change.entityId && entityIsBooking) {
     void queryClient.invalidateQueries({ queryKey: [BOOKING_THREAD_QUERY, change.entityId] });
   } else if (!change.entityId) {
@@ -286,6 +314,7 @@ export function applyNotificationsChange(queryClient: QueryClient, change: Notif
   if (change.type === FISCAL_DOCUMENT_ISSUED || change.type === FISCAL_DOCUMENT_SDI_REJECTED) refreshFiscalDocuments(queryClient);
   if (change.type === TOURIST_TAX_PAID) refreshTouristTax(queryClient, change.entityId);
   if (change.type === SCHEDULED_MESSAGE_ISSUE) refreshScheduledMessages(queryClient, change.entityId);
+  if (isTicinoType(change.type)) refreshTicinoNotification(queryClient, change.entityId);
 }
 
 /** After a gap in the channel events may have been missed: everything the channel feeds is read again, the count included. */
@@ -308,6 +337,8 @@ export function refreshAfterGap(queryClient: QueryClient): void {
   refreshTouristTax(queryClient);
   // And for a scheduled message that was held back, failed or skipped while it was down: the timelines that are open, and the «To do» list.
   refreshScheduledMessages(queryClient);
+  // And for a Ticino arrival day that was declared, or whose 24 hours ran out, while it was down: the cockpit, the days that are open and the properties.
+  refreshTicinoNotification(queryClient);
 }
 
 // One connection per tab: every user of the hook shares this client, and the channel closes with the last one.

@@ -1,6 +1,7 @@
 import { AlertTriangle, BedDouble, Bell, CalendarClock, ClipboardCheck, Coins, FileCheck, FileWarning, LifeBuoy, LogOut, MessageSquare, ShieldAlert, ShieldCheck, UserCheck, Wrench, type LucideIcon } from 'lucide-react';
 import type { InAppNotification } from '@/api/notifications.api';
 import type { AppContextKey, PermissionPredicate } from '@/config/route-manifest';
+import { ticinoLayerPath } from '@/features/compliance/ticino/ticino-layer-address';
 import { ONBOARDING_PLAN_PATH } from '@/lib/onboarding-parts';
 
 interface NotificationKind {
@@ -30,6 +31,16 @@ const serviceRequestRoute = (id: string, context: AppContextKey | null) =>
   context === 'supplier' ? `/app/supplier/inbox/${encodeURIComponent(id)}` : '/app/short-rent/marketplace/mine';
 
 const serviceRequest = (textKey: string): NotificationKind => ({ icon: Wrench, textKey, route: serviceRequestRoute });
+
+/**
+ * The notification of the guests of a Ticino arrival day to the cantonal police (E30/F02/US03/T01, NF-127): the entity of the bell entry is the PROPERTY (`QueuedInAppNotification.From`), never the
+ * day, so the click opens the layer of that property over the cockpit, which opens on its first day still to notify (`ticinoLayerPath`). The cockpit asks `property.read` and `booking.read` (the
+ * day it lists also asks the guests): whoever may not open it goes to the page of the property, as before the layer.
+ */
+const ticinoRoute = (id: string, _context: AppContextKey | null, hasPermission?: PermissionPredicate) =>
+  hasPermission && !(hasPermission('short-rent', 'property.read') && hasPermission('short-rent', 'booking.read'))
+    ? `/app/short-rent/properties/${encodeURIComponent(id)}`
+    : ticinoLayerPath(id);
 
 /** The console of the identity verifications: the bell tells the operators (who hold `verification.decision`) that a guest waits for a person. */
 const VERIFICATIONS_ROUTE = '/app/short-rent/verifications';
@@ -104,6 +115,11 @@ const KINDS: Record<string, NotificationKind> = {
   'service-request-backup-won': serviceRequest('notifications.types.serviceRequestBackupWon'),
   'service-request-backup-closed': serviceRequest('notifications.types.serviceRequestBackupClosed'),
   'service-payment-received': serviceRequest('notifications.types.servicePaymentReceived'),
+  // E30/F02/US03/T01 (`PushTypes.TicinoNotificationDue`, `TicinoNotificationOverdue`, `TicinoNotificationDeclared`, to the hosts of the property): the 24 hours of the notification of the guests of an
+  // arrival day to the cantonal police are running or over, or a person of the org declared the day uploaded to the portal (or undid it). The entity is the property: the click opens the Ticino layer.
+  'ticino-notification-due': { icon: CalendarClock, textKey: 'notifications.types.ticinoNotificationDue', route: ticinoRoute },
+  'ticino-notification-overdue': { icon: ShieldAlert, textKey: 'notifications.types.ticinoNotificationOverdue', route: ticinoRoute },
+  'ticino-notification-declared': { icon: FileCheck, textKey: 'notifications.types.ticinoNotificationDeclared', route: ticinoRoute },
 };
 
 const GENERIC_KIND = { icon: Bell, textKey: 'notifications.types.generic' } as const;

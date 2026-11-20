@@ -21,7 +21,9 @@ import { FISCAL_DOCUMENTS_KEY } from '@/queries/use-fiscal-documents';
 import { INVOICE_DATA_KEY, useInvoiceData } from '@/queries/use-invoice-data';
 import { NOTIFICATIONS_QUERY, UNREAD_COUNT_KEY } from '@/queries/use-notifications';
 import { PAYMENTS_KEY } from '@/queries/use-payments';
+import { PROPERTIES_KEY } from '@/queries/use-properties';
 import { SCHEDULED_MESSAGES_KEY } from '@/queries/use-scheduled-messages';
+import { TICINO_POLICE_KEY } from '@/queries/swissCompliance';
 import { TOURIST_TAX_SUMMARY_KEY } from '@/queries/use-tourist-tax-summary';
 import { VERIFICATION_KEY } from '@/queries/verification';
 import type { PendingAlert } from '@/types/alert';
@@ -300,6 +302,50 @@ describe('useNotificationsRealtime', () => {
     expect(readAnotherBooking).toHaveBeenCalledTimes(1);
   });
 
+  // E30/F02/US03/T01 (NF-127, NF-128): the alerts of the 24 hours of a Ticino arrival day and the declaration of a day are new notices for the bell, which shows its pop-up; the cockpit (and the counter of the menu),
+  // the days of THAT property and the properties read again. The entity is the property: no thread of a booking is read.
+  it.each(['ticino-notification-due', 'ticino-notification-overdue', 'ticino-notification-declared'])(
+    'useNotificationsRealtime_%sArrives_TellsTheBellAndReadsTheCockpitTheDaysOfThatPropertyAndThePropertiesOnly',
+    (type) => {
+      const { queryClient, wrapper } = setup();
+      queryClient.setQueryData(UNREAD_COUNT_KEY, 0);
+      const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+      const client = fakeClient();
+      const onNewNotification = vi.fn();
+      renderHook(() => useNotificationsRealtime({ enabled: true, userId: 'host-1', getAccessToken, client, onNewNotification }), { wrapper });
+
+      const change = { unreadCount: 1, type, entityId: 'p-1' };
+      act(() => client.emit(change));
+
+      expect(onNewNotification).toHaveBeenCalledWith(change);
+      const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+      expect(keys).toContainEqual([COMPLIANCE_KEY]);
+      expect(keys).toContainEqual([TICINO_POLICE_KEY, 'p-1']);
+      expect(keys).toContainEqual([PROPERTIES_KEY]);
+      // The entity is a property, never a booking: no thread, and nothing of what a check-in or a scheduled message changes.
+      expect(keys).not.toContainEqual([BOOKING_THREAD_QUERY, 'p-1']);
+      expect(keys).not.toContainEqual([TICINO_POLICE_KEY]);
+      for (const root of [BOOKINGS_KEY, CHECKIN_SESSION_KEY, ALLOGGIATI_KEY, DASHBOARD_KEY, SCHEDULED_MESSAGES_KEY]) expect(keys, root).not.toContainEqual([root]);
+    },
+  );
+
+  it('useNotificationsRealtime_ReconnectAfterAGap_AlsoReadsAgainTheTicinoNotification', () => {
+    const { queryClient, wrapper } = setup();
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    const client = fakeClient();
+    renderHook(() => useNotificationsRealtime({ enabled: true, userId: 'u1', getAccessToken, client }), { wrapper });
+
+    act(() => client.setState('connected'));
+    act(() => client.setState('connecting'));
+    act(() => client.setState('connected'));
+
+    // A day declared, or whose 24 hours ran out, while the socket was down sent no message: the cockpit, every open day and the properties are read again.
+    const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+    expect(keys).toContainEqual([COMPLIANCE_KEY]);
+    expect(keys).toContainEqual([TICINO_POLICE_KEY]);
+    expect(keys).toContainEqual([PROPERTIES_KEY]);
+  });
+
   it('useNotificationsRealtime_AssistRequestedArrives_ReadsTheStaffQueueAgainAndTellsTheBell', () => {
     const { queryClient, wrapper } = setup();
     queryClient.setQueryData(UNREAD_COUNT_KEY, 0);
@@ -569,6 +615,53 @@ describe('applyNotificationsChange', () => {
     act(() => applyNotificationsChange(queryClient, { unreadCount: 1, type: 'receipt-missing', entityId: 'b-1' }));
 
     await waitFor(() => expect(readSummary).toHaveBeenCalledTimes(2));
+  });
+
+  // E30/F02/US03/T01: the arrival days of the Ticino properties still to notify are a section of the summary of the cockpit, which the counter of the menu reads too: an open cockpit shows the day closed (or
+  // reopened) by a co-host, and an open layer shows who declared it, without a reload. Only the days of THAT property are read again.
+  it.each(['ticino-notification-due', 'ticino-notification-overdue', 'ticino-notification-declared'])(
+    'applyNotificationsChange_%s_AnOpenCockpitAndAnOpenDayReadTheNewStateWithoutAReload_AndTheDayOfAnotherPropertyIsLeftAlone',
+    async (type) => {
+      const { queryClient, wrapper } = setup();
+      const readSummary = vi.fn().mockResolvedValue({ ticinoNotifications: { count: 1, items: [] } });
+      const readThisProperty = vi.fn().mockResolvedValue({ alreadyDeclared: false });
+      const readAnotherProperty = vi.fn().mockResolvedValue({ alreadyDeclared: false });
+      // What the open cockpit and the open layer keep mounted: the summary, and the day of this property (the layer reads one day, the key holds the date) and of another one.
+      renderHook(
+        () => ({
+          summary: useQuery({ queryKey: [COMPLIANCE_KEY, 'summary'], queryFn: readSummary }),
+          mine: useQuery({ queryKey: [TICINO_POLICE_KEY, 'p-1', '2026-11-19'], queryFn: readThisProperty }),
+          other: useQuery({ queryKey: [TICINO_POLICE_KEY, 'p-2', '2026-11-19'], queryFn: readAnotherProperty }),
+        }),
+        { wrapper },
+      );
+      await waitFor(() => expect(readThisProperty).toHaveBeenCalledTimes(1));
+
+      act(() => applyNotificationsChange(queryClient, { unreadCount: 1, type, entityId: 'p-1' }));
+
+      await waitFor(() => expect(readSummary).toHaveBeenCalledTimes(2));
+      await waitFor(() => expect(readThisProperty).toHaveBeenCalledTimes(2));
+      expect(readAnotherProperty).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it('applyNotificationsChange_TicinoNotification_AnEventThatNamesNoPropertyReadsTheDaysOfEveryProperty', () => {
+    const { queryClient } = setup();
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    applyNotificationsChange(queryClient, { unreadCount: 1, type: 'ticino-notification-declared', entityId: null });
+    const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+    expect(keys).toContainEqual([TICINO_POLICE_KEY]);
+    // No entity at all is what a notification read on another device looks like: the threads are read again, as for any type without an entity.
+    expect(keys).toContainEqual([BOOKING_THREAD_QUERY]);
+  });
+
+  // A guest who completes the check-in changes who is in the file of the arrival day and who still misses data: the open layer shows it without a reload.
+  it('applyNotificationsChange_GuestCheckInCompleted_ReadsAgainTheDaysOfTheTicinoNotification', () => {
+    const { queryClient } = setup();
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    applyNotificationsChange(queryClient, { unreadCount: 1, type: 'guest-checkin-completed', entityId: 'b-1' });
+    const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+    expect(keys).toContainEqual([TICINO_POLICE_KEY]);
   });
 
   it('applyNotificationsChange_VerificationRequired_ReadsAgainTheQueueTheFiguresAndTheCockpit', () => {
