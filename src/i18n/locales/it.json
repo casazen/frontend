@@ -876,6 +876,10 @@
           "title": "Promemoria manuale della routine",
           "why": "Una routine che hai impostato ti chiede di occuparti di questa prenotazione."
         },
+        "ScheduledMessageIssue": {
+          "title": "Messaggio programmato da sistemare",
+          "why": "Un messaggio automatico per un ospite non è partito o ha bisogno di te: apri la prenotazione, completa quello che manca oppure invialo tu."
+        },
         "SelfBillingDraftsToReview": {
           "title": "Autofatture da controllare ed emettere",
           "why": "Le autofatture (TD17) del mese sono pronte in bozza: controlla gli importi con le fatture dei portali ed emettile entro la scadenza."
@@ -5227,6 +5231,195 @@
       "sendError": "Messaggio non inviato. Controlla la connessione e riprova.",
       "unread_one": "{{count}} messaggio da leggere",
       "unread_other": "{{count}} messaggi da leggere"
+    },
+    "scheduledMessages": {
+      "blocked": {
+        "fix": {
+          "guest": "Apri Documenti",
+          "property": "Apri l'immobile",
+          "routines": "Apri le routine",
+          "tax": "Apri la tassa di soggiorno"
+        },
+        "heading": "Manca:",
+        "item": {
+          "accessCodeHeld": "il pagamento della tassa di soggiorno (il codice d'accesso aspetta)",
+          "checkInInProgress": "che l'ospite finisca il check-in che sta compilando",
+          "idNotVerified": "la verifica dell'identità dell'ospite (il codice d'accesso parte solo dopo)",
+          "templateMissing": "il modello del messaggio (non c'è più: scrivi il testo con «Modifica» o scegli un altro modello nella routine)",
+          "textInvalid": "un testo valido (è vuoto, troppo lungo o il canale non lo accetta)",
+          "unknown": "un dato che serve per inviarlo"
+        },
+        "variable": {
+          "accessCode": "il codice d'accesso dell'immobile",
+          "bookingCode": "il codice della prenotazione",
+          "checkInDate": "la data di arrivo",
+          "checkInLink": "il link del check-in",
+          "checkInMethod": "come entra l'ospite (il metodo di check-in dell'immobile)",
+          "checkInTime": "l'orario di arrivo dell'immobile",
+          "checkOutDate": "la data di partenza",
+          "checkOutTime": "l'orario di partenza dell'immobile",
+          "guestName": "il nome dell'ospite (il canale non l'ha comunicato)",
+          "hostName": "il tuo nome come host",
+          "propertyAddress": "l'indirizzo dell'immobile",
+          "propertyName": "il nome dell'immobile",
+          "reviewLink": "il link per la recensione (c'è solo per le prenotazioni fatte dal tuo sito)"
+        },
+        "willHold": "Quando arriva il momento di inviarlo, il messaggio resta fermo finché questi dati non ci sono: il testo qui sotto non li ha ancora."
+      },
+      "channel": {
+        "direct": "conversazione diretta con l'ospite",
+        "email": "e-mail",
+        "line": "Canale: {{channel}}",
+        "lineNone": "Nessun modo per scrivere all'ospite: {{reason}}",
+        "none": "nessuno",
+        "ota": "chat del portale",
+        "reason": {
+          "contactInfoUnavailable": "il canale non comunica l'e-mail di questo ospite",
+          "mappingNotConfirmed": "l'annuncio della conversazione non è ancora collegato a un tuo immobile",
+          "noConversation": "non c'è una conversazione e non c'è un altro modo",
+          "notConnected": "il collegamento ai canali non è attivo",
+          "other": "al momento non c'è una via per raggiungerlo",
+          "threadClosed": "la conversazione è chiusa",
+          "unknown": "non riusciamo a controllarlo in questo momento"
+        }
+      },
+      "draftKept": "Il testo che stavi scrivendo non è perso: torna quando i messaggi si leggono di nuovo.",
+      "edit": {
+        "action": "Modifica",
+        "actionLabel": "Modifica il messaggio «{{name}}» di {{when}}",
+        "description": "La modifica vale solo per questa prenotazione: la routine e le altre prenotazioni non cambiano.",
+        "fieldHint": "I pulsanti qui sotto inseriscono un dato che CasaZen scrive al momento dell'invio, come il nome dell'ospite. Il dato compare tra doppie parentesi graffe.",
+        "fieldLabel": "Testo del messaggio",
+        "fixedNote": "Il testo parte da come lo leggerà l'ospite adesso: i dati già compilati (nome, date, orari, indirizzo) diventano testo fisso e non seguono più la prenotazione se questa cambia. Per farli seguire, inseriscili con i pulsanti.",
+        "insertLabel": "Inserisci un dato",
+        "missingAccept": "Ho capito: salvo il testo senza questi dati",
+        "missingHeading": "Nel testo qui sotto mancano questi dati, perché la prenotazione non li ha ancora:",
+        "missingWarning": "Se salvi così, il messaggio parte senza questi dati. Per tenerli, inserisci il pulsante evidenziato dove vanno: il messaggio resta fermo finché il dato non c'è.",
+        "originalSummary": "Testo della routine",
+        "restore": "Rimetti il testo della routine nel campo",
+        "restored": "Il messaggio torna al testo della routine.",
+        "save": "Salva",
+        "saved": "Messaggio modificato: la modifica vale solo per questa prenotazione.",
+        "title": "Modifica il messaggio",
+        "useRoutineText": "Usa il testo della routine",
+        "useRoutineTextHint": "Cancella la tua modifica: il messaggio torna al testo della routine, con i dati di questa prenotazione.",
+        "variable": {
+          "accessCode": "Codice d'accesso",
+          "bookingCode": "Codice prenotazione",
+          "checkInDate": "Data di arrivo",
+          "checkInLink": "Link del check-in",
+          "checkInMethod": "Come si entra",
+          "checkInTime": "Orario di arrivo",
+          "checkOutDate": "Data di partenza",
+          "checkOutTime": "Orario di partenza",
+          "guestName": "Nome dell'ospite",
+          "hostName": "Il tuo nome",
+          "propertyAddress": "Indirizzo",
+          "propertyName": "Nome dell'immobile",
+          "reviewLink": "Link per la recensione"
+        }
+      },
+      "edited": "Modificato",
+      "empty": "Non c'è niente di programmato per questa prenotazione. I messaggi partono da soli solo dopo che attivi una routine che li contiene.",
+      "emptyLink": "Vai alle routine",
+      "errors": {
+        "blocked": "Non è partito: manca ancora qualcosa.",
+        "blockedNamed": "Non è partito: manca ancora {{missing}}.",
+        "changed": "Qualcun altro ha cambiato il messaggio mentre lo modificavi: guarda com'è adesso e riprova.",
+        "generic": "Non siamo riusciti a completare l'operazione. Riprova tra poco.",
+        "inProgress": "Il messaggio sta partendo proprio ora: riprova tra poco.",
+        "notEditable": "Il messaggio non si può più cambiare: è già partito o non partirà più.",
+        "notFound": "Questo messaggio non c'è più o non puoi vederlo.",
+        "notSendable": "Il messaggio non si può inviare: è già partito o non partirà più.",
+        "textInvalid": "Il testo non può essere vuoto né più lungo di 2000 caratteri.",
+        "variableUnknown": "Nel testo c'è una parte tra doppie parentesi graffe che non è un dato che conosciamo: inseriscili con i pulsanti."
+      },
+      "failure": {
+        "channelRefused": "Non è partito: il canale ha segnalato un errore.",
+        "chatNotLicensed": "Non è partito: la chat del portale non è ancora attiva per questo annuncio.",
+        "manualVerify": "Non sappiamo se il messaggio è arrivato: controlla la conversazione prima di inviarlo di nuovo.",
+        "other": "Non è partito, per un problema che CasaZen non sa ancora spiegare.",
+        "rateLimited": "Non è partito: il canale ha chiesto di aspettare un po'.",
+        "unavailable": "Non è partito: il canale non risponde in questo momento.",
+        "unconfirmed": "Il canale non ha ancora confermato di aver preso il messaggio: non lo consideriamo inviato."
+      },
+      "listLabel": "Messaggi programmati per questa prenotazione, in ordine di orario",
+      "loadError": "Non riusciamo a leggere i messaggi programmati: non sappiamo cosa sta per partire.",
+      "loadErrorGone": "Questa prenotazione non c'è più o non puoi vederla: i suoi messaggi programmati non sono disponibili.",
+      "loading": "Carico i messaggi programmati…",
+      "outsideHours": "Inviato fuori orario",
+      "placeholder": {
+        "accessCode": "il codice d'accesso verrà aggiunto quando il messaggio parte",
+        "checkInLink": "il link del check-in verrà creato quando il messaggio parte",
+        "reviewLink": "il link per la recensione verrà aggiunto quando il messaggio parte"
+      },
+      "reason": {
+        "bookingCancelled": "La prenotazione è stata annullata: il messaggio non parte.",
+        "bySystem": "Saltato da CasaZen.",
+        "campaignNeedsConsent": "L'ospite non ha dato il consenso a ricevere messaggi di marketing.",
+        "channelRule": "Le regole del canale non permettono questo testo in questa conversazione, per esempio un link nella richiesta di una prenotazione.",
+        "checkInCompleted": "L'ospite ha già completato il check-in online: il link non serve più.",
+        "checkInNotOpen": "Il soggiorno non ha un check-in aperto (non è confermato o è già finito): il link non serve.",
+        "checkInWithOperator": "La verifica dell'identità è in mano a un operatore: un nuovo link la farebbe ricominciare.",
+        "checkOutReached": "È rimasto fermo fino alla partenza dell'ospite: non parte più.",
+        "conditionNotMet": "Questa prenotazione non rispetta la condizione della routine.",
+        "contactUnavailable": "Non c'è un modo per scrivere all'ospite: manca una conversazione, è chiusa o non c'è un indirizzo.",
+        "mappingNotConfirmed": "L'annuncio di questa conversazione non è ancora collegato a un tuo immobile: CasaZen non scrive finché non lo confermi.",
+        "missed": "L'orario previsto è passato da troppo tempo: non lo mandiamo in ritardo.",
+        "otherCancelled": "Il messaggio non partirà più.",
+        "otherExpired": "Il momento di inviarlo è passato.",
+        "otherSkipped": "CasaZen non l'ha inviato.",
+        "person": "Saltato da una persona del team.",
+        "routineInactive": "La routine è stata spenta o non contiene più questo messaggio."
+      },
+      "retry": "Riprova",
+      "routine": "Routine: {{name}}",
+      "routineUnnamed": "Senza nome",
+      "sendNow": {
+        "action": "Invia ora",
+        "actionLabel": "Invia ora il messaggio «{{name}}» di {{when}}",
+        "blockedNote": "Se non lo completi, il messaggio non parte.",
+        "confirm": "Invia ora",
+        "consequenceGuest": "L'ospite lo riceve adesso.",
+        "consequenceNow": "Il messaggio parte subito, senza aspettare l'orario previsto.",
+        "description": "Stai inviando subito il messaggio «{{name}}», previsto per {{when}}.",
+        "done": "Messaggio inviato.",
+        "failed": "Il messaggio non è partito: guarda il motivo nell'elenco.",
+        "notSent": "Il messaggio non è stato inviato: guarda il motivo nell'elenco.",
+        "stillMissing": "Manca ancora:",
+        "title": "Inviare il messaggio adesso?"
+      },
+      "sent": {
+        "at": "Inviato il {{when}}.",
+        "done": "Inviato.",
+        "openConversation": "Apri la conversazione",
+        "skippedAfterSend": "Il messaggio era già partito il {{when}}: l'ospite l'ha ricevuto lo stesso."
+      },
+      "skip": {
+        "action": "Salta",
+        "actionLabel": "Salta il messaggio «{{name}}» di {{when}}",
+        "confirm": "Salta il messaggio",
+        "consequenceFinal": "Non si può tornare indietro: il messaggio non partirà più.",
+        "consequenceGuest": "L'ospite non riceverà questo messaggio.",
+        "consequenceTeam": "Le altre persone che seguono l'immobile ricevono un avviso.",
+        "description": "Stai saltando il messaggio «{{name}}» previsto per {{when}}.",
+        "done": "Messaggio saltato: l'ospite non lo riceverà.",
+        "notDone": "Il messaggio non risulta saltato: guarda lo stato nell'elenco.",
+        "title": "Saltare questo messaggio?"
+      },
+      "status": {
+        "Blocked": "Bloccato",
+        "Cancelled": "Annullato",
+        "Expired": "Scaduto",
+        "Failed": "Invio non riuscito",
+        "Scheduled": "Programmato",
+        "Sent": "Inviato",
+        "Skipped": "Saltato",
+        "unknown": "Stato sconosciuto"
+      },
+      "textLabel": "Testo del messaggio",
+      "textMissing": "Il testo non è disponibile: il modello del messaggio non c'è più.",
+      "title": "Messaggi programmati"
     }
   },
   "bookingStatus": {
@@ -16065,7 +16258,8 @@
       "assistReopened": "Un utente ha riaperto una richiesta «Fallo per me»: dice che non funziona.",
       "fiscalDocumentIssued": "È stato emesso un documento fiscale per una prenotazione.",
       "fiscalDocumentSdiRejected": "Lo SDI ha scartato una fattura: va corretta.",
-      "touristTaxPaid": "Un ospite ha pagato online la tassa di soggiorno."
+      "touristTaxPaid": "Un ospite ha pagato online la tassa di soggiorno.",
+      "scheduledMessageIssue": "Un messaggio programmato per un ospite non è partito o ha bisogno di te: apri la prenotazione per vedere cosa è successo."
     }
   },
   "octorate": {

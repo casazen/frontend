@@ -876,6 +876,10 @@
           "title": "Manual reminder from a routine",
           "why": "A routine you set up asks you to take care of this booking."
         },
+        "ScheduledMessageIssue": {
+          "title": "Scheduled message to fix",
+          "why": "An automatic message for a guest did not go out or needs you: open the booking, complete what is missing or send it yourself."
+        },
         "SelfBillingDraftsToReview": {
           "title": "Self-billed invoices to check and issue",
           "why": "The self-billed invoices (TD17) of the month are ready as drafts: check the amounts against the portals' invoices and issue them by the deadline."
@@ -5227,6 +5231,195 @@
       "sendError": "Message not sent. Check your connection and try again.",
       "unread_one": "{{count}} message to read",
       "unread_other": "{{count}} messages to read"
+    },
+    "scheduledMessages": {
+      "blocked": {
+        "fix": {
+          "guest": "Open Documents",
+          "property": "Open the property",
+          "routines": "Open the routines",
+          "tax": "Open the tourist tax"
+        },
+        "heading": "Missing:",
+        "item": {
+          "accessCodeHeld": "the payment of the tourist tax (the access code waits for it)",
+          "checkInInProgress": "the guest to finish the check-in they are filling in",
+          "idNotVerified": "the identity check of the guest (the access code goes out only after it)",
+          "templateMissing": "the template of the message (it is gone: write the text with «Edit» or choose another template in the routine)",
+          "textInvalid": "a valid text (it is empty, too long or the channel does not accept it)",
+          "unknown": "something the message needs before it can go out"
+        },
+        "variable": {
+          "accessCode": "the access code of the property",
+          "bookingCode": "the booking code",
+          "checkInDate": "the arrival date",
+          "checkInLink": "the check-in link",
+          "checkInMethod": "how the guest gets in (the check-in method of the property)",
+          "checkInTime": "the check-in time of the property",
+          "checkOutDate": "the departure date",
+          "checkOutTime": "the check-out time of the property",
+          "guestName": "the name of the guest (the channel has not sent it)",
+          "hostName": "your name as the host",
+          "propertyAddress": "the address of the property",
+          "propertyName": "the name of the property",
+          "reviewLink": "the review link (it exists only for bookings made on your site)"
+        },
+        "willHold": "When the time comes to send it, the message waits until these details are there: the text below does not have them yet."
+      },
+      "channel": {
+        "direct": "direct conversation with the guest",
+        "email": "e-mail",
+        "line": "Channel: {{channel}}",
+        "lineNone": "No way to write to the guest: {{reason}}",
+        "none": "none",
+        "ota": "portal chat",
+        "reason": {
+          "contactInfoUnavailable": "the channel does not give the e-mail of this guest",
+          "mappingNotConfirmed": "the listing of the conversation is not linked to one of your properties yet",
+          "noConversation": "there is no conversation and no other way",
+          "notConnected": "the connection to the channels is not active",
+          "other": "there is no way to reach them right now",
+          "threadClosed": "the conversation is closed",
+          "unknown": "we cannot check it right now"
+        }
+      },
+      "draftKept": "The text you were writing is not lost: it comes back when the messages can be read again.",
+      "edit": {
+        "action": "Edit",
+        "actionLabel": "Edit the message «{{name}}» of {{when}}",
+        "description": "The change is for this booking only: the routine and the other bookings stay as they are.",
+        "fieldHint": "The buttons below put in a detail that CasaZen writes when the message goes out, such as the name of the guest. The detail appears between double curly brackets.",
+        "fieldLabel": "Message text",
+        "fixedNote": "The text starts from how the guest will read it now: the details already filled in (name, dates, times, address) become fixed text and no longer follow the booking if it changes. To make them follow it, insert them with the buttons.",
+        "insertLabel": "Insert a detail",
+        "missingAccept": "I understand: save the text without these details",
+        "missingHeading": "The text below lacks these details, because the booking does not have them yet:",
+        "missingWarning": "If you save it like this, the message goes out without these details. To keep them, put the highlighted button where the detail goes: the message then waits until the detail is there.",
+        "originalSummary": "Text of the routine",
+        "restore": "Put the text of the routine back in the field",
+        "restored": "The message goes back to the text of the routine.",
+        "save": "Save",
+        "saved": "Message edited: the change is for this booking only.",
+        "title": "Edit the message",
+        "useRoutineText": "Use the text of the routine",
+        "useRoutineTextHint": "Clears your change: the message goes back to the text of the routine, with the details of this booking.",
+        "variable": {
+          "accessCode": "Access code",
+          "bookingCode": "Booking code",
+          "checkInDate": "Arrival date",
+          "checkInLink": "Check-in link",
+          "checkInMethod": "How to get in",
+          "checkInTime": "Arrival time",
+          "checkOutDate": "Departure date",
+          "checkOutTime": "Departure time",
+          "guestName": "Guest name",
+          "hostName": "Your name",
+          "propertyAddress": "Address",
+          "propertyName": "Property name",
+          "reviewLink": "Review link"
+        }
+      },
+      "edited": "Edited",
+      "empty": "Nothing is scheduled for this booking. Messages go out on their own only after you activate a routine that contains them.",
+      "emptyLink": "Go to the routines",
+      "errors": {
+        "blocked": "It did not go out: something is still missing.",
+        "blockedNamed": "It did not go out: still missing {{missing}}.",
+        "changed": "Somebody else changed the message while you were editing it: look at how it is now and try again.",
+        "generic": "We could not complete the operation. Try again shortly.",
+        "inProgress": "The message is going out right now: try again shortly.",
+        "notEditable": "The message can no longer be changed: it has already gone out or it will not go out any more.",
+        "notFound": "This message is gone or you cannot see it.",
+        "notSendable": "The message cannot be sent: it has already gone out or it will not go out any more.",
+        "textInvalid": "The text cannot be empty or longer than 2000 characters.",
+        "variableUnknown": "The text has a part between double curly brackets that is not a detail we know: insert them with the buttons."
+      },
+      "failure": {
+        "channelRefused": "It did not go out: the channel reported an error.",
+        "chatNotLicensed": "It did not go out: the portal chat is not active for this listing yet.",
+        "manualVerify": "We do not know whether the message arrived: check the conversation before sending it again.",
+        "other": "It did not go out, for a problem CasaZen cannot explain yet.",
+        "rateLimited": "It did not go out: the channel asked us to wait a little.",
+        "unavailable": "It did not go out: the channel is not answering right now.",
+        "unconfirmed": "The channel has not confirmed that it took the message yet: we do not count it as sent."
+      },
+      "listLabel": "Scheduled messages for this booking, in time order",
+      "loadError": "We cannot read the scheduled messages, so we do not know what is about to go out.",
+      "loadErrorGone": "This booking is gone or you cannot see it, so its scheduled messages are not available.",
+      "loading": "Loading the scheduled messages…",
+      "outsideHours": "Sent outside hours",
+      "placeholder": {
+        "accessCode": "the access code will be added when the message goes out",
+        "checkInLink": "the check-in link will be created when the message goes out",
+        "reviewLink": "the review link will be added when the message goes out"
+      },
+      "reason": {
+        "bookingCancelled": "The booking was cancelled: the message does not go out.",
+        "bySystem": "Skipped by CasaZen.",
+        "campaignNeedsConsent": "The guest has not agreed to receive marketing messages.",
+        "channelRule": "The rules of the channel do not allow this text in this conversation, for example a link in a booking request.",
+        "checkInCompleted": "The guest has already completed the online check-in: the link is no longer needed.",
+        "checkInNotOpen": "The stay has no open check-in (it is not confirmed or it is over): the link is not needed.",
+        "checkInWithOperator": "The identity check is with an operator: a new link would start it over.",
+        "checkOutReached": "It stayed on hold until the guest left: it no longer goes out.",
+        "conditionNotMet": "This booking does not meet the condition of the routine.",
+        "contactUnavailable": "There is no way to write to the guest: there is no conversation, it is closed or there is no address.",
+        "mappingNotConfirmed": "The listing of this conversation is not linked to one of your properties yet: CasaZen does not write until you confirm it.",
+        "missed": "The planned time passed too long ago: we do not send it late.",
+        "otherCancelled": "The message will not go out any more.",
+        "otherExpired": "The time to send it has passed.",
+        "otherSkipped": "CasaZen did not send it.",
+        "person": "Skipped by a person on the team.",
+        "routineInactive": "The routine was switched off or no longer contains this message."
+      },
+      "retry": "Try again",
+      "routine": "Routine: {{name}}",
+      "routineUnnamed": "Unnamed",
+      "sendNow": {
+        "action": "Send now",
+        "actionLabel": "Send now the message «{{name}}» of {{when}}",
+        "blockedNote": "If you do not complete it, the message does not go out.",
+        "confirm": "Send now",
+        "consequenceGuest": "The guest receives it now.",
+        "consequenceNow": "The message goes out at once, without waiting for the planned time.",
+        "description": "You are sending the message «{{name}}», planned for {{when}}, right now.",
+        "done": "Message sent.",
+        "failed": "The message did not go out: see the reason in the list.",
+        "notSent": "The message was not sent: see the reason in the list.",
+        "stillMissing": "Still missing:",
+        "title": "Send the message now?"
+      },
+      "sent": {
+        "at": "Sent on {{when}}.",
+        "done": "Sent.",
+        "openConversation": "Open the conversation",
+        "skippedAfterSend": "The message had already gone out on {{when}}: the guest got it anyway."
+      },
+      "skip": {
+        "action": "Skip",
+        "actionLabel": "Skip the message «{{name}}» of {{when}}",
+        "confirm": "Skip the message",
+        "consequenceFinal": "It cannot be undone: the message will not go out any more.",
+        "consequenceGuest": "The guest will not receive this message.",
+        "consequenceTeam": "The other people who follow the property get a notice.",
+        "description": "You are skipping the message «{{name}}» planned for {{when}}.",
+        "done": "Message skipped: the guest will not receive it.",
+        "notDone": "The message does not show as skipped: see its state in the list.",
+        "title": "Skip this message?"
+      },
+      "status": {
+        "Blocked": "Blocked",
+        "Cancelled": "Cancelled",
+        "Expired": "Expired",
+        "Failed": "Send failed",
+        "Scheduled": "Scheduled",
+        "Sent": "Sent",
+        "Skipped": "Skipped",
+        "unknown": "Unknown state"
+      },
+      "textLabel": "Message text",
+      "textMissing": "The text is not available: the template of the message is gone.",
+      "title": "Scheduled messages"
     }
   },
   "bookingStatus": {
@@ -16065,7 +16258,8 @@
       "assistReopened": "A user reopened a «Do it for me» request: it says it does not work.",
       "fiscalDocumentIssued": "A fiscal document was issued for a booking.",
       "fiscalDocumentSdiRejected": "The SDI rejected an invoice: it needs to be corrected.",
-      "touristTaxPaid": "A guest paid the tourist tax online."
+      "touristTaxPaid": "A guest paid the tourist tax online.",
+      "scheduledMessageIssue": "A scheduled message for a guest did not go out or needs you: open the booking to see what happened."
     }
   },
   "octorate": {

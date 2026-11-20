@@ -21,6 +21,7 @@ import { FISCAL_DOCUMENTS_KEY } from '@/queries/use-fiscal-documents';
 import { INVOICE_DATA_KEY, useInvoiceData } from '@/queries/use-invoice-data';
 import { NOTIFICATIONS_QUERY, UNREAD_COUNT_KEY } from '@/queries/use-notifications';
 import { PAYMENTS_KEY } from '@/queries/use-payments';
+import { SCHEDULED_MESSAGES_KEY } from '@/queries/use-scheduled-messages';
 import { TOURIST_TAX_SUMMARY_KEY } from '@/queries/use-tourist-tax-summary';
 import { VERIFICATION_KEY } from '@/queries/verification';
 import type { PendingAlert } from '@/types/alert';
@@ -240,6 +241,63 @@ describe('useNotificationsRealtime', () => {
     const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
     expect(keys).toContainEqual([...FISCAL_DOCUMENTS_KEY]);
     expect(keys).toContainEqual([TOURIST_TAX_SUMMARY_KEY]);
+  });
+
+  // E05/F07/US02 (NF-71): a scheduled message that was held back or skipped while the socket was down sent no message either: every timeline that is open and the «To do» list are read again.
+  it('useNotificationsRealtime_ReconnectAfterAGap_AlsoReadsAgainTheScheduledMessagesAndTheTodoList', () => {
+    const { queryClient, wrapper } = setup();
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    const client = fakeClient();
+    renderHook(() => useNotificationsRealtime({ enabled: true, userId: 'u1', getAccessToken, client }), { wrapper });
+
+    act(() => client.setState('connected'));
+    act(() => client.setState('connecting'));
+    act(() => client.setState('connected'));
+
+    const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+    expect(keys).toContainEqual([SCHEDULED_MESSAGES_KEY]);
+    expect(keys).toContainEqual([INTERNAL_ACTIVITIES_KEY]);
+  });
+
+  // E05/F07/US02 (NF-71): the push `scheduled-message-issue` (a message held back, failed, skipped or sent outside hours) is a new notice for the bell, which shows its pop-up, and the timeline of THAT booking
+  // and the «To do» list read it again; the timelines of other bookings and what a check-in changes do not.
+  it('useNotificationsRealtime_ScheduledMessageIssueArrives_TellsTheBellAndReadsTheTimelineOfThatBookingAndTheTodoListOnly', () => {
+    const { queryClient, wrapper } = setup();
+    queryClient.setQueryData(UNREAD_COUNT_KEY, 0);
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    const client = fakeClient();
+    const onNewNotification = vi.fn();
+    renderHook(() => useNotificationsRealtime({ enabled: true, userId: 'host-1', getAccessToken, client, onNewNotification }), { wrapper });
+
+    const change = { unreadCount: 1, type: 'scheduled-message-issue', entityId: 'b-1' };
+    act(() => client.emit(change));
+
+    expect(onNewNotification).toHaveBeenCalledWith(change);
+    const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+    expect(keys).toContainEqual([SCHEDULED_MESSAGES_KEY, 'b-1']);
+    expect(keys).toContainEqual([INTERNAL_ACTIVITIES_KEY]);
+    expect(keys).not.toContainEqual([SCHEDULED_MESSAGES_KEY]);
+    for (const root of [BOOKINGS_KEY, CHECKIN_SESSION_KEY, CHECKIN_LINK_DELIVERY_KEY, ALLOGGIATI_KEY, COMPLIANCE_KEY]) expect(keys, root).not.toContainEqual([root]);
+  });
+
+  it('applyNotificationsChange_ScheduledMessageIssue_AnOpenTimelineShowsTheNewStateWithoutAReload_AndTheTimelineOfAnotherBookingIsLeftAlone', async () => {
+    const { queryClient, wrapper } = setup();
+    const readThisBooking = vi.fn().mockResolvedValue([]);
+    const readAnotherBooking = vi.fn().mockResolvedValue([]);
+    // What the open tab Soggiorno of booking b-1 keeps mounted (`useScheduledMessages`), and another booking's.
+    renderHook(
+      () => ({
+        mine: useQuery({ queryKey: [SCHEDULED_MESSAGES_KEY, 'b-1'], queryFn: readThisBooking }),
+        other: useQuery({ queryKey: [SCHEDULED_MESSAGES_KEY, 'b-2'], queryFn: readAnotherBooking }),
+      }),
+      { wrapper },
+    );
+    await waitFor(() => expect(readThisBooking).toHaveBeenCalledTimes(1));
+
+    act(() => applyNotificationsChange(queryClient, { unreadCount: 1, type: 'scheduled-message-issue', entityId: 'b-1' }));
+
+    await waitFor(() => expect(readThisBooking).toHaveBeenCalledTimes(2));
+    expect(readAnotherBooking).toHaveBeenCalledTimes(1);
   });
 
   it('useNotificationsRealtime_AssistRequestedArrives_ReadsTheStaffQueueAgainAndTellsTheBell', () => {
