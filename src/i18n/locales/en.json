@@ -1819,6 +1819,7 @@
       "replyNotDelivered": "The portal did not confirm the reply within an hour: it did not arrive. You can try again.",
       "reportInvalidPeriod": "The period is not valid: check the dates.",
       "reportPeriodTooLong": "The period is too long: choose one of at most 24 months.",
+      "reviewActionNotAllowed": "The portal did not allow the action: maybe the reply is already there, or the time is over. Refresh the review to see what happened.",
       "reviewNotAvailable": "The portal does not give us the reviews of this listing: usually a permission is missing in your channel manager.",
       "reviewNotDelivered": "The portal did not confirm your review of the guest within an hour: it did not arrive. You can try again.",
       "reviewNotFound": "Review not found.",

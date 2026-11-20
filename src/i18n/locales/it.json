@@ -1819,6 +1819,7 @@
       "replyNotDelivered": "Il portale non ha confermato la risposta entro un'ora: non è arrivata. Puoi riprovare.",
       "reportInvalidPeriod": "Il periodo non è valido: controlla le date.",
       "reportPeriodTooLong": "Il periodo è troppo lungo: scegline uno di al massimo 24 mesi.",
+      "reviewActionNotAllowed": "Il portale non ha permesso l'azione: forse la risposta c'è già, oppure il tempo è scaduto. Aggiorna la recensione per vedere com'è andata.",
       "reviewNotAvailable": "Il portale non ci dà le recensioni di questo annuncio: di solito manca un permesso nel tuo channel manager.",
       "reviewNotDelivered": "Il portale non ha confermato la tua recensione dell'ospite entro un'ora: non è arrivata. Puoi riprovare.",
       "reviewNotFound": "Recensione non trovata.",

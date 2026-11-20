@@ -126,9 +126,17 @@ describe('the model of the reviews (E05/F06/US02, NF-69)', () => {
       'review_not_available',
       'reply_not_delivered',
       'review_not_delivered',
+      // The code the server SAVES on the review when the channel manager answers 409 to a reply or to the host's review (the one of the HTTP answer is `ota_review_action_not_allowed`):
+      // the page reads it back from the review, so it needs its words too.
+      'review_action_not_allowed',
     ])('reasonText_%s_HasWordsInItalianAndEnglish', (code) => {
       expect(reasonText(code, i18n.getFixedT('it'))).toBeTruthy();
       expect(reasonText(code, i18n.getFixedT('en'))).toBeTruthy();
+    });
+
+    it('reasonText_TheTwoCodesOfANotAllowedAction_SayTheSameThing', () => {
+      expect(reasonText('review_action_not_allowed', t())).toBe(reasonText('ota_review_action_not_allowed', t()));
+      expect(reasonText('review_action_not_allowed', i18n.getFixedT('en'))).toBe(reasonText('ota_review_action_not_allowed', i18n.getFixedT('en')));
     });
 
     it('reasonText_ACodeTheAppHasNoWordsFor_IsNullNeverTheCode', () => {

@@ -253,6 +253,18 @@ describe('the page of a review (E05/F06/US02, NF-69)', () => {
       expect(screen.getByRole('button', { name: 'Pubblica la risposta' })).toBeEnabled();
     });
 
+    it('ReviewThreadView_ReplyTheChannelManagerAnsweredNotAllowed_SaysItInTheWordsWrittenForItAfterTheReadingAndNotTheGeneralSentence', async () => {
+      // The code the server saves on the review for a 409 of the channel manager (not the `ota_…` one of the HTTP answer).
+      vi.mocked(otaReviewsApi.getReviewThread).mockResolvedValue(
+        review({ reply: { state: 'Error', text: 'Grazie, a presto!', errorCode: 'review_action_not_allowed' } }),
+      );
+      renderReview();
+
+      const error = await screen.findByTestId('review-reply-error');
+      expect(error).toHaveTextContent('Il portale non ha permesso l\'azione');
+      expect(error).not.toHaveTextContent('Il portale non l\'ha accettata');
+    });
+
     it('ReviewThreadView_AChannelThatCannotBeAnswered_SaysOneSentenceAndShowsNothingInItsPlace', async () => {
       vi.mocked(otaReviewsApi.getReviewThread).mockResolvedValue(
         review({
@@ -401,6 +413,19 @@ describe('the page of a review (E05/F06/US02, NF-69)', () => {
       expect(screen.getByTestId('host-review-sent')).toHaveTextContent('Ospite ordinato.');
       expect(screen.getByTestId('host-review-sent')).toHaveTextContent('Grazie ancora.');
       expect(screen.queryByTestId('host-review-form')).not.toBeInTheDocument();
+    });
+
+    it('ReviewThreadView_HostReviewTheChannelManagerAnsweredNotAllowed_SaysItInTheWordsWrittenForItAfterTheReading', async () => {
+      vi.mocked(otaReviewsApi.getReviewThread).mockResolvedValue(
+        review({
+          hostReview: { window: 'Open', state: 'Error', ratings: [{ category: 'cleanliness', value: 4 }], text: 'Bene.', errorCode: 'review_action_not_allowed' },
+        }),
+      );
+      renderReview();
+
+      const error = await screen.findByTestId('host-review-error');
+      expect(error).toHaveTextContent('Il portale non ha permesso l\'azione');
+      expect(error).not.toHaveTextContent('Il portale non l\'ha accettata');
     });
 
     it('ReviewThreadView_HostReviewWhoseOutcomeIsNotKnown_IsToCheckAndCannotBeSentAgain', async () => {
