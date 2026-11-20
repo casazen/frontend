@@ -100,6 +100,36 @@ describe('InboxPage (NF-61)', () => {
     await waitFor(() => expect(lastFilters()).toEqual({ unread: true, page: 1, pageSize: 20 }));
   });
 
+  it('InboxPage_ChipRecensioni_ListsTheReviewsOfTheGuestsAndTurnsTheViewsOffAndTheDefaultViewHasNone', async () => {
+    renderInbox();
+    await screen.findByTestId('message-thread-row');
+    // The default view is the conversations: it asks for no review.
+    expect(lastFilters()).toEqual({ needsReply: true, page: 1, pageSize: 20 });
+    expect(screen.getByTestId('messages-view-reviews')).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(screen.getByTestId('messages-view-reviews'));
+
+    await waitFor(() => expect(lastFilters()).toEqual({ kind: 'Review', page: 1, pageSize: 20 }));
+    expect(screen.getByTestId('messages-view-reviews')).toHaveAttribute('aria-pressed', 'true');
+    for (const view of ['toRespond', 'all', 'unread']) expect(screen.getByTestId(`messages-view-${view}`), view).toHaveAttribute('aria-pressed', 'false');
+
+    // Pressed again, it goes back to where the page starts (the list of that view is the one already read, so nothing new is asked).
+    fireEvent.click(screen.getByTestId('messages-view-reviews'));
+    await waitFor(() => expect(screen.getByTestId('messages-view-toRespond')).toHaveAttribute('aria-pressed', 'true'));
+    expect(screen.getByTestId('messages-view-reviews')).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('InboxPage_ReviewsAddress_StartsOnTheReviewsAndAViewPressedLeavesThem', async () => {
+    renderInbox('/app/short-rent/messages?view=reviews');
+    await screen.findByTestId('message-thread-row');
+    expect(lastFilters()).toEqual({ kind: 'Review', page: 1, pageSize: 20 });
+
+    fireEvent.click(screen.getByTestId('messages-view-all'));
+
+    await waitFor(() => expect(lastFilters()).toEqual({ page: 1, pageSize: 20 }));
+    expect(screen.getByTestId('messages-view-reviews')).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('InboxPage_Channel_NarrowsTheList', async () => {
     renderInbox();
     await screen.findByTestId('message-thread-row');

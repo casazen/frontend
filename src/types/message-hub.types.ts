@@ -5,16 +5,19 @@
  */
 import type { BookingStatus } from './booking.types';
 
-/** Where the conversation lives: the one with the guest of a direct booking, or one of a channel. */
-export type MessageHubSource = 'Direct' | 'Ota' | 'Storefront';
+/**
+ * Where the conversation lives: the one with the guest of a direct booking, or one of a channel. `Review` and `OtaReview` are the reviews of the guests (E05/F06): the booking site's
+ * and a channel's. They are not conversations: the list shows them only under the filter «Recensioni» and a row of them opens its own detail (`ReviewThread`).
+ */
+export type MessageHubSource = 'Direct' | 'Ota' | 'Storefront' | 'Review' | 'OtaReview';
 
 /** The channel of a conversation: the direct one, or one of the four channels that have an integrated chat. */
 export type MessageHubChannel = 'Direct' | 'Airbnb' | 'Booking' | 'Vrbo' | 'Expedia' | 'Storefront';
 
 export const MESSAGE_HUB_CHANNELS: readonly MessageHubChannel[] = ['Direct', 'Airbnb', 'Booking', 'Vrbo', 'Expedia', 'Storefront'];
 
-/** What the conversation is about: a reservation, or a request with no booking yet (an inquiry). */
-export type MessageHubThreadKind = 'Reservation' | 'Request';
+/** What the row is about: a reservation, a request with no booking yet (an inquiry), or a review of a guest (only under the filter «Recensioni», never in the default view). */
+export type MessageHubThreadKind = 'Reservation' | 'Request' | 'Review';
 
 /** Whether the conversation is still being worked on. */
 export type MessageHubThreadState = 'Open' | 'Closed' | 'Archived';
@@ -53,8 +56,10 @@ export interface MessageHubThread {
   /** The start of the last message, for the host only; `null` for a message that is only a file. */
   preview?: string | null;
   unreadCount: number;
-  /** Open, with the guest's message last: the conversation of the «Da rispondere» list. */
+  /** Open, with the guest's message last: the conversation of the «Da rispondere» list. For a review: published and not answered. */
   needsReply: boolean;
+  /** The stars of a review (`kind` `Review`), 1 to 5; absent for a conversation. `lastMessageAt` is then when the review was published and `preview` its first words. */
+  rating?: number | null;
 }
 
 /** A page of `GET /api/messages?includeOta=true`. */

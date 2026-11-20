@@ -1763,6 +1763,7 @@
       "channelAccountHoldersInvalid": "Le modifiche agli intestatari non sono valide: controlla gli annunci e i portali e riprova.",
       "channelCommissionRuleInUse": "Una regola di commissione è già stata usata nei rendiconti: puoi chiuderla ma non cambiarne la percentuale né toglierla.",
       "channelCommissionRulesInvalid": "Una delle percentuali dei portali non è valida. Controlla e riprova.",
+      "channelNotIntegrated": "Questo canale non permette a CasaZen di leggere le recensioni né di rispondere.",
       "cleaningSetupBulkEmpty": "Scegli almeno un immobile: un elenco vuoto non vale «tutti».",
       "cleaningSetupBulkTooMany": "Puoi impostare al massimo 200 immobili alla volta.",
       "cleaningSetupCleanerMismatch": "Il fornitore o la persona dello staff non corrispondono al tipo di addetto scelto: indica solo quello che serve.",
@@ -1808,10 +1809,28 @@
       "guestUnreachable": "L'ospite non ha un indirizzo email registrato: non abbiamo inviato nulla.",
       "issuerRegimeCountryMismatch": "Il regime scelto non vale per il paese di chi emette. Controlla il paese e il regime.",
       "noPendingVerification": "Questa verifica non è più in attesa.",
+      "otaReviewActionNotAllowed": "Il portale non ha permesso l'azione: forse la risposta c'è già, oppure il tempo è scaduto. Aggiorna la recensione per vedere com'è andata.",
+      "otaReviewActionUnconfirmed": "Non sappiamo ancora se il portale ha ricevuto l'invio precedente: finché non lo sappiamo non si può mandare di nuovo.",
+      "otaReviewBookingNotReviewable": "Questo soggiorno non ha recensioni da leggere: non c'è stato, oppure non è collegato al portale.",
+      "otaReviewChannelNotSupported": "Per questo canale CasaZen non può rispondere alle recensioni: rispondi dal portale.",
+      "otaReviewHostReviewAlreadySent": "Hai già scritto la tua recensione dell'ospite.",
+      "otaReviewHostReviewInvalid": "La recensione dell'ospite non è valida: servono un voto da 1 a 5 per ogni voce e un testo pubblico.",
+      "otaReviewNotFound": "Recensione non trovata.",
+      "otaReviewNotPublished": "La recensione dell'ospite non è ancora pubblicata: non c'è niente a cui rispondere.",
+      "otaReviewRefreshTooSoon": "Hai letto il portale da poco: riprova tra qualche minuto.",
+      "otaReviewReplyAlreadySent": "Hai già risposto a questa recensione: la risposta si pubblica una volta sola.",
+      "otaReviewWindowClosed": "Il tempo per scrivere la tua recensione dell'ospite è finito.",
       "ownerMandateOwnersEmpty": "Non c’è nessun proprietario a cui applicare il mandato.",
       "rechargeWaiverNotAcknowledged": "Non abbiamo salvato: per smettere di riaddebitare ai proprietari le commissioni dei portali serve la tua conferma.",
+      "replyNotDelivered": "Il portale non ha confermato la risposta entro un'ora: non è arrivata. Puoi riprovare.",
       "reportInvalidPeriod": "Il periodo non è valido: controlla le date.",
       "reportPeriodTooLong": "Il periodo è troppo lungo: scegline uno di al massimo 24 mesi.",
+      "reviewActionNotAllowed": "Il portale non ha permesso l'azione: forse la risposta c'è già, oppure il tempo è scaduto. Aggiorna la recensione per vedere com'è andata.",
+      "reviewNotAvailable": "Il portale non ci dà le recensioni di questo annuncio: di solito manca un permesso nel tuo channel manager.",
+      "reviewNotDelivered": "Il portale non ha confermato la tua recensione dell'ospite entro un'ora: non è arrivata. Puoi riprovare.",
+      "reviewNotFound": "Recensione non trovata.",
+      "reviewReplyAlreadySent": "Hai già risposto a questa recensione: si risponde una volta sola.",
+      "reviewReplyInvalid": "La risposta deve avere da 1 a 800 caratteri.",
       "routineActionNotAvailable": "Questa routine contiene azioni non ancora disponibili: non si può attivare, ma puoi provarla in modalità test.",
       "routineEventNotAvailable": "Questo evento non fa ancora partire nessuna routine: scegline un altro.",
       "routineLimitReached": "Hai raggiunto il numero massimo di routine (50): elimina una routine per crearne un’altra.",
@@ -2482,6 +2501,7 @@
   "approval": {
     "action": {
       "approve": "Approva",
+      "approveAndPublish": "Approva e pubblica",
       "approveAndSend": "Approva e invia",
       "approved": "Elemento approvato",
       "approveFailed": "Impossibile approvare l'elemento",
@@ -2495,7 +2515,9 @@
         "message": "Messaggio inviato all'ospite.",
         "messageQueued": "Messaggio preso in carico dal tuo channel manager: sarà lui a inviarlo all'ospite.",
         "messageVerify": "Non sappiamo se il canale ha ricevuto il messaggio: controllalo nella conversazione prima di scriverlo di nuovo.",
-        "none": "Approvato. Non c'era nessuna azione collegata da eseguire."
+        "none": "Approvato. Non c'era nessuna azione collegata da eseguire.",
+        "review": "Risposta pubblicata.",
+        "reviewVerify": "Non sappiamo se il portale ha ricevuto la risposta: controlla la recensione prima di scriverla di nuovo."
       },
       "originFailed": "Non è stato possibile completare l'approvazione: l'elemento resta in attesa.",
       "originFailedHint": "Puoi riprovare, oppure modificare il testo e approvarlo di nuovo.",
@@ -2532,6 +2554,7 @@
       "description": "Cambia il testo prima di decidere. L'originale resta qui sotto.",
       "descriptionCampaign": "Cambia l'oggetto e il testo della campagna prima di approvarla. L'originale resta qui sotto.",
       "descriptionMessage": "Cambia il messaggio prima che parta verso l'ospite. L'originale resta qui sotto.",
+      "descriptionReview": "Cambia la risposta prima che venga pubblicata sotto la recensione. L'originale resta qui sotto.",
       "error": {
         "bodyRequired": "Scrivi il testo della campagna.",
         "empty": "Scrivi il testo.",
@@ -2555,7 +2578,8 @@
     },
     "hint": {
       "campaign": "Approvandola, la campagna viene approvata e, se ha già una data di invio, programmata.",
-      "messageDraft": "Approvandola, il messaggio parte verso l'ospite. Puoi modificarlo prima."
+      "messageDraft": "Approvandola, il messaggio parte verso l'ospite. Puoi modificarlo prima.",
+      "reviewReply": "Approvandola, la risposta viene pubblicata sotto la recensione: è pubblica e non si può più ritirare. Puoi modificarla prima."
     },
     "queue": {
       "description": "Elementi in attesa di approvazione prima dell'esecuzione",
@@ -2569,6 +2593,9 @@
     "reject": {
       "reasonRequired": "Scrivi il motivo del rifiuto.",
       "reasonTooLong": "Il motivo è troppo lungo: al massimo {{max}} caratteri."
+    },
+    "review": {
+      "open": "Apri la recensione"
     },
     "situation": {
       "cancellation_or_refund": "Cancellazione o rimborso",
@@ -2602,6 +2629,7 @@
       "campaign": "Campagna",
       "messageDraft": "Bozza di messaggio",
       "other": "Altro",
+      "reviewReply": "Risposta a una recensione",
       "routine": "Routine"
     }
   },
@@ -16323,6 +16351,8 @@
       "fiscalDocumentIssued": "È stato emesso un documento fiscale per una prenotazione.",
       "fiscalDocumentSdiRejected": "Lo SDI ha scartato una fattura: va corretta.",
       "touristTaxPaid": "Un ospite ha pagato online la tassa di soggiorno.",
+      "otaReviewActionFailed": "Una risposta a una recensione, o la tua recensione dell'ospite, non è arrivata sul portale: riprova dalla recensione.",
+      "otaReviewReceived": "Un ospite ha lasciato una recensione.",
       "scheduledMessageIssue": "Un messaggio programmato per un ospite non è partito o ha bisogno di te: apri la prenotazione per vedere cosa è successo."
     }
   },
@@ -25036,6 +25066,182 @@
     "resetFilters": "Reimposta filtri",
     "loading": "Caricamento analisi...",
     "empty": "Nessun dato ricavi disponibile"
+  },
+  "reviews": {
+    "booking": {
+      "empty": "Nessuna recensione per ora.",
+      "limit": "Per questo canale CasaZen non legge le recensioni né risponde: leggile e rispondi dal portale.",
+      "listLabel": "Recensioni di questo soggiorno",
+      "loadError": "Non riesco a leggere le recensioni di questo soggiorno.",
+      "loading": "Carico le recensioni…",
+      "notFound": "Le recensioni di questo soggiorno non sono state trovate: non ci sono più, oppure non sono tra quelle dei tuoi immobili.",
+      "open": "Apri nei Messaggi",
+      "readAt": "Lette dal portale il {{when}}",
+      "readFailed": "L'ultima lettura dal portale non è riuscita: {{reason}}",
+      "readFailedUnknown": "il portale non ha risposto.",
+      "refresh": "Aggiorna",
+      "refreshFailed": "Non riesco a leggere le recensioni dal portale. Riprova tra poco.",
+      "refreshTooSoon_one": "Hai letto il portale da poco: puoi aggiornare di nuovo tra {{count}} minuto.",
+      "refreshTooSoon_other": "Hai letto il portale da poco: puoi aggiornare di nuovo tra {{count}} minuti.",
+      "refreshed": "Recensioni aggiornate.",
+      "reply": {
+        "error": "Risposta non pubblicata",
+        "manualVerify": "Risposta da verificare",
+        "none": "Senza risposta",
+        "sent": "Risposta pubblicata"
+      },
+      "title": "Recensioni"
+    },
+    "category": {
+      "accuracy": "Accuratezza dell'annuncio",
+      "checkin": "Check-in",
+      "cleanliness": "Pulizia",
+      "communication": "Comunicazione",
+      "location": "Posizione",
+      "respect_house_rules": "Rispetto delle regole della casa",
+      "value": "Qualità-prezzo"
+    },
+    "channel": {
+      "noSource": "Questa prenotazione non viene da un portale né dal tuo sito: non ha recensioni.",
+      "notIntegrated": "{{channel}} non permette a CasaZen di leggere le recensioni né di rispondere: leggile e rispondi dal portale.",
+      "thisChannel": "Questo canale"
+    },
+    "hostReview": {
+      "cannot": "Per ora non puoi scrivere la tua recensione dell'ospite da CasaZen.",
+      "closed": "Il tempo per scrivere la tua recensione dell'ospite è finito: non si può più scrivere.",
+      "confirm": {
+        "description": "La recensione sarà inviata al portale e pubblicata come prevedono le sue regole.",
+        "once": "Si scrive una volta sola: non si può modificare né ritirare.",
+        "public": "La parte pubblica la leggono tutti sul portale.",
+        "send": "Invia",
+        "title": "Invii la recensione dell'ospite?"
+      },
+      "error": {
+        "ratings": "Dai un voto da 1 a 5 a ogni voce.",
+        "text": "Scrivi la tua recensione pubblica.",
+        "tooLong": "Il testo è troppo lungo: al massimo {{max}} caratteri."
+      },
+      "errorRetry": "Puoi cambiare i testi e riprovare.",
+      "errorUnknown": "Il portale non l'ha accettata.",
+      "intro": "Puoi scrivere una recensione dell'ospite sul portale. Si scrive una volta sola, finché il portale lo permette.",
+      "notSent": "La recensione dell'ospite non è stata inviata",
+      "offline": "Sei offline: puoi inviare la recensione quando torni online.",
+      "privateHint": "La vede solo l'ospite: non compare sul portale.",
+      "privateText": "Nota privata per l'ospite",
+      "publicHint": "La leggono tutti sul portale.",
+      "publicText": "La tua recensione pubblica",
+      "send": "Invia la recensione",
+      "sentAt": "Inviata il {{when}}",
+      "title": "La tua recensione dell'ospite",
+      "toast": {
+        "failed": "Non sono riuscito a inviare la recensione. Riprova.",
+        "refused": "Il portale non ha accettato la recensione.",
+        "sent": "Recensione dell'ospite inviata.",
+        "verify": "Non sappiamo ancora se il portale ha ricevuto la recensione: non riscriverla, la controlliamo noi."
+      },
+      "unknown": "Il portale non ha ancora detto se puoi scrivere la tua recensione dell'ospite. CasaZen lo controlla ogni poche ore.",
+      "verify": "Non sappiamo ancora se il portale ha ricevuto la tua recensione dell'ospite. CasaZen la controlla da sola: finché non lo sappiamo non puoi mandarla di nuovo."
+    },
+    "hub": {
+      "empty": "Non ci sono ancora recensioni",
+      "emptyHint": "Quando un ospite lascia una recensione, dal tuo sito o da un portale, la trovi qui.",
+      "filter": "Recensioni",
+      "noMatch": "Nessuna recensione trovata",
+      "noMatchHint": "Prova con un'altra ricerca o togli un filtro."
+    },
+    "reason": {
+      "mappingNotConfirmed": "L'annuncio non è ancora collegato a un tuo immobile: finché non lo è, CasaZen non risponde alle recensioni da qui.",
+      "notConnected": "Il collegamento ai canali non è attivo: CasaZen non legge le recensioni né risponde."
+    },
+    "row": {
+      "noText": "L'ospite non ha scritto un commento",
+      "notAnswered": "Senza risposta"
+    },
+    "state": {
+      "error": "Non inviata",
+      "manualVerify": "Da verificare",
+      "none": "Non ancora",
+      "sent": "Pubblicata"
+    },
+    "thread": {
+      "categoryValue": "{{value}} su {{max}}",
+      "confirm": {
+        "description": "La risposta sarà visibile a tutti sotto la recensione.",
+        "once": "Non si può ritirare né modificare, e parte una sola volta.",
+        "public": "È pubblica: la leggono tutti, non solo l'ospite.",
+        "publish": "Pubblica",
+        "title": "Pubblichi la risposta?"
+      },
+      "draft": {
+        "approve": "Approva e pubblica",
+        "ask": "Chiedi una bozza all'assistente",
+        "edit": "Modifica",
+        "loadError": "Non è stato possibile leggere le bozze in attesa. Riprova.",
+        "loading": "Cerco una bozza per questa recensione…",
+        "none": "Non c’è nessuna bozza in attesa per questa recensione.",
+        "notFound": "Questa recensione non è stata trovata.",
+        "reason": {
+          "ai_budget_exceeded": "L'assistente ha raggiunto il suo limite di utilizzo per ora: riprova più tardi, oppure rispondi tu.",
+          "ai_invalid_answer": "L'assistente non è riuscito a scrivere una bozza utilizzabile: riprova, oppure rispondi tu.",
+          "ai_provider_error": "L'assistente non è riuscito a scrivere la bozza in questo momento: riprova tra qualche minuto, oppure rispondi tu.",
+          "ai_provider_not_configured": "L'assistente non è ancora disponibile in questo ambiente: nessuna bozza è stata scritta.",
+          "already_answered": "Hai già risposto a questa recensione, oppure la risposta aspetta di essere verificata: nessuna bozza è stata scritta.",
+          "already_drafted": "C'è già una bozza in attesa per questa recensione.",
+          "assistant_disabled": "L'assistente è spento per la tua organizzazione o per questo immobile: nessuna bozza è stata scritta.",
+          "draft_rule_violation": "La risposta scritta dall'assistente non rispettava le regole (non può promettere rimborsi o sconti, dire di essere un'intelligenza artificiale, né contenere link o numeri di telefono) e non è stata messa in coda. Riprova, oppure rispondi tu.",
+          "draft_too_long": "La risposta scritta dall'assistente era troppo lunga per una recensione e non è stata messa in coda. Riprova, oppure rispondi tu.",
+          "ota_review_channel_not_supported": "Per questo canale CasaZen non può rispondere alle recensioni: rispondi dal portale.",
+          "ota_review_not_published": "La recensione dell'ospite non è ancora pubblicata: non c'è niente a cui rispondere.",
+          "reply_not_possible": "Per ora CasaZen non può inviare la risposta (il collegamento ai canali non è attivo, oppure l'annuncio non è ancora collegato a un tuo immobile): nessuna bozza è stata scritta.",
+          "unknown": "L'assistente non ha completato la richiesta: nessuna bozza è stata scritta. Riprova tra poco, oppure rispondi tu."
+        },
+        "reject": "Rifiuta",
+        "rejected": "Bozza rifiutata. Non è stato pubblicato nulla.",
+        "requestFailed": "Non è stato possibile chiedere la bozza. Riprova tra poco.",
+        "saveAndPublish": "Salva e pubblica",
+        "title": "Bozza dell'assistente"
+      },
+      "guest": {
+        "title": "La recensione dell'ospite"
+      },
+      "loadError": "Non riesco a caricare la recensione.",
+      "loading": "Carico la recensione…",
+      "noBooking": "La prenotazione di questa recensione non è disponibile.",
+      "noRating": "L'ospite non ha dato un voto.",
+      "noText": "L'ospite non ha scritto un commento.",
+      "notFound": "Recensione non trovata",
+      "notFoundHint": "L'indirizzo non è giusto, oppure la recensione non è tra quelle dei tuoi immobili.",
+      "publishedAt": "Pubblicata il {{when}}",
+      "ratingOf": "{{rating}} su {{max}}",
+      "readAt": "Letta dal portale il {{when}}",
+      "readFailed": "L'ultima lettura dal portale non è riuscita",
+      "readFailedHint": "Quello che vedi potrebbe non essere aggiornato: CasaZen riprova da sola.",
+      "readFailedUnknown": "Il portale non ha risposto.",
+      "readOnly": "Puoi leggere la recensione, ma non hai il permesso di rispondere.",
+      "reply": {
+        "cannot": "Per ora non puoi rispondere a questa recensione da CasaZen.",
+        "empty": "Scrivi la risposta.",
+        "errorRetry": "Puoi cambiare il testo e riprovare.",
+        "errorUnknown": "Il portale non l'ha accettata.",
+        "hint": "Si vede sotto la recensione, per tutti. Una volta pubblicata non si può modificare né ritirare.",
+        "label": "La tua risposta pubblica",
+        "notPublished": "La risposta non è stata pubblicata",
+        "offline": "Sei offline: puoi pubblicare la risposta quando torni online.",
+        "publish": "Pubblica la risposta",
+        "sentAt": "Pubblicata il {{when}}",
+        "title": "La tua risposta",
+        "tooLong": "La risposta è troppo lunga: al massimo {{max}} caratteri.",
+        "verify": "Non sappiamo ancora se il portale ha ricevuto la risposta. CasaZen la controlla da sola: finché non lo sappiamo non puoi mandarla di nuovo, così non rischi di pubblicarla due volte."
+      },
+      "title": "Recensione",
+      "toast": {
+        "replyFailed": "Non sono riuscito a pubblicare la risposta. Riprova.",
+        "replyRefused": "Il portale non ha accettato la risposta.",
+        "replySent": "Risposta pubblicata.",
+        "replyVerify": "Non sappiamo ancora se il portale ha ricevuto la risposta: non riscriverla, la controlliamo noi."
+      },
+      "unavailable": "Per ora non possiamo mostrare questa recensione."
+    }
   },
   "roles": {
     "Admin": "Super admin",

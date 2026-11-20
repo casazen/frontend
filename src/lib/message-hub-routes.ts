@@ -16,3 +16,11 @@ export function messagesOfBookingPath(bookingId: string): string {
 export function messageThreadPath(threadKey: string): string {
   return `${MESSAGES_PATH}/${encodeURIComponent(threadKey)}`;
 }
+
+/**
+ * The page of one review of a guest, from the key the server gave it (`otareview:…` of a channel, `review:…` of the booking site, E05/F06/US02): the list beside it is the one of the reviews
+ * (`view=reviews`), as the rows of that list open it. The way from the booking, and from the queue of the approvals, to a review.
+ */
+export function reviewThreadPath(threadKey: string): string {
+  return `${messageThreadPath(threadKey)}?view=reviews`;
+}
