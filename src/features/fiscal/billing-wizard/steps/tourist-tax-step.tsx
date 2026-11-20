@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, type ReactNode } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Check } from 'lucide-react';
@@ -12,6 +12,7 @@ import { useMunicipalTouristTaxRates } from '@/queries/use-billing-setup';
 import { useProperties } from '@/queries/use-properties';
 import type { TouristTaxRate } from '@/types/tourist-tax.types';
 import { PORTAL_SOURCES, type BillingWizardValues } from '../billing-wizard-schema';
+import { PortalTouristTax, type PortalTouristTaxProps } from './portal-tourist-tax';
 
 /** A comune written the way two lists of comuni can be compared: no accents, no case, no spaces at the ends. */
 function comuneKey(city: string): string {
@@ -87,10 +88,12 @@ function SwissTouristTax({ proposed }: { proposed: readonly string[] }) {
 }
 
 /**
- * The tourist tax of an Italian issuer: nothing is set here. The municipal rules (the rate of each comune) are CasaZen's, and the step only reads them: for the comune of each
- * property, the rate in force. A comune with no rate is a thing to do, said as such (CasaZen adds the rate: the person is not asked to), and never a way out of the wizard.
+ * The tourist tax of an Italian issuer. The municipal rules (the rate of each comune) are CasaZen's, and the step only reads them: for the comune of each property, the rate in force. A
+ * comune with no rate is a thing to do, said as such (CasaZen adds the rate: the person is not asked to), and never a way out of the wizard. The one thing a person is asked is
+ * whether a portal collects and pays the tourist tax in a comune (`portals`: the questions the server proposes, never preselected, and the portals already confirmed): it is there only
+ * when the server sends it, and a server that does not leaves the step as it was.
  */
-function ItalianTouristTax() {
+function ItalianTouristTax({ portals }: { portals: PortalTouristTaxProps | null }) {
   const { t } = useTranslation();
   const today = todayInRome();
   // The list is read again whenever the step opens: a property is created or changed on other pages, where this list is not watched, and the app keeps a list it has read for
@@ -107,23 +110,37 @@ function ItalianTouristTax() {
     return [...found.values()].sort((a, b) => a.localeCompare(b));
   }, [properties.data]);
 
+  // The portals do not wait for the rates: what they say comes from the setup, and the names of the comuni come from the proposals, with the properties only to name a confirmed pair.
+  const portalsBlock: ReactNode = portals ? <PortalTouristTax {...portals} properties={Array.isArray(properties.data) ? properties.data : []} /> : null;
+
   if (properties.isPending || rates.isPending) {
-    return <SkeletonLine lines={2} lineClassName="h-10" label={t('billingWizard.touristTax.italy.loading')} />;
+    return (
+      <>
+        <SkeletonLine lines={2} lineClassName="h-10" label={t('billingWizard.touristTax.italy.loading')} />
+        {portalsBlock}
+      </>
+    );
   }
   if (properties.isError || rates.isError) {
     return (
-      <Alert variant="warning" data-testid="billing-tourist-tax-italy-unavailable">
-        {t('billingWizard.touristTax.italy.unavailable')}
-      </Alert>
+      <>
+        <Alert variant="warning" data-testid="billing-tourist-tax-italy-unavailable">
+          {t('billingWizard.touristTax.italy.unavailable')}
+        </Alert>
+        {portalsBlock}
+      </>
     );
   }
 
   const rows = comuni.map((city) => ({ city, rate: rateInForce(rates.data ?? [], city, today) }));
   const missing = rows.filter((row) => !row.rate).map((row) => row.city);
+  // «Qui non devi impostare niente» is no longer true while there is a question to answer: the intro says what is asked instead.
+  const asking = (portals?.view.proposals.length ?? 0) > 0;
 
   return (
     <>
-      <p className="text-sm text-foreground/80">{t('billingWizard.touristTax.italy.intro')}</p>
+      <p className="text-sm text-foreground/80">{asking ? t('billingWizard.touristTax.italy.introPortals') : t('billingWizard.touristTax.italy.intro')}</p>
+      {portalsBlock}
       {rows.length === 0 ? (
         <p className="text-sm text-foreground/70" data-testid="billing-tourist-tax-italy-empty">
           {t('billingWizard.touristTax.italy.empty')}
@@ -162,12 +179,21 @@ interface TouristTaxStepProps {
    * portals that have no answer yet. None once the issuer has saved a list.
    */
   proposed?: readonly string[];
+  /**
+   * For an Italian issuer, what the setup says of the portals that collect the tourist tax in a comune: the questions to answer, the portals already confirmed and the hint about the
+   * records of the stays, with the confirmation to send. `null` or absent when the server sends none of it (an older server, or a person who does not reach the whole organization): the
+   * step is then exactly the reading of the municipal rules it always was.
+   */
+  portals?: PortalTouristTaxProps | null;
 }
 
-/** Step 4, «Tassa di soggiorno»: Switzerland asks who collects it for every portal (the ones that collect it by default already chosen); Italy only shows the municipal rules that exist. */
-export function TouristTaxStep({ country, proposed = [] }: TouristTaxStepProps) {
+/**
+ * Step 4, «Tassa di soggiorno»: Switzerland asks who collects it for every portal (the ones that collect it by default already chosen); Italy shows the municipal rules that exist and,
+ * when the server proposes it, asks per comune whether a portal collects the tax.
+ */
+export function TouristTaxStep({ country, proposed = [], portals = null }: TouristTaxStepProps) {
   const { t } = useTranslation();
   if (country === 'CH') return <SwissTouristTax proposed={proposed} />;
-  if (country === 'IT') return <ItalianTouristTax />;
+  if (country === 'IT') return <ItalianTouristTax portals={portals} />;
   return <p className="text-sm text-foreground/70">{t('billingWizard.touristTax.noCountry')}</p>;
 }
