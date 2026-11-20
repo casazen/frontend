@@ -299,6 +299,51 @@ class Test_Connection extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Even on a development site, only the development host itself is reached with the plain request: the API address that
+	 * its manifest names is reached with the safe request unless it is a development host too. A manifest cannot aim the
+	 * plain request (no refusal of private addresses, redirects not checked) at another host.
+	 */
+	public function test_a_development_address_reaches_other_hosts_with_the_safe_request() {
+		add_filter( 'casazen_allow_development_hosts', '__return_true' );
+		$this->reply( '/embed/v1/manifest.json', 200, $this->manifest( array( 'apiBase' => 'https://10.0.0.5' ) ) );
+		$this->reply( '/api/public/resolve-host', 200, $this->resolved() );
+
+		$result = Connection::test( 'http://localhost:5173', '' );
+
+		$this->assertSame( 'ok', $result['code'] );
+		$this->assertCount( 2, $this->requests );
+		$this->assertFalse( $this->requests[0]['args']['reject_unsafe_urls'], 'The development address itself uses the plain request.' );
+		$this->assertSame( 'https://10.0.0.5/api/public/resolve-host?host=localhost', $this->requests[1]['url'] );
+		$this->assertTrue( $this->requests[1]['args']['reject_unsafe_urls'], 'Any other host is reached with the safe request.' );
+	}
+
+	/**
+	 * The manifest of a development address can name an http API address only on a development host: the address of another
+	 * service, a metadata address or a name that merely contains «localhost» makes the manifest invalid and nothing else is
+	 * called.
+	 */
+	public function test_a_development_address_cannot_point_the_api_at_an_http_host_that_is_not_a_development_host() {
+		add_filter( 'casazen_allow_development_hosts', '__return_true' );
+
+		$api_bases = array(
+			'http://169.254.169.254',
+			'http://10.0.0.5:9200',
+			'http://api.example.com',
+			'http://localhost.example.com',
+			'http://evil-localhost',
+		);
+		foreach ( $api_bases as $api_base ) {
+			$this->requests = array();
+			$this->reply( '/embed/v1/manifest.json', 200, $this->manifest( array( 'apiBase' => $api_base ) ) );
+
+			$result = Connection::test( 'http://localhost:5173', '' );
+
+			$this->assertSame( 'manifest_invalid', $result['code'], $api_base . ' must be refused.' );
+			$this->assertCount( 1, $this->requests, 'Nothing is called after the manifest that names ' . $api_base . '.' );
+		}
+	}
+
+	/**
 	 * A real address cannot send the server to an http development host: that manifest is invalid.
 	 */
 	public function test_a_real_address_cannot_point_the_api_at_a_development_host() {
