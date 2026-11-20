@@ -15,6 +15,7 @@ import { DASHBOARD_KEY } from '@/queries/use-dashboard';
 import { INVOICE_DATA_KEY } from '@/queries/use-invoice-data';
 import { FISCAL_DOCUMENTS_KEY } from '@/queries/use-fiscal-documents';
 import { NOTIFICATIONS_QUERY, UNREAD_COUNT_KEY } from '@/queries/use-notifications';
+import { invalidateReviews } from '@/queries/use-ota-reviews';
 import { ASSIST_REQUESTS_KEY } from '@/queries/use-onboarding-assist';
 import { invalidateOnboarding } from '@/queries/use-onboarding-plan';
 import { PANEL_STEPS_KEY } from '@/queries/use-onboarding-panel-step';
@@ -204,6 +205,12 @@ function refreshFiscalDocuments(queryClient: QueryClient): void {
 const TOURIST_TAX_PAID = 'tourist-tax-paid';
 
 /**
+ * A guest left a review on a channel (`PushTypes.OtaReviewReceived`), or a reply to a review, or the host's own review, did not reach the channel (`PushTypes.OtaReviewActionFailed`),
+ * E05/F06/US02, NF-69: sent to the hosts of the booking, whose id is the `entityId`. Neither the guest nor a word of the review is in it: the pages read what changed from the review.
+ */
+const OTA_REVIEW_TYPES: ReadonlySet<string> = new Set(['ota-review-received', 'ota-review-action-failed']);
+
+/**
  * What a payment of the tourist tax changes on screen: the tax of the booking, whose `collection` block says what the guest paid online and what is still to collect (the step «Tassa di
  * soggiorno» of the host wizard open in front of the host shows «Pagata online il …» without a reload). Without a booking, every tax that is open.
  */
@@ -235,7 +242,8 @@ function refreshAssistOutcome(queryClient: QueryClient): void {
  * the per-booking counters are read again; the thread of the booking in the change is read again too (an open tab shows the new
  * message at once). A change without an entity (read on another device, unknown type) refreshes every open thread. A completed
  * check-in also refreshes the data it changes (`STALE_ON_CHECK_IN`), a link that did not reach the guest the guest panel and the «To do» list
- * (`refreshCheckInLinkDelivery`), a request of help from a host (or reopened by it) the staff queue, and a request support closed the requests of the host.
+ * (`refreshCheckInLinkDelivery`), a request of help from a host (or reopened by it) the staff queue, a request support closed the requests of the host, and a review of a guest that appeared
+ * (or a reply that was lost) the reviews: the section of the booking, the review that is open and the list of the hub (`invalidateReviews`).
  */
 export function applyNotificationsChange(queryClient: QueryClient, change: NotificationsChange): void {
   queryClient.setQueryData(UNREAD_COUNT_KEY, change.unreadCount);
@@ -257,6 +265,8 @@ export function applyNotificationsChange(queryClient: QueryClient, change: Notif
   if (change.type !== null && ASSIST_OUTCOME_TYPES.has(change.type)) refreshAssistOutcome(queryClient);
   if (change.type === FISCAL_DOCUMENT_ISSUED || change.type === FISCAL_DOCUMENT_SDI_REJECTED) refreshFiscalDocuments(queryClient);
   if (change.type === TOURIST_TAX_PAID) refreshTouristTax(queryClient, change.entityId);
+  // What a review that appeared, or a reply that was lost, changes: the section «Recensioni» of the open booking, the review that is open and the list of the reviews of the hub, without a reload.
+  if (change.type !== null && OTA_REVIEW_TYPES.has(change.type)) invalidateReviews(queryClient);
 }
 
 /** After a gap in the channel events may have been missed: everything the channel feeds is read again, the count included. */
@@ -277,6 +287,8 @@ export function refreshAfterGap(queryClient: QueryClient): void {
   refreshFiscalDocuments(queryClient);
   // And for a tourist tax paid while the channel was down.
   refreshTouristTax(queryClient);
+  // And for a review that appeared, or a reply that was lost, while the channel was down.
+  invalidateReviews(queryClient);
 }
 
 // One connection per tab: every user of the hook shares this client, and the channel closes with the last one.

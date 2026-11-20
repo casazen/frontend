@@ -17,6 +17,7 @@ import {
   finalTextOf,
   firstLineOf,
   isEdited,
+  isReviewReply,
   itemIsGone,
   originActionErrorOf,
   originErrorMessage,
@@ -75,8 +76,16 @@ describe('approval model (NF-68)', () => {
     expect(approvalTypeLabel('Campaign', t())).toBe('Campagna');
     expect(approvalTypeLabel('Routine', t())).toBe('Routine');
     expect(approvalTypeLabel('AiText', t())).toBe('Testo AI');
+    // The draft of the public reply to a review (E05/F06) has a name of its own.
+    expect(approvalTypeLabel('ReviewReply', t())).toBe('Risposta a una recensione');
     // A type a later version of the server adds is not shown as an identifier.
-    expect(approvalTypeLabel('ReviewReply', t())).toBe('Altro');
+    expect(approvalTypeLabel('SomethingNew', t())).toBe('Altro');
+  });
+
+  it('isReviewReply_OnlyTheDraftOfTheReplyToAReview', () => {
+    expect(isReviewReply(item({ itemType: 'ReviewReply' }))).toBe(true);
+    expect(isReviewReply(item({ itemType: 'MessageDraft' }))).toBe(false);
+    expect(isReviewReply(item({ itemType: 'Campaign' }))).toBe(false);
   });
 
   it('confidenceView_Score_IsHighFromTheThresholdAndLowBelowIt', () => {
@@ -195,6 +204,18 @@ describe('approval model (NF-68)', () => {
       expect(outcome('ManualVerify')).toEqual({ key: 'approval.action.executed.messageVerify', tone: 'warning' });
     });
 
+    it('approvalOutcome_ReplyToAReview_IsTheReplyThatWasPublishedNotAMessageToTheGuestAndAnUnknownOutcomeIsAWarning', () => {
+      const reply = (result: ApprovalOriginActionResult | null) => approvalOutcome({ itemType: 'ReviewReply', originActionResult: result, originActionStatus: 'Executed' });
+
+      expect(reply('Sent')).toEqual({ key: 'approval.action.executed.review', tone: 'success' });
+      // The outcome is not known: it is checked on the channel and never told as published.
+      expect(reply('ManualVerify')).toEqual({ key: 'approval.action.executed.reviewVerify', tone: 'warning' });
+      // The same reply approved a second time: nothing was sent again.
+      expect(reply(null)).toEqual({ key: 'approval.action.executed.already', tone: 'success' });
+      // A message to a guest keeps its words.
+      expect(approvalOutcome({ itemType: 'MessageDraft', originActionResult: 'Sent', originActionStatus: 'Executed' })).toEqual({ key: 'approval.action.executed.message', tone: 'success' });
+    });
+
     it('approvalOutcome_NoResult_IsNoActionLinkedOrAlreadyApproved', () => {
       expect(outcome(null, 'NotRequired')).toEqual({ key: 'approval.action.executed.none', tone: 'success' });
       // The same item approved a second time: nothing was sent again, and the page says so.
@@ -273,6 +294,11 @@ describe('approval model (NF-68)', () => {
       'approval.action.executed.campaignApproved',
       'approval.action.executed.already',
       'approval.action.executed.none',
+      'approval.action.executed.review',
+      'approval.action.executed.reviewVerify',
+      'approval.action.approveAndPublish',
+      'approval.hint.reviewReply',
+      'approval.review.open',
       'approval.edit.error.empty',
       'approval.edit.error.tooLong',
       'approval.edit.error.subjectRequired',
@@ -283,6 +309,7 @@ describe('approval model (NF-68)', () => {
       'approval.type.campaign',
       'approval.type.routine',
       'approval.type.aiText',
+      'approval.type.reviewReply',
       'approval.type.other',
       ...[
         'check_in_time',

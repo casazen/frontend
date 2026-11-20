@@ -13,6 +13,9 @@ import { InboxPane } from './components/inbox-pane';
  * each row opens the conversation. On desktop the open conversation takes the place of the empty column on the right, with
  * the list beside it (`ThreadPage`); on a phone the list leads to the conversation.
  *
+ * The chip «Recensioni» (`?view=reviews`, E05/F06/US02, NF-69) lists the reviews of the guests, of the booking site and of the channels, with their stars and «Senza risposta»;
+ * a row opens the review (`ThreadPage`, which tells a review from a conversation by its key). The reviews are in no other view: «Da rispondere» is the conversations.
+ *
  * Opened for one booking (`?booking=<id>`, the way a booking leads here) that has no conversation yet, it says how the guest can be
  * reached instead of an empty list: the conversation of the channel or of the site when there is one, an e-mail through CasaZen for a channel
  * with no chat, or why there is no way (`ContactOptionsPanel`, NF-63).

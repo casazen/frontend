@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PlainSection } from '@/components/shared/calm';
-import { ReviewInvitePanel } from '@/features/reviews/components/review-invite-panel';
 import { ServiceRequestForm } from '@/features/service-requests/components/service-request-form';
 import { ServiceRequestsCard } from '@/features/service-requests/components/service-requests-card';
 import { useWorkspace } from '@/hooks/use-workspace';
@@ -14,6 +13,7 @@ import { channelGuidanceOf } from '../lib/booking-change';
 import { bookingChannelText } from '../lib/ota-stay';
 import { BookingSourceValue, FACT_LINK, Fact, Facts } from './booking-facts';
 import { BookingOriginBadge } from './booking-origin-badge';
+import { BookingReviewsSection } from './booking-reviews-section';
 import { OtaChangeGuidance } from './ota-change-guidance';
 
 interface BookingStayTabProps {
@@ -125,8 +125,8 @@ export function BookingStayTab({ booking }: BookingStayTabProps) {
         </PlainSection>
       ) : null}
 
-      {/* DB-12b: the host asks the guest of a stay that is over for a review; the panel draws nothing for any other booking. */}
-      <ReviewInvitePanel booking={booking} canWrite={canWrite} />
+      {/* The one section of the reviews of the stay (E05/F06/US02): the host asks the guest of the site for a review (DB-12b) and reads the reviews of the guests, of the site and of the channel. It draws nothing where there is nothing to say. */}
+      <BookingReviewsSection booking={booking} canWrite={canWrite} />
 
       <ServiceRequestsCard
         plain

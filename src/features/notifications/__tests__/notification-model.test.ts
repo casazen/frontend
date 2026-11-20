@@ -39,6 +39,8 @@ describe('notification model', () => {
       'checkin-link-failed',
       // E20/F03/US01/T02: the host reopened a request support closed («Non funziona»), and support closed one of the host's (verified, or declared).
       'assist-reopened', 'assist-verified', 'assist-declared',
+      // E05/F06/US02: a guest left a review on a channel, and a reply or the host's own review did not reach it.
+      'ota-review-received', 'ota-review-action-failed',
     ];
     for (const type of backend) expect(notificationKind(type).textKey, type).not.toBe('notifications.types.generic');
   });
@@ -57,6 +59,24 @@ describe('notification model', () => {
     ['alloggiati-failed', '/app/short-rent/bookings/b-1?tab=alloggiati'],
   ])('notificationRoute_%s_OpensTheBooking', (type, expected) => {
     expect(notificationRoute({ type, entityId: 'b-1' }, 'short-rent')).toBe(expected);
+  });
+
+  it('notificationRoute_OtaReview_OpensTheBookingWhoseSectionRecensioniHoldsTheReviewsOfTheStay', () => {
+    // The entity of both pushes is the booking; its page opens on the tab Soggiorno, where the section «Recensioni» is.
+    for (const type of ['ota-review-received', 'ota-review-action-failed']) {
+      expect(notificationRoute({ type, entityId: 'b-1' }, 'short-rent'), type).toBe('/app/short-rent/bookings/b-1');
+      expect(notificationRoute({ type, entityId: null }, 'short-rent'), type).toBeNull();
+    }
+    expect(notificationKind('ota-review-received').textKey).toBe('notifications.types.otaReviewReceived');
+    expect(notificationKind('ota-review-action-failed').textKey).toBe('notifications.types.otaReviewActionFailed');
+    // Each says what happened in both languages, never the generic sentence, and never names the supplier of the channel manager.
+    for (const key of ['otaReviewReceived', 'otaReviewActionFailed']) {
+      for (const locale of [it_, en]) {
+        const sentence = String(lookup(locale, `notifications.types.${key}`));
+        expect(sentence).not.toBe(lookup(locale, 'notifications.types.generic'));
+        expect(sentence).not.toMatch(/octorate/i);
+      }
+    }
   });
 
   it('notificationKind_CheckInLinkFailed_SaysItInBothLanguagesWithoutTheNameOfTheChannelManager', () => {

@@ -1,4 +1,4 @@
-import { AlertTriangle, BedDouble, Bell, CalendarClock, ClipboardCheck, Coins, FileCheck, FileWarning, LifeBuoy, LogOut, MessageSquare, ShieldAlert, ShieldCheck, UserCheck, Wrench, type LucideIcon } from 'lucide-react';
+import { AlertTriangle, BedDouble, Bell, CalendarClock, ClipboardCheck, Coins, FileCheck, FileWarning, LifeBuoy, LogOut, MessageSquare, ShieldAlert, ShieldCheck, Star, UserCheck, Wrench, type LucideIcon } from 'lucide-react';
 import type { InAppNotification } from '@/api/notifications.api';
 import type { AppContextKey, PermissionPredicate } from '@/config/route-manifest';
 import { ONBOARDING_PLAN_PATH } from '@/lib/onboarding-parts';
@@ -75,6 +75,11 @@ const KINDS: Record<string, NotificationKind> = {
   // step of the check-in wizard of the booking, so the click opens it there.
   'tourist-tax-paid': { icon: Coins, textKey: 'notifications.types.touristTaxPaid', route: bookingTaxStep },
   'ota-stay-review': { icon: AlertTriangle, textKey: 'notifications.types.otaStayReview', route: bookingRoute },
+  // E05/F06/US02 (NF-69): a guest left a review on a channel (`PushTypes.OtaReviewReceived`), or a reply to a review, or the host's own review, did not reach the channel
+  // (`PushTypes.OtaReviewActionFailed`). The entity is the booking, whose page holds the reviews of the stay (the section «Recensioni» of the tab Soggiorno); the pages that show them read
+  // them again as the push arrives (`use-notifications-realtime.ts`). The text names neither the guest nor a word of the review.
+  'ota-review-received': { icon: Star, textKey: 'notifications.types.otaReviewReceived', route: bookingRoute },
+  'ota-review-action-failed': { icon: AlertTriangle, textKey: 'notifications.types.otaReviewActionFailed', route: bookingRoute },
   'service-request-created': serviceRequest('notifications.types.serviceRequestCreated'),
   'service-request-auto-accepted': serviceRequest('notifications.types.serviceRequestAutoAccepted'),
   'service-request-taken': serviceRequest('notifications.types.serviceRequestTaken'),

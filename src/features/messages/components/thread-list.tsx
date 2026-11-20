@@ -1,6 +1,6 @@
 import { useMemo, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { Inbox, SearchX } from 'lucide-react';
+import { Inbox, SearchX, Star } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ListPagination } from '@/components/shared/list-view/list-pagination';
 import { EmptyState } from '@/components/shared/empty-state';
@@ -17,6 +17,7 @@ import { hasInboxFilters, type InboxState } from '../lib/inbox-state';
 import { formatListTime, formatStayRange } from '../lib/thread-format';
 import { ChannelBadge } from './channel-badge';
 import { GuestAvatar } from './guest-avatar';
+import { ReviewRow } from './review-row';
 
 interface ThreadRowProps {
   thread: MessageHubThread;
@@ -141,16 +142,21 @@ export function ThreadList({ page, loading, error, onRetry, state, search, selec
   if (items.length === 0) {
     const className = compact ? 'py-8' : undefined;
     if (state.bookingId && noConversation) return <>{noConversation}</>;
+    // The reviews are not conversations (E05/F06/US02): their list says so in its own words.
+    const reviews = state.view === 'reviews';
     if (hasInboxFilters(state)) {
       return (
         <EmptyState
           className={className}
           icon={SearchX}
-          title={t('messages.empty.noMatch')}
-          description={t('messages.empty.noMatchHint')}
+          title={reviews ? t('reviews.hub.noMatch') : t('messages.empty.noMatch')}
+          description={reviews ? t('reviews.hub.noMatchHint') : t('messages.empty.noMatchHint')}
           action={{ label: t('messages.filter.clear'), onClick: () => onChange({ channel: null, propertyId: null, bookingId: null, q: '' }) }}
         />
       );
+    }
+    if (reviews) {
+      return <EmptyState className={className} icon={Star} title={t('reviews.hub.empty')} description={t('reviews.hub.emptyHint')} />;
     }
     if (state.view === 'toRespond') {
       return (
@@ -181,18 +187,23 @@ export function ThreadList({ page, loading, error, onRetry, state, search, selec
         </p>
       ) : null}
       <ul aria-label={t('messages.inbox.listLabel')} className="space-y-1">
-        {items.map((thread) => (
-          <ThreadRow
-            key={thread.threadKey}
-            thread={thread}
-            selected={thread.threadKey === selectedKey}
-            search={search}
-            now={now}
-            showNeedsReply={state.view !== 'toRespond'}
-            compact={compact}
-            canWrite={canWrite}
-          />
-        ))}
+        {items.map((thread) =>
+          // A review opens its own detail, never the endpoints of a conversation: the list under «Recensioni» is the only place it is in.
+          thread.kind === 'Review' ? (
+            <ReviewRow key={thread.threadKey} thread={thread} selected={thread.threadKey === selectedKey} search={search} now={now} compact={compact} />
+          ) : (
+            <ThreadRow
+              key={thread.threadKey}
+              thread={thread}
+              selected={thread.threadKey === selectedKey}
+              search={search}
+              now={now}
+              showNeedsReply={state.view !== 'toRespond'}
+              compact={compact}
+              canWrite={canWrite}
+            />
+          ),
+        )}
       </ul>
       {page ? <ListPagination page={page.page} pageSize={page.pageSize} totalCount={page.totalCount} onPageChange={(next) => onChange({ page: next })} /> : null}
     </div>
