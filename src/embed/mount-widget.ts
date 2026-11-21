@@ -101,7 +101,7 @@ export function createWidget(el: HTMLElement, plan: Plan): Widget {
   const valid = plan.base !== '' && !plan.invalid;
   let link: HTMLAnchorElement | undefined;
   let reveal = (): void => undefined;
-  const wait: { timer?: ReturnType<typeof setTimeout> } = {};
+  const wait: { timer?: ReturnType<typeof setTimeout>; watcher?: IntersectionObserver } = {};
 
   const widget: Widget = {
     el,
@@ -115,6 +115,7 @@ export function createWidget(el: HTMLElement, plan: Plan): Widget {
     origin: '',
     show: () => {
       clearTimeout(wait.timer);
+      wait.watcher?.disconnect();
       reveal();
       link?.remove();
     },
@@ -188,7 +189,21 @@ export function createWidget(el: HTMLElement, plan: Plan): Widget {
     frame.removeAttribute('aria-hidden');
     placeholder.remove();
   };
-  wait.timer = setTimeout(widget.fail, READY_TIMEOUT_MS);
+  // `loading="lazy"` keeps a frame that is far below the fold from being asked for at all, so it cannot say `ready` and nothing is wrong with it: its 8 seconds
+  // start when it comes into view, not when the page was printed (a frame that said `ready` before takes the watch away). A browser that cannot tell starts them now.
+  const arm = (): void => {
+    wait.timer = setTimeout(widget.fail, READY_TIMEOUT_MS);
+  };
+  if (typeof IntersectionObserver === 'function') {
+    wait.watcher = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      wait.watcher?.disconnect();
+      arm();
+    });
+    wait.watcher.observe(frame);
+  } else {
+    arm();
+  }
   widget.frame = frame;
   widget.origin = plan.base;
   return widget;

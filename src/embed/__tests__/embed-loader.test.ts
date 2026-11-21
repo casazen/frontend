@@ -973,6 +973,36 @@ describe('the state of the frame in the address (AC6)', () => {
 describe('the link that takes the place of a frame (AC7)', () => {
   const SITE = 'https://prenota.quokka360.com';
 
+  /** A browser that tells when an element comes into view (jsdom has none): the test says when. */
+  function stubIntersectionObserver() {
+    const watchers: { callback: IntersectionObserverCallback; element: Element | null; disconnected: boolean }[] = [];
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        private readonly watcher: (typeof watchers)[number];
+
+        constructor(callback: IntersectionObserverCallback) {
+          this.watcher = { callback, element: null, disconnected: false };
+          watchers.push(this.watcher);
+        }
+
+        observe(element: Element) {
+          this.watcher.element = element;
+        }
+
+        disconnect() {
+          this.watcher.disconnected = true;
+        }
+      },
+    );
+    /** The browser says the element of watcher `at` is now (or is still not) in view; a watcher that was disconnected hears nothing. */
+    const comeIntoView = (at = 0, isIntersecting = true) => {
+      const watcher = watchers[at];
+      if (!watcher.disconnected) watcher.callback([{ isIntersecting, target: watcher.element } as unknown as IntersectionObserverEntry], {} as IntersectionObserver);
+    };
+    return { watchers, comeIntoView };
+  }
+
   it('embedLoader_Fallback_After8SecondsWithoutReady_ShowsTheLinkToTheSite', async () => {
     vi.useFakeTimers();
     const element = widget('booking');
@@ -1082,6 +1112,80 @@ describe('the link that takes the place of a frame (AC7)', () => {
     vi.advanceTimersByTime(60000);
 
     expect(linkOf(element)).toBeNull();
+  });
+
+  it('embedLoader_Fallback_AFrameFarBelowTheFold_StartsItsEightSecondsWhenItComesIntoView', async () => {
+    vi.useFakeTimers();
+    const view = stubIntersectionObserver();
+    const element = widget('booking');
+    await loadLoader();
+
+    // Lazy and far away: nobody asks for it, so it cannot say ready, and nothing is wrong with it. No link, however long the visitor stays.
+    vi.advanceTimersByTime(60000);
+    expect(linkOf(element)).toBeNull();
+    expect(placeholderOf(element)).not.toBeNull();
+    expect(frameOf(element).style.opacity).toBe('0');
+    expect(view.watchers).toHaveLength(1);
+    expect(view.watchers[0].element).toBe(frameOf(element));
+
+    view.comeIntoView();
+    vi.advanceTimersByTime(7999);
+    expect(linkOf(element)).toBeNull();
+    vi.advanceTimersByTime(1);
+    expect(linkOf(element)?.textContent).toBe('Prenota su prenota.quokka360.com');
+  });
+
+  it('embedLoader_Fallback_AFrameInViewAtOnce_GetsItsLinkAfter8Seconds', async () => {
+    vi.useFakeTimers();
+    const view = stubIntersectionObserver();
+    const element = widget('booking');
+    await loadLoader();
+
+    view.comeIntoView();
+    vi.advanceTimersByTime(8000);
+
+    expect(linkOf(element)).not.toBeNull();
+    // The watch is over once it has done its work.
+    expect(view.watchers[0].disconnected).toBe(true);
+  });
+
+  it('embedLoader_Fallback_AFrameThatSaysReadyBeforeItIsInView_NeverArmsTheWait', async () => {
+    vi.useFakeTimers();
+    const view = stubIntersectionObserver();
+    const element = widget('booking');
+    await loadLoader();
+
+    // The browser had started it already, a little before the visitor got there.
+    post(frameOf(element), buildEmbedMessage('ready', { widget: 'booking' }));
+    expect(view.watchers[0].disconnected).toBe(true);
+    view.comeIntoView();
+    vi.advanceTimersByTime(60000);
+
+    expect(linkOf(element)).toBeNull();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('embedLoader_Fallback_AnEntryThatIsNotInView_StartsNothing', async () => {
+    vi.useFakeTimers();
+    const view = stubIntersectionObserver();
+    const element = widget('booking');
+    await loadLoader();
+
+    view.comeIntoView(0, false);
+    vi.advanceTimersByTime(60000);
+
+    expect(linkOf(element)).toBeNull();
+    expect(view.watchers[0].disconnected).toBe(false);
+  });
+
+  it('embedLoader_Fallback_AnErrorOfAFrameFarBelow_ShowsTheLinkAtOnce', async () => {
+    stubIntersectionObserver();
+    const element = widget('booking');
+    await loadLoader();
+
+    post(frameOf(element), buildEmbedMessage('error', { code: 'disabled' }));
+
+    expect(linkOf(element)).not.toBeNull();
   });
 
   it('embedLoader_Fallback_AnErrorOfTheFrame_ShowsTheLinkAtOnce', async () => {
