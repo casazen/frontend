@@ -274,7 +274,10 @@ export function BiometricSettingsCard({ compact = false }: { compact?: boolean }
       <div className="flex flex-wrap items-center gap-2">
         <ScanFace aria-hidden="true" className="size-5 text-primary-text" />
         <h2 id="biometric-settings-title" className="font-semibold">{t('biometricSettings.title')}</h2>
-        {settings.data?.provisional && <Badge variant="warning" data-testid="biometric-provisional">{t('biometricSettings.provisional.badge')}</Badge>}
+        {/* A read that failed leaves the older answer in memory: the badge is part of what is not known then. */}
+        {!settings.isError && settings.data?.provisional ? (
+          <Badge variant="warning" data-testid="biometric-provisional">{t('biometricSettings.provisional.badge')}</Badge>
+        ) : null}
       </div>
       {settings.data && compact ? (
         <p className="text-sm">{t(settings.data.enabled ? 'aiSettings.enabledSummary' : 'aiSettings.manualSummary')}</p>

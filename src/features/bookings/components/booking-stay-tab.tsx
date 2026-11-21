@@ -34,11 +34,13 @@ export function BookingStayTab({ booking }: BookingStayTabProps) {
   const { flags } = useFeatureFlags();
   // The stay's own requests (D2), with the same query as the app's booking screen.
   const canReadProperty = hasPermission('short-rent', 'property.read');
-  const serviceRequests = useServiceRequests(canReadProperty ? { bookingId: booking.id, pageSize: 50 } : undefined);
+  // Always ask for the stay's requests when the booking page is open: the list is what the host sees after creating one
+  // (GJ L3 pay-at-property). Gating the query on property.read hid the card after the cleaning wizard returned.
+  const serviceRequests = useServiceRequests({ bookingId: booking.id, pageSize: 50 });
   // Creating a request and managing an existing intervention are distinct permissions.
   const canManageSupplierRequests = hasPermission('short-rent', 'property.write');
   const canRequestSupplier = hasPermission('short-rent', 'servicerequest.write') && booking.status !== 'Cancelled';
-  const cleaningAction = canRequestSupplier && (
+  const cleaningAction = canRequestSupplier ? (
     <div className="flex flex-wrap items-center gap-2">
       <Button asChild size="sm" variant="outline" className="min-h-11">
         <Link to={requestInterventionPath(booking.propertyId, { bookingId: booking.id, type: 'cleaning' })} data-testid="booking-request-cleaning">
@@ -49,7 +51,7 @@ export function BookingStayTab({ booking }: BookingStayTabProps) {
         <Link to={requestInterventionPath(booking.propertyId, { bookingId: booking.id })}>{t('requestWizard.housekeeping.other')}</Link>
       </Button>
     </div>
-  );
+  ) : undefined;
   const canWrite = hasPermission('short-rent', 'booking.write');
   const canRead = hasPermission('short-rent', 'booking.read');
   // A booking of a channel that the channel does not let the host change or cancel from CasaZen (E08/F03/US02, NF-75, NF-76): the one sentence that says how to ask the
@@ -165,16 +167,14 @@ export function BookingStayTab({ booking }: BookingStayTabProps) {
       {/* The one section of the reviews of the stay (E05/F06/US02): the host asks the guest of the site for a review (DB-12b) and reads the reviews of the guests, of the site and of the channel. It draws nothing where there is nothing to say. */}
       <BookingReviewsSection booking={booking} canWrite={canWrite} />
 
-      {canReadProperty ? (
-        <ServiceRequestsCard
-          plain
-          query={serviceRequests}
-          emptyText={t('serviceRequest.emptyForStay')}
-          canManage={canManageSupplierRequests}
-          testId="booking-service-requests"
-          action={cleaningAction}
-        />
-      ) : cleaningAction}
+      <ServiceRequestsCard
+        plain
+        query={serviceRequests}
+        emptyText={t('serviceRequest.emptyForStay')}
+        canManage={canManageSupplierRequests}
+        testId="booking-service-requests"
+        action={cleaningAction}
+      />
 
       {/* NF-71: what the routines will send to the guest of this stay, after the sections above (they keep their place). Only with the flag on and for who may read the booking: off, nothing is drawn and nothing is asked. */}
       {flags.scheduledMessages && canRead ? <BookingScheduledMessages booking={booking} canWrite={canWrite} /> : null}
