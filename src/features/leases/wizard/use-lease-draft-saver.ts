@@ -56,6 +56,7 @@ export function useLeaseDraftSaver({ leaseId, version, origin, getValues, onSave
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const chain = useRef<Promise<boolean>>(Promise.resolve(true));
   const stopped = useRef(false);
+  const sending = useRef(false);
 
   /**
    * A stale version or a lease that is not a draft any more stops the saving for good (and says so in `status`): true for those two.
@@ -79,6 +80,7 @@ export function useLeaseDraftSaver({ leaseId, version, origin, getValues, onSave
       waiting.current.delete(step);
       const { leaseId: id, origin: leaseOrigin, getValues: read, onSaved: done } = latest.current;
       const payload = stepPayload(step, read(), leaseOrigin);
+      sending.current = true;
       try {
         const saved = await leasesApi.saveDraft(id, { version: versionRef.current, step, values: payload.values });
         versionRef.current = saved.version;
@@ -87,6 +89,8 @@ export function useLeaseDraftSaver({ leaseId, version, origin, getValues, onSave
         waiting.current.add(step);
         if (!stopOn(error)) setStatus('error');
         return false;
+      } finally {
+        sending.current = false;
       }
     }
     setStatus('saved');
@@ -143,5 +147,11 @@ export function useLeaseDraftSaver({ leaseId, version, origin, getValues, onSave
     return () => window.removeEventListener('beforeunload', warn);
   }, [unsaved]);
 
-  return { status, savedAt, queue, flush, adopt, getVersion, stopOn };
+  const hasPending = useCallback(() => sending.current || waiting.current.size > 0, []);
+  const discard = useCallback(() => {
+    clearTimeout(timer.current);
+    waiting.current.clear();
+  }, []);
+
+  return { status, savedAt, queue, flush, adopt, getVersion, stopOn, hasPending, discard };
 }

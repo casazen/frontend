@@ -552,28 +552,29 @@ test.describe('Aligned cards', () => {
   });
 
   test.describe('Menu of the phone (the sheet "Altro")', () => {
-    test('the two tiles of a row are as tall as each other when a name takes two lines', async ({ page }) => {
-      // A narrow phone: "Sito di prenotazione" is on two lines, "Marketplace" next to it on one.
+    test('menu rows fit a narrow phone and paired links align when long names wrap', async ({ page }) => {
       await page.setViewportSize({ width: 320, height: 800 });
       await page.goto(demoUrl('/app/short-rent', 'short-stay'));
       await page.locator('[data-more-trigger]').click();
-      const sheet = page.getByRole('dialog', { name: 'Altro' });
-      await expect(sheet.getByRole('link', { name: 'Marketplace' })).toBeVisible();
+      const offer = page.getByRole('dialog', { name: 'Altro' }).getByTestId('nav-group-offer');
+      const links = offer.getByRole('link');
+      await expect(links).toHaveCount(2);
+      const layout = () => links.evaluateAll(nodes => nodes.map(node => {
+        const rect = node.getBoundingClientRect();
+        return { x: Math.round(rect.x), y: Math.round(rect.y), height: Math.round(rect.height) };
+      }));
+      const small = await layout();
+      expect(small[1].x).toBe(small[0].x);
+      expect(small[1].y).toBeGreaterThan(small[0].y);
 
-      // One pass in the page, because the sheet slides in while the boxes are read.
-      const tiles = await sheet.locator('ul > li > a').evaluateAll((nodes) => {
-        const top = nodes[0].getBoundingClientRect().top;
-        return nodes.map((node) => {
-          const box = node.getBoundingClientRect();
-          return { row: Math.round(box.top - top), height: Math.round(box.height), name: node.textContent ?? '' };
-        });
-      });
-      expect(new Set(tiles.map((tile) => tile.height)).size, 'some tile is taller than the others').toBeGreaterThan(1);
-      const rows = new Map<number, { height: number; name: string }[]>();
-      for (const tile of tiles) rows.set(tile.row, [...(rows.get(tile.row) ?? []), tile]);
-      for (const [row, inRow] of rows) {
-        expect(new Set(inRow.map((tile) => tile.height)).size, `row at ${row}: ${inRow.map((tile) => `${tile.name} ${tile.height}`).join(', ')}`).toBe(1);
-      }
+      await page.setViewportSize({ width: 390, height: 844 });
+      const name = links.first().locator('span').first();
+      await setText(name, 'Sito per le prenotazioni dirette della tua struttura');
+      expect(await linesOf(name)).toBeGreaterThan(1);
+      const medium = await layout();
+      expect(medium[1].x).toBeGreaterThan(medium[0].x);
+      expect(medium[0].y).toBe(medium[1].y);
+      expect(medium[0].height).toBe(medium[1].height);
     });
   });
 

@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, configure, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { createElement } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { I18nextProvider } from 'react-i18next';
 import { AxiosError, AxiosHeaders } from 'axios';
 import type { InternalAxiosRequestConfig } from 'axios';
@@ -161,6 +161,11 @@ function httpError(status: number, data?: unknown): AxiosError {
   });
 }
 
+function BookingDetailStub() {
+  const location = useLocation();
+  return <div data-testid="booking-detail-stub" data-search={location.search} />;
+}
+
 function renderWizard(search = '') {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
@@ -171,7 +176,7 @@ function renderWizard(search = '') {
             createElement(Route, { path: '/app/short-rent/bookings/:id/check-in', element: createElement(CheckInWizardPage) }),
             createElement(Route, {
               path: '/app/short-rent/bookings/:id',
-              element: createElement('div', { 'data-testid': 'booking-detail-stub' }),
+              element: createElement(BookingDetailStub),
             }),
           )))),
   );
@@ -384,13 +389,17 @@ describe('CheckInWizardPage', () => {
   });
 
   describe('Save and exit', () => {
-    it('saveAndExit_NothingChanged_LeavesToTheBookingWithoutSaving', { timeout: FORM_TEST_TIMEOUT_MS }, async () => {
-      renderWizard();
+    it.each([
+      ['', ''],
+      ['?return=documents', '?tab=guest'],
+      ['?return=https://example.test', ''],
+    ])('returns to the known booking section for %s', { timeout: FORM_TEST_TIMEOUT_MS }, async (search, destination) => {
+      renderWizard(search);
       await screen.findByTestId('stay-guest-0');
 
       fireEvent.click(screen.getByTestId('checkin-wizard-save-exit'));
 
-      expect(await screen.findByTestId('booking-detail-stub')).toBeInTheDocument();
+      expect(await screen.findByTestId('booking-detail-stub')).toHaveAttribute('data-search', destination);
       expect(checkInWizardApi.saveGuests).not.toHaveBeenCalled();
     });
 

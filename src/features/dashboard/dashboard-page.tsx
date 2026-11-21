@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Building2, Plus, Wrench } from 'lucide-react';
+import { Building2, Plus, Workflow, Wrench } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { FocusBlock } from '@/components/shared/calm';
@@ -20,6 +20,7 @@ import { TodoPath } from '@/features/todo/todo-path';
 import { complianceActionRoute } from '@/lib/compliance-routes';
 import { formatStayDate } from '@/lib/stay-dates';
 import { useActivities, useActivityCount } from '@/queries/internalActivities';
+import { useCommercialRouteAccess } from '@/hooks/use-commercial-profile';
 import { useRoutines } from '@/queries/routines';
 import { useMessageHubThreads } from '@/queries/use-message-hub';
 import { useDashboardIcalFeeds, useDashboardOverview, useDashboardToday } from '@/queries/use-dashboard';
@@ -60,7 +61,8 @@ export function DashboardPage() {
   const canWriteProperty = hasPermission('short-rent', 'property.write');
   const canRequestService = hasPermission('short-rent', 'servicerequest.write');
 
-  const showRoutineStatus = flags.routines && canWriteProperty;
+  const canOpenPath = useCommercialRouteAccess();
+  const showRoutineStatus = flags.routines && canWriteProperty && canOpenPath('/app/short-rent/automations');
   const routines = useRoutines(showRoutineStatus);
   const activeRoutineCount = showRoutineStatus && routines.isSuccess
     ? routines.data.filter(routine => routine.active && !routine.testMode).length
@@ -141,9 +143,10 @@ export function DashboardPage() {
           title={firstName ? t('dashboard.title', { name: firstName }) : t('dashboard.titleNoName')}
           description={canReadBookings && today.data && !today.isError && !noActiveProperty ? purposeOf(today.data, propertyId, t, locale) : undefined}
           primary={phone ? undefined : createBooking}
-          action={activeRoutineCount > 0 ? (
-            <Link to="/app/short-rent/automations" className="text-sm text-muted-foreground underline-offset-4 hover:underline">
-              {t('routines.dashboardActive', { count: activeRoutineCount })}
+          action={showRoutineStatus && routines.isSuccess ? (
+            <Link to={routines.data.length ? '/app/short-rent/automations' : '/app/short-rent/automations?view=library'} className="inline-flex min-h-11 items-center gap-2 rounded-lg border px-3 text-sm font-medium text-primary-text hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring">
+              <Workflow aria-hidden="true" className="size-4" />
+              {activeRoutineCount > 0 ? t('routines.dashboardActive', { count: activeRoutineCount }) : t(routines.data.length ? 'nav.routines' : 'aiSettings.firstRoutine')}
             </Link>
           ) : undefined}
           secondary={[

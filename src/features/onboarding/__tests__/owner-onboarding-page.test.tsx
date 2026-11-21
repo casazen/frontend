@@ -177,7 +177,7 @@ function Arrived() {
 }
 
 function renderAt(path: string, element: ReactNode, { agencyTier = true, client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } }) } = {}) {
-  const flags = { ...DEFAULT_FEATURE_FLAGS, octorateOnboarding: true, agencyTier };
+  const flags = { ...DEFAULT_FEATURE_FLAGS, octorateOnboarding: true, octorateConnector: true, agencyTier };
   const view = render(
     <I18nextProvider i18n={i18n}>
       <FeatureFlagsContext.Provider value={{ flags, isLoading: false }}>
@@ -884,7 +884,13 @@ describe('OnboardingPlanPage, the owner step in the plan (NF-109)', () => {
     const row = await screen.findByTestId('onboarding-owners-step');
     const list = screen.getByTestId('onboarding-plan-parts');
     const ids = Array.from(list.children).map((item) => (item as HTMLElement).dataset.testid);
-    expect(ids.indexOf('onboarding-owners-step')).toBe(ids.indexOf('onboarding-part-properties') + 1);
+    const propertiesIndex = ids.indexOf('onboarding-part-properties');
+    if (propertiesIndex >= 0) {
+      expect(ids.indexOf('onboarding-owners-step')).toBe(propertiesIndex + 1);
+    } else {
+      expect(within(screen.getByTestId('onboarding-plan-current')).getByTestId('onboarding-part-properties')).toBeInTheDocument();
+      expect(ids.indexOf('onboarding-owners-step')).toBe(ids.indexOf('onboarding-part-octorateConnection') + 1);
+    }
     expect(row).not.toHaveAttribute('data-highlighted');
     await waitFor(() => expect(row).toHaveAttribute('data-state', 'toComplete'));
     expect(within(row).getByTestId('onboarding-owners-step-open')).toHaveAttribute('href', OWNER_STEP_PATH);

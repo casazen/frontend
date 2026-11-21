@@ -810,7 +810,7 @@ test.describe('the list of guests', () => {
     await expect(guestTable(page).locator('tbody tr')).toHaveCount(20);
     const before = asked.length;
 
-    await page.getByRole('searchbox').pressSequentially('verdi', { delay: 50 });
+    await page.getByRole('main').getByRole('searchbox').pressSequentially('verdi', { delay: 50 });
 
     await expect(page).toHaveURL(/[?&]q=verdi$/);
     await expect.poll(() => asked.at(-1)?.searchParams.get('search')).toBe('verdi');
@@ -820,7 +820,7 @@ test.describe('the list of guests', () => {
     expect(names.length).toBeGreaterThan(0);
     for (const name of names) expect(name).toContain('Verdi');
 
-    await page.getByRole('searchbox').fill('zzzzzz');
+    await page.getByRole('main').getByRole('searchbox').fill('zzzzzz');
     await expect(page.getByText('Nessun risultato', { exact: true })).toBeVisible();
     await page.getByTestId('guest-list').getByRole('button', { name: 'Azzera i filtri' }).last().click();
     await expect(guestTable(page).locator('tbody tr')).toHaveCount(20);

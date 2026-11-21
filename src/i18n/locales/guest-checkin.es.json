@@ -108,8 +108,15 @@
       }
     },
     "loading": "Cargando el check-in…",
+    "reopen": {
+      "loadTitle": "Registro temporalmente no disponible",
+      "loadHint": "Compruebe su conexión y vuelva a intentarlo con este enlace.",
+      "retry": "Reintentar",
+      "nextStep": "A continuación · {{name}}",
+      "resumed": "Los datos que ya registró el alojamiento aparecen rellenados. Vuelva a introducir los cambios que no llegó a enviar."
+    },
     "invalidLink": "Enlace no válido",
-    "invalidLinkDescription": "El enlace del check-in no es válido o ha caducado. Póngase en contacto con el gestor del alojamiento.",
+    "invalidLinkDescription": "El enlace no es válido o ha caducado. Pida al alojamiento un enlace nuevo a través de su reserva.",
     "guestCheckIn": "Check-in de huéspedes",
     "birthDate": "Fecha de nacimiento *",
     "genderLabel": "Sexo *",
@@ -130,7 +137,7 @@
     "submit": "Enviar el check-in",
     "fixHighlightedFields": "Algunos datos no son válidos: corrija los campos resaltados y envíe de nuevo.",
     "successTitle": "¡Check-in completado!",
-    "successDescription": "Sus datos se han registrado. ¡Gracias!",
+    "successDescription": "El alojamiento ha recibido los datos de su estancia. Para corregirlos, contacte con el alojamiento a través de su reserva.",
     "alreadyCompletedTitle": "Check-in ya completado",
     "alreadyCompletedDescription": "Los datos de esta estancia ya se han enviado. Para proteger su privacidad ya no se muestran. Para corregirlos, póngase en contacto con el gestor del alojamiento.",
     "marketingConsentVersion": "Opcional. Versión del texto: {{version}}",
@@ -141,7 +148,7 @@
       "version": "Versión del aviso: {{version}}"
     },
     "stepScan": "Documento",
-    "scanIntro": "Empiece con la foto del documento de cada huésped. Los datos se leen solos: en el paso siguiente los revisa y los corrige.",
+    "scanIntro": "Puede rellenar los datos a partir de una foto del documento o introducirlos a mano. Podrá revisarlos antes de enviarlos al alojamiento.",
     "scanHint": "JPG, PNG o WebP, máximo 5 MB. Si eliges la verificación en línea y das tu consentimiento, podrás usar la misma foto para verificar tu documento.",
     "scanButton": "Hacer o cargar la foto",
     "scanReading": "Leyendo el documento…",

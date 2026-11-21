@@ -10,6 +10,7 @@ import { useNavCounts } from '@/hooks/use-nav-counts';
 import { useUiStore } from '@/store/ui-store';
 import { cn } from '@/lib/utils';
 import { CasaZenLogo } from '@/components/brand/casazen-mark';
+import { MenuSearch } from './menu-search';
 import { AreaSwitcher } from './area-switcher';
 import { FooterNavLinks, GroupedNavLinks } from './grouped-nav-links';
 import { useRailTooltip } from './rail-tooltip';
@@ -95,7 +96,13 @@ export function ContextSidebar({ contextKey, organizationName = null }: ContextS
         aria-label={t('nav.menuLabel', { area: t(area.nameKey) })}
         className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4"
       >
-        <GroupedNavLinks nav={nav} matchEntries={matchEntries} collapsed={collapsed} counts={counts} />
+        {collapsed ? (
+          <GroupedNavLinks nav={nav} matchEntries={matchEntries} collapsed counts={counts} />
+        ) : (
+          <MenuSearch key={contextKey} entries={matchEntries}>
+            <GroupedNavLinks nav={nav} matchEntries={matchEntries} counts={counts} />
+          </MenuSearch>
+        )}
       </nav>
       {/* The settings of the area, pinned under the menu that scrolls (on the rail of a tablet too), then the button that reduces the sidebar. */}
       {nav.footer.length > 0 ? (

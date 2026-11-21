@@ -1,3 +1,4 @@
+import { inventoryPlanPart, usePlanReturn, withPlanPart } from '@/features/onboarding/plan-return';
 import { useState } from 'react';
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
@@ -105,8 +106,9 @@ function SaveAndExit({ onLeave }: { onLeave: () => void }) {
 
 /** The road «new»: the only one that creates. It leads to the listing wizard, in place of this step, and never from any other road. */
 function NewInventoryStep() {
+  const [params] = useSearchParams();
   const route = routeForScenario('newInventory');
-  return route.path ? <Navigate to={route.path} replace /> : null;
+  return route.path ? <Navigate to={withPlanPart(route.path, inventoryPlanPart(params))} replace /> : null;
 }
 
 /** The answer asked for in the address (`?scenario=`), from the plan of the activation: it is the answer, and the question is not asked again. */
@@ -149,6 +151,7 @@ function ConnectWizard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
+  const planReturn = usePlanReturn();
   const connect = useOctorateConnect();
   const confirmMapping = useConfirmMapping();
   const importListing = useImportListing();
@@ -400,12 +403,12 @@ function ConnectWizard() {
       finishLabel={t('octorate.connect.finishLabel')}
       finishFailedMessage={failedMessage}
       onFinish={applyMapping}
-      onExit={() => navigate(PROPERTIES_PATH)}
+      onExit={() => navigate(planReturn ?? PROPERTIES_PATH)}
       aboveFooter={
         <SaveAndExit
           onLeave={() => {
             toast.success(t('octorate.connect.exit.saved'));
-            navigate(PROPERTIES_PATH);
+            navigate(planReturn ?? PROPERTIES_PATH);
           }}
         />
       }
@@ -450,6 +453,7 @@ function ConnectOrPanelReturn() {
  * to the first question, from the plan of the activation.
  */
 export function OctorateConnectWizardPage() {
+  const planReturn = usePlanReturn();
   const { t } = useTranslation();
 
   return (
@@ -457,7 +461,7 @@ export function OctorateConnectWizardPage() {
       <PageHeader
         title={t('octorate.connect.title')}
         description={t('octorate.connect.page.description')}
-        crumbs={[{ label: t('nav.properties'), to: PROPERTIES_PATH }, { label: t('octorate.connect.title') }]}
+        crumbs={[{ label: t(planReturn ? 'onboardingPlan.launch.backToPlan' : 'nav.properties'), to: planReturn ?? PROPERTIES_PATH }, { label: t('octorate.connect.title') }]}
       />
       <ConnectOrPanelReturn />
     </div>

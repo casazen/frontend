@@ -33,6 +33,7 @@ const TAX_REASON_KEYS: Readonly<Record<string, string>> = {
 interface CheckInWizardDoneProps {
   bookingId: string;
   guestName: string;
+  returnPath: string;
   result: CheckInConfirmation;
 }
 
@@ -43,7 +44,7 @@ interface CheckInWizardDoneProps {
  * next, a warning when data already sent to the police changed, and one next step: "Register arrival" when the stay can be registered. This
  * is the end of the flow: it may link out.
  */
-export function CheckInWizardDone({ bookingId, guestName, result }: CheckInWizardDoneProps) {
+export function CheckInWizardDone({ bookingId, guestName, returnPath, result }: CheckInWizardDoneProps) {
   const { t, i18n } = useTranslation();
   const confirm = useConfirmCheckIn(bookingId);
   const booking = useBooking(bookingId);
@@ -94,7 +95,7 @@ export function CheckInWizardDone({ bookingId, guestName, result }: CheckInWizar
       title={t('checkin.wizard.done.title')}
       description={t('checkin.wizard.done.description', { guest: guestName })}
       whatNext={whatNext}
-      primary={{ label: t('checkin.wizard.done.toBooking'), to: stay }}
+      primary={{ label: t('checkin.wizard.done.toBooking'), to: returnPath }}
       secondary={{ label: t('checkin.wizard.done.toCompliance'), to: '/app/short-rent/compliance' }}
     >
       <div className="space-y-4" data-testid="checkin-wizard-done">

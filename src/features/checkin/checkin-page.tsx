@@ -59,6 +59,14 @@ const STEP_DOCUMENT = 3;
 const STEP_CONSENTS = 5;
 const STEP_IDENTITY = 6;
 const STEP_TAX = 7;
+const STEP_LABEL: Record<number, string> = {
+  [STEP_SCAN]: 'checkin.stepScan',
+  [STEP_GUESTS]: 'checkin.stepGuests',
+  [STEP_DOCUMENT]: 'checkin.stepDocument',
+  [STEP_IDENTITY]: 'checkin.stepIdentity',
+  [STEP_TAX]: 'checkin.touristTax.title',
+  [STEP_CONSENTS]: 'checkin.stepConsents',
+};
 
 /** Every step in the order the page shows them: the steps that are not in `stepsOf` are skipped, and the step that follows one that went away is found here. */
 const STEP_ORDER: readonly number[] = [STEP_SCAN, STEP_GUESTS, STEP_DOCUMENT, STEP_TAX, STEP_IDENTITY, STEP_CONSENTS];
@@ -180,7 +188,7 @@ export function CheckInPage() {
 
 function GuestCheckInFlow({ token }: { token: string }) {
   const { t } = useTranslation();
-  const { data: context, isLoading, isError, refetch } = useCheckInContext(token);
+  const { data: context, isLoading, isFetching, error: contextError, refetch } = useCheckInContext(token);
   const submitCheckIn = useSubmitGuestCheckIn(token);
   const saveLanguage = useSetCheckInLanguage(token);
   // The identity check (CHK-11): its state lives here, so that going back and forth between the steps keeps where the guest is in it.
@@ -200,10 +208,11 @@ function GuestCheckInFlow({ token }: { token: string }) {
   });
   const taxView = taxAvailability === 'ready' ? (taxRead.data ?? null) : null;
   const steps = stepsOf(identity.progress !== null, taxAvailability === 'ready' || taxAvailability === 'failed');
-  // The step the guest moved to; `null` until they move. The guest who came through the door of the property (`?step=identity`, E22/F02/US01/T01) starts at the identity step once the API offers one;
-  // any other address starts at the first step. From the first move on, the guest's own choice is what counts.
+  // Only the return point is kept in the address. Personal fields and photos stay in memory until submitted.
+  const [resumed] = useState(() => searchParams.get('resume') === 'guests');
   const [step, setStep] = useState<number | null>(null);
-  const startStep = searchParams.get('step') === IDENTITY_STEP_PARAM && steps.includes(STEP_IDENTITY) ? STEP_IDENTITY : STEP_SCAN;
+  const doorIdentity = searchParams.get('step') === IDENTITY_STEP_PARAM && steps.includes(STEP_IDENTITY);
+  const startStep = doorIdentity ? STEP_IDENTITY : resumed ? STEP_GUESTS : STEP_SCAN;
   const wantedStep = step ?? startStep;
   // A step that went away (the verification or the tax payment was switched off while the page was open) leaves the guest at the step that follows it.
   const current = steps.includes(wantedStep) ? wantedStep : stepAfterGone(wantedStep, steps);
@@ -236,6 +245,31 @@ function GuestCheckInFlow({ token }: { token: string }) {
     return photo;
   }, []);
   const formElement = useRef<HTMLFormElement>(null);
+  const stepHeading = useRef<HTMLHeadingElement>(null);
+  const focusHeading = useRef(false);
+  useEffect(() => {
+    if (!focusHeading.current) return;
+    focusHeading.current = false;
+    stepHeading.current?.focus();
+  }, [current]);
+
+  function goToStep(nextStep: number) {
+    focusHeading.current = true;
+    setStep(nextStep);
+    // A refresh can restore only data present in the server response, never an unsent document or consent.
+    if (current === STEP_SCAN || nextStep === STEP_SCAN) {
+      const next = new URLSearchParams(searchParams);
+      if (nextStep === STEP_SCAN) next.delete('resume');
+      else next.set('resume', 'guests');
+      next.delete('step');
+      setSearchParams(next, { replace: true });
+    }
+  }
+
+  const moveFromScan = () => {
+    setReview(null);
+    goToStep(STEP_GUESTS);
+  };
 
   // The page opens in the language the API resolved (the guest's earlier choice, else the browser's, else Italian) until the guest chooses.
   const locale = chosenLocale ?? resolveGuestLocale(context?.language);
@@ -245,7 +279,14 @@ function GuestCheckInFlow({ token }: { token: string }) {
     setLanguageNotLoaded(true);
   }, []);
   useGuestPageLocale(locale, keepLocale);
-  const sessionOpen = Boolean(context) && !context?.completed;
+  const status = getHttpStatus(contextError);
+  const invalidLink = !token || status === 404 || status === 410 || context?.status === 'Scaduto';
+  const completed = submitted || context?.completed || (context && COMPLETE_STATUSES.has(context.status));
+  const sessionOpen = context && !invalidLink && !completed;
+  const receiptHeading = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    if (completed) receiptHeading.current?.focus();
+  }, [completed]);
 
   // The statistical fields are asked only where the region requires them (data minimization): none while the page does not know.
   const statisticalFields = useMemo(() => requiredStatisticalFields(context?.requiredGuestFields), [context?.requiredGuestFields]);
@@ -336,7 +377,7 @@ function GuestCheckInFlow({ token }: { token: string }) {
 
   const goNext = async () => {
     if (current === STEP_SCAN) {
-      setStep(STEP_GUESTS);
+      moveFromScan();
       return;
     }
     // The identity check goes on only when it is over: it passed, or a person was asked and has it (the way to a person is always open).
@@ -352,7 +393,7 @@ function GuestCheckInFlow({ token }: { token: string }) {
         : [];
     const valid = await trigger(stepPaths(current));
     extra.forEach((issue) => setError(`guests.${issue.index}.${issue.field}`, { type: 'official', message: issue.message }));
-    if (valid && extra.length === 0) setStep(steps[Math.min(totalSteps - 1, stepIndex + 1)]);
+    if (valid && extra.length === 0) goToStep(steps[Math.min(totalSteps - 1, stepIndex + 1)]);
     else reportProblems();
   };
 
@@ -460,7 +501,9 @@ function GuestCheckInFlow({ token }: { token: string }) {
       } catch (error) {
         // Already submitted (e.g. from another tab): reload the context, which now shows the completed state.
         if (getHttpStatus(error) === 409) {
-          await refetch();
+          const latest = await refetch();
+          if (latest.data?.completed || (latest.data && COMPLETE_STATUSES.has(latest.data.status))) return;
+          setSubmitError(guestProblemMessage(error, t));
           return;
         }
 
@@ -524,14 +567,21 @@ function GuestCheckInFlow({ token }: { token: string }) {
     );
   }
 
-  if (isError || !context) {
+  if (invalidLink || !context) {
     return (
-      <GuestPageFrame switcher={switcher}>
+      <GuestPageFrame switcher={switcher} testId={invalidLink ? 'checkin-invalid-link' : 'checkin-load-problem'}>
         <Card className="mx-auto w-full max-w-md">
           <CardHeader>
-            <CardTitle>{t('checkin.invalidLink')}</CardTitle>
-            <CardDescription>{t('checkin.invalidLinkDescription')}</CardDescription>
+            <h1 className="text-2xl font-semibold tracking-tight">
+              {t(invalidLink ? 'checkin.invalidLink' : 'checkin.reopen.loadTitle')}
+            </h1>
+            <CardDescription>{t(invalidLink ? 'checkin.invalidLinkDescription' : 'checkin.reopen.loadHint')}</CardDescription>
           </CardHeader>
+          {!invalidLink && (
+            <CardContent>
+              <Button type="button" onClick={() => void refetch()} disabled={isFetching}>{t('checkin.reopen.retry')}</Button>
+            </CardContent>
+          )}
         </Card>
       </GuestPageFrame>
     );
@@ -541,15 +591,15 @@ function GuestCheckInFlow({ token }: { token: string }) {
     return <GuestPageFrame switcher={switcher}><GuestInvoiceForm token={token} context={context} /></GuestPageFrame>;
   }
 
-  if (submitted || context.completed || COMPLETE_STATUSES.has(context.status)) {
+  if (completed) {
     // A completed check-in still pays its tax (the server allows it): what can still be paid, and what was paid, is under the card, when the API offers the payment.
     const taxStillToSay = taxView !== null && isShownOnCompletedCheckIn(guestTaxOutlook(taxView));
     return (
       <GuestPageFrame switcher={switcher} testId="checkin-success">
         <Card className="mx-auto w-full max-w-md text-center">
           <CardContent className="pt-10 pb-8 space-y-4">
-            <CheckCircle2 className="h-16 w-16 text-green-600 mx-auto" />
-            <h1 className="text-2xl font-bold">
+            <CheckCircle2 aria-hidden="true" className="h-16 w-16 text-green-600 mx-auto" />
+            <h1 ref={receiptHeading} tabIndex={-1} className="text-2xl font-bold outline-none">
               {submitted ? t('checkin.successTitle') : t('checkin.alreadyCompletedTitle')}
             </h1>
             <p className="text-muted-foreground">
@@ -592,22 +642,19 @@ function GuestCheckInFlow({ token }: { token: string }) {
             </p>
           )}
         </div>
-        <div className="flex justify-center gap-2" data-testid="checkin-progress">
+        <ol className="mx-auto flex max-w-md justify-center gap-2" aria-label={t('checkin.guestCheckIn')} data-testid="checkin-progress">
           {steps.map((n, index) => (
-            <div key={n} className={`h-2 w-16 rounded-full ${index <= stepIndex ? 'bg-primary' : 'bg-muted'}`} />
+            <li key={n} aria-label={t(STEP_LABEL[n])} aria-current={n === current ? 'step' : undefined}
+              className={`h-2 min-w-0 flex-1 rounded-full ${index <= stepIndex ? 'bg-primary' : 'bg-border'}`} />
           ))}
-        </div>
+        </ol>
         <Card>
           <CardHeader>
-            <CardTitle>
-              {current === STEP_SCAN && t('checkin.stepScan')}
-              {current === STEP_GUESTS && t('checkin.stepGuests')}
-              {current === STEP_DOCUMENT && t('checkin.stepDocument')}
-              {current === STEP_TAX && t('checkin.touristTax.title')}
-              {current === STEP_IDENTITY && t('checkin.stepIdentity')}
-              {current === STEP_CONSENTS && t('checkin.stepConsents')}
-            </CardTitle>
             <CardDescription>{t('checkin.stepOf', { step: stepIndex + 1, total: totalSteps })}</CardDescription>
+            <h2 ref={stepHeading} tabIndex={-1} className="scroll-mt-4 text-2xl font-semibold tracking-tight">{t(STEP_LABEL[current])}</h2>
+            {stepIndex + 1 < totalSteps && (
+              <CardDescription>{t('checkin.reopen.nextStep', { name: t(STEP_LABEL[steps[stepIndex + 1]]) })}</CardDescription>
+            )}
           </CardHeader>
           <CardContent>
             <FormProvider {...form}>
@@ -635,12 +682,17 @@ function GuestCheckInFlow({ token }: { token: string }) {
                       finally { setReadingDocument(false); }
                     }}
                     onFile={(file) => { void readDocument(file); }}
-                    onManual={() => { setReview(null); setStep(STEP_GUESTS); }}
-                    onContinue={() => setStep(STEP_GUESTS)}
+                    onManual={moveFromScan}
+                    onContinue={moveFromScan}
                   />
                 )}
                 {current === STEP_GUESTS && (
                   <div className="space-y-4">
+                    {resumed && step === null && (
+                      <p className="rounded-md border-l-4 border-primary bg-muted px-3 py-2 text-sm" data-testid="checkin-resumed">
+                        {t('checkin.reopen.resumed')}
+                      </p>
+                    )}
                     <p className="text-sm text-muted-foreground">
                       {swissDocuments ? t('checkin.swiss.guestsIntro') : t('checkin.guestsIntro')}
                     </p>
@@ -708,7 +760,7 @@ function GuestCheckInFlow({ token }: { token: string }) {
                 )}
                 {current !== STEP_SCAN && (
                 <div className="flex justify-between pt-4">
-                  <Button type="button" variant="outline" onClick={() => setStep(steps[Math.max(0, stepIndex - 1)])} disabled={identity.busy || taxPaying}>
+                  <Button type="button" variant="outline" onClick={() => goToStep(steps[Math.max(0, stepIndex - 1)])} disabled={identity.busy || taxPaying}>
                     <ChevronLeft className="mr-1 h-4 w-4" />{t('checkin.back')}
                   </Button>
                   {current !== STEP_CONSENTS ? (

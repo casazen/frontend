@@ -5,6 +5,7 @@ import { isAxiosError } from 'axios';
 import { Home, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useLoginHandoff } from '@/hooks/use-login-handoff';
 import { useAuth } from '@/hooks/use-auth';
 import { getProblemMessage, isTransientRequestError } from '@/lib/api-errors';
 import {
@@ -51,7 +52,8 @@ export function HostInvitePage() {
 
 function InviteFlow({ token }: { token: string }) {
   const { t } = useTranslation();
-  const { isLoading: authLoading, isAuthenticated, login } = useAuth();
+  const { isLoading: authLoading, isAuthenticated } = useAuth();
+  const handoff = useLoginHandoff();
   const lookup = useHostInviteLookup(token);
   const valid = lookup.data?.valid === true;
 
@@ -102,15 +104,17 @@ function InviteFlow({ token }: { token: string }) {
         </p>
       )}
       <p className="text-sm text-muted-foreground">{t('hostInvite.useSameEmail')}</p>
+      {handoff.busy && <p role="status" className="text-sm">{t('login.redirecting')}</p>}
+      {(handoff.status === 'failed' || handoff.status === 'delayed') && <p role="alert" className="text-sm">{t('login.handoffFailed')}</p>}
       <Button
         className="w-full"
         size="lg"
-        onClick={() => login({ returnTo, authorizationParams: { screen_hint: 'signup' } })}
+        disabled={handoff.busy} onClick={() => handoff.start({ returnTo, authorizationParams: { screen_hint: 'signup' } })}
         data-testid="host-invite-signup"
       >
         {t('hostInvite.signup')}
       </Button>
-      <Button className="w-full" variant="outline" onClick={() => login({ returnTo })} data-testid="host-invite-login">
+      <Button className="w-full" variant="outline" disabled={handoff.busy} onClick={() => handoff.start({ returnTo })} data-testid="host-invite-login">
         {t('hostInvite.login')}
       </Button>
     </InviteLayout>

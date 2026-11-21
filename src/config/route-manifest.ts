@@ -45,10 +45,10 @@ export type NavPlacement = 'primary' | 'secondary' | 'footer';
 export type NavCountKey = 'bookingRequests' | 'supplierRequests' | 'compliance' | 'activities' | 'messages';
 
 /**
- * The main menu of an area never has more primary entries than this (UI-04a). Nine since the menus lost "Altro" as a place for daily pages:
- * Affitti brevi has nine, including the message inbox, and adds CRM when its flag is on.
+ * The short-rent area has nine standard entries. Licensed workspaces may also show CRM and AI routines.
+ * Entries stay grouped by task and every phone keeps the same four main destinations.
  */
-export const MAX_PRIMARY_NAV_ENTRIES = 10;
+export const MAX_PRIMARY_NAV_ENTRIES = 11;
 
 /** The bottom bar of the phone has at most this many destinations, "Altro" apart (UI-04a/UI-04b). */
 export const MAX_BOTTOM_NAV_ENTRIES = 4;
@@ -143,7 +143,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navPlacement: 'primary',
     navOrder: 4,
     navBottom: 4,
-    icon: 'Home',
+    icon: 'Building2',
     component: async () => ({ default: (await import('@/features/properties/properties-page')).PropertiesPage }),
     legacyPaths: ['/properties'],
   },
@@ -356,7 +356,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navKey: 'nav.documents',
     navParent: '/app/short-rent/payments',
     navOrder: 2.5,
-    icon: 'FileText',
+    icon: 'FolderOpen',
     component: async () => ({ default: (await import('@/features/document-archive/documents-page')).DocumentsPage }),
   },
   {
@@ -611,20 +611,17 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/assistant/assistant-settings-page')).AssistantSettingsPage }),
   },
   {
-    // The automation routines of the host (E01/F04/US02/T01, NF-21, DEB-06): what the host wants done by itself when something happens at a stay, with the library of ready ones,
-    // the log of each and a test mode. «Automazioni», a tab of «Impostazioni» after the integration and the assistant: it is set once, apart from the daily work. Only with the flag
-    // `routines` (backend `Routines`, off by default): while it is off the tab is not there, the address leads to the home of the area and the server answers 404 to every
-    // endpoint of the routines. It asks `property.write`, the permission the changes of the routines ask on the server (which also needs a reach over the whole organization:
-    // a collaborator limited to some properties is told so by the answer, `routines_need_org_scope`). Who may write the properties but not open «Impostazioni» (not the
-    // organization administrator) finds it in "Altro", as every page whose section is closed to its user.
+    // Daily operations. AI settings also links to this page. The API requires organization-wide
+    // access to change routines and the menu observes the feature flag and commercial entitlement.
     path: '/app/short-rent/automations',
     context: 'short-rent',
     requiredPermissions: ['property.write'],
     featureFlag: 'routines',
     navKey: 'nav.routines',
-    navParent: '/app/short-rent/settings/ai',
-    navOrder: 3,
-    icon: 'Repeat',
+    navPlacement: 'primary',
+    navGroup: 'everyday',
+    navOrder: 3.75,
+    icon: 'Workflow',
     component: async () => ({ default: (await import('@/pages/RoutinesPage')).RoutinesPage }),
   },
   {
@@ -638,7 +635,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navBottom: 3,
     // "Pay at the property" requests waiting for the host's answer (the query of the requests panel of this page).
     navCount: 'bookingRequests',
-    icon: 'Calendar',
+    icon: 'BedDouble',
     component: async () => ({ default: (await import('@/features/bookings/bookings-page')).BookingsPage }),
     legacyPaths: ['/bookings'],
   },
@@ -1113,7 +1110,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navPlacement: 'primary',
     navOrder: 3,
     navBottom: 2,
-    icon: 'Home',
+    icon: 'Building2',
     component: async () => ({
       default: (await import('@/features/properties/long-rent')).LongRentPropertiesPage,
     }),
@@ -1321,7 +1318,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navPlacement: 'primary',
     navOrder: 3,
     navBottom: 3,
-    icon: 'Home',
+    icon: 'Building2',
     component: async () => ({ default: (await import('@/features/account/properties/account-properties-page')).AccountPropertiesPage }),
   },
   {
@@ -1591,7 +1588,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navPlacement: 'primary',
     navOrder: 7,
     navBottom: 4,
-    icon: 'Settings',
+    icon: 'Workflow',
     component: async () => ({ default: (await import('@/features/admin/admin-jobs-page')).AdminJobsPage }),
     legacyPaths: ['/admin/jobs'],
   },
@@ -1669,7 +1666,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navKey: 'nav.guests',
     navParent: '/app/short-rent/bookings',
     navOrder: 2,
-    icon: 'Users',
+    icon: 'ContactRound',
     component: async () => ({ default: (await import('@/features/guests/guests-page')).GuestsPage }),
   },
   {

@@ -1,3 +1,4 @@
+import { connectReturnScope, rememberConnectReturn } from '@/features/onboarding/plan-return';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import i18n from '@/i18n/config';
@@ -106,6 +107,28 @@ afterEach(() => {
 });
 
 describe('the consent: from CasaZen to the channel manager', () => {
+  it.each([
+    ['?planPart=properties', '/app/short-rent/onboarding#passo-properties'],
+    ['', '/app/short-rent/properties'],
+    ['?planPart=https%3A%2F%2Funtrusted.example', '/app/short-rent/properties'],
+  ])('returns to the recorded internal origin on save and exit (%s)', async (search, destination) => {
+    renderWizard(OCTORATE_CONNECT_PATH + search);
+    await onStep('scenario');
+    fireEvent.click(screen.getByTestId('octorate-connect-save-exit'));
+    await waitFor(() => expect(currentLocation()).toBe(destination), WAIT);
+    expect(octorateApi.startConnect).not.toHaveBeenCalled();
+  });
+
+  it('returns from the consent callback with the scoped inventory task and consumes the temporary reference', async () => {
+    const scope = connectReturnScope(SCOPE.userId, SCOPE.orgId)!;
+    rememberConnectReturn(scope, 'octorateConnection');
+    renderWizard(CALLBACK_URL);
+    await screen.findByTestId('octorate-consent-connected', undefined, WAIT);
+    expect(sessionStorage.getItem(scope)).toBeNull();
+    fireEvent.click(screen.getByTestId('octorate-connect-save-exit'));
+    await waitFor(() => expect(currentLocation()).toBe('/app/short-rent/onboarding#passo-octorateConnection'), WAIT);
+  });
+
   it('OctorateConnectWizard_Consent_SaysWhatWillHappenBeforeAnythingHappens', async () => {
     renderOnTheConsent();
 

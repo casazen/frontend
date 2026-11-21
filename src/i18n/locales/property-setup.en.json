@@ -1,4 +1,14 @@
 {
+  "unspecifiedType": "Not specified",
+  "overview": { "noPhotos": "No photos uploaded." },
+  "resume": {
+    "listTitle": "Setup for {{name}}",
+    "lastStep": "Last step opened · {{step}}",
+    "action": "Resume setup",
+    "title": "Set up {{name}}",
+    "description": "Confirmed steps are saved on the property.",
+    "statusError": "Could not verify the property status."
+  },
   "loading": "Checking the saved setup…",
   "loadError": "The saved setup could not be loaded. Try again before continuing.",
   "configure": "Set up now",

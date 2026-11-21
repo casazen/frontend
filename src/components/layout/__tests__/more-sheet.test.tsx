@@ -128,6 +128,22 @@ describe('MoreSheet (UI-04b)', () => {
       }
     });
 
+    it('finds nested pages without suggesting pages outside the visible permissions', () => {
+      arrange(['short-rent'], (_context, permission) => permission !== 'booking.read');
+      renderSheet('short-rent');
+      open();
+      const search = within(sheet()).getByRole('searchbox', { name: 'Cerca nel menu' });
+      fireEvent.change(search, { target: { value: 'ospiti' } });
+      expect(within(sheet()).queryByRole('link', { name: /^Ospiti/ })).not.toBeInTheDocument();
+      fireEvent.change(search, { target: { value: 'incassi' } });
+      expect(within(sheet()).getByRole('link', { name: /^Incassi/ })).toHaveAttribute('href', '/app/short-rent/payments');
+      fireEvent.change(search, { target: { value: 'pagina-sconosciuta' } });
+      expect(within(sheet()).getByRole('status')).toHaveTextContent('Nessuna pagina trovata');
+      fireEvent.click(within(sheet()).getByRole('button', { name: 'Azzera la ricerca nel menu' }));
+      expect(search).toHaveFocus();
+      expect(within(sheet()).getByTestId('nav-group-management')).toBeInTheDocument();
+    });
+
     it('MoreSheet_Tiles_LeadToTheRealRoutes', () => {
       arrange(['short-rent']);
       renderSheet('short-rent');

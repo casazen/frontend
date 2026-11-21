@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { ChevronDown, ScanFace } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Alert } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -233,7 +234,7 @@ function BiometricSettingsForm({ settings }: { settings: BiometricSettings }) {
  * calibration. Platform administrators also see the models: name, state and why one cannot be used. Only for the org billing administrator and only while the identity verification is on; with
  * the flag off the card does not exist and nothing is asked. A save the server refuses (a bound that failed) says so, and nothing is saved.
  */
-export function BiometricSettingsCard() {
+export function BiometricSettingsCard({ compact = false }: { compact?: boolean }) {
   const { t } = useTranslation();
   const { flags } = useFeatureFlags();
   const { contexts } = useWorkspace();
@@ -242,23 +243,8 @@ export function BiometricSettingsCard() {
 
   if (!available) return null;
 
-  return (
-    <section className="mt-8 min-w-0 space-y-4 border-t pt-6" aria-labelledby="biometric-settings-title" data-testid="biometric-settings-card">
-      <div className="space-y-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <h2 id="biometric-settings-title" className="text-base font-semibold">
-            {t('biometricSettings.title')}
-          </h2>
-          {/* A read that failed leaves the older answer in memory, and the body of the card says it cannot be read: the badge is part of what is not known then. */}
-          {!settings.isError && settings.data?.provisional ? (
-            <Badge variant="warning" data-testid="biometric-provisional">
-              {t('biometricSettings.provisional.badge')}
-            </Badge>
-          ) : null}
-        </div>
-        <p className="break-words text-sm text-foreground/70">{t('biometricSettings.description')}</p>
-      </div>
-
+  const controls = (
+    <div className="max-w-3xl space-y-4">
       {settings.isError ? (
         <Alert
           variant="danger"
@@ -280,6 +266,30 @@ export function BiometricSettingsCard() {
       )}
 
       {isPlatformAdmin(contexts) && <ModelsStatus />}
+    </div>
+  );
+
+  return (
+    <section className="min-w-0 space-y-3 rounded-xl border bg-card p-4 sm:p-5" aria-labelledby="biometric-settings-title" data-testid="biometric-settings-card">
+      <div className="flex flex-wrap items-center gap-2">
+        <ScanFace aria-hidden="true" className="size-5 text-primary-text" />
+        <h2 id="biometric-settings-title" className="font-semibold">{t('biometricSettings.title')}</h2>
+        {/* A read that failed leaves the older answer in memory: the badge is part of what is not known then. */}
+        {!settings.isError && settings.data?.provisional ? (
+          <Badge variant="warning" data-testid="biometric-provisional">{t('biometricSettings.provisional.badge')}</Badge>
+        ) : null}
+      </div>
+      {settings.data && compact ? (
+        <p className="text-sm">{t(settings.data.enabled ? 'aiSettings.enabledSummary' : 'aiSettings.manualSummary')}</p>
+      ) : <p className="max-w-prose text-sm text-muted-foreground">{t('biometricSettings.description')}</p>}
+      {compact && settings.data && !settings.isError ? (
+        <details className="group">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-md text-sm font-semibold text-primary-text focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
+            {t('aiSettings.advancedVerification')}<ChevronDown aria-hidden="true" className="size-4 group-open:rotate-180" />
+          </summary>
+          {controls}
+        </details>
+      ) : controls}
     </section>
   );
 }

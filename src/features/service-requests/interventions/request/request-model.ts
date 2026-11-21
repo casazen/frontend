@@ -114,6 +114,7 @@ export interface RequestValues {
 
 /** The fields that depend on the supplier and its agenda: never written to the draft (they change, and the slots are the supplier's). */
 export const REQUEST_DRAFT_EXCLUDE: readonly string[] = [
+  'notes',
   'assistText',
   'aiCategory',
   'aiExplanation',

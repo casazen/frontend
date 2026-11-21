@@ -35,13 +35,8 @@ const LINK_STYLES: Record<NavVariant, { row: string; active: string; inactive: s
     active: `bg-primary/10 font-semibold ${ACCENT_TEXT}`,
     inactive: 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
   },
-  // Tiles, as the demo draws them: the icon above the name, a target far taller than the 44 px a finger needs. No border:
-  // the page keeps its own border color (UI-01), a tile tells the open page by its background and a ring. The name comes
-  // first in the markup and last on the screen (`flex-col-reverse`), so that a screen reader reads "Prenotazioni, 2
-  // richieste da approvare" and not the counter before the name. `h-full`: the tile is as tall as its cell, so that the two
-  // tiles of a row have the same background when one name takes two lines.
   sheet: {
-    row: 'relative flex h-full min-h-[4.5rem] flex-col-reverse justify-between gap-2 rounded-xl p-3 text-sm font-semibold leading-snug outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring',
+    row: 'relative flex h-full min-h-12 items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold leading-snug outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring',
     active: `bg-primary/10 ring-1 ring-inset ring-primary/40 ${ACCENT_TEXT}`,
     inactive: 'bg-muted/60 text-foreground hover:bg-muted',
   },
@@ -97,12 +92,9 @@ function NavTile({ entry, active, count, onNavigate }: Omit<NavLinkItemProps, 'c
       aria-current={active ? 'page' : undefined}
       className={cn(styles.row, active ? styles.active : styles.inactive)}
     >
-      {/* A wider font than the one tested (a Linux phone, a larger text size) breaks a long word instead of sticking out. */}
-      <span className="min-w-0 break-words">{getNavLabel(entry, t)}</span>
-      <span className="flex items-start justify-between">
-        <NavIcon name={entry.icon} className={cn('h-[1.375rem] w-[1.375rem] shrink-0', ACCENT_TEXT)} />
-        <NavCountPill entry={entry} count={count} className="-mr-1 -mt-1" />
-      </span>
+      <NavIcon name={entry.icon} className={cn('size-5 shrink-0', ACCENT_TEXT)} />
+      <span className="min-w-0 flex-1 break-words">{getNavLabel(entry, t)}</span>
+      <NavCountPill entry={entry} count={count} />
     </Link>
   );
 }
@@ -273,7 +265,7 @@ export function GroupedNavLinks({
     );
   };
 
-  const listClass = isSheet ? 'grid grid-cols-2 gap-2' : 'flex flex-col gap-0.5';
+  const listClass = isSheet ? 'grid grid-cols-1 gap-1.5 min-[23rem]:grid-cols-2' : 'flex flex-col gap-0.5';
 
   return (
     <div className={cn('flex flex-col', isSheet ? 'gap-5' : 'gap-4')}>

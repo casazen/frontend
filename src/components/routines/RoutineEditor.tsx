@@ -36,11 +36,12 @@ import {
   type ActionAvailability,
   type ActionDraft,
 } from '@/lib/routine-model';
-import type { CreateRoutineDto, Routine, RoutineActionType, RoutineCondition, RoutineEventType, UpdateRoutineDto } from '@/types';
+import type { CreateRoutineDto, Routine, RoutineActionType, RoutineCondition, RoutineEventType, RoutineLibraryTemplate, UpdateRoutineDto } from '@/types';
 
 interface RoutineEditorProps {
   initialObjective?: string;
   routine?: Routine;
+  template?: RoutineLibraryTemplate;
   /** What the catalog says of each action (`GET api/routines/actions`): the ones that cannot run yet are disabled, and a routine that holds one is not switched on. */
   availability?: ActionAvailability;
   onSave: (dto: CreateRoutineDto | UpdateRoutineDto) => void;
@@ -54,25 +55,26 @@ function offsetOf(eventConfig: string | undefined): { days: string; hours: strin
   return { days: String(days + Math.floor(hours / 24)), hours: String(hours % 24) };
 }
 
-export function RoutineEditor({ routine, availability, onSave, onCancel, isSaving, initialObjective }: RoutineEditorProps) {
+export function RoutineEditor({ routine, template, availability, onSave, onCancel, isSaving, initialObjective }: RoutineEditorProps) {
   const { t } = useTranslation();
 
   // The initial values come from the routine once: the editor is mounted again each time its dialog opens, so it starts from the stored routine every time.
   const [initial] = useState(() => {
-    const read = readCondition(routine?.conditionJson);
+    const read = readCondition(routine?.conditionJson ?? JSON.stringify(template?.condition));
+    const steps = routine ? parseActions(routine.actionsJson) : template?.actions ?? [];
     return {
-      name: routine?.name ?? '',
-      eventType: routine?.eventType ?? ('BookingConfirmed' as RoutineEventType),
-      ...offsetOf(routine?.eventConfig),
+      name: routine?.name ?? template?.name ?? '',
+      eventType: routine?.eventType ?? template?.eventType ?? ('BookingConfirmed' as RoutineEventType),
+      ...offsetOf(routine?.eventConfig ?? JSON.stringify(template?.eventConfig)),
       conditionUnsupported: read.kind === 'unsupported',
       condition: read.kind === 'rules' ? { operator: read.operator, rules: read.rules } : { operator: 'AND' as const, rules: [] },
-      actions: routine ? parseActions(routine.actionsJson).map((action, index) => actionToDraft(index + 1, action)) : [],
-      testMode: routine?.testMode ?? false,
-      active: routine?.active ?? true,
+      actions: steps.map((action, index) => actionToDraft(index + 1, action)),
+      testMode: routine?.testMode ?? Boolean(template),
+      active: routine?.active ?? !template,
     };
   });
 
-  const [objective, setObjective] = useState(routine?.agentObjective ?? initialObjective ?? '');
+  const [objective, setObjective] = useState(routine?.agentObjective ?? template?.agentObjective ?? initialObjective ?? '');
   const [name, setName] = useState(initial.name);
   const [eventType, setEventType] = useState<RoutineEventType>(initial.eventType);
   const [days, setDays] = useState(initial.days);
@@ -452,7 +454,7 @@ export function RoutineEditor({ routine, availability, onSave, onCancel, isSavin
       </div>
 
       {/* Toggles */}
-      <div className="space-y-4 border-t pt-4">
+      {template ? <p className="rounded-lg bg-muted p-4 text-sm">{t('routines.flow.savedPaused')}</p> : <div className="space-y-4 border-t pt-4">
         <div className="flex items-center justify-between gap-4">
           <div className="space-y-0.5">
             <Label htmlFor="test-mode">{t('routines.testMode')}</Label>
@@ -473,14 +475,14 @@ export function RoutineEditor({ routine, availability, onSave, onCancel, isSavin
           </div>
           <Switch id="active" checked={effectiveActive} disabled={activationBlocked} onCheckedChange={setActive} data-testid="active-switch" />
         </div>
-      </div>
+      </div>}
 
-      <div className="flex justify-end gap-2 pt-2">
+      <div className="flex flex-wrap justify-end gap-2 pt-2">
         <Button type="button" variant="outline" onClick={onCancel} disabled={isSaving}>
           {t('common.cancel')}
         </Button>
         <Button type="submit" disabled={isSaving || !valid} data-testid="save-routine-button">
-          {isSaving ? t('common.saving') : routine ? t('common.save') : t('routines.create')}
+          {isSaving ? t('common.saving') : template ? t('routines.flow.savePaused') : routine ? t('common.save') : t(active && !testMode && !activationBlocked ? 'routines.flow.createLive' : 'routines.create')}
         </Button>
       </div>
     </form>

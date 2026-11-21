@@ -171,14 +171,17 @@ export function SecondaryLink({ href, children, inverse = false, onClick }: { hr
 }
 
 /** The top of a page that is not the home page: the title (the `h1`), a line under it and, optionally, the call to action. */
-export function PageHeader({ title, intro, children }: { title: string; intro: string; children?: ReactNode }) {
+export function PageHeader({ title, intro, children, preview }: { title: string; intro: string; children?: ReactNode; preview?: ReactNode }) {
   return (
     <section className="relative overflow-hidden border-b border-ink-700/10 bg-gradient-to-b from-terra-50 to-cream-50">
       <CasaZenRing size={360} className="pointer-events-none absolute -right-20 -top-24 opacity-[0.09]" />
-      <div className="relative mx-auto max-w-6xl px-5 py-8 sm:py-20">
-        <h1 className="max-w-3xl font-display text-4xl font-semibold tracking-tight text-ink-800 sm:text-5xl">{title}</h1>
-        <p className="mt-5 max-w-3xl text-lg leading-relaxed text-ink-500">{intro}</p>
-        {children && <div className="mt-5 flex flex-wrap gap-3 sm:mt-8">{children}</div>}
+      <div className={`relative mx-auto max-w-6xl px-5 py-8 sm:py-20 ${preview ? 'grid gap-7 lg:grid-cols-[minmax(0,4fr)_minmax(0,5fr)] lg:items-start lg:gap-12' : ''}`}>
+        <div className="min-w-0">
+          <h1 className="max-w-3xl font-display text-4xl font-semibold tracking-tight text-ink-800 sm:text-5xl">{title}</h1>
+          <p className="mt-5 max-w-3xl text-lg leading-relaxed text-ink-500">{intro}</p>
+          {children && <div className="mt-5 flex flex-wrap gap-3 sm:mt-8">{children}</div>}
+        </div>
+        {preview}
       </div>
     </section>
   );

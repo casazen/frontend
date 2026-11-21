@@ -8,54 +8,108 @@ import { OrgSenderPreference } from '../components/org-sender-preference';
 
 vi.mock('@/api/org-compliance-sender.api', () => ({ orgComplianceSenderApi: { get: vi.fn(), set: vi.fn() } }));
 const empty: OrgComplianceSender = { sender: null, lastChangedAt: null, delegationAccepted: false, delegationTextVersion: '2026-11-v1', propertyOverrides: 0, autoSendGuestsToOctorate: false };
+const manual: OrgComplianceSender = { ...empty, sender: 'Manual', lastChangedAt: '2026-11-17T10:00:00Z' };
+
 function show() {
-  return render(<I18nextProvider i18n={i18n}><QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })}><OrgSenderPreference /></QueryClientProvider></I18nextProvider>);
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+  return render(<I18nextProvider i18n={i18n}><QueryClientProvider client={client}><OrgSenderPreference /></QueryClientProvider></I18nextProvider>);
 }
 afterEach(cleanup);
-beforeEach(async () => { vi.clearAllMocks(); await i18n.changeLanguage('it'); vi.mocked(orgComplianceSenderApi.get).mockResolvedValue(empty); });
+beforeEach(async () => {
+  vi.resetAllMocks();
+  await i18n.changeLanguage('it');
+  vi.mocked(orgComplianceSenderApi.get).mockResolvedValue(empty);
+});
+
 describe('account sender preference', () => {
-  it('requires explicit confirmation before saving a choice for the account', async () => {
-    vi.mocked(orgComplianceSenderApi.set).mockResolvedValue({ ...empty, sender: 'Manual', lastChangedAt: '2026-11-17T10:00:00Z' });
+  it('explains both methods and saves only after explicit review and confirmation', async () => {
+    vi.mocked(orgComplianceSenderApi.set).mockResolvedValue(manual);
     show();
-    await screen.findByRole('heading', { name: 'Chi invia i dati degli ospiti?' });
-    fireEvent.click(screen.getByRole('radio', { name: /Invio io sui portali/ }));
-    fireEvent.click(screen.getByRole('button', { name: 'Continua: riepilogo' }));
-    expect(screen.getByRole('button', { name: 'Salva per il mio account' })).toBeDisabled();
-    fireEvent.click(screen.getByRole('checkbox', { name: /Confermo questa scelta/ }));
-    fireEvent.click(screen.getByRole('button', { name: 'Salva per il mio account' }));
-    await waitFor(() => expect(orgComplianceSenderApi.set).toHaveBeenCalledWith(expect.objectContaining({ sender: 'Manual', confirmed: true, expectedLastChangedAt: null, delegationConsent: false }), expect.anything()));
-    expect(await screen.findByRole('status')).toHaveTextContent('Preferenza salvata');
+    const option = await screen.findByRole('radio', { name: 'Invio manuale' });
+    expect(option).toHaveAccessibleDescription(/Scarichi i file dei soggiorni/);
+    expect(screen.getByRole('radio', { name: 'Octorate' })).toHaveAccessibleDescription(/verifica di ogni immobile/);
+    expect(screen.getByRole('button', { name: 'Rivedi la scelta' })).toBeDisabled();
+    fireEvent.click(option);
+    fireEvent.click(screen.getByRole('button', { name: 'Rivedi la scelta' }));
+    expect(screen.getByRole('heading', { name: 'Verifica il metodo di invio' })).toHaveFocus();
+    expect(screen.getByRole('button', { name: 'Salva preferenza' })).toBeDisabled();
+    expect(orgComplianceSenderApi.set).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('checkbox', { name: /Confermo la scelta/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Salva preferenza' }));
+    await waitFor(() => expect(orgComplianceSenderApi.set).toHaveBeenCalledWith(
+      expect.objectContaining({ sender: 'Manual', confirmed: true, expectedLastChangedAt: null, delegationConsent: false }), expect.anything()));
+    await screen.findByRole('button', { name: 'Modifica scelta' });
+    expect(screen.getByRole('status')).toHaveTextContent('Invio manuale');
     expect(orgComplianceSenderApi.set).toHaveBeenCalledTimes(1);
   });
-  it('explains separate apartment identifiers and keeps overrides without claiming operational activation', async () => {
-    vi.mocked(orgComplianceSenderApi.get).mockResolvedValue({ ...empty, sender: 'Manual', propertyOverrides: 2 });
+
+  it('shows a compact saved preference, preserves exceptions and can discard edits', async () => {
+    vi.mocked(orgComplianceSenderApi.get).mockResolvedValue({ ...manual, propertyOverrides: 2 });
     show();
-    await screen.findByRole('button', { name: 'Modifica scelta' });
-    expect(screen.getByText(/Ogni appartamento mantiene il proprio identificativo/)).toHaveTextContent('IdAppartamento');
-    fireEvent.click(screen.getByRole('button', { name: 'Modifica scelta' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Continua: riepilogo' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Modifica scelta' }));
+    const details = screen.getByText('Credenziali e codici degli immobili').closest('details')!;
+    expect(details).not.toHaveAttribute('open');
+    expect(details).toHaveTextContent('IdAppartamento');
+    fireEvent.click(screen.getByRole('radio', { name: 'Octorate' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Rivedi la scelta' }));
     expect(screen.getByText(/2 immobili mantengono/)).toBeInTheDocument();
-    expect(screen.getByText(/Non attiva servizi esterni/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Torna alla scelta' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Annulla modifica' }));
+    expect(screen.getByRole('status')).toHaveTextContent('Invio manuale');
+    expect(screen.queryByRole('radio')).not.toBeInTheDocument();
     expect(orgComplianceSenderApi.set).not.toHaveBeenCalled();
   });
-  it('requires delegation for the channel manager and keeps guest auto-send an explicit account choice', async () => {
+
+  it('reviews the actual account-wide transfer setting and requires the current delegation', async () => {
+    vi.mocked(orgComplianceSenderApi.get).mockResolvedValue(manual);
+    vi.mocked(orgComplianceSenderApi.set).mockResolvedValue({ ...manual, sender: 'ChannelManager', delegationAccepted: true, autoSendGuestsToOctorate: true });
     show();
-    await screen.findByRole('heading', { name: 'Chi invia i dati degli ospiti?' });
-    fireEvent.click(screen.getByRole('radio', { name: /Il mio channel manager/ }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Modifica scelta' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Octorate' }));
     const auto = screen.getByRole('switch');
+    expect(auto).toHaveAccessibleDescription(/quando confermi il check-in/);
     expect(auto).not.toBeChecked();
     fireEvent.click(auto);
-    fireEvent.click(screen.getByRole('button', { name: 'Continua: riepilogo' }));
-    fireEvent.click(screen.getByRole('checkbox', { name: /Confermo questa scelta/ }));
-    expect(screen.getByRole('button', { name: 'Salva per il mio account' })).toBeDisabled();
-    expect(orgComplianceSenderApi.set).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Rivedi la scelta' }));
+    expect(screen.getByText(/Per tutti gli immobili dell’organizzazione/)).toBeVisible();
+    fireEvent.click(screen.getByRole('checkbox', { name: /Confermo la scelta/ }));
+    const save = screen.getByRole('button', { name: 'Salva preferenza' });
+    expect(save).toBeDisabled();
     fireEvent.click(screen.getByRole('checkbox', { name: /Ho letto il testo/ }));
-    expect(screen.getByRole('button', { name: 'Salva per il mio account' })).toBeEnabled();
+    fireEvent.click(save);
+    await waitFor(() => expect(orgComplianceSenderApi.set).toHaveBeenCalledWith({
+      sender: 'ChannelManager', confirmed: true, expectedLastChangedAt: manual.lastChangedAt, delegationConsent: true,
+      delegationTextVersion: empty.delegationTextVersion, autoSendGuestsToOctorate: true,
+    }, expect.anything()));
   });
-  it('keeps a failed read distinct from an unsaved default', async () => {
-    vi.mocked(orgComplianceSenderApi.get).mockRejectedValue(new Error('network'));
+
+  it('keeps an unsupported delegation version out of the save and lets the host reconsider', async () => {
+    vi.mocked(orgComplianceSenderApi.get).mockResolvedValue({ ...empty, delegationTextVersion: 'unsupported-version' });
     show();
-    expect(await screen.findByText(/Non riusciamo a leggere la scelta/)).toBeInTheDocument();
+    fireEvent.click(await screen.findByRole('radio', { name: 'Octorate' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Rivedi la scelta' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: /Confermo la scelta/ }));
+    expect(screen.queryByRole('checkbox', { name: /Ho letto/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Salva preferenza' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Torna alla scelta' }));
+    expect(screen.getByRole('radio', { name: 'Octorate' })).toBeChecked();
+    expect(orgComplianceSenderApi.set).not.toHaveBeenCalled();
+  });
+
+  it('recovers a failed read without inventing a default and retries a failed save', async () => {
+    vi.mocked(orgComplianceSenderApi.get).mockRejectedValueOnce(new Error('network'));
+    vi.mocked(orgComplianceSenderApi.set).mockRejectedValueOnce(new Error('network')).mockResolvedValue(manual);
+    show();
+    await screen.findByText(/Non riusciamo a leggere la scelta/);
     expect(screen.queryByRole('radio')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Riprova' }));
+    fireEvent.click(await screen.findByRole('radio', { name: 'Invio manuale' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Rivedi la scelta' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: /Confermo la scelta/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Salva preferenza' }));
+    await screen.findByText('Scelta non salvata. Riprova.');
+    fireEvent.click(screen.getByRole('button', { name: 'Salva preferenza' }));
+    await screen.findByRole('button', { name: 'Modifica scelta' });
+    expect(orgComplianceSenderApi.set).toHaveBeenCalledTimes(2);
   });
 });

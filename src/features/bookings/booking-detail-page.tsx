@@ -36,7 +36,7 @@ import { BOOKINGS_PATH } from './lib/booking-list-query';
 import { bookingHasMessages } from './lib/booking-messages';
 import { bookingCanCancel, bookingCanEdit } from './lib/booking-change';
 import { bookingPanelOf, type BookingPanel } from './lib/booking-tabs';
-import { canRegisterArrival } from './lib/stay-actions';
+import { canRegisterArrival, checkInWizardPath } from './lib/stay-actions';
 
 /** The page while the booking loads: the shape of the page, no spinner in the middle of nothing. */
 function BookingDetailSkeleton({ label }: { label: string }) {
@@ -131,6 +131,8 @@ export function BookingDetailPage() {
   }
 
   const canWrite = hasPermission('short-rent', 'booking.write');
+  const canOpenCheckInWizard = canWrite && hasPermission('short-rent', 'alloggiati.submit')
+    && (booking.status === 'Confirmed' || booking.status === 'CheckedIn');
   // One confirmation for every pending booking the host can confirm (PC-07 with BK-06): the ones entered by hand and
   // left Pending by the old code, and the "pay at the property" requests waiting for the host's answer.
   const pendingManual = booking.status === 'Pending' && booking.source === 'Manual';
@@ -251,8 +253,15 @@ export function BookingDetailPage() {
 
           {activeTab === 'guest' && (
             <div className="space-y-8">
-              <PlainSection title={t('booking.detailPage.checkInOnline')}>
-                <CheckInLinkPanel bookingId={booking.id} canWrite={canWrite}>
+              <PlainSection
+                title={t('booking.detailPage.checkInOnline')}
+                actionTestId="booking-open-checkin-wizard"
+                {...(canOpenCheckInWizard ? {
+                  actionLabel: t('booking.detailPage.openCheckInWizard'),
+                  href: checkInWizardPath(booking.id, true),
+                } : { actionLabel: undefined })}
+              >
+                <CheckInLinkPanel key={booking.id} bookingId={booking.id} canWrite={canWrite}>
                   <AskBookingDraftButton />
                   <DemoTourContact />
                 </CheckInLinkPanel>
