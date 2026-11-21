@@ -13,6 +13,220 @@ msgstr ""
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "X-Domain: casazen\n"
 
+#: blocks/src/booking/block.json
+msgctxt "block title"
+msgid "CasaZen booking"
+msgstr ""
+
+#: blocks/src/booking/block.json
+msgctxt "block description"
+msgid "Shows the CasaZen booking engine: search, results and quote."
+msgstr ""
+
+#: blocks/src/guest-access/block.json
+msgctxt "block title"
+msgid "CasaZen guest access"
+msgstr ""
+
+#: blocks/src/guest-access/block.json
+msgctxt "block description"
+msgid "Lets your guests open and manage their booking."
+msgstr ""
+
+#: blocks/src/owner-login/block.json
+msgctxt "block title"
+msgid "CasaZen owner login"
+msgstr ""
+
+#: blocks/src/owner-login/block.json
+msgctxt "block description"
+msgid "Shows a link to the sign-in of the owner area. The owner area is never shown inside a frame."
+msgstr ""
+
+#: blocks/src/property/block.json
+msgctxt "block title"
+msgid "CasaZen property"
+msgstr ""
+
+#: blocks/src/property/block.json
+msgctxt "block description"
+msgid "Shows one property of your CasaZen site with its availability and quote."
+msgstr ""
+
+#: blocks/src/search/block.json
+msgctxt "block title"
+msgid "CasaZen search bar"
+msgstr ""
+
+#: blocks/src/search/block.json
+msgctxt "block description"
+msgid "Shows the search bar of CasaZen (place, dates and guests) and leads to the page with the booking engine."
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:35
+msgid "Language"
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:36
+msgid "The default follows the language of the page and the language mapping of the plugin settings."
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:41 blocks/src/shared/placeholder-edit.js:140
+msgid "Default"
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:42
+msgid "Italian"
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:43
+msgid "English"
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:46
+msgid "Automatic (read from the page by the browser)"
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:52
+msgid "Property slug"
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:53
+msgid "The last part of the address of the property on your CasaZen site, for example villa-rossa."
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:60
+msgid "Check-in date"
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:61 blocks/src/shared/placeholder-edit.js:66
+msgid "Written as YYYY-MM-DD. Leave empty to let the guest choose."
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:65
+msgid "Check-out date"
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:70
+msgid "Guests"
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:71
+msgid "A number from 1 to 30. Leave empty to let the guest choose."
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:77
+msgid "Booking page"
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:78
+msgid "Where the search leads: a path of this site, an address of this site or an https address. Leave empty to use the page that holds the booking engine."
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:85
+msgid "Places"
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:86
+msgid "Offers the places of your properties in the search bar."
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:88 blocks/src/shared/placeholder-edit.js:163
+msgid "Yes"
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:89 blocks/src/shared/placeholder-edit.js:163
+msgid "No"
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:94
+msgid "Most guests"
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:95
+msgid "The most guests the search bar accepts, from 1 to 99."
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:101
+msgid "Send events to the data layer"
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:102
+msgid "Reports searches, views and the start of a checkout to the data layer of the page (Google Tag Manager)."
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:109
+msgid "Keep the state in the address of the page"
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:110
+msgid "Adds a cz parameter to the address of the page while the guest browses the widget."
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:117
+msgid "Initial height (pixels)"
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:118
+msgid "A number from 100 to 2000. The widget then adapts its height to its content."
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:127
+msgid "Main colour"
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:128
+msgid "A colour written as #rgb or #rrggbb, for example #2b4c7e."
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:132
+msgid "Corner radius"
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:133
+msgid "A whole number with px (up to 32px) or rem (up to 2rem), for example 8px."
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:137
+msgid "Font"
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:138
+msgid "One of the fonts of your CasaZen booking site."
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:141
+msgid "Editorial"
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:142
+msgid "Modern"
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:143
+msgid "Classic"
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:148
+msgid "Text of the link"
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:149
+msgid "Leave empty to use the default text."
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:274 includes/class-admin.php:148
+msgid "Settings"
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:277
+msgid "Appearance"
+msgstr ""
+
+#: blocks/src/shared/placeholder-edit.js:285
+msgid "This is only a preview. The widget appears on the published page."
+msgstr ""
+
 #. Plugin Name of the plugin
 #: casazen.php:3 casazen.php:9
 msgid "CasaZen"
@@ -45,10 +259,6 @@ msgstr ""
 
 #: includes/class-admin.php:132
 msgid "Script"
-msgstr ""
-
-#: includes/class-admin.php:148
-msgid "Settings"
 msgstr ""
 
 #: includes/class-admin.php:171
@@ -139,32 +349,68 @@ msgstr ""
 msgid "Not ready yet"
 msgstr ""
 
-#: includes/class-connection.php:262
+#: includes/class-connection.php:282
 msgid "The connection works."
 msgstr ""
 
-#: includes/class-connection.php:264
+#: includes/class-connection.php:284
 msgid "The connection works, but embedding is not switched on for your agency yet. Ask your CasaZen contact to switch it on."
 msgstr ""
 
-#: includes/class-connection.php:266
+#: includes/class-connection.php:286
 msgid "The address could not be reached. Check that it is correct and that the site is online."
 msgstr ""
 
-#: includes/class-connection.php:268
+#: includes/class-connection.php:288
 msgid "The address answered, but it is not a CasaZen address that supports embedding. Check the address."
 msgstr ""
 
-#: includes/class-connection.php:270
+#: includes/class-connection.php:290
 msgid "CasaZen did not answer the check as expected. Try again in a few minutes."
 msgstr ""
 
-#: includes/class-connection.php:272
+#: includes/class-connection.php:292
 msgid "CasaZen does not know this address or this organisation slug. Check how they are written."
 msgstr ""
 
-#: includes/class-connection.php:274
+#: includes/class-connection.php:294
 msgid "Set the CasaZen address to start."
+msgstr ""
+
+#: includes/class-renderer.php:198
+msgid "CasaZen: set the address in Settings → CasaZen"
+msgstr ""
+
+#: includes/class-renderer.php:209
+msgid "CasaZen: embedding is not enabled for this agency yet."
+msgstr ""
+
+#: includes/class-renderer.php:217
+msgid "CasaZen: the property widget needs the slug of a property, for example slug=\"villa-rossa\"."
+msgstr ""
+
+#: includes/class-renderer.php:231
+msgid "CasaZen — the booking engine appears on the published page"
+msgstr ""
+
+#. translators: %s: the host name of the CasaZen address, for example prenota.example.com.
+#: includes/class-renderer.php:533
+#, php-format
+msgid "Manage your booking on %s"
+msgstr ""
+
+#. translators: %s: the host name of the CasaZen address, for example prenota.example.com.
+#: includes/class-renderer.php:535
+#, php-format
+msgid "Book on %s"
+msgstr ""
+
+#: includes/class-renderer.php:552
+msgid "CasaZen: the owner portal is not enabled for this agency yet."
+msgstr ""
+
+#: includes/class-renderer.php:557
+msgid "Owner area"
 msgstr ""
 
 #: includes/class-settings.php:202

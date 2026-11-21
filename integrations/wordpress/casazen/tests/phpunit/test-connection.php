@@ -8,6 +8,7 @@
  */
 
 use Casazen\Connection;
+use Casazen\Destinations;
 use Casazen\Settings;
 
 /**
@@ -37,6 +38,10 @@ class Test_Connection extends WP_UnitTestCase {
 		$this->requests = array();
 		$this->replies  = array();
 		add_filter( 'pre_http_request', array( $this, 'fake_http' ), 10, 3 );
+
+		// A good test of the connection makes the places of the search bar be read: that call has its own tests
+		// (Test_Destinations). Here the connection is tested alone, so its requests are the only ones the stub counts.
+		remove_action( 'casazen_connection_refreshed', array( Destinations::class, 'on_connection_refreshed' ) );
 	}
 
 	/**
@@ -910,5 +915,48 @@ class Test_Connection extends WP_UnitTestCase {
 
 		$this->assertSame( array(), $this->requests );
 		$this->assertSame( $result, Connection::cached() );
+	}
+
+	/**
+	 * The manifest of CasaZen names the API the way the app uses it, with `/api` already at its end: the endpoints are then
+	 * asked below it and `/api` is not written twice. A bare host works too.
+	 */
+	public function test_an_api_base_that_ends_in_api_is_not_doubled() {
+		$this->reply( '/embed/v1/manifest.json', 200, $this->manifest( array( 'apiBase' => 'https://casazen-api.example.com/api' ) ) );
+		$this->reply( '/api/public/resolve-host', 200, $this->resolved() );
+
+		$result = Connection::test( 'https://prenota.example.com', '' );
+
+		$this->assertSame( 'ok', $result['code'] );
+		$this->assertSame( 'https://casazen-api.example.com/api', $result['apiBase'] );
+		$this->assertSame( 'https://casazen-api.example.com/api/public/resolve-host?host=prenota.example.com', $this->requests[1]['url'] );
+
+		// On the CasaZen domain the organisation is asked for below the same API address.
+		$this->requests = array();
+		$this->replies  = array();
+		$this->reply( '/embed/v1/manifest.json', 200, $this->manifest( array( 'apiBase' => 'https://casazen-api.example.com/api' ) ) );
+		$this->reply( '/api/public/resolve-host', 404, array() );
+		$this->reply( '/api/public/orgs/villa-rossi', 200, array( 'displayName' => 'Villa Rossi' ) );
+
+		$result = Connection::test( 'https://casazen.example.org', 'villa-rossi' );
+
+		$this->assertSame( 'ok', $result['code'] );
+		$this->assertSame( 'https://casazen-api.example.com/api/public/orgs/villa-rossi', $this->requests[2]['url'] );
+	}
+
+	/**
+	 * The address of an endpoint of the public API, for the two ways a manifest can name the API.
+	 */
+	public function test_api_url_adds_api_only_when_it_is_missing() {
+		$this->assertSame( 'https://api.example.com/api/public/x', Connection::api_url( 'https://api.example.com', '/public/x' ) );
+		$this->assertSame( 'https://api.example.com/api/public/x', Connection::api_url( 'https://api.example.com/', 'public/x' ) );
+		$this->assertSame( 'https://api.example.com/api/public/x', Connection::api_url( 'https://api.example.com/api', '/public/x' ) );
+		$this->assertSame( 'https://api.example.com/api/public/x', Connection::api_url( 'https://api.example.com/api/', '/public/x' ) );
+		$this->assertSame( 'https://api.example.com/v2/api/public/x', Connection::api_url( 'https://api.example.com/v2/api', '/public/x' ) );
+		$this->assertSame( 'https://api.example.com/v2/api/public/x', Connection::api_url( 'https://api.example.com/v2', '/public/x' ) );
+		$this->assertSame( 'http://localhost:5000/api/public/x', Connection::api_url( 'http://localhost:5000/api', '/public/x' ) );
+		// A host that is called `api` is not a path that ends in `/api`.
+		$this->assertSame( 'https://api/api/public/x', Connection::api_url( 'https://api', '/public/x' ) );
+		$this->assertSame( 'https://myapi.example.com/api/public/x', Connection::api_url( 'https://myapi.example.com', '/public/x' ) );
 	}
 }

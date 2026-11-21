@@ -1,0 +1,59 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "casazen/property",
+	"title": "CasaZen property",
+	"category": "widgets",
+	"icon": "admin-home",
+	"description": "Shows one property of your CasaZen site with its availability and quote.",
+	"textdomain": "casazen",
+	"supports": {
+		"html": false,
+		"customClassName": false
+	},
+	"attributes": {
+		"slug": {
+			"type": "string",
+			"default": ""
+		},
+		"lang": {
+			"type": "string",
+			"default": ""
+		},
+		"checkin": {
+			"type": "string",
+			"default": ""
+		},
+		"checkout": {
+			"type": "string",
+			"default": ""
+		},
+		"guests": {
+			"type": "integer"
+		},
+		"datalayer": {
+			"type": "boolean",
+			"default": true
+		},
+		"sync_url": {
+			"type": "boolean",
+			"default": false
+		},
+		"min_height": {
+			"type": "integer"
+		},
+		"primary": {
+			"type": "string",
+			"default": ""
+		},
+		"radius": {
+			"type": "string",
+			"default": ""
+		},
+		"font": {
+			"type": "string",
+			"default": ""
+		}
+	},
+	"editorScript": "file:./index.js"
+}

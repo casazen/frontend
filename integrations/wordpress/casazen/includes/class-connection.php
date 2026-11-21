@@ -99,7 +99,7 @@ class Connection {
 		$known = array( 'apiBase' => $api_base );
 
 		// (b) Which agency answers to this host.
-		$reply = self::get_json( $api_base . '/api/public/resolve-host?host=' . rawurlencode( $host ), $development );
+		$reply = self::get_json( self::api_url( $api_base, '/public/resolve-host' ) . '?host=' . rawurlencode( $host ), $development );
 		if ( null === $reply ) {
 			return self::result( 'resolve_unreachable', $known );
 		}
@@ -202,6 +202,26 @@ class Connection {
 		if ( ! wp_next_scheduled( Plugin::CRON_EVENT ) ) {
 			wp_schedule_single_event( time() + self::SCHEDULE_DELAY, Plugin::CRON_EVENT );
 		}
+	}
+
+	/**
+	 * The address of an endpoint of the public API.
+	 *
+	 * The manifest names the API the way the app itself uses it: the address already ends in `/api` (`https://host/api`) and the
+	 * endpoints are `/public/...` below it. A manifest may also name the bare host. Both give the same endpoint here: `/api` is
+	 * added only when the path of the API address does not end with it.
+	 *
+	 * @param string $api_base The `apiBase` of the manifest (no trailing slash).
+	 * @param string $path     The endpoint below `/api`, starting with a slash (`/public/resolve-host`).
+	 * @return string
+	 */
+	public static function api_url( $api_base, $path ) {
+		$base      = rtrim( (string) $api_base, '/' );
+		$base_path = wp_parse_url( $base, PHP_URL_PATH );
+		if ( ! is_string( $base_path ) || '/api' !== substr( $base_path, -4 ) ) {
+			$base .= '/api';
+		}
+		return $base . '/' . ltrim( (string) $path, '/' );
 	}
 
 	/**
@@ -320,7 +340,7 @@ class Connection {
 	 */
 	private static function from_slug( $api_base, $slug, $development ) {
 		$known = array( 'apiBase' => $api_base );
-		$reply = self::get_json( $api_base . '/api/public/orgs/' . rawurlencode( $slug ), $development );
+		$reply = self::get_json( self::api_url( $api_base, '/public/orgs/' . rawurlencode( $slug ) ), $development );
 		if ( null === $reply ) {
 			return self::result( 'resolve_unreachable', $known );
 		}
@@ -412,13 +432,16 @@ class Connection {
 	 * One GET, read as JSON. The headers, the cookies and the raw body are dropped here: only the status and the decoded
 	 * object leave this function.
 	 *
+	 * Public because the destinations of the search bar (Destinations) read the API with the same limits. Like the test of the
+	 * connection, it is only for the settings screen and for background events: never for a request of a visitor.
+	 *
 	 * @param string $url         The address to read.
 	 * @param bool   $development Whether the agency address is a development host on a site that may reach development hosts
 	 *                            (allows_development_hosts()): only then may the plain request, which reaches loopback
 	 *                            addresses and unusual ports, be used (and only for a development host).
 	 * @return array|null { status: int, data: array|null }, or null when the request failed (no answer, refused address).
 	 */
-	private static function get_json( $url, $development ) {
+	public static function get_json( $url, $development ) {
 		$args = array(
 			'timeout'             => 5,
 			'redirection'         => 2,

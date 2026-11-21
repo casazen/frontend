@@ -75,7 +75,8 @@ class Test_Uninstall extends WP_UnitTestCase {
 
 		$this->run_uninstall();
 
-		$this->assertFalse( get_option( 'casazen_settings' ) );
+		// A default is passed: the setting is registered with a default of its own, which get_option() would return for a missing option.
+		$this->assertSame( 'gone', get_option( 'casazen_settings', 'gone' ) );
 		$this->assertFalse( get_option( 'casazen_wizard_state' ) );
 		$this->assertSame( array(), $this->casazen_transient_rows(), 'Every casazen_ transient and its timeout is gone.' );
 		$this->assertFalse( wp_next_scheduled( 'casazen_refresh_connection' ) );
@@ -107,6 +108,28 @@ class Test_Uninstall extends WP_UnitTestCase {
 	}
 
 	/**
+	 * The places of the search bar (a transient) and the event that refreshes them go too.
+	 */
+	public function test_uninstall_removes_the_destinations_and_their_event() {
+		if ( wp_using_ext_object_cache() ) {
+			$this->markTestSkipped( 'The transients are only in the options table without an external object cache.' );
+		}
+		set_transient( 'casazen_destinations_0123456789ab', array( array( 'id' => 'lugano' ) ), HOUR_IN_SECONDS );
+		wp_clear_scheduled_hook( 'casazen_refresh_destinations' );
+		wp_schedule_single_event( time() + 600, 'casazen_refresh_destinations' );
+		$this->assertNotFalse( wp_next_scheduled( 'casazen_refresh_destinations' ) );
+
+		$this->run_uninstall();
+
+		// The uninstall script deletes the rows with one query, as WordPress does when the plugin is deleted: the cache of this request is
+		// not what it asserts.
+		wp_cache_flush();
+		$this->assertFalse( get_transient( 'casazen_destinations_0123456789ab' ) );
+		$this->assertSame( array(), $this->casazen_transient_rows() );
+		$this->assertFalse( wp_next_scheduled( 'casazen_refresh_destinations' ) );
+	}
+
+	/**
 	 * On a network every site is cleaned.
 	 */
 	public function test_uninstall_covers_every_site_of_a_network() {
@@ -125,12 +148,12 @@ class Test_Uninstall extends WP_UnitTestCase {
 
 		$this->run_uninstall();
 
-		$this->assertFalse( get_option( 'casazen_settings' ) );
+		$this->assertSame( 'gone', get_option( 'casazen_settings', 'gone' ) );
 		$this->assertSame( array(), $this->casazen_transient_rows() );
 		$this->assertSame( 'page', get_post_type( $first_page ) );
 
 		switch_to_blog( $second_site );
-		$this->assertFalse( get_option( 'casazen_settings' ) );
+		$this->assertSame( 'gone', get_option( 'casazen_settings', 'gone' ) );
 		$this->assertFalse( get_option( 'casazen_wizard_state' ) );
 		$this->assertSame( array(), $this->casazen_transient_rows() );
 		$this->assertFalse( wp_next_scheduled( 'casazen_refresh_connection' ) );

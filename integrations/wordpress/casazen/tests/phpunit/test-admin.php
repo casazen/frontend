@@ -7,6 +7,7 @@
 
 use Casazen\Admin;
 use Casazen\Connection;
+use Casazen\Destinations;
 use Casazen\Settings;
 
 /**
@@ -62,6 +63,10 @@ class Test_Admin extends WP_UnitTestCase {
 		$_GET            = array();
 		$_POST           = array();
 		add_filter( 'pre_http_request', array( $this, 'fake_http' ), 10, 3 );
+
+		// A good test of the connection makes the places of the search bar be read: that call has its own tests
+		// (Test_Destinations). Here the connection is tested alone, so its requests are the only ones the stub counts.
+		remove_action( 'casazen_connection_refreshed', array( Destinations::class, 'on_connection_refreshed' ) );
 	}
 
 	/**

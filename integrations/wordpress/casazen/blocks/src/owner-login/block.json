@@ -1,0 +1,21 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "casazen/owner-login",
+	"title": "CasaZen owner login",
+	"category": "widgets",
+	"icon": "admin-users",
+	"description": "Shows a link to the sign-in of the owner area. The owner area is never shown inside a frame.",
+	"textdomain": "casazen",
+	"supports": {
+		"html": false,
+		"customClassName": false
+	},
+	"attributes": {
+		"label": {
+			"type": "string",
+			"default": ""
+		}
+	},
+	"editorScript": "file:./index.js"
+}
