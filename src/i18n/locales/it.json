@@ -31673,6 +31673,7 @@
     },
     "issues": {
       "body": "Completa i dati qui (o chiedi all'ospite di completare il check-in): l'elenco si aggiorna. Se non è possibile, inserisci quei dati a mano sul portale.",
+      "bodyNoEdit": "Chiedi a chi può modificare la prenotazione, o all'ospite di completare il check-in: l'elenco si aggiorna. Se non è possibile, inserisci quei dati a mano sul portale.",
       "complete": "Completa i dati",
       "completeFor": "Completa i dati: {{name}}",
       "missing": {
@@ -31683,8 +31684,6 @@
         "lastName": "cognome",
         "nationality": "nazionalità"
       },
-      "openBooking": "Apri la prenotazione",
-      "openBookingFor": "Apri la prenotazione: {{name}}",
       "title_one": "Manca qualcosa a {{count}} ospite",
       "title_other": "Manca qualcosa a {{count}} ospiti"
     },

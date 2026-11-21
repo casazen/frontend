@@ -1,5 +1,4 @@
 import { Copy } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -148,17 +147,14 @@ export function SwissGuestsStep({ day, canEditGuests, busy, onComplete, onNext }
                   >
                     {t('swissNotification.issues.complete')}
                   </Button>
-                ) : (
-                  <Button asChild variant="outline" size="sm">
-                    <Link to={`/app/short-rent/bookings/${encodeURIComponent(issue.bookingId)}?tab=alloggiati`} aria-label={t('swissNotification.issues.openBookingFor', { name: issue.guestName })}>
-                      {t('swissNotification.issues.openBooking')}
-                    </Link>
-                  </Button>
-                )}
+                ) : null}
               </li>
             ))}
           </ul>
-          <p className="text-sm text-foreground/70">{t('swissNotification.issues.body')}</p>
+          {/* Who may not correct the guests is told whom to ask: the layer has no way out but the portal, so no link to the booking. */}
+          <p className="text-sm text-foreground/70" data-testid="swiss-issues-body">
+            {canEditGuests ? t('swissNotification.issues.body') : t('swissNotification.issues.bodyNoEdit')}
+          </p>
         </div>
       ) : null}
 

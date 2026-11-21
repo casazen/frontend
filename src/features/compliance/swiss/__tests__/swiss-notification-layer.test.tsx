@@ -284,16 +284,29 @@ describe('SwissNotificationLayer, the assisted notification of the guests of ano
       expect(screen.queryByTestId('stay-guests-edit-dialog')).not.toBeInTheDocument();
     });
 
-    it('SwissLayer_WhoMayNotWriteTheBookings_IsLedToTheBookingInsteadOfTheForm', async () => {
+    it('SwissLayer_WhoMayNotWriteTheBookings_IsToldWhomToAskAndTheLayerHasNoWayOutButThePortal', async () => {
       permissions.granted = ['guest.read', 'booking.read', 'alloggiati.submit'];
       vi.mocked(swissComplianceApi.getSwissDay).mockResolvedValue(
         swissDay({ issues: [{ bookingId: SWISS_BOOKING_ID, position: 0, guestName: 'Mario Rossi', missing: ['nationality'] }] }),
       );
       renderLayer();
 
-      const link = await screen.findByRole('link', { name: 'Apri la prenotazione: Mario Rossi' });
-      expect(link).toHaveAttribute('href', `/app/short-rent/bookings/${SWISS_BOOKING_ID}?tab=alloggiati`);
+      const issues = await screen.findByTestId('swiss-issues');
+      expect(issues).toHaveTextContent('Mario Rossi: nazionalità');
+      // No form to complete the guest, and no link to the booking: a line says whom to ask, and the only link of the layer is the one to the portal.
       expect(screen.queryByTestId('swiss-complete-guest')).not.toBeInTheDocument();
+      expect(screen.getByTestId('swiss-issues-body')).toHaveTextContent("Chiedi a chi può modificare la prenotazione, o all'ospite di completare il check-in");
+      expect(Array.from(screen.getByTestId('swiss-layer').querySelectorAll('a')).map((link) => link.getAttribute('data-testid'))).toEqual(['swiss-portal-link']);
+    });
+
+    it('SwissLayer_WhoMayWriteTheBookings_IsToldToCompleteTheDataHere', async () => {
+      vi.mocked(swissComplianceApi.getSwissDay).mockResolvedValue(
+        swissDay({ issues: [{ bookingId: SWISS_BOOKING_ID, position: 0, guestName: 'Mario Rossi', missing: ['nationality'] }] }),
+      );
+      renderLayer();
+
+      expect(await screen.findByTestId('swiss-complete-guest')).toBeInTheDocument();
+      expect(screen.getByTestId('swiss-issues-body')).toHaveTextContent('Completa i dati qui');
     });
   });
 

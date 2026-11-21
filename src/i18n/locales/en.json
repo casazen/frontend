@@ -31673,6 +31673,7 @@
     },
     "issues": {
       "body": "Complete the data here (or ask the guest to complete the check-in): the list updates. If that is not possible, enter that data by hand on the portal.",
+      "bodyNoEdit": "Ask someone who can edit the booking, or ask the guest to complete the check-in: the list updates. If that is not possible, enter that data by hand on the portal.",
       "complete": "Complete the data",
       "completeFor": "Complete the data: {{name}}",
       "missing": {
@@ -31683,8 +31684,6 @@
         "lastName": "last name",
         "nationality": "nationality"
       },
-      "openBooking": "Open the booking",
-      "openBookingFor": "Open the booking: {{name}}",
       "title_one": "{{count}} guest is missing something",
       "title_other": "{{count}} guests are missing something"
     },
