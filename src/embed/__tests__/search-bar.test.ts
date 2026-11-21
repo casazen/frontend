@@ -606,6 +606,29 @@ describe('the submit (AC1)', () => {
     expect(assign).toHaveBeenCalledTimes(1);
   });
 
+  it('searchBar_Submit_AReportThatFailsNeverKeepsTheGuestFromSearching', () => {
+    // A data layer the page broke, a listener that throws: the report is the page's business, the search is the guest's.
+    emit.mockImplementation(() => {
+      throw new Error('the data layer is not a list');
+    });
+    bar();
+    choose('2026-12-05', '2026-12-09');
+
+    send().click();
+
+    expect(emit).toHaveBeenCalledTimes(1);
+    expect(assign).toHaveBeenCalledTimes(1);
+  });
+
+  it('searchBar_Submit_WithALoaderThatHasNoEmitStillSearches', () => {
+    bar({ emit: undefined });
+    choose('2026-12-05', '2026-12-09');
+
+    send().click();
+
+    expect(assign).toHaveBeenCalledTimes(1);
+  });
+
   it('searchBar_Submit_AnySearchWithNoPlaceHasNoSearchTerm', () => {
     bar({ destinations: '[{"id":"lugano","label":"Lugano"}]' });
     choose('2026-12-05', '2026-12-09');

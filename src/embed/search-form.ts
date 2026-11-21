@@ -314,12 +314,18 @@ export function createSearchForm(options: SearchOptions, id: string): HTMLElemen
     }
 
     const place = where ? destinations.find((destination) => destination.id === where.value) : undefined;
-    options.emit('search', {
-      ...(place ? { search_term: place.label } : {}),
-      start_date: stay.checkIn,
-      end_date: stay.checkOut,
-      number_of_passengers: stay.guests,
-    });
+    // The report is for the analytics of the page: whatever goes wrong there (a data layer that is not a list, a loader that has no `emit`) must never keep
+    // the guest from searching.
+    try {
+      options.emit('search', {
+        ...(place ? { search_term: place.label } : {}),
+        start_date: stay.checkIn,
+        end_date: stay.checkOut,
+        number_of_passengers: stay.guests,
+      });
+    } catch {
+      // The search goes on.
+    }
     if (options.preview) {
       note.textContent = text.preview;
       return;

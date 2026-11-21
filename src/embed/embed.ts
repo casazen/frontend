@@ -140,7 +140,9 @@ function start(win: EmbedWindow): void {
   const register = (name: string, fn: WidgetMount): void => {
     if (typeof fn !== 'function') return;
     registry.set(String(name), fn);
+    // The search bars that wait for `search.js` start now; the elements of any other name that were on the page before its function came are mounted now.
     if (name === 'search') waiting.splice(0).forEach((item) => item.run());
+    else scan();
   };
 
   /** The only door a message of a frame goes through: the window it comes from, the origin it says, and the protocol. */

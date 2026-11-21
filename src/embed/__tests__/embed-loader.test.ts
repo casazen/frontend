@@ -1294,6 +1294,31 @@ describe('the search bar is loaded when a page has one (AC7)', () => {
     expect(document.querySelectorAll('script[src]')).toHaveLength(0);
   });
 
+  it('embedLoader_Register_AWidgetThatWasOnThePageBeforeItsFunction_IsMountedWhenItRegisters', async () => {
+    const element = widget('stars');
+    await loadLoader();
+    expect(element.childNodes).toHaveLength(0);
+    const mount = vi.fn();
+
+    api().register('stars', mount);
+
+    expect(mount).toHaveBeenCalledTimes(1);
+    expect(mount.mock.calls[0][0]).toBe(element);
+    // And only once: the next scan finds it mounted.
+    api().scan();
+    expect(mount).toHaveBeenCalledTimes(1);
+  });
+
+  it('embedLoader_Register_ANameWithoutAFunction_IsIgnored', async () => {
+    const element = widget('stars');
+    await loadLoader();
+
+    api().register('stars', 'not a function' as unknown as () => void);
+    api().scan();
+
+    expect(element.childNodes).toHaveLength(0);
+  });
+
   it('embedLoader_Register_AWidgetOfAnotherName_IsMountedByScan', async () => {
     await loadLoader();
     const mount = vi.fn();
