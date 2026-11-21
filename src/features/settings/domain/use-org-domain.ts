@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { DomainApi } from '@/api/domain.api';
-import type { SetOrgDomainRequest } from '@/types/domain.types';
+import type { OrgDomainConfig, SetDomainSurfacesRequest, SetOrgDomainRequest } from '@/types/domain.types';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { useWorkspace } from '@/hooks/use-workspace';
@@ -89,5 +89,42 @@ export function useVerifyOrgDomain(orgId?: string) {
     },
     // e.g. 403 plan_required (the plan lapsed): the reason, not a generic failure.
     onError: (error) => toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('domain.settings.verifyFailed')),
+  });
+}
+
+/**
+ * The three choices of the agency about what runs on its own domain (E40/F02/US02, NF-140..NF-142). The whole configuration that comes back is written into the cache of the page: it
+ * shows the saved state as the server holds it (the choices, what is really on, where the sign-in of the owners stands) without asking again.
+ */
+export function useSetDomainSurfaces(orgId?: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: SetDomainSurfacesRequest) => DomainApi.setSurfaces(orgId!, payload),
+    onSuccess: (config) => {
+      queryClient.setQueryData<OrgDomainConfig>([ORG_DOMAIN_QUERY_KEY, orgId], config);
+      toast.success(i18n.t('domain.settings.saved'));
+    },
+    onError: (error) => toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('domain.settings.saveFailed')),
+  });
+}
+
+/**
+ * Asks again for the sign-in of the owners on the agency's own domain, after the registration failed. The configuration that comes back goes into the cache like the one of the
+ * switches, and the toast tells what the server says now (still failed, registering, active), not only that the request went out.
+ */
+export function useRequestOwnerLogin(orgId?: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => DomainApi.requestOwnerLogin(orgId!),
+    onSuccess: (config) => {
+      queryClient.setQueryData<OrgDomainConfig>([ORG_DOMAIN_QUERY_KEY, orgId], config);
+      const state = config.surfaces?.ownerLoginHostState;
+      if (state === 'Failed') toast.warning(i18n.t('domain.surfaces.ownerLogin.retryStillFailed'));
+      else if (state === 'Ready') toast.success(i18n.t('domain.surfaces.ownerLogin.retryReady'));
+      else toast.success(i18n.t('domain.surfaces.ownerLogin.retryRequested'));
+    },
+    onError: (error) => toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('domain.surfaces.ownerLogin.retryFailed')),
   });
 }

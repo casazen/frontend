@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
 import { useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { COMPLIANCE_KEY } from '@/features/compliance/use-compliance';
+import { ORG_DOMAIN_QUERY_KEY } from '@/features/settings/domain/use-org-domain';
 import { INTERNAL_ACTIVITIES_KEY } from '@/lib/query-client';
 import { COMPLIANCE_ARCHIVE_KEY } from '@/queries/compliance-archive';
 import { COMPLIANCE_HEALTH_KEY } from '@/queries/compliance-health';
@@ -272,6 +273,25 @@ function refreshTicinoNotification(queryClient: QueryClient, propertyId?: string
 }
 
 /**
+ * The domain of the agency changed without the agency touching the page (E40/F01/US02, `be-auth0-host-sync`): the domain was verified (`domain-verified`), or the sign-in of the owners on it became
+ * active (`owner-login-ready`) or did not (`owner-login-failed`). Sent to the administrators of the org; their `entityId` is the ORG, never a booking.
+ */
+const DOMAIN_TYPES: ReadonlySet<string> = new Set(['domain-verified', 'owner-login-ready', 'owner-login-failed']);
+
+/** Whether a notification is about the domain of the agency (its `entityId` is the org, not a booking). */
+function isDomainType(type: string | null): boolean {
+  return type !== null && DOMAIN_TYPES.has(type);
+}
+
+/**
+ * What a change of the domain makes stale: the domain settings of the org (`ORG_DOMAIN_QUERY_KEY`: the state of the domain, the surfaces and where the owner sign-in stands), which are also what the
+ * links of the booking site are built from. The page of the domain settings, open in front of the administrator, shows the new state without a reload.
+ */
+function refreshOrgDomain(queryClient: QueryClient): void {
+  void queryClient.invalidateQueries({ queryKey: [ORG_DOMAIN_QUERY_KEY] });
+}
+
+/**
  * What a request of help from a host changes on screen: the staff queue of the «Fallo per me» requests (`ADMIN_ASSIST_KEY`, the list and its pages): the
  * page open in front of the staff shows the new request without a reload. The queries of anyone who has no such page do not exist, so nothing is read.
  */
@@ -297,16 +317,17 @@ function refreshAssistOutcome(queryClient: QueryClient): void {
  * check-in also refreshes the data it changes (`STALE_ON_CHECK_IN`), a link that did not reach the guest the guest panel and the «To do» list
  * (`refreshCheckInLinkDelivery`), a request of help from a host (or reopened by it) the staff queue, a request support closed the requests of the host, a review of a guest that appeared
  * (or a reply that was lost) the reviews: the section of the booking, the review that is open and the list of the hub (`invalidateReviews`), a scheduled message that needs
- * a look the timeline of its booking and the «To do» list (`refreshScheduledMessages`), and one about the Ticino police notification of a property the cockpit, the open days
- * of that property and the property queries (`refreshTicinoNotification`).
+ * a look the timeline of its booking and the «To do» list (`refreshScheduledMessages`), one about the Ticino police notification of a property the cockpit, the open days
+ * of that property and the property queries (`refreshTicinoNotification`), and one about the domain of the agency (verified, owner sign-in active or failed) the domain settings
+ * of the org (`refreshOrgDomain`).
  */
 export function applyNotificationsChange(queryClient: QueryClient, change: NotificationsChange): void {
   queryClient.setQueryData(UNREAD_COUNT_KEY, change.unreadCount);
   void queryClient.invalidateQueries({ queryKey: [NOTIFICATIONS_QUERY], predicate: (query) => query.queryKey[1] !== UNREAD_COUNT_KEY[1] });
   void queryClient.invalidateQueries({ queryKey: [HOST_THREADS_QUERY] });
   void queryClient.invalidateQueries({ queryKey: [UNREAD_MESSAGES_QUERY] });
-  // The entity is a booking, except for a service request, for a request of help and for the Ticino notification (a property).
-  const entityIsBooking = !isServiceRequestType(change.type) && !isAssistType(change.type) && !isTicinoType(change.type);
+  // The entity is a booking, except for a service request, for a request of help, for the Ticino notification (a property) and for the domain of the agency (the org).
+  const entityIsBooking = !isServiceRequestType(change.type) && !isAssistType(change.type) && !isTicinoType(change.type) && !isDomainType(change.type);
   if (change.entityId && entityIsBooking) {
     void queryClient.invalidateQueries({ queryKey: [BOOKING_THREAD_QUERY, change.entityId] });
   } else if (!change.entityId) {
@@ -325,6 +346,8 @@ export function applyNotificationsChange(queryClient: QueryClient, change: Notif
   if (change.type !== null && OTA_REVIEW_TYPES.has(change.type)) invalidateReviews(queryClient);
   if (change.type === SCHEDULED_MESSAGE_ISSUE) refreshScheduledMessages(queryClient, change.entityId);
   if (isTicinoType(change.type)) refreshTicinoNotification(queryClient, change.entityId);
+  // The domain became active, or the sign-in of the owners on it did or did not: the page of the domain settings that is open shows it without a reload.
+  if (isDomainType(change.type)) refreshOrgDomain(queryClient);
 }
 
 /** After a gap in the channel events may have been missed: everything the channel feeds is read again, the count included. */
@@ -351,6 +374,8 @@ export function refreshAfterGap(queryClient: QueryClient): void {
   refreshScheduledMessages(queryClient);
   // And for a Ticino arrival day that was declared, or whose 24 hours ran out, while it was down: the cockpit, the days that are open and the properties.
   refreshTicinoNotification(queryClient);
+  // And for a domain that became active, or an owner sign-in that became active or failed, while it was down: the domain settings.
+  refreshOrgDomain(queryClient);
 }
 
 // One connection per tab: every user of the hook shares this client, and the channel closes with the last one.

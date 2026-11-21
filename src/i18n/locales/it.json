@@ -9336,6 +9336,42 @@
       "manage": "Vai alla configurazione",
       "dismiss": "Nascondi suggerimento",
       "loadError": "Non riusciamo a caricare l'indirizzo del tuo sito."
+    },
+    "surfaces": {
+      "description": "Scegli cosa passa dal tuo indirizzo. Quello che lasci spento resta sull'indirizzo di CasaZen.",
+      "guestArea": {
+        "help": "I tuoi ospiti gestiscono la prenotazione e fanno il check-in dal tuo indirizzo, con il tuo marchio.",
+        "label": "Area ospite sul mio dominio",
+        "notActive": "Per ora l'area ospite resta sull'indirizzo di CasaZen."
+      },
+      "links": {
+        "address": "I link che invii partono da {{url}}.",
+        "help": "Check-in, gestione della prenotazione, conferme e inviti partono dal tuo indirizzo invece che da quello di CasaZen.",
+        "label": "Usa il mio dominio nei link che invio",
+        "notActive": "Per ora i link restano quelli di CasaZen."
+      },
+      "ownerLogin": {
+        "label": "Accesso dei proprietari",
+        "manualHint": "Lo abilita CasaZen: per te non c'è nulla da fare.",
+        "retry": "Riprova",
+        "retryFailed": "Richiesta non riuscita: riprova tra poco.",
+        "retryReady": "L'accesso dei proprietari sul tuo dominio è attivo.",
+        "retryRequested": "Richiesta inviata. Ti avvisiamo appena l'accesso dei proprietari è attivo.",
+        "retryStillFailed": "La registrazione non è ancora riuscita. Riprova tra poco.",
+        "state": {
+          "failed": "registrazione non riuscita",
+          "notRequested": "non ancora richiesto",
+          "pendingAutomatic": "registrazione in corso",
+          "pendingManual": "in attesa di abilitazione da parte di CasaZen",
+          "ready": "attivo"
+        }
+      },
+      "ownerPortal": {
+        "help": "I proprietari accedono dal tuo indirizzo. I link per loro si spostano solo quando l'accesso dei proprietari è attivo.",
+        "label": "Portale proprietari sul mio dominio",
+        "notActive": "Per ora il portale proprietari resta sull'indirizzo di CasaZen."
+      },
+      "title": "Cosa passa dal tuo dominio"
     }
   },
   "emailVerified": {
@@ -16366,6 +16402,9 @@
       "otaReviewActionFailed": "Una risposta a una recensione, o la tua recensione dell'ospite, non è arrivata sul portale: riprova dalla recensione.",
       "otaReviewReceived": "Un ospite ha lasciato una recensione.",
       "scheduledMessageIssue": "Un messaggio programmato per un ospite non è partito o ha bisogno di te: apri la prenotazione per vedere cosa è successo.",
+      "domainVerified": "Il tuo dominio è stato verificato: ora è attivo.",
+      "ownerLoginFailed": "L'accesso dei proprietari sul tuo dominio non si è attivato: riprova dalle impostazioni del dominio.",
+      "ownerLoginReady": "L'accesso dei proprietari sul tuo dominio è attivo.",
       "ticinoNotificationDeclared": "Qualcuno del tuo team ha aggiornato la notifica alla polizia di un arrivo in Ticino.",
       "ticinoNotificationDue": "Gli ospiti di un arrivo in Ticino vanno notificati alla polizia cantonale entro 24 ore.",
       "ticinoNotificationOverdue": "Sono passate le 24 ore per notificare alla polizia cantonale gli ospiti di un arrivo in Ticino."

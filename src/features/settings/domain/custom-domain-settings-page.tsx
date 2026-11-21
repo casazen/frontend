@@ -15,13 +15,15 @@ import { getProblemMessage } from '@/lib/api-errors';
 import { DnsInstructionsPanel } from './dns-instructions-panel';
 import { DomainStatusBadge } from './domain-status-badge';
 import { DomainStatusPanel } from './domain-status-panel';
+import { DomainSurfacesPanel } from './domain-surfaces-panel';
 import { useOrgDomain, useSetOrgDomain, useVerifyOrgDomain } from './use-org-domain';
 
 export function CustomDomainSettingsPage() {
   const { t } = useTranslation();
   const { org, user } = useCurrentUser();
   const { data: entitlement } = useEntitlement();
-  const { data: domainConfig, isLoading, isError, error, refetch } = useOrgDomain(org?.id);
+  // `fresh`: the domain is checked and activated by the platform while the page is open (and the surfaces change with it): it is read again on every visit and whenever the window comes back.
+  const { data: domainConfig, isLoading, isError, error, refetch } = useOrgDomain(org?.id, true, { fresh: true });
   const setDomain = useSetOrgDomain(org?.id);
   const verifyDomain = useVerifyOrgDomain(org?.id);
 
@@ -29,10 +31,14 @@ export function CustomDomainSettingsPage() {
   const [subdomain, setSubdomain] = useState('');
   const [customDomain, setCustomDomain] = useState('');
 
-  // Sync the form from the server config whenever it (re)loads (adjusting state during render).
-  const [syncedConfig, setSyncedConfig] = useState(domainConfig);
-  if (domainConfig !== syncedConfig) {
-    setSyncedConfig(domainConfig);
+  // Sync the form from the SAVED mode whenever it changes (adjusting state during render), and from a config that is already in the cache on the first render. A config that comes back with
+  // the same mode (a switch of the surfaces was saved, the domain was checked, a live event) leaves alone what the person is typing.
+  const savedMode = domainConfig
+    ? JSON.stringify([domainConfig.publicHostMode, domainConfig.subdomain ?? '', domainConfig.customDomain ?? ''])
+    : null;
+  const [syncedMode, setSyncedMode] = useState<string | null>(null);
+  if (savedMode !== syncedMode) {
+    setSyncedMode(savedMode);
     if (domainConfig) {
       setHostMode(domainConfig.publicHostMode);
       setSubdomain(domainConfig.subdomain ?? '');
@@ -223,6 +229,9 @@ export function CustomDomainSettingsPage() {
                 </CardContent>
               </Card>
             )}
+
+            {/* The one block of the page that is new (E40/F02/US02): there only with the surfaces from the backend and a verified domain, otherwise the page is as it was. */}
+            {domainConfig && <DomainSurfacesPanel orgId={org.id} config={domainConfig} />}
           </div>
         )}
       </div>

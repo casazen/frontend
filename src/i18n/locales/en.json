@@ -9336,6 +9336,42 @@
       "manage": "Go to the setup",
       "dismiss": "Hide the suggestion",
       "loadError": "We cannot load the address of your site."
+    },
+    "surfaces": {
+      "description": "Choose what runs on your address. Anything you leave off stays on the CasaZen address.",
+      "guestArea": {
+        "help": "Your guests manage their booking and check in from your address, under your brand.",
+        "label": "Guest area on my domain",
+        "notActive": "For now the guest area stays on the CasaZen address."
+      },
+      "links": {
+        "address": "The links you send start from {{url}}.",
+        "help": "Check-in, booking management, confirmations and invitations start from your address instead of the CasaZen one.",
+        "label": "Use my domain in the links I send",
+        "notActive": "For now the links stay the CasaZen ones."
+      },
+      "ownerLogin": {
+        "label": "Owner sign-in",
+        "manualHint": "CasaZen enables it: there is nothing for you to do.",
+        "retry": "Try again",
+        "retryFailed": "The request did not work: try again shortly.",
+        "retryReady": "Owner sign-in on your domain is active.",
+        "retryRequested": "Request sent. We will tell you as soon as owner sign-in is active.",
+        "retryStillFailed": "The registration still did not work. Try again shortly.",
+        "state": {
+          "failed": "registration failed",
+          "notRequested": "not requested yet",
+          "pendingAutomatic": "registration in progress",
+          "pendingManual": "waiting for CasaZen to enable it",
+          "ready": "active"
+        }
+      },
+      "ownerPortal": {
+        "help": "Owners sign in from your address. Their links move only once owner sign-in is active.",
+        "label": "Owner portal on my domain",
+        "notActive": "For now the owner portal stays on the CasaZen address."
+      },
+      "title": "What runs on your domain"
     }
   },
   "emailVerified": {
@@ -16366,6 +16402,9 @@
       "otaReviewActionFailed": "A reply to a review, or your review of a guest, did not reach the portal: try again from the review.",
       "otaReviewReceived": "A guest left a review.",
       "scheduledMessageIssue": "A scheduled message for a guest did not go out or needs you: open the booking to see what happened.",
+      "domainVerified": "Your domain has been verified: it is now active.",
+      "ownerLoginFailed": "Owner sign-in on your domain could not be activated: try again from the domain settings.",
+      "ownerLoginReady": "Owner sign-in on your domain is active.",
       "ticinoNotificationDeclared": "Someone on your team updated the police notification of an arrival in Ticino.",
       "ticinoNotificationDue": "The guests of an arrival in Ticino must be notified to the cantonal police within 24 hours.",
       "ticinoNotificationOverdue": "The 24 hours to notify the cantonal police of the guests of an arrival in Ticino have passed."
