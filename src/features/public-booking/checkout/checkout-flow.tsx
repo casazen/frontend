@@ -2,7 +2,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Lock } from 'lucide-react';
+import { useTrackBeginCheckout } from '@/features/host-tracking/use-track-ecommerce';
 import { useBooking } from '@/features/public-booking/booking/booking-context';
+import { quoteTotalCents } from '@/features/public-booking/booking/quote-helpers';
 import { CheckoutSteps } from '@/features/public-booking/checkout/checkout-steps';
 import { SummaryBar, StaySummary } from '@/features/public-booking/checkout/stay-summary';
 import { StepDetails } from '@/features/public-booking/checkout/step-details';
@@ -34,7 +36,21 @@ const shallowEqual = (a: DetailsValues, b: DetailsValues) => (Object.keys(a) as 
 export function CheckoutFlow({ org, orgSlug, draft, onDraft }: CheckoutFlowProps) {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { property, stay, hostLabel } = useBooking();
+  const { property, stay, hostLabel, quote } = useBooking();
+  // On an agency's own domain, with the visitor's consent, the checkout of a stay goes to its analytics once its quote is ready (NF-149): once per home and stay, with the total of
+  // the server and the currency of the home.
+  useTrackBeginCheckout(
+    quote.status === 'ready'
+      ? {
+          propertyId: property.id,
+          propertyName: property.name,
+          place: property.city,
+          stay,
+          currency: quote.quote.currency || property.currency,
+          total: quoteTotalCents(quote.quote) / 100,
+        }
+      : null,
+  );
   // Once the booking exists the page is its payment: the stay and the data are fixed, and any step of the address shows the payment.
   const [booking, setBooking] = useState<DirectBookingResponse | null>(null);
   const booked = booking !== null;
