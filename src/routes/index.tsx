@@ -441,14 +441,14 @@ let routerInstance: AppRouter | undefined;
 
 /**
  * The router of the app, created on first use: the start-up has found out by then whether the host is the app's own or an
- * org's own host (`getHostSite`, BK-16). On an org's own host the router only knows the org's booking site and shows clean
- * addresses (`/`, `/property/…`); anywhere else it is the full app.
+ * org's own host (`getHostSite`, BK-16). On an org's own host the router only knows the org's booking site (and, when `resolve-host` says they are on for it, the guest check-in
+ * and the owner portal, NF-140) and shows clean addresses (`/`, `/property/…`); anywhere else it is the full app.
  */
 export function getRouter(): AppRouter {
   if (!routerInstance) {
     const hostSite = getHostSite();
     routerInstance = hostSite
-      ? createBrowserRouter(buildHostSiteRoutes(appRoutes), { window: createHostSiteWindow(window, hostSite.slug) })
+      ? createBrowserRouter(buildHostSiteRoutes(appRoutes, hostSite), { window: createHostSiteWindow(window, hostSite.slug) })
       : createBrowserRouter(appRoutes);
   }
   return routerInstance;

@@ -10669,6 +10669,9 @@
       "description": "Non siamo riusciti a contattare il server. Riprova tra poco.",
       "retry": "Riprova"
     },
+    "frame": {
+      "poweredBy": "Powered by CasaZen"
+    },
     "pageNotFound": {
       "title": "Pagina non trovata",
       "description": "La pagina che cerchi non esiste su questo sito.",
@@ -20358,6 +20361,13 @@
         "upcoming": "Non ancora in vigore"
       }
     },
+    "hostLogin": {
+      "button": "Accedi",
+      "description": "Accedi con il tuo account per vedere i tuoi immobili, i rendiconti e i messaggi dell’agenzia.",
+      "failed": "L’accesso non è andato a buon fine. Puoi riprovare.",
+      "redirecting": "Ti stiamo portando alla pagina di accesso…",
+      "title": "Area proprietari"
+    },
     "inbox": {
       "description": "Scrivi all’agenzia e ritrova le conversazioni su un immobile, un soggiorno, un documento o un rendiconto. Le e-mail di avviso non contengono mai il testo dei messaggi.",
       "empty": "Non ci sono ancora conversazioni con l’agenzia.",
@@ -20467,6 +20477,17 @@
       "total": "Totale",
       "xml": "Scarica l’XML",
       "xmlAria": "Scarica l’XML di {{title}}"
+    },
+    "noAccess": {
+      "description": "Hai effettuato l’accesso, ma questo account non è collegato come proprietario a {{name}}. Esci e accedi con l’account con cui hai ricevuto l’invito.",
+      "home": "Torna al sito",
+      "signOut": "Esci",
+      "title": "Questo account non ha accesso all’area proprietari"
+    },
+    "notEnabled": {
+      "description": "L’accesso proprietari su questo sito non è ancora attivo. Quando lo sarà, potrai entrare da questa pagina. Per informazioni contatta {{name}}.",
+      "home": "Torna al sito",
+      "title": "Accesso proprietari non ancora attivo"
     },
     "properties": {
       "backToDashboard": "Torna alla panoramica",
@@ -23505,6 +23526,15 @@
       "loadingBooking": "Carico la tua prenotazione…",
       "sessionExpiredTitle": "La sessione è scaduta",
       "sessionExpiredDescription": "Per continuare scrivi di nuovo la tua email: il codice prenotazione è già compilato.",
+      "proofDescription": "Inserisci il codice prenotazione che trovi nell'email di conferma e scegli come verificare la prenotazione: con l'indirizzo email con cui hai prenotato o con le ultime 4 cifre del tuo telefono.",
+      "proofEmail": "E-mail",
+      "proofLegend": "Come vuoi verificare la prenotazione?",
+      "proofNotFoundDescription": "Nessuna prenotazione di questo sito corrisponde ai dati inseriti. Controlla il codice nell'email di conferma e i dati che hai usato per prenotare.",
+      "proofPhone": "Ultime 4 cifre del telefono",
+      "proofPhoneHint": "Sono le ultime quattro cifre del numero di telefono che hai indicato quando hai prenotato.",
+      "proofPhoneInvalid": "Inserisci esattamente 4 cifre, senza spazi.",
+      "proofPhoneLabel": "Ultime 4 cifre del telefono usato per prenotare",
+      "proofSessionExpiredDescription": "Per continuare verifica di nuovo la prenotazione con i tuoi dati: il codice prenotazione è già compilato.",
       "rateLimited_one": "Troppi tentativi: riprova tra {{count}} minuto.",
       "rateLimited_other": "Troppi tentativi: riprova tra {{count}} minuti.",
       "resultTitle": "La tua prenotazione",

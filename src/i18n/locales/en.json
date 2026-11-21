@@ -10669,6 +10669,9 @@
       "description": "We could not reach the server. Please try again shortly.",
       "retry": "Try again"
     },
+    "frame": {
+      "poweredBy": "Powered by CasaZen"
+    },
     "pageNotFound": {
       "title": "Page not found",
       "description": "The page you are looking for does not exist on this site.",
@@ -20358,6 +20361,13 @@
         "upcoming": "Not in force yet"
       }
     },
+    "hostLogin": {
+      "button": "Sign in",
+      "description": "Sign in with your account to see your properties, statements and messages from the agency.",
+      "failed": "The sign-in did not complete. You can try again.",
+      "redirecting": "Taking you to the sign-in page…",
+      "title": "Owner area"
+    },
     "inbox": {
       "description": "Write to the agency and find your conversations about a property, a stay, a document or a statement. Notification e-mails never contain the text of the messages.",
       "empty": "There are no conversations with the agency yet.",
@@ -20467,6 +20477,17 @@
       "total": "Total",
       "xml": "Download the XML",
       "xmlAria": "Download the XML of {{title}}"
+    },
+    "noAccess": {
+      "description": "You are signed in, but this account is not linked to {{name}} as an owner. Sign out and sign in with the account you were invited with.",
+      "home": "Back to the site",
+      "signOut": "Sign out",
+      "title": "This account has no access to the owner area"
+    },
+    "notEnabled": {
+      "description": "Owner access on this site is not active yet. When it is, you will be able to sign in from this page. For information, contact {{name}}.",
+      "home": "Back to the site",
+      "title": "Owner access not active yet"
     },
     "properties": {
       "backToDashboard": "Back to the overview",
@@ -23505,6 +23526,15 @@
       "loadingBooking": "Loading your booking…",
       "sessionExpiredTitle": "Your session has expired",
       "sessionExpiredDescription": "To continue, enter your email again: the booking code is already filled in.",
+      "proofDescription": "Enter the booking code from the confirmation email and choose how to verify the booking: with the email address you booked with or with the last 4 digits of your phone number.",
+      "proofEmail": "Email",
+      "proofLegend": "How do you want to verify the booking?",
+      "proofNotFoundDescription": "No booking on this site matches the details entered. Check the code in the confirmation email and the details you used to book.",
+      "proofPhone": "Last 4 digits of the phone",
+      "proofPhoneHint": "These are the last four digits of the phone number you gave when you booked.",
+      "proofPhoneInvalid": "Enter exactly 4 digits, with no spaces.",
+      "proofPhoneLabel": "Last 4 digits of the phone used to book",
+      "proofSessionExpiredDescription": "To continue, verify the booking again with your details: the booking code is already filled in.",
       "rateLimited_one": "Too many attempts: try again in {{count}} minute.",
       "rateLimited_other": "Too many attempts: try again in {{count}} minutes.",
       "resultTitle": "Your booking",

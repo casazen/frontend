@@ -31,6 +31,8 @@ export type FeatureFlagKey =
   | 'touristTaxOnlinePayment'
   | 'checkInIdentityVerification'
   | 'scheduledMessages'
+  | 'whiteLabelHost'
+  | 'auth0HostSync'
   | 'siteEmbed';
 
 export type FeatureFlags = Record<FeatureFlagKey, boolean>;
@@ -235,6 +237,20 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * closed nothing is planned or sent, whatever this flag says, and the section then tells that nothing is scheduled and has no link to the page of the routines.
    */
   scheduledMessages: false,
+  /**
+   * The agency's own domain as a whole site (backend `WhiteLabelHost`, E40, NF-140, NF-142, NF-143), off until the product owner turns it on in the test environment. Besides the booking site, the domain of an
+   * agency then serves the guest check-in page and the owner portal with the agency's logo and colours, and the guest area accepts the last four digits of the phone as a second proof. Which of those a domain serves
+   * is decided for each host by `resolve-host` (`surfaces`, `ownerLoginReady`), which says «on» only with this flag on, an allowed plan, a verified domain and the setting of the agency: the routes of a host read that
+   * answer, never this flag. The screens that belong to no host read it: the choice of the proof in the form of «Le mie prenotazioni» (`/book/:orgSlug/my-bookings`, on the CasaZen domain and on a host). While it is
+   * off nothing changes: a host serves the booking site and the pages it served before, the form asks for the code and the e-mail only, and the backend answers 404 to what it gates.
+   */
+  whiteLabelHost: false,
+  /**
+   * The registration of the agency domains with the sign-in service (backend `Auth0HostSync`, E40/F01/US02, NF-141), off until the product owner supplies credentials that may change the application (they are the owner's
+   * to give). No screen of this client reads it: whether the owners of an agency can sign in on its domain is the `ownerLoginReady` of `resolve-host`, which the backend sets when the registration is done, by this
+   * sync or by hand. The key exists so that every flag the server publishes is typed here, and for the pages of the backoffice that tell the agency where its domain stands.
+   */
+  auth0HostSync: false,
   /**
    * The embeddable booking widgets (backend `SiteEmbed`, E40/F01/US01/T01, E41, NF-144, NF-145), off until the product owner turns it on in the test environment. It decides whether the pages
    * under `/embed/<org>/…` of the CasaZen domain answer: while it is off they say «This widget is not available», nothing asks the server for the org and the backend reports `embedEnabled` false on
