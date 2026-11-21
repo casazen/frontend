@@ -46,16 +46,35 @@ function isSignInReturn(search: string): boolean {
 }
 
 /**
+ * The path of an address the way the router reads it, which is how a page of the owner portal has to be recognised here: `matchRoutes` decodes every segment of the address and compares it without
+ * looking at the case, so `/Portale-Proprietari/accedi` and `/portale%2Dproprietari` are the portal for it. A page that the router serves as the portal while this says it is not would be shown with no
+ * sign-in module, under the boundary that asks for one (`AuthProviderBoundary`), which loads the page again for ever.
+ */
+function pathAsTheRouterReadsIt(pathname: string): string {
+  const path = pathname.split(/[?#]/, 1)[0] ?? '';
+  try {
+    return path
+      .split('/')
+      .map((segment) => decodeURIComponent(segment).replace(/\//g, '%2F'))
+      .join('/')
+      .toLowerCase();
+  } catch {
+    // A malformed escape: the router matches the address as it is.
+    return path.toLowerCase();
+  }
+}
+
+/**
  * Whether the page of an org's own host needs the sign-in service (E40/F02/US01/T02, NF-141). Only the owner portal does, and only on a host that serves it AND whose domain is registered with the sign-in
- * service (`surfaces.ownerPortal` and `ownerLoginReady` of `resolve-host`): then the pages of the portal (`/portale-proprietari/…`) and the address the sign-in comes back to (the origin of the host, with
- * `code` and `state` or `error` and `state`) mount it, so the return is completed and the owner lands on the page that was asked for. On any other host, and on every other page of a host (the booking
- * site, `/my-bookings`, the check-in, the checkout, the widgets) nothing mounts it: those pages work with no sign-in module at all (A8-03), and a host that is not registered never sends anybody to the
- * sign-in. A host whose owner surface is off or not ready serves its owner paths as «not found» or «not yet enabled», pages that need nothing. The widgets (`/embed/*`) are frames of other
- * sites that work with no session module and no storage at all (NF-145): whatever their query says, nothing mounts it there.
+ * service (`surfaces.ownerPortal` and `ownerLoginReady` of `resolve-host`): then the pages of the portal (`/portale-proprietari/…`, whatever the case or the escapes of the address: see `pathAsTheRouterReadsIt`)
+ * and the address the sign-in comes back to (the origin of the host, with `code` and `state` or `error` and `state`) mount it, so the return is completed and the owner lands on the page that was asked for.
+ * On any other host, and on every other page of a host (the booking site, `/my-bookings`, the check-in, the checkout, the widgets) nothing mounts it: those pages work with no sign-in module at all (A8-03),
+ * and a host that is not registered never sends anybody to the sign-in. A host whose owner surface is off or not ready serves its owner paths as «not found» or «not yet enabled», pages that need nothing.
+ * The widgets (`/embed/*`) are frames of other sites that work with no session module and no storage at all (NF-145): whatever their query says, nothing mounts it there.
  */
 export function hostNeedsAuth(site: HostSite | null, pathname: string, search: string): boolean {
   if (site?.surfaces?.ownerPortal !== true || site.ownerLoginReady !== true) return false;
-  const path = pathname.split('?')[0] ?? pathname;
+  const path = pathAsTheRouterReadsIt(pathname);
   if (isEmbedPath(path)) return false;
   return path === OWNER_PORTAL_HOME_PATH || path.startsWith(`${OWNER_PORTAL_HOME_PATH}/`) || isSignInReturn(search);
 }

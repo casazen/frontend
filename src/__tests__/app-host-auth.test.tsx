@@ -101,14 +101,35 @@ function openAt(url: string) {
 const provider = () => screen.queryByTestId('auth0-provider');
 
 describe('hostNeedsAuth (NF-141)', () => {
-  it.each(['/portale-proprietari', '/portale-proprietari/', '/portale-proprietari/accedi', '/portale-proprietari/invito', '/portale-proprietari/contatto', '/portale-proprietari/contabilita/sv-1'])(
-    'hostNeedsAuth_ReadyHost_%s_IsTrue',
-    (path) => {
-      expect(hostNeedsAuth(READY, path, '')).toBe(true);
-    },
-  );
+  it.each([
+    '/portale-proprietari',
+    '/portale-proprietari/',
+    '/portale-proprietari/accedi',
+    '/portale-proprietari/invito',
+    '/portale-proprietari/contatto',
+    '/portale-proprietari/contabilita/sv-1',
+    '/portale-proprietari/accesso-negato',
+    // The router reads an address without looking at the case and decodes its segments: these are the portal for it, so they need the sign-in service too (or its boundary would reload the page for ever).
+    '/Portale-Proprietari',
+    '/PORTALE-PROPRIETARI/Accedi',
+    '/portale%2Dproprietari/accedi',
+  ])('hostNeedsAuth_ReadyHost_%s_IsTrue', (path) => {
+    expect(hostNeedsAuth(READY, path, '')).toBe(true);
+  });
 
-  it.each(['/', '/property/casa-mare', '/property/casa-mare/checkout', '/my-bookings', '/booking/0f6c', '/checkin/abc', '/search', '/embed/booking', '/portale-proprietari-x', '/legale/privacy'])(
+  it.each([
+    '/',
+    '/property/casa-mare',
+    '/property/casa-mare/checkout',
+    '/my-bookings',
+    '/booking/0f6c',
+    '/checkin/abc',
+    '/search',
+    '/embed/booking',
+    '/portale-proprietari-x',
+    '/Portale-Proprietari-x',
+    '/legale/privacy',
+  ])(
     'hostNeedsAuth_ReadyHost_%s_IsFalse',
     (path) => {
       // The booking site, the guest area and the widgets work with no sign-in module at all.
@@ -132,7 +153,7 @@ describe('hostNeedsAuth (NF-141)', () => {
     expect(hostNeedsAuth(READY, '/', search)).toBe(expected);
   });
 
-  it.each(['/embed/booking', '/embed/property/casa-mare', '/embed/guest-access', '/embed/v1/embed.js'])(
+  it.each(['/embed/booking', '/embed/property/casa-mare', '/embed/guest-access', '/embed/v1/embed.js', '/EMBED/booking', '/%65mbed/booking'])(
     'hostNeedsAuth_ReadyHost_TheWidget_%s_IsFalseWhateverItsQuerySays',
     (path) => {
       // The widgets are frames of other sites: no session module, no storage (NF-145), even for an address that looks like the return of a sign-in.
@@ -240,6 +261,23 @@ describe('App on the own domain of an agency (E40/F02/US01/T02, NF-141)', () => 
     expect(options.appState).toEqual({ returnTo: '/portale-proprietari' });
     expect(screen.getByTestId('host-surface-frame')).toBeInTheDocument();
   });
+
+  it.each(['/Portale-Proprietari/accedi', '/PORTALE-PROPRIETARI/Accedi', '/portale%2Dproprietari/accedi'])(
+    'ready host: the owner portal opened as %s mounts the sign-in service and is not loaded again for ever',
+    async (path) => {
+      // The router reads these addresses as the portal (it decodes them and does not look at the case). If the app did not, the page would be shown with no sign-in service under the boundary that asks for it:
+      // that boundary loads the page again, to the same address, and the page would never appear.
+      setHostSite(READY);
+      openAt(path);
+
+      render(<App />);
+
+      expect(await screen.findByTestId('auth0-provider')).toBeInTheDocument();
+      expect(await screen.findByTestId('owner-host-login')).toBeInTheDocument();
+      await waitFor(() => expect(auth0.loginWithRedirect).toHaveBeenCalledTimes(1));
+      expect(screen.queryByTestId('host-site-page-not-found')).not.toBeInTheDocument();
+    },
+  );
 
   it.each(['/?code=abc&state=xyz', '/?error=access_denied&state=xyz'])(
     'ready host: the address the sign-in returns to (%s) mounts the sign-in service and completes the return',
