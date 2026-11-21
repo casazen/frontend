@@ -90,4 +90,19 @@ describe('parseFeatureFlags', () => {
     expect(parseFeatureFlags(null)).toEqual(allOff);
     expect(parseFeatureFlags({})).toEqual(allOff);
   });
+
+  it.each(['whiteLabelHost', 'auth0HostSync', 'siteEmbed'] as const)(
+    'knows the flag of the site integration %s (E40, backend Features:*): off by default, on only when the server says true',
+    (key) => {
+      // The keys the backend sends for `Features:WhiteLabelHost`, `Features:Auth0HostSync` and `Features:SiteEmbed`.
+      expect(DEFAULT_FEATURE_FLAGS[key]).toBe(false);
+      expect(parseFeatureFlags({ [key]: true })[key]).toBe(true);
+      expect(parseFeatureFlags({ [key]: 'true' })[key]).toBe(false);
+      expect(parseFeatureFlags({ [key]: 1 })[key]).toBe(false);
+      expect(parseFeatureFlags({})[key]).toBe(false);
+      // One flag does not turn on another.
+      const others = Object.entries(parseFeatureFlags({ [key]: true })).filter(([name, on]) => name !== key && on);
+      expect(others).toEqual([]);
+    },
+  );
 });

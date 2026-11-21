@@ -26,6 +26,13 @@ describe('toAppPath / toHostPath', () => {
     ['/legale/privacy', '/legale/privacy'],
     ['/book/villa-rossi/booking/0f6c', '/book/villa-rossi/booking/0f6c'],
     ['/unknown', '/unknown'],
+    // The guest check-in and the owner portal of the agency's domain (NF-140) are routes of their own, never rewritten into the booking site.
+    ['/checkin/abc123', '/checkin/abc123'],
+    ['/checkin/porta/door-token', '/checkin/porta/door-token'],
+    ['/portale-proprietari', '/portale-proprietari'],
+    ['/portale-proprietari/accedi', '/portale-proprietari/accedi'],
+    ['/portale-proprietari/invito', '/portale-proprietari/invito'],
+    ['/portale-proprietari/contabilita/sv-1', '/portale-proprietari/contabilita/sv-1'],
   ])('toAppPath_%s_is%s', (hostPath, expected) => {
     expect(toAppPath(hostPath, SLUG)).toBe(expected);
   });
@@ -42,6 +49,8 @@ describe('toAppPath / toHostPath', () => {
     ['/book/villa-rossi/casa-mare', '/book/villa-rossi/casa-mare'],
     ['/book/villa-rossi-2/property/x', '/book/villa-rossi-2/property/x'],
     ['/legale/privacy', '/legale/privacy'],
+    ['/checkin/abc123', '/checkin/abc123'],
+    ['/portale-proprietari/accedi', '/portale-proprietari/accedi'],
   ])('toHostPath_%s_is%s', (appPath, expected) => {
     expect(toHostPath(appPath, SLUG)).toBe(expected);
   });
@@ -69,6 +78,8 @@ describe('createHostSiteWindow with a real router', () => {
       ],
     },
     { path: '/legale/privacy', element: null, id: 'privacy' },
+    { path: '/checkin/:token', element: null, id: 'checkin' },
+    { path: '/portale-proprietari/*', element: null, id: 'owner-portal' },
     { path: '*', element: null, id: 'not-found' },
   ];
 
@@ -134,6 +145,31 @@ describe('createHostSiteWindow with a real router', () => {
 
     expect(window.location.pathname).toBe('/legale/privacy');
     expect(router.state.matches.at(-1)?.route.id).toBe('privacy');
+    router.dispose();
+  });
+
+  it('createBrowserRouter_CheckInAndOwnerPortalAddresses_AreLeftUntouched', async () => {
+    setBrowserUrl('/checkin/abc123?step=identity');
+    const router = startRouter();
+
+    // On load: the check-in is the route itself, with its address and query as they are.
+    expect(router.state.location.pathname).toBe('/checkin/abc123');
+    expect(router.state.location.search).toBe('?step=identity');
+    expect(router.state.matches.at(-1)?.route.id).toBe('checkin');
+    expect(window.location.pathname).toBe('/checkin/abc123');
+
+    // Moving between the pages of the agency's domain never writes a `/book/<slug>` address in the browser, nor turns one of these into the booking site.
+    await router.navigate('/portale-proprietari/accedi');
+    expect(window.location.pathname).toBe('/portale-proprietari/accedi');
+    expect(router.state.matches.at(-1)?.route.id).toBe('owner-portal');
+
+    await router.navigate('/portale-proprietari');
+    expect(window.location.pathname).toBe('/portale-proprietari');
+    expect(router.state.matches.at(-1)?.route.id).toBe('owner-portal');
+
+    await router.navigate('/checkin/zzz', { replace: true });
+    expect(window.location.pathname).toBe('/checkin/zzz');
+    expect(router.state.matches.at(-1)?.route.id).toBe('checkin');
     router.dispose();
   });
 

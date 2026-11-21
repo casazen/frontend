@@ -1,7 +1,7 @@
 import { AxiosError, type AxiosResponse } from 'axios';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ResolveHostResponse } from '@/types/domain.types';
-import { getHostSite, isDefaultAppHost, resolveHostSite, setHostSite } from '../host-site';
+import { getHostSite, isDefaultAppHost, isHostSurfaceOn, resolveHostSite, setHostSite } from '../host-site';
 import { getPublicSiteHost, getPublicSiteOrigin } from '@/config/public-site';
 
 /** D3 (SE-03): the web app's own hosts come from configuration, no CasaZen domain is written in the code. */
@@ -71,10 +71,102 @@ describe('resolveHostSite (BK-16, A3-08)', () => {
     const result = await resolveHostSite('WWW.Villa-Rossi.example.test', resolveHost);
 
     expect(resolveHost).toHaveBeenCalledWith('www.villa-rossi.example.test');
+    // An answer that says nothing of the surfaces (and an agency that set no look) gives the site as it always was.
     expect(result).toEqual({
       kind: 'site',
       site: { host: 'www.villa-rossi.example.test', slug: 'villa-rossi', displayName: 'Villa Rossi' },
     });
+  });
+
+  it('resolveHostSite_SurfacesAndSignInAndBranding_AreMappedIntoTheSite', async () => {
+    const resolveHost = vi.fn().mockResolvedValue({
+      ...RESOLVED,
+      embedEnabled: true,
+      surfaces: { guestArea: true, ownerPortal: true },
+      ownerLoginReady: true,
+      branding: {
+        displayName: 'Villa Rossi',
+        slug: 'villa-rossi',
+        showPoweredBy: true,
+        logoUrl: 'https://cdn.example.test/logo.png',
+        primaryColor: '#1a5276',
+        publicThemeId: 'mare',
+        publicFontId: 'moderno',
+      },
+    });
+
+    const result = await resolveHostSite('prenota.villa-rossi.example.test', resolveHost);
+
+    expect(result).toEqual({
+      kind: 'site',
+      site: {
+        host: 'prenota.villa-rossi.example.test',
+        slug: 'villa-rossi',
+        displayName: 'Villa Rossi',
+        embedEnabled: true,
+        surfaces: { guestArea: true, ownerPortal: true },
+        ownerLoginReady: true,
+        branding: {
+          logoUrl: 'https://cdn.example.test/logo.png',
+          primaryColor: '#1a5276',
+          themeId: 'mare',
+          fontId: 'moderno',
+          displayName: 'Villa Rossi',
+          showPoweredBy: true,
+        },
+      },
+    });
+  });
+
+  it.each([
+    ['a logo', { logoUrl: 'https://cdn.example.test/l.png' }, { logoUrl: 'https://cdn.example.test/l.png' }],
+    ['a colour', { primaryColor: '#112233' }, { primaryColor: '#112233' }],
+    ['a theme', { publicThemeId: 'citta' }, { themeId: 'citta' }],
+    ['a font', { publicFontId: 'classico' }, { fontId: 'classico' }],
+    ['powered by', { showPoweredBy: true }, { showPoweredBy: true }],
+  ])('resolveHostSite_AgencyThatSet_%s_HasABrandingBlock', async (_name, set, expected) => {
+    const resolveHost = vi.fn().mockResolvedValue({ ...RESOLVED, branding: { ...RESOLVED.branding, ...set } });
+
+    const result = await resolveHostSite('prenota.villa-rossi.example.test', resolveHost);
+
+    expect(result.kind === 'site' && result.site.branding).toEqual({
+      logoUrl: null,
+      primaryColor: null,
+      themeId: null,
+      fontId: null,
+      displayName: 'Villa Rossi',
+      showPoweredBy: false,
+      ...expected,
+    });
+  });
+
+  it.each([
+    ['a surface missing from the answer', { surfaces: { guestArea: true } }, { guestArea: true, ownerPortal: false }],
+    ['a surface that is not true', { surfaces: { guestArea: 'true', ownerPortal: 1 } }, { guestArea: false, ownerPortal: false }],
+    ['an empty block', { surfaces: {} }, { guestArea: false, ownerPortal: false }],
+  ])('resolveHostSite_%s_IsOff', async (_name, answer, expected) => {
+    const resolveHost = vi.fn().mockResolvedValue({ ...RESOLVED, ...answer });
+
+    const result = await resolveHostSite('prenota.villa-rossi.example.test', resolveHost);
+
+    expect(result.kind === 'site' && result.site.surfaces).toEqual(expected);
+  });
+
+  it.each([[false], ['true'], [1], [undefined]])('resolveHostSite_OwnerLoginReady_%s_IsNotReady', async (ready) => {
+    const resolveHost = vi.fn().mockResolvedValue({ ...RESOLVED, surfaces: { guestArea: false, ownerPortal: true }, ownerLoginReady: ready });
+
+    const result = await resolveHostSite('prenota.villa-rossi.example.test', resolveHost);
+
+    expect(result.kind === 'site' && result.site.ownerLoginReady).toBeFalsy();
+  });
+
+  it('isHostSurfaceOn_AnOlderAnswerOrNoSite_IsOff', () => {
+    const site = { host: 'h.example.test', slug: 's', displayName: 'S' };
+
+    expect(isHostSurfaceOn(null, 'guestArea')).toBe(false);
+    expect(isHostSurfaceOn(site, 'guestArea')).toBe(false);
+    expect(isHostSurfaceOn({ ...site, surfaces: { guestArea: true, ownerPortal: false } }, 'guestArea')).toBe(true);
+    expect(isHostSurfaceOn({ ...site, surfaces: { guestArea: true, ownerPortal: false } }, 'ownerPortal')).toBe(false);
   });
 
   it('resolveHostSite_BackendDoesNotKnowTheHost_IsNotFound', async () => {

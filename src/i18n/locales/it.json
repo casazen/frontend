@@ -10524,6 +10524,9 @@
       "description": "Non siamo riusciti a contattare il server. Riprova tra poco.",
       "retry": "Riprova"
     },
+    "frame": {
+      "poweredBy": "Powered by CasaZen"
+    },
     "pageNotFound": {
       "title": "Pagina non trovata",
       "description": "La pagina che cerchi non esiste su questo sito.",

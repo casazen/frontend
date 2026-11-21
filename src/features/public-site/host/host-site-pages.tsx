@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { getPublicSiteOrigin } from '@/config/public-site';
 import { getHostSite } from '@/lib/host-site';
 import { useSeoMeta } from '@/lib/seo-meta';
+import { useCheckInContext } from '@/queries/use-checkin';
 
 /** What the start-up shows while it is still asking the backend which site the host serves, or why it cannot show one. */
 export type HostBootstrapState = 'loading' | 'not-found' | 'error';
@@ -77,6 +78,24 @@ export function HostOrgGuard({ children }: { children: ReactNode }) {
   const hostSite = getHostSite();
 
   return hostSite && orgSlug === hostSite.slug ? <>{children}</> : <HostSiteNotFoundPage />;
+}
+
+/**
+ * The same rule for the check-in page of an org's own host (NF-140): a link of another agency's guest, typed or followed on this domain, is «not found» here, so a domain never shows
+ * another agency's page under its name. The answer of the link names the agency whose privacy notice it carries (`privacyNoticeOrgSlug`); when that slug is there and is not the host's
+ * the page is not shown. It reads the answer with the hook of the page itself (`useCheckInContext`), so the two share one request and the check-in page is not touched. While the
+ * answer is not here, or when it fails, or when it carries no slug (a link that has no privacy notice, or one that is completed: the server then sends no data), the page decides
+ * what it shows, as it always did; a cached answer of another agency stays «not found» whatever a later failure says.
+ */
+export function HostCheckInGuard({ children }: { children: ReactNode }) {
+  const { token = '' } = useParams<{ token: string }>();
+  const { data: context } = useCheckInContext(token);
+  const hostSite = getHostSite();
+
+  // Slugs are lower case; the comparison does not depend on it, so a case that differs never turns an agency's own guest away.
+  const linkSlug = context?.privacyNoticeOrgSlug?.toLowerCase();
+  const ofAnotherAgency = Boolean(linkSlug) && linkSlug !== hostSite?.slug.toLowerCase();
+  return hostSite && !ofAnotherAgency ? <>{children}</> : <HostSiteNotFoundPage />;
 }
 
 /**

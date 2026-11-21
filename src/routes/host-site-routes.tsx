@@ -1,10 +1,36 @@
 import type { RouteObject } from 'react-router-dom';
-import { HostLegalRedirect, HostOrgGuard, HostSiteNotFoundPage } from '@/features/public-site/host/host-site-pages';
+import { HostCheckInGuard, HostLegalRedirect, HostOrgGuard, HostSiteNotFoundPage } from '@/features/public-site/host/host-site-pages';
+import { HostSurfaceFrame } from '@/features/public-site/host/host-surface-frame';
 import { LEGAL_DOCUMENT_PATHS, LEGAL_INDEX_PATH, LEGAL_SUBPROCESSORS_PATH } from '@/features/legal/legal-paths';
+import { getHostSite, isHostSurfaceOn, type HostSite } from '@/lib/host-site';
 import { buildEmbedRoutes } from './embed-routes';
+import { ownerPortalRoutes } from './ownerPortalRoutes';
 
 /** Path of the booking site route of the app, the one an org's own host serves. */
 const ORG_SITE_PATH = '/book/:orgSlug';
+
+/** Path of the guest check-in route of the app, the one an org's own host serves when its guest area is on. */
+const CHECK_IN_PATH = '/checkin/:token';
+
+function findAppRoute(appRoutes: RouteObject[], what: string, matches: (route: RouteObject) => boolean): RouteObject {
+  const route = appRoutes.find(matches);
+  if (!route) throw new Error(`The route of ${what} is missing from the app routes.`);
+  return route;
+}
+
+/**
+ * The guest check-in on an org's own host (NF-140): the very route of the app, only for the agency of the host (`HostCheckInGuard`). The door of a property
+ * (`/checkin/porta/:doorToken`) is another route of the app and is not served here.
+ */
+function checkInRoute(appRoutes: RouteObject[]): RouteObject {
+  const route = findAppRoute(appRoutes, `the check-in ${CHECK_IN_PATH}`, (candidate) => candidate.path === CHECK_IN_PATH);
+  return { ...route, element: <HostCheckInGuard>{route.element}</HostCheckInGuard> };
+}
+
+/** The owner portal on an org's own host (NF-140): the very routes of the app (the layout that holds the Auth boundary and its children, `ownerPortalRoutes`). */
+function ownerPortalRoute(appRoutes: RouteObject[]): RouteObject {
+  return findAppRoute(appRoutes, 'the owner portal', (candidate) => candidate.children === ownerPortalRoutes);
+}
 
 /**
  * Routes of an org's own host (BK-16, A3-08): the org's booking site (the very route of the app, so every page and every
@@ -14,15 +40,25 @@ const ORG_SITE_PATH = '/book/:orgSlug';
  * the CasaZen legal documents (redirected to the public web app) and a public 404. There is no app, no login, no search and no guide here: such
  * an address is "not found".
  *
- * The router window of such a host (`host-site-window.ts`) only rewrites the segments of `HOST_SITE_SEGMENTS`: `/embed/…` is the route itself.
+ * Two surfaces more, each only when `resolve-host` says it is on for this host (`site.surfaces`, NF-140; a host that says nothing serves what it always served), both inside the frame of the
+ * agency (`HostSurfaceFrame`: its logo, name and colours): the guest check-in `/checkin/:token` (guest area) and the owner portal `/portale-proprietari/…` (owner portal). Everything else that belongs to the
+ * host console stays «not found» on the host with every surface on: `/app/*`, `/login`, `/register`, `/search`, the door of a property `/checkin/porta/:doorToken`, the supplier pages and the
+ * `/book/…` of another org. `/my-bookings` is part of the booking site and is served whatever the surfaces say.
+ *
+ * The router window of such a host (`host-site-window.ts`) only rewrites the segments of `HOST_SITE_SEGMENTS`: `/embed/…`, `/checkin/…` and `/portale-proprietari/…` are the routes themselves.
+ * `site` is the one the start-up found (`getHostSite`); without one no surface is on.
  */
-export function buildHostSiteRoutes(appRoutes: RouteObject[]): RouteObject[] {
-  const orgSite = appRoutes.find((route) => route.path === ORG_SITE_PATH);
-  if (!orgSite) throw new Error(`The route ${ORG_SITE_PATH} of the booking site is missing from the app routes.`);
+export function buildHostSiteRoutes(appRoutes: RouteObject[], site: HostSite | null = getHostSite()): RouteObject[] {
+  const orgSite = findAppRoute(appRoutes, `the booking site ${ORG_SITE_PATH}`, (route) => route.path === ORG_SITE_PATH);
+
+  const surfaces: RouteObject[] = [];
+  if (isHostSurfaceOn(site, 'guestArea')) surfaces.push(checkInRoute(appRoutes));
+  if (isHostSurfaceOn(site, 'ownerPortal')) surfaces.push(ownerPortalRoute(appRoutes));
 
   return [
     { ...orgSite, element: <HostOrgGuard>{orgSite.element}</HostOrgGuard> },
     ...buildEmbedRoutes('host'),
+    ...(surfaces.length > 0 ? [{ element: <HostSurfaceFrame />, children: surfaces }] : []),
     ...[LEGAL_INDEX_PATH, LEGAL_SUBPROCESSORS_PATH, ...Object.values(LEGAL_DOCUMENT_PATHS)].map((path) => ({
       path,
       element: <HostLegalRedirect />,
