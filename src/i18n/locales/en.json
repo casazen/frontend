@@ -10175,9 +10175,9 @@
       "value": "Identification number: {{value}}"
     },
     "support": {
-      "AssistedNotification": "Prepares the data and reminds you of the deadline: you make the notification.",
+      "AssistedNotification": "Coming soon: CasaZen will prepare the data and remind you of the deadline; you will make the notification.",
       "FileExport": "Prepares the file in the official format: you upload it on the portal.",
-      "GuestRegister": "Collects the guests' data for the register: you keep it and show it to the police if asked.",
+      "GuestRegister": "Coming soon: CasaZen will collect the guests' data for the register; you will keep it and show it to the police if asked.",
       "InformationOnly": "Tells you what the canton asks: it sends nothing."
     },
     "toVerify": "To check with the municipality or the police"

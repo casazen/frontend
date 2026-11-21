@@ -10175,9 +10175,9 @@
       "value": "Numero identificativo: {{value}}"
     },
     "support": {
-      "AssistedNotification": "Prepara i dati e ti ricorda la scadenza: la notifica la fai tu.",
+      "AssistedNotification": "In arrivo: CasaZen preparerà i dati e ti ricorderà la scadenza; la notifica la farai tu.",
       "FileExport": "Prepara il file nel formato ufficiale: lo carichi tu sul portale.",
-      "GuestRegister": "Raccoglie i dati degli ospiti per il registro: lo conservi tu e lo mostri alla polizia se lo chiede.",
+      "GuestRegister": "In arrivo: CasaZen raccoglierà i dati degli ospiti per il registro; lo conserverai tu e lo mostrerai alla polizia se lo chiede.",
       "InformationOnly": "Ti dice cosa chiede il cantone: non invia nulla."
     },
     "toVerify": "Da verificare con il comune o la polizia"

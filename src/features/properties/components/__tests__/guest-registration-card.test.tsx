@@ -486,6 +486,26 @@ describe('GuestRegistrationCard, the regime of the canton of a property (E29/F02
       for (const raw of ['Mandatory', 'Pigeon', 'Yearly', 'Magic', 'Maybe']) expect(document.body.textContent).not.toContain(raw);
     });
 
+    // The register of the guests and the assisted notification arrive with S011-S013: until then the card says they are coming and does not tell what CasaZen does in the present.
+    it.each([
+      ['it', 'AssistedNotification', /In arrivo:/],
+      ['it', 'GuestRegister', /In arrivo:/],
+      ['en', 'AssistedNotification', /Coming soon:/],
+      ['en', 'GuestRegister', /Coming soon:/],
+    ] as const)('GuestRegistrationCard_%s_%sNotBuiltYet_SaysItIsComing', async (language, support, coming) => {
+      await i18n.changeLanguage(language);
+      vi.mocked(guestRegistrationApi.get).mockResolvedValue(card({ regime: regime({ casaZenSupport: support }) }));
+      renderCard();
+
+      expect(await screen.findByTestId('guest-registration-fact-support')).toHaveTextContent(coming);
+    });
+
+    it('GuestRegistrationCard_TheFileOfTicino_StillSaysWhatCasaZenDoesToday', async () => {
+      renderCard();
+
+      expect(await screen.findByTestId('guest-registration-fact-support')).toHaveTextContent(t('guestRegistration.support.FileExport'));
+    });
+
     it.each(['it', 'en'])('GuestRegistrationCard_%s_NamesNoSupplierAndSaysItIsNotLegalAdvice', async (language) => {
       await i18n.changeLanguage(language);
       for (const answer of [card(), zurichCard(), unknownPlaceCard()]) {
