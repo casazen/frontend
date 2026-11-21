@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-quer
 import { createElement } from 'react';
 import { getInvoiceData } from '@/api/invoice-data.api';
 import { COMPLIANCE_KEY } from '@/features/compliance/use-compliance';
+import { ORG_DOMAIN_QUERY_KEY } from '@/features/settings/domain/use-org-domain';
 import { INTERNAL_ACTIVITIES_KEY } from '@/lib/query-client';
 import { COMPLIANCE_ARCHIVE_KEY } from '@/queries/compliance-archive';
 import { COMPLIANCE_HEALTH_KEY } from '@/queries/compliance-health';
@@ -344,6 +345,43 @@ describe('useNotificationsRealtime', () => {
     expect(keys).toContainEqual([COMPLIANCE_KEY]);
     expect(keys).toContainEqual([TICINO_POLICE_KEY]);
     expect(keys).toContainEqual([PROPERTIES_KEY]);
+  });
+
+  // E40/F02/US02 (`be-auth0-host-sync`): the domain of the agency became active, or the sign-in of the owners on it became active or failed, with no one touching the page. The entity is the ORG: the
+  // administrator is told at once (the pop-up of the bell, with the way to the domain settings), and the domain settings that are open read the domain again. Nothing of a booking is read.
+  it.each(['domain-verified', 'owner-login-ready', 'owner-login-failed'])('useNotificationsRealtime_%sArrives_TellsTheBellAndReadsTheDomainSettingsOnly', (type) => {
+    const { queryClient, wrapper } = setup();
+    queryClient.setQueryData(UNREAD_COUNT_KEY, 0);
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    const client = fakeClient();
+    const onNewNotification = vi.fn();
+    renderHook(() => useNotificationsRealtime({ enabled: true, userId: 'admin-1', getAccessToken, client, onNewNotification }), { wrapper });
+
+    const change = { unreadCount: 1, type, entityId: 'org-1' };
+    act(() => client.emit(change));
+
+    expect(onNewNotification).toHaveBeenCalledWith(change);
+    const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+    expect(keys).toContainEqual([ORG_DOMAIN_QUERY_KEY]);
+    // The entity is the org, never a booking: no thread, and nothing of what a check-in, a verification or a Ticino notification changes.
+    expect(keys).not.toContainEqual([BOOKING_THREAD_QUERY, 'org-1']);
+    expect(keys).not.toContainEqual([BOOKING_THREAD_QUERY]);
+    for (const root of [BOOKINGS_KEY, CHECKIN_SESSION_KEY, ALLOGGIATI_KEY, DASHBOARD_KEY, COMPLIANCE_KEY, PROPERTIES_KEY]) expect(keys, root).not.toContainEqual([root]);
+  });
+
+  it('useNotificationsRealtime_ReconnectAfterAGap_AlsoReadsAgainTheDomainSettings', () => {
+    const { queryClient, wrapper } = setup();
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    const client = fakeClient();
+    renderHook(() => useNotificationsRealtime({ enabled: true, userId: 'u1', getAccessToken, client }), { wrapper });
+
+    act(() => client.setState('connected'));
+    act(() => client.setState('connecting'));
+    act(() => client.setState('connected'));
+
+    // A domain verified, or a sign-in of the owners made active or failed, while the socket was down sent no message: the domain settings are read again.
+    const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+    expect(keys).toContainEqual([ORG_DOMAIN_QUERY_KEY]);
   });
 
   it('useNotificationsRealtime_AssistRequestedArrives_ReadsTheStaffQueueAgainAndTellsTheBell', () => {
@@ -733,6 +771,37 @@ describe('applyNotificationsChange', () => {
 
     await waitFor(() => expect(readRequests).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(readStep).toHaveBeenCalledTimes(2));
+  });
+
+  // E40/F02/US02: the domain of the agency changed by itself (verified, owner sign-in active or failed). The entity is the ORG: it is not read as a booking, and the domain settings are read again.
+  it('applyNotificationsChange_OwnerLoginReady_InvalidatesTheOrgDomainQuery', () => {
+    const { queryClient } = setup();
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    applyNotificationsChange(queryClient, { unreadCount: 1, type: 'owner-login-ready', entityId: 'org-1' });
+    const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+    expect(keys).toContainEqual([ORG_DOMAIN_QUERY_KEY]);
+    expect(keys).not.toContainEqual([BOOKING_THREAD_QUERY, 'org-1']);
+    expect(keys).not.toContainEqual([BOOKING_THREAD_QUERY]);
+  });
+
+  it('applyNotificationsChange_DomainEvent_AnOpenDomainSettingsPageReadsTheNewStateWithoutAReload', async () => {
+    const { queryClient, wrapper } = setup();
+    const readDomain = vi.fn().mockResolvedValue({ orgId: 'org-1' });
+    // What the open page of the domain settings keeps mounted (`useOrgDomain`): the configuration of the org.
+    renderHook(() => useQuery({ queryKey: [ORG_DOMAIN_QUERY_KEY, 'org-1'], queryFn: readDomain }), { wrapper });
+    await waitFor(() => expect(readDomain).toHaveBeenCalledTimes(1));
+
+    act(() => applyNotificationsChange(queryClient, { unreadCount: 1, type: 'owner-login-failed', entityId: 'org-1' }));
+
+    await waitFor(() => expect(readDomain).toHaveBeenCalledTimes(2));
+  });
+
+  it.each(['guest-message', 'new-booking', 'guest-checkin-completed', 'assist-requested', 'ticino-notification-due'])('applyNotificationsChange_%s_DoesNotReadTheDomainSettings', (type) => {
+    const { queryClient } = setup();
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    applyNotificationsChange(queryClient, { unreadCount: 1, type, entityId: 'x-1' });
+    const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+    expect(keys).not.toContainEqual([ORG_DOMAIN_QUERY_KEY]);
   });
 
   // E20/F03/US01/T02: the host reopened a request: for the staff it is a request to handle again, as a new one.
