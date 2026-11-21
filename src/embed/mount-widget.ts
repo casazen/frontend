@@ -6,7 +6,10 @@
 
 import { LOADER_TEXTS, type EmbedLang } from './texts';
 
-/** How long the frame has to say `ready` before the link appears (AC-NF145-5). A frame that answers later takes the link away again. */
+/**
+ * How long a widget has to come before the link appears (AC-NF145-5): a frame to say `ready`, a widget the page draws itself (the search bar) to be drawn,
+ * which waits for its file. One that comes later takes the link away again.
+ */
 const READY_TIMEOUT_MS = 8000;
 
 /** What the loader worked out of the attributes of a widget and of the address of the page. */
@@ -141,7 +144,12 @@ export function createWidget(el: HTMLElement, plan: Plan): Widget {
     widget.fail();
     return widget;
   }
-  if (!plan.framed) return widget;
+  if (!plan.framed) {
+    // Drawn by a function that may be late (`search.js`, a file that can be slow, blocked, or never answer): the same 8 seconds, then the link takes the
+    // place of the empty container. The loader calls `show()` when the function has drawn the widget, which takes the link away again.
+    wait.timer = setTimeout(widget.fail, READY_TIMEOUT_MS);
+    return widget;
+  }
 
   // The address of the frame: `<base>/embed/[<org>/]<widget>[/<slug>]`, with the language, the page that frames it and the version of the protocol first.
   const search = new URLSearchParams({ lang: plan.lang, parent: location.origin, v: '1' });

@@ -1354,6 +1354,63 @@ describe('the search bar is loaded when a page has one (AC7)', () => {
     expect(linkOf(element)).not.toBeNull();
   });
 
+  it('embedLoader_Search_WhenTheFileNeverAnswers_ShowsTheLinkAfter8Seconds', async () => {
+    vi.useFakeTimers();
+    const element = widget('search', { lang: 'en' });
+    await loadLoader();
+
+    // The file is asked for and neither loads nor fails: the container is left as it was, for a while.
+    vi.advanceTimersByTime(7999);
+    expect(linkOf(element)).toBeNull();
+
+    vi.advanceTimersByTime(1);
+    const link = linkOf(element) as HTMLAnchorElement;
+    expect(link.textContent).toBe('Book on prenota.quokka360.com');
+    expect(link.href).toBe(`${BASE}/?lang=en&utm_source=agency-site&utm_medium=embed`);
+  });
+
+  it('embedLoader_Search_TheFileThatComesLate_TakesTheLinkAway', async () => {
+    vi.useFakeTimers();
+    const element = widget('search');
+    await loadLoader();
+    vi.advanceTimersByTime(8000);
+    expect(linkOf(element)).not.toBeNull();
+
+    // `search.js` registers at last: the bar is drawn, the link is gone, and the wait does not start again.
+    const mount = vi.fn();
+    api().register('search', mount);
+
+    expect(mount).toHaveBeenCalledTimes(1);
+    expect(linkOf(element)).toBeNull();
+    vi.advanceTimersByTime(60000);
+    expect(linkOf(element)).toBeNull();
+  });
+
+  it('embedLoader_Search_TheFileInTime_NeverShowsTheLink', async () => {
+    vi.useFakeTimers();
+    const element = widget('search');
+    await loadLoader();
+
+    vi.advanceTimersByTime(3000);
+    api().register('search', vi.fn());
+    vi.advanceTimersByTime(60000);
+
+    expect(linkOf(element)).toBeNull();
+  });
+
+  it('embedLoader_Search_AFileThatIsThereAlready_NeverArmsTheWait', async () => {
+    vi.useFakeTimers();
+    await loadLoader();
+    api().register('search', vi.fn());
+    const element = widget('search');
+    await Promise.resolve();
+
+    vi.advanceTimersByTime(60000);
+
+    expect(linkOf(element)).toBeNull();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
   it('embedLoader_Search_AfterAFailure_AnotherBarShowsTheLinkAndTheFileIsNotAskedAgain', async () => {
     await loadLoader();
     widget('search');

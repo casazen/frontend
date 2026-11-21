@@ -136,6 +136,8 @@ function start(win: EmbedWindow): void {
             return mode.on;
           },
         });
+        // Drawn: the wait is over, and the link that took the place of the container when the file was late goes away.
+        created.show();
       } catch {
         created.fail();
       }
