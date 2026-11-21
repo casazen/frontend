@@ -2019,6 +2019,8 @@
       "supportVaultValueInvalid": "User name and password are required, 200 characters at most; the further code 100 at most.",
       "swissMunicipalityNotApplicable": "A Swiss municipality can only be set for a property in Switzerland.",
       "swissMunicipalityUnknown": "The municipality you chose is not in the official list of the Swiss municipalities: choose the place again.",
+      "swissPeriodInvalid": "The last day cannot be before the first.",
+      "swissPeriodTooLong": "The period can last at most 366 days.",
       "swissPlacesUnavailable": "The official list of the Swiss places is not available right now: try again later.",
       "swissReceiptDateTooOld": "The day of this document is more than 5 years ago: it cannot be filed.",
       "swissReceiptFileInvalid": "The file is empty or too big: 10 MB at most.",
@@ -2161,6 +2163,8 @@
       "guestMarketingConsentUnavailable": "We cannot save your choice right now: please try again later.",
       "guestMarketingEmailInvalid": "Type a correct e-mail address: the one of the booking cannot be used for offers.",
       "guestMarketingPhoneInvalid": "Check the phone number: it does not look right.",
+      "guestRegisterFormatInvalid": "The format of the register is not valid.",
+      "guestRegisterNotAvailable": "The guest register is only for properties in Switzerland.",
       "guestRegistrationCountryNotSupported": "CasaZen does not have the guest notification rules for the country of this property yet.",
       "guestRegistrationOverrideNotApplicable": "The answer on guest notification can only be given for a property in Switzerland.",
       "welcomeAdultRequired": "To continue you must declare that you are at least 18 years old.",
@@ -10113,6 +10117,53 @@
       "noneOnly": "This stay has no refund of the price.",
       "partial": "{{percent}}% refund until {{date}}",
       "today": "Today"
+    }
+  },
+  "guestRegister": {
+    "actions": {
+      "download": "Download CSV",
+      "print": "Print"
+    },
+    "download": {
+      "done": "Register downloaded.",
+      "failed": "Could not download the register. Try again."
+    },
+    "layer": {
+      "close": "Close",
+      "forbidden": "You do not have permission to see the guests of this property.",
+      "intro": "The register lists the guests who arrived in the period you choose, with a column for the signature. You keep it and show it to the police if asked.",
+      "notAvailable": "The CasaZen guest register is only for properties in Switzerland.",
+      "notFound": "We cannot find this property, or you do not have access.",
+      "responsibility": "The register is your responsibility: CasaZen prepares it from the check-in data, does not save it, sends it to nobody and gives no legal advice. Check with the municipality or the police what your canton asks.",
+      "title": "Guest register",
+      "titleFor": "Guest register: {{property}}",
+      "unavailable": "The guest register is not active."
+    },
+    "period": {
+      "from": "From",
+      "hint": "It counts the day the guests arrive. At most 366 days.",
+      "missing": "Choose the first and the last day.",
+      "order": "The last day cannot be before the first.",
+      "title": "Period",
+      "to": "To",
+      "tooLong": "The period can last at most 366 days."
+    },
+    "preview": {
+      "count_one": "{{count}} guest arrived in the period",
+      "count_other": "{{count}} guests arrived in the period",
+      "empty": "No guest arrived in this period: there is nothing to keep or to print.",
+      "failed": "I cannot count the guests of this period. Try again.",
+      "loading": "Counting the guests…",
+      "refreshFailed": "I cannot refresh the count: what you see may not be up to date.",
+      "retention_one": "To be kept for at least {{count}} year, according to the sources of your canton.",
+      "retention_other": "To be kept for at least {{count}} years, according to the sources of your canton.",
+      "unknownPlace": "We do not know which municipality the property is in, so we do not know how long to keep the register: set it in the details of the property and check with the municipality or the police.",
+      "unknownRetention": "The sources do not say how long to keep it: check with the municipality or the police."
+    },
+    "print": {
+      "failed": "Could not prepare the print. Try again.",
+      "period": "From {{from}} to {{to}}",
+      "title": "Guest register"
     }
   },
   "guestRegistration": {

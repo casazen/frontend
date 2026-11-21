@@ -2019,6 +2019,8 @@
       "supportVaultValueInvalid": "Utente e password sono obbligatori, al massimo 200 caratteri; il codice aggiuntivo al massimo 100.",
       "swissMunicipalityNotApplicable": "Il comune svizzero si può indicare solo per un immobile in Svizzera.",
       "swissMunicipalityUnknown": "Il comune scelto non è nell'elenco ufficiale dei comuni svizzeri: scegli di nuovo la località.",
+      "swissPeriodInvalid": "L'ultimo giorno non può venire prima del primo.",
+      "swissPeriodTooLong": "Il periodo può durare al massimo 366 giorni.",
       "swissPlacesUnavailable": "L'elenco ufficiale delle località svizzere non è disponibile in questo momento: riprova più tardi.",
       "swissReceiptDateTooOld": "Il giorno di questo documento è più vecchio di 5 anni: non si può archiviare.",
       "swissReceiptFileInvalid": "Il file è vuoto oppure troppo grande: al massimo 10 MB.",
@@ -2161,6 +2163,8 @@
       "guestMarketingConsentUnavailable": "In questo momento non possiamo salvare la tua scelta: riprova più tardi.",
       "guestMarketingEmailInvalid": "Scrivi un indirizzo e-mail corretto: quello della prenotazione non si può usare per le offerte.",
       "guestMarketingPhoneInvalid": "Controlla il numero di telefono: non sembra corretto.",
+      "guestRegisterFormatInvalid": "Il formato del registro non è valido.",
+      "guestRegisterNotAvailable": "Il registro ospiti c'è solo per le strutture in Svizzera.",
       "guestRegistrationCountryNotSupported": "CasaZen non ha ancora le regole sulla notifica degli ospiti per il paese di questo immobile.",
       "guestRegistrationOverrideNotApplicable": "La risposta sulla notifica degli ospiti si può dare solo per un immobile in Svizzera.",
       "welcomeAdultRequired": "Per continuare devi dichiarare di avere almeno 18 anni.",
@@ -10113,6 +10117,53 @@
       "noneOnly": "Per questo soggiorno non è previsto il rimborso del prezzo.",
       "partial": "Rimborso del {{percent}}% fino al {{date}}",
       "today": "Oggi"
+    }
+  },
+  "guestRegister": {
+    "actions": {
+      "download": "Scarica CSV",
+      "print": "Stampa"
+    },
+    "download": {
+      "done": "Registro scaricato.",
+      "failed": "Impossibile scaricare il registro. Riprova."
+    },
+    "layer": {
+      "close": "Chiudi",
+      "forbidden": "Non hai il permesso di vedere gli ospiti di questa struttura.",
+      "intro": "Il registro elenca gli ospiti arrivati nel periodo che scegli, con una colonna per la firma. Lo tieni tu e lo mostri alla polizia se lo chiede.",
+      "notAvailable": "Il registro ospiti di CasaZen c'è solo per le strutture in Svizzera.",
+      "notFound": "Non troviamo questa struttura, oppure non hai accesso.",
+      "responsibility": "Il registro è una tua responsabilità: CasaZen lo prepara dai dati del check-in, non lo salva, non lo manda a nessuno e non dà consulenza legale. Verifica con il comune o la polizia cosa chiede il tuo cantone.",
+      "title": "Registro ospiti",
+      "titleFor": "Registro ospiti: {{property}}",
+      "unavailable": "Il registro ospiti non è attivo."
+    },
+    "period": {
+      "from": "Dal",
+      "hint": "Conta il giorno d'arrivo degli ospiti. Al massimo 366 giorni.",
+      "missing": "Scegli il primo e l'ultimo giorno.",
+      "order": "L'ultimo giorno non può venire prima del primo.",
+      "title": "Periodo",
+      "to": "Al",
+      "tooLong": "Il periodo può durare al massimo 366 giorni."
+    },
+    "preview": {
+      "count_one": "{{count}} ospite arrivato nel periodo",
+      "count_other": "{{count}} ospiti arrivati nel periodo",
+      "empty": "Nessun ospite è arrivato in questo periodo: non c'è niente da conservare né da stampare.",
+      "failed": "Non riesco a contare gli ospiti di questo periodo. Riprova.",
+      "loading": "Conto gli ospiti…",
+      "refreshFailed": "Non riesco ad aggiornare il conteggio: quello che vedi potrebbe non essere aggiornato.",
+      "retention_one": "Da conservare almeno {{count}} anno, secondo le fonti del tuo cantone.",
+      "retention_other": "Da conservare almeno {{count}} anni, secondo le fonti del tuo cantone.",
+      "unknownPlace": "Non sappiamo in quale comune si trova la struttura, quindi non sappiamo per quanto tempo conservare il registro: indicalo nei dati dell'immobile e verifica con il comune o la polizia.",
+      "unknownRetention": "Le fonti non indicano per quanto tempo conservarlo: verifica con il comune o la polizia."
+    },
+    "print": {
+      "failed": "Impossibile preparare la stampa. Riprova.",
+      "period": "Dal {{from}} al {{to}}",
+      "title": "Registro ospiti"
     }
   },
   "guestRegistration": {
