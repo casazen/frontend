@@ -18,10 +18,13 @@ import type {
   ChannelCommissionRuleInput,
   ChannelCommissionRuleSet,
   CommissionBase,
+  ConfirmPortalTouristTaxComuniRequest,
   DocumentRegime,
   FiscalTaxRule,
+  ItalianPortalProposal,
   OwnerMandateTemplate,
   PortalAccountHolder,
+  PortalTouristTaxComune,
   SaveAccountantPackageSettingsRequest,
   SaveBillingSetupSectionRequest,
 } from '@/types';
@@ -111,6 +114,181 @@ function isMissing(setup: BillingSetup | undefined, key: string): boolean {
   return Boolean(setup?.sections.some((section) => section.missing.some((item) => item.key === key)));
 }
 
+/**
+ * The portals the step «Tassa di soggiorno» proposes as the ones that collect the tourist tax, for an issuer that has not said its own answer yet: the ones the server lists in
+ * `defaultPlatformCollectedTouristTaxChannels` of the section `touristTax` (the shipped default of the Swiss tourist tax, which is what the guest documents assume until the issuer confirms:
+ * the wizard and the documents never disagree). It is a proposal and never an answer: it is read, never saved by itself (the issuer's own list is `platformCollectedTouristTaxChannels`), and
+ * once the issuer has confirmed a list, even an empty one, nothing is proposed and what the issuer saved is what the step shows. Only the portals the step asks about are kept.
+ */
+export function platformDefaultsOf(setup: BillingSetup | undefined): Array<(typeof PORTAL_SOURCES)[number]> {
+  const tourist = sectionOf(setup, 'touristTax')?.values;
+  if (flagOf(tourist, 'confirmed') || listOf(tourist, 'platformCollectedTouristTaxChannels') !== null) return [];
+  const proposed = listOf(tourist, 'defaultPlatformCollectedTouristTaxChannels') ?? [];
+  return PORTAL_SOURCES.filter((portal) => proposed.includes(portal));
+}
+
+/**
+ * The answers of the wizard as they stand for a person who has not touched the step «Tassa di soggiorno»: the ones it opened with, and the proposal (`proposed`, from `platformDefaultsOf` of the
+ * setup as it is now) in the portals that have no answer. The proposal may arrive after the wizard opened (the country is chosen in it), and it is not something the person wrote: a draft
+ * that leaves the step as it is must not take it for an answer (nothing is saved for it), nor tell the person that something they wrote was left out.
+ */
+export function withProposal(values: BillingWizardValues, proposed: readonly string[]): BillingWizardValues {
+  if (proposed.length === 0) return values;
+  const touristTaxCollectors = { ...values.touristTaxCollectors };
+  for (const portal of PORTAL_SOURCES) {
+    if (proposed.includes(portal) && touristTaxCollectors[portal] === '') touristTaxCollectors[portal] = 'portal';
+  }
+  return { ...values, touristTaxCollectors };
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// The tourist tax of the Italian portals (FIX/BE-IT-TOURISTTAX-DEFAULTS): proposals to confirm per comune, the confirmed ones, the hint
+// ---------------------------------------------------------------------------------------------------------------------
+
+/** The members of the values of the section `touristTax` the server adds for an Italian issuer (backend `ItalianTouristTaxSetupKeys`). */
+const PROPOSALS_KEY = 'italianPortalProposals';
+const CONFIRMED_KEY = 'confirmedPortalTouristTaxComuni';
+const CONFLICT_KEY = 'portalTouristTaxConflict';
+
+/** The only status of a proposal that is a question for a person: a status a newer server may add is not asked. */
+const TO_CONFIRM = 'to_confirm';
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function sameComune(a: PortalTouristTaxComune, b: PortalTouristTaxComune): boolean {
+  return a.channel === b.channel && a.comuneIstat === b.comuneIstat;
+}
+
+/**
+ * The pairs of a list the server sent; `null` when it is not a list or when ANY entry of it is not a pair. A confirmation sends the WHOLE list, so a list that could be read only in part
+ * must never be the base of one: it would take the confirmations it could not read away.
+ */
+function pairsOf(value: unknown): PortalTouristTaxComune[] | null {
+  if (!Array.isArray(value)) return null;
+  const pairs: PortalTouristTaxComune[] = [];
+  for (const entry of value) {
+    if (!isRecord(entry) || typeof entry.channel !== 'string' || entry.channel === '' || typeof entry.comuneIstat !== 'string' || entry.comuneIstat === '') return null;
+    const pair = { channel: entry.channel, comuneIstat: entry.comuneIstat };
+    if (!pairs.some((known) => sameComune(known, pair))) pairs.push(pair);
+  }
+  return pairs;
+}
+
+/** The proposals that are questions (`status` `to_confirm`), once each and without the ones that are already confirmed. An entry that is not readable is left out: nothing is asked about it. */
+function proposalsOf(value: unknown, confirmed: readonly PortalTouristTaxComune[]): ItalianPortalProposal[] {
+  if (!Array.isArray(value)) return [];
+  const proposals: ItalianPortalProposal[] = [];
+  for (const entry of value) {
+    if (!isRecord(entry) || entry.status !== TO_CONFIRM) continue;
+    const { channel, comuneIstat, comune } = entry;
+    if (typeof channel !== 'string' || channel === '' || typeof comuneIstat !== 'string' || comuneIstat === '') continue;
+    const pair = { channel, comuneIstat };
+    if (confirmed.some((known) => sameComune(known, pair)) || proposals.some((known) => sameComune(known, pair))) continue;
+    proposals.push({ comuneIstat, comune: typeof comune === 'string' ? comune.trim() : '', channel, status: TO_CONFIRM });
+  }
+  return proposals;
+}
+
+/** What the step «Tassa di soggiorno» of an Italian issuer says of the portals that collect the tourist tax, as the server sent it. */
+export interface ItalianTouristTaxView {
+  /**
+   * The questions: «does this portal collect and pay the tourist tax in this comune?», for the comuni of the properties, none confirmed yet. Never an answer: nothing is preselected.
+   * Empty while the confirmed pairs cannot be read (see `confirmed`).
+   */
+  proposals: ItalianPortalProposal[];
+  /**
+   * The portals the organization already confirmed, one pair for each comune. `null` when the server did not send them, or sent a list that cannot be read: nothing can be answered
+   * or taken away then, because an answer is the whole list and one built on a part of it would take confirmations away.
+   */
+  confirmed: PortalTouristTaxComune[] | null;
+  /** The records of the stays from the portals contradict the rule of the organization for the tourist tax: a hint, never a «Da fare». */
+  conflict: boolean;
+}
+
+/**
+ * The tourist tax of the Italian portals as the section `touristTax` of the setup says it. `null` when the section carries none of the three members: an older server, an issuer that is
+ * not Italian, or a person who does not reach the whole organization (the server leaves them out for them: nothing is shown, and never an error). The reading is tolerant: a member that
+ * is missing or odd leaves its part empty and the rest as it was.
+ */
+export function italianTouristTaxOf(setup: BillingSetup | undefined): ItalianTouristTaxView | null {
+  const values = sectionOf(setup, 'touristTax')?.values;
+  if (!values || !(PROPOSALS_KEY in values || CONFIRMED_KEY in values || CONFLICT_KEY in values)) return null;
+
+  const confirmed = pairsOf(values[CONFIRMED_KEY]);
+  return { proposals: confirmed === null ? [] : proposalsOf(values[PROPOSALS_KEY], confirmed), confirmed, conflict: values[CONFLICT_KEY] === true };
+}
+
+/** What a person does with a portal in a comune: confirms it, or takes the confirmation away. */
+export type PortalComuniChange = { add: PortalTouristTaxComune } | { remove: PortalTouristTaxComune };
+
+/**
+ * The body of the confirmation (`PUT api/billing-setup/touristTax/portal-comuni`): the WHOLE list of the pairs the organization confirms, because the server replaces the list it
+ * had. A confirmation is the pairs already confirmed plus the new one; a removal is the pairs already confirmed without that one (an empty list takes every confirmation away).
+ */
+export function portalComuniRequest(confirmed: readonly PortalTouristTaxComune[], change: PortalComuniChange): ConfirmPortalTouristTaxComuniRequest {
+  const target = 'add' in change ? change.add : change.remove;
+  const others = confirmed.filter((pair) => !sameComune(pair, target));
+  return { comuni: [...others, ...('add' in change ? [target] : [])].map(({ channel, comuneIstat }) => ({ channel, comuneIstat })) };
+}
+
+/**
+ * Why a confirmation was not saved, in the words the step has for it. `notSent` is the one failure where it is KNOWN that nothing was sent (the list could not be made); `failed` is a call
+ * whose outcome is not known (the server may have saved it before the answer was lost), and the other three are refusals of the server, which saved nothing.
+ */
+export type PortalComuniFailure = 'wholeOrg' | 'forbidden' | 'invalid' | 'profile' | 'notSent' | 'failed';
+
+/**
+ * The confirmation was NOT sent: the setup, read again just before it, could not be read, or did not hold the confirmed portals in full. A confirmation is the WHOLE list and the server
+ * replaces the list it had, so a list made from anything but a fresh and complete reading could take confirmations away: nothing is sent, and the person can try again.
+ */
+export class PortalComuniNotSentError extends Error {
+  constructor() {
+    super('The portals confirmed for the comuni could not be read, so nothing was sent.');
+    this.name = 'PortalComuniNotSentError';
+  }
+}
+
+/**
+ * What a failed confirmation was, from the answer: the list that could not be made (`PortalComuniNotSentError`: nothing was sent), 403 `fiscal_settings_need_whole_org` (the person reaches
+ * only some of the properties), any other 403 (the role may not change the setup), 422 `issuer_field_invalid` (a portal or a comune the server does not take), 422
+ * `issuer_profile_incomplete` (the issuer step has not created the profile yet); anything else (no answer, a 5xx, a body that is not the section) is a failed call whose outcome is not
+ * known, which can be tried again after the list has been read again.
+ */
+export function portalComuniFailureOf(error: unknown): PortalComuniFailure {
+  if (error instanceof PortalComuniNotSentError) return 'notSent';
+  if (isAxiosError(error) && error.response) {
+    const { status, data } = error.response;
+    const code = getProblemCode(data);
+    if (status === 403) return code === 'fiscal_settings_need_whole_org' ? 'wholeOrg' : 'forbidden';
+    if (status === 422 && code === 'issuer_field_invalid') return 'invalid';
+    if (status === 422 && code === 'issuer_profile_incomplete') return 'profile';
+  }
+  return 'failed';
+}
+
+/**
+ * The names of the comuni by ISTAT code, for the pairs the organization confirmed (a confirmed pair is no proposal any more, and its comune must still be named): the name the
+ * properties of the organization carry for the code, then the one a proposal gave (the server's), and last the ones a proposal gave earlier in this step (`remembered`). A code with
+ * none of them has no name here: the caller shows the code.
+ */
+export function comuneNamesOf(
+  properties: ReadonlyArray<{ city?: string | null; comuneIstatCode?: string | null }>,
+  proposals: readonly ItalianPortalProposal[],
+  remembered: ReadonlyMap<string, string> = new Map(),
+): Map<string, string> {
+  const names = new Map<string, string>();
+  for (const property of properties) {
+    const code = property.comuneIstatCode?.trim();
+    const city = property.city?.trim();
+    if (code && city && !names.has(code)) names.set(code, city);
+  }
+  for (const [code, name] of remembered) if (name !== '') names.set(code, name);
+  for (const proposal of proposals) if (proposal.comune !== '') names.set(proposal.comuneIstat, proposal.comune);
+  return names;
+}
+
 /** What of the tax profile the organization has already: the VAT number and the fiscal code the server read from it. */
 export function identityOnRecord(setup: BillingSetup | undefined): BillingIdentityOnRecord {
   const values = sectionOf(setup, 'issuer')?.values;
@@ -143,6 +321,8 @@ export function initialValues(setup: BillingSetup, context: { organizationName: 
   const countryChosen = isCountry(country) && !isMissing(setup, 'country_missing');
   const regime = textOf(vat, 'regime');
   const collected = listOf(tourist, 'platformCollectedTouristTaxChannels');
+  // What the issuer saved is what the step shows; for an issuer that has saved nothing the portals the server says collect it by default are chosen (and the others left to answer).
+  const proposed = platformDefaultsOf(setup);
   const holder = textOf(channels, 'portalAccountHolder');
   const stay = textOf(vat, 'stayVatTreatment');
   const cleaning = textOf(vat, 'cleaningFeeTreatment');
@@ -165,7 +345,9 @@ export function initialValues(setup: BillingSetup, context: { organizationName: 
     cleaningFeeTreatment: cleaning === 'Service' ? 'Service' : 'FollowsStay',
     guestDocumentSeries: textOf(numbering, 'guestDocumentSeries') || textOf(numbering, 'defaultGuestDocumentSeries'),
     ownerInvoiceSeries: textOf(numbering, 'ownerInvoiceSeries') || textOf(numbering, 'defaultOwnerInvoiceSeries'),
-    touristTaxCollectors: Object.fromEntries(PORTAL_SOURCES.map((portal) => [portal, collected === null ? '' : collected.includes(portal) ? 'portal' : 'host'])),
+    touristTaxCollectors: Object.fromEntries(
+      PORTAL_SOURCES.map((portal) => [portal, collected !== null ? (collected.includes(portal) ? 'portal' : 'host') : proposed.includes(portal) ? 'portal' : '']),
+    ),
     portalAccountHolder: holder === 'Agency' ? 'Agency' : 'Owner',
     rechargePortalCommissions: flagOf(channels, 'rechargePortalCommissions', true),
     holderChanges: {},
@@ -727,6 +909,15 @@ export interface FormProblem {
 /** The 403 a caller gets when it reaches only some of the properties: the setup is the whole organization's. */
 export function isNeedsWholeOrg(error: unknown): boolean {
   return isAxiosError(error) && error.response?.status === 403 && getProblemCode(error.response.data) === 'fiscal_settings_need_whole_org';
+}
+
+/**
+ * The 422 a write of the portal accounts (the settings of the step, or the bulk write of the holders) gets when it starts the waiver of the recharge (the recharge turned off while the agency
+ * holds an account, or the agency made the default holder or given its first listing while the recharge is off) and does not carry the acknowledgement of the person. Nothing was saved:
+ * the wizard asks, and sends the write again with the acknowledgement only if the person confirms.
+ */
+export function isRechargeWaiverNotAcknowledged(error: unknown): boolean {
+  return isAxiosError(error) && error.response?.status === 422 && getProblemCode(error.response.data) === 'recharge_waiver_not_acknowledged';
 }
 
 /** The form field and the words of a field of the setup the server refused; `null` for a field the wizard cannot put a message on. */

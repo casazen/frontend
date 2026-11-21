@@ -63,15 +63,32 @@ const TYPE_KEYS: Record<string, TypeKeys> = {
   OwnerStayToReview: { titleKey: 'activity.todo.type.OwnerStayToReview.title', whyKey: 'activity.todo.type.OwnerStayToReview.why' },
   OwnerStaySyncFailed: { titleKey: 'activity.todo.type.OwnerStaySyncFailed.title', whyKey: 'activity.todo.type.OwnerStaySyncFailed.why' },
   OwnerDocumentExpiring: { titleKey: 'activity.todo.type.OwnerDocumentExpiring.title', whyKey: 'activity.todo.type.OwnerDocumentExpiring.why' },
+  // The owner could not be told by e-mail that a statement was published (E13/F01/US02/T02): about the version of the statement, whose page «Rendiconto» is where the agency tells the owner by hand. The statement is published
+  // whatever happens. The reason it carries is a code (`owner_statement_notice_failed`), so the words are the type's.
+  OwnerStatementNoticeFailed: {
+    titleKey: 'activity.todo.type.OwnerStatementNoticeFailed.title',
+    whyKey: 'activity.todo.type.OwnerStatementNoticeFailed.why',
+  },
   // The To do that the action «Crea attività» of a routine of the host makes (E01/F04/US01/T02, NF-21): about a booking, with the words the host wrote in the routine as its reason.
   RoutineTask: { titleKey: 'activity.todo.type.RoutineTask.title', whyKey: 'activity.todo.type.RoutineTask.why' },
   // The automatic cleaning at check-out (E24/F01/US01/T02, NF-120): the dates of a stay changed after the supplier took the cleaning, so it stays on the old day and the host decides. About the booking.
   CleaningDateChanged: { titleKey: 'activity.todo.type.CleaningDateChanged.title', whyKey: 'activity.todo.type.CleaningDateChanged.why' },
   // The check-in link of a stay from a portal that has not reached the guest (E23/F01/US01/T01, NF-122): about the booking, with «Copia link» as its action.
   CheckInLinkToSend: { titleKey: 'activity.todo.type.CheckInLinkToSend.title', whyKey: 'activity.todo.type.CheckInLinkToSend.why' },
+  // A message of a routine that could not go out to a guest (E05/F07/US01/T03, NF-71): about the booking, one item for each booking, with «Fallo ora» opening the booking where its timeline says what is missing.
+  ScheduledMessageIssue: { titleKey: 'activity.todo.type.ScheduledMessageIssue.title', whyKey: 'activity.todo.type.ScheduledMessageIssue.why' },
   // The stay of a company tenant in the property of a private owner (E18/F01/US03/T01, NF-117, ⚖ I7): about the booking, and a person decides whether it stays a short let (the withholding) or not. The reason is the fixed
   // sentence of the server with the two readings of the rule; «Fallo ora» opens the dialog of the decision.
   CompanyTenantDecision: { titleKey: 'activity.todo.type.CompanyTenantDecision.title', whyKey: 'activity.todo.type.CompanyTenantDecision.why' },
+  // The self-billed invoices (TD17) of the agency (FIX/BE-TD17-ALERTS): a TD17 the SDI rejected (it counts as not issued, and has no correction yet), and the drafts of a month made by the monthly run, to check and issue.
+  // Both are about the organization, never a property, and the server lists them only to who holds `agency.invoice.manage`; «Fallo ora» opens the page of the self-billed invoices (`ReviewSelfBilling`).
+  SelfBillingRejected: { titleKey: 'activity.todo.type.SelfBillingRejected.title', whyKey: 'activity.todo.type.SelfBillingRejected.why' },
+  SelfBillingDraftsToReview: { titleKey: 'activity.todo.type.SelfBillingDraftsToReview.title', whyKey: 'activity.todo.type.SelfBillingDraftsToReview.why' },
+  // A cleaning recharged to an owner at its cost whose VAT nobody stated (E14/F01/US02/T01, NF-114, ⚖ I13; `ActivityType` 140): the backend posts the charge as it is and raises this item when the agency posts the month, and once more
+  // at the close of the statement. Since FIX/BE-CLEANING-VAT it is about the cleaning request (`ServiceRequest`) with the action `StateCleaningVat`, and «Fallo ora» opens the question «La ditta di pulizie ha applicato l'IVA su
+  // questa fattura?» (FIX/FE-CLEANING-VAT-QUESTION, `ACTION_ROUTE_MAP` of `activity-card.tsx`). The items raised before (action `ReviewBooking`, about the stay or the request) keep the button of that action. The `why` of the
+  // locale files is what an item says when its reason is not a sentence of the server: it asks to answer the question and says what each answer does.
+  CleaningVatToState: { titleKey: 'activity.todo.type.CleaningVatToState.title', whyKey: 'activity.todo.type.CleaningVatToState.why' },
 };
 
 const UNKNOWN_TYPE_KEYS: TypeKeys = { titleKey: 'activity.todo.type.unknown.title', whyKey: 'activity.todo.type.unknown.why' };
@@ -79,6 +96,7 @@ const UNKNOWN_TYPE_KEYS: TypeKeys = { titleKey: 'activity.todo.type.unknown.titl
 // Same for the kinds of entity (`EntityType` is a free string): `activity.todo.entity.<Type>` is added by the task that raises the item.
 const ENTITY_KEYS: Record<string, { labelKey: string }> = {
   Booking: { labelKey: 'activity.todo.entity.Booking' },
+  OwnerStatementVersion: { labelKey: 'activity.todo.entity.OwnerStatementVersion' },
   Property: { labelKey: 'activity.todo.entity.Property' },
 };
 

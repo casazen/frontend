@@ -59,9 +59,9 @@ describe('the launch registry of the plan «Inizia con CasaZen» (E10/F03/US02/T
   });
 
   it('registry_EveryLaunchTargetOfTheBackend_HasAnEntryAndEveryPartKeyHasAKnownFlowOrNone', () => {
-    for (const target of ONBOARDING_LAUNCH_TARGETS) expect(Object.hasOwn({ connect: 1, mapping: 1, channels: 1, listings: 1, prices: 1, compliance: 1, identification: 1, messages: 1, fiscal: 1, marketplace: 1, summary: 1 }, target), target).toBe(true);
-    // The parts that list properties name a flow; the partners and the summary list none.
-    expect(ONBOARDING_PART_KEYS.filter((part) => flowOfPart(part) === undefined)).toEqual(['partners', 'activation']);
+    for (const target of ONBOARDING_LAUNCH_TARGETS) expect(Object.hasOwn({ connect: 1, mapping: 1, channels: 1, listings: 1, prices: 1, compliance: 1, identification: 1, messages: 1, fiscal: 1, marketplace: 1, summary: 1, guestRegistration: 1 }, target), target).toBe(true);
+    // The parts that list properties name a flow; the partners, the notification of the guests in Switzerland (it lists its own items) and the summary list none.
+    expect(ONBOARDING_PART_KEYS.filter((part) => flowOfPart(part) === undefined)).toEqual(['partners', 'guestRegistration', 'activation']);
   });
 
   it('resolveLaunchTarget_PagesThatExist_ResolveToTheirAddressWithTheStepOfTheWizard', () => {
@@ -115,6 +115,16 @@ describe('the launch registry of the plan «Inizia con CasaZen» (E10/F03/US02/T
     expect(resolveLaunchTarget('compliance', 'taxRate', PROPERTY)?.to).toBe(`/app/short-rent/properties/${PROPERTY}/activation?step=tourist-tax`);
     expect(resolveLaunchTarget('compliance', 'cin')?.to).toBe('/app/short-rent/compliance/cin');
     expect(resolveLaunchTarget('compliance', 'taxRate')?.to).toBe('/app/short-rent/reports/tourist-tax');
+  });
+
+  // E29/F02/US02/T01: «Fai ora» of a property that lacks its municipality or its structure number reopens the activation wizard of THAT property on its Swiss step.
+  it('resolveLaunchTarget_GuestRegistrationOfAProperty_OpensTheActivationWizardOnTheSwissStep', () => {
+    expect(resolveLaunchTarget('guestRegistration', null, PROPERTY)?.to).toBe(`/app/short-rent/properties/${PROPERTY}/activation?step=guest-registration`);
+    // With no property named the part has no wizard of its own: the list of the properties, never a path with its `:id` unfilled.
+    expect(resolveLaunchTarget('guestRegistration')?.to).toBe('/app/short-rent/properties');
+    // The activation is written (`property.write`): a reader gets no link to it, only the list they may open.
+    expect(resolveLaunchTarget('guestRegistration', null, PROPERTY, permissions(['property.read']))?.to).toBe('/app/short-rent/properties');
+    expect(resolveLaunchTarget('guestRegistration', null, PROPERTY, permissions([]))).toBeNull();
   });
 
   it('resolveLaunchTarget_PersonWhoMayNotOpenThePage_GetsNullNeverADeadLink', () => {

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { getManifestEntry, hasEntryPermission, type PermissionPredicate } from '@/config/route-manifest';
 import type { BookingTab } from '@/features/bookings/lib/booking-tabs';
 import { CONNECTION_HEALTH_SECTION } from '@/features/compliance/lib/connection-health-model';
+import { CLEANING_VAT_PARAM, CLEANING_VAT_PERMISSION } from '@/features/owner-accounting/cleaning-vat-model';
 import { messageThreadPath } from '@/lib/message-hub-routes';
 import { cn } from '@/lib/utils';
 import { describeTodo } from './lib/todo-model';
@@ -22,6 +23,8 @@ export type TodoRouteTarget = 'entity' | 'property' | 'thread';
 export interface TodoRoute {
   path: string;
   target?: TodoRouteTarget;
+  /** The name of the `:param` of the page that the id of `target` fills, when it is not `:id` (`versionId` of the page of a statement). */
+  idParam?: string;
   /**
    * The kind of entity an item must be about for `target: 'entity'` to fill the page with its id (`Booking` for the page of a booking).
    * The id of an item about anything else (a queue item, a message thread) is not the id of a booking: it gets no address from this route.
@@ -44,6 +47,11 @@ export interface TodoRoute {
   /** The name of the parameter of the address that carries the id of the entity the item is about (`step` of a guided step of the panel), for a page that finds the rest from it. */
   entityParam?: string;
   /**
+   * The permissions the person needs besides the ones of the page (`requiredPermissions` of its entry), in the area of the page: a page can be read by who cannot do what its item asks (the page of an intervention is read with
+   * `property.read`, the question of the VAT of a cleaning is answered with `property.write`), and the button is offered only to who can do it. Without them in the predicate of the person the route is skipped.
+   */
+  permissions?: readonly string[];
+  /**
    * For `target: 'thread'`: the kind of conversation the key starts with, `ota` (a conversation of a channel, the id of its thread) or `direct` (a direct booking, the id of
    * the booking), as the hub gives them (`ota:{id}`, `direct:{bookingId}`).
    */
@@ -63,6 +71,9 @@ export interface TodoActionTarget {
 /** The `entityType` the server sends for an item about a booking. */
 const BOOKING = 'Booking';
 
+/** The `entityType` of the items about a request to a supplier (`ServiceRequest`): the id of the entity is the request, here a cleaning. */
+const SERVICE_REQUEST = 'ServiceRequest';
+
 /** The `entityType` of an item about a conversation of a channel (the thread of the copy of the channel's messages). */
 const OTA_THREAD = 'OtaMessageThread';
 
@@ -74,6 +85,9 @@ const ONBOARDING_FLOW = 'OnboardingFlow';
 
 /** The `entityType` of the items about a fiscal document (`FiscalDocumentTodos.EntityType`): the id of the entity is the document. */
 const FISCAL_DOCUMENT = 'FiscalDocument';
+
+/** The `entityType` of the items about a statement of an owner (`OwnerStatementDocuments.OwnerStatementVersionEntityType`): the id of the entity is the version of the statement. */
+const OWNER_STATEMENT_VERSION = 'OwnerStatementVersion';
 
 /**
  * Where the "Do now" button of an item leads, by the `action` the server sends (ADR-026-R6): the single registry of the app. The task that
@@ -96,7 +110,8 @@ const FISCAL_DOCUMENT = 'FiscalDocument';
  *   (epic E10), told apart by the entity (`onlyFor`): a guided step of the panel opens its own page (it finds its kind from the id of the step), a
  *   part put off or left half way, and a «Fallo per me» request, open the plan (their items know the id of a stored row, not the part). The flow to
  *   complete opens the summary of the activation (its item knows a derived id, not the flow, so the table opens on all the flows);
- * - `CopyCheckInLink`: the tab Documenti of the booking (`?tab=guest`), where the panel of the check-in link says where the link stands and has «Copia link» (E23/F01, NF-122).
+ * - `CopyCheckInLink`: the tab Documenti of the booking (`?tab=guest`), where the panel of the check-in link says where the link stands and has «Copia link» (E23/F01, NF-122);
+ * - `FixScheduledMessage`: the page of the booking, whose tab Soggiorno (the first one) holds the timeline of its scheduled messages with what a blocked one waits for and «Modifica», «Salta» and «Invia ora» (E05/F07, NF-71).
  *
  * A route filled with the id of the entity (`target: 'entity'`) names the kind of entity the item must be about (`entityType`, `Booking`
  * for the page of a booking): `ApproveAiDraft` may be about a queue item, whose id is not a booking's, so such an item gets no booking address from it (the button is left
@@ -166,6 +181,13 @@ export const ACTION_ROUTE_MAP = {
     route: { path: '/app/short-rent/fiscal/documents', onlyFor: [FISCAL_DOCUMENT], entityParam: 'document', search: { step: 'correct' } },
     fallback: { path: '/app/short-rent/fiscal' },
   },
+  // A self-billed invoice (TD17) waits for the agency (FIX/BE-TD17-ALERTS, `ActivityAction` 32): one the SDI rejected (`SelfBillingRejected`, about the document) or the drafts of a month to check and issue
+  // (`SelfBillingDraftsToReview`, about the month): the page of the self-billed invoices of the account. That page takes no document and no month in its address, so the address carries none. It is the page
+  // of the organization billing administrator (`orgBillingAdmin`, no other permission: the owner and the administrators hold `agency.invoice.manage`, the permission the server asks to list these items), and it has no
+  // read-only twin: whoever is not one is offered no button.
+  ReviewSelfBilling: {
+    route: { path: '/app/account/self-billing' },
+  },
   // The actions the traffic light of the cockpit raises (E03/F02/US01/T03, NF-52): the feeder opens a "To do" for each red or yellow item, with the
   // action of the cockpit. They lead where the cockpit leads (`COMPLIANCE_ACTION_TARGETS` of `lib/compliance-routes.ts`), so the «Adesso» block of the
   // Home and the page of the adempimenti end in the same place. `UploadIstatProof` and `VerifyIdentity` above were there before it.
@@ -196,6 +218,30 @@ export const ACTION_ROUTE_MAP = {
   // why it has not gone by itself and has «Copia link». The item is about the booking.
   CopyCheckInLink: {
     route: { path: '/app/short-rent/bookings/:id', target: 'entity', entityType: BOOKING, tab: 'guest' },
+  },
+  // A scheduled message of a booking is held back or failed (E05/F07/US01/T03, `ActivityAction` 120, NF-71): the page of the booking, where the tab Soggiorno lists its messages and says what the blocked
+  // one waits for, with «Modifica», «Salta» and «Invia ora». The item is about the booking (one item for each booking, shared by its blocked messages).
+  FixScheduledMessage: {
+    route: { path: '/app/short-rent/bookings/:id', target: 'entity', entityType: BOOKING },
+  },
+  // The owner could not be told by e-mail that a statement was published (E13/F01/US02/T02, `ActivityAction` 50, type `OwnerStatementNoticeFailed`): the statement of that version, in the Amministrazione
+  // (`/app/account/owner-close/versions/:versionId`), where the agency sees what the owner was to be told and tells the owner by hand. The item is about the version of the statement (`OwnerStatementVersion`),
+  // never a booking. The page is the one of the organization administrator (`orgBillingAdmin`, on the agency plan): anyone else gets no button, and no other page stands in for it.
+  ReviewOwnerStatement: {
+    route: { path: '/app/account/owner-close/versions/:versionId', target: 'entity', entityType: OWNER_STATEMENT_VERSION, idParam: 'versionId' },
+  },
+  // A cleaning recharged to an owner at its cost whose VAT nobody stated (FIX/FE-CLEANING-VAT-QUESTION, backend FIX/BE-CLEANING-VAT, `ActivityAction` 140, type `CleaningVatToState`): the item is about the cleaning request
+  // (`ServiceRequest`), and «Fallo ora» opens the page of that request in the interventions with the question «La ditta di pulizie ha applicato l'IVA su questa fattura?» over it (`?cleaningVat=<request>`, the pattern of
+  // `?decision=<booking>`). The page is read with `property.read` and the question is answered with `property.write` (what the endpoint asks): the button is for who may answer, and no other page stands in for it.
+  // The items raised before that action existed (`ReviewBooking`, type `CleaningVatToState`) keep the button of their own action.
+  StateCleaningVat: {
+    route: {
+      path: '/app/short-rent/interventions/:id',
+      target: 'entity',
+      entityType: SERVICE_REQUEST,
+      entityParam: CLEANING_VAT_PARAM,
+      permissions: [CLEANING_VAT_PERMISSION],
+    },
   },
 } satisfies Record<string, TodoActionTarget>;
 
@@ -247,6 +293,8 @@ function buildRoute(route: TodoRoute, activity: TodoRouteSubject, hasPermission?
   // The same test the menu and the route use: the permissions of the page and, for the page of the organization administrator (`orgBillingAdmin`, like the withholding), being one. A person who is not is sent
   // to the next page of the item (the booking), never to a page that tells them to ask an administrator.
   if (hasPermission && !hasEntryPermission(entry, hasPermission)) return null;
+  // What the item asks besides what the page asks: a person who can read the page and not do the thing is offered no button.
+  if (hasPermission && route.permissions?.some((permission) => !hasPermission(entry.context, permission))) return null;
 
   let path = entry.path;
   if (route.target === 'thread') {
@@ -257,7 +305,7 @@ function buildRoute(route: TodoRoute, activity: TodoRouteSubject, hasPermission?
   } else if (route.target) {
     const id = route.target === 'property' ? propertyOf(activity) : entityOf(route, activity);
     if (!id) return null;
-    path = generatePath(entry.path, { id });
+    path = generatePath(entry.path, { [route.idParam ?? 'id']: id });
   }
 
   const query = new URLSearchParams();

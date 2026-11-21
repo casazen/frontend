@@ -16,7 +16,10 @@ interface PartLaunchPanelProps {
   launch: ResolvedLaunch | null;
   /** «Riprendi» for a part that was started, «Fai ora» for one that was not. */
   resuming: boolean;
-  /** The part has nothing to do: it is done, or nobody provides it, or it waits for another one: no way in, and the part says why instead. */
+  /**
+   * The part has no one way in: it is done, or nobody provides it, or it waits for another one (the part says why instead), or it lists the properties that need doing, each with
+   * its own way in (the notification of the guests in Switzerland).
+   */
   blocked?: boolean;
 }
 

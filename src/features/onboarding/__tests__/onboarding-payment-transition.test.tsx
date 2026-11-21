@@ -94,3 +94,25 @@ it('keeps the payment confirmation open when the profile changes before workspac
   expect(contextsApi.getContexts).toHaveBeenCalledTimes(2);
   expect(UsersApi.postOnboarding).not.toHaveBeenCalled();
 });
+
+it('shows the commercial enter step when checkout=success lands after commercialSetupRequired is already cleared', async () => {
+  const settled = {
+    id: 'auth0|new-host', orgId: 'org-1', isActive: true, rentalType: 'ShortTerm', hasProperties: false,
+    onboardingRequired: false, consentsAccepted: true, onboardingCompletedAt: '2026-11-17',
+    commercialSetupRequired: false, commercialSignup: { profile: 'owner', rentalArea: 'ShortTerm', planTier: 'Pro', rooms: 1, addons: [] },
+  } as UserDetail;
+  vi.mocked(UsersApi.getMe).mockResolvedValue(settled);
+  vi.mocked(contextsApi.getContexts).mockResolvedValue({
+    userId: settled.id,
+    contexts: [{ contextKey: 'short-rent', displayName: 'Short', roleKey: 'property_owner', permissions: ['property.write'], defaultRoute: '/app/short-rent' }],
+  });
+  subscription.mockReturnValue({ data: { status: 'active' } });
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  render(<QueryClientProvider client={client}><MemoryRouter initialEntries={['/onboarding?checkout=success']}><Routes>
+    <Route path="/onboarding" element={<OnboardingPage />} />
+    <Route path="/app/short-rent/properties/create" element={<p data-testid="first-property">first property</p>} />
+  </Routes></MemoryRouter></QueryClientProvider>);
+
+  expect(await screen.findByRole('button', { name: i18n.t('commercial.enter') })).toBeVisible();
+  expect(screen.queryByRole('heading', { name: /Da dove vuoi iniziare/i })).not.toBeInTheDocument();
+});

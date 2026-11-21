@@ -1,10 +1,10 @@
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PlainSection } from '@/components/shared/calm';
-import { ReviewInvitePanel } from '@/features/reviews/components/review-invite-panel';
 import { requestInterventionPath } from '@/features/service-requests/interventions/paths';
 import { Button } from '@/components/ui/button';
 import { ServiceRequestsCard } from '@/features/service-requests/components/service-requests-card';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { formatStayDate } from '@/lib/stay-dates';
 import { formatDateTime } from '@/lib/utils';
@@ -13,8 +13,10 @@ import type { Booking } from '@/types';
 import { stayDateOf } from '../lib/booking-price';
 import { channelGuidanceOf } from '../lib/booking-change';
 import { bookingChannelText } from '../lib/ota-stay';
+import { BookingScheduledMessages } from './booking-scheduled-messages';
 import { BookingSourceValue, FACT_LINK, Fact, Facts } from './booking-facts';
 import { BookingOriginBadge } from './booking-origin-badge';
+import { BookingReviewsSection } from './booking-reviews-section';
 import { OtaChangeGuidance } from './ota-change-guidance';
 
 interface BookingStayTabProps {
@@ -23,11 +25,13 @@ interface BookingStayTabProps {
 
 /**
  * The tab Soggiorno: what the stay is (property, dates, guests, where it came from, the code the guest knows), who the guest is,
- * and the supplier requests of the stay. Sections without a box: a title and what it says.
+ * the supplier requests of the stay and, with the flag `scheduledMessages` on, the messages the routines will send to the guest
+ * (E05/F07/US02, NF-71) for who may read the booking. Sections without a box: a title and what it says.
  */
 export function BookingStayTab({ booking }: BookingStayTabProps) {
   const { t, i18n } = useTranslation();
   const { hasPermission } = useWorkspace();
+  const { flags } = useFeatureFlags();
   // The stay's own requests (D2), with the same query as the app's booking screen.
   const canReadProperty = hasPermission('short-rent', 'property.read');
   const serviceRequests = useServiceRequests(canReadProperty ? { bookingId: booking.id, pageSize: 50 } : undefined);
@@ -47,6 +51,7 @@ export function BookingStayTab({ booking }: BookingStayTabProps) {
     </div>
   );
   const canWrite = hasPermission('short-rent', 'booking.write');
+  const canRead = hasPermission('short-rent', 'booking.read');
   // A booking of a channel that the channel does not let the host change or cancel from CasaZen (E08/F03/US02, NF-75, NF-76): the one sentence that says how to ask the
   // guest or the channel, in place of the action. It replaces the lock sentence below, which would send the host to cancel a booking that cannot be cancelled here.
   const modifyGuidance = canWrite ? channelGuidanceOf(booking.changeOptions, 'modify') : null;
@@ -157,8 +162,8 @@ export function BookingStayTab({ booking }: BookingStayTabProps) {
         </Facts>
       </details>
 
-      {/* DB-12b: the host asks the guest of a stay that is over for a review; the panel draws nothing for any other booking. */}
-      <ReviewInvitePanel booking={booking} canWrite={canWrite} />
+      {/* The one section of the reviews of the stay (E05/F06/US02): the host asks the guest of the site for a review (DB-12b) and reads the reviews of the guests, of the site and of the channel. It draws nothing where there is nothing to say. */}
+      <BookingReviewsSection booking={booking} canWrite={canWrite} />
 
       {canReadProperty ? (
         <ServiceRequestsCard
@@ -170,6 +175,9 @@ export function BookingStayTab({ booking }: BookingStayTabProps) {
           action={cleaningAction}
         />
       ) : cleaningAction}
+
+      {/* NF-71: what the routines will send to the guest of this stay, after the sections above (they keep their place). Only with the flag on and for who may read the booking: off, nothing is drawn and nothing is asked. */}
+      {flags.scheduledMessages && canRead ? <BookingScheduledMessages booking={booking} canWrite={canWrite} /> : null}
     </div>
   );
 }

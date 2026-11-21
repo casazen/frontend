@@ -4,10 +4,13 @@ import type { BiometricSettings, BiometricsStatus, UpdateBiometricSettingsReques
 /**
  * The identity verification of the organization (E22/F02/US01/T02, ADR-013-R13). The settings are the organization's own (`OrgBillingAdmin`, no organization in the route) and sit behind the
  * flag `checkInIdentityVerification` (404 while it is off); the status of the models is for platform administrators (`AdminOnly`) and is not behind the flag.
+ *
+ * Both reads sit in a card of a page that has other things on it, and keep a 403 on that card (`localAuthRecovery`): the card says it cannot be read, instead of the app opening «no access» and
+ * taking the whole page away (the screen guesses who may read them from the contexts of the user, the server decides, and the two can differ: a role that is not in the token yet).
  */
 export const biometricSettingsApi = {
   /** The settings in force: the row of the organization, or the defaults (`isDefault`) while it has none. */
-  get: () => ApiClient.get<BiometricSettings>('/settings/biometrics'),
+  get: () => ApiClient.get<BiometricSettings>('/settings/biometrics', undefined, { localAuthRecovery: true }),
 
   /**
    * Saves the settings: 0.50 <= escalate < accept <= 0.95 and attempts 1 to 5, or 422 `biometric_thresholds_out_of_range`, `biometric_thresholds_order_invalid` or
@@ -16,5 +19,5 @@ export const biometricSettingsApi = {
   update: (request: UpdateBiometricSettingsRequest) => ApiClient.put<BiometricSettings>('/settings/biometrics', request),
 
   /** Per model: name, state and why it cannot be used. Platform administrators only (403 otherwise). */
-  getModelsStatus: () => ApiClient.get<BiometricsStatus>('/admin/biometrics/status'),
+  getModelsStatus: () => ApiClient.get<BiometricsStatus>('/admin/biometrics/status', undefined, { localAuthRecovery: true }),
 };

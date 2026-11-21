@@ -2,6 +2,7 @@ import { generatePath } from 'react-router-dom';
 import { getManifestEntry, type PermissionPredicate } from '@/config/route-manifest';
 import type { BookingTab } from '@/features/bookings/lib/booking-tabs';
 import { CONNECTION_HEALTH_SECTION } from '@/features/compliance/lib/connection-health-model';
+import { COMPLIANCE_COCKPIT_PATH, TICINO_LAYER_KIND, ticinoLayerPath } from '@/features/compliance/ticino/ticino-layer-address';
 import type { ComplianceCockpitAction, ComplianceSummaryItem } from '@/types/compliance.types';
 
 /** The kinds of proof the archive page can open on (`ManualProofKind` of the backend): the one a period item is about. */
@@ -14,12 +15,15 @@ const PERIOD = /^\d{4}-(0[1-9]|1[0-2])$/;
  * Parameters a page of the cockpit opens with, for a page that shows its content already filtered (the archive of the proofs): a fixed
  * `kind`, and, when asked, the `property` and the `period` (`yyyy-MM`) of the item. A parameter the item cannot give is left out: the page then
  * shows more than the item, never another thing. `section` is a fixed part of the page to open on (the connection health of the property page).
+ * `layer` is a layer of the page that opens on the item instead of another page (`?detail=ticino:<property>:<day>`, E30/F02/US03): the item names the
+ * property and, in `period`, the arrival day (a month, or anything that is not a day, is left out: the layer then opens on the first day to notify).
  */
 interface ComplianceActionQuery {
   kind?: ComplianceArchiveKind;
   property?: boolean;
   period?: boolean;
   section?: typeof CONNECTION_HEALTH_SECTION;
+  layer?: typeof TICINO_LAYER_KIND;
 }
 
 /** A page of the ROUTE_MANIFEST (pattern with `:id`), optionally on a tab of the booking detail or with the filters of the archive. */
@@ -37,7 +41,7 @@ export interface ComplianceActionTarget {
   /** Read-only screen for a user without the permissions of `route` (the guard would send them to the dashboard). */
   fallback?: ComplianceActionRoute;
   /** The permission that does what the action asks: whoever lacks it is led to the page ("Apri"), not told to do it. */
-  write: 'property.write' | 'booking.write' | 'payment.write';
+  write: 'property.write' | 'booking.write' | 'payment.write' | 'alloggiati.submit';
 }
 
 /**
@@ -118,11 +122,12 @@ export const COMPLIANCE_ACTION_TARGETS: Record<ComplianceCockpitAction, Complian
     route: { path: '/app/short-rent/bookings/:id', tab: 'alloggiati' },
     write: 'booking.write',
   },
-  // The proof of an ISTAT period and the tax of a month: the archive of the proofs, opened on the kind, the property and the month.
+  // The proof of an ISTAT period and the tax of a month: the archive of the proofs, opened on the kind, the property and the month. The archive lets only who may submit the Alloggiati upload a proof
+  // (`alloggiati.submit`, the page itself asks it): whoever may only read the bookings is led to the page and told "Apri", never asked to upload what the page will not let them.
   UploadIstatProof: {
     target: 'property',
     route: { path: '/app/short-rent/alloggiati/reports', query: { kind: 'IstatProof', property: true, period: true } },
-    write: 'booking.write',
+    write: 'alloggiati.submit',
   },
   EnterMunicipalityTaxRate: {
     target: 'property',
@@ -141,6 +146,14 @@ export const COMPLIANCE_ACTION_TARGETS: Record<ComplianceCockpitAction, Complian
     route: { path: '/app/short-rent/alloggiati' },
     write: 'booking.write',
   },
+  // casazen/backend#979: the guided notification of a Ticino property to the cantonal police, on the arrival day of the item. It is a layer over the cockpit (E30/F02/US03/T02:
+  // `?detail=ticino:<property>:<day>`), not a page: the cockpit asks what its own route asks (`property.read` and `booking.read`), and whoever may not declare the day
+  // (`alloggiati.submit`) is told «Apri» and sees the guests and the file but is not asked to declare it.
+  NotifyTicinoPolice: {
+    target: 'property',
+    route: { path: COMPLIANCE_COCKPIT_PATH, query: { layer: TICINO_LAYER_KIND } },
+    write: 'alloggiati.submit',
+  },
 };
 
 function buildRoute(
@@ -154,6 +167,8 @@ function buildRoute(
   if (hasPermission && !entry.requiredPermissions.every((permission) => hasPermission(entry.context, permission))) {
     return null;
   }
+  // A layer of the page (the guided notification of a Ticino property): the address is the page with the layer open on the property and the day of the item.
+  if (route.query?.layer === TICINO_LAYER_KIND) return ticinoLayerPath(item.propertyId, item.period);
   const path = generatePath(entry.path, { id });
   const params = new URLSearchParams();
   if (route.tab && route.tab !== 'details') params.set('tab', route.tab);

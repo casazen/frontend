@@ -10,6 +10,7 @@ import { isOpenBlocker } from '@/features/compliance/activation-wizard-model';
 import { useComplianceActivation } from '@/features/compliance/use-compliance';
 import { WizardNextStep } from '@/features/onboarding/components/wizard-next-step';
 import { useProperty } from '@/queries/use-properties';
+import { GUEST_REGISTRATION_STEP_ID } from '@/types/guest-registration.types';
 import { fixTargetFor } from './finish/finish-model';
 import { PROPERTIES_PATH, PROPERTY_CREATE_PATH, propertyCalendarPath, propertyWizardPath } from '../properties-paths';
 
@@ -17,8 +18,11 @@ interface PropertyWizardDoneProps {
   propertyId: string | null;
 }
 
-/** The blocking steps of the activation, said as what the host still has to do (the wording of the wizard, not of the law). */
-const OPEN_STEPS = ['base-data', 'cin', 'documents', 'safety'] as const;
+/**
+ * The blocking steps of the activation, said as what the host still has to do (the wording of the wizard, not of the law). The step of a property in Switzerland is one of
+ * them (its municipality and, in Ticino, its structure number): left out, the screen would say that only the Terms are missing for a property that lacks more.
+ */
+const OPEN_STEPS = ['base-data', 'cin', 'documents', 'safety', GUEST_REGISTRATION_STEP_ID] as const;
 
 /**
  * «Cosa succede ora» (SR-07c). Everything it says is read from the server again — the property and its activation — so it is true

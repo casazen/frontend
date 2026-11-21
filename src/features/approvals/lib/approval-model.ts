@@ -2,6 +2,7 @@ import { isAxiosError } from 'axios';
 import type { TFunction, i18n as I18nInstance } from 'i18next';
 import { getProblemCode, translateErrorCode } from '@/lib/api-errors';
 import { APPROVAL_ITEM_TYPES, type ApprovalQueueItem, type KnownApprovalItemType } from '@/types/approval-queue.types';
+import { REVIEW_REPLY_MAX_LENGTH } from '@/types/review.types';
 
 /*
  * What the page of the approvals needs to say about an item, as plain functions: the type, the situation and the confidence of a draft, the
@@ -14,6 +15,9 @@ export const MESSAGE_DRAFT_TYPE: KnownApprovalItemType = 'MessageDraft';
 
 /** The type of a marketing campaign waiting for approval: its text is the subject line, a blank line and the body. */
 export const CAMPAIGN_TYPE: KnownApprovalItemType = 'Campaign';
+
+/** The type of the drafts the assistant writes for the public reply to a review of a guest (E05/F06, NF-69): approving one publishes the reply, once. */
+export const REVIEW_REPLY_TYPE: KnownApprovalItemType = 'ReviewReply';
 
 /** The longest message to a guest (`GuestMessageRules.TextMaxLength`). */
 export const MESSAGE_TEXT_MAX_LENGTH = 2000;
@@ -43,6 +47,7 @@ const TYPE_LABEL_KEYS: Record<KnownApprovalItemType, string> = {
   Campaign: 'approval.type.campaign',
   Routine: 'approval.type.routine',
   AiText: 'approval.type.aiText',
+  ReviewReply: 'approval.type.reviewReply',
 };
 
 /** The types the filter of the page offers, in the order it shows them (the drafts of messages first). */
@@ -62,6 +67,11 @@ export function isMessageDraft(item: Pick<ApprovalQueueItem, 'itemType'>): boole
 /** Whether the item is a campaign. */
 export function isCampaign(item: Pick<ApprovalQueueItem, 'itemType'>): boolean {
   return item.itemType === CAMPAIGN_TYPE;
+}
+
+/** Whether the item is the draft of the public reply to a review: it has a review (`threadKey`) and no situation or score. */
+export function isReviewReply(item: Pick<ApprovalQueueItem, 'itemType'>): boolean {
+  return item.itemType === REVIEW_REPLY_TYPE;
 }
 
 /** Whether the host edited the text: the approval then acts with the edit, and the original stays on the item. */
@@ -179,6 +189,10 @@ export function editProblem(item: Pick<ApprovalQueueItem, 'itemType'>, fields: E
   if (isMessageDraft(item) && text.length > MESSAGE_TEXT_MAX_LENGTH) {
     return { field: 'text', key: 'approval.edit.error.tooLong', max: MESSAGE_TEXT_MAX_LENGTH };
   }
+  // The public reply to a review is shorter than a message to a guest (`ReviewRules.ReplyMaxLength`).
+  if (isReviewReply(item) && text.length > REVIEW_REPLY_MAX_LENGTH) {
+    return { field: 'text', key: 'approval.edit.error.tooLong', max: REVIEW_REPLY_MAX_LENGTH };
+  }
   return null;
 }
 
@@ -193,9 +207,14 @@ export interface ApprovalOutcome {
 /**
  * What the approval of an item did, from the answer of the API (`originActionResult`): the message that went out, the one the channel has and
  * sends, the one whose outcome must be checked on the channel, the campaign approved and scheduled (or approved and still without a time),
- * an item that was already approved (nothing was sent again) or one with no action linked.
+ * an item that was already approved (nothing was sent again) or one with no action linked. The reply to a review (`itemType` `ReviewReply`) is told as the reply that was published, or
+ * that the channel has not confirmed: it is not a message to the guest.
  */
-export function approvalOutcome(item: Pick<ApprovalQueueItem, 'originActionResult' | 'originActionStatus'>): ApprovalOutcome {
+export function approvalOutcome(item: Pick<ApprovalQueueItem, 'originActionResult' | 'originActionStatus'> & Partial<Pick<ApprovalQueueItem, 'itemType'>>): ApprovalOutcome {
+  if (item.itemType === REVIEW_REPLY_TYPE) {
+    if (item.originActionResult === 'Sent') return { key: 'approval.action.executed.review', tone: 'success' };
+    if (item.originActionResult === 'ManualVerify') return { key: 'approval.action.executed.reviewVerify', tone: 'warning' };
+  }
   switch (item.originActionResult) {
     case 'Sent':
       return { key: 'approval.action.executed.message', tone: 'success' };

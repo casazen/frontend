@@ -16,18 +16,22 @@ import {
   useFiscalDocumentsContext,
   useIssueFiscalDocument,
   useIssuedNumbers,
+  useSendFiscalDocumentEmail,
 } from '@/queries/use-fiscal-documents';
+import type { FiscalDocumentEmailQueued } from '@/types';
 import {
   CREDIT_REASON_MAX,
   creditProblemOf,
   creditRequestOf,
   documentKindWords,
   documentNameOf,
+  emailProblemOf,
   formatDocumentAmount,
   numberingOf,
   seriesOf,
   type CreditForm,
   type CreditProblem,
+  type EmailProblem,
   type Numbering,
 } from './document-model';
 
@@ -179,6 +183,56 @@ export function DiscardDraftDialog({ document, onClose, onDiscarded }: DialogPro
       {problem ? (
         <Alert variant="danger" data-testid="fiscal-document-discard-problem">
           {problem}
+        </Alert>
+      ) : null}
+    </ConfirmationDialog>
+  );
+}
+
+/**
+ * The e-mail of an issued document to the guest of its booking (E12/F01/US02/T01): the e-mail goes to a real person, so the host confirms it here. The dialog says what happens: the guest gets an e-mail with a link
+ * to open the document (never the document attached), and every confirmation sends one more e-mail with a new link. The server QUEUES the e-mail and never says it was delivered, so what is told afterwards
+ * (a toast, and the note next to the button) is «in coda», never «consegnata». A refusal (a draft, a document that is not the guest's, a guest with no address that can be written to...) is told here in the words of its
+ * code, and the dialog stays open: when asking again can change something (no answer, a server that failed, a queue that could not take the e-mail) the button reads «Riprova»; otherwise it is off until the person
+ * closes the dialog and fixes what the words name. `resend` is whether this screen already queued an e-mail for the document (the server keeps no «sent» state): only the words change, the call is the same.
+ */
+export function SendDocumentEmailDialog({
+  document,
+  resend,
+  onClose,
+  onQueued,
+}: DialogProps & { resend: boolean; onQueued?: (queued: FiscalDocumentEmailQueued) => void }) {
+  const { t } = useTranslation();
+  const send = useSendFiscalDocumentEmail();
+  const [problem, setProblem] = useState<EmailProblem | null>(null);
+
+  return (
+    <ConfirmationDialog
+      open
+      onOpenChange={(open) => {
+        // While the call is on its way the dialog stays (a second confirmation would send a second e-mail), so that a failure is told in it.
+        if (!open && !send.isPending) onClose();
+      }}
+      title={t(resend ? 'fiscalDocuments.email.resendTitle' : 'fiscalDocuments.email.sendTitle')}
+      description={t('fiscalDocuments.email.description', { document: documentNameOf(t, document) })}
+      confirmLabel={problem?.retry ? t('shared.errorState.retry') : t(resend ? 'fiscalDocuments.email.resendConfirm' : 'fiscalDocuments.email.sendConfirm')}
+      consequences={[t('fiscalDocuments.email.consequenceReal'), t('fiscalDocuments.email.consequenceAgain')]}
+      isLoading={send.isPending}
+      confirmDisabled={problem !== null && !problem.retry}
+      onConfirm={async () => {
+        setProblem(null);
+        try {
+          onQueued?.(await send.mutateAsync({ documentId: document.id }));
+        } catch (error) {
+          // The dialog stays open (the confirmation does not close on a rejection) and says why.
+          setProblem(emailProblemOf(error, t));
+          throw error;
+        }
+      }}
+    >
+      {problem ? (
+        <Alert variant="danger" data-testid="fiscal-document-email-problem" data-retry={problem.retry}>
+          {problem.message}
         </Alert>
       ) : null}
     </ConfirmationDialog>

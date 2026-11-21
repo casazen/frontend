@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { isAxiosError } from 'axios';
 import { Mail, MessageCircle } from 'lucide-react';
 import { useOrgProperties, useOrgPublicProperty } from '@/queries/use-public-org';
+import { useTrackViewItem } from '@/features/host-tracking/use-track-ecommerce';
 import { ReviewsSection } from '@/features/reviews/components/reviews-section';
 import { PropertyGallery } from '@/features/public-site/components/PropertyGallery';
 import { StorefrontChatDialog } from '@/features/public-site/contact/storefront-chat-dialog';
@@ -12,7 +13,9 @@ import { usePropertySeoMeta } from '@/features/public-site/hooks/use-org-seo-met
 import { AvailabilitySection } from '@/features/public-booking/booking/availability-section';
 import { BookingAside } from '@/features/public-booking/booking/booking-aside';
 import { BookingBar } from '@/features/public-booking/booking/booking-bar';
+import { useBooking } from '@/features/public-booking/booking/booking-context';
 import { BookingProvider } from '@/features/public-booking/booking/booking-provider';
+import { quoteTotalCents } from '@/features/public-booking/booking/quote-helpers';
 import { HOST_ACTION_CLASS, HostCard } from '@/features/public-booking/components/host-card';
 import { PropertyHeader } from '@/features/public-booking/components/property-header';
 import { PropertyOverview } from '@/features/public-booking/components/property-overview';
@@ -62,8 +65,31 @@ export function PublicPropertyPage() {
   return (
     <BookingProvider property={property} orgSlug={slug} hostLabel={hostLabel} contactEmail={org.contactEmail}>
       <PropertyPageBody property={property} org={org} orgSlug={slug} basePath={basePath} hostLabel={hostLabel || null} />
+      <TrackPropertyView property={property} />
     </BookingProvider>
   );
+}
+
+/**
+ * The `view_item` of the agency's analytics (NF-149): once per home, on an agency's own domain and with the visitor's consent. It reads the stay itself, as the parts that
+ * follow it do, so the page is not drawn again by a change of dates; it renders nothing. With dates in the address it waits for the quote of that stay, and then the total of the
+ * server and the currency of the home go with the event; without dates there is nothing to wait for and the event says which home was seen.
+ */
+function TrackPropertyView({ property }: { property: PublicPropertyDetailDto }) {
+  const { quote } = useBooking();
+  const ready = quote.status === 'ready' ? quote.quote : null;
+  useTrackViewItem(
+    quote.status === 'loading'
+      ? null
+      : {
+          propertyId: property.id,
+          propertyName: property.name,
+          place: property.city,
+          currency: ready ? ready.currency || property.currency : property.currency,
+          total: ready ? quoteTotalCents(ready) / 100 : null,
+        },
+  );
+  return null;
 }
 
 interface PropertyPageBodyProps {

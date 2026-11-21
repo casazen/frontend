@@ -14,7 +14,14 @@ import { SelfBillingPage } from '../self-billing-page';
 
 const env = vi.hoisted(() => ({ contexts: [] as { contextKey: string; roleKey: string; permissions?: string[] }[], flags: {} as Record<string, boolean> }));
 
-vi.mock('@/api/self-billing.api', () => ({ listSelfBilling: vi.fn(), getSelfBilling: vi.fn(), createSelfBillingDrafts: vi.fn(), issueSelfBilling: vi.fn(), discardSelfBilling: vi.fn() }));
+vi.mock('@/api/self-billing.api', () => ({
+  listSelfBilling: vi.fn(),
+  getSelfBilling: vi.fn(),
+  createSelfBillingDrafts: vi.fn(),
+  issueSelfBilling: vi.fn(),
+  discardSelfBilling: vi.fn(),
+  startSelfBillingCorrection: vi.fn(),
+}));
 vi.mock('@/api/fiscal-documents.api', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/api/fiscal-documents.api')>();
   return { ...actual, getDocumentSdi: vi.fn() };
@@ -68,6 +75,14 @@ const item = (overrides: Partial<SelfBillingListItem> = {}): SelfBillingListItem
   total: 122,
   currency: 'EUR',
   sdiStatus: 'not_applicable',
+  canCorrect: false,
+  replacesDocumentId: null,
+  replacedByDocumentId: null,
+  keptReason: null,
+  closedReason: null,
+  closedAt: null,
+  closedBy: null,
+  closedNote: null,
   ...overrides,
 });
 
@@ -104,6 +119,7 @@ const generation = (overrides: Partial<SelfBillingGeneration> = {}): SelfBilling
   drafts: [],
   failed: [],
   notDue: [],
+  kept: [],
   ledgerPosted: true,
   ...overrides,
 });

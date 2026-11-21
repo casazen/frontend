@@ -10,7 +10,7 @@ import { ComplianceUnavailable } from '@/features/compliance/components/complian
 import { lightsCouldNotBeRead, lightsOf, useComplianceLights } from '@/features/compliance/use-compliance';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { COMPLIANCE_ACTION_TARGETS, complianceActionRoute } from '@/lib/compliance-routes';
-import { formatRomeDateTime, formatStayDate, todayInRome } from '@/lib/stay-dates';
+import { addDays, formatRomeDateTime, formatStayDate, todayInRome } from '@/lib/stay-dates';
 import { useAlloggiatiStatus } from '@/queries/use-alloggiati';
 import { useBookingCheckInSession, useSendCheckInLink } from '@/queries/use-checkin';
 import type { Booking } from '@/types';
@@ -18,6 +18,7 @@ import { BOOKINGS_PATH } from '../lib/booking-list-query';
 import { claimsAllInOrder, documentsNeeded, nextStepOf } from '../lib/booking-next-step';
 import { stayDateOf } from '../lib/booking-price';
 import { canOpenCheckOut, checkInWizardPath } from '../lib/stay-actions';
+import { useBookingFlowSettings } from '../use-booking-flow-settings';
 
 interface BookingNextStepProps {
   booking: Booking;
@@ -63,6 +64,10 @@ export function BookingNextStep({ booking, canWrite, viewingCheckIn, onConfirm, 
   const summary = lightsOf(lights);
   const lightsFailed = wantsLights && lightsCouldNotBeRead(lights);
   const lines = useMemo(() => (summary ? stayLinesOf(summary, booking.id) : []), [summary, booking.id]);
+  // casazen/backend#978: what the booking flow of the org does by itself (the link, the arrival, the departure) is said as CasaZen's turn, not the host's. Read once and
+  // kept for minutes; until it is read (or when it cannot be) the step is the host's, as it always was.
+  const wantsFlow = wantsLights && (booking.status === 'Confirmed' || booking.status === 'CheckedIn');
+  const flowSettings = useBookingFlowSettings(wantsFlow);
 
   // The documents change the step: wait for them rather than show a block that changes a moment later.
   if (
@@ -75,10 +80,18 @@ export function BookingNextStep({ booking, canWrite, viewingCheckIn, onConfirm, 
 
   const link = needs === 'checkIn' ? session.data : undefined;
   const communication = needs === 'alloggiati' ? alloggiati.data : undefined;
+  const flow = flowSettings.data;
   const facts = {
     checkIn: link ? { status: link.status ?? null, canIssueLink: link.canIssueLink } : undefined,
     alloggiati: communication ? { status: communication.status, isOverdue: communication.isOverdue } : undefined,
     guestData: guestData.data ? { complete: guestData.data.dataComplete } : undefined,
+    flow: flow
+      ? {
+          sendsLink: flow.checkInLinkMode === 'Automatic',
+          registersArrival: flow.arrivalMode === 'Automatic',
+          registersDeparture: flow.departureMode === 'Automatic',
+        }
+      : undefined,
   };
   // The lights can take back a step that says «tutto in ordine»: until they are read, that is not said (a step that asks something is said at once).
   if (wantsLights && lights.isLoading && claimsAllInOrder(nextStepOf(booking, today, facts))) return <NextStepLoading />;
@@ -142,6 +155,29 @@ export function BookingNextStep({ booking, canWrite, viewingCheckIn, onConfirm, 
           who: myTurn,
           primary: canWrite ? { label: t('booking.arrival.action'), onClick: onArrival, testId: 'open-register-arrival' } : toBookings,
           secondary: checkOut ?? (viewingCheckIn ? undefined : completeInWizard ?? undefined),
+        };
+      case 'arrivalAutomatic':
+        return {
+          title: t('booking.next.arrivalAutomatic.title', { guest }),
+          body: t('booking.next.arrivalAutomatic.body', { date: arrival }),
+          primary: toBookings,
+          secondary: canWrite ? { label: t('booking.arrival.action'), onClick: onArrival, testId: 'open-register-arrival' } : undefined,
+        };
+      case 'departureAutomatic':
+        return {
+          title: t('booking.next.departureAutomatic.title', { guest }),
+          body: t('booking.next.departureAutomatic.body'),
+          primary: toBookings,
+          secondary: checkOut ?? undefined,
+        };
+      case 'linkScheduled':
+        return {
+          title: t('booking.next.linkScheduled.title'),
+          body: t('booking.next.linkScheduled.body', {
+            date: formatStayDate(addDays(stayDateOf(booking.checkInDate), -(flow?.checkInLinkDaysBefore ?? 0)), language),
+          }),
+          primary: toBookings,
+          secondary: sendCheckInLink ? { ...sendCheckInLink, label: t('booking.next.linkScheduled.action') } : completeInWizard ?? undefined,
         };
       case 'sendLink':
         return {

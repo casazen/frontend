@@ -260,6 +260,41 @@ describe('GuestBookingsPage', () => {
     );
   });
 
+  it('flag off: unchanged e-mail form', async () => {
+    // No provider of the flags here: every flag is off, `whiteLabelHost` too (NF-143). The form is the one of the code and the email, with its own words, and it sends what it always sent.
+    vi.mocked(guestSessionApi.getBooking).mockResolvedValue(booking());
+    renderPage();
+
+    expect(screen.getByTestId('guest-bookings-form')).toBeInTheDocument();
+    expect(screen.getByLabelText('Codice prenotazione')).toBeInTheDocument();
+    expect(screen.getByLabelText('Email usata per prenotare')).toHaveAttribute('type', 'email');
+    expect(screen.queryByRole('radio')).not.toBeInTheDocument();
+    expect(screen.queryByText('Come vuoi verificare la prenotazione?')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/Ultime 4 cifre/)).not.toBeInTheDocument();
+    expect(
+      screen.getByText("Inserisci il codice prenotazione che trovi nell'email di conferma e l'indirizzo email con cui hai prenotato."),
+    ).toBeInTheDocument();
+
+    fill(CODE, EMAIL);
+
+    await screen.findByTestId('guest-booking-result');
+    // The body of the call: three keys, the email among them, and no key of the phone.
+    const body = vi.mocked(guestSessionApi.openSession).mock.calls[0][0];
+    expect(body).toEqual({ orgSlug: 'demo-casazen', bookingCode: CODE, email: EMAIL });
+    expect(Object.keys(body).sort()).toEqual(['bookingCode', 'email', 'orgSlug']);
+  });
+
+  it('flag off: the not-found box keeps its own words', async () => {
+    vi.mocked(guestSessionApi.openSession).mockRejectedValue(problemError(404, { code: 'guest_booking_not_found', detail: 'x' }));
+    renderPage();
+
+    fill(CODE, EMAIL);
+
+    expect(await screen.findByTestId('guest-bookings-not-found')).toHaveTextContent(
+      "Nessuna prenotazione di questo sito corrisponde al codice e all'email inseriti. Controlla il codice nell'email di conferma e usa l'indirizzo email con cui hai prenotato.",
+    );
+  });
+
   it('GuestBookingsPage_SearchAnother_SignsOutAndClearsTheBookingFromTheScreen', async () => {
     vi.mocked(guestSessionApi.getBooking).mockResolvedValue(booking());
     renderPage();

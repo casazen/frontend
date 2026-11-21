@@ -16,7 +16,7 @@ import { supportConfig } from '@/config/support.config';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getProblemMessage } from '@/lib/api-errors';
-import { BULK_OFFER_ABOVE, ONBOARDING_BULK_PATH, firstOpenPart, knownNeeds, knownParts, normalizePartState, partsWaitedFor } from '@/lib/onboarding-parts';
+import { BULK_OFFER_ABOVE, ONBOARDING_BULK_PATH, firstOpenPart, knownNeeds, knownParts, normalizePartState, partAppliesToOrg, partsWaitedFor } from '@/lib/onboarding-parts';
 import { resolveLaunchTarget } from '@/lib/onboarding-part-launch';
 import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { cn } from '@/lib/utils';
@@ -76,7 +76,7 @@ export function OnboardingPlanPage() {
   const commercial = useCommercialProfile();
   const userId = commercial?.id;
   const orgId = commercial?.org?.id ?? commercial?.orgId;
-  const parts = useMemo(() => knownParts(plan.data).filter(part => commercialPartAllowed(commercial, part.code)), [plan.data, commercial]);
+  const parts = useMemo(() => knownParts(plan.data).filter(part => partAppliesToOrg(part) && commercialPartAllowed(commercial, part.code)), [plan.data, commercial]);
   const needs = useMemo(() => knownNeeds(plan.data), [plan.data]);
   function mayLaunch(part: OnboardingPart) {
     const destination = resolveLaunchTarget(part.launchTarget, null, null, hasPermission, part.reason, flags);

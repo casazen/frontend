@@ -86,6 +86,7 @@ describe('OwnerInvitationPage: the link of the e-mail and the round trip through
     mockAuth(false);
     refreshAccessToken.mockResolvedValue('a-new-access-token');
     vi.mocked(axios.post).mockResolvedValue({ data: ACCEPTED });
+    vi.mocked(axios.get).mockResolvedValue({ data: [] });
   });
 
   afterEach(() => {
@@ -258,13 +259,45 @@ describe('OwnerInvitationPage: the link of the e-mail and the round trip through
     expect(peekOwnerInvitationToken()).toBeNull();
   });
 
-  it('OwnerInvitationRoute_NewTokenCannotBeAsked_SaysSoInsteadOfOpeningThePortal', async () => {
+  it('continues through Auth0 without showing an error or reusing the invitation when silent refresh fails', async () => {
     mockAuth(true);
     refreshAccessToken.mockRejectedValue(new Error('login_required'));
+    const page = openAt(`${OWNER_INVITATION_PATH}?token=${TOKEN}`);
+
+    const returnTo = `${OWNER_INVITATION_PATH}?resume=portal`;
+    await waitFor(() => expect(login).toHaveBeenCalledWith({ returnTo }));
+    expect(screen.getByTestId('owner-invitation-waiting')).toBeInTheDocument();
+    expect(screen.queryByText(i18n.t('ownerInvitation.tokenPending.title'))).not.toBeInTheDocument();
+    expect(peekOwnerInvitationToken()).toBeNull();
+
+    page.unmount();
+    openAt(returnTo);
+    expect(await screen.findByTestId('owner-portal')).toBeInTheDocument();
+    expect(axios.get).toHaveBeenCalledWith('/owner-portal/properties', { localAuthRecovery: true });
+    expect(axios.post).toHaveBeenCalledTimes(1);
+    expect(refreshAccessToken).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the invite on one waiting screen while recovering from a forbidden portal response', async () => {
+    mockAuth(true);
+    vi.mocked(axios.get).mockRejectedValueOnce(problem(403, 'forbidden'));
     openAt(`${OWNER_INVITATION_PATH}?token=${TOKEN}`);
+
+    await waitFor(() => expect(login).toHaveBeenCalledTimes(1));
+    expect(screen.getByTestId('owner-invitation-waiting')).toBeInTheDocument();
+    expect(screen.queryByTestId('owner-portal')).not.toBeInTheDocument();
+    expect(window.location.pathname).toBe(OWNER_INVITATION_PATH);
+  });
+
+  it('offers a retry if Auth0 returns and the portal still denies access', async () => {
+    mockAuth(true);
+    vi.mocked(axios.get).mockRejectedValueOnce(problem(403, 'forbidden'));
+    openAt(`${OWNER_INVITATION_PATH}?resume=portal`);
 
     expect(await screen.findByText(i18n.t('ownerInvitation.tokenPending.title'))).toBeInTheDocument();
     expect(screen.queryByTestId('owner-portal')).not.toBeInTheDocument();
+    expect(login).not.toHaveBeenCalled();
+    expect(axios.post).not.toHaveBeenCalled();
   });
 
   it.each([

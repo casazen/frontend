@@ -87,6 +87,9 @@ async function rows(): Promise<HTMLElement[]> {
 const manualSender = { sender: 'Manual' as const, lastChangedAt: null, delegationAccepted: false, delegationTextVersion: 'v1', propertyOverrides: 0, autoSendGuestsToOctorate: false };
 const row = (code: OnboardingPartKey) => screen.getByTestId(`onboarding-part-${code}`);
 
+/** The parts a host with all its properties in Italy sees: every part but the one that is for properties in Switzerland. */
+const LISTED_PARTS = ONBOARDING_PART_KEYS.filter((code) => code !== 'guestRegistration');
+
 describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
   beforeEach(async () => {
     await i18n.changeLanguage('it');
@@ -190,9 +193,12 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
 
       const list = await rows();
 
-      const visibleOrder = ['properties', ...ONBOARDING_PART_KEYS.filter(code => code !== 'properties')] as const;
-      expect(list.map(item => item.dataset.testid)).toEqual(visibleOrder.map(code => `onboarding-part-${code}`));
-      expect(list.map(item => within(item).getByRole('heading', { level: 3 }).textContent)).toEqual(visibleOrder.map(code => i18n.t(partTitleKey(code))));
+      // The notification of the guests in Switzerland does not apply to a host with no active property there: it is not in the list (see the tests of that part below).
+      const visibleOrder = ['properties', ...LISTED_PARTS.filter((code) => code !== 'properties')] as const;
+      expect(list.map((item) => item.dataset.testid)).toEqual(visibleOrder.map((code) => `onboarding-part-${code}`));
+      expect(list.map((item) => within(item).getByRole('heading', { level: 3 }).textContent)).toEqual(
+        visibleOrder.map((code) => i18n.t(partTitleKey(code))),
+      );
       expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(i18n.t('onboardingPlan.workspace.title'));
       expect(screen.queryByTestId('page-description')).not.toBeInTheDocument();
     });
@@ -647,6 +653,51 @@ describe('OnboardingPlanPage, the plan «Inizia con CasaZen» (NF-104)', () => {
       await rows();
       await waitFor(() => expect(onboardingApi.getStatus).toHaveBeenCalled());
       expect(screen.queryByTestId('onboarding-plan-bulk')).not.toBeInTheDocument();
+    });
+  });
+
+  // E29/F02/US01/T02, E29/F02/US02/T01: the twelfth part is for an organization with an ACTIVE property in Switzerland; for any other the plan does not list it.
+  describe('the notification of the guests in Switzerland', () => {
+    it('OnboardingPlan_HostWithAnActiveSwissPropertyThatLacksSomething_ListsThePartBeforeTheSummaryWithWhatItLacks', async () => {
+      vi.mocked(onboardingApi.getPlan).mockResolvedValue(
+        plan({ guestRegistration: { state: 'open', reason: 'ticino_structure_id_missing', done: 1, total: 2, launchTarget: 'guestRegistration' } }),
+      );
+      renderPage();
+
+      const list = await rows();
+
+      // The twelve parts (properties first in the workspace plan), the Swiss one just before the summary.
+      const visibleOrder = ['properties', ...ONBOARDING_PART_KEYS.filter((code) => code !== 'properties')] as const;
+      expect(list.map((item) => item.dataset.testid)).toEqual(visibleOrder.map((code) => `onboarding-part-${code}`));
+      const swiss = row('guestRegistration');
+      expect(within(swiss).getByRole('heading', { level: 3 })).toHaveTextContent(i18n.t('onboardingPlan.parts.guestRegistration.title'));
+      expect(within(swiss).getByTestId('onboarding-part-reason')).toHaveTextContent(i18n.t('onboardingPlan.reasons.ticino_structure_id_missing'));
+      expect(within(swiss).getByTestId('onboarding-part-progress')).toHaveTextContent(i18n.t('onboardingPlan.progress', { done: 1, total: 2 }));
+      expect(within(swiss).getByTestId('onboarding-part-guestRegistration-open')).toHaveAttribute('href', partPath('guestRegistration'));
+      // Nothing requires it, so the host may put it off.
+      expect(within(swiss).getByTestId('onboarding-part-guestRegistration-later')).toBeEnabled();
+    });
+
+    it('OnboardingPlan_HostWithNoActiveSwissProperty_NeverSeesThePart', async () => {
+      renderPage();
+      await rows();
+
+      // The plan of such a host says «not available» (`no_swiss_property`): a row that only says there is nothing to do would be noise for a host whose properties are all in Italy.
+      expect(screen.queryByTestId('onboarding-part-guestRegistration')).not.toBeInTheDocument();
+      expect(document.body.textContent).not.toContain(i18n.t('onboardingPlan.parts.guestRegistration.title'));
+      expect(document.body.textContent).not.toContain(i18n.t('onboardingPlan.reasons.no_swiss_property'));
+    });
+
+    it('OnboardingPlan_ThePartIsDone_IsListedAsDoneWithNoButton', async () => {
+      vi.mocked(onboardingApi.getPlan).mockResolvedValue(
+        plan({ guestRegistration: { state: 'done', reason: null, done: 2, total: 2, launchTarget: 'guestRegistration' } }),
+      );
+      renderPage();
+      await rows();
+
+      const swiss = row('guestRegistration');
+      expect(within(swiss).getByTestId('onboarding-part-state')).toHaveTextContent(i18n.t('onboardingPlan.states.done'));
+      expect(within(swiss).queryByTestId('onboarding-part-guestRegistration-open')).not.toBeInTheDocument();
     });
   });
 

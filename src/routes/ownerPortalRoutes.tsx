@@ -25,7 +25,8 @@ import { OwnerStatements } from '@/pages/owner-portal/OwnerStatements';
  */
 export const ownerPortalRoutes: RouteObject[] = [
   {
-    path: '/portale-proprietari/accedi',
+    // On an agency's own domain `buildHostSiteRoutes` puts the sign-in page of that domain in its place (`OwnerHostLoginPage`): this one only exists for the CasaZen domain.
+    path: ownerPortalPaths.signIn,
     element: <LoginPage />,
   },
   {

@@ -129,6 +129,45 @@ export const BILLING_SETUP_FIELDS = [
 export type BillingSetupField = (typeof BILLING_SETUP_FIELDS)[number];
 
 // ---------------------------------------------------------------------------------------------------------------------
+// The tourist tax of the Italian portals (FIX/BE-IT-TOURISTTAX-DEFAULTS, decision 2 of the fiscal decisions of 2026-11-20): what the server proposes, what the organization
+// confirmed per comune, and the hint about the records of the stays. They are members of the values of the section `touristTax`, read only, sent for an Italian issuer to a
+// caller who reaches the whole organization (a caller who reaches only some of the properties gets none of them), and a server that does not know them sends none.
+// ---------------------------------------------------------------------------------------------------------------------
+
+/**
+ * What the setup proposes for a person to confirm (`italianPortalProposals`): «this portal collects and pays the tourist tax in this comune». It is a question and never an
+ * answer: nothing is saved or applied to a document until a person confirms it. `status` is `to_confirm`.
+ */
+export interface ItalianPortalProposal {
+  /** The ISTAT code of the comune, six digits. */
+  comuneIstat: string;
+  /** The name of the comune, as the server says it. */
+  comune: string;
+  /** The portal, by the name of `BookingSource` (`Airbnb`). */
+  channel: string;
+  status: string;
+}
+
+/**
+ * A portal the organization confirmed for one comune: a member of `confirmedPortalTouristTaxComuni` and a pair of the body of the confirmation. It counts only for the properties
+ * in that comune (confirming Milano is nothing for a flat in Como).
+ */
+export interface PortalTouristTaxComune {
+  /** The portal, by the name of `BookingSource`. */
+  channel: string;
+  /** The ISTAT code of the comune, six digits. */
+  comuneIstat: string;
+}
+
+/**
+ * The body of `PUT api/billing-setup/touristTax/portal-comuni`: the WHOLE list of the pairs the organization confirms. It replaces the one it had (the pairs already confirmed go in
+ * it again), an empty list takes every confirmation away and never means «every comune», and a request without `comuni` is 422.
+ */
+export interface ConfirmPortalTouristTaxComuniRequest {
+  comuni: PortalTouristTaxComune[];
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
 // Who holds the accounts of the portals (E14/F01/US01/T01, ⚖ I10, I11): behind the flag `ownerInvoicing`, whole organization only.
 // ---------------------------------------------------------------------------------------------------------------------
 
@@ -136,10 +175,15 @@ export type BillingSetupField = (typeof BILLING_SETUP_FIELDS)[number];
 export const PORTAL_ACCOUNT_HOLDERS = ['Owner', 'Agency'] as const;
 export type PortalAccountHolder = (typeof PORTAL_ACCOUNT_HOLDERS)[number];
 
-/** `PUT api/billing-setup/channels`: a member left out keeps its value. */
+/**
+ * `PUT api/billing-setup/channels`: a member left out keeps its value. `acknowledgeRechargeWaiver` is the explicit confirmation of the waiver of the recharge (FIX/BE-V2-NO-RECHARGE): a save that
+ * turns the recharge off while the agency holds an account, or makes the agency the default holder while the recharge is off, is refused (422 `recharge_waiver_not_acknowledged`) without it. It is
+ * sent ONLY after the person confirmed in the dialog that says what the waiver is, never by default and never in the first request of a save.
+ */
 export interface PortalAccountSettingsRequest {
   portalAccountHolder?: PortalAccountHolder;
   rechargePortalCommissions?: boolean;
+  acknowledgeRechargeWaiver?: boolean;
 }
 
 /** The holder of a listing on a portal where it differs from the default of the organization (`GET api/billing-setup/channel-account-holders`). */

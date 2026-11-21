@@ -7,6 +7,7 @@ import type {
   CheckInConfirmation,
   CheckInWizardState,
   GuestExemption,
+  GuestsSave,
   SaveMunicipalityRateRequest,
   StayTouristTax,
   TouristTaxCollector,
@@ -61,9 +62,13 @@ export function useSaveCheckInGuests(bookingId: string) {
 
   return useMutation({
     gcTime: 0,
-    mutationFn: async (guests: StayGuestSubmit[]) => {
+    // The guests alone, or with the plate of the stay where the regime asks it (`GuestsSave`).
+    mutationFn: async (save: StayGuestSubmit[] | GuestsSave) => {
+      const { guests, vehiclePlate } = Array.isArray(save) ? { guests: save, vehiclePlate: undefined } : save;
       try {
-        return await checkInWizardApi.saveGuests(bookingId, guests);
+        return await (vehiclePlate === undefined
+          ? checkInWizardApi.saveGuests(bookingId, guests)
+          : checkInWizardApi.saveGuests(bookingId, guests, vehiclePlate));
       } catch (error) {
         throw withoutRequest(error);
       }

@@ -38,7 +38,8 @@ import {
   initialStepOf,
   statisticalFieldsOf,
   stepOfGuestField,
-  toGuestsPayload,
+  swissRulesOfState,
+  toGuestsSave,
   wizardValuesFromState,
   type CheckInWizardStepId,
   type CheckInWizardValues,
@@ -200,16 +201,18 @@ function CheckInWizardForm({ bookingId, state, returnPath }: CheckInWizardFormPr
   // What the steps show is the latest state (each save answers with the new one); the form starts from the one the wizard opened with.
   const latest = wizard.data ?? state;
   const statisticalFields = useMemo(() => statisticalFieldsOf(state), [state]);
+  // A property in Switzerland (NF-132) asks the home of each guest, the document of every adult and the plate of the car: the rules of every step below.
+  const swiss = useMemo(() => swissRulesOfState(state), [state]);
   const [initialValues] = useState(() => wizardValuesFromState(state));
   // What the server holds, as the text of the request that saved it: a step saves only when the host changed something since.
-  const [savedSignature, setSavedSignature] = useState(() => guestsSignature(initialValues, statisticalFields));
+  const [savedSignature, setSavedSignature] = useState(() => guestsSignature(initialValues, statisticalFields, swiss));
   const [fieldProblems, setFieldProblems] = useState<GuestFieldProblem[]>([]);
   const [exitProblem, setExitProblem] = useState<string | null>(null);
   const [exiting, setExiting] = useState(false);
 
   const blocking = latest.issues.filter((issue) => issue.blocking).length;
   const warnings = latest.issues.length - blocking;
-  const isUnchanged = (values: CheckInWizardValues) => guestsSignature(values, statisticalFields) === savedSignature;
+  const isUnchanged = (values: CheckInWizardValues) => guestsSignature(values, statisticalFields, swiss) === savedSignature;
 
   /**
    * Saves the guests when the host changed something (the same call for "Continue" and "Save and exit"). The guests step defers the save
@@ -218,11 +221,11 @@ function CheckInWizardForm({ bookingId, state, returnPath }: CheckInWizardFormPr
    */
   const saveGuests = async (stepId: 'guests' | 'documents', values: CheckInWizardValues): Promise<void> => {
     if (isUnchanged(values)) return;
-    if (stepId === 'guests' && !documentsReadyToSave(values)) return;
+    if (stepId === 'guests' && !documentsReadyToSave(values, swiss)) return;
     setFieldProblems([]);
     try {
-      await save.mutateAsync(toGuestsPayload(values, statisticalFields));
-      setSavedSignature(guestsSignature(values, statisticalFields));
+      await save.mutateAsync(toGuestsSave(values, statisticalFields, swiss));
+      setSavedSignature(guestsSignature(values, statisticalFields, swiss));
     } catch (error) {
       const problems = guestFieldProblemsOf(error, values.guests.length, t('checkin.validation.invalidValue'));
       setFieldProblems(problems);
@@ -242,7 +245,7 @@ function CheckInWizardForm({ bookingId, state, returnPath }: CheckInWizardFormPr
   const saveAndExit = async (values: CheckInWizardValues): Promise<void> => {
     setExitProblem(null);
     if (!isUnchanged(values)) {
-      const complete = guestsStepSchema(statisticalFields).safeParse(values).success && documentsReadyToSave(values);
+      const complete = guestsStepSchema(statisticalFields, swiss).safeParse(values).success && documentsReadyToSave(values, swiss);
       if (!complete) {
         setExitProblem(t('checkin.wizard.exitIncomplete'));
         return;
@@ -270,7 +273,7 @@ function CheckInWizardForm({ bookingId, state, returnPath }: CheckInWizardFormPr
     {
       id: 'guests',
       ...stepText('guests'),
-      schema: guestsStepSchema(statisticalFields),
+      schema: guestsStepSchema(statisticalFields, swiss),
       beforeNext: (values) => saveGuests('guests', values),
       render: ({ form }) => (
         <>
@@ -282,7 +285,7 @@ function CheckInWizardForm({ bookingId, state, returnPath }: CheckInWizardFormPr
     {
       id: 'documents',
       ...stepText('documents'),
-      schema: documentsStepSchema(isUnchanged),
+      schema: documentsStepSchema(isUnchanged, swiss),
       beforeNext: (values) => saveGuests('documents', values),
       render: ({ form }) => (
         <>

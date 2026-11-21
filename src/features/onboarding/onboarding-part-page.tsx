@@ -18,6 +18,7 @@ import {
   ONBOARDING_PLAN_PATH,
   isOnboardingPartKey,
   knownParts,
+  missingItemsOf,
   needKey,
   normalizePartState,
   partTitleKey,
@@ -30,6 +31,7 @@ import { cn } from '@/lib/utils';
 import { useOnboardingPlan } from '@/queries/use-onboarding-plan';
 import { PartEntryQuestion } from './components/part-entry-question';
 import { PartLaunchPanel } from './components/part-launch-panel';
+import { PartMissingList } from './components/part-missing-list';
 import { PartPropertyTable } from './components/part-property-table';
 
 /**
@@ -63,6 +65,8 @@ export function OnboardingPartPage() {
   const target = part ? resolveLaunchTarget(part.launchTarget, null, null, hasPermission, part.reason, flags) : null;
   const launch = target && isEntryFeatureEnabled(target.entry, flags) && commercialRouteAllowed(profile, target.to) ? target : null;
   const waiting = state === 'blocked' || state === 'notAvailable' || state === 'done';
+  // The notification of the guests in Switzerland names the properties that lack something, each with its own way in: the one button of the part would only repeat them.
+  const missingItems = part && part.code === 'guestRegistration' && !waiting ? missingItemsOf(part) : [];
   // What is missing, in plain words; a part that waits for others names them, and a reason this version has no text for reads as a neutral line.
   const waitedFor = part ? partsWaitedFor(part, parts).map((waited) => t(partTitleKey(waited.code))).join(', ') : '';
   const reasonKeyOfPart = part ? partReasonTextKey(part) : null;
@@ -111,7 +115,9 @@ export function OnboardingPartPage() {
 
         {part.code === 'octorateConnection' && launch && !waiting ? <PartEntryQuestion /> : null}
 
-        <PartLaunchPanel partKey={part.code} launch={launch} resuming={state === 'deferred' || (part.done > 0 && part.done < part.total)} blocked={waiting} />
+        <PartLaunchPanel partKey={part.code} launch={launch} resuming={state === 'deferred' || (part.done > 0 && part.done < part.total)} blocked={waiting || missingItems.length > 0} />
+
+        {missingItems.length > 0 ? <PartMissingList target={part.launchTarget} items={missingItems} totalMissing={Math.max(0, part.total - part.done)} /> : null}
 
         {flow && !waiting ? <PartPropertyTable partKey={part.code} flow={flow} target={part.launchTarget} panelSteps={part.code === 'compliance' && hasPermission('short-rent', 'property.write')} assistFirst={assistFirst} /> : null}
       </>

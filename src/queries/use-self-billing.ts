@@ -1,13 +1,21 @@
 import { useIsMutating, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
-import { createSelfBillingDrafts, discardSelfBilling, getSelfBilling, issueSelfBilling, listSelfBilling } from '@/api/self-billing.api';
+import {
+  closeSelfBillingNotDue,
+  createSelfBillingDrafts,
+  discardSelfBilling,
+  getSelfBilling,
+  issueSelfBilling,
+  listSelfBilling,
+  startSelfBillingCorrection,
+} from '@/api/self-billing.api';
 import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
-import type { SelfBillingIssueRequest } from '@/types';
+import type { SelfBillingCloseRequest, SelfBillingIssueRequest } from '@/types';
 import { FISCAL_DOCUMENTS_KEY } from './use-fiscal-documents';
 
 /** Root of the query keys of the self-billed invoices (TD17): the list of a month and the detail of one live under it. */
 export const SELF_BILLING_KEY = ['fiscal', 'self-billing'] as const;
 
-/** The key of every write on a TD17 (the drafts of a month, the issue, the discard): `useSelfBillingBusy` asks the client whether one is running, so the buttons of a card wait for each other. */
+/** The key of every write on a TD17 (the drafts of a month, the issue, the discard, the correction, the closing): `useSelfBillingBusy` asks the client whether one is running, so the buttons of a card wait for each other. */
 const SELF_BILLING_MUTATION_KEY = [...SELF_BILLING_KEY, 'mutation'] as const;
 
 /**
@@ -97,6 +105,50 @@ export function useDiscardSelfBilling() {
     mutationFn: async ({ documentId }: { documentId: string }): Promise<void> => {
       try {
         await discardSelfBilling(documentId);
+      } catch (error) {
+        throw withoutRequest(error);
+      }
+    },
+    gcTime: 0,
+    onSettled: () => afterWrite(queryClient),
+  });
+}
+
+/**
+ * «Correggi e rimanda»: the TD17 the SDI rejected is replaced by a draft that holds its number (the answer, `null` when its body could not be read: the correction was made all the same). It writes on the rejected
+ * TD17, so the buttons of its card wait for it (`documentId` is in the variables). A failure is kept without its request (`withoutRequest`) and told by the dialog the correction was asked in, in the words of what
+ * the server said (not found, not correctable, no access, or a call that failed); the lists and the documents are read again whatever the answer was, so a refusal of a state that changed is not left stale.
+ */
+export function useCorrectSelfBilling() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: SELF_BILLING_MUTATION_KEY,
+    mutationFn: async ({ documentId }: { documentId: string }) => {
+      try {
+        return await startSelfBillingCorrection(documentId);
+      } catch (error) {
+        throw withoutRequest(error);
+      }
+    },
+    gcTime: 0,
+    onSettled: () => afterWrite(queryClient),
+  });
+}
+
+/**
+ * «Chiudi come non più dovuta»: the replacement draft of a rejected TD17 that the month no longer supports is closed with the reason and the optional note of the person; it keeps its number. It writes on that draft, so the
+ * buttons of its card wait for it (`documentId` is in the variables). The note is free text that can name a person or a document: it lives in the variables of the call while the dialog that asked is open (`gcTime: 0` drops the
+ * mutation once nothing watches it, and the dialog resets it as soon as it has read a failure, so the note is not kept while it waits for a retry), and a failure is kept without its request (`withoutRequest`, which carries
+ * the body of the call) and reduced to what the screen turns into words (the status and the code of the answer). The lists and the documents are read again whatever the answer was, so a refusal of a state that changed
+ * (already closed, not closable any more) is not left stale.
+ */
+export function useCloseSelfBilling() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: SELF_BILLING_MUTATION_KEY,
+    mutationFn: async ({ documentId, request }: { documentId: string; request: SelfBillingCloseRequest }) => {
+      try {
+        return await closeSelfBillingNotDue(documentId, request);
       } catch (error) {
         throw withoutRequest(error);
       }

@@ -7,6 +7,8 @@ import { toast } from 'sonner';
 import { approvalQueueApi } from '@/api/approvalQueue.api';
 import i18n from '@/i18n/config';
 import { ApprovalQueuePage } from '@/pages/ApprovalQueuePage';
+import { MESSAGE_HUB_QUERY } from '@/queries/use-message-hub';
+import { OTA_REVIEWS_QUERY } from '@/queries/use-ota-reviews';
 import { expectNoAxeViolations } from '@/test/axe';
 import type { ApprovalQueueItem } from '@/types/approval-queue.types';
 
@@ -66,6 +68,18 @@ const ROUTINE = item({
   threadKey: null,
 });
 
+/** The draft of the public reply to a review of a channel (E05/F06/US02): approving it publishes the reply, once, and it cannot be taken back. */
+const REVIEW_REPLY = item({
+  id: 'review-1',
+  itemType: 'ReviewReply',
+  itemId: '6f1c9a52-1111-4222-8333-944455556666',
+  contentText: 'Grazie di cuore per le belle parole.',
+  originAction: 'SendReviewReply',
+  confidenceScore: null,
+  situationCode: null,
+  threadKey: 'otareview:6f1c9a52-1111-4222-8333-944455556666',
+});
+
 function approved(of: ApprovalQueueItem, overrides: Partial<ApprovalQueueItem> = {}): ApprovalQueueItem {
   return { ...of, status: 'Approved', originActionStatus: 'Executed', approvedByUserId: 'auth0|me', approvedAt: '2026-11-10T09:00:00Z', ...overrides };
 }
@@ -87,13 +101,14 @@ function deferred<T>() {
 
 function renderPage() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
-  return render(
+  const view = render(
     <QueryClientProvider client={client}>
       <MemoryRouter initialEntries={['/app/short-rent/approval-queue']}>
         <ApprovalQueuePage />
       </MemoryRouter>
     </QueryClientProvider>,
   );
+  return { ...view, client };
 }
 
 const cards = () => screen.getAllByTestId('approval-item');
@@ -521,6 +536,142 @@ describe('ApprovalQueuePage (NF-68, NF-18)', () => {
       await waitFor(() => expect(toast.error).toHaveBeenCalledWith("Questo elemento è già stato deciso o è scaduto. L'elenco si aggiorna da solo."));
       await waitFor(() => expect(screen.queryByTestId('approval-reject-dialog')).toBeNull());
       expect(screen.queryByTestId('approval-decided')).toBeNull();
+    });
+  });
+
+  // The reply to a review is public and cannot be taken back (E05/F06/US02, AC-NF69-2): the queue asks the same question as the page of the review, with the exact words,
+  // before «Approva e pubblica» and before «Salva e pubblica» publish anything, and the reviews are read again whatever came of it.
+  describe('the reply to a review is public: the queue asks before it publishes', () => {
+    it('ApprovalQueuePage_ReplyToAReview_AsksFirstWithTheExactWordsAndPublishesOnlyWhenTheHostConfirms', async () => {
+      vi.mocked(approvalQueueApi.getPending).mockResolvedValueOnce([REVIEW_REPLY]).mockResolvedValue([]);
+      vi.mocked(approvalQueueApi.approve).mockResolvedValue(approved(REVIEW_REPLY, { originActionResult: 'Sent' }));
+      const { client } = renderPage();
+      await screen.findByTestId('approval-item');
+      const invalidate = vi.spyOn(client, 'invalidateQueries');
+
+      fireEvent.click(screen.getByRole('button', { name: 'Approva e pubblica' }));
+
+      // One click publishes nothing: the host is asked first, with the words exactly as they will be published and the sentence that they cannot be taken back.
+      const dialog = within(await screen.findByRole('dialog'));
+      expect(dialog.getByText('Pubblichi la risposta?')).toBeInTheDocument();
+      expect(dialog.getByText(/Non si può ritirare né modificare/)).toBeInTheDocument();
+      expect(dialog.getByTestId('review-publish-text')).toHaveTextContent('Grazie di cuore per le belle parole.');
+      expect(approvalQueueApi.approve).not.toHaveBeenCalled();
+
+      fireEvent.click(dialog.getByRole('button', { name: 'Pubblica' }));
+
+      await waitFor(() => expect(approvalQueueApi.approve).toHaveBeenCalledTimes(1));
+      expect(approvalQueueApi.approve).toHaveBeenCalledWith('review-1');
+      await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Risposta pubblicata.'));
+      expect(await screen.findByTestId('approval-decided-outcome')).toHaveTextContent('Risposta pubblicata.');
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+      // The reviews are read again: the ones of the bookings, the one that is open and the list of the hub.
+      expect(invalidate).toHaveBeenCalledWith({ queryKey: [OTA_REVIEWS_QUERY] });
+      expect(invalidate).toHaveBeenCalledWith({ queryKey: [MESSAGE_HUB_QUERY, 'review-thread'] });
+    });
+
+    it('ApprovalQueuePage_ReplyToAReviewTheHostDoesNotConfirm_PublishesNothingAndKeepsTheItem', async () => {
+      vi.mocked(approvalQueueApi.getPending).mockResolvedValue([REVIEW_REPLY]);
+      renderPage();
+      await screen.findByTestId('approval-item');
+
+      fireEvent.click(screen.getByRole('button', { name: 'Approva e pubblica' }));
+      const dialog = within(await screen.findByRole('dialog'));
+      fireEvent.click(dialog.getByRole('button', { name: 'Annulla' }));
+
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+      expect(approvalQueueApi.approve).not.toHaveBeenCalled();
+      expect(screen.getByRole('button', { name: 'Approva e pubblica' })).toBeEnabled();
+      expect(screen.queryByTestId('approval-decided')).toBeNull();
+    });
+
+    it('ApprovalQueuePage_ReplyToAReviewThatTheChannelRefuses_ClosesTheQuestionKeepsTheItemWithTheReasonAndReadsTheReviewsAgain', async () => {
+      vi.mocked(approvalQueueApi.getPending).mockResolvedValue([REVIEW_REPLY]);
+      vi.mocked(approvalQueueApi.approve).mockRejectedValue(httpError(409, { code: 'approval_origin_action_failed', originActionError: 'ota_review_not_published' }));
+      const { client } = renderPage();
+      await screen.findByTestId('approval-item');
+      const invalidate = vi.spyOn(client, 'invalidateQueries');
+
+      fireEvent.click(screen.getByRole('button', { name: 'Approva e pubblica' }));
+      fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Pubblica' }));
+
+      // Not published is told as such: the item stays with the reason in words and a retry, never in the list of what was decided.
+      expect(await screen.findByTestId('approval-item-failure')).toHaveTextContent('non è ancora pubblicata');
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+      expect(screen.queryByTestId('approval-decided')).toBeNull();
+      expect(screen.getByRole('button', { name: 'Riprova' })).toBeEnabled();
+      expect(toast.success).not.toHaveBeenCalled();
+      expect(invalidate).toHaveBeenCalledWith({ queryKey: [OTA_REVIEWS_QUERY] });
+    });
+
+    it('ApprovalQueuePage_ReplyToAReviewEditedThenPublished_AsksFirstWithTheEditedWordsAndOnlyThenSavesAndApproves', async () => {
+      const order: string[] = [];
+      const edited = { ...REVIEW_REPLY, editedContentText: 'Grazie a voi, a presto!' };
+      vi.mocked(approvalQueueApi.getPending).mockResolvedValueOnce([REVIEW_REPLY]).mockResolvedValue([]);
+      vi.mocked(approvalQueueApi.edit).mockImplementation(async () => {
+        order.push('edit');
+        return edited;
+      });
+      vi.mocked(approvalQueueApi.approve).mockImplementation(async () => {
+        order.push('approve');
+        return approved(edited, { originActionResult: 'Sent' });
+      });
+      const { client } = renderPage();
+      await screen.findByTestId('approval-item');
+      const invalidate = vi.spyOn(client, 'invalidateQueries');
+
+      fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
+      const editDialog = within(await screen.findByTestId('approval-edit-dialog'));
+      fireEvent.change(editDialog.getByLabelText('Testo'), { target: { value: 'Grazie a voi, a presto!' } });
+      // The button says what it does: it publishes.
+      fireEvent.click(editDialog.getByRole('button', { name: 'Salva e pubblica' }));
+
+      // Nothing is saved or published before the answer: the question shows the edited words.
+      expect(await screen.findByTestId('review-publish-text')).toHaveTextContent('Grazie a voi, a presto!');
+      expect(approvalQueueApi.edit).not.toHaveBeenCalled();
+      expect(approvalQueueApi.approve).not.toHaveBeenCalled();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Pubblica' }));
+
+      await waitFor(() => expect(approvalQueueApi.approve).toHaveBeenCalledWith('review-1'));
+      expect(approvalQueueApi.edit).toHaveBeenCalledWith('review-1', 'Grazie a voi, a presto!');
+      expect(order).toEqual(['edit', 'approve']);
+      await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Risposta pubblicata.'));
+      await waitFor(() => expect(screen.queryByTestId('approval-edit-dialog')).toBeNull());
+      expect(await screen.findByTestId('approval-decided-outcome')).toHaveTextContent('Risposta pubblicata.');
+      expect(invalidate).toHaveBeenCalledWith({ queryKey: [OTA_REVIEWS_QUERY] });
+    });
+
+    it('ApprovalQueuePage_ReplyToAReviewEditedAndNotConfirmed_SavesAndPublishesNothing', async () => {
+      vi.mocked(approvalQueueApi.getPending).mockResolvedValue([REVIEW_REPLY]);
+      renderPage();
+      await screen.findByTestId('approval-item');
+
+      fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
+      const editDialog = within(await screen.findByTestId('approval-edit-dialog'));
+      fireEvent.change(editDialog.getByLabelText('Testo'), { target: { value: 'Grazie a voi!' } });
+      fireEvent.click(editDialog.getByRole('button', { name: 'Salva e pubblica' }));
+      await screen.findByTestId('review-publish-text');
+
+      fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
+
+      await waitFor(() => expect(screen.queryByTestId('review-publish-text')).toBeNull());
+      expect(approvalQueueApi.edit).not.toHaveBeenCalled();
+      expect(approvalQueueApi.approve).not.toHaveBeenCalled();
+      // The edit dialog is still there with the words the host wrote.
+      expect(screen.getByTestId('approval-edit-dialog')).toBeInTheDocument();
+    });
+
+    it('ApprovalQueuePage_OtherItems_AreStillApprovedWithOneClick', async () => {
+      vi.mocked(approvalQueueApi.getPending).mockResolvedValue([CAMPAIGN]);
+      vi.mocked(approvalQueueApi.approve).mockResolvedValue(approved(CAMPAIGN, { originActionResult: 'Scheduled' }));
+      renderPage();
+      await screen.findByTestId('approval-item');
+
+      fireEvent.click(screen.getByRole('button', { name: 'Approva' }));
+
+      await waitFor(() => expect(approvalQueueApi.approve).toHaveBeenCalledWith('campaign-1'));
+      expect(screen.queryByRole('dialog')).toBeNull();
     });
   });
 

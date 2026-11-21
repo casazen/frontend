@@ -2,10 +2,12 @@ import { AxiosError, type AxiosResponse } from 'axios';
 import axios from '@/lib/axios';
 import { UnexpectedApiResponseError } from '@/lib/api-errors';
 import type {
+  SelfBillingCloseRequest,
   SelfBillingDetail,
   SelfBillingFailure,
   SelfBillingGeneration,
   SelfBillingIssueRequest,
+  SelfBillingKept,
   SelfBillingLine,
   SelfBillingListItem,
   SelfBillingNotDue,
@@ -28,10 +30,15 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 const isOptionalText = (value: unknown) => value === undefined || value === null || typeof value === 'string';
+const isOptionalFlag = (value: unknown) => value === undefined || value === null || typeof value === 'boolean';
 const textOf = (value: unknown): string | null => (typeof value === 'string' && value !== '' ? value : null);
 const isFiniteNumber = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
 
-/** One TD17 of the list, reduced to what the page shows: the codes, the amounts and the currency are there and of the right type. A member that is not one is a load error for the whole answer, never a row left out. */
+/**
+ * One TD17 of the list, reduced to what the page shows: the codes, the amounts and the currency are there and of the right type. A member that is not one is a load error for the whole answer, never a row left out.
+ * The members of the correction of a rejected TD17 (`canCorrect`, `replacesDocumentId`, `replacedByDocumentId`, `keptReason`) and those of the closing of its replacement (`closedReason`, `closedAt`, `closedBy`,
+ * `closedNote`) are additive: a server that does not send them (an older one) has neither, so they are read as «no»; one that sends them with a type that is not the right one is a load error like any other member.
+ */
 function itemOf(value: unknown): SelfBillingListItem | null {
   if (
     !isRecord(value) ||
@@ -51,7 +58,15 @@ function itemOf(value: unknown): SelfBillingListItem | null {
     typeof value.sdiStatus !== 'string' ||
     !isOptionalText(value.holderOwnerId) ||
     !isOptionalText(value.number) ||
-    !isOptionalText(value.issueDate)
+    !isOptionalText(value.issueDate) ||
+    !isOptionalFlag(value.canCorrect) ||
+    !isOptionalText(value.replacesDocumentId) ||
+    !isOptionalText(value.replacedByDocumentId) ||
+    !isOptionalText(value.keptReason) ||
+    !isOptionalText(value.closedReason) ||
+    !isOptionalText(value.closedAt) ||
+    !isOptionalText(value.closedBy) ||
+    !isOptionalText(value.closedNote)
   ) {
     return null;
   }
@@ -73,6 +88,14 @@ function itemOf(value: unknown): SelfBillingListItem | null {
     total: value.total,
     currency: value.currency,
     sdiStatus: value.sdiStatus,
+    canCorrect: value.canCorrect === true,
+    replacesDocumentId: textOf(value.replacesDocumentId),
+    replacedByDocumentId: textOf(value.replacedByDocumentId),
+    keptReason: textOf(value.keptReason),
+    closedReason: textOf(value.closedReason),
+    closedAt: textOf(value.closedAt),
+    closedBy: textOf(value.closedBy),
+    closedNote: textOf(value.closedNote),
   };
 }
 
@@ -144,12 +167,39 @@ function notDueOf(value: unknown): SelfBillingNotDue | null {
   return { reason: value.reason, channel: value.channel, stays: value.stays, amount: value.amount, currency: value.currency };
 }
 
-/** What the drafts of a month did: the counts and every row. An answer that is not one is a load error: the page never says «done» over a body it could not read. */
+/** A draft that holds the number of a rejected TD17 and that the drafts of the month kept: its holder, portal and number, and the code of why. */
+function keptOf(value: unknown): SelfBillingKept | null {
+  if (
+    !isRecord(value) ||
+    typeof value.documentId !== 'string' ||
+    typeof value.holderKind !== 'string' ||
+    typeof value.portalName !== 'string' ||
+    typeof value.reason !== 'string' ||
+    !isOptionalText(value.holderOwnerId) ||
+    !isOptionalText(value.number)
+  ) {
+    return null;
+  }
+  return {
+    documentId: value.documentId,
+    holderKind: value.holderKind,
+    holderOwnerId: textOf(value.holderOwnerId),
+    portalName: value.portalName,
+    number: textOf(value.number),
+    reason: value.reason,
+  };
+}
+
+/**
+ * What the drafts of a month did: the counts and every row. An answer that is not one is a load error: the page never says «done» over a body it could not read. `kept` (the drafts that hold the number of a
+ * rejected TD17 and are kept) is additive: an older server does not send it and has no such draft, so it is read as none; sent as anything but a list of drafts it is a load error, never read as «none».
+ */
 function generationOf(data: unknown, path: string): SelfBillingGeneration {
   if (!isRecord(data)) throw new UnexpectedApiResponseError(path);
   const drafts = Array.isArray(data.drafts) ? data.drafts.map(outcomeOf) : null;
   const failed = Array.isArray(data.failed) ? data.failed.map(failureOf) : null;
   const notDue = Array.isArray(data.notDue) ? data.notDue.map(notDueOf) : null;
+  const kept = data.kept === undefined || data.kept === null ? [] : Array.isArray(data.kept) ? data.kept.map(keptOf) : null;
   if (
     !isFiniteNumber(data.year) ||
     !isFiniteNumber(data.month) ||
@@ -161,7 +211,8 @@ function generationOf(data: unknown, path: string): SelfBillingGeneration {
     drafts === null ||
     failed === null ||
     notDue === null ||
-    [...drafts, ...failed, ...notDue].some((row) => row === null)
+    kept === null ||
+    [...drafts, ...failed, ...notDue, ...kept].some((row) => row === null)
   ) {
     throw new UnexpectedApiResponseError(path);
   }
@@ -175,6 +226,7 @@ function generationOf(data: unknown, path: string): SelfBillingGeneration {
     drafts: drafts as SelfBillingOutcome[],
     failed: failed as SelfBillingFailure[],
     notDue: notDue as SelfBillingNotDue[],
+    kept: kept as SelfBillingKept[],
     ledgerPosted: data.ledgerPosted,
   };
 }
@@ -220,7 +272,46 @@ export async function issueSelfBilling(id: string, request: SelfBillingIssueRequ
   return detailOf(response.data, path);
 }
 
-/** The draft of a TD17 discarded (`DELETE api/fiscal/self-billing/{id}`): no number is consumed, and its holder, portal and month are free for a new draft. 422 `document_not_draft`. */
+/** The draft of a TD17 discarded (`DELETE api/fiscal/self-billing/{id}`): no number is consumed, and its holder, portal and month are free for a new draft. 422 `document_not_draft`, `document_replacement_holds_number` (a draft that replaces a rejected TD17 is issued, never discarded). */
 export async function discardSelfBilling(id: string): Promise<void> {
   await axios.delete(`${PATH}/${encodeURIComponent(id)}`);
+}
+
+/**
+ * «Correggi e rimanda» (`POST api/fiscal/self-billing/{id}/correct`, no body, behind the flags of the issuance and of the sending, `agency.invoice.manage`, the whole organization): the TD17 the SDI rejected counts as not
+ * issued, so it is discarded (its number stays on it for the history) and a draft that holds its series and number replaces it. Nothing is issued and nothing is sent to the SDI by it. 201 with the replacement, the detail of
+ * `GET {id}` (a second call answers the same draft). Only that 201 proves the server acted: the answer is `null` when the server answered 201 but its body is not a TD17 this client can read (the correction was made,
+ * and the draft is in the list). Any other success status (a 200 with the page of the app served in place of the API, a 204) is not the answer of the endpoint: it is an `UnexpectedApiResponseError`, a call that failed, told
+ * as such and asked again (a second call answers the same draft), never as «done».
+ * 404 `fiscal_document_not_found` (another organization, not a TD17, unknown; also while a flag is off, with no code), 422 `self_billing_not_correctable` (not issued and rejected, or an issued credit note), 403.
+ * A 403 of a write never sends the app to the page of no access (the shared client does that for reads only): the screen that asked tells it.
+ */
+export async function startSelfBillingCorrection(id: string): Promise<SelfBillingDetail | null> {
+  const path = `${PATH}/${encodeURIComponent(id)}/correct`;
+  const response = await axios.post<unknown>(path);
+  if (response.status !== 201) throw new UnexpectedApiResponseError(path);
+  try {
+    return detailOf(response.data, path);
+  } catch (error) {
+    if (error instanceof UnexpectedApiResponseError) return null;
+    throw error;
+  }
+}
+
+/**
+ * «Chiudi come non più dovuta» (`POST api/fiscal/self-billing/{id}/close-not-due`, `{ reason, note? }`, behind the flags of the issuance and of the sending, `agency.invoice.manage`, the whole organization): the
+ * replacement draft of a rejected TD17 that the month no longer supports is closed with the reason, the person and the day recorded, and KEEPS its number (reserved, never given to another invoice). The note is left out of
+ * the body when there is none. 200 with the detail of the closed draft (`invoice.status` `Discarded`, `invoice.closedReason` set); the same call again with the same reason answers the same 200, so a double click is not an error.
+ * A 200 is the generic success status, so it proves the server acted only when its body is that closed draft: any other answer (the page of the app served in place of the API, a 204, a TD17 that is not closed) is an
+ * `UnexpectedApiResponseError`, a call that failed, told as such and asked again (safe: the same call answers the same draft), never as «done».
+ * 404 `fiscal_document_not_found` (another organization, not a TD17, unknown; also while a flag is off, with no code), 422 `close_reason_required`, `close_note_too_long`, `self_billing_already_closed` (closed with another
+ * reason), `self_billing_not_closable` (not the replacement of a rejected TD17, or one the month still supports), 403. A 403 of a write never sends the app to the page of no access: the screen that asked tells it.
+ */
+export async function closeSelfBillingNotDue(id: string, request: SelfBillingCloseRequest): Promise<SelfBillingDetail> {
+  const path = `${PATH}/${encodeURIComponent(id)}/close-not-due`;
+  const response = await axios.post<unknown>(path, request.note ? { reason: request.reason, note: request.note } : { reason: request.reason });
+  if (response.status !== 200) throw new UnexpectedApiResponseError(path);
+  const detail = detailOf(response.data, path);
+  if (detail.invoice.status !== 'Discarded' || detail.invoice.closedReason === null) throw new UnexpectedApiResponseError(path);
+  return detail;
 }

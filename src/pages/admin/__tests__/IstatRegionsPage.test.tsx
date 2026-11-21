@@ -1,6 +1,6 @@
 import { createElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios';
 import { toast } from 'sonner';
@@ -62,9 +62,10 @@ let table: IstatRegionRule[];
 
 function renderPage() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
-  return render(
+  const view = render(
     createElement(QueryClientProvider, { client }, createElement(IstatRegionsPage)),
   );
+  return { client, ...view };
 }
 
 async function openDialog(rowId: string) {
@@ -263,6 +264,8 @@ describe('IstatRegionsPage', () => {
 
     fireEvent.click(within(dialog).getByTestId('istat-region-save'));
 
+    // The table is read again before the save: the save is on its way once it was.
+    await waitFor(() => expect(istatApi.saveRegion).toHaveBeenCalledTimes(1));
     await waitFor(() => expect(within(dialog).getByTestId('istat-region-save')).toBeDisabled());
     expect(within(dialog).getByTestId('istat-region-cancel')).toBeDisabled();
     expect(within(dialog).getByTestId('istat-region-coverage')).toBeDisabled();
@@ -271,5 +274,93 @@ describe('IstatRegionsPage', () => {
 
     finish({ ...LOMBARDIA, verifiedAt: '2026-11-15T00:00:00.000Z' });
     await waitFor(() => expect(screen.queryByTestId('istat-region-dialog')).not.toBeInTheDocument());
+  });
+
+  // A save replaces the whole row, the API has no version and the save stamps the row «verified today»: a form made from an old read would put old values back as checked.
+  describe('a save is never made from an old read of the table', () => {
+    const LATER = '2026-11-15T17:30:00Z';
+
+    it('IstatRegionsPage_Edit_StartsFromTheRowTheServerHoldsNowAndNotFromTheOlderRead', async () => {
+      renderPage();
+      await screen.findByTestId('istat-regions-table');
+      // Another member of the staff saved the row after this page read the table.
+      table[0] = { ...table[0], system: 'Ross1000 bis', updatedAt: LATER };
+
+      const dialog = await openDialog('03');
+
+      expect(within(dialog).getByTestId('istat-region-system')).toHaveValue('Ross1000 bis');
+    });
+
+    it('IstatRegionsPage_EditWhileTheTableCannotBeReadAgain_OpensNothingAndSaysSo', async () => {
+      renderPage();
+      await screen.findByTestId('istat-regions-table');
+      vi.mocked(istatApi.listRegions).mockRejectedValueOnce(problem(500));
+
+      fireEvent.click(screen.getByTestId('istat-region-edit-03'));
+
+      await waitFor(() => expect(toast.error).toHaveBeenCalledWith(text('istatRegions.toast.rereadFailed')));
+      expect(screen.queryByTestId('istat-region-dialog')).not.toBeInTheDocument();
+      // A failed read is an error, never the rows of the older read.
+      expect(await screen.findByTestId('istat-regions-error')).toBeInTheDocument();
+      expect(screen.queryByTestId('istat-regions-table')).not.toBeInTheDocument();
+    });
+
+    it('IstatRegionsPage_SaveOfARowSomeoneElseChangedMeanwhile_SendsNothingAndAsksToOpenItAgain', async () => {
+      renderPage();
+      const dialog = await openDialog('03');
+      fireEvent.change(within(dialog).getByTestId('istat-region-notes'), { target: { value: 'Nota di prova' } });
+      // Another member of the staff saves the row while the form is open.
+      table[0] = { ...table[0], octorateCoverage: 'NotCovered', updatedAt: LATER };
+
+      fireEvent.click(within(dialog).getByTestId('istat-region-save'));
+
+      expect(await within(dialog).findByTestId('istat-region-stale')).toHaveAttribute('data-reason', 'changed');
+      expect(within(dialog).getByTestId('istat-region-stale')).toHaveTextContent(text('istatRegions.stale.changed'));
+      expect(istatApi.saveRegion).not.toHaveBeenCalled();
+      expect(within(dialog).getByTestId('istat-region-save')).toBeDisabled();
+      // The form stays open with what was typed, and the table shows what the server holds.
+      expect(within(dialog).getByTestId('istat-region-notes')).toHaveValue('Nota di prova');
+      expect(toast.success).not.toHaveBeenCalled();
+    });
+
+    it('IstatRegionsPage_SaveWhileTheTableCannotBeReadAgain_SendsNothingAndSaysSo', async () => {
+      renderPage();
+      const dialog = await openDialog('03');
+      vi.mocked(istatApi.listRegions).mockRejectedValueOnce(problem(500));
+
+      fireEvent.click(within(dialog).getByTestId('istat-region-save'));
+
+      expect(await within(dialog).findByTestId('istat-region-stale')).toHaveAttribute('data-reason', 'unreadable');
+      expect(within(dialog).getByTestId('istat-region-stale')).toHaveTextContent(text('istatRegions.stale.unreadable'));
+      expect(istatApi.saveRegion).not.toHaveBeenCalled();
+      expect(within(dialog).getByTestId('istat-region-save')).toBeDisabled();
+    });
+
+    it('IstatRegionsPage_ReadOfTheTableFailsInTheBackgroundWhileTheFormIsOpen_StopsTheSave', async () => {
+      const { client } = renderPage();
+      const dialog = await openDialog('03');
+
+      vi.mocked(istatApi.listRegions).mockRejectedValueOnce(problem(500));
+      await act(async () => {
+        await client.refetchQueries({ queryKey: ['admin', 'istat-regions'] });
+      });
+
+      expect(await within(dialog).findByTestId('istat-region-stale')).toHaveAttribute('data-reason', 'unreadable');
+      expect(within(dialog).getByTestId('istat-region-save')).toBeDisabled();
+      fireEvent.submit(within(dialog).getByTestId('istat-region-save').closest('form') as HTMLFormElement);
+      expect(istatApi.saveRegion).not.toHaveBeenCalled();
+    });
+
+    it('IstatRegionsPage_RowThatDidNotChange_IsSavedAfterTheTableWasReadAgain', async () => {
+      renderPage();
+      const dialog = await openDialog('03');
+      const readsBefore = vi.mocked(istatApi.listRegions).mock.calls.length;
+
+      fireEvent.click(within(dialog).getByTestId('istat-region-save'));
+
+      await waitFor(() => expect(istatApi.saveRegion).toHaveBeenCalledTimes(1));
+      expect(vi.mocked(istatApi.listRegions).mock.calls.length).toBeGreaterThan(readsBefore);
+      expect(within(dialog).queryByTestId('istat-region-stale')).not.toBeInTheDocument();
+    });
   });
 });

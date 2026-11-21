@@ -154,6 +154,20 @@ describe('NotificationBell (UI-12)', () => {
     expect(screen.getByTestId('where')).toHaveTextContent('/app/supplier/inbox/sr-1');
   });
 
+  it('NotificationBell_ClickOnATicinoNotification_MarksItReadAndOpensTheLayerOfThePropertyOverTheCockpit', async () => {
+    vi.mocked(notificationsApi.list).mockResolvedValue({ items: [note('t1', 'ticino-notification-overdue', 'p-1')], totalCount: 1, page: 1, pageSize: 20 });
+    renderBell();
+    fireEvent.click(await screen.findByTestId('notification-bell'));
+    const row = (await screen.findAllByTestId('notification-row'))[0];
+    expect(within(row).getByText('Sono passate le 24 ore per notificare alla polizia cantonale gli ospiti di un arrivo in Ticino.')).toBeInTheDocument();
+    fireEvent.click(row);
+
+    await waitFor(() => expect(notificationsApi.markRead).toHaveBeenCalledWith('t1'));
+    // The entity of the entry is the property: the layer opens on its first day to notify (no day in the address).
+    expect(screen.getByTestId('where')).toHaveTextContent('/app/short-rent/compliance?detail=ticino:p-1');
+    expect(screen.queryByTestId('notification-panel')).not.toBeInTheDocument();
+  });
+
   it('NotificationBell_UnknownType_MarksItReadAndStaysWhereItIs', async () => {
     renderBell();
     fireEvent.click(await screen.findByTestId('notification-bell'));
@@ -265,6 +279,23 @@ describe('NotificationBell (UI-12)', () => {
       expect(screen.getByTestId('where')).toHaveTextContent('/app/short-rent');
       act(() => options.action?.onClick());
       expect(screen.getByTestId('where')).toHaveTextContent('/app/short-rent/bookings/b-1?tab=guest');
+    });
+
+    // E30/F02/US03/T01 (NF-127): a Ticino alert or declaration is a pop-up that says what it is about and opens the layer of that property over the cockpit (the entity is the property, never the day).
+    it.each([
+      ['ticino-notification-due', 'Gli ospiti di un arrivo in Ticino vanno notificati alla polizia cantonale entro 24 ore.'],
+      ['ticino-notification-overdue', 'Sono passate le 24 ore per notificare alla polizia cantonale gli ospiti di un arrivo in Ticino.'],
+      ['ticino-notification-declared', 'Qualcuno del tuo team ha aggiornato la notifica alla polizia di un arrivo in Ticino.'],
+    ])('NotificationBell_%s_ShowsAPopUpWithAnOpenButtonThatOpensTheLayerOfTheProperty', async (type, sentence) => {
+      renderBell();
+      await screen.findByTestId('notification-bell');
+
+      arrives({ unreadCount: 4, type, entityId: 'p-1' });
+
+      expect(lastToast().message).toBe(sentence);
+      expect(lastToast().options.action?.label).toBe('Apri');
+      act(() => lastToast().options.action?.onClick());
+      expect(screen.getByTestId('where')).toHaveTextContent('/app/short-rent/compliance?detail=ticino:p-1');
     });
 
     it('NotificationBell_English_TheSentenceAndTheButtonAreInEnglish', async () => {

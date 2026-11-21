@@ -88,14 +88,23 @@
       "educationLevel": {
         "required": "Bitte den Bildungsabschluss auswählen"
       },
+      "residencePostalCode": {
+        "maxLength": "Höchstens 20 Zeichen"
+      },
       "residenceProvince": {
         "invalid": "Bitte das Zwei-Buchstaben-Kürzel eingeben (z. B. RM)"
+      },
+      "residenceStreet": {
+        "maxLength": "Höchstens 200 Zeichen"
       },
       "tourismType": {
         "required": "Bitte den Reisezweck auswählen"
       },
       "travelWay": {
         "required": "Bitte das Verkehrsmittel auswählen"
+      },
+      "vehiclePlate": {
+        "invalid": "Bitte ein gültiges Kennzeichen eingeben: Buchstaben, Ziffern und Bindestriche, höchstens 20 Zeichen."
       }
     },
     "loading": "Check-in wird geladen …",
@@ -300,7 +309,8 @@
       "statisticalValueInvalid": "Der gewählte Wert gehört nicht zu den zulässigen.",
       "summary_one": "1 Feld muss geprüft werden",
       "summary_other": "{{count}} Felder müssen geprüft werden",
-      "tooManyRequests": "Zu viele Anfragen in kurzer Zeit: Bitte warten Sie einen Moment und versuchen Sie es erneut."
+      "tooManyRequests": "Zu viele Anfragen in kurzer Zeit: Bitte warten Sie einen Moment und versuchen Sie es erneut.",
+      "vehiclePlateInvalid": "Das Kennzeichen ist ungültig: Bitte Buchstaben, Ziffern und Bindestriche verwenden, höchstens 20 Zeichen."
     },
     "guestKind": {
       "FamilyMember": "Familienmitglied",
@@ -489,12 +499,21 @@
     },
     "residence": {
       "abroad": "Im Ausland",
+      "city": "Ort",
       "comune": "Wohngemeinde",
       "country": "Wohnsitzland",
       "hint": "Freiwillig: Wo der Gast normalerweise wohnt.",
+      "homeHint": "Freiwillig: die Adresse, unter der der Gast wohnt. Sie gehört zur Meldung des Aufenthalts an die Polizei.",
       "inItaly": "In Italien",
       "label": "Wohnsitz",
-      "province": "Provinz des Wohnorts (zwei Buchstaben)"
+      "postalCode": "Postleitzahl",
+      "province": "Provinz des Wohnorts (zwei Buchstaben)",
+      "street": "Straße und Hausnummer"
+    },
+    "swiss": {
+      "documentIntro": "Art und Nummer des Ausweisdokuments jedes Erwachsenen. Das Familienoberhaupt bzw. der Gruppenleiter gibt zusätzlich den Ausstellungsort an.",
+      "guestsIntro": "Geben Sie alle Gäste an, die übernachten, auch Minderjährige. Jeder Erwachsene gibt im nächsten Schritt auch sein Ausweisdokument an.",
+      "stayKindHint": "Bei einer Familie oder Gruppe ist der erste Gast das Familienoberhaupt bzw. der Gruppenleiter. Das Ausweisdokument wird von jedem Erwachsenen verlangt (bei einer Gruppe ab sechs Personen nur vom Gruppenleiter)."
     },
     "toast": {
       "saved": "Check-in-Daten gespeichert.",
@@ -549,6 +568,10 @@
       "plane": "Flugzeug",
       "ship": "Schiff",
       "train": "Zug"
+    },
+    "vehiclePlate": {
+      "hint": "Ein Kennzeichen für den ganzen Aufenthalt, falls Sie mit dem Auto anreisen. Buchstaben, Ziffern und Bindestriche.",
+      "label": "Kennzeichen Ihres Autos (freiwillig)"
     }
   }
 }

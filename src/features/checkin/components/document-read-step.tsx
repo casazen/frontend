@@ -12,10 +12,12 @@ interface DocumentReadStepProps {
   onFile: (file: File) => void;
   onManual: () => void;
   onContinue: () => void;
+  /** The property keeps no image of the document (canton Ticino, decision D6): the step says the photo is not stored. Nothing is said otherwise. */
+  notArchived?: boolean;
 }
 
 /** First step of check-in: a photo of the identity document, read before the guest confirms the fields. */
-export function DocumentReadStep({ review, onConfirm, reading, message, readCount, onFile, onManual, onContinue }: DocumentReadStepProps) {
+export function DocumentReadStep({ review, onConfirm, reading, message, readCount, onFile, onManual, onContinue, notArchived = false }: DocumentReadStepProps) {
   const { t } = useTranslation();
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -26,6 +28,11 @@ export function DocumentReadStep({ review, onConfirm, reading, message, readCoun
       <div className="rounded-md border border-dashed p-6 text-center space-y-3">
         <Camera className="mx-auto h-8 w-8 text-muted-foreground" aria-hidden />
         <p className="text-sm">{t('checkin.scanHint')}</p>
+        {notArchived && (
+          <p className="text-sm font-medium" data-testid="checkin-document-not-archived">
+            {t('checkin.identity.documentNotArchived')}
+          </p>
+        )}
         <input
           ref={inputRef}
           id={inputId}

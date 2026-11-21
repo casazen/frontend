@@ -8,7 +8,17 @@ import { StaleReadNotice } from '@/components/finance/stale-read-notice';
 import { WireAccessLimited } from '@/components/finance/wire-access-limited';
 import { WireAmount } from '@/components/finance/wire-amount';
 import { WireBatchCard } from '@/components/finance/WireBatchCard';
-import { isPayable, ownerIdsOf, payableRows, readStateOf, WIRE_CURRENCIES, withoutIban, type PayableRow } from '@/components/finance/wire-model';
+import {
+  isListCapped,
+  isPayable,
+  ownerIdsOf,
+  payableRows,
+  readStateOf,
+  WIRE_CURRENCIES,
+  WIRE_PAYABLE_LIST_CAP,
+  withoutIban,
+  type PayableRow,
+} from '@/components/finance/wire-model';
 import { PlainSection } from '@/components/shared/calm';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import { ErrorState } from '@/components/shared/error-state';
@@ -49,8 +59,10 @@ type PayableState = 'loading' | 'notFound' | 'error' | 'refused' | 'ready';
  * of the org (the «Fatturazione» setup): the page never asks for an account and never shows one.
  *
  * What can be chosen comes from the server, one list for each currency (`payable-payouts?currency=CHF` and `...=EUR`, never mixed): the payouts that are confirmed, published
- * to the owner and in no file yet. A payout that went into a file leaves the list at once and does not come back after a reload; the refusals of the server stay as the second
- * line of defence. The server says only whether an owner has an IBAN, as a yes or a no: a payout of an owner without one is shown, blocked, with the reason.
+ * to the owner (with a net amount above zero) and in no file yet, the oldest first and at most `WIRE_PAYABLE_LIST_CAP` of them: a list that long says it may not be the whole of
+ * what can be paid. A payout that went into a file leaves the list at once and does not come back after a reload (nor in this visit, whatever a list read again says); the
+ * refusals of the server stay as the second line of defence. The server says only whether an owner has an IBAN, as a yes or a no: a payout of an owner without one is shown,
+ * blocked, with the reason.
  */
 export function WireTransferPage() {
   const { t } = useTranslation();
@@ -293,6 +305,11 @@ function WireTransferBody() {
                   </Button>
                 )}
               </div>
+              {isListCapped(payableReads[currency].data) && (
+                <p className="text-sm text-muted-foreground" data-testid={`wire-cap-note-${currency}`}>
+                  {t('wire.payoutsCapNote', { limit: WIRE_PAYABLE_LIST_CAP, currency })}
+                </p>
+              )}
               <ul role="list" className="space-y-2">
                 {items.map((row) => {
                   const payableRow = isPayable(row);

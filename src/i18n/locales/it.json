@@ -100,6 +100,7 @@
       "other": "Modifica all'account",
       "planChanged": "Piano cambiato: da {{from}} a {{to}}",
       "propertyActivatedWithReminders": "Immobile attivato con {{reminders}} da completare",
+      "rechargeWaiver": "Le commissioni dei portali non sono più riaddebitate ai proprietari: le sostiene l'agenzia",
       "reminder": {
         "documents": "i documenti",
         "documents_safety": "i documenti e la scheda di sicurezza",
@@ -705,6 +706,7 @@
       },
       "entity": {
         "Booking": "Prenotazione",
+        "OwnerStatementVersion": "Rendiconto del proprietario",
         "Property": "Immobile"
       },
       "filter": {
@@ -795,6 +797,10 @@
           "title": "Pulizia da richiedere",
           "why": "Il soggiorno è finito e nessuno ha chiesto la pulizia: dichiara l'immobile pronto o richiedila prima del prossimo arrivo."
         },
+        "CleaningVatToState": {
+          "title": "Riaddebito di pulizia senza IVA indicata",
+          "why": "Rispondi alla domanda: la ditta di pulizie ha applicato l'IVA su questa fattura? Con «Sì» la riga del riaddebito porta l'IVA della ditta, con «No» resta senza IVA, con «Non lo so» l'importo non cambia e la domanda torna una volta, alla chiusura del rendiconto."
+        },
         "CompanyTenantDecision": {
           "title": "Conduttore società da decidere",
           "why": "Il conduttore è una società e l'immobile è di un proprietario privato: decidi se il soggiorno resta una locazione breve, con la ritenuta, oppure no."
@@ -843,6 +849,10 @@
           "title": "Documento del proprietario in scadenza",
           "why": "Un documento condiviso con il proprietario (un'assicurazione, un mandato) scade entro 30 giorni o è già scaduto: carica quello nuovo."
         },
+        "OwnerStatementNoticeFailed": {
+          "title": "Proprietario da avvisare a mano",
+          "why": "Non siamo riusciti ad avvisare il proprietario con l'e-mail che il rendiconto è stato pubblicato: aprilo e avvisa tu il proprietario. Il rendiconto è pubblicato comunque."
+        },
         "OwnerStaySyncFailed": {
           "title": "Blocco del soggiorno del proprietario non accettato",
           "why": "Il gestionale dei canali non ha accettato il blocco delle date: il soggiorno non è confermato finché non lo invii di nuovo."
@@ -866,6 +876,18 @@
         "RoutineTask": {
           "title": "Promemoria manuale della routine",
           "why": "Una routine che hai impostato ti chiede di occuparti di questa prenotazione."
+        },
+        "ScheduledMessageIssue": {
+          "title": "Messaggio programmato da sistemare",
+          "why": "Un messaggio automatico per un ospite non è partito o ha bisogno di te: apri la prenotazione, completa quello che manca oppure invialo tu."
+        },
+        "SelfBillingDraftsToReview": {
+          "title": "Autofatture da controllare ed emettere",
+          "why": "Le autofatture (TD17) del mese sono pronte in bozza: controlla gli importi con le fatture dei portali ed emettile entro la scadenza."
+        },
+        "SelfBillingRejected": {
+          "title": "Autofattura scartata dallo SDI",
+          "why": "Per il fisco l'autofattura non risulta emessa: aprila tra le autofatture, guarda perché lo SDI l'ha scartata e premi «Correggi e rimanda» per rifarla con lo stesso numero. Se ha già una nota di credito, decide il commercialista."
         },
         "TouristTaxDeadline": {
           "title": "Imposta di soggiorno in scadenza",
@@ -1741,6 +1763,7 @@
       "channelAccountHoldersInvalid": "Le modifiche agli intestatari non sono valide: controlla gli annunci e i portali e riprova.",
       "channelCommissionRuleInUse": "Una regola di commissione è già stata usata nei rendiconti: puoi chiuderla ma non cambiarne la percentuale né toglierla.",
       "channelCommissionRulesInvalid": "Una delle percentuali dei portali non è valida. Controlla e riprova.",
+      "channelNotIntegrated": "Questo canale non permette a CasaZen di leggere le recensioni né di rispondere.",
       "cleaningSetupBulkEmpty": "Scegli almeno un immobile: un elenco vuoto non vale «tutti».",
       "cleaningSetupBulkTooMany": "Puoi impostare al massimo 200 immobili alla volta.",
       "cleaningSetupCleanerMismatch": "Il fornitore o la persona dello staff non corrispondono al tipo di addetto scelto: indica solo quello che serve.",
@@ -1772,20 +1795,42 @@
       "documentBookingNotDirect": "Questo documento non è collegato a una prenotazione, quindi non si può emettere da qui.",
       "documentConfirmationRequired": "Serve la tua conferma per emettere il documento: riprova.",
       "documentDraftOutdated": "La bozza è stata fatta con regole o dati che nel frattempo sono cambiati. Premi «Aggiorna» sulla bozza, controlla gli importi e poi emetti di nuovo.",
+      "documentEmailNotSent": "L’e-mail non è partita: il servizio di invio non è disponibile adesso e non è stato mandato niente. Riprova tra poco.",
       "documentInvoiceDataMissing": "Mancano i dati di chi riceve il documento: completali nei dati di fatturazione della prenotazione.",
       "documentIssueFailed": "Il documento non è stato emesso per un nostro problema: è ancora una bozza, riprova tra poco.",
       "documentIssuerConflict": "Per questa prenotazione ha già emesso un altro soggetto: CasaZen non emette un secondo documento.",
       "documentNotCreditable": "Si può fare una nota di credito solo di una fattura o di una ricevuta già emessa.",
       "documentNotDraft": "Il documento non è più una bozza. Aggiorna l’elenco.",
+      "documentNotIssued": "Al cliente si manda solo un documento già emesso: una bozza, o una bozza scartata, non si invia.",
       "documentReadOnly": "Questo documento è in sola lettura: non lo emette CasaZen.",
+      "documentRecipientEmailInvalid": "L’ospite non ha un indirizzo e-mail a cui si possa scrivere (manca, non è valido o è un indirizzo di prova): non è stato mandato niente. Correggilo nella prenotazione e riprova.",
       "documentRuleNotConfigured": "Mancano le regole fiscali di questo documento (aliquote e tipo di documento): completa la configurazione della fatturazione.",
       "fatturapaXmlInvalid": "Il file della fattura elettronica non è valido: controlla i dati di chi emette e di chi riceve il documento.",
       "guestUnreachable": "L'ospite non ha un indirizzo email registrato: non abbiamo inviato nulla.",
       "issuerRegimeCountryMismatch": "Il regime scelto non vale per il paese di chi emette. Controlla il paese e il regime.",
       "noPendingVerification": "Questa verifica non è più in attesa.",
+      "otaReviewActionNotAllowed": "Il portale non ha permesso l'azione: forse la risposta c'è già, oppure il tempo è scaduto. Aggiorna la recensione per vedere com'è andata.",
+      "otaReviewActionUnconfirmed": "Non sappiamo ancora se il portale ha ricevuto l'invio precedente: finché non lo sappiamo non si può mandare di nuovo.",
+      "otaReviewBookingNotReviewable": "Questo soggiorno non ha recensioni da leggere: non c'è stato, oppure non è collegato al portale.",
+      "otaReviewChannelNotSupported": "Per questo canale CasaZen non può rispondere alle recensioni: rispondi dal portale.",
+      "otaReviewHostReviewAlreadySent": "Hai già scritto la tua recensione dell'ospite.",
+      "otaReviewHostReviewInvalid": "La recensione dell'ospite non è valida: servono un voto da 1 a 5 per ogni voce e un testo pubblico.",
+      "otaReviewNotFound": "Recensione non trovata.",
+      "otaReviewNotPublished": "La recensione dell'ospite non è ancora pubblicata: non c'è niente a cui rispondere.",
+      "otaReviewRefreshTooSoon": "Hai letto il portale da poco: riprova tra qualche minuto.",
+      "otaReviewReplyAlreadySent": "Hai già risposto a questa recensione: la risposta si pubblica una volta sola.",
+      "otaReviewWindowClosed": "Il tempo per scrivere la tua recensione dell'ospite è finito.",
       "ownerMandateOwnersEmpty": "Non c’è nessun proprietario a cui applicare il mandato.",
+      "rechargeWaiverNotAcknowledged": "Non abbiamo salvato: per smettere di riaddebitare ai proprietari le commissioni dei portali serve la tua conferma.",
+      "replyNotDelivered": "Il portale non ha confermato la risposta entro un'ora: non è arrivata. Puoi riprovare.",
       "reportInvalidPeriod": "Il periodo non è valido: controlla le date.",
       "reportPeriodTooLong": "Il periodo è troppo lungo: scegline uno di al massimo 24 mesi.",
+      "reviewActionNotAllowed": "Il portale non ha permesso l'azione: forse la risposta c'è già, oppure il tempo è scaduto. Aggiorna la recensione per vedere com'è andata.",
+      "reviewNotAvailable": "Il portale non ci dà le recensioni di questo annuncio: di solito manca un permesso nel tuo channel manager.",
+      "reviewNotDelivered": "Il portale non ha confermato la tua recensione dell'ospite entro un'ora: non è arrivata. Puoi riprovare.",
+      "reviewNotFound": "Recensione non trovata.",
+      "reviewReplyAlreadySent": "Hai già risposto a questa recensione: si risponde una volta sola.",
+      "reviewReplyInvalid": "La risposta deve avere da 1 a 800 caratteri.",
       "routineActionNotAvailable": "Questa routine contiene azioni non ancora disponibili: non si può attivare, ma puoi provarla in modalità test.",
       "routineEventNotAvailable": "Questo evento non fa ancora partire nessuna routine: scegline un altro.",
       "routineLimitReached": "Hai raggiunto il numero massimo di routine (50): elimina una routine per crearne un’altra.",
@@ -1972,6 +2017,20 @@
       "supportVaultSecretMissing": "Queste credenziali non ci sono ancora: salvale prima, oppure chiedile all'utente.",
       "supportVaultTooManyOpenings": "Hai già aperto le credenziali 5 volte nell'ultima ora per questa richiesta: riprova più tardi.",
       "supportVaultValueInvalid": "Utente e password sono obbligatori, al massimo 200 caratteri; il codice aggiuntivo al massimo 100.",
+      "swissMunicipalityNotApplicable": "Il comune svizzero si può indicare solo per un immobile in Svizzera.",
+      "swissMunicipalityUnknown": "Il comune scelto non è nell'elenco ufficiale dei comuni svizzeri: scegli di nuovo la località.",
+      "swissPlacesUnavailable": "L'elenco ufficiale delle località svizzere non è disponibile in questo momento: riprova più tardi.",
+      "swissReceiptDateTooOld": "Il giorno di questo documento è più vecchio di 5 anni: non si può archiviare.",
+      "swissReceiptFileInvalid": "Il file è vuoto oppure troppo grande: al massimo 10 MB.",
+      "swissReceiptTypeInvalid": "Il tipo di documento non è valido.",
+      "ticinoDayAlreadyDeclared": "Questo giorno risulta già caricato sul portale: se scarichi di nuovo il file, il portale potrebbe creare delle notifiche doppie.",
+      "ticinoDeclarationDayInFuture": "Questo giorno non è ancora iniziato: non si può dichiarare il caricamento.",
+      "ticinoDeclarationReceiptInvalid": "La ricevuta non è di questa struttura o di questo giorno.",
+      "ticinoFileFormatInvalid": "Il formato del file non è valido: scegli CSV o XML.",
+      "ticinoNotAGroup": "Questo soggiorno non è un gruppo di sei o più persone: non c'è una scheda del gruppo.",
+      "ticinoNotificationEmpty": "Nessun ospite di questo giorno ha i dati completi: completali e scarica di nuovo il file.",
+      "ticinoStructureIdMissing": "Manca il numero identificativo della struttura: inseriscilo per creare il file.",
+      "ticinoXmlNotAvailable": "Il file XML non si può creare per questo giorno: scarica il CSV.",
       "videoCallNotSent": "L'email non è partita e nulla è stato inviato. Riprova.",
       "videoCallUrlInvalid": "Il link della riunione non è valido: deve cominciare con https://, senza spazi né password.",
       "xlsxTooManyRows": "Troppe righe: un foglio di un file Excel può avere al massimo 10.000 righe. Scegli un periodo più breve e riprova.",
@@ -2102,6 +2161,8 @@
       "guestMarketingConsentUnavailable": "In questo momento non possiamo salvare la tua scelta: riprova più tardi.",
       "guestMarketingEmailInvalid": "Scrivi un indirizzo e-mail corretto: quello della prenotazione non si può usare per le offerte.",
       "guestMarketingPhoneInvalid": "Controlla il numero di telefono: non sembra corretto.",
+      "guestRegistrationCountryNotSupported": "CasaZen non ha ancora le regole sulla notifica degli ospiti per il paese di questo immobile.",
+      "guestRegistrationOverrideNotApplicable": "La risposta sulla notifica degli ospiti si può dare solo per un immobile in Svizzera.",
       "welcomeAdultRequired": "Per continuare devi dichiarare di avere almeno 18 anni.",
       "welcomeChannelRequired": "Scegli almeno un canale: e-mail o WhatsApp.",
       "welcomeConsentOutdated": "Il testo del consenso è stato aggiornato: leggilo di nuovo e conferma la tua scelta.",
@@ -2240,6 +2301,7 @@
       "calendarTooManyProperties": "Una modifica può riguardare al massimo 50 immobili.",
       "calendarWindowTooLarge": "Il periodo è troppo lungo per essere letto in una volta.",
       "propertyNotFound": "Non troviamo l'immobile, oppure non hai accesso.",
+      "propertyNotInTicino": "Questa struttura non risulta nel Canton Ticino: la notifica alla polizia ticinese non si applica.",
       "propertyModeBlockedByBookings": "In quel giorno ci sono ancora soggiorni o date occupate sui portali. Scegli un giorno più avanti.",
       "propertyModeBlockedByDraftLease": "C'è una bozza di contratto: va eliminata prima del passaggio.",
       "propertyModeBlockedByLease": "In quel giorno c'è ancora un contratto in corso. Scegli il giorno dopo la sua fine.",
@@ -2453,6 +2515,7 @@
   "approval": {
     "action": {
       "approve": "Approva",
+      "approveAndPublish": "Approva e pubblica",
       "approveAndSend": "Approva e invia",
       "approved": "Elemento approvato",
       "approveFailed": "Impossibile approvare l'elemento",
@@ -2466,7 +2529,9 @@
         "message": "Messaggio inviato all'ospite.",
         "messageQueued": "Messaggio preso in carico dal tuo channel manager: sarà lui a inviarlo all'ospite.",
         "messageVerify": "Non sappiamo se il canale ha ricevuto il messaggio: controllalo nella conversazione prima di scriverlo di nuovo.",
-        "none": "Approvato. Non c'era nessuna azione collegata da eseguire."
+        "none": "Approvato. Non c'era nessuna azione collegata da eseguire.",
+        "review": "Risposta pubblicata.",
+        "reviewVerify": "Non sappiamo se il portale ha ricevuto la risposta: controlla la recensione prima di scriverla di nuovo."
       },
       "originFailed": "Non è stato possibile completare l'approvazione: l'elemento resta in attesa.",
       "originFailedHint": "Puoi riprovare, oppure modificare il testo e approvarlo di nuovo.",
@@ -2503,6 +2568,7 @@
       "description": "Cambia il testo prima di decidere. L'originale resta qui sotto.",
       "descriptionCampaign": "Cambia l'oggetto e il testo della campagna prima di approvarla. L'originale resta qui sotto.",
       "descriptionMessage": "Cambia il messaggio prima che parta verso l'ospite. L'originale resta qui sotto.",
+      "descriptionReview": "Cambia la risposta prima che venga pubblicata sotto la recensione. L'originale resta qui sotto.",
       "error": {
         "bodyRequired": "Scrivi il testo della campagna.",
         "empty": "Scrivi il testo.",
@@ -2526,7 +2592,8 @@
     },
     "hint": {
       "campaign": "Approvandola, la campagna viene approvata e, se ha già una data di invio, programmata.",
-      "messageDraft": "Approvandola, il messaggio parte verso l'ospite. Puoi modificarlo prima."
+      "messageDraft": "Approvandola, il messaggio parte verso l'ospite. Puoi modificarlo prima.",
+      "reviewReply": "Approvandola, la risposta viene pubblicata sotto la recensione: è pubblica e non si può più ritirare. Puoi modificarla prima."
     },
     "queue": {
       "description": "Elementi in attesa di approvazione prima dell'esecuzione",
@@ -2540,6 +2607,9 @@
     "reject": {
       "reasonRequired": "Scrivi il motivo del rifiuto.",
       "reasonTooLong": "Il motivo è troppo lungo: al massimo {{max}} caratteri."
+    },
+    "review": {
+      "open": "Apri la recensione"
     },
     "situation": {
       "cancellation_or_refund": "Cancellazione o rimborso",
@@ -2573,6 +2643,7 @@
       "campaign": "Campagna",
       "messageDraft": "Bozza di messaggio",
       "other": "Altro",
+      "reviewReply": "Risposta a una recensione",
       "routine": "Routine"
     }
   },
@@ -3197,6 +3268,14 @@
         "description": "La commissione che il portale ha fatturato all’agenzia entra nella fattura al proprietario, con l’IVA del compenso. Da confermare con il commercialista.",
         "legend": "Commissioni dei portali pagate dall’agenzia",
         "title": "Riaddebita le commissioni dei portali al proprietario"
+      },
+      "waiver": {
+        "confirm": "Confermo: le sostiene l’agenzia",
+        "description": "Da ora la commissione dei portali pagata dall’agenzia è un costo suo e non viene addebitata al proprietario.",
+        "mandate": "Controlla che il mandato lo consenta: l’agenzia rinuncia al rimborso che la legge le riconosce per queste spese e al documento che giustificherebbe la detrazione.",
+        "notRetroactive": "Non cambia i rendiconti già fatti: vale per quelli ancora da fare.",
+        "recorded": "CasaZen registra chi ha confermato e quando.",
+        "title": "Confermi che l’agenzia sostiene le commissioni dei portali?"
       }
     },
     "description": "Imposta come CasaZen emette i tuoi documenti: pochi passi, uno alla volta. Ogni passo si salva da solo e puoi riprendere quando vuoi.",
@@ -3689,8 +3768,43 @@
       "italy": {
         "empty": "Non hai ancora immobili: qui compariranno i comuni dei tuoi immobili con la loro tassa di soggiorno.",
         "intro": "In Italia la tassa di soggiorno si calcola con le regole del comune di ogni immobile: le tiene CasaZen e qui non devi impostare niente.",
+        "introPortals": "In Italia la tassa di soggiorno si calcola con le regole del comune di ogni immobile: le tiene CasaZen. Ti chiediamo solo una cosa: se un portale la incassa al posto tuo.",
         "loading": "Leggo le regole dei comuni",
         "noRate": "Da fare: manca l’aliquota",
+        "portals": {
+          "answerNow": "Rispondi ora",
+          "confirmed": {
+            "effect": "Sul documento per l’ospite l’imposta di questi soggiorni risulta incassata dal portale.",
+            "item": "{{portal}} incassa e versa l’imposta di soggiorno a {{comune}}",
+            "remove": "Togli la conferma per {{comune}}",
+            "title": "Hai confermato"
+          },
+          "done": {
+            "confirmed": "Confermato per {{comune}}.",
+            "removed": "Conferma tolta per {{comune}}."
+          },
+          "failure": {
+            "failed": "Non siamo sicuri che la tua risposta sia stata salvata: controlla l’elenco e riprova.",
+            "forbidden": "Il tuo ruolo non può cambiare come si emettono i documenti: la risposta non è stata salvata.",
+            "invalid": "Il portale o il comune di questa risposta non sono validi: la risposta non è stata salvata. Aggiorna la pagina e riprova.",
+            "notSent": "Non siamo riusciti a leggere l’elenco aggiornato, quindi non abbiamo inviato la tua risposta. Riprova.",
+            "profile": "Prima di rispondere completa i dati di chi emette, nel primo passo: la risposta non è stata salvata.",
+            "retry": "Riprova",
+            "wholeOrg": "Come si emettono i documenti riguarda tutti gli immobili dell’organizzazione: può cambiarlo solo chi li vede tutti, e il tuo accesso ne vede solo alcuni. La risposta non è stata salvata."
+          },
+          "hint": "I dati dei soggiorni da portale contraddicono la regola dell’imposta di soggiorno: controlla qui sotto.",
+          "proposal": {
+            "confirm": "Sì, confermo per {{comune}}",
+            "deferred": "Per {{comune}} non hai ancora risposto: sul documento per l’ospite l’imposta resta «da pagare in struttura». Puoi rispondere quando vuoi.",
+            "effect": "Se la incassa {{portal}}, il documento per l’ospite dice che l’imposta è stata incassata dal portale (per le esenzioni ci si rivolge al portale); altrimenti dice «da pagare in struttura».",
+            "notNow": "Non ora",
+            "notNowFor": "Non ora, per {{comune}}",
+            "question": "{{portal}} incassa e versa l’imposta di soggiorno a {{comune}}?",
+            "whereAirbnb": "Controllalo nel tuo annuncio su Airbnb, sezione Tasse, voce «Tasse locali riscosse e versate da Airbnb».",
+            "whereOther": "Controllalo nelle impostazioni del tuo annuncio su {{portal}}."
+          },
+          "title": "Imposta di soggiorno sulle prenotazioni da portale"
+        },
         "toDo_one": "CasaZen aggiunge l’aliquota del comune di {{comuni}}: ti avvisiamo appena c’è. Nel frattempo puoi andare avanti.",
         "toDo_other": "CasaZen aggiunge le aliquote dei comuni di {{comuni}}: ti avvisiamo appena ci sono. Nel frattempo puoi andare avanti.",
         "toDoTitle": "Da fare",
@@ -3702,7 +3816,8 @@
         "host": "La incasso io",
         "intro": "Per ogni portale dici chi incassa la tassa di soggiorno. Se la incassa il portale, sul documento non compare la riga. Se la incassi tu, compare con la regola del cantone.",
         "note": "Rispondi per ogni portale: non salviamo una scelta che non hai fatto.",
-        "portal": "La incassa il portale"
+        "portal": "La incassa il portale",
+        "proposed": "Per {{portals}} abbiamo già scelto «{{choice}}»: di solito la tassa la incassa il portale. Controlla, e cambia se per te non è così."
       }
     },
     "vat": {
@@ -4855,6 +4970,19 @@
       "confirmManual": {
         "title": "Conferma la prenotazione"
       },
+      "linkScheduled": {
+        "title": "Il link per il check-in online parte da solo",
+        "body": "CasaZen lo manda all'ospite il {{date}}. Se preferisci, mandalo subito.",
+        "action": "Mandalo ora"
+      },
+      "arrivalAutomatic": {
+        "title": "Arrivo di {{guest}}: ci pensa CasaZen",
+        "body": "Alla fine del giorno di arrivo ({{date}}) CasaZen lo registra da solo. Se l'ospite non arriva, segnala il no-show."
+      },
+      "departureAutomatic": {
+        "title": "Partenza di {{guest}}: ci pensa CasaZen",
+        "body": "All'orario di check-out CasaZen registra la partenza e prosegue con la pulizia e la casa pronta. Se preferisci, chiudi tu il soggiorno."
+      },
       "heading": "Cosa succede ora",
       "registerArrival": {
         "body": "Quando l'ospite è nell'immobile, conferma qui l'arrivo. Check-in: {{date}}.",
@@ -5195,6 +5323,195 @@
       "sendError": "Messaggio non inviato. Controlla la connessione e riprova.",
       "unread_one": "{{count}} messaggio da leggere",
       "unread_other": "{{count}} messaggi da leggere"
+    },
+    "scheduledMessages": {
+      "blocked": {
+        "fix": {
+          "guest": "Apri Documenti",
+          "property": "Apri l'immobile",
+          "routines": "Apri le routine",
+          "tax": "Apri la tassa di soggiorno"
+        },
+        "heading": "Manca:",
+        "item": {
+          "accessCodeHeld": "il pagamento della tassa di soggiorno (il codice d'accesso aspetta)",
+          "checkInInProgress": "che l'ospite finisca il check-in che sta compilando",
+          "idNotVerified": "la verifica dell'identità dell'ospite (il codice d'accesso parte solo dopo)",
+          "templateMissing": "il modello del messaggio (non c'è più: scrivi il testo con «Modifica» o scegli un altro modello nella routine)",
+          "textInvalid": "un testo valido (è vuoto, troppo lungo o il canale non lo accetta)",
+          "unknown": "un dato che serve per inviarlo"
+        },
+        "variable": {
+          "accessCode": "il codice d'accesso dell'immobile",
+          "bookingCode": "il codice della prenotazione",
+          "checkInDate": "la data di arrivo",
+          "checkInLink": "il link del check-in",
+          "checkInMethod": "come entra l'ospite (il metodo di check-in dell'immobile)",
+          "checkInTime": "l'orario di arrivo dell'immobile",
+          "checkOutDate": "la data di partenza",
+          "checkOutTime": "l'orario di partenza dell'immobile",
+          "guestName": "il nome dell'ospite (il canale non l'ha comunicato)",
+          "hostName": "il tuo nome come host",
+          "propertyAddress": "l'indirizzo dell'immobile",
+          "propertyName": "il nome dell'immobile",
+          "reviewLink": "il link per la recensione (c'è solo per le prenotazioni fatte dal tuo sito)"
+        },
+        "willHold": "Quando arriva il momento di inviarlo, il messaggio resta fermo finché questi dati non ci sono: il testo qui sotto non li ha ancora."
+      },
+      "channel": {
+        "direct": "conversazione diretta con l'ospite",
+        "email": "e-mail",
+        "line": "Canale: {{channel}}",
+        "lineNone": "Nessun modo per scrivere all'ospite: {{reason}}",
+        "none": "nessuno",
+        "ota": "chat del portale",
+        "reason": {
+          "contactInfoUnavailable": "il canale non comunica l'e-mail di questo ospite",
+          "mappingNotConfirmed": "l'annuncio della conversazione non è ancora collegato a un tuo immobile",
+          "noConversation": "non c'è una conversazione e non c'è un altro modo",
+          "notConnected": "il collegamento ai canali non è attivo",
+          "other": "al momento non c'è una via per raggiungerlo",
+          "threadClosed": "la conversazione è chiusa",
+          "unknown": "non riusciamo a controllarlo in questo momento"
+        }
+      },
+      "draftKept": "Il testo che stavi scrivendo non è perso: torna quando i messaggi si leggono di nuovo.",
+      "edit": {
+        "action": "Modifica",
+        "actionLabel": "Modifica il messaggio «{{name}}» di {{when}}",
+        "description": "La modifica vale solo per questa prenotazione: la routine e le altre prenotazioni non cambiano.",
+        "fieldHint": "I pulsanti qui sotto inseriscono un dato che CasaZen scrive al momento dell'invio, come il nome dell'ospite. Il dato compare tra doppie parentesi graffe.",
+        "fieldLabel": "Testo del messaggio",
+        "fixedNote": "Il testo parte da come lo leggerà l'ospite adesso: i dati già compilati (nome, date, orari, indirizzo) diventano testo fisso e non seguono più la prenotazione se questa cambia. Per farli seguire, inseriscili con i pulsanti.",
+        "insertLabel": "Inserisci un dato",
+        "missingAccept": "Ho capito: salvo il testo senza questi dati",
+        "missingHeading": "Nel testo qui sotto mancano questi dati, perché la prenotazione non li ha ancora:",
+        "missingWarning": "Se salvi così, il messaggio parte senza questi dati. Per tenerli, inserisci il pulsante evidenziato dove vanno: il messaggio resta fermo finché il dato non c'è.",
+        "originalSummary": "Testo della routine",
+        "restore": "Rimetti il testo della routine nel campo",
+        "restored": "Il messaggio torna al testo della routine.",
+        "save": "Salva",
+        "saved": "Messaggio modificato: la modifica vale solo per questa prenotazione.",
+        "title": "Modifica il messaggio",
+        "useRoutineText": "Usa il testo della routine",
+        "useRoutineTextHint": "Cancella la tua modifica: il messaggio torna al testo della routine, con i dati di questa prenotazione.",
+        "variable": {
+          "accessCode": "Codice d'accesso",
+          "bookingCode": "Codice prenotazione",
+          "checkInDate": "Data di arrivo",
+          "checkInLink": "Link del check-in",
+          "checkInMethod": "Come si entra",
+          "checkInTime": "Orario di arrivo",
+          "checkOutDate": "Data di partenza",
+          "checkOutTime": "Orario di partenza",
+          "guestName": "Nome dell'ospite",
+          "hostName": "Il tuo nome",
+          "propertyAddress": "Indirizzo",
+          "propertyName": "Nome dell'immobile",
+          "reviewLink": "Link per la recensione"
+        }
+      },
+      "edited": "Modificato",
+      "empty": "Non c'è niente di programmato per questa prenotazione. I messaggi partono da soli solo dopo che attivi una routine che li contiene.",
+      "emptyLink": "Vai alle routine",
+      "errors": {
+        "blocked": "Non è partito: manca ancora qualcosa.",
+        "blockedNamed": "Non è partito: manca ancora {{missing}}.",
+        "changed": "Qualcun altro ha cambiato il messaggio mentre lo modificavi: guarda com'è adesso e riprova.",
+        "generic": "Non siamo riusciti a completare l'operazione. Riprova tra poco.",
+        "inProgress": "Il messaggio sta partendo proprio ora: riprova tra poco.",
+        "notEditable": "Il messaggio non si può più cambiare: è già partito o non partirà più.",
+        "notFound": "Questo messaggio non c'è più o non puoi vederlo.",
+        "notSendable": "Il messaggio non si può inviare: è già partito o non partirà più.",
+        "textInvalid": "Il testo non può essere vuoto né più lungo di 2000 caratteri.",
+        "variableUnknown": "Nel testo c'è una parte tra doppie parentesi graffe che non è un dato che conosciamo: inseriscili con i pulsanti."
+      },
+      "failure": {
+        "channelRefused": "Non è partito: il canale ha segnalato un errore.",
+        "chatNotLicensed": "Non è partito: la chat del portale non è ancora attiva per questo annuncio.",
+        "manualVerify": "Non sappiamo se il messaggio è arrivato: controlla la conversazione prima di inviarlo di nuovo.",
+        "other": "Non è partito, per un problema che CasaZen non sa ancora spiegare.",
+        "rateLimited": "Non è partito: il canale ha chiesto di aspettare un po'.",
+        "unavailable": "Non è partito: il canale non risponde in questo momento.",
+        "unconfirmed": "Il canale non ha ancora confermato di aver preso il messaggio: non lo consideriamo inviato."
+      },
+      "listLabel": "Messaggi programmati per questa prenotazione, in ordine di orario",
+      "loadError": "Non riusciamo a leggere i messaggi programmati: non sappiamo cosa sta per partire.",
+      "loadErrorGone": "Questa prenotazione non c'è più o non puoi vederla: i suoi messaggi programmati non sono disponibili.",
+      "loading": "Carico i messaggi programmati…",
+      "outsideHours": "Inviato fuori orario",
+      "placeholder": {
+        "accessCode": "il codice d'accesso verrà aggiunto quando il messaggio parte",
+        "checkInLink": "il link del check-in verrà creato quando il messaggio parte",
+        "reviewLink": "il link per la recensione verrà aggiunto quando il messaggio parte"
+      },
+      "reason": {
+        "bookingCancelled": "La prenotazione è stata annullata: il messaggio non parte.",
+        "bySystem": "Saltato da CasaZen.",
+        "campaignNeedsConsent": "L'ospite non ha dato il consenso a ricevere messaggi di marketing.",
+        "channelRule": "Le regole del canale non permettono questo testo in questa conversazione, per esempio un link nella richiesta di una prenotazione.",
+        "checkInCompleted": "L'ospite ha già completato il check-in online: il link non serve più.",
+        "checkInNotOpen": "Il soggiorno non ha un check-in aperto (non è confermato o è già finito): il link non serve.",
+        "checkInWithOperator": "La verifica dell'identità è in mano a un operatore: un nuovo link la farebbe ricominciare.",
+        "checkOutReached": "È rimasto fermo fino alla partenza dell'ospite: non parte più.",
+        "conditionNotMet": "Questa prenotazione non rispetta la condizione della routine.",
+        "contactUnavailable": "Non c'è un modo per scrivere all'ospite: manca una conversazione, è chiusa o non c'è un indirizzo.",
+        "mappingNotConfirmed": "L'annuncio di questa conversazione non è ancora collegato a un tuo immobile: CasaZen non scrive finché non lo confermi.",
+        "missed": "L'orario previsto è passato da troppo tempo: non lo mandiamo in ritardo.",
+        "otherCancelled": "Il messaggio non partirà più.",
+        "otherExpired": "Il momento di inviarlo è passato.",
+        "otherSkipped": "CasaZen non l'ha inviato.",
+        "person": "Saltato da una persona del team.",
+        "routineInactive": "La routine è stata spenta o non contiene più questo messaggio."
+      },
+      "retry": "Riprova",
+      "routine": "Routine: {{name}}",
+      "routineUnnamed": "Senza nome",
+      "sendNow": {
+        "action": "Invia ora",
+        "actionLabel": "Invia ora il messaggio «{{name}}» di {{when}}",
+        "blockedNote": "Se non lo completi, il messaggio non parte.",
+        "confirm": "Invia ora",
+        "consequenceGuest": "L'ospite lo riceve adesso.",
+        "consequenceNow": "Il messaggio parte subito, senza aspettare l'orario previsto.",
+        "description": "Stai inviando subito il messaggio «{{name}}», previsto per {{when}}.",
+        "done": "Messaggio inviato.",
+        "failed": "Il messaggio non è partito: guarda il motivo nell'elenco.",
+        "notSent": "Il messaggio non è stato inviato: guarda il motivo nell'elenco.",
+        "stillMissing": "Manca ancora:",
+        "title": "Inviare il messaggio adesso?"
+      },
+      "sent": {
+        "at": "Inviato il {{when}}.",
+        "done": "Inviato.",
+        "openConversation": "Apri la conversazione",
+        "skippedAfterSend": "Il messaggio era già partito il {{when}}: l'ospite l'ha ricevuto lo stesso."
+      },
+      "skip": {
+        "action": "Salta",
+        "actionLabel": "Salta il messaggio «{{name}}» di {{when}}",
+        "confirm": "Salta il messaggio",
+        "consequenceFinal": "Non si può tornare indietro: il messaggio non partirà più.",
+        "consequenceGuest": "L'ospite non riceverà questo messaggio.",
+        "consequenceTeam": "Le altre persone che seguono l'immobile ricevono un avviso.",
+        "description": "Stai saltando il messaggio «{{name}}» previsto per {{when}}.",
+        "done": "Messaggio saltato: l'ospite non lo riceverà.",
+        "notDone": "Il messaggio non risulta saltato: guarda lo stato nell'elenco.",
+        "title": "Saltare questo messaggio?"
+      },
+      "status": {
+        "Blocked": "Bloccato",
+        "Cancelled": "Annullato",
+        "Expired": "Scaduto",
+        "Failed": "Invio non riuscito",
+        "Scheduled": "Programmato",
+        "Sent": "Inviato",
+        "Skipped": "Saltato",
+        "unknown": "Stato sconosciuto"
+      },
+      "textLabel": "Testo del messaggio",
+      "textMissing": "Il testo non è disponibile: il modello del messaggio non c'è più.",
+      "title": "Messaggi programmati"
     }
   },
   "bookingStatus": {
@@ -5583,14 +5900,23 @@
       "educationLevel": {
         "required": "Seleziona il titolo di studio"
       },
+      "residencePostalCode": {
+        "maxLength": "Al massimo 20 caratteri"
+      },
       "residenceProvince": {
         "invalid": "Inserisci la sigla di due lettere (es. RM)"
+      },
+      "residenceStreet": {
+        "maxLength": "Al massimo 200 caratteri"
       },
       "tourismType": {
         "required": "Seleziona il motivo del viaggio"
       },
       "travelWay": {
         "required": "Seleziona il mezzo usato per arrivare"
+      },
+      "vehiclePlate": {
+        "invalid": "Inserisci una targa valida: lettere, cifre e trattini, al massimo 20 caratteri."
       }
     },
     "loading": "Caricamento check-in...",
@@ -5902,7 +6228,8 @@
       "statisticalValueInvalid": "Il valore scelto non è tra quelli ammessi.",
       "summary_one": "C'è 1 campo da controllare",
       "summary_other": "Ci sono {{count}} campi da controllare",
-      "tooManyRequests": "Troppe richieste in poco tempo: attendi qualche istante e riprova."
+      "tooManyRequests": "Troppe richieste in poco tempo: attendi qualche istante e riprova.",
+      "vehiclePlateInvalid": "La targa non è valida: usa lettere, cifre e trattini, al massimo 20 caratteri."
     },
     "guestKind": {
       "FamilyMember": "Familiare",
@@ -6091,12 +6418,21 @@
     },
     "residence": {
       "abroad": "All'estero",
+      "city": "Località",
       "comune": "Comune di residenza",
       "country": "Stato di residenza",
       "hint": "Facoltativo: dove vive abitualmente l’ospite.",
+      "homeHint": "Facoltativo: l’indirizzo dove vive l’ospite. Fa parte della notifica del soggiorno alla polizia.",
       "inItaly": "In Italia",
       "label": "Residenza",
-      "province": "Provincia di residenza (due lettere)"
+      "postalCode": "CAP",
+      "province": "Provincia di residenza (due lettere)",
+      "street": "Via e numero civico"
+    },
+    "swiss": {
+      "documentIntro": "Tipo e numero del documento d’identità di ogni adulto. Il capofamiglia o il capogruppo indica anche il luogo di rilascio.",
+      "guestsIntro": "Inserisci tutti gli ospiti che soggiornano, minorenni compresi. Ogni adulto indicherà anche il proprio documento d’identità nel passo successivo.",
+      "stayKindHint": "Per una famiglia o un gruppo il primo ospite è il capofamiglia o il capogruppo. Il documento d’identità si chiede a ogni adulto (per un gruppo di sei o più, solo al capogruppo)."
     },
     "toast": {
       "saved": "Dati del check-in salvati.",
@@ -6151,6 +6487,10 @@
       "plane": "Aereo",
       "ship": "Nave",
       "train": "Treno"
+    },
+    "vehiclePlate": {
+      "hint": "Una sola targa per tutto il soggiorno, se arrivi in auto. Lettere, cifre e trattini.",
+      "label": "Targa dell’auto (facoltativa)"
     },
     "wizard": {
       "checks": {
@@ -6776,6 +7116,7 @@
       }
     },
     "item": {
+      "NotifyTicinoPolice": "Notifica alla polizia degli arrivi del {{period}}",
       "ActivateOctorateSend": "Invio automatico alla Questura",
       "ActivateProperty": "Attivazione dell'immobile",
       "CheckOut": "Partenza",
@@ -7017,6 +7358,7 @@
       },
       "choice": {
         "istat": "Lo stesso invio si occupa anche delle statistiche regionali (ISTAT), dove richieste.",
+        "istatSeeNotice": "Per l'ISTAT vale quanto dice l'avviso qui sopra.",
         "legend": "Chi invia i dati degli ospiti alla Polizia?",
         "notAvailable": "Non ancora disponibile.",
         "now": "Adesso: {{sender}}",
@@ -7068,6 +7410,7 @@
           "lead": "Il tuo channel manager conferma che invia i dati alla Polizia.",
           "points": {
             "istat": "Lo stesso invio si occupa delle statistiche regionali (ISTAT), dove richieste.",
+            "istatSeeNotice": "Per l'ISTAT guarda l'avviso sulla tua regione: non è detto che lo invii il channel manager.",
             "send": "Ogni giorno il tuo channel manager invia alla Polizia i dati degli ospiti."
           },
           "title": "Invio automatico attivo"
@@ -7233,6 +7576,7 @@
         },
         "istat": "Statistiche ISTAT",
         "istatFollows": "Le invia lo stesso servizio, dove richieste",
+        "istatSeeNotice": "Dipende dalla tua regione: vedi l'avviso sull'ISTAT",
         "property": "Immobile",
         "switch": {
           "automaticToAutomatic": "L'invio automatico in corso verrà spento: due invii automatici insieme farebbero partire i dati due volte. Se oggi invia il tuo channel manager, spegni l'invio automatico anche nel suo pannello. Finché lo stato del nuovo invio non è «Attivo» continui a inviare tu.",
@@ -7352,6 +7696,7 @@
       "tosAccept": "Confermo che l'immobile soddisfa i requisiti di compliance CasaZen",
       "remindersAccept": "Attivo comunque: so che la scheda di sicurezza e i documenti ancora da completare sono un mio obbligo e li completo il prima possibile.",
       "backToEdit": "Torna alla modifica immobile",
+      "backToStep": "Torna a «{{step}}»",
       "complete": "Completa attivazione",
       "completed": "Immobile attivato con successo",
       "blockersRemain": "Attivazione salvata — completa i blocchi rimanenti per pubblicare.",
@@ -7363,6 +7708,7 @@
         "safety": "Checklist sicurezza",
         "tourist-tax": "Imposta di soggiorno",
         "ical": "Sincronizzazione calendario",
+        "guest-registration": "Notifica degli ospiti",
         "review": "Riepilogo e attivazione"
       },
       "touristTax": {
@@ -7413,7 +7759,9 @@
         "activation_cin_missing": "Inserisci il codice CIN dell'immobile.",
         "activation_cin_invalid": "Il codice CIN non è nel formato ufficiale (es. IT015146C2ABCDEFGH).",
         "activation_documents_missing": "Carica i documenti richiesti per l'attivazione.",
-        "safety_extinguishers_below_minimum": "Estintori insufficienti rispetto al minimo richiesto per i piani e i m² dell'unità."
+        "safety_extinguishers_below_minimum": "Estintori insufficienti rispetto al minimo richiesto per i piani e i m² dell'unità.",
+        "swiss_municipality_missing": "Indica il comune svizzero dell'immobile.",
+        "ticino_structure_id_missing": "Inserisci il numero identificativo della struttura (Ticino)."
       },
       "review": {
         "intro": "Controlla lo stato di ogni passaggio: puoi tornare a qualsiasi passaggio senza perdere i dati inseriti.",
@@ -7966,6 +8314,7 @@
         "Unknown": "Controlla nel pannello del tuo channel manager che il collegamento con la Polizia sia attivo e che l'invio automatico giornaliero sia acceso, poi torna qui e controlla di nuovo."
       }
     },
+    "istatSeeNotice": "Se l'ISTAT parte dal channel manager dipende dalla tua regione: vedi l'avviso qui sotto.",
     "lastRun": "Ultimo invio automatico: {{when}}",
     "loadError": "Non riusciamo a leggere lo stato dell'invio.",
     "loading": "Leggo lo stato dell'invio…",
@@ -8527,6 +8876,10 @@
       "requests_other": "{{count}} richieste da approvare"
     },
     "todo": {
+      "NotifyTicinoPolice": {
+        "cta": "Notifica",
+        "title": "Notifica alla polizia gli ospiti arrivati il {{period}}: {{label}}"
+      },
       "ActivateOctorateSend": {
         "cta": "Controlla l'invio",
         "title": "Attiva l'invio automatico alla Questura: {{label}}"
@@ -8999,6 +9352,42 @@
       "manage": "Vai alla configurazione",
       "dismiss": "Nascondi suggerimento",
       "loadError": "Non riusciamo a caricare l'indirizzo del tuo sito."
+    },
+    "surfaces": {
+      "description": "Scegli cosa passa dal tuo indirizzo. Quello che lasci spento resta sull'indirizzo di CasaZen.",
+      "guestArea": {
+        "help": "I tuoi ospiti gestiscono la prenotazione e fanno il check-in dal tuo indirizzo, con il tuo marchio.",
+        "label": "Area ospite sul mio dominio",
+        "notActive": "Per ora l'area ospite resta sull'indirizzo di CasaZen."
+      },
+      "links": {
+        "address": "I link che invii partono da {{url}}.",
+        "help": "Check-in, gestione della prenotazione, conferme e inviti partono dal tuo indirizzo invece che da quello di CasaZen.",
+        "label": "Usa il mio dominio nei link che invio",
+        "notActive": "Per ora i link restano quelli di CasaZen."
+      },
+      "ownerLogin": {
+        "label": "Accesso dei proprietari",
+        "manualHint": "Lo abilita CasaZen: per te non c'è nulla da fare.",
+        "retry": "Riprova",
+        "retryFailed": "Richiesta non riuscita: riprova tra poco.",
+        "retryReady": "L'accesso dei proprietari sul tuo dominio è attivo.",
+        "retryRequested": "Richiesta inviata. Ti avvisiamo appena l'accesso dei proprietari è attivo.",
+        "retryStillFailed": "La registrazione non è ancora riuscita. Riprova tra poco.",
+        "state": {
+          "failed": "registrazione non riuscita",
+          "notRequested": "non ancora richiesto",
+          "pendingAutomatic": "registrazione in corso",
+          "pendingManual": "in attesa di abilitazione da parte di CasaZen",
+          "ready": "attivo"
+        }
+      },
+      "ownerPortal": {
+        "help": "I proprietari accedono dal tuo indirizzo. I link per loro si spostano solo quando l'accesso dei proprietari è attivo.",
+        "label": "Portale proprietari sul mio dominio",
+        "notActive": "Per ora il portale proprietari resta sull'indirizzo di CasaZen."
+      },
+      "title": "Cosa passa dal tuo dominio"
     }
   },
   "emailVerified": {
@@ -9011,6 +9400,22 @@
     "failedTitle": "Email non verificata",
     "failedDescription": "Il link è già stato usato, è scaduto, oppure la pagina di ritorno non è tra gli indirizzi consentiti. Se l'email risulta già confermata, accedi. Altrimenti richiedi un nuovo messaggio dalla schermata di accesso.",
     "signIn": "Accedi"
+  },
+  "embed": {
+    "error": {
+      "description": "Non siamo riusciti a raggiungere il server. Riprova tra poco.",
+      "title": "Non riusciamo a caricare i contenuti"
+    },
+    "loading": "Caricamento in corso…",
+    "notFound": {
+      "description": "Non troviamo il sito di prenotazione che questo widget dovrebbe mostrare.",
+      "title": "Sito non trovato"
+    },
+    "title": "Prenota · {{name}}",
+    "unavailable": {
+      "description": "Questa funzione non è attiva per il sito, oppure l'indirizzo non è corretto.",
+      "title": "Questo widget non è disponibile"
+    }
   },
   "favorites": {
     "add": "Salva {{name}} nei preferiti",
@@ -9353,7 +9758,8 @@
         "none": "Il documento non ha righe.",
         "quantity": "Quantità",
         "rate": "IVA",
-        "title": "Righe"
+        "title": "Righe",
+        "toCollectAtProperty": "Da pagare in struttura"
       },
       "lineType": {
         "Accommodation": "Soggiorno",
@@ -9368,10 +9774,12 @@
       "loadError": "Non riusciamo a caricare il documento.",
       "loading": "Carico il documento…",
       "payment": {
+        "noCurrency": "La valuta non è indicata nel documento: gli importi sono mostrati senza simbolo.",
         "paid": "Pagato",
         "paidPortal": "Pagato tramite il portale",
         "title": "Pagamento",
         "toCollect": "Da incassare",
+        "toCollectAtProperty": "Imposta di soggiorno da pagare in struttura",
         "unrecognized": "Incasso: {{code}}"
       },
       "rate": {
@@ -9400,6 +9808,23 @@
       "done": "Bozza scartata.",
       "failed": "Non siamo riusciti a scartare la bozza. Riprova tra poco.",
       "title": "Scartare la bozza?"
+    },
+    "email": {
+      "consequenceAgain": "Ogni conferma manda un’altra e-mail con un nuovo link: quelli già inviati funzionano fino alla loro scadenza.",
+      "consequenceReal": "L’e-mail va a una persona vera, all’indirizzo lasciato nella prenotazione.",
+      "description": "L’ospite della prenotazione riceve un’e-mail con il link per aprire e scaricare {{document}}. Il documento non è allegato.",
+      "failed": "Non siamo riusciti a mettere in coda l’e-mail. Riprova tra poco.",
+      "queued": "E-mail in coda: parte a breve. Il link vale fino al {{date}}.",
+      "queuedNote": "E-mail in coda. Il link vale fino al {{date}}.",
+      "refused": "L’e-mail non è stata messa in coda: il server non ha accettato la richiesta.",
+      "resend": "Rinvia e-mail",
+      "resendConfirm": "Rinvia l’e-mail",
+      "resendLabel": "Rinvia al cliente l’e-mail di {{document}}",
+      "resendTitle": "Rinviare l’e-mail al cliente?",
+      "send": "Invia al cliente",
+      "sendConfirm": "Invia l’e-mail",
+      "sendLabel": "Invia {{document}} al cliente per e-mail",
+      "sendTitle": "Inviare il documento al cliente?"
     },
     "issue": {
       "confirm": "Emetti",
@@ -9701,6 +10126,109 @@
       "partial": "Rimborso del {{percent}}% fino al {{date}}",
       "today": "Oggi"
     }
+  },
+  "guestRegistration": {
+    "card": {
+      "forbidden": "Non hai accesso a questo immobile.",
+      "loadFailed": "Non riesco a leggere le regole di questo cantone. Questo non significa che non ce ne siano: riprova.",
+      "loading": "Carico le regole del tuo cantone…",
+      "notFound": "Non troviamo questo immobile: forse è stato rimosso.",
+      "openPortal": "Apri il portale ufficiale",
+      "place": "{{municipality}} · Cantone {{canton}}",
+      "portalLater": "Potrai aprirlo dalla scheda dell'immobile, quando hai finito qui.",
+      "refreshFailed": "Non riesco ad aggiornare queste informazioni: quello che vedi potrebbe non essere aggiornato. Quello che hai scritto resta qui.",
+      "retry": "Riprova",
+      "title": "Notifica degli ospiti nel tuo cantone",
+      "unsupported": "CasaZen non ha ancora le regole sulla notifica degli ospiti per il paese di questo immobile."
+    },
+    "certainty": {
+      "Partial": {
+        "label": "Parzialmente verificato",
+        "text": "Le fonti non sono tutte ufficiali o non dicono tutto (lette il {{date}}). Verifica con il comune o la polizia: CasaZen non dà consulenza legale."
+      },
+      "Unverified": {
+        "label": "Non verificato",
+        "text": "Non abbiamo trovato una fonte ufficiale per questo cantone (cercata il {{date}}). Verifica con il comune o la polizia: CasaZen non dà consulenza legale."
+      },
+      "Verified": {
+        "label": "Verificato",
+        "text": "Letto sulle fonti ufficiali il {{date}}. In caso di dubbio verifica con il comune o la polizia: CasaZen non dà consulenza legale."
+      }
+    },
+    "channel": {
+      "EmailFile": "Mandi un file per e-mail",
+      "None": "Non si trasmette nulla: tieni il registro",
+      "Paper": "Con un modulo cartaceo",
+      "PortalFileUpload": "Carichi un file sul portale ufficiale",
+      "PortalForm": "Inserisci i dati sul portale ufficiale",
+      "VendorInterface": "Tramite l'interfaccia di un programma di gestione con il sistema del cantone (specifiche non pubbliche)"
+    },
+    "deadline": {
+      "AtArrival": "All'arrivo dell'ospite",
+      "DailyByTime": "Ogni giorno",
+      "Hours24FromArrival": "Entro 24 ore dall'arrivo dell'ospite",
+      "None": "Nessuna scadenza indicata dalle fonti",
+      "Weekly": "Almeno una volta a settimana"
+    },
+    "duty": {
+      "answeredNotRequired": "Hai risposto: non devo notificare.",
+      "answeredRequired": "Hai risposto: devo notificare.",
+      "askQuestion": "Per questa struttura devi notificare gli ospiti? Decidi tu.",
+      "askTitle": "Le fonti non dicono con certezza se la regola vale per chi affitta una casa privata.",
+      "change": "Cambia risposta",
+      "mustNotNotify": "Non devo notificare",
+      "mustNotify": "Devo notificare",
+      "required": "Per questa struttura la notifica è dovuta.",
+      "reversible": "La risposta non blocca nulla e si può cambiare in qualsiasi momento.",
+      "saveFailed": "Non sono riuscito a salvare la risposta. Riprova."
+    },
+    "facts": {
+      "channel": "Dove e come si notifica",
+      "deadline": "Scadenza",
+      "obligation": "Cosa chiede il cantone",
+      "portal": "Portale ufficiale",
+      "retention": "Conservazione dei dati",
+      "support": "Cosa fa CasaZen"
+    },
+    "missing": {
+      "fixMunicipality": "Indica il comune",
+      "swiss_municipality_missing": "Manca il comune. Senza il comune non sappiamo quali regole valgono per i tuoi ospiti: lo scegli dal CAP e dalla località, nei dati dell'immobile.",
+      "ticino_structure_id_missing": "Manca il numero identificativo della struttura: serve per preparare la notifica alla polizia ticinese.",
+      "title": "Da completare",
+      "unknown": "C'è ancora qualcosa da completare."
+    },
+    "obligation": {
+      "KeepRegister": "Devi tenere un registro degli ospiti e mostrarlo alla polizia se lo chiede.",
+      "Optional": "Tenere un registro degli ospiti è facoltativo.",
+      "ReportToAuthority": "Devi trasmettere i dati degli ospiti all'autorità.",
+      "Unknown": "Le fonti non dicono con certezza cosa chiede il cantone."
+    },
+    "privateRentals": {
+      "No": "Non vale per chi affitta una casa privata.",
+      "Partial": "Vale solo in parte per chi affitta una casa privata.",
+      "Unknown": "Non è certo se vale per chi affitta una casa privata.",
+      "Yes": "Vale anche per chi affitta una casa privata."
+    },
+    "retention": {
+      "none": "Le fonti non indicano un periodo",
+      "years_one": "{{count}} anno",
+      "years_other": "{{count}} anni"
+    },
+    "step": {
+      "complete": "Per notificare gli ospiti non manca nulla.",
+      "intro": "Per notificare gli ospiti serve sapere dove si trova la struttura e, in Ticino, il suo numero identificativo."
+    },
+    "structureId": {
+      "loading": "Leggo il numero della struttura…",
+      "value": "Numero identificativo: {{value}}"
+    },
+    "support": {
+      "AssistedNotification": "In arrivo: CasaZen preparerà i dati e ti ricorderà la scadenza; la notifica la farai tu.",
+      "FileExport": "Prepara il file nel formato ufficiale: lo carichi tu sul portale.",
+      "GuestRegister": "In arrivo: CasaZen raccoglierà i dati degli ospiti per il registro; lo conserverai tu e lo mostrerai alla polizia se lo chiede.",
+      "InformationOnly": "Ti dice cosa chiede il cantone: non invia nulla."
+    },
+    "toVerify": "Da verificare con il comune o la polizia"
   },
   "guests": {
     "title": "Ospiti",
@@ -10153,6 +10681,9 @@
       "description": "Non siamo riusciti a contattare il server. Riprova tra poco.",
       "retry": "Riprova"
     },
+    "frame": {
+      "poweredBy": "Powered by CasaZen"
+    },
     "pageNotFound": {
       "title": "Pagina non trovata",
       "description": "La pagina che cerchi non esiste su questo sito.",
@@ -10590,6 +11121,7 @@
     "action": {
       "newTab": "(si apre in una nuova scheda)",
       "panelStep": "Collega l'ISTAT nel pannello",
+      "panelStepInWizard": "L'ISTAT si collega dal pannello dell'immobile, a invio concluso.",
       "portalGuide": "Apri il portale della tua regione",
       "supportAdminOnly": "Per chiedere aiuto al supporto serve l'amministratore dell'organizzazione."
     },
@@ -10601,6 +11133,7 @@
     "detail": {
       "covered": "Il tuo channel manager invia i dati ISTAT di questa regione, dopo che lo hai collegato nel suo pannello.",
       "notCovered": "I dati ISTAT di questa regione non li invia il tuo channel manager: li comunichi tu dal portale regionale.",
+      "otherSender": "Adesso l'invio di questo immobile non lo fa il channel manager: l'ISTAT della tua regione si comunica dal suo portale.",
       "toVerify": "Non sappiamo ancora se il tuo channel manager invia i dati ISTAT di questa regione: finché non è verificato non lo diamo per scontato."
     },
     "loadError": "Non riusciamo a leggere se il tuo channel manager invia l'ISTAT per la tua regione: per ora è da verificare.",
@@ -10608,7 +11141,8 @@
     "portalMissing": "L'indirizzo del portale della tua regione non è ancora indicato.",
     "proof": {
       "action": "Carica la prova ISTAT di {{month}}",
-      "lead": "Ogni mese si conserva la prova che i dati sono stati comunicati."
+      "lead": "Ogni mese si conserva la prova che i dati sono stati comunicati.",
+      "open": "Apri l'archivio delle prove di {{month}}"
     },
     "region": {
       "named": "La tua regione ({{region}}) usa {{system}}.",
@@ -10619,6 +11153,7 @@
     "title": {
       "covered": "ISTAT: lo invia il tuo channel manager",
       "notCovered": "ISTAT: non lo invia il tuo channel manager",
+      "otherSender": "ISTAT: per questo immobile non passa dal channel manager",
       "toVerify": "ISTAT: da verificare"
     },
     "unverified": "Questi dati vengono dal nostro elenco e non sono ancora verificati."
@@ -10741,9 +11276,14 @@
     "portal": "Portale",
     "save": "Salva",
     "source": "Fonte",
+    "stale": {
+      "changed": "Questa riga è stata modificata da un'altra persona dopo che l'hai aperta: chiudi e riaprila per vedere i valori attuali. Non salviamo valori vecchi.",
+      "unreadable": "Non riusciamo a rileggere la tabella: non salviamo valori che potrebbero essere vecchi. Chiudi e riprova tra un momento."
+    },
     "summary": "Da verificare: {{pending}} su {{total}}.",
     "title": "Regioni ISTAT",
     "toast": {
+      "rereadFailed": "Non riusciamo a leggere la riga aggiornata: riprova.",
       "saved": "{{region}}: riga salvata.",
       "saveFailed": "Non siamo riusciti a salvare la riga."
     }
@@ -15664,6 +16204,77 @@
       "use": "Usa la traduzione"
     }
   },
+  "bookingFlow": {
+    "title": "Flusso delle prenotazioni",
+    "intro": "Ogni prenotazione passa da questi passaggi. Quelli in automatico li fa CasaZen e non finiscono più nella tua lista «Da fare».",
+    "loadFailed": "Non riusciamo a leggere il flusso delle prenotazioni. Riprova tra poco.",
+    "save": "Salva il flusso",
+    "saved": "Flusso delle prenotazioni salvato.",
+    "saveFailed": "Non siamo riusciti a salvare il flusso. Riprova.",
+    "readOnly": "Solo l'amministratore dell'organizzazione può cambiare questi passaggi.",
+    "mode": {
+      "Automatic": "In automatico",
+      "Manual": "Lo fai tu"
+    },
+    "errors": {
+      "days": "Scegli un numero di giorni da 0 a {{max}}."
+    },
+    "steps": {
+      "confirmation": {
+        "title": "Conferma",
+        "who": "In automatico",
+        "fixed": "Le prenotazioni dei portali e quelle pagate sul tuo sito si confermano da sole. Le richieste di prenotazione aspettano la tua risposta."
+      },
+      "checkInLink": {
+        "title": "Link del check-in online",
+        "automatic": "CasaZen manda all'ospite il link per il check-in online (email, conferma della prenotazione o chat del portale). Se non riesce a raggiungerlo, te lo dice.",
+        "manual": "Mandi tu il link all'ospite dalla pagina della prenotazione.",
+        "days": {
+          "label": "Giorni prima dell'arrivo",
+          "hint": "Da 0 (il giorno dell'arrivo) a {{max}}: il link resta valido {{max}} giorni."
+        }
+      },
+      "guestData": {
+        "title": "Dati degli ospiti",
+        "who": "L'ospite",
+        "fixed": "Li inserisce l'ospite con il check-in online. Se mancano, li completi tu dalla prenotazione."
+      },
+      "arrival": {
+        "title": "Arrivo",
+        "automatic": "CasaZen registra l'arrivo alla fine del giorno di arrivo. Fino ad allora puoi registrarlo tu o segnalare un no-show.",
+        "manual": "Registri tu l'arrivo dalla prenotazione."
+      },
+      "alloggiati": {
+        "title": "Comunicazione ad Alloggiati Web",
+        "who": "La fai tu",
+        "fixed": "È un obbligo di legge: CasaZen prepara i dati, l'invio alla Questura lo fai tu entro i termini."
+      },
+      "departure": {
+        "title": "Partenza",
+        "automatic": "CasaZen registra la partenza all'orario di check-out dell'immobile (alle 10:00 se non ne hai indicato uno).",
+        "manual": "Registri tu la partenza con la procedura di check-out."
+      },
+      "cleaning": {
+        "title": "Pulizia",
+        "who": "Su ogni immobile",
+        "fixed": "La pulizia al check-out si imposta su ogni immobile: chi pulisce, a che ora e a che prezzo."
+      },
+      "propertyReady": {
+        "title": "Casa pronta per il prossimo ospite",
+        "automatic": "CasaZen dichiara la casa pronta per il prossimo ospite.",
+        "manual": "Dichiari tu la casa pronta dopo il check-out.",
+        "trigger": {
+          "label": "Quando",
+          "CleaningDone": "Quando la pulizia è fatta",
+          "CheckOut": "Al check-out",
+          "hint": {
+            "CleaningDone": "Se per un soggiorno non è prevista nessuna pulizia, te lo ricordiamo nella lista «Da fare».",
+            "CheckOut": "La casa è pronta appena l'ospite parte, anche senza una pulizia registrata."
+          }
+        }
+      }
+    }
+  },
   "nav": {
     "accountant": "Commercialista",
     "accountHome": "Home",
@@ -15792,6 +16403,7 @@
     "activities": "Attività",
     "inviteQr": "QR di invito",
     "reviews": "Recensioni",
+    "bookingFlow": "Flusso",
     "routines": "Routine AI",
     "channelCommissions": "Commissioni dei canali",
     "channels": "Canali e calendari",
@@ -15893,6 +16505,7 @@
       "newBooking": "Hai una nuova prenotazione.",
       "guestMessage": "Un ospite ti ha scritto un messaggio.",
       "guestCheckinCompleted": "Un ospite ha completato il check-in online.",
+      "bookingFlowStep": "CasaZen ha fatto un passaggio della prenotazione al posto tuo.",
       "guestDataMissing": "Mancano i dati di un ospite da registrare.",
       "alloggiatiDeadline": "Una comunicazione Alloggiati Web sta per scadere.",
       "alloggiatiOverdue": "Una comunicazione Alloggiati Web è scaduta.",
@@ -15931,7 +16544,16 @@
       "assistReopened": "Un utente ha riaperto una richiesta «Fallo per me»: dice che non funziona.",
       "fiscalDocumentIssued": "È stato emesso un documento fiscale per una prenotazione.",
       "fiscalDocumentSdiRejected": "Lo SDI ha scartato una fattura: va corretta.",
-      "touristTaxPaid": "Un ospite ha pagato online la tassa di soggiorno."
+      "touristTaxPaid": "Un ospite ha pagato online la tassa di soggiorno.",
+      "otaReviewActionFailed": "Una risposta a una recensione, o la tua recensione dell'ospite, non è arrivata sul portale: riprova dalla recensione.",
+      "otaReviewReceived": "Un ospite ha lasciato una recensione.",
+      "scheduledMessageIssue": "Un messaggio programmato per un ospite non è partito o ha bisogno di te: apri la prenotazione per vedere cosa è successo.",
+      "domainVerified": "Il tuo dominio è stato verificato: ora è attivo.",
+      "ownerLoginFailed": "L'accesso dei proprietari sul tuo dominio non si è attivato: riprova dalle impostazioni del dominio.",
+      "ownerLoginReady": "L'accesso dei proprietari sul tuo dominio è attivo.",
+      "ticinoNotificationDeclared": "Qualcuno del tuo team ha aggiornato la notifica alla polizia di un arrivo in Ticino.",
+      "ticinoNotificationDue": "Gli ospiti di un arrivo in Ticino vanno notificati alla polizia cantonale entro 24 ore.",
+      "ticinoNotificationOverdue": "Sono passate le 24 ore per notificare alla polizia cantonale gli ospiti di un arrivo in Ticino."
     }
   },
   "octorate": {
@@ -17335,6 +17957,12 @@
     },
     "part": {
       "description": "Che cosa fa questo passo e dove ti porta.",
+      "missing": {
+        "more_one": "E ancora {{count}} immobile da completare",
+        "more_other": "E ancora {{count}} immobili da completare",
+        "title": "Cosa manca, immobile per immobile",
+        "unnamed": "Immobile senza nome"
+      },
       "needsTitle": "Cosa ti serve",
       "statusLabel": "Stato del passo"
     },
@@ -17354,6 +17982,10 @@
       "fiscalDocuments": {
         "title": "Fatturazione",
         "what": "I dati di chi emette, l’IVA, la numerazione e come si emettono i documenti."
+      },
+      "guestRegistration": {
+        "title": "Notifica degli ospiti (Svizzera)",
+        "what": "Per i tuoi immobili attivi in Svizzera: il comune e, in Ticino, il numero della struttura."
       },
       "identification": {
         "title": "Identificazione e accesso",
@@ -17430,6 +18062,7 @@
       "mapping_unavailable": "Ora non riusciamo a leggere gli abbinamenti con Octorate. Riprova tra poco.",
       "mapping_unconfirmed": "Manca la conferma dell'abbinamento tra gli annunci di Octorate e i tuoi immobili.",
       "no_property": "Non ci sono ancora immobili da configurare.",
+      "no_swiss_property": "Non hai immobili attivi in Svizzera: qui non c'è nulla da fare.",
       "not_provided": "Questo passo non è ancora disponibile.",
       "notification_preferences_missing": "Nessun amministratore ha ancora scelto come ricevere le notifiche.",
       "partner_integration_missing": "Non hai ancora attivato nessuna integrazione dal marketplace.",
@@ -17451,12 +18084,16 @@
         "property_inactive": "Questo immobile non è attivo.",
         "property_long_rent": "Questo immobile è in affitto lungo: qui non serve.",
         "sender_missing": "Manca chi invia le comunicazioni ad Alloggiati Web e ISTAT per questo immobile.",
+        "swiss_municipality_missing": "Manca il comune di questo immobile.",
         "tax_rate_missing": "Manca l'imposta di soggiorno del comune di questo immobile.",
+        "ticino_structure_id_missing": "Manca il numero identificativo della struttura di questo immobile.",
         "unknown": "C'è ancora qualcosa da completare."
       },
       "required_part_not_done": "Prima completa: {{parts}}.",
       "sender_missing": "Manca chi invia le comunicazioni ad Alloggiati Web e ISTAT per almeno un immobile.",
+      "swiss_municipality_missing": "Il comune di almeno un immobile attivo in Svizzera non è ancora indicato.",
       "tax_rate_missing": "Manca l'imposta di soggiorno del comune di almeno un immobile.",
+      "ticino_structure_id_missing": "Manca il numero identificativo della struttura di almeno un immobile attivo in Ticino.",
       "unknown": "Questo passo non è ancora completato."
     },
     "states": {
@@ -17956,6 +18593,43 @@
       "saved": "Commissioni salvate. Valgono per i soggiorni che finiscono dal {{date}} in poi.",
       "title": "Commissioni dei canali"
     },
+    "cleaningVat": {
+      "answer": {
+        "Applied": "Sì, {{rate}}",
+        "AppliedNoRate": "Sì",
+        "NotApplied": "No, senza IVA",
+        "Unknown": "Non lo so"
+      },
+      "company": "Ditta: {{name}}",
+      "country": {
+        "CH": "Svizzera",
+        "IT": "Italia"
+      },
+      "current": "Risposta data per questa pulizia: {{answer}}. Una nuova risposta prende il suo posto.",
+      "currentByCompany": "Risposta ricordata per questa ditta: {{answer}}. Una risposta data qui prende il suo posto per questa pulizia.",
+      "description": "È il riaddebito di una pulizia al proprietario: la tua risposta decide l'IVA su quella riga della fattura.",
+      "loadError": "Non riusciamo a leggere la domanda.",
+      "loading": "Leggo la domanda…",
+      "problem": {
+        "answerInvalid": "La risposta non è valida: scegli una delle tre.",
+        "changed": "Nel frattempo la richiesta è cambiata. Abbiamo riletto la domanda: controlla e rispondi di nuovo.",
+        "failed": "Non abbiamo la conferma che la risposta sia stata registrata. Riprova: se era già arrivata, la stessa risposta non cambia nulla.",
+        "forbidden": "Il tuo ruolo non può rispondere a questa domanda: serve il permesso di modificare gli immobili.",
+        "notCompleted": "La pulizia non è ancora conclusa, quindi non c'è ancora una fattura della ditta di cui rispondere. Torna quando è completata.",
+        "notFound": "Non troviamo questa richiesta: potrebbe non esserci più, o non essere tra quelle a cui hai accesso.",
+        "rateUnknown": "Per il giorno di questa pulizia non abbiamo un'aliquota IVA, quindi «Sì» non si può registrare. Rispondi «No» o «Non lo so».",
+        "rememberForbidden": "Solo chi gestisce l'intera organizzazione può ricordare la risposta per la ditta. Rispondi di nuovo senza «Ricorda»: vale solo per questa pulizia.",
+        "rememberUnknown": "«Non lo so» non si può ricordare per la ditta. Rispondi senza «Ricorda»."
+      },
+      "remember": "Ricorda per questa ditta",
+      "rememberHint": "Vale per le altre pulizie di questa ditta che non hanno già una risposta, in tutti gli immobili. Non vale per «Non lo so».",
+      "saved": "Risposta registrata: {{answer}}.",
+      "sending": "Registro la risposta…",
+      "title": "La ditta di pulizie ha applicato l'IVA su questa fattura?",
+      "unknownHint": "L'importo resta com'è e la domanda torna una volta, alla chiusura del rendiconto.",
+      "when": "Pulizia del {{date}} · {{country}}",
+      "yesUnavailable": "Per il giorno di questa pulizia non abbiamo un'aliquota IVA: «Sì» non è disponibile."
+    },
     "close": {
       "confirm": "Chiudi il mese",
       "consequences": {
@@ -18418,12 +19092,14 @@
         "AgencyVat": "IVA che la fattura dell'agenzia aggiunge alla provvigione e ai riaddebiti. Si toglie dal saldo.",
         "BookingRevenue": "Incasso della prenotazione, al netto dei rimborsi, per la quota del proprietario. Si somma al saldo.",
         "ChannelFee": "Commissione trattenuta dal canale sulla prenotazione, per la quota del proprietario. Si toglie dal saldo.",
+        "ChannelFeeBorneByAgency": "Commissione del portale pagata dall'agenzia, che non la riaddebita al proprietario. È solo un'informazione: non si toglie dal saldo e non entra in nessun totale.",
         "Correction": "Rettifica fatta a mano, con il suo motivo: sostituisce una riga o ne aggiunge una.",
         "OwnerCharge": "Addebito dell'agenzia al proprietario, per la sua quota. Si toglie dal saldo.",
         "OwnerExpense": "Spesa pagata dall'agenzia per conto del proprietario, per la sua quota. Si toglie dal saldo.",
         "OwnerPayment": "Bonifico pagato al proprietario: salda quello che gli si doveva. Si toglie dal saldo.",
         "Withholding": "Ritenuta trattenuta sul pagamento e destinata al fisco. Si toglie dal saldo."
       },
+      "informational": "Solo informativa",
       "open": {
         "attachment": "Apri l'allegato",
         "attachmentText": "Allegato: {{reference}}",
@@ -18447,6 +19123,8 @@
       "steps": {
         "fx": "Cambio",
         "fxSource": "Cambio preso da: {{source}}, del {{date}}",
+        "informationalOriginal": "Commissione per la quota del proprietario",
+        "informationalResult": "A carico dell'agenzia, non nel rendiconto",
         "original": "Importo del proprietario",
         "rate": "1 {{from}} = {{rate}} {{to}}",
         "result": "Importo nel rendiconto",
@@ -18461,6 +19139,7 @@
         "AgencyVat": "IVA sulla fattura dell'agenzia",
         "BookingRevenue": "Incasso di una prenotazione",
         "ChannelFee": "Commissione del canale",
+        "ChannelFeeBorneByAgency": "Commissione del portale sostenuta dall'agenzia, non addebitata al proprietario",
         "Correction": "Rettifica",
         "OwnerCharge": "Addebito dell'agenzia",
         "OwnerExpense": "Spesa per il proprietario",
@@ -18596,6 +19275,8 @@
       "focusBody": "Saldo di chiusura {{balance}}. Versione tagliata il {{cutoff}}.",
       "focusTitle": "Versione {{version}} · {{status}}",
       "formula": "Saldo di chiusura = saldo di apertura {{opening}} + incassi {{revenue}} + commissioni e costi {{costs}} + pagamenti e ritenute {{paid}} + rettifiche {{corrections}} = {{closing}}.",
+      "immutableBody": "Le righe registrate non danno più i totali salvati in questa versione. Per non mostrarti cifre sbagliate non la mostriamo, e nemmeno i suoi file: riprovare non serve. Scrivi all'assistenza indicando il mese e il proprietario.",
+      "immutableTitle": "Questo rendiconto non si può mostrare",
       "kicker": "Rendiconto di {{period}}",
       "loadError": "Non riusciamo a leggere il rendiconto.",
       "loading": "Leggo il rendiconto…",
@@ -18645,6 +19326,11 @@
       "downloadCsvLabel": "Scarica il CSV del rendiconto",
       "downloadPdf": "PDF",
       "downloadPdfLabel": "Scarica il PDF del rendiconto",
+      "informational": {
+        "label": "Commissione del portale sostenuta dall'agenzia, non addebitata al proprietario",
+        "note_one": "{{count}} riga solo informativa, fuori dal totale",
+        "note_other": "{{count}} righe solo informative, fuori dal totale"
+      },
       "lines_one": "{{count}} riga",
       "lines_other": "{{count}} righe",
       "net": "Netto: saldo di chiusura",
@@ -18918,6 +19604,18 @@
   },
   "ownerInvoice": {
     "currencyMissing": "Per qualche fattura il server non ha indicato la valuta: gli importi sono scritti senza simbolo.",
+    "detail": {
+      "creditNote": "Nota di credito",
+      "description": "Le righe della fattura e i suoi totali, come sono salvati.",
+      "forbidden": "Con il tuo accesso questa fattura non si vede: la vedono il titolare e chi amministra l'organizzazione, con accesso a tutti gli immobili.",
+      "forbiddenTitle": "Fattura non accessibile",
+      "issuedOn": "Emessa il {{date}}",
+      "notFound": "Questa fattura non c'è più",
+      "notFoundBody": "Non esiste, oppure appartiene a un'altra organizzazione. Chiudi e aggiorna l'elenco.",
+      "open": "Apri le righe",
+      "openLabel": "Apri le righe e i totali di: {{name}}",
+      "title": "Fattura al proprietario"
+    },
     "issue": {
       "confirm": "Emetti la fattura",
       "consequenceFinal": "Una volta emessa la fattura non si modifica più.",
@@ -19456,6 +20154,9 @@
       "invoicesTitle": "Fatture collegate",
       "line": {
         "bookingCode": "Prenotazione {{code}}",
+        "borneByAgency": "Commissione del portale sostenuta dall’agenzia, non addebitata al proprietario",
+        "chargedOnAgencyAccount": "Commissione del portale su un account intestato all’agenzia, addebitata a te senza riaddebito in fattura",
+        "informational": "Solo informativa",
         "kind": {
           "cleaning": "Pulizie",
           "linen": "Biancheria"
@@ -19711,6 +20412,13 @@
         "upcoming": "Non ancora in vigore"
       }
     },
+    "hostLogin": {
+      "button": "Accedi",
+      "description": "Accedi con il tuo account per vedere i tuoi immobili, i rendiconti e i messaggi dell’agenzia.",
+      "failed": "L’accesso non è andato a buon fine. Puoi riprovare.",
+      "redirecting": "Ti stiamo portando alla pagina di accesso…",
+      "title": "Area proprietari"
+    },
     "inbox": {
       "description": "Scrivi all’agenzia e ritrova le conversazioni su un immobile, un soggiorno, un documento o un rendiconto. Le e-mail di avviso non contengono mai il testo dei messaggi.",
       "empty": "Non ci sono ancora conversazioni con l’agenzia.",
@@ -19820,6 +20528,17 @@
       "total": "Totale",
       "xml": "Scarica l’XML",
       "xmlAria": "Scarica l’XML di {{title}}"
+    },
+    "noAccess": {
+      "description": "Hai effettuato l’accesso, ma questo account non è collegato come proprietario a {{name}}. Esci e accedi con l’account con cui hai ricevuto l’invito.",
+      "home": "Torna al sito",
+      "signOut": "Esci",
+      "title": "Questo account non ha accesso all’area proprietari"
+    },
+    "notEnabled": {
+      "description": "L’accesso proprietari su questo sito non è ancora attivo. Quando lo sarà, potrai entrare da questa pagina. Per informazioni contatta {{name}}.",
+      "home": "Torna al sito",
+      "title": "Accesso proprietari non ancora attivo"
     },
     "properties": {
       "backToDashboard": "Torna alla panoramica",
@@ -20305,16 +21024,17 @@
     "row": {
       "kindAndCurrency": "{{kind}} · valuta {{currency}}",
       "kindNoCurrency": "{{kind}} · valuta di liquidazione mancante",
-      "loading": "Leggo il profilo…",
       "mandateActive": "Provvigione {{percent}} {{vat}}, dal {{from}}",
       "mandateError": "Non riusciamo a leggere il mandato.",
       "mandateLoading": "Leggo il mandato…",
       "mandateMissing": "Manca il mandato",
       "mandateUpcoming": "Mandato dal {{from}}: provvigione {{percent}}",
       "noProfile": "Nessun profilo fiscale",
+      "noProperties": "Nessun immobile",
       "open": "Dati finanziari",
       "openLabel": "Apri i dati finanziari di {{owner}}",
-      "profileError": "Non riusciamo a leggere il profilo fiscale."
+      "properties_one": "{{count}} immobile",
+      "properties_other": "{{count}} immobili"
     },
     "title": "Proprietari"
   },
@@ -21393,6 +22113,9 @@
       },
       "comuneIstatCode": {
         "format": "Il codice ISTAT del comune non è valido: scegli il comune dall'elenco."
+      },
+      "swissMunicipalityCode": {
+        "format": "Il comune svizzero scelto non è valido: scegli di nuovo la località."
       }
     },
     "slug": {
@@ -21435,6 +22158,7 @@
       "download": "Scarica PNG",
       "error": "Errore",
       "errorDescription": "ID immobile mancante o non valido.",
+      "flagsUnreadable": "Per ora non riusciamo a capire quale codice QR stampare. Riprova tra poco.",
       "hint": "Stampa o scarica questo codice QR e posizionalo all'ingresso della struttura per facilitare il check-in dei tuoi ospiti.",
       "instructions": "Scansiona questo codice QR per iniziare la verifica del tuo soggiorno",
       "loading": "Generazione codice QR...",
@@ -22083,6 +22807,7 @@
         "base-data": "Completa i dati",
         "cin": "Aggiungi il CIN",
         "documents": "Carica i documenti",
+        "guest-registration": "Completa la notifica degli ospiti",
         "safety": "Compila la scheda di sicurezza"
       },
       "fixLabel": "Cosa sistemare",
@@ -22096,6 +22821,7 @@
         "base-data": "Il prezzo per notte e i dati di base",
         "cin": "Il codice CIN",
         "documents": "I documenti richiesti per la tua regione",
+        "guest-registration": "Il comune e, in Ticino, il numero della struttura per notificare gli ospiti",
         "safety": "La scheda di sicurezza"
       },
       "readyDescription": "Gli ospiti possono prenotare dal tuo sito.",
@@ -22860,6 +23586,15 @@
       "loadingBooking": "Carico la tua prenotazione…",
       "sessionExpiredTitle": "La sessione è scaduta",
       "sessionExpiredDescription": "Per continuare scrivi di nuovo la tua email: il codice prenotazione è già compilato.",
+      "proofDescription": "Inserisci il codice prenotazione che trovi nell'email di conferma e scegli come verificare la prenotazione: con l'indirizzo email con cui hai prenotato o con le ultime 4 cifre del tuo telefono.",
+      "proofEmail": "E-mail",
+      "proofLegend": "Come vuoi verificare la prenotazione?",
+      "proofNotFoundDescription": "Nessuna prenotazione di questo sito corrisponde ai dati inseriti. Controlla il codice nell'email di conferma e i dati che hai usato per prenotare.",
+      "proofPhone": "Ultime 4 cifre del telefono",
+      "proofPhoneHint": "Sono le ultime quattro cifre del numero di telefono che hai indicato quando hai prenotato.",
+      "proofPhoneInvalid": "Inserisci esattamente 4 cifre, senza spazi.",
+      "proofPhoneLabel": "Ultime 4 cifre del telefono usato per prenotare",
+      "proofSessionExpiredDescription": "Per continuare verifica di nuovo la prenotazione con i tuoi dati: il codice prenotazione è già compilato.",
       "rateLimited_one": "Troppi tentativi: riprova tra {{count}} minuto.",
       "rateLimited_other": "Troppi tentativi: riprova tra {{count}} minuti.",
       "resultTitle": "La tua prenotazione",
@@ -23151,6 +23886,7 @@
   "publicFiscalDocument": {
     "description": "Qui trovi il riepilogo del documento che hai ricevuto. Scarica il PDF per conservarlo.",
     "download": "Scarica il PDF",
+    "downloadFailed": "Non siamo riusciti a scaricare il PDF: controlla la connessione e riprova.",
     "invalid": {
       "description": "Questo link non è valido o è scaduto. Chiedi un nuovo invio alla struttura.",
       "title": "Link non valido o scaduto"
@@ -23160,6 +23896,10 @@
       "invoice": "Fattura",
       "other": "Documento",
       "receipt": "Ricevuta"
+    },
+    "loadFailed": {
+      "description": "In questo momento non riusciamo a caricare il documento: può essere la connessione o un problema nostro. Riprova tra poco.",
+      "title": "Non riusciamo a caricare il documento"
     },
     "loading": "Carico il documento…",
     "noCurrency": "La valuta non è indicata nel documento: l'importo è mostrato senza simbolo.",
@@ -23962,6 +24702,10 @@
         "description": "Comune per comune: quanto è dovuta, quanto hai versato e le ricevute. Qui registri anche i versamenti.",
         "name": "Imposta di soggiorno: dovuta e versata"
       },
+      "touristTaxYearEnd": {
+        "description": "I file di fine anno: la dichiarazione ai comuni, il conto dell'agente e il conteggio delle notti in Ticino.",
+        "name": "Imposta di soggiorno: fine anno"
+      },
       "withholding": {
         "description": "Le ritenute trattenute da Airbnb e Booking.com sugli incassi.",
         "name": "Ritenute dei portali"
@@ -24175,7 +24919,131 @@
         "ToPay": "Da versare"
       },
       "title": "Imposta di soggiorno: dovuta e versata",
-      "total": "Totale"
+      "total": "Totale",
+      "yearEnd": {
+        "account": {
+          "by": {
+            "label": "Suddivisione",
+            "month": "Mese per mese",
+            "quarter": "Trimestre per trimestre"
+          },
+          "caption": "Conto dell'agente {{year}}: {{cut}}, comune per comune",
+          "columns": {
+            "collected": "Riscossa",
+            "period": "Periodo"
+          },
+          "description": "Per ogni comune, l'imposta riscossa e quella versata mese per mese o trimestre per trimestre, con la riga dell'anno e l'elenco dei versamenti.",
+          "empty": "Nessun soggiorno in Italia con check-in nel {{year}} e nessun versamento registrato: il conto dell'agente non ha righe.",
+          "period": {
+            "quarter": "{{quarter}}º trimestre {{year}}",
+            "year": "Anno {{year}}"
+          },
+          "remittances": {
+            "empty": "Nessun versamento registrato nel {{year}}.",
+            "title": "Versamenti dell'anno"
+          },
+          "title": "Conto dell'agente {{year}}"
+        },
+        "columns": {
+          "guests": "Ospiti",
+          "nights": "Notti"
+        },
+        "declaration": {
+          "caption": "Dichiarazione ai comuni {{year}}, comune per comune",
+          "counts": {
+            "guestNights_one": "{{count}} notte-ospite",
+            "guestNights_other": "{{count}} notti-ospite",
+            "guests_one": "{{count}} ospite",
+            "guests_other": "{{count}} ospiti",
+            "stays_one": "{{count}} soggiorno",
+            "stays_other": "{{count}} soggiorni"
+          },
+          "description": "Per ogni comune: notti e ospiti, soggiorni con e senza imposta, imposta dovuta, versata e differenza, con i versamenti.",
+          "details": {
+            "exemptions": "Ospiti esenti",
+            "none": "Nessuno",
+            "staysWithoutAmount": "Soggiorni senza importo",
+            "taxedStays": "Soggiorni con imposta"
+          },
+          "empty": "Nessun soggiorno in Italia con check-in nel {{year}} e nessun versamento registrato: la dichiarazione ai comuni non ha righe.",
+          "exemptionReason": {
+            "erased": "Motivo cancellato con i dati dell'ospite",
+            "minor_age": "Minorenni (esenti per età)",
+            "restricted": "dettaglio dei motivi riservato"
+          },
+          "reasons": "Le esenzioni sono contate per motivo: mai un ospite, mai un nome.",
+          "reasonsRestricted": "Il dettaglio dei motivi delle esenzioni è riservato a chi può leggere i dati degli ospiti: nel file trovi le esenzioni per età e una sola riga, «dettaglio dei motivi riservato», con gli stessi conteggi.",
+          "stayReason": {
+            "collected_by_channel": "Imposta incassata dal portale",
+            "exempt": "Tutti gli ospiti esenti",
+            "no_tax_due": "Nessuna imposta dovuta",
+            "not_calculated": "Imposta non calcolata"
+          },
+          "title": "Dichiarazione ai comuni {{year}}"
+        },
+        "description": "I dati da consegnare ai comuni e all'ente turistico del Ticino. CasaZen prepara i file e non invia niente: la dichiarazione la presenti tu o il tuo commercialista.",
+        "details": {
+          "error": "Impossibile caricare queste cifre.",
+          "loading": "Carico le cifre…",
+          "noAccess": "Queste cifre non sono disponibili per il tuo accesso: servono il permesso sui pagamenti e l'accesso a tutti gli immobili dell'organizzazione.",
+          "notFound": "Queste cifre non ci sono.",
+          "unavailable": "Le cifre a schermo (dichiarazione, conto dell'agente e Ticino) non sono ancora disponibili: intanto puoi scaricare i file qui sopra."
+        },
+        "figures": {
+          "balance": "Saldo",
+          "byComune": "Apri il riepilogo per comune",
+          "currencyMissing": "Per questi importi il servizio non indica la valuta: sono scritti senza simbolo.",
+          "empty": "Nessun soggiorno in Italia con check-in nel {{year}} e nessun versamento registrato: la dichiarazione ai comuni non ha righe.",
+          "error": "Impossibile caricare le cifre dell'anno.",
+          "label": "Cifre del {{year}}",
+          "loading": "Carico le cifre dell'anno…",
+          "nights": "Notti",
+          "notFound": "Le cifre di questo anno non ci sono.",
+          "owed": "Imposta dovuta",
+          "paid": "Versata",
+          "partial": "Il tuo accesso copre solo alcuni immobili: la dichiarazione di fine anno riguarda tutta l'organizzazione, quindi qui non ne vedi le cifre.",
+          "refused": "Le cifre dell'anno non sono disponibili per il tuo accesso.",
+          "title": "Italia: il {{year}} in breve"
+        },
+        "files": {
+          "failed": "Non è stato possibile preparare il file. Riprova.",
+          "format": {
+            "csv": "Scarica CSV",
+            "xlsx": "Scarica Excel"
+          },
+          "formatFor": "{{format}}: {{title}}",
+          "noAccess": "Non puoi scaricare questo file: servono il permesso sui pagamenti e l'accesso a tutti gli immobili dell'organizzazione.",
+          "note": "CasaZen prepara i dati e non invia niente: i moduli li compila e li consegna chi di dovere, tu o il tuo commercialista.",
+          "title": "File da consegnare"
+        },
+        "ticino": {
+          "cantonUnknown": "Un immobile in Svizzera di cui non si conosce il cantone (manca il comune svizzero o non è riconosciuto) è nel conteggio con una nota nell'ultima colonna, perché potrebbe essere in Ticino. Completa i dati dell'immobile e scarica di nuovo il file.",
+          "caption": "Conteggio delle notti in Ticino {{year}}, immobile per immobile",
+          "columns": {
+            "property": "Immobile",
+            "taxed": "Con imposta",
+            "touristTax": "Imposta di soggiorno",
+            "untaxed": "Senza imposta",
+            "withoutDocument": "Senza documento"
+          },
+          "currencyMissing": "Per alcuni immobili il servizio non indica la valuta: i loro importi sono scritti senza simbolo.",
+          "description": "Per ogni immobile in Ticino: soggiorni e notti dell'anno, con e senza imposta di soggiorno secondo i documenti emessi, e gli importi in franchi. Da consegnare all'ente turistico entro il 5 gennaio {{deadlineYear}}.",
+          "due": "Da consegnare all'ente turistico entro il {{date}}.",
+          "empty": "Nessun immobile in Ticino, e nessuno di cantone non noto, nel {{year}}: il conteggio non ha righe.",
+          "legend": "«Con imposta» e «Senza imposta» vengono dal documento emesso per ogni soggiorno. «Senza documento» sono i soggiorni per cui non ne è stato ancora emesso uno: non sono contati come senza imposta.",
+          "nights_one": "{{count}} notte",
+          "nights_other": "{{count}} notti",
+          "openProperties": "Apri gli immobili",
+          "title": "Conteggio delle notti in Ticino {{year}}",
+          "unknown": {
+            "marker": "Cantone non noto",
+            "note_one": "{{count}} immobile in Svizzera ha il cantone non noto: potrebbe essere in Ticino, quindi è nel conteggio ed è segnato. Finché non indichi il suo comune svizzero nei dati dell'immobile, il conteggio può comprendere un immobile di un altro cantone.",
+            "note_other": "{{count}} immobili in Svizzera hanno il cantone non noto: potrebbero essere in Ticino, quindi sono nel conteggio e sono segnati. Finché non indichi il loro comune svizzero nei dati di ogni immobile, il conteggio può comprendere immobili di altri cantoni."
+          }
+        },
+        "title": "Imposta di soggiorno: fine anno",
+        "year": "Anno"
+      }
     },
     "type": {
       "financial": "Finanziario",
@@ -24497,6 +25365,182 @@
     "resetFilters": "Reimposta filtri",
     "loading": "Caricamento analisi...",
     "empty": "Nessun dato ricavi disponibile"
+  },
+  "reviews": {
+    "booking": {
+      "empty": "Nessuna recensione per ora.",
+      "limit": "Per questo canale CasaZen non legge le recensioni né risponde: leggile e rispondi dal portale.",
+      "listLabel": "Recensioni di questo soggiorno",
+      "loadError": "Non riesco a leggere le recensioni di questo soggiorno.",
+      "loading": "Carico le recensioni…",
+      "notFound": "Le recensioni di questo soggiorno non sono state trovate: non ci sono più, oppure non sono tra quelle dei tuoi immobili.",
+      "open": "Apri nei Messaggi",
+      "readAt": "Lette dal portale il {{when}}",
+      "readFailed": "L'ultima lettura dal portale non è riuscita: {{reason}}",
+      "readFailedUnknown": "il portale non ha risposto.",
+      "refresh": "Aggiorna",
+      "refreshFailed": "Non riesco a leggere le recensioni dal portale. Riprova tra poco.",
+      "refreshTooSoon_one": "Hai letto il portale da poco: puoi aggiornare di nuovo tra {{count}} minuto.",
+      "refreshTooSoon_other": "Hai letto il portale da poco: puoi aggiornare di nuovo tra {{count}} minuti.",
+      "refreshed": "Recensioni aggiornate.",
+      "reply": {
+        "error": "Risposta non pubblicata",
+        "manualVerify": "Risposta da verificare",
+        "none": "Senza risposta",
+        "sent": "Risposta pubblicata"
+      },
+      "title": "Recensioni"
+    },
+    "category": {
+      "accuracy": "Accuratezza dell'annuncio",
+      "checkin": "Check-in",
+      "cleanliness": "Pulizia",
+      "communication": "Comunicazione",
+      "location": "Posizione",
+      "respect_house_rules": "Rispetto delle regole della casa",
+      "value": "Qualità-prezzo"
+    },
+    "channel": {
+      "noSource": "Questa prenotazione non viene da un portale né dal tuo sito: non ha recensioni.",
+      "notIntegrated": "{{channel}} non permette a CasaZen di leggere le recensioni né di rispondere: leggile e rispondi dal portale.",
+      "thisChannel": "Questo canale"
+    },
+    "hostReview": {
+      "cannot": "Per ora non puoi scrivere la tua recensione dell'ospite da CasaZen.",
+      "closed": "Il tempo per scrivere la tua recensione dell'ospite è finito: non si può più scrivere.",
+      "confirm": {
+        "description": "La recensione sarà inviata al portale e pubblicata come prevedono le sue regole.",
+        "once": "Si scrive una volta sola: non si può modificare né ritirare.",
+        "public": "La parte pubblica la leggono tutti sul portale.",
+        "send": "Invia",
+        "title": "Invii la recensione dell'ospite?"
+      },
+      "error": {
+        "ratings": "Dai un voto da 1 a 5 a ogni voce.",
+        "text": "Scrivi la tua recensione pubblica.",
+        "tooLong": "Il testo è troppo lungo: al massimo {{max}} caratteri."
+      },
+      "errorRetry": "Puoi cambiare i testi e riprovare.",
+      "errorUnknown": "Il portale non l'ha accettata.",
+      "intro": "Puoi scrivere una recensione dell'ospite sul portale. Si scrive una volta sola, finché il portale lo permette.",
+      "notSent": "La recensione dell'ospite non è stata inviata",
+      "offline": "Sei offline: puoi inviare la recensione quando torni online.",
+      "privateHint": "La vede solo l'ospite: non compare sul portale.",
+      "privateText": "Nota privata per l'ospite",
+      "publicHint": "La leggono tutti sul portale.",
+      "publicText": "La tua recensione pubblica",
+      "send": "Invia la recensione",
+      "sentAt": "Inviata il {{when}}",
+      "title": "La tua recensione dell'ospite",
+      "toast": {
+        "failed": "Non sono riuscito a inviare la recensione. Riprova.",
+        "refused": "Il portale non ha accettato la recensione.",
+        "sent": "Recensione dell'ospite inviata.",
+        "verify": "Non sappiamo ancora se il portale ha ricevuto la recensione: non riscriverla, la controlliamo noi."
+      },
+      "unknown": "Il portale non ha ancora detto se puoi scrivere la tua recensione dell'ospite. CasaZen lo controlla ogni poche ore.",
+      "verify": "Non sappiamo ancora se il portale ha ricevuto la tua recensione dell'ospite. CasaZen la controlla da sola: finché non lo sappiamo non puoi mandarla di nuovo."
+    },
+    "hub": {
+      "empty": "Non ci sono ancora recensioni",
+      "emptyHint": "Quando un ospite lascia una recensione, dal tuo sito o da un portale, la trovi qui.",
+      "filter": "Recensioni",
+      "noMatch": "Nessuna recensione trovata",
+      "noMatchHint": "Prova con un'altra ricerca o togli un filtro."
+    },
+    "reason": {
+      "mappingNotConfirmed": "L'annuncio non è ancora collegato a un tuo immobile: finché non lo è, CasaZen non risponde alle recensioni da qui.",
+      "notConnected": "Il collegamento ai canali non è attivo: CasaZen non legge le recensioni né risponde."
+    },
+    "row": {
+      "noText": "L'ospite non ha scritto un commento",
+      "notAnswered": "Senza risposta"
+    },
+    "state": {
+      "error": "Non inviata",
+      "manualVerify": "Da verificare",
+      "none": "Non ancora",
+      "sent": "Pubblicata"
+    },
+    "thread": {
+      "categoryValue": "{{value}} su {{max}}",
+      "confirm": {
+        "description": "La risposta sarà visibile a tutti sotto la recensione.",
+        "once": "Non si può ritirare né modificare, e parte una sola volta.",
+        "public": "È pubblica: la leggono tutti, non solo l'ospite.",
+        "publish": "Pubblica",
+        "title": "Pubblichi la risposta?"
+      },
+      "draft": {
+        "approve": "Approva e pubblica",
+        "ask": "Chiedi una bozza all'assistente",
+        "edit": "Modifica",
+        "loadError": "Non è stato possibile leggere le bozze in attesa. Riprova.",
+        "loading": "Cerco una bozza per questa recensione…",
+        "none": "Non c’è nessuna bozza in attesa per questa recensione.",
+        "notFound": "Questa recensione non è stata trovata.",
+        "reason": {
+          "ai_budget_exceeded": "L'assistente ha raggiunto il suo limite di utilizzo per ora: riprova più tardi, oppure rispondi tu.",
+          "ai_invalid_answer": "L'assistente non è riuscito a scrivere una bozza utilizzabile: riprova, oppure rispondi tu.",
+          "ai_provider_error": "L'assistente non è riuscito a scrivere la bozza in questo momento: riprova tra qualche minuto, oppure rispondi tu.",
+          "ai_provider_not_configured": "L'assistente non è ancora disponibile in questo ambiente: nessuna bozza è stata scritta.",
+          "already_answered": "Hai già risposto a questa recensione, oppure la risposta aspetta di essere verificata: nessuna bozza è stata scritta.",
+          "already_drafted": "C'è già una bozza in attesa per questa recensione.",
+          "assistant_disabled": "L'assistente è spento per la tua organizzazione o per questo immobile: nessuna bozza è stata scritta.",
+          "draft_rule_violation": "La risposta scritta dall'assistente non rispettava le regole (non può promettere rimborsi o sconti, dire di essere un'intelligenza artificiale, né contenere link o numeri di telefono) e non è stata messa in coda. Riprova, oppure rispondi tu.",
+          "draft_too_long": "La risposta scritta dall'assistente era troppo lunga per una recensione e non è stata messa in coda. Riprova, oppure rispondi tu.",
+          "ota_review_channel_not_supported": "Per questo canale CasaZen non può rispondere alle recensioni: rispondi dal portale.",
+          "ota_review_not_published": "La recensione dell'ospite non è ancora pubblicata: non c'è niente a cui rispondere.",
+          "reply_not_possible": "Per ora CasaZen non può inviare la risposta (il collegamento ai canali non è attivo, oppure l'annuncio non è ancora collegato a un tuo immobile): nessuna bozza è stata scritta.",
+          "unknown": "L'assistente non ha completato la richiesta: nessuna bozza è stata scritta. Riprova tra poco, oppure rispondi tu."
+        },
+        "reject": "Rifiuta",
+        "rejected": "Bozza rifiutata. Non è stato pubblicato nulla.",
+        "requestFailed": "Non è stato possibile chiedere la bozza. Riprova tra poco.",
+        "saveAndPublish": "Salva e pubblica",
+        "title": "Bozza dell'assistente"
+      },
+      "guest": {
+        "title": "La recensione dell'ospite"
+      },
+      "loadError": "Non riesco a caricare la recensione.",
+      "loading": "Carico la recensione…",
+      "noBooking": "La prenotazione di questa recensione non è disponibile.",
+      "noRating": "L'ospite non ha dato un voto.",
+      "noText": "L'ospite non ha scritto un commento.",
+      "notFound": "Recensione non trovata",
+      "notFoundHint": "L'indirizzo non è giusto, oppure la recensione non è tra quelle dei tuoi immobili.",
+      "publishedAt": "Pubblicata il {{when}}",
+      "ratingOf": "{{rating}} su {{max}}",
+      "readAt": "Letta dal portale il {{when}}",
+      "readFailed": "L'ultima lettura dal portale non è riuscita",
+      "readFailedHint": "Quello che vedi potrebbe non essere aggiornato: CasaZen riprova da sola.",
+      "readFailedUnknown": "Il portale non ha risposto.",
+      "readOnly": "Puoi leggere la recensione, ma non hai il permesso di rispondere.",
+      "reply": {
+        "cannot": "Per ora non puoi rispondere a questa recensione da CasaZen.",
+        "empty": "Scrivi la risposta.",
+        "errorRetry": "Puoi cambiare il testo e riprovare.",
+        "errorUnknown": "Il portale non l'ha accettata.",
+        "hint": "Si vede sotto la recensione, per tutti. Una volta pubblicata non si può modificare né ritirare.",
+        "label": "La tua risposta pubblica",
+        "notPublished": "La risposta non è stata pubblicata",
+        "offline": "Sei offline: puoi pubblicare la risposta quando torni online.",
+        "publish": "Pubblica la risposta",
+        "sentAt": "Pubblicata il {{when}}",
+        "title": "La tua risposta",
+        "tooLong": "La risposta è troppo lunga: al massimo {{max}} caratteri.",
+        "verify": "Non sappiamo ancora se il portale ha ricevuto la risposta. CasaZen la controlla da sola: finché non lo sappiamo non puoi mandarla di nuovo, così non rischi di pubblicarla due volte."
+      },
+      "title": "Recensione",
+      "toast": {
+        "replyFailed": "Non sono riuscito a pubblicare la risposta. Riprova.",
+        "replyRefused": "Il portale non ha accettato la risposta.",
+        "replySent": "Risposta pubblicata.",
+        "replyVerify": "Non sappiamo ancora se il portale ha ricevuto la risposta: non riscriverla, la controlliamo noi."
+      },
+      "unavailable": "Per ora non possiamo mostrare questa recensione."
+    }
   },
   "roles": {
     "Admin": "Super admin",
@@ -29427,11 +30471,11 @@
       "inviteEmail": "Email fornitore",
       "inviteEmailPlaceholder": "fornitore@esempio.it",
       "inviteSend": "Invia invito",
-      "inviteSuccess": "Invito inviato con successo",
+      "inviteHint": "Il fornitore riceve un'email con il link per entrare in CasaZen con quell'indirizzo. Quando accetta, lo trovi in questa pagina.",
+      "inviteSuccess": "Invito inviato: il fornitore riceverà un'email con il link per accettare",
       "inviteError": "Impossibile inviare l'invito",
       "properties": "Proprietà assegnate",
-      "propertiesPlaceholder": "ID proprietà separati da virgola",
-      "propertiesHint": "Inserisci gli ID delle proprietà separati da virgola",
+      "propertiesHint": "Se non ne scegli nessuna, il fornitore lavora su tutte le tue proprietà.",
       "propertiesCount_one": "{{count}} proprietà assegnata",
       "propertiesCount_other": "{{count}} proprietà assegnate",
       "assignedProperties": "Proprietà assegnate",
@@ -30475,46 +31519,199 @@
     }
   },
   "swiss": {
-    "description": "File di conformità per il Canton Ticino: notifica giornaliera alla polizia e rapporto OTR.",
-    "otr": {
-      "description": "Rapporto pernottamenti per il periodo (OTR CSV).",
-      "download": "Scarica rapporto OTR",
-      "downloadFailed": "Impossibile scaricare il rapporto OTR.",
-      "downloading": "Download in corso...",
-      "fromDate": "Data inizio",
-      "title": "Rapporto OTR",
-      "toDate": "Data fine"
+    "actions": {
+      "next": "Avanti"
     },
-    "police": {
-      "date": "Data notifica",
-      "description": "Notifica giornaliera alla polizia (XML Ticino).",
-      "download": "Scarica notifica polizia",
-      "downloadFailed": "Impossibile scaricare la notifica.",
-      "downloading": "Download in corso...",
-      "title": "Notifica polizia"
+    "day": {
+      "closedByReceipt": "Ricevuta del portale archiviata: il giorno è notificato.",
+      "declared": "Già caricato il {{when}} da {{who}}.",
+      "declaredAnonymous": "Già caricato il {{when}}.",
+      "due": "Da notificare entro {{when}} (24 ore dall'arrivo).",
+      "future": "Questo giorno non è ancora iniziato: potrai dichiarare il caricamento dal giorno dell'arrivo.",
+      "none": "Nessun arrivo in questo giorno.",
+      "otherDays": "Altri giorni da notificare:",
+      "overdue": "Le 24 ore per notificare questo giorno sono passate ({{when}}): notifica appena puoi.",
+      "title": "Arrivi di {{day}}"
     },
-    "propertyIdPlaceholder": "ID immobile",
+    "declare": {
+      "action": "Ho caricato il file",
+      "alreadyDone": "Il giorno risultava già dichiarato come caricato.",
+      "body": "Quando il portale ha accettato il file, dillo qui: il giorno esce dagli adempimenti e chi lavora con te lo vede subito.",
+      "done": "Fatto: il giorno è dichiarato come caricato.",
+      "failed": "Impossibile registrare il caricamento. Riprova.",
+      "needsSubmit": "Dichiarare il caricamento spetta a chi può inviare le comunicazioni alla polizia: chiedilo a chi gestisce la struttura.",
+      "notYet": "Non l'hai ancora caricato? Torna al passo «Carica sul portale».",
+      "undo": "Non l'ho caricato: riapri il giorno",
+      "undoFailed": "Impossibile annullare la dichiarazione. Riprova.",
+      "undone": "Dichiarazione annullata."
+    },
+    "file": {
+      "download": "Scarica il file (CSV)",
+      "downloaded": "File scaricato: ora caricalo sul portale.",
+      "downloadFailed": "Impossibile scaricare il file.",
+      "downloadXml": "Scarica in formato XML",
+      "duplicates": "Se carichi di nuovo il file, il portale potrebbe creare delle notifiche doppie.",
+      "generated_one": "Il file di questo giorno è stato scaricato {{count}} volta (l'ultima il {{when}}).",
+      "generated_other": "Il file di questo giorno è stato scaricato {{count}} volte (l'ultima il {{when}}).",
+      "groupSheet": "Scarica la scheda del gruppo di {{name}}",
+      "groupSheetDownloaded": "Scheda del gruppo scaricata: conservala per 5 anni.",
+      "groupSheetFailed": "Impossibile scaricare la scheda del gruppo.",
+      "groupSheetHint": "Per i gruppi di 6 o più persone nel file c'è solo il responsabile: la scheda con tutti i componenti va conservata per 5 anni, a disposizione della polizia.",
+      "needsGuestRead": "Per scaricare il file serve il permesso di leggere i dati degli ospiti.",
+      "none": "Il file si crea quando almeno un ospite ha i dati completi."
+    },
+    "guests": {
+      "group": "Gruppo di {{count}} persone",
+      "minors_one": "(più {{count}} minore conteggiato su un genitore)",
+      "minors_other": "(più {{count}} minori conteggiati su un genitore)",
+      "none": "Nessun ospite di questo giorno ha ancora i dati completi: il file non si può creare.",
+      "ready_one": "{{count}} persona nel file",
+      "ready_other": "{{count}} persone nel file",
+      "transliterated_one": "{{count}} lettera dei nomi non ha il suo accento nel file: il file la scrive senza. Controlla i nomi sul portale.",
+      "transliterated_other": "{{count}} lettere dei nomi non hanno il loro accento nel file: il file le scrive senza. Controlla i nomi sul portale."
+    },
+    "issues": {
+      "body": "Completa i dati qui (o chiedi all'ospite di completare il check-in): il file si aggiorna. Se non è possibile, notifica l'ospite a mano sul portale («Notifiche → Nuova»).",
+      "complete": "Completa i dati",
+      "completeFor": "Completa i dati: {{name}}",
+      "missing": {
+        "birthDate": "data di nascita",
+        "documentType": "tipo di documento",
+        "firstName": "nome",
+        "guests": "dati di tutti gli ospiti della prenotazione",
+        "lastName": "cognome",
+        "nationality": "nazionalità"
+      },
+      "openBooking": "Apri la prenotazione",
+      "openBookingFor": "Apri la prenotazione: {{name}}",
+      "title_one": "{{count}} ospite non è nel file: mancano dei dati",
+      "title_other": "{{count}} ospiti non sono nel file: mancano dei dati"
+    },
+    "layer": {
+      "forbidden": "Non hai il permesso di vedere gli ospiti di questa struttura.",
+      "intro": "In Ticino ogni ospite va notificato alla polizia cantonale entro 24 ore dall'arrivo. CasaZen prepara il file ufficiale: lo carichi tu sul portale e poi dichiari qui che è fatto.",
+      "later": "Continua più tardi",
+      "loadFailed": "Impossibile caricare la notifica.",
+      "loading": "Caricamento della notifica…",
+      "notFound": "Non troviamo questa struttura, oppure non hai accesso.",
+      "notInTicino": "Questa struttura non risulta nel Canton Ticino: la notifica alla polizia ticinese non si applica.",
+      "refreshFailed": "Non riusciamo ad aggiornare questo giorno: quello che vedi è l'ultima lettura.",
+      "steps": "Passi della notifica",
+      "title": "Notifica alla polizia (Ticino)",
+      "titleFor": "Notifica alla polizia: {{property}}"
+    },
+    "portal": {
+      "accents": "Dopo il primo caricamento controlla sul portale che gli accenti dei nomi si leggano bene.",
+      "body": "Accedi a notifiche.ti.ch con le tue credenziali e il codice dell'app di autenticazione, apri «Notifiche → Invio», scegli il file e premi «Invia». Il portale mostra l'esito di ogni ospite.",
+      "newTab": "si apre in una nuova scheda",
+      "open": "Apri il portale delle notifiche",
+      "privacy": "CasaZen non accede al portale e non conosce le tue credenziali: il caricamento lo fai tu."
+    },
+    "property": {
+      "description": "Gli ospiti di questa struttura vanno notificati alla polizia cantonale entro 24 ore dall'arrivo, con il numero identificativo della struttura.",
+      "noId": "Numero identificativo non inserito.",
+      "open": "Notifica gli ospiti alla polizia",
+      "title": "Notifica alla polizia (Ticino)"
+    },
     "receipt": {
-      "date": "Data rapporto",
-      "description": "Carica la ricevuta dal portale cantonale.",
-      "file": "File ricevuta",
-      "reference": "Riferimento",
-      "referencePlaceholder": "Numero conferma o riferimento",
-      "title": "Carica ricevuta",
-      "type": "Tipo",
-      "typeOtr": "OTR",
-      "typePolice": "Polizia",
-      "upload": "Carica ricevuta",
-      "uploadFailed": "Impossibile caricare la ricevuta.",
-      "uploadSuccess": "Ricevuta caricata con successo.",
-      "uploading": "Caricamento in corso..."
+      "body": "Salva la pagina di riepilogo del portale (PDF o immagine) o il suo CSV e caricala qui: la conserviamo per 5 anni. Il giorno si chiude anche senza ricevuta.",
+      "file": "Riepilogo del portale",
+      "group": {
+        "body": "Scarica la scheda al passo «Scarica il file», fai compilare i dati dei componenti e conservala qui per 5 anni.",
+        "file": "Scheda del gruppo",
+        "success": "Scheda del gruppo archiviata.",
+        "title": "Scheda del gruppo: {{name}}",
+        "upload": "Archivia la scheda"
+      },
+      "have_one": "{{count}} ricevuta archiviata per questo giorno.",
+      "have_other": "{{count}} ricevute archiviate per questo giorno.",
+      "needsSubmit": "Aggiungere una ricevuta spetta a chi può inviare le comunicazioni alla polizia: chiedilo a chi gestisce la struttura.",
+      "parental": {
+        "body": "I minorenni che viaggiano senza un adulto hanno bisogno dell'autorizzazione scritta dei genitori: conservala qui per 5 anni. Se manca, la polizia va avvisata subito.",
+        "file": "Autorizzazione dei genitori",
+        "success": "Autorizzazione archiviata.",
+        "title": "Autorizzazione dei genitori",
+        "upload": "Archivia l'autorizzazione"
+      },
+      "tooBig": "Il file è troppo grande: al massimo 10 MB.",
+      "upload": "Aggiungi la ricevuta",
+      "uploadFailed": "Impossibile archiviare il documento.",
+      "uploading": "Caricamento…",
+      "uploadSuccess": "Ricevuta archiviata: giorno notificato.",
+      "uploadSuccessNotDeclared": "Ricevuta archiviata. La dichiarazione non è stata registrata, ma la ricevuta chiude comunque il giorno."
     },
-    "reminder": {
-      "description": "Riceverai notifiche 24 ore prima delle scadenze configurate.",
-      "title": "Promemoria scadenze"
+    "regenerate": {
+      "cancel": "Non scaricare",
+      "confirm": "Scarica di nuovo",
+      "consequence": "Gli ospiti già notificati potrebbero comparire due volte sul portale.",
+      "risk": "Se carichi di nuovo il file, il portale potrebbe creare delle notifiche doppie.",
+      "title": "Scaricare di nuovo il file?"
     },
-    "selectProperty": "Seleziona immobile",
-    "title": "Conformità Svizzera"
+    "steps": {
+      "declare": {
+        "title": "Ho caricato il file"
+      },
+      "file": {
+        "title": "Scarica il file"
+      },
+      "guests": {
+        "title": "Ospiti da notificare"
+      },
+      "portal": {
+        "title": "Carica sul portale"
+      },
+      "receipt": {
+        "title": "Aggiungi la ricevuta"
+      },
+      "state": {
+        "attention": "Da completare",
+        "done": "Fatto",
+        "optional": "Facoltativo",
+        "todo": "Da fare"
+      }
+    },
+    "structureId": {
+      "hint": "Lettere e cifre, con trattini singoli (es. NL-12345678).",
+      "invalid": "Numero non valido: da 3 a 20 lettere e cifre, con trattini singoli (es. NL-12345678).",
+      "label": "Numero identificativo LEAR / NO-LEAR",
+      "missing": "Serve per creare il file: è il numero che Ticino Turismo ti ha dato con la registrazione della struttura.",
+      "readOnly": "Chiedi a chi gestisce la struttura di inserire il numero identificativo: senza non si può creare il file.",
+      "save": "Salva",
+      "saving": "Salvataggio…",
+      "title": "Numero identificativo della struttura"
+    },
+    "warnings": {
+      "group_sheet_incomplete": "Nella scheda di un gruppo manca il nome o la nazionalità di un componente: completa i dati degli ospiti.",
+      "parental_authorization_needed": "Ci sono minorenni senza un adulto: serve l'autorizzazione scritta dei genitori, da conservare per 5 anni (aggiungila all'ultimo passo). Se manca, avvisa subito la polizia."
+    }
+  },
+  "swissPlace": {
+    "form": {
+      "cityFromPlace": "Città e CAP sono quelli della località scelta. Cancella la scelta per scriverli a mano.",
+      "hint": "Cerca il CAP o il nome della località: ne seguono il comune e il cantone, che dicono quali regole valgono per i tuoi ospiti.",
+      "label": "CAP e località (elenco ufficiale)"
+    },
+    "picker": {
+      "ambiguous": "Il CAP {{postalCode}} vale per più comuni: scegli il tuo, non ne scegliamo uno al posto tuo.",
+      "candidatesLabel": "Comuni con questo CAP",
+      "clear": "Cancella la località scelta",
+      "codeUnknown": "Il comune n. {{code}} non è nell'elenco ufficiale: scegli di nuovo la località.",
+      "confirm": "Conferma",
+      "confirmPrompt": "Conferma il comune: {{place}}",
+      "listLabel": "Località trovate",
+      "minChars": "Scrivi almeno {{min}} caratteri: il CAP o il nome della località.",
+      "municipality": "Comune: {{municipality}} · Cantone: {{canton}}",
+      "municipalityOf": "Comune di {{municipality}}",
+      "noPostalCode": "Non trovo il CAP {{postalCode}} tra le località svizzere: controlla come l'hai scritto.",
+      "noResults": "Nessuna località trovata per «{{query}}». Controlla come l'hai scritto.",
+      "placeholder": "Cerca il CAP o la località (almeno 2 caratteri)",
+      "resultCount_one": "{{count}} località trovata. Usa le frecce e Invio per sceglierla.",
+      "resultCount_other": "{{count}} località trovate. Usa le frecce e Invio per sceglierne una.",
+      "retry": "Riprova",
+      "searchError": "Non riesco a leggere l'elenco delle località: questo non significa che non ci siano risultati.",
+      "searching": "Cerco…",
+      "unavailable": "L'elenco ufficiale delle località non è disponibile in questo momento. Puoi salvare lo stesso: il comune si conferma più tardi."
+    }
   },
   "taxRates": {
     "title": "Aliquote Tassa di Soggiorno",
@@ -31409,13 +32606,14 @@
     "loadErrorCurrency": "Impossibile caricare i pagamenti in {{currency}}",
     "loading": "Caricamento bonifici...",
     "noPayouts": "Nessun pagamento da inviare in banca",
-    "noPayoutsDescription": "I pagamenti compaiono qui quando li confermi nella chiusura mensile dei proprietari.",
+    "noPayoutsDescription": "Un pagamento compare qui solo se l'hai confermato nella chiusura mensile dei proprietari, se il suo rendiconto è stato pubblicato al proprietario e se l'importo netto è maggiore di zero.",
     "notCreated": "File in {{currency}} non creato",
     "notFound": "Pagamenti non trovati",
     "notFoundPayout": "Non troviamo uno dei pagamenti scelti: l'elenco è stato aggiornato.",
     "openClose": "Vai alla chiusura mensile",
     "openOwner": "Apri i dati finanziari",
-    "payoutsHint": "I pagamenti confermati ai proprietari che non sono ancora in nessun file, per l'importo netto dopo la ritenuta. Un pagamento va in un solo file: quando lo inserisci in un file, esce da questo elenco.",
+    "payoutsCapNote": "Sono elencati al massimo {{limit}} pagamenti in {{currency}}, i più vecchi: gli altri compaiono qui quando ne metti alcuni in un file.",
+    "payoutsHint": "I pagamenti confermati ai proprietari che non sono ancora in nessun file, per l'importo netto dopo la ritenuta. Compaiono solo quelli con il rendiconto già pubblicato al proprietario e con un importo netto maggiore di zero. Un pagamento va in un solo file: quando lo inserisci in un file, esce da questo elenco.",
     "refused": {
       "description": "L'elenco riguarda i proprietari di tutta l'organizzazione e il server lo mostra solo con un accesso a tutte le strutture. Se il tuo accesso è limitato ad alcune strutture, chiedi a un amministratore di aprire questa pagina.",
       "title": "Questi pagamenti non sono disponibili per il tuo accesso"
@@ -32098,6 +33296,70 @@
     "title": "Emittente dei documenti dei soggiorni"
   },
   "selfBilling": {
+    "close": {
+      "button": "Chiudi come non più dovuta",
+      "buttonLabel": "Chiudi come non più dovuta la bozza {{title}}",
+      "confirm": "Chiudi come non più dovuta",
+      "consequenceClosed": "La bozza si chiude per sempre e non si emette più. Non si può annullare.",
+      "consequenceRegister": "Il numero compare nel registro dei numeri non utilizzati che il commercialista riceve nel pacchetto.",
+      "consequenceReserved": "Il suo numero resta riservato: non verrà mai dato a un’altra fattura.",
+      "description": "La bozza n. {{number}} ha preso il numero di un’autofattura scartata dallo SDI e per ora non si può emettere. Se non è più dovuta, puoi chiuderla: dicci perché, restano registrati il motivo, chi l’ha chiusa e il giorno.",
+      "descriptionUnknown": "Questa bozza ha preso il numero di un’autofattura scartata dallo SDI e per ora non si può emettere. Se non è più dovuta, puoi chiuderla: dicci perché, restano registrati il motivo, chi l’ha chiusa e il giorno.",
+      "done": "Bozza n. {{number}} chiusa: non è più dovuta. Il numero resta riservato.",
+      "doneUnknown": "Bozza chiusa: non è più dovuta. Il numero resta riservato.",
+      "note": {
+        "hint": "La nota resta nello storico e finisce nel registro che riceve il commercialista: scrivi solo ciò che serve a capire.",
+        "label": "Nota"
+      },
+      "problem": {
+        "alreadyClosed": "Questa bozza è già stata chiusa con un altro motivo: non c’è nulla da correggere. Abbiamo aggiornato l’elenco.",
+        "failed": "Non siamo riusciti a confermare la chiusura: controlla l’elenco e riprova.",
+        "forbidden": "Non puoi chiudere le bozze: serve poter gestire le fatture di tutta l’organizzazione. Non è cambiato niente.",
+        "notClosable": "Questa bozza non si può chiudere da qui: non sostituisce un’autofattura scartata, oppure il mese la sostiene ancora e va emessa. Abbiamo aggiornato l’elenco.",
+        "notFound": "Non troviamo più questa bozza: abbiamo aggiornato l’elenco.",
+        "noteTooLong": "La nota è troppo lunga: al massimo {{max}} caratteri.",
+        "reasonRequired": "Scegli il motivo: senza non si può chiudere la bozza.",
+        "unavailable": "La chiusura delle bozze non è ancora aperta in questo ambiente. Non è cambiato niente."
+      },
+      "reason": {
+        "duplicate_or_error": "Era un doppione o un errore",
+        "holder_no_longer_subject": "Il titolare del conto non è più soggetto all’autofattura",
+        "portal_credit_note": "Il portale ha emesso una nota di credito"
+      },
+      "reasonLegend": "Motivo (obbligatorio)",
+      "title": "Chiudere la bozza come non più dovuta?"
+    },
+    "closed": {
+      "at": "Chiusa il",
+      "by": "Chiusa da",
+      "intro": "Aveva preso il numero {{number}} di un’autofattura scartata dallo SDI. Il numero resta riservato: non lo avrà mai un’altra fattura.",
+      "introUnknown": "Aveva preso il numero di un’autofattura scartata dallo SDI. Il numero resta riservato: non lo avrà mai un’altra fattura.",
+      "note": "Nota",
+      "reason": "Motivo",
+      "title": "Questa bozza è stata chiusa"
+    },
+    "correct": {
+      "button": "Correggi e rimanda",
+      "buttonLabel": "Correggi e rimanda l’autofattura {{title}}",
+      "confirm": "Correggi e rimanda",
+      "consequenceDiscarded": "L’autofattura scartata non conta come emessa e resta nello storico.",
+      "consequenceDraft": "Ne facciamo una bozza con lo stesso numero: non va allo SDI da sola.",
+      "consequenceIssue": "Tu correggi ciò che lo SDI ha rifiutato e poi emetti la bozza: solo allora può andare di nuovo allo SDI.",
+      "description": "Lo SDI ha scartato l’autofattura n. {{number}}: per il fisco è come se non fosse mai stata emessa.",
+      "descriptionUnknown": "Lo SDI ha scartato questa autofattura: per il fisco è come se non fosse mai stata emessa.",
+      "done": "Bozza n. {{number}} pronta: sostituisce l’autofattura scartata. Correggi ciò che lo SDI ha rifiutato e poi emettila.",
+      "doneUnknown": "Bozza pronta: sostituisce l’autofattura scartata. Correggi ciò che lo SDI ha rifiutato e poi emettila.",
+      "problem": {
+        "failed": "Non siamo riusciti a confermare la correzione: controlla l’elenco e riprova.",
+        "forbidden": "Non puoi correggere le autofatture: serve poter gestire le fatture di tutta l’organizzazione. Non è cambiato niente.",
+        "notCorrectable": "Questa autofattura non si può correggere da qui: lo SDI non l’ha scartata, oppure ha già una nota di credito. Abbiamo aggiornato l’elenco.",
+        "notFound": "Non troviamo più questa autofattura: abbiamo aggiornato l’elenco.",
+        "unavailable": "La correzione delle autofatture non è ancora aperta in questo ambiente. Non è cambiato niente."
+      },
+      "reasonTitle": "Perché lo SDI l’ha scartata",
+      "title": "Correggere e rimandare l’autofattura?",
+      "unreadable": "La correzione è stata fatta, ma non riusciamo a leggere la risposta: la bozza è nell’elenco."
+    },
     "currencyMissing": "Per alcuni di questi importi il server non indica la valuta: sono scritti senza simbolo e non sono convertiti.",
     "detail": {
       "description": "Controlla le righe prima di emettere: dopo l’emissione l’autofattura non si modifica più.",
@@ -32124,7 +33386,12 @@
         "done": "Autofattura emessa.",
         "doneNumbered": "Autofattura {{number}} emessa.",
         "failed": "Non siamo riusciti a emettere l’autofattura. Riprova tra poco.",
+        "outdated": "I dati sono cambiati da quando la bozza è stata fatta: rifai le bozze del mese e poi emetti di nuovo.",
+        "redo": "Rifai le bozze del mese",
         "title": "Emettere l’autofattura?"
+      },
+      "kept": {
+        "title": "Per ora questa bozza non si può emettere"
       },
       "lines": {
         "amount": "Imponibile",
@@ -32136,6 +33403,18 @@
       "loadError": "Impossibile caricare l’autofattura.",
       "loading": "Carico l’autofattura…",
       "pdf": "PDF",
+      "replaced": {
+        "body": "Lo SDI l’ha scartata, quindi per il fisco non è mai stata emessa: la sostituisce un’autofattura con lo stesso numero. Questa resta nello storico, senza azioni.",
+        "closedBody": "Lo SDI l’ha scartata, quindi per il fisco non è mai stata emessa. La bozza che ne aveva preso il numero è stata chiusa come non più dovuta: il numero resta riservato e questa resta nello storico, senza azioni.",
+        "closedTitle": "La sua bozza sostitutiva è stata chiusa",
+        "open": "Apri la sostitutiva",
+        "title": "Sostituita da un’altra autofattura"
+      },
+      "replaces": {
+        "body": "Lo SDI l’ha scartata, quindi per il fisco non è mai stata emessa. Questa bozza tiene lo stesso numero e non si può scartare: correggi ciò che lo SDI ha rifiutato ed emettila.",
+        "title": "Sostituisce l’autofattura n. {{number}}",
+        "titleUnknown": "Sostituisce un’autofattura scartata dallo SDI"
+      },
       "rule": "Regole usate: versione {{version}}",
       "title": "Autofattura",
       "titleFor": "Autofattura di {{month}}",
@@ -32156,6 +33435,10 @@
         "failed_one": "Non possiamo ancora fare la bozza per 1 emittente:",
         "failed_other": "Non possiamo ancora fare la bozza per {{count}} emittenti:",
         "fields": "Mancano: {{fields}}.",
+        "keptRow": "{{holder}} · {{portal}} · autofattura n. {{number}}",
+        "keptRowNoNumber": "{{holder}} · {{portal}}",
+        "kept_one": "1 bozza tiene il numero di un’autofattura scartata e per ora non si può emettere:",
+        "kept_other": "{{count}} bozze tengono il numero di un’autofattura scartata e per ora non si possono emettere:",
         "ledgerNotPosted": "Il mese dei proprietari non è ancora registrato: le bozze si fanno dal libro del mese. Chiudi prima il mese e poi prepara di nuovo le bozze.",
         "notDue": "Commissioni che non si autofatturano:",
         "notDueRow_one": "{{channel}}: {{amount}} per {{count}} soggiorno, {{reason}}.",
@@ -32166,6 +33449,14 @@
     "holder": {
       "Agency": "Agenzia",
       "Owner": "Proprietario"
+    },
+    "kept": {
+      "exit": "Se non è più dovuta, chiudila come non più dovuta: il numero resta riservato e non viene mai riusato.",
+      "issuer_profile_incomplete": "Il profilo emittente di chi ha il conto del portale è incompleto: completalo nei dati di fatturazione e poi rifai le bozze del mese. Finché manca, la bozza tiene il numero ma non si può emettere.",
+      "ledger_gives_no_td17": "Il libro del mese non dà più nessuna autofattura a questo titolare per questo portale (commissioni stornate, soggiorni non più attivi o titolare non più soggetto): la bozza tiene il numero dell’autofattura scartata e non si può emettere.",
+      "owner_issuer_missing": "Il proprietario titolare del conto del portale non ha un profilo emittente: completalo nella sua scheda e poi rifai le bozze del mese. Finché manca, la bozza tiene il numero ma non si può emettere.",
+      "portal_not_configured": "Il portale di questa bozza non è più tra quelli configurati nelle impostazioni delle autofatture (paese e partita IVA): scrivi a CasaZen perché lo rimetta a posto. Finché manca, la bozza tiene il numero ma non si può emettere.",
+      "unknown": "Questa bozza tiene il numero di un’autofattura scartata dallo SDI e per ora non si può emettere (motivo: {{code}})."
     },
     "notDue": {
       "currency_not_supported": "la commissione non è in euro",
@@ -32195,20 +33486,31 @@
       "owner_issuer_missing": "manca il profilo emittente del proprietario"
     },
     "row": {
+      "corrected": "Autofattura {{number}}: scartata dallo SDI e sostituita da un’autofattura con lo stesso numero.",
+      "correctedClosed": "Autofattura {{number}}: scartata dallo SDI. La bozza che ne aveva preso il numero è stata chiusa come non più dovuta: il numero resta riservato.",
+      "correctedClosedUnknown": "Autofattura scartata dallo SDI. La bozza che ne aveva preso il numero è stata chiusa come non più dovuta: il numero resta riservato.",
+      "correctedUnknown": "Autofattura scartata dallo SDI e sostituita da un’autofattura con lo stesso numero.",
       "due": "Da emettere entro il {{date}}",
       "issued": "Autofattura {{number}} del {{date}}",
       "monthAndHolder": "{{month}} · {{holder}} · portale in {{country}}",
       "open": "Apri",
       "openLabel": "Apri l’autofattura {{title}}",
       "parts": "Imponibile {{base}} · IVA {{vat}}",
+      "replacement": "Apri la sostitutiva",
+      "replacementLabel": "Apri la sostitutiva dell’autofattura {{title}}",
+      "replaces": "Sostituisce l’autofattura n. {{number}}, scartata dallo SDI.",
+      "replacesUnknown": "Sostituisce un’autofattura scartata dallo SDI.",
       "review": "Rivedi ed emetti",
       "reviewLabel": "Rivedi ed emetti l’autofattura {{title}}",
       "total": "Totale {{amount}}"
     },
     "status": {
+      "ClosedNotDue": "Chiusa, non più dovuta",
       "Discarded": "Bozza scartata",
       "Draft": "Bozza",
-      "Issued": "Emessa"
+      "Issued": "Emessa",
+      "RejectedClosed": "Scartata dallo SDI",
+      "Replaced": "Sostituita"
     }
   },
   "commercial": {

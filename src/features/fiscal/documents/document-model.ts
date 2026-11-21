@@ -4,9 +4,9 @@ import { FISCAL_DOCUMENT_ERROR } from '@/api/fiscal-documents.api';
 import { isFeatureEnabled, type FeatureFlags } from '@/config/feature-flags';
 import { BOOKINGS_PATH } from '@/features/bookings/lib/booking-list-query';
 import { contentDispositionFileName } from '@/features/document-archive/document-file';
-import { getProblemCode, translateErrorCode } from '@/lib/api-errors';
+import { getProblemCode, getProblemMessage, translateErrorCode } from '@/lib/api-errors';
 import type { StatusIconName, StatusTone } from '@/lib/status-dictionary';
-import { formatStayDate, isStayDate, todayInRome } from '@/lib/stay-dates';
+import { formatStayDate, isStayDate, romeDateOf, todayInRome } from '@/lib/stay-dates';
 import {
   FISCAL_DOCUMENT_LINE_TYPES,
   FISCAL_DOCUMENT_SDI_STATUSES,
@@ -15,6 +15,7 @@ import {
   type FiscalDocumentBatchResult,
   type FiscalDocumentCriteria,
   type FiscalDocumentDetail,
+  type FiscalDocumentEmailQueued,
   type FiscalDocumentEntry,
   type FiscalDocumentExportFormat,
   type FiscalDocumentsContext,
@@ -499,9 +500,14 @@ export interface DocumentWriteActions {
   discard: boolean;
   /** An invoice or a receipt that was issued is credited, in whole or in part. */
   credit: boolean;
+  /** A document that was issued is e-mailed to the guest of its booking, or e-mailed again (E12/F01/US02/T01): the e-mail is QUEUED, never said to be delivered. */
+  email: boolean;
 }
 
-const NO_WRITE_ACTIONS: DocumentWriteActions = { issue: false, refresh: false, discard: false, credit: false };
+const NO_WRITE_ACTIONS: DocumentWriteActions = { issue: false, refresh: false, discard: false, credit: false, email: false };
+
+/** The kinds of document the guest gets by e-mail: the ones the public page of the link knows how to name. A kind this client does not know (the server is newer) is not offered. */
+const EMAILED_KINDS: readonly string[] = ['Invoice', 'Receipt', 'CreditNote'];
 
 /**
  * What can be changed in a document. `canWrite` is the right to write payments (`payment.write`) AND the flag of the issuance of CasaZen: without either of them nothing can be
@@ -509,19 +515,57 @@ const NO_WRITE_ACTIONS: DocumentWriteActions = { issue: false, refresh: false, d
  * again (a credit note that is still a draft is the amounts of the document it credits: there is nothing to make it again from). An invoice or a receipt that was issued is credited;
  * a credit note and a proforma never are. Two documents are the exception, because the server refuses the action for them every time: an invoice the SDI rejected never was issued, so it is corrected (from its panel
  * of the SDI) and never credited (422 `document_rejected_use_correction`); the draft that replaces it holds its number, so it is issued and never dropped (422 `document_replacement_holds_number`).
+ * An invoice, a receipt or a credit note that was issued is e-mailed to the guest of its booking (`POST api/fiscal/documents/{id}/send-email`, the same `payment.write` and flag): never a draft or a dropped draft
+ * (422 `document_not_issued`), and, by choice, never an invoice the SDI rejected either: it never was issued, so the guest gets the corrected one (the server would send it, and the guest would hold a document that is replaced).
  */
 export function documentWriteActionsOf(document: Pick<FiscalDocumentEntry, 'source' | 'status' | 'kind' | 'purpose' | 'sdiStatus' | 'replacesDocumentId'>, canWrite: boolean): DocumentWriteActions {
   // An invoice of the property manager to an owner and a self-billed invoice are never changed with the endpoints of the guest documents (the server refuses with 422): their own pages change them.
   if (!canWrite || document.source !== 'CasaZen' || !isGuestPurpose(document.purpose)) return NO_WRITE_ACTIONS;
   const draft = document.status === 'Draft';
+  const issued = document.status === 'Issued';
   const rejected = document.sdiStatus === 'rejected';
   const holdsANumber = Boolean(document.replacesDocumentId);
   return {
     issue: draft,
     refresh: draft && document.kind !== 'CreditNote',
     discard: draft && !holdsANumber,
-    credit: document.status === 'Issued' && (document.kind === 'Invoice' || document.kind === 'Receipt') && !rejected,
+    credit: issued && (document.kind === 'Invoice' || document.kind === 'Receipt') && !rejected,
+    email: issued && EMAILED_KINDS.includes(document.kind) && !rejected,
   };
+}
+
+// ---------------------------------------------------------------------------------------------------------------------------------
+// The e-mail of a document to its guest (E12/F01/US02/T01)
+
+/** The last day (Europe/Rome, as the e-mail writes it) the link in an e-mailed document opens, in the language of the person; empty when the server gave no instant. */
+export function emailLinkDayOf(queued: Pick<FiscalDocumentEmailQueued, 'linkExpiresAt'>, language: string): string {
+  return formatDocumentDay(romeDateOf(queued.linkExpiresAt), language);
+}
+
+/**
+ * Whether the same call may be repeated as it is: no answer reached the person (the network), the server failed (5xx), it was asked too often (429), or the queue could not take the e-mail
+ * (`document_email_not_sent`: nothing was sent). Every other refusal (403, 404, a 422 that names the document or the guest) is the same on the next call: the person changes what it names first.
+ */
+export function emailRetryableOf(error: unknown): boolean {
+  if (!isAxiosError(error) || error.response === undefined) return true;
+  const { status, data } = error.response;
+  return status >= 500 || status === 429 || getProblemCode(data) === FISCAL_DOCUMENT_ERROR.emailNotSent;
+}
+
+/** What a refused or failed e-mail says, and whether asking again can change anything. */
+export interface EmailProblem {
+  message: string;
+  retry: boolean;
+}
+
+/**
+ * The words of a failed e-mail: the ones of the code the server gave (`apiErrors.codes.*`: each refusal has its own), «no permission» for a 403, the sentence of the network for no answer, else a sentence that
+ * says whether asking again helps. Never a success, and never «consegnata»: even when it works, the e-mail is only queued.
+ */
+export function emailProblemOf(error: unknown, t: TFunction): EmailProblem {
+  const retry = emailRetryableOf(error);
+  const sentence = retry ? t('fiscalDocuments.email.failed') : t('fiscalDocuments.email.refused');
+  return { retry, message: getProblemMessage(error, t) ?? sentence };
 }
 
 // ---------------------------------------------------------------------------------------------------------------------------------
@@ -626,12 +670,17 @@ export function vatSummaryOf(detail: Pick<FiscalDocumentDetail, 'lines' | 'taxab
   return rows.map((row) => ({ ...row, taxable: row.taxable / 100, vat: row.vat / 100 }));
 }
 
+/** Whether a document has a line about the money at all: only an issued invoice or receipt does (a draft, a dropped draft, a credit note and a proforma have none). */
+function hasCollectionLine(document: Pick<FiscalDocumentDetail, 'kind' | 'status'>): boolean {
+  return document.status === 'Issued' && document.kind !== 'CreditNote' && document.kind !== 'Proforma';
+}
+
 /**
  * How a document stands on the money, in words, for the detail: «Pagato tramite il portale» when the portal collected it (the server says `Portal` as the channel), «Pagato», «Da incassare», and a state
  * nobody knows as it came. `null` when nothing is claimed: the server does not say, or the document has no collection (a draft, a credit note, a proforma).
  */
 export function paymentWordsOf(document: Pick<FiscalDocumentDetail, 'kind' | 'status' | 'paymentState' | 'paymentChannel'>): DocumentState | null {
-  if (document.status !== 'Issued' || document.kind === 'CreditNote' || document.kind === 'Proforma') return null;
+  if (!hasCollectionLine(document)) return null;
   switch (document.paymentState) {
     case 'Unknown':
       return null;
@@ -642,6 +691,46 @@ export function paymentWordsOf(document: Pick<FiscalDocumentDetail, 'kind' | 'st
     default:
       return { key: 'fiscalDocuments.detail.payment.unrecognized', tone: 'neutral', icon: 'circle-dashed', detail: document.paymentState };
   }
+}
+
+/** One of the two parts of a payment that is split in two: how it stands, in words with a tone and an icon, and its amount as the server wrote it (in the currency of the document). */
+export interface PaymentPart {
+  state: DocumentState;
+  amount: number;
+}
+
+/** The part of the payment that the portal collected, and the part (the tourist tax the portal left to the host) that is still to pay at the property. */
+export interface PaymentSplit {
+  /** `null` when nothing of the document was collected through the portal (it bills nothing but the tax): nothing is said of the portal then, as the PDF says nothing of it. */
+  portal: PaymentPart | null;
+  atProperty: PaymentPart;
+}
+
+const PORTAL_PART: DocumentState = { key: 'fiscalDocuments.detail.payment.paidPortal', tone: 'success', icon: 'check-circle' };
+const PROPERTY_PART: DocumentState = { key: 'fiscalDocuments.detail.payment.toCollectAtProperty', tone: 'warning', icon: 'clock' };
+
+/** The mark of the line of tourist tax that is paid at the property: «Da pagare in struttura», with a clock as the part of the payment has, so it is never told by color alone. */
+export const LINE_AT_PROPERTY_STATE: DocumentState = { key: 'fiscalDocuments.detail.lines.toCollectAtProperty', tone: 'warning', icon: 'clock' };
+
+/**
+ * The payment of a document in the two parts the server says for the guest document of a portal that left the tourist tax to the host (FIX/FE-PORTAL-TAX-SPLIT): what the portal collected and the tourist tax still
+ * to pay at the property, each with its words and its amount exactly as the server wrote it. Nothing is added, subtracted or rounded here, and nobody infers who collected what: the two parts do not always add up
+ * to the total (a part of the tax that the collection of the stay records as collected is on neither), and the server, which knows, is the only one that says it. They replace the single state of
+ * `paymentWordsOf` where that state would be drawn.
+ *
+ * `null` when the server says no such split (it leaves both amounts out of every other document: the document is then shown as it always was), and for a document that has no line about the money
+ * (a draft, a dropped draft, a credit note, a proforma). The split is made by the part still to pay at the property: with nothing to pay there the document is not split. The portal part is left out
+ * when it is not above zero: a document that bills nothing but the tax never says «paid through the portal» for nothing.
+ */
+export function paymentSplitOf(document: Pick<FiscalDocumentDetail, 'kind' | 'status' | 'amountPaidViaPortal' | 'amountToCollectAtProperty'>): PaymentSplit | null {
+  if (!hasCollectionLine(document)) return null;
+  const atProperty = document.amountToCollectAtProperty;
+  if (atProperty === undefined || !(atProperty > 0)) return null;
+  const portal = document.amountPaidViaPortal;
+  return {
+    portal: portal !== undefined && portal > 0 ? { state: PORTAL_PART, amount: portal } : null,
+    atProperty: { state: PROPERTY_PART, amount: atProperty },
+  };
 }
 
 // ---------------------------------------------------------------------------------------------------------------------------------

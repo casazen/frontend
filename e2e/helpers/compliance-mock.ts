@@ -6,6 +6,7 @@ import type {
   SafetyChecklist,
   SafetyItemCode,
 } from '../../src/types/compliance.types';
+import type { DeclareTicinoDayRequest, TicinoDeclaration, TicinoNotificationDay } from '../../src/types/swissCompliance.types';
 
 export const DEMO_PROPERTY_ID = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee';
 export const DEMO_CHECKOUT_BOOKING_ID = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
@@ -257,4 +258,150 @@ export async function mockComplianceApi(page: Page): Promise<void> {
       body: JSON.stringify(demoCheckoutWizard),
     });
   });
+}
+
+/** A Ticino property of the host with one arrival day still to notify to the cantonal police (E30/F02/US03, casazen/backend#979). */
+export const DEMO_TICINO_PROPERTY_ID = 'dddddddd-dddd-dddd-dddd-dddddddddddd';
+export const DEMO_TICINO_BOOKING_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+export const DEMO_TICINO_DAY = '2026-11-19';
+export const DEMO_TICINO_DUE_AT = '2026-11-20T14:00:00Z';
+
+/**
+ * The arrival day as `GET /api/properties/{id}/swiss/ticino-notification` sends it, typed with the app's types so that a change of the contract breaks this
+ * mock too: one guest with everything the file needs, nothing declared and no file written yet.
+ */
+export function demoTicinoDay(overrides: Partial<TicinoNotificationDay> = {}): TicinoNotificationDay {
+  return {
+    propertyId: DEMO_TICINO_PROPERTY_ID,
+    day: DEMO_TICINO_DAY,
+    structureId: 'NL-12345678',
+    stayCount: 1,
+    rows: [{ bookingId: DEMO_TICINO_BOOKING_ID, guestName: 'Mario Rossi', personsOver14: 0, personsUnder14: 0, kind: 'guest', groupSize: 0 }],
+    issues: [],
+    xmlAvailable: true,
+    receiptCount: 0,
+    dueAt: DEMO_TICINO_DUE_AT,
+    reference: `TI-${DEMO_TICINO_PROPERTY_ID.replaceAll('-', '')}-20261119`,
+    portalUrl: 'https://www.notifiche.ti.ch',
+    pendingDays: [{ day: DEMO_TICINO_DAY, stayCount: 1, dueAt: DEMO_TICINO_DUE_AT }],
+    warnings: [],
+    csvCharset: 'windows-1252',
+    transliteratedCount: 0,
+    declaredAt: null,
+    declaredBy: null,
+    fileGeneratedAt: null,
+    fileGeneratedCount: 0,
+    alreadyDeclared: false,
+    ...overrides,
+  };
+}
+
+/** The cockpit of the host with that arrival day listed as a thing to do (`NotifyTicinoPolice`, the day in `period`); empty once the day is declared. */
+export function demoTicinoSummary(declared: boolean): ComplianceSummaryResult {
+  const empty = { count: 0, items: [] };
+  return {
+    propertiesPending: empty,
+    guestCheckInsIncomplete: empty,
+    checkoutsDue: empty,
+    alloggiatiFailures: empty,
+    alloggiatiManualRequired: empty,
+    turnoversPending: empty,
+    ticinoNotifications: declared
+      ? empty
+      : {
+          count: 1,
+          items: [
+            {
+              id: DEMO_TICINO_PROPERTY_ID,
+              label: 'Casa Lugano',
+              action: 'NotifyTicinoPolice',
+              propertyId: DEMO_TICINO_PROPERTY_ID,
+              bookingId: null,
+              period: DEMO_TICINO_DAY,
+              dueAt: DEMO_TICINO_DUE_AT,
+            },
+          ],
+        },
+  };
+}
+
+/** What the mock of the Ticino notification has seen: the declarations the host made, and how many files it was asked for. */
+interface TicinoNotificationServer {
+  declarations: DeclareTicinoDayRequest[];
+  files: number;
+}
+
+/**
+ * The API of the guided notification to the Ticino police for the property of `DEMO_TICINO_PROPERTY_ID`, with the state a server keeps: the day to notify, its file, the
+ * declaration (POST and DELETE of `…/ticino-notification/declare`) and the summary of the cockpit, which lists the day until it is declared and not after. Answers over the
+ * defaults of the fixture (the last route registered wins), so a spec calls it after `test` has set them up.
+ */
+export async function mockTicinoNotificationApi(page: Page): Promise<TicinoNotificationServer> {
+  const server: TicinoNotificationServer = { declarations: [], files: 0 };
+  let declaration: TicinoDeclaration | null = null;
+  const json = (body: unknown, status = 200) => ({ status, contentType: 'application/json', body: JSON.stringify(body) });
+
+  await page.route('**/api/compliance/summary**', async (route) => {
+    if (route.request().method() !== 'GET') {
+      await route.fallback();
+      return;
+    }
+    await route.fulfill(json(demoTicinoSummary(declaration !== null)));
+  });
+
+  // The day (`?date=` in its address), and the file of the day. The declaration below is registered after it, so it answers its own address.
+  await page.route(`**/api/properties/${DEMO_TICINO_PROPERTY_ID}/swiss/ticino-notification**`, async (route) => {
+    const method = route.request().method();
+    if (method === 'GET') {
+      await route.fulfill(
+        json(
+          demoTicinoDay(
+            declaration
+              ? { declaredAt: declaration.declaredAt, declaredBy: declaration.declaredBy, alreadyDeclared: true, fileGeneratedCount: server.files, fileGeneratedAt: declaration.declaredAt }
+              : { fileGeneratedCount: server.files, fileGeneratedAt: server.files > 0 ? '2026-11-19T20:00:00Z' : null },
+          ),
+        ),
+      );
+      return;
+    }
+    if (method === 'POST') {
+      server.files += 1;
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/csv; charset=windows-1252',
+        headers: { 'Content-Disposition': 'attachment; filename="notifiche-ti-2026-11-19.csv"' },
+        body: 'Id Struttura;Cognome;Nome\r\nNL-12345678;Rossi;Mario\r\n',
+      });
+      return;
+    }
+    await route.fallback();
+  });
+
+  // The declaration of the day (idempotent) and its undo.
+  await page.route(`**/api/properties/${DEMO_TICINO_PROPERTY_ID}/swiss/ticino-notification/declare**`, async (route) => {
+    const method = route.request().method();
+    if (method === 'POST') {
+      const request = route.request().postDataJSON() as DeclareTicinoDayRequest;
+      server.declarations.push(request);
+      const created = declaration === null;
+      declaration ??= {
+        propertyId: DEMO_TICINO_PROPERTY_ID,
+        arrivalDay: request.arrivalDay,
+        declaredAt: '2026-11-19T20:30:00Z',
+        declaredBy: 'Luca Bianchi',
+        receiptId: request.receiptId ?? null,
+        created,
+      };
+      await route.fulfill(json({ ...declaration, created }));
+      return;
+    }
+    if (method === 'DELETE') {
+      declaration = null;
+      await route.fulfill({ status: 204 });
+      return;
+    }
+    await route.fallback();
+  });
+
+  return server;
 }

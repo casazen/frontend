@@ -27,6 +27,7 @@ const PROPERTY_ACTIONS: readonly ComplianceCockpitAction[] = [
   'EnterMunicipalityTaxRate',
   'UploadIstatProof',
   'DeclareTouristTax',
+  'NotifyTicinoPolice',
 ];
 
 const dueTime = (dueAt: string | null): number => {

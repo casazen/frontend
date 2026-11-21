@@ -26,6 +26,7 @@ import {
   useBillingSetup,
   useChannelAccountHolders,
   useChannelCommissionRules,
+  useConfirmPortalTouristTaxComuni,
   useSaveBillingSection,
   useSaveChannelAccountHolders,
   useSaveChannelCommissionRules,
@@ -51,9 +52,12 @@ import {
   initialValues,
   isAccountantRefused,
   isNeedsWholeOrg,
+  isRechargeWaiverNotAcknowledged,
+  italianTouristTaxOf,
   lastMonthOf,
   missingItemsOf,
   ownerIssuersMissing,
+  platformDefaultsOf,
   portalSettingsChanged,
   problemsOf,
   sectionOf,
@@ -61,6 +65,7 @@ import {
   stepSave,
   taxProfileAddition,
   textOf,
+  withProposal,
   type FormProblem,
 } from './billing-wizard-model';
 import {
@@ -89,6 +94,7 @@ import { StepFrame } from './steps/step-frame';
 import { SummaryStep } from './steps/summary-step';
 import { TouristTaxStep } from './steps/tourist-tax-step';
 import { VatStep } from './steps/vat-step';
+import { useRechargeWaiverConfirmation } from './use-recharge-waiver-confirmation';
 
 /** The name a step has in the texts: the id of the step, with no dash. */
 const stepKeyOf = (id: BillingStepId) => (id === BILLING_STEPS.touristTax ? 'touristTax' : id === BILLING_STEPS.ownerIssuers ? 'ownerIssuers' : id);
@@ -126,7 +132,10 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
   const save = useSaveBillingSection();
   const saveTaxIdentity = useSaveTaxIdentity();
   const savePortalSettings = useSavePortalAccountSettings();
+  // The portals the person confirms as the ones that collect the tourist tax in a comune (the step «Tassa di soggiorno» of an Italian issuer): an answer of its own, saved at once.
+  const confirmPortals = useConfirmPortalTouristTaxComuni();
   const saveHolders = useSaveChannelAccountHolders();
+  const waiver = useRechargeWaiverConfirmation();
   const saveRules = useSaveChannelCommissionRules();
   const apply = useApplyMandateTemplate();
   const preview = useBillingPreview();
@@ -153,6 +162,7 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
     save.isPending ||
     saveTaxIdentity.isPending ||
     savePortalSettings.isPending ||
+    confirmPortals.isPending ||
     saveHolders.isPending ||
     saveRules.isPending ||
     apply.isPending ||
@@ -162,6 +172,16 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
   // The wizard starts from the setup as it was when the page opened: a later read of it (the window comes back, a save) does not change the answers under the person's hands.
   const [today] = useState(() => todayInRome());
   const [defaults] = useState(() => initialValues(setup, { organizationName: org?.name ?? '', today }));
+  // The portals the server says collect the Swiss tourist tax by default, read from the setup as it is now (a country chosen in this wizard has its own). They are proposed in the step, and what a
+  // draft compares the answers with already holds them: a proposal the person left as it was is not something they wrote.
+  const proposedCollectors = readOnly ? [] : platformDefaultsOf(setup);
+  const baseline = withProposal(defaults, proposedCollectors);
+  // The tourist tax of the Italian portals, as the setup says it now (a confirmation answers with the section, which replaces it here at once): nothing of it when the server sends none
+  // (an older server, or a person who reaches only some of the properties, for whom it leaves it out). A person who may not change the setup reads what was confirmed and is asked nothing.
+  const italianTax = italianTouristTaxOf(setup);
+  const portals = italianTax
+    ? { view: readOnly ? { ...italianTax, proposals: [] } : italianTax, confirm: confirmPortals, busy: saving || leaving, onRefused: () => setRefused(true) }
+    : null;
   const [problems, setProblems] = useState<FormProblem[]>([]);
   const settle = useCallback((name: string) => setProblems((current) => (current.some((problem) => problem.name === name) ? current.filter((problem) => problem.name !== name) : current)), []);
 
@@ -170,6 +190,22 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
   const ownersWithoutMandate = missingItemsOf(setup).find((item) => item.key === 'owners_without_mandate')?.count ?? 0;
   const year = Number(today.slice(0, 4));
   const home = flags.octorateOnboarding ? { to: ONBOARDING_PLAN_PATH, label: t('billingWizard.done.toPlan') } : { to: FISCAL_PATH, label: t('billingWizard.done.toFiscal') };
+
+  /**
+   * A write that may start the waiver of the recharge of the portal commissions (the settings of the portal accounts, the bulk write of the holders). It is sent WITHOUT the acknowledgement of the
+   * waiver, always: the server alone knows whether the write starts one, and when it does it refuses with 422 `recharge_waiver_not_acknowledged` and saves nothing. Then the person is asked, in the
+   * dialog that says what the waiver is, and the write is sent again, once, WITH the acknowledgement, only after they confirm. After a no the refusal is the answer: nothing was saved and the
+   * wizard says so. Any other failure is the caller's, untouched.
+   */
+  const writeAskingTheWaiver = async <T,>(write: (acknowledgeRechargeWaiver: boolean) => Promise<T>): Promise<T> => {
+    try {
+      return await write(false);
+    } catch (error) {
+      if (!isRechargeWaiverNotAcknowledged(error)) throw error;
+      if (!(await waiver.confirm())) throw error;
+      return write(true);
+    }
+  };
 
   /**
    * Saves what a step holds on the server. A step that was checked sends every field it asks; a draft (what «Salva ed esci» keeps) sends only what is valid, not empty and
@@ -192,12 +228,18 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
       if (id === BILLING_STEPS.channels) {
         if (flags.ownerInvoicing) {
           if (!draft || portalSettingsChanged(values, defaults)) {
-            await savePortalSettings.mutateAsync({ portalAccountHolder: values.portalAccountHolder, rechargePortalCommissions: values.rechargePortalCommissions });
+            await writeAskingTheWaiver((acknowledgeRechargeWaiver) =>
+              savePortalSettings.mutateAsync({
+                portalAccountHolder: values.portalAccountHolder,
+                rechargePortalCommissions: values.rechargePortalCommissions,
+                ...(acknowledgeRechargeWaiver ? { acknowledgeRechargeWaiver: true } : {}),
+              }),
+            );
             sent = true;
           }
           const rows = holderChangesRequest(values.holderChanges, holders.data ?? []);
           if (rows) {
-            await saveHolders.mutateAsync(rows);
+            await writeAskingTheWaiver((acknowledgeRechargeWaiver) => saveHolders.mutateAsync(acknowledgeRechargeWaiver ? { changes: rows, acknowledgeRechargeWaiver: true } : { changes: rows }));
             sent = true;
           }
         }
@@ -217,7 +259,7 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
         }
         return { sent };
       }
-      const step = stepSave(id, values, { draft, onRecord, initial: defaults });
+      const step = stepSave(id, values, { draft, onRecord, initial: baseline });
       if (step && Object.keys(step.request).length > 0) {
         await save.mutateAsync(step);
         sent = true;
@@ -238,7 +280,7 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
         try {
           const { sent } = await saveStep(stepId as BillingStepId, values, true);
           // «Salvato» only for what is true: part of what was written may have been left out (not valid, or terms the step never saves), and a draft may have had nothing to send.
-          const left = draftLeftOut(stepId as BillingStepId, values, { initial: defaults, onRecord, accountant: accountantSettings });
+          const left = draftLeftOut(stepId as BillingStepId, values, { initial: baseline, onRecord, accountant: accountantSettings });
           if (left.length === 0) toast.success(t(sent ? 'billingWizard.exit.saved' : 'billingWizard.exit.nothingNew'));
           else if (stepId === BILLING_STEPS.mandate) toast.warning(t('billingWizard.exit.mandateNotSaved'));
           else toast.warning(t(sent ? 'billingWizard.exit.savedPartly' : 'billingWizard.exit.notSaved'));
@@ -292,7 +334,15 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
       case BILLING_STEPS.numbering:
         return { ...base, schema: checked(numberingStepSchema), render: () => frame(id, <NumberingStep year={year} />) };
       case BILLING_STEPS.touristTax:
-        return { ...base, schema: values.countryCode === 'CH' ? checked(touristTaxStepSchema) : undefined, render: () => frame(id, <TouristTaxStep country={values.countryCode} />) };
+        return {
+          ...base,
+          schema: values.countryCode === 'CH' ? checked(touristTaxStepSchema) : undefined,
+          // The confirmation of a portal is an answer of its own (saved at once, not by «Continua»): the step does not move on while it is on its way, nor while any other request of the wizard is
+          // (`saving`: a write that asks for the waiver of the recharge is one of them).
+          nextDisabled: leaving || saving,
+          // The proposal is read from the setup as it is now (the country may have been chosen in this wizard, and the portals that collect the tax by default are the server's answer for it).
+          render: () => frame(id, <TouristTaxStep country={values.countryCode} proposed={proposedCollectors} portals={portals} />),
+        };
       case BILLING_STEPS.channels:
         return {
           ...base,
@@ -378,7 +428,9 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
         // The answers are on the server, step by step: nothing is kept in the browser, and no old draft of this tab can be laid over what the server has.
         draft={false}
         // The test send of the step «Commercialista» takes minutes and its answer lives in the step: while it is on its way the way between the steps is shut too, so that the answer is not lost.
-        navigationDisabled={leaving || saveAccountant.isPending || sendAccountant.isPending}
+        // The same for every other request of the wizard (`saving`): the confirmation of a portal in the step «Tassa di soggiorno» (a refusal or a failure is told in the step) and the writes of the
+        // step «Commissioni dei canali» (the one that asks for the waiver of the recharge is sent again after the yes): the person cannot leave a step while its answer is on its way.
+        navigationDisabled={leaving || saving}
         finishLabel={t('billingWizard.finishLabel')}
         finishFailedMessage={t('billingWizard.saveFailed')}
         // Nothing is saved at the last button: every step saved itself. It only closes the wizard, and the confirmation says what the server says is still missing.
@@ -396,6 +448,8 @@ function BillingWizard({ setup, agency }: BillingWizardProps) {
           finishError: 'fiscal-billing-finish-error',
         }}
       />
+      {/* Outside the wizard and its form: a dialog inside a form would submit it. It opens only when the server asked for the confirmation of the waiver of the recharge. */}
+      {waiver.dialog}
     </>
   );
 }

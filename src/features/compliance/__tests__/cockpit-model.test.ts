@@ -508,6 +508,40 @@ describe('buildCockpit and the traffic light (NF-52)', () => {
     expect(model.green[0].note).toBeUndefined();
   });
 
+  // E30/F02/US03/T02: the day of a Ticino property to notify to the police is a row of the law, and its button opens the layer of the notification over the cockpit (never a page of its own).
+  it('buildCockpit_ADayToNotifyToTheTicinoPolice_IsARowOfTheLawWhoseButtonOpensTheLayerOnThatDay', () => {
+    const ticino = (day: string) => ({ ...period('NotifyTicinoPolice', 'p1', day), dueAt: hoursFromNow(5) });
+    const model = build(summaryOf({ ticinoNotifications: { count: 2, items: [ticino('2026-09-23'), ticino('2026-09-24')] } }));
+
+    expect(model.fine.rows.map((row) => row.tier)).toEqual(['fine', 'fine']);
+    expect(model.fine.total).toBe(2);
+    expect(model.fine.rows.map((row) => row.to)).toEqual([
+      '/app/short-rent/compliance?detail=ticino:p1:2026-09-23',
+      '/app/short-rent/compliance?detail=ticino:p1:2026-09-24',
+    ]);
+    // «Notifica» for who may declare it, «Apri» for who may only look: the layer is the same.
+    expect(model.fine.rows[0].cta).toBe('Notifica');
+    const readOnly = buildCockpit(summaryOf({ ticinoNotifications: { count: 1, items: [ticino('2026-09-23')] } }), {}, { ...context, hasPermission: (_area, permission) => permission !== 'alloggiati.submit' }, NOW);
+    expect(readOnly.fine.rows[0].cta).toBe('Apri');
+    expect(readOnly.fine.rows[0].to).toBe('/app/short-rent/compliance?detail=ticino:p1:2026-09-23');
+  });
+
+  // E29/F02/US02/T01: a property in Switzerland kept from starting by its municipality or its structure number says so like any other step (the item carries the reason as `code`, the step as `field`).
+  it('buildCockpit_SwissPropertyToActivate_NamesTheNotificationOfTheGuestsAsWhatItLacks', () => {
+    const swiss = { ...property('p1', 'Casa Lugano'), missing: [{ code: 'ticino_structure_id_missing', field: 'guest-registration' }] };
+    const model = build(summaryOf({ propertiesPending: { count: 1, items: [swiss] } }));
+
+    expect(model.start.rows[0].detail).toBe('Manca: Notifica degli ospiti');
+  });
+
+  it('fineCount_ADayDeclaredByACoHost_LeavesTheRedCounterOfTheMenuWithoutAReload', () => {
+    const open = summaryOf({ ticinoNotifications: { count: 2, items: [] } });
+    const afterDeclaration = summaryOf({ ticinoNotifications: { count: 1, items: [] } });
+
+    // The menu counter and the page read the same summary: once it is read again the declared day is not counted.
+    expect(fineCount(open) - fineCount(afterDeclaration)).toBe(1);
+  });
+
   it('focusToneOf_InProgress_IsCalmInfoNotAWarning', () => {
     expect(focusToneOf({ tier: 'fine', light: 'yellow', note: { text: 'x', tone: 'danger' } } as CockpitRow)).toBe('info');
     expect(focusToneOf({ tier: 'fine', light: 'red', note: { text: 'x', tone: 'danger' } } as CockpitRow)).toBe('danger');

@@ -5,11 +5,11 @@ import type {
   OwnerAccountingRuleParameters,
   OwnerClosePeriodStatus,
   OwnerCloseReadiness,
-  OwnerEntityKind,
   OwnerFiscalProfile,
   OwnerLedgerEntry,
   OwnerLedgerEntryType,
   OwnerMandate,
+  OwnerMandateInForce,
   OwnerPayout,
   OwnerPayoutCommand,
   OwnerPeriodReadiness,
@@ -775,6 +775,12 @@ export function taxYearVerdict(check: TaxYearCheck): TaxYearVerdict {
 
 // ── Errors ───────────────────────────────────────────────────────────────────────────────────────────────────
 
+/**
+ * The code of the 409 the server answers when the lines of a version no longer give the totals it stores (`owner_ledger_immutable`): the version is not shown, and no file is made from it, rather
+ * than a wrong net. It is not a failure of the connection: it has its own words, and trying again does not change it.
+ */
+export const LEDGER_IMMUTABLE_CODE = 'owner_ledger_immutable';
+
 export interface ProblemFacts {
   status: number | undefined;
   code: string | undefined;
@@ -894,8 +900,11 @@ export function otherActionsOf(actions: RowActions): ActionKey[] {
 export const mandateCovers = (mandate: Pick<OwnerMandate, 'validFrom' | 'validTo'>, day: string): boolean =>
   mandate.validFrom <= day && (mandate.validTo === null || mandate.validTo >= day);
 
+/** What a row of the list of the owners draws of a mandate: the day it starts, the commission and whether the VAT is in it. */
+export type MandateTerms = Pick<OwnerMandate, 'validFrom' | 'commissionPercent' | 'commissionIncludesVat'>;
+
 /** The mandate of an owner on a day: the version in force, or the first one that starts later, or none. The page never says «none» for a mandate it could not read. */
-export type MandateState = { kind: 'active'; mandate: OwnerMandate } | { kind: 'upcoming'; mandate: OwnerMandate } | { kind: 'missing' };
+export type MandateState = { kind: 'active'; mandate: MandateTerms } | { kind: 'upcoming'; mandate: MandateTerms } | { kind: 'missing' };
 
 /**
  * Which version of the mandate applies to an owner on `day`: the one in force (the latest start when more are, as the server decides), else the first one that starts after it, else
@@ -910,6 +919,16 @@ export function mandateStateOn(mandates: readonly OwnerMandate[], day: string): 
   return next ? { kind: 'upcoming', mandate: next } : { kind: 'missing' };
 }
 
+/**
+ * The mandate a row of the list of the owners draws on `day`. The list settles it for an owner whose own mandate is in force (`inForce`, written by the server in the same read as the row): that
+ * is the answer and nothing else is read. For every other row the list says nothing, and its `null` is not «no mandate»: a mandate of a single property, or one that starts later, is not in it. The
+ * versions of the mandate say what the row shows (`versions`); until they are read nothing is told (`null`), never «missing».
+ */
+export function mandateOfRow(inForce: OwnerMandateInForce | null | undefined, versions: readonly OwnerMandate[] | undefined, day: string): MandateState | null {
+  if (inForce) return { kind: 'active', mandate: inForce };
+  return versions ? mandateStateOn(versions, day) : null;
+}
+
 /** The start of the newest version of the mandate: a new version must start after it, since the server refuses a day that is not later (409 `owner_mandate_overlap`). */
 export function latestMandateStart(mandates: readonly Pick<OwnerMandate, 'validFrom'>[]): string | null {
   return mandates.reduce<string | null>((latest, mandate) => (latest === null || mandate.validFrom > latest ? mandate.validFrom : latest), null);
@@ -918,28 +937,12 @@ export function latestMandateStart(mandates: readonly Pick<OwnerMandate, 'validF
 /** The highest flat fee the server stores (`decimal(10,2)`): above it is a typing mistake (422 `owner_mandate_invalid`). */
 export const MAX_FLAT_FEE = 99_999_999.99;
 
-/** What the list of the owners shows of a fiscal profile: its kind and its settlement currency (`null` while the profile has none). Nothing else of the profile is kept. */
-export interface OwnerProfileFacts {
-  entityKind: OwnerEntityKind;
-  settlementCurrency: string | null;
-}
-
-/**
- * The kind and the settlement currency of the profile in force on `day` (the newest when none is in force, as the page of the owner does), or `null` for an owner with no profile. The profile
- * comes with the identifiers, the address and the bank account of the owner: the list reduces it to these two facts as soon as it is read, so none of them reaches the cache of the
- * queries.
- */
-export function profileFactsOf(profiles: readonly OwnerFiscalProfile[], day: string): OwnerProfileFacts | null {
-  const profile = profiles.find((candidate) => candidate.validFrom <= day && (candidate.validTo === null || candidate.validTo >= day)) ?? profiles[0];
-  return profile ? { entityKind: profile.entityKind, settlementCurrency: profile.settlementCurrency } : null;
-}
-
 // ── The statement as the owner reads it (E13/F02/US01/T02) ─────────────────────────────────────────────────────
 
 /**
  * The parts of a statement, in the order of its PDF and its CSV: the stays (the gross without the tourist tax), what the channels kept, the withholding, the commission of the property
  * manager (the VAT its invoice adds is counted with it), the recharges and expenses, the manual corrections, and the payments between the agency and the owner. `other` is a line of a
- * type this client does not know (the server may be newer): it is counted in the total, never dropped.
+ * type this client does not know (the server may be newer): it is counted in the total, never dropped, unless the server says it is for information only (`informational`).
  */
 export type StatementSection = 'stays' | 'channelFees' | 'withholding' | 'commission' | 'recharges' | 'corrections' | 'payments' | 'other';
 
@@ -947,6 +950,7 @@ export type StatementSection = 'stays' | 'channelFees' | 'withholding' | 'commis
 const SECTION_OF: Record<OwnerLedgerEntryType, StatementSection> = {
   BookingRevenue: 'stays',
   ChannelFee: 'channelFees',
+  ChannelFeeBorneByAgency: 'channelFees',
   Withholding: 'withholding',
   AgencyCommission: 'commission',
   AgencyVat: 'commission',
@@ -957,11 +961,30 @@ const SECTION_OF: Record<OwnerLedgerEntryType, StatementSection> = {
   AgencyPayment: 'payments',
 };
 
+/**
+ * A line for information only (`ChannelFeeBorneByAgency`: the commission of a portal the agency bears, and the owner is not charged): the server says it (`informational`), and the type that is
+ * always one says it too. Such a line is shown with its amount and is NEVER added to a part, to the period, to a balance: the ledger of an owner counts only the lines that count
+ * (`OwnerLedgerBalance`), and this client does not know which types do not, so it asks the line.
+ */
+export const isInformational = (entry: Pick<OwnerLedgerEntry, 'type' | 'informational'>): boolean => entry.informational === true || entry.type === 'ChannelFeeBorneByAgency';
+
+/**
+ * An amount of a line as the page writes it. A line for information only is the commission the agency bears, and it is written the way the PDF and the CSV of the statement write it, a positive
+ * figure (the ledger holds it as a negative, like a commission of the portal): never with the minus of a deduction, because nothing is deducted. Every other line keeps the sign of the ledger.
+ */
+export function shownAmount(entry: Pick<OwnerLedgerEntry, 'type' | 'informational'>, amount: number): number {
+  if (!isInformational(entry)) return amount;
+  return amount === 0 ? 0 : -amount;
+}
+
 export interface StatementGroup {
   section: StatementSection;
-  /** The signed total of its lines in the currency of the statement: positive is owed to the owner. */
+  /** The signed total of its lines that count, in the currency of the statement: positive is owed to the owner. A line for information only is never in it. */
   amount: number;
+  /** How many lines are in `amount`. */
   count: number;
+  /** The lines of the part that are for information only: how many, and what they come to written as the PDF writes it (the commission the agency bears, a positive figure). In no total. */
+  informational: { amount: number; count: number };
 }
 
 export interface StatementGroups {
@@ -982,20 +1005,30 @@ const ALWAYS_SHOWN: ReadonlySet<StatementSection> = new Set(['stays', 'channelFe
 
 /**
  * The lines of a version grouped as its PDF groups them. The amounts are the signed amounts of the lines added up in cents (never as floats), the balances the ones the version stores:
- * nothing here works a commission, a fee or a tax out.
+ * nothing here works a commission, a fee or a tax out. A line for information only (`isInformational`) is kept apart: it is counted and written in its part (`informational`) and is in
+ * no `amount`, no `count`, and so not in the period either.
  */
 export function statementGroupsOf(version: Pick<OwnerStatementVersion, 'openingBalance' | 'closingBalance'>, entries: readonly OwnerLedgerEntry[]): StatementGroups {
-  const cents = new Map<StatementSection, { amount: number; count: number }>();
+  const cents = new Map<StatementSection, { amount: number; count: number; informationalAmount: number; informationalCount: number }>();
   for (const entry of entries) {
     const section = SECTION_OF[entry.type] ?? 'other';
-    const current = cents.get(section) ?? { amount: 0, count: 0 };
-    cents.set(section, { amount: current.amount + toCents(entry.amount), count: current.count + 1 });
+    const current = cents.get(section) ?? { amount: 0, count: 0, informationalAmount: 0, informationalCount: 0 };
+    if (isInformational(entry)) {
+      cents.set(section, { ...current, informationalAmount: current.informationalAmount + toCents(shownAmount(entry, entry.amount)), informationalCount: current.informationalCount + 1 });
+    } else {
+      cents.set(section, { ...current, amount: current.amount + toCents(entry.amount), count: current.count + 1 });
+    }
   }
   const group = (section: StatementSection): StatementGroup => {
     const found = cents.get(section);
-    return { section, amount: (found?.amount ?? 0) / 100, count: found?.count ?? 0 };
+    return {
+      section,
+      amount: (found?.amount ?? 0) / 100,
+      count: found?.count ?? 0,
+      informational: { amount: (found?.informationalAmount ?? 0) / 100, count: found?.informationalCount ?? 0 },
+    };
   };
-  const groups = PARTS_IN_ORDER.map(group).filter((candidate) => ALWAYS_SHOWN.has(candidate.section) || candidate.count > 0);
+  const groups = PARTS_IN_ORDER.map(group).filter((candidate) => ALWAYS_SHOWN.has(candidate.section) || candidate.count > 0 || candidate.informational.count > 0);
   const period = groups.reduce((sum, candidate) => sum + toCents(candidate.amount), 0) / 100;
   return { groups, period, payments: group('payments'), opening: version.openingBalance, closing: version.closingBalance };
 }

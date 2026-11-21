@@ -97,11 +97,14 @@ export function BlockerList({
   steps,
   stepIds,
   onNavigate,
+  from,
 }: {
   blockers: ActivationBlocker[];
   steps: ComplianceWizardStep[];
   stepIds: string[];
   onNavigate: (stepId: string) => void;
+  /** The step the list is on: the step of Switzerland leads back to it (`stepHref`). */
+  from?: string;
 }) {
   const { t } = useTranslation();
   const texts = useStepTexts(steps);
@@ -112,7 +115,7 @@ export function BlockerList({
           <span>{texts.blocker(blocker)}</span>
           {stepIds.includes(blocker.step) && blocker.step !== REVIEW_STEP_ID && (
             <Link
-              to={stepHref(blocker.step)}
+              to={stepHref(blocker.step, from)}
               onClick={() => onNavigate(blocker.step)}
               className="inline-flex items-center gap-1 text-primary hover:underline"
               data-testid={`activation-blocker-link-${blocker.step}`}

@@ -107,7 +107,7 @@ describe('describeTodo and the month of a property', () => {
   });
 });
 
-// Every `ActivityType` of the backend (`Casazen.Core/Entities/Enums/ActivityType.cs`, today 29 values) has its own words in both languages, not «Attività da completare».
+// Every `ActivityType` of the backend (`Casazen.Core/Entities/Enums/ActivityType.cs`) that this version of the app knows has its own words in both languages, not «Attività da completare».
 const BACKEND_TYPES = [
   'CheckInPending',
   'CheckOutPending',
@@ -135,11 +135,20 @@ const BACKEND_TYPES = [
   'OwnerStayToReview',
   'OwnerStaySyncFailed',
   'OwnerDocumentExpiring',
+  // The owner could not be told by e-mail that a statement was published (E13/F01/US02/T02): the agency tells the owner by hand.
+  'OwnerStatementNoticeFailed',
   'RoutineTask',
   // The automatic cleaning at check-out (E24/F01/US01/T02): the dates of the stay changed after the supplier took the cleaning.
   'CleaningDateChanged',
   'CheckInLinkToSend',
   'CompanyTenantDecision',
+  // A message of a routine that could not go out to a guest (E05/F07/US01/T03, NF-71).
+  'ScheduledMessageIssue',
+  // The self-billed invoices (TD17) of the agency (FIX/FE-TD17-TODO): one the SDI rejected, and the drafts of a month to check and issue.
+  'SelfBillingRejected',
+  'SelfBillingDraftsToReview',
+  // The cleaning recharged to an owner at its cost whose VAT the cost source does not say (E14/F01/US02/T01, `ActivityType` 140).
+  'CleaningVatToState',
 ] as const;
 
 describe('describeTodo for every type of the backend', () => {
@@ -159,6 +168,79 @@ describe('describeTodo for every type of the backend', () => {
     }
     // No two types share a title: the host tells them apart in the list.
     expect(titles.size).toBe(BACKEND_TYPES.length);
+    await i18n.changeLanguage('it');
+  });
+});
+
+// The two items of the self-billed invoices (TD17, FIX/FE-TD17-TODO) as the server sends them: about the organization, never a property, and the drafts of a month carry the month in the kind of entity
+// (`SelfBillingPeriod:yyyy-MM`). Their words are the app's own, in the language of the person, and the object line says the account: never «un immobile», never the raw kind of entity.
+describe('describeTodo and the self-billed invoices (TD17)', () => {
+  const ITEMS = [
+    {
+      item: activity('SelfBillingRejected', { action: 'ReviewSelfBilling', entityType: 'FiscalDocument', entityId: 'd-1', propertyId: null }),
+      titles: { it: 'Autofattura scartata dallo SDI', en: 'Self-billed invoice rejected by the SDI' },
+    },
+    {
+      item: activity('SelfBillingDraftsToReview', { action: 'ReviewSelfBilling', entityType: 'SelfBillingPeriod:2026-10', entityId: 'o-1', propertyId: null, urgency: 'Medium' }),
+      titles: { it: 'Autofatture da controllare ed emettere', en: 'Self-billed invoices to check and issue' },
+    },
+  ] as const;
+
+  it.each(['it', 'en'] as const)('describeTodo_SelfBillingItems_SayTheirOwnWordsAboutTheAccountIn_%s', async (lng) => {
+    await i18n.changeLanguage(lng);
+    const fixed = i18n.getFixedT(lng);
+
+    for (const { item, titles } of ITEMS) {
+      const text = describeTodo(item, contextOf(lng));
+
+      expect(text.title).toBe(titles[lng]);
+      expect(text.why).toBe(fixed(`activity.todo.type.${item.activityType}.why`));
+      expect(text.object).toBe(fixed('activity.todo.object.organization'));
+    }
+    await i18n.changeLanguage('it');
+  });
+});
+
+// The cleaning recharged to an owner at its cost with no VAT stated (E14/F01/US02/T01, NF-114, ⚖ I13): the item the backend raises when the agency posts the month, about the cleaning request with the action `StateCleaningVat`
+// (FIX/BE-CLEANING-VAT; the items raised before carry `ReviewBooking`). It is told with its own words, not as an «Attività da completare», in both languages: the title says what is missing, the sentence says what to do, and the
+// two languages do not say the same words.
+describe('describeTodo and the cleaning recharge with no VAT stated', () => {
+  const item = activity('CleaningVatToState', { action: 'StateCleaningVat', entityType: 'ServiceRequest', urgency: 'Medium' });
+
+  it.each([
+    ['it', /IVA/],
+    ['en', /VAT/],
+  ] as const)('describeTodo_CleaningVatToState_SaysWhatIsMissingAndWhatToDoIn_%s', async (lng, vat) => {
+    await i18n.changeLanguage(lng);
+    const generic = describeTodo(activity('SomethingNew'), contextOf(lng));
+
+    const text = describeTodo(item, contextOf(lng));
+
+    expect(text.title).toMatch(vat);
+    expect(text.title).not.toBe(generic.title);
+    expect(text.why).toMatch(vat);
+    expect(text.why).not.toBe(generic.why);
+    await i18n.changeLanguage('it');
+  });
+
+  it('describeTodo_CleaningVatToState_HasDifferentWordsInTheTwoLanguages', () => {
+    const inItalian = describeTodo(item, contextOf('it'));
+    const inEnglish = describeTodo(item, contextOf('en'));
+
+    expect(inItalian.title).not.toBe(inEnglish.title);
+    expect(inItalian.why).not.toBe(inEnglish.why);
+  });
+
+  // FIX/FE-CLEANING-VAT-QUESTION: the sentence asks to answer the question of the dialog and says what each of the three answers does.
+  it.each([
+    ['it', ["l'IVA su questa fattura", '«Sì»', '«No»', '«Non lo so»', 'alla chiusura del rendiconto']],
+    ['en', ['charge VAT on this invoice', '«Yes»', '«No»', "«I don't know»", 'when the statement closes']],
+  ] as const)('describeTodo_CleaningVatToState_AsksToAnswerTheQuestionAndSaysWhatEachAnswerDoesIn_%s', async (lng, words) => {
+    await i18n.changeLanguage(lng);
+
+    const text = describeTodo(item, contextOf(lng));
+
+    for (const word of words) expect(text.why, word).toContain(word);
     await i18n.changeLanguage('it');
   });
 });

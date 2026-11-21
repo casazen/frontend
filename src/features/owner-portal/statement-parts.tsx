@@ -3,8 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatStayDate } from '@/lib/stay-dates';
+import { cn } from '@/lib/utils';
 import type { OwnerPortalStatementLine, OwnerPortalStatementSection, OwnerPortalStatementTotals, OwnerPortalTouristTax } from '@/types';
-import { BALANCE_KEYS, currencyCode, formatMoney, shownTotals, touristTaxTotals } from './owner-statement-model';
+import { BALANCE_KEYS, currencyCode, formatMoney, isInformationalLine, portalFeeNoteOf, shownLineAmount, shownTotals, touristTaxTotals } from './owner-statement-model';
 import { StatusPill, TOUCH } from './portal-parts';
 
 const DAY: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
@@ -105,9 +106,15 @@ export function PdfButton({ label, ariaLabel, onClick, disabled, loading, varian
   );
 }
 
+/**
+ * One line of a part. A line for information only (the commission of a portal the agency bears, and the owner is not charged) is quiet: its figure is the commission as a positive amount, not
+ * bold, with a pill that says it is for information and the sentence that says what it is; it is in no sum, and the total of its part (the server's) does not hold it.
+ */
 function StatementLineRow({ line, currency, sectionLabel }: { line: OwnerPortalStatementLine; currency: string; sectionLabel: string }) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
+  const informational = isInformationalLine(line);
+  const feeNote = portalFeeNoteOf(line);
   const description = line.description?.trim();
   const property = line.property?.trim();
   const title = description || property || sectionLabel;
@@ -122,14 +129,28 @@ function StatementLineRow({ line, currency, sectionLabel }: { line: OwnerPortalS
     line.sharePercent > 0 && line.sharePercent < 100 ? t('ownerPortal.accounting.line.share', { percent: formatPercent(line.sharePercent, locale) }) : null,
   ].filter(Boolean);
   return (
-    <li className="flex min-w-0 flex-col gap-1 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4" data-testid="owner-statement-line">
+    <li
+      className="flex min-w-0 flex-col gap-1 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4"
+      data-testid="owner-statement-line"
+      data-informational={informational ? 'true' : undefined}
+    >
       <div className="min-w-0 space-y-1">
         <p className="break-words text-sm font-medium">{title}</p>
         <p className="break-words text-sm text-muted-foreground">{details.join(' · ')}</p>
         {line.reversal ? <StatusPill tone="neutral">{t('ownerPortal.accounting.line.reversal')}</StatusPill> : null}
-        {line.channelFeeRechargedByAgency ? <p className="text-sm text-muted-foreground">{t('ownerPortal.accounting.line.rechargedByAgency')}</p> : null}
+        {informational ? <StatusPill tone="neutral">{t('ownerPortal.accounting.line.informational')}</StatusPill> : null}
+        {feeNote ? (
+          <p className="break-words text-sm text-muted-foreground" data-testid="owner-statement-line-note" data-note={feeNote}>
+            {t(`ownerPortal.accounting.line.${feeNote}`)}
+          </p>
+        ) : null}
       </div>
-      <p className="shrink-0 whitespace-nowrap text-sm font-semibold tabular-nums sm:text-right">{formatMoney(line.amount, currency, locale)}</p>
+      <p
+        className={cn('shrink-0 whitespace-nowrap text-sm tabular-nums sm:text-right', informational ? 'font-normal text-muted-foreground' : 'font-semibold')}
+        data-testid="owner-statement-line-amount"
+      >
+        {formatMoney(shownLineAmount(line), currency, locale)}
+      </p>
     </li>
   );
 }
@@ -145,7 +166,9 @@ export function StatementSectionBlock({ section, currency }: { section: OwnerPor
         <h3 id={headingId} className="min-w-0 break-words text-base font-semibold">
           {label}
         </h3>
-        <p className="shrink-0 whitespace-nowrap font-semibold tabular-nums">{formatMoney(section.total, currency, i18n.language)}</p>
+        <p className="shrink-0 whitespace-nowrap font-semibold tabular-nums" data-testid={`${headingId}-total`}>
+          {formatMoney(section.total, currency, i18n.language)}
+        </p>
       </div>
       <ul className="divide-y rounded-md border bg-card px-3">
         {section.lines.map((line) => (
@@ -157,13 +180,59 @@ export function StatementSectionBlock({ section, currency }: { section: OwnerPor
 }
 
 /**
+ * The stays of the tourist tax box and what they add up to, or the sentence that says there is none: the part of the box that the owner portal and the statement of the agency draw the same
+ * way (one place groups and writes it). Each stay carries the currency the tax was collected in (its amount is written in that one, not in the one of the statement), and a sum never
+ * mixes two currencies; a row with no currency has no symbol and the box says so.
+ */
+export function TouristTaxRows({ rows }: { rows: readonly OwnerPortalTouristTax[] }) {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language;
+  const totals = touristTaxTotals(rows);
+  if (rows.length === 0) {
+    return (
+      <p className="text-sm" data-testid="owner-tourist-tax-empty">
+        {t('ownerPortal.accounting.touristTax.empty')}
+      </p>
+    );
+  }
+  return (
+    <>
+      <ul className="divide-y">
+        {rows.map((row, index) => {
+          const details = [
+            stayDays(row.checkIn, row.checkOut, locale),
+            row.channel,
+            row.bookingCode ? t('ownerPortal.accounting.line.bookingCode', { code: row.bookingCode }) : null,
+          ].filter(Boolean);
+          return (
+            <li key={`${row.bookingCode ?? ''}-${row.checkIn}-${index}`} className="flex min-w-0 flex-col gap-1 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4" data-testid="owner-tourist-tax-row">
+              <div className="min-w-0 space-y-0.5">
+                {row.property ? <p className="break-words text-sm font-medium">{row.property}</p> : null}
+                <p className="break-words text-sm text-muted-foreground">{details.join(' · ')}</p>
+              </div>
+              <p className="shrink-0 whitespace-nowrap text-sm font-semibold tabular-nums sm:text-right">{formatMoney(row.amount, row.currency, locale)}</p>
+            </li>
+          );
+        })}
+      </ul>
+      <dl className="divide-y border-t text-sm">
+        {totals.map((total) => (
+          <AmountRow key={total.currency ?? 'none'} label={t('ownerPortal.accounting.touristTax.total')} value={formatMoney(total.total, total.currency, locale)} testId="owner-tourist-tax-total" />
+        ))}
+      </dl>
+      {rows.some((row) => !currencyCode(row.currency)) ? (
+        <MoneyNote testId="owner-tourist-tax-currency-missing">{t('ownerPortal.accounting.touristTax.currencyMissing')}</MoneyNote>
+      ) : null}
+    </>
+  );
+}
+
+/**
  * The tourist tax of the stays of the statement: for information, outside the net. Each stay carries the currency the tax was collected in (its amount is written in that one,
  * not in the one of the statement), and a sum never mixes two currencies.
  */
 export function TouristTaxBox({ rows }: { rows: readonly OwnerPortalTouristTax[] }) {
-  const { t, i18n } = useTranslation();
-  const locale = i18n.language;
-  const totals = touristTaxTotals(rows);
+  const { t } = useTranslation();
   return (
     <section aria-labelledby="owner-tourist-tax-title" className="space-y-3 rounded-md border bg-card p-4" data-testid="owner-tourist-tax">
       <div className="space-y-1">
@@ -172,40 +241,7 @@ export function TouristTaxBox({ rows }: { rows: readonly OwnerPortalTouristTax[]
         </h2>
         <p className="text-sm text-muted-foreground">{t('ownerPortal.accounting.touristTax.description')}</p>
       </div>
-      {rows.length === 0 ? (
-        <p className="text-sm" data-testid="owner-tourist-tax-empty">
-          {t('ownerPortal.accounting.touristTax.empty')}
-        </p>
-      ) : (
-        <>
-          <ul className="divide-y">
-            {rows.map((row, index) => {
-              const details = [
-                stayDays(row.checkIn, row.checkOut, locale),
-                row.channel,
-                row.bookingCode ? t('ownerPortal.accounting.line.bookingCode', { code: row.bookingCode }) : null,
-              ].filter(Boolean);
-              return (
-                <li key={`${row.bookingCode ?? ''}-${row.checkIn}-${index}`} className="flex min-w-0 flex-col gap-1 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4" data-testid="owner-tourist-tax-row">
-                  <div className="min-w-0 space-y-0.5">
-                    {row.property ? <p className="break-words text-sm font-medium">{row.property}</p> : null}
-                    <p className="break-words text-sm text-muted-foreground">{details.join(' · ')}</p>
-                  </div>
-                  <p className="shrink-0 whitespace-nowrap text-sm font-semibold tabular-nums sm:text-right">{formatMoney(row.amount, row.currency, locale)}</p>
-                </li>
-              );
-            })}
-          </ul>
-          <dl className="divide-y border-t text-sm">
-            {totals.map((total) => (
-              <AmountRow key={total.currency ?? 'none'} label={t('ownerPortal.accounting.touristTax.total')} value={formatMoney(total.total, total.currency, locale)} testId="owner-tourist-tax-total" />
-            ))}
-          </dl>
-          {rows.some((row) => !currencyCode(row.currency)) ? (
-            <MoneyNote testId="owner-tourist-tax-currency-missing">{t('ownerPortal.accounting.touristTax.currencyMissing')}</MoneyNote>
-          ) : null}
-        </>
-      )}
+      <TouristTaxRows rows={rows} />
     </section>
   );
 }

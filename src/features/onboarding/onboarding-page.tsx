@@ -11,12 +11,14 @@ import { useCompleteOnboarding, useMe } from '@/queries/use-users';
 import type { OnboardingResponse, RentalType, UserDetail } from '@/types';
 import type { OnboardingConsentsPayload } from '@/types/onboarding.types';
 import { ROLES_CLAIM } from '@/lib/auth-roles';
-import { useUserRoles } from '@/hooks/use-user-roles';
+import { useUserRoles, useUserRoleState } from '@/hooks/use-user-roles';
 import {
   canEditOnboarding,
+  getHomeRouteForRentalType,
   getHomeRouteForUser,
   getPostOnboardingRoute,
   getProfilePageForRentalType,
+  getRentalTypeOfHostSetUpByServer,
   getStaleConsentDocuments,
   isExemptFromHostOnboarding,
   isLinkedSupplier,
@@ -68,7 +70,14 @@ function OnboardingRoute({ profile }: { profile: UserDetail | undefined }) {
   const roles = useUserRoles();
   // A profile refetch may observe a settled payment before the workspace check finishes. Keep this visit on its confirmation screen.
   const [startedInPayment] = useState(profile?.commercialSetupRequired === true);
-  const commercial = profile?.commercialSetupRequired === true || (startedInPayment && !!profile?.commercialSignup && !needsConsentRenewal(profile));
+  // Back from Stripe (`?checkout=success`) after the webhook already cleared `commercialSetupRequired`: still open the commercial
+  // wizard so «Entra e inizia la configurazione» is shown — not the legacy rental-type choice (GJ L3 / commercial-signup.ts).
+  const returningFromCheckout =
+    params.get('checkout') === 'success' && !!profile?.commercialSignup && !needsConsentRenewal(profile);
+  const commercial =
+    profile?.commercialSetupRequired === true ||
+    returningFromCheckout ||
+    (startedInPayment && !!profile?.commercialSignup && !needsConsentRenewal(profile));
   const legacy = params.get('mode') === 'edit' || (!commercial &&
     (isExemptFromHostOnboarding(roles) || isLinkedSupplier(profile) || !!profile?.orgId));
   if (legacy) return <ExistingOnboardingPage />;
@@ -112,12 +121,18 @@ export function ExistingOnboardingPage() {
     headingRef.current?.focus();
   }, [step, consentsAttempt, profileLoading, isLeaving]);
 
-  const roles = useUserRoles();
+  const { roles, isResolved: rolesResolved } = useUserRoleState();
   const hasRoles = roles.length > 0;
   const hasOrg = !needsOrgSetup(profile);
   // Linked in the database (invite, registration, claim) even when the Supplier role is not in the token yet.
   const linkedSupplier = isLinkedSupplier(profile);
   const homeRoute = getHomeRouteForUser({ [ROLES_CLAIM]: roles }, profile);
+  // A host the server has set up owns its workspace through the persisted memberships even while the access token has no role claims
+  // (issued before the memberships existed, or the roles could not be synced): back from the payment the claims must not keep it on
+  // this wizard. Its area is the one of its rental type, which the claims of the token cannot say.
+  const setUpHostRentalType = !hasRoles && rolesResolved ? getRentalTypeOfHostSetUpByServer(profile) : null;
+  // Where a user who has finished the onboarding belongs; `null` while nothing says it.
+  const finishedRoute = hasRoles || linkedSupplier ? homeRoute : setUpHostRentalType ? getHomeRouteForRentalType(setUpHostRentalType) : null;
   // PL-02: the backend withholds the host features until the onboarding and the current consents.
   const hostAccessWithheld = profile?.onboardingRequired === true;
   // A completed onboarding whose legal documents changed: only the consents step, then the same rental type.
@@ -143,10 +158,10 @@ export function ExistingOnboardingPage() {
       !isEditMode &&
       !completingChecklistStep &&
       hasOrg &&
-      (hasRoles || linkedSupplier) &&
+      finishedRoute &&
       (!hostAccessWithheld || homeRoute === SUPPLIER_HOME_ROUTE)
     ) {
-      navigate(homeRoute, { replace: true });
+      navigate(finishedRoute, { replace: true });
       return;
     }
 
@@ -165,8 +180,7 @@ export function ExistingOnboardingPage() {
     profile,
     profileLoading,
     hasOrg,
-    hasRoles,
-    linkedSupplier,
+    finishedRoute,
     homeRoute,
     hostAccessWithheld,
     isEditMode,

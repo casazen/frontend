@@ -71,4 +71,44 @@ describe('PropertyWizardDone: the next step of the path at the end of the wizard
 
     expect(screen.getByTestId('wizard-next-step-stub')).toHaveAttribute('data-current-part', 'listings');
   });
+
+  // E29/F02/US02/T01: a property in Switzerland is not ready to activate while its municipality (in Ticino its structure number) is missing, and this screen must never say it is.
+  describe('a property in Switzerland that still lacks what it needs to be notified', () => {
+    const swissStep = (code: string) => ({
+      id: 'guest-registration',
+      label: 'Notifica degli ospiti',
+      status: 'pending',
+      blocker: true,
+      blockers: [{ step: 'guest-registration', code, message: '' }],
+    });
+    const completeStep = (id: string) => ({ id, label: id, status: 'complete', blocker: true, blockers: [] });
+
+    it.each(['ticino_structure_id_missing', 'swiss_municipality_missing'])('PropertyLacking_%s_SaysWhatIsOpenAndNeverThatOnlyTheConfirmationIsMissing', (code) => {
+      useProperty.mockReturnValue({ data: { id: 'prop-1', name: 'Casa Lugano', country: 'CH', address: 'Via Nassa 1', city: 'Lugano', maxGuests: 4 }, isError: false });
+      useComplianceActivation.mockReset().mockReturnValue({
+        data: { complianceStatus: 'Pending', steps: [completeStep('base-data'), completeStep('documents'), swissStep(code)] },
+      });
+      renderDone();
+
+      // Not «ready»: the screen lists the point that is open, in plain words, and leads to where it is fixed (the last step, where the card of the notification is).
+      expect(screen.queryByText(i18n.t('propertyWizard.done.leadReady'))).not.toBeInTheDocument();
+      expect(screen.queryByText(i18n.t('propertyWizard.done.readyToActivate'))).not.toBeInTheDocument();
+      expect(screen.getByText(i18n.t('propertyWizard.done.leadOpen'))).toBeInTheDocument();
+      expect(screen.getByText(i18n.t('propertyWizard.done.open.guest-registration'))).toBeInTheDocument();
+      const fix = screen.getByTestId('property-wizard-done-fix-guest-registration');
+      expect(fix).toHaveTextContent(i18n.t('propertyWizard.done.fix.guest-registration'));
+      expect(fix).toHaveAttribute('href', '/app/short-rent/properties/create?propertyId=prop-1&step=finish');
+      expect(screen.getByTestId('wizard-done-primary')).toHaveAttribute('href', '/app/short-rent/properties/create?propertyId=prop-1&step=finish');
+    });
+
+    it('PropertyWhoseSwissStepIsComplete_IsReadyToActivateAsBefore', () => {
+      useComplianceActivation.mockReset().mockReturnValue({
+        data: { complianceStatus: 'Pending', steps: [completeStep('base-data'), { ...completeStep('guest-registration'), blockers: [] }] },
+      });
+      renderDone();
+
+      expect(screen.getByText(i18n.t('propertyWizard.done.leadReady'))).toBeInTheDocument();
+      expect(screen.getByText(i18n.t('propertyWizard.done.readyToActivate'))).toBeInTheDocument();
+    });
+  });
 });

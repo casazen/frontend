@@ -1,6 +1,7 @@
-import { AlertTriangle, BedDouble, Bell, CalendarClock, ClipboardCheck, Coins, FileCheck, FileWarning, LifeBuoy, LogOut, MessageSquare, ShieldAlert, ShieldCheck, UserCheck, Wrench, type LucideIcon } from 'lucide-react';
+import { AlertTriangle, BedDouble, Bell, CalendarClock, ClipboardCheck, Coins, FileCheck, FileWarning, Globe, LifeBuoy, LogOut, MessageSquare, ShieldAlert, ShieldCheck, Star, UserCheck, Wrench, type LucideIcon } from 'lucide-react';
 import type { InAppNotification } from '@/api/notifications.api';
 import type { AppContextKey, PermissionPredicate } from '@/config/route-manifest';
+import { ticinoLayerPath } from '@/features/compliance/ticino/ticino-layer-address';
 import { ONBOARDING_PLAN_PATH } from '@/lib/onboarding-parts';
 
 interface NotificationKind {
@@ -31,11 +32,24 @@ const serviceRequestRoute = (id: string, context: AppContextKey | null) =>
 
 const serviceRequest = (textKey: string): NotificationKind => ({ icon: Wrench, textKey, route: serviceRequestRoute });
 
+/**
+ * The notification of the guests of a Ticino arrival day to the cantonal police (E30/F02/US03/T01, NF-127): the entity of the bell entry is the PROPERTY (`QueuedInAppNotification.From`), never the
+ * day, so the click opens the layer of that property over the cockpit, which opens on its first day still to notify (`ticinoLayerPath`). The cockpit asks `property.read` and `booking.read` (the
+ * day it lists also asks the guests): whoever may not open it goes to the page of the property, as before the layer.
+ */
+const ticinoRoute = (id: string, _context: AppContextKey | null, hasPermission?: PermissionPredicate) =>
+  hasPermission && !(hasPermission('short-rent', 'property.read') && hasPermission('short-rent', 'booking.read'))
+    ? `/app/short-rent/properties/${encodeURIComponent(id)}`
+    : ticinoLayerPath(id);
+
 /** The console of the identity verifications: the bell tells the operators (who hold `verification.decision`) that a guest waits for a person. */
 const VERIFICATIONS_ROUTE = '/app/short-rent/verifications';
 
 /** The staff queue of the «Fallo per me» requests (`onboarding-routes.ts`): the bell tells the platform administrators that a host asked CasaZen support to do a step. */
 const ASSIST_QUEUE_ROUTE = '/app/admin/onboarding-assist';
+
+/** The domain settings of the booking site (`route-manifest.ts`): the bell tells the administrator of the org that the domain is active, or that the sign-in of the owners on it is (or could not be made) active. */
+const DOMAIN_SETTINGS_ROUTE = '/app/short-rent/settings/domain';
 
 /**
  * The push types of the backend (`PushTypes`) the bell knows. A type that is not here is shown with a generic sentence and
@@ -46,9 +60,14 @@ const KINDS: Record<string, NotificationKind> = {
   'guest-message': { icon: MessageSquare, textKey: 'notifications.types.guestMessage', route: bookingTab('messages') },
   // The guest finished the online check-in: Documenti shows the link's state and the guests registered.
   'guest-checkin-completed': { icon: UserCheck, textKey: 'notifications.types.guestCheckinCompleted', route: bookingTab('guest') },
+  // casazen/backend#978: CasaZen registered the arrival or the departure, or declared the property ready, in the host's place (the booking flow): the booking says where it stands.
+  'booking-flow-step': { icon: CalendarClock, textKey: 'notifications.types.bookingFlowStep', route: bookingRoute },
   'guest-data-missing': { icon: ClipboardCheck, textKey: 'notifications.types.guestDataMissing', route: bookingTab('guest') },
   // E23/F01/US01/T01: the check-in link of a stay from a portal did not reach the guest and the host carries it; Documenti shows why and has «Copia link».
   'checkin-link-failed': { icon: AlertTriangle, textKey: 'notifications.types.checkinLinkFailed', route: bookingTab('guest') },
+  // E05/F07/US01: a scheduled message of a booking was held back, failed, skipped by CasaZen or a person, or went out outside the send window (`PushTypes.ScheduledMessageIssue`, sent to the people who reach the
+  // property through their preferences; the entity is the booking). The booking opens on the tab Soggiorno, whose timeline says which message and why, and the pages that show it read it again as the push arrives.
+  'scheduled-message-issue': { icon: AlertTriangle, textKey: 'notifications.types.scheduledMessageIssue', route: bookingRoute },
   // E03/F04/US02/T03: a guest handed the verification of the identity to a person; the operators open the console.
   'verification-required': { icon: ShieldCheck, textKey: 'notifications.types.verificationRequired', route: () => VERIFICATIONS_ROUTE },
   // E10/F03/US03/T03: a host asked CasaZen support to do a step («Fallo per me»); the entity is the request, and the staff open the queue of the requests.
@@ -75,6 +94,11 @@ const KINDS: Record<string, NotificationKind> = {
   // step of the check-in wizard of the booking, so the click opens it there.
   'tourist-tax-paid': { icon: Coins, textKey: 'notifications.types.touristTaxPaid', route: bookingTaxStep },
   'ota-stay-review': { icon: AlertTriangle, textKey: 'notifications.types.otaStayReview', route: bookingRoute },
+  // E05/F06/US02 (NF-69): a guest left a review on a channel (`PushTypes.OtaReviewReceived`), or a reply to a review, or the host's own review, did not reach the channel
+  // (`PushTypes.OtaReviewActionFailed`). The entity is the booking, whose page holds the reviews of the stay (the section «Recensioni» of the tab Soggiorno); the pages that show them read
+  // them again as the push arrives (`use-notifications-realtime.ts`). The text names neither the guest nor a word of the review.
+  'ota-review-received': { icon: Star, textKey: 'notifications.types.otaReviewReceived', route: bookingRoute },
+  'ota-review-action-failed': { icon: AlertTriangle, textKey: 'notifications.types.otaReviewActionFailed', route: bookingRoute },
   'service-request-created': serviceRequest('notifications.types.serviceRequestCreated'),
   'service-request-auto-accepted': serviceRequest('notifications.types.serviceRequestAutoAccepted'),
   'service-request-taken': serviceRequest('notifications.types.serviceRequestTaken'),
@@ -99,6 +123,16 @@ const KINDS: Record<string, NotificationKind> = {
   'service-request-backup-won': serviceRequest('notifications.types.serviceRequestBackupWon'),
   'service-request-backup-closed': serviceRequest('notifications.types.serviceRequestBackupClosed'),
   'service-payment-received': serviceRequest('notifications.types.servicePaymentReceived'),
+  // E30/F02/US03/T01 (`PushTypes.TicinoNotificationDue`, `TicinoNotificationOverdue`, `TicinoNotificationDeclared`, to the hosts of the property): the 24 hours of the notification of the guests of an
+  // arrival day to the cantonal police are running or over, or a person of the org declared the day uploaded to the portal (or undid it). The entity is the property: the click opens the Ticino layer.
+  'ticino-notification-due': { icon: CalendarClock, textKey: 'notifications.types.ticinoNotificationDue', route: ticinoRoute },
+  'ticino-notification-overdue': { icon: ShieldAlert, textKey: 'notifications.types.ticinoNotificationOverdue', route: ticinoRoute },
+  'ticino-notification-declared': { icon: FileCheck, textKey: 'notifications.types.ticinoNotificationDeclared', route: ticinoRoute },
+  // E40/F02/US02 (`be-auth0-host-sync`, to the administrators of the org; the entity is the ORG): the domain was verified, and the sign-in of the owners on it became active or could not be made active.
+  // The click opens the domain settings, where the page shows the new state (and «Riprova» when it failed); the open page reads it again as the push arrives (`use-notifications-realtime.ts`).
+  'domain-verified': { icon: Globe, textKey: 'notifications.types.domainVerified', route: () => DOMAIN_SETTINGS_ROUTE },
+  'owner-login-ready': { icon: ShieldCheck, textKey: 'notifications.types.ownerLoginReady', route: () => DOMAIN_SETTINGS_ROUTE },
+  'owner-login-failed': { icon: AlertTriangle, textKey: 'notifications.types.ownerLoginFailed', route: () => DOMAIN_SETTINGS_ROUTE },
 };
 
 const GENERIC_KIND = { icon: Bell, textKey: 'notifications.types.generic' } as const;

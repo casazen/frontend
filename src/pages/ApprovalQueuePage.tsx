@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { AlertCircle } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
@@ -9,8 +10,10 @@ import { ApprovalDecidedList } from '@/features/approvals/components/approval-de
 import { ApprovalEditDialog } from '@/features/approvals/components/approval-edit-dialog';
 import { ApprovalItemCard } from '@/features/approvals/components/approval-item-card';
 import { ApprovalRejectDialog } from '@/features/approvals/components/approval-reject-dialog';
-import { FILTERABLE_TYPES, approvalTypeLabel, originActionErrorOf } from '@/features/approvals/lib/approval-model';
+import { FILTERABLE_TYPES, approvalTypeLabel, finalTextOf, isReviewReply, originActionErrorOf } from '@/features/approvals/lib/approval-model';
+import { PublishReplyDialog } from '@/features/messages/components/publish-reply-dialog';
 import { useApproveItem, useEditItem, usePendingApprovals, useRejectItem, useSaveAndApproveItem } from '@/queries/approvalQueue';
+import { invalidateReviews } from '@/queries/use-ota-reviews';
 import type { ApprovalQueueItem } from '@/types/approval-queue.types';
 
 const matchesType = (item: ApprovalQueueItem, typeFilter: string) => typeFilter === 'all' || item.itemType === typeFilter;
@@ -19,9 +22,14 @@ const matchesType = (item: ApprovalQueueItem, typeFilter: string) => typeFilter 
  * The queue of the items that wait for a decision (NF-06, NF-68): the drafts of messages the assistant wrote, the campaigns, the texts of the AI. Each item
  * is read, edited, approved or rejected here; approving runs what the item was waiting for and says what it did, a failed action keeps the item open with a
  * retry, and a rejection keeps its reason. The page asks `approval.decide` (the route). A new item shows up within a minute without a reload.
+ *
+ * The draft of the public reply to a review (E05/F06/US02, `ReviewReply`) is the one item that cannot be taken back once approved: its approval, from the card and from
+ * «Salva e approva», asks the same question as the page of the review (`PublishReplyDialog`, with the exact words) before anything is published, and the reviews are
+ * read again whatever came of it.
  */
 export function ApprovalQueuePage() {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const { data: items, isLoading, error } = usePendingApprovals();
   const approveItem = useApproveItem();
   // The edit and the rejection are started from their dialogs but live here, with the approval: a dialog closed while its request goes on (the X, Esc, a
@@ -33,6 +41,8 @@ export function ApprovalQueuePage() {
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [editing, setEditing] = useState<ApprovalQueueItem | null>(null);
   const [rejecting, setRejecting] = useState<ApprovalQueueItem | null>(null);
+  // The reply to a review whose approval waits for the answer to the question (it is public and cannot be taken back).
+  const [publishing, setPublishing] = useState<ApprovalQueueItem | null>(null);
   // The queue lists only what waits: what was decided here stays below, quiet, until the page is left.
   const [decided, setDecided] = useState<ApprovalQueueItem[]>([]);
   // Why the last approval of an item failed (the code of its action), until the next try.
@@ -63,6 +73,11 @@ export function ApprovalQueuePage() {
 
   const handleApprove = (item: ApprovalQueueItem) => {
     clearFailure(item.id);
+    // A public reply is not approved by one click: the question comes first, with the words that will be published.
+    if (isReviewReply(item)) {
+      setPublishing(item);
+      return;
+    }
     approveItem.mutate(item.id, {
       onSuccess: noteDecided,
       onError: (failure) => {
@@ -71,6 +86,22 @@ export function ApprovalQueuePage() {
       },
     });
   };
+
+  // The host confirmed the question: the reply is approved (published). Whatever came of it the dialog closes (the toast of the hook and the card tell the rest) and the reviews are
+  // read again, because the review keeps where the reply stands (published, to check, refused with its reason).
+  const publishReply = async (item: ApprovalQueueItem) => {
+    try {
+      noteDecided(await approveItem.mutateAsync(item.id));
+    } catch (failure) {
+      const code = originActionErrorOf(failure);
+      if (code !== undefined) noteFailure(item.id, code);
+    } finally {
+      invalidateReviews(queryClient);
+    }
+  };
+
+  // The words on the question are the ones the list holds now (another person may have edited the draft), else the ones the host pressed on.
+  const publishingItem = publishing === null ? null : ((items ?? []).find((candidate) => candidate.id === publishing.id) ?? publishing);
 
   if (isLoading) {
     return <LoadingScreen message={t('approval.queue.loading')} />;
@@ -143,6 +174,14 @@ export function ApprovalQueuePage() {
         onApproveFailed={noteFailure}
       />
       <ApprovalRejectDialog item={rejecting} reject={rejectItem} onClose={() => setRejecting(null)} onRejected={noteDecided} />
+      <PublishReplyDialog
+        text={publishingItem === null ? null : finalTextOf(publishingItem)}
+        isLoading={approveItem.isPending}
+        onClose={() => setPublishing(null)}
+        onConfirm={async () => {
+          if (publishingItem !== null) await publishReply(publishingItem);
+        }}
+      />
     </>
   );
 }

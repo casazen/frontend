@@ -48,6 +48,22 @@ describe('the failure of a run that carried the access data of a portal', () => 
     expect(isAxiosError(kept) && kept.response).toBeUndefined();
   });
 
+  it.each([401, 403])('withoutRequest_AnonymousCallRefusedWith%i_StaysAnonymousSoItIsNeverASessionThatExpired', (status) => {
+    const config = { headers: new AxiosHeaders(), public: true, data: JSON.stringify({ password: SECRET }) } as InternalAxiosRequestConfig;
+    const original = new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, { status, data: undefined, statusText: '', headers: {}, config });
+    const words = (key: string) => `«${key}»`;
+    // The same refusal of a call that was signed in is a session or a permission, and the words say so: the flag is what tells them apart.
+    const signedIn = withoutRequest(failedStart(status, undefined));
+    expect(getProblemMessage(signedIn, words)).toBe(status === 401 ? '«apiErrors.sessionExpired»' : '«apiErrors.forbidden»');
+
+    const kept = withoutRequest(original);
+
+    expect(holds(kept, SECRET)).toBe(false);
+    expect(isAxiosError(kept) && kept.config?.public).toBe(true);
+    expect(isAxiosError(kept) && kept.response?.status).toBe(status);
+    expect(getProblemMessage(kept, words)).toBeUndefined();
+  });
+
   it('withoutRequest_ErrorThatIsNotOneOfAxios_IsGivenBackAsItIs', () => {
     const other = new Error('no token');
 

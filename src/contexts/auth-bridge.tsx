@@ -39,6 +39,11 @@ export type AuthBridgeValue = {
   kind: 'auth0' | 'anonymous' | 'demo';
   isLoading: boolean;
   isAuthenticated: boolean;
+  /**
+   * What the sign-in service reported when it could not complete the return from the login (`?error=…&state=…`): the person is not signed in and the app has to say so (E40/F02/US01/T02).
+   * Absent when there is nothing to report, and always where the service is not loaded.
+   */
+  error?: Error;
   user: ReturnType<typeof useAuth0>['user'] | ReturnType<typeof getDemoUser> | undefined;
   login: (options?: LoginOptions) => void | Promise<void>;
   logout: () => void;
@@ -125,6 +130,7 @@ function Auth0AuthBridge({ children }: { children: ReactNode }) {
   const {
     isLoading,
     isAuthenticated,
+    error,
     user,
     loginWithRedirect,
     logout: auth0Logout,
@@ -194,6 +200,7 @@ function Auth0AuthBridge({ children }: { children: ReactNode }) {
       kind: 'auth0',
       isLoading,
       isAuthenticated,
+      error,
       user,
       login,
       logout,
@@ -205,6 +212,7 @@ function Auth0AuthBridge({ children }: { children: ReactNode }) {
     [
       isLoading,
       isAuthenticated,
+      error,
       user,
       login,
       logout,

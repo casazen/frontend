@@ -187,12 +187,26 @@ export interface OnSiteRequestConfirmation {
   bookingCode?: string | null;
 }
 
-/** Body of "Le mie prenotazioni" (BK-11): the booking site, the booking code of the confirmation email, the guest's email. */
-export interface GuestBookingLookupPayload {
+/** Body of "Le mie prenotazioni" (BK-11) with the guest's email: the booking site, the booking code of the confirmation email, the email the booking was made with. */
+export interface GuestBookingEmailLookup {
   orgSlug: string;
   bookingCode: string;
   email: string;
 }
+
+/**
+ * Body of "Le mie prenotazioni" with the last four digits of the phone instead of the email (NF-143, E40): the same site and code, and `phoneLast4`, exactly four digits. The key `email` is
+ * ABSENT from this body: the backend takes exactly one of the two proofs. The digits are personal data: they live in the memory of the form only, never in an address, in the storage of the
+ * browser, in a query key or in a log.
+ */
+export interface GuestBookingPhoneLookup {
+  orgSlug: string;
+  bookingCode: string;
+  phoneLast4: string;
+}
+
+/** What opens a guest session (`POST /api/public/guest/session`): the code with the email, or the code with the last four digits of the phone. */
+export type GuestBookingLookupPayload = GuestBookingEmailLookup | GuestBookingPhoneLookup;
 
 /**
  * A guest session with no account (DB-06a, `POST /api/public/guest/session`): the signed token the guest area expects as

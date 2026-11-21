@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 import { guestSessionApi } from '@/api/guest-session.api';
+import { withoutRequest } from '@/features/marketplace/activation/use-sequential-run';
 import { clearGuestSession, readGuestSession, writeGuestSession } from '@/lib/guest-session';
 import type { GuestBookingLookupPayload, GuestSession } from '@/types';
 
@@ -17,8 +18,10 @@ export function isGuestSessionRefused(error: unknown): boolean {
  * `sessionStorage` of the tab per site (never the email) and read back when the page is opened again. The features of the guest area
  * (messages, reviews…) read `session` and send its token with `guestSessionHeaders`.
  *
- * - `openSession` proves a booking with its code and email (404 whatever does not match, 429 when the limits are hit) and starts the
- *   session; nothing is retried by itself.
+ * - `openSession` proves a booking with its code and one proof, the email or the last four digits of the phone (404 whatever does not match, 429 when
+ *   the limits are hit) and starts the session; nothing is retried by itself. What the guest typed is personal data, so the mutation does not outlive the page
+ *   (`gcTime: 0`) and what it keeps of a failure is the answer without the request (`withoutRequest`: the status and the body stay, which is what the page turns
+ *   into words; the body that was sent, with the email or the digits, does not).
  * - `closeSession` is "Esci": the token is forgotten and so is everything read with it.
  */
 export function useGuestSession(siteSlug: string) {
@@ -26,7 +29,14 @@ export function useGuestSession(siteSlug: string) {
   const [session, setSession] = useState<GuestSession | null>(() => readGuestSession(siteSlug));
 
   const openSession = useMutation({
-    mutationFn: (payload: GuestBookingLookupPayload) => guestSessionApi.openSession(payload),
+    gcTime: 0,
+    mutationFn: async (payload: GuestBookingLookupPayload) => {
+      try {
+        return await guestSessionApi.openSession(payload);
+      } catch (error) {
+        throw withoutRequest(error);
+      }
+    },
     onSuccess: (opened) => {
       writeGuestSession(siteSlug, opened);
       setSession(opened);

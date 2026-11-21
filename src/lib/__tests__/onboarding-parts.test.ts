@@ -24,10 +24,13 @@ import {
   knownNeeds,
   knownParts,
   knownPathSteps,
+  missingItemsOf,
+  missingReasonKey,
   needKey,
   nextPathStep,
   nextStepWhyKey,
   normalizePartState,
+  partAppliesToOrg,
   partPath,
   partTitleKey,
   partWhatKey,
@@ -47,7 +50,7 @@ function lookup(tree: Tree, path: string): string | Tree | undefined {
 }
 
 describe('the registry of the parts of the plan (E10/F03)', () => {
-  it('ElevenParts_InTheOrderOfThePlan_EachWithAnIcon', () => {
+  it('TwelveParts_InTheOrderOfThePlan_EachWithAnIcon', () => {
     expect(ONBOARDING_PART_KEYS).toEqual([
       'octorateConnection',
       'properties',
@@ -59,6 +62,7 @@ describe('the registry of the parts of the plan (E10/F03)', () => {
       'messagesAi',
       'fiscalDocuments',
       'partners',
+      'guestRegistration',
       'activation',
     ]);
     expect(Object.keys(ONBOARDING_PART_ICONS)).toEqual([...ONBOARDING_PART_KEYS]);
@@ -70,7 +74,7 @@ describe('the registry of the parts of the plan (E10/F03)', () => {
     expect(partPath('pricesRules')).toBe('/app/short-rent/onboarding/parts/pricesRules');
   });
 
-  it('IsOnboardingPartKey_OnlyTheElevenCodes', () => {
+  it('IsOnboardingPartKey_OnlyTheTwelveCodes', () => {
     for (const key of ONBOARDING_PART_KEYS) expect(isOnboardingPartKey(key)).toBe(true);
     expect(isOnboardingPartKey('OctorateConnection')).toBe(false);
     expect(isOnboardingPartKey('somethingNew')).toBe(false);
@@ -414,5 +418,69 @@ describe('the words of the plan, in both languages', () => {
     expect(lookup(itLocale as unknown as Tree, 'onboardingPlan.defer.notDeferrable')).toBe('Serve per i passi successivi.');
     expect(lookup(itLocale as unknown as Tree, 'onboardingPlan.defer.adminOnly')).toBe("Per posticipare serve l'amministratore dell'organizzazione.");
     expect(lookup(itLocale as unknown as Tree, 'onboardingPlan.defer.toast')).toBe('Lo trovi in Da fare');
+  });
+});
+
+// E29/F02/US01/T02, E29/F02/US02/T01: the part «Notifica degli ospiti» (Switzerland) lists what each active Swiss property still lacks.
+describe('the part «Notifica degli ospiti» of the plan', () => {
+  const MISSING = { propertyId: '9d4f6a0e-2c1b-4c5d-8e7f-3a2b1c0d9e8f', reason: 'ticino_structure_id_missing', code: 'guest-registration' };
+
+  it('MissingItemsOf_ThePartLists_KeepsTheItemsThatNameAPropertyOnceEachInTheOrderGiven', () => {
+    const second = { ...MISSING, propertyId: '0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d', reason: 'swiss_municipality_missing' };
+
+    expect(missingItemsOf(part('guestRegistration', { missing: [MISSING, second, { ...MISSING, reason: 'swiss_municipality_missing' }] }))).toEqual([MISSING, second]);
+  });
+
+  it('MissingItemsOf_NoListOrSomethingElse_IsNoItemsNeverAnError', () => {
+    expect(missingItemsOf(part('guestRegistration'))).toEqual([]);
+    expect(missingItemsOf(part('guestRegistration', { missing: [] }))).toEqual([]);
+    expect(missingItemsOf(part('guestRegistration', { missing: 'nothing' as unknown as [] }))).toEqual([]);
+    expect(missingItemsOf(part('guestRegistration', { missing: [null, { reason: 'x' }, { propertyId: '' }, 3] as unknown as [] }))).toEqual([]);
+    expect(missingItemsOf(null)).toEqual([]);
+    expect(missingItemsOf(undefined)).toEqual([]);
+  });
+
+  it('MissingReasonKey_TheTwoReasonsOfThePart_HaveTheTextOfAPropertyAndAnyOtherIsANeutralLine', () => {
+    expect(missingReasonKey('ticino_structure_id_missing')).toBe('onboardingPlan.reasons.property.ticino_structure_id_missing');
+    expect(missingReasonKey('swiss_municipality_missing')).toBe('onboardingPlan.reasons.property.swiss_municipality_missing');
+    // A reason of another part is not one of this list, and a reason nobody knows is never printed as it came.
+    expect(missingReasonKey('sender_missing')).toBe('onboardingPlan.reasons.property.unknown');
+    expect(missingReasonKey('something_new')).toBe('onboardingPlan.reasons.property.unknown');
+    expect(missingReasonKey(null)).toBe('onboardingPlan.reasons.property.unknown');
+  });
+
+  it('PartAppliesToOrg_OnlyThePartOfSwitzerlandWithNoActiveSwissProperty_IsLeftOutOfTheList', () => {
+    expect(partAppliesToOrg(part('guestRegistration', { state: 'notAvailable', reason: 'no_swiss_property' }))).toBe(false);
+    // Open, done, put off or not available for another reason: it applies.
+    expect(partAppliesToOrg(part('guestRegistration', { state: 'open', reason: 'swiss_municipality_missing' }))).toBe(true);
+    expect(partAppliesToOrg(part('guestRegistration', { state: 'done', reason: null }))).toBe(true);
+    expect(partAppliesToOrg(part('guestRegistration', { state: 'deferred', reason: 'ticino_structure_id_missing' }))).toBe(true);
+    expect(partAppliesToOrg(part('guestRegistration', { state: 'notAvailable', reason: 'not_provided' }))).toBe(true);
+    // Every other part stays whatever its state, as it always did.
+    expect(partAppliesToOrg(part('partners', { state: 'notAvailable', reason: 'no_swiss_property' }))).toBe(true);
+    expect(partAppliesToOrg(part('partners', { state: 'notAvailable', reason: 'not_provided' }))).toBe(true);
+  });
+
+  describe.each([
+    ['it', itLocale],
+    ['en', enLocale],
+  ])('the words in %s', (_language, locale) => {
+    const tree = locale as unknown as Tree;
+
+    it('TheReasonsOfThePartAndOfItsProperties_AreToldInPlainWords', () => {
+      for (const reason of ['swiss_municipality_missing', 'ticino_structure_id_missing', 'no_swiss_property']) {
+        expect(lookup(tree, reasonKey(reason as never)), reason).toEqual(expect.any(String));
+      }
+      for (const reason of ['swiss_municipality_missing', 'ticino_structure_id_missing']) expect(lookup(tree, missingReasonKey(reason)), reason).toEqual(expect.any(String));
+      expect(lookup(tree, missingReasonKey('unknown'))).toEqual(expect.any(String));
+      for (const key of ['title', 'unnamed', 'more_one', 'more_other']) expect(lookup(tree, `onboardingPlan.part.missing.${key}`), key).toEqual(expect.any(String));
+    });
+
+    it('TheTextsOfThePartSpeakOnlyOfTheActiveProperties', () => {
+      const texts = ['onboardingPlan.reasons.no_swiss_property', 'onboardingPlan.reasons.swiss_municipality_missing', 'onboardingPlan.reasons.ticino_structure_id_missing', partWhatKey('guestRegistration')].map((key) => String(lookup(tree, key)));
+
+      // «attivi» / «active»: a property that is still waiting does not open the part, and the texts never say otherwise.
+      for (const text of texts) expect(text).toMatch(/attiv|active/i);
+    });
   });
 });

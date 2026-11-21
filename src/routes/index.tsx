@@ -1,4 +1,5 @@
 import { createBrowserRouter, Navigate, Outlet, type RouteObject } from 'react-router-dom';
+import { buildEmbedRoutes } from './embed-routes';
 import { buildHostSiteRoutes } from './host-site-routes';
 import { createHostSiteWindow } from './host-site-window';
 import { getHostSite } from '@/lib/host-site';
@@ -292,6 +293,9 @@ export const appRoutes: RouteObject[] = [
       { path: ':propertySlugOrId', element: <LegacyPropertyBookingRedirect /> },
     ],
   },
+  // The embeddable widgets of an org on the CasaZen domain (NF-144): `/embed/:orgSlug/booking`, `…/property/:propertySlugOrId`, `…/guest-access`. Frames of
+  // other sites with no app chrome, outside `PublicSiteShell`; an agency's own domain serves the same pages without the org in the address.
+  ...buildEmbedRoutes('platform'),
   {
     element: <PublicSiteShell mode="default" />,
     handle: NOT_REDESIGNED_ROUTE_HANDLE,
@@ -437,14 +441,14 @@ let routerInstance: AppRouter | undefined;
 
 /**
  * The router of the app, created on first use: the start-up has found out by then whether the host is the app's own or an
- * org's own host (`getHostSite`, BK-16). On an org's own host the router only knows the org's booking site and shows clean
- * addresses (`/`, `/property/…`); anywhere else it is the full app.
+ * org's own host (`getHostSite`, BK-16). On an org's own host the router only knows the org's booking site (and, when `resolve-host` says they are on for it, the guest check-in
+ * and the owner portal, NF-140) and shows clean addresses (`/`, `/property/…`); anywhere else it is the full app.
  */
 export function getRouter(): AppRouter {
   if (!routerInstance) {
     const hostSite = getHostSite();
     routerInstance = hostSite
-      ? createBrowserRouter(buildHostSiteRoutes(appRoutes), { window: createHostSiteWindow(window, hostSite.slug) })
+      ? createBrowserRouter(buildHostSiteRoutes(appRoutes, hostSite), { window: createHostSiteWindow(window, hostSite.slug) })
       : createBrowserRouter(appRoutes);
   }
   return routerInstance;

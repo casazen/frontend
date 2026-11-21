@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -14,13 +15,17 @@ import {
   finalTextOf,
   isCampaign,
   isMessageDraft,
+  isReviewReply,
   itemIsGone,
   originActionErrorOf,
   type EditFields,
 } from '@/features/approvals/lib/approval-model';
+import { PublishReplyDialog } from '@/features/messages/components/publish-reply-dialog';
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import type { useEditItem, useSaveAndApproveItem } from '@/queries/approvalQueue';
+import { invalidateReviews } from '@/queries/use-ota-reviews';
 import type { ApprovalQueueItem } from '@/types/approval-queue.types';
+import { REVIEW_REPLY_MAX_LENGTH } from '@/types/review.types';
 
 interface ApprovalEditDialogProps {
   /** The item to edit; `null` while the dialog is closed. */
@@ -41,7 +46,8 @@ interface ApprovalEditDialogProps {
 /**
  * Edit the text of an item before deciding (AC-NF68-2): a message or any other text in one field, a campaign as its subject line and its body (the API
  * keeps a campaign as the subject, a blank line and the body). The original stays visible above the field and can be put back; «Save» keeps the edit
- * for later and «Save and approve» approves it in one step, so what goes out is the edited text.
+ * for later and «Save and approve» approves it in one step, so what goes out is the edited text. For the draft of the public reply to a review (`ReviewReply`) that step
+ * asks first, with the exact words, because a public reply cannot be taken back (E05/F06/US02), and the reviews are read again whatever came of it.
  */
 export function ApprovalEditDialog({ item, edit, saveAndApprove, onClose, onApproved, onApproveFailed }: ApprovalEditDialogProps) {
   return (
@@ -68,10 +74,13 @@ export function ApprovalEditDialog({ item, edit, saveAndApprove, onClose, onAppr
 
 function EditDialogBody({ item, edit, saveAndApprove, onClose, onApproved, onApproveFailed }: Omit<ApprovalEditDialogProps, 'item'> & { item: ApprovalQueueItem }) {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const [initial] = useState<EditFields>(() => editFieldsOf(item, finalTextOf(item)));
   const [fields, setFields] = useState<EditFields>(initial);
   const [attempted, setAttempted] = useState(false);
   const [refused, setRefused] = useState<string | null>(null);
+  // The edited words of a public reply that wait for the answer to the question; `null` while nothing is asked.
+  const [confirming, setConfirming] = useState<string | null>(null);
 
   const busy = edit.isPending || saveAndApprove.isPending;
   const campaign = isCampaign(item);
@@ -81,9 +90,11 @@ function EditDialogBody({ item, edit, saveAndApprove, onClose, onApproved, onApp
   const differsFromOriginal = editedTextOf(item, fields) !== editedTextOf(item, original);
   const textLength = fields.text.trim().length;
 
+  const reviewReply = isReviewReply(item);
   let description = t('approval.edit.description');
   if (isMessageDraft(item)) description = t('approval.edit.descriptionMessage');
   else if (campaign) description = t('approval.edit.descriptionCampaign');
+  else if (reviewReply) description = t('approval.edit.descriptionReview');
 
   const update = (patch: Partial<EditFields>) => {
     setFields((current) => ({ ...current, ...patch }));
@@ -104,12 +115,30 @@ function EditDialogBody({ item, edit, saveAndApprove, onClose, onApproved, onApp
     }
   };
 
+  /** The host confirmed the question: the edit is saved and the reply approved (published). The question closes either way; `failed` tells what the edit dialog shows of a refusal. */
+  const publish = async (text: string) => {
+    try {
+      const approved = await saveAndApprove.mutateAsync({ id: item.id, text });
+      onApproved(approved);
+      onClose();
+    } catch (error) {
+      failed(error);
+    } finally {
+      invalidateReviews(queryClient);
+    }
+  };
+
   const submit = (approve: boolean) => {
     setAttempted(true);
     if (problem) return;
 
     const text = editedTextOf(item, fields);
     if (approve) {
+      // A public reply cannot be taken back: nothing is published before the host has seen the exact words and said yes.
+      if (reviewReply) {
+        setConfirming(text);
+        return;
+      }
       saveAndApprove.mutate(
         { id: item.id, text },
         {
@@ -170,7 +199,7 @@ function EditDialogBody({ item, edit, saveAndApprove, onClose, onApproved, onApp
         ) : (
           <Field
             label={t('approval.edit.textLabel')}
-            counter={isMessageDraft(item) ? `${textLength}/${MESSAGE_TEXT_MAX_LENGTH}` : undefined}
+            counter={isMessageDraft(item) ? `${textLength}/${MESSAGE_TEXT_MAX_LENGTH}` : reviewReply ? `${textLength}/${REVIEW_REPLY_MAX_LENGTH}` : undefined}
             error={problemFor('text')}
           >
             <Textarea rows={8} value={fields.text} onChange={(event) => update({ text: event.target.value })} readOnly={busy} />
@@ -192,9 +221,20 @@ function EditDialogBody({ item, edit, saveAndApprove, onClose, onApproved, onApp
           {t('approval.action.save')}
         </Button>
         <Button type="button" onClick={() => submit(true)} disabled={busy && !saveAndApprove.isPending} loading={saveAndApprove.isPending}>
-          {t('approval.action.saveAndApprove')}
+          {reviewReply ? t('reviews.thread.draft.saveAndPublish') : t('approval.action.saveAndApprove')}
         </Button>
       </DialogFooter>
+
+      {reviewReply ? (
+        <PublishReplyDialog
+          text={confirming}
+          isLoading={saveAndApprove.isPending}
+          onClose={() => setConfirming(null)}
+          onConfirm={async () => {
+            if (confirming !== null) await publish(confirming);
+          }}
+        />
+      ) : null}
     </DialogContent>
   );
 }

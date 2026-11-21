@@ -6,8 +6,10 @@ import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { propertyDoorQrApi } from '@/api/checkin.api';
+import { featuresApi } from '@/api/features.api';
 import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
+import { FeatureFlagsProvider } from '@/contexts/feature-flags-provider';
 import { WorkspaceContext } from '@/contexts/workspace-context';
 import { PropertyQrCodePage } from '../PropertyQrCode';
 
@@ -16,6 +18,7 @@ vi.mock('@/api/checkin.api', () => ({
   propertyDoorQrApi: { get: vi.fn(), rotate: vi.fn() },
   publicCheckinApi: {},
 }));
+vi.mock('@/api/features.api', () => ({ featuresApi: { getFeatures: vi.fn() } }));
 // The drawing of the code is not what is tested: the image says which address it was made for.
 vi.mock('@/lib/qr-print-sheet', () => ({
   useQrDataUrl: (url: string) => (url === '' ? null : `data:image/png;base64,for:${url}`),
@@ -33,28 +36,44 @@ function httpError(status: number, data?: unknown): AxiosError {
   return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, { status, data, statusText: '', headers: {}, config });
 }
 
-function renderPage({ flag = true, canWrite = true }: { flag?: boolean; canWrite?: boolean } = {}) {
+interface RenderOptions {
+  flag?: boolean;
+  canWrite?: boolean;
+  /** The flags are still being read (every one of them is off in that time). */
+  isLoading?: boolean;
+  /** The flags could not be read (every one of them is off, but only because none is known). */
+  isError?: boolean;
+  /** The real provider of the flags, which reads them with `featuresApi`, instead of the value of a context. */
+  provider?: boolean;
+}
+
+function renderPage({ flag = true, canWrite = true, isLoading = false, isError = false, provider = false }: RenderOptions = {}) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+  const page = (
+    <WorkspaceContext.Provider
+      value={{
+        contexts: [],
+        activeContext: 'short-rent',
+        isReady: true,
+        setActiveContext: vi.fn(),
+        hasPermission: (_context, permission) => permission === 'property.read' || (canWrite && permission === 'property.write'),
+        getDefaultRoute: () => '/app/short-rent',
+      }}
+    >
+      <MemoryRouter initialEntries={[`/app/short-rent/properties/${PROPERTY}/qr`]}>
+        <Routes>
+          <Route path="/app/short-rent/properties/:propertyId/qr" element={<PropertyQrCodePage />} />
+        </Routes>
+      </MemoryRouter>
+    </WorkspaceContext.Provider>
+  );
   return render(
     <QueryClientProvider client={client}>
-      <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, checkInIdentityVerification: flag }, isLoading: false }}>
-        <WorkspaceContext.Provider
-          value={{
-            contexts: [],
-            activeContext: 'short-rent',
-            isReady: true,
-            setActiveContext: vi.fn(),
-            hasPermission: (_context, permission) => permission === 'property.read' || (canWrite && permission === 'property.write'),
-            getDefaultRoute: () => '/app/short-rent',
-          }}
-        >
-          <MemoryRouter initialEntries={[`/app/short-rent/properties/${PROPERTY}/qr`]}>
-            <Routes>
-              <Route path="/app/short-rent/properties/:propertyId/qr" element={<PropertyQrCodePage />} />
-            </Routes>
-          </MemoryRouter>
-        </WorkspaceContext.Provider>
-      </FeatureFlagsContext.Provider>
+      {provider ? (
+        <FeatureFlagsProvider>{page}</FeatureFlagsProvider>
+      ) : (
+        <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, checkInIdentityVerification: flag }, isLoading, isError }}>{page}</FeatureFlagsContext.Provider>
+      )}
     </QueryClientProvider>,
   );
 }
@@ -139,5 +158,42 @@ describe('the QR code of the entrance of a property (E22/F02/US01/T01)', () => {
 
     expect(await screen.findByTestId('property-door-qr-message')).toHaveTextContent(i18n.t(key));
     expect(screen.queryByTestId('property-qr-code')).not.toBeInTheDocument();
+  });
+});
+
+describe('the code that is printed depends on the flag, so the page waits for it (post-merge review of E22/F02/US01/T01)', () => {
+  it('PropertyQrCodePage_TheFlagsAreStillBeingRead_ShowsNoCodeAndAsksNothing', () => {
+    // Every flag is off while they are read: the static code, which leads to a page that does not exist, must not be on the screen with «Stampa» in that time.
+    renderPage({ flag: false, isLoading: true });
+
+    expect(screen.getByText(i18n.t('property.qr.loading'))).toBeInTheDocument();
+    expect(screen.queryByTestId('property-qr-code')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('property-qr-print')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('property-qr-download')).not.toBeInTheDocument();
+    expect(propertyDoorQrApi.get).not.toHaveBeenCalled();
+  });
+
+  it('PropertyQrCodePage_TheFlagsCouldNotBeRead_SaysSoAndPrintsNoCode', () => {
+    renderPage({ flag: false, isError: true });
+
+    expect(screen.getByTestId('property-door-qr-message')).toHaveTextContent(i18n.t('property.qr.flagsUnreadable'));
+    expect(screen.getByTestId('property-door-qr-retry')).toBeInTheDocument();
+    expect(screen.queryByTestId('property-qr-code')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('property-qr-print')).not.toBeInTheDocument();
+    expect(propertyDoorQrApi.get).not.toHaveBeenCalled();
+  });
+
+  it('PropertyQrCodePage_TheFlagsAreReadAgainFromTryAgain_ShowsTheCodeOfTheDoorOnceTheFlagIsKnownToBeOn', async () => {
+    // With the real provider: the first read fails and the page says so; the second one finds the flag on.
+    vi.mocked(featuresApi.getFeatures).mockRejectedValueOnce(httpError(500)).mockResolvedValue({ checkInIdentityVerification: true });
+    renderPage({ provider: true });
+
+    expect(await screen.findByTestId('property-door-qr-message')).toHaveTextContent(i18n.t('property.qr.flagsUnreadable'));
+    expect(screen.queryByTestId('property-qr-code')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('property-door-qr-retry'));
+
+    await waitFor(() => expect(imageOf()).toBe(`data:image/png;base64,for:${FIRST}`));
+    expect(propertyDoorQrApi.get).toHaveBeenCalledWith(PROPERTY);
   });
 });

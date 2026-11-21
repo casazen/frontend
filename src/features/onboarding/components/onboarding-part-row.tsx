@@ -7,6 +7,7 @@ import {
   CircleDashed,
   Home,
   IdCard,
+  Landmark,
   Link2,
   ListChecks,
   Lock,
@@ -50,6 +51,7 @@ const PART_ICONS: Record<OnboardingPartIconName, LucideIcon> = {
   MessageSquare,
   Receipt,
   Store,
+  Landmark,
   Rocket,
 };
 

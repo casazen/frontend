@@ -121,6 +121,8 @@ interface Section {
 const SECTIONS: readonly Section[] = [
   { field: 'alloggiatiFailures', testKey: 'alloggiati', icon: AlertCircle, group: 'stay', badge: { kind: 'alloggiati', status: 'Errore' } },
   { field: 'alloggiatiManualRequired', testKey: 'alloggiati-manual', icon: Send, group: 'stay', badge: { kind: 'alloggiati', status: 'DaInviareManualmente' } },
+  // casazen/backend#979: the guests of a Ticino property to notify to the cantonal police, an arrival day per row.
+  { field: 'ticinoNotifications', testKey: 'ticino', icon: Send, group: 'propertyItem' },
   { field: 'manualSendsRequired', testKey: 'manual-sends', icon: Send, group: 'stay' },
   { field: 'receiptsToUpload', testKey: 'receipts', icon: FileCheck, group: 'stay' },
   { field: 'guestCheckInsIncomplete', testKey: 'checkins', icon: Users, group: 'stay' },
@@ -132,8 +134,11 @@ const SECTIONS: readonly Section[] = [
   { field: 'propertiesPending', testKey: 'properties', icon: Home, group: 'property' },
 ];
 
-/** The steps of the activation wizard that can block it: their names are in `compliance.activation.steps`. */
-const ACTIVATION_STEPS = ['base-data', 'cin', 'documents', 'safety', 'tourist-tax', 'ical'];
+/**
+ * The steps of the activation wizard that can block it: their names are in `compliance.activation.steps`. The last one is the notification of the guests of a property in Switzerland
+ * (E29/F02): the item of the cockpit carries the reason as its `code` and the id of the step as its `field`.
+ */
+const ACTIVATION_STEPS = ['base-data', 'cin', 'documents', 'safety', 'tourist-tax', 'ical', 'guest-registration'];
 
 export interface CockpitContext {
   t: TFunction;

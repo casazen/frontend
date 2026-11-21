@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { LEGAL_QUERY_KEY } from '@/queries/use-legal';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
@@ -56,12 +56,12 @@ const refreshAccessToken = vi.fn(async () => 'fresh-token');
 const forceReauth = vi.fn();
 const assign = vi.fn();
 
-function mockAuth(roles: string[]) {
+function mockAuth(roles: string[], getAccessToken = vi.fn(async () => undefined)) {
   vi.mocked(useAuth).mockReturnValue({
     isLoading: false,
     isAuthenticated: true,
     user: { [ROLES_CLAIM]: roles },
-    getAccessToken: vi.fn(async () => undefined),
+    getAccessToken,
     refreshAccessToken,
     forceReauth,
     login: vi.fn(),
@@ -110,6 +110,7 @@ function renderPage(entry: string | { pathname: string; search?: string; state?:
           <Route path="/onboarding" element={<OnboardingPage />} />
           <Route path="/app/admin" element={<p data-testid="admin-area">admin</p>} />
           <Route path="/app/short-rent" element={<p data-testid="short-rent-home">home</p>} />
+          <Route path="/app/long-rent" element={<p data-testid="long-rent-home">home</p>} />
           <Route path="/app/supplier/activation" element={<p data-testid="supplier-activation">activation</p>} />
           <Route path="/register" element={<p data-testid="supplier-register">register</p>} />
           <Route path="/register/claim" element={<p data-testid="supplier-claim">claim</p>} />
@@ -439,6 +440,45 @@ describe('OnboardingPage (PL-01)', () => {
     renderPage();
 
     expect(await screen.findByTestId('short-rent-home')).toBeInTheDocument();
+  });
+
+  it.each([
+    ['ShortTerm', 'short-rent-home'],
+    ['LongTerm', 'long-rent-home'],
+  ] as const)(
+    'OnboardingPage_BackFromThePaymentWithoutRolesInTheToken_GoesToTheAreaOfTheRentalTypeTheServerSetUp (%s)',
+    async (rentalType, area) => {
+      // The access token was issued before the memberships existed: no role claims. The profile says the host is set up.
+      mockAuth([]);
+      vi.mocked(UsersApi.getMe).mockResolvedValue({
+        ...ONBOARDED, rentalType, onboardingRequired: false, consentsAccepted: true, commercialSetupRequired: false,
+      });
+
+      renderPage('/onboarding?checkout=success');
+
+      expect(await screen.findByTestId(area)).toBeInTheDocument();
+      expect(UsersApi.postOnboarding).not.toHaveBeenCalled();
+      expect(UsersApi.putOnboarding).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    ['the host features are withheld', { onboardingRequired: true, consentsAccepted: false }],
+    ['the payment is still pending', { commercialSetupRequired: true }],
+    ['the onboarding is not finished', { onboardingCompletedAt: null }],
+  ] as const)('OnboardingPage_NoRolesInTheTokenAndTheServerDoesNotConfirmTheSetup_StaysOnTheWizard (%s)', async (_case, overrides) => {
+    const getAccessToken = vi.fn(async () => undefined);
+    mockAuth([], getAccessToken);
+    vi.mocked(UsersApi.getMe).mockResolvedValue({ ...ONBOARDED, commercialSetupRequired: false, ...overrides });
+
+    renderPage('/onboarding?checkout=success');
+
+    expect((await screen.findAllByRole('button', { name: i18n.t('onboarding.choose') })).length).toBeGreaterThan(0);
+    // The claims are known only once the token is read: after that nothing else can move the page.
+    await waitFor(() => expect(getAccessToken).toHaveBeenCalled());
+    await act(async () => undefined);
+    expect(continuation).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('short-rent-home')).not.toBeInTheDocument();
   });
 
   it('OnboardingPage_AdminOpensItFromAnOpenChecklistStep_StaysOnTheWizard', async () => {

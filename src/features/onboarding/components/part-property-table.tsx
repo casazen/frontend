@@ -73,13 +73,13 @@ export function PartPropertyTable({ partKey, flow, target, panelSteps = false, a
         onRetry={() => void query.refetch()}
       />
     );
-  } else if (query.data && query.data.items.length === 0) {
+  } else if (query.data && (query.data.items?.length ?? 0) === 0) {
     body = (
       <p className="text-sm text-foreground/70" data-testid="part-properties-empty">
         {t(term ? 'onboardingPlan.launch.properties.noMatch' : 'onboardingPlan.launch.properties.empty')}
       </p>
     );
-  } else if (query.data) {
+  } else if (query.data?.items) {
     body = (
       <ul className="space-y-2" role="list" data-testid="part-properties-list">
         {query.data.items.map((row) => {

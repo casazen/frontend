@@ -16,6 +16,7 @@ export type FeatureFlagKey =
   | 'agencyTier'
   | 'crmMarketing'
   | 'complianceTrafficLight'
+  | 'guestRegistrationRegimes'
   | 'messageAssistant'
   | 'fiscalDocumentIssuance'
   | 'octorateDocumentImport'
@@ -28,7 +29,11 @@ export type FeatureFlagKey =
   | 'portalChatCheckInLink'
   | 'guestContactInfo'
   | 'touristTaxOnlinePayment'
-  | 'checkInIdentityVerification';
+  | 'checkInIdentityVerification'
+  | 'scheduledMessages'
+  | 'whiteLabelHost'
+  | 'auth0HostSync'
+  | 'siteEmbed';
 
 export type FeatureFlags = Record<FeatureFlagKey, boolean>;
 
@@ -120,6 +125,15 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    */
   complianceTrafficLight: false,
   /**
+   * The regimes of the registration of the guests (backend `GuestRegistrationRegimes`, E29/F02/US01/T01, NF-125, decisions D5 and D12), off until the product owner has read what the catalog says of
+   * each canton and on in the test environment only: what Italy and each of the 26 cantons ask, how sure the sources are, what CasaZen does for it and the host's own answer where the sources do not
+   * settle it (`GET` and `PUT api/properties/{id}/guest-registration`, which answer 404 while it is off). It decides what a property in Switzerland shows: with it on the card «Notifica degli ospiti
+   * nel tuo cantone» is in the tab «Documenti e adempimenti» (it carries the field of the structure number of Ticino and what is still missing), in the step «Notifica degli ospiti» of the activation of the
+   * property and in the last step of «Aggiungi immobile», and the general guidance «Registrazione in Svizzera» is no longer drawn. While it is off nothing changes: that guidance is what a Swiss property shows
+   * and nothing asks the server. What a property lacks to be notified (its municipality, in Ticino its structure number) and the part «Notifica degli ospiti» of the plan «Inizia con CasaZen» do not depend on it.
+   */
+  guestRegistrationRegimes: false,
+  /**
    * The assistant of the guests' messages (backend `MessageAssistant`, E05/F05, NF-66, NF-67, PO-08, PO-09), off until the product owner turns it on: what a guest
    * writes is personal data and the AI provider is an external sub-processor, so the privacy notice and the processing agreement of PO-09 come first. While it is
    * off the draft panel of the conversation and the page of its settings (`/app/short-rent/settings/assistant`, in «Altro») do not exist: the address leads to the
@@ -160,7 +174,7 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * The sending of the Italian electronic invoices to the SDI through the channel CasaZen has (backend `SdiSubmission`, E17/F01/US02, E17/F03/US01/T02, NF-116, NF-86, D13, D15), off until the product owner turns it on in the test
    * environment together with the credentials of the channel. While it is off nothing changes: the SDI panel of the detail of a document (the state, «Invia», «Dichiara inviato a mano», the reason of a rejection and the guided
    * correction) and the step «Invio allo SDI» of the wizard «Fatturazione» do not exist, and the backend answers 404 to the submission, the declaration and the correction. The state of a document towards the SDI
-   * is still the one the list always showed. The self-billed invoices (TD17) do not depend on it: they are behind `fiscalDocumentIssuance`.
+   * is still the one the list always showed. The self-billed invoices (TD17) do not depend on it, except for the correction of one the SDI rejected («Correggi e rimanda») and the closing of its replacement draft («Chiudi come non più dovuta»): they are behind `fiscalDocumentIssuance`.
    */
   sdiSubmission: false,
   /**
@@ -215,6 +229,34 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * While it is off nothing changes: the settings page, the queue and the QR page are the ones they always were, nothing asks the server, and the backend answers 404 to every call of the identification.
    */
   checkInIdentityVerification: false,
+  /**
+   * The scheduled messages of the routines (backend `ScheduledMessages`, E05/F07, NF-71, MSG-11, ADR-022), off until the product owner confirms the send window and the retry times and on in the
+   * test environment only: it turns the routine action `MessageToGuest` into real sending. It decides what the host sees on the page of a booking: the section «Messaggi programmati» of the tab
+   * Soggiorno (the timeline of what the routines will send, with «Modifica», «Salta» and «Invia ora») and the live update of the page when a message is held back. While it is off nothing is drawn,
+   * nothing asks the server, and the backend answers 404 to the three endpoints of the messages and plans nothing. It works on the routines, so the backend needs `routines` on too: with the routines
+   * closed nothing is planned or sent, whatever this flag says, and the section then tells that nothing is scheduled and has no link to the page of the routines.
+   */
+  scheduledMessages: false,
+  /**
+   * The agency's own domain as a whole site (backend `WhiteLabelHost`, E40, NF-140, NF-142, NF-143), off until the product owner turns it on in the test environment. Besides the booking site, the domain of an
+   * agency then serves the guest check-in page and the owner portal with the agency's logo and colours, and the guest area accepts the last four digits of the phone as a second proof. Which of those a domain serves
+   * is decided for each host by `resolve-host` (`surfaces`, `ownerLoginReady`), which says «on» only with this flag on, an allowed plan, a verified domain and the setting of the agency: the routes of a host read that
+   * answer, never this flag. The screens that belong to no host read it: the choice of the proof in the form of «Le mie prenotazioni» (`/book/:orgSlug/my-bookings`, on the CasaZen domain and on a host). While it is
+   * off nothing changes: a host serves the booking site and the pages it served before, the form asks for the code and the e-mail only, and the backend answers 404 to what it gates.
+   */
+  whiteLabelHost: false,
+  /**
+   * The registration of the agency domains with the sign-in service (backend `Auth0HostSync`, E40/F01/US02, NF-141), off until the product owner supplies credentials that may change the application (they are the owner's
+   * to give). No screen of this client reads it: whether the owners of an agency can sign in on its domain is the `ownerLoginReady` of `resolve-host`, which the backend sets when the registration is done, by this
+   * sync or by hand. The key exists so that every flag the server publishes is typed here, and for the pages of the backoffice that tell the agency where its domain stands.
+   */
+  auth0HostSync: false,
+  /**
+   * The embeddable booking widgets (backend `SiteEmbed`, E40/F01/US01/T01, E41, NF-144, NF-145), off until the product owner turns it on in the test environment. It decides whether the pages
+   * under `/embed/<org>/…` of the CasaZen domain answer: while it is off they say «This widget is not available», nothing asks the server for the org and the backend reports `embedEnabled` false on
+   * the agency domains. On an agency's own domain the pages follow `embedEnabled` of `resolve-host` instead (the plan of the agency decides there). Nothing else changes while it is off.
+   */
+  siteEmbed: false,
 };
 
 /** Known flags from the API response; anything but `true` is off. */
