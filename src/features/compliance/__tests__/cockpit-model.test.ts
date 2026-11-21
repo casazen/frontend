@@ -526,6 +526,14 @@ describe('buildCockpit and the traffic light (NF-52)', () => {
     expect(readOnly.fine.rows[0].to).toBe('/app/short-rent/compliance?detail=ticino:p1:2026-09-23');
   });
 
+  // E29/F02/US02/T01: a property in Switzerland kept from starting by its municipality or its structure number says so like any other step (the item carries the reason as `code`, the step as `field`).
+  it('buildCockpit_SwissPropertyToActivate_NamesTheNotificationOfTheGuestsAsWhatItLacks', () => {
+    const swiss = { ...property('p1', 'Casa Lugano'), missing: [{ code: 'ticino_structure_id_missing', field: 'guest-registration' }] };
+    const model = build(summaryOf({ propertiesPending: { count: 1, items: [swiss] } }));
+
+    expect(model.start.rows[0].detail).toBe('Manca: Notifica degli ospiti');
+  });
+
   it('fineCount_ADayDeclaredByACoHost_LeavesTheRedCounterOfTheMenuWithoutAReload', () => {
     const open = summaryOf({ ticinoNotifications: { count: 2, items: [] } });
     const afterDeclaration = summaryOf({ ticinoNotifications: { count: 1, items: [] } });
