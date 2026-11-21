@@ -48,6 +48,8 @@ describe('notification model', () => {
       'scheduled-message-issue',
       // E30/F02/US03/T01: the 24 hours of the notification of a Ticino arrival day to the cantonal police, and the declaration of a day (`PushTypes.IsTicinoNotification`).
       'ticino-notification-due', 'ticino-notification-overdue', 'ticino-notification-declared',
+      // E31/F02/US01/T01: the deadline of the assisted notification of a canton other than Ticino, and the declaration of a day (`PushTypes.IsSwissNotification`).
+      'swiss-notification-due', 'swiss-notification-overdue', 'swiss-notification-declared',
       // E40/F02/US02 (`be-auth0-host-sync`): the domain of the agency was verified, and the sign-in of the owners on it became active or failed.
       'domain-verified', 'owner-login-ready', 'owner-login-failed',
     ];
@@ -175,6 +177,47 @@ describe('notification model', () => {
     // An id an address cannot hold (a path, a colon) never goes into `?detail=`: the cockpit opens and the bell keeps working.
     expect(notificationRoute({ type: 'ticino-notification-due', entityId: '../admin' }, 'short-rent')).toBe('/app/short-rent/compliance');
     expect(notificationRoute({ type: 'ticino-notification-due', entityId: 'a:b' }, 'short-rent')).toBe('/app/short-rent/compliance');
+  });
+
+  // E31/F02/US01/T01 (NF-131): the push types of the assisted notification are lower case with hyphens, and the entity of the bell entry is the PROPERTY (never the day): the click opens the layer of the
+  // assisted notification of that property over the cockpit, which opens on its first day still to notify.
+  it.each([
+    ['swiss-notification-due', 'swissNotificationDue'],
+    ['swiss-notification-overdue', 'swissNotificationOverdue'],
+    ['swiss-notification-declared', 'swissNotificationDeclared'],
+  ])('notificationKind_%s_HasItsOwnSentenceInBothLanguagesAndNamesNoSupplierNorGuest', (type, key) => {
+    expect(KNOWN_NOTIFICATION_TYPES).toContain(type);
+    expect(notificationKind(type).textKey).toBe(`notifications.types.${key}`);
+    for (const locale of [it_, en]) {
+      const sentence = lookup(locale, `notifications.types.${key}`);
+      expect(typeof sentence).toBe('string');
+      expect(sentence).not.toBe(lookup(locale, 'notifications.types.generic'));
+      expect(sentence as string).not.toMatch(/hoko|unisys|u-stay|feratel|chekin|octorate|concordato\s*facile|\bavs\b/i);
+    }
+    // The authority of a canton is not always the police: the sentence says «authority».
+    expect(lookup(it_, `notifications.types.${key}`)).toMatch(/autorità/i);
+    expect(lookup(en, `notifications.types.${key}`)).toMatch(/authority/i);
+  });
+
+  it.each(['swiss-notification-due', 'swiss-notification-overdue', 'swiss-notification-declared'])('notificationRoute_%s_OpensTheLayerOfTheAssistedNotificationOverTheCockpit', (type) => {
+    expect(notificationRoute({ type, entityId: PROPERTY_ID }, 'short-rent')).toBe(`/app/short-rent/compliance?detail=swiss-notification:${PROPERTY_ID}`);
+    // Whatever the area the person is in when it arrives.
+    expect(notificationRoute({ type, entityId: PROPERTY_ID }, 'long-rent')).toBe(`/app/short-rent/compliance?detail=swiss-notification:${PROPERTY_ID}`);
+    expect(notificationRoute({ type, entityId: null }, 'short-rent')).toBeNull();
+  });
+
+  it('notificationRoute_SwissNotification_WhoMayNotOpenTheCockpitGoesToThePageOfThePropertyAndAnEntityThatIsNotAPropertyOpensTheCockpitAlone', () => {
+    const granted = (...keys: string[]) => (_context: AppContextKey, permission: string) => keys.includes(permission);
+
+    expect(notificationRoute({ type: 'swiss-notification-due', entityId: PROPERTY_ID }, 'short-rent', granted('property.read', 'booking.read'))).toBe(
+      `/app/short-rent/compliance?detail=swiss-notification:${PROPERTY_ID}`,
+    );
+    for (const keys of [['property.read'], ['booking.read'], []]) {
+      expect(notificationRoute({ type: 'swiss-notification-overdue', entityId: PROPERTY_ID }, 'short-rent', granted(...keys))).toBe(`/app/short-rent/properties/${PROPERTY_ID}`);
+    }
+    // An id an address cannot hold (a path, a colon) never goes into `?detail=`: the cockpit opens and the bell keeps working.
+    expect(notificationRoute({ type: 'swiss-notification-due', entityId: '../admin' }, 'short-rent')).toBe('/app/short-rent/compliance');
+    expect(notificationRoute({ type: 'swiss-notification-due', entityId: 'a:b' }, 'short-rent')).toBe('/app/short-rent/compliance');
   });
 
   it('notificationRoute_VerificationRequired_OpensTheConsoleOfTheVerifications', () => {

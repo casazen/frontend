@@ -13,7 +13,13 @@ import { lightStateOf, sectionItems, type SectionField } from './compliance-ligh
 export type CockpitTier = 'fine' | 'start' | 'chore';
 
 /** The sections of `GET api/compliance/summary` that carry a deadline of the law, whatever the stay. */
-export const FINE_FIELDS = ['alloggiatiFailures', 'alloggiatiManualRequired', 'guestCheckInsIncomplete', 'ticinoNotifications'] as const satisfies readonly (keyof ComplianceSummaryResult)[];
+export const FINE_FIELDS = [
+  'alloggiatiFailures',
+  'alloggiatiManualRequired',
+  'guestCheckInsIncomplete',
+  'ticinoNotifications',
+  'swissNotifications',
+] as const satisfies readonly (keyof ComplianceSummaryResult)[];
 
 /**
  * The sections the traffic light adds to the level of the law (`TIER_OF_FIELD`): the stays it takes out of `alloggiatiManualRequired` (to send by hand, sent
@@ -31,6 +37,7 @@ export const TIER_OF_FIELD: Readonly<Record<keyof ComplianceSummaryResult, Cockp
   connectionsToFix: 'fine',
   periodItems: 'fine',
   ticinoNotifications: 'fine',
+  swissNotifications: 'fine',
   propertiesPending: 'start',
   checkoutsDue: 'chore',
   turnoversPending: 'chore',

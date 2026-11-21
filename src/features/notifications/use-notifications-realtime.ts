@@ -5,6 +5,7 @@ import { ORG_DOMAIN_QUERY_KEY } from '@/features/settings/domain/use-org-domain'
 import { INTERNAL_ACTIVITIES_KEY } from '@/lib/query-client';
 import { COMPLIANCE_ARCHIVE_KEY } from '@/queries/compliance-archive';
 import { COMPLIANCE_HEALTH_KEY } from '@/queries/compliance-health';
+import { GUEST_REGISTER_KEY } from '@/queries/guestRegister';
 import { ADMIN_ASSIST_KEY } from '@/queries/use-admin-onboarding-assist';
 import { ALLOGGIATI_KEY } from '@/queries/use-alloggiati';
 import { BOOKING_THREAD_QUERY, HOST_THREADS_QUERY, UNREAD_MESSAGES_QUERY } from '@/queries/use-booking-messages';
@@ -23,7 +24,7 @@ import { PANEL_STEPS_KEY } from '@/queries/use-onboarding-panel-step';
 import { PAYMENTS_KEY } from '@/queries/use-payments';
 import { PROPERTIES_KEY } from '@/queries/use-properties';
 import { SCHEDULED_MESSAGES_KEY } from '@/queries/use-scheduled-messages';
-import { TICINO_POLICE_KEY } from '@/queries/swissCompliance';
+import { SWISS_NOTIFICATION_KEY, TICINO_POLICE_KEY } from '@/queries/swissCompliance';
 import { TOURIST_TAX_SUMMARY_KEY } from '@/queries/use-tourist-tax-summary';
 import { VERIFICATION_KEY } from '@/queries/verification';
 import { ACCOUNTANT_PACKAGE_KEY } from '@/queries/use-accountant-package';
@@ -86,8 +87,10 @@ const CHECKIN_LINK_FAILED = 'checkin-link-failed';
  * What a completed check-in changes on screen, apart from the bell: the booking and its page, the link of the online check-in (the
  * step "Cosa succede ora" reads it) and where it stands on its way to the guest (that delivery ends with the check-in), the guests of the stay and
  * Alloggiati Web, the cockpit and the counter of the menu, the Home, the guests of the organisation and the invoice data of the booking (the guest's
- * «yes» to «Ti serve la fattura?» and what the guest wrote, shown in «Dati di fatturazione» of the tab Pagamento) and the arrival day of the Ticino police
- * notification (who is in its file, and who still misses data: `TICINO_POLICE_KEY`). A page open in front of the host shows it without a reload.
+ * «yes» to «Ti serve la fattura?» and what the guest wrote, shown in «Dati di fatturazione» of the tab Pagamento), the arrival day of the Ticino police
+ * notification (who is in its file, and who still misses data: `TICINO_POLICE_KEY`), the arrival day of the assisted notification of the other cantons (the guests as data to copy and what they
+ * still miss: `SWISS_NOTIFICATION_KEY`) and the count of the guest register (`GUEST_REGISTER_KEY`: a check-in adds the guests of a stay to it). A page open in front of the host shows it
+ * without a reload.
  */
 const STALE_ON_CHECK_IN: readonly string[] = [
   BOOKINGS_KEY,
@@ -97,7 +100,9 @@ const STALE_ON_CHECK_IN: readonly string[] = [
   COMPLIANCE_KEY,
   DASHBOARD_KEY,
   GUESTS_QUERY,
+  GUEST_REGISTER_KEY,
   INVOICE_DATA_KEY,
+  SWISS_NOTIFICATION_KEY,
   TICINO_POLICE_KEY,
 ];
 
@@ -273,6 +278,29 @@ function refreshTicinoNotification(queryClient: QueryClient, propertyId?: string
 }
 
 /**
+ * The notifications about the assisted notification of the guests of an arrival day to the cantonal authority of a canton other than Ticino (`PushTypes.IsSwissNotification`, E31/F02/US01/T01,
+ * NF-131): the alerts of the deadline (`swiss-notification-due`, `swiss-notification-overdue`) and the declaration of a day by a person of the org, or its undo (`swiss-notification-declared`).
+ * Their `entityId` is the PROPERTY, never a booking nor the day.
+ */
+const SWISS_NOTIFICATION_TYPES: ReadonlySet<string> = new Set(['swiss-notification-due', 'swiss-notification-overdue', 'swiss-notification-declared']);
+
+/** Whether a notification is about the assisted notification of a property (its `entityId` is the property, not a booking). */
+function isSwissType(type: string | null): boolean {
+  return type !== null && SWISS_NOTIFICATION_TYPES.has(type);
+}
+
+/**
+ * What an assisted notification changes on screen, apart from the bell: the cockpit and the counter of the menu (`COMPLIANCE_KEY`: the arrival days still to notify are a section of its summary,
+ * so a day declared by a co-host leaves the red count at once), the days of THAT property that an open layer shows (`SWISS_NOTIFICATION_KEY`: the day, its guests, who declared it; the days of
+ * every property when the event names none) and the property queries (`PROPERTIES_KEY`). A page open in front of the host shows the day closed, reopened or overdue without a reload.
+ */
+function refreshSwissNotification(queryClient: QueryClient, propertyId?: string | null): void {
+  void queryClient.invalidateQueries({ queryKey: [COMPLIANCE_KEY] });
+  void queryClient.invalidateQueries({ queryKey: propertyId ? [SWISS_NOTIFICATION_KEY, propertyId] : [SWISS_NOTIFICATION_KEY] });
+  void queryClient.invalidateQueries({ queryKey: [PROPERTIES_KEY] });
+}
+
+/**
  * The domain of the agency changed without the agency touching the page (E40/F01/US02, `be-auth0-host-sync`): the domain was verified (`domain-verified`), or the sign-in of the owners on it became
  * active (`owner-login-ready`) or did not (`owner-login-failed`). Sent to the administrators of the org; their `entityId` is the ORG, never a booking.
  */
@@ -318,7 +346,8 @@ function refreshAssistOutcome(queryClient: QueryClient): void {
  * (`refreshCheckInLinkDelivery`), a request of help from a host (or reopened by it) the staff queue, a request support closed the requests of the host, a review of a guest that appeared
  * (or a reply that was lost) the reviews: the section of the booking, the review that is open and the list of the hub (`invalidateReviews`), a scheduled message that needs
  * a look the timeline of its booking and the «To do» list (`refreshScheduledMessages`), one about the Ticino police notification of a property the cockpit, the open days
- * of that property and the property queries (`refreshTicinoNotification`), and one about the domain of the agency (verified, owner sign-in active or failed) the domain settings
+ * of that property and the property queries (`refreshTicinoNotification`), one about the assisted notification of a property of another canton the same (`refreshSwissNotification`),
+ * and one about the domain of the agency (verified, owner sign-in active or failed) the domain settings
  * of the org (`refreshOrgDomain`).
  */
 export function applyNotificationsChange(queryClient: QueryClient, change: NotificationsChange): void {
@@ -326,8 +355,9 @@ export function applyNotificationsChange(queryClient: QueryClient, change: Notif
   void queryClient.invalidateQueries({ queryKey: [NOTIFICATIONS_QUERY], predicate: (query) => query.queryKey[1] !== UNREAD_COUNT_KEY[1] });
   void queryClient.invalidateQueries({ queryKey: [HOST_THREADS_QUERY] });
   void queryClient.invalidateQueries({ queryKey: [UNREAD_MESSAGES_QUERY] });
-  // The entity is a booking, except for a service request, for a request of help, for the Ticino notification (a property) and for the domain of the agency (the org).
-  const entityIsBooking = !isServiceRequestType(change.type) && !isAssistType(change.type) && !isTicinoType(change.type) && !isDomainType(change.type);
+  // The entity is a booking, except for a service request, for a request of help, for the Ticino and the assisted notification (a property) and for the domain of the agency (the org).
+  const entityIsBooking =
+    !isServiceRequestType(change.type) && !isAssistType(change.type) && !isTicinoType(change.type) && !isSwissType(change.type) && !isDomainType(change.type);
   if (change.entityId && entityIsBooking) {
     void queryClient.invalidateQueries({ queryKey: [BOOKING_THREAD_QUERY, change.entityId] });
   } else if (!change.entityId) {
@@ -346,6 +376,7 @@ export function applyNotificationsChange(queryClient: QueryClient, change: Notif
   if (change.type !== null && OTA_REVIEW_TYPES.has(change.type)) invalidateReviews(queryClient);
   if (change.type === SCHEDULED_MESSAGE_ISSUE) refreshScheduledMessages(queryClient, change.entityId);
   if (isTicinoType(change.type)) refreshTicinoNotification(queryClient, change.entityId);
+  if (isSwissType(change.type)) refreshSwissNotification(queryClient, change.entityId);
   // The domain became active, or the sign-in of the owners on it did or did not: the page of the domain settings that is open shows it without a reload.
   if (isDomainType(change.type)) refreshOrgDomain(queryClient);
 }
@@ -374,6 +405,8 @@ export function refreshAfterGap(queryClient: QueryClient): void {
   refreshScheduledMessages(queryClient);
   // And for a Ticino arrival day that was declared, or whose 24 hours ran out, while it was down: the cockpit, the days that are open and the properties.
   refreshTicinoNotification(queryClient);
+  // And for an arrival day of another canton that was declared, or whose deadline ran out, while it was down: the cockpit, the days that are open and the properties.
+  refreshSwissNotification(queryClient);
   // And for a domain that became active, or an owner sign-in that became active or failed, while it was down: the domain settings.
   refreshOrgDomain(queryClient);
 }

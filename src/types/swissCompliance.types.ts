@@ -1,3 +1,10 @@
+import type {
+  GuestRegistrationCertainty,
+  GuestRegistrationChannel,
+  GuestRegistrationDeadlineKind,
+  GuestRegistrationDuty,
+} from './guest-registration.types';
+
 /** The formats of the file for the Ticino police portal: the official CSV model (default) or the official XML. */
 export type TicinoFileFormat = 'csv' | 'xml';
 
@@ -127,4 +134,115 @@ export interface SwissReceiptResponse {
   reference: string;
   fileHash: string;
   uploadedAt: string;
+}
+
+/**
+ * The assisted notification of a canton other than Ticino (E31/F02/US02/T02, NF-131, casazen/backend#979): CasaZen prepares the data of the guests of an arrival day as data ready to copy
+ * onto the official portal and says when it is due; the host notifies and declares the day. Nothing is transmitted (decision D1). The enums are the names of the regime catalog, as in
+ * `guest-registration.types.ts`; a value this version does not know is possible at run time and reads as a neutral line.
+ */
+
+/** The kind of document of a guest as the day sends it: `passport`, `identityCard` or `other`. */
+export type SwissDocumentKind = 'passport' | 'identityCard' | 'other';
+
+/**
+ * A guest of the day as the host copies it onto the portal: what the check-in recorded and nothing else (no exemption, no photograph of the document, no contact of the booker).
+ * A field that is not there is `null`. It holds personal data: it comes with `guest.read` and is never cached for long.
+ */
+export interface SwissNotificationGuest {
+  bookingId: string;
+  /** The code of the booking as hosts read it (`XXXXX-XXXXX`). */
+  bookingCode: string | null;
+  /** The order of the guest in the stay, from 0. */
+  position: number;
+  /** The arrival and the departure day of the stay (`yyyy-MM-dd`). */
+  arrival: string;
+  departure: string;
+  firstName: string | null;
+  lastName: string | null;
+  /** `yyyy-MM-dd`. */
+  birthDate: string | null;
+  /** The comune of birth (born in Italy) or the country of birth (born abroad), as entered. */
+  placeOfBirth: string | null;
+  /** The nationality as the guest entered it, and as ISO 3166-1 alpha-3 where CasaZen can tell it. */
+  nationality: string | null;
+  nationalityCode: string | null;
+  documentType: string | null;
+  documentNumber: string | null;
+  street: string | null;
+  postalCode: string | null;
+  city: string | null;
+  /** The country of the home as ISO alpha-3. */
+  residenceCountryCode: string | null;
+  /** The plate of the car of the stay. */
+  plate: string | null;
+}
+
+/**
+ * A guest (or a whole stay, `position` null) that still lacks something, with the codes of what it lacks: `firstName`, `lastName`, `birthDate`, `nationality`, `documentType`,
+ * `guests` (fewer guests recorded than the booking counts).
+ */
+export interface SwissNotificationIssue {
+  bookingId: string;
+  position: number | null;
+  guestName: string;
+  missing: string[];
+}
+
+/** An arrival day still to notify; `dueAt` is `null` where the canton has no deadline in the sources. */
+export interface SwissPendingDay {
+  day: string;
+  stayCount: number;
+  dueAt: string | null;
+}
+
+/**
+ * `GET /properties/{id}/swiss/notification-day?date=` (`Features:GuestRegistrationRegimes`): one arrival day of a property in a canton other than Ticino whose authority asks for an
+ * electronic notification, with the regime in short (where, how, how sure the source is) and the deadline.
+ */
+export interface SwissNotificationDay {
+  propertyId: string;
+  day: string;
+  /** The regime of the place of the property (`CH-SH`). */
+  regimeCode: string;
+  cantonCode: string | null;
+  /** The official portal where the host notifies; `null` where the canton has none (a paper form, an e-mailed file). */
+  portalUrl: string | null;
+  channel: GuestRegistrationChannel;
+  deadlineKind: GuestRegistrationDeadlineKind;
+  /** The sentence (in the language of the request) that says what the deadline is when its kind alone does not. */
+  deadlineNote: string | null;
+  certainty: GuestRegistrationCertainty;
+  /** The duty CasaZen treats as in effect: only `Required` raises the day in the cockpit and in the alerts. */
+  effectiveDuty: GuestRegistrationDuty;
+  /** The stays that arrive on the day and owe a notification. */
+  stayCount: number;
+  guests: SwissNotificationGuest[];
+  issues: SwissNotificationIssue[];
+  /** The deadline (UTC); `null` where the canton has none: a deadline is never guessed, the screen says it is not known. */
+  dueAt: string | null;
+  /** When a person of the org declared the day notified (UTC); `null` while nobody did. */
+  declaredAt: string | null;
+  /** Who declared it (first and last name); `null` while nobody did, and when the account no longer exists. */
+  declaredBy: string | null;
+  /** The day is closed: it is declared, so the cockpit and the alerts no longer list it. */
+  alreadyDeclared: boolean;
+  /** The days of the property still to notify (of the last 14), oldest first; empty unless the duty is `Required`. */
+  pendingDays: SwissPendingDay[];
+}
+
+/** Body of `POST /properties/{id}/swiss/notification-declare`: the arrival day the host notified to the authority. */
+export interface DeclareSwissDayRequest {
+  arrivalDay: string;
+}
+
+/** The declaration of an arrival day, as the API answers every repeat of the call: it holds no guest data. */
+export interface SwissDeclaration {
+  propertyId: string;
+  arrivalDay: string;
+  regimeCode: string;
+  declaredAt: string;
+  declaredBy: string | null;
+  /** True when this call recorded the declaration; false when the day was declared already (by this person or a co-host). */
+  created: boolean;
 }

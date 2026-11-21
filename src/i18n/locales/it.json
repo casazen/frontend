@@ -2017,8 +2017,10 @@
       "supportVaultSecretMissing": "Queste credenziali non ci sono ancora: salvale prima, oppure chiedile all'utente.",
       "supportVaultTooManyOpenings": "Hai già aperto le credenziali 5 volte nell'ultima ora per questa richiesta: riprova più tardi.",
       "supportVaultValueInvalid": "Utente e password sono obbligatori, al massimo 200 caratteri; il codice aggiuntivo al massimo 100.",
+      "swissDeclarationDayInFuture": "Questo giorno non è ancora iniziato: potrai dichiarare la notifica dal giorno dell'arrivo.",
       "swissMunicipalityNotApplicable": "Il comune svizzero si può indicare solo per un immobile in Svizzera.",
       "swissMunicipalityUnknown": "Il comune scelto non è nell'elenco ufficiale dei comuni svizzeri: scegli di nuovo la località.",
+      "swissNotificationNotApplicable": "Per questa struttura la notifica assistita non si applica.",
       "swissPeriodInvalid": "L'ultimo giorno non può venire prima del primo.",
       "swissPeriodTooLong": "Il periodo può durare al massimo 366 giorni.",
       "swissPlacesUnavailable": "L'elenco ufficiale delle località svizzere non è disponibile in questo momento: riprova più tardi.",
@@ -7087,7 +7089,8 @@
         "overdueDays_other": "Scaduto da {{count}} giorni",
         "endOfToday": "Entro oggi",
         "endOfTomorrow": "Entro domani",
-        "endOfDay": "Entro il {{date}}"
+        "endOfDay": "Entro il {{date}}",
+        "unknown": "Scadenza non nota"
       },
       "active": {
         "toggle_one": "{{count}} casa in regola",
@@ -7118,6 +7121,7 @@
       "ConfirmPropertyReady": "Immobile pronto per il prossimo ospite",
       "DeclareTouristTax": "Imposta di soggiorno di {{period}}",
       "EnterMunicipalityTaxRate": "Imposta di soggiorno del comune",
+      "NotifyGuestsAuthority": "Notifica all'autorità degli arrivi del {{period}}",
       "RenewPoliceCredentials": "Credenziali della Questura",
       "ResolveAlloggiatiFailure": "Alloggiati Web",
       "SendAlloggiati": "Alloggiati Web",
@@ -8907,6 +8911,10 @@
         "cta": "Inserisci l'imposta",
         "title": "Inserisci l'imposta di soggiorno del comune: {{label}}"
       },
+      "NotifyGuestsAuthority": {
+        "cta": "Notifica",
+        "title": "Notifica all'autorità gli ospiti arrivati il {{period}}: {{label}}"
+      },
       "PayServiceRequest": {
         "cta": "Paga",
         "title": "Paga l'intervento di {{label}}"
@@ -10124,6 +10132,9 @@
       "download": "Scarica CSV",
       "print": "Stampa"
     },
+    "card": {
+      "open": "Apri il registro ospiti"
+    },
     "download": {
       "done": "Registro scaricato.",
       "failed": "Impossibile scaricare il registro. Riprova."
@@ -10262,9 +10273,9 @@
       "value": "Numero identificativo: {{value}}"
     },
     "support": {
-      "AssistedNotification": "In arrivo: CasaZen preparerà i dati e ti ricorderà la scadenza; la notifica la farai tu.",
+      "AssistedNotification": "CasaZen prepara i dati degli ospiti da copiare e ti ricorda la scadenza; la notifica la fai tu.",
       "FileExport": "Prepara il file nel formato ufficiale: lo carichi tu sul portale.",
-      "GuestRegister": "In arrivo: CasaZen raccoglierà i dati degli ospiti per il registro; lo conserverai tu e lo mostrerai alla polizia se lo chiede.",
+      "GuestRegister": "CasaZen prepara il registro degli ospiti da scaricare e stampare, con una colonna per la firma; lo conservi tu e lo mostri alla polizia se lo chiede.",
       "InformationOnly": "Ti dice cosa chiede il cantone: non invia nulla."
     },
     "toVerify": "Da verificare con il comune o la polizia"
@@ -16568,6 +16579,9 @@
       "domainVerified": "Il tuo dominio è stato verificato: ora è attivo.",
       "ownerLoginFailed": "L'accesso dei proprietari sul tuo dominio non si è attivato: riprova dalle impostazioni del dominio.",
       "ownerLoginReady": "L'accesso dei proprietari sul tuo dominio è attivo.",
+      "swissNotificationDeclared": "Qualcuno del tuo team ha aggiornato la notifica all'autorità di un arrivo.",
+      "swissNotificationDue": "Gli ospiti di un arrivo vanno notificati all'autorità del cantone entro la scadenza.",
+      "swissNotificationOverdue": "La scadenza per notificare all'autorità del cantone gli ospiti di un arrivo è passata.",
       "ticinoNotificationDeclared": "Qualcuno del tuo team ha aggiornato la notifica alla polizia di un arrivo in Ticino.",
       "ticinoNotificationDue": "Gli ospiti di un arrivo in Ticino vanno notificati alla polizia cantonale entro 24 ore.",
       "ticinoNotificationOverdue": "Sono passate le 24 ore per notificare alla polizia cantonale gli ospiti di un arrivo in Ticino."
@@ -31577,6 +31591,140 @@
     "warnings": {
       "group_sheet_incomplete": "Nella scheda di un gruppo manca il nome o la nazionalità di un componente: completa i dati degli ospiti.",
       "parental_authorization_needed": "Ci sono minorenni senza un adulto: serve l'autorizzazione scritta dei genitori, da conservare per 5 anni (aggiungila all'ultimo passo). Se manca, avvisa subito la polizia."
+    }
+  },
+  "swissNotification": {
+    "actions": {
+      "next": "Avanti"
+    },
+    "canton": {
+      "title": "Cosa chiede il cantone",
+      "titleFor": "Cosa chiede il cantone {{canton}}"
+    },
+    "card": {
+      "open": "Apri la notifica degli ospiti"
+    },
+    "certainty": {
+      "Partial": "Le fonti non sono tutte ufficiali o non dicono tutto. Verifica con il comune o la polizia: CasaZen non dà consulenza legale.",
+      "Unverified": "Non abbiamo trovato una fonte ufficiale per questo cantone. Verifica con il comune o la polizia: CasaZen non dà consulenza legale.",
+      "Verified": "Letto sulle fonti ufficiali. In caso di dubbio verifica con il comune o la polizia: CasaZen non dà consulenza legale."
+    },
+    "copy": {
+      "all": "Copia tutto",
+      "allFor": "Copia tutti i dati: {{name}}",
+      "done": "Copiato.",
+      "failed": "Non riesco a copiare: seleziona il testo e copialo a mano.",
+      "fieldFor": "Copia {{field}}: {{name}}"
+    },
+    "day": {
+      "declared": "Già notificato il {{when}} da {{who}}.",
+      "declaredAnonymous": "Già notificato il {{when}}.",
+      "declaredBare": "Già notificato.",
+      "due": "Da notificare entro {{when}}.",
+      "future": "Questo giorno non è ancora iniziato: potrai dichiarare la notifica dal giorno dell'arrivo.",
+      "noDeadline": "Scadenza non nota: le fonti non ne indicano una. Notifica appena puoi e verifica con il comune o la polizia.",
+      "none": "Nessun arrivo in questo giorno.",
+      "otherDays": "Altri giorni da notificare:",
+      "overdue": "La scadenza per notificare questo giorno è passata ({{when}}): notifica appena puoi.",
+      "title": "Arrivi di {{day}}"
+    },
+    "declare": {
+      "action": "Ho notificato",
+      "alreadyDone": "Il giorno risultava già dichiarato come notificato.",
+      "body": "Quando hai notificato gli ospiti sul portale, dillo qui: il giorno esce dagli adempimenti e chi lavora con te lo vede subito.",
+      "done": "Fatto: il giorno è dichiarato come notificato.",
+      "failed": "Impossibile registrare la notifica. Riprova.",
+      "needsSubmit": "Dichiarare la notifica spetta a chi può inviare le comunicazioni alle autorità: chiedilo a chi gestisce la struttura.",
+      "notYet": "Non l'hai ancora fatto? Torna al passo «Apri il portale».",
+      "undo": "Non l'ho notificato: riapri il giorno",
+      "undoFailed": "Impossibile annullare la dichiarazione. Riprova.",
+      "undone": "Dichiarazione annullata."
+    },
+    "documentType": {
+      "identityCard": "Carta d'identità",
+      "other": "Altro",
+      "passport": "Passaporto"
+    },
+    "duty": {
+      "Ask": "Le fonti non dicono con certezza se questa notifica vale per chi affitta una casa privata: decidi tu. Puoi cambiare la risposta nella scheda dell'immobile.",
+      "NotRequired": "Hai risposto che per questa struttura non devi notificare: il giorno non compare tra gli adempimenti. Puoi comunque preparare qui i dati."
+    },
+    "field": {
+      "arrival": "Arrivo",
+      "birthDate": "Data di nascita",
+      "city": "Località",
+      "departure": "Partenza",
+      "documentNumber": "Numero del documento",
+      "documentType": "Tipo di documento",
+      "firstName": "Nome",
+      "lastName": "Cognome",
+      "nationality": "Nazionalità",
+      "nationalityCode": "Nazionalità (codice)",
+      "placeOfBirth": "Luogo di nascita",
+      "plate": "Targa",
+      "postalCode": "CAP",
+      "residenceCountryCode": "Paese di residenza (codice)",
+      "street": "Indirizzo"
+    },
+    "guests": {
+      "intro": "Copia i dati di ogni ospite sul portale del cantone: un pulsante per ogni campo e uno per ogni ospite.",
+      "none": "Per questo giorno non ci sono ancora ospiti con i dati del check-in.",
+      "unnamed": "Ospite {{number}}"
+    },
+    "issues": {
+      "body": "Completa i dati qui (o chiedi all'ospite di completare il check-in): l'elenco si aggiorna. Se non è possibile, inserisci quei dati a mano sul portale.",
+      "complete": "Completa i dati",
+      "completeFor": "Completa i dati: {{name}}",
+      "missing": {
+        "birthDate": "data di nascita",
+        "documentType": "tipo di documento",
+        "firstName": "nome",
+        "guests": "dati di tutti gli ospiti della prenotazione",
+        "lastName": "cognome",
+        "nationality": "nazionalità"
+      },
+      "openBooking": "Apri la prenotazione",
+      "openBookingFor": "Apri la prenotazione: {{name}}",
+      "title_one": "Manca qualcosa a {{count}} ospite",
+      "title_other": "Manca qualcosa a {{count}} ospiti"
+    },
+    "layer": {
+      "forbidden": "Non hai il permesso di vedere gli ospiti di questa struttura.",
+      "intro": "In alcuni cantoni gli ospiti vanno notificati a un'autorità, di solito sul suo portale. CasaZen prepara i dati da copiare e ti ricorda la scadenza: la notifica la fai tu.",
+      "later": "Continua più tardi",
+      "loadFailed": "Impossibile caricare la notifica.",
+      "loading": "Caricamento della notifica…",
+      "notApplicable": "Per questa struttura la notifica assistita non si applica: il suo cantone chiede solo di tenere un registro, oppure ha un percorso suo (come il Ticino), oppure non sappiamo ancora in quale comune si trova.",
+      "notFound": "Non troviamo questa struttura, oppure non hai accesso.",
+      "refreshFailed": "Non riusciamo ad aggiornare questo giorno: quello che vedi è l'ultima lettura.",
+      "steps": "Passi della notifica",
+      "title": "Notifica degli ospiti",
+      "titleFor": "Notifica degli ospiti: {{property}}",
+      "unavailable": "La notifica assistita non è attiva."
+    },
+    "portal": {
+      "body": "Apri il portale, incolla i dati degli ospiti che hai copiato e conferma. Poi torna qui a dire che l'hai fatto.",
+      "newTab": "si apre in una nuova scheda",
+      "next": "Ho finito: vai all'ultimo passo",
+      "none": "Questo cantone non ha un portale da aprire da qui: segui il modo indicato sopra.",
+      "open": "Apri il portale ufficiale ({{host}})",
+      "privacy": "CasaZen non accede al portale e non conosce le tue credenziali: la notifica la fai tu."
+    },
+    "steps": {
+      "declare": {
+        "title": "Ho notificato"
+      },
+      "guests": {
+        "title": "Ospiti"
+      },
+      "portal": {
+        "title": "Apri il portale"
+      },
+      "state": {
+        "attention": "Da completare",
+        "done": "Fatto",
+        "todo": "Da fare"
+      }
     }
   },
   "swissPlace": {
