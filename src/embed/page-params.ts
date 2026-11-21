@@ -19,6 +19,7 @@ const WHERE = /^[\w.~-]{1,100}$/;
 const UTM_NAME = /^utm_(source|medium|campaign|term|content)$/;
 const UTM_VALUE = /^[\w.-]{1,80}$/;
 const GUESTS = /^[1-9]\d?$/;
+const CHILDREN = /^\d{1,2}$/;
 const DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
 /** The slug of an org or of a property, or `''` when `value` is not one. */
@@ -99,6 +100,7 @@ interface OwnStay {
  * The parameters of the PAGE that go on to the frame: `checkin` and `checkout` (a real pair, the departure after the arrival), `guests` (1 to 99), `where`
  * (the destination the search bar chose) and the `utm_*` of the campaign. An attribute of the widget wins over the page for the dates and the guests.
  * Whatever else the address holds (a code, a token, an address of e-mail) never goes: only what is named here, and only when it fits its pattern.
+ * The state of the frame that an address asks to come back to (`?cz=`) is held to the same patterns (`readFrameState`).
  */
 export function frameQuery(search: string, own: OwnStay): URLSearchParams {
   const page = new URLSearchParams(search);
@@ -134,15 +136,48 @@ export function isFrameState(widget: string, path: string, query: string): boole
 }
 
 /**
+ * Whether a parameter of a restored state may go on to the frame: one a frame keeps in its address (the stay, the place, the five `utm_*`), with a value that
+ * fits what it is (the same patterns `frameQuery` asks of the parameters of the page). A switch, not a table: a name like `constructor` is no key of anything.
+ */
+function fitsRestored(name: string, value: string): boolean {
+  switch (name) {
+    case 'checkin':
+    case 'checkout':
+      return isDate(value);
+    case 'guests':
+      return GUESTS.test(value);
+    case 'children':
+      return CHILDREN.test(value);
+    case 'pets':
+      return value === '1';
+    case 'where':
+      return WHERE.test(value);
+    default:
+      return UTM_NAME.test(name) && UTM_VALUE.test(value);
+  }
+}
+
+/** The query of a restored state as it may go on to the frame: only the parameters that fit (see `fitsRestored`), written again, so no `%`-escape of the address survives. */
+function restoredQuery(query: string): string {
+  const kept = new URLSearchParams();
+  for (const [name, value] of new URLSearchParams(query)) {
+    if (fitsRestored(name, value)) kept.set(name, value);
+  }
+  return kept.toString();
+}
+
+/**
  * The state of the frame an address (`?cz=<path>?<query>`) asks to come back to, or null when there is none or it is not one of the widget's: a path of
  * another site, a `javascript:` value, a query with anything but safe characters. Only read when the widget asked to keep its state in the address.
+ * The address is written by anybody, so the query is not taken as it stands: what a frame keeps there comes back, each parameter with the pattern its value
+ * must fit, and nothing else (a code, a token, an address of e-mail or a phone number in a link never goes on to the frame through here either).
  */
 export function readFrameState(widget: string, search: string): { path: string; query: string } | null {
   const value = new URLSearchParams(search).get('cz') ?? '';
   const at = value.indexOf('?');
   const path = at < 0 ? value : value.slice(0, at);
   const query = at < 0 ? '' : value.slice(at + 1);
-  return isFrameState(widget, path, query) ? { path, query } : null;
+  return isFrameState(widget, path, query) ? { path, query: restoredQuery(query) } : null;
 }
 
 /** `search` of the page with `cz` set to the state of the frame (the rest of the query stays as it was). */

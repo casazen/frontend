@@ -878,6 +878,56 @@ describe('the state of the frame in the address (AC6)', () => {
     expect(query.get('guests')).toBe('3');
   });
 
+  it('embedLoader_syncUrl_ARestoredQuery_CarriesOnlyTheStayThePlaceAndTheCampaign', async () => {
+    const restored =
+      '/property/casa-mare?email=a%40b.it&code=ABCDE-FGHIJ&token=secret&phone=3331234567&name=Mario&bookingcode=X1&constructor=1&other=1' +
+      '&checkin=2026-12-01&checkout=2026-12-04&guests=3&children=1&pets=1&where=lugano&utm_source=newsletter';
+    window.history.replaceState(null, '', `/prenota/?cz=${encodeURIComponent(restored)}`);
+    const element = widget('booking', { 'sync-url': 'true' });
+    await loadLoader();
+    const frame = new URL(frameOf(element).src);
+
+    // The state is restored (its page is the frame's), and only what a frame keeps in its address comes with it.
+    expect(frame.pathname).toBe('/embed/property/casa-mare');
+    expect(Object.fromEntries(frame.searchParams)).toEqual({
+      lang: 'it',
+      parent: PAGE_ORIGIN,
+      v: '1',
+      checkin: '2026-12-01',
+      checkout: '2026-12-04',
+      guests: '3',
+      children: '1',
+      pets: '1',
+      where: 'lugano',
+      utm_source: 'newsletter',
+    });
+    // Nothing of what a link carried that is personal or a credential: not as a name, not as an escape.
+    expect(frameOf(element).src).not.toMatch(/email|code|token|phone|name|%40|ABCDE|secret|3331234567|Mario/);
+  });
+
+  it.each([
+    ['an address of e-mail as a campaign', 'utm_campaign=guest%40example.com'],
+    ['a campaign with a space', 'utm_medium=a%20b'],
+    ['a campaign over 80 characters', `utm_term=${'x'.repeat(81)}`],
+    ['a utm_ that is not one of the five', 'utm_other=x'],
+    ['guests over 99', 'guests=999'],
+    ['guests that are not a number', 'guests=abc'],
+    ['children over 99', 'children=100'],
+    ['pets that are not 1', 'pets=yes'],
+    ['a date that does not exist', 'checkin=2026-02-30&checkout=2026-13-05'],
+    ['a place that is a tag', 'where=%3Cb%3E'],
+    ['a place with a slash', 'where=a%2Fb'],
+  ])('embedLoader_syncUrl_ARestoredValueThatDoesNotFit_%s_IsDropped', async (_label, query) => {
+    window.history.replaceState(null, '', `/prenota/?cz=${encodeURIComponent(`/property/casa-mare?${query}`)}`);
+    const element = widget('booking', { 'sync-url': 'true' });
+    await loadLoader();
+    const frame = new URL(frameOf(element).src);
+
+    // The state itself is the widget's (its page is restored), but none of its parameters fit: only the parameters of the frame itself remain.
+    expect(frame.pathname).toBe('/embed/property/casa-mare');
+    expect([...frame.searchParams.keys()].sort()).toEqual(['lang', 'parent', 'v']);
+  });
+
   it.each([
     ['a page of the app', '/admin'],
     ['a path that climbs', '/property/../../admin'],
