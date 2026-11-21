@@ -81,6 +81,8 @@ const OF_THE_REGIMES = [
   'compliance.activation.blockerCodes.swiss_municipality_missing',
   'compliance.activation.blockerCodes.ticino_structure_id_missing',
   'compliance.activation.backToStep',
+  'propertyWizard.done.open.guest-registration',
+  'propertyWizard.done.fix.guest-registration',
   'apiErrors.codes.guestRegistrationCountryNotSupported',
   'apiErrors.codes.guestRegistrationOverrideNotApplicable',
 ];

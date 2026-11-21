@@ -314,6 +314,8 @@ describe('keys used in code', () => {
         `onboardingPlan.reasons.property.${code}`,
       ]),
       'onboardingPlan.reasons.no_swiss_property',
+      // The screen at the end of «Aggiungi immobile» says each open step in words, and what to do about it: the step of Switzerland is one of them.
+      ...['base-data', 'cin', 'documents', 'safety', 'guest-registration'].flatMap((s) => [`propertyWizard.done.open.${s}`, `propertyWizard.done.fix.${s}`]),
       'guestRegistration.retention.years_one',
       'guestRegistration.retention.years_other',
       'apiErrors.codes.guestRegistrationCountryNotSupported',

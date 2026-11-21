@@ -22686,6 +22686,7 @@
         "base-data": "Complete the details",
         "cin": "Add the CIN",
         "documents": "Upload the documents",
+        "guest-registration": "Complete the guest notification",
         "safety": "Fill in the safety sheet"
       },
       "fixLabel": "What to fix",
@@ -22699,6 +22700,7 @@
         "base-data": "The nightly rate and the basic data",
         "cin": "The CIN code",
         "documents": "The documents required in your region",
+        "guest-registration": "The municipality and, in Ticino, the structure number to notify the guests",
         "safety": "The safety sheet"
       },
       "readyDescription": "Guests can book from your site.",

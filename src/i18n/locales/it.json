@@ -22686,6 +22686,7 @@
         "base-data": "Completa i dati",
         "cin": "Aggiungi il CIN",
         "documents": "Carica i documenti",
+        "guest-registration": "Completa la notifica degli ospiti",
         "safety": "Compila la scheda di sicurezza"
       },
       "fixLabel": "Cosa sistemare",
@@ -22699,6 +22700,7 @@
         "base-data": "Il prezzo per notte e i dati di base",
         "cin": "Il codice CIN",
         "documents": "I documenti richiesti per la tua regione",
+        "guest-registration": "Il comune e, in Ticino, il numero della struttura per notificare gli ospiti",
         "safety": "La scheda di sicurezza"
       },
       "readyDescription": "Gli ospiti possono prenotare dal tuo sito.",

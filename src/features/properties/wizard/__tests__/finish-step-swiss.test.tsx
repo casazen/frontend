@@ -11,6 +11,7 @@ import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { PROPERTY_ID, card } from '@/features/properties/components/__tests__/guest-registration-fixtures';
 import * as properties from '@/queries/use-properties';
+import type { ComplianceActivationResult } from '@/types/compliance.types';
 import { FinishStep } from '../steps/finish-step';
 import type { PropertyWizardValues } from '../property-wizard-model';
 
@@ -26,7 +27,23 @@ vi.mock('../finish/activation-section', () => ({ ActivationSection: () => null }
 
 type Hook<T extends (...args: never[]) => unknown> = ReturnType<T>;
 
-function renderStep(country: 'CH' | 'IT', regimes: boolean) {
+/** The activation of a Swiss property as the server says it: the step of the notification is open and lists what the property lacks. */
+function swissActivation(missing: string[]): ComplianceActivationResult {
+  return {
+    complianceStatus: 'Pending',
+    steps: [
+      {
+        id: 'guest-registration',
+        label: 'Notifica degli ospiti',
+        status: 'pending',
+        blocker: true,
+        blockers: missing.map((code) => ({ step: 'guest-registration', code, message: '' })),
+      },
+    ],
+  };
+}
+
+function renderStep(country: 'CH' | 'IT', regimes: boolean, activation?: ComplianceActivationResult) {
   vi.mocked(properties.useProperty).mockReturnValue({ data: { id: PROPERTY_ID, country, cinCode: null }, isLoading: false, isError: false } as unknown as Hook<typeof properties.useProperty>);
   const form = { watch: () => [] } as unknown as UseFormReturn<PropertyWizardValues>;
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
@@ -38,7 +55,7 @@ function renderStep(country: 'CH' | 'IT', regimes: boolean) {
             <FinishStep
               form={form}
               propertyId={PROPERTY_ID}
-              activation={undefined}
+              activation={activation}
               activationFailed={false}
               onRetryActivation={vi.fn()}
               refused={null}
@@ -85,6 +102,26 @@ describe('FinishStep, the notification of the guests in the last step of «Aggiu
     expect(screen.getByText(i18n.t('property.swissRegistration.title'))).toBeInTheDocument();
     expect(screen.queryByTestId('guest-registration-card')).not.toBeInTheDocument();
     expect(guestRegistrationApi.get).not.toHaveBeenCalled();
+  });
+
+  // What a Swiss property lacks blocks its activation whatever the flag says (the readiness is not behind it): the host can fix it here, and «Correggi» has a place to go.
+  it('FinishStep_SwissPropertyWithTheRegimesOff_ListsWhatItLacksAndAsksTheStructureNumberHere', async () => {
+    renderStep('CH', false, swissActivation(['ticino_structure_id_missing']));
+
+    expect(await screen.findByTestId('ticino-structure-id-form')).toBeInTheDocument();
+    expect(screen.getByTestId('guest-registration-missing')).toHaveTextContent(i18n.t('guestRegistration.missing.ticino_structure_id_missing'));
+    // The guidance it always was is still there, nothing is asked of the regimes, and the place «Correggi» leads to exists.
+    expect(screen.getByText(i18n.t('property.swissRegistration.title'))).toBeInTheDocument();
+    expect(guestRegistrationApi.get).not.toHaveBeenCalled();
+    expect(document.getElementById('property-wizard-section-guest-registration')).toBe(screen.getByTestId('property-wizard-swiss'));
+  });
+
+  it('FinishStep_SwissPropertyWithTheRegimesOff_NothingMissing_HasNoListOfWhatIsMissing', () => {
+    vi.mocked(properties.usePropertyDetail).mockReturnValue({ data: { id: PROPERTY_ID, isInTicino: false }, isLoading: false, isError: false, refetch: vi.fn() } as unknown as Hook<typeof properties.usePropertyDetail>);
+    renderStep('CH', false, swissActivation([]));
+
+    expect(screen.queryByTestId('guest-registration-missing')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('ticino-structure-id-form')).not.toBeInTheDocument();
   });
 
   it('FinishStep_PropertyInItaly_StaysTheCinSectionWhateverTheFlagSays', () => {
