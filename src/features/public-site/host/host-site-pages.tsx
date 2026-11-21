@@ -1,10 +1,12 @@
 import { useEffect } from 'react';
-import { Link, useLocation, useParams } from 'react-router-dom';
+import { Link, Navigate, useLocation, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { getPublicSiteOrigin } from '@/config/public-site';
+import { ownerPortalPaths } from '@/features/owner-portal/paths';
+import { useAuth } from '@/hooks/use-auth';
 import { getHostSite } from '@/lib/host-site';
 import { useSeoMeta } from '@/lib/seo-meta';
 import { useCheckInContext } from '@/queries/use-checkin';
@@ -96,6 +98,16 @@ export function HostCheckInGuard({ children }: { children: ReactNode }) {
   const linkSlug = context?.privacyNoticeOrgSlug?.toLowerCase();
   const ofAnotherAgency = Boolean(linkSlug) && linkSlug !== hostSite?.slug.toLowerCase();
   return hostSite && !ofAnotherAgency ? <>{children}</> : <HostSiteNotFoundPage />;
+}
+
+/**
+ * The protected owner portal on an org's own host: the visitor who is not signed in goes to the sign-in page of this domain, never to `/login`, which is «not found» on a host. A person
+ * who is signed in, or whose session is still being checked, gets the portal as it is (its own route shows the loading state).
+ */
+export function HostOwnerPortalGate({ children }: { children: ReactNode }) {
+  const { isLoading, isAuthenticated } = useAuth();
+
+  return !isLoading && !isAuthenticated ? <Navigate to={ownerPortalPaths.signIn} replace /> : <>{children}</>;
 }
 
 /**

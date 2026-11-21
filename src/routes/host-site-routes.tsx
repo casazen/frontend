@@ -1,5 +1,14 @@
 import type { RouteObject } from 'react-router-dom';
-import { HostCheckInGuard, HostLegalRedirect, HostOrgGuard, HostSiteNotFoundPage } from '@/features/public-site/host/host-site-pages';
+import { OwnerHostLoginPage } from '@/features/owner-portal/owner-host-login-page';
+import { OwnerLoginNotEnabledPage } from '@/features/owner-portal/owner-login-not-enabled-page';
+import { ownerPortalPaths } from '@/features/owner-portal/paths';
+import {
+  HostCheckInGuard,
+  HostLegalRedirect,
+  HostOrgGuard,
+  HostOwnerPortalGate,
+  HostSiteNotFoundPage,
+} from '@/features/public-site/host/host-site-pages';
 import { HostSurfaceFrame } from '@/features/public-site/host/host-surface-frame';
 import { LEGAL_DOCUMENT_PATHS, LEGAL_INDEX_PATH, LEGAL_SUBPROCESSORS_PATH } from '@/features/legal/legal-paths';
 import { getHostSite, isHostSurfaceOn, type HostSite } from '@/lib/host-site';
@@ -27,9 +36,29 @@ function checkInRoute(appRoutes: RouteObject[]): RouteObject {
   return { ...route, element: <HostCheckInGuard>{route.element}</HostCheckInGuard> };
 }
 
-/** The owner portal on an org's own host (NF-140): the very routes of the app (the layout that holds the Auth boundary and its children, `ownerPortalRoutes`). */
-function ownerPortalRoute(appRoutes: RouteObject[]): RouteObject {
-  return findAppRoute(appRoutes, 'the owner portal', (candidate) => candidate.children === ownerPortalRoutes);
+/**
+ * The owner portal on an org's own host (NF-140, NF-141) when its domain is registered with the sign-in service: the very routes of the app (the layout that holds the Auth boundary and
+ * its children, `ownerPortalRoutes`), with two differences that a host needs. The sign-in page is the one of the domain (`OwnerHostLoginPage`: it returns to this domain, to
+ * `/portale-proprietari`), and a visitor who is not signed in goes there from the protected portal instead of to `/login`, which is «not found» on a host.
+ */
+function ownerPortalHostRoute(appRoutes: RouteObject[]): RouteObject {
+  const layout = findAppRoute(appRoutes, 'the owner portal', (candidate) => candidate.children === ownerPortalRoutes);
+  return {
+    element: layout.element,
+    children: ownerPortalRoutes.map((route) => {
+      if (route.path === ownerPortalPaths.signIn) return { ...route, element: <OwnerHostLoginPage /> };
+      if (route.path === ownerPortalPaths.home) return { ...route, element: <HostOwnerPortalGate>{route.element}</HostOwnerPortalGate> };
+      return route;
+    }),
+  };
+}
+
+/**
+ * The owner portal on an org's own host whose domain is NOT yet registered with the sign-in service: every address of the portal is one page that says the access is not active yet.
+ * No sign-in boundary here: the boundary reloads a page that needs the sign-in, and on such a host nothing mounts it.
+ */
+function ownerPortalNotEnabledRoute(): RouteObject {
+  return { path: `${ownerPortalPaths.home}/*`, element: <OwnerLoginNotEnabledPage /> };
 }
 
 /**
@@ -41,7 +70,8 @@ function ownerPortalRoute(appRoutes: RouteObject[]): RouteObject {
  * an address is "not found".
  *
  * Two surfaces more, each only when `resolve-host` says it is on for this host (`site.surfaces`, NF-140; a host that says nothing serves what it always served), both inside the frame of the
- * agency (`HostSurfaceFrame`: its logo, name and colours): the guest check-in `/checkin/:token` (guest area) and the owner portal `/portale-proprietari/…` (owner portal). Everything else that belongs to the
+ * agency (`HostSurfaceFrame`: its logo, name and colours): the guest check-in `/checkin/:token` (guest area) and the owner portal `/portale-proprietari/…` (owner portal). With the
+ * owner surface on but the domain not registered with the sign-in service (`site.ownerLoginReady`) the whole portal is one «not yet enabled» page. Everything else that belongs to the
  * host console stays «not found» on the host with every surface on: `/app/*`, `/login`, `/register`, `/search`, the door of a property `/checkin/porta/:doorToken`, the supplier pages and the
  * `/book/…` of another org. `/my-bookings` is part of the booking site and is served whatever the surfaces say.
  *
@@ -53,7 +83,9 @@ export function buildHostSiteRoutes(appRoutes: RouteObject[], site: HostSite | n
 
   const surfaces: RouteObject[] = [];
   if (isHostSurfaceOn(site, 'guestArea')) surfaces.push(checkInRoute(appRoutes));
-  if (isHostSurfaceOn(site, 'ownerPortal')) surfaces.push(ownerPortalRoute(appRoutes));
+  if (isHostSurfaceOn(site, 'ownerPortal')) {
+    surfaces.push(site?.ownerLoginReady === true ? ownerPortalHostRoute(appRoutes) : ownerPortalNotEnabledRoute());
+  }
 
   return [
     { ...orgSite, element: <HostOrgGuard>{orgSite.element}</HostOrgGuard> },

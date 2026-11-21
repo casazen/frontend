@@ -20198,6 +20198,12 @@
         "upcoming": "Not in force yet"
       }
     },
+    "hostLogin": {
+      "button": "Sign in",
+      "description": "Sign in with your account to see your properties, statements and messages from the agency.",
+      "redirecting": "Taking you to the sign-in page…",
+      "title": "Owner area"
+    },
     "inbox": {
       "description": "Write to the agency and find your conversations about a property, a stay, a document or a statement. Notification e-mails never contain the text of the messages.",
       "empty": "There are no conversations with the agency yet.",
@@ -20307,6 +20313,11 @@
       "total": "Total",
       "xml": "Download the XML",
       "xmlAria": "Download the XML of {{title}}"
+    },
+    "notEnabled": {
+      "description": "Owner access on this site is not active yet. When it is, you will be able to sign in from this page. For information, contact {{name}}.",
+      "home": "Back to the site",
+      "title": "Owner access not active yet"
     },
     "properties": {
       "backToDashboard": "Back to the overview",

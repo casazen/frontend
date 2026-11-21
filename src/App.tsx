@@ -15,7 +15,7 @@ import {
   setApiOnboardingRequiredHandler,
 } from '@/lib/axios';
 import { openOnboardingAfterGate } from '@/lib/onboarding-gate';
-import { isPublicUnauthenticatedPath, isSecureAuth0Origin } from '@/lib/secure-origin';
+import { hostNeedsAuth, isPublicUnauthenticatedPath, isSecureAuth0Origin } from '@/lib/secure-origin';
 import { safeReturnTo } from '@/lib/auth-return-to';
 import { recordLandingTouch } from '@/lib/signup-attribution';
 import { stashOwnerInvitationToken } from '@/lib/owner-invitation';
@@ -97,8 +97,10 @@ function handleAuthRedirect(appState?: { returnTo?: unknown; supplierClaim?: unk
 
 function App() {
   const pathname = window.location.pathname;
-  // An org's own host (BK-16) only ever shows the org's public booking site, whatever the clean address looks like.
-  const publicPath = getHostSite() !== null || isPublicUnauthenticatedPath(pathname);
+  const hostSite = getHostSite();
+  // An org's own host (BK-16) only ever shows the org's public booking site, whatever the clean address looks like, and never loads the sign-in service: except the owner portal of a host
+  // that is registered with it, and the address the sign-in comes back to (E40/F02/US01/T02, NF-141; `hostNeedsAuth`).
+  const publicPath = hostSite !== null ? !hostNeedsAuth(hostSite, pathname, window.location.search) : isPublicUnauthenticatedPath(pathname);
   const secureOrigin = isSecureAuth0Origin();
 
   useEffect(() => {

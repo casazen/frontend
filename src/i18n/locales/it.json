@@ -20198,6 +20198,12 @@
         "upcoming": "Non ancora in vigore"
       }
     },
+    "hostLogin": {
+      "button": "Accedi",
+      "description": "Accedi con il tuo account per vedere i tuoi immobili, i rendiconti e i messaggi dell’agenzia.",
+      "redirecting": "Ti stiamo portando alla pagina di accesso…",
+      "title": "Area proprietari"
+    },
     "inbox": {
       "description": "Scrivi all’agenzia e ritrova le conversazioni su un immobile, un soggiorno, un documento o un rendiconto. Le e-mail di avviso non contengono mai il testo dei messaggi.",
       "empty": "Non ci sono ancora conversazioni con l’agenzia.",
@@ -20307,6 +20313,11 @@
       "total": "Totale",
       "xml": "Scarica l’XML",
       "xmlAria": "Scarica l’XML di {{title}}"
+    },
+    "notEnabled": {
+      "description": "L’accesso proprietari su questo sito non è ancora attivo. Quando lo sarà, potrai entrare da questa pagina. Per informazioni contatta {{name}}.",
+      "home": "Torna al sito",
+      "title": "Accesso proprietari non ancora attivo"
     },
     "properties": {
       "backToDashboard": "Torna alla panoramica",

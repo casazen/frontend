@@ -156,6 +156,7 @@ const BRANDED_LOOK = {
 };
 
 const GUEST_ONLY: HostSite = { ...HOST_SITE, surfaces: { guestArea: true, ownerPortal: false }, branding: BRANDED_LOOK };
+const OWNER_NOT_READY: HostSite = { ...HOST_SITE, surfaces: { guestArea: false, ownerPortal: true }, branding: BRANDED_LOOK };
 const EVERY_SURFACE: HostSite = { ...HOST_SITE, surfaces: { guestArea: true, ownerPortal: true }, ownerLoginReady: true, branding: BRANDED_LOOK };
 
 describe('guest check-in and owner portal on an org own host (NF-140)', () => {
@@ -218,6 +219,7 @@ describe('guest check-in and owner portal on an org own host (NF-140)', () => {
 
       expect(await screen.findByTestId('host-site-page-not-found')).toBeInTheDocument();
       expect(screen.queryByTestId('host-surface-frame')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('owner-login-not-enabled')).not.toBeInTheDocument();
     },
   );
 
@@ -226,6 +228,17 @@ describe('guest check-in and owner portal on an org own host (NF-140)', () => {
 
     expect(await screen.findByTestId('host-site-page-not-found')).toBeInTheDocument();
   });
+
+  it.each(['/portale-proprietari/accedi', '/portale-proprietari/invito', '/portale-proprietari/contatto', '/portale-proprietari', '/portale-proprietari/contabilita'])(
+    'OwnerPortalRoute_SurfaceOnButDomainNotRegistered_%s_IsTheNotEnabledPageInTheFrame',
+    async (path) => {
+      renderHostSite(path, OWNER_NOT_READY);
+
+      const frame = await screen.findByTestId('host-surface-frame');
+      expect(within(frame).getByTestId('owner-login-not-enabled')).toBeInTheDocument();
+      expect(screen.queryByTestId('host-site-page-not-found')).not.toBeInTheDocument();
+    },
+  );
 
   it.each([
     '/app/short-rent/bookings',
@@ -277,6 +290,7 @@ describe('guest check-in and owner portal on an org own host (NF-140)', () => {
     const orgSiteOnly = appRoutes.filter((route) => route.path === '/book/:orgSlug');
 
     expect(() => buildHostSiteRoutes(orgSiteOnly, GUEST_ONLY)).toThrow(/check-in/);
+    expect(() => buildHostSiteRoutes(orgSiteOnly, OWNER_NOT_READY)).not.toThrow();
     expect(() => buildHostSiteRoutes(orgSiteOnly, EVERY_SURFACE)).toThrow();
   });
 });
