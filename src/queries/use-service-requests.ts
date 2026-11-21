@@ -77,6 +77,11 @@ function onSupplierActionError(queryClient: QueryClient, error: unknown) {
  * Short-rent requests (D2): `bookingId` for one stay, `propertyId` for a property, `listAll` for every request in
  * scope. Nothing is fetched without one of them.
  */
+/**
+ * Stay or property short-rent requests. Read again when the page opens: the host creates them in the
+ * intervention wizard (another screen) and the shared client keeps `refetchOnMount: false`, so without
+ * this the stay card would keep an empty list after the wizard returns (GJ L3 pay-at-property).
+ */
 export function useServiceRequests(params?: {
   propertyId?: string;
   bookingId?: string;
@@ -89,6 +94,7 @@ export function useServiceRequests(params?: {
     queryKey: [SERVICE_REQUESTS_KEY, params],
     queryFn: () => fetchServiceRequests(params),
     enabled: !!params?.listAll || !!params?.propertyId || !!params?.bookingId,
+    refetchOnMount: 'always',
   });
 }
 

@@ -213,7 +213,11 @@ async function runGoldenJourney(browser: Browser, stack: StackEnv, request: impo
       await expect(host.getByTestId('wizard-done-primary')).toHaveAttribute('href', `/app/short-rent/interventions/${ids.serviceRequestId}`);
       await host.getByTestId('wizard-done-secondary').click();
       await expect(host).toHaveURL(new RegExp(stayPath + '$'));
-      await expect(host.getByTestId(`service-request-${ids.serviceRequestId}`)).toContainText('In attesa che il fornitore accetti o rifiuti.');
+      // The stay card refetches on mount after the wizard; wait for the new request like marketplace-l3.
+      await expect(host.getByTestId(`service-request-${ids.serviceRequestId}`)).toContainText(
+        'In attesa che il fornitore accetti o rifiuti.',
+        { timeout: 30_000 },
+      );
     });
 
     await step('F1: supplier (phone) takes the request in charge from the inbox', async () => {
