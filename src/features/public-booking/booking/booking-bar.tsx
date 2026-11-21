@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { WifiOff } from 'lucide-react';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
+import { useEmbed } from '@/features/embed/embed-context';
 import { FROM_DESKTOP_QUERY, useMediaQuery } from '@/hooks/use-media-query';
 import { usePortalRootProps } from '@/features/public-site/site-appearance-context';
 import { formatPrice, formatStayRange } from '@/features/public-site/stay/stay-format';
@@ -18,10 +19,14 @@ import '@/features/public-booking/booking/booking.css';
  * «da … / notte»), the dates, and «Prenota». The price opens a sheet with the same card, the calendar and the guests already open;
  * choosing there updates the bar behind it at once. From a desktop up there is no bar: the card is fixed beside the page. It sits under
  * the cookie banner (z-index in `booking.css`) and the page leaves room for it (`pb-24` of the shell), so it covers no content.
+ *
+ * It is never drawn inside the frame of an embeddable widget (NF-144): a bar fixed to the window of a frame as tall as its content would sit at the bottom of
+ * that content, far from the guest, and its sheet likewise. The card is in the flow of the page there, at every width.
  */
 export function BookingBar() {
   const { t, i18n } = useTranslation();
   const isDesktop = useMediaQuery(FROM_DESKTOP_QUERY);
+  const embed = useEmbed();
   const portal = usePortalRootProps();
   const model = useBooking();
   const [open, setOpen] = useState(false);
@@ -29,7 +34,7 @@ export function BookingBar() {
   const { quote, fromPriceCents, currency, stay, online, acceptsBookings, checkoutHref, property } = model;
   const locale = siteLocale(i18n.language);
 
-  if (isDesktop) return null;
+  if (isDesktop || embed) return null;
 
   const money = (cents: number) => formatPrice(cents, currency, locale);
   const ready = quote.status === 'ready' ? quote.quote : null;

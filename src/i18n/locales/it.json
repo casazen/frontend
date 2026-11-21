@@ -9405,6 +9405,14 @@
       "description": "Non troviamo il sito di prenotazione che questo widget dovrebbe mostrare.",
       "title": "Sito non trovato"
     },
+    "property": {
+      "backToResults": "Torna ai risultati",
+      "navLabel": "Navigazione della casa",
+      "notFound": {
+        "description": "Il link potrebbe essere vecchio o incompleto, oppure la casa non è più prenotabile online."
+      },
+      "openOnSite": "Apri sul sito"
+    },
     "title": "Prenota · {{name}}",
     "unavailable": {
       "description": "Questa funzione non è attiva per il sito, oppure l'indirizzo non è corretto.",

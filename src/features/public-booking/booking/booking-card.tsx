@@ -2,6 +2,8 @@ import { useId, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, CalendarCheck, Check, ChevronDown, Info, Lock, Mail, Receipt, WifiOff, Zap } from 'lucide-react';
+import { EmbedCheckoutLink } from '@/features/embed/embed-checkout-link';
+import { useEmbed } from '@/features/embed/embed-context';
 import { GuestsPicker } from '@/features/public-site/stay/guests-picker';
 import { StayCalendar } from '@/features/public-site/stay/stay-calendar';
 import { StaySheet } from '@/features/public-site/stay/stay-sheet';
@@ -209,6 +211,7 @@ function Messages() {
 /** «Prenota» when the quote of this stay is in; otherwise the one thing to do next. Never a button that leads to a wrong total. */
 function Cta({ onChoose }: { onChoose: (what: Exclude<OpenSheet, null>) => void }) {
   const { t } = useTranslation();
+  const embed = useEmbed();
   const { quote, online, acceptsBookings, checkoutHref, hostLabel, contactEmail } = useBooking();
   const base = 'public-site-cta pp-book__cta border-0';
 
@@ -241,11 +244,15 @@ function Cta({ onChoose }: { onChoose: (what: Exclude<OpenSheet, null>) => void 
 
   switch (quote.status) {
     case 'ready':
-      return checkoutHref ? (
+      if (!checkoutHref) return null;
+      // In the frame of an embeddable widget the way out is a link that takes the whole page to the checkout (a payment is never made inside a frame).
+      return embed ? (
+        <EmbedCheckoutLink className={base} />
+      ) : (
         <Link to={checkoutHref} className={base} data-testid="booking-cta">
           {t('propertyBooking.cta.book')}
         </Link>
-      ) : null;
+      );
     case 'loading':
       return (
         <button type="button" className={base} aria-disabled="true" aria-busy="true" data-testid="booking-cta">
