@@ -1,10 +1,12 @@
 import { useEffect, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { createMemoryRouter } from 'react-router-dom';
 import App from '@/App';
 import { publicCheckinApi } from '@/api/checkin.api';
 import i18n from '@/i18n/config';
+import axiosInstance from '@/lib/axios';
 import { setHostSite, type HostSite } from '@/lib/host-site';
 import { hostNeedsAuth } from '@/lib/secure-origin';
 import { getRouter } from '@/routes';
@@ -99,6 +101,11 @@ function openAt(url: string) {
 }
 
 const provider = () => screen.queryByTestId('auth0-provider');
+
+/** A read that the server refuses, as it does for the token of a person who is not an owner of this agency: the answer is a bare 403. */
+async function refusedRead(config: InternalAxiosRequestConfig): Promise<never> {
+  throw new AxiosError('Forbidden', 'ERR_BAD_REQUEST', config, undefined, { status: 403, statusText: 'Forbidden', headers: {}, config, data: '' });
+}
 
 describe('hostNeedsAuth (NF-141)', () => {
   it.each([
@@ -278,6 +285,25 @@ describe('App on the own domain of an agency (E40/F02/US01/T02, NF-141)', () => 
       expect(screen.queryByTestId('host-site-page-not-found')).not.toBeInTheDocument();
     },
   );
+
+  it('ready host: a 403 on a read of the portal opens the no-access page of the domain, which has the way out, and never «not found»', async () => {
+    // A signed-in person who is not an owner of this agency (or an owner of another one): the server refuses the read, the shared client tells the app, and `/app/no-access` does not exist on a host.
+    setHostSite(READY);
+    openAt('/portale-proprietari');
+    auth0.authenticated = true;
+    render(<App />);
+    expect(await screen.findByTestId('owner-portal-shell')).toBeInTheDocument();
+
+    await axiosInstance.get('/owner-portal/dashboard', { adapter: refusedRead }).catch(() => undefined);
+
+    expect(await screen.findByTestId('owner-host-no-access')).toBeInTheDocument();
+    expect(getRouter().state.location.pathname).toBe('/portale-proprietari/accesso-negato');
+    expect(screen.queryByTestId('host-site-page-not-found')).not.toBeInTheDocument();
+    expect(screen.getByTestId('host-surface-frame')).toContainElement(screen.getByTestId('owner-host-no-access'));
+    // The portal with its sign-out is gone by now: this page is the way out, and it brings the browser back to this domain.
+    fireEvent.click(screen.getByTestId('owner-host-no-access-sign-out'));
+    expect(auth0.logout).toHaveBeenCalledWith({ logoutParams: { returnTo: window.location.origin } });
+  });
 
   it.each(['/?code=abc&state=xyz', '/?error=access_denied&state=xyz'])(
     'ready host: the address the sign-in returns to (%s) mounts the sign-in service and completes the return',

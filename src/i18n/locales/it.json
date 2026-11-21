@@ -20314,6 +20314,12 @@
       "xml": "Scarica l’XML",
       "xmlAria": "Scarica l’XML di {{title}}"
     },
+    "noAccess": {
+      "description": "Hai effettuato l’accesso, ma questo account non è collegato come proprietario a {{name}}. Esci e accedi con l’account con cui hai ricevuto l’invito.",
+      "home": "Torna al sito",
+      "signOut": "Esci",
+      "title": "Questo account non ha accesso all’area proprietari"
+    },
     "notEnabled": {
       "description": "L’accesso proprietari su questo sito non è ancora attivo. Quando lo sarà, potrai entrare da questa pagina. Per informazioni contatta {{name}}.",
       "home": "Torna al sito",

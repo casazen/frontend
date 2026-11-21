@@ -211,7 +211,7 @@ describe('guest check-in and owner portal on an org own host (NF-140)', () => {
     expect(screen.queryByText('Casa di altri')).not.toBeInTheDocument();
   });
 
-  it.each(['/portale-proprietari/accedi', '/portale-proprietari/invito', '/portale-proprietari/contatto', '/portale-proprietari', '/portale-proprietari/contabilita'])(
+  it.each(['/portale-proprietari/accedi', '/portale-proprietari/invito', '/portale-proprietari/contatto', '/portale-proprietari', '/portale-proprietari/contabilita', '/portale-proprietari/accesso-negato'])(
     'surface off means not found: owner portal %s',
     async (path) => {
       // The guest area alone, and a host with no surface at all: the owner portal is not there.
@@ -229,7 +229,7 @@ describe('guest check-in and owner portal on an org own host (NF-140)', () => {
     expect(await screen.findByTestId('host-site-page-not-found')).toBeInTheDocument();
   });
 
-  it.each(['/portale-proprietari/accedi', '/portale-proprietari/invito', '/portale-proprietari/contatto', '/portale-proprietari', '/portale-proprietari/contabilita'])(
+  it.each(['/portale-proprietari/accedi', '/portale-proprietari/invito', '/portale-proprietari/contatto', '/portale-proprietari', '/portale-proprietari/contabilita', '/portale-proprietari/accesso-negato'])(
     'OwnerPortalRoute_SurfaceOnButDomainNotRegistered_%s_IsTheNotEnabledPageInTheFrame',
     async (path) => {
       renderHostSite(path, OWNER_NOT_READY);

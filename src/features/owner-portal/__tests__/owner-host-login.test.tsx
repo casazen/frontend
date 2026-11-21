@@ -306,6 +306,45 @@ describe('sign-in and sign-out of the own domain of an agency (E40/F02/US01/T02,
       expect(router.state.location.pathname).toBe('/portale-proprietari');
     });
 
+    it('RouteOfTheNoAccessPage_SignedInPerson_ShowsThePageOfTheDomainInsideTheFrameWithTheWayOut', async () => {
+      // Where a refused read of the portal ends (403): `/app/no-access` is «not found» on a host, so the page is the domain's own.
+      auth0.authenticated = true;
+
+      renderHost('/portale-proprietari/accesso-negato');
+
+      const frame = await screen.findByTestId('host-surface-frame');
+      const page = within(frame).getByTestId('owner-host-no-access');
+      expect(page).toHaveTextContent('Questo account non ha accesso all’area proprietari');
+      expect(page).toHaveTextContent('Quokka');
+      expect(page).not.toHaveTextContent(/auth0/i);
+      expect(within(page).getByTestId('owner-host-no-access-home')).toHaveAttribute('href', '/');
+      expect(screen.queryByTestId('host-site-page-not-found')).not.toBeInTheDocument();
+
+      // The way out: the sign-out of the domain, which brings the browser back to the origin of the agency (so the person can come back with the right account).
+      fireEvent.click(within(page).getByTestId('owner-host-no-access-sign-out'));
+      expect(auth0.logout).toHaveBeenCalledWith({ logoutParams: { returnTo: HOST_ORIGIN } });
+    });
+
+    it('RouteOfTheNoAccessPage_English_SaysItInEnglish', async () => {
+      await i18n.changeLanguage('en');
+      auth0.authenticated = true;
+
+      renderHost('/portale-proprietari/accesso-negato');
+
+      expect(await screen.findByRole('heading', { name: 'This account has no access to the owner area' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Sign out' })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Back to the site' })).toHaveAttribute('href', '/');
+    });
+
+    it('RouteOfTheNoAccessPage_SignedOutVisitor_GoesToTheSignInPageOfTheDomain', async () => {
+      // Nothing was refused to somebody who is not signed in.
+      const router = renderHost('/portale-proprietari/accesso-negato');
+
+      expect(await screen.findByTestId('owner-host-login')).toBeInTheDocument();
+      expect(router.state.location.pathname).toBe('/portale-proprietari/accedi');
+      expect(screen.queryByTestId('owner-host-no-access')).not.toBeInTheDocument();
+    });
+
     it('RouteOfTheConsoleLogin_IsStillNotFoundOnTheDomain', async () => {
       const router = renderHost('/login');
 

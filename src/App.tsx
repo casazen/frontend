@@ -5,6 +5,7 @@ import { AppToaster } from '@/components/shared/app-toaster';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
 import { AuthAppProviders, PublicAppProviders } from '@/contexts/auth-bridge';
 import { FeatureFlagsProvider } from '@/contexts/feature-flags-provider';
+import { ownerPortalPaths } from '@/features/owner-portal/paths';
 import { isEmbedPath } from '@/lib/embed-path';
 import { queryClient } from '@/lib/query-client';
 import {
@@ -31,10 +32,12 @@ function AppShell() {
   const router = getRouter();
   useEffect(() => {
     // 403 on a protected read → existing no-access page. `replace` keeps Back from reopening the
-    // forbidden page (which would 403 again).
+    // forbidden page (which would 403 again). On the own domain of an agency `/app/*` is «not found» and the only protected reads are those of the owner portal: the page of that
+    // domain says the account has no access to this agency and gives the way out (sign out), instead of a «not found» with no way to leave the account.
+    const noAccessPath = getHostSite() !== null ? ownerPortalPaths.noAccess : NO_ACCESS_PATH;
     setApiForbiddenHandler(() => {
-      if (router.state.location.pathname !== NO_ACCESS_PATH) {
-        void router.navigate(NO_ACCESS_PATH, { replace: true });
+      if (router.state.location.pathname !== noAccessPath) {
+        void router.navigate(noAccessPath, { replace: true });
       }
     });
     // 403 onboarding_required (PL-02): the backend withholds the host features until the onboarding and the current

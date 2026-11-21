@@ -1,5 +1,6 @@
 import type { RouteObject } from 'react-router-dom';
 import { OwnerHostLoginPage } from '@/features/owner-portal/owner-host-login-page';
+import { OwnerHostNoAccessPage } from '@/features/owner-portal/owner-host-no-access-page';
 import { OwnerLoginNotEnabledPage } from '@/features/owner-portal/owner-login-not-enabled-page';
 import { ownerPortalPaths } from '@/features/owner-portal/paths';
 import {
@@ -39,17 +40,21 @@ function checkInRoute(appRoutes: RouteObject[]): RouteObject {
 /**
  * The owner portal on an org's own host (NF-140, NF-141) when its domain is registered with the sign-in service: the very routes of the app (the layout that holds the Auth boundary and
  * its children, `ownerPortalRoutes`), with two differences that a host needs. The sign-in page is the one of the domain (`OwnerHostLoginPage`: it returns to this domain, to
- * `/portale-proprietari`), and a visitor who is not signed in goes there from the protected portal instead of to `/login`, which is «not found» on a host.
+ * `/portale-proprietari`), and a visitor who is not signed in goes there from the protected portal instead of to `/login`, which is «not found» on a host. A third page is the domain's own too: where a signed-in
+ * person whose read of the portal was refused (403) lands, since `/app/no-access` is «not found» on a host (`OwnerHostNoAccessPage`: it says so and gives the way out).
  */
 function ownerPortalHostRoute(appRoutes: RouteObject[]): RouteObject {
   const layout = findAppRoute(appRoutes, 'the owner portal', (candidate) => candidate.children === ownerPortalRoutes);
   return {
     element: layout.element,
-    children: ownerPortalRoutes.map((route) => {
-      if (route.path === ownerPortalPaths.signIn) return { ...route, element: <OwnerHostLoginPage /> };
-      if (route.path === ownerPortalPaths.home) return { ...route, element: <HostOwnerPortalGate>{route.element}</HostOwnerPortalGate> };
-      return route;
-    }),
+    children: [
+      ...ownerPortalRoutes.map((route) => {
+        if (route.path === ownerPortalPaths.signIn) return { ...route, element: <OwnerHostLoginPage /> };
+        if (route.path === ownerPortalPaths.home) return { ...route, element: <HostOwnerPortalGate>{route.element}</HostOwnerPortalGate> };
+        return route;
+      }),
+      { path: ownerPortalPaths.noAccess, element: <OwnerHostNoAccessPage /> },
+    ],
   };
 }
 

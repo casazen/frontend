@@ -10,6 +10,8 @@ export const ownerPortalPaths = {
   home: OWNER_PORTAL_ROOT,
   /** The sign-in page of the portal, on the CasaZen domain and on the own domain of an agency (E40/F02/US01/T02). */
   signIn: `${OWNER_PORTAL_ROOT}/accedi`,
+  /** Where a signed-in person whose read of the portal was refused (403) lands on the own domain of an agency, where `/app/no-access` is «not found» (E40/F02/US01/T02). */
+  noAccess: `${OWNER_PORTAL_ROOT}/accesso-negato`,
   property: (propertyId: string) => `${OWNER_PORTAL_ROOT}/immobili/${encodeURIComponent(propertyId)}`,
   /** The calendar and the owner stays: of one property when the id is given, of the first one the owner has otherwise. */
   calendar: (propertyId?: string) => `${OWNER_PORTAL_ROOT}/calendario${propertyId ? `/${encodeURIComponent(propertyId)}` : ''}`,
