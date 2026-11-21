@@ -406,13 +406,18 @@ describe('HostTracking and the events of the funnel', () => {
 
     it('hostTracking_viewItemList_reportsTheFirst20Homes', () => {
       accept();
+      // Homes as a site really has them (a UUID and a name): 20 of them are about 4.6 KB, over the 4 KB of the messages of the widgets, which do not apply to the page's own `dataLayer`.
+      const homes = Array.from({ length: 35 }, (_, position) =>
+        card(position, { id: `6f1c2b8e-3a4d-4e5f-8a9b-0c1d2e3f4a${10 + position}`, name: `Appartamento Vista Lago ${position}` }),
+      );
 
-      render(<Funnel cards={Array.from({ length: 35 }, (_, position) => card(position))} />);
+      render(<Funnel cards={homes} />);
 
       const [listed] = events();
       const items = (listed.ecommerce as { items: { item_id: string; index: number }[] }).items;
       expect(items).toHaveLength(20);
       expect(items.map((item) => item.index)).toEqual(Array.from({ length: 20 }, (_, position) => position));
+      expect(items.map((item) => item.item_id)).toEqual(homes.slice(0, 20).map((home) => home.id));
     });
 
     it('hostTracking_viewItem_isPushedOncePerHomeAndWaitsWhileTheQuoteIsOnItsWay', () => {

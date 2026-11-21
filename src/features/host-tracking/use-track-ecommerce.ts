@@ -138,7 +138,8 @@ export function useTrackViewItemList(cards: readonly PublicStayCard[] | null): v
         .map((card) => `${card.id}:${card.price?.currency ?? ''}:${card.price?.totalCents ?? ''}`)
         .join('|')
     : null;
-  useEcommerceEvent('view_item_list', key, () => (homes ? viewItemListEvent(homes, SEARCH_RESULTS_LIST) : null));
+  // The page's own `dataLayer` has no limit of 4 KB (the one of the messages of the widgets): the first 20 homes go, with the ids and the names of a real site.
+  useEcommerceEvent('view_item_list', key, () => (homes ? viewItemListEvent(homes, SEARCH_RESULTS_LIST, { asEmbedMessage: false }) : null));
 }
 
 /** `view_item`: the page of a home, once per home. `null`: nothing to report yet (the page waits for the quote of the stay of the address, if there is one). */
