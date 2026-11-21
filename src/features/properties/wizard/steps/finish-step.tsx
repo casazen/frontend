@@ -8,12 +8,13 @@ import { useProperty } from '@/queries/use-properties';
 import type { ActivationBlocker, ComplianceActivationResult } from '@/types/compliance.types';
 import { ActivationSection } from '../finish/activation-section';
 import { requiresItalianCin } from '@/lib/cin-format';
-import { SwissRegistrationGuidance } from '../../components/swiss-registration-guidance';
+import { GUEST_REGISTRATION_STEP_ID } from '@/types/guest-registration.types';
 import { CinSection } from '../finish/cin-section';
 import { DocumentsSection } from '../finish/documents-section';
 import { finishStage } from '../finish/finish-model';
 import { MissingSection } from '../finish/missing-section';
 import { SummarySection } from '../finish/summary-section';
+import { SwissSection } from '../finish/swiss-section';
 import type { PropertyWizardValues } from '../property-wizard-model';
 
 interface FinishStepProps {
@@ -71,7 +72,7 @@ export function FinishStep({
         </div>
       </details>
 
-      {property.data && !requiresItalianCin(property.data.country) ? <SwissRegistrationGuidance /> : <CinSection
+      {property.data && !requiresItalianCin(property.data.country) ? <SwissSection propertyId={propertyId} step={steps?.find((step) => step.id === GUEST_REGISTRATION_STEP_ID)} /> : <CinSection
         propertyId={propertyId}
         storedCin={property.data?.cinCode ?? null}
         guidanceUrl={steps?.find((step) => step.id === 'cin')?.linkUrl}

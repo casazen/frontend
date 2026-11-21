@@ -6,7 +6,7 @@ import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getProblemMessage } from '@/lib/api-errors';
 import { resolveLaunchTarget, type LaunchFocus } from '@/lib/onboarding-part-launch';
-import { isOnboardingPartKey, normalizePartState, partTitleKey } from '@/lib/onboarding-parts';
+import { isOnboardingPartKey, normalizePartState, partAppliesToOrg, partTitleKey } from '@/lib/onboarding-parts';
 import { useReopenPart } from '@/queries/use-onboarding-integration';
 import type { ChannelStatusCount, IntegrationPart, OnboardingPartKey, SenderCounts } from '@/types/onboarding.types';
 import { PartStateBadge } from './onboarding-part-row';
@@ -37,7 +37,7 @@ function knownIntegrationParts(parts: readonly IntegrationPart[] | undefined): I
   const seen = new Set<string>();
   const known: IntegrationPart[] = [];
   for (const part of parts) {
-    if (!part || !isOnboardingPartKey(part.code) || seen.has(part.code)) continue;
+    if (!part || !isOnboardingPartKey(part.code) || seen.has(part.code) || !partAppliesToOrg(part)) continue;
     seen.add(part.code);
     known.push(part);
   }

@@ -16,6 +16,7 @@ export type FeatureFlagKey =
   | 'agencyTier'
   | 'crmMarketing'
   | 'complianceTrafficLight'
+  | 'guestRegistrationRegimes'
   | 'messageAssistant'
   | 'fiscalDocumentIssuance'
   | 'octorateDocumentImport'
@@ -123,6 +124,15 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * alone, which does not depend on it.
    */
   complianceTrafficLight: false,
+  /**
+   * The regimes of the registration of the guests (backend `GuestRegistrationRegimes`, E29/F02/US01/T01, NF-125, decisions D5 and D12), off until the product owner has read what the catalog says of
+   * each canton and on in the test environment only: what Italy and each of the 26 cantons ask, how sure the sources are, what CasaZen does for it and the host's own answer where the sources do not
+   * settle it (`GET` and `PUT api/properties/{id}/guest-registration`, which answer 404 while it is off). It decides what a property in Switzerland shows: with it on the card «Notifica degli ospiti
+   * nel tuo cantone» is in the tab «Documenti e adempimenti» (it carries the field of the structure number of Ticino and what is still missing), in the step «Notifica degli ospiti» of the activation of the
+   * property and in the last step of «Aggiungi immobile», and the general guidance «Registrazione in Svizzera» is no longer drawn. While it is off nothing changes: that guidance is what a Swiss property shows
+   * and nothing asks the server. What a property lacks to be notified (its municipality, in Ticino its structure number) and the part «Notifica degli ospiti» of the plan «Inizia con CasaZen» do not depend on it.
+   */
+  guestRegistrationRegimes: false,
   /**
    * The assistant of the guests' messages (backend `MessageAssistant`, E05/F05, NF-66, NF-67, PO-08, PO-09), off until the product owner turns it on: what a guest
    * writes is personal data and the AI provider is an external sub-processor, so the privacy notice and the processing agreement of PO-09 come first. While it is

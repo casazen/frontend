@@ -1,6 +1,7 @@
 import { knownBlockers } from '@/features/compliance/activation-wizard-model';
 import type { Property } from '@/types';
 import type { ActivationBlocker, ComplianceActivationResult } from '@/types/compliance.types';
+import { GUEST_REGISTRATION_STEP_ID } from '@/types/guest-registration.types';
 import { baseDataStepFor, type WizardStepId } from '../property-wizard-model';
 
 /** A line of «Cosa manca»: a blocker of the server, or the whole safety sheet with how many of its points are open. */
@@ -57,15 +58,15 @@ export function finishActions(stage: FinishStage, showOnSite: boolean, storedSho
 }
 
 /** The parts of the last step that a missing item can send the host to. */
-export type FinishSection = 'calendars' | 'cin' | 'documents';
+export type FinishSection = 'calendars' | 'cin' | 'documents' | typeof GUEST_REGISTRATION_STEP_ID;
 
 /** Where a «Correggi» goes: another step of the wizard, or a part of the last step. */
 export type FixTarget = { kind: 'step'; step: WizardStepId } | { kind: 'section'; section: FinishSection };
 
 /**
  * The place where a step of the activation is fixed (`base-data`: the first step or the prices, whichever has the hole; `safety`:
- * the amenities step, which holds the safety sheet; the CIN, the documents and the calendars: here). A step the host cannot act on
- * — the tourist tax — has no place.
+ * the amenities step, which holds the safety sheet; the CIN, the documents, the calendars and, for a property in Switzerland, the
+ * notification of the guests: here). A step the host cannot act on — the tourist tax — has no place.
  */
 export function fixTargetFor(activationStepId: string, property: Pick<Property, 'name' | 'address' | 'city' | 'maxGuests'> & Partial<Pick<Property, 'country'>>): FixTarget | null {
   switch (activationStepId) {
@@ -79,6 +80,8 @@ export function fixTargetFor(activationStepId: string, property: Pick<Property, 
       return { kind: 'section', section: 'documents' };
     case 'ical':
       return { kind: 'section', section: 'calendars' };
+    case GUEST_REGISTRATION_STEP_ID:
+      return { kind: 'section', section: GUEST_REGISTRATION_STEP_ID };
     default:
       return null;
   }

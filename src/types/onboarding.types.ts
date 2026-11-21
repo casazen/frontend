@@ -244,9 +244,10 @@ export interface FlowPropertiesQuery {
 }
 
 /**
- * The eleven parts of the plan, in order (backend `OnboardingPartCatalog`, NF-104, ONB-01): the connection to Octorate, the properties,
+ * The twelve parts of the plan, in order (backend `OnboardingPartCatalog`, NF-104, ONB-01): the connection to Octorate, the properties,
  * the channels, the check of the listings, prices and rules, compliance, identification and access, messages and AI, fiscal documents,
- * the optional partners, and the summary with the activation. These are the codes the API writes and the `{key}` of
+ * the optional partners, the notification of the guests in Switzerland (E29/F02/US01/T02: only for an organization with an active property
+ * there, otherwise `notAvailable`), and the summary with the activation. These are the codes the API writes and the `{key}` of
  * `/onboarding/parts/{key}/...` (read without regard to case).
  */
 export const ONBOARDING_PART_KEYS = [
@@ -260,6 +261,7 @@ export const ONBOARDING_PART_KEYS = [
   'messagesAi',
   'fiscalDocuments',
   'partners',
+  'guestRegistration',
   'activation',
 ] as const;
 export type OnboardingPartKey = (typeof ONBOARDING_PART_KEYS)[number];
@@ -296,6 +298,9 @@ export const ONBOARDING_PART_REASONS = [
   'issuer_missing',
   'partner_integration_missing',
   'connector_off',
+  'swiss_municipality_missing',
+  'ticino_structure_id_missing',
+  'no_swiss_property',
   'no_property',
   'required_part_not_done',
   'not_provided',
@@ -319,6 +324,7 @@ export const ONBOARDING_LAUNCH_TARGETS = [
   'fiscal',
   'marketplace',
   'summary',
+  'guestRegistration',
 ] as const;
 export type OnboardingLaunchTarget = (typeof ONBOARDING_LAUNCH_TARGETS)[number];
 
@@ -347,6 +353,16 @@ export interface OnboardingPartAssist {
 }
 
 /**
+ * One thing a part still lacks on one property (`missing` of a part, E29/F02/US01/T02): the property, why (`swiss_municipality_missing` or `ticino_structure_id_missing`) and `code`, the
+ * step of the activation wizard that fixes it (`guest-registration`). Ids and codes only: the name of the property is read where it is shown.
+ */
+export interface OnboardingPartMissing {
+  propertyId: string;
+  reason: string;
+  code: string;
+}
+
+/**
  * One part of the plan (`parts` of `GET /onboarding/plan`, NF-104). `done` of `total` is the progress (both 0 for a part nobody provides).
  * `requires`: the codes of the parts that must be done first. `deferrable` is false for a part another part requires. `needs`: the codes
  * of «What you need» of the part. `remindAt`: when the «Da fare» of a deferral or an exit is due, null when there is none.
@@ -368,6 +384,11 @@ export interface OnboardingPart {
   remindAt: Instant | null;
   assist: OnboardingPartAssist | null;
   launchTarget: OnboardingLaunchTarget;
+  /**
+   * What the part still lacks, property by property, for the part that says it (`guestRegistration`: at most 50, while `done` and `total` count them all); absent or empty for every other
+   * part, for a part that is done and for a server that does not send it yet.
+   */
+  missing?: OnboardingPartMissing[];
 }
 
 /**

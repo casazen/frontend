@@ -22,6 +22,15 @@ import {
 } from '@/lib/i18n-labels';
 import { LEASE_EVENT_TYPES, LEASE_STATUSES } from '@/types';
 import { COMBUSTION_APPLIANCES, SAFETY_DETECTOR_TYPES, SAFETY_ITEM_CODES } from '@/types/compliance.types';
+import {
+  GUEST_REGISTRATION_CERTAINTIES,
+  GUEST_REGISTRATION_CHANNELS,
+  GUEST_REGISTRATION_DEADLINE_KINDS,
+  GUEST_REGISTRATION_MISSING_CODES,
+  GUEST_REGISTRATION_OBLIGATIONS,
+  GUEST_REGISTRATION_PRIVATE_RENTALS,
+  GUEST_REGISTRATION_SUPPORTS,
+} from '@/types/guest-registration.types';
 import { STATUS_DICTIONARY, type StatusDefinition } from '@/lib/status-dictionary';
 
 const it_ = APP_RESOURCES.it.translation;
@@ -290,7 +299,28 @@ describe('keys used in code', () => {
       ...['Landlord', 'Tenant'].map((r) => `leases.partyRole.${r}`),
       ...LEASE_STATUSES.map((s) => `leases.statusLabel.${s}`),
       ...LEASE_EVENT_TYPES.map((e) => `leases.eventType.${e}`),
-      ...['base-data', 'cin', 'documents', 'safety', 'tourist-tax', 'ical'].map((s) => `compliance.activation.steps.${s}`),
+      ...['base-data', 'cin', 'documents', 'safety', 'tourist-tax', 'ical', 'guest-registration'].map((s) => `compliance.activation.steps.${s}`),
+      // The card of the regime of the canton (E29/F02/US02/T01, NF-125): every member of every enum the API writes has its sentence, and every reason of what is missing its text.
+      ...GUEST_REGISTRATION_OBLIGATIONS.map((v) => `guestRegistration.obligation.${v}`),
+      ...GUEST_REGISTRATION_CHANNELS.map((v) => `guestRegistration.channel.${v}`),
+      ...GUEST_REGISTRATION_DEADLINE_KINDS.map((v) => `guestRegistration.deadline.${v}`),
+      ...GUEST_REGISTRATION_PRIVATE_RENTALS.map((v) => `guestRegistration.privateRentals.${v}`),
+      ...GUEST_REGISTRATION_SUPPORTS.map((v) => `guestRegistration.support.${v}`),
+      ...GUEST_REGISTRATION_CERTAINTIES.flatMap((v) => [`guestRegistration.certainty.${v}.label`, `guestRegistration.certainty.${v}.text`]),
+      ...GUEST_REGISTRATION_MISSING_CODES.flatMap((code) => [
+        `guestRegistration.missing.${code}`,
+        `compliance.activation.blockerCodes.${code}`,
+        `onboardingPlan.reasons.${code}`,
+        `onboardingPlan.reasons.property.${code}`,
+      ]),
+      'onboardingPlan.reasons.no_swiss_property',
+      // The screen at the end of «Aggiungi immobile» says each open step in words, and what to do about it: the step of Switzerland is one of them.
+      ...['base-data', 'cin', 'documents', 'safety', 'guest-registration'].flatMap((s) => [`propertyWizard.done.open.${s}`, `propertyWizard.done.fix.${s}`]),
+      'guestRegistration.retention.years_one',
+      'guestRegistration.retention.years_other',
+      'guestRegistration.card.refreshFailed',
+      'apiErrors.codes.guestRegistrationCountryNotSupported',
+      'apiErrors.codes.guestRegistrationOverrideNotApplicable',
       // D.L. 145/2023 safety checklist (CO-07): items, facts and stable codes of the API.
       ...SAFETY_ITEM_CODES.flatMap((c) => [`compliance.safety.items.${c}.title`, `compliance.safety.items.${c}.reference`]),
       ...SAFETY_ITEM_CODES.filter((c) => c !== 'EmergencyInstructions').map((c) => `compliance.safety.items.${c}.dateLabel`),
