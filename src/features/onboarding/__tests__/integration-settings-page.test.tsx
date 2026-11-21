@@ -31,6 +31,9 @@ vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => workspace }));
 
 const SETTINGS_PATH = '/app/short-rent/settings/integration';
 
+/** The parts of the plan a host with all its properties in Italy sees: every part but the one that is for properties in Switzerland. */
+const LISTED_PARTS = ONBOARDING_PART_KEYS.filter((code) => code !== 'guestRegistration');
+
 function integrationPart(code: OnboardingPartKey, overrides: Partial<IntegrationPart> = {}): IntegrationPart {
   return { ...part(code, { state: 'done', launchTarget: 'connect' }), reopenable: true, ...overrides };
 }
@@ -48,6 +51,7 @@ function overview(overrides: Partial<IntegrationOverview> = {}): IntegrationOver
     messagesAi: 'messages',
     fiscalDocuments: 'fiscal',
     partners: 'marketplace',
+    guestRegistration: 'guestRegistration',
     activation: 'summary',
   };
   return {
@@ -56,6 +60,8 @@ function overview(overrides: Partial<IntegrationOverview> = {}): IntegrationOver
       integrationPart(code, {
         launchTarget: launchTargets[code],
         ...(code === 'partners' ? { state: 'notAvailable', reason: 'not_provided', reopenable: false } : {}),
+        // An organization with no active property in Switzerland: the part does not apply and the settings do not list it.
+        ...(code === 'guestRegistration' ? { state: 'notAvailable', reason: 'no_swiss_property', reopenable: false } : {}),
       }),
     ),
     senders: { channelManager: 3, casaZen: 1, manual: 2, notSet: 4 },
@@ -124,9 +130,10 @@ describe('IntegrationSettingsPage, the integration settings (E10/F03/US03/T01)',
     // Production: no «prova» label; connected: no notice of reconnection.
     expect(within(card).queryByTestId('connection-environment-test')).not.toBeInTheDocument();
     expect(within(card).queryByTestId('connection-reconnect')).not.toBeInTheDocument();
-    // The eleven parts, each with its state and «Riapri».
+    // The parts, each with its state and «Riapri»: the notification of the guests in Switzerland is not among them while the organization has no active property there.
     expect(screen.getByTestId('reopen-parts-list').querySelectorAll('li')).toHaveLength(11);
-    for (const code of ONBOARDING_PART_KEYS) expect(screen.getByTestId(`reopen-part-${code}-action`)).toBeInTheDocument();
+    for (const code of LISTED_PARTS) expect(screen.getByTestId(`reopen-part-${code}-action`)).toBeInTheDocument();
+    expect(screen.queryByTestId('reopen-part-guestRegistration-action')).not.toBeInTheDocument();
     // Who sends the schedine, for how many properties; the listings by status (every status the server sent).
     expect(screen.getByTestId('integration-sender-channelManager')).toHaveTextContent('3');
     expect(screen.getByTestId('integration-sender-notSet')).toHaveTextContent('4');
@@ -253,7 +260,7 @@ describe('IntegrationSettingsPage, the integration settings (E10/F03/US03/T01)',
     fireEvent.click(await screen.findByTestId('reopen-part-listings-action'));
 
     await waitFor(() => expect(screen.getByTestId('reopen-part-compliance-action')).toBeDisabled());
-    for (const code of ONBOARDING_PART_KEYS) {
+    for (const code of LISTED_PARTS) {
       if (code === 'listings') continue;
       expect(screen.getByTestId(`reopen-part-${code}-action`), code).toBeDisabled();
     }

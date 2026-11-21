@@ -1,4 +1,4 @@
-import { AlertTriangle, BedDouble, Bell, CalendarClock, ClipboardCheck, Coins, FileCheck, FileWarning, LifeBuoy, LogOut, MessageSquare, ShieldAlert, ShieldCheck, Star, UserCheck, Wrench, type LucideIcon } from 'lucide-react';
+import { AlertTriangle, BedDouble, Bell, CalendarClock, ClipboardCheck, Coins, FileCheck, FileWarning, Globe, LifeBuoy, LogOut, MessageSquare, ShieldAlert, ShieldCheck, Star, UserCheck, Wrench, type LucideIcon } from 'lucide-react';
 import type { InAppNotification } from '@/api/notifications.api';
 import type { AppContextKey, PermissionPredicate } from '@/config/route-manifest';
 import { ticinoLayerPath } from '@/features/compliance/ticino/ticino-layer-address';
@@ -47,6 +47,9 @@ const VERIFICATIONS_ROUTE = '/app/short-rent/verifications';
 
 /** The staff queue of the «Fallo per me» requests (`onboarding-routes.ts`): the bell tells the platform administrators that a host asked CasaZen support to do a step. */
 const ASSIST_QUEUE_ROUTE = '/app/admin/onboarding-assist';
+
+/** The domain settings of the booking site (`route-manifest.ts`): the bell tells the administrator of the org that the domain is active, or that the sign-in of the owners on it is (or could not be made) active. */
+const DOMAIN_SETTINGS_ROUTE = '/app/short-rent/settings/domain';
 
 /**
  * The push types of the backend (`PushTypes`) the bell knows. A type that is not here is shown with a generic sentence and
@@ -125,6 +128,11 @@ const KINDS: Record<string, NotificationKind> = {
   'ticino-notification-due': { icon: CalendarClock, textKey: 'notifications.types.ticinoNotificationDue', route: ticinoRoute },
   'ticino-notification-overdue': { icon: ShieldAlert, textKey: 'notifications.types.ticinoNotificationOverdue', route: ticinoRoute },
   'ticino-notification-declared': { icon: FileCheck, textKey: 'notifications.types.ticinoNotificationDeclared', route: ticinoRoute },
+  // E40/F02/US02 (`be-auth0-host-sync`, to the administrators of the org; the entity is the ORG): the domain was verified, and the sign-in of the owners on it became active or could not be made active.
+  // The click opens the domain settings, where the page shows the new state (and «Riprova» when it failed); the open page reads it again as the push arrives (`use-notifications-realtime.ts`).
+  'domain-verified': { icon: Globe, textKey: 'notifications.types.domainVerified', route: () => DOMAIN_SETTINGS_ROUTE },
+  'owner-login-ready': { icon: ShieldCheck, textKey: 'notifications.types.ownerLoginReady', route: () => DOMAIN_SETTINGS_ROUTE },
+  'owner-login-failed': { icon: AlertTriangle, textKey: 'notifications.types.ownerLoginFailed', route: () => DOMAIN_SETTINGS_ROUTE },
 };
 
 const GENERIC_KIND = { icon: Bell, textKey: 'notifications.types.generic' } as const;

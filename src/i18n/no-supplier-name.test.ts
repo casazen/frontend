@@ -59,3 +59,52 @@ describe('no name of the supplier of the guided form in the texts (CF-FLOW)', ()
     expect(named).toEqual([]);
   });
 });
+
+/**
+ * E29/F02/US02/T01 (NF-125, decision D13): the card of the regime of the canton, the step of the activation and the part of the plan name the authorities and their portals (Polizia
+ * cantonale, notifiche.ti.ch), never the supplier of a software or of a cantonal system that the research met on the way: whoever reads them has no use for the name, and none of them
+ * has an interface CasaZen uses. As above: if a text ever has to name one, that is a decision of the owner of the product, not a key to put on a list of exceptions here.
+ */
+const SOFTWARE_SUPPLIER = /hoko|unisys|u-stay|feratel|chekin|stellar\s*check-?in|chargeautomation|smoobu|lodgify|octorate|concordato\s*facile|\bavs\b/i;
+
+/** Where the regimes of the registration of the guests are told to the person. */
+const OF_THE_REGIMES = [
+  'guestRegistration',
+  'onboardingPlan.parts.guestRegistration',
+  'onboardingPlan.part.missing',
+  'onboardingPlan.reasons.no_swiss_property',
+  'onboardingPlan.reasons.swiss_municipality_missing',
+  'onboardingPlan.reasons.ticino_structure_id_missing',
+  'onboardingPlan.reasons.property.swiss_municipality_missing',
+  'onboardingPlan.reasons.property.ticino_structure_id_missing',
+  'compliance.activation.steps.guest-registration',
+  'compliance.activation.blockerCodes.swiss_municipality_missing',
+  'compliance.activation.blockerCodes.ticino_structure_id_missing',
+  'compliance.activation.backToStep',
+  'propertyWizard.done.open.guest-registration',
+  'propertyWizard.done.fix.guest-registration',
+  'apiErrors.codes.guestRegistrationCountryNotSupported',
+  'apiErrors.codes.guestRegistrationOverrideNotApplicable',
+];
+
+describe('no name of a supplier of software or of a cantonal system in the texts of the regimes (E29/F02/US02/T01)', () => {
+  it.each(LOCALES)('%s.json: the texts of the regimes name no supplier', (_language, locale) => {
+    const inTheRegimes = texts(locale).filter(([key]) => OF_THE_REGIMES.some((prefix) => key === prefix || key.startsWith(`${prefix}.`)));
+    // The scan really reaches them: the card, its enums and its sentences are well over fifty texts.
+    expect(inTheRegimes.length).toBeGreaterThan(50);
+
+    const named = inTheRegimes.filter(([, text]) => SOFTWARE_SUPPLIER.test(text)).map(([key, text]) => `${key}: ${text}`);
+    expect(named).toEqual([]);
+  });
+
+  it.each(LOCALES)('%s.json: the texts of the regimes keep the words of the authorities and say it is not legal advice', (language, locale) => {
+    const all = Object.fromEntries(texts(locale));
+
+    // The rule the host reads next to every certainty: «check with the municipality or the police», and that CasaZen gives no legal advice.
+    for (const certainty of ['Verified', 'Partial', 'Unverified']) {
+      const text = all[`guestRegistration.certainty.${certainty}.text`] ?? '';
+      expect(text, certainty).toMatch(language === 'it' ? /comune o la polizia/ : /municipality or the police/);
+      expect(text, certainty).toMatch(language === 'it' ? /consulenza legale/ : /legal advice/);
+    }
+  });
+});

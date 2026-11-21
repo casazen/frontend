@@ -1,4 +1,5 @@
 import { SwissRegistrationGuidance } from '@/features/properties/components/swiss-registration-guidance';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -25,6 +26,7 @@ import { TouristTaxStepInfo } from '@/features/compliance/components/tourist-tax
 import { SafetyChecklistForm } from '@/features/compliance/components/safety-checklist-form';
 import { PropertyForm } from '@/features/properties/components/property-form';
 import {
+  ORIGIN_STEP_PARAM,
   REVIEW_STEP_ID,
   stepHref,
   changedPropertyFields,
@@ -40,7 +42,9 @@ import { getPropertyDocumentTypeLabel } from '@/lib/i18n-labels';
 import type { ActivationBlocker, ComplianceActivationResult, ComplianceStepStatus } from '@/types/compliance.types';
 import type { CreatePropertyDto, Property } from '@/types';
 import { useWizardOpenFlag } from '@/store/use-wizard-open-flag';
+import { GUEST_REGISTRATION_STEP_ID } from '@/types/guest-registration.types';
 import { useStepTexts } from './use-activation-step-texts';
+import { GuestRegistrationStep } from './components/guest-registration-step';
 import { StepStatusIcon, StepIndicator, BlockerList, StepWarnings, StepBlockers, StepPanel } from './components/activation-progress';
 export function PropertyActivationWizard() {
   const { id } = useParams<{ id: string }>();
@@ -134,6 +138,7 @@ function ActivationWizardContent({
   const completeActivation = useCompleteComplianceActivation(propertyId);
   const updateProperty = useUpdateProperty();
   const updateCin = useUpdatePropertyCin();
+  const { flags } = useFeatureFlags();
 
   // Opens on the first blocking step still open, or on the summary when everything is complete (from the server).
   const [initialStep] = useState(() => initialStepId(steps));
@@ -146,6 +151,13 @@ function ActivationWizardContent({
         : stepIds[0];
   const currentIdx = stepIds.indexOf(currentStepId);
   const currentStep = steps.find((s) => s.id === currentStepId);
+  // The step of a property in Switzerland (the server adds it for those only) and the step the host came from when it opened it: its «Torna a» goes back there.
+  const swissStep = steps.find((s) => s.id === GUEST_REGISTRATION_STEP_ID);
+  const originId = searchParams.get(ORIGIN_STEP_PARAM);
+  const origin =
+    currentStepId === GUEST_REGISTRATION_STEP_ID && originId && originId !== currentStepId && stepIds.includes(originId)
+      ? { id: originId, title: texts.title(originId) }
+      : null;
 
   // Base data: the form starts from the stored property and sends only what the host changed.
   const [baseSnapshot, setBaseSnapshot] = useState(property);
@@ -184,6 +196,9 @@ function ActivationWizardContent({
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
       next.set('step', stepId);
+      // The step the host leaves is remembered only for the step of Switzerland; going anywhere else forgets it.
+      if (stepId !== GUEST_REGISTRATION_STEP_ID) next.delete(ORIGIN_STEP_PARAM);
+      else if (stepId !== currentStepId) next.set(ORIGIN_STEP_PARAM, currentStepId);
       return next;
     });
   };
@@ -291,7 +306,8 @@ function ActivationWizardContent({
           </div>
         )}
 
-        {!requiresItalianCin(property.country) ? <SwissRegistrationGuidance /> : null}
+        {/* With the regimes on the card is in its own step, inside the wizard; with them off it is the guidance it always was, above the steps. */}
+        {!requiresItalianCin(property.country) && !flags.guestRegistrationRegimes ? <SwissRegistrationGuidance propertyId={propertyId} variant="wizard" /> : null}
 
         <StepIndicator
           stepIds={stepIds}
@@ -304,7 +320,7 @@ function ActivationWizardContent({
         <Card>
           <CardHeader>
             <CardTitle>{texts.title(currentStepId)}</CardTitle>
-            {currentStep && currentStep.id !== 'safety' && currentStep.id !== 'tourist-tax' && (
+            {currentStep && currentStep.id !== 'safety' && currentStep.id !== 'tourist-tax' && currentStep.id !== GUEST_REGISTRATION_STEP_ID && (
               <StepBlockers step={currentStep} />
             )}
             {currentStep && <StepWarnings step={currentStep} />}
@@ -409,6 +425,22 @@ function ActivationWizardContent({
               <IcalSettings propertyId={propertyId} />
             </StepPanel>
 
+            {swissStep ? (
+              <StepPanel active={currentStepId === GUEST_REGISTRATION_STEP_ID} stepId={GUEST_REGISTRATION_STEP_ID}>
+                <GuestRegistrationStep
+                  propertyId={propertyId}
+                  step={swissStep}
+                  ticino={detail?.isInTicino === true}
+                  onFixMunicipality={() => goTo('base-data')}
+                  onChanged={refetchActivation}
+                  origin={origin}
+                  onBackToOrigin={() => {
+                    if (origin) goTo(origin.id);
+                  }}
+                />
+              </StepPanel>
+            ) : null}
+
             {currentStepId === REVIEW_STEP_ID && (
               <div className="space-y-6" data-testid="activation-review">
                 <p className="text-sm text-muted-foreground">{t('compliance.activation.review.intro')}</p>
@@ -437,7 +469,7 @@ function ActivationWizardContent({
                     {steps.map((step) => (
                       <li key={step.id} className="flex items-center gap-2" data-testid={`activation-review-step-${step.id}`}>
                         <StepStatusIcon status={step.status} current={false} />
-                        <Link to={stepHref(step.id)} onClick={onNavigate} className="hover:underline">
+                        <Link to={stepHref(step.id, REVIEW_STEP_ID)} onClick={onNavigate} className="hover:underline">
                           {texts.title(step.id)}
                         </Link>
                         <span className="text-muted-foreground">
@@ -455,12 +487,12 @@ function ActivationWizardContent({
                     data-testid="activation-blocked"
                   >
                     <p className="font-medium">{t('compliance.activation.blockerList.blockedTitle')}</p>
-                    <BlockerList blockers={blockedBlockers} steps={steps} stepIds={stepIds} onNavigate={onNavigate} />
+                    <BlockerList blockers={blockedBlockers} steps={steps} stepIds={stepIds} onNavigate={onNavigate} from={REVIEW_STEP_ID} />
                   </div>
                 ) : openBlockers.length > 0 ? (
                   <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm" data-testid="activation-known-blockers">
                     <p className="font-medium">{t('compliance.activation.blockerList.knownTitle')}</p>
-                    <BlockerList blockers={openBlockers} steps={steps} stepIds={stepIds} onNavigate={onNavigate} />
+                    <BlockerList blockers={openBlockers} steps={steps} stepIds={stepIds} onNavigate={onNavigate} from={REVIEW_STEP_ID} />
                   </div>
                 ) : (
                   <p className="flex items-center gap-2 text-sm text-green-700" data-testid="activation-no-blockers">

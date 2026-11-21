@@ -2161,6 +2161,8 @@
       "guestMarketingConsentUnavailable": "We cannot save your choice right now: please try again later.",
       "guestMarketingEmailInvalid": "Type a correct e-mail address: the one of the booking cannot be used for offers.",
       "guestMarketingPhoneInvalid": "Check the phone number: it does not look right.",
+      "guestRegistrationCountryNotSupported": "CasaZen does not have the guest notification rules for the country of this property yet.",
+      "guestRegistrationOverrideNotApplicable": "The answer on guest notification can only be given for a property in Switzerland.",
       "welcomeAdultRequired": "To continue you must declare that you are at least 18 years old.",
       "welcomeChannelRequired": "Choose at least one channel: e-mail or WhatsApp.",
       "welcomeConsentOutdated": "The text of the consent has been updated: read it again and confirm your choice.",
@@ -7684,6 +7686,7 @@
       "tosAccept": "I confirm that the property meets the CasaZen compliance requirements",
       "remindersAccept": "Activate anyway: I know that the safety sheet and the documents still to complete are my obligation and I will complete them as soon as possible.",
       "backToEdit": "Back to property editing",
+      "backToStep": "Back to «{{step}}»",
       "complete": "Complete activation",
       "completed": "Property activated successfully",
       "blockersRemain": "Activation saved — resolve the remaining blockers to publish.",
@@ -7695,6 +7698,7 @@
         "safety": "Safety checklist",
         "tourist-tax": "Tourist tax",
         "ical": "Calendar sync",
+        "guest-registration": "Guest notification",
         "review": "Summary and activation"
       },
       "touristTax": {
@@ -7745,7 +7749,9 @@
         "activation_cin_missing": "Enter the CIN code of the property.",
         "activation_cin_invalid": "The CIN code is not in the official format (e.g. IT015146C2ABCDEFGH).",
         "activation_documents_missing": "Upload the documents required for the activation.",
-        "safety_extinguishers_below_minimum": "Not enough extinguishers for the minimum required by the floors and m² of the unit."
+        "safety_extinguishers_below_minimum": "Not enough extinguishers for the minimum required by the floors and m² of the unit.",
+        "swiss_municipality_missing": "Set the Swiss municipality of the property.",
+        "ticino_structure_id_missing": "Enter the structure identification number (Ticino)."
       },
       "review": {
         "intro": "Check the status of each step: you can go back to any step without losing what you entered.",
@@ -9336,6 +9342,42 @@
       "manage": "Go to the setup",
       "dismiss": "Hide the suggestion",
       "loadError": "We cannot load the address of your site."
+    },
+    "surfaces": {
+      "description": "Choose what runs on your address. Anything you leave off stays on the CasaZen address.",
+      "guestArea": {
+        "help": "Your guests manage their booking and check in from your address, under your brand.",
+        "label": "Guest area on my domain",
+        "notActive": "For now the guest area stays on the CasaZen address."
+      },
+      "links": {
+        "address": "The links you send start from {{url}}.",
+        "help": "Check-in, booking management, confirmations and invitations start from your address instead of the CasaZen one.",
+        "label": "Use my domain in the links I send",
+        "notActive": "For now the links stay the CasaZen ones."
+      },
+      "ownerLogin": {
+        "label": "Owner sign-in",
+        "manualHint": "CasaZen enables it: there is nothing for you to do.",
+        "retry": "Try again",
+        "retryFailed": "The request did not work: try again shortly.",
+        "retryReady": "Owner sign-in on your domain is active.",
+        "retryRequested": "Request sent. We will tell you as soon as owner sign-in is active.",
+        "retryStillFailed": "The registration still did not work. Try again shortly.",
+        "state": {
+          "failed": "registration failed",
+          "notRequested": "not requested yet",
+          "pendingAutomatic": "registration in progress",
+          "pendingManual": "waiting for CasaZen to enable it",
+          "ready": "active"
+        }
+      },
+      "ownerPortal": {
+        "help": "Owners sign in from your address. Their links move only once owner sign-in is active.",
+        "label": "Owner portal on my domain",
+        "notActive": "For now the owner portal stays on the CasaZen address."
+      },
+      "title": "What runs on your domain"
     }
   },
   "emailVerified": {
@@ -10072,6 +10114,109 @@
       "partial": "{{percent}}% refund until {{date}}",
       "today": "Today"
     }
+  },
+  "guestRegistration": {
+    "card": {
+      "forbidden": "You do not have access to this property.",
+      "loadFailed": "I can't read the rules of this canton. That does not mean there are none: try again.",
+      "loading": "Loading the rules of your canton…",
+      "notFound": "We can't find this property: it may have been removed.",
+      "openPortal": "Open the official portal",
+      "place": "{{municipality}} · Canton {{canton}}",
+      "portalLater": "You will be able to open it from the property page, when you are done here.",
+      "refreshFailed": "I can't refresh this information: what you see may not be up to date. What you typed stays here.",
+      "retry": "Try again",
+      "title": "Guest notification in your canton",
+      "unsupported": "CasaZen does not have the guest notification rules for the country of this property yet."
+    },
+    "certainty": {
+      "Partial": {
+        "label": "Partly verified",
+        "text": "The sources are not all official or do not say everything (read on {{date}}). Check with the municipality or the police: CasaZen does not give legal advice."
+      },
+      "Unverified": {
+        "label": "Not verified",
+        "text": "We have not found an official source for this canton (searched on {{date}}). Check with the municipality or the police: CasaZen does not give legal advice."
+      },
+      "Verified": {
+        "label": "Verified",
+        "text": "Read on the official sources on {{date}}. If in doubt, check with the municipality or the police: CasaZen does not give legal advice."
+      }
+    },
+    "channel": {
+      "EmailFile": "You send a file by e-mail",
+      "None": "Nothing is sent: you keep the register",
+      "Paper": "On a paper form",
+      "PortalFileUpload": "You upload a file on the official portal",
+      "PortalForm": "You enter the data on the official portal",
+      "VendorInterface": "Through the interface of a management program with the canton's system (specifications not public)"
+    },
+    "deadline": {
+      "AtArrival": "When the guest arrives",
+      "DailyByTime": "Every day",
+      "Hours24FromArrival": "Within 24 hours of the guest's arrival",
+      "None": "No deadline given by the sources",
+      "Weekly": "At least once a week"
+    },
+    "duty": {
+      "answeredNotRequired": "You answered: I do not have to notify.",
+      "answeredRequired": "You answered: I have to notify.",
+      "askQuestion": "Do you have to notify the guests of this property? It is up to you.",
+      "askTitle": "The sources do not say for certain whether the rule applies to whoever lets a private home.",
+      "change": "Change answer",
+      "mustNotNotify": "I do not have to notify",
+      "mustNotify": "I have to notify",
+      "required": "For this property the notification is due.",
+      "reversible": "The answer blocks nothing and you can change it at any time.",
+      "saveFailed": "I could not save the answer. Try again."
+    },
+    "facts": {
+      "channel": "Where and how to notify",
+      "deadline": "Deadline",
+      "obligation": "What the canton asks",
+      "portal": "Official portal",
+      "retention": "How long to keep the data",
+      "support": "What CasaZen does"
+    },
+    "missing": {
+      "fixMunicipality": "Set the municipality",
+      "swiss_municipality_missing": "The municipality is missing. Without it we do not know which rules apply to your guests: choose it from the postal code and the locality, in the property details.",
+      "ticino_structure_id_missing": "The structure identification number is missing: it is needed to prepare the notification to the Ticino police.",
+      "title": "To complete",
+      "unknown": "There is still something to complete."
+    },
+    "obligation": {
+      "KeepRegister": "You must keep a register of the guests and show it to the police if asked.",
+      "Optional": "Keeping a register of the guests is optional.",
+      "ReportToAuthority": "You must send the guests' data to the authority.",
+      "Unknown": "The sources do not say for certain what the canton asks."
+    },
+    "privateRentals": {
+      "No": "It does not apply to whoever lets a private home.",
+      "Partial": "It applies only in part to whoever lets a private home.",
+      "Unknown": "It is not certain whether it applies to whoever lets a private home.",
+      "Yes": "It also applies to whoever lets a private home."
+    },
+    "retention": {
+      "none": "The sources give no period",
+      "years_one": "{{count}} year",
+      "years_other": "{{count}} years"
+    },
+    "step": {
+      "complete": "Nothing is missing to notify the guests.",
+      "intro": "To notify the guests we need to know where the property is and, in Ticino, its identification number."
+    },
+    "structureId": {
+      "loading": "Reading the structure number…",
+      "value": "Identification number: {{value}}"
+    },
+    "support": {
+      "AssistedNotification": "Coming soon: CasaZen will prepare the data and remind you of the deadline; you will make the notification.",
+      "FileExport": "Prepares the file in the official format: you upload it on the portal.",
+      "GuestRegister": "Coming soon: CasaZen will collect the guests' data for the register; you will keep it and show it to the police if asked.",
+      "InformationOnly": "Tells you what the canton asks: it sends nothing."
+    },
+    "toVerify": "To check with the municipality or the police"
   },
   "guests": {
     "title": "Guests",
@@ -16366,6 +16511,9 @@
       "otaReviewActionFailed": "A reply to a review, or your review of a guest, did not reach the portal: try again from the review.",
       "otaReviewReceived": "A guest left a review.",
       "scheduledMessageIssue": "A scheduled message for a guest did not go out or needs you: open the booking to see what happened.",
+      "domainVerified": "Your domain has been verified: it is now active.",
+      "ownerLoginFailed": "Owner sign-in on your domain could not be activated: try again from the domain settings.",
+      "ownerLoginReady": "Owner sign-in on your domain is active.",
       "ticinoNotificationDeclared": "Someone on your team updated the police notification of an arrival in Ticino.",
       "ticinoNotificationDue": "The guests of an arrival in Ticino must be notified to the cantonal police within 24 hours.",
       "ticinoNotificationOverdue": "The 24 hours to notify the cantonal police of the guests of an arrival in Ticino have passed."
@@ -17769,6 +17917,12 @@
     },
     "part": {
       "description": "What this step does and where it takes you.",
+      "missing": {
+        "more_one": "And {{count}} more property to complete",
+        "more_other": "And {{count}} more properties to complete",
+        "title": "What is missing, property by property",
+        "unnamed": "Unnamed property"
+      },
       "needsTitle": "What you need",
       "statusLabel": "Status of the step"
     },
@@ -17788,6 +17942,10 @@
       "fiscalDocuments": {
         "title": "Invoicing",
         "what": "The issuer data, the VAT, the numbering and how the documents are issued."
+      },
+      "guestRegistration": {
+        "title": "Guest notification (Switzerland)",
+        "what": "For your active properties in Switzerland: the municipality and, in Ticino, the structure number."
       },
       "identification": {
         "title": "Identification and access",
@@ -17864,6 +18022,7 @@
       "mapping_unavailable": "We cannot read the matches with Octorate right now. Try again shortly.",
       "mapping_unconfirmed": "The match between the listings on Octorate and your properties is not confirmed yet.",
       "no_property": "There are no properties to set up yet.",
+      "no_swiss_property": "You have no active properties in Switzerland: nothing to do here.",
       "not_provided": "This step is not available yet.",
       "notification_preferences_missing": "No administrator has chosen how to receive notifications yet.",
       "partner_integration_missing": "You have not activated any integration from the marketplace yet.",
@@ -17885,12 +18044,16 @@
         "property_inactive": "This property is not active.",
         "property_long_rent": "This property is a long-term rental: it is not needed here.",
         "sender_missing": "Who sends the Alloggiati Web and ISTAT communications for this property is missing.",
+        "swiss_municipality_missing": "The municipality of this property is missing.",
         "tax_rate_missing": "The tourist tax of this property's municipality is missing.",
+        "ticino_structure_id_missing": "The structure identification number of this property is missing.",
         "unknown": "There is still something to complete."
       },
       "required_part_not_done": "Complete first: {{parts}}.",
       "sender_missing": "Nobody is set to send the Alloggiati Web and ISTAT communications of at least one property.",
+      "swiss_municipality_missing": "The municipality of at least one active property in Switzerland is not set yet.",
       "tax_rate_missing": "The tourist tax of the comune of at least one property is missing.",
+      "ticino_structure_id_missing": "At least one active property in Ticino has no structure identification number.",
       "unknown": "This step is not complete yet."
     },
     "states": {
@@ -22563,6 +22726,7 @@
         "base-data": "Complete the details",
         "cin": "Add the CIN",
         "documents": "Upload the documents",
+        "guest-registration": "Complete the guest notification",
         "safety": "Fill in the safety sheet"
       },
       "fixLabel": "What to fix",
@@ -22576,6 +22740,7 @@
         "base-data": "The nightly rate and the basic data",
         "cin": "The CIN code",
         "documents": "The documents required in your region",
+        "guest-registration": "The municipality and, in Ticino, the structure number to notify the guests",
         "safety": "The safety sheet"
       },
       "readyDescription": "Guests can book from your site.",

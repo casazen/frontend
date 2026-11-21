@@ -7,11 +7,19 @@ import { I18nextProvider } from 'react-i18next';
 import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { DomainApi } from '@/api/domain.api';
-import type { OrgDomainConfig } from '@/types/domain.types';
+import type { DomainSurfaces, OrgDomainConfig } from '@/types/domain.types';
 import { CustomDomainSettingsPage } from '../custom-domain-settings-page';
+import { ORG_DOMAIN_QUERY_KEY } from '../use-org-domain';
 
 vi.mock('@/api/domain.api', () => ({
-  DomainApi: { getDomain: vi.fn(), setDomain: vi.fn(), verifyDomain: vi.fn(), resolveHost: vi.fn() },
+  DomainApi: {
+    getDomain: vi.fn(),
+    setDomain: vi.fn(),
+    verifyDomain: vi.fn(),
+    setSurfaces: vi.fn(),
+    requestOwnerLogin: vi.fn(),
+    resolveHost: vi.fn(),
+  },
 }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
 vi.mock('@/components/layout/app-shell', () => ({
@@ -61,8 +69,7 @@ function config(overrides: Partial<OrgDomainConfig> = {}, status: Partial<NonNul
   return { ...BASE, ...overrides, status: { ...BASE.status!, ...status } } as OrgDomainConfig;
 }
 
-function renderPage() {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+function renderPage(client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })) {
   return render(
     createElement(
       I18nextProvider,
@@ -273,5 +280,129 @@ describe('CustomDomainSettingsPage (BK-17, A3-25)', () => {
     fireEvent.click(await screen.findByTestId('verify-domain-button'));
 
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith(i18n.t('domain.settings.verifyFailed')));
+  });
+});
+
+const SURFACES: DomainSurfaces = {
+  guestAreaOnOwnDomain: false,
+  ownerPortalOnOwnDomain: false,
+  useOwnDomainForLinks: false,
+  ownerLoginHostState: 'NotRequested',
+  ownerLoginAutomatic: true,
+  effective: { guestArea: false, ownerPortal: false, ownerLoginReady: false, linksOnOwnDomain: false },
+};
+
+/** A verified domain on its own address, as the backend sends it (the `surfaces` come with the flag `WhiteLabelHost` on, otherwise `null`). */
+function verified(overrides: Partial<OrgDomainConfig> = {}) {
+  return config(
+    { domainVerificationStatus: 'Verified', publicUrls: { ...BASE.publicUrls, customDomainUrl: 'https://www.tuavilla.it' }, ...overrides },
+    { detail: null, verifiedAt: '2026-10-01T09:00:00Z' },
+  );
+}
+
+describe('CustomDomainSettingsPage: what runs on the agency domain (E40/F02/US02)', () => {
+  beforeEach(async () => {
+    entitlement.canUseCustomDomain = true;
+    await i18n.changeLanguage('it');
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
+  });
+
+  // Nothing changes without the flag of the backend: it sends no surfaces, and the page is the one of before (the tests above are its proof).
+  it.each([
+    ['null', { surfaces: null }],
+    ['absent', {}],
+  ] as const)('surfaces %s: no surfaces block', async (_name, overrides) => {
+    vi.mocked(DomainApi.getDomain).mockResolvedValue(verified(overrides));
+    renderPage();
+
+    expect(await screen.findByTestId('domain-status-panel')).toHaveAttribute('data-state', 'verified');
+    expect(screen.queryByTestId('domain-surfaces-panel')).not.toBeInTheDocument();
+    expect(screen.queryByRole('switch')).not.toBeInTheDocument();
+  });
+
+  it('surfaces_TheDomainIsNotVerified_NoSurfacesBlock', async () => {
+    vi.mocked(DomainApi.getDomain).mockResolvedValue(config({ surfaces: SURFACES }));
+    renderPage();
+
+    expect(await screen.findByTestId('domain-status-panel')).toHaveAttribute('data-state', 'waitingDns');
+    expect(screen.queryByTestId('domain-surfaces-panel')).not.toBeInTheDocument();
+  });
+
+  it('surfaces_VerifiedDomain_TheSwitchesShowTheStoredValuesAndASaveShowsTheSavedState', async () => {
+    vi.mocked(DomainApi.getDomain).mockResolvedValue(
+      verified({ surfaces: { ...SURFACES, guestAreaOnOwnDomain: true, effective: { ...SURFACES.effective, guestArea: true } } }),
+    );
+    vi.mocked(DomainApi.setSurfaces).mockResolvedValue(
+      verified({
+        surfaces: {
+          ...SURFACES,
+          guestAreaOnOwnDomain: true,
+          useOwnDomainForLinks: true,
+          effective: { ...SURFACES.effective, guestArea: true, linksOnOwnDomain: true },
+        },
+      }),
+    );
+    renderPage();
+
+    const panel = await screen.findByTestId('domain-surfaces-panel');
+    const guest = within(panel).getByRole('switch', { name: i18n.t('domain.surfaces.guestArea.label') });
+    const owner = within(panel).getByRole('switch', { name: i18n.t('domain.surfaces.ownerPortal.label') });
+    const links = within(panel).getByRole('switch', { name: i18n.t('domain.surfaces.links.label') });
+    expect(guest).toBeChecked();
+    expect(owner).not.toBeChecked();
+    expect(links).not.toBeChecked();
+
+    fireEvent.click(links);
+
+    // The three booleans, as the server holds them with the one that moved.
+    await waitFor(() =>
+      expect(DomainApi.setSurfaces).toHaveBeenCalledWith('org-1', {
+        guestAreaOnOwnDomain: true,
+        ownerPortalOnOwnDomain: false,
+        useOwnDomainForLinks: true,
+      }),
+    );
+    expect(DomainApi.setSurfaces).toHaveBeenCalledTimes(1);
+    // The page shows what the server answered: the choice is on, and the links say the address they use.
+    expect(await screen.findByTestId('domain-surface-links-note')).toHaveTextContent('https://www.tuavilla.it');
+    expect(links).toBeChecked();
+    expect(toast.success).toHaveBeenCalledWith(i18n.t('domain.settings.saved'));
+  });
+
+  it('surfaces_ASaveOfASwitch_LeavesWhatIsTypedInTheModeFormAlone', async () => {
+    vi.mocked(DomainApi.getDomain).mockResolvedValue(verified({ surfaces: SURFACES }));
+    vi.mocked(DomainApi.setSurfaces).mockResolvedValue(verified({ surfaces: { ...SURFACES, guestAreaOnOwnDomain: true } }));
+    renderPage();
+
+    const input = await screen.findByTestId('custom-domain-input');
+    expect(input).toHaveValue('www.tuavilla.it');
+    fireEvent.change(input, { target: { value: 'www.altro.it' } });
+    fireEvent.click(await screen.findByRole('switch', { name: i18n.t('domain.surfaces.guestArea.label') }));
+
+    // The answer is a new configuration with the same saved mode: the form is not filled again from it.
+    await waitFor(() => expect(toast.success).toHaveBeenCalledWith(i18n.t('domain.settings.saved')));
+    await waitFor(() => expect(screen.getByRole('switch', { name: i18n.t('domain.surfaces.guestArea.label') })).toBeEnabled());
+    expect(screen.getByTestId('custom-domain-input')).toHaveValue('www.altro.it');
+  });
+
+  it('page_OpensWithTheDomainInTheCache_ReadsItAgainAndStartsFromTheSavedMode', async () => {
+    // The client of the app keeps a query fresh for five minutes and does not read it again on mount: this page does (`fresh`), because the platform checks the domain while nobody looks.
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false, staleTime: 5 * 60 * 1000, refetchOnMount: false }, mutations: { retry: false } },
+    });
+    client.setQueryData([ORG_DOMAIN_QUERY_KEY, 'org-1'], config());
+    vi.mocked(DomainApi.getDomain).mockResolvedValue(verified({ surfaces: SURFACES }));
+    renderPage(client);
+
+    // At once, from the cache: the form is the saved mode, not the default one.
+    expect(screen.getByTestId('host-mode-radio')).toHaveValue('CustomDomain');
+    expect(screen.getByTestId('custom-domain-input')).toHaveValue('www.tuavilla.it');
+    // And the server is asked: the domain was verified in the meantime, so the block of the surfaces is there.
+    expect(await screen.findByTestId('domain-surfaces-panel')).toBeInTheDocument();
+    expect(DomainApi.getDomain).toHaveBeenCalledTimes(1);
   });
 });

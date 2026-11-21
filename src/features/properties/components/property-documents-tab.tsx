@@ -11,6 +11,7 @@ import { TICINO_LAYER_KIND, ticinoLayerPath } from '@/features/compliance/ticino
 import { TicinoStructureIdForm } from '@/features/compliance/ticino/ticino-structure-id-form';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import type { PropertyDetailDto } from '@/types';
+import { propertyEditPath } from '../properties-paths';
 import { PropertyCinBadge } from './property-cin-badge';
 import { PropertyDocumentsSection } from './property-documents-section';
 import { QuesturaCredentialsCard } from './questura-credentials-card';
@@ -46,12 +47,13 @@ export function PropertyDocumentsTab({ property, canWrite, onEditCin }: Property
           ) : null}
         </div>
         <p className="mt-2 text-sm text-foreground/70">{t('property.detail.cinDescription')}</p>
-      </PlainSection> : <SwissRegistrationGuidance />}
+      </PlainSection> : <SwissRegistrationGuidance propertyId={property.id} variant="page" canWrite={canWrite} municipalityHref={propertyEditPath(property.id)} />}
 
       {property.isInTicino ? (
         <PlainSection title={t('swiss.property.title')}>
           <p className="mb-3 text-sm text-foreground/70">{t('swiss.property.description')}</p>
-          {canWrite ? (
+          {/* With the regimes on the structure number is in the card above, with what is still missing: it is never asked twice on the page. */}
+          {flags.guestRegistrationRegimes ? null : canWrite ? (
             <TicinoStructureIdForm propertyId={property.id} value={property.ticinoStructureId} />
           ) : (
             <p className="text-sm">{property.ticinoStructureId ?? t('swiss.property.noId')}</p>

@@ -2,12 +2,15 @@ import { describe, it, expect } from 'vitest';
 import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from 'axios';
 import { getActivationBlockedProblem } from '@/api/compliance.api';
 import {
+  ACTIVATION_STEP_ORDER,
+  ORIGIN_STEP_PARAM,
   REVIEW_STEP_ID,
   changedPropertyFields,
   initialStepId,
   knownBlockers,
   openReminders,
   propertyFormPayload,
+  stepHref,
   wizardStepIds,
 } from '../activation-wizard-model';
 import type { ComplianceWizardStep } from '@/types/compliance.types';
@@ -150,5 +153,39 @@ describe('getActivationBlockedProblem', () => {
     expect(getActivationBlockedProblem(httpError(409, { code: 'activation_tos_required' }))).toBeUndefined();
     expect(getActivationBlockedProblem(httpError(422, { code: 'property_activation_blocked' }))).toBeUndefined();
     expect(getActivationBlockedProblem(new Error('boom'))).toBeUndefined();
+  });
+});
+
+// E29/F02/US02/T01: the step of a property in Switzerland, where the card of the regime of its canton is.
+describe('the step «Notifica degli ospiti» of a property in Switzerland', () => {
+  const swiss = step('guest-registration', 'pending', true, [{ step: 'guest-registration', code: 'ticino_structure_id_missing', message: 'm' }]);
+
+  it('ActivationStepOrder_TheSwissStep_IsTheLastOfTheKnownOnesBeforeTheSummary', () => {
+    expect(ACTIVATION_STEP_ORDER.at(-1)).toBe('guest-registration');
+    expect(wizardStepIds([swiss, step('ical', 'warning', false), step('base-data', 'complete')])).toEqual(['base-data', 'ical', 'guest-registration', REVIEW_STEP_ID]);
+  });
+
+  it('InitialStepId_TheSwissStepIsTheFirstBlockerStillOpen_TheWizardOpensOnIt', () => {
+    expect(initialStepId([step('base-data', 'complete'), swiss])).toBe('guest-registration');
+    // For a property that is already active it is a reminder (it does not block): the wizard opens on the summary.
+    expect(initialStepId([step('base-data', 'complete'), { ...swiss, status: 'warning', blocker: false }])).toBe(REVIEW_STEP_ID);
+  });
+
+  it('KnownBlockers_TheSwissStepWithItsReasons_ListsThemWithTheStepTheyBelongTo', () => {
+    expect(knownBlockers([swiss])).toEqual([{ step: 'guest-registration', code: 'ticino_structure_id_missing', message: 'm' }]);
+  });
+
+  it('StepHref_AnyStep_KeepsTheAddressItAlwaysHad', () => {
+    expect(stepHref('cin')).toEqual({ search: '?step=cin' });
+    expect(stepHref('tourist-tax', REVIEW_STEP_ID)).toEqual({ search: '?step=tourist-tax' });
+    expect(stepHref('guest-registration')).toEqual({ search: '?step=guest-registration' });
+  });
+
+  it('StepHref_TheSwissStepFromAnotherStep_RemembersWhereTheHostCameFrom', () => {
+    expect(ORIGIN_STEP_PARAM).toBe('from');
+    expect(stepHref('guest-registration', REVIEW_STEP_ID)).toEqual({ search: '?step=guest-registration&from=review' });
+    expect(stepHref('guest-registration', 'base-data')).toEqual({ search: '?step=guest-registration&from=base-data' });
+    // Never back to itself.
+    expect(stepHref('guest-registration', 'guest-registration')).toEqual({ search: '?step=guest-registration' });
   });
 });

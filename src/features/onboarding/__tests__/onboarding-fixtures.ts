@@ -103,6 +103,8 @@ export function plan(overrides: Partial<Record<OnboardingPartKey, Partial<Onboar
     messagesAi: part('messagesAi', { state: 'notAvailable', reason: 'not_provided' }),
     fiscalDocuments: part('fiscalDocuments', { state: 'notAvailable', reason: 'not_provided' }),
     partners: part('partners', { state: 'notAvailable', reason: 'not_provided' }),
+    // The common host has no active property in Switzerland: the part does not apply (and the plan does not list it). A test of the Swiss host overrides it.
+    guestRegistration: part('guestRegistration', { state: 'notAvailable', reason: 'no_swiss_property', launchTarget: 'guestRegistration' }),
     activation: part('activation', { state: 'blocked', reason: 'required_part_not_done', requires: ['octorateConnection', 'properties'] }),
   };
   const parts = ONBOARDING_PART_KEYS.map((code) => ({ ...base[code], ...overrides[code] }));

@@ -22,7 +22,7 @@ export function commercialRouteAllowed(profile: UserDetail | null | undefined, p
 
 export function commercialPartAllowed(profile: UserDetail | null | undefined, part: string): boolean {
   if (!profile?.commercialSignup) return true;
-  const modules: Record<string, string> = { octorateConnection: 'channels', channels: 'channels', listings: 'channels', prices: 'revenue', pricesRules: 'revenue', compliance: 'compliance', identification: 'identification', messagesAi: 'messages-ai', fiscalDocuments: 'fiscal', partners: 'operations' };
+  const modules: Record<string, string> = { octorateConnection: 'channels', channels: 'channels', listings: 'channels', prices: 'revenue', pricesRules: 'revenue', compliance: 'compliance', guestRegistration: 'compliance', identification: 'identification', messagesAi: 'messages-ai', fiscalDocuments: 'fiscal', partners: 'operations' };
   const module = modules[part];
   return !module || profile.commercialEnabledAddons?.includes(module) === true;
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,18 +22,28 @@ interface TicinoStructureIdFormProps {
   value: string | null | undefined;
   /** Called after a successful save (the page reloads its day). */
   onSaved?: () => void;
+  /**
+   * Called with `true` while the save is on its way and with `false` when it is over: the card of the regime keeps its other buttons off meanwhile, so no two
+   * changes of the same card are in flight at once.
+   */
+  onPendingChange?: (pending: boolean) => void;
 }
 
 /**
  * The «Numero identificativo LEAR / NO-LEAR» of a Ticino property (casazen/backend#979): the first field of every row of the file for the
  * police portal, received from Ticino Turismo when the structure registers. Saved with `PUT /properties/{id}` (only this field).
  */
-export function TicinoStructureIdForm({ propertyId, value, onSaved }: TicinoStructureIdFormProps) {
+export function TicinoStructureIdForm({ propertyId, value, onSaved, onPendingChange }: TicinoStructureIdFormProps) {
   const { t } = useTranslation();
   const update = useUpdateProperty();
   const [draft, setDraft] = useState(value ?? '');
   const [invalid, setInvalid] = useState(false);
   const inputId = `ticino-structure-id-${propertyId}`;
+  const pending = update.isPending;
+
+  useEffect(() => {
+    onPendingChange?.(pending);
+  }, [pending, onPendingChange]);
 
   const save = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -41,7 +51,11 @@ export function TicinoStructureIdForm({ propertyId, value, onSaved }: TicinoStru
       setInvalid(true);
       return;
     }
-    await update.mutateAsync({ id: propertyId, data: { ticinoStructureId: normalizeTicinoStructureId(draft) } });
+    try {
+      await update.mutateAsync({ id: propertyId, data: { ticinoStructureId: normalizeTicinoStructureId(draft) } });
+    } catch {
+      return; // The toast of the mutation tells why; the field keeps what was typed.
+    }
     onSaved?.();
   };
 
