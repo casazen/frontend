@@ -116,6 +116,13 @@ export interface ResolveHostResponse {
   embedEnabled?: boolean;
   /** What the agency set for tracking: its Google Tag Manager container, or null when it set none (E40, NF-149). Absent on an older backend. */
   tracking?: { gtmContainerId: string | null } | null;
+  /**
+   * What the domain serves besides the booking site (E40, NF-140): the guest check-in page and the owner portal. True only with the flag `WhiteLabelHost`, an allowed plan, a verified domain and the setting of the
+   * agency. Absent on an older backend, and a missing member of it: off, the host then serves exactly what it served before.
+   */
+  surfaces?: { guestArea?: boolean; ownerPortal?: boolean } | null;
+  /** The domain is registered with the sign-in service, so the owners can sign in on it (E40, NF-141); only meaningful with `surfaces.ownerPortal`. Absent on an older backend: false. */
+  ownerLoginReady?: boolean;
   branding: {
     logoUrl?: string | null;
     primaryColor?: string | null;

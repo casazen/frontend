@@ -5,7 +5,7 @@ import type {
   DirectBookingQuotePayload,
   DirectBookingResponse,
   GuestBookingDetails,
-  GuestBookingLookupPayload,
+  GuestBookingEmailLookup,
   CheckoutOutcome,
   CheckoutPaymentSession,
   OnSiteRequestConfirmation,
@@ -49,11 +49,11 @@ export const publicBookingApi = {
    * URL). 404 `guest_booking_not_found` whatever does not match; 429 `rate_limited`. The page no longer uses it: it opens a guest
    * session once and reads the booking with its token (`guestSessionApi`, DB-06c); the endpoint stays for compatibility.
    */
-  lookupGuestBooking: (payload: GuestBookingLookupPayload) =>
+  lookupGuestBooking: (payload: GuestBookingEmailLookup) =>
     ApiClient.post<GuestBookingDetails>('/public/bookings/lookup', payload, { public: true }),
 
   /** Emails the online check-in link again to the address of the booking (202); 409 `guest_check_in_link_unavailable`. */
-  sendGuestCheckInLink: (payload: GuestBookingLookupPayload) =>
+  sendGuestCheckInLink: (payload: GuestBookingEmailLookup) =>
     ApiClient.post<void>('/public/bookings/lookup/check-in-link', payload, { public: true }),
 
   /**
