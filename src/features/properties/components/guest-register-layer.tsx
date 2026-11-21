@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { isAxiosError } from 'axios';
 import { Download, Loader2, Printer } from 'lucide-react';
@@ -94,7 +94,16 @@ function GuestRegisterLayer({ propertyId, close }: GuestRegisterLayerProps) {
 
   // The sheet to print holds the guests: it is in the page while the browser prints and not a moment longer.
   const [sheet, setSheet] = useState<PrintedSheet | null>(null);
+  // A request is not cancelled when the layer is closed: if the file arrives after that there is no sheet to draw, and the browser must not print the page behind it.
+  const isOpen = useRef(true);
+  useEffect(() => {
+    isOpen.current = true;
+    return () => {
+      isOpen.current = false;
+    };
+  }, []);
   const print = usePrintGuestRegister(propertyId, (table, printed) => {
+    if (!isOpen.current) return;
     // The sheet has to be in the page when the browser draws it: it is drawn now, then printed, and taken away when the printing is over (or the layer is closed).
     flushSync(() => setSheet({ table, period: printed }));
     window.addEventListener('afterprint', () => setSheet(null), { once: true });

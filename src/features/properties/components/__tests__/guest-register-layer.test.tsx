@@ -291,6 +291,27 @@ describe('GuestRegisterLayer, the guest register of a property in Switzerland (E
       expect(document.querySelector('.guest-register-sheet')).toBeNull();
     });
 
+    // A request is not cancelled when the layer is closed: the file that arrives afterwards finds no sheet to draw, and the browser must not print the page behind it.
+    it('GuestRegisterLayer_TheLayerClosedWhileTheFileIsOnItsWay_PrintsNothingWhenTheFileArrives', async () => {
+      const print = vi.spyOn(window, 'print').mockImplementation(() => undefined);
+      let deliver: (file: { blob: Blob; contentDisposition: string | null }) => void = () => undefined;
+      vi.mocked(guestRegisterApi.download).mockReturnValue(new Promise((resolve) => (deliver = resolve)));
+      const { client, unmount } = renderLayer();
+      const button = await screen.findByTestId('guest-register-print');
+      await waitFor(() => expect(button).toBeEnabled());
+      fireEvent.click(button);
+      await waitFor(() => expect(guestRegisterApi.download).toHaveBeenCalledTimes(1));
+      const mutation = client.getMutationCache().getAll()[0];
+
+      // The host closes the layer while the file is on its way; the file arrives afterwards and the request runs to its end.
+      unmount();
+      deliver({ blob: new Blob([`\uFEFF${CSV}`], { type: 'text/csv' }), contentDisposition: null });
+      await waitFor(() => expect(mutation.state.status).toBe('success'));
+
+      expect(print).not.toHaveBeenCalled();
+      expect(document.querySelector('.guest-register-sheet')).toBeNull();
+    });
+
     it('GuestRegisterLayer_AFailedPrint_IsToldAndNothingIsPrinted', async () => {
       const print = vi.spyOn(window, 'print').mockImplementation(() => undefined);
       vi.mocked(guestRegisterApi.download).mockRejectedValue(apiError(500));

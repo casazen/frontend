@@ -59,7 +59,7 @@ export function useDownloadGuestRegister(propertyId: string) {
 /**
  * Reads the register of a period for the printed sheet: the same file as the download, parsed into the table the sheet draws. The table holds the personal data of the guests, so the
  * mutation never keeps it (it returns nothing, and is dropped as soon as nothing watches it): `onTable` is handed the table and the period it was made for, and it is the caller's to
- * draw it, print it and let it go.
+ * draw it, print it and let it go. A mutation is not cancelled when the screen that started it is gone: `onTable` may be called after the layer was closed, and the caller then ignores it.
  */
 export function usePrintGuestRegister(propertyId: string, onTable: (table: GuestRegisterTable, period: GuestRegisterPeriod) => void) {
   return useMutation({
