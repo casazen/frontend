@@ -10088,6 +10088,7 @@
       "openPortal": "Open the official portal",
       "place": "{{municipality}} · Canton {{canton}}",
       "portalLater": "You will be able to open it from the property page, when you are done here.",
+      "refreshFailed": "I can't refresh this information: what you see may not be up to date. What you typed stays here.",
       "retry": "Try again",
       "title": "Guest notification in your canton",
       "unsupported": "CasaZen does not have the guest notification rules for the country of this property yet."

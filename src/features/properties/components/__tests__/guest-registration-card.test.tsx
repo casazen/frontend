@@ -378,6 +378,59 @@ describe('GuestRegistrationCard, the regime of the canton of a property (E29/F02
       expect(screen.queryByTestId('guest-registration-duty')).not.toBeInTheDocument();
     });
 
+    // A 404 is what the server says about the property; a refresh that fails for another reason (the network, a 5xx) is not: the card the host is working in stays, with what was typed.
+    it('GuestRegistrationCard_ARefreshFailsWith5xxAfterItWorked_KeepsTheCardAndWhatWasTyped_AndSaysItMayNotBeUpToDate', async () => {
+      vi.mocked(guestRegistrationApi.get).mockResolvedValue(card({ identifierMissing: ['ticino_structure_id_missing'] }));
+      const { client } = renderCard();
+      fireEvent.change(await screen.findByLabelText(t('swiss.structureId.label')), { target: { value: 'nl-12' } });
+
+      vi.mocked(guestRegistrationApi.get).mockRejectedValue(problemError(500, {}));
+      await act(async () => {
+        await client.invalidateQueries({ queryKey: guestRegistrationKey(PROPERTY_ID) });
+      });
+
+      const notice = await screen.findByTestId('guest-registration-refresh-error');
+      expect(notice).toHaveTextContent(t('guestRegistration.card.refreshFailed'));
+      expect(screen.queryByTestId('guest-registration-error')).not.toBeInTheDocument();
+      expect(screen.getByTestId('guest-registration-summary')).toBeInTheDocument();
+      expect(screen.getByLabelText(t('swiss.structureId.label'))).toHaveValue('NL-12');
+
+      // «Riprova» reads again: once it works the notice is gone and the number is still where it was.
+      vi.mocked(guestRegistrationApi.get).mockResolvedValue(card({ identifierMissing: ['ticino_structure_id_missing'] }));
+      fireEvent.click(within(notice).getByRole('button', { name: t('guestRegistration.card.retry') }));
+      await waitFor(() => expect(screen.queryByTestId('guest-registration-refresh-error')).not.toBeInTheDocument());
+      expect(screen.getByLabelText(t('swiss.structureId.label'))).toHaveValue('NL-12');
+    });
+
+    it('GuestRegistrationCard_TheNumberOfThePropertyFailsToRefreshWith5xx_KeepsTheFieldWithWhatWasTyped', async () => {
+      vi.mocked(guestRegistrationApi.get).mockResolvedValue(card({ identifierMissing: ['ticino_structure_id_missing'] }));
+      const { client } = renderCard();
+      fireEvent.change(await screen.findByLabelText(t('swiss.structureId.label')), { target: { value: 'nl-12' } });
+
+      vi.mocked(propertiesApi.getDetail).mockRejectedValue(problemError(500, {}));
+      await act(async () => {
+        await client.invalidateQueries({ queryKey: ['properties', PROPERTY_ID, 'detail'] });
+      });
+
+      expect(await screen.findByTestId('guest-registration-structure-refresh-error')).toHaveTextContent(t('guestRegistration.card.refreshFailed'));
+      expect(screen.queryByTestId('guest-registration-structure-error')).not.toBeInTheDocument();
+      expect(screen.getByLabelText(t('swiss.structureId.label'))).toHaveValue('NL-12');
+    });
+
+    it('GuestRegistrationCard_TheNumberOfThePropertyIsNotFoundAfterItWorked_IsAFailureNeverTheOldNumber', async () => {
+      vi.mocked(guestRegistrationApi.get).mockResolvedValue(card({ identifierMissing: ['ticino_structure_id_missing'] }));
+      const { client } = renderCard();
+      await screen.findByLabelText(t('swiss.structureId.label'));
+
+      vi.mocked(propertiesApi.getDetail).mockRejectedValue(problemError(404, { code: 'property_not_found' }));
+      await act(async () => {
+        await client.invalidateQueries({ queryKey: ['properties', PROPERTY_ID, 'detail'] });
+      });
+
+      expect(await screen.findByTestId('guest-registration-structure-error')).toBeInTheDocument();
+      expect(screen.queryByTestId('ticino-structure-id-form')).not.toBeInTheDocument();
+    });
+
     it('GuestRegistrationCard_TheCallerDoesNotReachTheProperty_SaysNoAccess', async () => {
       vi.mocked(guestRegistrationApi.get).mockRejectedValue(problemError(403, {}));
       renderCard();

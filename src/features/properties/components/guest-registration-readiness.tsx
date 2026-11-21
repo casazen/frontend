@@ -3,8 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { AlertCircle, CircleCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TicinoStructureIdForm } from '@/features/compliance/ticino/ticino-structure-id-form';
+import { getHttpStatus } from '@/lib/api-errors';
 import { usePropertyDetail } from '@/queries/use-properties';
 import { missingTextKey } from '../lib/guest-registration-model';
+import { RefreshFailedNotice } from './guest-registration-notice';
 
 interface GuestRegistrationReadinessProps {
   propertyId: string;
@@ -93,8 +95,11 @@ function StructureIdBlock({ propertyId, canWrite, busy, onPendingChange, onSaved
   const { t } = useTranslation();
   const detail = usePropertyDetail(propertyId);
 
-  // A read that failed is not the old answer: TanStack Query keeps the data it had, and a stored number must not be shown (or replaced) from it.
-  if (detail.isError) {
+  // A read that failed is not the old answer: TanStack Query keeps the data it had. What the server says about the property (404, 403), or no number to show at all, is told as a failure
+  // and replaces the field. A refresh that did not work (the network, a 5xx) with the number on screen does not: the field stays with what is being typed, and a notice says that what is
+  // shown may not be up to date.
+  const status = detail.isError ? getHttpStatus(detail.error) : undefined;
+  if (detail.isError && (!detail.data || status === 404 || status === 403)) {
     return (
       <div className="space-y-2" role="alert" data-testid="guest-registration-structure-error">
         <p className="text-sm text-destructive">{t('guestRegistration.card.loadFailed')}</p>
@@ -112,20 +117,29 @@ function StructureIdBlock({ propertyId, canWrite, busy, onPendingChange, onSaved
     );
   }
 
+  const notice = detail.isError ? (
+    <RefreshFailedNotice testId="guest-registration-structure-refresh-error" retrying={detail.isFetching} onRetry={() => void detail.refetch()} />
+  ) : null;
   const stored = detail.data.ticinoStructureId ?? null;
   if (!canWrite) {
     return (
-      <p className="flex items-start gap-2 text-sm" data-testid="guest-registration-structure-value">
-        {stored ? <CircleCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-success-foreground" /> : null}
-        <span>{stored ? t('guestRegistration.structureId.value', { value: stored }) : t('swiss.property.noId')}</span>
-      </p>
+      <>
+        {notice}
+        <p className="flex items-start gap-2 text-sm" data-testid="guest-registration-structure-value">
+          {stored ? <CircleCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-success-foreground" /> : null}
+          <span>{stored ? t('guestRegistration.structureId.value', { value: stored }) : t('swiss.property.noId')}</span>
+        </p>
+      </>
     );
   }
 
   // The form starts from the number the property has: it is made again only when that number changes under it (saved, or changed on another device), never while it is typed in.
   return (
-    <fieldset disabled={busy} className="min-w-0 border-0 p-0" data-testid="guest-registration-structure">
-      <TicinoStructureIdForm key={stored ?? ''} propertyId={propertyId} value={stored} onSaved={onSaved} onPendingChange={onPendingChange} />
-    </fieldset>
+    <>
+      {notice}
+      <fieldset disabled={busy} className="min-w-0 border-0 p-0" data-testid="guest-registration-structure">
+        <TicinoStructureIdForm key={stored ?? ''} propertyId={propertyId} value={stored} onSaved={onSaved} onPendingChange={onPendingChange} />
+      </fieldset>
+    </>
   );
 }

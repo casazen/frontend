@@ -318,6 +318,7 @@ describe('keys used in code', () => {
       ...['base-data', 'cin', 'documents', 'safety', 'guest-registration'].flatMap((s) => [`propertyWizard.done.open.${s}`, `propertyWizard.done.fix.${s}`]),
       'guestRegistration.retention.years_one',
       'guestRegistration.retention.years_other',
+      'guestRegistration.card.refreshFailed',
       'apiErrors.codes.guestRegistrationCountryNotSupported',
       'apiErrors.codes.guestRegistrationOverrideNotApplicable',
       // D.L. 145/2023 safety checklist (CO-07): items, facts and stable codes of the API.

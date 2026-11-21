@@ -12,6 +12,7 @@ import type { StatusTone } from '@/lib/status-dictionary';
 import { useGuestRegistration, useSetGuestRegistrationOverride } from '@/queries/guestRegistration';
 import { certaintyView, isPlaceUnknown, isTicinoRegime, missingCodesOf, portalLink, regimeFacts } from '../lib/guest-registration-model';
 import { GuestRegistrationDuty } from './guest-registration-duty';
+import { RefreshFailedNotice } from './guest-registration-notice';
 import { GuestRegistrationReadiness } from './guest-registration-readiness';
 
 /** The 422 of the API for a property whose country the catalog has no regime for. */
@@ -73,27 +74,30 @@ export function GuestRegistrationCard({ propertyId, variant, canWrite, onFixMuni
   };
   const answerError = answer.isError ? (getProblemMessage(answer.error, t) ?? t('guestRegistration.duty.saveFailed')) : null;
 
+  // Read `isError` before `data`: TanStack Query keeps the old data on an error, and a 404 or a 403 must not be told with it. What the server says about THIS property (404, 403, and the
+  // 422 of a country with no regime) replaces the card. Any other failure (the network, a 5xx) is only a refresh that did not work: with a card on screen it stays, with the structure
+  // number that is being typed, and a notice says that it may not be up to date.
+  const status = query.isError ? getHttpStatus(query.error) : undefined;
+  const code = query.isError && isAxiosError(query.error) ? getProblemCode(query.error.response?.data) : undefined;
+  const unsupportedCountry = status === 422 && code === COUNTRY_NOT_SUPPORTED;
+  const unreadable = query.isError && status !== 404 && status !== 403 && !unsupportedCountry;
+
   let body: ReactNode;
-  if (query.isError) {
-    // Read `isError` before `data`: TanStack Query keeps the old data on an error, and a 404 or a 403 must not be told with it.
-    const status = getHttpStatus(query.error);
-    const code = isAxiosError(query.error) ? getProblemCode(query.error.response?.data) : undefined;
-    if (status === 404) {
-      body = <p className="text-sm" data-testid="guest-registration-not-found">{t('guestRegistration.card.notFound')}</p>;
-    } else if (status === 403) {
-      body = <p className="text-sm" data-testid="guest-registration-forbidden">{t('guestRegistration.card.forbidden')}</p>;
-    } else if (status === 422 && code === COUNTRY_NOT_SUPPORTED) {
-      body = <p className="text-sm" data-testid="guest-registration-unsupported">{t('guestRegistration.card.unsupported')}</p>;
-    } else {
-      body = (
-        <div className="space-y-2" role="alert" data-testid="guest-registration-error">
-          <p className="text-sm text-destructive">{t('guestRegistration.card.loadFailed')}</p>
-          <Button type="button" variant="outline" size="sm" onClick={() => void query.refetch()}>
-            {t('guestRegistration.card.retry')}
-          </Button>
-        </div>
-      );
-    }
+  if (query.isError && status === 404) {
+    body = <p className="text-sm" data-testid="guest-registration-not-found">{t('guestRegistration.card.notFound')}</p>;
+  } else if (query.isError && status === 403) {
+    body = <p className="text-sm" data-testid="guest-registration-forbidden">{t('guestRegistration.card.forbidden')}</p>;
+  } else if (query.isError && unsupportedCountry) {
+    body = <p className="text-sm" data-testid="guest-registration-unsupported">{t('guestRegistration.card.unsupported')}</p>;
+  } else if (unreadable && !query.data) {
+    body = (
+      <div className="space-y-2" role="alert" data-testid="guest-registration-error">
+        <p className="text-sm text-destructive">{t('guestRegistration.card.loadFailed')}</p>
+        <Button type="button" variant="outline" size="sm" onClick={() => void query.refetch()}>
+          {t('guestRegistration.card.retry')}
+        </Button>
+      </div>
+    );
   } else if (!query.data) {
     body = (
       <p className="flex items-center gap-2 text-sm text-foreground/70" role="status" data-testid="guest-registration-loading">
@@ -115,6 +119,7 @@ export function GuestRegistrationCard({ propertyId, variant, canWrite, onFixMuni
 
     body = (
       <>
+        {unreadable ? <RefreshFailedNotice testId="guest-registration-refresh-error" retrying={query.isFetching} onRetry={() => void query.refetch()} /> : null}
         {municipality && canton ? (
           <p className="text-sm text-foreground/70" data-testid="guest-registration-place">
             {t('guestRegistration.card.place', { municipality, canton })}

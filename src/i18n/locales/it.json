@@ -10088,6 +10088,7 @@
       "openPortal": "Apri il portale ufficiale",
       "place": "{{municipality}} · Cantone {{canton}}",
       "portalLater": "Potrai aprirlo dalla scheda dell'immobile, quando hai finito qui.",
+      "refreshFailed": "Non riesco ad aggiornare queste informazioni: quello che vedi potrebbe non essere aggiornato. Quello che hai scritto resta qui.",
       "retry": "Riprova",
       "title": "Notifica degli ospiti nel tuo cantone",
       "unsupported": "CasaZen non ha ancora le regole sulla notifica degli ospiti per il paese di questo immobile."
