@@ -10,7 +10,7 @@ import { getHttpStatus, getProblemCode, getProblemMessage } from '@/lib/api-erro
 import { cn } from '@/lib/utils';
 import type { StatusTone } from '@/lib/status-dictionary';
 import { useGuestRegistration, useSetGuestRegistrationOverride } from '@/queries/guestRegistration';
-import { certaintyView, isTicinoRegime, missingCodesOf, portalLink, regimeFacts } from '../lib/guest-registration-model';
+import { certaintyView, isPlaceUnknown, isTicinoRegime, missingCodesOf, portalLink, regimeFacts } from '../lib/guest-registration-model';
 import { GuestRegistrationDuty } from './guest-registration-duty';
 import { GuestRegistrationReadiness } from './guest-registration-readiness';
 
@@ -111,6 +111,7 @@ export function GuestRegistrationCard({ propertyId, variant, canWrite, onFixMuni
     const portal = portalLink(regime.portalUrl);
     const municipality = place && !place.ambiguous && place.municipalityName ? place.municipalityName : null;
     const canton = place?.cantonCode ?? regime.cantonCode;
+    const missing = missingCodesOf(query.data.identifierMissing);
 
     body = (
       <>
@@ -180,12 +181,13 @@ export function GuestRegistrationCard({ propertyId, variant, canWrite, onFixMuni
           savingValue={answer.variables}
           busy={busy}
           error={answerError}
+          placeKnown={!isPlaceUnknown(missing)}
           onAnswer={(override) => answer.mutate(override)}
         />
 
         <GuestRegistrationReadiness
           propertyId={propertyId}
-          missing={missingCodesOf(query.data.identifierMissing)}
+          missing={missing}
           ticino={isTicinoRegime(regime)}
           canWrite={canWrite}
           busy={busy}

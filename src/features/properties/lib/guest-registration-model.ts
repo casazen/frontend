@@ -91,6 +91,15 @@ export function isMissingCode(code: string): code is GuestRegistrationMissingCod
   return (GUEST_REGISTRATION_MISSING_CODES as readonly string[]).includes(code);
 }
 
+/**
+ * The municipality of the property is not known (so neither is its canton): nobody can say yet what the rule is, and the question «must you notify?» has no meaning. The card asks it
+ * only once the place is known: an answer given now would be kept for no canton and, as the host's setting wins over the regime, would later silence the duty of the one it turns out to be.
+ */
+export function isPlaceUnknown(missing: readonly string[]): boolean {
+  const municipalityMissing: GuestRegistrationMissingCode = 'swiss_municipality_missing';
+  return missing.includes(municipalityMissing);
+}
+
 /** The key of the sentence that says what is missing (`guestRegistration.missing.*`): a code this version does not know reads as a neutral line, never as the code. */
 export function missingTextKey(code: string): string {
   return isMissingCode(code) ? `guestRegistration.missing.${code}` : 'guestRegistration.missing.unknown';

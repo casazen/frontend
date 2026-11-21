@@ -310,6 +310,28 @@ describe('GuestRegistrationCard, the regime of the canton of a property (E29/F02
       expect(onFixMunicipality).toHaveBeenCalledTimes(1);
     });
 
+    // Found in review: with no municipality there is no canton, so «must you notify?» has no meaning, and an answer given then is kept for no canton and later wins over the duty of the one the property is in.
+    it('GuestRegistrationCard_UnknownMunicipality_DoesNotAskWhetherTheGuestsMustBeNotifiedBeforeThePlaceIsKnown', async () => {
+      vi.mocked(guestRegistrationApi.get).mockResolvedValue(unknownPlaceCard());
+      renderCard({ onFixMunicipality: vi.fn() });
+
+      // «Indica il comune» comes first, and nothing asks the host to decide.
+      expect(await screen.findByTestId('guest-registration-fix-municipality')).toBeInTheDocument();
+      expect(screen.queryByTestId('guest-registration-answer-Required')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('guest-registration-answer-NotRequired')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('guest-registration-duty-ask')).not.toBeInTheDocument();
+      expect(screen.queryByText(t('guestRegistration.duty.askQuestion'))).not.toBeInTheDocument();
+      expect(guestRegistrationApi.setOverride).not.toHaveBeenCalled();
+    });
+
+    it('GuestRegistrationCard_UnknownMunicipalityWithAnAnswerGivenBefore_ShowsItAndLetsTheHostTakeItBack', async () => {
+      vi.mocked(guestRegistrationApi.get).mockResolvedValue(unknownPlaceCard({ effectiveDuty: 'NotRequired', override: 'NotRequired' }));
+      renderCard();
+
+      expect(await screen.findByTestId('guest-registration-duty-answered')).toHaveTextContent(t('guestRegistration.duty.answeredNotRequired'));
+      expect(screen.getByTestId('guest-registration-duty-change')).toBeEnabled();
+    });
+
     it('GuestRegistrationCard_UnknownMunicipalityOnAPage_LinksToTheFormOfTheProperty_AndAReaderGetsNoAction', async () => {
       vi.mocked(guestRegistrationApi.get).mockResolvedValue(unknownPlaceCard());
       const { unmount } = renderCard({ municipalityHref: `/app/short-rent/properties/${PROPERTY_ID}/edit` });

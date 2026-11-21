@@ -18,15 +18,19 @@ interface GuestRegistrationDutyProps {
   busy: boolean;
   /** Why the last answer was not saved; `null` when it was, or none was given. */
   error: string | null;
+  /** The municipality of the property, so its canton, is known: until then there is nothing to decide, and the question is not asked (an answer already given still shows, to be taken back). */
+  placeKnown: boolean;
   onAnswer: (override: GuestNotificationOverride | null) => void;
 }
 
 /**
  * Whether the guests of the property must be notified, as CasaZen treats it (E29/F02/US02/T01, NF-125, decision D5). A duty the sources settle is told as such. A duty
  * they do not settle for a private home (`Ask`) is the host's to decide, with two plain answers and nothing in red: the answer is saved on the property, changes nothing
- * that was already done and can be taken back at any time, so it never blocks anything. The buttons wait while any change of the card is on its way.
+ * that was already done and can be taken back at any time, so it never blocks anything. The buttons wait while any change of the card is on its way. The question is asked
+ * only where the place is known: for a property whose municipality is missing «Indica il comune» comes first, and an answer given for no canton would later win over the duty of
+ * the one the property turns out to be in.
  */
-export function GuestRegistrationDuty({ duty, override, canWrite, saving, savingValue, busy, error, onAnswer }: GuestRegistrationDutyProps) {
+export function GuestRegistrationDuty({ duty, override, canWrite, saving, savingValue, busy, error, placeKnown, onAnswer }: GuestRegistrationDutyProps) {
   const { t } = useTranslation();
   const answered = override === 'Required' || override === 'NotRequired' ? override : duty === 'NotRequired' ? 'NotRequired' : null;
 
@@ -54,6 +58,9 @@ export function GuestRegistrationDuty({ duty, override, canWrite, saving, saving
         ) : null}
       </>
     );
+  } else if (duty === 'Ask' && !placeKnown) {
+    // Nothing to decide yet: the list of what is missing says what comes first.
+    content = null;
   } else if (duty === 'Ask') {
     content = (
       <>
@@ -93,6 +100,9 @@ export function GuestRegistrationDuty({ duty, override, canWrite, saving, saving
     // A duty this version does not know: nothing is claimed about it.
     content = null;
   }
+
+  // Nothing to say and nothing to explain: no empty block between the facts and what is missing.
+  if (content === null && !error) return null;
 
   return (
     <div className="space-y-2" aria-live="polite" data-testid="guest-registration-duty" data-duty={duty}>
