@@ -28,6 +28,7 @@ import { EmbedBridgeContext, useEmbedBridgeController, type EmbedErrorCode } fro
 import { useEmbedLanguage } from '@/features/embed/use-embed-language';
 import '@/styles/public-tokens.css';
 import '@/styles/public-brand.css';
+import '@/features/embed/embed.css';
 
 interface EmbedShellProps {
   /** Where the routes are served (see `EmbedHostMode`). */
@@ -205,7 +206,7 @@ export function EmbedShell({ mode }: EmbedShellProps) {
           {/* No min-h-screen, no 100vh: the height of the frame is the height of this element. Transparent, so the page that frames it shows through. */}
           <div
             ref={wrapperRef}
-            className="public-site-root flow-root overflow-x-clip"
+            className="embed-frame public-site-root flow-root overflow-x-clip"
             data-testid="embed-shell"
             data-widget={widget}
             data-state={state}

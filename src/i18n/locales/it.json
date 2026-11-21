@@ -9390,6 +9390,12 @@
     "signIn": "Accedi"
   },
   "embed": {
+    "booking": {
+      "more": {
+        "button": "Mostra altre case",
+        "shown": "Stai vedendo {{shown}} case su {{total}}"
+      }
+    },
     "error": {
       "description": "Non siamo riusciti a raggiungere il server. Riprova tra poco.",
       "title": "Non riusciamo a caricare i contenuti"

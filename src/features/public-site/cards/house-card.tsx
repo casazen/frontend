@@ -14,11 +14,11 @@ import type { PublicStayCard } from '@/types/public-stays.types';
 import {
   availabilityNote,
   cardFacts,
-  cardLink,
   cardPrice,
   freeCancellationUntil,
   isGuestFavourite,
   placeOfCard,
+  useCardLink,
 } from './house-card-model';
 import { PhotoCarousel } from './photo-carousel';
 import { SITE_TAG_ICONS, isSiteTag } from './site-tags';
@@ -58,12 +58,14 @@ export interface HouseCardProps {
 export function HouseCard({ card, orgSlug, variant = 'grid', nights = null, stay = null, mapLink, eager = false }: HouseCardProps) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const linkOf = useCardLink();
   const locale = siteLocale(i18n.language);
   // Across all the sites the home brings the slug of its own site; on a site it is the site's.
   const site = orgSlug ?? card.orgSlug ?? '';
   const ofAllSites = orgSlug === undefined;
   const host = ofAllSites ? card.hostName?.trim() : '';
-  const to = cardLink(site, card, stay);
+  // The page of the home on the site; inside the frame of a widget it is the property widget of the same frame.
+  const to = linkOf(site, card, stay);
   const facts = cardFacts(card);
   const price = cardPrice(card, nights);
   const currency = card.price.currency || 'EUR';

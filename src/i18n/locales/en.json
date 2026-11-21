@@ -9390,6 +9390,12 @@
     "signIn": "Sign in"
   },
   "embed": {
+    "booking": {
+      "more": {
+        "button": "Show more homes",
+        "shown": "Showing {{shown}} of {{total}} homes"
+      }
+    },
     "error": {
       "description": "We could not reach the server. Please try again shortly.",
       "title": "We could not load the content"

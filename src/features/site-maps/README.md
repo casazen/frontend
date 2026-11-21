@@ -176,13 +176,14 @@ components/
   region-map.tsx / region-map-canvas.tsx   RegionMap: the shell (box, skeleton, error) and the map itself, loaded on demand
   local-map.tsx / local-map-canvas.tsx     LocalMap, the same for the map of the zone
   map-pin.tsx, map-cluster.tsx             a price pill; a bubble that stands for several houses that would overlap
-  map-controls.tsx, map-card.tsx           zoom, zoom out and «fit»; the card of the selected house (sheet on a phone)
+  map-controls.tsx, map-card.tsx           zoom, zoom out and «fit»; the card of the selected house (sheet on a phone, or in the flow)
+  map-card-data.ts                         what the card of a pin says (`mapCardOfPin`)
   map-skeleton.tsx                         the box that stands in while the code and the data load
   use-map-view.ts, use-map-link.ts         the view (fitted to the pins until the person moves it); the list ↔ map link
   place-pins.ts                            minimal shifts and grouping of pins that would overlap
 ```
 
-**`RegionMap`** (`pins`, `selectedId`, `onSelect`, `activeId`, `onActiveChange`, `highlightIds`, `view`, `labels`, `aspect`):
+**`RegionMap`** (`pins`, `selectedId`, `onSelect`, `activeId`, `onActiveChange`, `highlightIds`, `view`, `labels`, `aspect`, `hideCard`):
 a pin is `{ id, lat, lon, place?, label, name, href?, available?, unavailableNote?, tone?, card? }` with the position **already
 rounded** (see `publicPoint`); there is no field for an address or an interior, and nothing in the component computes a distance
 from coordinates. **A house whose host never gave a position** is stored with `0, 0` (`isPositionSet` says so) and the public data
@@ -195,7 +196,10 @@ The map has the focus (arrows move it, `+` and `-` zoom, `0` fits) and the contr
 the new width; dragging works with mouse and pen, and with touch only when the map fills its parent (a map inside a page keeps
 the scrolling of the page); the wheel zooms only with Ctrl or Cmd. The zoom stays between the whole of Italy and 8 km. The
 selected house has a card, over the map on a computer (without taking the focus), a sheet from the bottom on a phone (a touch
-outside or Esc closes it; the card is the link to the house). Pins that would sit on top of each other are shifted by a little
+outside or Esc closes it; the card is the link to the house). A page in the frame of another site (the window of that frame is as
+tall as its content, so neither the sheet nor a card over the map would be near the guest) passes `hideCard` and `selectedId` /
+`onSelect`, and puts the card where it wants: `<MapCard data={mapCardOfPin(pin, t)} layout="flow" …/>` is the same card as a block
+in the flow, under the map. Pins that would sit on top of each other are shifted by a little
 (never more than the 1.5 km of the approximation) and, if that is not enough, grouped in a bubble with their number that brings
 the map closer; the selected pin, the lit one and the emphasised ones are never grouped. If loading fails the box says «Mappa non
 disponibile» with «Riprova»; positions outside Italy and Switzerland are not drawn («Posizione non disponibile»).
