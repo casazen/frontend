@@ -22,6 +22,8 @@ This version provides:
 * a connection test that tells you which agency answers at that address and whether embedding is switched on for it;
 * five blocks and five shortcodes, with the same attributes and the same result: the booking engine (`[casazen_booking]`), one property (`[casazen_property slug="villa-rossa"]`), the search bar for the hero of your home page (`[casazen_search]`), the guest access (`[casazen_guest_access]`) and a link to the owner area (`[casazen_owner_login]`);
 * the loader script of CasaZen, put in the page once and only on the pages that have a widget;
+* a guided setup (Settings, then CasaZen, then Guided setup) that creates the pages "Book", "Online check-in" and "Owner area" with their menu entries, and never changes, moves or deletes anything that already exists;
+* the language of Polylang and WPML for the widgets, and a static placeholder instead of the widget in the Elementor editor (the widgets work in Elementor through its Shortcode widget);
 * texts in English and Italian;
 * a clean uninstall: it removes the settings, the cached results and the scheduled events, and leaves your pages alone.
 

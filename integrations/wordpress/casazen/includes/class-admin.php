@@ -10,7 +10,8 @@ namespace Casazen;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Admin side of the plugin: the settings page, its status box and the «Test connection» button.
+ * Admin side of the plugin: the settings page with its two tabs («Settings» and «Guided setup»), its status box and the «Test
+ * connection» button.
  *
  * Every action checks the capability and a nonce, every output is escaped where it is printed, and there is no field for a
  * secret (phase 1 has no API key).
@@ -18,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
 class Admin {
 
 	/**
-	 * The capability needed to see the screen and to use its two forms.
+	 * The capability needed to see the screen and to use its forms.
 	 *
 	 * @var string
 	 */
@@ -32,6 +33,20 @@ class Admin {
 	const PAGE_SLUG = 'casazen';
 
 	/**
+	 * The first tab of the page: the settings and the connection test (the one shown when no tab is asked for).
+	 *
+	 * @var string
+	 */
+	const TAB_SETTINGS = 'settings';
+
+	/**
+	 * The second tab, `?page=casazen&tab=setup`: the guided setup of the pages and the menu entries.
+	 *
+	 * @var string
+	 */
+	const TAB_SETUP = 'setup';
+
+	/**
 	 * Action and nonce of the «Test connection» form (`admin-post.php?action=casazen_test_connection`).
 	 *
 	 * @var string
@@ -39,7 +54,8 @@ class Admin {
 	const TEST_ACTION = 'casazen_test_connection';
 
 	/**
-	 * Name of the nonce field of the «Test connection» form (the settings form has its own, from the Settings API).
+	 * Name of the nonce field of the «Test connection» form and of the guided setup form (the settings form has its own, from
+	 * the Settings API).
 	 *
 	 * @var string
 	 */
@@ -202,7 +218,7 @@ class Admin {
 	}
 
 	/**
-	 * Prints the settings page.
+	 * Prints the settings page: its tabs and the one that is asked for.
 	 *
 	 * @return void
 	 */
@@ -214,29 +230,19 @@ class Admin {
 				array( 'response' => 403 )
 			);
 		}
+		$tab = self::current_tab();
 		?>
 		<div class="wrap">
 			<h1>CasaZen</h1>
 			<hr class="wp-header-end" />
-			<?php self::render_test_result(); ?>
-			<?php self::render_status(); ?>
-
-			<form method="post" action="options.php">
-				<?php
-				settings_fields( Settings::GROUP );
-				do_settings_sections( self::PAGE_SLUG );
-				submit_button();
-				?>
-			</form>
-
-			<h2><?php esc_html_e( 'Test connection', 'casazen' ); ?></h2>
-			<p><?php esc_html_e( 'Check now that this site can reach your CasaZen address.', 'casazen' ); ?></p>
-			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php?action=' . self::TEST_ACTION ) ); ?>">
-				<?php
-				wp_nonce_field( self::TEST_ACTION, self::NONCE_FIELD );
-				submit_button( __( 'Test connection', 'casazen' ), 'secondary', 'casazen_test_submit', false );
-				?>
-			</form>
+			<?php self::render_tabs( $tab ); ?>
+			<?php
+			if ( self::TAB_SETUP === $tab ) {
+				self::render_setup_tab();
+			} else {
+				self::render_settings_tab();
+			}
+			?>
 		</div>
 		<?php
 	}
@@ -317,6 +323,336 @@ class Admin {
 			esc_attr( Settings::OPTION ),
 			checked( $settings['load_script'], true, false ),
 			esc_html__( 'Load the CasaZen script on the pages that use it', 'casazen' )
+		);
+	}
+
+	/**
+	 * The tab that is asked for: the guided setup, or (for anything else) the settings.
+	 *
+	 * @return string One of the TAB constants.
+	 */
+	private static function current_tab() {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- it only picks which tab to show, nothing changes.
+		$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : self::TAB_SETTINGS;
+		return self::TAB_SETUP === $tab ? self::TAB_SETUP : self::TAB_SETTINGS;
+	}
+
+	/**
+	 * The address of a tab.
+	 *
+	 * @param string $tab One of the TAB constants.
+	 * @return string
+	 */
+	private static function tab_url( $tab ) {
+		return add_query_arg(
+			array(
+				'page' => self::PAGE_SLUG,
+				'tab'  => $tab,
+			),
+			admin_url( 'options-general.php' )
+		);
+	}
+
+	/**
+	 * The tabs of the page.
+	 *
+	 * @param string $current The tab that is shown.
+	 * @return void
+	 */
+	private static function render_tabs( $current ) {
+		$tabs = array(
+			self::TAB_SETTINGS => __( 'Settings', 'casazen' ),
+			self::TAB_SETUP    => __( 'Guided setup', 'casazen' ),
+		);
+
+		echo '<nav class="nav-tab-wrapper">';
+		foreach ( $tabs as $tab => $label ) {
+			printf(
+				'<a href="%1$s" class="nav-tab%2$s"%3$s>%4$s</a>',
+				esc_url( self::tab_url( $tab ) ),
+				$tab === $current ? ' nav-tab-active' : '',
+				$tab === $current ? ' aria-current="page"' : '',
+				esc_html( $label )
+			);
+		}
+		echo '</nav>';
+	}
+
+	/**
+	 * The first tab: the result of the last test, the status, the settings form and the «Test connection» form.
+	 *
+	 * @return void
+	 */
+	private static function render_settings_tab() {
+		self::render_test_result();
+		self::render_status();
+		?>
+		<form method="post" action="options.php">
+			<?php
+			settings_fields( Settings::GROUP );
+			do_settings_sections( self::PAGE_SLUG );
+			submit_button();
+			?>
+		</form>
+
+		<h2><?php esc_html_e( 'Test connection', 'casazen' ); ?></h2>
+		<p><?php esc_html_e( 'Check now that this site can reach your CasaZen address.', 'casazen' ); ?></p>
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php?action=' . self::TEST_ACTION ) ); ?>">
+			<?php
+			wp_nonce_field( self::TEST_ACTION, self::NONCE_FIELD );
+			submit_button( __( 'Test connection', 'casazen' ), 'secondary', 'casazen_test_submit', false );
+			?>
+		</form>
+		<?php
+	}
+
+	/**
+	 * The second tab: the result of the last run (once), then the form, or the request to test the connection first.
+	 *
+	 * @return void
+	 */
+	private static function render_setup_tab() {
+		$result = Wizard::take_result();
+		?>
+		<h2><?php esc_html_e( 'Guided setup', 'casazen' ); ?></h2>
+		<p><?php esc_html_e( 'Creates the pages of your booking site and adds them to a menu. A page that already exists is never changed, and nothing is deleted or moved.', 'casazen' ); ?></p>
+		<?php
+		// What the last run left is only shown: the setup finds its pages by their role, never by this note.
+		$state = Wizard::state();
+		if ( ! empty( $state['time'] ) ) {
+			printf(
+				'<p class="description">%s</p>',
+				sprintf(
+					/* translators: %s: the date and time of the last run of the guided setup. */
+					esc_html__( 'Last run: %s.', 'casazen' ),
+					esc_html( wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), (int) $state['time'] ) )
+				)
+			);
+		}
+
+		if ( null !== $result ) {
+			self::render_wizard_result( $result );
+		}
+
+		$connection = Connection::cached();
+		if ( ! is_array( $connection ) || empty( $connection['ok'] ) ) {
+			?>
+			<div class="notice notice-warning inline">
+				<p><strong><?php esc_html_e( 'Run the connection test first', 'casazen' ); ?></strong></p>
+				<p><a href="<?php echo esc_url( self::tab_url( self::TAB_SETTINGS ) ); ?>"><?php esc_html_e( 'Open the Settings tab', 'casazen' ); ?></a></p>
+			</div>
+			<?php
+		} else {
+			self::render_wizard_form();
+		}
+
+		self::render_search_bar_hint();
+	}
+
+	/**
+	 * The names of the three pages, by role.
+	 *
+	 * @return string[]
+	 */
+	private static function role_labels() {
+		return array(
+			Pages::ROLE_BOOKING      => __( 'Booking page', 'casazen' ),
+			Pages::ROLE_GUEST_ACCESS => __( 'Guest access page', 'casazen' ),
+			Pages::ROLE_OWNER_AREA   => __( 'Owner area page', 'casazen' ),
+		);
+	}
+
+	/**
+	 * The form of the guided setup.
+	 *
+	 * @return void
+	 */
+	private static function render_wizard_form() {
+		$titles = Wizard::default_titles();
+		$labels = self::role_labels();
+		?>
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php?action=' . Wizard::ACTION ) ); ?>">
+			<?php wp_nonce_field( Wizard::ACTION, self::NONCE_FIELD ); ?>
+			<table class="form-table" role="presentation">
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Pages', 'casazen' ); ?></th>
+					<td>
+						<fieldset>
+							<legend class="screen-reader-text"><span><?php esc_html_e( 'Pages', 'casazen' ); ?></span></legend>
+							<?php foreach ( Pages::roles() as $role ) : ?>
+								<?php $existing = Pages::find( $role, 'any' ); ?>
+								<p>
+									<label>
+										<input type="checkbox" name="casazen_wizard[pages][<?php echo esc_attr( $role ); ?>][enabled]" value="1" checked="checked" />
+										<?php echo esc_html( $labels[ $role ] ); ?>
+									</label>
+									<br />
+									<label for="casazen-wizard-title-<?php echo esc_attr( $role ); ?>"><?php esc_html_e( 'Title', 'casazen' ); ?></label>
+									<input type="text" class="regular-text" id="casazen-wizard-title-<?php echo esc_attr( $role ); ?>" name="casazen_wizard[pages][<?php echo esc_attr( $role ); ?>][title]" value="<?php echo esc_attr( $titles[ $role ] ); ?>" maxlength="200" />
+									<?php if ( $existing > 0 ) : ?>
+										<br />
+										<span class="description">
+											<?php
+											printf(
+												/* translators: %s: the title of the page that already exists, as a link. */
+												esc_html__( 'A page for this already exists: %s. It will not be changed.', 'casazen' ),
+												'<a href="' . esc_url( (string) get_permalink( $existing ) ) . '">' . esc_html( get_the_title( $existing ) ) . '</a>'
+											);
+											?>
+										</span>
+									<?php endif; ?>
+								</p>
+							<?php endforeach; ?>
+						</fieldset>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Publication', 'casazen' ); ?></th>
+					<td>
+						<label>
+							<input type="checkbox" name="casazen_wizard[publish]" value="1" checked="checked" />
+							<?php esc_html_e( 'Publish the pages now', 'casazen' ); ?>
+						</label>
+						<p class="description"><?php esc_html_e( 'Without the tick the pages are saved as drafts.', 'casazen' ); ?></p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="casazen-wizard-menu"><?php esc_html_e( 'Menu', 'casazen' ); ?></label></th>
+					<td>
+						<select name="casazen_wizard[menu]" id="casazen-wizard-menu">
+							<option value="0"><?php esc_html_e( 'Do not add menu entries', 'casazen' ); ?></option>
+							<?php foreach ( Wizard::menus() as $menu ) : ?>
+								<option value="<?php echo esc_attr( (string) (int) $menu->term_id ); ?>"><?php echo esc_html( $menu->name ); ?></option>
+							<?php endforeach; ?>
+						</select>
+						<p class="description"><?php esc_html_e( 'The pages are added at the end of the menu. The entries that are already there are never moved, renamed or removed.', 'casazen' ); ?></p>
+						<?php if ( Wizard::is_block_theme() ) : ?>
+							<p class="description"><?php esc_html_e( 'Your theme is a block theme: its menus are edited in the Site Editor. If you choose no menu here, the pages are listed so that you can add them there.', 'casazen' ); ?></p>
+						<?php endif; ?>
+					</td>
+				</tr>
+			</table>
+			<?php submit_button( __( 'Create the pages', 'casazen' ) ); ?>
+		</form>
+		<?php
+	}
+
+	/**
+	 * What the last run did, page by page. Everything that comes from the result is escaped where it is printed.
+	 *
+	 * @param array $result The result of Wizard::run() (or of the form that refused to run it).
+	 * @return void
+	 */
+	private static function render_wizard_result( array $result ) {
+		if ( ! empty( $result['error'] ) ) {
+			$message = 'unknown_menu' === $result['error']
+				? __( 'The menu you chose does not exist. Nothing was created.', 'casazen' )
+				: __( 'Run the connection test first', 'casazen' );
+			printf( '<div class="notice notice-error inline"><p>%s</p></div>', esc_html( $message ) );
+			return;
+		}
+
+		$labels = self::role_labels();
+		$items  = ( isset( $result['menu']['items'] ) && is_array( $result['menu']['items'] ) ) ? $result['menu']['items'] : array();
+
+		echo '<div class="notice notice-success inline" id="casazen-wizard-result">';
+		echo '<p><strong>' . esc_html__( 'The setup is done.', 'casazen' ) . '</strong></p><ul>';
+		foreach ( Pages::roles() as $role ) {
+			if ( ! isset( $result['pages'][ $role ] ) || ! is_array( $result['pages'][ $role ] ) ) {
+				continue;
+			}
+			echo '<li>' . self::wizard_page_line( $labels[ $role ], $result['pages'][ $role ], isset( $items[ $role ] ) ? (string) $items[ $role ] : '' ) . '</li>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped piece by piece in wizard_page_line().
+		}
+		echo '</ul>';
+
+		if ( isset( $result['menu']['name'] ) ) {
+			printf(
+				'<p>%s</p>',
+				sprintf(
+					/* translators: %s: the name of a menu. */
+					esc_html__( 'Menu: %s', 'casazen' ),
+					'<strong>' . esc_html( (string) $result['menu']['name'] ) . '</strong>'
+				)
+			);
+		}
+		if ( ! empty( $result['block_theme'] ) ) {
+			echo '<p>' . esc_html__( 'Your theme is a block theme, so no menu was changed. Add them to the Navigation block in the Site Editor.', 'casazen' ) . '</p>';
+		}
+		if ( ! empty( $result['polylang'] ) ) {
+			echo '<p>' . esc_html__( 'The pages are in the default language. Translate the pages from the Polylang screen.', 'casazen' ) . '</p>';
+		}
+		echo '</div>';
+	}
+
+	/**
+	 * One line of the result: the page with its link, what happened to it and to its menu entry.
+	 *
+	 * @param string $label      The name of the role.
+	 * @param array  $page       The description of the page (see Wizard::run()).
+	 * @param string $menu_state `added`, `exists`, `failed` or an empty string when no menu was chosen.
+	 * @return string HTML, already escaped.
+	 */
+	private static function wizard_page_line( $label, array $page, $menu_state ) {
+		$prefix = '<strong>' . esc_html( $label ) . '</strong>: ';
+		$status = isset( $page['status'] ) ? $page['status'] : '';
+
+		if ( 'skipped' === $status ) {
+			return $prefix . esc_html__( 'Skipped.', 'casazen' );
+		}
+		if ( ! in_array( $status, array( 'created', 'exists' ), true ) || empty( $page['id'] ) ) {
+			return $prefix . esc_html__( 'The page could not be created.', 'casazen' );
+		}
+
+		$url   = isset( $page['url'] ) ? (string) $page['url'] : '';
+		$title = isset( $page['title'] ) ? (string) $page['title'] : '';
+		$line  = $prefix . '<a href="' . esc_url( $url ) . '">' . esc_html( $title ) . '</a> ';
+
+		if ( 'created' === $status ) {
+			$line .= esc_html__( 'Page created.', 'casazen' );
+			if ( isset( $page['post_status'] ) && 'draft' === $page['post_status'] ) {
+				$line .= ' ' . esc_html__( 'It is a draft: publish it when you are ready.', 'casazen' );
+			}
+			if ( ! empty( $page['wanted_slug'] ) && isset( $page['slug'] ) && $page['wanted_slug'] !== $page['slug'] ) {
+				$line .= ' ' . sprintf(
+					/* translators: 1: the address the title asked for, 2: the address the page got. */
+					esc_html__( 'The address "%1$s" belongs to another page, so this page uses "%2$s".', 'casazen' ),
+					esc_html( (string) $page['wanted_slug'] ),
+					esc_html( (string) $page['slug'] )
+				);
+			}
+		} else {
+			$line .= esc_html__( 'The page already exists and was not changed.', 'casazen' );
+		}
+
+		if ( 'added' === $menu_state ) {
+			$line .= ' ' . esc_html__( 'Added to the menu.', 'casazen' );
+		} elseif ( 'exists' === $menu_state ) {
+			$line .= ' ' . esc_html__( 'Already in the menu.', 'casazen' );
+		} elseif ( 'failed' === $menu_state ) {
+			$line .= ' ' . esc_html__( 'Could not be added to the menu.', 'casazen' );
+		}
+		return $line;
+	}
+
+	/**
+	 * The hint about the search bar of the home page, below the form.
+	 *
+	 * @return void
+	 */
+	private static function render_search_bar_hint() {
+		$booking = Pages::find( Pages::ROLE_BOOKING, 'any' );
+		$titles  = Wizard::default_titles();
+		$name    = $booking > 0 ? get_the_title( $booking ) : $titles[ Pages::ROLE_BOOKING ];
+
+		echo '<h3>' . esc_html__( 'Hero search bar', 'casazen' ) . '</h3>';
+		printf(
+			'<p>%s</p>',
+			sprintf(
+				/* translators: 1: the shortcode of the search bar. 2: the title of the page that holds the booking engine. */
+				esc_html__( 'Add the shortcode %1$s to the home page (in Elementor, the Shortcode widget): it sends the guest to the page %2$s with the dates and the guests.', 'casazen' ),
+				'<code>[casazen_search]</code>',
+				'<strong>' . esc_html( $name ) . '</strong>'
+			)
 		);
 	}
 

@@ -118,7 +118,7 @@ msgstr "Ospiti"
 msgid "A number from 1 to 30. Leave empty to let the guest choose."
 msgstr "Un numero da 1 a 30. Lascia vuoto per far scegliere all'ospite."
 
-#: blocks/src/shared/placeholder-edit.js:77
+#: blocks/src/shared/placeholder-edit.js:77 includes/class-admin.php:459
 msgid "Booking page"
 msgstr "Pagina di prenotazione"
 
@@ -218,7 +218,7 @@ msgstr "Testo del link"
 msgid "Leave empty to use the default text."
 msgstr "Lascia vuoto per usare il testo predefinito."
 
-#: blocks/src/shared/placeholder-edit.js:274 includes/class-admin.php:148
+#: blocks/src/shared/placeholder-edit.js:274 includes/class-admin.php:164 includes/class-admin.php:364
 msgid "Settings"
 msgstr "Impostazioni"
 
@@ -240,115 +240,261 @@ msgstr "CasaZen"
 msgid "Connects your WordPress site to CasaZen, so that your booking engine and your guest area appear on your own pages."
 msgstr "Collega il tuo sito WordPress a CasaZen, per mostrare il motore di prenotazione e l'area ospite sulle tue pagine."
 
-#: includes/class-admin.php:95
+#: includes/class-admin.php:111
 msgid "Connection"
 msgstr "Connessione"
 
-#: includes/class-admin.php:101
+#: includes/class-admin.php:117
 msgid "CasaZen address"
 msgstr "Indirizzo CasaZen"
 
-#: includes/class-admin.php:109
+#: includes/class-admin.php:125
 msgid "Organisation slug"
 msgstr "Identificativo dell'organizzazione (slug)"
 
-#: includes/class-admin.php:118
+#: includes/class-admin.php:134
 msgid "Display"
 msgstr "Visualizzazione"
 
-#: includes/class-admin.php:124
+#: includes/class-admin.php:140
 msgid "Language mapping"
 msgstr "Associazione delle lingue"
 
-#: includes/class-admin.php:132
+#: includes/class-admin.php:148
 msgid "Script"
 msgstr "Script"
 
-#: includes/class-admin.php:171
+#: includes/class-admin.php:187
 msgid "Set the CasaZen address to start using the plugin."
 msgstr "Imposta l'indirizzo CasaZen per iniziare a usare il plugin."
 
-#: includes/class-admin.php:183
+#: includes/class-admin.php:199 includes/class-wizard.php:161 includes/class-wizard.php:171
 msgid "You do not have permission to do this."
 msgstr "Non hai il permesso di eseguire questa azione."
 
-#: includes/class-admin.php:212
+#: includes/class-admin.php:228
 msgid "You do not have permission to open this page."
 msgstr "Non hai il permesso di aprire questa pagina."
 
-#: includes/class-admin.php:232 includes/class-admin.php:237
-msgid "Test connection"
-msgstr "Prova la connessione"
-
-#: includes/class-admin.php:233
-msgid "Check now that this site can reach your CasaZen address."
-msgstr "Controlla ora che questo sito riesca a raggiungere il tuo indirizzo CasaZen."
-
-#: includes/class-admin.php:250
+#: includes/class-admin.php:256
 msgid "The address where your CasaZen booking site lives. The widgets are loaded by the browser of your visitors straight from this address."
 msgstr "L'indirizzo del tuo sito di prenotazione CasaZen. I widget vengono caricati dal browser dei tuoi visitatori direttamente da questo indirizzo."
 
-#: includes/class-admin.php:267
+#: includes/class-admin.php:273
 msgid "The address of your CasaZen booking site, for example https://prenota.example.com. Only the scheme, the host and the port are kept."
 msgstr "L'indirizzo del tuo sito di prenotazione CasaZen, ad esempio https://prenota.example.com. Vengono conservati solo lo schema, il dominio e la porta."
 
-#: includes/class-admin.php:286
+#: includes/class-admin.php:292
 msgid "Only needed when the address above is the CasaZen domain. Lower-case letters, numbers and hyphens."
 msgstr "Serve solo quando l'indirizzo qui sopra è il dominio di CasaZen. Lettere minuscole, numeri e trattini."
 
-#: includes/class-admin.php:304
+#: includes/class-admin.php:310
 msgid "One line per language of your site, for example it_IT = it. The value is it, en or auto."
 msgstr "Una riga per ogni lingua del tuo sito, ad esempio it_IT = it. Il valore è it, en oppure auto."
 
-#: includes/class-admin.php:319
+#: includes/class-admin.php:325
 msgid "Load the CasaZen script on the pages that use it"
 msgstr "Carica lo script di CasaZen nelle pagine che lo usano"
 
-#: includes/class-admin.php:381
+#: includes/class-admin.php:365 includes/class-admin.php:417
+msgid "Guided setup"
+msgstr "Procedura guidata"
+
+#: includes/class-admin.php:398 includes/class-admin.php:403
+msgid "Test connection"
+msgstr "Prova la connessione"
+
+#: includes/class-admin.php:399
+msgid "Check now that this site can reach your CasaZen address."
+msgstr "Controlla ora che questo sito riesca a raggiungere il tuo indirizzo CasaZen."
+
+#: includes/class-admin.php:418
+msgid "Creates the pages of your booking site and adds them to a menu. A page that already exists is never changed, and nothing is deleted or moved."
+msgstr "Crea le pagine del tuo sito di prenotazione e le aggiunge a un menu. Una pagina che esiste già non viene mai modificata e non viene cancellato né spostato nulla."
+
+#. translators: %s: the date and time of the last run of the guided setup.
+#: includes/class-admin.php:427
+#, php-format
+msgid "Last run: %s."
+msgstr "Ultima esecuzione: %s."
+
+#: includes/class-admin.php:441 includes/class-admin.php:550
+msgid "Run the connection test first"
+msgstr "Esegui prima la prova della connessione"
+
+#: includes/class-admin.php:442
+msgid "Open the Settings tab"
+msgstr "Apri la scheda Impostazioni"
+
+#: includes/class-admin.php:460
+msgid "Guest access page"
+msgstr "Pagina di accesso degli ospiti"
+
+#: includes/class-admin.php:461
+msgid "Owner area page"
+msgstr "Pagina dell'area proprietari"
+
+#: includes/class-admin.php:478 includes/class-admin.php:481
+msgid "Pages"
+msgstr "Pagine"
+
+#: includes/class-admin.php:490
+msgid "Title"
+msgstr "Titolo"
+
+#. translators: %s: the title of the page that already exists, as a link.
+#: includes/class-admin.php:498
+#, php-format
+msgid "A page for this already exists: %s. It will not be changed."
+msgstr "Esiste già una pagina per questo: %s. Non verrà modificata."
+
+#: includes/class-admin.php:510
+msgid "Publication"
+msgstr "Pubblicazione"
+
+#: includes/class-admin.php:514
+msgid "Publish the pages now"
+msgstr "Pubblica subito le pagine"
+
+#: includes/class-admin.php:516
+msgid "Without the tick the pages are saved as drafts."
+msgstr "Senza la spunta le pagine vengono salvate come bozze."
+
+#: includes/class-admin.php:520
+msgid "Menu"
+msgstr "Menu"
+
+#: includes/class-admin.php:523
+msgid "Do not add menu entries"
+msgstr "Non aggiungere voci di menu"
+
+#: includes/class-admin.php:528
+msgid "The pages are added at the end of the menu. The entries that are already there are never moved, renamed or removed."
+msgstr "Le pagine vengono aggiunte in fondo al menu. Le voci già presenti non vengono mai spostate, rinominate o rimosse."
+
+#: includes/class-admin.php:530
+msgid "Your theme is a block theme: its menus are edited in the Site Editor. If you choose no menu here, the pages are listed so that you can add them there."
+msgstr "Il tuo tema è un tema a blocchi: i suoi menu si modificano nell'Editor del sito. Se qui non scegli nessun menu, le pagine vengono elencate così potrai aggiungerle lì."
+
+#: includes/class-admin.php:535
+msgid "Create the pages"
+msgstr "Crea le pagine"
+
+#: includes/class-admin.php:549
+msgid "The menu you chose does not exist. Nothing was created."
+msgstr "Il menu scelto non esiste. Non è stato creato nulla."
+
+#: includes/class-admin.php:559
+msgid "The setup is done."
+msgstr "La procedura è terminata."
+
+#. translators: %s: the name of a menu.
+#: includes/class-admin.php:573
+#, php-format
+msgid "Menu: %s"
+msgstr "Menu: %s"
+
+#: includes/class-admin.php:579
+msgid "Your theme is a block theme, so no menu was changed. Add them to the Navigation block in the Site Editor."
+msgstr "Il tuo tema è un tema a blocchi, quindi nessun menu è stato modificato. Aggiungile al blocco Navigazione nell'Editor del sito."
+
+#: includes/class-admin.php:582
+msgid "The pages are in the default language. Translate the pages from the Polylang screen."
+msgstr "Le pagine sono nella lingua predefinita. Traduci le pagine dalla schermata di Polylang."
+
+#: includes/class-admin.php:600
+msgid "Skipped."
+msgstr "Saltata."
+
+#: includes/class-admin.php:603
+msgid "The page could not be created."
+msgstr "Non è stato possibile creare la pagina."
+
+#: includes/class-admin.php:611
+msgid "Page created."
+msgstr "Pagina creata."
+
+#: includes/class-admin.php:613
+msgid "It is a draft: publish it when you are ready."
+msgstr "È una bozza: pubblicala quando sei pronto."
+
+#. translators: 1: the address the title asked for, 2: the address the page got.
+#: includes/class-admin.php:618
+#, php-format
+msgid "The address \"%1$s\" belongs to another page, so this page uses \"%2$s\"."
+msgstr "L'indirizzo \"%1$s\" appartiene a un'altra pagina, quindi questa pagina usa \"%2$s\"."
+
+#: includes/class-admin.php:624
+msgid "The page already exists and was not changed."
+msgstr "La pagina esiste già e non è stata modificata."
+
+#: includes/class-admin.php:628
+msgid "Added to the menu."
+msgstr "Aggiunta al menu."
+
+#: includes/class-admin.php:630
+msgid "Already in the menu."
+msgstr "Già presente nel menu."
+
+#: includes/class-admin.php:632
+msgid "Could not be added to the menu."
+msgstr "Non è stato possibile aggiungerla al menu."
+
+#: includes/class-admin.php:647
+msgid "Hero search bar"
+msgstr "Barra di ricerca della home"
+
+#. translators: 1: the shortcode of the search bar. 2: the title of the page that holds the booking engine.
+#: includes/class-admin.php:652
+#, php-format
+msgid "Add the shortcode %1$s to the home page (in Elementor, the Shortcode widget): it sends the guest to the page %2$s with the dates and the guests."
+msgstr "Aggiungi lo shortcode %1$s alla home page (in Elementor, il widget Shortcode): porta l'ospite alla pagina %2$s con le date e gli ospiti."
+
+#: includes/class-admin.php:717
 msgid "Connection status"
 msgstr "Stato della connessione"
 
-#: includes/class-admin.php:383
+#: includes/class-admin.php:719
 msgid "No check has been made yet. Use the Test connection button below."
 msgstr "Non è ancora stata fatta nessuna verifica. Usa il pulsante «Prova la connessione» qui sotto."
 
-#: includes/class-admin.php:388
+#: includes/class-admin.php:724
 msgid "Agency"
 msgstr "Agenzia"
 
-#: includes/class-admin.php:392
+#: includes/class-admin.php:728
 msgid "Embedding"
 msgstr "Incorporamento"
 
-#: includes/class-admin.php:396
+#: includes/class-admin.php:732
 msgid "Owner sign-in"
 msgstr "Accesso dei proprietari"
 
-#: includes/class-admin.php:400
+#: includes/class-admin.php:736
 msgid "Last check"
 msgstr "Ultima verifica"
 
-#: includes/class-admin.php:406
+#: includes/class-admin.php:742
 msgid "Script address"
 msgstr "Indirizzo dello script"
 
-#: includes/class-admin.php:421
+#: includes/class-admin.php:757
 msgid "On"
 msgstr "Attivo"
 
-#: includes/class-admin.php:424
+#: includes/class-admin.php:760
 msgid "Off"
 msgstr "Non attivo"
 
-#: includes/class-admin.php:426 includes/class-admin.php:442
+#: includes/class-admin.php:762 includes/class-admin.php:778
 msgid "Unknown"
 msgstr "Sconosciuto"
 
-#: includes/class-admin.php:437
+#: includes/class-admin.php:773
 msgid "Ready"
 msgstr "Pronto"
 
-#: includes/class-admin.php:440
+#: includes/class-admin.php:776
 msgid "Not ready yet"
 msgstr "Non ancora pronto"
 
@@ -412,7 +558,7 @@ msgstr "Prenota su %s"
 msgid "CasaZen: the owner portal is not enabled for this agency yet."
 msgstr "CasaZen: il portale proprietari non è ancora attivo per questa agenzia."
 
-#: includes/class-renderer.php:557
+#: includes/class-renderer.php:557 includes/class-wizard.php:95
 msgid "Owner area"
 msgstr "Area proprietari"
 
@@ -441,3 +587,11 @@ msgstr "L'indirizzo CasaZen non deve contenere nome utente o password. L'indiriz
 #: includes/class-settings.php:449
 msgid "The CasaZen address is not valid. Use the form https://prenota.example.com. The previous address was kept."
 msgstr "L'indirizzo CasaZen non è valido. Usa il formato https://prenota.example.com. L'indirizzo precedente è stato mantenuto."
+
+#: includes/class-wizard.php:93
+msgid "Book"
+msgstr "Prenota"
+
+#: includes/class-wizard.php:94
+msgid "Online check-in"
+msgstr "Check-in online"

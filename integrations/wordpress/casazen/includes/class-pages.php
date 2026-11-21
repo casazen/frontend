@@ -52,7 +52,10 @@ class Pages {
 	}
 
 	/**
-	 * The address of the published page that carries a role.
+	 * The address of the published page that carries a role, in the language of the page that is printed.
+	 *
+	 * The role is found in any language. When Polylang or WPML is active and has a published translation of that page into the
+	 * current language, the address is the one of the translation; otherwise it is the address of the page itself.
 	 *
 	 * @param string $role One of the roles.
 	 * @return string The permalink, or an empty string when no published page carries the role.
@@ -62,7 +65,14 @@ class Pages {
 		if ( 0 === $page_id ) {
 			return '';
 		}
-		$url = get_permalink( $page_id );
+
+		$translated = Compat\Polylang_Wpml::translate_page( $page_id );
+		if ( $translated !== $page_id && 'publish' !== get_post_status( $translated ) ) {
+			// A translation that is a draft (or is gone) is no page to send a guest to.
+			$translated = $page_id;
+		}
+
+		$url = get_permalink( $translated );
 		return is_string( $url ) ? $url : '';
 	}
 

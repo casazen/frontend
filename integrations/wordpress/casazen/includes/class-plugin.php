@@ -36,8 +36,13 @@ class Plugin {
 		Assets::init();
 		Destinations::init();
 
+		// The language of Polylang and WPML, and the static placeholder of the Elementor editor. Neither plugin is needed.
+		Compat\Polylang_Wpml::init();
+		Compat\Elementor::init();
+
 		if ( is_admin() ) {
 			Admin::init();
+			Wizard::init();
 		}
 	}
 
