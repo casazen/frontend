@@ -9400,6 +9400,10 @@
       "description": "Non siamo riusciti a raggiungere il server. Riprova tra poco.",
       "title": "Non riusciamo a caricare i contenuti"
     },
+    "guestAccess": {
+      "label": "Gestisci la tua prenotazione",
+      "submit": "Continua"
+    },
     "loading": "Caricamento in corso…",
     "notFound": {
       "description": "Non troviamo il sito di prenotazione che questo widget dovrebbe mostrare.",

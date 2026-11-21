@@ -9400,6 +9400,10 @@
       "description": "We could not reach the server. Please try again shortly.",
       "title": "We could not load the content"
     },
+    "guestAccess": {
+      "label": "Manage your booking",
+      "submit": "Continue"
+    },
     "loading": "Loading…",
     "notFound": {
       "description": "We can't find the booking site this widget should show.",
