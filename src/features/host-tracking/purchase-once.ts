@@ -8,8 +8,9 @@ import { hasConsent } from '@/lib/cookie-consent';
  *
  * The id is an opaque id of the booking, never the code the guest is shown. The list is only written after the visitor allowed statistics, as the choice
  * itself is; a browser that cannot write it counts no purchase at all, because "once" could not be kept (and the choice of such a browser is not kept either).
- * A visitor who withdraws the choice keeps the list: it is never read while the choice is off, and it is what stops the same booking from counting twice if
- * they allow statistics again.
+ * A visitor who does not allow statistics, or no longer does, has the list forgotten (`forgetSentPurchases`, called with the rest of what the statistics kept, as the
+ * source of the visit is: `useConsent`). A booking they open again after allowing statistics once more is pushed again, and GA4 itself ignores a `purchase` whose
+ * `transaction_id` it already has.
  */
 
 export const PURCHASES_STORAGE_KEY = 'cz-ga4-purchases';
@@ -34,6 +35,15 @@ function writeSent(ids: string[]): boolean {
     return true;
   } catch {
     return false;
+  }
+}
+
+/** The visitor does not allow statistics (or no longer does): the list of the bookings pushed is forgotten, in the browser. A browser that cannot reach its storage kept nothing. */
+export function forgetSentPurchases(): void {
+  try {
+    window.localStorage.removeItem(PURCHASES_STORAGE_KEY);
+  } catch {
+    // Storage unavailable: there is no list to forget.
   }
 }
 

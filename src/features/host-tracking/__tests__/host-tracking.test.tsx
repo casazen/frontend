@@ -1,8 +1,9 @@
 import { StrictMode } from 'react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { I18nextProvider } from 'react-i18next';
-import { act, cleanup, render } from '@testing-library/react';
+import { act, cleanup, render, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { useConsent } from '@/hooks/use-consent';
 import i18n from '@/i18n/config';
 import { PublicSiteShell } from '@/layouts/PublicSiteShell';
 import { CONSENT_STORAGE_KEY, writeConsentChoice } from '@/lib/cookie-consent';
@@ -536,6 +537,20 @@ describe('HostTracking and the events of the funnel', () => {
       expect(events()).toHaveLength(2);
       expect((events()[1].ecommerce as { transaction_id: string }).transaction_id).toBe(OTHER_BOOKING_ID);
       expect(JSON.parse(window.localStorage.getItem(PURCHASES_STORAGE_KEY) ?? '[]')).toEqual([BOOKING_ID, OTHER_BOOKING_ID]);
+    });
+
+    it('hostTracking_purchase_theListOfBookingsIsForgottenWhenTheVisitorWithdrawsTheChoice', () => {
+      accept();
+      render(<Funnel confirmation={outcome()} />);
+      expect(JSON.parse(window.localStorage.getItem(PURCHASES_STORAGE_KEY) ?? '[]')).toEqual([BOOKING_ID]);
+
+      // The visitor says no in the notice (or in the panel of the choices): what the statistics kept goes with the choice, as the source of the visit does.
+      const consent = renderHook(() => useConsent());
+      act(() => consent.result.current.choose('rejected'));
+
+      expect(window.localStorage.getItem(PURCHASES_STORAGE_KEY)).toBeNull();
+      expect(window.localStorage.getItem(CONSENT_STORAGE_KEY)).toBe('rejected');
+      expect(events()).toHaveLength(1);
     });
   });
 });

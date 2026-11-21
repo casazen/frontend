@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CONSENT_STORAGE_KEY } from '@/lib/cookie-consent';
-import { MAX_REMEMBERED_PURCHASES, PURCHASES_STORAGE_KEY, purchaseOnce } from '../purchase-once';
+import { MAX_REMEMBERED_PURCHASES, PURCHASES_STORAGE_KEY, forgetSentPurchases, purchaseOnce } from '../purchase-once';
 
 /**
  * A booking is one `purchase` of the agency's analytics, never two (E41/F04/US01/T01, NF-149). Money data: a second push of the same booking counts its
@@ -122,5 +122,27 @@ describe('purchaseOnce', () => {
 
     // A crash between the two loses one purchase and never counts one twice.
     expect(seenByThePush).toEqual(['booking-1']);
+  });
+
+  it('forgetSentPurchases_RemovesTheListAndLeavesTheChoiceOfTheVisitor', () => {
+    accept();
+    purchaseOnce('booking-1', vi.fn());
+    expect(stored()).toEqual(['booking-1']);
+
+    forgetSentPurchases();
+
+    expect(window.localStorage.getItem(PURCHASES_STORAGE_KEY)).toBeNull();
+    expect(window.localStorage.getItem(CONSENT_STORAGE_KEY)).toBe('accepted');
+    // With nothing to forget it does nothing, and a booking that is opened again after the statistics are allowed once more is pushed again.
+    expect(() => forgetSentPurchases()).not.toThrow();
+    expect(purchaseOnce('booking-1', vi.fn())).toBe(true);
+  });
+
+  it('forgetSentPurchases_AStorageThatCannotBeReached_ThrowsNothing', () => {
+    vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => {
+      throw new DOMException('Access is denied for this document.', 'SecurityError');
+    });
+
+    expect(() => forgetSentPurchases()).not.toThrow();
   });
 });
