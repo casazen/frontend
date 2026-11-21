@@ -46,6 +46,15 @@ function isSignInReturn(search: string): boolean {
 }
 
 /**
+ * The address the sign-in service sends the browser back to when the sign-in did NOT complete (`error` and `state`). The service does not finish such a return: the person is not signed in and
+ * the address stays as it is, so the app has to tell them (E40/F02/US01/T02).
+ */
+export function isSignInErrorReturn(search: string): boolean {
+  const params = new URLSearchParams(search);
+  return params.has('state') && params.has('error');
+}
+
+/**
  * The path of an address the way the router reads it, which is how a page of the owner portal has to be recognised here: `matchRoutes` decodes every segment of the address and compares it without
  * looking at the case, so `/Portale-Proprietari/accedi` and `/portale%2Dproprietari` are the portal for it. A page that the router serves as the portal while this says it is not would be shown with no
  * sign-in module, under the boundary that asks for one (`AuthProviderBoundary`), which loads the page again for ever.

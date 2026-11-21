@@ -8,14 +8,16 @@ import { publicCheckinApi } from '@/api/checkin.api';
 import i18n from '@/i18n/config';
 import axiosInstance from '@/lib/axios';
 import { setHostSite, type HostSite } from '@/lib/host-site';
-import { hostNeedsAuth } from '@/lib/secure-origin';
+import { hostNeedsAuth, isSignInErrorReturn } from '@/lib/secure-origin';
 import { getRouter } from '@/routes';
 import type { PublicOrgDto } from '@/types';
 
 // The sign-in service is the only thing replaced. Its provider is a marker in the page (so a test can see whether the app mounted it) and hands the app, once it is mounted, the `appState`
-// that `login()` would have given back after the redirect. Everything else is the app: `App`, the auth bridge, `handleAuthRedirect` and the route table of the agency's own domain.
+// that `login()` would have given back after the redirect: only for a return that completes. A return that comes back with an error does what the real provider does (it reads the answer, does not
+// call `onRedirectCallback` and reports the failure as `error`). Everything else is the app: `App`, the auth bridge, `handleAuthRedirect` and the route table of the agency's own domain.
 const auth0 = vi.hoisted(() => ({
   appState: undefined as Record<string, unknown> | undefined,
+  error: undefined as Error | undefined,
   authenticated: false,
   loginWithRedirect: vi.fn(),
   logout: vi.fn(),
@@ -34,6 +36,7 @@ vi.mock('@auth0/auth0-react', () => ({
   },
   useAuth0: () => ({
     isLoading: false,
+    error: auth0.error,
     isAuthenticated: auth0.authenticated,
     user: auth0.authenticated ? { email: 'owner@example.com' } : undefined,
     loginWithRedirect: auth0.loginWithRedirect,
@@ -181,12 +184,26 @@ describe('hostNeedsAuth (NF-141)', () => {
   });
 });
 
+describe('isSignInErrorReturn (NF-141)', () => {
+  it.each([
+    ['?error=access_denied&state=xyz', true],
+    ['?state=xyz&error=access_denied&error_description=Account%20blocked', true],
+    ['?code=abc&state=xyz', false],
+    ['?error=access_denied', false],
+    ['?state=xyz', false],
+    ['', false],
+  ])('isSignInErrorReturn_%s_Is_%s', (search, expected) => {
+    expect(isSignInErrorReturn(search)).toBe(expected);
+  });
+});
+
 describe('App on the own domain of an agency (E40/F02/US01/T02, NF-141)', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     sessionStorage.clear();
     localStorage.clear();
     auth0.appState = undefined;
+    auth0.error = undefined;
     auth0.authenticated = false;
     auth0.getAccessTokenSilently.mockResolvedValue('a-new-access-token');
     // A link that is already completed: the check-in page shows its closing card, nothing to fill in.
@@ -305,23 +322,59 @@ describe('App on the own domain of an agency (E40/F02/US01/T02, NF-141)', () => 
     expect(auth0.logout).toHaveBeenCalledWith({ logoutParams: { returnTo: window.location.origin } });
   });
 
-  it.each(['/?code=abc&state=xyz', '/?error=access_denied&state=xyz'])(
-    'ready host: the address the sign-in returns to (%s) mounts the sign-in service and completes the return',
-    async (url) => {
-      setHostSite(READY);
-      openAt(url);
-      // What `login({ returnTo })` kept in the `appState`, handed back by the provider once it has read the answer.
-      auth0.appState = { returnTo: '/portale-proprietari' };
-      auth0.authenticated = true;
+  it('ready host: the address the sign-in returns to mounts the sign-in service and completes the return', async () => {
+    setHostSite(READY);
+    openAt('/?code=abc&state=xyz');
+    // What `login({ returnTo })` kept in the `appState`, handed back by the provider once it has read the answer.
+    auth0.appState = { returnTo: '/portale-proprietari' };
+    auth0.authenticated = true;
 
-      render(<App />);
+    render(<App />);
 
-      expect(await screen.findByTestId('auth0-provider')).toBeInTheDocument();
-      // The return goes through the router of the host, to the page the owner asked for.
-      expect(await screen.findByTestId('owner-portal-shell')).toBeInTheDocument();
-      expect(getRouter().state.location.pathname).toBe('/portale-proprietari');
-    },
-  );
+    expect(await screen.findByTestId('auth0-provider')).toBeInTheDocument();
+    // The return goes through the router of the host, to the page the owner asked for.
+    expect(await screen.findByTestId('owner-portal-shell')).toBeInTheDocument();
+    expect(getRouter().state.location.pathname).toBe('/portale-proprietari');
+  });
+
+  it('ready host: a sign-in that comes back with an error says so on the sign-in page of the domain, it does not leave the booking site with the answer in the address', async () => {
+    setHostSite(READY);
+    openAt('/?error=access_denied&error_description=Account%20blocked&state=xyz');
+    // What the real provider does with such a return: it reads the answer, never calls `onRedirectCallback`, and reports the failure.
+    auth0.error = new Error('access_denied');
+
+    render(<App />);
+
+    expect(await screen.findByTestId('auth0-provider')).toBeInTheDocument();
+    // The failure is told, inside the frame of the agency, and nothing sends the person off again by itself.
+    const failed = await screen.findByTestId('owner-host-login-failed');
+    expect(failed).toHaveTextContent('L’accesso non è andato a buon fine');
+    expect(screen.getByTestId('host-surface-frame')).toContainElement(failed);
+    expect(screen.queryByTestId('public-site-shell')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('owner-host-login-redirecting')).not.toBeInTheDocument();
+    expect(auth0.loginWithRedirect).not.toHaveBeenCalled();
+    // The answer of the sign-in is out of the address (the entry is replaced, not added); the way to try again is a button.
+    expect(getRouter().state.location.pathname).toBe('/portale-proprietari/accedi');
+    expect(getRouter().state.location.search).toBe('');
+    fireEvent.click(screen.getByTestId('owner-host-login-button'));
+    expect(auth0.loginWithRedirect).toHaveBeenCalledTimes(1);
+    expect(auth0.loginWithRedirect.mock.calls[0][0].appState).toEqual({ returnTo: '/portale-proprietari' });
+  });
+
+  it.each([
+    ['/', 'public-site-shell'],
+    ['/portale-proprietari/accedi', 'owner-host-login'],
+  ])('ready host: %s with no answer of the sign-in in the address is not a failed sign-in, whatever the service reports', async (path, page) => {
+    // The failure is only told for the return from the login: a person who simply opens a page is not told that a sign-in failed.
+    setHostSite(READY);
+    openAt(path);
+    auth0.error = new Error('login_required');
+
+    render(<App />);
+
+    expect(await screen.findByTestId(page)).toBeInTheDocument();
+    expect(screen.queryByTestId('owner-host-login-failed')).not.toBeInTheDocument();
+  });
 
   it('ready host: the return address with a code and no state is not an answer of the sign-in and mounts nothing', async () => {
     setHostSite(READY);

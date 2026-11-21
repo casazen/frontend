@@ -20201,6 +20201,7 @@
     "hostLogin": {
       "button": "Accedi",
       "description": "Accedi con il tuo account per vedere i tuoi immobili, i rendiconti e i messaggi dell’agenzia.",
+      "failed": "L’accesso non è andato a buon fine. Puoi riprovare.",
       "redirecting": "Ti stiamo portando alla pagina di accesso…",
       "title": "Area proprietari"
     },

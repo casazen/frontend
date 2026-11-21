@@ -6,6 +6,17 @@ import { OWNER_PORTAL_HOME_PATH } from '@/lib/owner-invitation';
  */
 export const OWNER_PORTAL_ROOT = OWNER_PORTAL_HOME_PATH;
 
+/**
+ * The router state the sign-in page of an agency's own domain is opened with when the sign-in came back with an error (`HostSignInFailure` in `App`): the page then says that it did not complete and
+ * waits for the visitor, instead of sending them off again. It is state of the history entry, never part of the address.
+ */
+export const SIGN_IN_FAILED_STATE = { signInFailed: true } as const;
+
+/** Whether the router state of a page is `SIGN_IN_FAILED_STATE`. */
+export function isSignInFailedState(state: unknown): boolean {
+  return typeof state === 'object' && state !== null && (state as { signInFailed?: unknown }).signInFailed === true;
+}
+
 export const ownerPortalPaths = {
   home: OWNER_PORTAL_ROOT,
   /** The sign-in page of the portal, on the CasaZen domain and on the own domain of an agency (E40/F02/US01/T02). */

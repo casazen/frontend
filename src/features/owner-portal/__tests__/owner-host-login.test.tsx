@@ -16,6 +16,7 @@ import { appRoutes } from '@/routes';
 import { buildHostSiteRoutes } from '@/routes/host-site-routes';
 import { OwnerPortalShell } from '@/features/owner-portal/owner-portal-shell';
 import { OwnerHostLoginPage } from '../owner-host-login-page';
+import { SIGN_IN_FAILED_STATE } from '../paths';
 
 // The sign-in service is the only thing replaced: what it is told (`loginWithRedirect`, `logout`) is what is checked. The bridge of the app, the pages and the routes are the real ones.
 const auth0 = vi.hoisted(() => ({
@@ -69,11 +70,11 @@ function Where() {
   return <p data-testid="where">{pathname}</p>;
 }
 
-function renderLoginPage(strict = false) {
+function renderLoginPage(strict = false, state?: unknown) {
   const tree = (
     <QueryClientProvider client={queryClient()}>
       <AuthAppProviders>
-        <MemoryRouter initialEntries={['/portale-proprietari/accedi']}>
+        <MemoryRouter initialEntries={[{ pathname: '/portale-proprietari/accedi', state }]}>
           <Routes>
             <Route path="/portale-proprietari/accedi" element={<OwnerHostLoginPage />} />
             <Route path="/portale-proprietari" element={<Where />} />
@@ -188,6 +189,29 @@ describe('sign-in and sign-out of the own domain of an agency (E40/F02/US01/T02,
       fireEvent.click(button);
       expect(auth0.loginWithRedirect).toHaveBeenCalledTimes(1);
       expect(auth0.loginWithRedirect.mock.calls[0][0].appState).toEqual({ returnTo: '/portale-proprietari' });
+    });
+
+    it('OwnerHostLoginPage_OpenedAfterASignInThatFailed_SaysSoAndWaitsForTheVisitorInsteadOfSendingThemOffAgain', async () => {
+      // `HostSignInFailure` of `App` opens the page this way when the sign-in came back with an error.
+      renderLoginPage(false, SIGN_IN_FAILED_STATE);
+
+      const failed = await screen.findByTestId('owner-host-login-failed');
+      expect(failed).toHaveTextContent('L’accesso non è andato a buon fine. Puoi riprovare.');
+      expect(failed).toHaveAttribute('role', 'alert');
+      expect(screen.queryByTestId('owner-host-login-redirecting')).not.toBeInTheDocument();
+      // Nothing is started by itself (that would be a loop for an error that comes back at once); the way to try again is the button.
+      expect(auth0.loginWithRedirect).not.toHaveBeenCalled();
+      expect(sessionStorage.getItem(STARTED_KEY)).toBeNull();
+      fireEvent.click(screen.getByTestId('owner-host-login-button'));
+      expect(auth0.loginWithRedirect).toHaveBeenCalledTimes(1);
+      expect(auth0.loginWithRedirect.mock.calls[0][0].appState).toEqual({ returnTo: '/portale-proprietari' });
+    });
+
+    it('OwnerHostLoginPage_OpenedNormally_TellsNothingOfAFailure', async () => {
+      renderLoginPage();
+
+      await waitFor(() => expect(auth0.loginWithRedirect).toHaveBeenCalledTimes(1));
+      expect(screen.queryByTestId('owner-host-login-failed')).not.toBeInTheDocument();
     });
 
     it('OwnerHostLoginPage_StartLongAgo_IsNotALoop', async () => {

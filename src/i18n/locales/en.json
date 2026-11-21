@@ -20201,6 +20201,7 @@
     "hostLogin": {
       "button": "Sign in",
       "description": "Sign in with your account to see your properties, statements and messages from the agency.",
+      "failed": "The sign-in did not complete. You can try again.",
       "redirecting": "Taking you to the sign-in page…",
       "title": "Owner area"
     },

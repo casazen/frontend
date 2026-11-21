@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Loader2, LogIn } from 'lucide-react';
+import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
 import { OWNER_PORTAL_HOME_PATH } from '@/lib/owner-invitation';
 import { useSeoMeta } from '@/lib/seo-meta';
+import { isSignInFailedState } from './paths';
 
 /** When this page last sent the visitor to the sign-in (`sessionStorage`, one tab). */
 const LAST_START_KEY = 'casazen.owner-host-login-started-at';
@@ -39,13 +41,17 @@ function rememberStart(): void {
  * A person who is already signed in goes straight to the portal. The one case that is not sent: a visitor who comes back within a few seconds of the last start, because the browser's back
  * button returned from the sign-in or because the sign-in answered with an error that sent the app here again. Redirecting that visitor again would be a loop, so the page then offers
  * the way in with a button.
+ *
+ * The same when the sign-in came back with an error (`HostSignInFailure` in `App` opens the page with the state `SIGN_IN_FAILED_STATE`): the page says that the sign-in did not complete and waits for
+ * the visitor to try again, it does not send them off by itself.
  */
 export function OwnerHostLoginPage() {
   const { t } = useTranslation();
   const { isAuthenticated, isLoading, user, login } = useAuth();
   const navigate = useNavigate();
+  const signInFailed = isSignInFailedState(useLocation().state);
   // Decided once, when the page opens.
-  const [redirect] = useState(() => !startedRecently());
+  const [redirect] = useState(() => !signInFailed && !startedRecently());
   const started = useRef(false);
   useSeoMeta({ title: t('ownerPortal.hostLogin.title'), noindex: true });
 
@@ -71,6 +77,11 @@ export function OwnerHostLoginPage() {
           </p>
         ) : (
           <>
+            {signInFailed ? (
+              <Alert variant="danger" className="w-full text-left" data-testid="owner-host-login-failed">
+                {t('ownerPortal.hostLogin.failed')}
+              </Alert>
+            ) : null}
             <p className="text-sm text-muted-foreground">{t('ownerPortal.hostLogin.description')}</p>
             <Button type="button" size="lg" className="min-h-11" onClick={() => login({ returnTo: OWNER_PORTAL_HOME_PATH })} data-testid="owner-host-login-button">
               <LogIn aria-hidden="true" className="mr-2 size-5" />

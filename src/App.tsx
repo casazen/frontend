@@ -5,7 +5,8 @@ import { AppToaster } from '@/components/shared/app-toaster';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
 import { AuthAppProviders, PublicAppProviders } from '@/contexts/auth-bridge';
 import { FeatureFlagsProvider } from '@/contexts/feature-flags-provider';
-import { ownerPortalPaths } from '@/features/owner-portal/paths';
+import { ownerPortalPaths, SIGN_IN_FAILED_STATE } from '@/features/owner-portal/paths';
+import { useAuth } from '@/hooks/use-auth';
 import { isEmbedPath } from '@/lib/embed-path';
 import { queryClient } from '@/lib/query-client';
 import {
@@ -16,7 +17,7 @@ import {
   setApiOnboardingRequiredHandler,
 } from '@/lib/axios';
 import { openOnboardingAfterGate } from '@/lib/onboarding-gate';
-import { hostNeedsAuth, isPublicUnauthenticatedPath, isSecureAuth0Origin } from '@/lib/secure-origin';
+import { hostNeedsAuth, isPublicUnauthenticatedPath, isSecureAuth0Origin, isSignInErrorReturn } from '@/lib/secure-origin';
 import { safeReturnTo } from '@/lib/auth-return-to';
 import { recordLandingTouch } from '@/lib/signup-attribution';
 import { stashOwnerInvitationToken } from '@/lib/owner-invitation';
@@ -98,6 +99,20 @@ function handleAuthRedirect(appState?: { returnTo?: unknown; supplierClaim?: unk
   window.history.replaceState({}, document.title, window.location.pathname);
 }
 
+/**
+ * The sign-in of an owner on the own domain of an agency came back with an error (`?error=…&state=…`, E40/F02/US01/T02, NF-141): the sign-in service does not complete such a return and does not call
+ * `handleAuthRedirect`, so without this the person would be left on the booking site with the answer of the sign-in in the address bar and no word about it. Once the service has read the answer, the
+ * sign-in page of the domain opens in its place (the address is replaced, so the answer is not kept in the history) and says that the sign-in did not complete, with the way to try again.
+ */
+function HostSignInFailure() {
+  const { error, isLoading } = useAuth();
+  useEffect(() => {
+    if (isLoading || !error) return;
+    void getRouter().navigate(ownerPortalPaths.signIn, { replace: true, state: SIGN_IN_FAILED_STATE });
+  }, [error, isLoading]);
+  return null;
+}
+
 function App() {
   const pathname = window.location.pathname;
   const hostSite = getHostSite();
@@ -135,6 +150,7 @@ function App() {
   return (
     <ErrorBoundary>
       <AuthAppProviders onRedirectCallback={handleAuthRedirect}>
+        {hostSite !== null && isSignInErrorReturn(window.location.search) ? <HostSignInFailure /> : null}
         <AppShell />
       </AuthAppProviders>
     </ErrorBoundary>
