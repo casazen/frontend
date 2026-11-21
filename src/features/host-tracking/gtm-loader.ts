@@ -40,12 +40,27 @@ export function normalizeGtmContainerId(value: unknown): string | null {
 }
 
 /**
+ * The pages of the booking site that a guest opens with the link of an e-mail, where the ADDRESS is the key to a booking: the code in `/my-bookings?code=…`, and the token in
+ * `/requests/<id>/confirm?token=…`, `/booking/<id>/review?token=…` and `/bookings/<id>/cancel?token=…` (this one takes it out of the address as soon as it opens, but it is in it
+ * when the page starts). With or without the `/book/<slug>` of the router: an agency's own domain writes `my-bookings`, `requests` and `booking` without it (`HOST_SITE_SEGMENTS`).
+ * The outcome page `/booking/<id>?token=…` is not one of them: the `purchase` is reported there (the risk and its follow-up are in the pull request).
+ */
+const KEY_ADDRESS_PAGE = /^(?:\/book\/[^/]+)?\/(?:my-bookings|requests|booking\/[^/]+\/review|bookings\/[^/]+\/cancel)(?:\/|$)/i;
+
+/** Whether the address `pathname` is one of `KEY_ADDRESS_PAGE`. The comparison ignores the case, as the router does. */
+function isKeyAddressPath(pathname: string): boolean {
+  return KEY_ADDRESS_PAGE.test(pathname.split(/[?#]/, 1)[0] ?? '');
+}
+
+/**
  * The container the page at `pathname` may load, or null when it loads nothing: not an agency's own domain (`site` null: the CasaZen domain), the embeddable
- * pages are not on for it (`embedEnabled`: the flag and the plan), the agency set no container or an invalid one, or the page is a widget (`/embed/*`:
- * a widget reports its events to the page that frames it, and never loads a tag manager). The consent of the visitor is the caller's check.
+ * pages are not on for it (`embedEnabled`: the flag and the plan), the agency set no container or an invalid one, the page is a widget (`/embed/*`:
+ * a widget reports its events to the page that frames it, and never loads a tag manager), or the address of the page is the key to a booking (`KEY_ADDRESS_PAGE`:
+ * a tag manager reads the whole address, the `Page URL` of its tags and the `page_location` of GA4, and would be handed the code or the token of the guest; it is the same
+ * reason why the source of a sign-up is not recorded on a page whose address names a person, `recordLandingTouch`). The consent of the visitor is the caller's check.
  */
 export function gtmContainerOf(site: Pick<HostSite, 'embedEnabled' | 'tracking'> | null, pathname: string): string | null {
-  if (!site || site.embedEnabled !== true || isEmbedPath(pathname)) return null;
+  if (!site || site.embedEnabled !== true || isEmbedPath(pathname) || isKeyAddressPath(pathname)) return null;
   return normalizeGtmContainerId(site.tracking?.gtmContainerId);
 }
 

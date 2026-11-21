@@ -143,4 +143,34 @@ describe('gtmContainerOf', () => {
       expect(gtmContainerOf(site, pathname)).toBeNull();
     },
   );
+
+  // The address of these pages is the key to a booking (the code of `/my-bookings?code=`, the token of the links of the e-mails): a tag manager reads the whole address, so it is not loaded there.
+  it.each([
+    ['/my-bookings'],
+    ['/my-bookings?code=K7M4Q-9XP2H'],
+    ['/MY-bookings/'],
+    ['/requests/0f8fad5b-d9cb-469f-a165-70867728950e/confirm?token=tok_secret'],
+    ['/booking/0f8fad5b-d9cb-469f-a165-70867728950e/review?token=tok_secret'],
+    ['/bookings/0f8fad5b-d9cb-469f-a165-70867728950e/cancel?token=tok_secret'],
+    ['/book/villa-mare/my-bookings'],
+    ['/book/villa-mare/requests/0f8fad5b/confirm'],
+    ['/book/villa-mare/booking/0f8fad5b/review'],
+    ['/book/villa-mare/bookings/0f8fad5b/cancel'],
+  ])('gtmContainerOf_OnAPageWhoseAddressIsTheKeyToABooking_%s_IsNothing', (pathname) => {
+    expect(gtmContainerOf(site, pathname)).toBeNull();
+  });
+
+  // The pages of the funnel stay measured: the outcome page keeps its token in the address because the `purchase` is reported there (the risk is in the pull request).
+  it.each([
+    ['/'],
+    ['/search'],
+    ['/property/casa-mare'],
+    ['/property/casa-mare/checkout'],
+    ['/property/my-bookings'],
+    ['/booking/0f8fad5b-d9cb-469f-a165-70867728950e?token=tok_secret'],
+    ['/book/villa-mare/booking/0f8fad5b'],
+    ['/book/my-bookings'],
+  ])('gtmContainerOf_OnAPageOfTheFunnel_%s_IsTheContainer', (pathname) => {
+    expect(gtmContainerOf(site, pathname)).toBe('GTM-ABC123');
+  });
 });

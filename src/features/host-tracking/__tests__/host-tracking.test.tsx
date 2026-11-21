@@ -211,6 +211,30 @@ describe('HostTracking and the events of the funnel', () => {
     });
 
     it.each([
+      ['/my-bookings?code=K7M4Q-9XP2H'],
+      ['/requests/0f8fad5b-d9cb-469f-a165-70867728950e/confirm?token=tok_secret'],
+      ['/booking/0f8fad5b-d9cb-469f-a165-70867728950e/review?token=tok_secret'],
+      ['/book/quokka/bookings/0f8fad5b-d9cb-469f-a165-70867728950e/cancel?token=tok_secret'],
+    ])('hostTracking_onAPageWhoseAddressIsTheKeyToABooking_doesNothing (%s)', (path) => {
+      window.history.pushState({}, '', path);
+      accept();
+      const read = vi.spyOn(Storage.prototype, 'getItem');
+
+      render(
+        <>
+          <HostTracking />
+          {EVERYTHING}
+        </>,
+      );
+
+      // A tag manager reads the whole address: the code or the token of the guest is never handed to the container, and the choice of the visitor is not even read there.
+      expect(scripts()).toHaveLength(0);
+      expect((window as DataLayerWindow).dataLayer).toBeUndefined();
+      expect(read).not.toHaveBeenCalled();
+      expect(window.localStorage.getItem(PURCHASES_STORAGE_KEY)).toBeNull();
+    });
+
+    it.each([
       ['the widgets are off for the agency', { ...HOST, embedEnabled: false }],
       ['the agency set no container', { ...HOST, tracking: { gtmContainerId: null } }],
       ['the answer says nothing of tracking', { ...HOST, tracking: undefined }],
@@ -474,6 +498,21 @@ describe('HostTracking and the events of the funnel', () => {
 
       expect(events()).toHaveLength(0);
       expect(window.localStorage.getItem(PURCHASES_STORAGE_KEY)).toBeNull();
+    });
+
+    it('hostTracking_purchase_isStillReportedOnTheOutcomePageWhoseAddressKeepsTheToken', () => {
+      window.history.pushState({}, '', `/booking/${BOOKING_ID}?token=tok_checkout_secret`);
+      accept();
+
+      render(
+        <>
+          <HostTracking />
+          <Funnel confirmation={outcome()} />
+        </>,
+      );
+
+      expect(scripts()).toHaveLength(1);
+      expect(events().map((message) => message.event)).toEqual(['purchase']);
     });
 
     it('hostTracking_purchase_isPushedOncePerBookingAcrossReloadsAndTabs', () => {
