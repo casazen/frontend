@@ -1257,6 +1257,52 @@ describe('the search bar is loaded when a page has one (AC7)', () => {
     ]);
   });
 
+  it('embedLoader_Search_APreviewAskedAfterTheLoaderMountedTheBar_TurnsThePreviewOn', async () => {
+    // The element carries the attribute, so the loader mounts it by itself; the console asks for its preview a moment later (an effect of its page).
+    const element = widget('search');
+    await loadLoader();
+    const mount = vi.fn();
+    api().register('search', mount);
+    const options = mount.mock.calls[0][1] as { preview: boolean };
+    expect(options.preview).toBe(false);
+
+    api().mount(element, { widget: 'search', preview: true });
+
+    // The bar is not drawn a second time: the one it has is a preview from now on.
+    expect(mount).toHaveBeenCalledTimes(1);
+    expect(options.preview).toBe(true);
+  });
+
+  it('embedLoader_Search_OnlyTrueTurnsThePreviewOn_AndNothingTurnsItOff', async () => {
+    const element = widget('search');
+    await loadLoader();
+    const mount = vi.fn();
+    api().register('search', mount);
+    const options = mount.mock.calls[0][1] as { preview: boolean };
+
+    api().mount(element, { preview: 'true' });
+    api().mount(element, { preview: 1 });
+    api().mount(element, { preview: false });
+    api().mount(element);
+    expect(options.preview).toBe(false);
+
+    api().mount(element, { preview: true });
+    api().mount(element, { preview: false });
+    expect(options.preview).toBe(true);
+  });
+
+  it('embedLoader_Search_APreviewAskedWhileTheFileIsStillComing_IsTheOneTheBarGets', async () => {
+    const element = widget('search');
+    await loadLoader();
+    api().mount(element, { widget: 'search', preview: true });
+
+    const mount = vi.fn();
+    api().register('search', mount);
+
+    expect(mount).toHaveBeenCalledTimes(1);
+    expect((mount.mock.calls[0][1] as { preview: boolean }).preview).toBe(true);
+  });
+
   it('embedLoader_Search_AddedAfterTheFileLoaded_IsMountedAtOnceAndLoadsNothingMore', async () => {
     await loadLoader();
     const early = widget('search');

@@ -27,6 +27,8 @@ function start(win: EmbedWindow): void {
   const scriptUrl = script?.src ?? '';
   const scriptOrigin = readOrigin(scriptUrl);
   const mounted = new WeakSet<Element>();
+  /** The preview switch of each widget the page draws itself (the search bar): a later `mount(element, { preview: true })` turns it on. */
+  const previews = new WeakMap<Element, { on: boolean }>();
   const registry = new Map<string, WidgetMount>();
   /** The search bars that wait for `search.js` to register itself. */
   const waiting: { widget: Widget; run: () => void }[] = [];
@@ -69,7 +71,16 @@ function start(win: EmbedWindow): void {
   };
 
   const mount = (element: Element, options: EmbedOptions = {}): void => {
-    if (!element || element.nodeType !== 1 || mounted.has(element)) return;
+    if (!element || element.nodeType !== 1) return;
+    if (mounted.has(element)) {
+      // A bar the loader drew by itself (its element carries the attribute) is a preview all the same when its caller asks for it afterwards: the bar reads the
+      // switch when its form is sent. Only `true` turns it on, nothing turns it off, and a frame has no preview: for the rest, mounting twice does nothing.
+      if (options.preview === true) {
+        const mode = previews.get(element);
+        if (mode) mode.on = true;
+      }
+      return;
+    }
     const host = element as HTMLElement;
     const get = (key: string, attribute = key): unknown => options[key] ?? host.getAttribute(`data-casazen-${attribute}`);
     const widget = String(get('widget') ?? '');
@@ -107,6 +118,8 @@ function start(win: EmbedWindow): void {
     if (!created.ok) return;
 
     // A widget the page draws itself (the search bar): its function is called with the options, once `search.js` has registered it.
+    const mode = { on: options.preview === true };
+    previews.set(host, mode);
     const run = (): void => {
       try {
         registry.get(widget)?.(host, {
@@ -118,7 +131,10 @@ function start(win: EmbedWindow): void {
           base: plan.base,
           org,
           emit: (name, params) => emit(created, name, params),
-          preview: options.preview === true,
+          // Read when the bar needs it (at the submit), not when it is drawn: see `previews`.
+          get preview() {
+            return mode.on;
+          },
         });
       } catch {
         created.fail();

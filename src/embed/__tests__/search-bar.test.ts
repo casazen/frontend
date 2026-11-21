@@ -1444,4 +1444,17 @@ describe('through the loader (AC7)', () => {
     expect(heard).toHaveLength(1);
     expect(assign).not.toHaveBeenCalled();
   });
+
+  it('searchBar_Search_APreviewAskedAfterTheLoaderMountedTheBar_NeverLeavesThePage', async () => {
+    // The element carries the attribute, so the loader draws the bar by itself; the console asks for the preview afterwards.
+    const element = await pageWithTheLoader({ target: '/prenota/' });
+    (window as EmbedWindow & { CasaZenEmbed: { mount: (element: Element, options?: Options) => void } }).CasaZenEmbed.mount(element, { widget: 'search', preview: true });
+    choose('2026-12-05', '2026-12-09');
+
+    send().click();
+
+    expect(note().textContent).toBe(IT.preview);
+    expect(assign).not.toHaveBeenCalled();
+    expect(element.querySelectorAll('form')).toHaveLength(1);
+  });
 });
