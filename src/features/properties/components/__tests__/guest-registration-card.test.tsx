@@ -519,10 +519,18 @@ describe('GuestRegistrationCard, the regime of the canton of a property (E29/F02
     });
 
     it('GuestRegistrationCard_TheCardOfAnAskDuty_HasNoAccessibilityViolation', async () => {
-      vi.mocked(guestRegistrationApi.get).mockResolvedValue(zurichCard({ identifierMissing: ['swiss_municipality_missing'] }));
-      const { container } = renderCard({ municipalityHref: '/edit' });
+      vi.mocked(guestRegistrationApi.get).mockResolvedValue(zurichCard());
+      const { container } = renderCard();
 
       await screen.findByTestId('guest-registration-answer-Required');
+      await expectNoAxeViolations(container);
+    });
+
+    it('GuestRegistrationCard_TheCardOfAnUnknownPlaceWithTheWayToSetIt_HasNoAccessibilityViolation', async () => {
+      vi.mocked(guestRegistrationApi.get).mockResolvedValue(unknownPlaceCard());
+      const { container } = renderCard({ municipalityHref: '/edit' });
+
+      await screen.findByTestId('guest-registration-fix-municipality');
       await expectNoAxeViolations(container);
     });
 
