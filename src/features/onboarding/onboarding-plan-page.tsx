@@ -15,7 +15,7 @@ import { supportConfig } from '@/config/support.config';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getProblemMessage } from '@/lib/api-errors';
-import { BULK_OFFER_ABOVE, ONBOARDING_BULK_PATH, firstOpenPart, knownNeeds, knownParts } from '@/lib/onboarding-parts';
+import { BULK_OFFER_ABOVE, ONBOARDING_BULK_PATH, firstOpenPart, knownNeeds, knownParts, partAppliesToOrg } from '@/lib/onboarding-parts';
 import { isOrgBillingAdmin } from '@/lib/org-billing-admin';
 import { cn } from '@/lib/utils';
 import { useFlowSummaries } from '@/queries/use-onboarding-flows';
@@ -63,7 +63,7 @@ export function OnboardingPlanPage() {
   const [deferring, setDeferring] = useState<Deferring | null>(null);
 
   const commercial = useCommercialProfile();
-  const parts = useMemo(() => knownParts(plan.data).filter(part => commercialPartAllowed(commercial, part.code)), [plan.data, commercial]);
+  const parts = useMemo(() => knownParts(plan.data).filter(part => partAppliesToOrg(part) && commercialPartAllowed(commercial, part.code)), [plan.data, commercial]);
   const needs = useMemo(() => knownNeeds(plan.data), [plan.data]);
   const focus = firstOpenPart(parts);
   // Every flow counts every property the caller reaches (each is in exactly one state of each flow), so the largest total is the number of properties.

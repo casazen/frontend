@@ -66,6 +66,10 @@ const BACKEND_PART_REASONS = [
   'issuer_missing',
   'partner_integration_missing',
   'connector_off',
+  // The part «Guest registration» (E29/F02/US01/T02, `OnboardingPlanModels.cs`: `SwissMunicipalityMissing`, `TicinoStructureIdMissing`, `NoSwissProperty`).
+  'swiss_municipality_missing',
+  'ticino_structure_id_missing',
+  'no_swiss_property',
   'no_property',
   'required_part_not_done',
   'not_provided',

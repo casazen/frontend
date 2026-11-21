@@ -2161,6 +2161,8 @@
       "guestMarketingConsentUnavailable": "In questo momento non possiamo salvare la tua scelta: riprova più tardi.",
       "guestMarketingEmailInvalid": "Scrivi un indirizzo e-mail corretto: quello della prenotazione non si può usare per le offerte.",
       "guestMarketingPhoneInvalid": "Controlla il numero di telefono: non sembra corretto.",
+      "guestRegistrationCountryNotSupported": "CasaZen non ha ancora le regole sulla notifica degli ospiti per il paese di questo immobile.",
+      "guestRegistrationOverrideNotApplicable": "La risposta sulla notifica degli ospiti si può dare solo per un immobile in Svizzera.",
       "welcomeAdultRequired": "Per continuare devi dichiarare di avere almeno 18 anni.",
       "welcomeChannelRequired": "Scegli almeno un canale: e-mail o WhatsApp.",
       "welcomeConsentOutdated": "Il testo del consenso è stato aggiornato: leggilo di nuovo e conferma la tua scelta.",
@@ -7684,6 +7686,7 @@
       "tosAccept": "Confermo che l'immobile soddisfa i requisiti di compliance CasaZen",
       "remindersAccept": "Attivo comunque: so che la scheda di sicurezza e i documenti ancora da completare sono un mio obbligo e li completo il prima possibile.",
       "backToEdit": "Torna alla modifica immobile",
+      "backToStep": "Torna a «{{step}}»",
       "complete": "Completa attivazione",
       "completed": "Immobile attivato con successo",
       "blockersRemain": "Attivazione salvata — completa i blocchi rimanenti per pubblicare.",
@@ -7695,6 +7698,7 @@
         "safety": "Checklist sicurezza",
         "tourist-tax": "Imposta di soggiorno",
         "ical": "Sincronizzazione calendario",
+        "guest-registration": "Notifica degli ospiti",
         "review": "Riepilogo e attivazione"
       },
       "touristTax": {
@@ -7745,7 +7749,9 @@
         "activation_cin_missing": "Inserisci il codice CIN dell'immobile.",
         "activation_cin_invalid": "Il codice CIN non è nel formato ufficiale (es. IT015146C2ABCDEFGH).",
         "activation_documents_missing": "Carica i documenti richiesti per l'attivazione.",
-        "safety_extinguishers_below_minimum": "Estintori insufficienti rispetto al minimo richiesto per i piani e i m² dell'unità."
+        "safety_extinguishers_below_minimum": "Estintori insufficienti rispetto al minimo richiesto per i piani e i m² dell'unità.",
+        "swiss_municipality_missing": "Indica il comune svizzero dell'immobile.",
+        "ticino_structure_id_missing": "Inserisci il numero identificativo della struttura (Ticino)."
       },
       "review": {
         "intro": "Controlla lo stato di ogni passaggio: puoi tornare a qualsiasi passaggio senza perdere i dati inseriti.",
@@ -10108,6 +10114,109 @@
       "partial": "Rimborso del {{percent}}% fino al {{date}}",
       "today": "Oggi"
     }
+  },
+  "guestRegistration": {
+    "card": {
+      "forbidden": "Non hai accesso a questo immobile.",
+      "loadFailed": "Non riesco a leggere le regole di questo cantone. Questo non significa che non ce ne siano: riprova.",
+      "loading": "Carico le regole del tuo cantone…",
+      "notFound": "Non troviamo questo immobile: forse è stato rimosso.",
+      "openPortal": "Apri il portale ufficiale",
+      "place": "{{municipality}} · Cantone {{canton}}",
+      "portalLater": "Potrai aprirlo dalla scheda dell'immobile, quando hai finito qui.",
+      "refreshFailed": "Non riesco ad aggiornare queste informazioni: quello che vedi potrebbe non essere aggiornato. Quello che hai scritto resta qui.",
+      "retry": "Riprova",
+      "title": "Notifica degli ospiti nel tuo cantone",
+      "unsupported": "CasaZen non ha ancora le regole sulla notifica degli ospiti per il paese di questo immobile."
+    },
+    "certainty": {
+      "Partial": {
+        "label": "Parzialmente verificato",
+        "text": "Le fonti non sono tutte ufficiali o non dicono tutto (lette il {{date}}). Verifica con il comune o la polizia: CasaZen non dà consulenza legale."
+      },
+      "Unverified": {
+        "label": "Non verificato",
+        "text": "Non abbiamo trovato una fonte ufficiale per questo cantone (cercata il {{date}}). Verifica con il comune o la polizia: CasaZen non dà consulenza legale."
+      },
+      "Verified": {
+        "label": "Verificato",
+        "text": "Letto sulle fonti ufficiali il {{date}}. In caso di dubbio verifica con il comune o la polizia: CasaZen non dà consulenza legale."
+      }
+    },
+    "channel": {
+      "EmailFile": "Mandi un file per e-mail",
+      "None": "Non si trasmette nulla: tieni il registro",
+      "Paper": "Con un modulo cartaceo",
+      "PortalFileUpload": "Carichi un file sul portale ufficiale",
+      "PortalForm": "Inserisci i dati sul portale ufficiale",
+      "VendorInterface": "Tramite l'interfaccia di un programma di gestione con il sistema del cantone (specifiche non pubbliche)"
+    },
+    "deadline": {
+      "AtArrival": "All'arrivo dell'ospite",
+      "DailyByTime": "Ogni giorno",
+      "Hours24FromArrival": "Entro 24 ore dall'arrivo dell'ospite",
+      "None": "Nessuna scadenza indicata dalle fonti",
+      "Weekly": "Almeno una volta a settimana"
+    },
+    "duty": {
+      "answeredNotRequired": "Hai risposto: non devo notificare.",
+      "answeredRequired": "Hai risposto: devo notificare.",
+      "askQuestion": "Per questa struttura devi notificare gli ospiti? Decidi tu.",
+      "askTitle": "Le fonti non dicono con certezza se la regola vale per chi affitta una casa privata.",
+      "change": "Cambia risposta",
+      "mustNotNotify": "Non devo notificare",
+      "mustNotify": "Devo notificare",
+      "required": "Per questa struttura la notifica è dovuta.",
+      "reversible": "La risposta non blocca nulla e si può cambiare in qualsiasi momento.",
+      "saveFailed": "Non sono riuscito a salvare la risposta. Riprova."
+    },
+    "facts": {
+      "channel": "Dove e come si notifica",
+      "deadline": "Scadenza",
+      "obligation": "Cosa chiede il cantone",
+      "portal": "Portale ufficiale",
+      "retention": "Conservazione dei dati",
+      "support": "Cosa fa CasaZen"
+    },
+    "missing": {
+      "fixMunicipality": "Indica il comune",
+      "swiss_municipality_missing": "Manca il comune. Senza il comune non sappiamo quali regole valgono per i tuoi ospiti: lo scegli dal CAP e dalla località, nei dati dell'immobile.",
+      "ticino_structure_id_missing": "Manca il numero identificativo della struttura: serve per preparare la notifica alla polizia ticinese.",
+      "title": "Da completare",
+      "unknown": "C'è ancora qualcosa da completare."
+    },
+    "obligation": {
+      "KeepRegister": "Devi tenere un registro degli ospiti e mostrarlo alla polizia se lo chiede.",
+      "Optional": "Tenere un registro degli ospiti è facoltativo.",
+      "ReportToAuthority": "Devi trasmettere i dati degli ospiti all'autorità.",
+      "Unknown": "Le fonti non dicono con certezza cosa chiede il cantone."
+    },
+    "privateRentals": {
+      "No": "Non vale per chi affitta una casa privata.",
+      "Partial": "Vale solo in parte per chi affitta una casa privata.",
+      "Unknown": "Non è certo se vale per chi affitta una casa privata.",
+      "Yes": "Vale anche per chi affitta una casa privata."
+    },
+    "retention": {
+      "none": "Le fonti non indicano un periodo",
+      "years_one": "{{count}} anno",
+      "years_other": "{{count}} anni"
+    },
+    "step": {
+      "complete": "Per notificare gli ospiti non manca nulla.",
+      "intro": "Per notificare gli ospiti serve sapere dove si trova la struttura e, in Ticino, il suo numero identificativo."
+    },
+    "structureId": {
+      "loading": "Leggo il numero della struttura…",
+      "value": "Numero identificativo: {{value}}"
+    },
+    "support": {
+      "AssistedNotification": "In arrivo: CasaZen preparerà i dati e ti ricorderà la scadenza; la notifica la farai tu.",
+      "FileExport": "Prepara il file nel formato ufficiale: lo carichi tu sul portale.",
+      "GuestRegister": "In arrivo: CasaZen raccoglierà i dati degli ospiti per il registro; lo conserverai tu e lo mostrerai alla polizia se lo chiede.",
+      "InformationOnly": "Ti dice cosa chiede il cantone: non invia nulla."
+    },
+    "toVerify": "Da verificare con il comune o la polizia"
   },
   "guests": {
     "title": "Ospiti",
@@ -17808,6 +17917,12 @@
     },
     "part": {
       "description": "Che cosa fa questo passo e dove ti porta.",
+      "missing": {
+        "more_one": "E ancora {{count}} immobile da completare",
+        "more_other": "E ancora {{count}} immobili da completare",
+        "title": "Cosa manca, immobile per immobile",
+        "unnamed": "Immobile senza nome"
+      },
       "needsTitle": "Cosa ti serve",
       "statusLabel": "Stato del passo"
     },
@@ -17827,6 +17942,10 @@
       "fiscalDocuments": {
         "title": "Fatturazione",
         "what": "I dati di chi emette, l’IVA, la numerazione e come si emettono i documenti."
+      },
+      "guestRegistration": {
+        "title": "Notifica degli ospiti (Svizzera)",
+        "what": "Per i tuoi immobili attivi in Svizzera: il comune e, in Ticino, il numero della struttura."
       },
       "identification": {
         "title": "Identificazione e accesso",
@@ -17903,6 +18022,7 @@
       "mapping_unavailable": "Ora non riusciamo a leggere gli abbinamenti con Octorate. Riprova tra poco.",
       "mapping_unconfirmed": "Manca la conferma dell'abbinamento tra gli annunci di Octorate e i tuoi immobili.",
       "no_property": "Non ci sono ancora immobili da configurare.",
+      "no_swiss_property": "Non hai immobili attivi in Svizzera: qui non c'è nulla da fare.",
       "not_provided": "Questo passo non è ancora disponibile.",
       "notification_preferences_missing": "Nessun amministratore ha ancora scelto come ricevere le notifiche.",
       "partner_integration_missing": "Non hai ancora attivato nessuna integrazione dal marketplace.",
@@ -17924,12 +18044,16 @@
         "property_inactive": "Questo immobile non è attivo.",
         "property_long_rent": "Questo immobile è in affitto lungo: qui non serve.",
         "sender_missing": "Manca chi invia le comunicazioni ad Alloggiati Web e ISTAT per questo immobile.",
+        "swiss_municipality_missing": "Manca il comune di questo immobile.",
         "tax_rate_missing": "Manca l'imposta di soggiorno del comune di questo immobile.",
+        "ticino_structure_id_missing": "Manca il numero identificativo della struttura di questo immobile.",
         "unknown": "C'è ancora qualcosa da completare."
       },
       "required_part_not_done": "Prima completa: {{parts}}.",
       "sender_missing": "Manca chi invia le comunicazioni ad Alloggiati Web e ISTAT per almeno un immobile.",
+      "swiss_municipality_missing": "Il comune di almeno un immobile attivo in Svizzera non è ancora indicato.",
       "tax_rate_missing": "Manca l'imposta di soggiorno del comune di almeno un immobile.",
+      "ticino_structure_id_missing": "Manca il numero identificativo della struttura di almeno un immobile attivo in Ticino.",
       "unknown": "Questo passo non è ancora completato."
     },
     "states": {
@@ -22602,6 +22726,7 @@
         "base-data": "Completa i dati",
         "cin": "Aggiungi il CIN",
         "documents": "Carica i documenti",
+        "guest-registration": "Completa la notifica degli ospiti",
         "safety": "Compila la scheda di sicurezza"
       },
       "fixLabel": "Cosa sistemare",
@@ -22615,6 +22740,7 @@
         "base-data": "Il prezzo per notte e i dati di base",
         "cin": "Il codice CIN",
         "documents": "I documenti richiesti per la tua regione",
+        "guest-registration": "Il comune e, in Ticino, il numero della struttura per notificare gli ospiti",
         "safety": "La scheda di sicurezza"
       },
       "readyDescription": "Gli ospiti possono prenotare dal tuo sito.",

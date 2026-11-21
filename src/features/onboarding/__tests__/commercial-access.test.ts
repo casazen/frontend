@@ -18,6 +18,9 @@ describe('purchased modules and guided setup', () => {
     expect(commercialPartAllowed(profile, 'octorateConnection')).toBe(true);
     expect(commercialPartAllowed(profile, 'messagesAi')).toBe(false);
     expect(commercialPartAllowed(profile, 'fiscalDocuments')).toBe(false);
+    // The notification of the guests in Switzerland is a compliance matter: it follows the module of the compliance.
+    expect(commercialPartAllowed(profile, 'guestRegistration')).toBe(false);
+    expect(commercialPartAllowed({ ...profile, commercialEnabledAddons: ['compliance'] }, 'guestRegistration')).toBe(true);
   });
   it('preserves existing accounts rather than changing their contracted access', () => {
     expect(commercialRouteAllowed(buildDemoProfile('short-stay'), '/app/short-rent/fiscal')).toBe(true);
