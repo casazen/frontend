@@ -21,8 +21,9 @@ interface EmbedOutletContext {
  * does not exist and for one that is not bookable online), and an error with a retry for any other failure. The two that leave the frame with nothing to show also tell
  * the page that frames it (`error`), which then shows its own link to the site.
  *
- * A 404 is «not found» even when TanStack Query still holds an older answer for the home (it keeps the data it had on an error): what the server says last wins. Any
- * other failure of a later read leaves the page that is already there.
+ * A 404 is «not found» even when TanStack Query still holds an older answer for the home (it keeps the data it had on an error): what the server says last wins.
+ * Any other failure of a later read leaves the page that is already there. The home is asked again every time the widget opens (`fresh`), so the older answer
+ * is shown at once and a home that is no more is found out at the next visit, not at the end of the five minutes the app keeps an answer.
  */
 export function PropertyWidget() {
   const { propertySlugOrId } = useParams<{ propertySlugOrId: string }>();
@@ -30,7 +31,8 @@ export function PropertyWidget() {
   const embed = useEmbed();
   const { send } = useEmbedBridge();
   const orgSlug = embed?.orgSlug ?? org.slug;
-  const { data: property, isLoading, isError, error, refetch } = useOrgPublicProperty(orgSlug, propertySlugOrId);
+  // Asked again every time the widget opens: the guest moves between the results and the homes without the frame being loaded afresh.
+  const { data: property, isLoading, isError, error, refetch } = useOrgPublicProperty(orgSlug, propertySlugOrId, { fresh: true });
 
   const notFound = (isError && isAxiosError(error) && error.response?.status === 404) || (!isLoading && !isError && !property);
   const failed = !notFound && !property && isError;

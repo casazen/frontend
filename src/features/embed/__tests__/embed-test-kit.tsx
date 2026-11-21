@@ -1,5 +1,5 @@
 import { act, render, waitFor } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, type DefaultOptions } from '@tanstack/react-query';
 import { RouterProvider, createMemoryRouter } from 'react-router-dom';
 import { expect, vi, type Mock, type MockInstance } from 'vitest';
 import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
@@ -18,10 +18,15 @@ export const PARENT = 'https://quokka360.com';
 /** The two parameters every address of a frame has when a loader made it: the version of the protocol and the origin of the page. */
 export const FRAME_QUERY = `v=1&parent=${encodeURIComponent(PARENT)}`;
 
-export function newQueryClient(): QueryClient {
-  // No retry and no wait: a failed read is a failed read at once.
-  return new QueryClient({ defaultOptions: { queries: { retry: false, retryDelay: 1 } } });
+type QueryDefaults = NonNullable<DefaultOptions['queries']>;
+
+export function newQueryClient(queries: QueryDefaults = {}): QueryClient {
+  // No retry and no wait: a failed read is a failed read at once. `queries` is what else the app says of every query (its own client keeps an answer for five minutes).
+  return new QueryClient({ defaultOptions: { queries: { retry: false, retryDelay: 1, ...queries } } });
 }
+
+/** What the client of the app says of every query that does not say otherwise (`lib/query-client.ts`): an answer is kept for five minutes and never asked again on mount. */
+export const APP_QUERY_DEFAULTS: QueryDefaults = { staleTime: 5 * 60 * 1000, refetchOnMount: false };
 
 /**
  * The routes of the widgets, as the app has them, with the widgets of the flag `siteEmbed` on (the shell asks the flag and the org before any widget).

@@ -9,7 +9,7 @@ import type { EmbedMessage } from '@/embed/protocol';
 import { addDays } from '@/lib/stay-dates';
 import { freezeClock } from '@/test/clock';
 import type { DirectBookingQuote, PublicCalendarDto, PublicOrgDto, PublicPropertyDetailDto } from '@/types';
-import { FRAME_QUERY, PARENT, frameInsideAPage, renderWidgets, spyOnTheBrowserMemory, type FramingPage, type MemorySpies } from './embed-test-kit';
+import { APP_QUERY_DEFAULTS, FRAME_QUERY, PARENT, frameInsideAPage, newQueryClient, renderWidgets, spyOnTheBrowserMemory, type FramingPage, type MemorySpies } from './embed-test-kit';
 import { DESTINATIONS, siteCalendar, stayCard, staysResult } from './stays-fixtures';
 
 /**
@@ -470,14 +470,38 @@ describe('the states (AC6)', () => {
   });
 
   it('embedProperty_Error404WithAnOlderAnswerInTheCache_IsStillNotFound', async () => {
-    // TanStack Query keeps the data of an earlier answer on an error: what the server says last wins.
-    const client = (await import('./embed-test-kit')).newQueryClient();
+    // TanStack Query keeps the data of an earlier answer on an error: what the server says last wins. The client is the one of the app (an answer kept for five
+    // minutes, never asked again on mount): the widget asks for itself, and the older answer is gone as soon as the server says «not found».
+    const client = newQueryClient(APP_QUERY_DEFAULTS);
     client.setQueryData(['public-org-property', 'villa-rossi', 'villa-mare'], property);
     getOrgProperty.mockRejectedValue(httpError(404));
     open(STAY, { client });
 
     expect(await screen.findByTestId('embed-property-not-found')).toBeInTheDocument();
     expect(screen.queryByTestId('embed-property')).not.toBeInTheDocument();
+    expect(getOrgProperty).toHaveBeenCalledTimes(1);
+  });
+
+  it('embedProperty_EachTimeItOpens_TheHomeIsAskedAgain_ShownAtOnceFromTheOlderAnswerAndCorrectedByTheNewOne', async () => {
+    const client = newQueryClient(APP_QUERY_DEFAULTS);
+    const { router } = open(STAY, { client });
+    await screen.findByTestId('embed-property');
+    expect(getOrgProperty).toHaveBeenCalledTimes(1);
+
+    // The guest goes to the results and comes back to the home: the home is asked again although the app would keep the answer for five minutes. The page shows the
+    // older answer while the new one is on its way.
+    await act(async () => {
+      await router.navigate(`/embed/villa-rossi/booking?${STAY}&${FRAME_QUERY}`);
+    });
+    await screen.findByTestId('embed-widget-booking');
+    getOrgProperty.mockResolvedValue({ ...property, name: 'Villa Mare Nuova' });
+    await act(async () => {
+      await router.navigate(`${ENTRY}?${STAY}&${FRAME_QUERY}`);
+    });
+
+    expect(await screen.findByTestId('embed-property')).toBeInTheDocument();
+    await waitFor(() => expect(getOrgProperty).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(within(screen.getByTestId('property-header')).getByRole('heading', { level: 1 })).toHaveTextContent('Villa Mare Nuova'));
   });
 
   it('embedProperty_AnotherFailure_IsAnErrorWithARetry_NeverNotFound_AndTellsThePage', async () => {
