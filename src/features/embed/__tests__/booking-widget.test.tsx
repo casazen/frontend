@@ -134,6 +134,37 @@ describe('the results in the frame (AC1)', () => {
     expect(getStays).toHaveBeenCalledWith(ORG_SLUG, expect.objectContaining({ checkIn: '2026-12-10', checkOut: '2026-12-13', adults: 2, bedrooms: 2, where: 'lugano' }));
   });
 
+  it('embedBooking_EveryControlOfTheSite_IsThere_PriceBedroomsBathroomsAreaAmenitiesRulesAndTheTags', async () => {
+    // Homes that differ in price and size (a slider needs a range), with labels: the controls the site offers for them.
+    getStays.mockResolvedValue(
+      staysResult([
+        stayCard(1, { price: { currency: 'EUR', perNightCents: 9000, totalCents: null }, areaSqm: 40, tags: ['mare', 'piscina'] }),
+        stayCard(2, { price: { currency: 'EUR', perNightCents: 21000, totalCents: null }, areaSqm: 120, tags: ['mare'] }),
+      ]),
+    );
+    open(DATES);
+    await screen.findAllByTestId('house-card');
+
+    // The labels of the homes are chips of the bar, with the sort.
+    const categories = await screen.findByRole('list', { name: 'Categorie' });
+    expect(within(categories).getByRole('button', { name: 'Mare' })).toBeInTheDocument();
+    expect(within(categories).getByRole('button', { name: 'Con piscina' })).toBeInTheDocument();
+    expect(screen.getByTestId('search-sort')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('search-filters-open'));
+    const panel = await screen.findByTestId('search-filters-panel');
+    for (const legend of ['Prezzo a notte', 'Camere', 'Bagni', 'Superficie', 'Servizi', 'Regole della casa']) {
+      expect(within(panel).getByText(legend, { selector: 'legend span' })).toBeInTheDocument();
+    }
+    // The ranges are the ones of the homes: the euros of the cheapest and of the dearest night, and the metres of the smallest and of the largest.
+    const sliders = within(panel).getAllByRole('slider') as HTMLInputElement[];
+    expect(sliders.map((slider) => [slider.min, slider.max])).toEqual([
+      ['90', '210'],
+      ['90', '210'],
+      ['40', '120'],
+    ]);
+  });
+
   it('embedBooking_AChangeOfTheSearch_IsWrittenInTheAddressOfTheFrameWithTheKeysOfTheSite', async () => {
     const { router } = open(DATES);
     await screen.findAllByTestId('house-card');
