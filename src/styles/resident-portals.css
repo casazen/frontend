@@ -1,0 +1,80 @@
+/* Owner accounts and tenant contracts share navigation mechanics, with separate role accents. */
+.resident-shell {
+  --resident-ink: #1f3a3d;
+  --resident-paper: #fbfaf8;
+  --resident-tint: #e9f1f0;
+  --resident-active: #1f3a3d;
+  --resident-line: #cfdad8;
+  min-height: 100dvh;
+  background: var(--resident-paper);
+  color: var(--resident-ink);
+}
+.resident-shell--tenant {
+  --resident-active: #2147af;
+  --resident-tint: #eef3ff;
+  --resident-line: #dce3ef;
+}
+.resident-rail {
+  background: white;
+  border-bottom: 1px solid var(--resident-line);
+}
+.resident-rail__inner {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+.resident-title {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -.025em;
+}
+.resident-title > svg {
+  flex: none;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: .625rem;
+  background: var(--resident-active);
+  color: white;
+  border-radius: .875rem;
+}
+.resident-nav {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: .25rem;
+}
+.resident-link {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  padding: .5rem .625rem;
+  border-radius: .625rem;
+  font-size: .875rem;
+  font-weight: 550;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.resident-link svg { flex: none; width: 1.125rem; height: 1.125rem; }
+.resident-link:hover, .resident-link[aria-current="page"] { background: var(--resident-tint); }
+.resident-link[aria-current="page"] { color: var(--resident-active); font-weight: 750; box-shadow: inset 3px 0 var(--resident-active); }
+.resident-link:focus-visible { outline: 2px solid var(--resident-active); outline-offset: -2px; }
+.resident-main {
+  min-width: 0;
+  width: 100%;
+  max-width: 75rem;
+  margin-inline: auto;
+  padding: clamp(1rem,3vw,2.5rem);
+}
+@media (min-width: 40rem) and (max-width: 63.99rem) {
+  .resident-nav { grid-template-columns: repeat(4,minmax(0,1fr)); }
+}
+@media (min-width: 64rem) {
+  .resident-shell { display: grid; grid-template-columns: clamp(14rem,19vw,18.5rem) minmax(0,1fr); }
+  .resident-rail { border-bottom: 0; border-inline-end: 1px solid var(--resident-line); }
+  .resident-rail__inner { position: sticky; top: 0; max-height: 100dvh; overflow-y: auto; gap: 2rem; padding: 1.5rem 1rem; }
+  .resident-title { padding-bottom: 1.25rem; border-bottom: 1px solid var(--resident-line); }
+  .resident-nav { grid-template-columns: 1fr; }
+  .resident-shell--tenant .resident-main { max-width: 62rem; }
+}

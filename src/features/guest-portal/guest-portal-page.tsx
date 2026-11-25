@@ -62,6 +62,8 @@ const copy = {
   guide: ['Guida della casa', 'House guide', 'Hausführer', 'Guide du logement', 'Guía del alojamiento'],
   stay: ['Soggiorno', 'Stay', 'Aufenthalt', 'Séjour', 'Estancia'],
   details: ['Informazioni sulla prenotazione', 'Booking details', 'Buchungsdetails', 'Détails de la réservation', 'Detalles de la reserva'],
+  arrivalDate: ['Arrivo', 'Arrival', 'Anreise', 'Arrivée', 'Llegada'],
+  departureDate: ['Partenza', 'Departure', 'Abreise', 'Départ', 'Salida'],
   arrival: ['Orario di arrivo', 'Arrival time', 'Ankunftszeit', 'Heure d’arrivée', 'Hora de llegada'],
   late: ['Arrivo tardi', 'Late arrival', 'Späte Anreise', 'Arrivée tardive', 'Llegada tardía'],
   save: ['Salva', 'Save', 'Speichern', 'Enregistrer', 'Guardar'],
@@ -288,7 +290,17 @@ function GuestPortalPage({ token }: { token: string }) {
                 <Link to={href()} className="stay-back"><ArrowLeft aria-hidden="true" />{text('back')}</Link>
               )}
               {(!checkingIn || !stay.checkInAvailable) && <h1>{checkingIn ? text('checkInSection') : extras ? extraLabels[language][0] : text(services ? 'servicesAndExtras' : supplierOrders ? 'supplierOrders' : guide ? 'guide' : details ? 'booking' : chat ? 'chat' : documents ? 'documents' : payments ? 'payments' : review ? 'review' : cancellation ? 'cancellation' : privacy ? 'privacy' : 'title')}</h1>}
-              {!checkingIn && <p className="stay-meta">{home ? <>{range} · {stay.guests} {guestLabel(language, stay.guests)}</> : stay.propertyName}</p>}
+              {home ? (
+                <dl className="stay-itinerary">
+                  {([['arrivalDate', stay.checkIn], ['departureDate', stay.checkOut]] as const).map(([label, value]) => (
+                    <div key={label}>
+                      <dt>{text(label)}</dt>
+                      <dd><time dateTime={value.slice(0, 10)}>{date(value).toLocaleDateString(language, { dateStyle: 'medium', timeZone: 'UTC' })}</time></dd>
+                    </div>
+                  ))}
+                  <div><dt><UsersRound aria-hidden="true" />{guestLabel(language, stay.guests)}</dt><dd>{stay.guests}</dd></div>
+                </dl>
+              ) : !checkingIn && <p className="stay-meta">{stay.propertyName}</p>}
               {home && (
                 <p className="stay-property"><MapPin aria-hidden="true" />{stay.propertyName}
                   <small className="stay-mobile-code">· {stay.bookingCode}</small>
