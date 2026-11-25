@@ -138,8 +138,8 @@ function PageHeaderWithTrail({ title, description, action, crumbs, primary, seco
       {/* The same row as the head every page has (it wraps and shrinks to fit a phone); the title is smaller on a phone. */}
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
         <div className="min-w-0 grow basis-56">
-          <h1 className="break-words text-2xl font-bold tracking-tight md:text-3xl">{title}</h1>
-          {description ? <p className="mt-2 break-words text-muted-foreground">{description}</p> : null}
+          <h1 className="workspace-title">{title}</h1>
+          {description ? <p className="workspace-description">{description}</p> : null}
         </div>
         {hasActions ? (
           <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">

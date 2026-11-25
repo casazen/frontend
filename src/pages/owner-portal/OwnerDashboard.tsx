@@ -27,16 +27,9 @@ export function OwnerDashboard() {
     <div className="space-y-6">
       <PortalPageHeading title={t('ownerPortal.dashboard.title')} description={t('ownerPortal.dashboard.description')} />
 
-      {/* The numbers of the period are not available for an owner yet: said, never a zero in their place */}
-      {hasNoProperties ? null : (
-        <Alert variant="info" title={t('ownerPortal.dashboard.numbersUnavailable.title')} data-testid="owner-numbers-unavailable">
-          {t('ownerPortal.dashboard.numbersUnavailable.description')}
-        </Alert>
-      )}
-
       {/* Properties list */}
       <section className="space-y-4" aria-labelledby="owner-properties-title">
-        <h2 id="owner-properties-title" className="text-xl font-semibold text-[#1f3a3d] sm:text-2xl">
+        <h2 id="owner-properties-title" className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
           {t('ownerPortal.dashboard.yourProperties')}
         </h2>
         {properties.isLoading ? (
@@ -63,8 +56,8 @@ export function OwnerDashboard() {
               <li key={property.propertyId} className="min-w-0">
                 <Card className="relative h-full transition-shadow focus-within:ring-2 focus-within:ring-ring hover:shadow-md">
                   <CardHeader>
-                    <CardTitle className="flex min-w-0 items-start gap-2 text-xl">
-                      <Building2 aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-[#1f3a3d]" />
+                    <CardTitle className="flex min-w-0 items-center gap-3 text-xl">
+                      <Building2 aria-hidden="true" className="size-9 shrink-0 rounded-lg bg-muted p-2 text-foreground" />
                       <Link
                         to={ownerPortalPaths.property(property.propertyId)}
                         className="min-w-0 break-words after:absolute after:inset-0 after:content-[''] focus-visible:outline-none"
@@ -75,14 +68,14 @@ export function OwnerDashboard() {
                     <CardDescription className="break-words">{property.address}</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <dl className="grid grid-cols-2 gap-4 text-sm">
+                    <dl className="grid grid-cols-2 gap-4 border-t pt-4 text-sm">
                       <div>
                         <dt className="text-muted-foreground">{t('ownerPortal.dashboard.bookings')}</dt>
-                        <dd className="font-semibold">{property.totalBookings}</dd>
+                        <dd className="mt-1 text-xl font-semibold tabular-nums">{property.totalBookings}</dd>
                       </div>
                       <div>
                         <dt className="text-muted-foreground">{t('ownerPortal.dashboard.recentBookings')}</dt>
-                        <dd className="font-semibold">{property.recentBookings.length}</dd>
+                        <dd className="mt-1 text-xl font-semibold tabular-nums">{property.recentBookings.length}</dd>
                       </div>
                     </dl>
                   </CardContent>
@@ -92,6 +85,13 @@ export function OwnerDashboard() {
           </ul>
         )}
       </section>
+
+      {/* The numbers of the period are not available for an owner yet: said, never a zero in their place */}
+      {hasNoProperties ? null : (
+        <Alert variant="info" title={t('ownerPortal.dashboard.numbersUnavailable.title')} data-testid="owner-numbers-unavailable">
+          {t('ownerPortal.dashboard.numbersUnavailable.description')}
+        </Alert>
+      )}
     </div>
   );
 }

@@ -14,8 +14,8 @@ export function PortalPageHeading({ title, description, actions }: { title: stri
   return (
     <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
       <div className="min-w-0 space-y-1">
-        <h1 className="break-words text-2xl font-bold text-[#1f3a3d] sm:text-3xl">{title}</h1>
-        {description ? <p className="max-w-2xl text-sm text-muted-foreground">{description}</p> : null}
+        <h1 className="workspace-title text-foreground">{title}</h1>
+        {description ? <p className="workspace-description">{description}</p> : null}
       </div>
       {actions ? <div className="flex min-w-0 flex-wrap gap-2">{actions}</div> : null}
     </div>

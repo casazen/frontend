@@ -68,7 +68,7 @@ function NavLinkItem({ entry, active, collapsed, count, onNavigate }: NavLinkIte
       >
         {active ? <span aria-hidden="true" className="absolute -left-2 bottom-2 top-2 w-[3px] rounded-full bg-primary" /> : null}
         <NavIcon name={entry.icon} className="h-5 w-5 shrink-0" />
-        <span className={cn('truncate', collapsed && 'sr-only')}>{label}</span>
+        <span className={cn('min-w-0 break-words py-1 leading-snug', collapsed && 'sr-only')}>{label}</span>
         <NavCountPill
           entry={entry}
           count={count}
@@ -147,7 +147,7 @@ function NavMoreMenu({
         {...triggerProps}
       >
         <Ellipsis className="h-5 w-5 shrink-0" aria-hidden="true" />
-        <span className={cn('truncate', collapsed && 'sr-only')}>{label}</span>
+        <span className={cn('min-w-0 break-words py-1 leading-snug', collapsed && 'sr-only')}>{label}</span>
         {counted.map((entry) => (
           <NavCountPill
             key={entry.path}

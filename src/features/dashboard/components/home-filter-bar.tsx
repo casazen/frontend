@@ -14,7 +14,7 @@ export function HomeFilterBar({ properties, propertyId, onPropertyChange, onRese
   const unknownProperty = Boolean(propertyId && !properties.some(property => property.id === propertyId));
   const propertyLabel = t('dashboard.filter.property');
   return (
-    <div role="group" aria-label={t('dashboard.filter.label')} data-testid="home-filter" className="flex flex-wrap items-center gap-x-3 gap-y-1">
+    <div role="group" aria-label={t('dashboard.filter.label')} data-testid="home-filter" className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border bg-card px-4 py-2">
       {properties.length > 1 || unknownProperty ? (
         <label className="flex min-w-0 max-w-full flex-wrap items-center gap-x-3 gap-y-1">
           <span className="text-sm font-medium">{propertyLabel}</span>

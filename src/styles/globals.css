@@ -172,3 +172,21 @@ body {
     font-size: 1.1rem;
   }
 }
+
+@layer components {
+  .workspace-title {
+    font-size: clamp(1.625rem, 1.3rem + 1.2vw, 2.375rem);
+    font-weight: 650;
+    line-height: 1.12;
+    letter-spacing: -0.035em;
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+  }
+  .workspace-description {
+    max-width: 68ch;
+    margin-block-start: 0.5rem;
+    color: var(--color-muted-foreground);
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+  }
+}
