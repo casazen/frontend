@@ -68,7 +68,7 @@ function ImportInventory({ onSaved }: { onSaved: () => void }) {
         }} />
       </label>
       {invalid && <p role="alert">{t('activationStaff.invalidImport')}</p>}
-      {rows.length > 0 && <p>{t('activationStaff.selection', { count: rows.length })}</p>}
+      {rows.length > 0 && <p role="status" className="font-medium tabular-nums">{t('activationStaff.selection', { count: rows.length })}</p>}
       <Button type="button" disabled={rows.length === 0 || upload.isPending} onClick={() => upload.mutate()}>
         {t(upload.isPending ? 'activationStaff.importing' : 'activationStaff.importAction')}
       </Button>
@@ -171,7 +171,8 @@ export function AdminPropertyPreparationPage() {
     <AppShell>
       <div className="space-y-5">
         <PageHeader title={t('activationStaff.title')} />
-        <section className="space-y-3 rounded-xl border bg-card p-4">
+        <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <section className="min-w-0 space-y-3 rounded-xl border bg-card p-4 sm:p-6">
           <h2 className="text-lg font-semibold">{t('activationStaff.candidatesTitle')}</h2>
           <label className="block space-y-1">
             <span>{t('activationStaff.search')}</span>
@@ -184,7 +185,7 @@ export function AdminPropertyPreparationPage() {
           {available.length > 0 && <fieldset className="max-h-96 divide-y overflow-y-auto rounded-lg border px-3">
             <legend className="px-1">{t('activationStaff.selectProperties')}</legend>
             {available.map((row) => (
-              <label key={row.propertyId} className="flex items-start gap-3 py-2">
+              <label key={row.propertyId} className="flex items-start gap-3 rounded-lg p-3 has-checked:bg-muted">
                 <input type="checkbox" className="mt-1" disabled={row.missingFields.length > 0 || start.isPending}
                   checked={row.missingFields.length === 0 && selectedIds.includes(row.propertyId)} onChange={(event) => {
                     const checked = event.target.checked;
@@ -200,12 +201,13 @@ export function AdminPropertyPreparationPage() {
               </label>
             ))}
           </fieldset>}
-          <p>{t('activationStaff.selection', { count: selected.length })}</p>
+          <p role="status" className="font-medium tabular-nums">{t('activationStaff.selection', { count: selected.length })}</p>
           <Button disabled={!selected.length || search.trim() !== deferredSearch || start.isPending} onClick={() => start.mutate()}>{t('activationStaff.start')}</Button>
           {start.isError && <p role="alert">{getProblemMessage(start.error, t) ?? t('activationStaff.importFailure')}</p>}
         </section>
         <ImportInventory onSaved={() => { void cache.invalidateQueries({ queryKey: candidateKey }); }} />
-        <section className="space-y-3 rounded-xl border bg-card p-4">
+        </div>
+        <section className="min-w-0 space-y-3 rounded-xl border bg-card p-4 sm:p-6">
           <h2 className="text-lg font-semibold">{t('activationStaff.prepareTitle')}</h2>
           {recent.isError && <ErrorState title={t('activationStaff.loadError')} error={recent.error} onRetry={() => void recent.refetch()} />}
           {recent.isSuccess && batches.size === 0 && <p>{t('activationStaff.emptyBatches')}</p>}

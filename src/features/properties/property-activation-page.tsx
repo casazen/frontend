@@ -20,6 +20,7 @@ import { useWorkspace } from '@/hooks/use-workspace';
 import { useMarketplaceCatalog } from '@/queries/use-marketplace';
 import { SHORT_PROPERTIES_OVERVIEW, useProperties } from '@/queries/use-properties';
 import type { Property } from '@/types/property.types';
+import { PropertyThumb } from './components/property-thumb';
 import { PropertyActivationServices } from './property-activation-services';
 import { PropertyImportReview } from './property-import-review';
 import { propertyPath, propertyTabPath, propertyWizardPath } from './properties-paths';
@@ -45,9 +46,12 @@ function PropertyJourney({ property, canEditProperty, canReadCatalog, canConnect
 
   return (
     <section aria-label={property.name} className="min-w-0 space-y-5 rounded-xl border bg-card p-4 sm:p-6">
-      <div>
+      <div className="flex items-center gap-4 rounded-xl bg-muted/50 p-3">
+        <PropertyThumb photoUrls={property.photoUrls} className="size-16 rounded-lg" />
+        <div>
         <h2 className="break-words text-xl font-semibold">{property.name}</h2>
         <p className="text-sm text-muted-foreground">{property.city}</p>
+        </div>
       </div>
 
       <div className="space-y-3 border-t pt-4">
@@ -195,7 +199,8 @@ export function PropertyActivationPage() {
                           else if (event.key === 'ArrowUp') search.current?.focus();
                         }}
                         className="flex min-h-11 items-center justify-between gap-3 rounded-lg p-3 hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-[-2px] aria-current:bg-muted">
-                        <span className="min-w-0 break-words">
+                        <PropertyThumb photoUrls={property.photoUrls} className="size-10" />
+                        <span className="min-w-0 flex-1 break-words">
                           <span className="block font-medium">{property.name}</span>
                           <span className="text-sm text-muted-foreground">{property.city}</span>
                         </span>
