@@ -27,21 +27,21 @@ export function CampaignsPage() {
   const getStatusBadgeClass = (status: CampaignStatus) => {
     switch (status) {
       case 'Draft':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-muted text-foreground';
       case 'PendingApproval':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-warning-soft text-warning-foreground';
       case 'Approved':
-        return 'bg-green-100 text-green-800';
+        return 'bg-success-soft text-success-foreground';
       case 'Scheduled':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-info-soft text-info-foreground';
       case 'Sending':
-        return 'bg-indigo-100 text-indigo-800';
+        return 'bg-info-soft text-info-foreground';
       case 'Sent':
-        return 'bg-green-100 text-green-800';
+        return 'bg-success-soft text-success-foreground';
       case 'Failed':
-        return 'bg-red-100 text-red-800';
+        return 'bg-danger-soft text-danger-foreground';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-muted text-foreground';
     }
   };
 
@@ -61,7 +61,7 @@ export function CampaignsPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-8 flex justify-between items-center">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b pb-4">
         <div>
           <h1 className="text-3xl font-bold">{t('campaigns.title')}</h1>
           <p className="text-muted-foreground mt-2">
@@ -106,10 +106,10 @@ export function CampaignsPage() {
           {filteredCampaigns.map((campaign) => (
             <div
               key={campaign.id}
-              className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+              className="rounded-xl border bg-card p-4 sm:p-5"
             >
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0 flex-1 basis-64">
                   <div className="flex items-center gap-3 mb-2">
                     <h3 className="text-lg font-semibold">{campaign.subject}</h3>
                     <span
@@ -152,7 +152,7 @@ export function CampaignsPage() {
                         </div>
                         <div>
                           <span className="text-muted-foreground">{t('campaigns.report.errors')}: </span>
-                          <span className="font-medium text-red-600">{reportData.errors}</span>
+                          <span className="font-medium text-danger-foreground">{reportData.errors}</span>
                         </div>
                         <div>
                           <span className="text-muted-foreground">

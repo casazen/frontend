@@ -462,9 +462,13 @@ function RoutineCard({ routine, availability, busy, onEdit, onSimulate, onDelete
       <CardContent>
         <div className="space-y-4">
           <div className="space-y-2 text-sm text-muted-foreground">
-            <dl className="grid gap-3 rounded-lg bg-muted/50 p-3">
+            <dl className="grid gap-4 rounded-xl border bg-muted/40 p-4">
               <div><dt className="text-xs">{t('routines.flow.when')}</dt><dd className="font-medium text-foreground">{routineTrigger(t, routine.eventType, timing)}</dd></div>
-              <div><dt className="text-xs">{t('routines.flow.what')}</dt><dd className="text-foreground">{actionNames.length > 0 ? actionNames.join(', ') : t('routines.noActions')}</dd></div>
+              <div><dt className="text-xs">{t('routines.flow.what')}</dt><dd className="mt-1 text-foreground">{actionNames.length > 0 ? (
+                <ol className="list-decimal space-y-1 border-s-2 border-primary/40 ps-6 marker:font-semibold marker:text-primary-text">
+                  {actionNames.map((name, index) => <li key={index} className="break-words">{name}</li>)}
+                </ol>
+              ) : t('routines.noActions')}</dd></div>
             </dl>
             <Button type="button" variant="outline" onClick={() => onSimulate(routine)} disabled={busy} data-testid={`simulate-${routine.id}`}><FlaskConical aria-hidden="true" />{t('routines.flow.simulate')}</Button>
             {cannotRun.length > 0 && (
