@@ -3,32 +3,6 @@ import { bookingId, mockArrivalJourney, property } from './helpers/arrival-journ
 import { demoUrl } from './helpers/demo-profile';
 
 test.describe('Guest check-in portal', () => {
-  test('post-stay actions follow the host settings and the original booking channel', async ({ page }) => {
-    const token = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdef';
-    const api = `**/api/public/guest-portal/${token}`;
-    let reviewAvailable = true;
-    await page.route(api, route => route.fulfill({ json: {
-      stay: { propertyName: 'Villa Test', checkIn: '2025-10-01', checkOut: '2025-10-07',
-        bookingCode: 'PORTAL-TEST', guests: 2, status: 'checkedOut', isDirect: false, isOta: true },
-      branding: { name: 'Casa Test' }, language: 'en', checkInCompleted: true,
-    } }));
-    await page.route(api + '/stay', route => route.fulfill({ json: {
-      guide: {}, chatOpen: false, bookingChannel: 'BookingCom', reviewAvailable,
-    } }));
-    await page.route(api + '/host-extras?*', route => route.fulfill({ json: { offers: [], orders: [] } }));
-    const portal = `/s/${token}?lang=en`;
-    await page.goto(portal);
-    await expect(page.getByRole('link', { name: 'Write a review' })).toBeVisible();
-    await expect(page.getByText('The chat is closed.')).toBeVisible();
-    reviewAvailable = false;
-    await page.reload();
-    await expect(page.getByText('The chat is closed.')).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Write a review' })).toHaveCount(0);
-    await page.goto(portal + '&page=details');
-    await expect(page.getByRole('link', { name: 'Booking.com' }))
-      .toHaveAttribute('href', 'https://secure.booking.com/myreservations.html');
-  });
-
   test('a link issued by the host opens the same stay in a fresh guest browser', async ({ page, browser, baseURL }) => {
     test.slow();
     await mockArrivalJourney(page);

@@ -275,7 +275,7 @@ test.describe('Marketplace suppliers (#340)', () => {
     await page.getByTestId('request-notes').fill('Private arrival instructions');
     await page.getByTestId('request-next').click();
     await expect(page.getByTestId('request-supplier-sees')).toBeVisible();
-    await page.reload();
+    await page.reload({ waitUntil: 'domcontentloaded' });
     await expect(page.getByTestId('request-wizard')).toHaveAttribute('data-step', 'proposals');
     await chooseSupplier();
     await expect(page.getByTestId('request-notes')).toHaveValue('');
@@ -285,7 +285,7 @@ test.describe('Marketplace suppliers (#340)', () => {
     await expect(page.getByTestId('wizard-done-primary')).toHaveAttribute('href', '/app/short-rent/interventions/sr-created-e2e');
     await expect(page.getByTestId('wizard-done-secondary')).toHaveAttribute('href', `/app/short-rent/bookings/${STAY_ID}`);
     expect(posted).toEqual([expect.objectContaining({ bookingId: STAY_ID, propertyId: PROPERTY_ID, category: 'cleaning' })]);
-    await page.reload();
+    await page.reload({ waitUntil: 'domcontentloaded' });
     await expect(page).toHaveURL(/\/interventions\/sr-created-e2e$/);
     await expect(page.getByTestId('intervention-status')).toBeVisible();
     expect(posted).toHaveLength(1);
