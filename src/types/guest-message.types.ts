@@ -8,6 +8,7 @@ export type GuestMessageSender = 'Guest' | 'Host';
 export interface GuestThreadMessage {
   id: string;
   sender: GuestMessageSender;
+  origin?: 'Guest' | 'Person' | 'Assistant' | 'Automation' | null;
   text: string;
   /** UTC instant. */
   createdAt: string;

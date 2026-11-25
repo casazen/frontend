@@ -3,12 +3,12 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { ApiClient } from '@/api/client';
 import type { GuestThread } from '@/types/guest-message.types';
 
-const hostLabels = {
-  it: 'Scrivi all’host',
-  en: 'Write to the host',
-  de: 'Gastgeber kontaktieren',
-  fr: 'Écrire à l’hôte',
-  es: 'Escribir al anfitrión',
+const chatLabels = {
+  it: { handoff: 'Scrivi all’host', guest: 'Tu', host: 'Host', assistant: 'Assistente automatico', automation: 'Messaggio automatico' },
+  en: { handoff: 'Write to the host', guest: 'You', host: 'Host', assistant: 'Automatic assistant', automation: 'Automatic message' },
+  de: { handoff: 'Gastgeber kontaktieren', guest: 'Du', host: 'Gastgeber', assistant: 'Automatischer Assistent', automation: 'Automatische Nachricht' },
+  fr: { handoff: 'Écrire à l’hôte', guest: 'Vous', host: 'Hôte', assistant: 'Assistant automatique', automation: 'Message automatique' },
+  es: { handoff: 'Escribir al anfitrión', guest: 'Tú', host: 'Anfitrión', assistant: 'Asistente automático', automation: 'Mensaje automático' },
 } as const;
 
 interface Labels {
@@ -20,7 +20,9 @@ interface Labels {
   closed: string;
 }
 
-export function GuestPortalChat({ path, language, labels }: { path: string; language: keyof typeof hostLabels; labels: Labels }) {
+export function GuestPortalChat({ path, language, labels }: { path: string; language: keyof typeof chatLabels; labels: Labels }) {
+  const copy = chatLabels[language];
+  const time = new Intl.DateTimeFormat(language, { hour: 'numeric', minute: 'numeric' });
   const [input, setInput] = useState('');
   const [requestHost, setRequestHost] = useState(false);
   const messageField = useRef<HTMLTextAreaElement>(null);
@@ -56,15 +58,23 @@ export function GuestPortalChat({ path, language, labels }: { path: string; lang
       {thread.isPending && <p role="status">{labels.loading}</p>}
       {(thread.isError || send.isError) && <p role="alert">{labels.failed}</p>}
       {thread.data?.messages.length === 0 && <p>{labels.empty}</p>}
-      <ul className="stay-chat">
+      <ul className="stay-chat" role="log">
         {thread.data?.messages.map((message) => (
-          <li key={message.id} data-sender={message.sender}>{message.text}</li>
+          <li key={message.id} data-sender={message.sender}>
+            <div className="stay-chat-meta">
+              <strong>{message.sender === 'Guest' ? copy.guest
+                : message.origin === 'Assistant' ? copy.assistant
+                : message.origin === 'Automation' ? copy.automation : copy.host}</strong>
+              <time dateTime={message.createdAt}>{time.format(new Date(message.createdAt))}</time>
+            </div>
+            {message.text}
+          </li>
         ))}
       </ul>
       {thread.data?.state === 'Closed' && <p>{labels.closed}</p>}
       {thread.data?.state === 'Open' && (
         <form onSubmit={submit} className="stay-chat-form">
-          <label htmlFor="stay-message">{requestHost ? hostLabels[language] : labels.message}</label>
+          <label htmlFor="stay-message">{requestHost ? copy.handoff : labels.message}</label>
           <textarea ref={messageField} id="stay-message" value={input} maxLength={2000} required disabled={send.isPending}
             onChange={(event) => {
               key.current = null;
@@ -77,7 +87,7 @@ export function GuestPortalChat({ path, language, labels }: { path: string; lang
               setRequestHost(true);
               send.reset();
               messageField.current?.focus();
-            }}>{hostLabels[language]}</button>
+            }}>{copy.handoff}</button>
           )}
           <button type="submit" disabled={!input.trim() || send.isPending}>{labels.send}</button>
         </form>

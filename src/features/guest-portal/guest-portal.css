@@ -216,6 +216,15 @@
   background: var(--stay-tint);
 }
 
+.stay-chat-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  justify-content: space-between;
+  margin-bottom: .25rem;
+  font-size: .8125rem;
+}
+
 .stay-chat-form {
   display: grid;
   gap: .5rem;
