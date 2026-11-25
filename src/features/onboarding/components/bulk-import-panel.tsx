@@ -191,7 +191,7 @@ export function BulkImportPanel() {
   }
 
   return (
-    <section aria-labelledby={`${ids}-title`} className="min-w-0 space-y-4 rounded-lg border bg-card p-4" data-testid="bulk-import">
+    <section id="bulk-import" tabIndex={-1} aria-labelledby={`${ids}-title`} className="min-w-0 space-y-4 scroll-mt-24 rounded-2xl border bg-card p-4 shadow-sm sm:p-6" data-testid="bulk-import">
       <div className="space-y-1">
         <h2 id={`${ids}-title`} className="text-lg font-semibold">
           {t('onboardingPlan.bulk.import.title')}

@@ -88,7 +88,7 @@ export function QuickPropertyForm({ variant, onSubmit, isLoading, disabled, onFu
 
   return (
     <form onSubmit={handleSubmit(submit)} noValidate className="space-y-6" data-testid="quick-property-form">
-      <Card>
+      <Card className="rounded-2xl">
         {/* The name and the comune, and beside them once the card is wide the address and the numbers (under each other when it is not). */}
         <CardContent className="@container pt-6">
           <div className={FIELD_COLUMNS}>
@@ -155,8 +155,8 @@ export function QuickPropertyForm({ variant, onSubmit, isLoading, disabled, onFu
         </CardContent>
       </Card>
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Button type="button" variant="link" className="h-auto p-0" onClick={onFullForm} data-testid="quick-property-full-form">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-card p-3">
+        <Button type="button" variant="link" className="h-auto min-h-11 px-2" onClick={onFullForm} data-testid="quick-property-full-form">
           {t('property.quick.fullForm')}
         </Button>
         <Button type="submit" size="lg" disabled={isLoading || disabled} data-testid="quick-property-submit">

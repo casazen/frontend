@@ -202,7 +202,7 @@ export function BulkSelectionPanel() {
   const appliedAll = appliedCount > 0 && refusedCount === 0;
 
   return (
-    <section aria-labelledby={`${ids}-title`} className="min-w-0 space-y-5 rounded-lg border bg-card p-4" data-testid="bulk-selection">
+    <section id="bulk-selection" tabIndex={-1} aria-labelledby={`${ids}-title`} className="min-w-0 space-y-5 scroll-mt-24 rounded-2xl border bg-card p-4 shadow-sm sm:p-6" data-testid="bulk-selection">
       <div className="space-y-1">
         <h2 id={`${ids}-title`} className="text-lg font-semibold">
           {t('onboardingPlan.bulk.selection.title')}
