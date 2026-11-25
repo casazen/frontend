@@ -63,7 +63,7 @@ export function GuestSupplierOperations({ scope }: { scope: Scope }) {
   return (
     <section className="grid gap-4 rounded-lg border bg-card p-4">
       <h2 className="font-semibold">Servizi e ordini ospiti</h2>
-      <p>Ambiente di test. Pagamenti e rimborsi simulati.</p>
+      <p>Ambiente di test per gli ordini ospiti.</p>
       {scope.role === 'host' && <>
         <ConfigureOffer endpoint={endpoint} offers={query.data.offers}
           busy={change.isPending} save={(id, commissionBasisPoints, enabled) =>
@@ -108,7 +108,8 @@ export function GuestSupplierOperations({ scope }: { scope: Scope }) {
                 busy={change.isPending} send={(_, text) => transition('reply', { text })} />}
             </>}
             {disputable && (scope.role === 'admin' || (scope.role === 'host' && order.hostOrigin)) && <ActionForm
-              amountLabel="Rimborso in euro" textLabel="Motivazione della decisione" button="Risolvi controversia" maxCents={order.totalCents}
+              amountLabel={order.stripeSandbox ? undefined : 'Rimborso in euro'} textLabel="Motivazione della decisione"
+              button={order.stripeSandbox ? 'Chiudi senza rimborso' : 'Risolvi controversia'} maxCents={order.totalCents}
               busy={change.isPending} send={(refundCents, text) => change.mutate({ suffix: `/${order.id}/resolve`, body: { refundCents, text } })} />}
           </article>
         );

@@ -12,6 +12,7 @@ export interface GuestSupplierOrder {
   totalCents: number;
   refundCents: number;
   hostOrigin: boolean;
+  stripeSandbox?: boolean;
   requestNote: string | null;
   complaint: string | null;
   supplierReply: string | null;
