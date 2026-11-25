@@ -46,11 +46,12 @@ describe('TrustedSuppliersPage invite (bug #977)', () => {
 
     fireEvent.click(await screen.findByTestId('invite-supplier-button'));
     fireEvent.change(screen.getByTestId('invite-email-input'), { target: { value: ' fornitore@example.com ' } });
+    fireEvent.change(screen.getByLabelText(i18n.t('supplier.identity.vat')), { target: { value: 'IT12345678901' } });
     fireEvent.click(await screen.findByLabelText(LUGANO.name));
     fireEvent.click(screen.getByTestId('invite-submit-button'));
 
     await waitFor(() =>
-      expect(trustedSuppliersApi.invite).toHaveBeenCalledWith({ email: 'fornitore@example.com', propertyIds: [LUGANO.id] }),
+      expect(trustedSuppliersApi.invite).toHaveBeenCalledWith({ email: 'fornitore@example.com', vatNumber: 'IT12345678901', propertyIds: [LUGANO.id] }),
     );
   });
 

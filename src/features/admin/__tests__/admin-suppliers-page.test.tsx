@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
 import { MemoryRouter } from 'react-router-dom';
 import { toast } from 'sonner';
+import { ApiClient } from '@/api/client';
 import i18n from '@/i18n/config';
 import type {
   AdminSupplier,
@@ -24,6 +25,7 @@ vi.mock('@/services/supplier-api', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/services/supplier-api')>()),
   ...api,
 }));
+vi.mock('@/api/client', () => ({ ApiClient: { get: vi.fn(), post: vi.fn() } }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 const ACTIVE: AdminSupplier = {
@@ -78,6 +80,7 @@ function problem(status: number, code: string, detail: string) {
 describe('AdminSuppliersPage (SU-12, A4-29)', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
+    vi.mocked(ApiClient.get).mockResolvedValue([]);
     api.fetchAdminSuppliers.mockResolvedValue(page([ACTIVE, SUSPENDED]));
     api.suspendSupplier.mockResolvedValue({ ...ACTIVE, status: 'Suspended' });
     api.reactivateSupplier.mockResolvedValue({ ...SUSPENDED, status: 'Active' });

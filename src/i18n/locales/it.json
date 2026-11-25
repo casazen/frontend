@@ -28463,6 +28463,24 @@
     }
   },
   "supplier": {
+    "identity": {
+      "fields": "Identificativi facoltativi",
+      "fieldsHint": "Aggiungi i dati che conosci per riconoscere un fornitore già registrato.",
+      "vat": "Partita IVA",
+      "fiscal": "Codice fiscale",
+      "phone": "Telefono",
+      "email": "Email",
+      "queue": "Inviti da verificare",
+      "submitted": "Email indicata nell’invito: {{email}}",
+      "decide": "Scegli a chi inviare l’invito",
+      "matched": "Coincidenze: {{fields}}",
+      "distinct": "È un fornitore distinto. Invia a {{email}}",
+      "reject": "Archivia la richiesta senza inviare l’invito",
+      "confirm": "Conferma decisione",
+      "resolveError": "Impossibile confermare. Aggiorna l’elenco e riprova.",
+      "loadError": "Impossibile caricare le verifiche.",
+      "empty": "Nessun invito da verificare."
+    },
     "clients": {
       "chips": {
         "all": "Tutti",
@@ -30789,8 +30807,8 @@
       "inviteEmail": "Email fornitore",
       "inviteEmailPlaceholder": "fornitore@esempio.it",
       "inviteSend": "Invia invito",
-      "inviteHint": "Il fornitore riceve un'email con il link per entrare in CasaZen con quell'indirizzo. Quando accetta, lo trovi in questa pagina.",
-      "inviteSuccess": "Invito inviato: il fornitore riceverà un'email con il link per accettare",
+      "inviteHint": "Inserisci l’email del fornitore. Il rapporto inizia quando il titolare del profilo accetta.",
+      "inviteSuccess": "Richiesta registrata. Dopo la verifica il fornitore riceverà il link per accettare.",
       "inviteError": "Impossibile inviare l'invito",
       "properties": "Proprietà assegnate",
       "propertiesHint": "Se non ne scegli nessuna, il fornitore lavora su tutte le tue proprietà.",

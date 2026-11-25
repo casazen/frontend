@@ -12,6 +12,9 @@ export interface TrustedSupplier {
 }
 
 export interface InviteSupplierDto {
+  vatNumber?: string;
+  fiscalCode?: string;
+  phone?: string;
   email: string;
   propertyIds: string[];
 }

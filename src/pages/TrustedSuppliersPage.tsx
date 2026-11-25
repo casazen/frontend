@@ -1,3 +1,5 @@
+import { SupplierInviteIdentityFields } from '@/features/supplier/supplier-invite-identity-fields';
+import { readSupplierInviteIdentity } from '@/features/supplier/read-supplier-invite-identity';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/page-header';
@@ -33,12 +35,12 @@ export function TrustedSuppliersPage() {
   const toggleInviteProperty = (id: string, checked: boolean) =>
     setInvitePropertyIds((current) => (checked ? [...current, id] : current.filter((value) => value !== id)));
 
-  const handleInvite = () => {
+  const handleInvite = (form: HTMLFormElement) => {
     const email = inviteEmail.trim();
     if (!email || !properties.isSuccess || inviteSupplier.isPending) return;
 
     inviteSupplier.mutate(
-      { email, propertyIds: invitePropertyIds },
+      { email, propertyIds: invitePropertyIds, ...readSupplierInviteIdentity(form) },
       {
         onSuccess: () => {
           setInviteDialogOpen(false);
@@ -92,7 +94,7 @@ export function TrustedSuppliersPage() {
                 <DialogTitle>{t('supplier.trusted.inviteTitle')}</DialogTitle>
                 <DialogDescription>{t('supplier.trusted.inviteHint')}</DialogDescription>
               </DialogHeader>
-              <form className="space-y-4" onSubmit={(event) => { event.preventDefault(); handleInvite(); }}>
+              <form className="space-y-4" onSubmit={(event) => { event.preventDefault(); handleInvite(event.currentTarget); }}>
                 <div className="space-y-2">
                   <Label htmlFor="invite-email">{t('supplier.trusted.inviteEmail')}</Label>
                   <Input
@@ -105,6 +107,7 @@ export function TrustedSuppliersPage() {
                     data-testid="invite-email-input"
                   />
                 </div>
+                <SupplierInviteIdentityFields />
                 {properties.isPending && <p role="status">{t('supplier.trusted.loadingProperties')}</p>}
                 {properties.isError && <div className="space-y-2">
                   <p role="alert">{t('supplier.trusted.propertiesError')}</p>

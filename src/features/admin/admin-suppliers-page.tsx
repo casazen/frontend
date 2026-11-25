@@ -1,3 +1,4 @@
+import { SupplierIdentityReviews } from './supplier-identity-reviews';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { GuestSupplierOperations, MarketplaceSettings } from '@/features/guest-portal/guest-supplier-operations';
 import { useState } from 'react';
@@ -160,6 +161,7 @@ export function AdminSuppliersPage() {
       />
       <SuppliersTab />
       <MarketplaceSettings />
+      <SupplierIdentityReviews />
       {flags.guestPortal && flags.guestPortalSupplierServices && <GuestSupplierOperations scope={{ role: 'admin' }} />}
     </div>
   );
