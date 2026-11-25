@@ -30,9 +30,9 @@ export function DocumentFilterBar({ filters, problem, onChange, onReset }: Docum
   const set = (part: keyof DocumentFilters, value: string) => onChange({ ...filters, [part]: value });
 
   return (
-    <div className="space-y-3" data-testid="fiscal-documents-filters">
-      <div role="group" aria-label={t('fiscalDocuments.list.filters.label')} className="flex flex-wrap items-end gap-3">
-        <Field label={t('fiscalDocuments.list.filters.from')} className="w-full sm:w-44">
+    <div className="space-y-3 rounded-2xl border bg-card p-4 sm:p-5" data-testid="fiscal-documents-filters">
+      <div role="group" aria-label={t('fiscalDocuments.list.filters.label')} className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        <Field label={t('fiscalDocuments.list.filters.from')} className="min-w-0">
           <Input
             type="date"
             value={filters.from}
@@ -42,7 +42,7 @@ export function DocumentFilterBar({ filters, problem, onChange, onReset }: Docum
             data-testid="fiscal-documents-from"
           />
         </Field>
-        <Field label={t('fiscalDocuments.list.filters.to')} className="w-full sm:w-44">
+        <Field label={t('fiscalDocuments.list.filters.to')} className="min-w-0">
           <Input
             type="date"
             value={filters.to}
@@ -52,7 +52,7 @@ export function DocumentFilterBar({ filters, problem, onChange, onReset }: Docum
             data-testid="fiscal-documents-to"
           />
         </Field>
-        <Field label={t('fiscalDocuments.list.filters.kind')} className="w-full sm:w-48">
+        <Field label={t('fiscalDocuments.list.filters.kind')} className="min-w-0">
           <Select value={filters.kind} onChange={(event) => set('kind', event.target.value)} data-testid="fiscal-documents-kind">
             <option value="">{t('fiscalDocuments.list.filters.all')}</option>
             {DOCUMENT_KIND_OPTIONS.map((kind) => (
@@ -62,7 +62,7 @@ export function DocumentFilterBar({ filters, problem, onChange, onReset }: Docum
             ))}
           </Select>
         </Field>
-        <Field label={t('fiscalDocuments.list.filters.source')} className="w-full sm:w-56">
+        <Field label={t('fiscalDocuments.list.filters.source')} className="min-w-0">
           <Select value={filters.source} onChange={(event) => set('source', event.target.value)} data-testid="fiscal-documents-source">
             <option value="">{t('fiscalDocuments.list.filters.all')}</option>
             {DOCUMENT_SOURCE_OPTIONS.map((source) => (
@@ -72,7 +72,7 @@ export function DocumentFilterBar({ filters, problem, onChange, onReset }: Docum
             ))}
           </Select>
         </Field>
-        <Field label={t('fiscalDocuments.list.filters.status')} className="w-full sm:w-48">
+        <Field label={t('fiscalDocuments.list.filters.status')} className="min-w-0">
           <Select value={filters.status} onChange={(event) => set('status', event.target.value)} data-testid="fiscal-documents-status">
             <option value="">{t('fiscalDocuments.list.filters.all')}</option>
             {DOCUMENT_STATUS_OPTIONS.map((status) => (
