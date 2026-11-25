@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useDeferredValue, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
@@ -14,6 +14,7 @@ import { getProblemMessage } from '@/lib/api-errors';
 type ImportRow = PreparationSelection & { snapshot: PropertyImportSnapshot };
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const preparationKey = ['property-preparation'];
+const candidateKey = [...preparationKey, 'candidates'];
 
 function isImportRow(value: unknown): value is ImportRow {
   if (typeof value !== 'object' || value === null) return false;
@@ -23,7 +24,7 @@ function isImportRow(value: unknown): value is ImportRow {
     && Array.isArray(row.snapshot.findings) && Array.isArray(row.snapshot.ratePlans);
 }
 
-function ImportInventory({ onPrepared }: { onPrepared: (rows: PreparationSelection[]) => void }) {
+function ImportInventory({ onSaved }: { onSaved: () => void }) {
   const { t } = useTranslation();
   const [rows, setRows] = useState<ImportRow[]>([]);
   const [invalid, setInvalid] = useState(false);
@@ -31,20 +32,17 @@ function ImportInventory({ onPrepared }: { onPrepared: (rows: PreparationSelecti
   const upload = useMutation({
     mutationFn: async () => {
       setOutcomes([]);
-      const prepared: PreparationSelection[] = [];
       for (const row of rows) {
         let problem: string | null = null;
         try {
           await propertyActivationApi.record(row.orgId, row.propertyId, row.snapshot);
-          prepared.push({ orgId: row.orgId, propertyId: row.propertyId });
         } catch (error) {
           problem = getProblemMessage(error, t) ?? t('activationStaff.importFailure');
         }
         setOutcomes((previous) => [...previous, { propertyId: row.propertyId, problem }]);
       }
-      return prepared;
     },
-    onSuccess: onPrepared,
+    onSuccess: onSaved,
   });
 
   return (
@@ -137,13 +135,20 @@ function Batch({ rows }: { rows: PreparationRow[] }) {
 export function AdminPropertyPreparationPage() {
   const { t } = useTranslation();
   const cache = useQueryClient();
-  const [imported, setImported] = useState<PreparationSelection[]>([]);
-  const [excluded, setExcluded] = useState<string[]>([]);
-  const selected = imported.filter((row) => !excluded.includes(row.propertyId));
+  const [search, setSearch] = useState('');
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const deferredSearch = useDeferredValue(search.trim());
+  const candidates = useQuery({ queryKey: [...candidateKey, deferredSearch], queryFn: () => propertyPreparationApi.candidates(deferredSearch) });
+  const available = candidates.data?.items ?? [];
+  const selected = available.filter((row) => row.missingFields.length === 0 && selectedIds.includes(row.propertyId))
+    .map(({ orgId, propertyId }) => ({ orgId, propertyId }));
   const recent = useQuery({ queryKey: preparationKey, queryFn: propertyPreparationApi.recent, refetchInterval: 5000 });
   const start = useMutation({
     mutationFn: () => propertyPreparationApi.start(selected),
-    onSuccess: () => cache.invalidateQueries({ queryKey: preparationKey }),
+    onSuccess: async () => {
+      setSelectedIds([]);
+      await cache.invalidateQueries({ queryKey: preparationKey });
+    },
   });
   const batches = new Map<string, PreparationRow[]>();
   for (const row of recent.data ?? []) {
@@ -156,23 +161,44 @@ export function AdminPropertyPreparationPage() {
     <AppShell>
       <div className="space-y-5">
         <PageHeader title={t('activationStaff.title')} />
-        <ImportInventory onPrepared={(rows) => { setImported(rows); setExcluded([]); }} />
         <section className="space-y-3 rounded-xl border bg-card p-4">
-          <h2 className="text-lg font-semibold">{t('activationStaff.prepareTitle')}</h2>
-          <p>{t('activationStaff.selection', { count: selected.length })}</p>
-          {imported.length > 0 && <fieldset className="max-h-52 overflow-y-auto rounded-lg border px-3">
+          <h2 className="text-lg font-semibold">{t('activationStaff.candidatesTitle')}</h2>
+          <label className="block space-y-1">
+            <span>{t('activationStaff.search')}</span>
+            <Input type="search" value={search} maxLength={120} onChange={(event) => { setSearch(event.target.value); setSelectedIds([]); }} />
+          </label>
+          {candidates.isPending && <p role="status">{t('activationStaff.loadingCandidates')}</p>}
+          {candidates.isError && <ErrorState title={t('activationStaff.candidatesError')} onRetry={() => void candidates.refetch()} />}
+          {candidates.isSuccess && available.length === 0 && <p>{t('activationStaff.emptyCandidates')}</p>}
+          {candidates.data?.hasMore && <p>{t('activationStaff.moreCandidates')}</p>}
+          {available.length > 0 && <fieldset className="max-h-96 divide-y overflow-y-auto rounded-lg border px-3">
             <legend className="px-1">{t('activationStaff.selectProperties')}</legend>
-            {imported.map((row) => (
-              <label key={row.propertyId} className="flex min-h-11 items-center gap-2 break-all">
-                <input type="checkbox" checked={!excluded.includes(row.propertyId)} onChange={(event) => setExcluded((previous) =>
-                  event.target.checked ? previous.filter((id) => id !== row.propertyId) : [...previous, row.propertyId])} />
-                {row.propertyId}
+            {available.map((row) => (
+              <label key={row.propertyId} className="flex items-start gap-3 py-2">
+                <input type="checkbox" className="mt-1" disabled={row.missingFields.length > 0 || start.isPending}
+                  checked={row.missingFields.length === 0 && selectedIds.includes(row.propertyId)} onChange={(event) => {
+                    const checked = event.target.checked;
+                    setSelectedIds((previous) => checked ? [...previous, row.propertyId] : previous.filter((id) => id !== row.propertyId));
+                  }} />
+                <span>
+                  <span className="block font-medium">{row.propertyName}</span>
+                  <span className="block text-sm text-muted-foreground">{row.organizationName}</span>
+                  {row.missingFields.length > 0 && <span className="block text-sm text-muted-foreground">
+                    {t('activationStaff.missingFields', { fields: row.missingFields.map((field) => t(`activationStaff.fields.${field}`, { defaultValue: field })).join(', ') })}
+                  </span>}
+                </span>
               </label>
             ))}
           </fieldset>}
-          <Button disabled={!selected.length || start.isPending} onClick={() => start.mutate()}>{t('activationStaff.start')}</Button>
+          <p>{t('activationStaff.selection', { count: selected.length })}</p>
+          <Button disabled={!selected.length || search.trim() !== deferredSearch || start.isPending} onClick={() => start.mutate()}>{t('activationStaff.start')}</Button>
           {start.isError && <p role="alert">{getProblemMessage(start.error, t) ?? t('activationStaff.importFailure')}</p>}
+        </section>
+        <ImportInventory onSaved={() => { void cache.invalidateQueries({ queryKey: candidateKey }); }} />
+        <section className="space-y-3 rounded-xl border bg-card p-4">
+          <h2 className="text-lg font-semibold">{t('activationStaff.prepareTitle')}</h2>
           {recent.isError && <ErrorState title={t('activationStaff.loadError')} error={recent.error} onRetry={() => void recent.refetch()} />}
+          {recent.isSuccess && batches.size === 0 && <p>{t('activationStaff.emptyBatches')}</p>}
           {[...batches].map(([id, rows]) => <Batch key={id} rows={rows} />)}
         </section>
       </div>
