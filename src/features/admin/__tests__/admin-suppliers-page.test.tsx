@@ -90,6 +90,21 @@ describe('AdminSuppliersPage (SU-12, A4-29)', () => {
 
   // ─── Suppliers list ───
 
+  it('requires staff to select a candidate and submits its organization identifier', async () => {
+    vi.mocked(ApiClient.get).mockImplementation(async path => path.includes('identity-reviews') ? [{
+      id: 'invite-1', hostName: 'Host Como', email: 'alias@example.it', supplied: { phone: '3331234567' },
+      candidates: [{ supplierOrgId: 'supplier-4', name: 'Pulizie Como', email: 'ufficio@example.it', matchedBy: ['phone'] }],
+    }] : []);
+    renderPage();
+    const confirm = await screen.findByRole('button', { name: i18n.t('supplier.identity.confirm') });
+    expect(confirm).toBeDisabled();
+    fireEvent.click(screen.getByRole('radio', { name: /Pulizie Como/ }));
+    fireEvent.click(confirm);
+    await waitFor(() => expect(ApiClient.post).toHaveBeenCalledWith('/admin/suppliers/identity-reviews/invite-1/decision', {
+      action: 'existing', supplierOrgId: 'supplier-4',
+    }));
+  });
+
   it('AdminSuppliersPage_Suppliers_ShowsStatusOpenRequestsAndSuspensionNote', async () => {
     renderPage();
 
