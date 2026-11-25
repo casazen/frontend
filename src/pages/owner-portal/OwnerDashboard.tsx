@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Building2 } from 'lucide-react';
+import { ArrowUpRight, Building2, CalendarDays } from 'lucide-react';
 import { Alert } from '@/components/ui/alert';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SkeletonCard } from '@/components/ui/skeleton';
@@ -54,15 +54,15 @@ export function OwnerDashboard() {
           <ul className="grid gap-4 md:grid-cols-2" data-testid="owner-properties">
             {list.map((property) => (
               <li key={property.propertyId} className="min-w-0">
-                <Card className="relative h-full transition-shadow focus-within:ring-2 focus-within:ring-ring hover:shadow-md">
+                <Card className="h-full overflow-hidden">
                   <CardHeader>
                     <CardTitle className="flex min-w-0 items-center gap-3 text-xl">
                       <Building2 aria-hidden="true" className="size-9 shrink-0 rounded-lg bg-muted p-2 text-foreground" />
                       <Link
                         to={ownerPortalPaths.property(property.propertyId)}
-                        className="min-w-0 break-words after:absolute after:inset-0 after:content-[''] focus-visible:outline-none"
+                        className="inline-flex min-h-11 min-w-0 items-center gap-1 break-words hover:underline"
                       >
-                        {property.propertyName}
+                        {property.propertyName}<ArrowUpRight aria-hidden="true" className="size-4 shrink-0" />
                       </Link>
                     </CardTitle>
                     <CardDescription className="break-words">{property.address}</CardDescription>
@@ -78,6 +78,11 @@ export function OwnerDashboard() {
                         <dd className="mt-1 text-xl font-semibold tabular-nums">{property.recentBookings.length}</dd>
                       </div>
                     </dl>
+                    <Link to={ownerPortalPaths.calendar(property.propertyId)} className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-lg bg-muted px-3 text-sm font-semibold text-foreground hover:underline">
+                      <CalendarDays aria-hidden="true" className="size-4" />
+                      {t('ownerPortal.shell.nav.calendar')}
+                      <span className="sr-only"> · {property.propertyName}</span>
+                    </Link>
                   </CardContent>
                 </Card>
               </li>

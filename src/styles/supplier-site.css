@@ -939,19 +939,19 @@
 }
 
 .vz-svc__media {
-  aspect-ratio: 3 / 2;
+  aspect-ratio: 16 / 10;
 }
 
 .vz-svc__body {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 18px 18px 16px;
+  padding: clamp(16px, 2vw, 24px);
   flex: 1;
 }
 
 .vz-svc__title {
-  font-size: 1.3rem;
+  font-size: clamp(1.3rem, 2vw, 1.625rem);
   line-height: 1.2;
 }
 

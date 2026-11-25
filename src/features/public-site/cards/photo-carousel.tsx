@@ -15,7 +15,9 @@ export function PhotoCarousel({ photos, label, eager = false }: { photos: readon
   const { t } = useTranslation();
   const track = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
-  const urls = displayableMediaUrls(photos).slice(0, MAX_PHOTOS);
+  const [unavailable, setUnavailable] = useState<ReadonlySet<string>>(new Set());
+  const urls = displayableMediaUrls(photos).filter(url => !unavailable.has(url)).slice(0, MAX_PHOTOS);
+  const current = Math.min(index, urls.length - 1);
 
   if (urls.length === 0) {
     return (
@@ -45,21 +47,21 @@ export function PhotoCarousel({ photos, label, eager = false }: { photos: readon
       <div ref={track} className="hcar__track" role="group" aria-roledescription="carousel" tabIndex={0} aria-label={label} onScroll={onScroll}>
         {urls.map((url, position) => (
           <div key={url} className="hcar__slide" role="group" aria-roledescription="slide" aria-label={`${position + 1} / ${urls.length}`}>
-            <img src={url} alt="" loading={eager && position === 0 ? 'eager' : 'lazy'} decoding="async" draggable={false} />
+            <img src={url} alt="" onError={() => setUnavailable(previous => new Set(previous).add(url))} loading={eager && position === 0 ? 'eager' : 'lazy'} decoding="async" draggable={false} />
           </div>
         ))}
       </div>
       {several ? (
         <>
-          <button type="button" className="hcar__nav hcar__nav--prev" onClick={() => move(-1)} disabled={index === 0} aria-label={t('siteHome.card.previousPhoto')}>
+          <button type="button" className="hcar__nav hcar__nav--prev" onClick={() => move(-1)} disabled={current === 0} aria-label={t('siteHome.card.previousPhoto')}>
             <ChevronLeft aria-hidden="true" />
           </button>
-          <button type="button" className="hcar__nav hcar__nav--next" onClick={() => move(1)} disabled={index >= urls.length - 1} aria-label={t('siteHome.card.nextPhoto')}>
+          <button type="button" className="hcar__nav hcar__nav--next" onClick={() => move(1)} disabled={current >= urls.length - 1} aria-label={t('siteHome.card.nextPhoto')}>
             <ChevronRight aria-hidden="true" />
           </button>
           <div className="hcar__dots" aria-hidden="true">
             {urls.map((url, position) => (
-              <i key={url} className={position === index ? 'is-on' : undefined} />
+              <i key={url} className={position === current ? 'is-on' : undefined} />
             ))}
           </div>
         </>
