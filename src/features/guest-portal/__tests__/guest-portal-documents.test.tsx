@@ -31,6 +31,19 @@ describe('stay invoice recipient', () => {
     ));
   });
 
+  it('refreshes the correction action when the host issues while the form is open', async () => {
+    show(false);
+    vi.mocked(ApiClient.put).mockImplementationOnce(async () => {
+      vi.mocked(ApiClient.get).mockImplementation(async url => url.endsWith('/invoice-data')
+        ? { issued: true, invoiceRequested: true, hasInvoiceData: true, hostManaged: false } : [invoice]);
+      throw { isAxiosError: true, response: { status: 409 } };
+    });
+    fireEvent.click(await screen.findByTestId('checkin-invoice-yes'));
+    fireEvent.click(screen.getByRole('button', { name: /save answer/i }));
+    expect(await screen.findByRole('button', { name: labels.correction })).toBeInTheDocument();
+    expect(screen.queryByTestId('checkin-invoice-step')).not.toBeInTheDocument();
+  });
+
   it('offers a correction for an issued invoice', async () => {
     show(true);
     fireEvent.click(await screen.findByRole('button', { name: labels.correction }));
