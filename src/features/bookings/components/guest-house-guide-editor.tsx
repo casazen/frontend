@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { BookOpen, LockKeyhole, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ApiClient } from '@/api/client';
 import { Button } from '@/components/ui/button';
@@ -10,12 +11,20 @@ const orgSettingsPath = '/guest-portal/auto-reply-settings';
 const replyOptions = ['enabled', ...autoReplyTopics] as const;
 const chatGuideFields = ['checkInHours', 'checkOutHours', 'parking', 'wifi'] as const;
 
+const guideGroups = [
+  { label: 'arrivalGroup', fields: ['arrival', 'checkInHours', 'parking'] },
+  { label: 'stayGroup', fields: ['house', 'contacts', 'localTips'] },
+  { label: 'departureGroup', fields: ['departure', 'checkOutHours'] },
+  { label: 'privateGroup', fields: ['access', 'wifi'] },
+] as const satisfies ReadonlyArray<{ label: string; fields: ReadonlyArray<typeof guideFields[number]> }>;
+
 const defaultReplies: GuideAutoReplies = { enabled: false, checkIn: false, checkOut: false, parking: false, wifi: false };
 
-export function GuestHouseGuideEditor({ propertyId, suggestion, section, onSaved }: {
+export function GuestHouseGuideEditor({ propertyId, suggestion, section, withAi = false, onSaved }: {
   propertyId: string;
   suggestion?: HouseGuide;
   section?: 'guide' | 'chat';
+  withAi?: boolean;
   onSaved?: () => void;
 }) {
   const { t } = useTranslation();
@@ -28,6 +37,7 @@ export function GuestHouseGuideEditor({ propertyId, suggestion, section, onSaved
   const orgSettings = useQuery({
     queryKey: ['guest-portal', 'auto-reply-settings', propertyId],
     queryFn: () => ApiClient.get<{ enabled: boolean; canManage: boolean }>(orgSettingsPath),
+    enabled: section !== 'guide',
     retry: false,
     gcTime: 0,
   });
@@ -41,7 +51,32 @@ export function GuestHouseGuideEditor({ propertyId, suggestion, section, onSaved
     mutationFn: () => ApiClient.put(endpoint, guide),
     onSuccess: onSaved,
   });
-  const fields = section === 'chat' ? chatGuideFields : guideFields;
+  const generate = useMutation({
+    mutationFn: () => ApiClient.post<{ guide?: HouseGuide } | undefined>(
+      `/properties/${propertyId}/guest-portal-setup/suggestions/guide`,
+    ),
+  });
+  const proposedFields = (['arrival', 'house', 'departure'] as const).flatMap((field) => {
+    const value = generate.data?.guide?.[field];
+    return typeof value === 'string' && value.trim() ? [{ field, value }] : [];
+  });
+
+  const fillableFields = proposedFields.filter(({ field }) => !guide[field]?.trim());
+
+  function renderField(field: typeof guideFields[number]) {
+    return (
+      <label key={field} className="grid min-w-0 gap-2 text-sm font-medium">
+        {t(`guestPortal.guide.${field}`)}
+        <textarea className="min-h-24 rounded-lg border bg-background p-3 text-sm font-normal leading-relaxed"
+          disabled={save.isPending}
+          maxLength={chatGuideFields.some((brief) => brief === field) ? 1000 : 2000} value={guide[field] ?? ''}
+          onChange={(event) => {
+            save.reset();
+            setDraft((current) => ({ ...current, [field]: event.target.value }));
+          }} />
+      </label>
+    );
+  }
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -49,26 +84,73 @@ export function GuestHouseGuideEditor({ propertyId, suggestion, section, onSaved
   }
 
   return (
-    <form onSubmit={submit} className="grid gap-4 rounded-lg border bg-card p-4">
-      {section !== 'chat' && <h2 className="font-medium">{t('guestPortal.guide.title')}</h2>}
+    <form onSubmit={submit} className="grid gap-6 rounded-xl border bg-card p-5 sm:p-7">
+      {section !== 'chat' && (
+        <header className="flex items-start gap-4">
+          <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-muted"><BookOpen className="size-5" aria-hidden="true" /></span>
+          <div className="space-y-1">
+            <h2 className="text-xl font-semibold tracking-tight">{t('guestPortal.guide.title')}</h2>
+            <p className="text-sm text-muted-foreground">{t('guestPortal.guide.editorDescription')}</p>
+          </div>
+        </header>
+      )}
       {query.isPending && <p role="status">{t('guestPortal.host.loading')}</p>}
       {query.isError && <p role="alert">{t('guestPortal.host.unavailable')}</p>}
       {query.isSuccess && (
         <>
+          {withAi && (
+            <section className="grid gap-4 rounded-xl border border-primary/20 bg-primary/5 p-4 sm:p-5">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <Sparkles aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-primary" />
+                  <div className="space-y-1">
+                    <h3 className="font-semibold">{t('guestPortal.guide.aiTitle')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('guestPortal.guide.aiDescription')}</p>
+                  </div>
+                </div>
+                <Button type="button" className="min-h-11" loading={generate.isPending} disabled={save.isPending}
+                  onClick={() => generate.mutate()}>{t('guestPortal.guide.aiGenerate')}</Button>
+              </div>
+              {(generate.isError || (generate.isSuccess && proposedFields.length === 0)) && (
+                <p role="status" className="text-sm text-muted-foreground">{t('guestPortal.guide.aiUnavailable')}</p>
+              )}
+              {proposedFields.length > 0 && (
+                <div className="space-y-4 rounded-lg border bg-card p-4">
+                  <dl className="space-y-4">
+                    {proposedFields.map(({ field, value }) => (
+                      <div key={field}>
+                        <dt className="text-sm font-semibold">{t(`guestPortal.guide.${field}`)}</dt>
+                        <dd className="mt-1 whitespace-pre-wrap break-words text-sm text-muted-foreground">{value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                  {fillableFields.length > 0 ? <Button type="button" variant="outline" disabled={save.isPending || generate.isPending} onClick={() => {
+                    setDraft((current) => ({ ...current, ...Object.fromEntries(fillableFields.map(({ field, value }) => [field, value])) }));
+                    save.reset();
+                    generate.reset();
+                  }}>{t('guestPortal.guide.aiApply')}</Button> : (
+                    <p className="text-sm text-muted-foreground">{t('guestPortal.guide.aiNoEmptyFields')}</p>
+                  )}
+                </div>
+              )}
+            </section>
+          )}
           <p className="text-sm text-muted-foreground">{t('guestPortal.guide.visibility')}</p>
-          {fields.map((field) => (
-            <label key={field} className="grid gap-1 text-sm font-medium">
-              {t(`guestPortal.guide.${field}`)}
-              <textarea className="min-h-20 rounded-md border bg-background p-2" disabled={save.isPending}
-                maxLength={chatGuideFields.some((brief) => brief === field) ? 1000 : 2000} value={guide[field] ?? ''}
-                onChange={(event) => {
-                  save.reset();
-                  setDraft((current) => ({ ...current, [field]: event.target.value }));
-                }} />
-            </label>
+          {section === 'chat' ? (
+            <div className="grid gap-4 sm:grid-cols-2">{chatGuideFields.map(renderField)}</div>
+          ) : guideGroups.map(({ label, fields }) => (
+            <fieldset key={label} className="min-w-0 rounded-xl border px-4 pb-4 sm:px-5">
+              <legend className="px-2 text-sm font-semibold">
+                <span className="flex items-center gap-2">
+                  {label === 'privateGroup' && <LockKeyhole aria-hidden="true" className="size-4" />}
+                  {t(`guestPortal.guide.${label}`)}
+                </span>
+              </legend>
+              <div className="grid gap-4 pt-2 sm:grid-cols-2">{fields.map(renderField)}</div>
+            </fieldset>
           ))}
-          {section !== 'guide' && <fieldset className="grid gap-2" disabled={save.isPending}>
-            <legend className="font-medium">{t('guestPortal.guide.autoReplyTitle')}</legend>
+          {section !== 'guide' && <fieldset className="grid gap-3 rounded-xl border px-5 pb-5" disabled={save.isPending}>
+            <legend className="px-2 font-semibold">{t('guestPortal.guide.autoReplyTitle')}</legend>
             <p className="text-sm text-muted-foreground">{t('guestPortal.guide.autoReplyHelp')}</p>
             {orgSettings.data && (
               <label className="flex items-center gap-2 text-sm">
@@ -93,7 +175,7 @@ export function GuestHouseGuideEditor({ propertyId, suggestion, section, onSaved
               </label>
             ))}
           </fieldset>}
-          <Button type="submit" disabled={save.isPending}>{t('guestPortal.guide.save')}</Button>
+          <Button type="submit" className="min-h-11 justify-self-start" disabled={save.isPending}>{t('guestPortal.guide.save')}</Button>
           {save.isSuccess && <p role="status">{t('guestPortal.guide.saved')}</p>}
           {save.isError && <p role="alert">{t('guestPortal.host.changeError')}</p>}
         </>

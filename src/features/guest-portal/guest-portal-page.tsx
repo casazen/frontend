@@ -1,4 +1,4 @@
-import { BookOpen, CalendarDays, ChevronRight, ClipboardCheck, CreditCard, FileText, Leaf, MessageCircle, ShoppingBag, Star } from 'lucide-react';
+import { ArrowLeft, BookOpen, CalendarDays, ChevronRight, Ellipsis, Globe2, House, MapPin, UsersRound, ClipboardCheck, CreditCard, FileText, Leaf, MessageCircle, ShoppingBag } from 'lucide-react';
 import { GuestSupplierOrders } from './guest-supplier-orders';
 import { useState, type CSSProperties, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -33,6 +33,19 @@ const languages = ['it', 'en', 'de', 'fr', 'es'] as const;
 type Language = typeof languages[number];
 
 const copy = {
+  portal: ['Portale ospiti', 'Guest portal', 'Gästeportal', 'Portail voyageurs', 'Portal de huéspedes'],
+  services: ['Servizi', 'Services', 'Services', 'Services', 'Servicios'],
+  servicesAndExtras: ['Servizi e extra', 'Services and extras', 'Dienste und Extras', 'Services et extras', 'Servicios y extras'],
+  more: ['Altro', 'More', 'Mehr', 'Plus', 'Más'],
+  booking: ['Prenotazione', 'Booking', 'Buchung', 'Réservation', 'Reserva'],
+  yourBooking: ['La tua prenotazione', 'Your booking', 'Deine Buchung', 'Votre réservation', 'Tu reserva'],
+  viewBooking: ['Vedi la prenotazione', 'View booking', 'Buchung ansehen', 'Voir la réservation', 'Ver reserva'],
+  guest: ['Ospite', 'Guest', 'Gast', 'Voyageur', 'Huésped'],
+  everything: ['Tutto per il tuo soggiorno', 'Everything for your stay', 'Alles für deinen Aufenthalt', 'Tout pour votre séjour', 'Todo para tu estancia'],
+  guideNote: ['Istruzioni e consigli per il soggiorno', 'Instructions and tips for your stay', 'Hinweise und Tipps zum Aufenthalt', 'Instructions et conseils pour le séjour', 'Instrucciones y consejos para tu estancia'],
+  servicesNote: ['Organizza il tuo arrivo', 'Plan your arrival', 'Plane deine Anreise', 'Préparez votre arrivée', 'Organiza tu llegada'],
+  chatNote: ['Scrivici se hai bisogno', 'Message us if you need help', 'Schreib uns, wenn du Hilfe brauchst', 'Écrivez-nous si besoin', 'Escríbenos si lo necesitas'],
+  documentsNote: ['Scarica i PDF del soggiorno', 'Download your stay PDFs', 'Aufenthaltsdokumente herunterladen', 'Télécharger les PDF du séjour', 'Descarga los PDF de tu estancia'],
   supplierOrders: ['Servizi e ordini', 'Services and orders', 'Dienste und Bestellungen', 'Services et commandes', 'Servicios y pedidos'],
   title: ['Il tuo soggiorno', 'Your stay', 'Dein Aufenthalt', 'Votre séjour', 'Tu estancia'],
   before: ['Prima dell’arrivo', 'Before arrival', 'Vor der Anreise', 'Avant l’arrivée', 'Antes de llegar'],
@@ -79,6 +92,8 @@ const copy = {
   documents: ['Documenti e ricevute', 'Documents and receipts', 'Dokumente und Belege', 'Documents et reçus', 'Documentos y recibos'],
   emptyDocuments: ['Non ci sono documenti disponibili.', 'No documents are available.', 'Keine Dokumente verfügbar.', 'Aucun document disponible.', 'No hay documentos disponibles.'],
   download: ['Scarica PDF', 'Download PDF', 'PDF herunterladen', 'Télécharger le PDF', 'Descargar PDF'],
+  reviewHeading: ['Com’è andato il soggiorno?', 'How was your stay?', 'Wie war dein Aufenthalt?', 'Comment s’est passé votre séjour ?', '¿Cómo fue tu estancia?'],
+  reviewAction: ['Scrivi una recensione', 'Write a review', 'Bewertung schreiben', 'Écrire un avis', 'Escribir una reseña'],
   review: ['Recensione', 'Review', 'Bewertung', 'Avis', 'Reseña'],
   rating: ['Valutazione', 'Rating', 'Bewertung', 'Note', 'Puntuación'],
   comment: ['Commento facoltativo', 'Optional comment', 'Optionaler Kommentar', 'Commentaire facultatif', 'Comentario opcional'],
@@ -177,6 +192,7 @@ function GuestPortalPage({ token }: { token: string }) {
     ?? supportedLanguage(navigator.language) ?? 'it';
   const text = (key: keyof typeof copy) => copy[key][languages.indexOf(language)];
   const section = params.get('page');
+  const services = section === 'services';
   const extras = section === 'extras';
   const extraCatalog = useGuestHostExtras(path, language, Boolean(stay) && !extras);
   const hasExtras = Boolean(extraCatalog.data?.offers.length || extraCatalog.data?.orders.length);
@@ -202,26 +218,44 @@ function GuestPortalPage({ token }: { token: string }) {
   const phase = stay && (stay.status === 'checkedOut' || stay.status === 'cancelled' || today >= stay.checkOut)
     ? 'after' : stay && today >= stay.checkIn ? 'during' : 'before';
 
+  const home = !services && !extras && !guide && !details && !chat && !documents && !payments
+    && !supplierOrders && !review && !privacy && !cancellation;
+  const nav = [
+    { key: 'stay', page: undefined, icon: House, current: home },
+    { key: 'guide', page: 'guide', icon: BookOpen, current: guide },
+    { key: 'services', page: 'services', icon: ShoppingBag, current: services || extras || supplierOrders },
+    { key: 'chat', page: 'chat', icon: MessageCircle, current: chat },
+    { key: 'more', page: 'details', icon: Ellipsis, current: !home && !guide && !services && !extras && !supplierOrders && !chat },
+  ] as const;
+  const hasLayout = Boolean(stay && !failed);
+
   useSeoMeta({ title: text('title'), noindex: true, referrer: 'no-referrer' });
 
   return (
-    <div className="guest-portal" lang={language} style={{
+    <div className="guest-portal" data-stay-layout={hasLayout ? 'booking' : undefined} lang={language} style={{
       '--stay-accent': accent,
       '--stay-on-accent': readableTextOn(accent).color,
     } as CSSProperties}>
       <header className="stay-header">
-        <div className="stay-width stay-header-inner">
+        <div className="stay-header-inner">
           <Link to={href()} className="stay-brand">
             {overview?.branding.logoUrl ? <img src={overview.branding.logoUrl} alt="" referrerPolicy="no-referrer" /> : <Leaf aria-hidden="true" />}
             {overview?.branding.name || text('title')}
           </Link>
-          <select aria-label={text('language')} value={language} onChange={(event) => {
+          <span className="stay-header-title">{text('portal')}</span>
+          <label className="stay-language">
+            <Globe2 aria-hidden="true" />
+            <select aria-label={text('language')} value={language} onChange={(event) => {
             const next = new URLSearchParams(params);
             next.set('lang', event.target.value);
             setParams(next, { replace: true });
           }}>
             {languages.map((code) => <option key={code} value={code}>{code.toUpperCase()}</option>)}
-          </select>
+            </select>
+          </label>
+          {hasLayout && overview?.branding.name && (
+            <span className="stay-header-guest">{overview.branding.name} · {text('guest')}</span>
+          )}
         </div>
       </header>
       <main className="stay-width stay-main">
@@ -234,11 +268,24 @@ function GuestPortalPage({ token }: { token: string }) {
         )}
         {stay && !failed && (
           <>
-            <span className="stay-phase">{text(phase)}</span>
-            <h1>{extras ? extraLabels[language][0] : text(supplierOrders ? 'supplierOrders' : guide ? 'guide' : details ? 'details' : chat ? 'chat' : documents ? 'documents' : payments ? 'payments' : review ? 'review' : cancellation ? 'cancellation' : privacy ? 'privacy' : 'title')}</h1>
-            <p className="stay-meta">{range} · {stay.guests} {guestLabel(language, stay.guests)}</p>
-            <div className="stay-card stay-property"><CalendarDays aria-hidden="true" />{stay.propertyName} · {stay.bookingCode}</div>
-            {extras ? (
+            <div className={home ? 'stay-intro' : undefined}>
+            {home ? <span className="stay-phase">{text(phase)}</span> : (
+              <Link to={href()} className="stay-back"><ArrowLeft aria-hidden="true" />{text('back')}</Link>
+            )}
+            <h1>{extras ? extraLabels[language][0] : text(services ? 'servicesAndExtras' : supplierOrders ? 'supplierOrders' : guide ? 'guide' : details ? 'booking' : chat ? 'chat' : documents ? 'documents' : payments ? 'payments' : review ? 'review' : cancellation ? 'cancellation' : privacy ? 'privacy' : 'title')}</h1>
+            <p className="stay-meta">{home ? <>{range} · {stay.guests} {guestLabel(language, stay.guests)}</> : stay.propertyName}</p>
+            {home && (
+              <p className="stay-property"><MapPin aria-hidden="true" />{stay.propertyName}
+                <small className="stay-mobile-code">· {stay.bookingCode}</small>
+              </p>
+            )}
+            </div>
+            {services ? (
+              <>
+                <GuestHostExtras path={path} language={language} />
+                {overview?.features?.supplierServices && <GuestSupplierOrders path={path} language={language} />}
+              </>
+            ) : extras ? (
               <GuestHostExtras path={path} language={language} />
             ) : guide ? (
               <div className="stay-card stay-content">
@@ -301,13 +348,17 @@ function GuestPortalPage({ token }: { token: string }) {
                   arrival={overview.stay.checkIn} departure={overview.stay.checkOut}
                   paymentsHref={href('payments')} />}
                 {stay.isDirect && phase === 'before' && <Link className="stay-card" to={href('cancellation')}>{text('cancellation')}</Link>}
+                <Link className="stay-card" to={href('payments')}><CreditCard aria-hidden="true" />{text('payments')}<ChevronRight aria-hidden="true" /></Link>
+                <Link className="stay-card" to={href('documents')}><FileText aria-hidden="true" />{text('documents')}<ChevronRight aria-hidden="true" /></Link>
                 <Link className="stay-card" to={href('privacy')}>{text('privacy')}<ChevronRight aria-hidden="true" /></Link>
+                <Link className="stay-card" to={guestAccountStaysPath}>{text('account')}<ChevronRight aria-hidden="true" /></Link>
                 {stay.isOta && <p className="stay-card">{text('otaChanges')}</p>}
               </>
             ) : (
               <>
                 {phase !== 'after' && (
                   <section className="stay-next">
+                    <div className="stay-next-symbol"><ClipboardCheck aria-hidden="true" /></div>
                     <p>{text('next')}</p>
                     <h2>{text(nextStep)}</h2>
                     {!overview?.checkInCompleted && <p>{text(stay.checkInAvailable ? 'checkInHelp' : 'checkInWait')}</p>}
@@ -316,15 +367,25 @@ function GuestPortalPage({ token }: { token: string }) {
                     {!overview?.checkInCompleted && stay.checkInAvailable && <a href={checkIn} rel="noreferrer">{text('open')}</a>}
                   </section>
                 )}
+                {phase === 'after' && stay.status !== 'cancelled' && (
+                  <section className="stay-next">
+                    <div className="stay-next-symbol"><ClipboardCheck aria-hidden="true" /></div>
+                    <p>{text('next')}</p>
+                    <h2>{text('reviewHeading')}</h2>
+                    <p>{text('reviewUnavailable')}</p>
+                    <Link to={href('review')}>{text('reviewAction')}</Link>
+                  </section>
+                )}
+                {phase !== 'after' && <h2 className="stay-sections-title">{text('everything')}</h2>}
                 <div className="stay-links">
-                  <Link className="stay-card" to={href('details')}><CalendarDays aria-hidden="true" />{text('details')}<ChevronRight aria-hidden="true" /></Link>
-                  <Link className="stay-card" to={href('guide')}><BookOpen aria-hidden="true" />{text('guide')}<ChevronRight aria-hidden="true" /></Link>
-                  {stay.status !== 'cancelled' && <Link className="stay-card" to={href('chat')}><MessageCircle aria-hidden="true" />{text('chat')}<ChevronRight aria-hidden="true" /></Link>}
-                  <Link className="stay-card" to={href('payments')}><CreditCard aria-hidden="true" />{text('payments')}<ChevronRight aria-hidden="true" /></Link>
-                  {hasExtras && <Link className="stay-card" to={href('extras')}><ShoppingBag aria-hidden="true" />{extraLabels[language][0]}<ChevronRight aria-hidden="true" /></Link>}
-                  {overview?.features?.supplierServices && <Link className="stay-card" to={href('supplier-orders')}><ClipboardCheck aria-hidden="true" />{text('supplierOrders')}<ChevronRight aria-hidden="true" /></Link>}
-                  <Link className="stay-card" to={href('documents')}><FileText aria-hidden="true" />{text('documents')}<ChevronRight aria-hidden="true" /></Link>
-                  {phase === 'after' && stay.status !== 'cancelled' && <Link className="stay-card" to={href('review')}><Star aria-hidden="true" />{text('review')}<ChevronRight aria-hidden="true" /></Link>}
+                  {phase !== 'after' && <>
+                    <StaySectionLink to={href('details')} icon={CalendarDays} label={text('details')} detail={stay.propertyName} />
+                    <StaySectionLink to={href('guide')} icon={BookOpen} label={text('guide')} detail={text('guideNote')} />
+                    {(hasExtras || overview?.features?.supplierServices) && <StaySectionLink to={href('services')} icon={ShoppingBag} label={text('servicesAndExtras')} detail={text('servicesNote')} />}
+                  </>}
+                  {stay.status !== 'cancelled' && <StaySectionLink to={href('chat')} icon={MessageCircle} label={text('chat')} detail={text('chatNote')} />}
+                  <StaySectionLink to={href('documents')} icon={FileText} label={text('documents')} detail={text('documentsNote')} />
+                  {phase === 'after' && <StaySectionLink to={href('privacy')} icon={ClipboardCheck} label={text('privacy')} />}
                   {overview?.checkInCompleted && (stay.checkInAvailable ? (
                     <a className="stay-card" href={checkIn} rel="noreferrer"><ClipboardCheck aria-hidden="true" />{text('done')}<ChevronRight aria-hidden="true" /></a>
                   ) : <div className="stay-card"><ClipboardCheck aria-hidden="true" />{text('done')}</div>)}
@@ -334,17 +395,45 @@ function GuestPortalPage({ token }: { token: string }) {
           </>
         )}
       </main>
-      <footer>
-        {stay && <Link className="stay-account-link" to={guestAccountStaysPath}>{text('account')}</Link>}
-        <span>{poweredBy}</span>
-      </footer>
-      {stay && !failed && (
-        <nav className="stay-nav" aria-label={text('stay')}>
-          <Link to={href()} aria-current={!guide && !chat && !documents && !payments && !review && !privacy ? 'page' : undefined}><CalendarDays aria-hidden="true" />{text('stay')}</Link>
-          <Link to={href('guide')} aria-current={guide ? 'page' : undefined}><BookOpen aria-hidden="true" />{text('guide')}</Link>
-        </nav>
+      {hasLayout && stay && (
+        <>
+          <aside className="stay-summary" aria-label={text('yourBooking')}>
+            <div className="stay-card">
+              <h2>{text('yourBooking')}</h2>
+              <p className="stay-summary-property">{stay.propertyName}</p>
+              <p><CalendarDays aria-hidden="true" />{range}</p>
+              <p><UsersRound aria-hidden="true" />{stay.guests} {guestLabel(language, stay.guests)}</p>
+              <p><FileText aria-hidden="true" />{stay.bookingCode}</p>
+              <Link className="stay-summary-action" to={href('details')}>{text('viewBooking')}<ChevronRight aria-hidden="true" /></Link>
+            </div>
+          </aside>
+          <nav className="stay-nav" aria-label={text('stay')}>
+            <p>{text('stay')}</p>
+            {nav.map(({ key, page, icon: Icon, current }) => key !== 'chat' || stay.status !== 'cancelled' ? (
+              <Link key={key} to={href(page)} aria-current={current ? 'page' : undefined}>
+                <Icon aria-hidden="true" />{text(key)}
+              </Link>
+            ) : null)}
+          </nav>
+        </>
       )}
+      <footer>{poweredBy}</footer>
     </div>
+  );
+}
+
+function StaySectionLink({ to, icon: Icon, label, detail }: {
+  to: string;
+  icon: typeof CalendarDays;
+  label: string;
+  detail?: string;
+}) {
+  return (
+    <Link className="stay-card stay-section-link" to={to}>
+      <Icon aria-hidden="true" />
+      <span><strong>{label}</strong>{detail && <small>{detail}</small>}</span>
+      <ChevronRight aria-hidden="true" />
+    </Link>
   );
 }
 

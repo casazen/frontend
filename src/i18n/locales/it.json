@@ -4173,6 +4173,17 @@
       "signOut": "Esci"
     },
     "guide": {
+      "editorDescription": "Organizza le informazioni che l’ospite consulta prima e durante il soggiorno.",
+      "arrivalGroup": "Arrivo e parcheggio",
+      "stayGroup": "Durante il soggiorno",
+      "departureGroup": "Partenza",
+      "privateGroup": "Informazioni riservate",
+      "aiTitle": "Bozza con l’AI",
+      "aiDescription": "Genera una bozza di arrivo, soggiorno e partenza dai dati dell’alloggio. Rivedila prima di salvare.",
+      "aiGenerate": "Genera bozza",
+      "aiUnavailable": "La generazione AI non ha restituito una bozza. Puoi riprovare o compilare la guida.",
+      "aiApply": "Compila i campi vuoti",
+      "aiNoEmptyFields": "I campi proposti sono già compilati. Puoi modificare i testi direttamente nella guida.",
       "checkInHours": "Orari di check-in",
       "checkOutHours": "Orari di check-out",
       "parking": "Parcheggio",
@@ -4202,6 +4213,10 @@
       "visibility": "Accesso e Wi-Fi sono visibili solo dopo il check-in. Le altre sezioni si vedono anche dal QR pubblico."
     },
     "host": {
+      "accessSection": "Accesso ospite",
+      "accessDescription": "Condividi il link personale di questo soggiorno o apri la vista che vedrà l’ospite.",
+      "preview": "Apri il portale",
+      "ordersSection": "Servizi e ordini",
       "privacyRequests": "Richieste privacy dal portale",
       "GuestDataCopyRequested": "Richiesta di copia dei dati",
       "GuestDataErasureRequested": "Richiesta di cancellazione dei dati",

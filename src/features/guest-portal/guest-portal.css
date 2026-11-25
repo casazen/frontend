@@ -257,3 +257,290 @@
 .stay-supplier-orders label { display: grid; gap: 0.35rem; margin-block: 0.6rem; }
 .stay-supplier-orders dl div { display: flex; justify-content: space-between; gap: 0.75rem; }
 .stay-supplier-input { max-width: 100%; width: 100%; color: inherit; background: transparent; border: 1px solid currentColor; border-radius: 0.4rem; padding: 0.45rem; font: inherit; }
+
+/* Guest Portal boards 01 and 13 share the same navigation and booking data. */
+.stay-header-inner {
+  width: min(100%, 1280px);
+  margin-inline: auto;
+  padding-inline: 24px;
+  justify-content: flex-start;
+  min-height: 62px;
+}
+.stay-header-title, .stay-header-guest, .stay-summary, .stay-nav > p {
+  display: none;
+}
+.stay-language {
+  margin-inline-start: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  padding-inline: 8px;
+  border-radius: 10px;
+  background: #f6f4f0;
+}
+.stay-language svg, .stay-back svg {
+  width: 16px;
+  height: 16px;
+}
+.stay-language select {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  font: inherit;
+  font-size: .875rem;
+}
+.stay-nav {
+  order: 1;
+  z-index: 1;
+  gap: 2px;
+  padding-inline: max(4px, env(safe-area-inset-left));
+}
+.stay-nav a {
+  flex: 1 1 0;
+  max-width: 86px;
+  min-width: 0;
+  padding-inline: 2px;
+  font-size: .75rem;
+}
+.stay-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 10px;
+  background: #f6f4f0;
+  font-weight: 600;
+}
+.stay-sections-title {
+  margin-block: 20px 10px;
+  font-size: 1rem;
+  font-weight: 650;
+}
+.stay-section-link {
+  min-height: 58px;
+}
+.stay-section-link > span {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+.stay-section-link small {
+  color: var(--stay-muted);
+  font-size: .8125rem;
+}
+.stay-section-link > svg:first-child {
+  width: 34px;
+  height: 34px;
+  padding: 7px;
+  border-radius: 10px;
+  background: var(--stay-tint);
+}
+.stay-section-link > svg:last-child {
+  margin-inline-start: auto;
+  width: 14px;
+  height: 14px;
+}
+
+@media (min-width: 960px) {
+  .guest-portal[data-stay-layout="booking"] {
+    display: grid;
+    grid-template-columns: minmax(194px, 1fr) minmax(0, 720px) minmax(240px, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas: "header header header" "navigation content summary" "footer footer footer";
+  }
+  .stay-header {
+    grid-area: header;
+  }
+  .stay-header-title, .stay-header-guest {
+    display: inline;
+    font-size: .875rem;
+  }
+  .stay-header-title {
+    margin-inline-start: 24px;
+    color: var(--stay-muted);
+  }
+  .stay-header-guest {
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: var(--stay-tint);
+    font-weight: 600;
+  }
+  [data-stay-layout="booking"] .stay-main {
+    grid-area: content;
+    width: 100%;
+    padding: 28px 32px 34px;
+  }
+  .stay-nav {
+    grid-area: navigation;
+    position: static;
+    order: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 4px;
+    width: 194px;
+    justify-self: end;
+    padding: 28px 10px;
+    border: 0;
+    border-inline-end: 1px solid var(--stay-border);
+    box-shadow: -50vw 0 0 50vw white;
+    clip-path: inset(0 0 0 -100vw);
+  }
+  .stay-nav > p {
+    display: block;
+    padding-inline: 10px;
+    margin-bottom: 4px;
+    color: var(--stay-muted);
+    font-size: .75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .stay-nav a {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-inline: 12px;
+    max-width: none;
+    min-height: 44px;
+    font-size: .875rem;
+  }
+  .stay-summary {
+    grid-area: summary;
+    display: block;
+    width: min(240px, calc(100% - 24px));
+    align-self: start;
+    padding-block-start: 28px;
+  }
+  .stay-summary > .stay-card {
+    display: grid;
+    gap: 6px;
+    padding: 14px;
+    overflow-wrap: anywhere;
+  }
+  .stay-summary h2 {
+    font-weight: 650;
+  }
+  .stay-summary p {
+    color: var(--stay-muted);
+    font-size: .875rem;
+  }
+  .stay-summary .stay-section-link {
+    margin-top: 6px;
+    font-size: .875rem;
+  }
+  .guest-portal > footer {
+    grid-area: footer;
+  }
+}
+
+.stay-intro {
+  padding-block: .625rem 1rem;
+}
+.stay-intro h1 {
+  font-size: clamp(2.375rem, 5vw, 3.5rem);
+  letter-spacing: -.045em;
+}
+.stay-intro .stay-meta {
+  margin-bottom: .65rem;
+}
+.stay-property {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  overflow-wrap: anywhere;
+}
+.stay-property svg {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+}
+.stay-next {
+  position: relative;
+  margin-block: 0 1.75rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
+}
+.stay-next-symbol {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border-radius: .75rem;
+  background: color-mix(in srgb, currentColor 16%, transparent);
+  margin-bottom: .75rem;
+}
+.stay-next-symbol + p {
+  font-size: .75rem;
+  font-weight: 650;
+}
+.stay-next a {
+  display: inline-flex;
+  justify-content: center;
+  border-color: transparent;
+}
+.stay-sections-title {
+  font-size: 1.125rem;
+  margin-bottom: .75rem;
+}
+.stay-links {
+  gap: .625rem;
+}
+.stay-section-link {
+  min-height: 68px;
+}
+.stay-section-link:hover, .stay-nav a:hover, .stay-summary-action:hover {
+  background: var(--stay-tint);
+}
+@media (min-width: 1120px) {
+  .stay-links {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 960px) {
+  .stay-summary > .stay-card {
+    gap: .625rem;
+    padding: 1.125rem;
+    border-radius: 1rem;
+  }
+  .stay-summary h2 {
+    font-size: 1rem;
+  }
+  .stay-summary p {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+  }
+  .stay-summary p svg {
+    width: .9rem;
+    height: .9rem;
+  }
+  .stay-summary .stay-summary-property {
+    color: var(--stay-text);
+    font-weight: 600;
+    margin-bottom: .125rem;
+  }
+  .stay-summary-action {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .375rem;
+    min-height: 44px;
+    padding: .35rem .625rem;
+    border-radius: .5rem;
+    background: var(--stay-tint);
+    font-size: .8125rem;
+    font-weight: 650;
+  }
+}
+.stay-mobile-code {
+  color: var(--stay-muted);
+  font-size: .8125rem;
+  font-weight: 500;
+}
+@media (min-width: 960px) {
+  .stay-mobile-code {
+    display: none;
+  }
+}

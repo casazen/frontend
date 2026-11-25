@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ArrowUpRight, Copy, Link2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiClient } from '@/api/client';
@@ -39,17 +40,31 @@ export function GuestPortalLinkPanel({ bookingId }: { bookingId: string }) {
     }
   }
   return (
-    <section className="grid gap-3 rounded-lg border bg-card p-4">
-      <h2 className="font-medium">{t('guestPortal.host.title')}</h2>
+    <section className="grid gap-5 rounded-xl border bg-card p-5 sm:p-7">
+      <header className="flex items-start gap-4">
+        <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-muted text-foreground"><Link2 className="size-5" aria-hidden="true" /></span>
+        <div className="space-y-1">
+          <h2 className="text-xl font-semibold tracking-tight">{t('guestPortal.host.accessSection')}</h2>
+          <p className="text-sm text-muted-foreground">{t('guestPortal.host.accessDescription')}</p>
+        </div>
+      </header>
       {link.isPending && <p role="status">{t('guestPortal.host.loading')}</p>}
       {link.isError && <p role="alert">{t('guestPortal.host.unavailable')}</p>}
-      {url && (
-        <a className="break-all underline" href={url} rel="noreferrer" target="_blank">{url}</a>
-      )}
       {link.data?.eligible && (
         <div className="flex flex-wrap gap-2">
           {!url && <Button disabled={change.isPending} onClick={() => change.mutate('issue')}>{t('guestPortal.host.generate')}</Button>}
-          {url && <Button variant="outline" onClick={() => void copyLink(url)}>{t('guestPortal.host.copy')}</Button>}
+          {url && (
+            <>
+              <Button className="min-h-11" onClick={() => void copyLink(url)}>
+                <Copy aria-hidden="true" className="size-4" />{t('guestPortal.host.copy')}
+              </Button>
+              <Button asChild className="min-h-11" variant="outline">
+                <a href={url} rel="noreferrer" target="_blank">
+                  {t('guestPortal.host.preview')}<ArrowUpRight aria-hidden="true" className="size-4" />
+                </a>
+              </Button>
+            </>
+          )}
           {url && !confirmation && (
             <>
               <Button variant="outline" disabled={change.isPending} onClick={() => setConfirmation('rotate')}>{t('guestPortal.host.rotate')}</Button>
