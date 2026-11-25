@@ -25,7 +25,7 @@ export function OwnerDashboard() {
 
   return (
     <div className="space-y-6">
-      <PortalPageHeading title={t('ownerPortal.dashboard.title')} description={t('ownerPortal.dashboard.description')} />
+      <PortalPageHeading icon={Building2} title={t('ownerPortal.dashboard.title')} description={t('ownerPortal.dashboard.description')} />
 
       {/* Properties list */}
       <section className="space-y-4" aria-labelledby="owner-properties-title">

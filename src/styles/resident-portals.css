@@ -47,7 +47,6 @@
 }
 .resident-link {
   display: flex;
-  min-height: 44px;
   align-items: center;
   gap: .625rem;
   padding: .5rem .625rem;

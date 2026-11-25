@@ -1,6 +1,6 @@
 import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, MessageSquare } from 'lucide-react';
+import { ReceiptText, ArrowLeft, MessageSquare } from 'lucide-react';
 import { ownerPortalApi } from '@/api/ownerPortal.api';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -95,7 +95,7 @@ export function OwnerStatementDetail() {
     <div className="space-y-6" data-testid="owner-statement-detail" data-status={statement.superseded ? 'Superseded' : 'Published'}>
       <div className="space-y-2">
         {back}
-        <PortalPageHeading
+        <PortalPageHeading icon={ReceiptText}
           title={t('ownerPortal.accounting.statementTitle', { period })}
           description={subtitle}
           actions={

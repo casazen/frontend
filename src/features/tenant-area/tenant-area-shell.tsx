@@ -5,7 +5,7 @@ import { SkipLink } from '@/components/layout/skip-link';
 import '@/styles/resident-portals.css';
 import { tenantContractPath, tenantDocumentsPath, tenantDuesPath, tenantMaintenancePath, TENANT_AREA_PATH } from './paths';
 
-const linkClass = 'resident-link';
+const linkClass = 'resident-link min-h-11';
 
 /** The tenant portal: one contract at a time, no organisation menu. Pagamenti is the one place the tenant checks what is paid. */
 export function TenantAreaShell() {

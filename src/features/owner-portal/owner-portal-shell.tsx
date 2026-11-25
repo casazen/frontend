@@ -16,7 +16,7 @@ import { ownerPortalPaths } from './paths';
 const MAIN_ID = 'owner-portal-main';
 
 /** At least 44 px high on every device, whatever the pointer: the product rule for a touch target, kept here as a class and not left to a media query. */
-const linkClass = 'resident-link';
+const linkClass = 'resident-link min-h-11';
 
 /**
  * The shell of the owner portal (E07/F07/US01/T03, NF-111, ADR-011): one header with the places of the portal, then the page. It is not the console of an agency (no
