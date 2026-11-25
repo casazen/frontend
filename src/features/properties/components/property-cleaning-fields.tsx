@@ -100,7 +100,7 @@ export function PropertyCleaningFields({ idPrefix, form, onChange, problems, cur
               {supplierMissing ? <option value={form.supplierOrgId}>{suppliers.storedName ?? t('propertyCleaning.suppliers.stored')}</option> : null}
               {suppliers.choices.map((choice) => (
                 <option key={choice.id} value={choice.id}>
-                  {choice.covers === null ? choice.name : t('propertyCleaning.suppliers.covers', { name: choice.name, count: choice.covers })}
+                  {choice.covers === null ? choice.name : t('propertyCleaning.suppliers.covers', { name: choice.name, count: choice.covers })}{choice.hostOrigin !== undefined && ` · ${t(choice.hostOrigin ? 'supplier.trusted.privateSupplier' : 'supplier.trusted.marketplace')}`}
                 </option>
               ))}
             </Select>

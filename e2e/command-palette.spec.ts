@@ -388,17 +388,17 @@ test.describe('Command palette (UI-06)', () => {
       await openPage(page, '/app/short-rent', 'dual');
       await openFromKeyboard(page);
 
-      // With two areas the same page of each is told apart by the area in its second line. The pages of the section Immobili of Affitti
-      // brevi (interventions, channel calendars, activation and trusted suppliers on the agency plan) hang from it, which their
-      // second line names, so the words of Immobili find them too.
+      // The broad search returns at most five pages across both rental areas.
+      // Search for each property subpage by name to verify its area independently of ranking.
       await search(page, 'immobili');
       const pages = group(page, 'Pagine').getByRole('option');
       await expect(pages).toHaveCount(5);
       await expect(pages.filter({ hasText: 'Affitti brevi' })).toHaveCount(4);
       await expect(pages.filter({ hasText: 'Affitti lunghi' })).toHaveCount(1);
-      await expect(pages.filter({ hasText: 'Interventi' })).toHaveCount(1);
-      await expect(pages.filter({ hasText: 'Canali e calendari' })).toHaveCount(1);
-      await expect(pages.filter({ hasText: 'Attivazione' })).toHaveCount(1);
+      for (const name of ['Interventi', 'Canali e calendari', 'Attivazione', 'Fornitori fidati']) {
+        await search(page, name);
+        await expect(pages.filter({ hasText: name }).filter({ hasText: 'Affitti brevi' })).toHaveCount(1);
+      }
 
       await search(page, 'lunghi');
       await expect(group(page, 'Azioni').getByRole('option').first()).toContainText('Cambia area: Affitti lunghi');

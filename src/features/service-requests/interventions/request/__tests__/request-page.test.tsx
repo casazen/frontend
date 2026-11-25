@@ -291,8 +291,8 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
   });
 
   it('RequestInterventionPage_TheBestRankedSupplier_IsMarkedRecommended_AndOnlyThatOne', async () => {
-    const other = { ...supplier, orgId: 'b1b2c3d4-0000-4000-8000-000000000002', legalName: 'Pulizie Bianchi' } as SupplierPicker;
-    vi.mocked(fetchSuppliersByProperty).mockResolvedValue({ items: [{ ...supplier, recommended: true }, other], totalCount: 2, page: 1, pageSize: 20 });
+    const other = { ...supplier, orgId: 'b1b2c3d4-0000-4000-8000-000000000002', legalName: 'Pulizie Bianchi', hostOrigin: false } as SupplierPicker;
+    vi.mocked(fetchSuppliersByProperty).mockResolvedValue({ items: [{ ...supplier, recommended: true, hostOrigin: true }, other], totalCount: 2, page: 1, pageSize: 20 });
     renderPage();
 
     const first = await screen.findByTestId(`request-supplier-${SUPPLIER_ID}`, undefined, WAIT);
@@ -302,6 +302,8 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
     expect(screen.getAllByTestId('supplier-recommended-badge')).toHaveLength(1);
     expect(badge).toHaveTextContent('Consigliato');
     expect(first.closest('label')).toContainElement(badge);
+    expect(first.closest('label')).toHaveTextContent('Fornitore di fiducia');
+    expect(screen.getByTestId('request-supplier-b1b2c3d4-0000-4000-8000-000000000002').closest('label')).toHaveTextContent('Marketplace CasaZen');
     expect(screen.getByTestId('request-supplier-b1b2c3d4-0000-4000-8000-000000000002').closest('label')).not.toContainElement(badge);
     // The order is the server's, and the host is told what it means.
     expect(screen.getByText(/in ordine di affidabilità e disponibilità/)).toBeInTheDocument();
@@ -329,7 +331,7 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
 
     await stepIs('channel');
     // Nobody of CasaZen in the zone: the partners are the way, and the reason is said; CasaZen cannot be picked.
-    expect(await screen.findByTestId('request-no-network', undefined, WAIT)).toHaveTextContent('non ci sono ancora fornitori CasaZen');
+    expect(await screen.findByTestId('request-no-network', undefined, WAIT)).toHaveTextContent('Non ci sono ancora fornitori disponibili');
     await waitFor(() => expect(screen.getByTestId('request-channel-external')).toBeChecked(), WAIT);
     expect(screen.getByTestId('request-channel-casazen')).toBeDisabled();
     next();
@@ -360,7 +362,7 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
     await stepIs('channel');
     // Nobody of CasaZen in the zone and no partner either: the reason is said, without promising partners.
     const note = await screen.findByTestId('request-no-network', undefined, WAIT);
-    expect(note).toHaveTextContent('non ci sono ancora fornitori CasaZen');
+    expect(note).toHaveTextContent('Non ci sono ancora fornitori disponibili');
     expect(note).not.toHaveTextContent('partner');
     expect(screen.queryByTestId('request-channel-external')).not.toBeInTheDocument();
     expect(screen.getByTestId('request-channel-casazen')).toBeDisabled();
@@ -384,7 +386,7 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
 
       await stepIs('channel');
       const note = await screen.findByTestId('request-no-network', undefined, WAIT);
-      expect(note).toHaveTextContent('non ci sono ancora fornitori CasaZen');
+      expect(note).toHaveTextContent('Non ci sono ancora fornitori disponibili');
       expect(note).not.toHaveTextContent('partner');
       expect(screen.queryByTestId('request-channel-external')).not.toBeInTheDocument();
       expect(screen.getByTestId('request-channel-casazen')).toBeDisabled();

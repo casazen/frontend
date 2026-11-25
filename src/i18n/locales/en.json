@@ -25406,10 +25406,10 @@
       },
       "open": "Describe it",
       "result": {
-        "casazen_one": "A CasaZen supplier in your area",
-        "casazen_other": "{{count}} CasaZen suppliers in your area",
+        "casazen_one": "A supplier available in your area",
+        "casazen_other": "{{count}} suppliers available in your area",
         "edit": "Change the words",
-        "external": "An external partner: there are no CasaZen suppliers in your area yet for this service",
+        "external": "An external partner: no suppliers are currently available in your area for this service",
         "note": "Note for the supplier",
         "service": "Service",
         "skip": "I'll choose",
@@ -25435,8 +25435,8 @@
       "addComune": "Add the comune",
       "casazen": {
         "none": "There are none yet in the area of this property.",
-        "text": "Professionals of your area, with clear prices and times: you choose who to call.",
-        "title": "A CasaZen supplier"
+        "text": "Choose from your trusted suppliers and CasaZen marketplace suppliers available for this property.",
+        "title": "A supplier for this property"
       },
       "external": {
         "text": "Outside companies for cleaning, check-in and maintenance: the work is organised on their site.",
@@ -25445,8 +25445,8 @@
       "legend": "Who do you want to ask",
       "noComune": "To look for the suppliers of your area the comune of the property is needed: until it is there we propose the external partners.",
       "noComuneNoPartners": "To look for the suppliers of your area the comune of the property is needed.",
-      "noNetwork": "There are no CasaZen suppliers yet in the area of this property: we propose the external partners.",
-      "noNetworkNoPartners": "There are no CasaZen suppliers yet in the area of this property.",
+      "noNetwork": "No suppliers are available for this property yet: we propose the external partners.",
+      "noNetworkNoPartners": "No suppliers are available for this property yet.",
       "recommended": "Recommended"
     },
     "details": {
@@ -25560,7 +25560,7 @@
     "steps": {
       "channel": {
         "label": "Who",
-        "purpose": "We advise a CasaZen supplier from your area. Otherwise you can turn to an external service.",
+        "purpose": "We suggest a supplier available for this property. Otherwise you can turn to an external service.",
         "title": "Who do you want to ask?"
       },
       "details": {
@@ -30805,6 +30805,29 @@
       "removeConfirm": "Do you really want to remove this trusted supplier?",
       "removeSuccess": "Supplier removed",
       "removeError": "Unable to remove supplier",
+      "hostOrigin": "Trusted supplier · Host commission",
+      "marketplaceOrigin": "Marketplace supplier · CasaZen commission",
+      "allProperties": "All properties",
+      "source": "Supplier source",
+      "privateSupplier": "Trusted supplier",
+      "privateDirectory": "Trusted suppliers",
+      "marketplace": "CasaZen marketplace",
+      "hostTerms": "Set the commission your trusted supplier will be asked to accept.",
+      "marketplaceTerms": "CasaZen sets and receives the commission for these services.",
+      "configured": "Services configured for this property",
+      "noneConfigured": "No services configured.",
+      "findServices": "Search for more services or suppliers",
+      "noMatches": "No other services found.",
+      "accepted": "Commission accepted",
+      "pending": "Awaiting consent",
+      "hostRate": "Host commission (%)",
+      "platformRate": "CasaZen commission: {{rate}}%",
+      "exposed": "Available in the portal after acceptance",
+      "save": "Save service",
+      "serviceSaved": "Service updated.",
+      "loadingProperties": "Loading properties…",
+      "propertiesError": "Could not load the properties to assign.",
+      "browseMarketplace": "Find suppliers in the CasaZen marketplace",
       "supplierLabel": "Supplier {{id}}"
     }
   },

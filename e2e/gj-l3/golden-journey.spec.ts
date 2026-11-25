@@ -89,6 +89,16 @@ async function runGoldenJourney(browser: Browser, stack: StackEnv, request: impo
       ids.supplierOrgId = profile.orgId;
     });
 
+    await step('Platform admin publishes the supplier in the CasaZen marketplace', async () => {
+      await loginAs(actors.admin, stack, emails.admin);
+      await actors.admin.goto('/app/admin/suppliers');
+      const search = actors.admin.getByLabel('Fornitori nel marketplace CasaZen');
+      await search.fill(supplierName);
+      await search.press('Enter');
+      await actors.admin.getByRole('button', { name: 'Pubblica nel marketplace' }).click();
+      await expect(actors.admin.getByRole('button', { name: 'Rimuovi dal marketplace' })).toBeVisible();
+    });
+
     await step('Host onboards, creates the property and completes the activation wizard (publication)', async () => {
       await loginAs(host, stack, emails.host);
       await completeHostOnboarding(host);

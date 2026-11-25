@@ -4,7 +4,9 @@ import { ShoppingBag } from 'lucide-react';
 import { ApiClient } from '@/api/client';
 import { getHttpStatus } from '@/lib/api-errors';
 import { romeWallTimeToUtc } from '@/lib/stay-dates';
-import { orderMoney, orderStatus, type GuestSupplierOrder } from './guest-supplier-order-model';
+import { orderMoney, type GuestSupplierOrder } from './guest-supplier-order-model';
+
+import { supplierOrderState, supplierOrderText } from './guest-supplier-order-copy';
 
 interface Offer {
   id: string;
@@ -17,6 +19,7 @@ interface Offer {
 }
 
 export function GuestSupplierOrders({ path, language }: { path: string; language: string }) {
+  const text = supplierOrderText(language);
   const endpoint = `${path}/supplier-orders`;
   const query = useQuery({
     queryKey: ['guest-supplier-orders', endpoint],
@@ -31,47 +34,47 @@ export function GuestSupplierOrders({ path, language }: { path: string; language
       ApiClient.post<GuestSupplierOrder>(`${endpoint}${args.suffix}`, args.body, { public: true }),
     onSuccess: () => { void query.refetch(); },
   });
-  if (query.isPending) return <p role="status">Caricamento dei servizi…</p>;
+  if (query.isPending) return <p role="status">{text('loading')}</p>;
   if (query.isError) return <p role="alert">{getHttpStatus(query.error) === 404
-    ? 'Servizi non disponibili per il soggiorno.' : 'Impossibile caricare i servizi.'}</p>;
+    ? text('unavailable') : text('loadError')}</p>;
 
   return (
     <div className="stay-supplier-orders">
-      <p className="stay-card stay-content">Ambiente di test. I pagamenti e i rimborsi sono simulati.</p>
-      <h2>Servizi disponibili</h2>
-      {query.data.offers.length === 0 && <p>Nessun servizio disponibile.</p>}
+      <p className="stay-card stay-content">{text('testMode')}</p>
+      <h2>{text('offers')}</h2>
+      {query.data.offers.length === 0 && <p>{text('noOffers')}</p>}
       {query.data.offers.map((offer) => <OfferForm key={`${offer.id}:${query.data.orders.length}`} offer={offer} language={language}
         busy={change.isPending} submit={(body) => change.mutate({ suffix: '', body })} />)}
-      <h2>I tuoi ordini</h2>
-      {query.data.orders.length === 0 && <p>Non hai ancora ordinato servizi.</p>}
+      <h2>{text('orders')}</h2>
+      {query.data.orders.length === 0 && <p>{text('noOrders')}</p>}
       {query.data.orders.map((order) => (
         <article className="stay-card stay-content" key={order.id}>
           <h3>{order.serviceName}</h3>
-          <p>{order.supplierName} · {orderStatus(order.state)}</p>
+          <p>{order.supplierName} · {supplierOrderState(order.state, language)}</p>
           <p>{new Intl.DateTimeFormat(language, { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Europe/Rome' })
             .format(new Date(order.requestedFor))}</p>
           {order.totalCents > 0 && <dl>
-            <div><dt>Prezzo del fornitore</dt><dd>{orderMoney(order.supplierPriceCents, language)}</dd></div>
-            <div><dt>Commissione</dt><dd>{orderMoney(order.commissionCents, language)}</dd></div>
-            <div><dt>Totale</dt><dd>{orderMoney(order.totalCents, language)}</dd></div>
-            {order.refundCents > 0 && <div><dt>Rimborso</dt><dd>{orderMoney(order.refundCents, language)}</dd></div>}
+            <div><dt>{text('price')}</dt><dd>{orderMoney(order.supplierPriceCents, language)}</dd></div>
+            <div><dt>{text('fee')}</dt><dd>{orderMoney(order.commissionCents, language)}</dd></div>
+            <div><dt>{text('total')}</dt><dd>{orderMoney(order.totalCents, language)}</dd></div>
+            {order.refundCents > 0 && <div><dt>{text('refund')}</dt><dd>{orderMoney(order.refundCents, language)}</dd></div>}
           </dl>}
           {order.state === 'Quoted' && <button disabled={change.isPending} onClick={() => change.mutate({
             suffix: `/${order.id}/authorize`, body: { totalCents: order.totalCents },
-          })}>Simula autorizzazione</button>}
+          })}>{text('authorize')}</button>}
           {order.state === 'Completed' && <form onSubmit={(event) => {
             event.preventDefault();
             const text = new FormData(event.currentTarget).get('complaint');
             change.mutate({ suffix: `/${order.id}/dispute`, body: { text } });
           }}>
-            <label>Descrivi il problema<textarea className="stay-supplier-input" name="complaint" required maxLength={2000} /></label>
-            <button disabled={change.isPending}>Apri controversia</button>
+            <label>{text('problem')}<textarea className="stay-supplier-input" name="complaint" required maxLength={2000} /></label>
+            <button disabled={change.isPending}>{text('dispute')}</button>
           </form>}
-          {order.complaint && <p>Segnalazione: {order.complaint}</p>}
-          {order.decision && <p>Decisione: {order.decision}</p>}
+          {order.complaint && <p>{text('complaint')}: {order.complaint}</p>}
+          {order.decision && <p>{text('decision')}: {order.decision}</p>}
         </article>
       ))}
-      {change.isError && <p role="alert">Operazione non riuscita. Ricarica la pagina e verifica lo stato dell’ordine.</p>}
+      {change.isError && <p role="alert">{text('failed')}</p>}
     </div>
   );
 }
@@ -79,6 +82,7 @@ export function GuestSupplierOrders({ path, language }: { path: string; language
 function OfferForm({ offer, language, busy, submit }: {
   offer: Offer; language: string; busy: boolean; submit: (body: object) => void;
 }) {
+  const text = supplierOrderText(language);
   const [requestId, setRequestId] = useState(() => crypto.randomUUID());
   function order(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -93,11 +97,11 @@ function OfferForm({ offer, language, busy, submit }: {
       <h3><ShoppingBag aria-hidden="true" size={17} /> {offer.serviceName}</h3>
       <p>{offer.category} · {offer.supplierName}</p>
       {offer.summary && <p>{offer.summary}</p>}
-      <p>{price === null ? 'Su preventivo' : orderMoney(price, language)}</p>
-      <label>Data <input className="stay-supplier-input" type="date" name="date" required /></label>
-      <label>Ora italiana <input className="stay-supplier-input" type="time" name="time" required /></label>
-      <label>Note per il fornitore <textarea className="stay-supplier-input" name="note" maxLength={2000} /></label>
-      <button disabled={busy}>{price === null ? 'Richiedi preventivo' : 'Prepara ordine'}</button>
+      <p>{price === null ? text('quote') : orderMoney(price, language)}</p>
+      <label>{text('date')} <input className="stay-supplier-input" type="date" name="date" required /></label>
+      <label>{text('time')} <input className="stay-supplier-input" type="time" name="time" required /></label>
+      <label>{text('note')} <textarea className="stay-supplier-input" name="note" maxLength={2000} /></label>
+      <button disabled={busy}>{price === null ? text('request') : text('prepare')}</button>
     </form>
   );
 }

@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState } from '@/components/shared/error-state';
@@ -13,7 +12,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import {
   useTrustedSuppliers,
   useInviteSupplier,
-  useUpdateVisibility,
   useRemoveSupplier,
 } from '@/queries/trustedSuppliers';
 import { useProperties } from '@/queries/use-properties';
@@ -22,11 +20,10 @@ export function TrustedSuppliersPage() {
   const { t } = useTranslation();
   const { data: suppliers, isLoading, isError, error, refetch } = useTrustedSuppliers();
   const inviteSupplier = useInviteSupplier();
-  const updateVisibility = useUpdateVisibility();
   const removeSupplier = useRemoveSupplier();
   // The host picks the properties by name (bug #977: the dialog asked for their ids); none picked = all of them.
-  const { data: properties } = useProperties();
-  const propertyList = Array.isArray(properties) ? properties : [];
+  const properties = useProperties();
+  const propertyList = properties.data ?? [];
   const propertyNames = new Map(propertyList.map((property) => [property.id, property.name]));
 
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
@@ -38,7 +35,7 @@ export function TrustedSuppliersPage() {
 
   const handleInvite = () => {
     const email = inviteEmail.trim();
-    if (!email) return;
+    if (!email || !properties.isSuccess || inviteSupplier.isPending) return;
 
     inviteSupplier.mutate(
       { email, propertyIds: invitePropertyIds },
@@ -50,10 +47,6 @@ export function TrustedSuppliersPage() {
         },
       }
     );
-  };
-
-  const handleVisibilityToggle = (id: string, currentValue: boolean) => {
-    updateVisibility.mutate({ id, visible: !currentValue });
   };
 
   const handleRemove = (id: string) => {
@@ -99,19 +92,26 @@ export function TrustedSuppliersPage() {
                 <DialogTitle>{t('supplier.trusted.inviteTitle')}</DialogTitle>
                 <DialogDescription>{t('supplier.trusted.inviteHint')}</DialogDescription>
               </DialogHeader>
-              <div className="space-y-4">
+              <form className="space-y-4" onSubmit={(event) => { event.preventDefault(); handleInvite(); }}>
                 <div className="space-y-2">
                   <Label htmlFor="invite-email">{t('supplier.trusted.inviteEmail')}</Label>
                   <Input
                     id="invite-email"
                     type="email"
+                    required
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
                     placeholder={t('supplier.trusted.inviteEmailPlaceholder')}
                     data-testid="invite-email-input"
                   />
                 </div>
-                {propertyList.length > 0 && (
+                {properties.isPending && <p role="status">{t('supplier.trusted.loadingProperties')}</p>}
+                {properties.isError && <div className="space-y-2">
+                  <p role="alert">{t('supplier.trusted.propertiesError')}</p>
+                  <Button type="button" variant="outline" onClick={() => void properties.refetch()}>{t('shared.errorState.retry')}</Button>
+                </div>}
+                {properties.isSuccess && propertyList.length === 0 && <p>{t('supplier.trusted.allProperties')}</p>}
+                {properties.isSuccess && propertyList.length > 0 && (
                   <fieldset className="space-y-2" data-testid="invite-properties">
                     <legend className="text-sm font-medium">{t('supplier.trusted.properties')}</legend>
                     <p className="text-xs text-muted-foreground">{t('supplier.trusted.propertiesHint')}</p>
@@ -130,22 +130,26 @@ export function TrustedSuppliersPage() {
                   </fieldset>
                 )}
                 <div className="flex justify-end space-x-2">
-                  <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
+                  <Button type="button" variant="outline" onClick={() => setInviteDialogOpen(false)}>
                     {t('common.cancel')}
                   </Button>
                   <Button
-                    onClick={handleInvite}
-                    disabled={!inviteEmail || inviteSupplier.isPending}
+                    type="submit"
+                    disabled={!inviteEmail.trim() || !properties.isSuccess || inviteSupplier.isPending}
                     data-testid="invite-submit-button"
                   >
                     {inviteSupplier.isPending ? t('common.sending') : t('supplier.trusted.inviteSend')}
                   </Button>
                 </div>
-              </div>
+              </form>
             </DialogContent>
           </Dialog>
         }
       />
+
+      <Button variant="outline" asChild>
+        <a href="/app/short-rent/marketplace/search">{t('supplier.trusted.browseMarketplace')}</a>
+      </Button>
 
       {!suppliers || suppliers.length === 0 ? (
         <Card data-testid="trusted-suppliers-empty">
@@ -161,10 +165,11 @@ export function TrustedSuppliersPage() {
                 <div className="flex items-start justify-between">
                   <div>
                     <CardTitle className="text-lg">
-                      {t('supplier.trusted.supplierLabel', { id: supplier.supplierOrgId })}
+                      {supplier.supplierName || t('supplier.trusted.supplierLabel', { id: supplier.supplierOrgId })}
                     </CardTitle>
                     <CardDescription>
-                      {t('supplier.trusted.propertiesCount', { count: supplier.assignedPropertyIds.length })}
+                      {supplier.hostOrigin !== undefined && <>{t(supplier.hostOrigin ? 'supplier.trusted.hostOrigin' : 'supplier.trusted.marketplaceOrigin')} · </>}
+                      {supplier.assignedPropertyIds.length === 0 ? t('supplier.trusted.allProperties') : t('supplier.trusted.propertiesCount', { count: supplier.assignedPropertyIds.length })}
                     </CardDescription>
                   </div>
                   <Button
@@ -179,19 +184,6 @@ export function TrustedSuppliersPage() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <Label htmlFor={`visibility-${supplier.id}`}>{t('supplier.trusted.visibility')}</Label>
-                    <p className="text-xs text-muted-foreground">{t('supplier.trusted.visibilityHint')}</p>
-                  </div>
-                  <Switch
-                    id={`visibility-${supplier.id}`}
-                    checked={supplier.visibleInMarketplace}
-                    onCheckedChange={() => handleVisibilityToggle(supplier.id, supplier.visibleInMarketplace)}
-                    disabled={updateVisibility.isPending}
-                    data-testid={`visibility-toggle-${supplier.id}`}
-                  />
-                </div>
                 {supplier.assignedPropertyIds.length > 0 && (
                   <div className="space-y-2">
                     <Label>{t('supplier.trusted.assignedProperties')}</Label>

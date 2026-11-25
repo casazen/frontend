@@ -220,26 +220,9 @@ export function cleaningPropertiesOf(properties: readonly Property[] | undefined
   return [...(properties ?? [])].sort((left, right) => left.name.localeCompare(right.name));
 }
 
-/**
- * The comune a property is in, for the coverage of the suppliers (they cover a comune by its ISTAT code, else by the written name): the code when the host chose the comune from the official
- * list, else the name as written. Properties of one comune are asked for once.
- */
-export function comuneKeyOf(property: Pick<Property, 'comuneIstatCode' | 'city'>): string {
-  return property.comuneIstatCode ? `istat:${property.comuneIstatCode}` : `city:${property.city.trim().toLocaleLowerCase()}`;
-}
-
-/** The properties by comune, in the order they first appear. */
-export function groupByComune<T extends Pick<Property, 'comuneIstatCode' | 'city'>>(properties: readonly T[]): T[][] {
-  const groups = new Map<string, T[]>();
-  for (const property of properties) {
-    const key = comuneKeyOf(property);
-    groups.set(key, [...(groups.get(key) ?? []), property]);
-  }
-  return [...groups.values()];
-}
-
-/** A supplier that can be chosen, and for how many of the chosen properties its comune is covered. */
+/** A supplier that can be chosen, and how many selected properties it serves. */
 export interface SupplierChoice {
+  hostOrigin?: boolean;
   id: string;
   name: string;
   /** How many of the properties chosen it covers; `null` when the choice is for one property. */
@@ -247,15 +230,20 @@ export interface SupplierChoice {
 }
 
 /**
- * The suppliers to choose from for a group of properties: one list for each comune (`GET api/suppliers?propertyId=&category=cleaning`), put together without repeating a supplier,
- * each with the number of properties its comune covers. A supplier that covers only some of them can still be chosen: the answer of the save says which properties it was refused for.
+ * The suppliers to choose from for a group of properties: one list for each property (`GET api/suppliers?propertyId=&category=cleaning`), put together without repeating a supplier,
+ * each with the number of selected properties it serves. A supplier that covers only some of them can still be chosen: the answer of the save says which properties it was refused for.
  */
-export function supplierChoicesOf(lists: ReadonlyArray<{ size: number; suppliers: readonly Pick<SupplierPicker, 'orgId' | 'legalName'>[] }>, single: boolean): SupplierChoice[] {
+export function supplierChoicesOf(lists: ReadonlyArray<ReadonlyArray<Pick<SupplierPicker, 'orgId' | 'legalName' | 'hostOrigin'>>>, single: boolean): SupplierChoice[] {
   const choices = new Map<string, SupplierChoice>();
-  for (const { size, suppliers } of lists) {
+  for (const suppliers of lists) {
     for (const supplier of suppliers) {
       const known = choices.get(supplier.orgId);
-      choices.set(supplier.orgId, { id: supplier.orgId, name: supplier.legalName, covers: single ? null : (known?.covers ?? 0) + size });
+      choices.set(supplier.orgId, {
+        id: supplier.orgId,
+        name: supplier.legalName,
+        hostOrigin: supplier.hostOrigin,
+        covers: single ? null : (known?.covers ?? 0) + 1,
+      });
     }
   }
   return [...choices.values()].sort((left, right) => left.name.localeCompare(right.name));
