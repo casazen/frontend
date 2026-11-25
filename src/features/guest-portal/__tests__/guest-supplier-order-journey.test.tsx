@@ -1,3 +1,4 @@
+import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
@@ -36,7 +37,7 @@ it('carries a guest request through the supplier quote and completion using the 
     return orders[0];
   });
   function showGuest() {
-    return render(<QueryClientProvider client={new QueryClient()}><GuestSupplierOrders path="/guest/test" language="en" /></QueryClientProvider>);
+    return render(<QueryClientProvider client={new QueryClient()}><MemoryRouter><GuestSupplierOrders path="/guest/test" language="en" /></MemoryRouter></QueryClientProvider>);
   }
   function showSupplier() {
     return render(<QueryClientProvider client={new QueryClient()}><GuestSupplierOperations scope={{ role: 'supplier' }} /></QueryClientProvider>);

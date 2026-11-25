@@ -62,10 +62,18 @@ describe('guest supplier sandbox checkout', () => {
     expect(ApiClient.post).toHaveBeenCalledTimes(2);
   });
 
+  it('never mounts Stripe with a live publishable key in the sandbox', async () => {
+    vi.mocked(ApiClient.post).mockResolvedValue({ ...checkout, publishableKey: 'pk_live_example' });
+    show();
+    fireEvent.click(await screen.findByRole('button', { name: 'Authorize with test card' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Could not verify authorization');
+    expect(screen.queryByTestId('payment')).not.toBeInTheDocument();
+  });
+
   it('keeps simulated orders on their original endpoint and never mounts Stripe for them', async () => {
     vi.mocked(ApiClient.get).mockResolvedValue({ environment: 'simulation', offers: [], orders: [{ ...order, stripeSandbox: false }] });
     show();
-    fireEvent.click(await screen.findByRole('button', { name: 'Simulate authorization' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Authorize simulated payment' }));
     await waitFor(() => expect(ApiClient.post).toHaveBeenCalledWith(base + '/o1/authorize', { totalCents: 1100 }, { public: true }));
     expect(screen.queryByTestId('payment')).not.toBeInTheDocument();
   });
