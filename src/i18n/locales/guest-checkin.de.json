@@ -155,6 +155,7 @@
     "scanAnother": "Dokument eines weiteren Gastes hochladen",
     "scanManual": "Daten von Hand eingeben",
     "scanReadOk": "Daten gelesen für {{name}}. Prüfen Sie sie vor dem Senden.",
+    "invoiceHostManaged": "Sie können fehlende Angaben ergänzen. Um bereits von Ihrem Gastgeber eingetragene Daten zu ändern, kontaktieren Sie ihn.",
     "invoiceSave": "Antwort speichern",
     "invoiceFinished": "Vorgang abgeschlossen.",
     "scanMismatch": "Das Dokument lässt sich keinem namentlich gebuchten Gast zuordnen. Prüfen Sie das Foto oder kontaktieren Sie die Unterkunft, um einen Namen zu berichtigen.",

@@ -6314,6 +6314,7 @@
     "scanAnother": "Carica il documento di un altro ospite",
     "scanManual": "Inserisci i dati a mano",
     "scanReadOk": "Dati letti per {{name}}. Controllali prima di inviare.",
+    "invoiceHostManaged": "Puoi completare i dati mancanti. Per correggere i dati già inseriti dall’host, contattalo.",
     "invoiceSave": "Salva risposta",
     "invoiceFinished": "Operazione completata.",
     "scanMismatch": "Il documento non corrisponde a un ospite identificabile nella prenotazione. Controlla la foto. Per correggere un nominativo contatta la struttura.",

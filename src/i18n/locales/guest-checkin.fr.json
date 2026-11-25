@@ -155,6 +155,7 @@
     "scanAnother": "Charger le document d'une autre personne",
     "scanManual": "Saisir les données à la main",
     "scanReadOk": "Données lues pour {{name}}. Vérifiez-les avant d'envoyer.",
+    "invoiceHostManaged": "Vous pouvez compléter les coordonnées manquantes. Pour corriger celles déjà saisies par votre hôte, contactez-le.",
     "invoiceSave": "Enregistrer la réponse",
     "invoiceFinished": "Opération terminée.",
     "scanMismatch": "Ce document ne correspond pas à un voyageur nommé dans la réservation. Vérifiez la photo ou contactez l’hébergement pour corriger un nom.",
