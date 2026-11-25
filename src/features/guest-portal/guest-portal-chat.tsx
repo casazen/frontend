@@ -3,6 +3,14 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { ApiClient } from '@/api/client';
 import type { GuestThread } from '@/types/guest-message.types';
 
+const chatLabels = {
+  it: { handoff: 'Scrivi all’host', guest: 'Tu', host: 'Host', assistant: 'Assistente automatico', automation: 'Messaggio automatico' },
+  en: { handoff: 'Write to the host', guest: 'You', host: 'Host', assistant: 'Automatic assistant', automation: 'Automatic message' },
+  de: { handoff: 'Gastgeber kontaktieren', guest: 'Du', host: 'Gastgeber', assistant: 'Automatischer Assistent', automation: 'Automatische Nachricht' },
+  fr: { handoff: 'Écrire à l’hôte', guest: 'Vous', host: 'Hôte', assistant: 'Assistant automatique', automation: 'Message automatique' },
+  es: { handoff: 'Escribir al anfitrión', guest: 'Tú', host: 'Anfitrión', assistant: 'Asistente automático', automation: 'Mensaje automático' },
+} as const;
+
 interface Labels {
   message: string;
   send: string;
@@ -12,8 +20,12 @@ interface Labels {
   closed: string;
 }
 
-export function GuestPortalChat({ path, labels }: { path: string; labels: Labels }) {
+export function GuestPortalChat({ path, language, labels }: { path: string; language: keyof typeof chatLabels; labels: Labels }) {
+  const copy = chatLabels[language];
+  const time = new Intl.DateTimeFormat(language, { hour: 'numeric', minute: 'numeric' });
   const [input, setInput] = useState('');
+  const [requestHost, setRequestHost] = useState(false);
+  const messageField = useRef<HTMLTextAreaElement>(null);
   const key = useRef<string | null>(null);
   const endpoint = `${path}/chat`;
   const thread = useQuery({
@@ -25,10 +37,11 @@ export function GuestPortalChat({ path, labels }: { path: string; labels: Labels
   });
   const send = useMutation({
     mutationFn: ({ text, id }: { text: string; id: string }) =>
-      ApiClient.post(endpoint, { text }, { public: true, headers: { 'Idempotency-Key': id } }),
+      ApiClient.post(endpoint, { text, requestHost, language }, { public: true, headers: { 'Idempotency-Key': id } }),
     onSuccess: () => {
       key.current = null;
       setInput('');
+      setRequestHost(false);
       void thread.refetch();
     },
   });
@@ -45,21 +58,37 @@ export function GuestPortalChat({ path, labels }: { path: string; labels: Labels
       {thread.isPending && <p role="status">{labels.loading}</p>}
       {(thread.isError || send.isError) && <p role="alert">{labels.failed}</p>}
       {thread.data?.messages.length === 0 && <p>{labels.empty}</p>}
-      <ul className="stay-chat">
+      <ul className="stay-chat" role="log">
         {thread.data?.messages.map((message) => (
-          <li key={message.id} data-sender={message.sender}>{message.text}</li>
+          <li key={message.id} data-sender={message.sender}>
+            <div className="stay-chat-meta">
+              <strong>{message.sender === 'Guest' ? copy.guest
+                : message.origin === 'Assistant' ? copy.assistant
+                : message.origin === 'Automation' ? copy.automation : copy.host}</strong>
+              <time dateTime={message.createdAt}>{time.format(new Date(message.createdAt))}</time>
+            </div>
+            {message.text}
+          </li>
         ))}
       </ul>
       {thread.data?.state === 'Closed' && <p>{labels.closed}</p>}
       {thread.data?.state === 'Open' && (
         <form onSubmit={submit} className="stay-chat-form">
-          <label htmlFor="stay-message">{labels.message}</label>
-          <textarea id="stay-message" value={input} maxLength={2000} required disabled={send.isPending}
+          <label htmlFor="stay-message">{requestHost ? copy.handoff : labels.message}</label>
+          <textarea ref={messageField} id="stay-message" value={input} maxLength={2000} required disabled={send.isPending}
             onChange={(event) => {
               key.current = null;
               setInput(event.target.value);
               send.reset();
             }} />
+          {!requestHost && (
+            <button type="button" disabled={send.isPending} onClick={() => {
+              key.current = null;
+              setRequestHost(true);
+              send.reset();
+              messageField.current?.focus();
+            }}>{copy.handoff}</button>
+          )}
           <button type="submit" disabled={!input.trim() || send.isPending}>{labels.send}</button>
         </form>
       )}

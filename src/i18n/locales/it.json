@@ -1022,6 +1022,18 @@
           "title": "Riconnetti il gestionale dei canali",
           "why": "Il collegamento con il gestionale dei canali si è interrotto."
         },
+        "GuestDataCopyRequested": {
+          "title": "Copia dei dati ospite",
+          "why": "Verifica la richiesta e prepara la copia con gli strumenti privacy."
+        },
+        "GuestDataErasureRequested": {
+          "title": "Cancellazione dei dati ospite",
+          "why": "Verifica la richiesta e gli obblighi di conservazione prima di procedere."
+        },
+        "GuestInvoiceCorrectionRequested": {
+          "title": "Correzione della fattura ospite",
+          "why": "Controlla la fattura con l’ospite e applica la correzione necessaria."
+        },
         "RoutineTask": {
           "title": "Promemoria manuale della routine",
           "why": "Una routine che hai impostato ti chiede di occuparti di questa prenotazione."
@@ -4118,6 +4130,42 @@
     "title": "Verifica dell'identità"
   },
   "guestPortal": {
+    "setup": {
+      "suggest": "Genera suggerimenti",
+      "suggestLocal": "Cerca consigli sulla zona",
+      "applySuggestion": "Usa nella bozza della guida",
+      "suggestionsUnavailable": "Nessun suggerimento disponibile. Puoi continuare con la configurazione manuale.",
+      "manageSuppliers": "Gestisci i fornitori abituali",
+      "title": "Portale ospiti",
+      "subtitle": "Configura il portale per ciascun alloggio. Riprendi dai passaggi che hai salvato per l’alloggio.",
+      "open": "Configura",
+      "property": "Alloggio",
+      "noProperties": "Aggiungi un alloggio per configurare il portale.",
+      "steps": "Passaggi di configurazione",
+      "confirmed": "Completato",
+      "complete": "Configurazione del portale completata.",
+      "brand": "Marchio",
+      "brandNote": "Verifica il nome, il logo e il colore che gli ospiti vedranno nel portale.",
+      "guide": "Guida della casa",
+      "guideNote": "Aggiungi le informazioni per il soggiorno e salvale nella guida.",
+      "extras": "Extra dell’host",
+      "extrasNote": "Controlla gli extra e i listini che vuoi offrire agli ospiti di questo alloggio.",
+      "extrasConfirm": "Ho verificato gli extra e i prezzi.",
+      "suppliers": "Fornitori",
+      "suppliersNote": "Vuoi offrire agli ospiti i servizi dei fornitori regionali di CasaZen?",
+      "chat": "Chat",
+      "chatNote": "Configura le risposte automatiche a partire dalle informazioni della guida.",
+      "chatConfirm": "Ho verificato le impostazioni della chat.",
+      "reviews": "Recensioni",
+      "reviewsNote": "Vuoi consentire agli ospiti di lasciare una recensione dal portale?",
+      "ota": "Regole OTA",
+      "otaNote": "Verifica le condizioni del canale per l’offerta di servizi a pagamento. Il rispetto delle condizioni resta responsabilità dell’host.",
+      "hideAirbnb": "Nascondi i servizi a pagamento ai soggiorni Airbnb",
+      "yes": "Sì",
+      "no": "No",
+      "save": "Salva il passaggio",
+      "saveGuide": "Aggiungi almeno un’informazione e salva la guida prima di completare questo passaggio."
+    },
     "account": {
       "title": "I miei soggiorni",
       "verifyEmail": "Verifica l’indirizzo email del tuo account e accedi di nuovo.",
@@ -4125,6 +4173,19 @@
       "signOut": "Esci"
     },
     "guide": {
+      "checkInHours": "Orari di check-in",
+      "checkOutHours": "Orari di check-out",
+      "parking": "Parcheggio",
+      "autoReplyTitle": "Risposte automatiche della chat",
+      "autoReplyOrganization": "Attiva l’assistente per l’organizzazione",
+      "autoReplyHelp": "Le risposte usano le informazioni pubblicate in questa guida. Le altre domande arrivano all’host.",
+      "autoReplyTopics": {
+        "enabled": "Attiva per questo alloggio",
+        "checkIn": "Orari di check-in",
+        "checkOut": "Orari di check-out",
+        "parking": "Parcheggio",
+        "wifi": "Indica dove trovare le credenziali Wi-Fi dopo il check-in"
+      },
       "houseRules": "Regole della casa",
       "acceptRules": "Accetto queste regole della casa",
       "title": "Guida della casa",
@@ -4141,6 +4202,18 @@
       "visibility": "Accesso e Wi-Fi sono visibili solo dopo il check-in. Le altre sezioni si vedono anche dal QR pubblico."
     },
     "host": {
+      "privacyRequests": "Richieste privacy dal portale",
+      "GuestDataCopyRequested": "Richiesta di copia dei dati",
+      "GuestDataErasureRequested": "Richiesta di cancellazione dei dati",
+      "completePrivacyRequest": "Chiudi richiesta",
+      "completePrivacyDescription": "Conferma dopo aver gestito la richiesta e risposto all’ospite.",
+      "completePrivacyError": "Impossibile chiudere la richiesta.",
+      "stayChangeGuests": "Adulti: {{adults}} · Bambini: {{children}}",
+      "stayChangeTotals": "Totale attuale {{previous}} · Totale proposto {{proposed}}",
+      "stayChangeApprove": "Approva la modifica",
+      "stayChangeDecline": "Rifiuta la richiesta",
+      "stayChangeApproved": "Modifica del soggiorno approvata.",
+      "stayChangeError": "Impossibile aggiornare la richiesta. Verifica date, prezzo e permessi oppure riprova.",
       "revoke": "Revoca link",
       "confirmRevoke": "Conferma revoca",
       "resend": "Invia email",
@@ -16698,6 +16771,8 @@
     "listLabel": "Elenco delle notifiche",
     "toastOpen": "Apri",
     "types": {
+      "guestPortalRequest": "Nuova richiesta dal portale ospiti",
+      "guestStayChange": "Un ospite ha richiesto una modifica al soggiorno.",
       "routineOwner": "Una routine ha notificato il titolare per questa prenotazione.",
       "routineStaff": "Una routine ti ha notificato come responsabile dell’immobile.",
       "routineTeam": "Una routine ha aggiornato il team su questa prenotazione.",
@@ -18513,6 +18588,11 @@
       "never": "Mai"
     },
     "setup": {
+      "suggest": "Genera suggerimenti",
+      "suggestLocal": "Cerca consigli sulla zona",
+      "applySuggestion": "Usa nella bozza della guida",
+      "suggestionsUnavailable": "Nessun suggerimento disponibile. Puoi continuare con la configurazione manuale.",
+      "manageSuppliers": "Gestisci i fornitori abituali",
       "title": "Aggiungi integrazione OTA",
       "description": "Collega una proprietà a una piattaforma di agenzie di viaggio online",
       "platformTitle": "Selezione piattaforma",

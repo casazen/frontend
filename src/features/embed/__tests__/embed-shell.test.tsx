@@ -477,7 +477,7 @@ describe('the agency domain (AC1, AC2: the proof of the isolation)', () => {
     expect(screen.queryByTestId('host-site-page-not-found')).not.toBeInTheDocument();
     expect(document.querySelectorAll('a, [role="link"]')).toHaveLength(0);
     expect(getPublicOrg).not.toHaveBeenCalled();
-    expect(robots()).toBe('noindex,nofollow');
+    await waitFor(() => expect(robots()).toBe('noindex,nofollow'));
   });
 
   it.each([

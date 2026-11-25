@@ -1,3 +1,4 @@
+import { GuestSupplierOperations } from '@/features/guest-portal/guest-supplier-operations';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { Building2, CalendarDays, Pencil, XCircle } from 'lucide-react';
@@ -28,8 +29,10 @@ import { BookingTimelineSection } from './components/booking-timeline-section';
 import { CancelBookingDialog } from './components/cancel-booking-dialog';
 import { CheckInDialog } from './components/check-in-dialog';
 import { CheckInLinkPanel } from './components/checkin-link-panel';
+import { HostExtrasEditor } from './components/host-extras-editor';
 import { GuestHouseGuideEditor } from './components/guest-house-guide-editor';
 import { GuestPortalLinkPanel } from './components/guest-portal-link-panel';
+import { GuestStayChangePanel } from './components/guest-stay-change-panel';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { ConfirmBookingDialog } from './components/confirm-booking-dialog';
 import { DeclineBookingDialog } from './components/decline-booking-dialog';
@@ -286,9 +289,16 @@ export function BookingDetailPage() {
 
           {activeTab === 'portal' && (
             <div className="grid gap-4">
+              <GuestStayChangePanel bookingId={booking.id} onApproved={() => { void refetch(); }} />
               <GuestPortalLinkPanel key={booking.id} bookingId={booking.id} />
+              {flags.guestPortalSupplierServices && hasPermission('short-rent', 'guestportal.manage') && (
+                <GuestSupplierOperations scope={{ role: 'host', propertyId: booking.propertyId }} />
+              )}
               {hasPermission('short-rent', 'guestportal.manage') && (
-                <GuestHouseGuideEditor key={booking.propertyId} propertyId={booking.propertyId} />
+                <>
+                  <GuestHouseGuideEditor key={booking.propertyId} propertyId={booking.propertyId} />
+                  <HostExtrasEditor key={booking.id} bookingId={booking.id} propertyId={booking.propertyId} />
+                </>
               )}
             </div>
           )}

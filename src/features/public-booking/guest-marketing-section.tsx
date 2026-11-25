@@ -1,4 +1,6 @@
 import { useId, useState, type FormEvent, type ReactNode } from 'react';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { ApiClient } from '@/api/client';
 import { useTranslation } from 'react-i18next';
 import { isAxiosError } from 'axios';
 import { AlertCircle, Loader2, RefreshCw } from 'lucide-react';
@@ -13,7 +15,7 @@ import { hasInternationalPrefix } from '@/features/public-booking/checkout/detai
 import { getHttpStatus, getProblemCode, getProblemMessage } from '@/lib/api-errors';
 import { useGuestMarketing, useResendMarketingConfirmation, useSaveGuestMarketing } from '@/queries/use-guest-marketing';
 import type { GuestBookingDetails, GuestSession } from '@/types';
-import type { GuestMarketingState } from '@/types/guest-marketing.types';
+import type { GuestMarketing as Marketing, GuestMarketingChange, GuestMarketingResend, GuestMarketingState } from '@/types/guest-marketing.types';
 
 type Channel = 'email' | 'whatsapp';
 
@@ -141,12 +143,44 @@ interface GuestMarketingProps {
 }
 
 function GuestMarketing({ session, code }: GuestMarketingProps) {
-  const { t, i18n } = useTranslation();
-  const headingId = useId();
   const marketing = useGuestMarketing(session, code);
   const save = useSaveGuestMarketing(session, code);
   const withdraw = useSaveGuestMarketing(session, code);
   const resend = useResendMarketingConfirmation(session, code);
+  return <GuestMarketingForm {...{ marketing, save, withdraw, resend }} />;
+}
+
+export function PortalGuestMarketingSection({ path }: { path: string }) {
+  const endpoint = `${path}/privacy/marketing`;
+  const marketing = useQuery({
+    queryKey: ['guest-portal-marketing', endpoint],
+    queryFn: ({ signal }) => ApiClient.get<Marketing>(endpoint, undefined, { public: true, signal }),
+    gcTime: 0,
+    retry: false,
+  });
+  const options = {
+    mutationFn: (change: GuestMarketingChange) => ApiClient.put<Marketing>(endpoint, change, { public: true }),
+    onSettled: () => marketing.refetch(),
+  };
+  const save = useMutation(options);
+  const withdraw = useMutation(options);
+  const resend = useMutation({
+    mutationFn: () => ApiClient.post<GuestMarketingResend>(`${endpoint}/resend-confirmation`, undefined, { public: true }),
+    onSuccess: () => marketing.refetch(),
+  });
+  return <GuestMarketingForm {...{ marketing, save, withdraw, resend }} />;
+}
+
+interface GuestMarketingFormProps {
+  marketing: ReturnType<typeof useGuestMarketing>;
+  save: ReturnType<typeof useSaveGuestMarketing>;
+  withdraw: ReturnType<typeof useSaveGuestMarketing>;
+  resend: ReturnType<typeof useResendMarketingConfirmation>;
+}
+
+function GuestMarketingForm({ marketing, save, withdraw, resend }: GuestMarketingFormProps) {
+  const { t, i18n } = useTranslation();
+  const headingId = useId();
   // What the guest switched on and typed here, not yet sent: nothing starts ticked, whatever the server knows.
   const [ticked, setTicked] = useState<Record<Channel, boolean>>({ email: false, whatsapp: false });
   const [address, setAddress] = useState('');
