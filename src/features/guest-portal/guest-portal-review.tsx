@@ -14,7 +14,7 @@ interface Labels {
   submitted: string;
 }
 
-export function GuestPortalReview({ path, labels }: { path: string; labels: Labels }) {
+export function GuestPortalReview({ path, labels, onSubmitted }: { path: string; labels: Labels; onSubmitted: () => void }) {
   const [rating, setRating] = useState('');
   const [text, setText] = useState('');
   const [showName, setShowName] = useState(false);
@@ -27,6 +27,7 @@ export function GuestPortalReview({ path, labels }: { path: string; labels: Labe
   });
   const send = useMutation({
     mutationFn: () => ApiClient.post(endpoint, { rating: Number(rating), text, showName }, { public: true }),
+    onSuccess: onSubmitted,
     onSettled: () => { void review.refetch(); },
   });
   function submit(event: FormEvent<HTMLFormElement>) {

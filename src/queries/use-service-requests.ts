@@ -360,21 +360,22 @@ export function useSuppliersByProperty(propertyId?: string, category?: string, o
  * suppliers of a comune change when one is activated or changes its prices.
  */
 export function useMarketplaceSuppliers(params: {
+  includeTrusted?: boolean;
   propertyId?: string;
   accountScope?: boolean;
   category?: string;
   q?: string;
   sort?: SupplierPickerSort;
 }) {
-  const { propertyId, accountScope, category, q, sort } = params;
+  const { propertyId, accountScope, category, q, sort, includeTrusted } = params;
   const scopeKey = accountScope ? 'account' : propertyId;
   return useQuery({
-    queryKey: ['suppliers', 'marketplace', scopeKey, category ?? '', q ?? '', sort ?? 'recommended'],
-    queryFn: () => fetchMarketplaceSuppliers({ ...(accountScope ? { accountScope } : { propertyId }), category, q, sort }),
+    queryKey: ['suppliers', 'marketplace', scopeKey, category ?? '', q ?? '', sort ?? 'recommended', includeTrusted === true],
+    queryFn: () => fetchMarketplaceSuppliers({ ...(accountScope ? { accountScope } : { propertyId }), ...(includeTrusted ? { includeTrusted } : {}), category, q, sort }),
     enabled: accountScope === true || !!propertyId,
     refetchOnMount: true,
     placeholderData: (previous, previousQuery) =>
-      previousQuery?.queryKey[2] === scopeKey && previousQuery?.queryKey[3] === (category ?? '') ? previous : undefined,
+      previousQuery?.queryKey[2] === scopeKey && previousQuery?.queryKey[3] === (category ?? '') && previousQuery?.queryKey[6] === (includeTrusted === true) ? previous : undefined,
   });
 }
 

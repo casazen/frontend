@@ -256,7 +256,7 @@ export function CleaningStep({
                 <option value="">{t('serviceRequest.selectSupplier')}</option>
                 {supplierOptions.map((supplier) => (
                   <option key={supplier.orgId} value={supplier.orgId}>
-                    {supplier.legalName}
+                    {supplier.legalName}{supplier.hostOrigin !== undefined && ` · ${t(supplier.hostOrigin ? 'supplier.trusted.privateSupplier' : 'supplier.trusted.marketplace')}`}
                   </option>
                 ))}
               </select>

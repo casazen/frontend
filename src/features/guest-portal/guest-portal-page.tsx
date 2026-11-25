@@ -149,7 +149,18 @@ interface StayDetails {
   arrivalTime: string | null;
   checkInAvailable: boolean;
   canEditArrival: boolean;
+  bookingChannel?: string | null;
+  reviewAvailable?: boolean;
+  chatOpen?: boolean;
 }
+
+const channelTrips: Record<string, { name: string; url: string }> = {
+  Airbnb: { name: 'Airbnb', url: 'https://www.airbnb.com/trips' },
+  BookingCom: { name: 'Booking.com', url: 'https://secure.booking.com/myreservations.html' },
+  Expedia: { name: 'Expedia', url: 'https://www.expedia.com/trips' },
+  Vrbo: { name: 'Vrbo', url: 'https://www.vrbo.com/traveler/inbox' },
+  Agoda: { name: 'Agoda', url: 'https://www.agoda.com/account/bookings.html' },
+};
 
 function supportedLanguage(value: string | null | undefined): Language | undefined {
   return languages.find((language) => language === value?.toLowerCase().split('-')[0]);
@@ -225,6 +236,7 @@ function GuestPortalPage({ token }: { token: string }) {
 
   const home = !checkingIn && !services && !extras && !guide && !details && !chat && !documents && !payments
     && !supplierOrders && !review && !privacy && !cancellation;
+  const channel = stay?.bookingChannel ? channelTrips[stay.bookingChannel] : undefined;
   const nav = [
     { key: 'stay', page: undefined, icon: House, current: home || checkingIn },
     { key: 'guide', page: 'guide', icon: BookOpen, current: guide },
@@ -347,7 +359,7 @@ function GuestPortalPage({ token }: { token: string }) {
                   documents: text('documents'), payTax: text('payTax'), services: text('servicePayments'), refresh: text('refreshPayment'),
                 }} />
             ) : review ? (
-              <GuestPortalReview path={path} labels={{
+              <GuestPortalReview path={path} onSubmitted={() => { void stayQuery.refetch(); }} labels={{
                 rating: text('rating'), comment: text('comment'), showName: text('showName'), send: text('send'),
                 loading: text('load'), failed: text('error'), submitted: text('reviewSubmitted'), unavailable: text('reviewUnavailable'),
               }} />
@@ -372,7 +384,7 @@ function GuestPortalPage({ token }: { token: string }) {
                 <Link className="stay-card" to={href('documents')}><FileText aria-hidden="true" />{text('documents')}<ChevronRight aria-hidden="true" /></Link>
                 <Link className="stay-card" to={href('privacy')}>{text('privacy')}<ChevronRight aria-hidden="true" /></Link>
                 <Link className="stay-card" to={guestAccountStaysPath}>{text('account')}<ChevronRight aria-hidden="true" /></Link>
-                {stay.isOta && <p className="stay-card">{text('otaChanges')}</p>}
+                {stay.isOta && <p className="stay-card">{text('otaChanges')} {channel && <a href={channel.url} rel="noreferrer">{channel.name}</a>}</p>}
               </>
             ) : (
               <>
@@ -387,7 +399,7 @@ function GuestPortalPage({ token }: { token: string }) {
                     {!overview?.checkInCompleted && stay.checkInAvailable && <Link to={checkIn}>{text('open')}</Link>}
                   </section>
                 )}
-                {phase === 'after' && stay.status !== 'cancelled' && (
+                {phase === 'after' && stay.status !== 'cancelled' && stay.reviewAvailable && (
                   <section className="stay-next">
                     <div className="cz-icon-tile stay-next-symbol"><ClipboardCheck aria-hidden="true" /></div>
                     <p>{text('next')}</p>
@@ -403,7 +415,7 @@ function GuestPortalPage({ token }: { token: string }) {
                     <StaySectionLink to={href('guide')} icon={BookOpen} label={text('guide')} detail={text('guideNote')} />
                     {(hasExtras || overview?.features?.supplierServices) && <StaySectionLink to={href('services')} icon={ShoppingBag} label={text('servicesAndExtras')} detail={text('servicesNote')} />}
                   </>}
-                  {stay.status !== 'cancelled' && <StaySectionLink to={href('chat')} icon={MessageCircle} label={text('chat')} detail={text('chatNote')} />}
+                  {stay.status !== 'cancelled' && <StaySectionLink to={href('chat')} icon={MessageCircle} label={text('chat')} detail={text(stay.chatOpen === false ? 'closedChat' : 'chatNote')} />}
                   <StaySectionLink to={href('documents')} icon={FileText} label={text('documents')} detail={text('documentsNote')} />
                   {phase === 'after' && <StaySectionLink to={href('privacy')} icon={ClipboardCheck} label={text('privacy')} />}
                   {(phase !== 'after' || stay.checkInAvailable || overview?.checkInCompleted) && (

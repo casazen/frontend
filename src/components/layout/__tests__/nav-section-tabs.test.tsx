@@ -98,15 +98,19 @@ describe('NavSectionTabs (UI-04a)', () => {
 
   it('NavSectionTabs_OtaChannels_AreATabOnlyWhileTheirFlagIsOn', () => {
     renderAt('/app/short-rent/channels', { flags: { otaPartnerApi: false } });
-    expect(labelsOf('Sezioni di Immobili')).toEqual(['Immobili', 'Interventi', 'Canali e calendari', 'Attivazione']);
+    expect(labelsOf('Sezioni di Immobili')).toEqual(['Immobili', 'Interventi', 'Fornitori fidati', 'Canali e calendari', 'Attivazione']);
 
     cleanup();
     renderAt('/app/short-rent/channels', { flags: { otaPartnerApi: true } });
-    expect(labelsOf('Sezioni di Immobili')).toEqual(['Immobili', 'Interventi', 'Canali e calendari', 'Attivazione', 'OTA']);
+    expect(labelsOf('Sezioni di Immobili')).toEqual(['Immobili', 'Interventi', 'Fornitori fidati', 'Canali e calendari', 'Attivazione', 'OTA']);
   });
 
-  it('NavSectionTabs_TrustedSuppliers_AreATabOnlyOnTheAgencyPlan', () => {
+  it('NavSectionTabs_TrustedSuppliers_RequireAnOrganizationAdministratorOnEveryPlan', () => {
     renderAt('/app/short-rent/channels', { flags: { agencyTier: false } });
+    expect(labelsOf('Sezioni di Immobili')).toContain('Fornitori fidati');
+
+    cleanup();
+    renderAt('/app/short-rent/channels', { hasPermission: (_, permission) => permission !== 'org.billing.admin', flags: { agencyTier: true } });
     expect(labelsOf('Sezioni di Immobili')).not.toContain('Fornitori fidati');
 
     cleanup();
@@ -193,7 +197,7 @@ describe('PageHeader draws the tabs of its section (UI-04a)', () => {
     renderAt('/app/short-rent/properties', { children: <PageHeader title="Immobili" crumbs="auto" /> });
 
     expect(screen.getByTestId('page-header')).toBeInTheDocument();
-    expect(labelsOf('Sezioni di Immobili')).toEqual(['Immobili', 'Interventi', 'Canali e calendari', 'Attivazione']);
+    expect(labelsOf('Sezioni di Immobili')).toEqual(['Immobili', 'Interventi', 'Fornitori fidati', 'Canali e calendari', 'Attivazione']);
   });
 
   it('PageHeader_PageOutsideAnySection_IsTheHeadItAlwaysWas', () => {

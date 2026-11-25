@@ -194,7 +194,6 @@ describe('route-manifest main menu (UI-04a)', () => {
   // The pages of the agency plan read endpoints that answer only an org on that plan (ADR-010): shown to everyone, their first read
   // answered 403 and the whole app went to the no-access page («Nessun accesso disponibile… Accedi di nuovo»).
   const AGENCY_PAGES: [AppContextKey, string][] = [
-    ['short-rent', '/app/short-rent/trusted-suppliers'],
     ['account', '/app/account/statements'],
     ['account', '/app/account/withholding'],
     ['account', '/app/account/wire-transfers'],
@@ -664,13 +663,15 @@ describe('route-manifest sections as tabs (UI-04a)', () => {
     expect(getNavSection('/app/short-rent/guests/', allowAll).length).toBeGreaterThan(1);
   });
 
-  it('leaves out the tabs the user may not open, the OTA tab while its flag is off and the trusted suppliers while the agency plan is', () => {
+  it('shows trusted suppliers to organization administrators on all plans and gates OTA separately', () => {
     expect(paths(getNavSection('/app/short-rent/properties', allowAll))).toEqual([
       '/app/short-rent/properties',
       '/app/short-rent/interventions',
+      '/app/short-rent/trusted-suppliers',
       '/app/short-rent/channels',
       '/app/short-rent/activation',
     ]);
+    expect(paths(getNavSection('/app/short-rent/properties', without('org.billing.admin')))).not.toContain('/app/short-rent/trusted-suppliers');
     expect(paths(getNavSection('/app/short-rent/properties', allowAll, { agencyTier: true }))).toEqual([
       '/app/short-rent/properties',
       '/app/short-rent/interventions',

@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState } from '@/components/shared/error-state';
@@ -15,7 +14,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import {
   useTrustedSuppliers,
   useInviteSupplier,
-  useUpdateVisibility,
   useRemoveSupplier,
 } from '@/queries/trustedSuppliers';
 import { useProperties } from '@/queries/use-properties';
@@ -24,11 +22,10 @@ export function TrustedSuppliersPage() {
   const { t } = useTranslation();
   const { data: suppliers, isLoading, isError, error, refetch } = useTrustedSuppliers();
   const inviteSupplier = useInviteSupplier();
-  const updateVisibility = useUpdateVisibility();
   const removeSupplier = useRemoveSupplier();
   // The host picks the properties by name (bug #977: the dialog asked for their ids); none picked = all of them.
-  const { data: properties } = useProperties();
-  const propertyList = Array.isArray(properties) ? properties : [];
+  const properties = useProperties();
+  const propertyList = properties.data ?? [];
   const propertyNames = new Map(propertyList.map((property) => [property.id, property.name]));
 
   const [removing, setRemoving] = useState<{ id: string; supplierOrgId: string } | null>(null);
@@ -43,7 +40,7 @@ export function TrustedSuppliersPage() {
 
   const handleInvite = () => {
     const email = inviteEmail.trim();
-    if (!email) return;
+    if (!email || !properties.isSuccess || inviteSupplier.isPending) return;
 
     inviteSupplier.mutate(
       { email, propertyIds: invitePropertyIds },
@@ -57,9 +54,6 @@ export function TrustedSuppliersPage() {
     );
   };
 
-  const handleVisibilityToggle = (id: string, currentValue: boolean) => {
-    updateVisibility.mutate({ id, visible: !currentValue });
-  };
 
   if (isLoading) {
     return (
@@ -115,7 +109,13 @@ export function TrustedSuppliersPage() {
                     data-testid="invite-email-input"
                   />
                 </div>
-                {propertyList.length > 0 && (
+                {properties.isPending && <p role="status">{t('supplier.trusted.loadingProperties')}</p>}
+                {properties.isError && <div className="space-y-2">
+                  <p role="alert">{t('supplier.trusted.propertiesError')}</p>
+                  <Button type="button" variant="outline" onClick={() => void properties.refetch()}>{t('shared.errorState.retry')}</Button>
+                </div>}
+                {properties.isSuccess && propertyList.length === 0 && <p>{t('supplier.trusted.allProperties')}</p>}
+                {properties.isSuccess && propertyList.length > 0 && (
                   <fieldset className="space-y-2 rounded-xl border border-border p-3" data-testid="invite-properties">
                     <legend className="text-sm font-medium">{t('supplier.trusted.properties')}</legend>
                     <p className="text-xs text-muted-foreground">{t('supplier.trusted.propertiesHint')}</p>
@@ -139,7 +139,7 @@ export function TrustedSuppliersPage() {
                   </Button>
                   <Button
                     type="submit"
-                    disabled={!inviteEmail || inviteSupplier.isPending}
+                    disabled={!inviteEmail.trim() || !properties.isSuccess || inviteSupplier.isPending}
                     data-testid="invite-submit-button"
                   >
                     {inviteSupplier.isPending ? t('common.sending') : t('supplier.trusted.inviteSend')}
@@ -150,6 +150,10 @@ export function TrustedSuppliersPage() {
           </Dialog>
         }
       />
+
+      <Button variant="outline" asChild>
+        <a href="/app/short-rent/marketplace/search">{t('supplier.trusted.browseMarketplace')}</a>
+      </Button>
 
       {!suppliers || suppliers.length === 0 ? (
         <Card data-testid="trusted-suppliers-empty">
@@ -166,10 +170,11 @@ export function TrustedSuppliersPage() {
                   <div className="min-w-0 flex-1 space-y-1">
                     <Handshake aria-hidden="true" className="mb-2 size-9 rounded-xl bg-primary-soft p-2 text-primary-text" />
                     <CardTitle className="break-words text-lg">
-                      {t('supplier.trusted.supplierLabel', { id: supplier.supplierOrgId })}
+                      {supplier.supplierName || t('supplier.trusted.supplierLabel', { id: supplier.supplierOrgId })}
                     </CardTitle>
                     <CardDescription>
-                      {t('supplier.trusted.propertiesCount', { count: supplier.assignedPropertyIds.length })}
+                      {supplier.hostOrigin !== undefined && <>{t(supplier.hostOrigin ? 'supplier.trusted.hostOrigin' : 'supplier.trusted.marketplaceOrigin')} · </>}
+                      {supplier.assignedPropertyIds.length === 0 ? t('supplier.trusted.allProperties') : t('supplier.trusted.propertiesCount', { count: supplier.assignedPropertyIds.length })}
                     </CardDescription>
                   </div>
                   <Button
@@ -187,19 +192,6 @@ export function TrustedSuppliersPage() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <Label htmlFor={`visibility-${supplier.id}`}>{t('supplier.trusted.visibility')}</Label>
-                    <p className="text-xs text-muted-foreground">{t('supplier.trusted.visibilityHint')}</p>
-                  </div>
-                  <Switch
-                    id={`visibility-${supplier.id}`}
-                    checked={supplier.visibleInMarketplace}
-                    onCheckedChange={() => handleVisibilityToggle(supplier.id, supplier.visibleInMarketplace)}
-                    disabled={updateVisibility.isPending}
-                    data-testid={`visibility-toggle-${supplier.id}`}
-                  />
-                </div>
                 {supplier.assignedPropertyIds.length > 0 && (
                   <div className="space-y-2">
                     <Label>{t('supplier.trusted.assignedProperties')}</Label>

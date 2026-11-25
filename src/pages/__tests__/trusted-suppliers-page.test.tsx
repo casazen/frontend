@@ -64,6 +64,26 @@ describe('TrustedSuppliersPage invite (bug #977)', () => {
     await waitFor(() => expect(trustedSuppliersApi.remove).toHaveBeenCalledWith('ts-1'));
   });
 
+  it('blocks the invite while the property scope is loading or unavailable and lets the host retry', async () => {
+    let failRead!: (reason: Error) => void;
+    vi.mocked(propertiesApi.getAll)
+      .mockImplementationOnce(() => new Promise((_, reject) => { failRead = reject; }))
+      .mockResolvedValueOnce([]);
+    renderPage();
+    fireEvent.click(await screen.findByTestId('invite-supplier-button'));
+    fireEvent.change(screen.getByTestId('invite-email-input'), { target: { value: 'supplier@example.com' } });
+    expect(screen.getByTestId('invite-submit-button')).toBeDisabled();
+    expect(screen.getByText('Caricamento delle proprietà…')).toBeVisible();
+    failRead(new Error('unavailable'));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Impossibile caricare le proprietà');
+    expect(screen.getByTestId('invite-submit-button')).toBeDisabled();
+    expect(trustedSuppliersApi.invite).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('shared.errorState.retry') }));
+    await waitFor(() => expect(screen.getByTestId('invite-submit-button')).toBeEnabled());
+    fireEvent.click(screen.getByTestId('invite-submit-button'));
+    await waitFor(() => expect(trustedSuppliersApi.invite).toHaveBeenCalledWith({ email: 'supplier@example.com', propertyIds: [] }));
+  });
+
   it('shows the assigned properties by name', async () => {
     renderPage();
 

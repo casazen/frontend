@@ -10,6 +10,7 @@ import { HostExtrasEditor } from '@/features/bookings/components/host-extras-edi
 import { GuestHouseGuideEditor } from '@/features/bookings/components/guest-house-guide-editor';
 import { GuestSupplierOperations } from '@/features/guest-portal/guest-supplier-operations';
 import type { HouseGuide } from '@/features/guest-portal/house-guide-fields';
+import { ORG_BILLING_ADMIN_PERMISSION } from '@/lib/org-billing-admin';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { useProperties } from '@/queries/use-properties';
@@ -233,7 +234,7 @@ function PropertySetup({ propertyId }: { propertyId: string }) {
           )}
           {step === 'extras' && <HostExtrasEditor propertyId={propertyId} suggestions={generate.data?.extras} />}
           {step === 'suppliers' && flags.guestPortalSupplierServices && <GuestSupplierOperations scope={{ role: 'host', propertyId }} />}
-          {step === 'suppliers' && flags.agencyTier && hasPermission('short-rent', 'property.read') && (
+          {step === 'suppliers' && hasPermission('short-rent', ORG_BILLING_ADMIN_PERMISSION) && (
             <Button type="button" variant="link" asChild className="min-h-11 justify-self-start px-0">
               <Link to="/app/short-rent/trusted-suppliers">{t('guestPortal.setup.manageSuppliers')}</Link>
             </Button>

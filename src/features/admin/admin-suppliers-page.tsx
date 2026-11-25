@@ -1,5 +1,5 @@
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
-import { GuestSupplierOperations } from '@/features/guest-portal/guest-supplier-operations';
+import { GuestSupplierOperations, MarketplaceSettings } from '@/features/guest-portal/guest-supplier-operations';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
@@ -160,6 +160,7 @@ export function AdminSuppliersPage() {
 
       />
       <SuppliersTab />
+      <MarketplaceSettings />
       {flags.guestPortal && flags.guestPortalSupplierServices && <GuestSupplierOperations scope={{ role: 'admin' }} />}
     </div>
   );
