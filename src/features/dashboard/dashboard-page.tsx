@@ -139,26 +139,28 @@ export function DashboardPage() {
   return (
     <AppShell>
       <div className="space-y-6 md:space-y-8" data-testid="sr-home">
-        <PageHeader
-          title={firstName ? t('dashboard.title', { name: firstName }) : t('dashboard.titleNoName')}
-          description={canReadBookings && today.data && !today.isError && !noActiveProperty ? purposeOf(today.data, propertyId, t, locale) : undefined}
-          primary={phone ? undefined : createBooking}
-          action={showRoutineStatus && routines.isSuccess ? (
-            <Link to={routines.data.length ? '/app/short-rent/automations' : '/app/short-rent/automations?view=library'} className="inline-flex min-h-11 items-center gap-2 rounded-lg border px-3 text-sm font-medium text-primary-text hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring">
-              <Workflow aria-hidden="true" className="size-4" />
-              {activeRoutineCount > 0 ? t('routines.dashboardActive', { count: activeRoutineCount }) : t(routines.data.length ? 'nav.routines' : 'aiSettings.firstRoutine')}
-            </Link>
-          ) : undefined}
-          secondary={[
-            ...(phone && createBooking ? [createBooking] : []),
-            ...(canWriteProperty ? [{ label: t('dashboard.actions.addProperty'), icon: Building2, to: '/app/short-rent/properties/create' }] : []),
-            // «Richiedi un intervento» (SR-08b): the guided request, on the property the Home is filtered to; for who may ask for one.
-            ...(canRequestService
-              ? [{ label: t('dashboard.actions.requestService'), icon: Wrench, to: requestInterventionPath(propertyId || undefined), testId: 'home-request-service' }]
-              : []),
-          ]}
-          mobilePrimary="none"
-        />
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-6 lg:border-s-4 lg:border-s-primary">
+          <PageHeader
+            title={firstName ? t('dashboard.title', { name: firstName }) : t('dashboard.titleNoName')}
+            description={canReadBookings && today.data && !today.isError && !noActiveProperty ? purposeOf(today.data, propertyId, t, locale) : undefined}
+            primary={phone ? undefined : createBooking}
+            action={showRoutineStatus && routines.isSuccess ? (
+              <Link to={routines.data.length ? '/app/short-rent/automations' : '/app/short-rent/automations?view=library'} className="inline-flex min-h-11 items-center gap-2 rounded-lg border px-3 text-sm font-medium text-primary-text hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring">
+                <Workflow aria-hidden="true" className="size-4" />
+                {activeRoutineCount > 0 ? t('routines.dashboardActive', { count: activeRoutineCount }) : t(routines.data.length ? 'nav.routines' : 'aiSettings.firstRoutine')}
+              </Link>
+            ) : undefined}
+            secondary={[
+              ...(phone && createBooking ? [createBooking] : []),
+              ...(canWriteProperty ? [{ label: t('dashboard.actions.addProperty'), icon: Building2, to: '/app/short-rent/properties/create' }] : []),
+              // «Richiedi un intervento» (SR-08b): the guided request, on the property the Home is filtered to; for who may ask for one.
+              ...(canRequestService
+                ? [{ label: t('dashboard.actions.requestService'), icon: Wrench, to: requestInterventionPath(propertyId || undefined), testId: 'home-request-service' }]
+                : []),
+            ]}
+            mobilePrimary="none"
+          />
+        </div>
 
         {/* «Sono in regola?» in one line, and, without the traffic light, what carries a risk of a sanction as the first block, whatever the filter below says: it is the host's, not a property's. */}
         {!noActiveProperty && canReadBookings ? <ComplianceUrgentBlock /> : null}

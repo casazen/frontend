@@ -107,7 +107,10 @@ export function HomeRowItem({ row, icon: Icon, noteFirst = false, className }: H
           className={cn('group grid min-h-11 gap-1 rounded-md py-3 hover:bg-muted/60 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-x-4', className)}
         >
           <span className="min-w-0 space-y-1">
-            <span className="block break-words font-semibold">{row.title}</span>
+            <span className="flex items-center gap-2 break-words font-semibold">
+              {Icon ? <Icon aria-hidden="true" className="size-5 shrink-0 text-primary-text" /> : null}
+              {row.title}
+            </span>
             <span className="block break-words text-sm text-foreground/75">{row.sub}</span>
             {note}
           </span>
