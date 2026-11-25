@@ -1,3 +1,4 @@
+import { Mail } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
@@ -26,7 +27,8 @@ export function HostInvitesContent() {
           <HostInviteForm scope="host" blocked={exhausted} />
         </div>
         <section className="min-w-0 space-y-3" aria-labelledby="host-invites-list-title">
-          <h2 id="host-invites-list-title" className="text-lg font-semibold">
+          <h2 id="host-invites-list-title" className="flex items-center gap-2 text-lg font-semibold">
+            <Mail aria-hidden="true" className="size-5 text-primary-text" />
             {t('hostInvites.list.title')}
           </h2>
           <HostInvitesList scope="host" />

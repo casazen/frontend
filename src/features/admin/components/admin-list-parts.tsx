@@ -18,7 +18,7 @@ export function Pager({
   const { t } = useTranslation();
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   return (
-    <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground" data-testid="admin-suppliers-pagination">
+    <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-sm tabular-nums text-foreground/75" data-testid="admin-suppliers-pagination">
       <span>{t('admin.suppliers.pagination', { page, totalPages, totalCount })}</span>
       {totalPages > 1 && (
         <div className="flex gap-2">
@@ -48,8 +48,8 @@ export function LoadingRows() {
 export function ErrorRow({ error, message, onRetry }: { error: unknown; message: string; onRetry: () => void }) {
   const { t } = useTranslation();
   return (
-    <div className="flex flex-wrap items-center gap-3 py-6" role="alert" data-testid="admin-suppliers-error">
-      <AlertTriangle className="h-5 w-5 shrink-0 text-destructive" />
+    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-danger-border bg-danger-soft p-4" role="alert" data-testid="admin-suppliers-error">
+      <AlertTriangle aria-hidden="true" className="h-5 w-5 shrink-0 text-destructive" />
       <p className="flex-1 text-sm text-destructive">{getProblemMessage(error, t) ?? message}</p>
       <Button size="sm" variant="outline" onClick={onRetry}>
         {t('admin.suppliers.retry')}

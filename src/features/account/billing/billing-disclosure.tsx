@@ -13,12 +13,12 @@ interface BillingDisclosureProps {
 
 /**
  * A part of the page that opens on request, for the details that do not need to be seen at first (the redesign conventions, §7bis,
- * rule 7): a title and a line under it, a hairline above, no box. It is the native `details`, so the keyboard, the screen readers and
+ * rule 7): a title and a line under it, a hairline above, a collapsible panel. It is the native `details`, so the keyboard, the screen readers and
  * "find in page" work with no code of ours.
  */
 export function BillingDisclosure({ title, summary, detailsRef, testId, children }: BillingDisclosureProps) {
   return (
-    <details ref={detailsRef} data-testid={testId} className="group min-w-0 scroll-mt-4 border-t border-border">
+    <details ref={detailsRef} data-testid={testId} className="group min-w-0 scroll-mt-4 rounded-xl border bg-card px-4">
       <summary className="grid min-h-14 cursor-pointer list-none grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
         <h2 className="col-start-1 break-words text-lg font-semibold">{title}</h2>
         {summary ? <span className="col-start-1 row-start-2 break-words text-sm text-foreground/70">{summary}</span> : null}
