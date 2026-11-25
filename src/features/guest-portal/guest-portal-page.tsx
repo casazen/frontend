@@ -176,7 +176,7 @@ function GuestPortalPage({ token }: { token: string }) {
   const nextStep = shouldPayTax ? 'payTax' : overview?.checkInCompleted ? 'guide' : 'complete';
   const language = supportedLanguage(params.get('lang')) ?? supportedLanguage(overview?.language)
     ?? supportedLanguage(navigator.language) ?? 'it';
-  const t = (key: keyof typeof copy) => copy[key][languages.indexOf(language)];
+  const text = (key: keyof typeof copy) => copy[key][languages.indexOf(language)];
   const section = params.get('page');
   const extras = section === 'extras';
   const extraCatalog = useGuestHostExtras(path, language, Boolean(stay) && !extras);
@@ -203,7 +203,7 @@ function GuestPortalPage({ token }: { token: string }) {
   const phase = stay && (stay.status === 'checkedOut' || stay.status === 'cancelled' || today >= stay.checkOut)
     ? 'after' : stay && today >= stay.checkIn ? 'during' : 'before';
 
-  useSeoMeta({ title: t('title'), noindex: true, referrer: 'no-referrer' });
+  useSeoMeta({ title: text('title'), noindex: true, referrer: 'no-referrer' });
 
   return (
     <div className="guest-portal" lang={language} style={{
@@ -214,9 +214,9 @@ function GuestPortalPage({ token }: { token: string }) {
         <div className="stay-width stay-header-inner">
           <Link to={href()} className="stay-brand">
             {overview?.branding.logoUrl ? <img src={overview.branding.logoUrl} alt="" referrerPolicy="no-referrer" /> : <Leaf aria-hidden="true" />}
-            {overview?.branding.name || t('title')}
+            {overview?.branding.name || text('title')}
           </Link>
-          <select aria-label={t('language')} value={language} onChange={(event) => {
+          <select aria-label={text('language')} value={language} onChange={(event) => {
             const next = new URLSearchParams(params);
             next.set('lang', event.target.value);
             setParams(next, { replace: true });
@@ -226,109 +226,109 @@ function GuestPortalPage({ token }: { token: string }) {
         </div>
       </header>
       <main className="stay-width stay-main">
-        {!stay && !failed && <p role="status">{t('load')}</p>}
+        {!stay && !failed && <p role="status">{text('load')}</p>}
         {failed && (
           <>
-            <p role="alert">{getHttpStatus(failed) === 404 ? t('unavailable') : t('error')}</p>
-            {getHttpStatus(failed) !== 404 && <button onClick={() => void (query.isError ? query.refetch() : stayQuery.refetch())}>{t('retry')}</button>}
+            <p role="alert">{getHttpStatus(failed) === 404 ? text('unavailable') : text('error')}</p>
+            {getHttpStatus(failed) !== 404 && <button onClick={() => void (query.isError ? query.refetch() : stayQuery.refetch())}>{text('retry')}</button>}
           </>
         )}
         {stay && !failed && (
           <>
-            <span className="stay-phase">{t(phase)}</span>
-            <h1>{extras ? extraLabels[language][0] : t(supplierOrders ? 'supplierOrders' : guide ? 'guide' : details ? 'details' : chat ? 'chat' : documents ? 'documents' : payments ? 'payments' : review ? 'review' : cancellation ? 'cancellation' : privacy ? 'privacy' : 'title')}</h1>
+            <span className="stay-phase">{text(phase)}</span>
+            <h1>{extras ? extraLabels[language][0] : text(supplierOrders ? 'supplierOrders' : guide ? 'guide' : details ? 'details' : chat ? 'chat' : documents ? 'documents' : payments ? 'payments' : review ? 'review' : cancellation ? 'cancellation' : privacy ? 'privacy' : 'title')}</h1>
             <p className="stay-meta">{range} · {stay.guests} {guestLabel(language, stay.guests)}</p>
             <div className="stay-card stay-property"><CalendarDays aria-hidden="true" />{stay.propertyName} · {stay.bookingCode}</div>
             {extras ? (
               <GuestHostExtras path={path} language={language} />
             ) : guide ? (
               <div className="stay-card stay-content">
-                <h2>{t('address')}</h2>
+                <h2>{text('address')}</h2>
                 <p>{[stay.address, stay.city].filter(Boolean).join(', ')}</p>
-                {!stay.address && phase !== 'after' && <p>{t('addressLocked')}</p>}
+                {!stay.address && phase !== 'after' && <p>{text('addressLocked')}</p>}
                 <HouseGuideSections guide={stay.guide} />
                 {stay.address && flags.checkInIdentityVerification && (
                   <>
-                    <button type="button" disabled={accessCode.isPending} onClick={() => accessCode.mutate()}>{t('accessCode')}</button>
+                    <button type="button" disabled={accessCode.isPending} onClick={() => accessCode.mutate()}>{text('accessCode')}</button>
                     {accessCode.data?.code && <p role="status">{accessCode.data.code}</p>}
-                    {accessCode.isError && <p role="alert">{t('error')}</p>}
+                    {accessCode.isError && <p role="alert">{text('error')}</p>}
                   </>
                 )}
-                {stay.houseRules && <><h2>{t('rules')}</h2><p className="stay-rules">{stay.houseRules}</p></>}
+                {stay.houseRules && <><h2>{text('rules')}</h2><p className="stay-rules">{stay.houseRules}</p></>}
               </div>
             ) : chat ? (
               <GuestPortalChat path={path} language={language} labels={{
-                message: t('message'), send: t('send'), loading: t('load'), failed: t('error'),
-                empty: t('emptyChat'), closed: t('closedChat'),
+                message: text('message'), send: text('send'), loading: text('load'), failed: text('error'),
+                empty: text('emptyChat'), closed: text('closedChat'),
               }} />
             ) : documents ? (
               <GuestPortalDocuments path={path} language={language} labels={{
-                loading: t('load'), failed: t('error'), empty: t('emptyDocuments'), download: t('download'),
-                correction: t('correction'), requested: t('requestReceived'),
+                loading: text('load'), failed: text('error'), empty: text('emptyDocuments'), download: text('download'),
+                correction: text('correction'), requested: text('requestReceived'),
               }} />
             ) : privacy ? (
               <GuestPortalPrivacy path={path} language={language} labels={{
-                copy: t('dataCopy'), erasure: t('dataErasure'), confirm: t('requestConfirm'), back: t('back'),
-                requested: t('requestReceived'), closed: t('requestClosed'), failed: t('error'), loading: t('load'),
+                copy: text('dataCopy'), erasure: text('dataErasure'), confirm: text('requestConfirm'), back: text('back'),
+                requested: text('requestReceived'), closed: text('requestClosed'), failed: text('error'), loading: text('load'),
               }} />
             ) : payments ? (
               <GuestPortalPayments path={path} language={language} direct={stay.isDirect && stay.status !== 'cancelled'}
                 tax={taxAvailable ? tax.data : undefined} checkIn={checkIn}
                 documents={href('documents')} services={overview?.features?.supplierServices ? href('supplier-orders') : undefined} labels={{
-                  balance: t('balance'), total: t('paymentTotal'), paid: t('paymentPaid'), tax: t('touristTax'),
-                  payNow: t('payNow'), loading: t('load'), failed: t('error'), settled: t('paymentSettled'),
-                  deferred: t('paymentDeferred'), processing: t('paymentProcessing'), unavailable: t('paymentUnavailable'),
-                  documents: t('documents'), payTax: t('payTax'), services: t('servicePayments'), refresh: t('refreshPayment'),
+                  balance: text('balance'), total: text('paymentTotal'), paid: text('paymentPaid'), tax: text('touristTax'),
+                  payNow: text('payNow'), loading: text('load'), failed: text('error'), settled: text('paymentSettled'),
+                  deferred: text('paymentDeferred'), processing: text('paymentProcessing'), unavailable: text('paymentUnavailable'),
+                  documents: text('documents'), payTax: text('payTax'), services: text('servicePayments'), refresh: text('refreshPayment'),
                 }} />
             ) : review ? (
               <GuestPortalReview path={path} labels={{
-                rating: t('rating'), comment: t('comment'), showName: t('showName'), send: t('send'),
-                loading: t('load'), failed: t('error'), submitted: t('reviewSubmitted'), unavailable: t('reviewUnavailable'),
+                rating: text('rating'), comment: text('comment'), showName: text('showName'), send: text('send'),
+                loading: text('load'), failed: text('error'), submitted: text('reviewSubmitted'), unavailable: text('reviewUnavailable'),
               }} />
             ) : cancellation ? (
               <GuestPortalCancellation path={path} language={language} onCancelled={() => { void query.refetch(); }} labels={{
-                loading: t('load'), failed: t('error'), unavailable: t('cannotCancel'), cancelled: t('cancelled'),
-                refund: t('refund'), changed: t('refundChanged'), confirm: t('confirmCancellation'),
+                loading: text('load'), failed: text('error'), unavailable: text('cannotCancel'), cancelled: text('cancelled'),
+                refund: text('refund'), changed: text('refundChanged'), confirm: text('confirmCancellation'),
               }} />
             ) : supplierOrders ? (
               <GuestSupplierOrders path={path} language={language} />
             ) : details ? (
               <>
-              {stay.canEditArrival ? <ArrivalForm stay={stay} path={path} t={t} onSaved={(arrivalTime) => {
+              {stay.canEditArrival ? <ArrivalForm stay={stay} path={path} text={text} onSaved={(arrivalTime) => {
                 queryClient.setQueryData<StayDetails>(queryKey, (current) => current && { ...current, arrivalTime });
               }} />
-                : <div className="stay-card stay-content"><h2>{t('arrival')}</h2><p>{stay.arrivalTime === 'late' ? t('late') : stay.arrivalTime ?? '—'}</p></div>}
+                : <div className="stay-card stay-content"><h2>{text('arrival')}</h2><p>{stay.arrivalTime === 'late' ? text('late') : stay.arrivalTime ?? '—'}</p></div>}
                 {stay.isDirect && overview?.stay && <GuestPortalStayChange path={path} language={language}
                   arrival={overview.stay.checkIn} departure={overview.stay.checkOut}
                   paymentsHref={href('payments')} />}
-                {stay.isDirect && phase === 'before' && <Link className="stay-card" to={href('cancellation')}>{t('cancellation')}</Link>}
-                <Link className="stay-card" to={href('privacy')}>{t('privacy')}<ChevronRight aria-hidden="true" /></Link>
-                {stay.isOta && <p className="stay-card">{t('otaChanges')}</p>}
+                {stay.isDirect && phase === 'before' && <Link className="stay-card" to={href('cancellation')}>{text('cancellation')}</Link>}
+                <Link className="stay-card" to={href('privacy')}>{text('privacy')}<ChevronRight aria-hidden="true" /></Link>
+                {stay.isOta && <p className="stay-card">{text('otaChanges')}</p>}
               </>
             ) : (
               <>
                 {phase !== 'after' && (
                   <section className="stay-next">
-                    <p>{t('next')}</p>
-                    <h2>{t(nextStep)}</h2>
-                    {!overview?.checkInCompleted && <p>{t(stay.checkInAvailable ? 'checkInHelp' : 'checkInWait')}</p>}
-                    {nextStep === 'guide' && <Link to={href('guide')}>{t('guide')}</Link>}
-                    {nextStep === 'payTax' && <a href={checkIn} rel="noreferrer">{t('payTax')}</a>}
-                    {!overview?.checkInCompleted && stay.checkInAvailable && <a href={checkIn} rel="noreferrer">{t('open')}</a>}
+                    <p>{text('next')}</p>
+                    <h2>{text(nextStep)}</h2>
+                    {!overview?.checkInCompleted && <p>{text(stay.checkInAvailable ? 'checkInHelp' : 'checkInWait')}</p>}
+                    {nextStep === 'guide' && <Link to={href('guide')}>{text('guide')}</Link>}
+                    {nextStep === 'payTax' && <a href={checkIn} rel="noreferrer">{text('payTax')}</a>}
+                    {!overview?.checkInCompleted && stay.checkInAvailable && <a href={checkIn} rel="noreferrer">{text('open')}</a>}
                   </section>
                 )}
                 <div className="stay-links">
-                  <Link className="stay-card" to={href('details')}><CalendarDays aria-hidden="true" />{t('details')}<ChevronRight aria-hidden="true" /></Link>
-                  <Link className="stay-card" to={href('guide')}><BookOpen aria-hidden="true" />{t('guide')}<ChevronRight aria-hidden="true" /></Link>
-                  {stay.status !== 'cancelled' && <Link className="stay-card" to={href('chat')}><MessageCircle aria-hidden="true" />{t('chat')}<ChevronRight aria-hidden="true" /></Link>}
-                  <Link className="stay-card" to={href('payments')}><CreditCard aria-hidden="true" />{t('payments')}<ChevronRight aria-hidden="true" /></Link>
+                  <Link className="stay-card" to={href('details')}><CalendarDays aria-hidden="true" />{text('details')}<ChevronRight aria-hidden="true" /></Link>
+                  <Link className="stay-card" to={href('guide')}><BookOpen aria-hidden="true" />{text('guide')}<ChevronRight aria-hidden="true" /></Link>
+                  {stay.status !== 'cancelled' && <Link className="stay-card" to={href('chat')}><MessageCircle aria-hidden="true" />{text('chat')}<ChevronRight aria-hidden="true" /></Link>}
+                  <Link className="stay-card" to={href('payments')}><CreditCard aria-hidden="true" />{text('payments')}<ChevronRight aria-hidden="true" /></Link>
                   {hasExtras && <Link className="stay-card" to={href('extras')}><ShoppingBag aria-hidden="true" />{extraLabels[language][0]}<ChevronRight aria-hidden="true" /></Link>}
-                  {overview?.features?.supplierServices && <Link className="stay-card" to={href('supplier-orders')}><ClipboardCheck aria-hidden="true" />{t('supplierOrders')}<ChevronRight aria-hidden="true" /></Link>}
-                  <Link className="stay-card" to={href('documents')}><FileText aria-hidden="true" />{t('documents')}<ChevronRight aria-hidden="true" /></Link>
-                  {phase === 'after' && stay.status !== 'cancelled' && <Link className="stay-card" to={href('review')}><Star aria-hidden="true" />{t('review')}<ChevronRight aria-hidden="true" /></Link>}
+                  {overview?.features?.supplierServices && <Link className="stay-card" to={href('supplier-orders')}><ClipboardCheck aria-hidden="true" />{text('supplierOrders')}<ChevronRight aria-hidden="true" /></Link>}
+                  <Link className="stay-card" to={href('documents')}><FileText aria-hidden="true" />{text('documents')}<ChevronRight aria-hidden="true" /></Link>
+                  {phase === 'after' && stay.status !== 'cancelled' && <Link className="stay-card" to={href('review')}><Star aria-hidden="true" />{text('review')}<ChevronRight aria-hidden="true" /></Link>}
                   {overview?.checkInCompleted && (stay.checkInAvailable ? (
-                    <a className="stay-card" href={checkIn} rel="noreferrer"><ClipboardCheck aria-hidden="true" />{t('done')}<ChevronRight aria-hidden="true" /></a>
-                  ) : <div className="stay-card"><ClipboardCheck aria-hidden="true" />{t('done')}</div>)}
+                    <a className="stay-card" href={checkIn} rel="noreferrer"><ClipboardCheck aria-hidden="true" />{text('done')}<ChevronRight aria-hidden="true" /></a>
+                  ) : <div className="stay-card"><ClipboardCheck aria-hidden="true" />{text('done')}</div>)}
                 </div>
               </>
             )}
@@ -336,13 +336,13 @@ function GuestPortalPage({ token }: { token: string }) {
         )}
       </main>
       <footer>
-        {stay && <Link className="stay-account-link" to={guestAccountStaysPath}>{t('account')}</Link>}
+        {stay && <Link className="stay-account-link" to={guestAccountStaysPath}>{text('account')}</Link>}
         <span>{poweredBy}</span>
       </footer>
       {stay && !failed && (
-        <nav className="stay-nav" aria-label={t('stay')}>
-          <Link to={href()} aria-current={!guide && !chat && !documents && !payments && !review && !privacy ? 'page' : undefined}><CalendarDays aria-hidden="true" />{t('stay')}</Link>
-          <Link to={href('guide')} aria-current={guide ? 'page' : undefined}><BookOpen aria-hidden="true" />{t('guide')}</Link>
+        <nav className="stay-nav" aria-label={text('stay')}>
+          <Link to={href()} aria-current={!guide && !chat && !documents && !payments && !review && !privacy ? 'page' : undefined}><CalendarDays aria-hidden="true" />{text('stay')}</Link>
+          <Link to={href('guide')} aria-current={guide ? 'page' : undefined}><BookOpen aria-hidden="true" />{text('guide')}</Link>
         </nav>
       )}
     </div>
@@ -354,10 +354,10 @@ function guestLabel(language: Language, count: number): string {
   return labels[languages.indexOf(language)];
 }
 
-function ArrivalForm({ stay, path, t, onSaved }: {
+function ArrivalForm({ stay, path, text, onSaved }: {
   stay: StayDetails;
   path: string;
-  t: (key: keyof typeof copy) => string;
+  text: (key: keyof typeof copy) => string;
   onSaved: (arrivalTime: string) => void;
 }) {
   const [late, setLate] = useState(stay.arrivalTime === 'late');
@@ -373,7 +373,7 @@ function ArrivalForm({ stay, path, t, onSaved }: {
   }
   return (
     <form className="stay-card stay-content" onSubmit={submit}>
-      <label htmlFor="arrival-time">{t('arrival')}</label>
+      <label htmlFor="arrival-time">{text('arrival')}</label>
       <input id="arrival-time" type="time" value={time} disabled={late} required={!late} onChange={(event) => {
         setTime(event.target.value);
         save.reset();
@@ -382,11 +382,11 @@ function ArrivalForm({ stay, path, t, onSaved }: {
         <input type="checkbox" checked={late} onChange={(event) => {
           setLate(event.target.checked);
           save.reset();
-        }} /> {t('late')}
+        }} /> {text('late')}
       </label>
-      <button disabled={save.isPending}>{t('save')}</button>
-      {save.isSuccess && <p role="status">{t('saved')}</p>}
-      {save.isError && <p role="alert">{t('error')}</p>}
+      <button disabled={save.isPending}>{text('save')}</button>
+      {save.isSuccess && <p role="status">{text('saved')}</p>}
+      {save.isError && <p role="alert">{text('error')}</p>}
     </form>
   );
 }
