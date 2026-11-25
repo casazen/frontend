@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { Building2, Mail, Users } from 'lucide-react';
+import { Building2, Mail, UserCheck, UserMinus, Users } from 'lucide-react';
 import { defineList } from '@/components/shared/list-view/define-list';
 import type { ListCardContent } from '@/components/shared/list-view/list-types';
 import { StatusBadge } from '@/components/shared/status/status-badge';
@@ -101,9 +101,9 @@ export function usePeopleList() {
         },
         chips: [
           { id: 'all', label: t('team.list.chips.all'), test: () => true },
-          { id: 'active', label: t('team.list.chips.active'), test: (row) => row.status === 'Active' },
-          { id: 'invited', label: t('team.list.chips.invited'), hint: t('team.list.chips.invitedHint'), test: (row) => row.kind === 'invitation' },
-          { id: 'deactivated', label: t('team.list.chips.deactivated'), test: (row) => row.status === 'Deactivated' },
+          { id: 'active', icon: UserCheck, label: t('team.list.chips.active'), test: (row) => row.status === 'Active' },
+          { id: 'invited', icon: Mail, label: t('team.list.chips.invited'), hint: t('team.list.chips.invitedHint'), test: (row) => row.kind === 'invitation' },
+          { id: 'deactivated', icon: UserMinus, label: t('team.list.chips.deactivated'), test: (row) => row.status === 'Deactivated' },
         ],
         filters: [
           {

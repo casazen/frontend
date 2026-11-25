@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { Search, UserRound } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { matchesSearch } from '@/components/shared/list-view/list-data';
 import { Link, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AgencyFinanceGate } from '@/components/finance/agency-finance-gate';
@@ -39,6 +42,7 @@ function OwnersBody() {
   const { t } = useTranslation();
   const owners = useOwnerNames();
   const [showAll, setShowAll] = useState(false);
+  const [query, setQuery] = useState('');
   const header = <PageHeader title={t('owners.title')} description={t('owners.description')} crumbs="auto" />;
 
   if (owners.isPending) {
@@ -61,32 +65,29 @@ function OwnersBody() {
 
   const list = owners.data;
   if (list.length === 0) return <Navigate to={OWNER_ONBOARDING_PATH} replace />;
-  const shown = showAll ? list : list.slice(0, VISIBLE_OWNERS);
+  const filtered = list.filter(owner => matchesSearch(nameOf(owner, id => t('ownerAccounting.owner.unnamed', { id })), query));
+  const shown = showAll ? filtered : filtered.slice(0, VISIBLE_OWNERS);
 
   return (
     <div className="space-y-6" data-testid="owners-page">
       {header}
-      {list.length === 0 ? (
-        <div className="space-y-3" data-testid="owners-empty">
-          <p className="break-words text-sm text-foreground/70">{t('owners.empty')}</p>
-          <Button asChild size="sm" variant="outline">
-            <Link to={OWNER_ONBOARDING_PATH}>{t('owners.emptyAction')}</Link>
-          </Button>
-        </div>
-      ) : (
-        <PlainSection title={t('owners.list.title')} count={list.length} data-testid="owners-list">
-          <ul role="list" className="divide-y divide-border">
-            {shown.map((owner) => (
-              <OwnerRow key={owner.id} owner={owner} />
-            ))}
+      <PlainSection title={t('owners.list.title')} count={filtered.length} data-testid="owners-list">
+        <label className="relative block max-w-md">
+          <Search aria-hidden="true" className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-foreground/70" />
+          <span className="sr-only">{t('commandPalette.title')} · {t('owners.title')}</span>
+          <Input type="search" className="min-h-11 rounded-full ps-9" value={query} placeholder={t('commandPalette.title')} onChange={event => { setQuery(event.target.value); setShowAll(false); }} />
+        </label>
+        {shown.length ? (
+          <ul role="list" className="grid gap-3 lg:grid-cols-2">
+            {shown.map(owner => <OwnerRow key={owner.id} owner={owner} />)}
           </ul>
-          {list.length > VISIBLE_OWNERS ? (
-            <Button type="button" variant="ghost" size="sm" onClick={() => setShowAll((current) => !current)} data-testid="owners-show-all">
-              {showAll ? t('owners.list.showLess') : t('owners.list.showAll', { count: list.length })}
-            </Button>
-          ) : null}
-        </PlainSection>
-      )}
+        ) : <p role="status" className="rounded-xl border bg-surface-2 p-4 text-sm">{t('listView.noResults.title')}</p>}
+        {filtered.length > VISIBLE_OWNERS ? (
+          <Button type="button" variant="ghost" size="sm" onClick={() => setShowAll(current => !current)} data-testid="owners-show-all">
+            {showAll ? t('owners.list.showLess') : t('owners.list.showAll', { count: filtered.length })}
+          </Button>
+        ) : null}
+      </PlainSection>
     </div>
   );
 }
@@ -153,10 +154,11 @@ function OwnerRow({ owner }: { owner: PropertyOwnerSummary }) {
   }
 
   return (
-    <li className="flex flex-col gap-3 py-4 sm:flex-row sm:items-start sm:justify-between" data-testid="owner-row" data-owner={owner.id}>
+    <li className="flex min-w-0 flex-col items-start justify-between gap-4 rounded-xl border bg-card p-4" data-testid="owner-row" data-owner={owner.id}>
       <div className="min-w-0 space-y-1">
-        <h3 className="break-words text-base font-semibold">
-          <Link to={ownerFinancialPath(owner.id)} className="underline-offset-4 hover:underline" data-testid={`owner-${owner.id}-open`}>
+        <h3 className="flex items-center gap-2 break-words text-base font-semibold">
+          <UserRound aria-hidden="true" className="size-5 shrink-0 text-primary-text" />
+          <Link to={ownerFinancialPath(owner.id)} className="min-w-0 break-words underline-offset-4 hover:underline" data-testid={`owner-${owner.id}-open`}>
             {name}
           </Link>
         </h3>

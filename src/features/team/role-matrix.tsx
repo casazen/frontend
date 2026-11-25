@@ -59,12 +59,12 @@ function MatrixTable({ roles }: { roles: readonly OrgRoleInfo[] }) {
   const groups = buildRoleMatrix(roles);
 
   return (
-    <div className="hidden min-w-0 md:block">
+    <div className="hidden min-w-0 overflow-hidden rounded-xl border bg-card md:block">
       <table className="w-full table-fixed border-collapse text-sm" data-testid="role-matrix-table">
         <caption className="sr-only">{t('team.roles.matrixCaption')}</caption>
-        <thead>
+        <thead className="bg-surface-2">
           <tr>
-            <th scope="col" className="w-[26%] py-2 pr-3 text-left font-semibold">
+            <th scope="col" className="w-[26%] px-3 py-3 text-left font-semibold">
               {t('team.roles.capability')}
             </th>
             {roles.map((info) => (
@@ -77,13 +77,13 @@ function MatrixTable({ roles }: { roles: readonly OrgRoleInfo[] }) {
         {groups.map((group) => (
           <tbody key={group.group}>
             <tr>
-              <th scope="colgroup" colSpan={roles.length + 1} className="pb-1 pt-5 text-left text-xs font-semibold uppercase tracking-wide text-foreground/70">
+              <th scope="colgroup" colSpan={roles.length + 1} className="bg-primary-soft px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-foreground/70">
                 {groupName(group.group, t)}
               </th>
             </tr>
             {group.rows.map((row) => (
               <tr key={row.id} className="border-t border-border" data-testid={`role-matrix-row-${row.id}`}>
-                <th scope="row" className="break-words py-2.5 pr-3 text-left font-normal">
+                <th scope="row" className="break-words px-3 py-2.5 text-left font-normal">
                   {capabilityLabel(row.id, t) ?? row.id}
                 </th>
                 {roles.map((info) => (
@@ -110,7 +110,7 @@ function MatrixCards({ roles }: { roles: readonly OrgRoleInfo[] }) {
       {roles.map((info) => {
         const byLevel = capabilitiesByLevel(groups, info.role);
         return (
-          <li key={info.role} className="min-w-0 space-y-2 border-t border-border pt-4" data-testid={`role-matrix-card-${info.role}`}>
+          <li key={info.role} className="min-w-0 space-y-3 rounded-xl border bg-card p-4" data-testid={`role-matrix-card-${info.role}`}>
             <h3 className="break-words font-semibold">{orgRoleLabel(info.role, t)}</h3>
             {LEVELS.filter((level) => byLevel[level].length > 0).map((level) => (
               <p key={level} className="break-words text-sm text-foreground/80">

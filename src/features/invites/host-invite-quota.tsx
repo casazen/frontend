@@ -37,10 +37,10 @@ export function HostInviteQuotaIndicator() {
 
   return (
     <Card data-testid="host-invite-quota">
-      <CardContent className="space-y-2 pt-6">
+      <CardContent className="space-y-3 pt-6">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <p className="text-sm font-medium">{t('hostInvites.quota.usage', { used: data.used, limit: data.limit })}</p>
-          <p className="text-sm text-muted-foreground" data-testid="host-invite-quota-remaining">
+          <p className="rounded-full bg-primary-soft px-2.5 py-1 text-sm font-semibold tabular-nums text-primary-text" data-testid="host-invite-quota-remaining">
             {t('hostInvites.quota.remaining', { count: Math.max(0, data.remaining) })}
           </p>
         </div>
@@ -50,7 +50,7 @@ export function HostInviteQuotaIndicator() {
           aria-valuemin={0}
           aria-valuemax={data.limit}
           aria-valuenow={data.used}
-          className="h-2 overflow-hidden rounded-full bg-muted"
+          className="h-2.5 overflow-hidden rounded-full bg-muted"
         >
           <div className={`h-full ${exhausted ? 'bg-destructive' : 'bg-primary'}`} style={{ width: `${percent}%` }} />
         </div>
