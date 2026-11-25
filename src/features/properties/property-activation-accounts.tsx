@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -27,6 +27,11 @@ export function PropertyActivationAccounts({ propertyId, channels, canConnectCha
   const [selection, setSelection] = useState([propertyId]);
   const [result, setResult] = useState<{ account: ActivationAccount; outcomes: ActivationAccountOutcome[] } | null>(null);
   const [confirmRevoke, setConfirmRevoke] = useState<string | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
   const visible = properties.data ?? [];
   const names = new Map(visible.map((property) => [property.id, property.name]));
   const selected = shared ? selection : [propertyId];
@@ -127,7 +132,7 @@ export function PropertyActivationAccounts({ propertyId, channels, canConnectCha
             <p>{serviceName(account.service)}</p>
             <p className="text-sm text-muted-foreground">{t('activationJourney.accounts.expiry', { date: new Intl.DateTimeFormat(i18n.language).format(new Date(account.expiresAt)) })}</p>
             <div className="flex flex-wrap gap-2">
-              <Button size="sm" variant="outline" className="min-h-11" disabled={pending || Date.parse(account.expiresAt) <= Date.now()} onClick={() => run.mutate(account)}>{t('activationJourney.accounts.resume')}</Button>
+              <Button size="sm" variant="outline" className="min-h-11" disabled={pending || Date.parse(account.expiresAt) <= now} onClick={() => run.mutate(account)}>{t('activationJourney.accounts.resume')}</Button>
               <Button size="sm" variant="outline" className="min-h-11" disabled={pending} onClick={() => setConfirmRevoke(account.id)}>{t('activationJourney.accounts.revoke')}</Button>
               {confirmRevoke === account.id && (
                 <Button size="sm" className="min-h-11" disabled={pending} onClick={() => revoke.mutate(account.id)}>{t('activationJourney.accounts.confirmRevoke')}</Button>
