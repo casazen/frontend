@@ -70,7 +70,7 @@ function CockpitRowItem({ row }: { row: CockpitRow }) {
 /** The rows of a section, one under the other with a line between them. */
 function RowList({ rows }: { rows: readonly CockpitRow[] }) {
   return (
-    <ul role="list" className="divide-y divide-border border-y border-border">
+    <ul role="list" className="divide-y divide-border rounded-2xl border bg-card">
       {rows.map((row) => (
         <CockpitRowItem key={row.id} row={row} />
       ))}

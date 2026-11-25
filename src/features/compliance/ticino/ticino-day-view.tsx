@@ -55,7 +55,7 @@ function DayHeader({ day, asOf, busy, onPickDay }: { day: TicinoNotificationDay;
   else line = t(new Date(day.dueAt).getTime() < asOf ? 'swiss.day.overdue' : 'swiss.day.due', { when: dueWhen });
 
   return (
-    <header className="space-y-2" data-testid="ticino-day-header">
+    <header className="space-y-2 rounded-xl border bg-muted/40 p-4" data-testid="ticino-day-header">
       <h3 className="text-base font-semibold" data-testid="ticino-day-title">
         {t('swiss.day.title', { day: dayName })}
       </h3>
@@ -215,7 +215,7 @@ export function TicinoDayView({ day, asOf, onPin, onPickDay, close }: TicinoDayV
       ) : null}
 
       {hasArrivals && day.structureId ? (
-        <ol aria-label={t('swiss.layer.steps')} className="divide-y divide-border border-y border-border" data-testid="ticino-steps">
+        <ol aria-label={t('swiss.layer.steps')} className="space-y-2" data-testid="ticino-steps">
           {TICINO_STEPS.map((step, index) => (
             <TicinoStepSection key={step} id={step} position={index + 1} state={stepStateOf(step, day)} open={open === step} onToggle={() => toggle(step)}>
               {content(step)}
