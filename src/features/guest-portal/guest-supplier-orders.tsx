@@ -4,24 +4,7 @@ import { ShoppingBag } from 'lucide-react';
 import { ApiClient } from '@/api/client';
 import { getHttpStatus } from '@/lib/api-errors';
 import { romeWallTimeToUtc } from '@/lib/stay-dates';
-
-export interface GuestSupplierOrder {
-  id: string;
-  serviceName: string;
-  supplierName: string;
-  state: string;
-  requestedFor: string;
-  completedAt: string | null;
-  supplierPriceCents: number;
-  commissionCents: number;
-  totalCents: number;
-  refundCents: number;
-  hostOrigin: boolean;
-  requestNote: string | null;
-  complaint: string | null;
-  supplierReply: string | null;
-  decision: string | null;
-}
+import { orderMoney, orderStatus, type GuestSupplierOrder } from './guest-supplier-order-model';
 
 interface Offer {
   id: string;
@@ -32,16 +15,6 @@ interface Offer {
   priceCents: number | null;
   commissionBasisPoints: number;
 }
-
-const statuses: Record<string, string> = {
-  PendingQuote: 'Preventivo in attesa', Quoted: 'Da confermare', Authorized: 'Importo autorizzato',
-  CardSaved: 'Carta di test registrata', Accepted: 'Prenotato', Declined: 'Rifiutato', Completed: 'Servizio completato',
-  Disputed: 'Controversia aperta', Resolved: 'Controversia risolta', Released: 'Pagamento rilasciato',
-};
-
-export const orderStatus = (state: string) => statuses[state] ?? state;
-export const orderMoney = (cents: number, language = 'it') =>
-  new Intl.NumberFormat(language, { style: 'currency', currency: 'EUR' }).format(cents / 100);
 
 export function GuestSupplierOrders({ path, language }: { path: string; language: string }) {
   const endpoint = `${path}/supplier-orders`;
@@ -110,8 +83,7 @@ function OfferForm({ offer, language, busy, submit }: {
   function order(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    const [day, time] = String(data.get('date')).split('T');
-    const requestedFor = romeWallTimeToUtc(day, time);
+    const requestedFor = romeWallTimeToUtc(String(data.get('date')), String(data.get('time')));
     if (!requestedFor) return;
     submit({ requestId, offerId: offer.id, requestedFor, note: data.get('note') });
   }
@@ -122,7 +94,8 @@ function OfferForm({ offer, language, busy, submit }: {
       <p>{offer.category} · {offer.supplierName}</p>
       {offer.summary && <p>{offer.summary}</p>}
       <p>{price === null ? 'Su preventivo' : orderMoney(price, language)}</p>
-      <label>Data e ora (ora italiana) <input className="stay-supplier-input" type="datetime-local" name="date" required /></label>
+      <label>Data <input className="stay-supplier-input" type="date" name="date" required /></label>
+      <label>Ora italiana <input className="stay-supplier-input" type="time" name="time" required /></label>
       <label>Note per il fornitore <textarea className="stay-supplier-input" name="note" maxLength={2000} /></label>
       <button disabled={busy}>{price === null ? 'Richiedi preventivo' : 'Prepara ordine'}</button>
     </form>

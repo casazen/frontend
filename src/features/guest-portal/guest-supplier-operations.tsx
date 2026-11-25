@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { getHttpStatus } from '@/lib/api-errors';
-import { orderMoney, orderStatus, type GuestSupplierOrder } from './guest-supplier-orders';
+import { orderMoney, orderStatus, type GuestSupplierOrder } from './guest-supplier-order-model';
 
 interface OfferTerms {
   id: string;
