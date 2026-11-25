@@ -89,7 +89,7 @@ export function GuestSupplierOperations({ scope }: { scope: Scope }) {
         return (
           <article className="grid gap-2 rounded-lg border p-3" key={order.id}>
             <h3 className="font-semibold">{order.serviceName} · {order.supplierName}</h3>
-            <p>{orderStatus(order.state)} · {orderMoney(order.totalCents)}</p>
+            <p>{orderStatus(order.state)} · {orderMoney(order.totalCents)} · {order.stripeSandbox ? 'Stripe sandbox' : 'Simulazione'}</p>
             <p>{new Date(order.requestedFor).toLocaleString('it-IT', { timeZone: 'Europe/Rome' })}</p>
             {order.requestNote && <p>Note: {order.requestNote}</p>}
             {order.complaint && <p>Segnalazione: {order.complaint}</p>}

@@ -75,7 +75,7 @@ export function GuestSupplierOrders({ path, language }: { path: string; language
             {order.refundCents > 0 && <div><dt>{text('refund')}</dt><dd>{orderMoney(order.refundCents, language)}</dd></div>}
           </dl>}
           {order.stripeSandbox && (order.state === 'Quoted' || returnId === order.id) && (
-            <GuestSupplierCheckout endpoint={endpoint} order={order} language={language} returned={returnId === order.id}
+            <GuestSupplierCheckout key={order.totalCents} endpoint={endpoint} order={order} language={language} returned={returnId === order.id} refresh={() => { void query.refetch(); }}
               update={verified => client.setQueryData<Catalog>(['guest-supplier-orders', endpoint], previous =>
                 previous && { ...previous, orders: previous.orders.map(item => item.id === verified.id ? verified : item) })} />
           )}

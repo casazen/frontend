@@ -49,7 +49,7 @@ describe('guest supplier sandbox checkout', () => {
     await waitFor(() => expect(screen.queryByTestId('payment')).not.toBeInTheDocument());
     expect(ApiClient.post).toHaveBeenNthCalledWith(1, base + '/o1/checkout', { totalCents: 1100 }, { public: true });
     expect(ApiClient.post).toHaveBeenNthCalledWith(2, base + '/o1/reconcile', {}, { public: true });
-    expect(await screen.findByText(/Acme · Authorized/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Amount authorized/i)).toBeInTheDocument();
   });
 
   it('scrubs Stripe redirect parameters, retries a failed reconciliation and keeps the guest language', async () => {
@@ -58,7 +58,7 @@ describe('guest supplier sandbox checkout', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Check status' }));
     await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('?page=supplier-orders&lang=en'));
     await waitFor(() => expect(screen.getByTestId('location').textContent).toBe('?page=supplier-orders&lang=en'));
-    expect(await screen.findByText(/Acme · Authorized/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Amount authorized/i)).toBeInTheDocument();
     expect(ApiClient.post).toHaveBeenCalledTimes(2);
   });
 

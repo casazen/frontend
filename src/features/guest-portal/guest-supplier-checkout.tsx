@@ -2,18 +2,19 @@ import { useEffect, useRef, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { ApiClient } from '@/api/client';
-import { withoutPaymentReturn } from '@/features/checkin/lib/tourist-tax-model';
+import { refusalLeavesPaymentOpen, withoutPaymentReturn } from '@/features/checkin/lib/tourist-tax-model';
 import { StripeIntentPayment } from '@/features/public-booking/components/stripe-intent-payment';
 import { stripeLocale } from '@/lib/stripe-appearance';
 import { supplierOrderText } from './guest-supplier-order-copy';
 import type { GuestSupplierOrder } from './guest-supplier-order-model';
 
-export function GuestSupplierCheckout({ endpoint, order, language, returned, update }: {
+export function GuestSupplierCheckout({ endpoint, order, language, returned, update, refresh }: {
   endpoint: string;
   order: GuestSupplierOrder;
   language: string;
   returned: boolean;
   update: (order: GuestSupplierOrder) => void;
+  refresh: () => void;
 }) {
   const text = supplierOrderText(language);
   const [, setParams] = useSearchParams();
@@ -27,6 +28,7 @@ export function GuestSupplierCheckout({ endpoint, order, language, returned, upd
       if (!checkout.publishableKey?.startsWith('pk_test_') || !checkout.clientSecret) throw new Error('Invalid sandbox session');
       return checkout;
     },
+    onError: refresh,
     gcTime: 0,
   });
   const { mutate: verify, isPending, isError: checkFailed, data: checked } = useMutation({
@@ -65,6 +67,12 @@ export function GuestSupplierCheckout({ endpoint, order, language, returned, upd
       ? <StripeIntentPayment mode="payment" clientSecret={checkout.data.clientSecret}
           publishableKey={checkout.data.publishableKey} locale={stripeLocale(language)} returnUrl={returnUrl.toString()}
           submitLabel={text('authorizeCard')} busyLabel={text('checking')} onError={setMessage}
+          onRefusal={reason => {
+            if (refusalLeavesPaymentOpen(reason)) {
+              checkout.reset();
+              verify();
+            }
+          }}
           onSubmitted={() => { checkout.reset(); setMessage(''); verify(); }} />
       : <button type="button" disabled={checkout.isPending}
           onClick={() => { setMessage(''); checkout.mutate(); }}>{text('authorizeCard')}</button>)}
