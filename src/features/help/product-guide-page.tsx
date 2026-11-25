@@ -36,8 +36,11 @@ export function ProductGuidePage() {
   const sections = t('productGuide.sections', { returnObjects: true }) as Record<string, GuideSection>;
   const id = location.hash.replace(/^#guide-/, '');
   const topic = Object.hasOwn(sections, id) ? sections[id] : undefined;
+  const entries = Object.entries(sections);
+  const currentIndex = entries.findIndex(([key]) => key === id);
+  const adjacent = [entries[currentIndex - 1], entries[currentIndex + 1]].filter(Boolean);
   const activeTopic = topic ? id : '';
-  const matches = Object.entries(sections).filter(([, section]) =>
+  const matches = entries.filter(([, section]) =>
     matchesSearch([section.title, section.keywords, ...section.steps].join(' '), query));
   const areaRoot = location.pathname.replace(/\/help\/?$/, '');
   const source = safeReturnTo(location.state?.guideReturnTo);
@@ -65,28 +68,36 @@ export function ProductGuidePage() {
             className="inline-flex min-h-11 items-center gap-2 rounded-md text-sm font-medium text-primary-text focus-visible:ring-2 focus-visible:ring-ring">
             <ArrowLeft aria-hidden="true" className="size-4" />{t('productGuide.allTopics')}
           </Link>
-          <article className="rounded-xl border bg-card p-4 sm:p-6">
+          <article className="rounded-2xl border bg-card px-5 py-6 sm:px-8">
             <h2 ref={title} tabIndex={-1} id="guide-topic-title" className="scroll-mt-24 break-words text-xl font-semibold tracking-tight outline-none">{topic.title}</h2>
-            <ol className="mt-4 list-decimal space-y-0 divide-y pl-6 marker:font-semibold marker:text-primary-text">
+            <ol className="mt-5 list-decimal space-y-0 divide-y pl-7 marker:font-semibold marker:text-primary-text">
               {topic.steps.map(step => <li key={step} className="py-3 pl-2 leading-relaxed">{step}</li>)}
             </ol>
           </article>
+          <nav aria-label={t('productGuide.contents')} className="grid gap-2 sm:grid-cols-2">
+            {adjacent.map(([key, section]) => (
+              <Link key={key} to={{ pathname: location.pathname, search: location.search, hash: '#guide-' + key }} state={location.state}
+                className="flex min-h-12 items-center justify-between gap-2 rounded-lg border bg-card px-4 py-3 text-sm font-medium hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
+                {section.title}<ChevronRight aria-hidden="true" className="size-4 shrink-0 text-primary-text" />
+              </Link>
+            ))}
+          </nav>
         </section>
       ) : (
         <>
-          <div className="max-w-xl space-y-1.5">
+          <div className="space-y-2 rounded-2xl bg-primary-soft p-5 sm:p-6">
             <label htmlFor="guide-search" className="text-sm font-medium">{t('productGuide.search')}</label>
-            <div className="relative">
+            <div className="relative max-w-2xl">
               <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input ref={searchInput} id="guide-search" className="h-11 pl-9" type="search" value={query} onChange={event => setQuery(event.target.value)} />
             </div>
           </div>
-          <nav aria-label={t('productGuide.contents')} className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+          <nav aria-label={t('productGuide.contents')} className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {matches.map(([key, section]) => {
               const Icon = icons[key as keyof typeof icons] ?? BookOpen;
               return (
                 <Link key={key} id={'guide-link-' + key} to={{ pathname: location.pathname, search: location.search, hash: '#guide-' + key }} state={location.state}
-                  className="group flex min-h-16 items-center gap-3 rounded-xl border bg-card px-3 py-3 hover:border-primary/50 hover:bg-muted/30 focus-visible:ring-2 focus-visible:ring-ring">
+                  className="group flex min-h-20 items-center gap-3 rounded-xl border bg-card px-4 py-4 hover:border-primary/50 hover:bg-muted/30 focus-visible:ring-2 focus-visible:ring-ring">
                   <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary-text"><Icon aria-hidden="true" className="size-5" /></span>
                   <h2 className="min-w-0 flex-1 break-words text-sm font-semibold leading-snug">{section.title}</h2>
                   <ChevronRight aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />

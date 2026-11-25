@@ -21,7 +21,7 @@
 
 @media (min-width: 48rem) {
   .host-timeline {
-    --label-w: 11rem;
+    --label-w: clamp(11rem, 17vw, 15rem);
   }
 }
 
@@ -75,8 +75,8 @@
   padding: 0 0.75rem;
   border-right: 1px solid var(--color-border);
   border-bottom: 1px solid var(--color-border);
-  background: var(--color-surface-2);
-  color: var(--color-muted-foreground);
+  background: var(--ink-700);
+  color: var(--stone-0);
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -97,8 +97,8 @@
   justify-content: center;
   border-right: 1px solid var(--color-border);
   border-bottom: 1px solid var(--color-border);
-  background: var(--color-surface-2);
-  color: var(--color-muted-foreground);
+  background: var(--ink-700);
+  color: var(--stone-0);
   font-size: 0.6875rem;
   line-height: 1.15;
   letter-spacing: 0.03em;
@@ -112,7 +112,7 @@
   place-items: center;
   padding: 0 0.25rem;
   border-radius: 999px;
-  color: var(--color-foreground);
+  color: inherit;
   font-size: 0.9375rem;
   font-variant-numeric: tabular-nums;
 }

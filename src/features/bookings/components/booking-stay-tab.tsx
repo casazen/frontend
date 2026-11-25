@@ -1,3 +1,4 @@
+import { ArrowRight, CalendarDays } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PlainSection } from '@/components/shared/calm';
@@ -74,8 +75,20 @@ export function BookingStayTab({ booking }: BookingStayTabProps) {
 
   return (
     <div className="space-y-8">
-      <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] xl:gap-10" data-testid="booking-stay-overview">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 rounded-xl border border-primary/25 bg-primary-soft p-4 text-primary-text sm:gap-4 sm:p-5">
+        <dl>
+          <dt className="flex items-center gap-2 text-sm"><CalendarDays aria-hidden="true" className="size-4" />{t('booking.detail.checkIn')}</dt>
+          <dd className="mt-1 text-lg font-semibold tabular-nums">{stayDate(booking.checkInDate)}</dd>
+        </dl>
+        <div aria-hidden="true" className="flex items-center"><ArrowRight className="size-5" /></div>
+        <dl>
+          <dt className="text-sm">{t('booking.detail.checkOut')}</dt>
+          <dd className="mt-1 text-lg font-semibold tabular-nums">{stayDate(booking.checkOutDate)}</dd>
+        </dl>
+      </div>
+      <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]" data-testid="booking-stay-overview">
         <PlainSection
+          className="rounded-xl border bg-card p-4 sm:p-5"
           title={t('booking.detailPage.stayTitle')}
           actionTestId="booking-review-checkin"
           {...(reviewCheckIn ? {
@@ -91,8 +104,6 @@ export function BookingStayTab({ booking }: BookingStayTabProps) {
                 </Link>
               ) : booking.propertyName || '—'}
             </Fact>
-            <Fact label={t('booking.detail.checkIn')}>{stayDate(booking.checkInDate)}</Fact>
-            <Fact label={t('booking.detail.checkOut')}>{stayDate(booking.checkOutDate)}</Fact>
             <Fact label={t('booking.detail.guests')}>
               {t('booking.list.guestCount', { count: booking.numberOfGuests })}
               {children > 0 ? ` · ${t('booking.detailPage.childrenCount', { count: children })}` : ''}
@@ -118,7 +129,7 @@ export function BookingStayTab({ booking }: BookingStayTabProps) {
         </PlainSection>
 
         {guest ? (
-          <PlainSection title={t('booking.detailPage.guestInformationTitle')}>
+          <PlainSection className="rounded-xl border bg-card p-4 sm:p-5" title={t('booking.detailPage.guestInformationTitle')}>
             <Facts>
               <Fact label={t('booking.detail.guestName')}>{`${guest.firstName ?? ''} ${guest.lastName ?? ''}`.trim() || t('compliance.checkout.guestFallback')}</Fact>
               {guest.email ? (

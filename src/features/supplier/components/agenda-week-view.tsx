@@ -20,11 +20,11 @@ export function AgendaWeekView({ days, today, pendingDates }: AgendaWeekViewProp
   const { t, i18n } = useTranslation();
 
   return (
-    <ul role="list" className="grid items-start gap-3 md:grid-cols-2 xl:grid-cols-7" data-testid="agenda-week">
+    <ul role="list" className="grid overflow-hidden rounded-xl border border-border bg-border gap-px md:grid-cols-2 xl:grid-cols-7" data-testid="agenda-week">
       {days.map((day) => {
         const state = dayStateOf(day);
         return (
-          <li key={day.date} className="min-w-0 space-y-2 rounded-xl bg-card p-3 ring-1 ring-inset ring-border xl:p-2" data-testid={`availability-${day.date}`}>
+          <li key={day.date} className="min-w-0 space-y-2 bg-card p-3 xl:p-2" data-testid={`availability-${day.date}`}>
             <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
               <h3 className="min-w-0 text-base font-semibold">
                 <Link

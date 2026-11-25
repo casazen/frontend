@@ -1,3 +1,4 @@
+import { House, MapPin, BedDouble, ListChecks, ClipboardList, BadgeCheck } from 'lucide-react';
 import { useEffect, useMemo, type ChangeEvent } from 'react';
 import {
   useForm,
@@ -160,9 +161,9 @@ export function PropertyForm({
     <form onSubmit={handleSubmit(submit)} className="@container space-y-6" noValidate>
       <div className={CONTAINER_COLUMNS}>
         <div className={PAGE_COLUMN}>
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('property.form.basicInfo.title')}</CardTitle>
+          <Card className="overflow-hidden rounded-2xl">
+            <CardHeader className="mb-4 border-b bg-muted/30">
+              <CardTitle className="flex items-center gap-3"><House className="size-5 shrink-0 text-primary" aria-hidden="true" />{t('property.form.basicInfo.title')}</CardTitle>
               <CardDescription>{t('property.form.basicInfo.description')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -195,9 +196,9 @@ export function PropertyForm({
           </Card>
 
           {shortStay && country === 'IT' && (
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('property.form.cin.title')}</CardTitle>
+            <Card className="overflow-hidden rounded-2xl">
+              <CardHeader className="mb-4 border-b bg-muted/30">
+                <CardTitle className="flex items-center gap-3"><BadgeCheck className="size-5 shrink-0 text-primary" aria-hidden="true" />{t('property.form.cin.title')}</CardTitle>
                 <CardDescription>{t('property.form.cin.description')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
@@ -208,9 +209,9 @@ export function PropertyForm({
             </Card>
           )}
 
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('property.form.location.title')}</CardTitle>
+          <Card className="overflow-hidden rounded-2xl">
+            <CardHeader className="mb-4 border-b bg-muted/30">
+              <CardTitle className="flex items-center gap-3"><MapPin className="size-5 shrink-0 text-primary" aria-hidden="true" />{t('property.form.location.title')}</CardTitle>
               <CardDescription>{t('property.form.location.description')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -336,9 +337,9 @@ export function PropertyForm({
         </div>
 
         <div className={PAGE_COLUMN}>
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('property.form.details.title')}</CardTitle>
+          <Card className="overflow-hidden rounded-2xl">
+            <CardHeader className="mb-4 border-b bg-muted/30">
+              <CardTitle className="flex items-center gap-3"><BedDouble className="size-5 shrink-0 text-primary" aria-hidden="true" />{t('property.form.details.title')}</CardTitle>
               <CardDescription>{t(shortStay ? 'property.form.details.description' : 'property.form.details.longRentDescription')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -388,9 +389,9 @@ export function PropertyForm({
           </Card>
 
           {shortStay && (
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('property.form.stayRules.title')}</CardTitle>
+            <Card className="overflow-hidden rounded-2xl">
+              <CardHeader className="mb-4 border-b bg-muted/30">
+                <CardTitle className="flex items-center gap-3"><ClipboardList className="size-5 shrink-0 text-primary" aria-hidden="true" />{t('property.form.stayRules.title')}</CardTitle>
                 <CardDescription>{t('property.form.stayRules.description')}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -423,9 +424,9 @@ export function PropertyForm({
             </Card>
           )}
 
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('property.form.amenities.title')}</CardTitle>
+          <Card className="overflow-hidden rounded-2xl">
+            <CardHeader className="mb-4 border-b bg-muted/30">
+              <CardTitle className="flex items-center gap-3"><ListChecks className="size-5 shrink-0 text-primary" aria-hidden="true" />{t('property.form.amenities.title')}</CardTitle>
               <CardDescription>{t('property.form.amenities.description')}</CardDescription>
             </CardHeader>
             {/* The columns follow the width of the card (it is half a page on a wide screen), not the one of the screen. */}
@@ -436,7 +437,7 @@ export function PropertyForm({
         </div>
       </div>
 
-      <div className="flex justify-end gap-4">
+      <div className="flex flex-wrap justify-end gap-3 rounded-2xl border bg-card p-3">
         <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>{t('property.form.cancel')}</Button>
         <Button type="submit" disabled={isLoading || disabled}>
           {isLoading ? t('property.form.saving') : property ? t('property.form.update') : t('property.form.create')}

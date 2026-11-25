@@ -153,6 +153,30 @@
   width: min(1080px, 100%);
 }
 
+/* On a wide viewport the cover and the search each get their own surface. */
+@media (min-width: 56rem) {
+  .hm-hero {
+    width: auto;
+    min-height: clamp(25rem, 55vh, 36rem);
+    margin-inline: 0;
+    margin-block: 1rem 5rem;
+    padding: clamp(2rem, 5vw, 4.5rem) 4% 5rem;
+    justify-content: center;
+    border-radius: var(--cz-public-radius-xl);
+    background: var(--cz-public-surface-2);
+    color: var(--cz-public-text);
+  }
+  .hm-hero--image .hm-hero__media {
+    inset: 0 0 0 auto;
+    width: 50%;
+    border-radius: 0 var(--cz-public-radius-xl) var(--cz-public-radius-xl) 0;
+  }
+  .hm-hero__scrim { display: none; }
+  .hm-hero__in { width: 100%; }
+  .hm-hero--image .hm-hero__copy { max-width: 45%; }
+  .hm-hero__title { font-size: clamp(2.4rem, 4vw, 4rem); text-shadow: none; }
+  .hm-hero__star { fill: currentColor; color: var(--cz-public-primary-text); }
+}
 /* --------------------------------------------------------------------- Categories */
 .hm-cats ul {
   display: flex;

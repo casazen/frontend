@@ -8,12 +8,13 @@ import { PAGE_COLUMNS } from '@/components/layout/page-columns';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCreateOtaIntegration } from '@/queries/use-ota';
 import { useProperties } from '@/queries/use-properties';
 import { getOtaPlatformLabel } from '@/lib/i18n-labels';
-import { otaIntegrationFormSchema, OTA_PLATFORM_COLORS, OTA_PLATFORM_ICONS } from './schemas/ota.schema';
+import { otaIntegrationFormSchema, PLATFORM_LOGO } from './schemas/ota.schema';
 import type { OtaIntegrationFormValues } from './schemas/ota.schema';
 import { FormFieldError } from '@/components/shared/form-field-error';
 
@@ -39,8 +40,6 @@ export function OtaSetupPage() {
   });
 
   const selectedPlatform = watch('platform');
-  const platformColor = selectedPlatform ? OTA_PLATFORM_COLORS[selectedPlatform] : '#888';
-  const platformIcon = selectedPlatform ? OTA_PLATFORM_ICONS[selectedPlatform] : '';
   const platformLabel = selectedPlatform ? getOtaPlatformLabel(selectedPlatform, t) : '';
 
   const onSubmit = async (data: OtaIntegrationFormValues) => {
@@ -66,27 +65,25 @@ export function OtaSetupPage() {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="platform">{t('ota.setup.platformLabel')}</Label>
-                  <select
+                  <Select
                     id="platform"
                     {...register('platform')}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   >
                     <option value="">{t('ota.setup.selectPlatform')}</option>
-                    {Object.keys(OTA_PLATFORM_COLORS).map((value) => (
+                    {Object.keys(PLATFORM_LOGO).map((value) => (
                       <option key={value} value={value}>
-                        {OTA_PLATFORM_ICONS[value]} {getOtaPlatformLabel(value, t)}
+                        {getOtaPlatformLabel(value, t)}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                   <FormFieldError error={errors.platform} />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="propertyId">{t('ota.setup.propertyLabel')}</Label>
-                  <select
+                  <Select
                     id="propertyId"
                     {...register('propertyId')}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   >
                     <option value="">{t('ota.setup.selectProperty')}</option>
                     {properties.map((property) => (
@@ -94,7 +91,7 @@ export function OtaSetupPage() {
                         {property.name} - {property.city}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                   <FormFieldError error={errors.propertyId} />
                 </div>
 
@@ -112,10 +109,10 @@ export function OtaSetupPage() {
             </Card>
 
             {selectedPlatform && (
-              <Card style={{ borderTop: `4px solid ${platformColor}` }}>
+              <Card className="border-t-4 border-t-primary">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <span className="text-2xl">{platformIcon}</span>
+                    <img src={PLATFORM_LOGO[selectedPlatform]} alt="" className="h-9 w-16 shrink-0 rounded-md bg-white object-contain p-1" />
                     {t('ota.setup.credentialsTitle', { platform: platformLabel })}
                   </CardTitle>
                   <CardDescription>

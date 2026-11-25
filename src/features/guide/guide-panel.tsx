@@ -39,13 +39,14 @@ function SetupSection({ journey }: { journey: SetupJourney }) {
   }));
 
   return (
-    <section aria-labelledby={titleId} className="space-y-4" data-testid="guide-setup">
+    <section aria-labelledby={titleId} className="space-y-4 rounded-xl border bg-card p-4" data-testid="guide-setup">
       <div>
         <h3 id={titleId} className="text-base font-semibold">
           {t(journey.source === 'path' ? 'guide.setup.titlePath' : 'guide.setup.titleChecklist')}
         </h3>
         <p className="text-sm text-foreground/70">{t('guide.setup.progress', { done: journey.done, total: journey.total })}</p>
       </div>
+      {journey.total > 0 && <progress aria-label={t('guide.setup.label')} className="block h-2 w-full accent-primary" value={journey.done} max={journey.total} />}
       <GuidePath label={t('guide.setup.label')} steps={steps} density="compact" />
       {journey.allHref ? (
         <Link to={journey.allHref} className={PANEL_LINK} data-testid="guide-setup-all">
@@ -92,7 +93,7 @@ function TodoSection() {
   const urgentCount = urgent.data?.count ?? 0;
 
   return (
-    <section aria-labelledby={titleId} className="space-y-4" data-testid="guide-todo">
+    <section aria-labelledby={titleId} className="space-y-4 rounded-xl border bg-card p-4" data-testid="guide-todo">
       <div>
         <h3 id={titleId} className="text-base font-semibold">
           {t('guide.todo.title')}
@@ -126,7 +127,7 @@ function HelpSection({ contextKey }: { contextKey: AppContextKey }) {
   const returnState = location.pathname === manual ? location.state : { guideReturnTo: currentReturnTo(location) };
 
   return (
-    <section aria-labelledby={titleId} className="space-y-2" data-testid="guide-help">
+    <section aria-labelledby={titleId} className="space-y-2 rounded-xl border bg-card p-4" data-testid="guide-help">
       <h3 id={titleId} className="text-base font-semibold">
         {t('guide.help.title')}
       </h3>
@@ -179,14 +180,14 @@ function GuidePanel({ contextKey }: GuidePanelProps) {
   return (
     <Sheet open onOpenChange={setOpen}>
       <SheetContent side="right" className="w-full sm:max-w-md" data-testid="guide-panel">
-        <SheetHeader className="space-y-1 border-b px-6 pb-4 pr-14 pt-6 text-left">
+        <SheetHeader className="space-y-1 border-b bg-primary-soft px-6 pb-4 pr-14 pt-6 text-left">
           <SheetTitle className="flex items-center gap-2">
             <Compass aria-hidden="true" className="size-5 text-primary-text" />
             {t('guide.title')}
           </SheetTitle>
           <SheetDescription>{t('guide.description')}</SheetDescription>
         </SheetHeader>
-        <div className="min-h-0 flex-1 space-y-8 overflow-y-auto overscroll-contain px-6 pb-8 pt-2">
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain bg-surface-2 p-4 sm:p-5">
           {shortRent && journey ? <SetupSection journey={journey} /> : null}
           {canReadTodo ? <TodoSection /> : null}
           <HelpSection contextKey={contextKey} />
@@ -196,66 +197,26 @@ function GuidePanel({ contextKey }: GuidePanelProps) {
   );
 }
 
-interface GuideButtonViewProps {
-  urgent: number;
-}
-
-/** The button itself: the compass, «Guida» from a laptop up, and the number of the urgent things on its corner. */
-function GuideButtonView({ urgent }: GuideButtonViewProps) {
+function GuideButtonView() {
   const { t } = useTranslation();
   const setOpen = useUiStore((state) => state.setGuideOpen);
   const open = useUiStore((state) => state.guideOpen);
-  const label = urgent > 0 ? t('guide.openWithCount', { count: urgent }) : t('guide.open');
-
   return (
-    <Button
-      type="button"
-      variant="ghost"
-      size="sm"
-      className="relative h-10 gap-2 px-2.5"
-      aria-haspopup="dialog"
-      aria-expanded={open}
-      aria-label={label}
-      title={label}
-      onClick={() => setOpen(true)}
-      data-testid="guide-button"
-    >
+    <Button type="button" variant="ghost" size="sm" className="h-10 gap-2 px-2.5"
+      aria-haspopup="dialog" aria-expanded={open} aria-label={t('guide.open')} title={t('guide.open')}
+      onClick={() => setOpen(true)} data-testid="guide-button">
       <Compass aria-hidden="true" className="size-5" />
       <span className="hidden text-sm font-medium lg:inline">{t('guide.button')}</span>
-      {urgent > 0 ? (
-        <span
-          aria-hidden="true"
-          className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-semibold leading-none text-primary-foreground"
-          data-testid="guide-button-count"
-        >
-          {urgent > 99 ? '99+' : urgent}
-        </span>
-      ) : null}
     </Button>
   );
 }
-
-/** The button with the number of the urgent things to do of Affitti brevi (the one the tab «Da fare» shows), read from the query the tab reads. */
-function CountedGuideButton() {
-  const urgent = useActivityCount().data?.count ?? 0;
-  return <GuideButtonView urgent={urgent} />;
-}
-
-/**
- * The button of the header that opens the guide (it took the place of the book icon, whose guide of the product is now inside the panel). In
- * Affitti brevi it carries the number of the urgent things to do, the one the tab «Da fare» shows: the guide is where they are told in order.
- * The panel is mounted only while it is open, so a closed guide asks nothing of the server. Like the tabs of a section, it can be rendered where
- * there is no query client (an isolated test of the shell): there is then no number to show and no panel to read.
- */
 export function GuideButton({ contextKey }: GuidePanelProps) {
   const open = useUiStore((state) => state.guideOpen);
-  const { hasPermission } = useWorkspace();
   const hasQueryClient = useContext(QueryClientContext) !== undefined;
-  const counted = hasQueryClient && contextKey === 'short-rent' && hasPermission('short-rent', 'property.read');
 
   return (
     <>
-      {counted ? <CountedGuideButton /> : <GuideButtonView urgent={0} />}
+      <GuideButtonView />
       {open && hasQueryClient ? <GuidePanel contextKey={contextKey} /> : null}
     </>
   );

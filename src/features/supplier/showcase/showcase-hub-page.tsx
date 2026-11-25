@@ -1,10 +1,10 @@
 import { useState, type ComponentProps } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, CheckCircle2, Copy, ExternalLink, PauseCircle, Share2 } from 'lucide-react';
+import { Store, AlertCircle, CheckCircle2, Copy, ExternalLink, PauseCircle, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { FOCUS_COLUMN, PAGE_COLUMNS } from '@/components/layout/page-columns';
-import { PageHeader } from '@/components/layout/page-header';
+import { ServicePageHeader } from '@/features/supplier/components/service-page-header';
 import { FocusBlock, PlainSection, StatStrip, StatTile, type CalmAction } from '@/components/shared/calm';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import { ErrorState } from '@/components/shared/error-state';
@@ -82,7 +82,7 @@ export function SupplierShowcaseHubPage() {
   const [shareOpen, setShareOpen] = useState(() => params.get('condividi') === '1');
   const [discardOpen, setDiscardOpen] = useState(false);
 
-  const header = <PageHeader title={t('supplier.showcase.title')} description={t('supplier.showcase.description')} crumbs="auto" />;
+  const header = <ServicePageHeader icon={Store} title={t('supplier.showcase.title')} description={t('supplier.showcase.description')} crumbs="auto" />;
 
   if (content.isError) {
     return (

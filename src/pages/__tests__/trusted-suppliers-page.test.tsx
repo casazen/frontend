@@ -55,6 +55,16 @@ describe('TrustedSuppliersPage invite (bug #977)', () => {
     );
   });
 
+  it('confirms removal of the chosen supplier in the dialog', async () => {
+    vi.mocked(trustedSuppliersApi.remove).mockResolvedValue(undefined);
+    renderPage();
+    fireEvent.click(await screen.findByTestId('remove-supplier-ts-1'));
+    expect(screen.getByRole('dialog')).toHaveTextContent('org-1');
+    expect(trustedSuppliersApi.remove).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Rimuovi', exact: true }));
+    await waitFor(() => expect(trustedSuppliersApi.remove).toHaveBeenCalledWith('ts-1'));
+  });
+
   it('blocks the invite while the property scope is loading or unavailable and lets the host retry', async () => {
     let failRead!: (reason: Error) => void;
     vi.mocked(propertiesApi.getAll)

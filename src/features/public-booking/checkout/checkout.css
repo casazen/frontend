@@ -77,8 +77,12 @@
 .co__main {
   width: 100%;
   min-width: 0;
-  max-width: 680px;
+  max-width: 720px;
   margin-inline: auto;
+  padding: clamp(1rem, 3vw, 2.5rem);
+  border: 1px solid var(--cz-public-border);
+  border-radius: var(--cz-public-radius-xl);
+  background: var(--cz-public-surface);
 }
 
 .co__aside {

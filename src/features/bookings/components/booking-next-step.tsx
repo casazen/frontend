@@ -292,7 +292,10 @@ export function BookingNextStep({ booking, canWrite, viewingCheckIn, useGuestPor
     );
   }
 
-  return <FocusBlock data-testid="booking-next-step" data-next-step={step.kind} tone={step.tone} kicker={t('booking.next.heading')} {...view} body={body} />;
+  return <details className="rounded-lg border bg-card px-4">
+    <summary className="cursor-pointer py-3 text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring">{view.title}</summary>
+    <FocusBlock data-testid="booking-next-step" data-next-step={step.kind} tone={step.tone} kicker={t('booking.next.heading')} {...view} body={body} />
+  </details>;
 }
 
 /** The block while the step is read: its place is kept, so that it does not jump when the step arrives. */
@@ -301,7 +304,7 @@ function NextStepLoading() {
   return (
     <div role="status" aria-busy="true" data-testid="booking-next-step-loading">
       <span className="sr-only">{t('shared.loading.srOnly')}</span>
-      <Skeleton aria-hidden="true" className="h-36 w-full rounded-xl motion-reduce:animate-none" />
+      <Skeleton aria-hidden="true" className="h-11 w-full rounded-xl motion-reduce:animate-none" />
     </div>
   );
 }

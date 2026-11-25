@@ -1,4 +1,8 @@
 {
+  "complianceNoDeadlines": "No deadlines listed",
+  "dashboardNoPending": "No operational priorities listed",
+  "dashboardPrioritiesPartial": "Some priorities are unavailable.",
+  "dashboardPendingHeading": "Operational priorities",
   "activationStaff": {
     "selectProperties": "Properties in this batch",
     "title": "Prepare properties",
@@ -26104,6 +26108,7 @@
         "noEmail": "There is no email address to write to (none was given, or the guest was erased or asked for the erasure): no invitation sent.",
         "noShow": "The guest did not show up (the stay is marked as a no-show): no invitation sent.",
         "notConfirmed": "The booking was cancelled or never confirmed: no invitation sent.",
+        "reviewsDisabled": "Reviews are turned off for this property.",
         "notDirect": "The booking does not come from your booking site (a portal asks its own guests for the review): no invitation sent.",
         "reviewInviteNotSent": "The invitation e-mail did not go out (the mail is not configured, or it could not be queued): you can still ask for the review by hand from the booking.",
         "reviewNeedsBooking": "The review is requested for a booking and this event has none.",

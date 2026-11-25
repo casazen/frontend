@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useState, useMemo } from 'react';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Building2 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import { AgencyAccessRefused, AgencyFinanceGate } from '@/components/finance/agency-finance-gate';
 import { StaleReadNotice } from '@/components/finance/stale-read-notice';
@@ -110,7 +110,7 @@ function StatementsBody() {
       {header}
       {stale && <StaleReadNotice onRetry={() => void refetch()} />}
 
-      <div className="flex flex-wrap gap-4 items-end">
+      <div className="flex flex-wrap items-end gap-4 rounded-2xl border bg-card p-4">
         <div className="w-full sm:w-64">
           <label htmlFor="status-filter" className="text-sm font-medium mb-2 block">
             {t('statement.filter.status')}
@@ -135,26 +135,27 @@ function StatementsBody() {
             : t('statement.emptyList')}
         </Alert>
       ) : (
-        <div className="space-y-4" data-testid="statements-list">
+        <div className="grid gap-4 xl:grid-cols-2" data-testid="statements-list">
           {filteredStatements.map((statement) => (
             <div
               key={statement.id}
               data-testid={`statement-row-${statement.id}`}
-              className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+              className="min-w-0 rounded-2xl border bg-card p-4 shadow-sm sm:p-5"
             >
-              <div className="flex justify-between items-start">
+              <div className="flex flex-col gap-4">
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-lg font-semibold">
+                  <div className="mb-2 flex flex-wrap items-center gap-2">
+                    <Building2 aria-hidden="true" className="size-5 shrink-0 text-primary" />
+                    <h3 className="min-w-0 break-words text-lg font-semibold">
                       {statement.propertyName}
                     </h3>
                     <span
                       className={`px-2 py-1 text-xs font-medium rounded-full ${
                         statement.status === 'Draft'
-                          ? 'bg-gray-100 text-gray-800'
+                          ? 'bg-muted text-muted-foreground'
                           : statement.status === 'Approved'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-green-100 text-green-800'
+                            ? 'bg-primary/10 text-primary'
+                            : 'bg-emerald-100 text-emerald-900'
                       }`}
                     >
                       {t(`statement.status.${statement.status.toLowerCase()}`)}
@@ -163,27 +164,27 @@ function StatementsBody() {
                   <p className="text-sm text-muted-foreground mb-2">
                     {statement.ownerName}
                   </p>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+                  <div className="grid grid-cols-2 gap-3 rounded-xl bg-muted/50 p-3 text-sm tabular-nums">
                     <div>
-                      <span className="text-muted-foreground">{t('statement.period')}:</span>{' '}
+                      <span className="block text-xs text-muted-foreground">{t('statement.period')}:</span>{' '}
                       <span className="font-medium">
                         {statement.month}/{statement.year}
                       </span>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">{t('statement.revenue')}:</span>{' '}
+                      <span className="block text-xs text-muted-foreground">{t('statement.revenue')}:</span>{' '}
                       <span className="font-medium">
                         {money(statement.totalRevenue, statement.currency)}
                       </span>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">{t('statement.commission')}:</span>{' '}
+                      <span className="block text-xs text-muted-foreground">{t('statement.commission')}:</span>{' '}
                       <span className="font-medium">
                         {money(statement.commission, statement.currency)}
                       </span>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">{t('statement.netPayable')}:</span>{' '}
+                      <span className="block text-xs text-muted-foreground">{t('statement.netPayable')}:</span>{' '}
                       <span className="font-medium">
                         {money(statement.netPayable, statement.currency)}
                       </span>
@@ -191,6 +192,7 @@ function StatementsBody() {
                   </div>
                 </div>
                 <Button
+                  className="self-end"
                   variant="outline"
                   size="sm"
                   onClick={() => setSelectedId(statement.id)}

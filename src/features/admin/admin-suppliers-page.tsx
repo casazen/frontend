@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent } from '@/components/ui/card';
+import { Select } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { getProblemMessage } from '@/lib/api-errors';
 import { getSupplierStatusLabel } from '@/lib/i18n-labels';
@@ -70,7 +71,7 @@ function SuppliersTab() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-3 rounded-xl border bg-card p-3">
         <Input
           placeholder={t('admin.suppliers.searchPlaceholder')}
           aria-label={t('admin.suppliers.searchPlaceholder')}
@@ -79,8 +80,8 @@ function SuppliersTab() {
           className="max-w-xs"
           data-testid="admin-suppliers-search"
         />
-        <select
-          className="rounded-md border bg-background px-3 py-2 text-sm"
+        <Select
+          wrapperClassName="w-full sm:w-56"
           aria-label={t('admin.suppliers.filter.status')}
           value={status}
           onChange={(e) => {
@@ -95,7 +96,7 @@ function SuppliersTab() {
               {getSupplierStatusLabel(value, t)}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
 
       <Card>

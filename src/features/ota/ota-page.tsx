@@ -5,6 +5,8 @@ import { AlignedCard, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, AlertCircle, XCircle, RefreshCw, Loader2 } from 'lucide-react';
+import { PLATFORM_LOGO } from './schemas/ota.schema';
+import { ErrorState } from '@/components/shared/error-state';
 import i18n from '@/i18n/config';
 import { useOtaIntegrations, useSyncAllOta, useSyncOtaPlatform } from '@/queries/use-ota';
 import type { OtaIntegration, OtaPlatform } from '@/types';
@@ -37,8 +39,8 @@ function formatLastSync(lastSyncAt: string | undefined, t: (key: string, options
 }
 
 function StatusIcon({ status }: { status: 'connected' | 'warning' | 'disconnected' }) {
-  if (status === 'connected') return <CheckCircle className="h-5 w-5 text-green-500" />;
-  if (status === 'warning') return <AlertCircle className="h-5 w-5 text-yellow-500" />;
+  if (status === 'connected') return <CheckCircle className="h-5 w-5 text-success-foreground" />;
+  if (status === 'warning') return <AlertCircle className="h-5 w-5 text-warning-foreground" />;
   return <XCircle className="h-5 w-5 text-muted-foreground" />;
 }
 
@@ -69,8 +71,9 @@ function OtaCard({ integration, t, showSyncStatus, showError }: OtaCardProps) {
 
   return (
     <AlignedCard rows={rows} from="md">
-      <div className="mb-3 flex items-center justify-between">
-        <CardTitle className="text-base font-semibold">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b pb-3">
+        <CardTitle className="flex min-w-0 flex-wrap items-center gap-3 text-lg font-semibold">
+          {PLATFORM_LOGO[integration.platform] ? <img src={PLATFORM_LOGO[integration.platform]} alt="" className="h-9 w-16 rounded bg-white object-contain p-1" /> : null}
           {PLATFORM_LABELS[integration.platform] ?? integration.platform}
         </CardTitle>
         <StatusIcon status={connectionStatus} />
@@ -122,7 +125,7 @@ function OtaCard({ integration, t, showSyncStatus, showError }: OtaCardProps) {
 
 export function OtaPage() {
   const { t } = useTranslation();
-  const { data: integrations, isLoading, isError } = useOtaIntegrations();
+  const { data: integrations, isLoading, isError, error, refetch } = useOtaIntegrations();
   const syncAll = useSyncAllOta();
 
   function handleSyncAll() {
@@ -152,20 +155,18 @@ export function OtaPage() {
         />
 
         {isLoading && (
-          <div className="flex items-center justify-center py-12">
+          <div role="status" className="flex items-center justify-center rounded-xl border bg-card py-12">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             <span className="ml-2 text-muted-foreground">{t('ota.page.loading')}</span>
           </div>
         )}
 
         {isError && (
-          <div className="py-8 text-center text-destructive">
-            {t('ota.page.error')}
-          </div>
+          <ErrorState title={t('ota.page.error')} error={error} onRetry={() => void refetch()} />
         )}
 
         {!isLoading && !isError && (integrations ?? []).length === 0 && (
-          <div className="py-12 text-center text-muted-foreground">
+          <div className="rounded-xl border border-dashed bg-card px-5 py-12 text-center text-muted-foreground">
             {t('ota.page.empty')}
           </div>
         )}

@@ -103,8 +103,8 @@ function DocumentPhotoReader({ bookingId, form, index }: DocumentPhotoReaderProp
   const nothingRead = review !== null && (review.reading.method === 'None' || review.reading.fields == null);
 
   return (
-    <section className="space-y-3 rounded-md border border-dashed p-4" data-testid={`document-photo-${index}`}>
-      <div className="flex flex-wrap items-center gap-3">
+    <section className="space-y-3 rounded-2xl border border-dashed border-primary/40 bg-primary/5 p-4 sm:p-5" data-testid={`document-photo-${index}`}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <input
           ref={fileInput}
           type="file"

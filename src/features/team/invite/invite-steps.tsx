@@ -60,7 +60,7 @@ function SeatsNote({ seats }: { seats: OrgSeats | undefined }) {
   }
 
   return (
-    <p className="flex items-center gap-2 text-sm text-foreground/70" data-testid="invite-seats">
+    <p className="flex items-center gap-2 border-t border-border pt-4 text-sm text-foreground/70" data-testid="invite-seats">
       <Users aria-hidden="true" className="size-4 shrink-0" />
       {seats.unlimited ? t('team.invite.seats.unlimited') : t('team.invite.seats.left', { count: seats.available, max: seats.max })}
     </p>
@@ -74,14 +74,16 @@ export function WhoStep() {
   const members = useOrgMembers(true, { fresh: true });
 
   return (
-    <div className="space-y-5">
-      <Field label={t('team.invite.who.name')} example={t('team.invite.who.nameExample')} error={formState.errors.name}>
-        <Input autoComplete="off" data-testid="invite-name" {...register('name')} />
-      </Field>
-      <Field label={t('team.invite.who.email')} hint={t('team.invite.who.emailHint')} error={formState.errors.email}>
-        <Input type="email" inputMode="email" autoComplete="off" autoCapitalize="off" spellCheck={false} data-testid="invite-email" {...register('email')} />
-      </Field>
-      <div className="space-y-1.5">
+    <div className="@container space-y-5">
+      <div className="grid gap-4 @xl:grid-cols-2">
+        <Field label={t('team.invite.who.name')} example={t('team.invite.who.nameExample')} error={formState.errors.name}>
+          <Input autoComplete="off" data-testid="invite-name" {...register('name')} />
+        </Field>
+        <Field label={t('team.invite.who.email')} hint={t('team.invite.who.emailHint')} error={formState.errors.email}>
+          <Input type="email" inputMode="email" autoComplete="off" autoCapitalize="off" spellCheck={false} data-testid="invite-email" {...register('email')} />
+        </Field>
+      </div>
+      <div className="space-y-2 rounded-2xl border border-border bg-muted/40 p-4">
         <p className="text-sm font-medium leading-snug">{t('team.invite.who.language')}</p>
         <Controller
           control={control}

@@ -222,6 +222,11 @@ function DraftPanelBody({ threadKey, canAsk }: DraftPanelProps) {
   // What the last request for a draft ended in is the state of the panel only while there is no draft: once one is there it is the draft that counts.
   const outcome = request.data ? draftOutcomeView(request.data) : null;
   const requestError = request.isError && draft === null ? request.error : null;
+  if (!draft && pending.isSuccess && !request.data && !requestError && !notice && canAsk) {
+    return <Button type="button" size="sm" variant="ghost" className="w-fit" onClick={handleAsk} loading={request.isPending}>
+      <Sparkles aria-hidden="true" className="size-4" />{t('assistant.draft.ask')}
+    </Button>;
+  }
 
   return (
     <section aria-label={t('assistant.draft.title')} className="space-y-3 rounded-xl border bg-card p-4" data-testid="assistant-draft-panel">

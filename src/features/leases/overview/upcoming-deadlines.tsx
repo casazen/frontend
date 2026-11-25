@@ -25,7 +25,7 @@ export function UpcomingDeadlines({ deadlines, isError, onRetry, today }: Upcomi
   const rows = deadlines ? upcomingDeadlines(deadlines.items).map((item) => deadlineRow(item, { t, today })) : [];
 
   return (
-    <PlainSection
+    <PlainSection className="min-w-0 rounded-xl border bg-card p-4 sm:p-5"
       title={t('longRentOverview.upcoming.title')}
       actionLabel={t('longRentOverview.upcoming.all')}
       href={DEADLINES_PATH}

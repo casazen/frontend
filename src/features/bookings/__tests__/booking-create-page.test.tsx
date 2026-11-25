@@ -279,8 +279,8 @@ describe('BookingCreatePage', { timeout: 20000 }, () => {
     expect(bookingsApi.createManual).not.toHaveBeenCalled();
   });
 
-  it('shows the properties load error instead of an empty select', async () => {
-    vi.mocked(propertiesApi.getAll).mockRejectedValue(new Error('boom'));
+  it('recovers the property list in place and selects the only property', async () => {
+    vi.mocked(propertiesApi.getAll).mockRejectedValueOnce(new Error('boom')).mockResolvedValue([property]);
     renderPage();
 
     expect(await screen.findByTestId('booking-properties-error', undefined, WAIT)).toHaveTextContent(
@@ -288,6 +288,9 @@ describe('BookingCreatePage', { timeout: 20000 }, () => {
     );
     expect(screen.queryByTestId('booking-properties-empty')).not.toBeInTheDocument();
     await waitFor(() => expect(label('booking.create.stay.property')).toBeDisabled(), WAIT);
+    fireEvent.click(within(screen.getByTestId('booking-properties-error')).getByRole('button'));
+    await waitFor(() => expect(label('booking.create.stay.property')).toHaveValue(property.id), WAIT);
+    expect(screen.queryByTestId('booking-properties-error')).not.toBeInTheDocument();
   });
 });
 

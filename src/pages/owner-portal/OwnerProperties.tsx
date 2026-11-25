@@ -95,9 +95,9 @@ export function OwnerProperties() {
 
       {/* Property summary */}
       <h2 className="sr-only">{t('ownerPortal.properties.summaryTitle')}</h2>
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <div className="flex min-w-0 flex-wrap">
+        <Card className="w-full bg-muted sm:w-auto">
+          <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('ownerPortal.properties.totalBookings')}</CardTitle>
             <Calendar aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
           </CardHeader>

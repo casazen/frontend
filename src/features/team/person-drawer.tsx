@@ -99,7 +99,7 @@ function PersonDetails({ row, callerRole, close }: { row: PersonRow; callerRole:
       <PersonActions row={row} callerRole={callerRole} close={close} />
 
       <PlainSection title={t('team.drawer.data')}>
-        <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2 text-sm">
+        <dl className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)] gap-x-3 gap-y-3 rounded-xl border bg-surface-2 p-4 text-sm">
           <dt className="text-foreground/70">{t('team.drawer.email')}</dt>
           <dd className="break-words">{row.email}</dd>
           <dt className="text-foreground/70">{t('team.drawer.role')}</dt>

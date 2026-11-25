@@ -9,6 +9,8 @@ const VISIBLE = 4;
 
 interface TodoSectionProps {
   rows: HomeRow[];
+  incomplete?: boolean;
+  loading?: boolean;
   showAll: boolean;
   onToggleAll: () => void;
 }
@@ -17,28 +19,31 @@ interface TodoSectionProps {
  * "Da fare": a section without a box, in the order the server gives (most pressing first), each row with how pressing it is,
  * said in words, and the button that does it. Four rows, then "Vedi tutte".
  */
-export function TodoSection({ rows, showAll, onToggleAll }: TodoSectionProps) {
+export function TodoSection({ rows, incomplete, loading, showAll, onToggleAll }: TodoSectionProps) {
   const { t } = useTranslation();
   const shown = showAll ? rows : rows.slice(0, VISIBLE);
   const action: { actionLabel: string; onAction: () => void } | { actionLabel?: undefined } =
     rows.length > VISIBLE ? { actionLabel: showAll ? t('dashboard.todo.showLess') : t('dashboard.todo.seeAll', { count: rows.length }), onAction: onToggleAll } : {};
 
   return (
-    <PlainSection title={t('dashboard.todo.title')} count={rows.length} data-testid="home-todo" {...action}>
+    <PlainSection className="rounded-xl border border-border bg-card p-4 sm:p-5" title={t('dashboardPendingHeading')} count={rows.length} data-testid="home-todo" {...action}>
       {rows.length > 0 ? (
         <ul role="list" className="divide-y divide-border border-y border-border">
           {shown.map((row) => (
             <HomeRowItem key={row.id} row={row} noteFirst />
           ))}
         </ul>
+      ) : loading || incomplete ? (
+        <p role="status" className="py-3 text-sm text-muted-foreground">
+          {t(loading ? 'shared.loading.srOnly' : 'dashboardPrioritiesPartial')}
+        </p>
       ) : (
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3">
           <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-full bg-success-soft text-success-foreground">
             <CheckCircle2 className="size-[22px]" />
           </span>
           <div className="min-w-0 flex-1 basis-52">
-            <p className="font-semibold">{t('dashboard.todo.empty.title')}</p>
-            <p className="text-sm text-foreground/70">{t('dashboard.todo.empty.text')}</p>
+            <p className="font-semibold">{t('dashboardNoPending')}</p>
           </div>
         </div>
       )}

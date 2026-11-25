@@ -17,9 +17,9 @@ export function PropertyThumb({ photoUrls, className }: PropertyThumbProps) {
   const cover = displayableMediaUrls(photoUrls)[0];
 
   return (
-    <div aria-hidden="true" className={cn('size-12 shrink-0 overflow-hidden rounded-md bg-muted', className)}>
+    <div aria-hidden="true" className={cn('cz-media-frame h-12 w-16 shrink-0 rounded-lg bg-primary-soft', className)}>
       {cover ? (
-        <img src={cover} alt="" loading="lazy" className="size-full object-cover" />
+        <img src={cover} alt="" loading="lazy" decoding="async" className="size-full object-cover" />
       ) : (
         <div className="grid size-full place-items-center text-foreground/60">
           <Building2 className="size-5" />

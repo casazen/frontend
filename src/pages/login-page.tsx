@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { ownerPortalPaths } from '@/features/owner-portal/paths';
 import { safeReturnTo } from '@/lib/auth-return-to';
 import { useTranslation } from 'react-i18next';
 import { LogIn } from 'lucide-react';
-import { CasaZenLogo, CasaZenMark } from '@/components/brand/casazen-mark';
+import { PublicAccessFrame } from './public-access-frame';
+import { CasaZenMark } from '@/components/brand/casazen-mark';
 import { Button } from '@/components/ui/button';
 import { useLoginHandoff } from '@/hooks/use-login-handoff';
 import { useAuth } from '@/hooks/use-auth';
@@ -46,10 +48,16 @@ export function LoginPage() {
   const handoff = useLoginHandoff();
   const { start } = handoff;
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [params] = useSearchParams();
   const candidate = safeReturnTo(params.get('returnTo'));
   // Only application routes can be a post-login target; never external URLs or /login itself.
-  const returnTo = candidate?.startsWith('/app/') && new URL(candidate, window.location.origin).pathname.startsWith('/app/') ? candidate : null;
+  const destination = candidate && new URL(candidate, window.location.origin).pathname;
+  const ownerPage = destination === ownerPortalPaths.home ||
+    (destination?.startsWith(ownerPortalPaths.home + '/') &&
+      /^(?:immobili|calendario|contabilita|rendiconti|documenti|documenti-emessi|messaggi|contatti)(?:\/|$)/.test(destination.slice(ownerPortalPaths.home.length + 1)));
+  const returnTo = destination?.startsWith('/app/') || ownerPage ? candidate
+    : pathname === ownerPortalPaths.signIn ? ownerPortalPaths.home : null;
   const { t } = useTranslation();
   // Decided once, when the page opens.
   const [redirect] = useState(() => !startedRecently());
@@ -76,31 +84,26 @@ export function LoginPage() {
   const handoffProblem = handoff.status === 'failed' || handoff.status === 'delayed';
   if (!initializationStalled && !handoffProblem && (handoff.busy || isLoading || redirect)) {
     return (
-      <div role="status" className="flex min-h-screen flex-col items-center justify-center gap-5 bg-[#fbfaf8] px-4 text-center">
+      <div role="status" className="flex min-h-svh flex-col items-center justify-center gap-5 bg-background px-4 text-center">
         <CasaZenMark size={56} className="animate-pulse motion-reduce:animate-none" />
-        <p className="text-sm text-[#4a6d71]">{t('login.redirecting')}</p>
+        <p className="text-sm text-muted-foreground">{t('login.redirecting')}</p>
       </div>
     );
   }
 
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-muted/40 px-4 py-8">
-      <div className="w-full max-w-md space-y-5 rounded-xl border bg-card p-6 sm:p-8">
-        <CasaZenLogo size={40} />
-        <div className="space-y-2">
-          <h1 className="text-2xl font-semibold tracking-tight">{t('login.resumeTitle')}</h1>
-          <p role={handoffProblem || initializationStalled ? 'alert' : undefined} className="text-sm leading-relaxed text-muted-foreground">
-            {t(initializationStalled ? 'login.initializationSlow' : handoffProblem ? 'login.handoffFailed' : 'login.resumeBody')}
-          </p>
-        </div>
-        <Button type="button" onClick={() => {
-          if (initializationStalled) window.location.reload();
-          else { rememberStart(); start(returnTo ? { returnTo } : undefined); }
-        }} size="lg" className="w-full">
-          <LogIn aria-hidden="true" className="size-5" />
-          {t(initializationStalled ? 'login.reload' : 'login.signInButton')}
-        </Button>
-      </div>
-    </main>
+    <PublicAccessFrame title={t('login.resumeTitle')} icon={LogIn} description={
+      <p role={handoffProblem || initializationStalled ? 'alert' : undefined} className="text-sm leading-relaxed text-muted-foreground">
+        {t(initializationStalled ? 'login.initializationSlow' : handoffProblem ? 'login.handoffFailed' : 'login.resumeBody')}
+      </p>
+    }>
+      <Button type="button" onClick={() => {
+        if (initializationStalled) window.location.reload();
+        else { rememberStart(); start(returnTo ? { returnTo } : undefined); }
+      }} size="lg" className="w-full">
+        <LogIn aria-hidden="true" className="size-5" />
+        {t(initializationStalled ? 'login.reload' : 'login.signInButton')}
+      </Button>
+    </PublicAccessFrame>
   );
 }

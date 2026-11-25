@@ -1,0 +1,18 @@
+import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { AppShell } from '@/components/layout/app-shell';
+import { PageHeader } from '@/components/layout/page-header';
+import { PropertySetupSelection } from '@/features/onboarding/components/guest-portal-setup';
+
+export function GuestPortalSettingsPage() {
+  const { t } = useTranslation();
+  const [params] = useSearchParams();
+  return (
+    <AppShell>
+      <div className="mx-auto w-full max-w-4xl space-y-5">
+        <PageHeader title={t('guestPortal.setup.title')} crumbs="auto" />
+        <PropertySetupSelection initialPropertyId={params.get('propertyId') ?? undefined} />
+      </div>
+    </AppShell>
+  );
+}

@@ -1,25 +1,29 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PUBLIC_SITE_THEME_PALETTES } from '@/lib/public-site-themes';
 
 /** The host workspace and guest check-in, using the product's own demo captures. */
 export function HeroArt() {
   const { t } = useTranslation();
+  const [scene, setScene] = useState<'cockpit' | 'lease'>('cockpit');
   return (
-    <figure className="site-product-scene relative isolate mx-auto w-full max-w-2xl rounded-3xl bg-ink-800 px-[6%] pb-[13%] pt-[10%]">
+    <figure className="site-product-scene relative isolate mx-auto w-full max-w-2xl overflow-hidden rounded-3xl bg-ink-800 p-4 sm:p-6">
+      <figcaption className="mb-4 flex flex-wrap gap-1.5">
+        {(['cockpit', 'lease'] as const).map(key => (
+          <button key={key} type="button" aria-pressed={scene === key} onClick={() => setScene(key)}
+            className="min-h-11 rounded-full border border-white/40 px-4 text-sm font-semibold text-white hover:bg-ink-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white aria-pressed:bg-white aria-pressed:text-ink-800">
+            {t(`site.home.showcase.${key}.tab`)}
+          </button>
+        ))}
+      </figcaption>
       <img
-        src="/site/cockpit.webp"
-        alt={t('site.home.showcase.cockpit.alt')}
+        key={scene}
+        src={`/site/${scene}.webp`}
+        alt={t(`site.home.showcase.${scene}.alt`)}
         width={1600}
         height={1000}
         fetchPriority="high"
         className="block w-full rounded-xl border border-ink-200 bg-white shadow-xl"
-      />
-      <img
-        src="/site/checkin-poster.webp"
-        alt={t('site.home.showcase.checkin.alt')}
-        width={390}
-        height={780}
-        className="absolute bottom-[4%] right-[3%] w-[20%] rounded-[12%/6%] border-4 border-ink-900 bg-white shadow-xl"
       />
     </figure>
   );

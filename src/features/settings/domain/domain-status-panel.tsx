@@ -46,7 +46,7 @@ export function DomainStatusPanel({ config, verifying, onVerify }: DomainStatusP
 
   return (
     <div className="space-y-3" data-testid="domain-status-panel" data-state={state}>
-      <div className={`flex items-start gap-3 rounded-md border p-3 ${TONES[state]}`} role={state === 'failed' ? 'alert' : 'status'}>
+      <div className={`flex items-start gap-3 rounded-xl border-s-4 p-4 ${TONES[state]}`} role={state === 'failed' ? 'alert' : 'status'}>
         <Icon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
         <div className="space-y-1">
           <p className="font-medium" data-testid="domain-state-title">
@@ -72,7 +72,7 @@ export function DomainStatusPanel({ config, verifying, onVerify }: DomainStatusP
         </p>
       )}
 
-      <dl className="grid gap-1 text-xs text-muted-foreground sm:grid-cols-2">
+      <dl className="grid gap-2 rounded-lg border bg-card p-3 text-sm text-muted-foreground sm:grid-cols-2">
         <div data-testid="domain-last-check">
           <dt className="inline font-medium">{t('domain.lastCheck')}: </dt>
           <dd className="inline">{checkedAt ?? t('domain.neverChecked')}</dd>

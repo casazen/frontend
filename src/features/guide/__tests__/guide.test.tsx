@@ -97,11 +97,11 @@ describe('the guide of the header', () => {
 
   afterEach(() => cleanup());
 
-  it('GuideButton_UrgentThingsToDo_CarriesTheirNumberAndSaysIt', async () => {
+  it('GuideButton_DoesNotDuplicateTheUrgentActivityCount', async () => {
     renderButton();
 
-    expect(await screen.findByTestId('guide-button-count')).toHaveTextContent('3');
-    expect(screen.getByTestId('guide-button')).toHaveAccessibleName('Apri la guida: 3 cose urgenti da fare');
+    expect(screen.queryByTestId('guide-button-count')).not.toBeInTheDocument();
+    expect(screen.getByTestId('guide-button')).toHaveAccessibleName('Apri la guida');
   });
 
   it('GuidePanel_ShortRent_TellsTheSetupAndTheToDoListAsRoadsWithTheStepToDoNow', async () => {

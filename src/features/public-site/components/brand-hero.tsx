@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import { CasaZenRing } from '@/components/brand/casazen-mark';
 
 interface BrandHeroProps {
   /** A small label above the title (`BrandEyebrow`). */
@@ -17,11 +16,10 @@ interface BrandHeroProps {
  */
 export function BrandHero({ eyebrow, title, description, children }: BrandHeroProps) {
   return (
-    <header className="relative overflow-hidden rounded-3xl border border-[var(--cz-brand-tint-strong)] bg-[linear-gradient(135deg,var(--cz-brand-tint-strong),var(--cz-brand-tint)_50%,var(--cz-public-bg))] px-6 py-8 md:px-10 md:py-11">
-      <CasaZenRing size={300} className="pointer-events-none absolute -right-16 -top-20 opacity-[0.13]" />
+    <header className="border-b border-[var(--cz-public-line-strong)] py-6 md:py-10">
       <div className="relative">
         {eyebrow}
-        <h1 className="public-display text-3xl leading-tight md:text-4xl">{title}</h1>
+        <h1 className="public-display max-w-3xl text-balance text-4xl leading-tight md:text-5xl">{title}</h1>
         {description ? <p className="mt-3 max-w-2xl text-[var(--cz-public-muted)]">{description}</p> : null}
         {children}
       </div>

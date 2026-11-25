@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { CalendarClock, Inbox } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { PageHeader } from '@/components/layout/page-header';
+import { ServicePageHeader } from '@/features/supplier/components/service-page-header';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ListView } from '@/components/shared/list-view/list-view';
 import type { ListOption } from '@/components/shared/list-view/list-types';
@@ -105,7 +105,7 @@ export function SupplierInboxPage() {
 
   return (
     <div className="min-w-0 space-y-6" data-testid="supplier-inbox-page">
-      <PageHeader title={t('supplier.requests.title')} description={t('supplier.requests.description')} crumbs="auto" primary={primary} />
+      <ServicePageHeader icon={Inbox} title={t('supplier.requests.title')} description={t('supplier.requests.description')} crumbs="auto" primary={primary} />
       {flags.guestPortal && flags.guestPortalSupplierServices && <GuestSupplierOperations scope={{ role: 'supplier' }} />}
 
       {nothingYet ? (

@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { isAxiosError } from 'axios';
-import { Home, Loader2 } from 'lucide-react';
+import { Store, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { PublicAccessFrame, type AccessContent } from './public-access-frame';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ComunePicker } from '@/components/shared/comune-picker';
@@ -72,7 +72,7 @@ function InviteRegistration({ token }: { token: string }) {
     const final = code !== undefined && FINAL_INVITE_CODES.has(code);
     return (
       <RegisterLayout title={t('supplier.register.inviteErrorTitle')}>
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
           {getProblemMessage(invite.error, t) ?? t('supplier.register.inviteErrorGeneric')}
         </p>
         {!final && (
@@ -133,7 +133,7 @@ function InviteRegistration({ token }: { token: string }) {
     return (
       <RegisterLayout title={t('supplier.register.title')} description={t('supplier.register.inviteDescription')}>
         {summary}
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
           {t('supplier.register.inviteWrongAccount', { account: accountEmail, invited: data.email })}
         </p>
         <Button className="w-full" onClick={() => loginForInvite({ prompt: 'login' })}>
@@ -186,7 +186,7 @@ function SelfServeRegistration() {
   if (options.isError) {
     return (
       <RegisterLayout title={t('supplier.register.title')}>
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
           {getProblemMessage(options.error, t) ?? t('supplier.register.optionsError')}
         </p>
         <Button className="w-full" variant="outline" onClick={() => void options.refetch()}>
@@ -302,7 +302,7 @@ function RegistrationForm({
   const message = missingFields ? t('supplier.register.errorFields') : error;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+    <form onSubmit={handleSubmit} className="grid gap-5" noValidate>
       <div className="space-y-2">
         <Label htmlFor="email">{t('supplier.register.email')}</Label>
         {lockedEmail !== undefined ? (
@@ -366,7 +366,7 @@ function RegistrationForm({
       </div>
 
       {message && (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
           {message}
         </p>
       )}
@@ -435,47 +435,12 @@ function LoadingCard({ message }: { message: string }) {
   return (
     <RegisterLayout title={message}>
       <div className="flex justify-center py-4" role="status" aria-label={message}>
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <Loader2 className="size-7 animate-spin motion-reduce:animate-none text-muted-foreground" />
       </div>
     </RegisterLayout>
   );
 }
 
-function RegisterLayout({
-  title,
-  description,
-  success = false,
-  children,
-}: {
-  title: string;
-  description?: string;
-  success?: boolean;
-  children?: ReactNode;
-}) {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div
-            className={
-              success
-                ? 'mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-green-700'
-                : 'mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground'
-            }
-          >
-            {success ? (
-              <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-            ) : (
-              <Home className="h-8 w-8" />
-            )}
-          </div>
-          <CardTitle className="text-2xl">{title}</CardTitle>
-          {description && <CardDescription>{description}</CardDescription>}
-        </CardHeader>
-        {children && <CardContent className="space-y-4">{children}</CardContent>}
-      </Card>
-    </div>
-  );
+function RegisterLayout(props: AccessContent) {
+  return <PublicAccessFrame icon={Store} {...props} />;
 }

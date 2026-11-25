@@ -204,7 +204,7 @@ export function PaymentLedgerTable({
     const detail = (name: string, value: ReactNode) => (
       <div className="min-w-0">
         <dt className="text-foreground/70">{name}</dt>
-        <dd className="mt-0.5 text-foreground">{value}</dd>
+        <dd className="mt-0.5 font-semibold tabular-nums text-foreground">{value}</dd>
       </div>
     );
     return (
@@ -221,7 +221,7 @@ export function PaymentLedgerTable({
           </div>
           <StateBadge line={line} />
         </div>
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+        <dl className="grid grid-cols-2 gap-x-4 gap-y-3 rounded-xl bg-surface-2 p-3 text-sm">
           {detail(t('paymentLedger.columns.gross'), <Figure testId="payment-ledger-gross">{formatLedgerAmount(line.gross, line.currency, language)}</Figure>)}
           {detail(
             t('paymentLedger.columns.fee'),

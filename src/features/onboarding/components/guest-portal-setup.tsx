@@ -81,7 +81,7 @@ export function GuestPortalSetupEntry() {
   );
 }
 
-function PropertySetupSelection() {
+export function PropertySetupSelection({ initialPropertyId }: { initialPropertyId?: string }) {
   const { t } = useTranslation();
   const [selected, setSelected] = useState('');
   const properties = useProperties({ mode: 'short' }, { fresh: true });
@@ -90,7 +90,7 @@ function PropertySetupSelection() {
   if (properties.isError) return <p role="alert">{t('guestPortal.host.unavailable')}</p>;
   if (!properties.data.length) return <p>{t('guestPortal.setup.noProperties')}</p>;
 
-  const propertyId = selected || properties.data[0].id;
+  const propertyId = selected || properties.data.find(property => property.id === initialPropertyId)?.id || properties.data[0].id;
   return (
     <div className="grid gap-4">
       <label className="grid gap-1 text-sm font-medium">

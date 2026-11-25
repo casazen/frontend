@@ -136,24 +136,25 @@ test.describe('Onboarding L3 (real stack)', () => {
       await page.locator('#nightlyRate').fill('120');
       await page.getByTestId('quick-property-submit').click();
 
-      // The dashboard with the checklist: the property is done, the rest is asked one step at a time.
+      // After creating the property, the host can open the setup checklist from the guide on the dashboard.
       await expect(page).toHaveURL(/\/app\/short-rent$/, { timeout: 30_000 });
       // «Inizia con CasaZen» as the first wizard: the welcome opens over the Home of a new host, once; «Più tardi» leaves the Home to the journey.
       await expect(page.getByTestId('first-run-wizard')).toBeVisible({ timeout: 30_000 });
       await page.getByTestId('first-run-later').click();
       await expect(page.getByTestId('first-run-wizard')).toHaveCount(0);
-      // The Home says the next step alone; the whole list opens from "Tutti i passi".
-      await expect(page.getByTestId('activation-next-step')).toBeVisible({ timeout: 30_000 });
-      await page.getByTestId('home-next-step-all').click();
-      const checklist = page.getByTestId('activation-checklist');
+      await page.getByTestId('guide-button').click();
+      const checklist = page.getByTestId('guide-setup');
       await expect(checklist).toBeVisible({ timeout: 30_000 });
-      await expect(page.getByTestId('activation-step-property')).toHaveAttribute('data-state', 'done', { timeout: 20_000 });
-      await expectNoHorizontalOverflow(page, 'dashboard with the checklist');
-      // On a phone the text of a step keeps room to be read (it used to be squeezed to one word per line).
-      const orgStep = page.getByTestId('activation-step-organization');
-      await expect(orgStep).toBeVisible();
-      expect((await orgStep.getByText(/organizzazione/i).first().boundingBox())?.width ?? 0).toBeGreaterThan(200);
-      await shot(page, 'host-3-dashboard-checklist');
+      const propertyStep = checklist.getByRole('listitem').filter({ hasText: 'Primo immobile' });
+      await expect(propertyStep).toHaveAttribute('data-state', 'done');
+      await expect(checklist.locator('[aria-current="step"]')).toHaveCount(1);
+      await expect(checklist.getByTestId('guide-setup-continue')).toBeVisible();
+      await expectNoHorizontalOverflow(page, 'setup checklist in the guide');
+      // A long step title still has enough space to read comfortably on a phone.
+      const organizationTitle = checklist.getByText(/nome e indirizzo dell.organizzazione/i);
+      await expect(organizationTitle).toBeVisible();
+      expect((await organizationTitle.boundingBox())?.width ?? 0).toBeGreaterThan(200);
+      await shot(page, 'host-3-guide-checklist');
       console.log(`[onboarding-l3] short-rent host: QR -> property created in ${Math.round((Date.now() - t0) / 1000)}s`);
 
       // The oracle: the org exists on Pro and the property is stored with its comune.
@@ -267,7 +268,7 @@ test.describe('Onboarding L3 (real stack)', () => {
       await shot(page, 'supplier-4-wizard-terms');
       await page.getByRole('button', { name: 'Attiva profilo' }).click();
       await expect(page).toHaveURL(/\/app\/supplier\/dashboard/, { timeout: 30_000 });
-      await expect(page.getByTestId('supplier-getting-started').or(page.getByTestId('supplier-kpis'))).toBeVisible({ timeout: 20_000 });
+      await expect(page.getByTestId('supplier-home').getByTestId('supplier-kpis')).toBeVisible({ timeout: 20_000 });
       await shot(page, 'supplier-5-dashboard');
 
       const api = oracleFor(context.request, stack, await accessToken(page));

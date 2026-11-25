@@ -14,7 +14,7 @@ interface StepFrameProps {
 /** The content of a step: a column of blocks, and read-only as a whole when the person may not change the setup. */
 export function StepFrame({ readOnly, testId, children }: StepFrameProps) {
   return (
-    <fieldset disabled={readOnly} data-testid={testId} data-readonly={readOnly ? 'true' : undefined} className={cn('m-0 flex min-w-0 flex-col gap-6 border-0 p-0', readOnly && 'opacity-90')}>
+    <fieldset disabled={readOnly} data-testid={testId} data-readonly={readOnly ? 'true' : undefined} className={cn('m-0 flex min-w-0 flex-col gap-5 rounded-2xl border border-border bg-card p-4 sm:p-6', readOnly && 'opacity-90')}>
       {children}
     </fieldset>
   );

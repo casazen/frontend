@@ -4,12 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAdminStats } from '@/queries/use-admin';
 import { useTranslation } from 'react-i18next';
-import i18n from '@/i18n/config';
-import { Building2, Calendar, DollarSign, FileCheck, Wifi } from 'lucide-react';
+import { ErrorState } from '@/components/shared/error-state';
+import { Building2, Calendar, Wallet, FileCheck, Wifi } from 'lucide-react';
 
 export function AdminDashboardPage() {
-  const { t } = useTranslation();
-  const { data: stats, isLoading } = useAdminStats();
+  const { t, i18n } = useTranslation();
+  const { data: stats, isLoading, error, refetch } = useAdminStats();
 
   return (
     <div className="space-y-6">
@@ -56,7 +56,7 @@ export function AdminDashboardPage() {
             <AdminKpiCard
               title={t('admin.dashboard.kpi.totalRevenue')}
               value={`€ ${stats.totalRevenue.toLocaleString(i18n.language, { minimumFractionDigits: 2 })}`}
-              icon={DollarSign}
+              icon={Wallet}
             />
           </div>
 
@@ -64,26 +64,26 @@ export function AdminDashboardPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <FileCheck className="h-4 w-4" />
+                  <FileCheck aria-hidden="true" className="size-5 text-primary-text" />
                   {t('admin.dashboard.cin.title')}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className="divide-y divide-border [&>div]:py-2.5">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">{t('admin.dashboard.cin.total')}</span>
-                  <span className="font-medium">{stats.cinCompliance.total}</span>
+                  <span className="font-semibold tabular-nums">{stats.cinCompliance.total}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-green-600">{t('admin.dashboard.cin.valid')}</span>
-                  <span className="font-medium">{stats.cinCompliance.valid}</span>
+                  <span className="text-success-foreground">{t('admin.dashboard.cin.valid')}</span>
+                  <span className="font-semibold tabular-nums">{stats.cinCompliance.valid}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-yellow-600">{t('admin.dashboard.cin.missing')}</span>
-                  <span className="font-medium">{stats.cinCompliance.missing}</span>
+                  <span className="text-warning-foreground">{t('admin.dashboard.cin.missing')}</span>
+                  <span className="font-semibold tabular-nums">{stats.cinCompliance.missing}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-red-600">{t('admin.dashboard.cin.invalid')}</span>
-                  <span className="font-medium">{stats.cinCompliance.invalid}</span>
+                  <span className="text-danger-foreground">{t('admin.dashboard.cin.invalid')}</span>
+                  <span className="font-semibold tabular-nums">{stats.cinCompliance.invalid}</span>
                 </div>
               </CardContent>
             </Card>
@@ -91,29 +91,29 @@ export function AdminDashboardPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <Wifi className="h-4 w-4" />
+                  <Wifi aria-hidden="true" className="size-5 text-primary-text" />
                   {t('admin.dashboard.ota.title')}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className="divide-y divide-border [&>div]:py-2.5">
                 <div className="flex justify-between text-sm">
-                  <span className="text-green-600">{t('admin.dashboard.ota.synced')}</span>
-                  <span className="font-medium">{stats.otaSyncHealth.synced}</span>
+                  <span className="text-success-foreground">{t('admin.dashboard.ota.synced')}</span>
+                  <span className="font-semibold tabular-nums">{stats.otaSyncHealth.synced}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-red-600">{t('admin.dashboard.ota.failed')}</span>
-                  <span className="font-medium">{stats.otaSyncHealth.failed}</span>
+                  <span className="text-danger-foreground">{t('admin.dashboard.ota.failed')}</span>
+                  <span className="font-semibold tabular-nums">{stats.otaSyncHealth.failed}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">{t('admin.dashboard.ota.neverSynced')}</span>
-                  <span className="font-medium">{stats.otaSyncHealth.neverSynced}</span>
+                  <span className="font-semibold tabular-nums">{stats.otaSyncHealth.neverSynced}</span>
                 </div>
               </CardContent>
             </Card>
           </div>
         </>
       ) : (
-        <p className="text-muted-foreground">{t('admin.dashboard.loadError')}</p>
+        <ErrorState title={t('admin.dashboard.loadError')} error={error} onRetry={() => void refetch()} />
       )}
     </div>
   );

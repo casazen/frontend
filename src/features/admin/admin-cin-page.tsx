@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Select } from '@/components/ui/select';
 import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -33,8 +34,9 @@ export function AdminCinPage() {
           <CardTitle>{t('admin.cin.filters')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <select
-            className="rounded-md border px-3 py-2 text-sm"
+          <Select
+            wrapperClassName="max-w-sm"
+            aria-label={t('admin.cin.filters')}
             value={cinStatus}
             onChange={(e) => {
               setCinStatus(e.target.value as CinStatusFilter);
@@ -46,7 +48,7 @@ export function AdminCinPage() {
             <option value="valid">{t('admin.cin.filter.valid')}</option>
             <option value="missing">{t('admin.cin.filter.missing')}</option>
             <option value="invalid">{t('admin.cin.filter.invalid')}</option>
-          </select>
+          </Select>
         </CardContent>
       </Card>
 

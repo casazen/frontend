@@ -143,7 +143,10 @@ export function useBookingsList({ canWrite, properties, handlers }: BookingsList
           sort: guestName,
           render: (booking, cell) => (
             <div className="min-w-0">
-              {cell.open(<span>{guestName(booking) || t('compliance.checkout.guestFallback')}</span>)}
+              {cell.open(<span className="inline-flex items-center gap-2">
+                <Users aria-hidden="true" className="size-4 shrink-0 text-primary-text" />
+                {guestName(booking) || t('compliance.checkout.guestFallback')}
+              </span>)}
               <span className="mt-0.5 block break-words text-sm text-foreground/70">
                 {[booking.propertyName, t('booking.list.guestCount', { count: booking.numberOfGuests })].filter(Boolean).join(' · ')}
               </span>

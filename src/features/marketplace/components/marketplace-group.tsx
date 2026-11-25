@@ -24,7 +24,7 @@ export function MarketplaceGroup({ id, children }: { id: MarketplaceGroupId; chi
   const { t } = useTranslation();
 
   return (
-    <PlainSection title={t(`marketplace.groups.${id}.title`)} data-testid={GROUP_TEST_ID[id]}>
+    <PlainSection id={`catalog-${id}`} tabIndex={-1} className="scroll-mt-4 rounded-lg focus-visible:outline-2 focus-visible:outline-ring" title={t(`marketplace.groups.${id}.title`)} data-testid={GROUP_TEST_ID[id]}>
       <p className="text-sm text-foreground/70">{t(`marketplace.groups.${id}.description`)}</p>
       {children}
     </PlainSection>

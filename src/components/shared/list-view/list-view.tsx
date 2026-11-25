@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Download, Inbox, SearchX } from 'lucide-react';
+import { Download, Inbox, ListFilter, SearchX } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
@@ -428,14 +428,14 @@ export function ListView<Row>({
     );
   }
 
-  const showFooter = !isLoading && !isError && !nothingAtAll;
+  const showCount = !isLoading && !isError && !nothingAtAll;
 
   return (
     <section
       aria-label={list.title}
       aria-busy={isRefreshing || isLoading || undefined}
       data-testid={testId}
-      className={cn('min-w-0 overflow-clip rounded-lg border bg-card text-card-foreground shadow-sm', className)}
+      className={cn('min-w-0 overflow-clip rounded-2xl border bg-card text-card-foreground shadow-sm', className)}
     >
       {nothingAtAll ? null : (
         <ListToolbar
@@ -454,16 +454,20 @@ export function ListView<Row>({
         />
       )}
 
+      {showCount ? (
+        <p role="status" aria-live="polite" className="flex items-center gap-2 border-b bg-surface-2 px-4 py-2 text-sm font-semibold tabular-nums" data-testid="list-count">
+          <ListFilter aria-hidden="true" className="size-4 shrink-0 text-primary-text" />
+          {countText}
+        </p>
+      ) : null}
+
       {hasBulk && selectedKeys.length > 0 ? <ListBulkBar count={selectedKeys.length} actions={bulkBarActions} onClear={clearSelection} /> : null}
 
       <div className={cn('min-w-0 transition-opacity', isRefreshing && 'opacity-60')}>{content}</div>
 
-      {showFooter ? (
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t px-4 py-3 text-sm">
-          <p role="status" aria-live="polite" className="text-foreground/70" data-testid="list-count">
-            {countText}
-          </p>
-          {mode === 'server' && pageSize ? <ListPagination page={state.page} pageSize={pageSize} totalCount={total} onPageChange={listState.setPage} /> : null}
+      {showCount && mode === 'server' && pageSize ? (
+        <div className="flex justify-end border-t bg-surface-2 px-4 py-3">
+          <ListPagination page={state.page} pageSize={pageSize} totalCount={total} onPageChange={listState.setPage} />
         </div>
       ) : null}
 

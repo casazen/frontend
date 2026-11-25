@@ -177,7 +177,7 @@ export function PricingRulesSection({ config, isSaving, onToggle, onSave }: Pric
   }
 
   return (
-    <PlainSection title={t('pricing.config.rulesLabel')} className="@container" data-testid="pricing-rules">
+    <PlainSection title={t('pricing.config.rulesLabel')} className="@container rounded-xl border bg-card p-4 sm:p-5" data-testid="pricing-rules">
       <div className="min-w-0 space-y-8 pt-2">
         {/* On or off */}
         <div className="flex items-start justify-between gap-4">

@@ -167,7 +167,7 @@ export function ChannelsCatalogue() {
 /** A screenshot of the app in a browser window: the images are the app with example data, never a mock-up. */
 export function BrowserFrame({ src, alt }: { src: string; alt: string }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-ink-700/15 bg-white shadow-lift">
+    <div className="cz-media-frame border border-ink-700/15 bg-white shadow-soft">
       <div aria-hidden="true" className="flex items-center gap-1.5 border-b border-ink-700/10 bg-cream-100 px-4 py-2.5">
         <span className="size-2.5 rounded-full bg-ink-200" />
         <span className="size-2.5 rounded-full bg-ink-200" />
@@ -191,7 +191,7 @@ const EXPLORER_TABS: readonly { key: ExplorerKey; image?: string }[] = [
 /** The guest check-in on a phone: a short user-controlled clip, with its first frame as the poster (and for those who cannot play it). */
 function PhoneVideo({ label }: { label: string }) {
   return (
-    <div className="mx-auto w-full max-w-[240px] overflow-hidden rounded-[2.2rem] border-[7px] border-ink-900 bg-ink-900 shadow-lift sm:max-w-[270px]">
+    <div className="mx-auto w-full max-w-[240px] overflow-hidden rounded-[2.2rem] border-[7px] border-ink-900 bg-ink-900 shadow-soft sm:max-w-[270px]">
       <video
         className="block h-auto w-full"
         width={390}

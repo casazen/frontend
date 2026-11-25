@@ -83,7 +83,8 @@ export function DocumentsPage() {
           title={t('documentArchive.title')}
           description={t('documentArchive.description')}
           primary={{ label: t('documentArchive.export.open'), icon: FileArchive, onClick: () => setExporting(true), testId: 'archive-export-open' }}
-          mobilePrimary="none"
+          crumbs="auto"
+          mobilePrimary="bar"
         />
 
         <ListView
@@ -105,7 +106,7 @@ export function DocumentsPage() {
         />
 
         {(documents.data?.totalCount ?? 0) > ARCHIVE_PAGE_SIZES[0] ? (
-          <div className="flex justify-end">
+          <div className="flex justify-end rounded-xl border bg-card p-3">
             <Field label={t('documentArchive.pageSize')} className="w-full sm:w-52">
               <Select
                 size="sm"

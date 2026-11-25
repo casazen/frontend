@@ -1,3 +1,4 @@
+import { UsersRound } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ContactList, InviteContactForm } from '@/features/owner-portal/contacts-panel';
 import { PortalLoading, PortalPageHeading, PortalReadProblem } from '@/features/owner-portal/portal-parts';
@@ -14,7 +15,7 @@ export function OwnerContacts() {
 
   return (
     <div className="space-y-6">
-      <PortalPageHeading title={t('ownerPortal.contacts.title')} description={t('ownerPortal.contacts.description')} />
+      <PortalPageHeading icon={UsersRound} title={t('ownerPortal.contacts.title')} description={t('ownerPortal.contacts.description')} />
       {contacts.isLoading ? (
         <PortalLoading label={t('ownerPortal.contacts.loading')} />
       ) : contacts.isError ? (

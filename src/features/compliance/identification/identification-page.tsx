@@ -1,3 +1,4 @@
+import { ComplianceQueue } from '@/features/compliance/components/compliance-queue';
 import { useState } from 'react';
 import { Link, generatePath, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -70,6 +71,7 @@ function IdentificationRow({ item, onEditCode }: IdentificationRowProps) {
 
   return (
     <ComplianceRow
+      icon={Home}
       testId={`identification-row-${item.propertyId}`}
       title={item.name}
       to={`${PROPERTIES_PATH}/${item.propertyId}`}
@@ -153,15 +155,15 @@ export function IdentificationPage() {
           />
         ) : (
           <PlainSection title={t('compliance.identification.list.title')} count={items.length}>
-            <ul role="list" className="divide-y divide-border border-y border-border" data-testid="identification-list">
-              {items.map((item) => (
+            <ComplianceQueue rows={items} textOf={item => [item.name, item.city].join(' ')} needsAction={item => !item.accessCodeSet} testId="identification-list">
+              {item => (
                 <IdentificationRow
                   key={item.propertyId}
                   item={item}
                   onEditCode={() => setDialog({ propertyId: item.propertyId, open: true })}
                 />
-              ))}
-            </ul>
+              )}
+            </ComplianceQueue>
           </PlainSection>
         )}
 
