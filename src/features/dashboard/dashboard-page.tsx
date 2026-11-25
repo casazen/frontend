@@ -140,26 +140,26 @@ export function DashboardPage() {
     <AppShell>
       <div className="space-y-6 md:space-y-8" data-testid="sr-home">
         <div className="rounded-2xl border bg-gradient-to-br from-primary-soft via-card to-card p-5 md:p-7">
-        <PageHeader
-          title={firstName ? t('dashboard.title', { name: firstName }) : t('dashboard.titleNoName')}
-          description={canReadBookings && today.data && !today.isError && !noActiveProperty ? purposeOf(today.data, propertyId, t, locale) : undefined}
-          primary={phone ? undefined : createBooking}
-          action={showRoutineStatus && routines.isSuccess ? (
-            <Link to={routines.data.length ? '/app/short-rent/automations' : '/app/short-rent/automations?view=library'} className="inline-flex min-h-11 items-center gap-2 rounded-lg border px-3 text-sm font-medium text-primary-text hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring">
-              <Workflow aria-hidden="true" className="size-4" />
-              {activeRoutineCount > 0 ? t('routines.dashboardActive', { count: activeRoutineCount }) : t(routines.data.length ? 'nav.routines' : 'aiSettings.firstRoutine')}
-            </Link>
-          ) : undefined}
-          secondary={[
-            ...(phone && createBooking ? [createBooking] : []),
-            ...(canWriteProperty ? [{ label: t('dashboard.actions.addProperty'), icon: Building2, to: '/app/short-rent/properties/create' }] : []),
-            // «Richiedi un intervento» (SR-08b): the guided request, on the property the Home is filtered to; for who may ask for one.
-            ...(canRequestService
-              ? [{ label: t('dashboard.actions.requestService'), icon: Wrench, to: requestInterventionPath(propertyId || undefined), testId: 'home-request-service' }]
-              : []),
-          ]}
-          mobilePrimary="none"
-        />
+          <PageHeader
+            title={firstName ? t('dashboard.title', { name: firstName }) : t('dashboard.titleNoName')}
+            description={canReadBookings && today.data && !today.isError && !noActiveProperty ? purposeOf(today.data, propertyId, t, locale) : undefined}
+            primary={phone ? undefined : createBooking}
+            action={showRoutineStatus && routines.isSuccess ? (
+              <Link to={routines.data.length ? '/app/short-rent/automations' : '/app/short-rent/automations?view=library'} className="inline-flex min-h-11 items-center gap-2 rounded-lg border px-3 text-sm font-medium text-primary-text hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring">
+                <Workflow aria-hidden="true" className="size-4" />
+                {activeRoutineCount > 0 ? t('routines.dashboardActive', { count: activeRoutineCount }) : t(routines.data.length ? 'nav.routines' : 'aiSettings.firstRoutine')}
+              </Link>
+            ) : undefined}
+            secondary={[
+              ...(phone && createBooking ? [createBooking] : []),
+              ...(canWriteProperty ? [{ label: t('dashboard.actions.addProperty'), icon: Building2, to: '/app/short-rent/properties/create' }] : []),
+              // «Richiedi un intervento» (SR-08b): the guided request, on the property the Home is filtered to; for who may ask for one.
+              ...(canRequestService
+                ? [{ label: t('dashboard.actions.requestService'), icon: Wrench, to: requestInterventionPath(propertyId || undefined), testId: 'home-request-service' }]
+                : []),
+            ]}
+            mobilePrimary="none"
+          />
         </div>
 
         {/* «Sono in regola?» in one line, and, without the traffic light, what carries a risk of a sanction as the first block, whatever the filter below says: it is the host's, not a property's. */}
@@ -225,45 +225,45 @@ export function DashboardPage() {
         ) : null}
 
         {canReadBookings && !noActiveProperty && (
-          <details className="group rounded-2xl border bg-card px-5 md:px-6" open={params.has('period') || undefined}>
+          <details data-testid="home-performance" className="group rounded-2xl border bg-card px-5 md:px-6" open={params.has('period') || undefined}>
             <summary className="flex min-h-16 cursor-pointer list-none items-center gap-3 rounded-lg font-semibold focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
               <ChartNoAxesColumn aria-hidden="true" className="size-5 text-primary-text" />
               {t('dashboard.numbers.label')}
               <ChevronDown aria-hidden="true" className="ml-auto size-4 transition-transform group-open:rotate-180 motion-reduce:transition-none" />
             </summary>
             <div className="space-y-5 border-t py-5">
-            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-              <span className="text-sm font-medium">{t('dashboard.filter.period')}</span>
-              <Select
-                size="sm"
-                aria-label={t('dashboard.filter.period')}
-                wrapperClassName="w-auto max-w-full"
-                data-testid="dashboard-period"
-                value={period}
-                onChange={event => setQuery({ period: event.target.value === 'month' ? null : event.target.value })}
-              >
-                {HOME_PERIODS.map(value => <option key={value} value={value}>{t(`dashboard.period.${value}`)}</option>)}
-              </Select>
-            </div>
-            {overview.data && !overview.isError && !overview.isPlaceholderData ? (
-              <HomeNumbers overview={overview.data} period={period} />
-            ) : overview.isError ? (
-              // One error is enough when the day failed too: its retry reloads both.
-              today.isError ? null : (
-                <ErrorState title={t('dashboard.error.overview')} error={overview.error} onRetry={() => void overview.refetch()} />
-              )
-            ) : (
-              <SkeletonLine lines={3} />
-            )}
-          {overview.data && !overview.isError && !overview.isPlaceholderData ? (
-            overview.data.series && overview.data.revenue ? (
-              <RevenueChart series={overview.data.series} currency={overview.data.revenue.currency} />
-            ) : (
-              <Alert variant="info" title={t('dashboard.chart.locked.title')} data-testid="home-chart-locked">
-                {t('dashboard.chart.locked.text')}
-              </Alert>
-            )
-          ) : null}
+              <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+                <span className="text-sm font-medium">{t('dashboard.filter.period')}</span>
+                <Select
+                  size="sm"
+                  aria-label={t('dashboard.filter.period')}
+                  wrapperClassName="w-auto max-w-full"
+                  data-testid="dashboard-period"
+                  value={period}
+                  onChange={event => setQuery({ period: event.target.value === 'month' ? null : event.target.value })}
+                >
+                  {HOME_PERIODS.map(value => <option key={value} value={value}>{t(`dashboard.period.${value}`)}</option>)}
+                </Select>
+              </div>
+              {overview.data && !overview.isError && !overview.isPlaceholderData ? (
+                <HomeNumbers overview={overview.data} period={period} />
+              ) : overview.isError ? (
+                // One error is enough when the day failed too: its retry reloads both.
+                today.isError ? null : (
+                  <ErrorState title={t('dashboard.error.overview')} error={overview.error} onRetry={() => void overview.refetch()} />
+                )
+              ) : (
+                <SkeletonLine lines={3} />
+              )}
+              {overview.data && !overview.isError && !overview.isPlaceholderData ? (
+                overview.data.series && overview.data.revenue ? (
+                  <RevenueChart series={overview.data.series} currency={overview.data.revenue.currency} />
+                ) : (
+                  <Alert variant="info" title={t('dashboard.chart.locked.title')} data-testid="home-chart-locked">
+                    {t('dashboard.chart.locked.text')}
+                  </Alert>
+                )
+              ) : null}
             </div>
           </details>
         )}

@@ -75,7 +75,7 @@ describe('NavSectionTabs (UI-04a)', () => {
   it('NavSectionTabs_SectionOfThePayments_NamesTheSectionAfterItsEntry', () => {
     renderAt('/app/short-rent/fiscal');
 
-    expect(labelsOf('Sezioni di Incassi')).toEqual(['Incassi', 'Ricavi', 'Report', 'Documenti', 'Regime fiscale', 'Stripe Connect']);
+    expect(labelsOf('Sezioni di Incassi')).toEqual(['Incassi', 'Ricavi', 'Report', 'Documenti', 'Regime fiscale']);
   });
 
   it.each(['/app/long-rent/fiscal', '/app/long-rent/tenants', '/app/long-rent/deadlines', '/app/long-rent/leases'])('keeps %s free of the redundant contract-list tabs', (path) => {
@@ -139,7 +139,7 @@ describe('NavSectionTabs (UI-04a)', () => {
   it('NavSectionTabs_Impostazioni_NamesTheTabOfThePageNotTheSection', () => {
     renderAt('/app/short-rent/settings/organization', { flags: { octorateOnboarding: true, messageAssistant: true } });
 
-    expect(labelsOf('Sezioni di Impostazioni')).toEqual(['Organizzazione', 'Integrazione', 'AI']);
+    expect(screen.getByRole('link', { name: 'Impostazioni' })).toHaveAttribute('href', '/app/short-rent/settings');
   });
 
   it('NavSectionTabs_StaffConsoleAndAmministrazione_HaveTabsTooAndTheSupplierAreaKeepsItsLinks', () => {

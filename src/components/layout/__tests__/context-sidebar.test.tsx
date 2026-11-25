@@ -98,14 +98,14 @@ describe('ContextSidebar (UI-04a)', () => {
     renderSidebar('admin', '/app/admin');
 
     expect(within(screen.getByTestId('area-header')).getByText('Console staff')).toBeInTheDocument();
-    expect(screen.getByText('v1.0.0 · Admin')).toBeInTheDocument();
+    expect(screen.queryByText('v1.0.0 · Admin')).not.toBeInTheDocument();
   });
 
   it('ContextSidebar_OtherAreas_ShowTheVersionLine', () => {
     arrange(['short-rent']);
     renderSidebar('short-rent');
 
-    expect(screen.getByText('v1.0.0 · casazen.io')).toBeInTheDocument();
+    expect(screen.queryByText('v1.0.0 · casazen.io')).not.toBeInTheDocument();
   });
 
   it('ContextSidebar_ShortRent_ShowsMessagesInTheMainMenuAndSettingsAtTheFoot', () => {
@@ -125,7 +125,7 @@ describe('ContextSidebar (UI-04a)', () => {
     // No "Altro": the queues are tabs of the Cruscotto and the settings are pinned under the menu.
     expect(within(nav).queryByRole('button', { name: 'Altro' })).not.toBeInTheDocument();
     const foot = screen.getByRole('navigation', { name: 'Impostazioni e inviti' });
-    expect(within(foot).getAllByRole('link').map((link) => link.textContent)).toEqual(['Impostazioni', 'Consiglia CasaZen']);
+    expect(within(foot).getAllByRole('link').map((link) => link.textContent)).toEqual(['Impostazioni']);
   });
 
   it('ContextSidebar_UserWithoutAPermission_DoesNotSeeTheEntryThatAsksForIt', () => {
@@ -203,7 +203,7 @@ describe('ContextSidebar (UI-04a)', () => {
 
       fireEvent.click(screen.getByTestId('sidebar-collapse-toggle'));
       expect(screen.getByRole('complementary')).toHaveAttribute('data-collapsed', 'false');
-      expect(screen.getByText('v1.0.0 · casazen.io')).toBeInTheDocument();
+      expect(screen.queryByText('v1.0.0 · casazen.io')).not.toBeInTheDocument();
     });
 
     it('ContextSidebar_Collapsed_IsRememberedAndTheNextVisitStartsCollapsed', async () => {

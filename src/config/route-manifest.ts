@@ -494,8 +494,8 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'short-rent',
     requiredPermissions: ['property.write'],
     navKey: 'nav.domain',
-    navOrder: 3,
     icon: 'Globe',
+    navOrder: 40,
     component: async () => ({
       default: (await import('@/features/settings/domain/custom-domain-settings-page')).CustomDomainSettingsPage,
     }),
@@ -509,6 +509,8 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: [],
     orgBillingAdmin: true,
     navKey: 'nav.plan',
+    icon: 'CreditCard',
+    navOrder: 70,
     component: async () => ({
       default: (await import('@/features/billing/plans-page')).PlansPage,
     }),
@@ -521,6 +523,8 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: [],
     orgBillingAdmin: true,
     navKey: 'nav.billing',
+    icon: 'Receipt',
+    navOrder: 80,
     component: async () => ({
       default: (await import('@/features/billing/billing-settings-page')).BillingSettingsPage,
     }),
@@ -544,8 +548,8 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: [],
     orgBillingAdmin: true,
     navKey: 'nav.organization',
-    navOrder: 40,
     icon: 'Settings',
+    navOrder: 10,
     component: async () => ({
       default: (await import('@/features/settings/organization/organization-settings-page')).OrganizationSettingsPage,
     }),
@@ -558,8 +562,8 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: [],
     orgBillingAdmin: true,
     navKey: 'nav.siteAppearance',
-    navOrder: 1,
     icon: 'Palette',
+    navOrder: 30,
     component: async () => ({
       default: (await import('@/features/settings/site-appearance/site-appearance-page')).SiteAppearancePage,
     }),
@@ -572,8 +576,8 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: [],
     orgBillingAdmin: true,
     navKey: 'nav.siteDocuments',
-    navOrder: 2,
     icon: 'FileText',
+    navOrder: 50,
     component: async () => ({
       default: (await import('@/features/settings/site-documents/site-documents-page')).SiteDocumentsPage,
     }),
@@ -585,8 +589,8 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'short-rent',
     requiredPermissions: ['property.write'],
     navKey: 'nav.stripeConnect',
-    navOrder: 4,
     icon: 'Wallet',
+    navOrder: 60,
     component: async () => ({
       default: (await import('@/features/settings/payments-page')).ConnectPaymentsPage,
     }),
@@ -599,8 +603,8 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'short-rent',
     requiredPermissions: ['property.read'],
     navKey: 'nav.hostInvites',
-    navOrder: 41,
     icon: 'Gift',
+    navOrder: 20,
     component: async () => ({
       default: (await import('@/features/invites/host-invites-page')).HostInvitesPage,
     }),
@@ -611,8 +615,8 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'short-rent',
     requiredPermissions: ['property.write'],
     navKey: 'aiSettings.title',
-    navOrder: 2,
     icon: 'Sparkles',
+    navOrder: 90,
     component: async () => ({ default: (await import('@/features/settings/ai-settings-page')).AiSettingsPage }),
   },
   {
@@ -1235,6 +1239,8 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: [],
     orgBillingAdmin: true,
     navKey: 'nav.plan',
+    icon: 'CreditCard',
+    navOrder: 70,
     component: async () => ({
       default: (await import('@/features/billing/plans-page')).PlansPageContent,
     }),
@@ -1246,6 +1252,8 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: [],
     orgBillingAdmin: true,
     navKey: 'nav.billing',
+    icon: 'Receipt',
+    navOrder: 80,
     component: async () => ({
       default: (await import('@/features/billing/billing-settings-page')).BillingSettingsContent,
     }),
@@ -1269,8 +1277,8 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: [],
     orgBillingAdmin: true,
     navKey: 'nav.organization',
-    navOrder: 40,
     icon: 'Settings',
+    navOrder: 10,
     component: async () => ({
       default: (await import('@/features/settings/organization/organization-settings-page')).OrganizationSettingsContent,
     }),
@@ -1281,8 +1289,8 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     context: 'long-rent',
     requiredPermissions: ['property.read'],
     navKey: 'nav.hostInvites',
-    navOrder: 41,
     icon: 'Gift',
+    navOrder: 20,
     component: async () => ({
       default: (await import('@/features/invites/host-invites-page')).HostInvitesContent,
     }),
@@ -2117,6 +2125,8 @@ function resolveNavEntries(
   const menu: RouteManifestEntry[] = [];
   const hanging: RouteManifestEntry[] = [];
   for (const entry of available) {
+    const isRentalSettings = entry.path === '/app/short-rent/settings' || entry.path === '/app/long-rent/settings';
+    if (isRentalSettings && !available.some(child => child.navParent === entry.path)) continue;
     if (entry.navPlacement !== undefined) menu.push(entry);
     else if (entry.navParent === profilePath) continue;
     else if (entry.navParent !== undefined && availablePaths.has(entry.navParent)) hanging.push(entry);

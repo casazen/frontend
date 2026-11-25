@@ -16580,7 +16580,13 @@
   "nav": {
     "propertyPreparation": "Prepare properties",
     "propertyActivation": "Activation",
-    "settingsGroups": {"workspace": "Organization", "website": "Booking website", "money": "Payments and plan", "tools": "Integrations and assistant", "empty": "No settings are available for your role."},
+    "settingsGroups": {
+      "workspace": "Workspace",
+      "website": "Booking website",
+      "money": "Payments and plan",
+      "tools": "Integrations and assistant",
+      "empty": "No settings are available for your role."
+    },
     "accountant": "Accountant",
     "accountHome": "Home",
     "people": "People",

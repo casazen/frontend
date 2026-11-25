@@ -16580,7 +16580,13 @@
   "nav": {
     "propertyPreparation": "Preparazione strutture",
     "propertyActivation": "Attivazione",
-    "settingsGroups": {"workspace": "Organizzazione", "website": "Sito di prenotazione", "money": "Pagamenti e piano", "tools": "Integrazioni e assistente", "empty": "Nessuna impostazione disponibile per il tuo ruolo."},
+    "settingsGroups": {
+      "workspace": "Area di lavoro",
+      "website": "Sito di prenotazione",
+      "money": "Pagamenti e piano",
+      "tools": "Integrazioni e assistente",
+      "empty": "Nessuna impostazione disponibile per il tuo ruolo."
+    },
     "accountant": "Commercialista",
     "accountHome": "Home",
     "people": "Persone",

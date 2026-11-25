@@ -38,7 +38,11 @@ export function SettingsIndex() {
                 {links.map(entry => (
                   <li key={entry.path}>
                     <Link to={entry.path} className="flex min-h-14 items-center gap-3 rounded-lg px-3 font-medium hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
-                      <NavIcon name={entry.icon} className="size-5 text-muted-foreground" />
+                      {entry.navKey === 'nav.stripeConnect' ? (
+                        <img src="/brand/stripe.svg" width="20" height="20" alt="" />
+                      ) : (
+                        <NavIcon name={entry.icon} className="size-5 text-muted-foreground" />
+                      )}
                       {getNavLabel(entry, t)}
                       <ChevronRight className="ml-auto size-4 text-muted-foreground" aria-hidden="true" />
                     </Link>
