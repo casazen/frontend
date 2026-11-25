@@ -30,6 +30,7 @@ import { OnboardingNeedsPanel } from './components/onboarding-needs-panel';
 import { OnboardingPartRow } from './components/onboarding-part-row';
 import { OrgSenderPreference } from './components/org-sender-preference';
 import { OwnerStep } from './components/owner-step-row';
+import { GuestPortalSetupEntry } from './components/guest-portal-setup';
 
 /** At least 44 px high on every device (the product rule), and a long label wraps instead of pushing the page sideways. */
 const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading-tight';
@@ -266,6 +267,7 @@ export function OnboardingPlanPage() {
           {planReady && needs.length > 0 && <div className="order-3 lg:col-start-2 lg:row-start-2"><OnboardingNeedsPanel needs={needs} /></div>}
           {!senderPrimary && senderPanel}
           {planReady ? showOutline && content : <div className="order-5 lg:col-span-2">{content}</div>}
+          {flags.guestPortal && hasPermission('short-rent', 'guestportal.manage') && <GuestPortalSetupEntry />}
         </div>
       </div>
 

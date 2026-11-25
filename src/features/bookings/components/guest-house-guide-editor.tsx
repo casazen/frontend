@@ -7,7 +7,7 @@ import { autoReplyTopics, guideFields, type GuideAutoReplies, type HouseGuide } 
 
 const defaultReplies: GuideAutoReplies = { enabled: false, checkIn: false, checkOut: false, parking: false, wifi: false };
 
-export function GuestHouseGuideEditor({ propertyId }: { propertyId: string }) {
+export function GuestHouseGuideEditor({ propertyId, suggestion }: { propertyId: string; suggestion?: HouseGuide }) {
   const { t } = useTranslation();
   const endpoint = `/properties/${propertyId}/guest-house-guide`;
   const query = useQuery({
@@ -16,7 +16,7 @@ export function GuestHouseGuideEditor({ propertyId }: { propertyId: string }) {
     gcTime: 0,
   });
   const [draft, setDraft] = useState<HouseGuide>({});
-  const guide = { ...query.data, ...draft };
+  const guide = { ...query.data, ...suggestion, ...draft };
   const save = useMutation({ mutationFn: () => ApiClient.put(endpoint, guide) });
 
   function submit(event: FormEvent<HTMLFormElement>) {
