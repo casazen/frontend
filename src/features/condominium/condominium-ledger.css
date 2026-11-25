@@ -85,22 +85,24 @@
   margin: 20px 24px;
 }
 .ledger-workspace {
-  display: grid;
-  grid-template-columns: 216px minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   min-height: 650px;
 }
 .ledger-rail {
   display: flex;
-  flex-direction: column;
+  flex-flow: row wrap;
+  align-items: center;
+  gap: 12px;
   background: var(--color-card);
-  padding: 28px 16px;
-  border-right: 1px solid var(--ledger-line);
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--ledger-line);
 }
 .ledger-brand {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 0 8px 26px;
+  padding: 0;
 }
 .ledger-brand > span {
   display: grid;
@@ -123,9 +125,8 @@
   font-size: 12px;
 }
 .ledger-house {
-  padding: 16px 12px;
-  border-block: 1px solid var(--ledger-line);
-  margin-bottom: 20px;
+  padding-inline: 12px;
+  border-inline-start: 1px solid var(--ledger-line);
 }
 .ledger-house small {
   font-size: 11px;
@@ -139,7 +140,9 @@
   overflow-wrap: anywhere;
 }
 .ledger-rail nav {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
   gap: 6px;
 }
 .ledger-rail nav button {
@@ -168,8 +171,7 @@
   background: color-mix(in oklab, var(--color-primary) 6%, var(--color-card));
 }
 .ledger-rail .ledger-rail-note {
-  margin-top: auto;
-  padding: 32px 12px 0;
+  padding: 0;
   font-size: 12px;
 }
 .ledger-main {
@@ -542,9 +544,6 @@
   margin: 20px 0;
 }
 @media (max-width: 1100px) {
-  .ledger-workspace {
-    grid-template-columns: 180px minmax(0, 1fr);
-  }
   .ledger-main {
     padding: 24px 20px;
   }
