@@ -269,7 +269,7 @@ export function OrganizationSettings({ showSiteAppearanceLink = false }: { showS
         ) : null}
         <div className={FIELD_COLUMNS}>
           {/* How the org is known and reached: the name and address of its site, the email and the phone. */}
-          <div className="min-w-0 space-y-5">
+          <div className="min-w-0 space-y-5 rounded-xl border bg-card p-4 sm:p-6">
             <Field label={t('orgSettings.nameLabel')} error={fieldErrors.name}>
               <Input
                 id={ORG_NAME_FIELD_ID}
@@ -358,7 +358,7 @@ export function OrganizationSettings({ showSiteAppearanceLink = false }: { showS
           </div>
 
           {/* Who runs it by law, and the language and currency of the account. */}
-          <div className="min-w-0 space-y-5">
+          <div className="min-w-0 space-y-5 rounded-xl border bg-card p-4 sm:p-6">
             {/* Who runs the site (DB-03b-a): shown in the footer of the booking site with the VAT number of the fiscal profile. */}
             <div className="space-y-4" data-testid="org-operator-section">
               <p id="org-operator-help" className="break-words text-sm text-foreground/70" data-testid="org-operator-help">
@@ -403,7 +403,7 @@ export function OrganizationSettings({ showSiteAppearanceLink = false }: { showS
                 />
                 <p className="break-words text-sm text-foreground/70">{t('orgSettings.languageHelp')}</p>
               </div>
-              <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1 text-sm" data-testid="org-regional-info">
+              <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2 rounded-lg bg-muted p-3 text-sm" data-testid="org-regional-info">
                 <dt className="text-foreground/70">{t('orgSettings.currencyLabel')}</dt>
                 <dd>{t('orgSettings.currencyValue')}</dd>
                 <dt className="text-foreground/70">{t('orgSettings.timezoneLabel')}</dt>
