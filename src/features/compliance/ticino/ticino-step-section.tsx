@@ -43,7 +43,7 @@ export function TicinoStepSection({ id, position, state, open, onToggle, childre
   const panelId = `${base}-panel`;
 
   return (
-    <li data-testid={`ticino-step-${id}`} data-state={state} data-open={open ? 'true' : 'false'}>
+    <li className={cn('rounded-xl border', open ? 'bg-card shadow-sm' : 'bg-muted/30')} data-testid={`ticino-step-${id}`} data-state={state} data-open={open ? 'true' : 'false'}>
       <h3>
         <button
           type="button"
@@ -53,7 +53,7 @@ export function TicinoStepSection({ id, position, state, open, onToggle, childre
           aria-current={open ? 'step' : undefined}
           onClick={onToggle}
           data-testid={`ticino-step-${id}-toggle`}
-          className="flex min-h-11 w-full items-center gap-3 rounded-md px-1 py-2 text-left text-sm font-semibold hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <StepMark state={state} position={position} />
           <span className="min-w-0 flex-1 break-words">{t(`swiss.steps.${id}.title`)}</span>
@@ -63,7 +63,7 @@ export function TicinoStepSection({ id, position, state, open, onToggle, childre
           <ChevronDown aria-hidden="true" className={cn('size-4 shrink-0 transition-transform motion-reduce:transition-none', open && 'rotate-180')} />
         </button>
       </h3>
-      <div id={panelId} role="region" aria-labelledby={headingId} hidden={!open} className="space-y-3 pb-4 pl-10 pr-1 pt-1">
+      <div id={panelId} role="region" aria-labelledby={headingId} hidden={!open} className="space-y-3 border-t p-3 sm:p-4">
         {children}
       </div>
     </li>

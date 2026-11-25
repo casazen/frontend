@@ -134,8 +134,8 @@ function RequestDetail({ request, canManage, paymentSent, onPaymentSent }: Reque
         onRequestAgain={() => setDialog('again')}
       />
 
-      <div className="space-y-8">
-        <PlainSection title={t('longRentRequests.detail.detailsTitle')} data-testid="long-rent-request-details">
+      <div className="grid min-w-0 items-start gap-5 xl:grid-cols-[minmax(0,3fr)_minmax(16rem,2fr)]">
+        <PlainSection className="rounded-2xl border border-border bg-card p-4 sm:p-5" title={t('longRentRequests.detail.detailsTitle')} data-testid="long-rent-request-details">
           <Facts>
             <Fact label={t('longRentRequests.detail.type')}>{getServiceCategoryLabel(request.category, t)}</Fact>
             {request.serviceName?.trim() ? <Fact label={t('longRentRequests.detail.service')}>{request.serviceName.trim()}</Fact> : null}
@@ -170,7 +170,7 @@ function RequestDetail({ request, canManage, paymentSent, onPaymentSent }: Reque
           </Facts>
         </PlainSection>
 
-        <details className="group min-w-0" data-testid="long-rent-request-more">
+        <details className="group min-w-0 rounded-2xl border border-border bg-card px-4 py-2" data-testid="long-rent-request-more">
           <summary className="flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-md text-sm font-semibold outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden">
             <ChevronDown aria-hidden="true" className="size-4 shrink-0 transition-transform group-open:rotate-180" />
             {t('longRentRequests.detail.showDetails')}

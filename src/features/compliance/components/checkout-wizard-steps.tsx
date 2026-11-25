@@ -25,15 +25,15 @@ import type { CheckoutAnswers } from '../checkout-wizard-model';
 import { alloggiatiNow } from '../lib/checkout-result';
 
 const selectClass =
-  'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
+  'flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-base sm:text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';
 
 type DraftChange = (change: Partial<CheckoutAnswers>) => void;
 
 function SummaryRow({ label, value, testId }: { label: string; value: string; testId?: string }) {
   return (
-    <div className="flex flex-wrap justify-between gap-2 py-1 text-sm">
+    <div className="grid min-w-0 gap-1 py-2 text-sm sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-4">
       <dt className="text-muted-foreground">{label}</dt>
-      <dd className="font-medium" data-testid={testId}>
+      <dd className="min-w-0 break-words font-semibold" data-testid={testId}>
         {value}
       </dd>
     </div>
@@ -55,7 +55,7 @@ export function StaySummaryStep({
 
   return (
     <div className="space-y-4" data-testid="checkout-step-panel-stay-summary">
-      <dl className="divide-y rounded-md border px-4 py-2">
+      <dl className="divide-y rounded-xl border bg-muted/30 px-4 py-2">
         <SummaryRow label={t('compliance.checkout.stay.guest')} value={stay.guestName || t('compliance.checkout.guestFallback')} />
         <SummaryRow label={t('compliance.checkout.stay.property')} value={stay.propertyName} testId="checkout-stay-property" />
         <SummaryRow
@@ -194,7 +194,7 @@ export function CleaningStep({
 
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium">{t('compliance.checkout.cleaning.question')}</legend>
-        <label className="flex items-center gap-2 text-sm">
+        <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-sm has-checked:bg-primary/5 has-checked:ring-1 has-checked:ring-primary">
           <input
             type="radio"
             name="checkout-cleaning"
@@ -204,7 +204,7 @@ export function CleaningStep({
           />
           {t('compliance.checkout.cleaning.request')}
         </label>
-        <label className="flex items-center gap-2 text-sm">
+        <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-sm has-checked:bg-primary/5 has-checked:ring-1 has-checked:ring-primary">
           <input
             type="radio"
             name="checkout-cleaning"
@@ -256,7 +256,7 @@ export function CleaningStep({
                 <option value="">{t('serviceRequest.selectSupplier')}</option>
                 {supplierOptions.map((supplier) => (
                   <option key={supplier.orgId} value={supplier.orgId}>
-                    {supplier.legalName}
+                    {supplier.legalName}{supplier.hostOrigin !== undefined && ` · ${t(supplier.hostOrigin ? 'supplier.trusted.privateSupplier' : 'supplier.trusted.marketplace')}`}
                   </option>
                 ))}
               </select>
@@ -345,7 +345,7 @@ export function PropertyReadyStep({ draft, onChange }: { draft: CheckoutAnswers;
     <div className="space-y-4" data-testid="checkout-step-panel-property-ready">
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium">{t('compliance.checkout.propertyReady.question')}</legend>
-        <label className="flex items-center gap-2 text-sm">
+        <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-sm has-checked:bg-primary/5 has-checked:ring-1 has-checked:ring-primary">
           <input
             type="radio"
             name="checkout-property-ready"
@@ -355,7 +355,7 @@ export function PropertyReadyStep({ draft, onChange }: { draft: CheckoutAnswers;
           />
           {t('compliance.checkout.propertyReady.yes')}
         </label>
-        <label className="flex items-center gap-2 text-sm">
+        <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-sm has-checked:bg-primary/5 has-checked:ring-1 has-checked:ring-primary">
           <input
             type="radio"
             name="checkout-property-ready"

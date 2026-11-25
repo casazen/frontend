@@ -1,10 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAppShell } from '@/components/layout/app-shell-context';
-import { PageHeader } from '@/components/layout/page-header';
+import { ServicePageHeader } from '@/features/supplier/components/service-page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Globe, Building2, CalendarDays, Apple, Mail } from 'lucide-react';
+import { BookOpen, ArrowLeft, Globe, Building2, CalendarDays, Apple, Mail } from 'lucide-react';
 
 interface PlatformGuide {
   icon: React.ComponentType<{ className?: string }>;
@@ -39,7 +39,8 @@ export function IcalHelpPage() {
         {t('supplier.help.backToSync')}
       </Button>
 
-      <PageHeader
+      <ServicePageHeader
+        icon={BookOpen}
         title={t('supplier.help.icalPageTitle')}
         description={t('supplier.help.icalPageDescription')}
       />

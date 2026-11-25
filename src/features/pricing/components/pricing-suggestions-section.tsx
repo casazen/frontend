@@ -49,7 +49,7 @@ export function PricingSuggestionsSection({ data, applying, onApply }: PricingSu
     );
 
   return (
-    <PlainSection title={t('pricing.suggestions.chartTitle', { count: items.length })} data-testid="pricing-suggestions">
+    <PlainSection className="rounded-xl border bg-card p-4 sm:p-5" title={t('pricing.suggestions.chartTitle', { count: items.length })} data-testid="pricing-suggestions">
       <div className="space-y-6 pt-2">
         {data.computedAt && (
           <p className="text-sm text-foreground/70" data-testid="computed-at">
@@ -98,7 +98,7 @@ export function PricingSuggestionsSection({ data, applying, onApply }: PricingSu
           <h3 className="text-base font-semibold">{t('pricing.suggestions.details')}</h3>
           {/* A table on a computer; on a phone each night is a block of its own (the header stays for screen readers). */}
           <table className="w-full text-sm max-md:block" data-testid="suggestions-table">
-            <thead className="max-md:sr-only">
+            <thead className="bg-muted max-md:sr-only">
               <tr className="text-left text-foreground/70">
                 <th scope="col" className="py-2 pr-4 font-medium">
                   {t('pricing.suggestions.date')}
@@ -120,7 +120,7 @@ export function PricingSuggestionsSection({ data, applying, onApply }: PricingSu
                 return (
                   <tr
                     key={s.date}
-                    className="border-t max-md:grid max-md:grid-cols-[minmax(0,1fr)_auto] max-md:gap-x-4 max-md:gap-y-1 max-md:py-3"
+                    className="border-t focus-within:bg-primary/5 max-md:grid max-md:grid-cols-[minmax(0,1fr)_auto] max-md:gap-x-4 max-md:gap-y-1 max-md:py-3"
                   >
                     <td className="py-3 pr-4 text-foreground/70 max-md:col-start-1 max-md:row-start-1 max-md:p-0">{shortDay(s.date)}</td>
                     <td className="py-3 pr-4 text-right font-semibold tabular-nums max-md:col-start-2 max-md:row-start-1 max-md:p-0">

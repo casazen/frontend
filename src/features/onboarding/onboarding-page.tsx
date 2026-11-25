@@ -302,7 +302,7 @@ export function ExistingOnboardingPage() {
 
   if (pendingAccess) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted/40 px-4 py-12">
+      <div className="min-h-dvh border-t-4 border-primary bg-muted/40 px-4 py-6 sm:py-12">
         <WorkspaceAccessError
           onRetry={() => void leaveTo(pendingAccess.target, pendingAccess.rentalType)}
         />
@@ -331,9 +331,9 @@ export function ExistingOnboardingPage() {
   const showStepper = !isEditMode && !renewsConsents;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/40 px-4 py-12">
-      <div className="mx-auto max-w-5xl space-y-10 text-center">
-        <div className="space-y-3">
+    <div className="min-h-dvh border-t-4 border-primary bg-muted/40 px-4 py-6 sm:py-12">
+      <div className="mx-auto max-w-5xl space-y-6">
+        <div className="space-y-3 rounded-2xl border bg-card p-5 sm:p-8">
           <p className="text-sm font-semibold uppercase tracking-wide text-primary">{t('onboarding.casaZen')}</p>
           {showStepper ? (
             <>
@@ -344,7 +344,7 @@ export function ExistingOnboardingPage() {
                 })}
               </p>
               <ol
-                className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm"
+                className="flex flex-wrap items-center gap-2 text-sm"
                 aria-label={t('onboarding.stepsLabel')}
                 data-testid="onboarding-steps"
               >
@@ -355,7 +355,7 @@ export function ExistingOnboardingPage() {
                     <li
                       key={wizardStep}
                       aria-current={current ? 'step' : undefined}
-                      className={current ? 'font-semibold text-foreground' : done ? 'text-primary' : 'text-muted-foreground'}
+                      className={current ? 'rounded-full bg-primary px-3 py-1.5 font-semibold text-primary-foreground' : done ? 'rounded-full bg-muted px-3 py-1.5 text-primary' : 'rounded-full px-3 py-1.5 text-muted-foreground'}
                     >
                       <span className="mr-1">{index + 1}.</span>
                       {t(`onboarding.steps.${wizardStep}`)}

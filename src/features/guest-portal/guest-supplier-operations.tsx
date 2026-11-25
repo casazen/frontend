@@ -1,15 +1,20 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ApiClient } from '@/api/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { getHttpStatus } from '@/lib/api-errors';
-import { orderMoney, orderStatus, type GuestSupplierOrder } from './guest-supplier-order-model';
+import { GUEST_ORDER_REFRESH_MS, orderMoney, orderStatus, type GuestSupplierOrder } from './guest-supplier-order-model';
 
 interface OfferTerms {
   id: string;
   serviceId: string;
+  serviceName: string;
+  supplierName: string;
+  propertyName?: string;
+  hostName?: string;
   commissionBasisPoints: number;
   hostOrigin: boolean;
   accepted: boolean;
@@ -26,11 +31,14 @@ interface CatalogMatch {
   id: string;
   name: string;
   supplier: string;
+  hostOrigin: boolean;
+  commissionBasisPoints: number;
 }
 
 type Scope = { role: 'host'; propertyId: string } | { role: 'supplier' } | { role: 'admin' };
 
 export function GuestSupplierOperations({ scope }: { scope: Scope }) {
+  const { t } = useTranslation();
   const endpoint = scope.role === 'host' ? `/properties/${scope.propertyId}/guest-supplier-orders`
     : scope.role === 'supplier' ? '/supplier/guest-orders' : '/admin/guest-supplier-orders';
   const query = useQuery({
@@ -42,6 +50,8 @@ export function GuestSupplierOperations({ scope }: { scope: Scope }) {
       return ApiClient.get<OrderList>(endpoint, undefined, { signal });
     },
     retry: false,
+    refetchOnWindowFocus: 'always',
+    refetchInterval: ({ state }) => scope.role === 'supplier' && state.data && !state.error ? GUEST_ORDER_REFRESH_MS : false,
   });
   const change = useMutation({
     mutationFn: ({ suffix, body, method }: { suffix: string; body: object; method?: 'put' }) =>
@@ -56,15 +66,15 @@ export function GuestSupplierOperations({ scope }: { scope: Scope }) {
     <section className="grid gap-4 rounded-lg border bg-card p-4">
       <h2 className="font-semibold">Servizi e ordini ospiti</h2>
       <p>Ambiente di test. Pagamenti e rimborsi simulati.</p>
-      {scope.role === 'admin' && <MarketplaceSettings endpoint={endpoint} />}
       {scope.role === 'host' && <>
-        <InviteTrustedSupplier endpoint={endpoint} />
         <ConfigureOffer endpoint={endpoint} offers={query.data.offers}
           busy={change.isPending} save={(id, commissionBasisPoints, enabled) =>
             change.mutate({ suffix: `/offers/${id}`, method: 'put', body: { commissionBasisPoints, enabled } })} />
       </>}
       {scope.role === 'supplier' && query.data.offers.map((offer) => (
-        <div className="flex flex-wrap items-center gap-3" key={offer.id}>
+        <div className="grid gap-2 rounded border p-3" key={offer.id}>
+          <h3 className="font-semibold">{offer.serviceName}</h3>
+          {(offer.propertyName || offer.hostName) && <p>{[offer.propertyName, offer.hostName].filter(Boolean).join(' · ')}</p>}
           <span>Commissione {offer.hostOrigin ? 'host' : 'CasaZen'} {offer.commissionBasisPoints / 100}% · {offer.accepted ? 'Accettata' : 'In attesa'}</span>
           <Button disabled={change.isPending} onClick={() => change.mutate({
             suffix: `/offers/${offer.id}/consent`,
@@ -105,6 +115,7 @@ export function GuestSupplierOperations({ scope }: { scope: Scope }) {
           </article>
         );
       })}
+      {change.isSuccess && change.variables.method === 'put' && <p role="status">{t('supplier.trusted.serviceSaved')}</p>}
       {change.isError && <p role="alert">Operazione non riuscita. Aggiorna la pagina e riprova.</p>}
     </section>
   );
@@ -134,44 +145,66 @@ function ConfigureOffer({ endpoint, offers, busy, save }: {
   endpoint: string; offers: OfferTerms[]; busy: boolean;
   save: (id: string, commissionBasisPoints: number, enabled: boolean) => void;
 }) {
+  const { t } = useTranslation();
   const [term, setTerm] = useState('');
+  const [origin, setOrigin] = useState<'host' | 'marketplace'>('host');
   const found = useQuery({
-    queryKey: ['guest-supplier-catalog', endpoint, term],
-    queryFn: ({ signal }) => ApiClient.get<CatalogMatch[]>(`${endpoint}/catalog`, { search: term }, { signal }),
+    queryKey: ['guest-supplier-catalog', endpoint, term, origin],
+    queryFn: ({ signal }) => ApiClient.get<CatalogMatch[]>(`${endpoint}/catalog`, { search: term, origin }, { signal }),
     enabled: term.length >= 2,
     retry: false,
   });
 
-  return <>
+  const hostOrigin = origin === 'host';
+  const configured = offers.filter((offer) => offer.hostOrigin === hostOrigin);
+  const available = found.data?.filter((item) => item.hostOrigin === hostOrigin && !offers.some((offer) => offer.serviceId === item.id));
+
+  return <section className="grid gap-4">
+    <div role="group" aria-label={t('supplier.trusted.source')} className="flex flex-wrap gap-2">
+      <Button type="button" aria-pressed={hostOrigin} variant={hostOrigin ? 'default' : 'outline'} onClick={() => setOrigin('host')}>{t('supplier.trusted.privateDirectory')}</Button>
+      <Button type="button" aria-pressed={!hostOrigin} variant={hostOrigin ? 'outline' : 'default'} onClick={() => setOrigin('marketplace')}>{t('supplier.trusted.marketplace')}</Button>
+    </div>
+    <p>{hostOrigin ? t('supplier.trusted.hostTerms') : t('supplier.trusted.marketplaceTerms')}</p>
+    {hostOrigin && <InviteTrustedSupplier endpoint={endpoint} />}
+    <h3 className="font-semibold">{t('supplier.trusted.configured')}</h3>
+    {configured.length === 0 && <p>{t('supplier.trusted.noneConfigured')}</p>}
+    {configured.map((offer) => <ServiceOfferForm key={offer.id + ':' + offer.version}
+      item={{ id: offer.serviceId, name: offer.serviceName, supplier: offer.supplierName, hostOrigin, commissionBasisPoints: offer.commissionBasisPoints }}
+      offer={offer} busy={busy} save={save} />)}
     <form className="grid gap-2 sm:grid-cols-[1fr_auto]" onSubmit={(event) => {
       event.preventDefault();
       setTerm(String(new FormData(event.currentTarget).get('search')).trim());
     }}>
-      <label>Cerca servizi o fornitori<Input name="search" required minLength={2} maxLength={100} /></label>
+      <label>{t('supplier.trusted.findServices')}<Input name="search" required minLength={2} maxLength={100} /></label>
       <Button className="self-end" variant="outline">Cerca</Button>
     </form>
     {found.isFetching && <p role="status">Ricerca in corso…</p>}
     {found.isError && <p role="alert">Ricerca non riuscita.</p>}
-    {found.data?.length === 0 && <p>Nessun servizio trovato.</p>}
-    {found.data?.map((item) => {
-      const offer = offers.find((entry) => entry.serviceId === item.id);
-      return <form className="grid gap-2 rounded border p-3" key={`${item.id}:${offer?.version ?? ''}`} onSubmit={(event) => {
-        event.preventDefault();
-        const fields = new FormData(event.currentTarget);
-        save(item.id, Math.round(Number(fields.get('commission')) * 100), fields.has('enabled'));
-      }}>
-        <h3>{item.name} · {item.supplier}</h3>
-        {offer && <p>{offer.accepted ? 'Commissione accettata' : 'In attesa di consenso'} · {offer.commissionBasisPoints / 100}%</p>}
-        {offer?.hostOrigin !== false && <label>Commissione host (%)
-          <Input name="commission" type="number" step={0.01} min={0} max={50} defaultValue={(offer?.commissionBasisPoints ?? 0) / 100} />
-        </label>}
-        <label className="flex items-center gap-2"><input type="checkbox" name="enabled" defaultChecked={offer?.enabled ?? true} /> Disponibile nel portale</label>
-        <Button className="justify-self-start" disabled={busy}>Salva servizio</Button>
-      </form>;
-    })}
-  </>;
+    {available?.length === 0 && <p role="status">{t('supplier.trusted.noMatches')}</p>}
+    {available?.map((item) => <ServiceOfferForm key={item.id} item={item} busy={busy} save={save} />)}
+  </section>;
 }
 
+function ServiceOfferForm({ item, offer, busy, save }: {
+  item: CatalogMatch; offer?: OfferTerms; busy: boolean;
+  save: (id: string, commissionBasisPoints: number, enabled: boolean) => void;
+}) {
+  const { t } = useTranslation();
+  return <form className="grid gap-2 rounded border p-3" onSubmit={(event) => {
+    event.preventDefault();
+    const fields = new FormData(event.currentTarget);
+    const rate = item.hostOrigin ? Math.round(Number(fields.get('commission')) * 100) : item.commissionBasisPoints;
+    save(item.id, rate, fields.has('enabled'));
+  }}>
+    <h4 className="font-semibold">{item.name} · {item.supplier}</h4>
+    {offer && <p>{offer.accepted ? t('supplier.trusted.accepted') : t('supplier.trusted.pending')}</p>}
+    {item.hostOrigin ? <label>{t('supplier.trusted.hostRate')}
+      <Input name="commission" type="number" required step={0.01} min={0} max={50} defaultValue={item.commissionBasisPoints / 100} />
+    </label> : <p>{t('supplier.trusted.platformRate', { rate: item.commissionBasisPoints / 100 })}</p>}
+    <label className="flex items-center gap-2"><input type="checkbox" name="enabled" defaultChecked={offer?.enabled ?? true} /> {t('supplier.trusted.exposed')}</label>
+    <Button className="justify-self-start" disabled={busy}>{t('supplier.trusted.save')}</Button>
+  </form>;
+}
 
 function InviteTrustedSupplier({ endpoint }: { endpoint: string }) {
   const [email, setEmail] = useState('');
@@ -194,19 +227,20 @@ function InviteTrustedSupplier({ endpoint }: { endpoint: string }) {
   </div>;
 }
 
-function MarketplaceSettings({ endpoint }: { endpoint: string }) {
+export function MarketplaceSettings() {
+  const endpoint = '/admin/suppliers/marketplace';
   const [term, setTerm] = useState('');
   const suppliers = useQuery({
     queryKey: ['guest-supplier-marketplace', term],
     queryFn: ({ signal }) => ApiClient.get<{ orgId: string; legalName: string; enabled: boolean }[]>(
-      `${endpoint}/marketplace`, { search: term }, { signal },
+      endpoint, { search: term }, { signal },
     ),
     enabled: term.length >= 2,
     retry: false,
   });
   const publish = useMutation({
     mutationFn: ({ orgId, enabled }: { orgId: string; enabled: boolean }) =>
-      ApiClient.put<void>(`${endpoint}/marketplace/${orgId}`, { enabled }),
+      ApiClient.put<void>(`${endpoint}/${orgId}`, { enabled }),
     onSuccess: () => { void suppliers.refetch(); },
   });
 

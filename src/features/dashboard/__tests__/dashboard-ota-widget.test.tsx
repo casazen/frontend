@@ -31,7 +31,7 @@ function renderDashboard(otaPartnerApi: boolean) {
   return render(
     <QueryClientProvider client={queryClient}>
       <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, otaPartnerApi }, isLoading: false }}>
-        <MemoryRouter>
+        <MemoryRouter initialEntries={['/app/short-rent?view=analytics']}>
           <DashboardPage />
         </MemoryRouter>
       </FeatureFlagsContext.Provider>

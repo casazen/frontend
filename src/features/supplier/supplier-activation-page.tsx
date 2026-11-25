@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { CheckCircle2, Circle, Loader2 } from 'lucide-react';
-import { PageHeader } from '@/components/layout/page-header';
+import { BadgeCheck, CheckCircle2, Circle, Loader2 } from 'lucide-react';
+import { ServicePageHeader } from '@/features/supplier/components/service-page-header';
 import { FOCUS_COLUMN, PAGE_COLUMNS } from '@/components/layout/page-columns';
 import { ErrorState } from '@/components/shared/error-state';
 import { LoadingScreen } from '@/components/shared/loading-screen';
@@ -205,7 +205,7 @@ function ActivationWizard({ activation, profile }: { activation: ActivationStatu
   const current = screens[index];
   return (
     <div className={cn(FOCUS_COLUMN, 'space-y-6')} data-testid="supplier-activation-page">
-      <PageHeader title={t('supplier.activation.title')} description={t('supplier.activation.description')} />
+      <ServicePageHeader icon={BadgeCheck} title={t('supplier.activation.title')} description={t('supplier.activation.description')} />
       <StepNav activation={activation} screens={screens} current={index} onGoToScreen={goToScreen} />
       <p className="text-sm text-muted-foreground" data-testid="supplier-activation-step-of">
         {t('supplier.activation.stepOf', { current: index + 1, total: screens.length })}
@@ -258,7 +258,7 @@ export function SupplierActivationPage() {
     // A suspended supplier cannot activate itself: only an admin reactivates it (SU-12).
     return (
       <div className={cn(FOCUS_COLUMN, 'space-y-4')} data-testid="supplier-activation-suspended">
-        <PageHeader title={t('supplier.statusSuspended')} description={t('supplier.suspendedHint')} />
+        <ServicePageHeader icon={BadgeCheck} title={t('supplier.statusSuspended')} description={t('supplier.suspendedHint')} />
       </div>
     );
   }

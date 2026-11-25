@@ -1,5 +1,6 @@
+import { ContactRound } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { PageHeader } from '@/components/layout/page-header';
+import { ServicePageHeader } from '@/features/supplier/components/service-page-header';
 import { PAGE_COLUMNS_WIDE } from '@/components/layout/page-columns';
 import { ErrorState } from '@/components/shared/error-state';
 import { SkeletonLine } from '@/components/ui/skeleton';
@@ -30,7 +31,7 @@ export function SupplierProfilePage() {
   if (isError && !profile) {
     return (
       <div className="w-full min-w-0 space-y-6">
-        <PageHeader title={t('supplier.profileTitle')} description={t('supplier.profileDescription')} crumbs="auto" />
+        <ServicePageHeader icon={ContactRound} title={t('supplier.profileTitle')} description={t('supplier.profileDescription')} crumbs="auto" />
         <ErrorState testId="supplier-profile-error" title={t('supplier.profileLoadError')} error={error} onRetry={() => void refetch()} />
       </div>
     );
@@ -39,7 +40,7 @@ export function SupplierProfilePage() {
   if (isLoading || !profile) {
     return (
       <div className="w-full min-w-0 space-y-6" data-testid="supplier-profile-loading" aria-busy="true">
-        <PageHeader title={t('supplier.profileTitle')} crumbs="auto" />
+        <ServicePageHeader icon={ContactRound} title={t('supplier.profileTitle')} crumbs="auto" />
         <SkeletonLine lines={8} label={t('supplier.profileLoading')} />
       </div>
     );
@@ -47,7 +48,7 @@ export function SupplierProfilePage() {
 
   return (
     <div className="w-full min-w-0 space-y-8" data-testid="supplier-profile-page">
-      <PageHeader title={t('supplier.profileTitle')} description={t('supplier.profileDescription')} crumbs="auto" />
+      <ServicePageHeader icon={ContactRound} title={t('supplier.profileTitle')} description={t('supplier.profileDescription')} crumbs="auto" />
       <ProfileFocus
         profile={profile}
         activation={activation.data}

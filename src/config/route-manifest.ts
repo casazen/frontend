@@ -625,6 +625,17 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     // answers 404 to every endpoint of the assistant. The page asks `property.write` (the exceptions and the answers of a property are written with it); inside it, the
     // rules, the situations and the answers of the organization are changed by the organization administrator alone, and the others read them with the reason in words.
     // Who may not open «Impostazioni» (not the organization administrator) finds it in "Altro", as every page whose section is closed to its user.
+    path: '/app/short-rent/settings/guest-portal',
+    context: 'short-rent',
+    requiredPermissions: ['guestportal.manage', 'property.read'],
+    featureFlag: 'guestPortal',
+    navKey: 'guestPortal.host.title',
+    navParent: '/app/short-rent/settings',
+    navOrder: 82,
+    icon: 'Settings',
+    component: async () => ({ default: (await import('@/features/settings/guest-portal-settings-page')).GuestPortalSettingsPage }),
+  },
+  {
     path: '/app/short-rent/settings/assistant',
     context: 'short-rent',
     requiredPermissions: ['property.write'],
@@ -791,12 +802,9 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
-    // The trusted suppliers of an agency (ADR-010): `/trusted-suppliers` answers only an org on the Agency plan (`agencyTier`). Next to
-    // the interventions they are asked for: a tab of Immobili, there while the flag is on.
     path: '/app/short-rent/trusted-suppliers',
     context: 'short-rent',
-    requiredPermissions: ['property.read'],
-    featureFlag: 'agencyTier',
+    requiredPermissions: [ORG_BILLING_ADMIN_PERMISSION],
     navKey: 'nav.trustedSuppliers',
     navParent: '/app/short-rent/properties',
     navOrder: 2,

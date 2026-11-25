@@ -66,7 +66,7 @@ function SectionTabs({ className }: NavSectionTabsProps) {
     );
   }
 
-  return hasQueryClient && pages.some((page) => page.navCount) ? (
+  return hasQueryClient && pathname !== '/app/short-rent' && pages.some((page) => page.navCount) ? (
     <CountedSectionTabs section={section} className={className} />
   ) : (
     <SectionTabStrip section={section} counts={{}} className={className} />

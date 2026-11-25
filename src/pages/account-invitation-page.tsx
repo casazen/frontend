@@ -44,15 +44,15 @@ function InvitationHandoff({ fragment, cleanUrl }: { fragment: string; cleanUrl:
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {canStart ? (
+          {canStart && handoffFailed ? (
             <Button className="w-full" disabled={isLoading || busy} onClick={() => start(invitation)}>
               {t('invitation.retry')}
             </Button>
-          ) : (
+          ) : !canStart ? (
             <Button asChild variant="outline" className="w-full">
               <Link to="/">{t('invitation.unusable.goToApp')}</Link>
             </Button>
-          )}
+          ) : null}
         </CardContent>
       </Card>
     </main>

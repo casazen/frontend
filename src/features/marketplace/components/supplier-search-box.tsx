@@ -55,7 +55,7 @@ export function SupplierSearchBox({ value = '', onSearch, live = false }: Suppli
           type="search"
           value={typed ?? value}
           placeholder={t('marketplace.search.placeholder')}
-          className="pl-9"
+          className="min-h-11 rounded-xl pl-9"
           data-testid="marketplace-search"
           onChange={(event) => {
             const words = event.target.value;

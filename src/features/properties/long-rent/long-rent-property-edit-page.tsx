@@ -47,11 +47,22 @@ export function LongRentPropertyEditPage() {
   if (property.rentalMode === 'Short') return <Navigate to={`/app/short-rent/properties/${property.id}/edit`} replace />;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 [&_input]:scroll-mt-24">
       <PageHeader
         title={t('longRentProperties.edit.title')}
         description={t('longRentProperties.edit.description', { name: property.name })}
       />
+      <nav aria-label={t('longRentProperties.edit.title')} className="flex flex-wrap gap-2 rounded-2xl border bg-card p-3">
+        {[
+          ['name', 'property.form.basicInfo.title'],
+          ['address', 'property.form.location.title'],
+          ['bedrooms', 'property.form.details.title'],
+        ].map(([field, title]) => (
+          <a key={field} href={`#${field}`} className="inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-medium text-primary hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">
+            {t(title)}
+          </a>
+        ))}
+      </nav>
       <PropertyForm
         variant="long-rent"
         property={property}

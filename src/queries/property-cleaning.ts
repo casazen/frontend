@@ -85,7 +85,7 @@ export function useSaveBulkCleaningSetup() {
 }
 
 /**
- * The suppliers that clean, for each property given (`GET api/suppliers?propertyId=&category=cleaning`, one read for each): the dialog for many properties asks once for each comune
+ * The suppliers that clean, for each property given (`GET api/suppliers?propertyId=&category=cleaning`, one read for each): the dialog for many properties reads each property’s assignments
  * and puts the lists together. The same key as the list a request asks for (`useSuppliersByProperty`), so a list read by one is the other's. `enabled` is false while a member of the staff
  * is chosen: nothing is asked then. Read again whenever it is asked for, also when it was read a moment ago: the picker never offers a supplier that was available minutes ago (a read that
  * fails is not used by the caller, which tells it is not read).

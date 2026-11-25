@@ -8,28 +8,24 @@ import { FocusBlock } from '@/components/shared/calm';
 import { ErrorState } from '@/components/shared/error-state';
 import { Alert } from '@/components/ui/alert';
 import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
+import { useCommercialRouteAccess } from '@/hooks/use-commercial-profile';
+import { useRoutines } from '@/queries/routines';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { PHONE_QUERY, useMediaQuery } from '@/hooks/use-media-query';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Select } from '@/components/ui/select';
 import { useWorkspace } from '@/hooks/use-workspace';
-import { ComplianceUrgentBlock } from '@/features/compliance/components/compliance-urgent-block';
-import { useComplianceFineCount, useComplianceLightsOn } from '@/features/compliance/use-compliance';
 import { requestInterventionPath } from '@/features/service-requests/interventions/paths';
-import { urgentCountOf } from '@/features/todo/lib/todo-model';
-import { TodoPath } from '@/features/todo/todo-path';
 import { complianceActionRoute } from '@/lib/compliance-routes';
 import { formatStayDate } from '@/lib/stay-dates';
-import { useActivities, useActivityCount } from '@/queries/internalActivities';
-import { useCommercialRouteAccess } from '@/hooks/use-commercial-profile';
-import { useRoutines } from '@/queries/routines';
 import { useMessageHubThreads } from '@/queries/use-message-hub';
 import { useDashboardIcalFeeds, useDashboardOverview, useDashboardToday } from '@/queries/use-dashboard';
 import { useProperties } from '@/queries/use-properties';
 import { useCurrentUser } from '@/queries/use-users';
 import type { DashboardList, DashboardToday } from '@/types/dashboard.types';
+import { planResumeHref } from '@/features/onboarding/plan-resume';
+import { usePlanResume } from '@/features/onboarding/use-plan-resume';
 import { HomeFilterBar } from './components/home-filter-bar';
-import { HomeNextStep } from './components/home-next-step';
 import { HomeNumbers } from './components/home-numbers';
 import { OtaStatusCard } from './components/ota-status-card';
 import { RevenueChart } from './components/revenue-chart';
@@ -38,15 +34,21 @@ import { TodoSection } from './components/todo-section';
 import { buildTodayRows, buildTodoRows } from './lib/home-model';
 import { HOME_PERIODS, overviewQueryFor, parseHomePeriod } from './lib/home-period';
 
+function ResumeOnboardingLink({ userId, orgId }: { userId?: string; orgId?: string }) {
+  const { t } = useTranslation();
+  const { step } = usePlanResume(userId, orgId);
+  return step ? (
+    <Link className="inline-flex items-center py-2 text-sm font-medium text-primary underline-offset-4 hover:underline"
+      data-testid="home-resume-onboarding" to={planResumeHref(step)}>
+      {t('commercial.resume')}
+    </Link>
+  ) : null;
+}
+
 /** Two columns from a wide screen: the thing that matters on the left (60 %), the one beside it on the right. */
 const TWO_COLUMNS = 'grid gap-8 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] xl:items-start';
 
-/**
- * The Home of Affitti brevi: "in 5 secondi capisco cosa devo fare oggi". The day in one block ("Oggi"), the things to do in
- * order of urgency ("Da fare"), the four numbers against the period before, one chart and the next step of the setup. The
- * property and the period are in the address; every number and every row comes from the server (`dashboard/today`,
- * `dashboard/overview`, `dashboard/ical-feeds`), none is worked out here.
- */
+/** The daily workspace shows today's stays and pending operations. Analytics open separately from the page menu. */
 export function DashboardPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
@@ -61,7 +63,6 @@ export function DashboardPage() {
   const canReadBookings = hasPermission('short-rent', 'booking.read');
   const canWriteProperty = hasPermission('short-rent', 'property.write');
   const canRequestService = hasPermission('short-rent', 'servicerequest.write');
-
   const canOpenPath = useCommercialRouteAccess();
   const showRoutineStatus = flags.routines && canWriteProperty && canOpenPath('/app/short-rent/automations');
   const routines = useRoutines(showRoutineStatus);
@@ -74,6 +75,7 @@ export function DashboardPage() {
   const propertyList = useMemo(() => (Array.isArray(properties.data) ? properties.data : []), [properties.data]);
   // Keep the scope of a deep link even if the property was removed or the caller cannot read its name.
   const propertyId = params.get('propertyId') ?? '';
+  const analytics = params.get('view') === 'analytics' || (!params.has('view') && params.has('period'));
   const period = parseHomePeriod(params.get('period'));
   const showAllTodo = params.get('todo') === 'all';
 
@@ -85,21 +87,6 @@ export function DashboardPage() {
   // permission to read bookings, no request.
   const threads = useMessageHubThreads({ needsReply: true, pageSize: 20 }, hasPermission('short-rent', 'booking.read'));
   const threadList = useMemo(() => threads.data?.items ?? [], [threads.data]);
-
-  // The "To do" list of the host (NF-07): what the system asks of it, already sorted by the server. It is the road of the Home («I tuoi prossimi
-  // passi»): its first item is the step to do now, unless what carries a risk of a sanction already holds the one highlighted block of the page.
-  // The server cuts the list at 50: how many are urgent is the number of the tab «Da fare» (`/count`, which counts them all), and a list that long
-  // is told as "the first ones", with no total.
-  const activities = useActivities();
-  const urgentActivities = useActivityCount();
-  const todoItems = useMemo(() => (Array.isArray(activities.data) ? activities.data : []), [activities.data]);
-  const complianceFines = useComplianceFineCount(canReadBookings);
-  // With the traffic light on (NF-52) the compliance reaches the "Adesso" block through this very list (the feeder keeps it in step with the cockpit):
-  // the block of the sanctions steps aside, so there is no second path to the "Adesso" block and no item twice. Without it, that block still holds it.
-  const complianceLights = useComplianceLightsOn(canReadBookings);
-  const complianceBlock = !complianceLights && typeof complianceFines === 'number' && complianceFines > 0;
-  const todoFocus = todoItems.length > 0 && !complianceBlock;
-  const propertyNames = useMemo(() => new Map(propertyList.map((property) => [property.id, property.name] as const)), [propertyList]);
 
   const setQuery = useCallback(
     (changes: Record<string, string | null>) => {
@@ -130,7 +117,7 @@ export function DashboardPage() {
   const createBooking = canWrite
     ? { label: t('dashboard.actions.createBooking'), icon: Plus, to: '/app/short-rent/bookings/create', testId: 'home-create-booking' }
     : undefined;
-  const firstName = user?.firstName?.trim();
+  const firstName = user?.firstName?.includes('@') ? undefined : user?.firstName?.trim();
   const noActiveProperty = canReadBookings && overview.data?.propertyCount === 0 && !propertyId && canWriteProperty;
   const pendingActivation = today.data?.todo.items.find((item) => item.action === 'ActivateProperty');
   const activationRoute = pendingActivation
@@ -152,6 +139,7 @@ export function DashboardPage() {
               </Link>
             ) : undefined}
             secondary={[
+              ...(canReadBookings ? [{ label: t(analytics ? 'nav.dashboard' : 'dashboard.numbers.label'), icon: ChartNoAxesColumn, onClick: () => setQuery({ view: analytics ? null : 'analytics', period: null }) }] : []),
               ...(phone && createBooking ? [createBooking] : []),
               ...(canWriteProperty ? [{ label: t('dashboard.actions.addProperty'), icon: Building2, to: '/app/short-rent/properties/create' }] : []),
               // «Richiedi un intervento» (SR-08b): the guided request, on the property the Home is filtered to; for who may ask for one.
@@ -161,12 +149,10 @@ export function DashboardPage() {
             ]}
             mobilePrimary="none"
           />
+          {flags.octorateOnboarding && <ResumeOnboardingLink userId={user?.id} orgId={user?.org?.id} />}
         </div>
 
-        {/* «Sono in regola?» in one line, and, without the traffic light, what carries a risk of a sanction as the first block, whatever the filter below says: it is the host's, not a property's. */}
-        {!noActiveProperty && canReadBookings ? <ComplianceUrgentBlock /> : null}
-
-        {canReadBookings && !noActiveProperty ? (
+        {canReadBookings && !noActiveProperty && (propertyList.length > 1 || propertyId) ? (
           <HomeFilterBar
             properties={propertyList}
             propertyId={propertyId}
@@ -186,12 +172,12 @@ export function DashboardPage() {
               testId: 'home-first-property-cta',
             }}
           />
-        ) : canReadBookings ? (
+        ) : canReadBookings && !analytics ? (
           <div className={TWO_COLUMNS}>
             {today.data && !today.isError ? (
               <>
                 <TodayCard rows={todayRows} today={today.data} propertyId={propertyId} />
-                <TodoSection rows={todoRows} showAll={showAllTodo} onToggleAll={() => setQuery({ todo: showAllTodo ? null : 'all' })} />
+                <TodoSection rows={todoRows} incomplete={threads.isError || (canReadProperties && feeds.isError)} loading={threads.isLoading || (canReadProperties && feeds.isLoading)} showAll={showAllTodo} onToggleAll={() => setQuery({ todo: showAllTodo ? null : 'all' })} />
               </>
             ) : today.isError ? (
               <div className="xl:col-span-2">
@@ -214,19 +200,8 @@ export function DashboardPage() {
           </div>
         ) : null}
 
-        {/* The "To do" list (NF-07) as a road: the item to do now, the next ones and the way to the whole list; nothing while there is nothing to do. */}
-        {!noActiveProperty && todoItems.length > 0 ? (
-          <TodoPath
-            items={todoItems}
-            focus={todoFocus}
-            urgent={urgentCountOf(todoItems, urgentActivities.data?.count)}
-            propertyNames={propertyNames}
-            hasPermission={hasPermission}
-          />
-        ) : null}
-
         {canReadBookings && !noActiveProperty && (
-          <Accordion type="single" collapsible defaultValue={params.has('period') ? 'performance' : undefined}
+          <Accordion type="single" collapsible key={analytics ? 'analytics' : 'daily'} defaultValue={analytics ? 'performance' : undefined}
             className="rounded-2xl border bg-card px-5 md:px-6" data-testid="home-performance">
             <AccordionItem value="performance">
               <AccordionTrigger>
@@ -273,9 +248,7 @@ export function DashboardPage() {
           </Accordion>
         )}
 
-        <HomeNextStep />
-
-        {otaEnabled ? <OtaStatusCard /> : null}
+        {analytics && otaEnabled ? <OtaStatusCard /> : null}
       </div>
     </AppShell>
   );

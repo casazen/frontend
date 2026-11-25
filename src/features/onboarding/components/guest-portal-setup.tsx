@@ -10,6 +10,7 @@ import { HostExtrasEditor } from '@/features/bookings/components/host-extras-edi
 import { GuestHouseGuideEditor } from '@/features/bookings/components/guest-house-guide-editor';
 import { GuestSupplierOperations } from '@/features/guest-portal/guest-supplier-operations';
 import type { HouseGuide } from '@/features/guest-portal/house-guide-fields';
+import { ORG_BILLING_ADMIN_PERMISSION } from '@/lib/org-billing-admin';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { useProperties } from '@/queries/use-properties';
@@ -80,7 +81,7 @@ export function GuestPortalSetupEntry() {
   );
 }
 
-function PropertySetupSelection() {
+export function PropertySetupSelection({ initialPropertyId }: { initialPropertyId?: string }) {
   const { t } = useTranslation();
   const [selected, setSelected] = useState('');
   const properties = useProperties({ mode: 'short' }, { fresh: true });
@@ -89,7 +90,7 @@ function PropertySetupSelection() {
   if (properties.isError) return <p role="alert">{t('guestPortal.host.unavailable')}</p>;
   if (!properties.data.length) return <p>{t('guestPortal.setup.noProperties')}</p>;
 
-  const propertyId = selected || properties.data[0].id;
+  const propertyId = selected || properties.data.find(property => property.id === initialPropertyId)?.id || properties.data[0].id;
   return (
     <div className="grid gap-4">
       <label className="grid gap-1 text-sm font-medium">
@@ -233,7 +234,7 @@ function PropertySetup({ propertyId }: { propertyId: string }) {
           )}
           {step === 'extras' && <HostExtrasEditor propertyId={propertyId} suggestions={generate.data?.extras} />}
           {step === 'suppliers' && flags.guestPortalSupplierServices && <GuestSupplierOperations scope={{ role: 'host', propertyId }} />}
-          {step === 'suppliers' && flags.agencyTier && hasPermission('short-rent', 'property.read') && (
+          {step === 'suppliers' && hasPermission('short-rent', ORG_BILLING_ADMIN_PERMISSION) && (
             <Button type="button" variant="link" asChild className="min-h-11 justify-self-start px-0">
               <Link to="/app/short-rent/trusted-suppliers">{t('guestPortal.setup.manageSuppliers')}</Link>
             </Button>

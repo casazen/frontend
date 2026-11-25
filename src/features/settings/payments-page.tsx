@@ -177,7 +177,7 @@ export function PaymentsBody({ payments, showAction }: PaymentsBodyProps) {
           ) : null}
 
           {hasRequirements && needsAction ? (
-            <div className="space-y-0.5 text-sm" data-testid="connect-requirements-alert">
+            <div className="space-y-1 rounded-lg border-s-4 border-warning bg-warning-soft p-4 text-sm" data-testid="connect-requirements-alert">
               <p className="font-medium">{t('settings.verificationIncomplete')}</p>
               <p className="text-foreground/70">{t('settings.verificationIncompleteDescription')}</p>
             </div>

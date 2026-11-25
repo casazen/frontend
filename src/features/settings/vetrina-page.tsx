@@ -40,18 +40,18 @@ export function VetrinaPage() {
   return (
     <AppShell>
       {orgBookingPath && bookingSite ? (
-        <div className="-m-4 flex h-[calc(100svh-var(--header-height))] min-h-0 flex-col overflow-hidden max-md:h-[calc(100svh-var(--header-height)-var(--bottom-nav-height))] md:-m-6">
+        <div className="flex min-w-0 flex-col gap-4 lg:h-[calc(100dvh-var(--header-height)-3rem)] lg:min-h-0">
           {/* The tabs of the section (the head draws them) sit tight on the preview: the room under them is the padding of this band. */}
-          <div className="shrink-0 border-b bg-background px-4 py-4 md:px-6 [&_nav>div]:mb-0">
+          <div className="shrink-0 [&_nav>div]:mb-0">
             <PageHeader title={t('directBooking.title')} description={t('directBooking.description')} />
             <div className="mt-3 empty:hidden">
               <SitePublicationBanner />
             </div>
           </div>
 
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
-            <div className="flex max-h-[40%] shrink-0 flex-col overflow-hidden border-b md:max-h-none md:w-72 md:border-r md:border-b-0">
-              <div className="flex-1 overflow-y-auto px-3 py-3">
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 lg:flex-row">
+            <div className="flex min-w-0 shrink-0 flex-col rounded-xl border bg-card lg:w-72 lg:overflow-hidden">
+              <div className="max-h-64 flex-1 overflow-y-auto px-3 py-3 lg:max-h-none">
                 <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   {t('directBooking.propertiesLabel')}
                 </p>
@@ -86,7 +86,7 @@ export function VetrinaPage() {
               </div>
             </div>
 
-            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <div className="flex h-[65svh] min-h-80 min-w-0 flex-col overflow-hidden rounded-xl border bg-card lg:h-auto lg:min-h-0 lg:flex-1">
               {previewPath ? (
                 <VetrinaPreviewPanel bookingSitePath={previewPath} />
               ) : (

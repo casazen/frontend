@@ -31,6 +31,7 @@ export function TenantMaintenanceListPage() {
   const items = list.data ?? [];
   return (
     <div className="space-y-4" data-testid="tenant-maintenance">
+      <h1 className="text-3xl font-semibold tracking-tight">{t('tenantArea.nav.maintenance')}</h1>
       <Button asChild>
         <Link to={tenantMaintenancePath(leaseId, 'nuova')}>{t('tenantArea.maintenance.new')}</Link>
       </Button>
@@ -38,9 +39,9 @@ export function TenantMaintenanceListPage() {
       <ul className="space-y-2">
         {items.map((request) => (
           <li key={request.id}>
-            <Link to={tenantMaintenancePath(leaseId, request.id)} className="block rounded-md border border-border p-3" data-testid={`tenant-request-${request.id}`}>
+            <Link to={tenantMaintenancePath(leaseId, request.id)} className="flex min-h-12 flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-card p-4 hover:bg-muted" data-testid={`tenant-request-${request.id}`}>
               <span className="font-medium">{getServiceCategoryLabel(request.category, t)}</span>
-              <span className="ml-2 text-sm" data-testid="tenant-request-status">
+              <span className="rounded-full bg-muted px-3 py-1 text-sm" data-testid="tenant-request-status">
                 {t(`tenantArea.maintenance.status.${request.status}`)}
               </span>
             </Link>
@@ -79,12 +80,13 @@ export function TenantMaintenanceFormPage() {
         );
       }}
     >
+      <h1 className="text-3xl font-semibold tracking-tight">{t('tenantArea.maintenance.new')}</h1>
       <p className="text-sm text-muted-foreground">{t('tenantArea.maintenance.sentToManager')}</p>
       <div className="space-y-1">
         <Label htmlFor="tenant-maintenance-category">{t('tenantArea.maintenance.category')}</Label>
         <select
           id="tenant-maintenance-category"
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+          className="flex h-11 w-full rounded-lg border border-input bg-card px-3 text-base"
           value={selected}
           onChange={(event) => setCategory(event.target.value)}
         >
@@ -99,7 +101,7 @@ export function TenantMaintenanceFormPage() {
         <Label htmlFor="tenant-maintenance-urgency">{t('tenantArea.maintenance.urgency')}</Label>
         <select
           id="tenant-maintenance-urgency"
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+          className="flex h-11 w-full rounded-lg border border-input bg-card px-3 text-base"
           value={urgency}
           onChange={(event) => setUrgency(event.target.value as TenantMaintenanceUrgency)}
         >

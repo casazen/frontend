@@ -156,8 +156,8 @@ export function TouristTaxYearEndPage() {
           description={t('reports.touristTax.yearEnd.description')}
           crumbs="auto"
           action={
-            <div className="flex items-center gap-2">
-              <Label htmlFor="year-end-year" className="sr-only">
+            <div className="flex flex-wrap items-center gap-2 rounded-xl border bg-card px-3 py-2">
+              <Label htmlFor="year-end-year" className="text-xs font-semibold text-muted-foreground">
                 {t('reports.touristTax.yearEnd.year')}
               </Label>
               <Select id="year-end-year" value={year} onChange={(event) => setYear(Number(event.target.value))} data-testid="year-end-year">

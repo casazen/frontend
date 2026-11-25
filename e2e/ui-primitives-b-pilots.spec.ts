@@ -77,7 +77,11 @@ test.describe('DataView in the list of guests (pilot)', () => {
 
     const table = page.getByRole('table', { name: 'Ospiti' });
     await expect(table).toBeVisible();
-    await expect(table.getByRole('rowheader')).toHaveText(['Mario Rossi', 'Anna Maria Giuseppina Bianchi Montefeltro Della Rovere', 'Luigi Verdi']);
+    const names = table.getByRole('rowheader');
+    await expect(names).toHaveCount(GUESTS.length);
+    for (const [index, guest] of GUESTS.entries()) {
+      await expect(names.nth(index)).toHaveAccessibleName(`${guest.firstName} ${guest.lastName}`);
+    }
     await expect(table.getByRole('link', { name: 'Dettagli' }).first()).toHaveAttribute('href', '/app/short-rent/guests/g1');
     await expect(page.getByRole('list', { name: 'Ospiti' })).toBeHidden();
     await expectNothingSticksOut(page, '1280 px, guests', 'main');
@@ -161,8 +165,12 @@ test.describe('Tabs in the booking detail (pilot)', () => {
     expect(panel.y + panel.height).toBeGreaterThan(1050);
     const composer = (await reply.boundingBox())!;
     expect(composer.y + composer.height).toBeLessThan(1100);
+    await expect(page.getByTestId('booking-next-step')).toHaveCount(0);
+    await page.getByTestId('booking-tab-details').click();
+    const guidance = page.locator('details').filter({ has: page.getByTestId('booking-next-step') });
+    await expect(guidance.locator('summary')).toBeVisible();
     await expect(page.getByTestId('booking-next-step')).toBeHidden();
-    await page.locator('summary').filter({ hasText: 'Cosa succede ora' }).click();
+    await guidance.locator('summary').click();
     await expect(page.getByTestId('booking-next-step')).toBeVisible();
   });
 
@@ -203,7 +211,7 @@ test.describe('Tabs in the booking detail (pilot)', () => {
     await openBooking(page, 1280);
     const tabs = page.getByRole('tablist', { name: 'Sezioni della prenotazione' });
 
-    await expect(tabs.getByRole('tab')).toHaveText(['Soggiorno', 'Documenti', 'Pagamento', 'Cronologia']);
+    await expect(tabs.getByRole('tab')).toHaveText(['Soggiorno', 'Check-in online', 'Pagamento']);
     await expect(page.getByTestId('booking-tab-details')).toHaveAttribute('aria-selected', 'true');
     // The other parameters of the address (here the profile of the demo) are kept, in their order.
     await expect(page.getByTestId('booking-tab-guest')).toHaveAttribute('href', `/app/short-rent/bookings/${DEMO_BOOKING_ID}?demoProfile=short-stay&tab=guest`);
@@ -212,11 +220,11 @@ test.describe('Tabs in the booking detail (pilot)', () => {
     await page.getByTestId('booking-tab-guest').click();
     await expect(page).toHaveURL(/tab=guest/);
     await expect(page.getByTestId('booking-tab-guest')).toHaveAttribute('aria-selected', 'true');
-    await expect(page.getByRole('tabpanel')).toHaveAccessibleName('Documenti');
+    await expect(page.getByRole('tabpanel')).toHaveAccessibleName('Check-in online');
     await expect(page.getByRole('heading', { name: 'Check-in online' })).toBeVisible();
   });
 
-  test('a link to ?tab=alloggiati opens Documenti at its Alloggiati Web section, as the links of the arrival and the cockpit do', async ({ page }) => {
+  test('a link to ?tab=alloggiati opens Check-in online at its Alloggiati Web section, as the links of the arrival and the cockpit do', async ({ page }) => {
     await openBooking(page, 1280, '?tab=alloggiati');
 
     await expect(page.getByTestId('booking-tab-guest')).toHaveAttribute('aria-selected', 'true');

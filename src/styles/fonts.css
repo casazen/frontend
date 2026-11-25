@@ -12,10 +12,10 @@
 
 /* A new name: nothing uses `font-display` yet (display titles, UI-04 onwards). Same stack as the demo. */
 @theme static {
-  --font-display: 'Fraunces Variable', Fraunces, 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+  --font-display: var(--cz-font-display);
 }
 
 /* Inter replaces the system stack only under the redesign; the fallbacks are the demo's. */
 html[data-ui='v2'] {
-  --font-sans: 'Inter Variable', Inter, 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Roboto, Arial, sans-serif;
+  --font-sans: var(--cz-font-body);
 }

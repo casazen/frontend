@@ -38,6 +38,13 @@ export function MenuSearch({ entries, children, onNavigate }: MenuSearchProps) {
       <div className="relative mb-3">
         <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input ref={input} type="search" value={query} onChange={event => setQuery(event.target.value)}
+          onKeyDown={event => {
+            if (event.key === 'Escape' && query) {
+              event.preventDefault();
+              event.stopPropagation();
+              clear();
+            }
+          }}
           aria-label={t('nav.searchMenu')} placeholder={t('nav.searchMenu')}
           className="h-11 pl-9 pr-11 [&::-webkit-search-cancel-button]:hidden" />
         {query && (

@@ -49,15 +49,15 @@ export function FocusBlock({ tone = 'neutral', kicker, title, body, who, when, p
       aria-labelledby={titleId}
       data-tone={tone}
       className={cn(
-        'relative flex min-w-0 flex-col gap-3 overflow-hidden rounded-xl p-4 pl-5 shadow-sm ring-1 ring-inset forced-colors:outline-1 sm:flex-row sm:gap-4 sm:p-6 sm:pl-7',
+        'relative flex min-w-0 flex-col gap-3 overflow-hidden rounded-[var(--cz-radius-panel)] p-4 pl-5 shadow-sm ring-1 ring-inset forced-colors:outline-1 sm:flex-row sm:gap-4 sm:p-6 sm:pl-7',
         style.surface,
         className,
       )}
     >
       {/* The tone on the edge, not on the whole block: a card with a colored edge reads as "the next thing", a tinted block as an error. */}
       <span aria-hidden="true" className={cn('absolute inset-y-0 left-0 w-1', style.bar)} />
-      <span aria-hidden="true" className={cn('grid size-10 shrink-0 place-items-center rounded-full sm:size-12', style.badge, style.accent)}>
-        <Icon className="size-5 sm:size-6" />
+      <span aria-hidden="true" className={cn('cz-icon-tile sm:[--cz-icon-tile-size:3rem] sm:[--cz-icon-size:1.5rem]', style.badge, style.accent)}>
+        <Icon strokeWidth={1.75} />
       </span>
 
       <div className="min-w-0 flex-1 space-y-2">

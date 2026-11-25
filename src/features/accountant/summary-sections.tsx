@@ -105,7 +105,7 @@ export function DocumentsSection({ summary }: SectionProps) {
   const empty = guest.length + counts.length + rates.length === 0;
 
   return (
-    <PlainSection title={t('accountantPackage.documents.title')} data-testid="accountant-documents">
+    <PlainSection title={t('accountantPackage.documents.title')} id="accountant-documents" className="scroll-mt-24" data-testid="accountant-documents">
       {empty ? (
         <p className={NOTE} data-testid="accountant-documents-empty">
           {t('accountantPackage.documents.empty')}
@@ -215,7 +215,7 @@ export function OwnersSection({ summary }: SectionProps) {
   const empty = [commissions, margin, payouts, wires, portalCommissionsBorne, owners].every((rows) => rows.length === 0);
 
   return (
-    <PlainSection title={t('accountantPackage.owners.title')} data-testid="accountant-owners">
+    <PlainSection title={t('accountantPackage.owners.title')} id="accountant-owners" className="scroll-mt-24" data-testid="accountant-owners">
       {empty ? (
         <p className={NOTE} data-testid="accountant-owners-empty">
           {t('accountantPackage.owners.empty')}
@@ -337,7 +337,7 @@ export function StaysSection({ summary }: SectionProps) {
   ];
 
   return (
-    <PlainSection title={t('accountantPackage.stays.title')} data-testid="accountant-stays">
+    <PlainSection title={t('accountantPackage.stays.title')} id="accountant-stays" className="scroll-mt-24" data-testid="accountant-stays">
       <p className={NOTE} data-testid="accountant-stays-currency-note">
         {t('accountantPackage.currencyNotGiven')}
       </p>

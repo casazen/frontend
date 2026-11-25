@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
@@ -55,14 +56,11 @@ export function StaffActivitiesPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">{t('activity.staff.title')}</h1>
-        <p className="text-sm text-muted-foreground">{t('activity.staff.description')}</p>
-      </div>
+      <PageHeader title={t('activity.staff.title')} description={t('activity.staff.description')} />
 
       <Card>
         <CardContent className="pt-6">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid max-w-3xl gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="property-filter">{t('activity.filter.property')}</Label>
               <Select
@@ -109,7 +107,7 @@ export function StaffActivitiesPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4" data-testid="staff-activities-list">
+        <div className="grid gap-4 xl:grid-cols-2 xl:items-start" data-testid="staff-activities-list">
           {filteredActivities.map((activity) => (
             <ActivityCard key={activity.id} activity={activity} />
           ))}

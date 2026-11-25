@@ -200,7 +200,7 @@ describe('RequestInterventionPage, «Descrivi di cosa hai bisogno» (WIZ-AI-REQU
     expect(serviceRequestAssistApi.assist).toHaveBeenCalledWith({ propertyId: PROPERTY_ID, text: WORDS });
     expect(within(result).getByTestId('request-assist-category')).toHaveTextContent('Idraulico');
     expect(within(result).getByTestId('request-assist-urgency')).toHaveTextContent('Alta');
-    expect(within(result).getByTestId('request-assist-who')).toHaveTextContent('2 fornitori CasaZen della tua zona');
+    expect(within(result).getByTestId('request-assist-who')).toHaveTextContent('2 fornitori disponibili nella tua zona');
     expect(within(result).getByTestId('request-assist-note')).toHaveTextContent('Il rubinetto della cucina perde acqua: serve un intervento domani mattina.');
     expect(result).toHaveTextContent('Una perdita al rubinetto è un lavoro da idraulico');
     // It says that an AI wrote it.

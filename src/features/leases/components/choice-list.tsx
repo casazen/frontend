@@ -30,14 +30,14 @@ interface ChoiceListProps {
 export function ChoiceList({ legend, name, options, value, onChange, className }: ChoiceListProps) {
   return (
     <fieldset className={cn('m-0 min-w-0 border-0 p-0', className)}>
-      <legend className="mb-2 text-base font-semibold">{legend}</legend>
-      <div className="divide-y overflow-hidden rounded-xl ring-1 ring-inset ring-border">
+      <legend className="mb-3 text-lg font-semibold tracking-tight">{legend}</legend>
+      <div className="grid gap-2">
         {options.map((option) => (
           <label
             key={option.value}
             className={cn(
-              'flex min-h-14 cursor-pointer items-start gap-3 bg-background p-4 transition-colors hover:bg-muted/40',
-              'has-checked:bg-primary/5',
+              'flex min-h-16 cursor-pointer items-center gap-4 rounded-xl border bg-card px-4 py-3.5 transition-colors hover:border-primary/50 hover:bg-muted/40',
+              'has-checked:border-primary has-checked:bg-primary/5 has-checked:shadow-sm',
               'has-focus-visible:outline-2 has-focus-visible:-outline-offset-2 has-focus-visible:outline-ring',
               'has-disabled:cursor-not-allowed has-disabled:opacity-60 has-disabled:hover:bg-background',
             )}
@@ -50,7 +50,7 @@ export function ChoiceList({ legend, name, options, value, onChange, className }
               disabled={option.disabled}
               onChange={() => onChange(option.value)}
               data-testid={option.testId}
-              className="mt-0.5 size-5 shrink-0 accent-primary"
+              className="order-last ml-auto size-5 shrink-0 accent-primary"
             />
             <span className="min-w-0">
               <span className="block break-words font-semibold leading-snug">{option.title}</span>

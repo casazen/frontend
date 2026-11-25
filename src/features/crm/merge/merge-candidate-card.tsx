@@ -94,7 +94,7 @@ export function MergeCandidateCard({ candidate }: MergeCandidateCardProps) {
   return (
     <article
       aria-label={t('crm.merge.card.label', { a: nameOf(profileA), b: nameOf(profileB) })}
-      className="min-w-0 space-y-5 rounded-xl border p-4 sm:p-6"
+      className="min-w-0 space-y-5 rounded-2xl border bg-card p-4 sm:p-6"
       data-testid="crm-merge-card"
       data-candidate-id={candidate.id}
       data-likelihood={likelihood}
@@ -109,23 +109,23 @@ export function MergeCandidateCard({ candidate }: MergeCandidateCardProps) {
         >
           {likelihoodLabel(t, candidate.score)}
         </h2>
-        <ul role="list" aria-label={t('crm.merge.reasons.title')} className="space-y-0.5 text-sm text-foreground/70" data-testid="crm-merge-reasons">
+        <ul role="list" aria-label={t('crm.merge.reasons.title')} className="flex flex-wrap gap-2 text-sm text-foreground/70" data-testid="crm-merge-reasons">
           {candidate.reasons.map((reason) => (
-            <li key={reason}>{reasonLabel(t, reason)}</li>
+            <li key={reason} className="rounded-md bg-muted px-2 py-1">{reasonLabel(t, reason)}</li>
           ))}
         </ul>
       </header>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-0 md:divide-x">
-        <div className="min-w-0 md:pr-6">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <div className="min-w-0 rounded-xl border p-4">
           <ProfileSummary profile={profileA} position={1} />
         </div>
-        <div className="min-w-0 md:pl-6">
+        <div className="min-w-0 rounded-xl border p-4">
           <ProfileSummary profile={profileB} position={2} />
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 border-t pt-4">
         <Button
           type="button"
           onClick={() => setMergeOpen(true)}

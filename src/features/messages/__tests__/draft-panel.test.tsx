@@ -348,8 +348,8 @@ describe('the draft of the assistant in the conversation (E05/F05/US04/T01)', ()
     it('draftPanel_NoPendingDraft_OffersToAskTheAssistantForOne', async () => {
       renderPanel();
 
-      expect(await screen.findByTestId('assistant-draft-none')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: "Chiedi una bozza all'assistente" })).toBeEnabled();
+      expect(await screen.findByRole('button', { name: "Chiedi una bozza all'assistente" })).toBeEnabled();
+      expect(screen.queryByTestId('assistant-draft-none')).not.toBeInTheDocument();
     });
 
     it('draftPanel_CannotAsk_OffersNoButton', async () => {

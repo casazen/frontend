@@ -1,3 +1,5 @@
+import { Table2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useId, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Segmented } from '@/components/ui/segmented';
@@ -73,6 +75,8 @@ export function TrendChart({
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
   const titleId = useId();
+  const tableId = useId();
+  const [showTable, setShowTable] = useState(false);
   const [metric, setMetric] = useState<OverviewMetric>('revenue');
   const [seriesKey, setSeriesKey] = useState('');
   const format = useMemo(() => overviewFormat(locale, currency), [locale, currency]);
@@ -95,10 +99,14 @@ export function TrendChart({
   const hasForecast = buckets.some((bucket) => isFutureBucket(bucket, today));
 
   return (
-    <section aria-labelledby={titleId} data-testid={testId} className="min-w-0 space-y-3">
-      <Heading id={titleId} className="break-words text-lg font-semibold">
-        {heading}
-      </Heading>
+    <section aria-labelledby={titleId} data-testid={testId} className="min-w-0 space-y-4 rounded-2xl border bg-card p-4 sm:p-5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <Heading id={titleId} className="break-words text-lg font-semibold">{heading}</Heading>
+        <Button type="button" variant="outline" size="sm" aria-controls={tableId} aria-pressed={showTable} onClick={() => setShowTable(!showTable)}>
+          <Table2 aria-hidden="true" className="size-4" />
+          {t('listView.layout.list')}
+        </Button>
+      </div>
 
       <div className="flex flex-wrap items-end gap-3">
         <Segmented<OverviewMetric>
@@ -187,12 +195,12 @@ export function TrendChart({
       )}
 
       {/* In a box of its own: a table ignores the 1 px of `sr-only` and would make a phone scroll sideways. */}
-      <div className="sr-only">
-        <table data-testid={`${testId}-table`}>
-          <caption>{`${heading} · ${lineName} · ${metricName}`}</caption>
-          <thead>
+      <div id={tableId} className={showTable ? 'max-h-96 overflow-auto rounded-xl border' : 'sr-only'}>
+        <table className="w-full border-collapse text-sm [&_td]:px-3 [&_td]:py-2 [&_td]:text-right [&_td]:tabular-nums [&_th]:px-3 [&_th]:py-2 [&_tr]:border-b" data-testid={`${testId}-table`}>
+          <caption className="sr-only">{`${heading} · ${lineName} · ${metricName}`}</caption>
+          <thead className="sticky top-0 bg-surface-2 text-right text-xs text-foreground/80">
             <tr>
-              <th scope="col">{t('reports.overview.trend.period')}</th>
+              <th scope="col" className="text-left">{t('reports.overview.trend.period')}</th>
               <th scope="col">{metricName}</th>
               {compared ? <th scope="col">{t('reports.overview.trend.previousYear')}</th> : null}
             </tr>
@@ -202,7 +210,7 @@ export function TrendChart({
               const before = previousBucketName(bucket, locale);
               return (
                 <tr key={bucket.label}>
-                  <th scope="row">
+                  <th scope="row" className="text-left font-medium">
                     {bucketName(bucket, unit, locale)}
                     {isFutureBucket(bucket, today) ? ` (${t('reports.overview.trend.forecast')})` : ''}
                   </th>

@@ -317,7 +317,7 @@ export function FiscalDocumentsPage() {
 
             {/* The page asked by itself for the answer of the SDI for a while and stopped (no endless polling of a tab left open): it says so in neutral words, never as a failure. */}
             {read === 'ok' && documents.watchOver ? (
-              <div className="flex flex-wrap items-center gap-3 text-sm text-foreground/70" data-testid="fiscal-documents-watch-over">
+              <div className="flex flex-wrap items-center gap-3 rounded-xl border bg-muted/40 p-3 text-sm text-muted-foreground" data-testid="fiscal-documents-watch-over">
                 <p>{t('fiscalDocuments.list.watch.over')}</p>
                 <Button type="button" variant="outline" size="sm" disabled={documents.isFetching} onClick={documents.checkAgain} data-testid="fiscal-documents-check-again">
                   {t('fiscalDocuments.list.watch.checkAgain')}
@@ -364,7 +364,7 @@ export function FiscalDocumentsPage() {
                 empty={empty}
                 footer={
                   data && data.totalCount > 0 ? (
-                    <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-muted/30 px-4 py-3">
                       <p className="text-sm text-foreground/70" data-testid="fiscal-documents-count">
                         {t('fiscalDocuments.list.count', { count: data.totalCount })}
                       </p>

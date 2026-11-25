@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useState } from 'react';
-import { Search, Star, X } from 'lucide-react';
+import { Inbox, Mail, MessageCircleReply, Search, Star, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -70,6 +70,7 @@ function InboxSearch({ value, onCommit }: InboxSearchProps) {
 }
 
 interface InboxFiltersProps {
+  compact?: boolean;
   state: InboxState;
   onChange: (changes: Partial<InboxState>) => void;
   /** The properties of the host; the filter by property is offered when there are two or more. */
@@ -82,22 +83,22 @@ interface InboxFiltersProps {
  * host has more than one, the search, and the one booking the page may have been opened for.
  * Everything is in the address (`onChange` writes it), so the list is the same after a refresh and beside an open conversation.
  */
-export function InboxFilters({ state, onChange, properties }: InboxFiltersProps) {
+export function InboxFilters({ state, onChange, properties, compact = false }: InboxFiltersProps) {
   const { t } = useTranslation();
   const commitSearch = useCallback((q: string) => onChange({ q }), [onChange]);
   // What the button «Azzera i filtri» takes away: the booking has its own way out, below.
   const narrowed = state.channel !== null || state.propertyId !== null || state.q !== '';
   const reviewsOn = state.view === 'reviews';
   const views: SegmentedOption<InboxView>[] = [
-    { value: 'toRespond', label: t('messages.filter.toRespond'), testId: 'messages-view-toRespond' },
-    { value: 'all', label: t('messages.filter.all'), testId: 'messages-view-all' },
-    { value: 'unread', label: t('messages.filter.unread'), testId: 'messages-view-unread' },
+    { value: 'toRespond', icon: MessageCircleReply, label: t('messages.filter.toRespond'), testId: 'messages-view-toRespond' },
+    { value: 'all', icon: Inbox, label: t('messages.filter.all'), testId: 'messages-view-all' },
+    { value: 'unread', icon: Mail, label: t('messages.filter.unread'), testId: 'messages-view-unread' },
   ];
 
   return (
-    <div className="space-y-3" role="search" aria-label={t('messages.search.label')} data-testid="messages-filters">
+    <div className="@container space-y-3" role="search" aria-label={t('messages.search.label')} data-testid="messages-filters">
       <InboxSearch value={state.q} onCommit={commitSearch} />
-      <Segmented label={t('messages.filter.label')} options={views} value={state.view} onValueChange={(view) => onChange({ view })} className="w-full" />
+      <Segmented label={t('messages.filter.label')} options={views} value={state.view} onValueChange={(view) => onChange({ view })} className={cn("grid w-full grid-cols-3 [&_button]:min-w-0 [&_button]:flex-col [&_button]:gap-1 [&_button]:whitespace-normal [&_button]:px-1 [&_button]:py-2", !compact && "lg:grid-cols-1 lg:bg-transparent lg:p-0 lg:[&_button]:flex-row lg:[&_button]:justify-start lg:[&_button]:gap-3 lg:[&_button]:px-3")} />
       {/* The reviews are not conversations: a chip of their own, pressed while their list is shown. The shape (the filled star), not the tint alone, says it is on. */}
       <Button
         type="button"
@@ -111,7 +112,7 @@ export function InboxFilters({ state, onChange, properties }: InboxFiltersProps)
         {t('reviews.hub.filter')}
       </Button>
 
-      <div className={cn('grid gap-2', properties.length >= 2 && 'min-[26rem]:grid-cols-2')}>
+      <div className={cn('grid gap-2', properties.length >= 2 && '@min-[26rem]:grid-cols-2')}>
         <Select
           size="sm"
           aria-label={t('messages.filter.channel')}

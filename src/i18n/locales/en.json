@@ -1,4 +1,8 @@
 {
+  "complianceNoDeadlines": "No deadlines listed",
+  "dashboardNoPending": "No operational priorities listed",
+  "dashboardPrioritiesPartial": "Some priorities are unavailable.",
+  "dashboardPendingHeading": "Operational priorities",
   "activationStaff": {
     "selectProperties": "Properties in this batch",
     "title": "Prepare properties",
@@ -4196,11 +4200,14 @@
       "departureGroup": "Departure",
       "privateGroup": "Private information",
       "aiTitle": "AI draft",
-      "aiDescription": "Generate an arrival, stay and departure draft from property details. Review it before saving.",
-      "aiGenerate": "Generate draft",
-      "aiUnavailable": "AI generation did not return a draft. Try again or fill in the guide manually.",
-      "aiApply": "Fill empty fields",
-      "aiNoEmptyFields": "The suggested fields already have content. You can edit them directly in the guide.",
+      "aiDescription": "Fill the empty guide fields in one click using your property details.",
+      "aiGenerate": "Fill guide with AI",
+      "aiUnavailable": "Could not fill the guide. Try again.",
+      "aiGenerating": "Preparing the guide…",
+      "aiReady": "Draft ready. Select Save guide to make it visible to guests.",
+      "aiRefining": "Draft ready to save. AI is refining the text.",
+      "aiPropertyReady": "Draft filled from your property details. Select Save guide to make it visible to guests.",
+      "aiNoEmptyFields": "The guide is already filled in.",
       "checkInHours": "Check-in hours",
       "checkOutHours": "Check-out hours",
       "parking": "Parking",
@@ -4230,6 +4237,9 @@
       "visibility": "Access instructions and Wi-Fi are visible after check-in. The other sections are also visible from the public QR code."
     },
     "host": {
+      "checkInAccess": "Check-in in the guest portal",
+      "checkInAccessDescription": "Share the private link to open the Check-in section of the guest portal.",
+      "prepareCheckIn": "Enable check-in in the portal",
       "accessSection": "Guest access",
       "accessDescription": "Share the private link for this stay or open the portal as your guest sees it.",
       "preview": "Open guest portal",
@@ -25407,10 +25417,10 @@
       },
       "open": "Describe it",
       "result": {
-        "casazen_one": "A CasaZen supplier in your area",
-        "casazen_other": "{{count}} CasaZen suppliers in your area",
+        "casazen_one": "A supplier available in your area",
+        "casazen_other": "{{count}} suppliers available in your area",
         "edit": "Change the words",
-        "external": "An external partner: there are no CasaZen suppliers in your area yet for this service",
+        "external": "An external partner: no suppliers are currently available in your area for this service",
         "note": "Note for the supplier",
         "service": "Service",
         "skip": "I'll choose",
@@ -25436,8 +25446,8 @@
       "addComune": "Add the comune",
       "casazen": {
         "none": "There are none yet in the area of this property.",
-        "text": "Professionals of your area, with clear prices and times: you choose who to call.",
-        "title": "A CasaZen supplier"
+        "text": "Choose from your trusted suppliers and CasaZen marketplace suppliers available for this property.",
+        "title": "A supplier for this property"
       },
       "external": {
         "text": "Outside companies for cleaning, check-in and maintenance: the work is organised on their site.",
@@ -25446,8 +25456,8 @@
       "legend": "Who do you want to ask",
       "noComune": "To look for the suppliers of your area the comune of the property is needed: until it is there we propose the external partners.",
       "noComuneNoPartners": "To look for the suppliers of your area the comune of the property is needed.",
-      "noNetwork": "There are no CasaZen suppliers yet in the area of this property: we propose the external partners.",
-      "noNetworkNoPartners": "There are no CasaZen suppliers yet in the area of this property.",
+      "noNetwork": "No suppliers are available for this property yet: we propose the external partners.",
+      "noNetworkNoPartners": "No suppliers are available for this property yet.",
       "recommended": "Recommended"
     },
     "details": {
@@ -25561,7 +25571,7 @@
     "steps": {
       "channel": {
         "label": "Who",
-        "purpose": "We advise a CasaZen supplier from your area. Otherwise you can turn to an external service.",
+        "purpose": "We suggest a supplier available for this property. Otherwise you can turn to an external service.",
         "title": "Who do you want to ask?"
       },
       "details": {
@@ -30806,6 +30816,29 @@
       "removeConfirm": "Do you really want to remove this trusted supplier?",
       "removeSuccess": "Supplier removed",
       "removeError": "Unable to remove supplier",
+      "hostOrigin": "Trusted supplier · Host commission",
+      "marketplaceOrigin": "Marketplace supplier · CasaZen commission",
+      "allProperties": "All properties",
+      "source": "Supplier source",
+      "privateSupplier": "Trusted supplier",
+      "privateDirectory": "Trusted suppliers",
+      "marketplace": "CasaZen marketplace",
+      "hostTerms": "Set the commission your trusted supplier will be asked to accept.",
+      "marketplaceTerms": "CasaZen sets and receives the commission for these services.",
+      "configured": "Services configured for this property",
+      "noneConfigured": "No services configured.",
+      "findServices": "Search for more services or suppliers",
+      "noMatches": "No other services found.",
+      "accepted": "Commission accepted",
+      "pending": "Awaiting consent",
+      "hostRate": "Host commission (%)",
+      "platformRate": "CasaZen commission: {{rate}}%",
+      "exposed": "Available in the portal after acceptance",
+      "save": "Save service",
+      "serviceSaved": "Service updated.",
+      "loadingProperties": "Loading properties…",
+      "propertiesError": "Could not load the properties to assign.",
+      "browseMarketplace": "Find suppliers in the CasaZen marketplace",
       "supplierLabel": "Supplier {{id}}"
     }
   },

@@ -1,3 +1,4 @@
+import { FolderOpen } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { DocumentsList } from '@/features/owner-portal/documents-list';
 import { PortalLoading, PortalPageHeading, PortalReadProblem } from '@/features/owner-portal/portal-parts';
@@ -14,7 +15,7 @@ export function OwnerDocuments() {
 
   return (
     <div className="space-y-6">
-      <PortalPageHeading title={t('ownerPortal.documents.title')} description={t('ownerPortal.documents.description')} />
+      <PortalPageHeading icon={FolderOpen} title={t('ownerPortal.documents.title')} description={t('ownerPortal.documents.description')} />
       {documents.isLoading ? (
         <PortalLoading label={t('ownerPortal.documents.loading')} />
       ) : documents.isError ? (

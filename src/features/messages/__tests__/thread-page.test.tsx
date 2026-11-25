@@ -97,6 +97,11 @@ function renderThread(threadKey = KEY, search = '') {
 }
 
 const textbox = () => screen.getByRole('textbox', { name: "Messaggio per l'ospite" });
+async function openStayDetails() {
+  const name = 'Dettagli soggiorno';
+  fireEvent.click(await screen.findByRole('button', { name }));
+  return within(await screen.findByRole('dialog', { name }));
+}
 const typeMessage = (text: string) => fireEvent.change(textbox(), { target: { value: text } });
 
 describe('ThreadPage (NF-61, NF-63, NF-64)', () => {
@@ -105,7 +110,7 @@ describe('ThreadPage (NF-61, NF-63, NF-64)', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     permissions.canWrite = true;
-    // On a wide desktop the list and the booking are both beside the conversation.
+    // On a wide desktop the inbox stays beside the conversation.
     window.matchMedia = ((query: string) => ({
       matches: query === '(width >= 64rem)' || query === '(width >= 96rem)',
       media: query,
@@ -128,14 +133,15 @@ describe('ThreadPage (NF-61, NF-63, NF-64)', () => {
     window.matchMedia = originalMatchMedia;
   });
 
-  it('ThreadPage_OpenConversation_ShowsTheMessagesAndTheBookingCardBesideThem', async () => {
+  it('shows the conversation first and opens the booking details on demand on wide desktop', async () => {
     renderThread();
 
     expect(await screen.findByText('Che ore sono il check-in?')).toBeInTheDocument();
     // The key is the one of the address, back as the server gave it.
     expect(messageHubApi.getThread).toHaveBeenCalledWith(KEY);
 
-    const card = screen.getByTestId('booking-card');
+    expect(screen.queryByTestId('booking-card')).not.toBeInTheDocument();
+    const card = (await openStayDetails()).getByTestId('booking-card');
     expect(within(card).getByTestId('booking-card-code')).toHaveTextContent('ABCDE-12345');
     expect(within(card).getByTestId('booking-card-status')).toHaveTextContent('Confermata');
     expect(card).toHaveTextContent('Sofia Marino');
@@ -170,7 +176,7 @@ describe('ThreadPage (NF-61, NF-63, NF-64)', () => {
     vi.mocked(messageHubApi.getThread).mockResolvedValue(thread({ booking: { ...CARD, amounts: { total: 450 } } }));
     renderThread();
 
-    const amounts = await screen.findByTestId('booking-card-amounts');
+    const amounts = (await openStayDetails()).getByTestId('booking-card-amounts');
     expect(amounts).toHaveTextContent('Totale');
     expect(amounts).not.toHaveTextContent('Commissione');
     expect(amounts).not.toHaveTextContent('Netto');
@@ -180,7 +186,7 @@ describe('ThreadPage (NF-61, NF-63, NF-64)', () => {
     vi.mocked(messageHubApi.getThread).mockResolvedValue(thread({ booking: { ...CARD, amounts: null } }));
     renderThread();
 
-    await screen.findByTestId('booking-card');
+    expect((await openStayDetails()).getByTestId('booking-card')).toBeVisible();
     expect(screen.queryByTestId('booking-card-amounts')).not.toBeInTheDocument();
     expect(screen.queryByTestId('booking-card-no-amounts')).not.toBeInTheDocument();
   });
@@ -198,6 +204,7 @@ describe('ThreadPage (NF-61, NF-63, NF-64)', () => {
     renderThread();
 
     expect(await screen.findByTestId('thread-request-label')).toHaveTextContent('Richiesta');
+    await openStayDetails();
     expect(screen.getByTestId('booking-card-none')).toHaveTextContent('Non c\'è ancora una prenotazione');
     expect(screen.queryByTestId('booking-card')).not.toBeInTheDocument();
     // On an Airbnb request the composer says that links and contacts cannot be sent before the booking.
@@ -416,7 +423,7 @@ describe('ThreadPage (NF-61, NF-63, NF-64)', () => {
 
   it('ThreadPage_NeverNamesTheChannelManager', async () => {
     renderThread();
-    await screen.findByTestId('booking-card');
+    await openStayDetails();
 
     expect(document.body.textContent).not.toMatch(/octorate/i);
   });

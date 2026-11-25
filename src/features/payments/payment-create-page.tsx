@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Calendar } from 'lucide-react';
+import { Calendar, ReceiptText } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { FOCUS_COLUMN } from '@/components/layout/page-columns';
@@ -69,11 +69,12 @@ export function PaymentCreatePage() {
   } else {
     body = (
       <Card className={cn(FOCUS_COLUMN)}>
-        <CardHeader>
+        <CardHeader className="border-b bg-muted/30">
+          <ReceiptText aria-hidden="true" className="mb-1 size-6 text-primary" />
           <CardTitle>{t('payment.create.paymentDetails')}</CardTitle>
           <CardDescription>{t('payment.create.paymentDetailsDescription')}</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-5">
           <RecordPaymentForm options={options} initialBookingId={initialBookingId} onRecorded={toRecordedPayment} onCancel={backToList} />
         </CardContent>
       </Card>
@@ -83,7 +84,7 @@ export function PaymentCreatePage() {
   return (
     <AppShell>
       <div className="space-y-6">
-        <PageHeader title={t('payment.create.title')} description={t('payment.create.description')} />
+        <PageHeader title={t('payment.create.title')} description={t('payment.create.description')} crumbs="auto" />
 
         {body}
       </div>

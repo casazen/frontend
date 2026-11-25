@@ -137,7 +137,7 @@ export function ReopenPartsList({ parts, senders, channels }: ReopenPartsListPro
             {t('onboardingPlan.integration.parts.empty')}
           </p>
         ) : (
-          <ol role="list" className="space-y-2" data-testid="reopen-parts-list">
+          <ol role="list" className="grid items-start gap-3 lg:grid-cols-2" data-testid="reopen-parts-list">
             {known.map((part) => {
               const reopenable = part.reopenable === true;
               const noteId = `${listId}-${part.code}-note`;
@@ -188,9 +188,9 @@ export function ReopenPartsList({ parts, senders, channels }: ReopenPartsListPro
               {t('onboardingPlan.integration.senders.empty')}
             </p>
           ) : (
-            <dl className="space-y-1 text-sm">
+            <dl className="divide-y text-sm">
               {SENDER_ROWS.map((row) => (
-                <div key={row.field} className="flex items-baseline justify-between gap-3" data-testid={`integration-sender-${row.field}`}>
+                <div key={row.field} className="flex items-baseline justify-between gap-3 py-2" data-testid={`integration-sender-${row.field}`}>
                   <dt className="min-w-0 break-words">{t(row.labelKey)}</dt>
                   <dd className="shrink-0 font-semibold tabular-nums">{count(senders?.[row.field])}</dd>
                 </div>
@@ -208,9 +208,9 @@ export function ReopenPartsList({ parts, senders, channels }: ReopenPartsListPro
               {t('onboardingPlan.integration.channels.empty')}
             </p>
           ) : (
-            <dl className="space-y-1 text-sm">
+            <dl className="divide-y text-sm">
               {channelRows.map((row) => (
-                <div key={row.status} className="flex items-baseline justify-between gap-3" data-testid={`integration-channel-${row.status}`}>
+                <div key={row.status} className="flex items-baseline justify-between gap-3 py-2" data-testid={`integration-channel-${row.status}`}>
                   <dt className="min-w-0 break-words">
                     {CHANNEL_STATUSES.has(row.status) ? t(`onboardingPlan.integration.channels.status.${row.status}`) : t('onboardingPlan.integration.channels.status.other')}
                   </dt>

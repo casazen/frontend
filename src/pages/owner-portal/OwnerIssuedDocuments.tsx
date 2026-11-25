@@ -1,3 +1,4 @@
+import { FileStack } from 'lucide-react';
 import { useState } from 'react';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
@@ -54,7 +55,7 @@ export function OwnerIssuedDocuments() {
 
   return (
     <div className="space-y-6">
-      <PortalPageHeading title={t('ownerPortal.issued.title')} description={t('ownerPortal.issued.description')} />
+      <PortalPageHeading icon={FileStack} title={t('ownerPortal.issued.title')} description={t('ownerPortal.issued.description')} />
       {isLoading ? <PortalLoading label={t('ownerPortal.issued.loading')} /> : open ? <IssuedDocumentsBody /> : <PortalNotice state="unavailable" testId="owner-issued-not-open" />}
     </div>
   );

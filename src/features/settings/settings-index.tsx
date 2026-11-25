@@ -13,7 +13,7 @@ const groups = [
   { name: 'workspace', pages: ['organization', 'invitations'] },
   { name: 'website', pages: ['site-appearance', 'domain', 'site-documents'] },
   { name: 'money', pages: ['payments', 'plan', 'billing'] },
-  { name: 'tools', pages: ['integration', 'ai'] },
+  { name: 'tools', pages: ['guest-portal', 'integration', 'ai'] },
 ];
 
 export function SettingsIndex() {

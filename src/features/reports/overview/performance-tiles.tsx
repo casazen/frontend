@@ -1,3 +1,4 @@
+import { BedDouble, ChartNoAxesColumn, ReceiptText, Wallet } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StatStrip, StatTile } from '@/components/shared/calm';
@@ -51,24 +52,28 @@ export function PerformanceTiles({ row, currency, compared, names, label, testId
   return (
     <StatStrip label={label} data-testid={testId}>
       <StatTile
+        icon={BedDouble}
         label={names.occupancy}
         value={figures.occupancyRate === null ? na : format.rate(figures.occupancyRate)}
         delta={pointsDelta(row.occupancyDeltaPoints)}
         data-testid={`${testId}-occupancy`}
       />
       <StatTile
+        icon={Wallet}
         label={names.revenue}
         value={format.money(figures.revenue)}
         delta={percentDelta(row.revenueDeltaPercent)}
         data-testid={`${testId}-revenue`}
       />
       <StatTile
+        icon={ReceiptText}
         label={names.adr}
         value={figures.adr === null ? na : format.moneyExact(figures.adr)}
         delta={percentDelta(row.adrDeltaPercent)}
         data-testid={`${testId}-adr`}
       />
       <StatTile
+        icon={ChartNoAxesColumn}
         label={names.revPar}
         value={figures.revPar === null ? na : format.moneyExact(figures.revPar)}
         delta={percentDelta(row.revParDeltaPercent)}

@@ -167,8 +167,8 @@ export function StayGuestPersonalFields({
   };
 
   return (
-    <fieldset className="space-y-4 rounded-md border p-4" data-testid={`stay-guest-${index}`}>
-      <legend className="flex items-center gap-2 px-1 text-sm font-semibold">
+    <fieldset className="min-w-0 space-y-4 rounded-2xl border bg-card px-4 pb-5 pt-3 sm:px-5" data-testid={`stay-guest-${index}`}>
+      <legend className="flex max-w-full flex-wrap items-center gap-2 rounded-xl border bg-muted px-3 py-1 text-sm font-semibold">
         {t('checkin.guestHeading', { index: index + 1 })}
         <Badge variant="secondary" data-testid={`stay-guest-${index}-type`}>
           {t(`checkin.guestKind.${guest.type}`)}
@@ -486,7 +486,7 @@ export function StayGuestDocumentFields({ index, source, level = 'full' }: StayG
   const maskedDocumentNumber = guest.documentNumberOnFile;
 
   return (
-    <fieldset className="space-y-4 rounded-md border p-4" data-testid={`stay-guest-${index}-document`}>
+    <fieldset className="min-w-0 space-y-4 rounded-2xl border bg-card px-4 pb-5 pt-3 sm:px-5" data-testid={`stay-guest-${index}-document`}>
       <legend className="px-1 text-sm font-semibold">
         {t('checkin.documentOf', { name: `${guest.firstName} ${guest.lastName}`.trim() || t('checkin.guestHeading', { index: index + 1 }) })}
       </legend>

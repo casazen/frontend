@@ -46,7 +46,7 @@ export function HostExtrasEditor({ propertyId, bookingId, suggestions }: {
   const l = labels[language];
   const catalogPath = `/properties/${propertyId}/guest-host-extras`;
   const orderPath = `/bookings/${bookingId}/guest-host-extras`;
-  const catalog = useQuery({ queryKey: ['host-extras', propertyId], queryFn: () => ApiClient.get<Extra[]>(catalogPath) });
+  const catalog = useQuery({ queryKey: ['host-extras', propertyId], enabled: !bookingId, queryFn: () => ApiClient.get<Extra[]>(catalogPath) });
   const orders = useQuery({
     queryKey: ['booking-extras', bookingId],
     queryFn: () => ApiClient.get<HostExtraOrder[]>(orderPath),
@@ -73,6 +73,7 @@ export function HostExtrasEditor({ propertyId, bookingId, suggestions }: {
 
   return (
     <section className="grid gap-4 rounded-lg border bg-card p-4">
+      {!bookingId && <>
       <h2 className="font-medium">{l[0]}</h2>
       {catalog.isPending && <p role="status">{l[24]}</p>}
       {(catalog.isError || orders.isError || save.isError || update.isError || translate.isError) && <p role="alert">{l[25]}</p>}
@@ -128,9 +129,12 @@ export function HostExtrasEditor({ propertyId, bookingId, suggestions }: {
           <Button type="submit" disabled={save.isPending}>{l[19]}</Button>
         </form>
       )}
+      </>}
       {bookingId && (
         <div className="grid gap-2">
           <h3>{l[20]}</h3>
+          {orders.isPending && <p role="status">{l[24]}</p>}
+          {(orders.isError || update.isError) && <p role="alert">{l[25]}</p>}
           {orders.data?.map((order) => (
             <div className="grid gap-2 rounded-md border p-3" key={order.id}>
               <p>{order.name} · {order.quantity} · {formatExtraPrice(language, order.amount, order.currency)} · {hostExtraStatus(language, order.status)}</p>

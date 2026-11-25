@@ -80,13 +80,13 @@ export function ContextSidebar({ contextKey, organizationName = null }: ContextS
       aria-label={t('shell.mainNavigation')}
       data-collapsed={collapsed}
       className={cn(
-        'sticky top-0 hidden h-dvh shrink-0 flex-col self-start border-r bg-card transition-[width] duration-200 motion-reduce:transition-none md:flex',
+        'workspace-rail sticky top-0 hidden h-dvh shrink-0 flex-col self-start border-r bg-card transition-[width] duration-200 motion-reduce:transition-none md:flex',
         collapsed ? 'w-[4.5rem]' : 'w-64',
       )}
     >
       {/* The brand, as tall as the header of the shell so that the two lines meet; the mark alone when reduced. */}
       <div className={cn('flex h-[var(--header-height)] shrink-0 items-center border-b', collapsed ? 'justify-center' : 'px-5')}>
-        <CasaZenLogo collapsed={collapsed} size={collapsed ? 32 : 34} />
+        <CasaZenLogo tone="dark" collapsed={collapsed} size={collapsed ? 32 : 34} />
       </div>
       <div className="border-b p-3">
         <AreaSwitcher contextKey={contextKey} organizationName={organizationName} collapsed={collapsed} />

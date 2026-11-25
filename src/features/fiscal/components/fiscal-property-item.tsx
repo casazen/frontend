@@ -1,3 +1,4 @@
+import { Building2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { StatusBadge } from '@/components/shared/status/status-badge';
@@ -69,12 +70,15 @@ export function FiscalPropertyItem({ row, snapshot, pending, canWrite, onAssign 
       data-testid={`fiscal-property-card-${row.propertyId}`}
       // One column on a phone, with the controls under the text; text and controls side by side from `md` when there are controls.
       className={cn(
-        'grid min-w-0 grid-cols-[minmax(0,1fr)] gap-x-8 gap-y-3 py-4',
+        'grid min-w-0 grid-cols-[minmax(0,1fr)] gap-x-8 gap-y-4 rounded-xl border bg-card p-4',
         canWrite && 'md:grid-cols-[minmax(0,1fr)_minmax(0,20rem)] md:items-start',
       )}
     >
       <div className="min-w-0 space-y-1.5">
-        <p className="break-words font-semibold">{row.name}</p>
+        <p className="flex items-center gap-2 text-base font-semibold">
+          <Building2 aria-hidden="true" className="size-5 shrink-0 text-primary-text" />
+          <span className="min-w-0 break-words">{row.name}</span>
+        </p>
         <p data-testid={`fiscal-assigned-${row.propertyId}`} className="break-words text-sm text-foreground/70">
           {t('fiscal.assigned')}: <span className="font-medium text-foreground">{regimeLabel(row.assignedRegime)}</span>
         </p>

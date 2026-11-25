@@ -192,7 +192,6 @@ describe('route-manifest main menu (UI-04a)', () => {
   // The pages of the agency plan read endpoints that answer only an org on that plan (ADR-010): shown to everyone, their first read
   // answered 403 and the whole app went to the no-access page («Nessun accesso disponibile… Accedi di nuovo»).
   const AGENCY_PAGES: [AppContextKey, string][] = [
-    ['short-rent', '/app/short-rent/trusted-suppliers'],
     ['account', '/app/account/statements'],
     ['account', '/app/account/withholding'],
     ['account', '/app/account/wire-transfers'],
@@ -429,7 +428,7 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
     // What waits for the host: the «Da fare» list, the approvals and the verifications of the guests are the tabs of the Cruscotto.
     '/app/short-rent': ['/app/short-rent/activities', '/app/short-rent/approval-queue', '/app/short-rent/verifications'],
     // «Impostazioni»: the organization, then the integration, the assistant and the automations (each behind its flag).
-    '/app/short-rent/settings': ['/app/short-rent/settings/organization', '/app/short-rent/settings/invitations', '/app/short-rent/settings/site-appearance', '/app/short-rent/settings/domain', '/app/short-rent/settings/site-documents', '/app/short-rent/settings/payments', '/app/short-rent/settings/plan', '/app/short-rent/settings/billing', '/app/short-rent/settings/integration', '/app/short-rent/settings/ai'],
+    '/app/short-rent/settings': ['/app/short-rent/settings/organization', '/app/short-rent/settings/invitations', '/app/short-rent/settings/site-appearance', '/app/short-rent/settings/domain', '/app/short-rent/settings/site-documents', '/app/short-rent/settings/payments', '/app/short-rent/settings/plan', '/app/short-rent/settings/billing', '/app/short-rent/settings/guest-portal', '/app/short-rent/settings/integration', '/app/short-rent/settings/ai'],
     '/app/long-rent/settings': ['/app/long-rent/settings/organization', '/app/long-rent/settings/invitations', '/app/long-rent/settings/plan', '/app/long-rent/settings/billing'],
     '/app/short-rent/settings/ai': [
       '/app/short-rent/settings/assistant',
@@ -491,6 +490,7 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
     fiscalDocumentIssuance: true,
     octorateOnboarding: true,
     messageAssistant: true,
+    guestPortal: true,
     ownerInvoicing: true,
     accountantPackage: true,
     routines: true,
@@ -651,13 +651,15 @@ describe('route-manifest sections as tabs (UI-04a)', () => {
     expect(getNavSection('/app/short-rent/guests/', allowAll).length).toBeGreaterThan(1);
   });
 
-  it('leaves out the tabs the user may not open, the OTA tab while its flag is off and the trusted suppliers while the agency plan is', () => {
+  it('shows trusted suppliers to organization administrators on all plans and gates OTA separately', () => {
     expect(paths(getNavSection('/app/short-rent/properties', allowAll))).toEqual([
       '/app/short-rent/properties',
       '/app/short-rent/interventions',
+      '/app/short-rent/trusted-suppliers',
       '/app/short-rent/channels',
       '/app/short-rent/activation',
     ]);
+    expect(paths(getNavSection('/app/short-rent/properties', without('org.billing.admin')))).not.toContain('/app/short-rent/trusted-suppliers');
     expect(paths(getNavSection('/app/short-rent/properties', allowAll, { agencyTier: true }))).toEqual([
       '/app/short-rent/properties',
       '/app/short-rent/interventions',
@@ -693,6 +695,7 @@ describe('route-manifest sections as tabs (UI-04a)', () => {
       fiscalDocumentIssuance: true,
       octorateOnboarding: true,
       messageAssistant: true,
+      guestPortal: true,
       ownerInvoicing: true,
       accountantPackage: true,
       routines: true,

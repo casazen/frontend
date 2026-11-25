@@ -1,8 +1,10 @@
 import { Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Building2, FilePlus2, Pencil } from 'lucide-react';
+import { Building2, FilePlus2, Pencil, Files, FileSignature, Wallet, Wrench, ClipboardList, Info } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import type { PageHeaderMenuItem } from '@/components/layout/page-header-actions';
+import { PropertyPhotoCarousel } from '../components/property-photo-carousel';
+import { isDisplayableMediaUrl } from '@/lib/media-url';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
 import { DemoTourContact } from '@/components/shared/demo-tour-contact';
@@ -27,6 +29,8 @@ import { ContractsPanel, DataPanel, DocumentsPanel, MaintenancePanel } from './l
 import { longRentPropertyPanelOf, longRentPropertyPanels, type LongRentPropertyPanel } from './long-rent-property-sheet';
 import { longRentPropertyRows } from './long-rent-property-rows';
 import { LONG_RENT_PROPERTIES_PATH, longRentPropertyEditPath, newLeaseForPropertyPath } from './paths';
+
+const panelIcons = { contracts: FileSignature, expenses: Wallet, maintenance: Wrench, documents: Files, requests: ClipboardList, data: Info };
 
 /** The page while the property loads: the shape of the page, no spinner in the middle of nothing. */
 function PropertyDetailSkeleton({ label }: { label: string }) {
@@ -123,6 +127,7 @@ export function LongRentPropertyDetailPage() {
   const panel = longRentPropertyPanelOf(searchParams.get('tab'), panels);
   const tabs: TabItem<LongRentPropertyPanel>[] = panels.map((value) => ({
     value,
+    icon: panelIcons[value],
     label: t(`longRentProperties.detail.tabs.${value}`),
     testId: `long-rent-property-tab-${value}`,
   }));
@@ -140,6 +145,8 @@ export function LongRentPropertyDetailPage() {
 
       <ScheduledChangeNotice area="long-rent" propertyId={property.id} />
 
+      <div className={property.photoUrls?.some(isDisplayableMediaUrl) ? 'grid items-start gap-4 lg:grid-cols-2' : undefined}>
+      {property.photoUrls?.some(isDisplayableMediaUrl) && <PropertyPhotoCarousel photoUrls={property.photoUrls} name={property.name} />}
       {leases.isLoading ? (
         <div role="status" aria-busy="true" data-testid="long-rent-property-next-step-loading">
           <span className="sr-only">{t('longRentProperties.detail.loading')}</span>
@@ -156,6 +163,8 @@ export function LongRentPropertyDetailPage() {
       ) : row ? (
         <LongRentPropertyNextStep row={row} canCreateLease={canCreateLease} />
       ) : null}
+
+      </div>
 
       {row && <DemoTourContact area="long" />}
 

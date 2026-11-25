@@ -87,7 +87,18 @@ export function TodoListPage() {
   } else {
     content = (
       <>
-        <div className="flex flex-wrap items-center gap-2" role="group" aria-label={t('activity.todo.filter.label')} data-testid="todo-filters">
+        <p className="border-l-4 border-primary pl-3 text-base font-medium" aria-live="polite" data-testid="todo-summary">
+          {summary}
+          {urgent !== null && urgent > 0 ? (
+            <>
+              {' · '}
+              <strong className="font-semibold text-danger-foreground" data-testid="todo-urgent-count">
+                {t('activity.todo.summary.urgent', { count: urgent })}
+              </strong>
+            </>
+          ) : null}
+        </p>
+        <div className="flex flex-wrap items-center gap-2 empty:hidden" role="group" aria-label={t('activity.todo.filter.label')} data-testid="todo-filters">
           {types.length > 1 ? (
             <Select
               size="sm"
@@ -125,17 +136,7 @@ export function TodoListPage() {
           ) : null}
         </div>
 
-        <p className="text-sm text-foreground/70" aria-live="polite" data-testid="todo-summary">
-          {summary}
-          {urgent !== null && urgent > 0 ? (
-            <>
-              {' · '}
-              <strong className="font-semibold text-danger-foreground" data-testid="todo-urgent-count">
-                {t('activity.todo.summary.urgent', { count: urgent })}
-              </strong>
-            </>
-          ) : null}
-        </p>
+
 
         {visible.length > 0 ? (
           <ul className="space-y-3" aria-label={t('activity.todo.listLabel')} data-testid="todo-list">

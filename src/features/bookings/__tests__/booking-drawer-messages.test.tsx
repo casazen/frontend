@@ -39,21 +39,16 @@ describe('the conversation in the booking drawer (SR-12)', () => {
   });
   afterEach(() => cleanup());
 
-  it('BookingDrawerContent_UnreadMessages_ShowsTheCountNextToTheTitle', () => {
+  it('opens the preview without mounting the conversation or history', () => {
     renderDrawer();
-    const section = screen.getByTestId('booking-drawer-messages');
-    expect(section).toHaveTextContent('4 messaggi da leggere');
+    expect(screen.getByTestId('booking-drawer')).toHaveTextContent('Sofia Marino');
+    expect(screen.queryByTestId('thread')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('booking-drawer-timeline')).not.toBeInTheDocument();
   });
 
-  it('BookingDrawerContent_OpenedWithFocusMessages_ScrollsToTheConversationAndFocusesItsTitle', () => {
+  it('keeps a direct route to the conversation for a legacy message link', () => {
     renderDrawer('?detail=booking:b-1&focus=messages');
-    const title = screen.getByRole('heading', { name: /Messaggi/ });
-    expect(title).toHaveFocus();
-    expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
-  });
-
-  it('BookingDrawerContent_OpenedPlainly_KeepsTheFocusWhereItWas', () => {
-    renderDrawer('?detail=booking:b-1');
-    expect(screen.getByRole('heading', { name: /Messaggi/ })).not.toHaveFocus();
+    expect(screen.getByRole('link', { name: 'Messaggi' })).toHaveAttribute('href', '/app/short-rent/bookings/b-1?tab=messages');
+    expect(screen.queryByTestId('thread')).not.toBeInTheDocument();
   });
 });

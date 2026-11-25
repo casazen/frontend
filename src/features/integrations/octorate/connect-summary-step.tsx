@@ -275,7 +275,7 @@ function ResultListingRow({ row }: { row: ResultRow }) {
 
   return (
     <li
-      className="flex min-w-0 items-start justify-between gap-3 rounded-md border p-3 text-sm"
+      className="flex min-w-0 items-start justify-between gap-3 rounded-xl border bg-card p-4 text-sm"
       data-testid={`octorate-result-${listing.octorateAccommodationId}`}
       data-result={kind}
     >
@@ -345,7 +345,7 @@ function IcalNotice({ rows }: IcalNoticeProps) {
   if (entries.length === 0 && !unreadable) return null;
 
   return (
-    <section aria-labelledby={titleId} className="space-y-3 rounded-lg bg-muted p-4 text-left" data-testid="octorate-ical-notice">
+    <section aria-labelledby={titleId} className="space-y-3 rounded-xl border border-primary/25 bg-primary-soft p-4 text-left" data-testid="octorate-ical-notice">
       <h3 id={titleId} className="text-base font-semibold">
         {t('octorate.connect.summary.ical.title')}
       </h3>

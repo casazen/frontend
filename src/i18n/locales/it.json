@@ -1,4 +1,8 @@
 {
+  "complianceNoDeadlines": "Nessuna scadenza in elenco",
+  "dashboardNoPending": "Nessuna priorità operativa in elenco",
+  "dashboardPrioritiesPartial": "Alcune priorità non sono disponibili.",
+  "dashboardPendingHeading": "Priorità operative",
   "activationStaff": {
     "selectProperties": "Immobili del lotto",
     "title": "Preparazione strutture",
@@ -4196,11 +4200,14 @@
       "departureGroup": "Partenza",
       "privateGroup": "Informazioni riservate",
       "aiTitle": "Bozza con l’AI",
-      "aiDescription": "Genera una bozza di arrivo, soggiorno e partenza dai dati dell’alloggio. Rivedila prima di salvare.",
-      "aiGenerate": "Genera bozza",
-      "aiUnavailable": "La generazione AI non ha restituito una bozza. Puoi riprovare o compilare la guida.",
-      "aiApply": "Compila i campi vuoti",
-      "aiNoEmptyFields": "I campi proposti sono già compilati. Puoi modificare i testi direttamente nella guida.",
+      "aiDescription": "Compila i campi vuoti della guida in un clic con i dati dell’alloggio.",
+      "aiGenerate": "Compila la guida con l’AI",
+      "aiUnavailable": "Impossibile compilare la guida. Riprova.",
+      "aiGenerating": "La guida è in preparazione…",
+      "aiReady": "Bozza compilata. Seleziona Salva guida per renderla visibile agli ospiti.",
+      "aiRefining": "Bozza pronta da salvare. L’AI sta rifinendo i testi.",
+      "aiPropertyReady": "Bozza compilata dai dati dell’alloggio. Seleziona Salva guida per renderla visibile agli ospiti.",
+      "aiNoEmptyFields": "La guida è già compilata.",
       "checkInHours": "Orari di check-in",
       "checkOutHours": "Orari di check-out",
       "parking": "Parcheggio",
@@ -4230,6 +4237,9 @@
       "visibility": "Accesso e Wi-Fi sono visibili solo dopo il check-in. Le altre sezioni si vedono anche dal QR pubblico."
     },
     "host": {
+      "checkInAccess": "Check-in nel Portale ospiti",
+      "checkInAccessDescription": "Condividi il link personale con l’ospite per aprire la sezione Check-in del suo portale.",
+      "prepareCheckIn": "Abilita il check-in nel portale",
       "accessSection": "Accesso ospite",
       "accessDescription": "Condividi il link personale di questo soggiorno o apri la vista che vedrà l’ospite.",
       "preview": "Apri il portale",
@@ -25407,10 +25417,10 @@
       },
       "open": "Descrivi a parole",
       "result": {
-        "casazen_one": "Un fornitore CasaZen della tua zona",
-        "casazen_other": "{{count}} fornitori CasaZen della tua zona",
+        "casazen_one": "Un fornitore disponibile nella tua zona",
+        "casazen_other": "{{count}} fornitori disponibili nella tua zona",
         "edit": "Cambia le parole",
-        "external": "Un partner esterno: nella tua zona non ci sono ancora fornitori CasaZen per questo servizio",
+        "external": "Un partner esterno: nella tua zona non ci sono ancora fornitori disponibili per questo servizio",
         "note": "Nota per il fornitore",
         "service": "Servizio",
         "skip": "Scelgo io",
@@ -25436,8 +25446,8 @@
       "addComune": "Aggiungi il comune",
       "casazen": {
         "none": "Nella zona di questo immobile non ce ne sono ancora.",
-        "text": "Professionisti della tua zona, con prezzi e orari chiari: scegli tu chi chiamare.",
-        "title": "Un fornitore CasaZen"
+        "text": "Scegli tra i tuoi fornitori di fiducia e quelli del marketplace CasaZen disponibili per questo immobile.",
+        "title": "Un fornitore per questo immobile"
       },
       "external": {
         "text": "Aziende esterne per pulizie, check-in e manutenzione: il lavoro si organizza sul loro sito.",
@@ -25446,8 +25456,8 @@
       "legend": "Chi vuoi coinvolgere",
       "noComune": "Per cercare i fornitori della tua zona serve il comune dell'immobile: finché manca ti proponiamo i partner esterni.",
       "noComuneNoPartners": "Per cercare i fornitori della tua zona serve il comune dell'immobile.",
-      "noNetwork": "Nella zona di questo immobile non ci sono ancora fornitori CasaZen: ti proponiamo i partner esterni.",
-      "noNetworkNoPartners": "Nella zona di questo immobile non ci sono ancora fornitori CasaZen.",
+      "noNetwork": "Non ci sono ancora fornitori disponibili per questo immobile: ti proponiamo i partner esterni.",
+      "noNetworkNoPartners": "Non ci sono ancora fornitori disponibili per questo immobile.",
       "recommended": "Consigliato"
     },
     "details": {
@@ -25561,7 +25571,7 @@
     "steps": {
       "channel": {
         "label": "Chi",
-        "purpose": "Ti consigliamo un fornitore CasaZen della tua zona. In alternativa puoi rivolgerti a un servizio esterno.",
+        "purpose": "Ti consigliamo un fornitore disponibile per questo immobile. In alternativa puoi rivolgerti a un servizio esterno.",
         "title": "Chi vuoi coinvolgere?"
       },
       "details": {
@@ -30806,6 +30816,29 @@
       "removeConfirm": "Vuoi davvero rimuovere questo fornitore di fiducia?",
       "removeSuccess": "Fornitore rimosso",
       "removeError": "Impossibile rimuovere il fornitore",
+      "hostOrigin": "Fornitore di fiducia · Commissione all’host",
+      "marketplaceOrigin": "Fornitore marketplace · Commissione a CasaZen",
+      "allProperties": "Tutte le proprietà",
+      "source": "Origine del fornitore",
+      "privateSupplier": "Fornitore di fiducia",
+      "privateDirectory": "Fornitori di fiducia",
+      "marketplace": "Marketplace CasaZen",
+      "hostTerms": "Per i tuoi fornitori scegli la commissione che il fornitore dovrà accettare.",
+      "marketplaceTerms": "Per questi servizi la commissione è fissata da CasaZen e spetta a CasaZen.",
+      "configured": "Servizi configurati per la casa",
+      "noneConfigured": "Nessun servizio configurato.",
+      "findServices": "Cerca altri servizi o fornitori",
+      "noMatches": "Nessun altro servizio trovato.",
+      "accepted": "Commissione accettata",
+      "pending": "In attesa di consenso",
+      "hostRate": "Commissione host (%)",
+      "platformRate": "Commissione CasaZen: {{rate}}%",
+      "exposed": "Disponibile nel portale dopo il consenso",
+      "save": "Salva servizio",
+      "serviceSaved": "Servizio aggiornato.",
+      "loadingProperties": "Caricamento delle proprietà…",
+      "propertiesError": "Impossibile caricare le proprietà da assegnare.",
+      "browseMarketplace": "Cerca fornitori nel marketplace CasaZen",
       "supplierLabel": "Fornitore {{id}}"
     }
   },

@@ -185,29 +185,32 @@ function SelfBillingBody() {
   return (
     <div className="space-y-6" data-testid="self-billing-page">
       <PageHeader title={t('selfBilling.page.title')} description={t('selfBilling.page.description')} crumbs="auto" />
-      <p className="break-words text-sm text-foreground/70" data-testid="self-billing-note">
-        {t('selfBilling.page.note')}
-      </p>
+      <div className="space-y-3 rounded-2xl border bg-card p-4 sm:p-5">
+        <p className="max-w-prose break-words text-sm text-muted-foreground" data-testid="self-billing-note">
+          {t('selfBilling.page.note')}
+        </p>
 
-      <div className="flex flex-wrap items-end gap-3" data-testid="self-billing-filters">
-        <Field label={t('selfBilling.page.filterPeriod')} className="w-full sm:w-64">
-          <Select value={period} onChange={(event) => setPeriod(event.target.value)} data-testid="self-billing-period">
-            <option value="">{t('selfBilling.page.allMonths')}</option>
-            {monthOptions.map((value) => {
-              const parsed = parsePeriod(value, thisMonth);
-              return (
-                <option key={value} value={value}>
-                  {month(parsed.year, parsed.month)}
-                </option>
-              );
-            })}
-          </Select>
-        </Field>
-        <Button type="button" disabled={period === '' || busy} loading={drafts.isPending} onClick={() => prepare(period)} data-testid="self-billing-prepare">
-          {t('selfBilling.drafts.button')}
-        </Button>
+        <div className="flex flex-wrap items-end gap-3" data-testid="self-billing-filters">
+          <Field label={t('selfBilling.page.filterPeriod')} className="w-full sm:w-64">
+            <Select value={period} onChange={(event) => setPeriod(event.target.value)} data-testid="self-billing-period">
+              <option value="">{t('selfBilling.page.allMonths')}</option>
+              {monthOptions.map((value) => {
+                const parsed = parsePeriod(value, thisMonth);
+                return (
+                  <option key={value} value={value}>
+                    {month(parsed.year, parsed.month)}
+                  </option>
+                );
+              })}
+            </Select>
+          </Field>
+          <Button type="button" disabled={period === '' || busy} loading={drafts.isPending} onClick={() => prepare(period)} data-testid="self-billing-prepare">
+            {t('selfBilling.drafts.button')}
+          </Button>
+        </div>
+        {period === '' ? <p className="text-sm text-foreground/70">{t('selfBilling.drafts.needMonth')}</p> : null}
+
       </div>
-      {period === '' ? <p className="text-sm text-foreground/70">{t('selfBilling.drafts.needMonth')}</p> : null}
 
       {generation ? <GenerationReport generation={generation} closedIds={closedIds} mayClose={mayClose} /> : null}
       {content}
@@ -442,7 +445,7 @@ function SelfBillingRow({ item, mayCorrect, mayClose, replacementClosed, onOpen,
   else standing = t('selfBilling.row.due', { date: formatDocumentDay(item.dueDate, i18n.language) });
 
   return (
-    <li className="flex flex-col gap-3 py-4 sm:flex-row sm:items-start sm:justify-between" data-testid="self-billing-row" data-status={item.status} data-id={item.id}>
+    <li className="flex flex-col gap-3 rounded-xl p-4 even:bg-muted/40 sm:flex-row sm:items-start sm:justify-between" data-testid="self-billing-row" data-status={item.status} data-id={item.id}>
       <div className="min-w-0 space-y-1">
         <h3 className="break-words text-base font-semibold" data-testid="self-billing-row-title">
           {title}

@@ -1,3 +1,4 @@
+import { ArrowUpRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -36,20 +37,20 @@ export function ContextPickerPage() {
   return (
     // A screen of the signed-in app without a shell, where a user with several areas lands after the login: like the
     // header of the shells it carries the id that the e2e logins wait for (UI-00).
-    <div data-testid="app-ready" className="flex min-h-screen flex-col items-center justify-center gap-6 bg-muted/20 px-4">
-      <CasaZenLogo size={44} />
-      <Card className="w-full max-w-xl">
+    <div data-testid="app-ready" className="workspace-entry flex min-h-dvh flex-col items-center justify-center gap-6 px-4 py-10">
+      <CasaZenLogo size={44} tone="dark" />
+      <Card className="w-full max-w-3xl">
         <CardHeader>
           <CardTitle>{t('shared.contextPicker.title')}</CardTitle>
           <CardDescription>{t('shared.contextPicker.description')}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="grid gap-3 sm:grid-cols-2">
           {areas.map((area) => (
             <Button
               key={area.key}
               variant="outline"
               data-testid={`context-option-${area.key}`}
-              className="h-auto w-full justify-start gap-3 whitespace-normal py-3 text-left"
+              className="relative h-auto w-full flex-col items-start justify-start gap-3 whitespace-normal rounded-xl p-4 text-left"
               onClick={() => setActiveContext(area.key)}
             >
               <span
@@ -58,6 +59,7 @@ export function ContextPickerPage() {
               >
                 <NavIcon name={area.icon} className="h-5 w-5" />
               </span>
+              <ArrowUpRight aria-hidden="true" className="absolute end-4 top-4 size-4 text-muted-foreground" />
               <span className="min-w-0 flex-1">
                 <span className="block font-semibold">{t(area.nameKey)}</span>
                 <span className="block text-sm font-normal leading-snug text-muted-foreground">{t(area.descriptionKey)}</span>

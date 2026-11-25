@@ -537,11 +537,11 @@ test.describe('Aligned cards', () => {
       // The suppliers have the whole width of the page now (SR-09a), so how many lines a name takes depends on the font even more:
       // the first name is made long on purpose (see `setText`), the second is one line; only the first supplier has a bio.
       await setText(
-        cards.nth(0).locator('.font-medium').first(),
+        cards.nth(0).getByTestId('supplier-name'),
         'Servizi Integrati di Pulizia e Manutenzione per Strutture Ricettive del Lago di Como e della Brianza, con Lavanderia Industriale, Giardinaggio, Assistenza Tecnica Specializzata e Gestione Completa degli Ospiti S.r.l.',
       );
-      expect(await linesOf(cards.nth(0).locator('.font-medium').first())).toBeGreaterThanOrEqual(3);
-      expect(await linesOf(cards.nth(1).locator('.font-medium').first())).toBe(1);
+      expect(await linesOf(cards.nth(0).getByTestId('supplier-name'))).toBeGreaterThanOrEqual(3);
+      expect(await linesOf(cards.nth(1).getByTestId('supplier-name'))).toBe(1);
 
       await expectAligned([0, 1].map((index) => cards.nth(index).locator('.flex-wrap')), 'badges');
       await expectAligned([0, 1].map((index) => cards.nth(index)), 'card', 'bottom');
@@ -609,7 +609,7 @@ test.describe('Aligned cards', () => {
       await expectAligned([0, 1, 2].map((index) => tiles.nth(index).locator('.text-2xl')), 'number');
     });
 
-    test('the Home of Affitti brevi lines its numbers up beside the list of the next arrivals', async ({ page }) => {
+    test('opening analytics from the short-stay dashboard aligns its metrics beside the next arrivals', async ({ page }) => {
       const arrival = (bookingId: string, guestName: string, day: string) => ({
         bookingId,
         propertyId: 'p1',
@@ -641,8 +641,12 @@ test.describe('Aligned cards', () => {
       await page.setViewportSize({ width: 1040, height: 900 });
       await page.goto(demoUrl('/app/short-rent', 'short-stay'));
 
-      await page.getByTestId('home-performance').getByRole('button').click();
       const numbers = page.getByTestId('home-numbers');
+      await expect(page.getByTestId('home-today')).toBeVisible();
+      await expect(numbers).toHaveCount(0);
+      await page.getByTestId('page-header-more').click();
+      await page.getByRole('menuitem', { name: 'I numeri essenziali' }).click();
+      await expect(page).toHaveURL(/[?&]view=analytics(?:&|$)/);
       const tiles = numbers.getByRole('listitem').filter({ has: page.locator('.text-2xl') });
       await expect(tiles).toHaveCount(3);
       await expect(numbers.getByTestId('home-next-arrivals')).toBeVisible();

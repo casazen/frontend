@@ -129,46 +129,50 @@ export function BaseStep({ form, storedRoomCount = 0 }: BaseStepProps) {
         </Field>
       </div>
 
-      <div className="grid min-w-0 gap-4 md:grid-cols-2">
-        <Field label={t('propertyWizard.base.address.label')} hint={t('propertyWizard.base.address.hint')} error={errors.address}>
-          <Input autoComplete="street-address" placeholder={t('propertyWizard.base.address.placeholder')} {...register('address')} />
-        </Field>
-        {country === 'IT' ? <Field label={t('propertyWizard.base.comune.label')} hint={t('propertyWizard.base.comune.hint')} error={errors.city ?? errors.comuneIstatCode}>
-          {(control) => (
-            <ComunePicker
-              id={control.id}
-              istatCode={comuneIstatCode}
-              describedBy={control['aria-describedby']}
-              invalid={control['aria-invalid'] === true}
-              fallbackName={form.getValues('city') || null}
-              onChange={(comune) => {
-                setValue('comuneIstatCode', comune?.istatCode ?? '', { shouldValidate: true, shouldDirty: true });
-                setValue('city', comune?.name ?? '', { shouldValidate: true, shouldDirty: true });
-              }}
-              // Without the official list there is nothing to choose from: the city is written, as in the form of today.
-              unavailableFallback={
-                <Input
-                  aria-label={t('propertyWizard.base.comune.fallbackLabel')}
-                  autoComplete="address-level2"
-                  placeholder={t('propertyWizard.base.comune.fallbackPlaceholder')}
-                  {...register('city')}
-                />
-              }
-            />
-          )}
-        </Field> : <Field label={t('property.form.city')} error={errors.city}>
-          <Input autoComplete="address-level2" {...register('city')} />
-        </Field>}
-      </div>
+      <fieldset className="min-w-0 space-y-4 rounded-2xl border bg-muted/20 p-4">
+        <legend className="px-2 font-semibold">{t('property.form.location.title')}</legend>
+        <div className="grid min-w-0 gap-4 md:grid-cols-2">
+          <Field label={t('propertyWizard.base.address.label')} hint={t('propertyWizard.base.address.hint')} error={errors.address}>
+            <Input autoComplete="street-address" placeholder={t('propertyWizard.base.address.placeholder')} {...register('address')} />
+          </Field>
+          {country === 'IT' ? <Field label={t('propertyWizard.base.comune.label')} hint={t('propertyWizard.base.comune.hint')} error={errors.city ?? errors.comuneIstatCode}>
+            {(control) => (
+              <ComunePicker
+                id={control.id}
+                istatCode={comuneIstatCode}
+                describedBy={control['aria-describedby']}
+                invalid={control['aria-invalid'] === true}
+                fallbackName={form.getValues('city') || null}
+                onChange={(comune) => {
+                  setValue('comuneIstatCode', comune?.istatCode ?? '', { shouldValidate: true, shouldDirty: true });
+                  setValue('city', comune?.name ?? '', { shouldValidate: true, shouldDirty: true });
+                }}
+                // Without the official list there is nothing to choose from: the city is written, as in the form of today.
+                unavailableFallback={
+                  <Input
+                    aria-label={t('propertyWizard.base.comune.fallbackLabel')}
+                    autoComplete="address-level2"
+                    placeholder={t('propertyWizard.base.comune.fallbackPlaceholder')}
+                    {...register('city')}
+                  />
+                }
+              />
+            )}
+          </Field> : <Field label={t('property.form.city')} error={errors.city}>
+            <Input autoComplete="address-level2" {...register('city')} />
+          </Field>}
+        </div>
 
-      <div className="grid min-w-0 gap-4 md:grid-cols-2">
-        <Field label={t('propertyWizard.base.unit.label')} optional hint={t('propertyWizard.base.unit.hint')} error={errors.unit}>
-          <Input autoComplete="off" maxLength={30} {...register('unit')} />
-        </Field>
-        <Field label={t('propertyWizard.base.postalCode.label')} optional error={errors.postalCode}>
-          <Input inputMode="numeric" autoComplete="postal-code" maxLength={5} {...register('postalCode')} />
-        </Field>
-      </div>
+        <div className="grid min-w-0 gap-4 md:grid-cols-2">
+          <Field label={t('propertyWizard.base.unit.label')} optional hint={t('propertyWizard.base.unit.hint')} error={errors.unit}>
+            <Input autoComplete="off" maxLength={30} {...register('unit')} />
+          </Field>
+          <Field label={t('propertyWizard.base.postalCode.label')} optional error={errors.postalCode}>
+            <Input inputMode="numeric" autoComplete="postal-code" maxLength={5} {...register('postalCode')} />
+          </Field>
+        </div>
+
+      </fieldset>
 
       <section aria-labelledby="property-wizard-spaces" className="min-w-0 space-y-4">
         <h3 id="property-wizard-spaces" className="text-base font-semibold">

@@ -127,12 +127,12 @@ export function HomePage({ legal }: { legal: SiteLegal }) {
   const { t } = useTranslation();
   return (
     <>
-      <section className="relative overflow-hidden bg-gradient-to-b from-terra-50 via-cream-50 to-cream-50">
+      <section className="relative overflow-hidden border-b border-ink-700/10 bg-cream-50">
         <CasaZenRing size={640} className="pointer-events-none absolute -left-44 -top-60 opacity-[0.06]" />
-        <div className="relative mx-auto grid max-w-6xl items-center gap-14 px-5 py-14 sm:py-20 lg:grid-cols-[1.15fr_0.85fr] lg:py-24">
+        <div className="relative mx-auto grid max-w-7xl items-center gap-8 px-5 py-10 sm:px-8 sm:py-16 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-12 lg:py-20">
           <div>
             <Eyebrow>{t('site.home.hero.eyebrow')}</Eyebrow>
-            <h1 className="mt-6 font-display text-4xl font-semibold leading-[1.1] tracking-tight text-ink-800 sm:text-5xl">
+            <h1 className="mt-5 text-balance font-display text-4xl font-semibold leading-[1.03] tracking-tight text-ink-800 sm:text-5xl xl:text-6xl">
               <span className="block">{t('site.home.hero.title1')}</span>
               <span className="block">{t('site.home.hero.title2')}</span>
               <span className="block text-terra-700">{t('site.home.hero.title3')}</span>
