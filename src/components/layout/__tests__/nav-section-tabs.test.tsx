@@ -96,13 +96,16 @@ describe('NavSectionTabs (UI-04a)', () => {
     expect(labelsOf('Sezioni di Incassi')).toEqual(['Incassi', 'Ricavi', 'Report', 'Documenti', 'Regime fiscale']);
   });
 
-  it('NavSectionTabs_OtaChannels_AreATabOnlyWhileTheirFlagIsOn', () => {
+  it('NavSectionTabs_OtaChannels_AppearInSectionNavigationOnlyWhileTheirFlagIsOn', () => {
     renderAt('/app/short-rent/channels', { flags: { otaPartnerApi: false } });
     expect(labelsOf('Sezioni di Immobili')).toEqual(['Immobili', 'Interventi', 'Fornitori fidati', 'Canali e calendari', 'Attivazione']);
 
     cleanup();
     renderAt('/app/short-rent/channels', { flags: { otaPartnerApi: true } });
-    expect(labelsOf('Sezioni di Immobili')).toEqual(['Immobili', 'Interventi', 'Fornitori fidati', 'Canali e calendari', 'Attivazione', 'OTA']);
+    const section = screen.getByRole('navigation', { name: 'Sezioni di Immobili' });
+    const select = within(section).getByRole('combobox', { name: 'Sezioni di Immobili' });
+    expect(within(select).getAllByRole('option').map(option => option.textContent))
+      .toEqual(['Immobili', 'Interventi', 'Fornitori fidati', 'Canali e calendari', 'Attivazione', 'OTA']);
   });
 
   it('NavSectionTabs_TrustedSuppliers_RequireAnOrganizationAdministratorOnEveryPlan', () => {
