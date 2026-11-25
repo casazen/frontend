@@ -14,7 +14,7 @@ interface Labels {
   submitted: string;
 }
 
-export function GuestPortalReview({ path, labels }: { path: string; labels: Labels }) {
+export function GuestPortalReview({ path, labels, onSubmitted }: { path: string; labels: Labels; onSubmitted: () => void }) {
   const [rating, setRating] = useState('');
   const [text, setText] = useState('');
   const [showName, setShowName] = useState(false);
@@ -27,6 +27,7 @@ export function GuestPortalReview({ path, labels }: { path: string; labels: Labe
   });
   const send = useMutation({
     mutationFn: () => ApiClient.post(endpoint, { rating: Number(rating), text, showName }, { public: true }),
+    onSuccess: onSubmitted,
     onSettled: () => { void review.refetch(); },
   });
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -46,7 +47,7 @@ export function GuestPortalReview({ path, labels }: { path: string; labels: Labe
         <form onSubmit={submit} className="stay-chat-form">
           <label htmlFor="stay-review-rating">{labels.rating}</label>
           <select id="stay-review-rating" value={rating} required onChange={(event) => setRating(event.target.value)}>
-            <option value="">â€”</option>
+            <option value="">—</option>
             {[1, 2, 3, 4, 5].map((value) => <option key={value} value={value}>{value}</option>)}
           </select>
           <label htmlFor="stay-review-text">{labels.comment}</label>

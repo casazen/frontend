@@ -1,3 +1,5 @@
+import { supplierOrderState } from './guest-supplier-order-copy';
+
 export interface GuestSupplierOrder {
   id: string;
   serviceName: string;
@@ -16,12 +18,6 @@ export interface GuestSupplierOrder {
   decision: string | null;
 }
 
-const statuses: Record<string, string> = {
-  PendingQuote: 'Preventivo in attesa', Quoted: 'Da confermare', Authorized: 'Importo autorizzato',
-  CardSaved: 'Carta di test registrata', Accepted: 'Prenotato', Declined: 'Rifiutato', Completed: 'Servizio completato',
-  Disputed: 'Controversia aperta', Resolved: 'Controversia risolta', Released: 'Pagamento rilasciato',
-};
-
-export const orderStatus = (state: string) => statuses[state] ?? state;
+export const orderStatus = (state: string) => supplierOrderState(state, 'it');
 export const orderMoney = (cents: number, language = 'it') =>
   new Intl.NumberFormat(language, { style: 'currency', currency: 'EUR' }).format(cents / 100);
