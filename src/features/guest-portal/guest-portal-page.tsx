@@ -198,7 +198,7 @@ function GuestPortalPage({ token }: { token: string }) {
   const services = section === 'services';
   const extras = section === 'extras';
   const extraCatalog = useGuestHostExtras(path, language, Boolean(stay) && !extras);
-  const hasExtras = Boolean(extraCatalog.data?.offers.length || extraCatalog.data?.orders.length);
+  const hasExtras = Boolean(extraCatalog.data?.offers?.length || extraCatalog.data?.orders?.length);
   const guide = section === 'guide';
   const details = section === 'details';
   const chat = section === 'chat' && stay?.status !== 'cancelled';

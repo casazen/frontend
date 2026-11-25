@@ -54,6 +54,7 @@ test.describe('Guest check-in portal', () => {
       branding: { name: 'Casa Test', primaryColor: '#1F3A3D' }, language: 'it', checkInCompleted: completed,
     } }));
     await page.route(api + '/stay', route => route.fulfill({ json: { checkInAvailable: true, guide: {} } }));
+    await page.route(api + '/host-extras?*', route => route.fulfill({ json: { offers: [], orders: [] } }));
     await page.route(`**/api/public/checkin/stay_${token}`, route => {
       expect(route.request().headers()).not.toHaveProperty('authorization');
       return route.fulfill({ json: {
