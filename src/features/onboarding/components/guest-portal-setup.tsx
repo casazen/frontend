@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { HostExtrasEditor } from '@/features/bookings/components/host-extras-editor';
 import { GuestHouseGuideEditor } from '@/features/bookings/components/guest-house-guide-editor';
+import { GuestSupplierOperations } from '@/features/guest-portal/guest-supplier-operations';
 import type { HouseGuide } from '@/features/guest-portal/house-guide-fields';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
@@ -231,6 +232,7 @@ function PropertySetup({ propertyId }: { propertyId: string }) {
               onSaved={() => void query.refetch()} />
           )}
           {step === 'extras' && <HostExtrasEditor propertyId={propertyId} suggestions={generate.data?.extras} />}
+          {step === 'suppliers' && flags.guestPortalSupplierServices && <GuestSupplierOperations scope={{ role: 'host', propertyId }} />}
           {step === 'suppliers' && flags.agencyTier && hasPermission('short-rent', 'property.read') && (
             <Button type="button" variant="link" asChild className="min-h-11 justify-self-start px-0">
               <Link to="/app/short-rent/trusted-suppliers">{t('guestPortal.setup.manageSuppliers')}</Link>
