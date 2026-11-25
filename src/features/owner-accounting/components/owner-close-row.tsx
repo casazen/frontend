@@ -57,7 +57,7 @@ export function OwnerCloseRow({ period, owner, name, monthOver }: OwnerCloseRowP
   const testId = `row-${owner.ownerId}`;
 
   return (
-    <li id={`owner-${owner.ownerId}`} className="flex scroll-mt-24 flex-col gap-3 py-4 sm:flex-row sm:items-start sm:justify-between" data-testid="owner-row" data-owner={owner.ownerId} data-status={latest?.status ?? 'none'}>
+    <li id={`owner-${owner.ownerId}`} className="flex scroll-mt-24 flex-col gap-3 rounded-xl border bg-card p-4 sm:flex-row sm:items-start sm:justify-between" data-testid="owner-row" data-owner={owner.ownerId} data-status={latest?.status ?? 'none'}>
       <div className="min-w-0 space-y-1">
         <h4 className="break-words text-base font-semibold">
           {latest ? (
@@ -68,7 +68,7 @@ export function OwnerCloseRow({ period, owner, name, monthOver }: OwnerCloseRowP
             name
           )}
         </h4>
-        <p className="break-words text-sm text-foreground/70" data-testid={`${testId}-state`}>
+        <p className="break-words text-sm tabular-nums text-foreground/80" data-testid={`${testId}-state`}>
           {waiting
             ? t('ownerAccounting.row.loading')
             : latest
