@@ -93,7 +93,7 @@ export function ChannelsPage() {
           />
         ) : (
           <>
-            <div className="space-y-2 text-sm text-foreground/80" data-testid="channels-intro">
+            <div className="space-y-2 rounded-xl border-s-4 border-primary bg-primary-soft p-4 text-sm text-primary-text" data-testid="channels-intro">
               <p>
                 {t('channels.intro', { count: data.syncEveryMinutes })}{' '}
                 <HelpTip title={t('channels.help.title')} learnMoreHref="/help/ical" learnMoreLabel={t('ical.helpLink')}>
@@ -103,7 +103,7 @@ export function ChannelsPage() {
               <p>{t('channels.privacy')}</p>
             </div>
 
-            <ul role="list" className="divide-y divide-border border-y border-border" data-testid="channels-list">
+            <ul role="list" className="divide-y divide-border rounded-xl border bg-card px-4" data-testid="channels-list">
               {rows.map((row) => (
                 <CalendarRowItem
                   key={row.key}

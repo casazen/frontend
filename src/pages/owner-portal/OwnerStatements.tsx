@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ExternalLink, MessageSquare } from 'lucide-react';
+import { Landmark, ExternalLink, MessageSquare } from 'lucide-react';
 import { ownerPortalApi } from '@/api/ownerPortal.api';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -255,7 +255,7 @@ export function OwnerStatements() {
 
   return (
     <div className="space-y-8">
-      <PortalPageHeading title={t('ownerPortal.accounting.title')} description={t('ownerPortal.accounting.description')} />
+      <PortalPageHeading icon={Landmark} title={t('ownerPortal.accounting.title')} description={t('ownerPortal.accounting.description')} />
 
       <section aria-labelledby="owner-statements-title" className="space-y-3">
         <h2 id="owner-statements-title" className="text-xl font-semibold text-[#1f3a3d]">

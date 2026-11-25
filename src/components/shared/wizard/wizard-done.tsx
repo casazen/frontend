@@ -57,19 +57,19 @@ export function WizardDone({ title, description, lead, whatNext, primary, second
   }, []);
 
   return (
-    <section aria-labelledby={titleId} className={cn("mx-auto w-full min-w-0 max-w-xl space-y-6", className)}>
-      <div className="flex min-w-0 flex-col items-center gap-3 text-center">
-        <span className="grid size-14 place-items-center rounded-full bg-success-soft text-success-foreground">
+    <section aria-labelledby={titleId} className={cn("mx-auto w-full min-w-0 max-w-2xl space-y-6 rounded-2xl border bg-card p-4 shadow-sm sm:p-8", className)}>
+      <div className="flex min-w-0 flex-col items-start gap-3">
+        <span className="grid size-14 place-items-center rounded-2xl bg-success-soft text-success-foreground">
           <CheckCircle2 aria-hidden="true" className="size-8" />
         </span>
-        <h2 id={titleId} ref={titleRef} tabIndex={-1} className="break-words text-2xl font-semibold tracking-tight outline-none">
+        <h2 id={titleId} ref={titleRef} tabIndex={-1} className="break-words text-3xl font-semibold tracking-tight outline-none">
           {title}
         </h2>
         {description && <p className="break-words text-muted-foreground">{description}</p>}
         {lead && <p className="max-w-prose break-words text-base">{lead}</p>}
       </div>
 
-      <section aria-labelledby={whatNextId} className="space-y-3 rounded-lg bg-muted p-4">
+      <section aria-labelledby={whatNextId} className="space-y-3 border-y py-5">
         <h3 id={whatNextId} className="text-base font-semibold">
           {t("wizard.done.whatNext")}
         </h3>
@@ -85,7 +85,7 @@ export function WizardDone({ title, description, lead, whatNext, primary, second
 
       {children}
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
         <Button asChild size="lg" className="h-auto min-h-11 whitespace-normal py-2 text-center leading-tight">
           <Link to={primary.to} data-testid="wizard-done-primary">
             {primary.label}

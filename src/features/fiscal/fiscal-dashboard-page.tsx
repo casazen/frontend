@@ -147,7 +147,7 @@ function FiscalOverview({ snapshot, canWrite, pending, onAssign }: FiscalOvervie
         <p data-testid="fiscal-str-count" className="text-sm text-foreground/70">
           {t('fiscal.count', { count: snapshot.strPropertyCount, year: snapshot.taxYear })}
         </p>
-        <ul role="list" className="divide-y divide-border border-y border-border">
+        <ul role="list" className="grid gap-3">
           {snapshot.properties.map((row) => (
             <FiscalPropertyItem
               key={row.propertyId}

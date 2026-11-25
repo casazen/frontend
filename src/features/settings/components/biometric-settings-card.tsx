@@ -136,7 +136,7 @@ function BiometricSettingsForm({ settings }: { settings: BiometricSettings }) {
 
   return (
     <form onSubmit={save} noValidate className="space-y-5" data-testid="biometric-settings-form">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-4 rounded-xl bg-muted/40 p-4">
         <div className="min-w-0 space-y-1">
           <Label htmlFor="biometric-enabled">{t('biometricSettings.enabled.label')}</Label>
           <p id="biometric-enabled-help" className="break-words text-sm text-foreground/70">
@@ -153,34 +153,36 @@ function BiometricSettingsForm({ settings }: { settings: BiometricSettings }) {
         />
       </div>
 
-      <Field label={t('biometricSettings.accept.label')} hint={t('biometricSettings.accept.help')} error={errorText('accept')}>
-        <Input
-          data-testid="biometric-accept"
-          type="number"
-          inputMode="decimal"
-          step="0.01"
-          min={BIOMETRIC_ESCALATE_MIN}
-          max={BIOMETRIC_ACCEPT_MAX}
-          value={form.accept}
-          disabled={update.isPending}
-          onChange={(event) => edit({ accept: event.target.value })}
-        />
-      </Field>
+      <div className="grid items-start gap-4 sm:grid-cols-2">
+        <Field label={t('biometricSettings.accept.label')} hint={t('biometricSettings.accept.help')} error={errorText('accept')}>
+          <Input
+            data-testid="biometric-accept"
+            type="number"
+            inputMode="decimal"
+            step="0.01"
+            min={BIOMETRIC_ESCALATE_MIN}
+            max={BIOMETRIC_ACCEPT_MAX}
+            value={form.accept}
+            disabled={update.isPending}
+            onChange={(event) => edit({ accept: event.target.value })}
+          />
+        </Field>
 
-      <Field label={t('biometricSettings.escalate.label')} hint={t('biometricSettings.escalate.help')} error={errorText('escalate')}>
-        <Input
-          data-testid="biometric-escalate"
-          type="number"
-          inputMode="decimal"
-          step="0.01"
-          min={BIOMETRIC_ESCALATE_MIN}
-          max={BIOMETRIC_ACCEPT_MAX}
-          value={form.escalate}
-          disabled={update.isPending}
-          onChange={(event) => edit({ escalate: event.target.value })}
-        />
-      </Field>
+        <Field label={t('biometricSettings.escalate.label')} hint={t('biometricSettings.escalate.help')} error={errorText('escalate')}>
+          <Input
+            data-testid="biometric-escalate"
+            type="number"
+            inputMode="decimal"
+            step="0.01"
+            min={BIOMETRIC_ESCALATE_MIN}
+            max={BIOMETRIC_ACCEPT_MAX}
+            value={form.escalate}
+            disabled={update.isPending}
+            onChange={(event) => edit({ escalate: event.target.value })}
+          />
+        </Field>
 
+      </div>
       <p className="text-sm text-foreground/70">
         {t('biometricSettings.thresholdsRange', { min: boundText(BIOMETRIC_ESCALATE_MIN, i18n.language), max: boundText(BIOMETRIC_ACCEPT_MAX, i18n.language) })}
       </p>
@@ -270,7 +272,7 @@ export function BiometricSettingsCard({ compact = false }: { compact?: boolean }
   );
 
   return (
-    <section className="min-w-0 space-y-3 rounded-xl border bg-card p-4 sm:p-5" aria-labelledby="biometric-settings-title" data-testid="biometric-settings-card">
+    <section className="min-w-0 space-y-3 rounded-2xl border bg-card p-5 sm:p-6" aria-labelledby="biometric-settings-title" data-testid="biometric-settings-card">
       <div className="flex flex-wrap items-center gap-2">
         <ScanFace aria-hidden="true" className="size-5 text-primary-text" />
         <h2 id="biometric-settings-title" className="font-semibold">{t('biometricSettings.title')}</h2>
@@ -279,7 +281,7 @@ export function BiometricSettingsCard({ compact = false }: { compact?: boolean }
           <Badge variant="warning" data-testid="biometric-provisional">{t('biometricSettings.provisional.badge')}</Badge>
         ) : null}
       </div>
-      {settings.data && compact ? (
+      {settings.data && !settings.isError && compact ? (
         <p className="text-sm">{t(settings.data.enabled ? 'aiSettings.enabledSummary' : 'aiSettings.manualSummary')}</p>
       ) : <p className="max-w-prose text-sm text-muted-foreground">{t('biometricSettings.description')}</p>}
       {compact && settings.data && !settings.isError ? (

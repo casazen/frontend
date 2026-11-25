@@ -107,8 +107,8 @@ const RING = 'outline:3px solid var(--czs-ink);outline-offset:2px;';
 
 /** The rules, each a list of selectors (after the scope) and what they declare. */
 const RULES: [string[], string][] = [
-  [[''], `${RESET}--czs-primary:#2b4c7e;--czs-on-primary:#ffffff;--czs-tint:#dfe4ec;--czs-radius:8px;--czs-ink:#1f2933;--czs-muted:#52606d;--czs-line:#7b8794;--czs-error:#b42318;display:block;position:relative;width:100%;text-align:left;`],
-  [[' .czs-form'], `${RESET}display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px;position:relative;padding:12px;background:#ffffff;border:1px solid var(--czs-line);border-radius:var(--czs-radius);`],
+  [[''], `${RESET}--czs-primary:#1f3a3d;--czs-on-primary:#ffffff;--czs-tint:#e9f1f0;--czs-radius:14px;--czs-ink:#172c2e;--czs-muted:#496469;--czs-line:#798b8a;--czs-error:#b42318;display:block;position:relative;width:100%;text-align:left;`],
+  [[' .czs-form'], `${RESET}display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px;position:relative;padding:16px;background:#ffffff;border:1px solid var(--czs-line);border-radius:var(--czs-radius);box-shadow:0 6px 20px rgba(23,44,46,.08);`],
   [[' .czs-field'], `${RESET}display:flex;flex-direction:column;gap:4px;flex:1 1 150px;min-width:0;`],
   [[' .czs-label'], `${RESET}display:block;font-size:13px;font-weight:600;line-height:1.2;color:var(--czs-muted);`],
   [

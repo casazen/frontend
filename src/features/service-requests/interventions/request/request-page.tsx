@@ -4,9 +4,9 @@ import { useFormContext } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { isAxiosError } from 'axios';
 import { useQueryClient } from '@tanstack/react-query';
-import { Building2 } from 'lucide-react';
+import { ClipboardPenLine, Building2 } from 'lucide-react';
 import { FOCUS_COLUMN } from '@/components/layout/page-columns';
-import { PageHeader } from '@/components/layout/page-header';
+import { ServicePageHeader } from '@/features/supplier/components/service-page-header';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
 import { LoadingScreen } from '@/components/shared/loading-screen';
@@ -261,7 +261,7 @@ export function RequestInterventionPage() {
 
   return (
     <div className={cn(FOCUS_COLUMN, 'space-y-6')} data-testid="request-page">
-      <PageHeader title={t('requestWizard.title')} crumbs="auto" />
+      <ServicePageHeader icon={ClipboardPenLine} title={t('requestWizard.title')} crumbs="auto" />
       <RequestWizard key={entryKey(search)} />
     </div>
   );

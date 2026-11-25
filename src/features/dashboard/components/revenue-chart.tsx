@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import { Table2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { formatStayDate } from '@/lib/stay-dates';
 import { cn } from '@/lib/utils';
@@ -35,7 +36,7 @@ export function RevenueChart({ series, currency }: RevenueChartProps) {
   const title = t(unit === 'month' ? 'dashboard.chart.titleMonth' : 'dashboard.chart.titleWeek');
 
   return (
-    <section aria-labelledby={titleId} data-testid="home-chart" className="min-w-0 space-y-3">
+    <section aria-labelledby={titleId} data-testid="home-chart" className="min-w-0 space-y-4 rounded-xl border bg-card p-4 sm:p-5">
       <h2 id={titleId} className="break-words text-lg font-semibold">
         {title}
       </h2>
@@ -80,31 +81,36 @@ export function RevenueChart({ series, currency }: RevenueChartProps) {
         </div>
       )}
 
-      {/* In a box of its own: a table ignores the 1 px of `sr-only` and would make a phone scroll sideways. */}
-      <div className="sr-only">
-        <table>
-          <caption>{title}</caption>
-          <thead>
-            <tr>
-              <th scope="col">{t('dashboard.chart.period')}</th>
-              <th scope="col">{t('dashboard.chart.revenue')}</th>
-              <th scope="col">{t('dashboard.chart.previous')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {buckets.map((bucket) => (
-              <tr key={bucket.label}>
-                <th scope="row">
-                  {nameOf(bucket)}
-                  {bucket.isFuture ? ` (${t('dashboard.chart.forecast')})` : ''}
-                </th>
-                <td>{money(bucket.amount)}</td>
-                <td>{money(bucket.previousAmount)}</td>
+      <details className="group rounded-lg border bg-background">
+        <summary className="flex min-h-11 cursor-pointer items-center gap-2 rounded-lg px-3 text-sm font-semibold text-primary-text focus-visible:outline-2 focus-visible:outline-ring">
+          <Table2 aria-hidden="true" className="size-4" />
+          {t('dashboard.chart.revenue')}
+        </summary>
+        <div className="overflow-x-auto border-t">
+          <table className="w-full text-left text-sm tabular-nums [&_th]:p-2 [&_td]:p-2">
+            <caption className="sr-only">{title}</caption>
+            <thead className="bg-muted text-foreground">
+              <tr>
+                <th scope="col">{t('dashboard.chart.period')}</th>
+                <th scope="col">{t('dashboard.chart.revenue')}</th>
+                <th scope="col">{t('dashboard.chart.previous')}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="divide-y">
+              {buckets.map((bucket) => (
+                <tr key={bucket.label}>
+                  <th scope="row">
+                    {nameOf(bucket)}
+                    {bucket.isFuture ? ` (${t('dashboard.chart.forecast')})` : ''}
+                  </th>
+                  <td>{money(bucket.amount)}</td>
+                  <td>{money(bucket.previousAmount)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </details>
       <p className="text-sm text-foreground/70">{t('dashboard.chart.basis')}</p>
     </section>
   );

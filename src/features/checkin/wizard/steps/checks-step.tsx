@@ -51,8 +51,8 @@ function IssueList({ issues, state, tone, onFix }: IssueListProps) {
         const label = position === null ? t('checkin.wizard.checks.entireStay') : guestLabel(state, position, t);
         const headingId = `checkin-issues-${tone}-${position ?? -1}`;
         return (
-          <section key={headingId} aria-labelledby={headingId} className="rounded-lg border border-border">
-            <h4 id={headingId} className="break-words border-b border-border bg-muted/50 px-3 py-2 font-semibold">{label}</h4>
+          <section key={headingId} aria-labelledby={headingId} className="overflow-hidden rounded-2xl border bg-card">
+            <h4 id={headingId} className="break-words border-b border-border bg-muted/50 px-4 py-3 font-semibold">{label}</h4>
             <ul className="divide-y divide-border">
               {group.map((issue, index) => {
                 const sentence = issueSentence(issue, state, t);
@@ -61,7 +61,7 @@ function IssueList({ issues, state, tone, onFix }: IssueListProps) {
                     key={`${issue.code}-${issue.field ?? 'none'}-${index}`}
                     data-testid="checkin-wizard-issue"
                     data-blocking={issue.blocking}
-                    className="grid min-w-0 items-center gap-x-4 px-3 py-2 text-sm sm:grid-cols-[minmax(0,1fr)_auto]"
+                    className="grid min-w-0 items-center gap-x-4 px-4 py-3 text-sm sm:grid-cols-[minmax(0,1fr)_auto]"
                   >
                     <span className="break-words">{sentence}</span>
                     <Button

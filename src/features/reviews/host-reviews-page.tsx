@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Loader2, Star } from 'lucide-react';
+import { Flag, Loader2, Reply, Star } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
@@ -36,8 +36,8 @@ function HostReviewCard({ review, canWrite, onReply, onReport }: HostReviewCardP
   const canReport = canWrite && !removed && !review.reportedAt;
 
   return (
-    <li className="space-y-3 rounded-lg bg-card p-4 ring-1 ring-inset ring-border" data-testid="host-review" data-status={review.status}>
-      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+    <li className="flex h-full min-w-0 flex-col gap-4 rounded-xl border bg-card p-5" data-testid="host-review" data-status={review.status}>
+      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2 border-b pb-3">
         <div className="min-w-0">
           <p className="break-words font-semibold">{review.authorName}</p>
           <p className="break-words text-sm text-foreground/70">
@@ -67,7 +67,7 @@ function HostReviewCard({ review, canWrite, onReply, onReport }: HostReviewCardP
       {review.text ? <p className="whitespace-pre-line break-words text-sm leading-relaxed">{review.text}</p> : <p className="text-sm text-foreground/70">{t('hostReviews.noText')}</p>}
 
       {review.hostReply ? (
-        <div className="space-y-1 border-l-4 border-primary/30 pl-3" data-testid="host-review-reply">
+        <div className="space-y-1 rounded-lg border-s-4 border-primary bg-primary-soft p-3 text-primary-text" data-testid="host-review-reply">
           <p className="text-sm font-semibold">
             {t('hostReviews.yourReply')}
             {review.hostRepliedAt ? <span className="font-normal text-foreground/70"> · {formatRomeDateTime(review.hostRepliedAt, i18n.language, DAY)}</span> : null}
@@ -77,15 +77,15 @@ function HostReviewCard({ review, canWrite, onReply, onReport }: HostReviewCardP
       ) : null}
 
       {canReply || canReport ? (
-        <div className="flex flex-wrap gap-2">
+        <div className="mt-auto flex flex-wrap gap-2 border-t pt-3">
           {canReply ? (
             <Button type="button" size="sm" className="min-h-11 md:min-h-0" onClick={() => onReply(review)} data-testid="host-review-reply-open">
-              {t('hostReviews.actions.reply')}
+              <Reply aria-hidden="true" className="size-4" />{t('hostReviews.actions.reply')}
             </Button>
           ) : null}
           {canReport ? (
             <Button type="button" size="sm" variant="outline" className="min-h-11 md:min-h-0" onClick={() => onReport(review)} data-testid="host-review-report-open">
-              {t('hostReviews.actions.report')}
+              <Flag aria-hidden="true" className="size-4" />{t('hostReviews.actions.report')}
             </Button>
           ) : null}
         </div>
@@ -125,7 +125,7 @@ export function HostReviewsPage() {
           <EmptyState icon={Star} title={t('hostReviews.empty.title')} description={t('hostReviews.empty.description')} />
         ) : (
           <>
-            <ul className="space-y-3" aria-label={t('hostReviews.listLabel')}>
+            <ul className="grid gap-4 xl:grid-cols-2" aria-label={t('hostReviews.listLabel')}>
               {items.map((review) => (
                 <HostReviewCard key={review.id} review={review} canWrite={canWrite} onReply={setReplying} onReport={setReporting} />
               ))}

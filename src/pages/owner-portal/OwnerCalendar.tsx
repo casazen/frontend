@@ -1,3 +1,4 @@
+import { CalendarDays } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -80,7 +81,7 @@ export function OwnerCalendar() {
 
   return (
     <div className="space-y-6">
-      <PortalPageHeading title={t('ownerPortal.calendar.title')} description={t('ownerPortal.calendar.description')} />
+      <PortalPageHeading icon={CalendarDays} title={t('ownerPortal.calendar.title')} description={t('ownerPortal.calendar.description')} />
 
       {choices.length === 0 && !stays.isError ? (
         <p className="rounded-md border border-dashed p-4 text-sm text-muted-foreground" data-testid="owner-calendar-no-properties">

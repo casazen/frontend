@@ -2,6 +2,8 @@ import { useState, type ReactNode } from 'react';
 import { ExternalLink, Pencil } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { RegisterSearch } from '@/features/admin/components/register-search';
+import { matchesSearch } from '@/components/shared/list-view/list-data';
 import { PageHeader } from '@/components/layout/page-header';
 import { ErrorState } from '@/components/shared/error-state';
 import { Badge } from '@/components/ui/badge';
@@ -94,6 +96,7 @@ function RegionRow({ row, onEdit, busy, reading }: { row: IstatRegionRule; onEdi
  * a save replaces a whole row, so it is never made from an old read.
  */
 export function IstatRegionsPage() {
+  const [query, setQuery] = useState('');
   const { t } = useTranslation();
   const regions = useIstatRegions();
   const reread = useRereadIstatRegions();
@@ -133,10 +136,12 @@ export function IstatRegionsPage() {
     );
   } else {
     const rows = regions.data;
+    const visible = rows.filter(row => matchesSearch([territoryName(row), row.system, row.regionIstatCode, row.provinceCode].filter(Boolean).join(' '), query));
     const toVerify = rows.filter((row) => !row.verifiedAt).length;
     body = (
       <>
-        <p className="text-sm text-muted-foreground" data-testid="istat-regions-summary">
+        <RegisterSearch value={query} onChange={setQuery} label={t('istatRegions.columns.region') + ' / ' + t('istatRegions.columns.system')} />
+        <p className="rounded-lg bg-surface-2 px-3 py-2 text-sm font-medium" data-testid="istat-regions-summary">
           {t('istatRegions.summary', { pending: toVerify, total: rows.length })}
         </p>
         <div className="overflow-x-auto">
@@ -168,7 +173,8 @@ export function IstatRegionsPage() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((row) => (
+              {visible.length === 0 && <tr><td colSpan={7} className="p-5 text-center text-muted-foreground" role="status">{t('listView.noResults.title')}</td></tr>}
+              {visible.map((row) => (
                 <RegionRow key={row.id} row={row} onEdit={() => void edit(row)} busy={opening !== null} reading={opening === row.id} />
               ))}
             </tbody>

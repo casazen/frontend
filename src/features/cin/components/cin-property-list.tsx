@@ -1,3 +1,5 @@
+import { ComplianceQueue } from '@/features/compliance/components/compliance-queue';
+import { Building2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { StatusBadge } from '@/components/shared/status/status-badge';
@@ -20,12 +22,13 @@ export function CinPropertyList({ items, canWrite }: CinPropertyListProps) {
   }
 
   return (
-    <ul role="list" className="divide-y divide-border border-y border-border" data-testid="cin-compliance-table">
-      {items.map((item) => {
+    <ComplianceQueue rows={items} textOf={item => [item.propertyName, item.city, item.cinCode].join(' ')} needsAction={item => item.cinStatus !== 'valid'} testId="cin-compliance-table">
+      {item => {
         const label = t(item.cinStatus === 'missing' ? 'cin.table.addCin' : 'cin.table.fixCin');
         return (
           <ComplianceRow
             key={item.propertyId}
+            icon={Building2}
             testId={`cin-row-${item.propertyId}`}
             title={item.propertyName}
             to={`/app/short-rent/properties/${item.propertyId}`}
@@ -46,7 +49,7 @@ export function CinPropertyList({ items, canWrite }: CinPropertyListProps) {
             }
           />
         );
-      })}
-    </ul>
+      }}
+    </ComplianceQueue>
   );
 }

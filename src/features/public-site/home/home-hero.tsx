@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
@@ -51,7 +51,9 @@ export function HomeHero({ org, slug, cards, destinations, searchPath, loading =
     [destinations, t],
   );
 
-  const image = org.heroImageUrl ?? displayableMediaUrls(cards[0]?.photos)[0] ?? null;
+  const [failedImages, setFailedImages] = useState<ReadonlySet<string>>(new Set());
+  const coverCandidates = [org.heroImageUrl, ...cards.flatMap(card => displayableMediaUrls(card.photos))];
+  const image = coverCandidates.find(url => url && !failedImages.has(url));
   const tagline = org.tagline?.trim() ?? '';
   const subtitle = (org as HomeOrg).subtitle?.trim() || homesLine(cards, locale, t);
   const rating = siteRating(cards);
@@ -62,7 +64,7 @@ export function HomeHero({ org, slug, cards, destinations, searchPath, loading =
     <section className={`hm-hero ${image ? 'hm-hero--image' : 'hm-hero--plain'}`} aria-labelledby="home-title" data-testid="home-hero">
       {image ? (
         <>
-          <img className="hm-hero__media" src={image} alt="" fetchPriority="high" decoding="async" />
+          <img className="hm-hero__media" src={image} alt="" onError={() => setFailedImages(previous => new Set(previous).add(image))} fetchPriority="high" decoding="async" />
           <div className="hm-hero__scrim" aria-hidden="true" />
         </>
       ) : null}

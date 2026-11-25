@@ -147,25 +147,25 @@ function WithholdingBody() {
 
       <PlainSection title={t('withholding.summary.title')} data-testid="withholding-summary">
         <p className="text-sm text-muted-foreground">{t('withholding.summary.description')}</p>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-2xl border bg-card p-4 first:border-primary/30 first:bg-primary/5 sm:p-5">
             <p className="text-sm text-muted-foreground">{t('withholding.summary.total')}</p>
-            <p className="font-semibold text-2xl" data-testid="withholding-total">
+            <p className="mt-2 text-3xl font-semibold tracking-tight tabular-nums" data-testid="withholding-total">
               {money(summary?.totalWithholding ?? 0, F24_CURRENCY)}
             </p>
           </div>
-          <div>
+          <div className="rounded-2xl border bg-card p-4 first:border-primary/30 first:bg-primary/5 sm:p-5">
             <p className="text-sm text-muted-foreground">{t('withholding.summary.taxable')}</p>
-            <p className="font-semibold text-2xl" data-testid="withholding-base">
+            <p className="mt-2 text-3xl font-semibold tracking-tight tabular-nums" data-testid="withholding-base">
               {money(summary?.totalBase ?? 0, F24_CURRENCY)}
             </p>
           </div>
         </div>
 
         {owners.length > 0 ? (
-          <ul className="space-y-2" aria-label={t('withholding.summary.byOwner')}>
+          <ul className="divide-y overflow-hidden rounded-2xl border bg-card" aria-label={t('withholding.summary.byOwner')}>
             {owners.map((owner) => (
-              <li key={owner.ownerId} className="grid grid-cols-2 gap-2 rounded-md bg-muted/50 p-3 text-sm sm:grid-cols-4" data-testid={`withholding-owner-${owner.ownerId}`}>
+              <li key={owner.ownerId} className="grid grid-cols-2 gap-3 p-4 text-sm tabular-nums even:bg-muted/30 sm:grid-cols-4" data-testid={`withholding-owner-${owner.ownerId}`}>
                 <div>
                   <p className="text-muted-foreground">{t('withholding.summary.owner')}</p>
                   <p className="font-medium">{owner.ownerName}</p>

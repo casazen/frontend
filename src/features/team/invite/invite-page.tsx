@@ -1,3 +1,4 @@
+import { UserRoundPlus } from 'lucide-react';
 import { useMe } from '@/queries/use-users';
 import { useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
@@ -196,7 +197,10 @@ export function InvitePage() {
 
   return (
     <div className={cn(FOCUS_COLUMN, 'space-y-6')} data-testid="invite-page">
-      <PageHeader title={t('team.invite.title')} crumbs="auto" />
+      <div className="grid min-w-0 items-center gap-4 rounded-3xl border border-primary/20 bg-card p-5 sm:grid-cols-[auto_minmax(0,1fr)] sm:p-7">
+        <span aria-hidden="true" className="grid size-12 place-items-center rounded-2xl bg-primary/10 text-primary-text"><UserRoundPlus className="size-6" /></span>
+        <PageHeader title={t('team.invite.title')} crumbs="auto" />
+      </div>
       <InviteWizard key={searchParams.get('n') ?? 'first'} />
     </div>
   );

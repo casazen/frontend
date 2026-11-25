@@ -130,6 +130,7 @@ export function TenantDetailPage() {
 
         {overdue ? <LateRentBlock overdue={overdue} /> : null}
 
+        <div className="grid min-w-0 items-start gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] [&>section]:rounded-xl [&>section]:border [&>section]:bg-card [&>section]:p-4">
         <PlainSection title={t('longRentTenants.contacts.title')}>
           <dl className="space-y-3 text-sm">
             <div className="flex min-w-0 flex-col gap-0.5 sm:flex-row sm:gap-4">
@@ -166,6 +167,8 @@ export function TenantDetailPage() {
             </ul>
           ) : null}
         </PlainSection>
+
+        </div>
 
         <PlainSection title={t('longRentTenants.leases.title')} count={tenant.leases.length}>
           <ul role="list" className="divide-y divide-border border-y border-border" data-testid="tenant-leases">

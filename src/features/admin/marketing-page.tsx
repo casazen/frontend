@@ -19,16 +19,13 @@ export function MarketingPage() {
         description={t('admin.marketing.description')}
       />
 
-      {/* Data-scope notice */}
-      <Card data-testid="marketing-scope-notice">
-        <CardContent className="flex items-start gap-3 pt-6">
-          <Info className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" aria-hidden />
-          <p className="text-sm text-muted-foreground">{t('admin.marketing.scopeNotice')}</p>
-        </CardContent>
-      </Card>
-
       {/* SEO funnel: top comuni by CTA clicks and signup conversions */}
       <SeoTopComuniWidget />
+
+      <p className="flex items-start gap-3 rounded-lg bg-surface-2 px-4 py-3 text-sm text-muted-foreground" data-testid="marketing-scope-notice">
+        <Info className="mt-0.5 size-4 shrink-0 text-primary-text" aria-hidden />
+        {t('admin.marketing.scopeNotice')}
+      </p>
 
       {/* UTM / referrer attribution placeholder */}
       <Card data-testid="marketing-attributions-placeholder">

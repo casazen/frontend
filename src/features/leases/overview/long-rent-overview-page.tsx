@@ -25,16 +25,18 @@ function OverviewBody({ overview, today }: { overview: LongRentOverview; today: 
   const deadlines = useLongRentDeadlines(overviewWindow(today));
 
   return (
-    <div className="space-y-8">
-      <NowBlock now={overview.now ?? null} today={today} />
+    <div className="grid min-w-0 gap-5 xl:grid-cols-2">
+      <div className="xl:col-span-2"><NowBlock now={overview.now ?? null} today={today} /></div>
       <ContractGroups leases={overview.leases} />
       <RentNumbers rents={overview.rents} rentMonth={overview.rentMonth} currentMonth={monthOfDate(today)} />
+      <div className="xl:col-span-2">
       <UpcomingDeadlines
         deadlines={deadlines.data}
         isError={deadlines.isError}
         onRetry={() => void deadlines.refetch()}
         today={today}
       />
+      </div>
     </div>
   );
 }

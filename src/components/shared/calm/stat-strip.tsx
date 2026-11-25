@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TONE_STYLES, type CalmTone } from './calm-tone';
 
@@ -18,6 +18,8 @@ export interface StatTileProps extends Omit<React.HTMLAttributes<HTMLElement>, '
   value: string | number;
   /** `neutral` (default) is plain; the others color the number and put the icon of the tone before the label. */
   tone?: CalmTone;
+  /** Icon identifying the metric. A semantic tone takes precedence when it signals a risk. */
+  icon?: LucideIcon;
   /** How it moves, already formatted with its sign and what it is compared to ("+6% su settembre"). */
   delta?: string;
   /** The tile is a link to the page that explains the number. (A tile that is not a link has no click: it is not a control.) */
@@ -30,19 +32,19 @@ export interface StatTileProps extends Omit<React.HTMLAttributes<HTMLElement>, '
  * One number with its name. Not a card: no box, no shadow, so a row of them stays quiet. With an `href` the whole tile is the
  * link (a big target), and a chevron says so.
  */
-export function StatTile({ label, value, tone = 'neutral', delta, href, state, className, ...props }: StatTileProps) {
+export function StatTile({ label, value, tone = 'neutral', icon, delta, href, state, className, ...props }: StatTileProps) {
   const style = TONE_STYLES[tone];
-  const ToneIcon = tone === 'neutral' ? null : style.Icon;
+  const ToneIcon = tone === 'neutral' ? icon : style.Icon;
 
   const content = (
     <>
       {/* `self-start`: in a row of the strip as tall as the longest name, a shorter name stays at the top, as the first line of the others. */}
       <span className={cn('flex items-center gap-1.5 self-start text-sm text-foreground/70', href !== undefined && 'group-hover/tile:underline')}>
-        {ToneIcon ? <ToneIcon aria-hidden="true" className={cn('size-4 shrink-0', style.accent)} /> : null}
+        {ToneIcon ? <ToneIcon aria-hidden="true" className={cn('size-5 shrink-0', style.accent)} /> : null}
         <span className="min-w-0 break-words">{label}</span>
         {href !== undefined ? <ChevronRight aria-hidden="true" className="ml-auto size-4 shrink-0" /> : null}
       </span>
-      <span className={cn('mt-1 block break-words text-2xl font-bold tabular-nums tracking-tight', tone === 'neutral' ? 'text-foreground' : style.accent)}>{value}</span>
+      <span className={cn('mt-1 block break-words text-2xl font-bold xl:text-3xl tabular-nums tracking-tight', tone === 'neutral' ? 'text-foreground' : style.accent)}>{value}</span>
       {delta ? <span className="mt-1 block break-words text-sm text-foreground/70">{delta}</span> : null}
     </>
   );
@@ -137,11 +139,11 @@ export function StatStrip({ label, children, className, ...props }: StatStripPro
   if (count === 0) return null;
 
   return (
-    <div {...props} role="group" aria-label={label ?? t('calm.statStrip.label')} className={cn('min-w-0 border-y border-border', className)}>
+    <div {...props} role="group" aria-label={label ?? t('calm.statStrip.label')} className={cn('min-w-0 rounded-xl border border-border bg-card px-4', className)}>
       <ul
         role="list"
         className={cn(
-          'grid grid-cols-1 gap-x-8',
+          'grid grid-cols-1 gap-x-5',
           // Three tiles across from a tablet, not two and one alone; two for the others.
           count === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2',
           // Three or four across from a laptop: the sidebar takes its room there, and each number keeps about 170 px.

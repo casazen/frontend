@@ -272,7 +272,7 @@ export function RequestFacts({ request, compact = false }: { request: SupplierSe
   const showcase = request.source === 'showcase';
 
   return (
-    <dl className={cn('grid grid-cols-1 gap-x-6 gap-y-4 border-y py-4 sm:grid-cols-2', !compact && 'lg:grid-cols-4')} data-testid="supplier-request-facts">
+    <dl className={cn('grid grid-cols-1 gap-x-4 gap-y-4 rounded-2xl border border-border bg-card p-4 sm:grid-cols-2', !compact && 'lg:grid-cols-4')} data-testid="supplier-request-facts">
       <Fact
         testId="supplier-request-when"
         label={t('supplier.requests.facts.when')}

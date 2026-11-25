@@ -54,7 +54,7 @@ export function RentalTypeCard({ rentalType, onSelect, isLoading, selectedType }
     <AlignedCard
       rows={5}
       className={cn(
-        'transition-shadow hover:shadow-md',
+        'rounded-2xl transition-shadow hover:shadow-md',
         isSelected && 'ring-2 ring-primary',
       )}
     >
@@ -63,7 +63,7 @@ export function RentalTypeCard({ rentalType, onSelect, isLoading, selectedType }
       </div>
       <CardTitle className="mb-1.5">{t(meta.titleKey)}</CardTitle>
       <CardDescription className="mb-6">{t(meta.descriptionKey)}</CardDescription>
-      <div className="mb-4">
+      <div className="mb-4 rounded-xl bg-muted/60 p-3">
         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{t('onboarding.then')}</p>
         <ol className="mt-2 list-decimal space-y-1 pl-4 text-sm text-muted-foreground">
           {PATH_STEPS[rentalType].map((key) => (
@@ -73,7 +73,7 @@ export function RentalTypeCard({ rentalType, onSelect, isLoading, selectedType }
       </div>
       <Button
         type="button"
-        className="w-full"
+        className="w-full rounded-full"
         disabled={isLoading}
         onClick={() => onSelect(rentalType)}
       >

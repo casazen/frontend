@@ -242,7 +242,7 @@ function SignupFlow({ profile }: { profile: UserDetail | undefined }) {
           <p className="text-sm text-muted-foreground">{t('commercial.resumeFrom', { step: t(`commercial.steps.${step}`) })}</p>
           <Button onClick={() => setPaused(null)}>{t('commercial.resume')}</Button>
         </section> : <>
-        <ol aria-label={t('commercial.progress')} className="mb-4 flex gap-2 sm:mb-10 sm:gap-5">
+        <ol aria-label={t('commercial.progress')} className="mb-4 flex gap-2 rounded-2xl border bg-card p-4 sm:mb-8 sm:gap-5 sm:p-5">
           {STEPS.map((item, index) => {
             const active = STEPS.indexOf(currentStep);
             return <li key={item} aria-current={item === currentStep ? 'step' : undefined} className="min-w-0 flex-1">
@@ -258,7 +258,7 @@ function SignupFlow({ profile }: { profile: UserDetail | undefined }) {
         {canGoBack && <Button type="button" variant="outline" className="mb-5" onClick={goBack} disabled={busy || checkout.isPending || checkout.isSuccess || portal.isPending}>
           <ArrowLeft className="size-4" aria-hidden="true" />{t('commercial.back')}
         </Button>}
-        <div className="mb-8 max-w-2xl space-y-3">
+        <div className="mb-6 max-w-3xl space-y-3">
           <h1 id="commercial-title" tabIndex={-1} className="text-3xl font-semibold tracking-tight outline-none sm:text-4xl">{t(isAgency && consenting ? 'commercial.agency.consents' : `commercial.headings.${headingKey}`)}</h1>
           <p className="text-base leading-relaxed text-muted-foreground">{t(descriptionKey)}</p>
           {showRestored && <p role="status" className="text-sm font-medium">{t('commercial.restored')}</p>}
@@ -269,7 +269,7 @@ function SignupFlow({ profile }: { profile: UserDetail | undefined }) {
 
         {currentStep === 'profile' && <>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {PROFILES.map(({ id, icon: Icon }) => <button key={id} type="button" onClick={() => chooseProfile(id)} data-testid={`signup-profile-${id}`} className="group flex min-h-44 items-start gap-5 rounded-2xl border border-[#1f3a3d]/15 bg-white p-6 text-left shadow-sm transition hover:border-[#1f3a3d] hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#1f3a3d] sm:p-7">
+            {PROFILES.map(({ id, icon: Icon }) => <button key={id} type="button" onClick={() => chooseProfile(id)} data-testid={`signup-profile-${id}`} className="group flex min-w-0 flex-col items-start gap-4 rounded-2xl border border-input bg-card p-5 text-left shadow-sm transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring sm:p-6">
               <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#edf2ef]"><Icon className="size-6" aria-hidden="true" /></span>
               <span className="flex-1 space-y-2"><span className="block text-xl font-semibold">{t(`commercial.profiles.${id}.title`)}</span><span className="block text-sm leading-relaxed text-muted-foreground">{t(`commercial.profiles.${id}.text`)}</span><span className="block pt-1 text-xs font-medium text-[#b34d25]">{t(`commercial.profiles.${id}.hint`)}</span></span>
               <ArrowRight className="mt-1 size-5 shrink-0 transition-transform group-hover:translate-x-1" aria-hidden="true" />

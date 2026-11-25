@@ -43,16 +43,18 @@ export function OnboardingSummaryPage() {
 
         {isAdmin ? (
           <>
-            <FinalTestPanel />
-            <section className="min-w-0 space-y-3 rounded-lg border border-primary/30 bg-primary/5 p-4" aria-labelledby="summary-activate-title" data-testid="summary-activation">
-              <h2 id="summary-activate-title" className="text-lg font-semibold">
-                {t('onboardingPlan.summary.activate.title')}
-              </h2>
-              <p className="text-sm text-foreground/70">{t('onboardingPlan.summary.activate.text')}</p>
-              <Button type="button" className="h-auto min-h-11 whitespace-normal py-2 text-center leading-tight" onClick={() => setActivating(true)} iconRight={<Rocket />} data-testid="summary-activate">
-                {t('onboardingPlan.summary.activate.action')}
-              </Button>
-            </section>
+            <div className="grid min-w-0 items-start gap-5 xl:grid-cols-[minmax(0,3fr)_minmax(16rem,2fr)]">
+              <FinalTestPanel />
+              <section className="min-w-0 space-y-3 rounded-2xl border border-primary/30 bg-primary/5 p-5 xl:sticky xl:top-5" aria-labelledby="summary-activate-title" data-testid="summary-activation">
+                <h2 id="summary-activate-title" className="text-lg font-semibold">
+                  {t('onboardingPlan.summary.activate.title')}
+                </h2>
+                <p className="text-sm text-foreground/70">{t('onboardingPlan.summary.activate.text')}</p>
+                <Button type="button" className="h-auto min-h-11 whitespace-normal py-2 text-center leading-tight" onClick={() => setActivating(true)} iconRight={<Rocket />} data-testid="summary-activate">
+                  {t('onboardingPlan.summary.activate.action')}
+                </Button>
+              </section>
+            </div>
             <ActivationDialog open={activating} onOpenChange={setActivating} />
           </>
         ) : (

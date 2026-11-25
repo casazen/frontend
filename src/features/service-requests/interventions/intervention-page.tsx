@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Building2, CalendarDays, Phone, Wrench, XCircle } from 'lucide-react';
-import { PageHeader } from '@/components/layout/page-header';
+import { ClipboardCheck, Building2, CalendarDays, Phone, Wrench, XCircle } from 'lucide-react';
+import { ServicePageHeader } from '@/features/supplier/components/service-page-header';
 import type { PageHeaderMenuItem } from '@/components/layout/page-header-actions';
 import { PlainSection } from '@/components/shared/calm';
 import { EmptyState } from '@/components/shared/empty-state';
@@ -86,7 +86,8 @@ function InterventionDetail({ request, returned }: InterventionDetailProps) {
   return (
     <div className="min-w-0 space-y-6" data-testid="intervention-page">
       {/* The trail (Affitti brevi › Immobili › Interventi › this one) and, on a phone, the link back to the list (UI-05). */}
-      <PageHeader
+      <ServicePageHeader
+        icon={ClipboardCheck}
         crumbs="auto"
         title={title}
         description={[request.propertyName, request.propertyCity, when.day].filter(Boolean).join(' · ') || undefined}
@@ -109,7 +110,7 @@ function InterventionDetail({ request, returned }: InterventionDetailProps) {
 
       <InterventionNow request={request} steps={actions.steps} busy={actions.busy} permissions={permissions} paymentSent={paymentSent} />
 
-      <div className="space-y-8">
+      <div className="grid min-w-0 items-start gap-6 lg:grid-cols-2">
         {request.group ? (
           <PlainSection title={t('interventions.group.title')} data-testid="intervention-group-section">
             <InterventionGroup group={request.group} />
@@ -175,7 +176,7 @@ function InterventionPage({ id }: { id: string }) {
   if (isError && getHttpStatus(error) !== 404) {
     return (
       <div className="min-w-0 space-y-6">
-        <PageHeader crumbs="auto" title={t('interventions.detail.fallbackTitle')} />
+        <ServicePageHeader icon={ClipboardCheck} crumbs="auto" title={t('interventions.detail.fallbackTitle')} />
         <ErrorState testId="intervention-load-error" title={t('interventions.detail.loadError')} error={error} onRetry={() => void refetch()} />
       </div>
     );
@@ -184,7 +185,7 @@ function InterventionPage({ id }: { id: string }) {
   if (!request) {
     return (
       <div className="min-w-0 space-y-6">
-        <PageHeader crumbs="auto" title={t('interventions.detail.fallbackTitle')} />
+        <ServicePageHeader icon={ClipboardCheck} crumbs="auto" title={t('interventions.detail.fallbackTitle')} />
         <EmptyState
           icon={Wrench}
           title={t('interventions.detail.notFound')}

@@ -148,44 +148,58 @@ function BookingFlowForm({ settings, canEdit }: { settings: BookingFlowSettings;
   };
 
   return (
-    <form className="max-w-3xl space-y-6" onSubmit={submit} data-testid="booking-flow-form">
-      <ol className="divide-y rounded-xl border">
-        {STEPS.map(({ key, switchable }, index) => (
-          <li key={key} className="space-y-3 p-4" data-testid={`booking-flow-step-${key}`}>
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0 space-y-1">
-                <h2 className="font-semibold">
-                  <span className="mr-2 text-foreground/60">{index + 1}.</span>
-                  {switchable ? <Label htmlFor={`booking-flow-${key}`}>{t(`bookingFlow.steps.${key}.title`)}</Label> : t(`bookingFlow.steps.${key}.title`)}
-                </h2>
-                <p id={`booking-flow-${key}-help`} className="break-words text-sm text-foreground/70">
-                  {switchable
-                    ? t(`bookingFlow.steps.${key}.${automatic(switchable) ? 'automatic' : 'manual'}`)
-                    : t(`bookingFlow.steps.${key}.fixed`)}
-                </p>
-              </div>
-              {switchable ? (
-                <div className="flex shrink-0 items-center gap-2">
-                  <span className="text-sm text-foreground/70" aria-hidden="true">
-                    {t(automatic(switchable) ? 'bookingFlow.mode.Automatic' : 'bookingFlow.mode.Manual')}
-                  </span>
-                  <Switch
-                    id={`booking-flow-${key}`}
-                    aria-describedby={`booking-flow-${key}-help`}
-                    data-testid={`booking-flow-switch-${key}`}
-                    checked={automatic(switchable)}
-                    disabled={disabled}
-                    onCheckedChange={(checked) => setMode(switchable, checked)}
-                  />
+    <form className="max-w-5xl space-y-6" onSubmit={submit} data-testid="booking-flow-form">
+      <div className="grid items-start gap-6 lg:grid-cols-[13rem_minmax(0,1fr)]">
+        <nav aria-label={t('bookingFlow.title')} className="hidden rounded-2xl border bg-muted/30 p-3 lg:sticky lg:top-6 lg:block">
+          <ul className="space-y-1">
+            {STEPS.map(({ key }, index) => (
+              <li key={key}>
+                <a href={`#flow-${key}`} className="flex min-h-10 items-center gap-2 rounded-lg px-2 text-sm hover:bg-muted focus-visible:outline-primary">
+                  <span aria-hidden className="text-xs font-semibold tabular-nums text-muted-foreground">{index + 1}</span>
+                  {t(`bookingFlow.steps.${key}.title`)}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <ol className="space-y-3 border-s-2 border-primary/25 ps-4 sm:ps-6">
+          {STEPS.map(({ key, switchable }, index) => (
+            <li key={key} id={`flow-${key}`} tabIndex={-1} className="relative scroll-mt-20 space-y-3 rounded-2xl border bg-card px-4 py-4 sm:p-5" data-testid={`booking-flow-step-${key}`}>
+              <div className="flex flex-col items-start justify-between gap-3 sm:flex-row">
+                <div className="min-w-0 space-y-1">
+                  <h2 className="font-semibold">
+                    <span className="me-2 inline-grid size-7 place-items-center rounded-full bg-primary/10 text-sm font-semibold tabular-nums text-primary">{index + 1}</span>
+                    {switchable ? <Label htmlFor={`booking-flow-${key}`}>{t(`bookingFlow.steps.${key}.title`)}</Label> : t(`bookingFlow.steps.${key}.title`)}
+                  </h2>
+                  <p id={`booking-flow-${key}-help`} className="break-words text-sm text-foreground/70">
+                    {switchable
+                      ? t(`bookingFlow.steps.${key}.${automatic(switchable) ? 'automatic' : 'manual'}`)
+                      : t(`bookingFlow.steps.${key}.fixed`)}
+                  </p>
                 </div>
-              ) : (
-                <span className="shrink-0 text-sm text-foreground/70">{t(`bookingFlow.steps.${key}.who`)}</span>
-              )}
-            </div>
-            {switchable && parameterOf(switchable)}
-          </li>
-        ))}
-      </ol>
+                {switchable ? (
+                  <div className="flex shrink-0 items-center gap-2">
+                    <span className="text-sm text-foreground/70" aria-hidden="true">
+                      {t(automatic(switchable) ? 'bookingFlow.mode.Automatic' : 'bookingFlow.mode.Manual')}
+                    </span>
+                    <Switch
+                      id={`booking-flow-${key}`}
+                      aria-describedby={`booking-flow-${key}-help`}
+                      data-testid={`booking-flow-switch-${key}`}
+                      checked={automatic(switchable)}
+                      disabled={disabled}
+                      onCheckedChange={(checked) => setMode(switchable, checked)}
+                    />
+                  </div>
+                ) : (
+                  <span className="shrink-0 text-sm text-foreground/70">{t(`bookingFlow.steps.${key}.who`)}</span>
+                )}
+              </div>
+              {switchable && parameterOf(switchable)}
+            </li>
+          ))}
+        </ol>
+      </div>
 
       {update.isError && (
         <Alert variant="danger" data-testid="booking-flow-save-error">
@@ -194,7 +208,7 @@ function BookingFlowForm({ settings, canEdit }: { settings: BookingFlowSettings;
       )}
 
       {canEdit ? (
-        <Button type="submit" loading={update.isPending} disabled={update.isPending || daysInvalid || !isChanged(form, settings)} data-testid="booking-flow-save">
+        <Button className="w-full sm:w-auto" type="submit" loading={update.isPending} disabled={update.isPending || daysInvalid || !isChanged(form, settings)} data-testid="booking-flow-save">
           {t('bookingFlow.save')}
         </Button>
       ) : (

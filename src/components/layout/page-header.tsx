@@ -3,13 +3,14 @@ import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BackLink } from '@/components/shared/back-link';
 import { getArea } from '@/config/areas';
-import { getDefaultRoute } from '@/config/route-manifest';
+import { getDefaultRoute, getManifestEntry } from '@/config/route-manifest';
 import { WorkspaceContext } from '@/contexts/workspace-context';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { usePageTitle } from '@/hooks/use-page-title';
 import { getManifestCrumbs, type PageCrumb } from '@/lib/page-crumbs';
 import { useAppShell } from './app-shell-context';
 import { NavSectionTabs } from './nav-section-tabs';
+import { NavIcon } from './nav-icon';
 import { PageCrumbs } from './page-crumbs';
 import {
   PageHeaderMenu,
@@ -60,8 +61,9 @@ interface PageHeaderProps {
  */
 export function PageHeader({ title, description, action, crumbs, primary, secondary, mobilePrimary }: PageHeaderProps) {
   usePageTitle(title);
+  const shell = useAppShell();
 
-  if (crumbs === undefined && primary === undefined && !secondary?.length) {
+  if (!shell && crumbs === undefined && primary === undefined && !secondary?.length) {
     return (
       <>
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
@@ -84,7 +86,7 @@ export function PageHeader({ title, description, action, crumbs, primary, second
         title={title}
         description={description}
         action={action}
-        crumbs={crumbs}
+        crumbs={crumbs ?? (shell ? 'auto' : undefined)}
         primary={primary}
         secondary={secondary}
         mobilePrimary={mobilePrimary}
@@ -132,14 +134,25 @@ function PageHeaderWithTrail({ title, description, action, crumbs, primary, seco
   const hasActions = Boolean(action) || Boolean(secondary?.length) || primary !== undefined;
 
   return (
-    <div className="flex flex-col gap-2" data-testid="page-header">
-      {items.length > 0 ? <PageCrumbs items={items} /> : null}
+    <div className="workspace-page-heading flex flex-col gap-2" data-testid="page-header">
+      {items.length > 0 && (
+        <div className="flex items-center gap-2">
+          {shell && (
+            <span className="workspace-page-icon" aria-hidden="true">
+              <NavIcon name={getManifestEntry(pathname)?.icon ?? getArea(shell.contextKey).icon} className="size-4" />
+            </span>
+          )}
+          <PageCrumbs items={items} />
+        </div>
+      )}
       {back?.to ? <BackLink to={back.to} label={back.label} /> : null}
       {/* The same row as the head every page has (it wraps and shrinks to fit a phone); the title is smaller on a phone. */}
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
-        <div className="min-w-0 grow basis-56">
+        <div className="flex min-w-0 grow basis-56 items-start gap-3 sm:gap-4">
+          <div className="min-w-0">
           <h1 className="workspace-title">{title}</h1>
           {description ? <p className="workspace-description">{description}</p> : null}
+          </div>
         </div>
         {hasActions ? (
           <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2">

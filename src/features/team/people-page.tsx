@@ -35,7 +35,7 @@ export function PeoplePage() {
 
       {/* The members are there without their invitations: it is said, never guessed (nobody is "not invited" because a list failed). */}
       {invitationsFailed && !isError ? (
-        <div role="status" className="flex flex-wrap items-center gap-3 text-sm text-foreground/70" data-testid="people-invitations-note">
+        <div role="status" className="flex flex-wrap items-center gap-3 rounded-xl border border-warning-border bg-warning-soft p-4 text-sm text-warning-foreground" data-testid="people-invitations-note">
           <p className="min-w-0 break-words">{t('team.invitationsUnavailable')}</p>
           <Button type="button" variant="outline" size="sm" onClick={refetchInvitations}>
             {t('team.retry')}

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { CategoryIcon } from './category-icon';
 
@@ -16,11 +17,13 @@ interface SiteMediaProps {
 
 /** A picture of a supplier's site: the photo, or (VT-D19) a neutral fill with the icon of the trade until the supplier uploads one. */
 export function SiteMedia({ url, alt, category, priority = false, className, width, height }: SiteMediaProps) {
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
   return (
     <div className={cn('vz-media', className)}>
-      {url ? (
+      {url && url !== failedUrl ? (
         <img
           src={url}
+          onError={() => setFailedUrl(url)}
           alt={alt}
           width={width}
           height={height}

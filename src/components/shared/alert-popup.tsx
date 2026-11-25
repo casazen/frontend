@@ -1,3 +1,4 @@
+import { ArrowRight, Clock3 } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -62,9 +63,11 @@ function AlertCard({ alert, busy, primaryActionIsThere, onDismiss, onRemind }: A
             {route ? (
               <Button type="button" size="sm" disabled={busy} data-testid="alert-do-now" onClick={() => void navigate(route)}>
                 {t('alert.popup.doNow')}
+                <ArrowRight aria-hidden="true" className="size-4" />
               </Button>
             ) : null}
             <Button type="button" size="sm" variant="outline" disabled={busy} data-testid="alert-remind" onClick={onRemindMe}>
+              <Clock3 aria-hidden="true" className="size-4" />
               {t('alert.popup.remindMeLater')}
             </Button>
             <Button type="button" size="sm" variant="ghost" disabled={busy} data-testid="alert-dismiss" onClick={onDismiss}>

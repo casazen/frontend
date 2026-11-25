@@ -1,7 +1,8 @@
+import { Settings2 } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { NavChildLinks } from '@/components/layout/nav-child-links';
-import { PageHeader } from '@/components/layout/page-header';
+import { ServicePageHeader } from '@/features/supplier/components/service-page-header';
 import { FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { Tabs, type TabItem } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -33,7 +34,8 @@ export function SupplierSettingsPage() {
 
   return (
     <div className={cn(FOCUS_COLUMN, 'space-y-6')} data-testid="supplier-settings-page">
-      <PageHeader
+      <ServicePageHeader
+        icon={Settings2}
         title={t('supplier.settings.title')}
         description={t('supplier.settings.description')}
         crumbs="auto"

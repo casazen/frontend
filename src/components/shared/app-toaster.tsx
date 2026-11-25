@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Toaster } from 'sonner';
 import { PHONE_QUERY, useMediaQuery } from '@/hooks/use-media-query';
 import { useUiStore } from '@/store/ui-store';
@@ -18,6 +19,7 @@ const ABOVE_THE_BAR_AND_THE_PRIMARY_ACTION =
  * notice sit at the bottom.
  */
 export function AppToaster() {
+  const { t } = useTranslation();
   const isPhone = useMediaQuery(PHONE_QUERY);
   const barIsThere = useUiStore((state) => state.bottomBarVisible);
   const primaryActionIsThere = useUiStore((state) => state.mobilePrimaryVisible);
@@ -31,6 +33,17 @@ export function AppToaster() {
       // 600 px, `mobileOffset` for a narrower one.
       offset={aboveTheBar ? { bottom } : undefined}
       mobileOffset={aboveTheBar ? { bottom } : undefined}
+      containerAriaLabel={t('notifications.title')}
+      closeButton
+      toastOptions={{
+        closeButtonAriaLabel: t('shared.close'),
+        style: { borderRadius: 'var(--radius-lg)', fontFamily: 'inherit' },
+        classNames: {
+          title: 'font-semibold',
+          content: 'min-w-0 break-words',
+          closeButton: 'focus-visible:ring-2 focus-visible:ring-ring',
+        },
+      }}
       richColors
     />
   );

@@ -17,21 +17,12 @@ export const otaIntegrationFormSchema = z.object({
 
 export type OtaIntegrationFormValues = z.infer<typeof otaIntegrationFormSchema>;
 
-/** @deprecated Use getOtaPlatformLabel from @/lib/i18n-labels */
-export const OTA_PLATFORM_COLORS: Record<string, string> = {
-  AIRBNB: '#FF5A5F',
-  BOOKING_COM: '#003580',
-  EXPEDIA: '#FFCC00',
-  VRBO: '#0066CC',
-  TRIPADVISOR: '#00AF87',
-  AGODA: '#D4145A',
-};
-
-export const OTA_PLATFORM_ICONS: Record<string, string> = {
-  AIRBNB: '🏠',
-  BOOKING_COM: '🏨',
-  EXPEDIA: '✈️',
-  VRBO: '🏡',
-  TRIPADVISOR: '🦉',
-  AGODA: '🌴',
-};
+/** Local brand assets shared by the connection form and the integration overview. */
+export const PLATFORM_LOGO = {
+  AIRBNB: '/integrations/ota/airbnb.svg',
+  BOOKING_COM: '/integrations/ota/booking-com.svg',
+  EXPEDIA: '/integrations/ota/expedia.svg',
+  VRBO: '/integrations/ota/vrbo.webp',
+  TRIPADVISOR: '/integrations/metasearch/tripadvisor.webp',
+  AGODA: '/integrations/ota/agoda.svg',
+} as const;

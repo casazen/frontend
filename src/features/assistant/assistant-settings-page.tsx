@@ -1,8 +1,11 @@
+import { useState } from 'react';
+import { Building2, MessageSquareText } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PAGE_COLUMNS } from '@/components/layout/page-columns';
 import { PageHeader } from '@/components/layout/page-header';
+import { Input } from '@/components/ui/input';
 import { Field } from '@/components/ui/field';
 import { Select } from '@/components/ui/select';
 import { Tabs, type TabItem } from '@/components/ui/tabs';
@@ -47,6 +50,7 @@ function RulesTab({ canReadRules, isAdmin }: Pick<PermissionsProps, 'canReadRule
 function PropertiesTab({ propertyId, canReadRules, canReadProperty, canWriteProperty }: Pick<PermissionsProps, 'canReadRules' | 'canReadProperty' | 'canWriteProperty'> & { propertyId: string | null }) {
   const { t } = useTranslation();
   const properties = useShortProperties();
+  const [query, setQuery] = useState('');
 
   if (properties.isPending) return <SettingsLoading testId="assistant-properties-loading" />;
   if (!properties.data) return <SettingsError message={t('assistant.property.listError')} onRetry={() => void properties.refetch()} testId="assistant-properties-error" />;
@@ -54,11 +58,16 @@ function PropertiesTab({ propertyId, canReadRules, canReadProperty, canWriteProp
 
   const chosen = propertyId === null ? undefined : properties.data.find((property) => property.id === propertyId);
 
+  const search = query.trim().toLocaleLowerCase();
+  const visibleProperties = properties.data.filter((property) => property.name.toLocaleLowerCase().includes(search));
+
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,16rem)_minmax(0,1fr)] lg:items-start" data-testid="assistant-tab-properties">
-      <nav aria-label={t('assistant.property.listLabel')} className="min-w-0">
-        <ul className="space-y-1">
-          {properties.data.map((property) => {
+      <nav aria-label={t('assistant.property.listLabel')} className="min-w-0 space-y-2 rounded-2xl border bg-card p-3">
+        <Input type="search" value={query} onChange={(event) => setQuery(event.target.value)} aria-label={t('property.list.search')} placeholder={t('property.list.search')} />
+        {visibleProperties.length === 0 && <p role="status" className="px-2 py-3 text-sm text-muted-foreground">{t('listView.noResults.title')}</p>}
+        <ul className="max-h-72 space-y-1 overflow-y-auto lg:max-h-[60vh]">
+          {visibleProperties.map((property) => {
             const current = property.id === propertyId;
             return (
               <li key={property.id}>
@@ -66,11 +75,12 @@ function PropertiesTab({ propertyId, canReadRules, canReadProperty, canWriteProp
                   to={`${ASSISTANT_SETTINGS_PATH}?tab=properties&propertyId=${encodeURIComponent(property.id)}`}
                   aria-current={current ? 'page' : undefined}
                   className={cn(
-                    'flex min-h-11 items-center rounded-lg px-3 py-2 text-sm break-words hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                    current ? 'bg-muted font-semibold' : 'text-foreground/80',
+                    'flex min-h-11 items-center gap-2 rounded-lg px-3 py-2 text-sm break-words hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    current ? 'bg-primary/10 font-semibold text-primary-text' : 'text-foreground/80',
                   )}
                   data-testid="assistant-property-link"
                 >
+                  <Building2 aria-hidden className="size-4 shrink-0" />
                   {property.name}
                 </Link>
               </li>
@@ -81,7 +91,7 @@ function PropertiesTab({ propertyId, canReadRules, canReadProperty, canWriteProp
 
       <div className="min-w-0">
         {propertyId === null ? (
-          <p className="text-sm text-foreground/70" data-testid="assistant-choose-property">
+          <p className="rounded-2xl border border-dashed p-6 text-center text-sm text-foreground/70" data-testid="assistant-choose-property">
             {t('assistant.property.choose')}
           </p>
         ) : chosen === undefined ? (
@@ -190,7 +200,8 @@ export function AssistantSettingsPage() {
     <AppShell>
       <div className="min-w-0 space-y-6" data-testid="assistant-settings-page">
         <PageHeader title={t('assistant.settings.title')} description={t('assistant.settings.description')} crumbs="auto" />
-        <p className="max-w-3xl break-words text-sm text-foreground/70" data-testid="assistant-settings-drafts-only">
+        <p className="flex items-start gap-3 rounded-xl border bg-muted/40 p-4 text-sm text-foreground/80" data-testid="assistant-settings-drafts-only">
+          <MessageSquareText aria-hidden className="size-5 shrink-0 text-primary-text" />
           {t('assistant.settings.draftsOnly')}
         </p>
         <Tabs label={t('assistant.settings.tabsLabel')} items={tabs} defaultValue="rules" value={tab} selectTestId="assistant-tabs-select">

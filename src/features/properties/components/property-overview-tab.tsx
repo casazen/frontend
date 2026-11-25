@@ -80,18 +80,31 @@ export function PropertyOverviewTab({ property, canWrite, publicPath, onEditCin 
 
   return (
     <div className="space-y-8">
-      <div className="grid min-w-0 gap-6 xl:grid-cols-2 xl:items-start xl:gap-x-8">
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] xl:items-start">
+        <PlainSection title={t('property.detail.tabs.photos')}>
+          {hasPhotos ? <PropertyPhotoCarousel photoUrls={property.photoUrls} name={property.name} /> : (
+            <p className="text-sm text-muted-foreground">{t('propertySetup.overview.noPhotos')}</p>
+          )}
+          {canWrite ? (
+            <Button asChild variant="outline" size="sm" className="min-h-11">
+              <Link to={propertyTabPath(property.id, 'photos')} data-testid="property-manage-photos">
+                <ImagePlus aria-hidden="true" className="size-4" />
+                {t(hasPhotos ? 'property.photos.manage' : 'property.photos.add')}
+              </Link>
+            </Button>
+          ) : null}
+        </PlainSection>
         {canWrite ? (
-          <PlainSection title={t('property.detail.sections.data')} actionLabel={t('property.detail.edit')} href={propertyEditPath(property.id)}>
+          <PlainSection className="rounded-xl border bg-card p-4 sm:p-5" title={t('property.detail.sections.data')} actionLabel={t('property.detail.edit')} href={propertyEditPath(property.id)}>
             {data}
           </PlainSection>
         ) : (
-          <PlainSection title={t('property.detail.sections.data')}>{data}</PlainSection>
+          <PlainSection className="rounded-xl border bg-card p-4 sm:p-5" title={t('property.detail.sections.data')}>{data}</PlainSection>
         )}
 
         <PlainSection
           id={PRICING_SECTION_ID}
-          className="scroll-mt-6"
+          className="scroll-mt-6 rounded-xl border bg-card p-4 sm:p-5"
           title={t('property.detail.sections.pricing')}
           actionLabel={t('property.detail.managePricing')}
           href={propertyPricingPath(property.id)}
@@ -122,19 +135,6 @@ export function PropertyOverviewTab({ property, canWrite, publicPath, onEditCin 
           </Facts>
         </PlainSection>
 
-        <PlainSection title={t('property.detail.tabs.photos')}>
-          {hasPhotos ? <PropertyPhotoCarousel photoUrls={property.photoUrls} name={property.name} /> : (
-            <p className="text-sm text-muted-foreground">{t('propertySetup.overview.noPhotos')}</p>
-          )}
-          {canWrite ? (
-            <Button asChild variant="outline" size="sm" className="min-h-11">
-              <Link to={propertyTabPath(property.id, 'photos')} data-testid="property-manage-photos">
-                <ImagePlus aria-hidden="true" className="size-4" />
-                {t(hasPhotos ? 'property.photos.manage' : 'property.photos.add')}
-              </Link>
-            </Button>
-          ) : null}
-        </PlainSection>
         <PropertyAmenitiesGrid amenities={property.amenities} />
       </div>
 

@@ -28,7 +28,7 @@ export function PropertyPhotoCarousel({ photoUrls, name }: PropertyPhotoCarousel
     // computer, never more than 24 rem) and a property without photos gets a short strip, not a screen of nothing.
     <div
       className={cn(
-        'relative w-full overflow-hidden rounded-xl bg-muted',
+        'relative w-full overflow-hidden rounded-2xl bg-muted',
         hasPhotos ? 'aspect-[4/3] max-h-96 sm:aspect-video' : 'aspect-[3/1] max-h-40',
       )}
     >
@@ -52,7 +52,7 @@ export function PropertyPhotoCarousel({ photoUrls, name }: PropertyPhotoCarousel
               <Button
                 variant="secondary"
                 size="icon"
-                className="absolute left-3 top-1/2 -translate-y-1/2"
+                className="absolute bottom-3 left-3 min-h-11 min-w-11 rounded-full bg-card text-foreground shadow-sm"
                 onClick={goPrev}
                 aria-label={t('property.photos.prev')}
               >
@@ -61,13 +61,13 @@ export function PropertyPhotoCarousel({ photoUrls, name }: PropertyPhotoCarousel
               <Button
                 variant="secondary"
                 size="icon"
-                className="absolute right-3 top-1/2 -translate-y-1/2"
+                className="absolute bottom-3 right-3 min-h-11 min-w-11 rounded-full bg-card text-foreground shadow-sm"
                 onClick={goNext}
                 aria-label={t('property.photos.next')}
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
-              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-3 py-1 text-xs text-white">
+              <div aria-live="polite" aria-atomic="true" className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-card px-3 py-1 text-xs font-semibold tabular-nums text-foreground">
                 {position} / {photos.length}
               </div>
             </>

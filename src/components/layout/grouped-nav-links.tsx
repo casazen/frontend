@@ -239,6 +239,7 @@ export function GroupedNavLinks({
   const { t } = useTranslation();
   const { pathname } = useLocation();
   const baseId = useId();
+  const [folded, setFolded] = useState<Record<string, boolean>>({});
   const activePath = resolveActiveNavEntry(pathname, matchEntries)?.path;
   const isSheet = variant === 'sheet';
   const groupCount =
@@ -272,6 +273,10 @@ export function GroupedNavLinks({
       {nav.sections.map((section, index) => {
         const label = getNavGroupLabel(section.group, t);
         const labelId = `${baseId}-${section.group}`;
+        const listId = `${labelId}-entries`;
+        const foldKey = `${pathname}:${section.group}`;
+        const foldable = showGroupLabels && !isSheet;
+        const expanded = !foldable || !folded[foldKey];
         return (
           <div
             key={section.group}
@@ -282,12 +287,24 @@ export function GroupedNavLinks({
             data-testid={`nav-group-${section.group}`}
             className={cn(collapsed && index > 0 && 'border-t pt-2')}
           >
-            {showGroupLabels ? (
+            {foldable ? (
+              <button
+                type="button"
+                id={labelId}
+                aria-controls={listId}
+                aria-expanded={expanded}
+                onClick={() => setFolded(previous => ({ ...previous, [foldKey]: expanded }))}
+                className="workspace-group-toggle"
+              >
+                {label}
+                <ChevronDown aria-hidden="true" className={cn('size-3.5', !expanded && '-rotate-90')} />
+              </button>
+            ) : showGroupLabels ? (
               <p id={labelId} className={GROUP_LABEL_STYLES[variant]}>
                 {label}
               </p>
             ) : null}
-            <ul className={listClass}>{section.entries.map(renderEntry)}</ul>
+            <ul id={listId} hidden={!expanded} className={expanded ? listClass : undefined}>{section.entries.map(renderEntry)}</ul>
           </div>
         );
       })}

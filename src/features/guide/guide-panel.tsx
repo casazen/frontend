@@ -39,13 +39,14 @@ function SetupSection({ journey }: { journey: SetupJourney }) {
   }));
 
   return (
-    <section aria-labelledby={titleId} className="space-y-4" data-testid="guide-setup">
+    <section aria-labelledby={titleId} className="space-y-4 rounded-xl border bg-card p-4" data-testid="guide-setup">
       <div>
         <h3 id={titleId} className="text-base font-semibold">
           {t(journey.source === 'path' ? 'guide.setup.titlePath' : 'guide.setup.titleChecklist')}
         </h3>
         <p className="text-sm text-foreground/70">{t('guide.setup.progress', { done: journey.done, total: journey.total })}</p>
       </div>
+      {journey.total > 0 && <progress aria-label={t('guide.setup.label')} className="block h-2 w-full accent-primary" value={journey.done} max={journey.total} />}
       <GuidePath label={t('guide.setup.label')} steps={steps} density="compact" />
       {journey.allHref ? (
         <Link to={journey.allHref} className={PANEL_LINK} data-testid="guide-setup-all">
@@ -92,7 +93,7 @@ function TodoSection() {
   const urgentCount = urgent.data?.count ?? 0;
 
   return (
-    <section aria-labelledby={titleId} className="space-y-4" data-testid="guide-todo">
+    <section aria-labelledby={titleId} className="space-y-4 rounded-xl border bg-card p-4" data-testid="guide-todo">
       <div>
         <h3 id={titleId} className="text-base font-semibold">
           {t('guide.todo.title')}
@@ -126,7 +127,7 @@ function HelpSection({ contextKey }: { contextKey: AppContextKey }) {
   const returnState = location.pathname === manual ? location.state : { guideReturnTo: currentReturnTo(location) };
 
   return (
-    <section aria-labelledby={titleId} className="space-y-2" data-testid="guide-help">
+    <section aria-labelledby={titleId} className="space-y-2 rounded-xl border bg-card p-4" data-testid="guide-help">
       <h3 id={titleId} className="text-base font-semibold">
         {t('guide.help.title')}
       </h3>
@@ -179,14 +180,14 @@ function GuidePanel({ contextKey }: GuidePanelProps) {
   return (
     <Sheet open onOpenChange={setOpen}>
       <SheetContent side="right" className="w-full sm:max-w-md" data-testid="guide-panel">
-        <SheetHeader className="space-y-1 border-b px-6 pb-4 pr-14 pt-6 text-left">
+        <SheetHeader className="space-y-1 border-b bg-primary-soft px-6 pb-4 pr-14 pt-6 text-left">
           <SheetTitle className="flex items-center gap-2">
             <Compass aria-hidden="true" className="size-5 text-primary-text" />
             {t('guide.title')}
           </SheetTitle>
           <SheetDescription>{t('guide.description')}</SheetDescription>
         </SheetHeader>
-        <div className="min-h-0 flex-1 space-y-8 overflow-y-auto overscroll-contain px-6 pb-8 pt-2">
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain bg-surface-2 p-4 sm:p-5">
           {shortRent && journey ? <SetupSection journey={journey} /> : null}
           {canReadTodo ? <TodoSection /> : null}
           <HelpSection contextKey={contextKey} />
