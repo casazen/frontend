@@ -20,12 +20,14 @@ function show(issued: boolean) {
 }
 
 describe('stay invoice recipient', () => {
-  it('saves the pre-issue answer through the scoped stay endpoint', async () => {
+  it('saves validated pre-issue recipient details through the scoped stay endpoint', async () => {
     show(false);
     fireEvent.click(await screen.findByTestId('checkin-invoice-yes'));
+    fireEvent.change(screen.getByTestId('checkin-invoice-name'), { target: { value: 'Mario Rossi' } });
+    fireEvent.change(screen.getByTestId('checkin-invoice-fiscalCode'), { target: { value: 'RSSMRA80A01H501U' } });
     fireEvent.click(screen.getByRole('button', { name: /save answer/i }));
     await waitFor(() => expect(ApiClient.put).toHaveBeenCalledWith(
-      path + '/documents/invoice-data', { needInvoice: true }, { public: true },
+      path + '/documents/invoice-data', { needInvoice: true, recipientKind: 'Guest', countryCode: 'IT', name: 'Mario Rossi', fiscalCode: 'RSSMRA80A01H501U' }, { public: true },
     ));
   });
 
