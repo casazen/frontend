@@ -5,6 +5,7 @@ import { AlertCircle } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { Alert } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { ApprovalDecidedList } from '@/features/approvals/components/approval-decided-list';
 import { ApprovalEditDialog } from '@/features/approvals/components/approval-edit-dialog';
@@ -30,7 +31,7 @@ const matchesType = (item: ApprovalQueueItem, typeFilter: string) => typeFilter 
 export function ApprovalQueuePage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const { data: items, isLoading, error } = usePendingApprovals();
+  const { data: items, isLoading, error, isFetching, refetch } = usePendingApprovals();
   const approveItem = useApproveItem();
   // The edit and the rejection are started from their dialogs but live here, with the approval: a dialog closed while its request goes on (the X, Esc, a
   // tap outside) would take the callbacks of the request with it, and the decision would be written neither below nor on the card.
@@ -118,21 +119,21 @@ export function ApprovalQueuePage() {
         <PageHeader title={t('approval.queue.title')} description={t('approval.queue.description')} />
 
         {loadFailed ? (
-          <Alert variant="danger" title={t('shared.error')} icon={AlertCircle}>
+          <Alert variant="danger" title={t('shared.error')} icon={AlertCircle} action={<Button type="button" variant="outline" size="sm" disabled={isFetching} onClick={() => void refetch()}>{t('approval.action.retry')}</Button>}>
             {t('approval.queue.loadError')}
           </Alert>
         ) : (
           <>
-            <div className="flex flex-wrap gap-4">
+            <div className="rounded-2xl border bg-card p-4">
               <div className="w-full sm:w-64">
                 <label htmlFor="type-filter" className="mb-2 block text-sm font-medium">
                   {t('approval.filter.type')}
                 </label>
                 <Select id="type-filter" value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)}>
-                  <option value="all">{t('approval.filter.allTypes')}</option>
+                  <option value="all">{t('approval.filter.allTypes')} ({waiting.length})</option>
                   {FILTERABLE_TYPES.map((type) => (
                     <option key={type} value={type}>
-                      {approvalTypeLabel(type, t)}
+                      {approvalTypeLabel(type, t)} ({waiting.filter((item) => item.itemType === type).length})
                     </option>
                   ))}
                 </Select>

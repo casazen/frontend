@@ -68,49 +68,57 @@ export function VerificationQueuePage() {
     <div className="container mx-auto space-y-6 px-4 py-8">
       <PageHeader title={t('verification.queue.title')} description={t('verification.queue.description')} />
 
-      <VerificationMetricsCard />
+      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_19rem]">
+        <div className="min-w-0 space-y-4">
+          <div className="grid gap-3 rounded-2xl border bg-card p-4 sm:grid-cols-2">
+            <div className="min-w-0">
+              <label htmlFor="reason-filter" className="text-sm font-medium mb-2 block">
+                {t('verification.filter.reason')}
+              </label>
+              <Select id="reason-filter" value={reasonFilter} onChange={(e) => setReasonFilter(e.target.value)}>
+                <option value="all">{t('verification.filter.allReasons')}</option>
+                {QUEUE_REASONS.map((reason) => (
+                  <option key={reason} value={reason}>
+                    {t(`verification.filter.reasons.${reason}`)}
+                  </option>
+                ))}
+              </Select>
+            </div>
 
-      <div className="flex flex-wrap gap-4">
-        <div className="w-full sm:w-64">
-          <label htmlFor="reason-filter" className="text-sm font-medium mb-2 block">
-            {t('verification.filter.reason')}
-          </label>
-          <Select id="reason-filter" value={reasonFilter} onChange={(e) => setReasonFilter(e.target.value)}>
-            <option value="all">{t('verification.filter.allReasons')}</option>
-            {QUEUE_REASONS.map((reason) => (
-              <option key={reason} value={reason}>
-                {t(`verification.filter.reasons.${reason}`)}
-              </option>
-            ))}
-          </Select>
-        </div>
+            <div className="min-w-0">
+              <label htmlFor="deadline-filter" className="text-sm font-medium mb-2 block">
+                {t('verification.filter.deadline')}
+              </label>
+              <Select id="deadline-filter" value={deadlineFilter} onChange={(e) => setDeadlineFilter(e.target.value)}>
+                <option value="all">{t('verification.filter.allDeadlines')}</option>
+                <option value="past">{t('verification.filter.past')}</option>
+                <option value="today">{t('verification.filter.today')}</option>
+                <option value="upcoming">{t('verification.filter.upcoming')}</option>
+              </Select>
+            </div>
+            {(reasonFilter !== 'all' || deadlineFilter !== 'all') && (
+              <Button type="button" size="sm" variant="outline" className="justify-self-start" onClick={() => { setReasonFilter('all'); setDeadlineFilter('all'); }}>
+                {t('revenue.resetFilters')}
+              </Button>
+            )}
+          </div>
 
-        <div className="w-full sm:w-64">
-          <label htmlFor="deadline-filter" className="text-sm font-medium mb-2 block">
-            {t('verification.filter.deadline')}
-          </label>
-          <Select id="deadline-filter" value={deadlineFilter} onChange={(e) => setDeadlineFilter(e.target.value)}>
-            <option value="all">{t('verification.filter.allDeadlines')}</option>
-            <option value="past">{t('verification.filter.past')}</option>
-            <option value="today">{t('verification.filter.today')}</option>
-            <option value="upcoming">{t('verification.filter.upcoming')}</option>
-          </Select>
+          {filteredVerifications.length === 0 ? (
+            <Alert variant="info" title={t('verification.queue.emptyTitle')} icon={AlertCircle}>
+              {verifications && verifications.length > 0
+                ? t('verification.queue.emptyFiltered')
+                : t('verification.queue.emptyQueue')}
+            </Alert>
+          ) : (
+            <div className="space-y-4" data-testid="verification-list">
+              {filteredVerifications.map((verification) => (
+                <VerificationItem key={verification.bookingId} verification={verification} />
+              ))}
+            </div>
+          )}
         </div>
+        <aside><VerificationMetricsCard /></aside>
       </div>
-
-      {filteredVerifications.length === 0 ? (
-        <Alert variant="info" title={t('verification.queue.emptyTitle')} icon={AlertCircle}>
-          {verifications && verifications.length > 0
-            ? t('verification.queue.emptyFiltered')
-            : t('verification.queue.emptyQueue')}
-        </Alert>
-      ) : (
-        <div className="space-y-4" data-testid="verification-list">
-          {filteredVerifications.map((verification) => (
-            <VerificationItem key={verification.bookingId} verification={verification} />
-          ))}
-        </div>
-      )}
     </div>
   );
 }
