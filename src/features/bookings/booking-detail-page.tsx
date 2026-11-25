@@ -28,6 +28,7 @@ import { BookingTimelineSection } from './components/booking-timeline-section';
 import { CancelBookingDialog } from './components/cancel-booking-dialog';
 import { CheckInDialog } from './components/check-in-dialog';
 import { CheckInLinkPanel } from './components/checkin-link-panel';
+import { HostExtrasEditor } from './components/host-extras-editor';
 import { GuestHouseGuideEditor } from './components/guest-house-guide-editor';
 import { GuestPortalLinkPanel } from './components/guest-portal-link-panel';
 import { GuestStayChangePanel } from './components/guest-stay-change-panel';
@@ -290,7 +291,10 @@ export function BookingDetailPage() {
               <GuestStayChangePanel bookingId={booking.id} onApproved={() => { void refetch(); }} />
               <GuestPortalLinkPanel key={booking.id} bookingId={booking.id} />
               {hasPermission('short-rent', 'guestportal.manage') && (
-                <GuestHouseGuideEditor key={booking.propertyId} propertyId={booking.propertyId} />
+                <>
+                  <GuestHouseGuideEditor key={booking.propertyId} propertyId={booking.propertyId} />
+                  <HostExtrasEditor key={booking.id} bookingId={booking.id} propertyId={booking.propertyId} />
+                </>
               )}
             </div>
           )}

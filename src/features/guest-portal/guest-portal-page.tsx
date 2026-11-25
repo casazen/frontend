@@ -1,6 +1,10 @@
 import { useState, type CSSProperties, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+<<<<<<< HEAD
 import { BookOpen, CalendarDays, ChevronRight, ClipboardCheck, CreditCard, FileText, Leaf, MessageCircle, Star } from 'lucide-react';
+=======
+import { BookOpen, CalendarDays, ChevronRight, ClipboardCheck, FileText, Leaf, MessageCircle, ShoppingBag, Star } from 'lucide-react';
+>>>>>>> f7cb0c19 (Add guest extras catalog, ordering and host operations)
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { ApiClient } from '@/api/client';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
@@ -12,6 +16,7 @@ import { HostSiteNotFoundPage } from '@/features/public-site/host/host-site-page
 import { readableTextOn } from '@/lib/public-site-colors';
 import { normalizeHexColor } from '@/lib/public-site-themes';
 import { LegacySupplierShowcaseRedirect } from '@/pages/supplier-showcase';
+import { extraLabels, GuestHostExtras, useGuestHostExtras } from './guest-host-extras';
 import { GuestPortalChat } from './guest-portal-chat';
 import { GuestPortalDocuments } from './guest-portal-documents';
 import { GuestPortalPayments } from './guest-portal-payments';
@@ -173,6 +178,9 @@ function GuestPortalPage({ token }: { token: string }) {
     ?? supportedLanguage(navigator.language) ?? 'it';
   const t = (key: keyof typeof copy) => copy[key][languages.indexOf(language)];
   const section = params.get('page');
+  const extras = section === 'extras';
+  const extraCatalog = useGuestHostExtras(path, Boolean(stay) && !extras);
+  const hasExtras = Boolean(extraCatalog.data?.offers.length || extraCatalog.data?.orders.length);
   const guide = section === 'guide';
   const details = section === 'details';
   const chat = section === 'chat' && stay?.status !== 'cancelled';
@@ -227,10 +235,16 @@ function GuestPortalPage({ token }: { token: string }) {
         {stay && !failed && (
           <>
             <span className="stay-phase">{t(phase)}</span>
+<<<<<<< HEAD
             <h1>{t(guide ? 'guide' : details ? 'details' : chat ? 'chat' : documents ? 'documents' : payments ? 'payments' : review ? 'review' : cancellation ? 'cancellation' : privacy ? 'privacy' : 'title')}</h1>
+=======
+            <h1>{extras ? extraLabels[language][0] : t(guide ? 'guide' : details ? 'details' : chat ? 'chat' : documents ? 'documents' : review ? 'review' : cancellation ? 'cancellation' : 'title')}</h1>
+>>>>>>> f7cb0c19 (Add guest extras catalog, ordering and host operations)
             <p className="stay-meta">{range} · {stay.guests} {guestLabel(language, stay.guests)}</p>
             <div className="stay-card stay-property"><CalendarDays aria-hidden="true" />{stay.propertyName} · {stay.bookingCode}</div>
-            {guide ? (
+            {extras ? (
+              <GuestHostExtras path={path} language={language} />
+            ) : guide ? (
               <div className="stay-card stay-content">
                 <h2>{t('address')}</h2>
                 <p>{[stay.address, stay.city].filter(Boolean).join(', ')}</p>
@@ -308,7 +322,11 @@ function GuestPortalPage({ token }: { token: string }) {
                   <Link className="stay-card" to={href('details')}><CalendarDays aria-hidden="true" />{t('details')}<ChevronRight aria-hidden="true" /></Link>
                   <Link className="stay-card" to={href('guide')}><BookOpen aria-hidden="true" />{t('guide')}<ChevronRight aria-hidden="true" /></Link>
                   {stay.status !== 'cancelled' && <Link className="stay-card" to={href('chat')}><MessageCircle aria-hidden="true" />{t('chat')}<ChevronRight aria-hidden="true" /></Link>}
+<<<<<<< HEAD
                   <Link className="stay-card" to={href('payments')}><CreditCard aria-hidden="true" />{t('payments')}<ChevronRight aria-hidden="true" /></Link>
+=======
+                  {hasExtras && <Link className="stay-card" to={href('extras')}><ShoppingBag aria-hidden="true" />{extraLabels[language][0]}<ChevronRight aria-hidden="true" /></Link>}
+>>>>>>> f7cb0c19 (Add guest extras catalog, ordering and host operations)
                   <Link className="stay-card" to={href('documents')}><FileText aria-hidden="true" />{t('documents')}<ChevronRight aria-hidden="true" /></Link>
                   {phase === 'after' && stay.status !== 'cancelled' && <Link className="stay-card" to={href('review')}><Star aria-hidden="true" />{t('review')}<ChevronRight aria-hidden="true" /></Link>}
                   {overview?.checkInCompleted && (stay.checkInAvailable ? (
