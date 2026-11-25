@@ -28,6 +28,7 @@ import { TaxStep } from '../wizard/steps/tax-step';
 import {
   guestTaxAvailability,
   paymentCannotBeMade,
+  paymentReturnUrlOf,
   readPublicTouristTax,
   readTouristTaxPaymentIntent,
   refusalLeavesPaymentOpen,
@@ -488,6 +489,15 @@ describe('the answers of the API', () => {
     expect(guestTaxAvailability({ ...read, error: httpError(503) })).toBe('ready');
     expect(guestTaxAvailability({ ...read, hasData: false, error: httpError(503) })).toBe('failed');
     expect(guestTaxAvailability({ ...read, enabled: false, error: null })).toBe('off');
+  });
+
+  it('returns payment redirects to the portal check-in without payment secrets', () => {
+    const origin = 'https://portal.example';
+    const pathname = '/s/ABCDEFGHIJKLMNOPQRSTUVWXYZabcdef';
+    expect(paymentReturnUrlOf({ origin, pathname,
+      search: '?lang=de&page=checkin&resume=guests&payment_intent_client_secret=secret',
+    })).toBe(`${origin}${pathname}?page=checkin&lang=de&resume=guests`);
+    expect(paymentReturnUrlOf({ origin, pathname: '/checkin/legacy', search: '?lang=de' })).toBe(`${origin}/checkin/legacy`);
   });
 
   it('withoutPaymentReturn_TheSecretOfTheIntentGoesFromTheAddress_TheRestStays', () => {
