@@ -26104,6 +26104,7 @@
         "noEmail": "Non c'è un indirizzo email a cui scrivere (manca, oppure l'ospite è stato cancellato o ha chiesto la cancellazione): nessun invito inviato.",
         "noShow": "L'ospite non è arrivato (soggiorno segnato come no-show): nessun invito inviato.",
         "notConfirmed": "La prenotazione è stata annullata o non è mai stata confermata: nessun invito inviato.",
+        "reviewsDisabled": "Le recensioni sono disattivate per questo immobile.",
         "notDirect": "La prenotazione non arriva dal tuo sito di prenotazione (un portale chiede la recensione ai suoi ospiti): nessun invito inviato.",
         "reviewInviteNotSent": "L'email di invito non è partita (la posta non è configurata o non è entrata in coda): puoi chiedere la recensione a mano dalla prenotazione.",
         "reviewNeedsBooking": "La richiesta di recensione si fa per una prenotazione e questo evento non ne ha una.",

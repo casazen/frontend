@@ -508,6 +508,7 @@ const EXECUTION_CODES: ReadonlyArray<{ code: string; labelKey: string }> = [
   { code: 'routine_review_needs_booking', labelKey: 'routines.log.code.reviewNeedsBooking' },
   { code: 'review_invite_not_sent', labelKey: 'routines.log.code.reviewInviteNotSent' },
   // Why an action skipped a booking (`ReviewInviteSkipReasons`, E26/F01/US01/T01): nothing was asked of the guest.
+  { code: 'reviews_disabled', labelKey: 'routines.log.code.reviewsDisabled' },
   { code: 'not_direct', labelKey: 'routines.log.code.notDirect' },
   { code: 'not_confirmed', labelKey: 'routines.log.code.notConfirmed' },
   { code: 'no_show', labelKey: 'routines.log.code.noShow' },
