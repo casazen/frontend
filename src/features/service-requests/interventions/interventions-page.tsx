@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Wrench } from 'lucide-react';
-import { PageHeader } from '@/components/layout/page-header';
+import { ServicePageHeader } from '@/features/supplier/components/service-page-header';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ListView } from '@/components/shared/list-view/list-view';
 import { useListState } from '@/components/shared/list-view/use-list-state';
@@ -80,7 +80,8 @@ function InterventionsListPage() {
 
   return (
     <div className="min-w-0 space-y-6" data-testid="interventions-page">
-      <PageHeader
+      <ServicePageHeader
+        icon={Wrench}
         crumbs="auto"
         title={t('interventions.title')}
         description={t('interventions.description')}

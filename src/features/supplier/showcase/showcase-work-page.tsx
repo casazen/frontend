@@ -1,9 +1,9 @@
 import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Eye } from 'lucide-react';
+import { Images, Eye } from 'lucide-react';
 import { toast } from 'sonner';
-import { PageHeader } from '@/components/layout/page-header';
+import { ServicePageHeader } from '@/features/supplier/components/service-page-header';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PHONE_QUERY, useMediaQuery } from '@/hooks/use-media-query';
@@ -92,7 +92,8 @@ export function ShowcaseWorkPage({ content, step }: ShowcaseWorkPageProps) {
 
   return (
     <div className="space-y-4" data-testid="supplier-showcase-work">
-      <PageHeader
+      <ServicePageHeader
+        icon={Images}
         title={t('supplier.showcase.title')}
         description={t('supplier.showcase.editor.description')}
         crumbs={[{ label: t('supplier.showcase.title'), to: OVERVIEW_PATH }, { label: stepLabel }]}

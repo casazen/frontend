@@ -125,7 +125,7 @@ export function QuoteLinesFields({
         {form.rows.length >= QUOTE_LIMITS.maxLines ? <p className="text-sm text-foreground/70">{t(`${T}.maxLines`, { count: QUOTE_LIMITS.maxLines })}</p> : null}
       </fieldset>
 
-      <div className="space-y-1 border-t pt-3" data-testid="quote-total-block">
+      <div className="space-y-1 rounded-xl bg-primary-soft px-4 py-3 text-primary-text" data-testid="quote-total-block">
         <p className="flex items-baseline justify-between gap-3">
           <span className="text-sm font-semibold">{t(`${T}.total`)}</span>
           <strong className="text-xl tabular-nums" data-testid="quote-total">

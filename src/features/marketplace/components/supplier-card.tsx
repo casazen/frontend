@@ -40,9 +40,9 @@ export function SupplierCard({ supplier, rows, onOpen }: SupplierCardProps) {
       className="min-w-0 cursor-pointer py-4 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <div className="flex items-start justify-between gap-x-3">
-        <span className="min-w-0 break-words font-medium">{supplier.legalName}</span>
+        <span className="min-w-0 break-words text-lg font-semibold leading-snug">{supplier.legalName}</span>
         {supplier.recommended || supplier.verified ? (
-          <span className="flex shrink-0 flex-wrap justify-end gap-1">
+          <span className="flex min-w-0 flex-wrap justify-end gap-1">
             {supplier.recommended ? <RecommendedBadge /> : null}
             {supplier.verified ? <VerifiedBadge /> : null}
           </span>

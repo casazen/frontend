@@ -2,8 +2,8 @@ import { useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
-import { Inbox, Plus } from 'lucide-react';
-import { PageHeader } from '@/components/layout/page-header';
+import { CalendarCheck, Inbox, Plus } from 'lucide-react';
+import { ServicePageHeader } from '@/features/supplier/components/service-page-header';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { formatStayDate, todayInRome } from '@/lib/stay-dates';
@@ -99,7 +99,8 @@ export function SupplierDashboardPage() {
 
   return (
     <div className="min-w-0 space-y-6 md:space-y-8" data-testid="supplier-home">
-      <PageHeader
+      <ServicePageHeader
+        icon={CalendarCheck}
         title={name ? t('supplier.home.greeting', { name }) : t('supplier.home.greetingAnonymous')}
         description={description}
         primary={urgent ? { label: t('supplier.requests.answerUrgent'), icon: Inbox, to: requestPath(urgent.id), testId: 'supplier-home-urgent' } : undefined}
@@ -117,8 +118,10 @@ export function SupplierDashboardPage() {
         <TodaySection actions={actions} />
         <TodoSection />
       </div>
-      <NumbersSection />
-      <NextStepSection />
+      <div className="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <NumbersSection />
+        <NextStepSection />
+      </div>
     </div>
   );
 }

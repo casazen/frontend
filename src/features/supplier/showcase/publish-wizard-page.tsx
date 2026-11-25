@@ -1,9 +1,10 @@
+import { Send } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supplierShowcaseApi } from '@/api/supplier-showcase.api';
 import { FOCUS_COLUMN } from '@/components/layout/page-columns';
-import { PageHeader } from '@/components/layout/page-header';
+import { ServicePageHeader } from '@/features/supplier/components/service-page-header';
 import { ErrorState } from '@/components/shared/error-state';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { WIZARD_DONE_STEP, WizardShell, type WizardStep } from '@/components/shared/wizard/wizard-shell';
@@ -145,7 +146,8 @@ export function SupplierShowcasePublishWizardPage() {
   const profile = useSupplierProfile();
 
   const header = (
-    <PageHeader
+    <ServicePageHeader
+        icon={Send}
       title={t(`${T}.title`)}
       description={t(`${T}.description`)}
       crumbs={[{ label: t('supplier.showcase.title'), to: OVERVIEW_PATH }, { label: t(`${T}.title`) }]}
