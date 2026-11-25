@@ -69,15 +69,15 @@ export function SupplierIdentityReviews() {
   return (
     <section className="space-y-3" aria-label={t('supplier.identity.queue')}>
       <h2 className="text-lg font-semibold">{t('supplier.identity.queue')}</h2>
-      {query.isPending && <p role="status">{t('common.loading')}</p>}
+      {query.isPending && <p role="status">{t('admin.suppliers.loading')}</p>}
       {query.isError && <div role="alert" className="flex items-center gap-2">
-        {t('supplier.identity.loadError')} <Button variant="outline" onClick={() => void query.refetch()}>{t('common.retry')}</Button>
+        {t('supplier.identity.loadError')} <Button variant="outline" onClick={() => void query.refetch()}>{t('admin.suppliers.retry')}</Button>
       </div>}
       {query.data?.length === 0 && <p className="text-sm text-muted-foreground">{t('supplier.identity.empty')}</p>}
       {query.data?.map(review => <ReviewForm key={review.id} review={review} />)}
       {(page > 1 || query.data?.length === 25) && <div className="flex gap-2">
-        <Button variant="outline" disabled={page === 1} onClick={() => setPage(page - 1)}>{t('common.previous')}</Button>
-        <Button variant="outline" disabled={query.data?.length !== 25} onClick={() => setPage(page + 1)}>{t('common.next')}</Button>
+        <Button variant="outline" disabled={page === 1} onClick={() => setPage(page - 1)}>{t('admin.suppliers.previous')}</Button>
+        <Button variant="outline" disabled={query.data?.length !== 25} onClick={() => setPage(page + 1)}>{t('admin.suppliers.next')}</Button>
       </div>}
     </section>
   );
