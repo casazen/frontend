@@ -1,5 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { isAxiosError } from 'axios';
+import { useMutation } from '@tanstack/react-query';
+import { ApiClient } from '@/api/client';
 import { useOutletContext, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AlertCircle, CalendarCheck, Clock, Loader2, Mail, RefreshCw, SearchX } from 'lucide-react';
@@ -120,7 +122,15 @@ export function GuestBookingsPage() {
   const proofChoice = flags.whiteLabelHost;
   const siteSlug = org?.slug || orgSlug;
   const { session, openSession, closeSession } = useGuestSession(siteSlug);
-  // What the guest typed to open the session. It is only here, in memory: the online check-in link asks for the email again when there is none.
+  const recoverPortal = useMutation({
+    mutationFn: (payload: GuestBookingLookupPayload) =>
+      ApiClient.post<{ url: string }>('/public/guest-portal/recover', payload, { public: true }),
+    onSuccess: ({ url }) => window.location.assign(url),
+    onError: (error, payload) => {
+      if (isNotFound(error)) openSession.mutate(payload);
+    },
+  });
+  // What the guest typed to open the session. The email is only here, in memory: the online check-in link asks for it again.
   const [credentials, setCredentials] = useState<GuestBookingLookupPayload | null>(null);
 
   // The link of an email names its booking: when it is not the one of the session, the form comes first.
@@ -136,11 +146,18 @@ export function GuestBookingsPage() {
   const showForm = !showBooking && !showLoading && !showBookingError;
 
   const openNotFound = isNotFound(openSession.error);
-  const notFound = openNotFound || (showForm && bookingNotFound);
+  const notFound = !recoverPortal.isPending && (openNotFound || (showForm && bookingNotFound));
+  const sessionError = recoverPortal.isError && !isNotFound(recoverPortal.error) ? recoverPortal.error
+    : openSession.isError && !openNotFound ? openSession.error : null;
 
   const submit = (payload: GuestBookingLookupPayload) => {
     setCredentials(payload);
-    openSession.mutate(payload);
+    if (flags.guestPortal && 'email' in payload) {
+      openSession.reset();
+      recoverPortal.mutate(payload);
+    } else {
+      openSession.mutate(payload);
+    }
   };
 
   const signOut = () => {
@@ -220,7 +237,7 @@ export function GuestBookingsPage() {
         <div className="max-w-md space-y-4">
           <GuestAccessForm
             initialCode={linkedCode ?? session?.bookingCode ?? ''}
-            pending={openSession.isPending}
+            pending={openSession.isPending || recoverPortal.isPending || recoverPortal.isSuccess}
             onSubmit={(proof) => submit({ orgSlug: siteSlug, ...proof })}
           />
 
@@ -256,7 +273,7 @@ export function GuestBookingsPage() {
             </div>
           )}
 
-          {openSession.isError && !openNotFound && (
+          {sessionError && (
             <div
               className="flex gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4"
               role="alert"
@@ -264,8 +281,8 @@ export function GuestBookingsPage() {
             >
               <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-destructive" />
               <div className="space-y-2">
-                <p className="text-sm text-destructive">{failureMessage(openSession.error)}</p>
-                {credentials && isTransientRequestError(openSession.error) && (
+                <p className="text-sm text-destructive">{failureMessage(sessionError)}</p>
+                {credentials && isTransientRequestError(sessionError) && (
                   <Button variant="outline" size="sm" onClick={() => submit(credentials)}>
                     <RefreshCw className="mr-2 h-4 w-4" />
                     {t('publicBooking.guestBookings.retry')}

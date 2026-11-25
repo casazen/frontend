@@ -1,7 +1,9 @@
+import { isGuestPortalToken } from '@/lib/guest-portal-path';
+import { useSeoMeta } from '@/lib/seo-meta';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FormProvider, useFieldArray, useForm, useWatch, type FieldErrors, type FieldPath } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingScreen } from '@/components/shared/loading-screen';
@@ -236,6 +238,9 @@ function GuestCheckInFlow({ token }: { token: string }) {
   const verifyingPhoto = useRef<File | null>(null);
   const [review, setReview] = useState<{ result: CheckInDocumentReadResult; file: File } | null>(null);
   const [privacyRead, setPrivacyRead] = useState(false);
+  const [acceptedRulesVersion, setAcceptedRulesVersion] = useState<string | undefined>();
+  const activeRulesVersion = context?.houseRulesVersion ?? undefined;
+  const rulesAccepted = !activeRulesVersion || activeRulesVersion === acceptedRulesVersion;
   useEffect(() => {
     if (!identity.progress || identity.concluded || submitted) verifyingPhoto.current = null;
   }, [identity.progress, identity.concluded, submitted]);
@@ -272,13 +277,16 @@ function GuestCheckInFlow({ token }: { token: string }) {
   };
 
   // The page opens in the language the API resolved (the guest's earlier choice, else the browser's, else Italian) until the guest chooses.
-  const locale = chosenLocale ?? resolveGuestLocale(context?.language);
+  const fromPortal = isGuestPortalToken(token);
+  const portalLanguage = fromPortal ? offeredGuestLocales(context?.supportedLanguages).find((language) => language === searchParams.get('lang')) : undefined;
+  const locale = chosenLocale ?? portalLanguage ?? resolveGuestLocale(context?.language);
   // The texts of a language that cannot be loaded (the network): the page stays in the language it has and says so.
   const keepLocale = useCallback((stayedIn: GuestLocale) => {
     setChosenLocale(stayedIn);
     setLanguageNotLoaded(true);
   }, []);
   useGuestPageLocale(locale, keepLocale);
+  useSeoMeta(fromPortal ? { title: t('checkin.guestCheckIn'), noindex: true, referrer: 'no-referrer' } : null);
   const status = getHttpStatus(contextError);
   const invalidLink = !token || status === 404 || status === 410 || context?.status === 'Scaduto';
   const completed = submitted || context?.completed || (context && COMPLETE_STATUSES.has(context.status));
@@ -493,10 +501,10 @@ function GuestCheckInFlow({ token }: { token: string }) {
 
   const onSubmit = handleSubmit(
     async (values) => {
-      if (current !== STEP_CONSENTS || !privacyRead || (identity.progress && !identity.concluded)) return;
+      if (current !== STEP_CONSENTS || !privacyRead || !rulesAccepted || (identity.progress && !identity.concluded)) return;
       setSubmitError(null);
       try {
-        await submitCheckIn.mutateAsync({ ...toPublicCheckInSubmitRequest(values, { statisticalFields, swiss }), privacyNoticeAcknowledged: privacyRead });
+        await submitCheckIn.mutateAsync({ ...toPublicCheckInSubmitRequest(values, { statisticalFields, swiss }), privacyNoticeAcknowledged: privacyRead, houseRulesVersion: acceptedRulesVersion });
         setSubmitted(true);
       } catch (error) {
         // Already submitted (e.g. from another tab): reload the context, which now shows the completed state.
@@ -541,6 +549,11 @@ function GuestCheckInFlow({ token }: { token: string }) {
 
   const switcher = (
     <div className="space-y-1">
+      {fromPortal && (
+        <Link className="inline-flex min-h-11 items-center gap-1 underline" to={`/s/${token.slice(5)}?lang=${locale}`}>
+          <ChevronLeft aria-hidden="true" className="h-4 w-4" />{t('checkin.back')}
+        </Link>
+      )}
       <LanguageSwitcher
         value={locale}
         onChange={chooseLanguage}
@@ -745,6 +758,18 @@ function GuestCheckInFlow({ token }: { token: string }) {
                 )}
                 {current === STEP_IDENTITY && <IdentityStep identity={identity} token={token} takeFront={takeVerifyingPhoto} />}
                 {current === STEP_CONSENTS && (
+                  <>
+                    {activeRulesVersion && context.houseRules && (
+                      <section className="space-y-3 rounded-md border p-4">
+                        <h2 className="font-semibold">{t('guestPortal.guide.houseRules')}</h2>
+                        <p className="whitespace-pre-wrap break-words">{context.houseRules}</p>
+                        <label className="flex items-center gap-2">
+                          <input type="checkbox" checked={rulesAccepted}
+                            onChange={(event) => setAcceptedRulesVersion(event.target.checked ? activeRulesVersion : undefined)} />
+                          {t('guestPortal.guide.acceptRules')}
+                        </label>
+                      </section>
+                    )}
                   <ConsentStep
                     privacyRead={privacyRead}
                     onPrivacyRead={setPrivacyRead}
@@ -752,6 +777,7 @@ function GuestCheckInFlow({ token }: { token: string }) {
                     privacyNoticeOrgSlug={context.privacyNoticeOrgSlug}
                     marketingConsentVersion={context.marketingConsentVersion}
                   />
+                  </>
                 )}
                 {submitError && (
                   <p role="alert" className="text-sm text-destructive" data-testid="checkin-submit-error">
@@ -776,7 +802,7 @@ function GuestCheckInFlow({ token }: { token: string }) {
                       {t('checkin.next')}<ChevronRight className="ml-1 h-4 w-4" />
                     </Button>
                   ) : (
-                    <Button key="checkin-submit" type="submit" disabled={submitCheckIn.isPending || !privacyRead} data-testid="checkin-submit">
+                    <Button key="checkin-submit" type="submit" disabled={submitCheckIn.isPending || !privacyRead || !rulesAccepted} data-testid="checkin-submit">
                       {submitCheckIn.isPending ? t('checkin.saving') : t('checkin.submit')}
                     </Button>
                   )}

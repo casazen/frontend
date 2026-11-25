@@ -59,7 +59,9 @@ import { ServicePaymentPage } from '@/features/public-service-payment/service-pa
 import { GuidedFormPage } from '@/features/guided-form/guided-form-page';
 import { GUIDED_FORM_PATH } from '@/features/guided-form/lib/guided-form-link';
 import { SUPPLIER_SHOWCASE_BASE_PATH } from '@/features/supplier/lib/showcase-paths';
-import { LegacySupplierShowcaseRedirect, SupplierShowcasePage } from '@/pages/supplier-showcase';
+import { SupplierShowcasePage } from '@/pages/supplier-showcase';
+import { GuestAccountStaysPage, guestAccountStaysPath } from '@/features/guest-portal/guest-account-stays-page';
+import { GuestPortalEntry } from '@/features/guest-portal/guest-portal-page';
 import { SupplierAboutPage } from '@/pages/supplier-about';
 import { SupplierBookingConfirmPage } from '@/pages/supplier-booking-confirm';
 import { SupplierBookingPage } from '@/pages/supplier-booking';
@@ -246,6 +248,7 @@ export const appRoutes: RouteObject[] = [
           </ProtectedRoute>
         ),
         children: [
+          { path: guestAccountStaysPath, element: <GuestAccountStaysPage /> },
           {
             path: '/onboarding',
             element: <OnboardingPage />,
@@ -336,9 +339,9 @@ export const appRoutes: RouteObject[] = [
     ],
   },
   {
-    // The first address of the showcase, which never worked (A4-16): kept as a redirect for links already shared.
+    // Stay tokens and legacy supplier slugs share this prefix.
     path: '/s/:slug',
-    element: <LegacySupplierShowcaseRedirect />,
+    element: <GuestPortalEntry />,
   },
   {
     // The page the QR code at the door of a property opens (E22/F02/US01/T01): the guest who arrives types the booking code (or the surname) and the arrival date and goes on to the

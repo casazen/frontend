@@ -81,6 +81,8 @@ export interface PublicCheckInGuestPrefill {
  * `completed` and `status`: no booking data and no guest data.
  */
 export interface PublicCheckInContextDto {
+  houseRules?: string | null;
+  houseRulesVersion?: string | null;
   completed: boolean;
   status: GuestCheckInSessionStatus;
   sessionId?: string;
@@ -208,6 +210,7 @@ export interface PublicCheckInInvoiceRequest extends InvoiceDataText {
  * NF-05 adds per-channel consent with a separate marketing email.
  */
 export interface PublicCheckInSubmitRequest {
+  houseRulesVersion?: string;
   privacyNoticeAcknowledged?: boolean;
   guests: StayGuestSubmit[];
   /** Guest ticked the email marketing channel (NF-05). */

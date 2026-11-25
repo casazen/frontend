@@ -3962,6 +3962,48 @@
     "thresholdsRange": "The thresholds go from {{min}} to {{max}}: the higher the value, the stricter the comparison.",
     "title": "Identity check"
   },
+  "guestPortal": {
+    "account": {
+      "title": "My stays",
+      "verifyEmail": "Verify your account email address and sign in again.",
+      "empty": "No open stays with this email address.",
+      "signOut": "Sign out"
+    },
+    "guide": {
+      "houseRules": "House rules",
+      "acceptRules": "I accept these house rules",
+      "title": "House guide",
+      "arrival": "Getting here",
+      "house": "The house",
+      "departure": "Departure",
+      "contacts": "Useful numbers",
+      "localTips": "Local tips",
+      "access": "Access instructions",
+      "wifi": "Wi-Fi",
+      "save": "Save guide",
+      "saved": "Guide updated.",
+      "openStay": "Open your stay",
+      "visibility": "Access instructions and Wi-Fi are visible after check-in. The other sections are also visible from the public QR code."
+    },
+    "host": {
+      "revoke": "Revoke link",
+      "confirmRevoke": "Confirm revocation",
+      "resend": "Send email",
+      "resent": "Email queued.",
+      "title": "Guest portal",
+      "loading": "Loading…",
+      "unavailable": "The stay link is unavailable.",
+      "generate": "Generate link",
+      "copy": "Copy link",
+      "rotate": "Replace link",
+      "rotateNotice": "The link you shared will stop working.",
+      "confirm": "Confirm replacement",
+      "cancel": "Cancel",
+      "copied": "Link copied.",
+      "copyError": "Select and copy the link address.",
+      "changeError": "Could not update the link. Try again."
+    }
+  },
   "booking": {
     "status": {
       "pending": "Pending",

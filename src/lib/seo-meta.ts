@@ -9,6 +9,7 @@ export interface SeoMetaInput {
   noindex?: boolean;
   /** With `noindex`: the links of the page may still be followed (a page of results): `noindex,follow`. */
   follow?: boolean;
+  referrer?: 'no-referrer';
   /** Absolute https URL of the preview image (`og:image`). */
   imageUrl?: string | null;
   /** `og:type`; `website` when omitted. */
@@ -61,7 +62,7 @@ function upsertCanonical(href: string): Restore {
  * Writes the title and the meta tags of a page and returns the function that restores the previous ones: a page of the
  * single-page app must not leave its canonical, description or `noindex` on the pages that follow (A8-09).
  */
-export function applySeoMeta({ title, description, canonicalUrl, noindex, follow, imageUrl, ogType }: SeoMetaInput): Restore {
+export function applySeoMeta({ title, description, canonicalUrl, noindex, follow, referrer, imageUrl, ogType }: SeoMetaInput): Restore {
   const restores: Restore[] = [];
   const previousTitle = document.title;
   document.title = title;
@@ -89,6 +90,8 @@ export function applySeoMeta({ title, description, canonicalUrl, noindex, follow
 
   if (noindex) restores.push(upsertMeta('robots', follow ? 'noindex,follow' : 'noindex,nofollow'));
 
+  if (referrer) restores.push(upsertMeta('referrer', referrer));
+
   return () => {
     // In reverse order, so a tag written twice by nested calls ends on its original value.
     for (const restore of restores.reverse()) restore();
@@ -103,13 +106,14 @@ export function useSeoMeta(meta: SeoMetaInput | null) {
   const canonicalUrl = meta?.canonicalUrl;
   const noindex = meta?.noindex;
   const follow = meta?.follow;
+  const referrer = meta?.referrer;
   const imageUrl = meta?.imageUrl;
   const ogType = meta?.ogType;
 
   useEffect(() => {
     if (title === undefined) return;
-    return applySeoMeta({ title, description, canonicalUrl, noindex, follow, imageUrl, ogType });
-  }, [title, description, canonicalUrl, noindex, follow, imageUrl, ogType]);
+    return applySeoMeta({ title, description, canonicalUrl, noindex, follow, referrer, imageUrl, ogType });
+  }, [title, description, canonicalUrl, noindex, follow, referrer, imageUrl, ogType]);
 }
 
 /** Longest description of a search result snippet (the first 155 characters, spec-branded-booking-site AC13). */

@@ -28,6 +28,9 @@ import { BookingTimelineSection } from './components/booking-timeline-section';
 import { CancelBookingDialog } from './components/cancel-booking-dialog';
 import { CheckInDialog } from './components/check-in-dialog';
 import { CheckInLinkPanel } from './components/checkin-link-panel';
+import { GuestHouseGuideEditor } from './components/guest-house-guide-editor';
+import { GuestPortalLinkPanel } from './components/guest-portal-link-panel';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { ConfirmBookingDialog } from './components/confirm-booking-dialog';
 import { DeclineBookingDialog } from './components/decline-booking-dialog';
 import { OtaReviewNotice } from './components/ota-review-notice';
@@ -78,12 +81,16 @@ export function BookingDetailPage() {
   const [declineOpen, setDeclineOpen] = useState(false);
   const [arrivalOpen, setArrivalOpen] = useState(false);
   const { hasPermission } = useWorkspace();
+  const { flags } = useFeatureFlags();
   // The page is read again whenever it opens: what the host may do with the booking (`changeOptions`) and what is tied to it change elsewhere (the guest, the channel manager).
   const { data: booking, isLoading, isError, error, refetch } = useBooking(id!, { fresh: true });
   // Messages with the guest (SR-12): only a booking of the booking site has them; the same thread query feeds the tab and its number.
-  const hasMessages = booking !== undefined && hasPermission('short-rent', 'booking.read') && bookingHasMessages(booking);
+  const hasMessages = booking !== undefined && hasPermission('short-rent', 'booking.read') && bookingHasMessages(booking, flags.guestPortal);
   const unreadMessages = useBookingThread(id!, hasMessages).data?.unreadCount ?? 0;
-  const activeTab: BookingPanel = requestedTab === 'messages' && !hasMessages ? 'details' : requestedTab;
+  const hasPortal = flags.guestPortal && hasPermission('short-rent', 'booking.write')
+    && booking !== undefined && ['Confirmed', 'CheckedIn', 'CheckedOut'].includes(booking.status);
+  const hiddenTab = (requestedTab === 'messages' && !hasMessages) || (requestedTab === 'portal' && !hasPortal);
+  const activeTab: BookingPanel = hiddenTab ? 'details' : requestedTab;
   const showMessages = activeTab === 'messages';
 
   // The links of the arrival and of the cockpit ask for Alloggiati Web (`?tab=alloggiati`): Documenti opens at its section.
@@ -192,6 +199,7 @@ export function BookingDetailPage() {
       : []),
     { value: 'guest', label: t('booking.detailPage.tabs.guest'), testId: 'booking-tab-guest' },
     { value: 'payment', label: t('booking.detailPage.tabs.payment'), testId: 'booking-tab-payment' },
+    ...(hasPortal ? [{ value: 'portal' as const, label: t('guestPortal.host.title'), testId: 'booking-tab-portal' }] : []),
     { value: 'history', label: t('booking.detailPage.tabs.history'), testId: 'booking-tab-history' },
   ];
   const nextStep = (
@@ -273,6 +281,15 @@ export function BookingDetailPage() {
                 </PlainSection>
               </div>
               <BookingComplianceSection booking={booking} />
+            </div>
+          )}
+
+          {activeTab === 'portal' && (
+            <div className="grid gap-4">
+              <GuestPortalLinkPanel key={booking.id} bookingId={booking.id} />
+              {hasPermission('short-rent', 'guestportal.manage') && (
+                <GuestHouseGuideEditor key={booking.propertyId} propertyId={booking.propertyId} />
+              )}
             </div>
           )}
 

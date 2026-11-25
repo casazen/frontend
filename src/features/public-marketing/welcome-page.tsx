@@ -1,3 +1,8 @@
+import { useQuery } from '@tanstack/react-query';
+import { ApiClient } from '@/api/client';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
+import { HouseGuideSections } from '@/features/guest-portal/house-guide';
+import type { HouseGuide } from '@/features/guest-portal/house-guide-fields';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { isAxiosError } from 'axios';
@@ -279,6 +284,16 @@ export function WelcomePage() {
   const { token = '' } = useParams<{ token: string }>();
   useSeoMeta({ title: t('marketing.welcome.pageTitle'), noindex: true });
   const page = useWelcomePage(token);
+  const { flags } = useFeatureFlags();
+  const houseGuide = useQuery({
+    queryKey: ['public-house-guide', token],
+    queryFn: () => ApiClient.get<{ guide: HouseGuide; orgSlug: string; houseRules: string }>(
+      `/public/welcome/${encodeURIComponent(token)}/guide`, undefined, { public: true },
+    ),
+    enabled: flags.guestPortal && page.isSuccess,
+    retry: false,
+    gcTime: 0,
+  });
   const submit = useSubmitWelcomeConsent(token);
 
   const version = page.data?.marketingConsentVersion ?? null;
@@ -320,6 +335,15 @@ export function WelcomePage() {
 
   return (
     <MarketingLinkCard state={state} testId="welcome-page" {...cards[state]}>
+      {houseGuide.data && (
+        <div className="space-y-4">
+          <HouseGuideSections guide={houseGuide.data.guide} />
+          {houseGuide.data.houseRules && <p className="whitespace-pre-wrap">{houseGuide.data.houseRules}</p>}
+          <Link className="font-medium underline" to={`/book/${encodeURIComponent(houseGuide.data.orgSlug)}/my-bookings`}>
+            {t('guestPortal.guide.openStay')}
+          </Link>
+        </div>
+      )}
       {state === 'ask' && page.data && version ? <WelcomeForm page={page.data} version={version} submit={submit} /> : null}
       {state === 'error' ? (
         <>
