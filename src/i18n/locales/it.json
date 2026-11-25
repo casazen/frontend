@@ -4117,6 +4117,48 @@
     "thresholdsRange": "Le soglie vanno da {{min}} a {{max}}: più il valore è alto, più il confronto è severo.",
     "title": "Verifica dell'identità"
   },
+  "guestPortal": {
+    "account": {
+      "title": "I miei soggiorni",
+      "verifyEmail": "Verifica l’indirizzo email del tuo account e accedi di nuovo.",
+      "empty": "Nessun soggiorno aperto con questo indirizzo email.",
+      "signOut": "Esci"
+    },
+    "guide": {
+      "houseRules": "Regole della casa",
+      "acceptRules": "Accetto queste regole della casa",
+      "title": "Guida della casa",
+      "arrival": "Come arrivare",
+      "house": "La casa",
+      "departure": "Partenza",
+      "contacts": "Numeri utili",
+      "localTips": "Consigli sulla zona",
+      "access": "Istruzioni di accesso",
+      "wifi": "Wi-Fi",
+      "save": "Salva guida",
+      "saved": "Guida aggiornata.",
+      "openStay": "Entra nel tuo soggiorno",
+      "visibility": "Accesso e Wi-Fi sono visibili solo dopo il check-in. Le altre sezioni si vedono anche dal QR pubblico."
+    },
+    "host": {
+      "revoke": "Revoca link",
+      "confirmRevoke": "Conferma revoca",
+      "resend": "Invia email",
+      "resent": "Email messa in coda.",
+      "title": "Portale ospiti",
+      "loading": "Caricamento…",
+      "unavailable": "Il link del soggiorno non è disponibile.",
+      "generate": "Genera link",
+      "copy": "Copia link",
+      "rotate": "Rigenera link",
+      "rotateNotice": "Il link già condiviso smetterà di funzionare.",
+      "confirm": "Conferma rigenerazione",
+      "cancel": "Annulla",
+      "copied": "Link copiato.",
+      "copyError": "Seleziona e copia l’indirizzo del link.",
+      "changeError": "Impossibile aggiornare il link. Riprova."
+    }
+  },
   "booking": {
     "status": {
       "pending": "In attesa",

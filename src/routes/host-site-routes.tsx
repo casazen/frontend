@@ -11,6 +11,8 @@ import {
   HostSiteNotFoundPage,
 } from '@/features/public-site/host/host-site-pages';
 import { HostSurfaceFrame } from '@/features/public-site/host/host-surface-frame';
+
+import { GuestPortalEntry } from '@/features/guest-portal/guest-portal-page';
 import { LEGAL_DOCUMENT_PATHS, LEGAL_INDEX_PATH, LEGAL_SUBPROCESSORS_PATH } from '@/features/legal/legal-paths';
 import { getHostSite, isHostSurfaceOn, type HostSite } from '@/lib/host-site';
 import { buildEmbedRoutes } from './embed-routes';
@@ -96,6 +98,7 @@ export function buildHostSiteRoutes(appRoutes: RouteObject[], site: HostSite | n
     { ...orgSite, element: <HostOrgGuard>{orgSite.element}</HostOrgGuard> },
     ...buildEmbedRoutes('host'),
     ...(surfaces.length > 0 ? [{ element: <HostSurfaceFrame />, children: surfaces }] : []),
+    { path: '/s/:slug', element: <GuestPortalEntry hostOnly /> },
     ...[LEGAL_INDEX_PATH, LEGAL_SUBPROCESSORS_PATH, ...Object.values(LEGAL_DOCUMENT_PATHS)].map((path) => ({
       path,
       element: <HostLegalRedirect />,

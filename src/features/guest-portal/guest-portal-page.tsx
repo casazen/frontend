@@ -1,0 +1,331 @@
+import { useState, type CSSProperties, type FormEvent } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { BookOpen, CalendarDays, ChevronRight, ClipboardCheck, FileText, Leaf, MessageCircle, Star } from 'lucide-react';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { ApiClient } from '@/api/client';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
+import { useGuestTouristTax } from '@/queries/use-checkin';
+import { guestTaxAvailability, guestTaxOutlook } from '@/features/checkin/lib/tourist-tax-model';
+import { getHttpStatus } from '@/lib/api-errors';
+import { useSeoMeta } from '@/lib/seo-meta';
+import { HostSiteNotFoundPage } from '@/features/public-site/host/host-site-pages';
+import { readableTextOn } from '@/lib/public-site-colors';
+import { normalizeHexColor } from '@/lib/public-site-themes';
+import { LegacySupplierShowcaseRedirect } from '@/pages/supplier-showcase';
+import { GuestPortalChat } from './guest-portal-chat';
+import { GuestPortalDocuments } from './guest-portal-documents';
+import { GuestPortalReview } from './guest-portal-review';
+import { HouseGuideSections } from './house-guide';
+import type { HouseGuide } from './house-guide-fields';
+import { GuestPortalCancellation } from './guest-portal-cancellation';
+import { useStayManifest } from './use-stay-manifest';
+import { guestAccountStaysPath } from './guest-account-stays-page';
+import './guest-portal.css';
+
+const poweredBy = 'Powered by CasaZen';
+const languages = ['it', 'en', 'de', 'fr', 'es'] as const;
+type Language = typeof languages[number];
+
+const copy = {
+  title: ['Il tuo soggiorno', 'Your stay', 'Dein Aufenthalt', 'Votre séjour', 'Tu estancia'],
+  before: ['Prima dell’arrivo', 'Before arrival', 'Vor der Anreise', 'Avant l’arrivée', 'Antes de llegar'],
+  during: ['Durante il soggiorno', 'During your stay', 'Während des Aufenthalts', 'Pendant le séjour', 'Durante la estancia'],
+  after: ['Dopo la partenza', 'After departure', 'Nach der Abreise', 'Après le départ', 'Después de la salida'],
+  next: ['Prossimo passo', 'Next step', 'Nächster Schritt', 'Prochaine étape', 'Siguiente paso'],
+  complete: ['Completa il check-in', 'Complete check-in', 'Check-in abschließen', 'Terminez le check-in', 'Completa el registro'],
+  open: ['Fai il check-in', 'Start check-in', 'Check-in starten', 'Faire le check-in', 'Iniciar el registro'],
+  checkInHelp: ['Inserisci i dati degli ospiti per preparare il tuo arrivo.', 'Enter guest details to prepare for arrival.', 'Gib die Gästedaten für die Anreise ein.', 'Renseignez les données des voyageurs avant votre arrivée.', 'Introduce los datos de los huéspedes antes de llegar.'],
+  checkInWait: ['L’host ti avviserà quando potrai fare il check-in.', 'Your host will let you know when check-in opens.', 'Dein Gastgeber informiert dich, sobald der Check-in öffnet.', 'Votre hôte vous indiquera quand le check-in sera ouvert.', 'Tu anfitrión te avisará cuando se abra el registro.'],
+  payTax: ['Paga la tassa di soggiorno', 'Pay the tourist tax', 'Kurtaxe bezahlen', 'Payer la taxe de séjour', 'Paga la tasa turística'],
+  guide: ['Guida della casa', 'House guide', 'Hausführer', 'Guide du logement', 'Guía del alojamiento'],
+  stay: ['Soggiorno', 'Stay', 'Aufenthalt', 'Séjour', 'Estancia'],
+  details: ['Informazioni sulla prenotazione', 'Booking details', 'Buchungsdetails', 'Détails de la réservation', 'Detalles de la reserva'],
+  arrival: ['Orario di arrivo', 'Arrival time', 'Ankunftszeit', 'Heure d’arrivée', 'Hora de llegada'],
+  late: ['Arrivo tardi', 'Late arrival', 'Späte Anreise', 'Arrivée tardive', 'Llegada tardía'],
+  save: ['Salva', 'Save', 'Speichern', 'Enregistrer', 'Guardar'],
+  saved: ['Orario salvato.', 'Arrival time saved.', 'Ankunftszeit gespeichert.', 'Heure d’arrivée enregistrée.', 'Hora guardada.'],
+  address: ['Indirizzo', 'Address', 'Adresse', 'Adresse', 'Dirección'],
+  addressLocked: ['L’indirizzo completo sarà visibile dopo il check-in.', 'The full address appears after check-in.', 'Die vollständige Adresse erscheint nach dem Check-in.', 'L’adresse complète s’affiche après le check-in.', 'La dirección completa se muestra tras el registro.'],
+  rules: ['Regole della casa', 'House rules', 'Hausregeln', 'Règlement intérieur', 'Normas del alojamiento'],
+  done: ['Check-in completato', 'Check-in completed', 'Check-in abgeschlossen', 'Check-in terminé', 'Registro completado'],
+  load: ['Caricamento…', 'Loading…', 'Wird geladen…', 'Chargement…', 'Cargando…'],
+  unavailable: ['Link scaduto o revocato. Chiedi all’host un link valido.', 'This link has expired or been revoked. Ask your host for a valid link.', 'Dieser Link ist abgelaufen oder wurde widerrufen. Bitte frage deinen Gastgeber nach einem gültigen Link.', 'Ce lien a expiré ou a été révoqué. Demandez un lien valide à votre hôte.', 'Este enlace ha caducado o se ha revocado. Pide un enlace válido a tu anfitrión.'],
+  error: ['Non siamo riusciti a completare l’operazione.', 'We could not complete the request.', 'Die Anfrage konnte nicht abgeschlossen werden.', 'Nous n’avons pas pu terminer la demande.', 'No se pudo completar la solicitud.'],
+  retry: ['Riprova', 'Try again', 'Erneut versuchen', 'Réessayer', 'Reintentar'],
+  chat: ['Chat con l’host', 'Chat with your host', 'Chat mit dem Gastgeber', 'Discussion avec l’hôte', 'Chat con tu anfitrión'],
+  message: ['Messaggio', 'Message', 'Nachricht', 'Message', 'Mensaje'],
+  send: ['Invia', 'Send', 'Senden', 'Envoyer', 'Enviar'],
+  emptyChat: ['Ancora nessun messaggio.', 'No messages yet.', 'Noch keine Nachrichten.', 'Aucun message pour le moment.', 'Todavía no hay mensajes.'],
+  closedChat: ['La chat è chiusa.', 'The chat is closed.', 'Der Chat ist geschlossen.', 'La discussion est fermée.', 'El chat está cerrado.'],
+  documents: ['Documenti e ricevute', 'Documents and receipts', 'Dokumente und Belege', 'Documents et reçus', 'Documentos y recibos'],
+  emptyDocuments: ['Non ci sono documenti disponibili.', 'No documents are available.', 'Keine Dokumente verfügbar.', 'Aucun document disponible.', 'No hay documentos disponibles.'],
+  download: ['Scarica PDF', 'Download PDF', 'PDF herunterladen', 'Télécharger le PDF', 'Descargar PDF'],
+  review: ['Recensione', 'Review', 'Bewertung', 'Avis', 'Reseña'],
+  rating: ['Valutazione', 'Rating', 'Bewertung', 'Note', 'Puntuación'],
+  comment: ['Commento facoltativo', 'Optional comment', 'Optionaler Kommentar', 'Commentaire facultatif', 'Comentario opcional'],
+  showName: ['Mostra il mio nome', 'Show my first name', 'Meinen Vornamen anzeigen', 'Afficher mon prénom', 'Mostrar mi nombre'],
+  reviewSubmitted: ['Recensione inviata.', 'Review submitted.', 'Bewertung gesendet.', 'Avis envoyé.', 'Reseña enviada.'],
+  reviewUnavailable: ['Puoi recensire il soggiorno nei 14 giorni dopo la partenza.', 'You can review the stay within 14 days after departure.', 'Du kannst den Aufenthalt innerhalb von 14 Tagen nach der Abreise bewerten.', 'Vous pouvez laisser un avis dans les 14 jours suivant le départ.', 'Puedes dejar una reseña dentro de los 14 días posteriores a la salida.'],
+  cancellation: ['Cancella prenotazione', 'Cancel booking', 'Buchung stornieren', 'Annuler la réservation', 'Cancelar reserva'],
+  confirmCancellation: ['Conferma la cancellazione', 'Confirm cancellation', 'Stornierung bestätigen', 'Confirmer l’annulation', 'Confirmar cancelación'],
+  cancelled: ['Prenotazione cancellata.', 'Booking cancelled.', 'Buchung storniert.', 'Réservation annulée.', 'Reserva cancelada.'],
+  cannotCancel: ['Contatta l’host per cancellare.', 'Contact your host to cancel.', 'Wende dich für die Stornierung an deinen Gastgeber.', 'Contactez votre hôte pour annuler.', 'Contacta con tu anfitrión para cancelar.'],
+  otaChanges: ['Per modificare o cancellare, usa il canale su cui hai prenotato.', 'To change or cancel, use the channel you booked with.', 'Ändere oder storniere über deinen Buchungskanal.', 'Pour modifier ou annuler, utilisez le canal de réservation.', 'Para modificar o cancelar, usa el canal en el que reservaste.'],
+  refund: ['Rimborso previsto', 'Expected refund', 'Voraussichtliche Erstattung', 'Remboursement prévu', 'Reembolso previsto'],
+  refundChanged: ['Controlla il rimborso aggiornato prima di confermare.', 'Review the updated refund before confirming.', 'Prüfe die neue Erstattung vor der Bestätigung.', 'Vérifiez le nouveau remboursement avant de confirmer.', 'Revisa el nuevo reembolso antes de confirmar.'],
+  accessCode: ['Mostra il codice di accesso', 'Show access code', 'Zugangscode anzeigen', 'Afficher le code d’accès', 'Mostrar código de acceso'],
+  account: ['I miei soggiorni', 'My stays', 'Meine Aufenthalte', 'Mes séjours', 'Mis estancias'],
+  language: ['Lingua', 'Language', 'Sprache', 'Langue', 'Idioma'],
+} satisfies Record<string, readonly [string, string, string, string, string]>;
+
+interface StayOverview {
+  branding: { name: string; logoUrl: string | null; primaryColor: string | null };
+  stay: {
+    propertyName: string;
+    city: string;
+    checkIn: string;
+    checkOut: string;
+    bookingCode: string;
+    guests: number;
+    status: string;
+    isDirect: boolean;
+    isOta: boolean;
+  };
+  language: string;
+  checkInCompleted: boolean;
+}
+
+interface StayDetails {
+  guide: HouseGuide;
+  address: string | null;
+  houseRules: string;
+  arrivalTime: string | null;
+  checkInAvailable: boolean;
+  canEditArrival: boolean;
+}
+
+function supportedLanguage(value: string | null | undefined): Language | undefined {
+  return languages.find((language) => language === value?.toLowerCase().split('-')[0]);
+}
+
+export function GuestPortalEntry({ hostOnly = false }: { hostOnly?: boolean }) {
+  const { slug = '' } = useParams();
+  if (/^[A-Za-z0-9_-]{32}$/.test(slug)) return <GuestPortalPage key={slug} token={slug} />;
+  return hostOnly ? <HostSiteNotFoundPage /> : <LegacySupplierShowcaseRedirect />;
+}
+
+function GuestPortalPage({ token }: { token: string }) {
+  const [params, setParams] = useSearchParams();
+  const path = `/public/guest-portal/${token}`;
+  const queryKey = ['guest-portal-details', token];
+  const queryClient = useQueryClient();
+  const query = useQuery({
+    queryKey: ['guest-portal', token],
+    queryFn: ({ signal }) => ApiClient.get<StayOverview>(path, undefined, { public: true, signal }),
+    gcTime: 0,
+    retry: false,
+  });
+  const stayQuery = useQuery({
+    queryKey,
+    queryFn: ({ signal }) => ApiClient.get<StayDetails>(`${path}/stay`, undefined, { public: true, signal }),
+    enabled: query.isSuccess,
+    gcTime: 0,
+    retry: false,
+  });
+  const overview = query.data;
+  const stay = overview && stayQuery.data ? { ...overview.stay, ...stayQuery.data } : null;
+  const failed = query.isError ? query.error : stayQuery.error;
+  const { flags } = useFeatureFlags();
+  const accessCode = useMutation({
+    mutationFn: () => ApiClient.post<{ code: string }>(`${path}/access-code`, undefined, { public: true }),
+    gcTime: 0,
+  });
+  const taxEnabled = flags.touristTaxOnlinePayment && Boolean(overview?.checkInCompleted && stay?.checkInAvailable && !failed);
+  const tax = useGuestTouristTax(`stay_${token}`, taxEnabled);
+  const taxAvailable = guestTaxAvailability({ ...tax, enabled: taxEnabled, hasData: tax.data !== undefined }) === 'ready';
+  const shouldPayTax = taxAvailable && tax.data && guestTaxOutlook(tax.data) === 'payable';
+  const nextStep = shouldPayTax ? 'payTax' : overview?.checkInCompleted ? 'guide' : 'complete';
+  const language = supportedLanguage(params.get('lang')) ?? supportedLanguage(overview?.language)
+    ?? supportedLanguage(navigator.language) ?? 'it';
+  const t = (key: keyof typeof copy) => copy[key][languages.indexOf(language)];
+  const section = params.get('page');
+  const guide = section === 'guide';
+  const details = section === 'details';
+  const chat = section === 'chat' && stay?.status !== 'cancelled';
+  const documents = section === 'documents';
+  const review = section === 'review';
+  const cancellation = section === 'cancellation' && stay?.isDirect;
+  const accent = normalizeHexColor(overview?.branding.primaryColor) ?? '#1F3A3D';
+  useStayManifest(token, failed ? undefined : overview?.branding.name, accent);
+  const href = (page?: string) => `?${new URLSearchParams(page ? { lang: language, page } : { lang: language })}`;
+  const checkIn = `/checkin/stay_${token}?lang=${language}`;
+  const date = (value: string) => new Date(`${value.slice(0, 10)}T12:00:00Z`);
+  const range = stay && new Intl.DateTimeFormat(language, {
+    dateStyle: 'medium', timeZone: 'UTC',
+  }).formatRange(date(stay.checkIn), date(stay.checkOut));
+
+  const today = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Rome' }).format(new Date());
+  const phase = stay && (stay.status === 'checkedOut' || stay.status === 'cancelled' || today >= stay.checkOut)
+    ? 'after' : stay && today >= stay.checkIn ? 'during' : 'before';
+
+  useSeoMeta({ title: t('title'), noindex: true, referrer: 'no-referrer' });
+
+  return (
+    <div className="guest-portal" lang={language} style={{
+      '--stay-accent': accent,
+      '--stay-on-accent': readableTextOn(accent).color,
+    } as CSSProperties}>
+      <header className="stay-header">
+        <div className="stay-width stay-header-inner">
+          <Link to={href()} className="stay-brand">
+            {overview?.branding.logoUrl ? <img src={overview.branding.logoUrl} alt="" referrerPolicy="no-referrer" /> : <Leaf aria-hidden="true" />}
+            {overview?.branding.name || t('title')}
+          </Link>
+          <select aria-label={t('language')} value={language} onChange={(event) => {
+            const next = new URLSearchParams(params);
+            next.set('lang', event.target.value);
+            setParams(next, { replace: true });
+          }}>
+            {languages.map((code) => <option key={code} value={code}>{code.toUpperCase()}</option>)}
+          </select>
+        </div>
+      </header>
+      <main className="stay-width stay-main">
+        {!stay && !failed && <p role="status">{t('load')}</p>}
+        {failed && (
+          <>
+            <p role="alert">{getHttpStatus(failed) === 404 ? t('unavailable') : t('error')}</p>
+            {getHttpStatus(failed) !== 404 && <button onClick={() => void (query.isError ? query.refetch() : stayQuery.refetch())}>{t('retry')}</button>}
+          </>
+        )}
+        {stay && !failed && (
+          <>
+            <span className="stay-phase">{t(phase)}</span>
+            <h1>{t(guide ? 'guide' : details ? 'details' : chat ? 'chat' : documents ? 'documents' : review ? 'review' : cancellation ? 'cancellation' : 'title')}</h1>
+            <p className="stay-meta">{range} · {stay.guests} {guestLabel(language, stay.guests)}</p>
+            <div className="stay-card stay-property"><CalendarDays aria-hidden="true" />{stay.propertyName} · {stay.bookingCode}</div>
+            {guide ? (
+              <div className="stay-card stay-content">
+                <h2>{t('address')}</h2>
+                <p>{[stay.address, stay.city].filter(Boolean).join(', ')}</p>
+                {!stay.address && phase !== 'after' && <p>{t('addressLocked')}</p>}
+                <HouseGuideSections guide={stay.guide} />
+                {stay.address && flags.checkInIdentityVerification && (
+                  <>
+                    <button type="button" disabled={accessCode.isPending} onClick={() => accessCode.mutate()}>{t('accessCode')}</button>
+                    {accessCode.data?.code && <p role="status">{accessCode.data.code}</p>}
+                    {accessCode.isError && <p role="alert">{t('error')}</p>}
+                  </>
+                )}
+                {stay.houseRules && <><h2>{t('rules')}</h2><p className="stay-rules">{stay.houseRules}</p></>}
+              </div>
+            ) : chat ? (
+              <GuestPortalChat path={path} labels={{
+                message: t('message'), send: t('send'), loading: t('load'), failed: t('error'),
+                empty: t('emptyChat'), closed: t('closedChat'),
+              }} />
+            ) : documents ? (
+              <GuestPortalDocuments path={path} language={language} labels={{
+                loading: t('load'), failed: t('error'), empty: t('emptyDocuments'), download: t('download'),
+              }} />
+            ) : review ? (
+              <GuestPortalReview path={path} labels={{
+                rating: t('rating'), comment: t('comment'), showName: t('showName'), send: t('send'),
+                loading: t('load'), failed: t('error'), submitted: t('reviewSubmitted'), unavailable: t('reviewUnavailable'),
+              }} />
+            ) : cancellation ? (
+              <GuestPortalCancellation path={path} language={language} onCancelled={() => { void query.refetch(); }} labels={{
+                loading: t('load'), failed: t('error'), unavailable: t('cannotCancel'), cancelled: t('cancelled'),
+                refund: t('refund'), changed: t('refundChanged'), confirm: t('confirmCancellation'),
+              }} />
+            ) : details ? (
+              <>
+              {stay.canEditArrival ? <ArrivalForm stay={stay} path={path} t={t} onSaved={(arrivalTime) => {
+                queryClient.setQueryData<StayDetails>(queryKey, (current) => current && { ...current, arrivalTime });
+              }} />
+                : <div className="stay-card stay-content"><h2>{t('arrival')}</h2><p>{stay.arrivalTime === 'late' ? t('late') : stay.arrivalTime ?? '—'}</p></div>}
+                {stay.isDirect && phase === 'before' && <Link className="stay-card" to={href('cancellation')}>{t('cancellation')}</Link>}
+                {stay.isOta && <p className="stay-card">{t('otaChanges')}</p>}
+              </>
+            ) : (
+              <>
+                {phase !== 'after' && (
+                  <section className="stay-next">
+                    <p>{t('next')}</p>
+                    <h2>{t(nextStep)}</h2>
+                    {!overview?.checkInCompleted && <p>{t(stay.checkInAvailable ? 'checkInHelp' : 'checkInWait')}</p>}
+                    {nextStep === 'guide' && <Link to={href('guide')}>{t('guide')}</Link>}
+                    {nextStep === 'payTax' && <a href={checkIn} rel="noreferrer">{t('payTax')}</a>}
+                    {!overview?.checkInCompleted && stay.checkInAvailable && <a href={checkIn} rel="noreferrer">{t('open')}</a>}
+                  </section>
+                )}
+                <div className="stay-links">
+                  <Link className="stay-card" to={href('details')}><CalendarDays aria-hidden="true" />{t('details')}<ChevronRight aria-hidden="true" /></Link>
+                  <Link className="stay-card" to={href('guide')}><BookOpen aria-hidden="true" />{t('guide')}<ChevronRight aria-hidden="true" /></Link>
+                  {stay.status !== 'cancelled' && <Link className="stay-card" to={href('chat')}><MessageCircle aria-hidden="true" />{t('chat')}<ChevronRight aria-hidden="true" /></Link>}
+                  <Link className="stay-card" to={href('documents')}><FileText aria-hidden="true" />{t('documents')}<ChevronRight aria-hidden="true" /></Link>
+                  {phase === 'after' && stay.status !== 'cancelled' && <Link className="stay-card" to={href('review')}><Star aria-hidden="true" />{t('review')}<ChevronRight aria-hidden="true" /></Link>}
+                  {overview?.checkInCompleted && (stay.checkInAvailable ? (
+                    <a className="stay-card" href={checkIn} rel="noreferrer"><ClipboardCheck aria-hidden="true" />{t('done')}<ChevronRight aria-hidden="true" /></a>
+                  ) : <div className="stay-card"><ClipboardCheck aria-hidden="true" />{t('done')}</div>)}
+                </div>
+              </>
+            )}
+          </>
+        )}
+      </main>
+      <footer>
+        {stay && <Link className="stay-account-link" to={guestAccountStaysPath}>{t('account')}</Link>}
+        <span>{poweredBy}</span>
+      </footer>
+      {stay && !failed && (
+        <nav className="stay-nav" aria-label={t('stay')}>
+          <Link to={href()} aria-current={!guide && !chat && !documents && !review ? 'page' : undefined}><CalendarDays aria-hidden="true" />{t('stay')}</Link>
+          <Link to={href('guide')} aria-current={guide ? 'page' : undefined}><BookOpen aria-hidden="true" />{t('guide')}</Link>
+        </nav>
+      )}
+    </div>
+  );
+}
+
+function guestLabel(language: Language, count: number): string {
+  const labels = count === 1 ? ['ospite', 'guest', 'Gast', 'voyageur', 'huésped'] : ['ospiti', 'guests', 'Gäste', 'voyageurs', 'huéspedes'];
+  return labels[languages.indexOf(language)];
+}
+
+function ArrivalForm({ stay, path, t, onSaved }: {
+  stay: StayDetails;
+  path: string;
+  t: (key: keyof typeof copy) => string;
+  onSaved: (arrivalTime: string) => void;
+}) {
+  const [late, setLate] = useState(stay.arrivalTime === 'late');
+  const initialTime = stay.arrivalTime ?? '';
+  const [time, setTime] = useState(/^\d{2}:\d{2}$/.test(initialTime) ? initialTime : '');
+  const save = useMutation({
+    mutationFn: (value: string) => ApiClient.put<void>(`${path}/arrival`, { time: value }, { public: true }),
+    onSuccess: (_, value) => onSaved(value),
+  });
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    save.mutate(late ? 'late' : time);
+  }
+  return (
+    <form className="stay-card stay-content" onSubmit={submit}>
+      <label htmlFor="arrival-time">{t('arrival')}</label>
+      <input id="arrival-time" type="time" value={time} disabled={late} required={!late} onChange={(event) => {
+        setTime(event.target.value);
+        save.reset();
+      }} />
+      <label className="stay-checkbox">
+        <input type="checkbox" checked={late} onChange={(event) => {
+          setLate(event.target.checked);
+          save.reset();
+        }} /> {t('late')}
+      </label>
+      <button disabled={save.isPending}>{t('save')}</button>
+      {save.isSuccess && <p role="status">{t('saved')}</p>}
+      {save.isError && <p role="alert">{t('error')}</p>}
+    </form>
+  );
+}
