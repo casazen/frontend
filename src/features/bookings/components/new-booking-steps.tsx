@@ -45,7 +45,7 @@ function useShortProperties(propertyId: string | undefined) {
 /** One counter of the guests in a box of its own: the adults and the minors sit side by side as the two dates above them do. */
 function GuestCountRow({ label, hint, children }: { label: string; hint: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-md border px-4 py-3">
+    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-xl border bg-card px-4 py-3">
       <div className="min-w-0 flex-1 basis-40">
         <p className="break-words text-sm font-medium">{label}</p>
         <p className="break-words text-sm text-foreground/70">{hint}</p>
@@ -134,7 +134,7 @@ export function StayStep({ agesMissing, onAgesChange }: StayStepProps) {
         )}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 rounded-xl border bg-muted/30 p-4 sm:grid-cols-2">
         <Field id="checkInDate" label={t('booking.create.stay.checkIn')} error={errors.checkInDate}>
           {(field) => <Input {...field} type="date" min={today} {...register('checkInDate')} />}
         </Field>
@@ -232,8 +232,8 @@ export function GuestStep() {
   const notes = useWatch({ control, name: 'specialRequests' }) ?? '';
 
   return (
-    <div className="min-w-0 space-y-6">
-      <Field id="guest.name" label={t('booking.create.guest.name')} example={t('booking.create.guest.nameExample')} error={errors.guest?.name}>
+    <div className="grid min-w-0 items-start gap-4 sm:grid-cols-2">
+      <Field className="sm:col-span-2" id="guest.name" label={t('booking.create.guest.name')} example={t('booking.create.guest.nameExample')} error={errors.guest?.name}>
         {(field) => <Input {...field} autoComplete="off" {...register('guest.name')} />}
       </Field>
       <Field
@@ -249,6 +249,7 @@ export function GuestStep() {
         {(field) => <Input {...field} type="tel" inputMode="tel" autoComplete="off" {...register('guest.phone')} />}
       </Field>
       <Field
+        className="sm:col-span-2"
         id="specialRequests"
         label={t('booking.create.guest.notes')}
         hint={t('booking.create.guest.notesHint')}
@@ -258,7 +259,7 @@ export function GuestStep() {
       >
         {(field) => <Textarea {...field} rows={3} maxLength={1000} {...register('specialRequests')} />}
       </Field>
-      <p className="flex items-start gap-2 text-sm text-foreground/70">
+      <p className="flex items-start gap-2 rounded-xl bg-muted/50 p-4 text-sm text-foreground/70 sm:col-span-2">
         <IdCard aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
         <span className="min-w-0 break-words">{t('booking.create.guest.checkinNote')}</span>
       </p>
@@ -303,7 +304,7 @@ function PriceBlock({ hasStay, quote, isLoading, error }: { hasStay: boolean; qu
 
   return (
     // A receipt: as wide as a receipt (`max-w-xl`), so each amount stays next to what it pays for on a wide screen.
-    <dl className="min-w-0 max-w-xl space-y-2 rounded-lg bg-muted p-4 text-sm" data-testid="booking-price-summary">
+    <dl className="min-w-0 space-y-3 rounded-xl border bg-card p-5 text-sm tabular-nums" data-testid="booking-price-summary">
       <div className="flex min-w-0 justify-between gap-3">
         <dt className="min-w-0 break-words text-foreground/70">
           {t('booking.form.price.lodging', { count: quote.nights, perNight: money(quote.nightlyRate) })}
