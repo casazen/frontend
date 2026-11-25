@@ -16,6 +16,7 @@ export type FeatureFlagKey =
   | 'agencyTier'
   | 'crmMarketing'
   | 'guestPortal'
+  | 'guestPortalSupplierServices'
   | 'complianceTrafficLight'
   | 'guestRegistrationRegimes'
   | 'messageAssistant'

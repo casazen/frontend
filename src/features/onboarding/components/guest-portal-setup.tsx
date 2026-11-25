@@ -198,7 +198,7 @@ function PropertySetup({ propertyId }: { propertyId: string }) {
             <p role="status">{t('guestPortal.setup.suggestionsUnavailable')}</p>}
           {generate.data?.guide && (
             <div className="space-y-2 rounded-lg border p-3">
-              <ul className="space-y-2">{Object.entries(generate.data.guide).filter(([, text]) => typeof text === 'string' && text).map(([key, text]) => (
+              <ul className="space-y-2">{Object.entries(generate.data.guide).map(([key, text]) => typeof text === 'string' && text && (
                 <li key={key} className="break-words text-sm">
                   <span className="font-semibold">{t(`guestPortal.guide.${key}`)}</span>
                   <p className="whitespace-pre-wrap">{text}</p>

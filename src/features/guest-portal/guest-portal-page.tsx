@@ -106,7 +106,6 @@ const copy = {
 } satisfies Record<string, readonly [string, string, string, string, string]>;
 
 interface StayOverview {
-  features?: { supplierServices?: boolean };
   branding: { name: string; logoUrl: string | null; primaryColor: string | null };
   stay: {
     propertyName: string;
