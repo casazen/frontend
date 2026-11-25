@@ -6,9 +6,16 @@ import { Button } from '@/components/ui/button';
 import { autoReplyTopics, guideFields, type GuideAutoReplies, type HouseGuide } from '@/features/guest-portal/house-guide-fields';
 
 const replyOptions = ['enabled', ...autoReplyTopics] as const;
+const chatGuideFields = ['checkInHours', 'checkOutHours', 'parking', 'wifi'] as const;
+
 const defaultReplies: GuideAutoReplies = { enabled: false, checkIn: false, checkOut: false, parking: false, wifi: false };
 
-export function GuestHouseGuideEditor({ propertyId, suggestion }: { propertyId: string; suggestion?: HouseGuide }) {
+export function GuestHouseGuideEditor({ propertyId, suggestion, section, onSaved }: {
+  propertyId: string;
+  suggestion?: HouseGuide;
+  section?: 'guide' | 'chat';
+  onSaved?: () => void;
+}) {
   const { t } = useTranslation();
   const endpoint = `/properties/${propertyId}/guest-house-guide`;
   const query = useQuery({
@@ -18,7 +25,11 @@ export function GuestHouseGuideEditor({ propertyId, suggestion }: { propertyId: 
   });
   const [draft, setDraft] = useState<HouseGuide>({});
   const guide = { ...query.data, ...suggestion, ...draft };
-  const save = useMutation({ mutationFn: () => ApiClient.put(endpoint, guide) });
+  const save = useMutation({
+    mutationFn: () => ApiClient.put(endpoint, guide),
+    onSuccess: onSaved,
+  });
+  const fields = section === 'chat' ? chatGuideFields : guideFields;
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -27,24 +38,24 @@ export function GuestHouseGuideEditor({ propertyId, suggestion }: { propertyId: 
 
   return (
     <form onSubmit={submit} className="grid gap-4 rounded-lg border bg-card p-4">
-      <h2 className="font-medium">{t('guestPortal.guide.title')}</h2>
+      {section !== 'chat' && <h2 className="font-medium">{t('guestPortal.guide.title')}</h2>}
       {query.isPending && <p role="status">{t('guestPortal.host.loading')}</p>}
       {query.isError && <p role="alert">{t('guestPortal.host.unavailable')}</p>}
       {query.isSuccess && (
         <>
           <p className="text-sm text-muted-foreground">{t('guestPortal.guide.visibility')}</p>
-          {guideFields.map((field) => (
+          {fields.map((field) => (
             <label key={field} className="grid gap-1 text-sm font-medium">
               {t(`guestPortal.guide.${field}`)}
               <textarea className="min-h-20 rounded-md border bg-background p-2" disabled={save.isPending}
-                maxLength={(['wifi', 'checkInHours', 'checkOutHours', 'parking'] as const).some((brief) => brief === field) ? 1000 : 2000} value={guide[field] ?? ''}
+                maxLength={chatGuideFields.some((brief) => brief === field) ? 1000 : 2000} value={guide[field] ?? ''}
                 onChange={(event) => {
                   save.reset();
                   setDraft((current) => ({ ...current, [field]: event.target.value }));
                 }} />
             </label>
           ))}
-          <fieldset className="grid gap-2" disabled={save.isPending}>
+          {section !== 'guide' && <fieldset className="grid gap-2" disabled={save.isPending}>
             <legend className="font-medium">{t('guestPortal.guide.autoReplyTitle')}</legend>
             <p className="text-sm text-muted-foreground">{t('guestPortal.guide.autoReplyHelp')}</p>
             {replyOptions.map((topic) => (
@@ -60,7 +71,7 @@ export function GuestHouseGuideEditor({ propertyId, suggestion }: { propertyId: 
                 {t(`guestPortal.guide.autoReplyTopics.${topic}`)}
               </label>
             ))}
-          </fieldset>
+          </fieldset>}
           <Button type="submit" disabled={save.isPending}>{t('guestPortal.guide.save')}</Button>
           {save.isSuccess && <p role="status">{t('guestPortal.guide.saved')}</p>}
           {save.isError && <p role="alert">{t('guestPortal.host.changeError')}</p>}

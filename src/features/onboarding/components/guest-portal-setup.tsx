@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { ApiClient } from '@/api/client';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { HostExtrasEditor } from '@/features/bookings/components/host-extras-editor';
 import { GuestHouseGuideEditor } from '@/features/bookings/components/guest-house-guide-editor';
 import type { HouseGuide } from '@/features/guest-portal/house-guide-fields';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
@@ -225,7 +226,11 @@ function PropertySetup({ propertyId }: { propertyId: string }) {
               {generate.data?.categories?.map((code) => <li key={code}>{t(`serviceRequest.categories.${code}`)}</li>)}
             </ul>
           )}
-          {(step === 'guide' || step === 'chat') && <GuestHouseGuideEditor key={step} propertyId={propertyId} suggestion={guideDraft} />}
+          {(step === 'guide' || step === 'chat') && (
+            <GuestHouseGuideEditor key={step} propertyId={propertyId} section={step} suggestion={guideDraft}
+              onSaved={() => void query.refetch()} />
+          )}
+          {step === 'extras' && <HostExtrasEditor propertyId={propertyId} suggestions={generate.data?.extras} />}
           {step === 'suppliers' && flags.agencyTier && hasPermission('short-rent', 'property.read') && (
             <Button type="button" variant="link" asChild className="min-h-11 justify-self-start px-0">
               <Link to="/app/short-rent/trusted-suppliers">{t('guestPortal.setup.manageSuppliers')}</Link>
