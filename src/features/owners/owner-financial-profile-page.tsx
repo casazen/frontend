@@ -1,6 +1,8 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { FinanceSectionLinks } from '@/components/finance/finance-section-links';
+import { ClipboardCheck, History as HistoryIcon, ScrollText, Wallet } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import { FocusBlock, PlainSection } from '@/components/shared/calm';
 import { Alert } from '@/components/ui/alert';
@@ -174,6 +176,12 @@ function ProfileBody({ ownerId }: { ownerId: string }) {
     content = (
       <div className="space-y-8">
         <ReadinessFocus readiness={readiness} canEdit={canEdit} backTo={backTo} onEdit={() => setDialog('profile')} onApprove={setApproving} onNewPolicy={() => setDialog('policy')} />
+        <FinanceSectionLinks label={title} links={[
+          ...(current ? [{ id: 'profile-facts', label: t('ownerProfile.facts.title'), icon: Wallet }] : []),
+          { id: 'profile-policy', label: t('ownerProfile.policy.title'), icon: ScrollText },
+          { id: 'profile-onboarding', label: t('ownerProfile.onboarding.title'), icon: ClipboardCheck },
+          ...(profileList.length > 1 ? [{ id: 'profile-history', label: t('ownerProfile.history.title'), icon: HistoryIcon }] : []),
+        ]} />
         <OwnerWarnings warnings={ownerEntry?.warnings ?? []} />
         {startsAfterTheMonth && readiness.ready ? (
           <MonthNotCovered from={readiness.from} period={period} />
@@ -353,7 +361,7 @@ function ProfileFacts({ profile, policy }: { profile: OwnerFiscalProfile; policy
   ];
 
   return (
-    <PlainSection title={t('ownerProfile.facts.title')} data-testid="profile-facts">
+    <PlainSection title={t('ownerProfile.facts.title')} id="profile-facts" className="scroll-mt-24" data-testid="profile-facts">
       <p className="break-words text-sm text-foreground/70">
         {profile.validTo ? t('ownerProfile.facts.validBetween', { from: date(profile.validFrom), to: date(profile.validTo) }) : t('ownerProfile.facts.validFrom', { from: date(profile.validFrom) })}
         {policy ? ` · ${t('ownerProfile.facts.rule', { rule: policy.ruleCode, version: policy.version })}` : ''}
@@ -401,6 +409,7 @@ function PolicyPanel({ policy, all, canManage, onApprove, onNew }: PolicyPanelPr
 
   return (
     <PlainSection
+      id="profile-policy" className="scroll-mt-24"
       title={t('ownerProfile.policy.title')}
       {...newAction}
       data-testid="profile-policy-section"
@@ -481,7 +490,7 @@ function OnboardingFacts({ loaded, available, reasons, properties }: OnboardingF
   const periodOf = (issue: OwnershipIssue) => (issue.to ? t('ownerProfile.ownership.until', { date: date(issue.to) }) : t('ownerProfile.ownership.onward'));
 
   return (
-    <PlainSection title={t('ownerProfile.onboarding.title')} count={reasons.length} data-testid="profile-onboarding">
+    <PlainSection title={t('ownerProfile.onboarding.title')} count={reasons.length} id="profile-onboarding" className="scroll-mt-24" data-testid="profile-onboarding">
       {!available ? (
         <p className="break-words text-sm text-foreground/70">{t('ownerProfile.onboarding.unavailable')}</p>
       ) : reasons.length === 0 ? (
@@ -529,7 +538,7 @@ function History({ profiles, policies, currentId }: { profiles: readonly OwnerFi
   const { date } = useOwnerFormat();
 
   return (
-    <PlainSection title={t('ownerProfile.history.title')} count={profiles.length} data-testid="profile-history">
+    <PlainSection title={t('ownerProfile.history.title')} count={profiles.length} id="profile-history" className="scroll-mt-24" data-testid="profile-history">
       <ul role="list" className="divide-y divide-border text-sm">
         {profiles.map((profile) => {
           const policy = policies.find((candidate) => candidate.id === profile.accountingPolicyId);

@@ -1,7 +1,8 @@
 import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { AlertCircle } from 'lucide-react';
+import { FinanceSectionLinks } from '@/components/finance/finance-section-links';
+import { AlertCircle, Landmark, ListChecks } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import { AgencyAccessRefused, AgencyFinanceGate } from '@/components/finance/agency-finance-gate';
 import { StaleReadNotice } from '@/components/finance/stale-read-notice';
@@ -296,7 +297,7 @@ function WireTransferBody() {
           const payable = items.filter(isPayable);
           const allChosen = payable.length > 0 && payable.every((row) => selected.has(row.id));
           return (
-            <div key={currency} className="space-y-3" data-testid={`wire-group-${currency}`}>
+            <div key={currency} className="space-y-3 rounded-2xl border bg-card p-4" data-testid={`wire-group-${currency}`}>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="text-base font-semibold">{t('wire.currencyGroup', { currency })}</h3>
                 {payable.length > 0 && (
@@ -365,7 +366,7 @@ function WireTransferBody() {
           );
         })}
 
-        <div className="space-y-4 border-t pt-6">
+        <div className="grid items-end gap-4 rounded-2xl border border-primary/30 bg-primary/5 p-4 sm:grid-cols-[minmax(12rem,20rem)_1fr]">
           <div className="max-w-xs">
             <Label htmlFor="wire-execution-date">{t('wire.executionDate')}</Label>
             <Input
@@ -389,7 +390,7 @@ function WireTransferBody() {
               {t('wire.create')}
             </Button>
             {chosenCount > 0 && (
-              <span className="text-sm text-muted-foreground" data-testid="wire-selection">
+              <span className="text-sm font-medium tabular-nums" role="status" data-testid="wire-selection">
                 {chosenSummary}
               </span>
             )}
@@ -428,7 +429,11 @@ function WireTransferBody() {
       {header}
       {stale && <StaleReadNotice onRetry={retryFailed} />}
 
-      <PlainSection title={t('wire.selectPayouts')} data-testid="wire-compose">
+      <FinanceSectionLinks label={t('wire.title')} links={[
+        { id: 'wire-compose', label: t('wire.selectPayouts'), icon: ListChecks },
+        { id: 'wire-batches', label: t('wire.batches.title'), icon: Landmark },
+      ]} />
+      <PlainSection id="wire-compose" className="scroll-mt-24" title={t('wire.selectPayouts')} data-testid="wire-compose">
         {composeBody()}
         {attempts.length > 0 && (
           <div className="mt-4 space-y-3" data-testid="wire-outcome">
@@ -468,7 +473,7 @@ function WireTransferBody() {
         )}
       </PlainSection>
 
-      <PlainSection title={t('wire.batches.title')} count={batches.length} data-testid="wire-batches">
+      <PlainSection id="wire-batches" className="scroll-mt-24" title={t('wire.batches.title')} count={batches.length} data-testid="wire-batches">
         {batchesBody()}
       </PlainSection>
 

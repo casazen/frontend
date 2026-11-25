@@ -154,7 +154,7 @@ function FilterBar({ period, ownerId, thisMonth, owners, onPeriod, onOwner }: Fi
   if (ownerId !== '' && !ownerOptions.some((option) => option.id === ownerId)) ownerOptions.unshift({ id: ownerId, label: t('ownerAccounting.owner.unnamed', { id: shortId(ownerId) }) });
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 sm:max-w-2xl" data-testid="owner-invoices-filters">
+    <div className="grid gap-4 rounded-2xl border bg-card p-4 sm:grid-cols-2" data-testid="owner-invoices-filters">
       <Field label={t('ownerInvoice.page.filterPeriod')}>
         <Select value={period} onChange={(event) => onPeriod(event.target.value)} data-testid="owner-invoices-filter-period">
           <option value="">{t('ownerInvoice.page.allMonths')}</option>
@@ -201,7 +201,7 @@ function InvoiceRow({ invoice, downloading, locked, onOpen, onPdf }: InvoiceRowP
   const owner = invoice.ownerName?.trim() || t('ownerAccounting.owner.unnamed', { id: shortId(invoice.ownerId) });
 
   return (
-    <li className="flex flex-col gap-3 py-4 sm:flex-row sm:items-start sm:justify-between" data-testid="owner-invoice-row" data-status={invoice.status} data-invoice={invoice.id}>
+    <li className="flex flex-col gap-3 rounded-xl p-4 even:bg-muted/40 sm:flex-row sm:items-start sm:justify-between" data-testid="owner-invoice-row" data-status={invoice.status} data-invoice={invoice.id}>
       <div className="min-w-0 space-y-1">
         <h3 className="break-words text-base font-semibold" data-testid="owner-invoice-row-number">
           {invoice.number ? t('ownerInvoice.page.row.number', { number: invoice.number }) : t('ownerInvoice.page.row.draft')}
@@ -210,7 +210,7 @@ function InvoiceRow({ invoice, downloading, locked, onOpen, onPdf }: InvoiceRowP
           {t('ownerInvoice.page.row.ownerAndMonth', { owner, month: month(invoice.periodYear, invoice.periodMonth) })}
         </p>
         <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-          <span className="font-medium tabular-nums" data-testid="owner-invoice-row-total">
+          <span className="text-lg font-semibold tracking-tight tabular-nums" data-testid="owner-invoice-row-total">
             {money(invoice.total, invoice.currency)}
           </span>
           {invoice.creditedInFull ? (

@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { isArchiveCallCancelled } from '@/api/document-archive.api';
 import { AppShell } from '@/components/layout/app-shell';
+import { FinanceSectionLinks } from '@/components/finance/finance-section-links';
+import { BedDouble, Files, Users } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import { FocusBlock } from '@/components/shared/calm';
 import { ErrorState } from '@/components/shared/error-state';
@@ -155,8 +157,8 @@ function PackageBlock({ period, today, ownerAccounting, onPeriod }: PackageBlock
   };
 
   return (
-    <div className="space-y-4" data-testid="accountant-package-block">
-      <div className="sm:max-w-xs">
+    <div className="grid items-start gap-4 lg:grid-cols-[minmax(14rem,1fr)_2fr]" data-testid="accountant-package-block">
+      <div className="rounded-2xl border bg-card p-5">
         <Field label={t('accountantPackage.period.label')}>
           <Select value={key} onChange={(event) => onPeriod(event.target.value)} disabled={pending} data-testid="accountant-period">
             <optgroup label={t('accountantPackage.period.months')}>
@@ -230,6 +232,11 @@ function SummaryArea({ view, onRetry }: SummaryAreaProps) {
         {t('accountantPackage.summary.range', { from: format.date(summary.from), to: format.date(summary.to), generated: format.date(summary.generatedOn) })}
         {summary.periodKind === 'year' ? ` ${t('accountantPackage.summary.yearNote')}` : ''}
       </p>
+      <FinanceSectionLinks label={t('accountantPackage.summary.title')} links={[
+        { id: 'accountant-documents', label: t('accountantPackage.documents.title'), icon: Files },
+        ...(summary.ownerAccountingIncluded ? [{ id: 'accountant-owners', label: t('accountantPackage.owners.title'), icon: Users }] : []),
+        { id: 'accountant-stays', label: t('accountantPackage.stays.title'), icon: BedDouble },
+      ]} />
       <DocumentsSection summary={summary} />
       {summary.ownerAccountingIncluded ? <OwnersSection summary={summary} /> : null}
       <StaysSection summary={summary} />
