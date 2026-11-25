@@ -17,6 +17,7 @@ import {
   CREDENTIAL_MAX_LENGTH,
   HOTEL_ID_MAX_LENGTH,
   activationPanelResume,
+  hotelIdsFor,
   missingAccess,
   panelAccessStatus,
   propertyNameOf,
@@ -33,7 +34,7 @@ const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading
 const HELP_LABEL = 'needHelp';
 
 /** Who can do the step on the panel of the channel manager: the organization administrator, and only while the guided steps of the activation are on. */
-export type PanelAvailability = 'ready' | 'notAdmin' | 'unavailable';
+export type PanelAvailability = 'ready' | 'notAdmin' | 'unavailable' | 'staff';
 
 /** The guided steps of the panel the wizard reads for the access step (`usePanelSteps`), and whether this person can do them. */
 export interface PanelAccess {
@@ -140,6 +141,20 @@ function PanelAccessSection({ context, propertyIds, panel, onSaveAndExit, onActi
     for (const id of doneIds.split('|')) if (id !== '') void refreshActivation(queryClient, id);
   }, [stepsRead, doneIds, queryClient]);
 
+  if (panel.availability === 'staff') {
+    return (
+      <section className="space-y-2">
+        <p>{t('activationJourney.accounts.staffApproval')}</p>
+        {propertyIds.filter((id) => context.plans.get(id)?.activationId).map((id) => (
+          <div key={id} className="flex flex-wrap items-center gap-2">
+            <span>{propertyNameOf(context.properties, id) ?? id}</span>
+            <AssistRequestButton part={panelPartOf('channelAccess')}
+              context={panelAssistContext('channelAccess')} propertyId={id} channelCode={context.code} label={HELP_LABEL} />
+          </div>
+        ))}
+      </section>
+    );
+  }
   if (panel.availability === 'unavailable') {
     return (
       <Alert variant="info" data-testid="activation-panel-unavailable">
@@ -253,7 +268,7 @@ export function AccessStep({ context, credentials, onCredentialsChange, showErro
   const { t } = useTranslation();
   const { control, setValue } = useFormContext<ActivationWizardValues>();
   const propertyIds = useWatch({ control, name: 'propertyIds' }) ?? [];
-  const hotelIds = useWatch({ control, name: 'hotelIds' }) ?? {};
+  const hotelIds = hotelIdsFor(useWatch({ control, name: 'hotelIds' }) ?? {}, context.plans);
   const { requirements } = context;
   const name = context.channelName ?? t('marketplace.activation.thisChannel');
 
@@ -289,6 +304,7 @@ export function AccessStep({ context, credentials, onCredentialsChange, showErro
             >
               <Input
                 value={hotelIds[propertyId] ?? ''}
+                readOnly={!!context.plans.get(propertyId)?.verifiedHotelId}
                 maxLength={HOTEL_ID_MAX_LENGTH}
                 autoComplete="off"
                 spellCheck={false}

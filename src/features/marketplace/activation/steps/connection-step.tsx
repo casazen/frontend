@@ -11,6 +11,7 @@ import {
   CHANNEL_REFUSAL_CODE,
   hasAccessStep,
   isAccessComplete,
+  hotelIdsFor,
   missingAccess,
   problemCodeOf,
   propertyNameOf,
@@ -67,7 +68,7 @@ export function ConnectionStep({ context, credentials, onCredentialsUsed, onFix,
   const { t } = useTranslation();
   const { control } = useFormContext<ActivationWizardValues>();
   const propertyIds = useWatch({ control, name: 'propertyIds' }) ?? [];
-  const hotelIds = useWatch({ control, name: 'hotelIds' }) ?? {};
+  const hotelIds = hotelIdsFor(useWatch({ control, name: 'hotelIds' }) ?? {}, context.plans);
   const start = useStartActivation();
   const { kind, code, requirements, plans } = context;
   const accessStep = hasAccessStep(requirements);

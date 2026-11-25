@@ -37,6 +37,7 @@ import {
   connectionKindOfSlug,
   isAccessComplete,
   mappingProblem,
+  hotelIdsFor,
   missingAccess,
   outcomeOfFailure,
   outcomeOfState,
@@ -148,7 +149,9 @@ function ActivationWizard({ kind, code }: { kind: MarketplaceConnectionKind; cod
   };
 
   // The access on the panel of the channel manager is the organization administrator's, and the guided steps of the activation are behind their flag.
-  const panelAvailability: PanelAvailability = !flags.octorateOnboarding ? 'unavailable' : isOrgBillingAdmin(contexts) ? 'ready' : 'notAdmin';
+  const managedByStaff = [...plans.values()].some((plan) => plan.managedByStaff);
+  const panelAvailability: PanelAvailability = managedByStaff ? 'staff'
+    : !flags.octorateOnboarding ? 'unavailable' : isOrgBillingAdmin(contexts) ? 'ready' : 'notAdmin';
   const needsPanel = requirements?.panelAccess === true;
   const panelSteps = usePanelSteps(undefined, { enabled: needsPanel && panelAvailability === 'ready' });
   const panel: PanelAccess = { availability: panelAvailability, steps: panelSteps.data };
@@ -233,9 +236,9 @@ function ActivationWizard({ kind, code }: { kind: MarketplaceConnectionKind; cod
       title: t('marketplace.activation.steps.access.title', { name }),
       purpose: t('marketplace.activation.steps.access.purpose'),
       // The access on the panel is done by the person there and seen by CasaZen: until every chosen property has it, the wizard waits.
-      nextDisabled: needsPanel && (panelAvailability !== 'ready' || !values.propertyIds.every((propertyId) => panelAccessOf(propertyId) === 'given')),
+      nextDisabled: needsPanel && panelAvailability !== 'staff' && (panelAvailability !== 'ready' || !values.propertyIds.every((propertyId) => panelAccessOf(propertyId) === 'given')),
       beforeNext: (answers) => {
-        const missing = missingAccess(requirements ?? requirementsOf([]), answers.propertyIds, answers.hotelIds, credentials);
+        const missing = missingAccess(requirements ?? requirementsOf([]), answers.propertyIds, hotelIdsFor(answers.hotelIds, plans), credentials);
         if (!isAccessComplete(missing)) {
           setShowAccessErrors(true);
           setFailing('access');
