@@ -4,7 +4,7 @@ import { ApiClient } from '@/api/client';
 import { StripeIntentPayment } from '@/features/public-booking/components/stripe-intent-payment';
 import { stripeLocale } from '@/lib/stripe-appearance';
 
-import { extraLabels, formatExtraPrice, hostExtraStatus, useGuestHostExtras,
+import { canPayExtraOrder, extraLabels, formatExtraPrice, hostExtraStatus, useGuestHostExtras,
   type HostExtraOrder, type Language } from './guest-host-extra-model';
 
 interface Payment {
@@ -27,7 +27,7 @@ export function GuestHostExtras({ path, language }: { path: string; language: La
     ),
     onSuccess: (order) => {
       void refresh();
-      if (order.status === 'ReadyToPay') pay.mutate(order.id);
+      if (canPayExtraOrder(order.status)) pay.mutate(order.id);
     },
   });
   const pay = useMutation({
@@ -36,6 +36,11 @@ export function GuestHostExtras({ path, language }: { path: string; language: La
       session: await ApiClient.post<Payment>(`${path}/host-extra-orders/${id}/payment`, undefined, { public: true }),
     }),
     onSuccess: (next) => { setActivePayment(next); setPaymentError(''); },
+    onError: refresh,
+  });
+  const confirmAuthorization = useMutation({
+    mutationFn: (id: string) => ApiClient.post(`${path}/host-extra-orders/${id}/authorization`, undefined, { public: true }),
+    onSettled: refresh,
   });
   const cancel = useMutation({
     mutationFn: (id: string) => ApiClient.delete(`${path}/host-extra-orders/${id}`, { public: true }),
@@ -48,7 +53,7 @@ export function GuestHostExtras({ path, language }: { path: string; language: La
   return (
     <div className="stay-content">
       {content.isPending && <p role="status">{labels[1]}</p>}
-      {(content.isError || reserve.isError || pay.isError || cancel.isError) && <p role="alert">{labels[8]}</p>}
+      {(content.isError || reserve.isError || pay.isError || cancel.isError || confirmAuthorization.isError) && <p role="alert">{labels[8]}</p>}
       {content.isSuccess && content.data.offers.length === 0 && <p>{labels[2]}</p>}
       <div className="grid gap-3 sm:grid-cols-2">
         {content.data?.offers.map((offer) => {
@@ -73,15 +78,20 @@ export function GuestHostExtras({ path, language }: { path: string; language: La
         <article className="stay-card stay-content" key={order.id}>
           <h3>{order.name}</h3>
           <p>{formatExtraPrice(language, order.amount, order.currency)} · {hostExtraStatus(language, order.status)}</p>
-          {order.status === 'ReadyToPay' && activePayment?.id !== order.id && <button type="button" disabled={pay.isPending}
-            onClick={() => pay.mutate(order.id)}>{labels[6]}</button>}
-          {order.status === 'ReadyToPay' && activePayment?.id === order.id && (
+          {canPayExtraOrder(order.status) && activePayment?.id !== order.id && <button type="button" disabled={pay.isPending}
+            onClick={() => pay.mutate(order.id)}>{order.status === 'AwaitingAuthorization' ? labels[3] : labels[6]}</button>}
+          {canPayExtraOrder(order.status) && activePayment?.id === order.id && (
             <StripeIntentPayment mode="payment" {...activePayment.session} locale={stripeLocale(language)}
               returnUrl={returnUrl.href}
-              onSubmitted={() => { setActivePayment(undefined); void refresh(); }} onError={setPaymentError} />
+              submitLabel={order.status === 'AwaitingAuthorization' ? labels[3] : undefined}
+              onSubmitted={() => {
+                setActivePayment(undefined);
+                if (order.status === 'AwaitingAuthorization') confirmAuthorization.mutate(order.id);
+                else void refresh();
+              }} onError={setPaymentError} />
           )}
           {paymentError && activePayment?.id === order.id && <p role="alert">{paymentError}</p>}
-          {(order.status === 'Requested' || order.status === 'ReadyToPay') && <button type="button" disabled={cancel.isPending}
+          {(order.status === 'Requested' || canPayExtraOrder(order.status)) && <button type="button" disabled={cancel.isPending}
             onClick={() => cancel.mutate(order.id)}>{labels[7]}</button>}
         </article>
       ))}

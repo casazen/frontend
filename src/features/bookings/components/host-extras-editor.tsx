@@ -136,7 +136,7 @@ export function HostExtrasEditor({ propertyId, bookingId, suggestions }: {
               <p>{order.name} · {order.quantity} · {formatExtraPrice(language, order.amount, order.currency)} · {hostExtraStatus(language, order.status)}</p>
               {(order.status === 'Requested' || order.status === 'Paid') && (
                 <div className="flex gap-2">
-                  <Button type="button" disabled={update.isPending} onClick={() => update.mutate({ id: order.id, status: order.status === 'Requested' ? 'ReadyToPay' : 'Fulfilled' })}>
+                  <Button type="button" disabled={update.isPending} onClick={() => update.mutate({ id: order.id, status: order.status === 'Requested' ? 'CapturePending' : 'Fulfilled' })}>
                     {order.status === 'Requested' ? l[21] : l[23]}
                   </Button>
                   {order.status === 'Requested' && <Button variant="outline" type="button" disabled={update.isPending}
