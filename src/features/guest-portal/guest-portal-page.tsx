@@ -287,7 +287,7 @@ function GuestPortalPage({ token }: { token: string }) {
               stay.checkInAvailable ? <GuestCheckInFlow token={`stay_${token}`} embedded onCompleted={() => {
                 void queryClient.invalidateQueries({ queryKey: ['guest-portal', token] });
                 void queryClient.invalidateQueries({ queryKey });
-              }} /> : <p className="stay-card">{text('checkInWait')}</p>
+              }} /> : <p className="stay-card">{text(overview?.checkInCompleted ? 'done' : 'checkInWait')}</p>
             ) : services ? (
               <>
                 <GuestHostExtras path={path} language={language} />
@@ -394,9 +394,9 @@ function GuestPortalPage({ token }: { token: string }) {
                   {stay.status !== 'cancelled' && <StaySectionLink to={href('chat')} icon={MessageCircle} label={text('chat')} detail={text('chatNote')} />}
                   <StaySectionLink to={href('documents')} icon={FileText} label={text('documents')} detail={text('documentsNote')} />
                   {phase === 'after' && <StaySectionLink to={href('privacy')} icon={ClipboardCheck} label={text('privacy')} />}
-                  {stay.checkInAvailable ? (
+                  {(phase !== 'after' || stay.checkInAvailable || overview?.checkInCompleted) && (
                     <StaySectionLink to={checkIn} icon={ClipboardCheck} label={text(overview?.checkInCompleted ? 'done' : 'checkInSection')} />
-                  ) : overview?.checkInCompleted && <div className="stay-card"><ClipboardCheck aria-hidden="true" />{text('done')}</div>}
+                  )}
                 </div>
               </>
             )}
