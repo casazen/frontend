@@ -16771,6 +16771,7 @@
     "listLabel": "Elenco delle notifiche",
     "toastOpen": "Apri",
     "types": {
+      "guestPortalRequest": "Nuova richiesta dal portale ospiti",
       "guestStayChange": "Un ospite ha richiesto una modifica al soggiorno.",
       "routineOwner": "Una routine ha notificato il titolare per questa prenotazione.",
       "routineStaff": "Una routine ti ha notificato come responsabile dell’immobile.",

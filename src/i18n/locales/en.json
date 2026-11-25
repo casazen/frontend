@@ -16771,6 +16771,7 @@
     "listLabel": "Notifications list",
     "toastOpen": "Open",
     "types": {
+      "guestPortalRequest": "New request from the guest portal",
       "guestStayChange": "A guest requested a change to their stay.",
       "routineOwner": "A routine notified the owner about this booking.",
       "routineStaff": "A routine notified you as the person responsible for the property.",

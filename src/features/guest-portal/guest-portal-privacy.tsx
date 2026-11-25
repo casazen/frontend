@@ -3,7 +3,8 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { ApiClient } from '@/api/client';
 import { PortalGuestMarketingSection } from '@/features/public-booking/guest-marketing-section';
 
-type Kind = 'copy' | 'erasure';
+const requestKinds = ['copy', 'erasure'] as const;
+type Kind = (typeof requestKinds)[number];
 
 interface PrivacyRequest {
   activityType: 'GuestDataCopyRequested' | 'GuestDataErasureRequested';
@@ -46,7 +47,7 @@ export function GuestPortalPrivacy({ path, language, labels }: {
             <span>{request.completedAt ? labels.closed : request.deadline ? date.format(new Date(request.deadline)) : labels.requested}</span>
           </div>
         ))}
-        {requests.isSuccess && !confirmation && (['copy', 'erasure'] as const).map((kind) => (
+        {requests.isSuccess && !confirmation && requestKinds.map((kind) => (
           <button type="button" key={kind} disabled={requests.data.some((request) => !request.completedAt && kindOf(request) === kind)}
             onClick={() => { submit.reset(); setConfirmation(kind); }}>
             {labels[kind]}
