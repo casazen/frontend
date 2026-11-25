@@ -178,7 +178,7 @@ function GuestPortalPage({ token }: { token: string }) {
   const t = (key: keyof typeof copy) => copy[key][languages.indexOf(language)];
   const section = params.get('page');
   const extras = section === 'extras';
-  const extraCatalog = useGuestHostExtras(path, Boolean(stay) && !extras);
+  const extraCatalog = useGuestHostExtras(path, language, Boolean(stay) && !extras);
   const hasExtras = Boolean(extraCatalog.data?.offers.length || extraCatalog.data?.orders.length);
   const guide = section === 'guide';
   const details = section === 'details';

@@ -17,6 +17,7 @@ interface Extra {
   requiresApproval: boolean;
   calendar: typeof calendars[number];
   published: boolean;
+  hasTranslations?: boolean;
 }
 const priceModes = ['Fixed', 'PerNight', 'PerGuest', 'PerUnit'] as const;
 const calendars = ['None', 'EarlyCheckIn', 'LateCheckOut'] as const;
@@ -28,11 +29,11 @@ const labels = {
   it: ['Extra della casa', 'Nuovo extra', 'Nome', 'Descrizione', 'Prezzo', 'Prezzo calcolato', 'Fisso', 'Per notte', 'Per persona', 'Per pezzo',
     'Inventario', 'Ore di anticipo', 'Disponibile durante il soggiorno', 'Approvazione richiesta', 'Vincolo calendario', 'Nessuno',
     'Early check-in', 'Late check-out', 'Pubblica per questa struttura', 'Salva', 'Ordini del soggiorno', 'Approva', 'Rifiuta', 'Segna erogato',
-    'Caricamento…', 'Operazione non riuscita', 'Pubblicato', 'Bozza'],
+    'Caricamento…', 'Operazione non riuscita', 'Pubblicato', 'Bozza', 'Genera traduzioni con AI', 'Traduzioni disponibili'],
   en: ['Host extras', 'New extra', 'Name', 'Description', 'Price', 'Pricing basis', 'Fixed', 'Per night', 'Per guest', 'Per unit',
     'Inventory', 'Hours before check-in', 'Available during the stay', 'Approval required', 'Calendar restriction', 'None',
     'Early check-in', 'Late check-out', 'Publish for this property', 'Save', 'Orders for this stay', 'Approve', 'Decline', 'Mark fulfilled',
-    'Loading…', 'Something went wrong', 'Published', 'Draft'],
+    'Loading…', 'Something went wrong', 'Published', 'Draft', 'Generate AI translations', 'Translations available'],
 } as const;
 
 export function HostExtrasEditor({ propertyId, bookingId, suggestions }: {
@@ -56,6 +57,10 @@ export function HostExtrasEditor({ propertyId, bookingId, suggestions }: {
     mutationFn: (item: Extra) => ApiClient.put(`${catalogPath}/${item.id}`, item),
     onSuccess: () => { setDraft(undefined); return catalog.refetch(); },
   });
+  const translate = useMutation({
+    mutationFn: (id: string) => ApiClient.post(`${catalogPath}/${id}/translate`),
+    onSuccess: () => catalog.refetch(),
+  });
   const update = useMutation({
     mutationFn: ({ id, status }: { id: string; status: HostExtraStatus }) => ApiClient.put(`${orderPath}/${id}`, { status }),
     onSuccess: () => orders.refetch(),
@@ -70,7 +75,7 @@ export function HostExtrasEditor({ propertyId, bookingId, suggestions }: {
     <section className="grid gap-4 rounded-lg border bg-card p-4">
       <h2 className="font-medium">{l[0]}</h2>
       {catalog.isPending && <p role="status">{l[24]}</p>}
-      {(catalog.isError || orders.isError || save.isError || update.isError) && <p role="alert">{l[25]}</p>}
+      {(catalog.isError || orders.isError || save.isError || update.isError || translate.isError) && <p role="alert">{l[25]}</p>}
       <div className="flex flex-wrap gap-2">
         {catalog.data?.map((extra) => <Button variant="outline" type="button" key={extra.id}
           onClick={() => setDraft(extra)}>{extra.name} · {extra.published ? l[26] : l[27]}</Button>)}
@@ -82,6 +87,14 @@ export function HostExtrasEditor({ propertyId, bookingId, suggestions }: {
           </Button>
         ))}
       </div>
+      {draft && catalog.data?.some((item) => item.id === draft.id && item.name === draft.name &&
+        item.description === draft.description) && (
+        <div className="flex items-center gap-3">
+          <Button variant="outline" type="button" disabled={translate.isPending || save.isPending}
+            onClick={() => translate.mutate(draft.id)}>{l[28]}</Button>
+          {catalog.data.find((item) => item.id === draft.id)?.hasTranslations && <p role="status">{l[29]}</p>}
+        </div>
+      )}
       {draft && (
         <form className="grid gap-3 sm:grid-cols-2" onSubmit={submit}>
           <label className="grid gap-1">{l[2]}<input required maxLength={120} value={draft.name}

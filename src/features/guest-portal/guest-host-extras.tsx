@@ -47,11 +47,11 @@ interface Payment {
   stripeAccountId: string;
 }
 
-export function useGuestHostExtras(path: string, enabled: boolean, trackOrders = false) {
+export function useGuestHostExtras(path: string, language: Language, enabled: boolean, trackOrders = false) {
   return useQuery({
-    queryKey: ['guest-host-extras', path],
+    queryKey: ['guest-host-extras', path, language],
     queryFn: ({ signal }) => ApiClient.get<{ offers: Offer[]; orders: HostExtraOrder[] }>(
-      `${path}/host-extras`, undefined, { public: true, signal },
+      `${path}/host-extras`, { lang: language }, { public: true, signal },
     ),
     enabled, retry: false, gcTime: 0,
     refetchInterval: ({ state }) => trackOrders && state.data?.orders.some(
@@ -70,12 +70,12 @@ export function hostExtraStatus(language: Language, status: HostExtraStatus) {
 
 export function GuestHostExtras({ path, language }: { path: string; language: Language }) {
   const labels = extraLabels[language];
-  const content = useGuestHostExtras(path, true, true);
+  const content = useGuestHostExtras(path, language, true, true);
   const queryClient = useQueryClient();
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [activePayment, setActivePayment] = useState<{ id: string; session: Payment }>();
   const [paymentError, setPaymentError] = useState('');
-  const refresh = () => queryClient.invalidateQueries({ queryKey: ['guest-host-extras', path] });
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ['guest-host-extras', path, language] });
   const reserve = useMutation({
     mutationFn: ({ id, quantity }: { id: string; quantity: number }) => ApiClient.post<HostExtraOrder>(
       `${path}/host-extras/${id}/orders`, { quantity, requestId: crypto.randomUUID() }, { public: true },
