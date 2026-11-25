@@ -98,22 +98,32 @@ function Batch({ rows }: { rows: PreparationRow[] }) {
     <section className="space-y-3 rounded-lg border p-4">
       <h3 className="break-all font-semibold">{t('activationStaff.batch', { id: batchId })}</h3>
       <ul className="divide-y">
-        {rows.map((row) => (
-          <li key={row.id} className="space-y-2 py-2">
-            <p className="font-medium">{row.propertyName || row.propertyId}</p>
-            <p className="text-sm text-muted-foreground">{t(`activationStaff.status.${row.status}`)}{row.accommodationId && ` · ${row.accommodationId}`}</p>
-            {row.errorCode && <p className="break-words text-sm">{t(`activationStaff.reasons.${row.errorCode}`, { defaultValue: row.errorCode })}</p>}
-            {!row.accommodationId && (row.status === 'ReconcileCreation' || row.status === 'NeedsReview') && (
-              <div className="flex flex-wrap gap-2">
-                <Input className="w-56" aria-label={t('activationStaff.externalId')} placeholder={t('activationStaff.externalId')}
-                  value={reconciliation[row.id] ?? ''} onChange={(event) => setReconciliation((previous) => ({ ...previous, [row.id]: event.target.value }))} />
-                <Button variant="outline" disabled={job.isPending || !reconciliation[row.id]?.trim()} onClick={() => job.mutate({ kind: 'reconcile', rowId: row.id })}>
-                  {t('activationStaff.reconcile')}
-                </Button>
-              </div>
-            )}
-          </li>
-        ))}
+        {rows.map((row) => {
+          const environmentMismatch = row.errorCode === 'octorate_preparation_environment_mismatch';
+          const masterCheckFailed = row.errorCode === 'octorate_preparation_master_check_failed';
+          const canReconcile = !row.accommodationId && (row.status === 'ReconcileCreation' ||
+            (row.status === 'NeedsReview' && !environmentMismatch && !masterCheckFailed));
+          return (
+            <li key={row.id} className="space-y-2 py-2">
+              <p className="font-medium">{row.propertyName || row.propertyId}</p>
+              <p className="text-sm text-muted-foreground">{t(`activationStaff.status.${row.status}`)}{row.accommodationId && ` · ${row.accommodationId}`}</p>
+              {environmentMismatch && <p className="text-sm">{t('apiErrors.codes.octorateWrongEnvironment')}</p>}
+              {masterCheckFailed && <p className="text-sm">{t('activationStaff.importFailure')}</p>}
+              {row.errorCode && !environmentMismatch && !masterCheckFailed && (
+                <p className="break-words text-sm">{t(`activationStaff.reasons.${row.errorCode}`, { defaultValue: row.errorCode })}</p>
+              )}
+              {canReconcile && (
+                <div className="flex flex-wrap gap-2">
+                  <Input className="w-56" aria-label={t('activationStaff.externalId')} placeholder={t('activationStaff.externalId')}
+                    value={reconciliation[row.id] ?? ''} onChange={(event) => setReconciliation((previous) => ({ ...previous, [row.id]: event.target.value }))} />
+                  <Button variant="outline" disabled={job.isPending || !reconciliation[row.id]?.trim()} onClick={() => job.mutate({ kind: 'reconcile', rowId: row.id })}>
+                    {t('activationStaff.reconcile')}
+                  </Button>
+                </div>
+              )}
+            </li>
+          );
+        })}
       </ul>
       {rows.every((row) => row.accommodationId) && (
         <div className="flex flex-wrap items-end gap-2">
