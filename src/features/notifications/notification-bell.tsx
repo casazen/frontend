@@ -55,7 +55,7 @@ function NotificationRow({ notification, onOpen }: RowProps) {
           unread && 'bg-primary-soft/40',
         )}
       >
-        <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-foreground/80">
+        <span className={cn("mt-0.5 grid size-9 shrink-0 place-items-center rounded-xl", unread ? "bg-primary-soft text-primary-text" : "bg-muted text-muted-foreground")}>
           <Icon aria-hidden="true" className="size-4" />
         </span>
         <span className="min-w-0 flex-1">
@@ -63,9 +63,9 @@ function NotificationRow({ notification, onOpen }: RowProps) {
           {when ? <time dateTime={notification.createdAt} className="block text-xs text-foreground/70">{when}</time> : null}
         </span>
         {unread ? (
-          <span className="mt-2 shrink-0">
-            <span aria-hidden="true" className="block size-2.5 rounded-full bg-primary" />
-            <span className="sr-only">{t('notifications.unreadDot')}</span>
+          <span className="mt-1 inline-flex shrink-0 items-center gap-1 rounded-full bg-primary-soft px-2 py-1 text-xs font-medium text-primary-text">
+            <span aria-hidden="true" className="block size-1.5 rounded-full bg-primary" />
+            <span>{t('notifications.unreadDot')}</span>
           </span>
         ) : null}
       </button>
@@ -89,7 +89,7 @@ export function NotificationBell() {
 }
 
 function LiveNotificationBell({ userId, getAccessToken }: { userId: string; getAccessToken: () => Promise<string | undefined> }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const shell = useAppShell();
   // What the person may do, when the workspace is there: a click that leads to a page that needs a permission falls back to one they can open (the tax paid online opens the wizard of the booking).
@@ -126,6 +126,19 @@ function LiveNotificationBell({ userId, getAccessToken }: { userId: string; getA
 
   const items = useMemo(() => list.data?.pages.flatMap((page) => (Array.isArray(page?.items) ? page.items : [])) ?? [], [list.data]);
 
+  const days = useMemo(() => {
+    const date = new Intl.DateTimeFormat(i18n.language, { dateStyle: 'long' });
+    const groups = new Map<string, InAppNotification[]>();
+    for (const item of items) {
+      const at = new Date(item.createdAt);
+      const day = Number.isNaN(at.getTime()) ? '' : date.format(at);
+      const group = groups.get(day);
+      if (group) group.push(item);
+      else groups.set(day, [item]);
+    }
+    return Array.from(groups);
+  }, [items, i18n.language]);
+
   const openNotification = (notification: InAppNotification) => {
     if (notification.readAt === null) markRead.mutate(notification.id);
     setOpen(false);
@@ -157,9 +170,9 @@ function LiveNotificationBell({ userId, getAccessToken }: { userId: string; getA
             ) : null}
           </button>
         </PopoverTrigger>
-        <PopoverContent align="end" className="flex max-h-[min(32rem,calc(100dvh-6rem))] w-[26rem] flex-col p-0" data-testid="notification-panel">
-          <div className="flex items-center justify-between gap-2 border-b px-4 py-2">
-            <h2 className="text-sm font-semibold">{t('notifications.title')}</h2>
+        <PopoverContent align="end" aria-label={t('notifications.title')} className="flex max-h-[min(36rem,calc(100dvh-6rem))] w-[28rem] flex-col overflow-hidden rounded-2xl p-0" data-testid="notification-panel">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3">
+            <h2 className="text-xl font-semibold tracking-tight">{t('notifications.title')}</h2>
             <Button
               type="button"
               variant="ghost"
@@ -195,11 +208,16 @@ function LiveNotificationBell({ userId, getAccessToken }: { userId: string; getA
                 {t('notifications.empty')}
               </p>
             ) : (
-              <ul aria-label={t('notifications.listLabel')} className="divide-y">
-                {items.map((notification) => (
-                  <NotificationRow key={notification.id} notification={notification} onOpen={openNotification} />
+              <div>
+                {days.map(([day, notifications]) => (
+                  <section key={day}>
+                    {day && <h3 className="bg-muted px-4 py-2 text-xs font-semibold text-foreground">{day}</h3>}
+                    <ul aria-label={day || t('notifications.listLabel')} className="divide-y">
+                      {notifications.map(notification => <NotificationRow key={notification.id} notification={notification} onOpen={openNotification} />)}
+                    </ul>
+                  </section>
                 ))}
-              </ul>
+              </div>
             )}
             {list.hasNextPage ? (
               <div className="border-t p-2">

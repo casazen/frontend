@@ -54,14 +54,16 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
       <div
         ref={ref}
         role={variant === "danger" ? "alert" : "status"}
-        className={cn("flex min-w-0 items-start gap-3 rounded-md p-3 text-sm leading-relaxed text-foreground ring-1 ring-inset", box, className)}
+        className={cn("flex min-w-0 items-start gap-3 rounded-md p-4 text-sm leading-relaxed text-foreground ring-1 ring-inset", box, className)}
         {...props}
       >
-        <Icon aria-hidden="true" className={cn("mt-0.5 size-5 shrink-0", iconTone)} />
+        <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-card/80">
+          <Icon aria-hidden="true" className={cn("size-5", iconTone)} />
+        </span>
         <div className="min-w-0 flex-1 break-words">
-          {title && <p className="font-semibold">{title}</p>}
+          {title && <p className="font-semibold leading-snug">{title}</p>}
           {children && <div className={cn(title && "mt-0.5")}>{children}</div>}
-          {action && <div className="mt-2 flex flex-wrap items-center gap-2">{action}</div>}
+          {action && <div className="mt-3 flex flex-wrap items-center gap-2">{action}</div>}
         </div>
       </div>
     );
