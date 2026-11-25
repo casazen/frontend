@@ -25,4 +25,3 @@ const statuses: Record<string, string> = {
 export const orderStatus = (state: string) => statuses[state] ?? state;
 export const orderMoney = (cents: number, language = 'it') =>
   new Intl.NumberFormat(language, { style: 'currency', currency: 'EUR' }).format(cents / 100);
-

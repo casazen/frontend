@@ -56,6 +56,7 @@ export function GuestSupplierOperations({ scope }: { scope: Scope }) {
     <section className="grid gap-4 rounded-lg border bg-card p-4">
       <h2 className="font-semibold">Servizi e ordini ospiti</h2>
       <p>Ambiente di test. Pagamenti e rimborsi simulati.</p>
+      {scope.role === 'admin' && <MarketplaceSettings endpoint={endpoint} />}
       {scope.role === 'host' && <ConfigureOffer endpoint={endpoint} offers={query.data.offers}
         busy={change.isPending} save={(id, commissionBasisPoints, enabled) =>
           change.mutate({ suffix: `/offers/${id}`, method: 'put', body: { commissionBasisPoints, enabled } })} />}
@@ -166,4 +167,42 @@ function ConfigureOffer({ endpoint, offers, busy, save }: {
       </form>;
     })}
   </>;
+}
+
+
+function MarketplaceSettings({ endpoint }: { endpoint: string }) {
+  const [term, setTerm] = useState('');
+  const suppliers = useQuery({
+    queryKey: ['guest-supplier-marketplace', term],
+    queryFn: ({ signal }) => ApiClient.get<{ orgId: string; legalName: string; enabled: boolean }[]>(
+      `${endpoint}/marketplace`, { search: term }, { signal },
+    ),
+    enabled: term.length >= 2,
+    retry: false,
+  });
+  const publish = useMutation({
+    mutationFn: ({ orgId, enabled }: { orgId: string; enabled: boolean }) =>
+      ApiClient.put<void>(`${endpoint}/marketplace/${orgId}`, { enabled }),
+    onSuccess: () => { void suppliers.refetch(); },
+  });
+
+  return <div className="grid gap-2">
+    <form className="grid gap-2 sm:grid-cols-[1fr_auto]" onSubmit={(event) => {
+      event.preventDefault();
+      setTerm(String(new FormData(event.currentTarget).get('search')).trim());
+    }}>
+      <label>Fornitori nel marketplace CasaZen<Input name="search" required minLength={2} maxLength={100} /></label>
+      <Button className="self-end" variant="outline">Cerca</Button>
+    </form>
+    {suppliers.isFetching && <p role="status">Ricerca in corso…</p>}
+    {suppliers.data?.length === 0 && <p>Nessun fornitore trovato.</p>}
+    {suppliers.isError && <p role="alert">Ricerca non riuscita.</p>}
+    {suppliers.data?.map((supplier) => <div className="flex flex-wrap items-center gap-2" key={supplier.orgId}>
+      <span>{supplier.legalName}</span>
+      <Button variant="outline" disabled={publish.isPending} onClick={() => publish.mutate({
+        orgId: supplier.orgId, enabled: !supplier.enabled,
+      })}>{supplier.enabled ? 'Rimuovi dal marketplace' : 'Pubblica nel marketplace'}</Button>
+    </div>)}
+    {publish.isError && <p role="alert">Impossibile aggiornare il marketplace.</p>}
+  </div>;
 }
