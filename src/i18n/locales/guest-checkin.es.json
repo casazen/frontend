@@ -155,6 +155,7 @@
     "scanAnother": "Cargar el documento de otro huésped",
     "scanManual": "Introducir los datos a mano",
     "scanReadOk": "Datos leídos de {{name}}. Revíselos antes de enviar.",
+    "invoiceHostManaged": "Tu anfitrión gestiona los datos de facturación de esta estancia. Ponte en contacto con él para modificarlos.",
     "invoiceSave": "Guardar respuesta",
     "invoiceFinished": "Operación completada.",
     "scanMismatch": "El documento no coincide con un huésped identificado en la reserva. Comprueba la foto o contacta con el alojamiento para corregir un nombre.",
