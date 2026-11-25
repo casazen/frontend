@@ -130,13 +130,17 @@ export function ApprovalQueuePage() {
                   {t('approval.filter.type')}
                 </label>
                 <Select id="type-filter" value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)}>
-                  <option value="all">{t('approval.filter.allTypes')} ({waiting.length})</option>
+                  <option value="all">{t('approval.filter.allTypes')}</option>
                   {FILTERABLE_TYPES.map((type) => (
                     <option key={type} value={type}>
-                      {approvalTypeLabel(type, t)} ({waiting.filter((item) => item.itemType === type).length})
+                      {approvalTypeLabel(type, t)}
                     </option>
                   ))}
                 </Select>
+                <output htmlFor="type-filter" className="mt-2 inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs font-medium">
+                  {typeFilter === 'all' ? t('approval.filter.allTypes') : approvalTypeLabel(typeFilter as ApprovalQueueItem['itemType'], t)}
+                  <span className="tabular-nums">{filteredItems.length}</span>
+                </output>
               </div>
             </div>
 
