@@ -206,6 +206,7 @@ export function BookingDetailPage() {
       booking={booking}
       canWrite={canWrite}
       viewingCheckIn={activeTab === 'guest'}
+      useGuestPortal={flags.guestPortal}
       onConfirm={() => setConfirmOpen(true)}
       onDecline={() => setDeclineOpen(true)}
       onArrival={() => setArrivalOpen(true)}
@@ -268,7 +269,7 @@ export function BookingDetailPage() {
                   href: checkInWizardPath(booking.id, true),
                 } : { actionLabel: undefined })}
               >
-                <CheckInLinkPanel key={booking.id} bookingId={booking.id} canWrite={canWrite}>
+                <CheckInLinkPanel key={booking.id} bookingId={booking.id} canWrite={canWrite} useGuestPortal={flags.guestPortal}>
                   <AskBookingDraftButton />
                   <DemoTourContact />
                 </CheckInLinkPanel>

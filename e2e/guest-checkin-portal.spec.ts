@@ -41,6 +41,47 @@ test.describe('Guest check-in portal', () => {
     }
   });
 
+  test('keeps the check-in wizard and its resume URL inside the guest portal', async ({ page }) => {
+    test.slow();
+    const token = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdef';
+    const portal = `/s/${token}`;
+    const api = `**/api/public/guest-portal/${token}`;
+    let completed = false;
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.route(api, route => route.fulfill({ json: {
+      stay: { propertyName: 'Villa Test', checkIn: '2027-12-08', checkOut: '2027-12-10',
+        bookingCode: 'PORTAL-TEST', guests: 1, status: 'confirmed', isDirect: true },
+      branding: { name: 'Casa Test', primaryColor: '#1F3A3D' }, language: 'it', checkInCompleted: completed,
+    } }));
+    await page.route(api + '/stay', route => route.fulfill({ json: { checkInAvailable: true, guide: {} } }));
+    await page.route(`**/api/public/checkin/stay_${token}`, route => {
+      expect(route.request().headers()).not.toHaveProperty('authorization');
+      return route.fulfill({ json: {
+        language: 'it', completed, status: completed ? 'Completo' : 'InCompilazione',
+        propertyName: 'Villa Test', declaredGuests: 1, guests: [{ type: 'SingleGuest', firstName: 'Alba', lastName: 'Rossi' }],
+      } });
+    });
+
+    await page.goto(`${portal}?lang=it`, { waitUntil: 'domcontentloaded' });
+    await page.getByRole('link', { name: 'Fai il check-in' }).click();
+    await expect(page).toHaveURL(new RegExp(portal + '\\?lang=it&page=checkin$'));
+    await expect(page.getByTestId('checkin-page')).toBeVisible();
+    await expect(page.getByRole('navigation')).toBeVisible();
+    await expect(page.getByRole('main')).toHaveCount(1);
+    await page.getByTestId('checkin-enter-manually').click();
+    await expect(page.locator('#guest-0-firstName')).toHaveValue('Alba');
+    await expect(page).toHaveURL(/page=checkin.*resume=guests/);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(page.getByTestId('checkin-resumed')).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+
+    completed = true;
+    await page.goto(`/checkin/stay_${token}?lang=it`, { waitUntil: 'domcontentloaded' });
+    await expect(page).toHaveURL(new RegExp(portal + '\\?lang=it&page=checkin$'));
+    await expect(page.getByTestId('checkin-success')).toBeVisible();
+    await expect(page.getByRole('navigation')).toBeVisible();
+  });
+
   test('shows invalid link for unknown token', async ({ page }) => {
     // L2 has no backend: the API answers 404 for a token it does not know, as the real one does.
     await page.route('**/api/public/checkin/**', async (route) => {

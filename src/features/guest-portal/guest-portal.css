@@ -61,12 +61,12 @@
   font-size: .8rem;
   font-weight: 600;
 }
-.stay-main h1, .stay-next h2 {
+.stay-main:not([data-checkin]) h1, .stay-next h2 {
   font-family: "Fraunces Variable", Georgia, serif;
   font-weight: 600;
   line-height: 1.1;
 }
-.stay-main h1 {
+.stay-main:not([data-checkin]) h1 {
   font-size: clamp(2.1875rem, 5vw, 2.625rem);
   margin-block: .65rem .45rem;
 }
@@ -110,7 +110,7 @@
   margin-block: .5rem;
   font-size: 1.875rem;
 }
-.stay-next a, .stay-main button, .stay-main input[type="time"], .stay-header select {
+.stay-next a, .stay-main:not([data-checkin]) button, .stay-main:not([data-checkin]) input[type="time"], .stay-header select {
   min-height: 44px;
   border: 1px solid #8c857a;
   border-radius: .625rem;
@@ -118,7 +118,7 @@
   background: #fff;
   color: var(--stay-text);
 }
-.stay-next a, .stay-main button {
+.stay-next a, .stay-main:not([data-checkin]) button {
   display: grid;
   place-items: center;
   font-weight: 600;
@@ -543,4 +543,12 @@
   .stay-mobile-code {
     display: none;
   }
+}
+
+.stay-checkin-intro {
+  margin-bottom: 1rem;
+}
+.stay-main[data-checkin] > section {
+  --color-primary: var(--stay-accent);
+  --color-primary-foreground: var(--stay-on-accent);
 }

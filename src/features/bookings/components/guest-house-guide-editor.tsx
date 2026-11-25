@@ -52,16 +52,35 @@ export function GuestHouseGuideEditor({ propertyId, suggestion, section, withAi 
     onSuccess: onSaved,
   });
   const generate = useMutation({
-    mutationFn: () => ApiClient.post<{ guide?: HouseGuide } | undefined>(
-      `/properties/${propertyId}/guest-portal-setup/suggestions/guide`,
-    ),
-  });
-  const proposedFields = (['arrival', 'house', 'departure'] as const).flatMap((field) => {
-    const value = generate.data?.guide?.[field];
-    return typeof value === 'string' && value.trim() ? [{ field, value }] : [];
-  });
+    mutationFn: async () => {
+      if (guideFields.every((field) => guide[field]?.trim())) return null;
 
-  const fillableFields = proposedFields.filter(({ field }) => !guide[field]?.trim());
+      return ApiClient.post<{ guide?: HouseGuide; guideSource?: 'ai' | 'property' } | undefined>(
+        `/properties/${propertyId}/guest-portal-setup/suggestions/guide`,
+      );
+    },
+    onSuccess: (result) => {
+      const generated = result?.guide;
+      if (!generated) return;
+
+      setDraft((current) => {
+        const next = { ...current };
+        const existing = { ...query.data, ...suggestion, ...current };
+        for (const field of guideFields) {
+          const value = generated[field];
+          if (!existing[field]?.trim() && typeof value === 'string' && value.trim()) next[field] = value;
+        }
+        return next;
+      });
+      save.reset();
+    },
+  });
+  const hasGeneratedFields = guideFields.some((field) => {
+    const value = generate.data?.guide?.[field];
+    return typeof value === 'string' && value.trim();
+  });
+  const generatedStatus = generate.data === null ? 'aiNoEmptyFields'
+    : generate.data?.guideSource === 'property' ? 'aiPropertyReady' : 'aiReady';
 
   function renderField(field: typeof guideFields[number]) {
     return (
@@ -80,7 +99,7 @@ export function GuestHouseGuideEditor({ propertyId, suggestion, section, withAi 
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    save.mutate();
+    if (!generate.isPending) save.mutate();
   }
 
   return (
@@ -111,27 +130,16 @@ export function GuestHouseGuideEditor({ propertyId, suggestion, section, withAi 
                 <Button type="button" className="min-h-11" loading={generate.isPending} disabled={save.isPending}
                   onClick={() => generate.mutate()}>{t('guestPortal.guide.aiGenerate')}</Button>
               </div>
-              {(generate.isError || (generate.isSuccess && proposedFields.length === 0)) && (
-                <p role="status" className="text-sm text-muted-foreground">{t('guestPortal.guide.aiUnavailable')}</p>
+              {generate.isPending && (
+                <p role="status" className="text-sm text-muted-foreground">{t('guestPortal.guide.aiGenerating')}</p>
               )}
-              {proposedFields.length > 0 && (
-                <div className="space-y-4 rounded-lg border bg-card p-4">
-                  <dl className="space-y-4">
-                    {proposedFields.map(({ field, value }) => (
-                      <div key={field}>
-                        <dt className="text-sm font-semibold">{t(`guestPortal.guide.${field}`)}</dt>
-                        <dd className="mt-1 whitespace-pre-wrap break-words text-sm text-muted-foreground">{value}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                  {fillableFields.length > 0 ? <Button type="button" variant="outline" disabled={save.isPending || generate.isPending} onClick={() => {
-                    setDraft((current) => ({ ...current, ...Object.fromEntries(fillableFields.map(({ field, value }) => [field, value])) }));
-                    save.reset();
-                    generate.reset();
-                  }}>{t('guestPortal.guide.aiApply')}</Button> : (
-                    <p className="text-sm text-muted-foreground">{t('guestPortal.guide.aiNoEmptyFields')}</p>
-                  )}
-                </div>
+              {(generate.isError || (generate.isSuccess && generate.data !== null && !hasGeneratedFields)) && (
+                <p role="alert" className="text-sm text-muted-foreground">{t('guestPortal.guide.aiUnavailable')}</p>
+              )}
+              {generate.isSuccess && (generate.data === null || hasGeneratedFields) && (
+                <p role="status" className="text-sm text-muted-foreground">
+                  {t(`guestPortal.guide.${generatedStatus}`)}
+                </p>
               )}
             </section>
           )}
@@ -175,7 +183,7 @@ export function GuestHouseGuideEditor({ propertyId, suggestion, section, withAi 
               </label>
             ))}
           </fieldset>}
-          <Button type="submit" className="min-h-11 justify-self-start" disabled={save.isPending}>{t('guestPortal.guide.save')}</Button>
+          <Button type="submit" className="min-h-11 justify-self-start" disabled={save.isPending || generate.isPending}>{t('guestPortal.guide.save')}</Button>
           {save.isSuccess && <p role="status">{t('guestPortal.guide.saved')}</p>}
           {save.isError && <p role="alert">{t('guestPortal.host.changeError')}</p>}
         </>

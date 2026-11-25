@@ -1,9 +1,8 @@
 import { isGuestPortalToken } from '@/lib/guest-portal-path';
-import { useSeoMeta } from '@/lib/seo-meta';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FormProvider, useFieldArray, useForm, useWatch, type FieldErrors, type FieldPath } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingScreen } from '@/components/shared/loading-screen';
@@ -185,10 +184,20 @@ function emptyForm(): PublicCheckInFormValues {
 
 export function CheckInPage() {
   const { token = '' } = useParams<{ token: string }>();
+  const [params] = useSearchParams();
+  if (isGuestPortalToken(token)) {
+    const next = withoutPaymentReturn(params) ?? new URLSearchParams(params);
+    next.set('page', 'checkin');
+    return <Navigate replace to={`/s/${token.slice(5)}?${next}`} />;
+  }
   return <GuestCheckInFlow key={token} token={token} />;
 }
 
-function GuestCheckInFlow({ token }: { token: string }) {
+export function GuestCheckInFlow({ token, embedded = false, onCompleted }: {
+  token: string;
+  embedded?: boolean;
+  onCompleted?: () => void;
+}) {
   const { t } = useTranslation();
   const { data: context, isLoading, isFetching, error: contextError, refetch } = useCheckInContext(token);
   const submitCheckIn = useSubmitGuestCheckIn(token);
@@ -277,8 +286,7 @@ function GuestCheckInFlow({ token }: { token: string }) {
   };
 
   // The page opens in the language the API resolved (the guest's earlier choice, else the browser's, else Italian) until the guest chooses.
-  const fromPortal = isGuestPortalToken(token);
-  const portalLanguage = fromPortal ? offeredGuestLocales(context?.supportedLanguages).find((language) => language === searchParams.get('lang')) : undefined;
+  const portalLanguage = embedded ? offeredGuestLocales(context?.supportedLanguages).find((language) => language === searchParams.get('lang')) : undefined;
   const locale = chosenLocale ?? portalLanguage ?? resolveGuestLocale(context?.language);
   // The texts of a language that cannot be loaded (the network): the page stays in the language it has and says so.
   const keepLocale = useCallback((stayedIn: GuestLocale) => {
@@ -286,7 +294,6 @@ function GuestCheckInFlow({ token }: { token: string }) {
     setLanguageNotLoaded(true);
   }, []);
   useGuestPageLocale(locale, keepLocale);
-  useSeoMeta(fromPortal ? { title: t('checkin.guestCheckIn'), noindex: true, referrer: 'no-referrer' } : null);
   const status = getHttpStatus(contextError);
   const invalidLink = !token || status === 404 || status === 410 || context?.status === 'Scaduto';
   const completed = submitted || context?.completed || (context && COMPLETE_STATUSES.has(context.status));
@@ -506,11 +513,15 @@ function GuestCheckInFlow({ token }: { token: string }) {
       try {
         await submitCheckIn.mutateAsync({ ...toPublicCheckInSubmitRequest(values, { statisticalFields, swiss }), privacyNoticeAcknowledged: privacyRead, houseRulesVersion: acceptedRulesVersion });
         setSubmitted(true);
+        onCompleted?.();
       } catch (error) {
         // Already submitted (e.g. from another tab): reload the context, which now shows the completed state.
         if (getHttpStatus(error) === 409) {
           const latest = await refetch();
-          if (latest.data?.completed || (latest.data && COMPLETE_STATUSES.has(latest.data.status))) return;
+          if (latest.data?.completed || (latest.data && COMPLETE_STATUSES.has(latest.data.status))) {
+            onCompleted?.();
+            return;
+          }
           setSubmitError(guestProblemMessage(error, t));
           return;
         }
@@ -547,13 +558,8 @@ function GuestCheckInFlow({ token }: { token: string }) {
     },
   );
 
-  const switcher = (
+  const switcher = !embedded && (
     <div className="space-y-1">
-      {fromPortal && (
-        <Link className="inline-flex min-h-11 items-center gap-1 underline" to={`/s/${token.slice(5)}?lang=${locale}`}>
-          <ChevronLeft aria-hidden="true" className="h-4 w-4" />{t('checkin.back')}
-        </Link>
-      )}
       <LanguageSwitcher
         value={locale}
         onChange={chooseLanguage}
@@ -574,7 +580,7 @@ function GuestCheckInFlow({ token }: { token: string }) {
 
   if (isLoading) {
     return (
-      <GuestPageFrame switcher={switcher}>
+      <GuestPageFrame embedded={embedded} switcher={switcher}>
         <LoadingScreen message={t('checkin.loading')} className="h-64" />
       </GuestPageFrame>
     );
@@ -582,7 +588,7 @@ function GuestCheckInFlow({ token }: { token: string }) {
 
   if (invalidLink || !context) {
     return (
-      <GuestPageFrame switcher={switcher} testId={invalidLink ? 'checkin-invalid-link' : 'checkin-load-problem'}>
+      <GuestPageFrame embedded={embedded} switcher={switcher} testId={invalidLink ? 'checkin-invalid-link' : 'checkin-load-problem'}>
         <Card className="mx-auto w-full max-w-md">
           <CardHeader>
             <h1 className="text-2xl font-semibold tracking-tight">
@@ -601,14 +607,14 @@ function GuestCheckInFlow({ token }: { token: string }) {
   }
 
   if (searchParams.get('invoice') === '1') {
-    return <GuestPageFrame switcher={switcher}><GuestInvoiceForm token={token} context={context} /></GuestPageFrame>;
+    return <GuestPageFrame embedded={embedded} switcher={switcher}><GuestInvoiceForm token={token} context={context} /></GuestPageFrame>;
   }
 
   if (completed) {
     // A completed check-in still pays its tax (the server allows it): what can still be paid, and what was paid, is under the card, when the API offers the payment.
     const taxStillToSay = taxView !== null && isShownOnCompletedCheckIn(guestTaxOutlook(taxView));
     return (
-      <GuestPageFrame switcher={switcher} testId="checkin-success">
+      <GuestPageFrame embedded={embedded} switcher={switcher} testId="checkin-success">
         <Card className="mx-auto w-full max-w-md text-center">
           <CardContent className="pt-10 pb-8 space-y-4">
             <CheckCircle2 aria-hidden="true" className="h-16 w-16 text-green-600 mx-auto" />
@@ -644,9 +650,9 @@ function GuestCheckInFlow({ token }: { token: string }) {
   const swissDocuments = asksSwissDocument(swiss);
 
   return (
-    <GuestPageFrame switcher={switcher} testId="checkin-page">
+    <GuestPageFrame embedded={embedded} switcher={switcher} testId="checkin-page">
       <>
-        <div className="text-center space-y-2">
+        <div className={embedded ? 'space-y-2' : 'text-center space-y-2'}>
           <h1 className="text-2xl font-bold">{t('checkin.guestCheckIn')}</h1>
           <p className="text-muted-foreground">{context.propertyName}</p>
           {context.checkInDate && context.checkOutDate && (
