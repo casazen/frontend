@@ -1,3 +1,4 @@
+import { FileText, Network, Send } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -83,7 +84,7 @@ export function SenderChoiceStep({ read }: SenderChoiceStepProps) {
       {/* Whether the channel manager sends the ISTAT of the region of the property, said at once, before anything is asked (CHK-05 point 3). Behind the flag of the activation: with it off nothing is drawn. */}
       <IstatCoverageNotice propertyId={read.propertyId} inWizard senderOpen />
 
-      <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 text-sm" data-testid="sender-current">
+      <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border bg-muted/40 px-4 py-3 text-sm" data-testid="sender-current">
         <span className="text-foreground/70">
           {t('compliance.sender.choice.now', { sender: t(`compliance.sender.choice.options.${read.sender}.title`) })}
         </span>
@@ -94,6 +95,7 @@ export function SenderChoiceStep({ read }: SenderChoiceStepProps) {
         {options.map(({ sender, available }) => (
           <ChoiceCard
             key={sender}
+            icon={sender === 'ChannelManager' ? Network : sender === 'CasaZen' ? Send : FileText}
             name="sender"
             value={sender}
             checked={chosen === sender}
