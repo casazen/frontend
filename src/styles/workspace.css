@@ -45,14 +45,14 @@ html[data-ui='v2'] {
 }
 .workspace-group-toggle:hover { color: white; }
 .workspace-page-heading {
-  padding-block: .25rem 1rem;
+  padding-block: 0 .35rem;
   border-block-end: 1px solid var(--color-border);
 }
 .workspace-page-icon {
   display: grid;
   flex: none;
   place-items: center;
-  width: clamp(2.5rem, 4vw, 3.25rem);
+  width: 1.5rem;
   aspect-ratio: 1;
   border-radius: var(--radius-lg);
   color: var(--color-primary-text, var(--color-primary));

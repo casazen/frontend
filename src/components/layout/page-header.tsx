@@ -135,16 +135,20 @@ function PageHeaderWithTrail({ title, description, action, crumbs, primary, seco
 
   return (
     <div className="workspace-page-heading flex flex-col gap-2" data-testid="page-header">
-      {items.length > 0 ? <PageCrumbs items={items} /> : null}
+      {items.length > 0 && (
+        <div className="flex items-center gap-2">
+          {shell && (
+            <span className="workspace-page-icon" aria-hidden="true">
+              <NavIcon name={getManifestEntry(pathname)?.icon ?? getArea(shell.contextKey).icon} className="size-4" />
+            </span>
+          )}
+          <PageCrumbs items={items} />
+        </div>
+      )}
       {back?.to ? <BackLink to={back.to} label={back.label} /> : null}
       {/* The same row as the head every page has (it wraps and shrinks to fit a phone); the title is smaller on a phone. */}
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
         <div className="flex min-w-0 grow basis-56 items-start gap-3 sm:gap-4">
-          {shell && (
-            <span className="workspace-page-icon" aria-hidden="true">
-              <NavIcon name={getManifestEntry(pathname)?.icon ?? getArea(shell.contextKey).icon} className="size-5 sm:size-6" />
-            </span>
-          )}
           <div className="min-w-0">
           <h1 className="workspace-title">{title}</h1>
           {description ? <p className="workspace-description">{description}</p> : null}
