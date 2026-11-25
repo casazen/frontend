@@ -3,6 +3,8 @@ import { ApiClient } from './client';
 export interface TrustedSupplier {
   id: string;
   supplierOrgId: string;
+  supplierName?: string | null;
+  hostOrigin?: boolean;
   assignedPropertyIds: string[];
   priority: number;
   visibleInMarketplace: boolean;

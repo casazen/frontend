@@ -776,12 +776,9 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
-    // The trusted suppliers of an agency (ADR-010): `/trusted-suppliers` answers only an org on the Agency plan (`agencyTier`). Next to
-    // the interventions they are asked for: a tab of Immobili, there while the flag is on.
     path: '/app/short-rent/trusted-suppliers',
     context: 'short-rent',
-    requiredPermissions: ['property.read'],
-    featureFlag: 'agencyTier',
+    requiredPermissions: [ORG_BILLING_ADMIN_PERMISSION],
     navKey: 'nav.trustedSuppliers',
     navParent: '/app/short-rent/properties',
     navOrder: 2,

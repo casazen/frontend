@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState } from '@/components/shared/error-state';
@@ -13,7 +12,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import {
   useTrustedSuppliers,
   useInviteSupplier,
-  useUpdateVisibility,
   useRemoveSupplier,
 } from '@/queries/trustedSuppliers';
 import { useProperties } from '@/queries/use-properties';
@@ -22,7 +20,6 @@ export function TrustedSuppliersPage() {
   const { t } = useTranslation();
   const { data: suppliers, isLoading, isError, error, refetch } = useTrustedSuppliers();
   const inviteSupplier = useInviteSupplier();
-  const updateVisibility = useUpdateVisibility();
   const removeSupplier = useRemoveSupplier();
   // The host picks the properties by name (bug #977: the dialog asked for their ids); none picked = all of them.
   const { data: properties } = useProperties();
@@ -50,10 +47,6 @@ export function TrustedSuppliersPage() {
         },
       }
     );
-  };
-
-  const handleVisibilityToggle = (id: string, currentValue: boolean) => {
-    updateVisibility.mutate({ id, visible: !currentValue });
   };
 
   const handleRemove = (id: string) => {
@@ -99,12 +92,13 @@ export function TrustedSuppliersPage() {
                 <DialogTitle>{t('supplier.trusted.inviteTitle')}</DialogTitle>
                 <DialogDescription>{t('supplier.trusted.inviteHint')}</DialogDescription>
               </DialogHeader>
-              <div className="space-y-4">
+              <form className="space-y-4" onSubmit={(event) => { event.preventDefault(); handleInvite(); }}>
                 <div className="space-y-2">
                   <Label htmlFor="invite-email">{t('supplier.trusted.inviteEmail')}</Label>
                   <Input
                     id="invite-email"
                     type="email"
+                    required
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
                     placeholder={t('supplier.trusted.inviteEmailPlaceholder')}
@@ -130,22 +124,26 @@ export function TrustedSuppliersPage() {
                   </fieldset>
                 )}
                 <div className="flex justify-end space-x-2">
-                  <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
+                  <Button type="button" variant="outline" onClick={() => setInviteDialogOpen(false)}>
                     {t('common.cancel')}
                   </Button>
                   <Button
-                    onClick={handleInvite}
+                    type="submit"
                     disabled={!inviteEmail || inviteSupplier.isPending}
                     data-testid="invite-submit-button"
                   >
                     {inviteSupplier.isPending ? t('common.sending') : t('supplier.trusted.inviteSend')}
                   </Button>
                 </div>
-              </div>
+              </form>
             </DialogContent>
           </Dialog>
         }
       />
+
+      <Button variant="outline" asChild>
+        <a href="/app/short-rent/marketplace/search">{t('supplier.trusted.browseMarketplace')}</a>
+      </Button>
 
       {!suppliers || suppliers.length === 0 ? (
         <Card data-testid="trusted-suppliers-empty">
@@ -161,10 +159,11 @@ export function TrustedSuppliersPage() {
                 <div className="flex items-start justify-between">
                   <div>
                     <CardTitle className="text-lg">
-                      {t('supplier.trusted.supplierLabel', { id: supplier.supplierOrgId })}
+                      {supplier.supplierName || t('supplier.trusted.supplierLabel', { id: supplier.supplierOrgId })}
                     </CardTitle>
                     <CardDescription>
-                      {t('supplier.trusted.propertiesCount', { count: supplier.assignedPropertyIds.length })}
+                      {supplier.hostOrigin !== undefined && <>{t(supplier.hostOrigin ? 'supplier.trusted.hostOrigin' : 'supplier.trusted.marketplaceOrigin')} · </>}
+                      {supplier.assignedPropertyIds.length === 0 ? t('supplier.trusted.allProperties') : t('supplier.trusted.propertiesCount', { count: supplier.assignedPropertyIds.length })}
                     </CardDescription>
                   </div>
                   <Button
@@ -179,19 +178,6 @@ export function TrustedSuppliersPage() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <Label htmlFor={`visibility-${supplier.id}`}>{t('supplier.trusted.visibility')}</Label>
-                    <p className="text-xs text-muted-foreground">{t('supplier.trusted.visibilityHint')}</p>
-                  </div>
-                  <Switch
-                    id={`visibility-${supplier.id}`}
-                    checked={supplier.visibleInMarketplace}
-                    onCheckedChange={() => handleVisibilityToggle(supplier.id, supplier.visibleInMarketplace)}
-                    disabled={updateVisibility.isPending}
-                    data-testid={`visibility-toggle-${supplier.id}`}
-                  />
-                </div>
                 {supplier.assignedPropertyIds.length > 0 && (
                   <div className="space-y-2">
                     <Label>{t('supplier.trusted.assignedProperties')}</Label>
