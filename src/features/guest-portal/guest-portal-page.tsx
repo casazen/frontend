@@ -13,7 +13,8 @@ import { HostSiteNotFoundPage } from '@/features/public-site/host/host-site-page
 import { readableTextOn } from '@/lib/public-site-colors';
 import { normalizeHexColor } from '@/lib/public-site-themes';
 import { LegacySupplierShowcaseRedirect } from '@/pages/supplier-showcase';
-import { extraLabels, GuestHostExtras, useGuestHostExtras } from './guest-host-extras';
+import { GuestHostExtras } from './guest-host-extras';
+import { extraLabels, useGuestHostExtras } from './guest-host-extra-model';
 import { GuestPortalChat } from './guest-portal-chat';
 import { GuestPortalDocuments } from './guest-portal-documents';
 import { GuestPortalPayments } from './guest-portal-payments';

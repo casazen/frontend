@@ -3,7 +3,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { ApiClient } from '@/api/client';
 import { Button } from '@/components/ui/button';
-import { formatExtraPrice, hostExtraStatus, type HostExtraOrder, type HostExtraStatus } from '@/features/guest-portal/guest-host-extras';
+import { formatExtraPrice, hostExtraStatus, type HostExtraOrder, type HostExtraStatus } from '@/features/guest-portal/guest-host-extra-model';
 
 interface Extra {
   id: string;
