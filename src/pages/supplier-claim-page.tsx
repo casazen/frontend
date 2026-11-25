@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { isAxiosError } from 'axios';
-import { Home, Loader2 } from 'lucide-react';
+import { KeyRound, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { PublicAccessFrame, type AccessContent } from './public-access-frame';
 import { RolesPendingPanel } from '@/features/onboarding/components/roles-pending-panel';
 import { useAuth } from '@/hooks/use-auth';
 import { getProblemCode, getProblemMessage } from '@/lib/api-errors';
@@ -153,7 +153,7 @@ export function SupplierClaimPage() {
     if (!result.rolesSynced) {
       // FD-14 / PL-01: the link is saved, the Auth0 role is not; a retry repeats the (idempotent) claim.
       return (
-        <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <div className="flex min-h-screen items-center justify-center bg-muted/50 p-4">
           <RolesPendingPanel
             isRetrying={claim.status === 'pending'}
             onRetry={sendClaim}
@@ -235,41 +235,12 @@ function ClaimLoading({ message }: { message: string }) {
   return (
     <ClaimLayout title={message}>
       <div className="flex justify-center py-4" role="status" aria-label={message}>
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <Loader2 className="size-7 animate-spin motion-reduce:animate-none text-muted-foreground" />
       </div>
     </ClaimLayout>
   );
 }
 
-function ClaimLayout({
-  title,
-  description,
-  success = false,
-  children,
-}: {
-  title: string;
-  description?: string;
-  success?: boolean;
-  children?: ReactNode;
-}) {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <Card className="w-full max-w-md" data-testid="supplier-claim">
-        <CardHeader className="text-center">
-          <div
-            className={
-              success
-                ? 'mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-green-700'
-                : 'mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground'
-            }
-          >
-            <Home className="h-8 w-8" aria-hidden />
-          </div>
-          <CardTitle className="text-2xl">{title}</CardTitle>
-          {description && <CardDescription>{description}</CardDescription>}
-        </CardHeader>
-        {children && <CardContent className="space-y-4">{children}</CardContent>}
-      </Card>
-    </div>
-  );
+function ClaimLayout(props: AccessContent) {
+  return <PublicAccessFrame icon={KeyRound} testId="supplier-claim" {...props} />;
 }
