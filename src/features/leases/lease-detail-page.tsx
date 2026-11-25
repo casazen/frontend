@@ -3,7 +3,7 @@ import { useId, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { ChevronDown, FileText } from 'lucide-react';
+import { BookOpen, CalendarDays, ChevronDown, ClipboardList, FileText, FolderOpen, Users, Wallet } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import type { PageHeaderMenuItem } from '@/components/layout/page-header-actions';
 import { BackLink } from '@/components/shared/back-link';
@@ -60,11 +60,11 @@ function LeaseFacts({ lease }: { lease: LeaseDetail }) {
     [t('rent.focus.monthlyRent'), leaseRentText(lease, t)],
   ];
   return (
-    <dl data-testid="lease-facts" className="grid min-w-0 gap-3 rounded-xl border border-border bg-card px-4 py-3 sm:grid-cols-3 sm:gap-5">
+    <dl data-testid="lease-facts" className="grid min-w-0 gap-2 sm:grid-cols-3">
       {facts.map(([label, value]) => (
-        <div key={label} className="flex min-w-0 items-baseline justify-between gap-3 sm:block">
+        <div key={label} className="flex min-w-0 items-baseline justify-between gap-3 rounded-xl border bg-card px-4 py-3 sm:block">
           <dt className="text-sm text-muted-foreground">{label}</dt>
-          <dd className="min-w-0 break-words text-right text-sm font-semibold sm:mt-1 sm:text-left">{value}</dd>
+          <dd className="min-w-0 break-words text-right text-base font-semibold tabular-nums sm:mt-1 sm:text-left">{value}</dd>
         </div>
       ))}
     </dl>
@@ -134,12 +134,12 @@ function LeaseSheet({ lease, nextStep, stage }: { lease: LeaseDetail; nextStep: 
   const now = step ? describeLeaseStep(lease.id, step, { t, language: i18n.language, today: todayInRome() }) : null;
 
   const tabs: TabItem<LeaseTab>[] = [
-    { value: 'guida', label: t('leaseGuide.tab'), testId: 'lease-tab-guida' },
-    { value: 'inquilini', label: t('nav.longRentTenants'), testId: 'lease-tab-inquilini' },
-    { value: 'dati', label: t('leaseSheet.tabs.data'), testId: 'lease-tab-dati' },
-    { value: 'documenti', label: t('leaseSheet.tabs.documents'), testId: 'lease-tab-documenti' },
-    { value: 'pagamenti', label: t('leaseSheet.tabs.canoni'), testId: 'lease-tab-pagamenti' },
-    { value: 'scadenze', label: t('leaseSheet.tabs.deadlines'), testId: 'lease-tab-scadenze' },
+    { value: 'guida', icon: BookOpen, label: t('leaseGuide.tab'), testId: 'lease-tab-guida' },
+    { value: 'inquilini', icon: Users, label: t('nav.longRentTenants'), testId: 'lease-tab-inquilini' },
+    { value: 'dati', icon: ClipboardList, label: t('leaseSheet.tabs.data'), testId: 'lease-tab-dati' },
+    { value: 'documenti', icon: FolderOpen, label: t('leaseSheet.tabs.documents'), testId: 'lease-tab-documenti' },
+    { value: 'pagamenti', icon: Wallet, label: t('leaseSheet.tabs.canoni'), testId: 'lease-tab-pagamenti' },
+    { value: 'scadenze', icon: CalendarDays, label: t('leaseSheet.tabs.deadlines'), testId: 'lease-tab-scadenze' },
   ];
 
   const title = leaseTitle(lease, i18n.language, t);
