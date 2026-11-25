@@ -53,6 +53,9 @@ export function LongRentPropertyCreatePage() {
 
   return (
     <div className="space-y-6">
+      <Link to={LONG_RENT_PROPERTIES_PATH} className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-primary hover:underline">
+        <span aria-hidden="true">←</span> {t('cfDocuments.backToHouses')}
+      </Link>
       <PageHeader
         title={quick ? t('property.quick.title') : t('longRentProperties.create.title')}
         description={quick ? t('property.quick.description') : t('longRentProperties.create.description')}
@@ -62,13 +65,13 @@ export function LongRentPropertyCreatePage() {
         <div
           role="alert"
           data-testid="plan-limit-alert"
-          className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm"
+          className="rounded-xl border-l-4 border-destructive bg-destructive/10 px-4 py-4 text-sm"
         >
           <p className="font-medium text-destructive">{getPlanLimitMessage()}</p>
           {/* The plan page of the long-rent shell (PL-16): never the short-rent one. */}
           <Link
             to={getPlanUpgradePath('long-rent')}
-            className="mt-1 inline-block font-medium text-primary underline underline-offset-2"
+            className="mt-1 inline-flex min-h-11 items-center font-medium text-primary underline underline-offset-2"
             data-testid="plan-upgrade-link"
           >
             {getPlanUpgradeCta()}
