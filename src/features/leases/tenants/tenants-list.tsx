@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { CalendarRange, Clock, Users } from 'lucide-react';
+import { CalendarRange, Clock, UserRound, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { defineList } from '@/components/shared/list-view/define-list';
@@ -56,10 +56,13 @@ export function buildTenantsList(t: TFunction, language: string, canCreateLease:
         rowHeader: true,
         priority: 1,
         render: (tenant, cell) => (
-          <span className="block min-w-0">
+          <span className="flex min-w-0 items-center gap-3">
+            <UserRound aria-hidden="true" className="size-9 shrink-0 rounded-full bg-muted p-2 text-primary" />
+            <span className="min-w-0">
             {cell.open(tenantName(tenant))}
             <span className="mt-0.5 block break-words text-sm text-foreground/70">
               {tenantCitizenshipText(tenant, t)} · {tenant.contactEmailMasked}
+            </span>
             </span>
           </span>
         ),

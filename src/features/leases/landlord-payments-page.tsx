@@ -1,3 +1,4 @@
+import { CircleCheck, Info, ReceiptText } from "lucide-react";
 import { useState } from "react";
 import { CondominiumManagement } from "@/features/condominium/condominium-management";
 import { CONDO_KEY } from "@/api/condominium-accounting.api";
@@ -47,23 +48,20 @@ export function LandlordPaymentsPage() {
         crumbs="auto"
       />
       <div className="w-full min-w-0 space-y-4">
-        <p className="text-sm">{t("condoManual.reminder")}</p>
+        <p className="flex items-start gap-3 rounded-xl border bg-muted/40 p-4 text-sm"><Info aria-hidden="true" className="size-5 shrink-0 text-primary" />{t("condoManual.reminder")}</p>
         <CondominiumManagement />
+        {dues.isLoading && <p role="status" className="rounded-lg bg-muted p-4">{t("tenantSepa.loading")}</p>}
+        {(dues.isError || mark.isError) && <p role="alert" className="rounded-lg border border-destructive/30 p-4 text-destructive">{t("tenantSepa.error")}</p>}
         {dues.data?.length ? (
           <details className="rounded-xl border bg-card p-4">
             <summary className="cursor-pointer font-medium">
               {t("condoLedger.allHomesDues")}
             </summary>
-            {dues.isLoading ? (
-              <p role="status">{t("tenantSepa.loading")}</p>
-            ) : null}
-            {dues.isError || mark.isError ? (
-              <p role="alert">{t("tenantSepa.error")}</p>
-            ) : null}
-            <ul className="space-y-3">
+            <ul className="mt-4 grid gap-3 md:grid-cols-2">
               {dues.data?.map((due) => (
                 <li key={due.id} className="space-y-2 rounded-md border p-4">
-                  <h2 className="font-semibold">
+                  <h2 className="flex items-center gap-2 font-semibold">
+                    <ReceiptText className="size-4 shrink-0 text-primary" aria-hidden="true" />
                     {due.name} · {due.label}
                   </h2>
                   <p>
@@ -71,7 +69,7 @@ export function LandlordPaymentsPage() {
                     {formatCurrency(due.amount, "EUR")}
                   </p>
                   {due.paid ? (
-                    <p>{t("condoManual.paid")}</p>
+                    <p className="flex items-center gap-2 font-medium"><CircleCheck aria-hidden="true" className="size-4 text-primary" />{t("condoManual.paid")}</p>
                   ) : canWrite ? (
                     confirm === due.id ? (
                       <div className="space-y-2">
