@@ -76,10 +76,9 @@ describe('the pages of the palette are the pages of the menu (UI-06)', () => {
 
     const offered = pagesOf(context).map((entry) => entry.to);
 
-    // Plan and billing are reached from the badge of the header, and the detail pages from their lists.
-    for (const hidden of ['/app/short-rent/settings/plan', '/app/short-rent/settings/billing', '/app/short-rent/bookings/create']) {
-      expect(offered).not.toContain(hidden);
-    }
+    expect(offered).toContain('/app/short-rent/settings/plan');
+    expect(offered).toContain('/app/short-rent/settings/billing');
+    expect(offered).not.toContain('/app/short-rent/bookings/create');
     expect(offered).toContain('/app/short-rent/bookings');
   });
 

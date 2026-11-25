@@ -511,7 +511,7 @@ test.describe('Mobile navigation (UI-04b)', () => {
       await expect(sidebar(page).getByRole('link', { name: 'Incassi' })).toBeFocused();
       await expect(tooltip(page)).toHaveText('Incassi');
       await page.keyboard.press('Tab');
-      await page.keyboard.press('Tab');
+      await expect(sidebar(page).getByRole('link', { name: 'Impostazioni' })).toBeFocused();
       await page.keyboard.press('Tab');
       await expect(sidebar(page).getByTestId('sidebar-collapse-toggle')).toBeFocused();
       await expect(tooltip(page)).toHaveText('Espandi menu');
