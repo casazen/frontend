@@ -57,9 +57,9 @@ export function GuestPortalDocuments({ path, language, labels }: {
       {(docs.isPending || invoice.isPending) && <p role="status">{labels.loading}</p>}
       {(docs.isError || invoice.isError || pdf.isError || correction.isError) && <p role="alert">{labels.failed}</p>}
       {correction.isSuccess && <p role="status">{labels.requested}</p>}
-      {invoice.data && !invoice.data.issued && (invoice.data.hostManaged
-        ? <p>{t('checkin.invoiceHostManaged')}</p>
-        : <GuestInvoiceForm context={invoice.data} save={async (request) => {
+      {invoice.data && !invoice.data.issued && <>
+        {invoice.data.hostManaged && <p>{t('checkin.invoiceHostManaged')}</p>}
+        <GuestInvoiceForm context={invoice.data} save={async (request) => {
             try {
               await ApiClient.put<void>(invoiceEndpoint, request, { public: true });
             } catch (error) {
@@ -68,7 +68,8 @@ export function GuestPortalDocuments({ path, language, labels }: {
               throw error;
             }
             await invoice.refetch();
-          }} />)}
+          }} />
+      </>}
       {docs.data?.length === 0 && <p>{labels.empty}</p>}
       {docs.data?.map((document) => (
         <div key={document.id} className="stay-document">

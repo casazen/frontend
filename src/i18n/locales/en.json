@@ -6310,7 +6310,7 @@
     "scanAnother": "Upload another guest's document",
     "scanManual": "Enter the details by hand",
     "scanReadOk": "Details read for {{name}}. Check them before sending.",
-    "invoiceHostManaged": "Your host manages the billing details for this stay. Contact them to make changes.",
+    "invoiceHostManaged": "You can add missing details. Contact your host to change details they have already entered.",
     "invoiceSave": "Save answer",
     "invoiceFinished": "Done.",
     "scanMismatch": "This document could not be matched to a named guest on the booking. Check the photo or contact the property to correct a name.",
