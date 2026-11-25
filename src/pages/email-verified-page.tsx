@@ -7,7 +7,7 @@ import { useLoginHandoff } from '@/hooks/use-login-handoff';
 import { useAuth } from '@/hooks/use-auth';
 import { hostInvitePath, readPendingHostInvite } from '@/lib/host-invite';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { PublicAccessFrame } from './public-access-frame';
 import { emailVerificationOutcome } from './email-verification-outcome';
 
 /**
@@ -34,43 +34,24 @@ export function EmailVerifiedPage() {
   }, [isAuthenticated, isLoading, navigate, returnTo, failed, needsFreshSession]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/40 px-4">
-      <Card className="w-full max-w-md" data-testid="email-verified-page" data-outcome={outcome}>
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground">
-            {failed ? <MailWarning className="h-8 w-8" aria-hidden /> : <MailCheck className="h-8 w-8" aria-hidden />}
-          </div>
-          <CardTitle className="text-2xl">
-            {t(failed ? 'emailVerified.failedTitle' : outcome === 'verified' ? 'emailVerified.title' : 'emailVerified.unknownTitle')}
-          </CardTitle>
-          <CardDescription>
-            {t(
-              failed
-                ? 'emailVerified.failedDescription'
-                : outcome === 'verified'
-                  ? 'emailVerified.description'
-                  : 'emailVerified.unknownDescription',
-            )}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {handoff.status === 'failed' || handoff.status === 'delayed' ? <p role="alert" className="text-sm">{t('login.handoffFailed')}</p> : null}
-          {!failed && !returnTo && <p className="text-sm text-muted-foreground">{t('emailVerified.inviteTab')}</p>}
-          <Button className="w-full" size="lg" disabled={isLoading || handoff.busy} onClick={() => {
-            if (isAuthenticated && !returnTo) {
-              navigate('/app/choose-context', { replace: true });
-              return;
-            }
-            handoff.start(returnTo ? {
-              returnTo,
-              ...(needsFreshSession ? { authorizationParams: { prompt: 'login' } } : {}),
-            } : undefined);
-          }} data-testid="email-verified-sign-in">
-            <LogIn className="mr-2 h-5 w-5" />
-            {t(pendingInvite ? 'emailVerified.resumeInvite' : isAuthenticated ? 'invitation.unusable.goToApp' : 'emailVerified.signIn')}
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
+    <PublicAccessFrame icon={failed ? MailWarning : MailCheck} success={outcome === 'verified'} testId="email-verified-page" outcome={outcome}
+      title={t(failed ? 'emailVerified.failedTitle' : outcome === 'verified' ? 'emailVerified.title' : 'emailVerified.unknownTitle')}
+      description={t(failed ? 'emailVerified.failedDescription' : outcome === 'verified' ? 'emailVerified.description' : 'emailVerified.unknownDescription')}>
+      {handoff.status === 'failed' || handoff.status === 'delayed' ? <p role="alert" className="text-sm">{t('login.handoffFailed')}</p> : null}
+      {!failed && !returnTo && <p className="text-sm text-muted-foreground">{t('emailVerified.inviteTab')}</p>}
+      <Button className="w-full" size="lg" disabled={isLoading || handoff.busy} onClick={() => {
+        if (isAuthenticated && !returnTo) {
+          navigate('/app/choose-context', { replace: true });
+          return;
+        }
+        handoff.start(returnTo ? {
+          returnTo,
+          ...(needsFreshSession ? { authorizationParams: { prompt: 'login' } } : {}),
+        } : undefined);
+      }} data-testid="email-verified-sign-in">
+        <LogIn className="mr-2 h-5 w-5" />
+        {t(pendingInvite ? 'emailVerified.resumeInvite' : isAuthenticated ? 'invitation.unusable.goToApp' : 'emailVerified.signIn')}
+      </Button>
+    </PublicAccessFrame>
   );
 }
