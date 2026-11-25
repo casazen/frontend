@@ -21,6 +21,8 @@ import type { CheckInLinkDelivery } from '@/types/checkin-link.types';
 import type { CheckInLinkResponse, CheckInSessionStatusDto, GuestCheckInSessionStatus } from '@/types/public-checkin.types';
 import { describeDelivery, linkToCopy, type DeliveryLine, type DeliveryTone } from '../lib/checkin-link-delivery';
 
+import { GuestPortalLinkPanel } from './guest-portal-link-panel';
+
 const STATUS_VARIANT: Record<GuestCheckInSessionStatus, 'default' | 'secondary' | 'outline' | 'destructive'> = {
   Inviato: 'secondary',
   InCompilazione: 'outline',
@@ -46,6 +48,7 @@ interface CheckInLinkPanelProps {
   canWrite: boolean;
   /** Contextual actions are offered only after the session status has loaded. */
   children?: ReactNode;
+  useGuestPortal?: boolean;
 }
 
 /** State of the link email, as recorded by the API: never "sent" when nothing left (A5-26). */
@@ -141,7 +144,7 @@ function DeliveryState({ delivery, line, link, copied, busy, onCopy }: DeliveryS
  * waiting for the chat, for the conversation or for the IP addresses, or failed, and offers «Copia link» to who may copy a link (`booking.write`). With the
  * connector off, or both flags off, it reads and shows nothing of it.
  */
-export function CheckInLinkPanel({ bookingId, canWrite, children }: CheckInLinkPanelProps) {
+export function CheckInLinkPanel({ bookingId, canWrite, children, useGuestPortal = false }: CheckInLinkPanelProps) {
   const { t } = useTranslation();
   const { flags } = useFeatureFlags();
   const { data: session, isLoading, isError, refetch } = useBookingCheckInSession(bookingId);
@@ -149,7 +152,7 @@ export function CheckInLinkPanel({ bookingId, canWrite, children }: CheckInLinkP
   const guestData = useAlloggiatiStatus(bookingId, submitted);
   // The delivery runs in the backend only while the connector of the channel manager is on AND one of the two flags is (`ChatOn`, `ContactOn` of `CheckInLinkDeliveryService`). With the
   // connector off what the server still records is not for a screen: nothing is asked and nothing is drawn, and the panel is what it was.
-  const deliveryOn = flags.octorateConnector && (flags.portalChatCheckInLink || flags.guestContactInfo);
+  const deliveryOn = !useGuestPortal && flags.octorateConnector && (flags.portalChatCheckInLink || flags.guestContactInfo);
   const delivery = useCheckInLinkDelivery(bookingId, deliveryOn);
   const resend = useResendCheckInLink(bookingId);
   const create = useCreateCheckInLink(bookingId);
@@ -252,7 +255,7 @@ export function CheckInLinkPanel({ bookingId, canWrite, children }: CheckInLinkP
           </Button>
         </div>
       ) : null}
-      {showEmailState && <EmailState session={session} />}
+      {!useGuestPortal && showEmailState && <EmailState session={session} />}
       {status === 'Scaduto' && <p className="text-sm text-muted-foreground">{t('checkin.link.expired')}</p>}
       {!completed && !session.canIssueLink && (
         <p className="text-sm text-muted-foreground" data-testid="checkin-link-not-eligible">
@@ -260,7 +263,7 @@ export function CheckInLinkPanel({ bookingId, canWrite, children }: CheckInLinkP
         </p>
       )}
 
-      {issued && canWrite && session.canIssueLink && !completed && status !== 'Scaduto' && (
+      {!useGuestPortal && issued && canWrite && session.canIssueLink && !completed && status !== 'Scaduto' && (
         <div className="space-y-1" data-testid="checkin-link-issued">
           <p className="text-sm font-medium">{t('checkin.link.copyTitle')}</p>
           <div className="flex items-center gap-2">
@@ -282,7 +285,7 @@ export function CheckInLinkPanel({ bookingId, canWrite, children }: CheckInLinkP
         </div>
       )}
 
-      {canWrite && session.canIssueLink && (
+      {!useGuestPortal && canWrite && session.canIssueLink && (
         <div className="space-y-2">
           <div className="flex flex-wrap gap-2">
             <Button
@@ -310,6 +313,12 @@ export function CheckInLinkPanel({ bookingId, canWrite, children }: CheckInLinkP
             <p className="text-xs text-muted-foreground">{t('checkin.link.replaceWarning')}</p>
           )}
         </div>
+      )}
+      {useGuestPortal && canWrite && (session.canIssueLink || completed) && (
+        <GuestPortalLinkPanel bookingId={bookingId} checkIn={{
+          ready: completed || (hasLink && status !== 'Scaduto'),
+          prepare: session.canIssueLink ? () => create.mutateAsync() : undefined,
+        }} />
       )}
       {children}
     </div>

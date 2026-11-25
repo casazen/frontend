@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { BookOpen, LockKeyhole, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -46,22 +46,65 @@ export function GuestHouseGuideEditor({ propertyId, suggestion, section, withAi 
     onSuccess: async () => { await orgSettings.refetch(); },
   });
   const [draft, setDraft] = useState<HouseGuide>({});
-  const guide = { ...query.data, ...suggestion, ...draft };
+  const [generated, setGenerated] = useState<{ property?: HouseGuide; ai?: HouseGuide }>({});
+  const generation = useRef(0);
+  const source = `/properties/${propertyId}/guest-portal-setup/suggestions/guide`;
+  const existing = { ...query.data, ...suggestion, ...draft };
+  const suggestedFields: HouseGuide = {};
+  for (const field of guideFields) {
+    if (Object.hasOwn(draft, field) || existing[field]?.trim()) continue;
+    const value = generated.ai?.[field] ?? generated.property?.[field];
+    if (typeof value === 'string' && value.trim()) suggestedFields[field] = value;
+  }
+  const guide = { ...existing, ...suggestedFields };
+  const draftReady = Boolean(generated.ai || generated.property);
   const save = useMutation({
-    mutationFn: () => ApiClient.put(endpoint, guide),
+    mutationFn: (snapshot: HouseGuide) => ApiClient.put(endpoint, snapshot),
     onSuccess: onSaved,
   });
   const generate = useMutation({
-    mutationFn: () => ApiClient.post<{ guide?: HouseGuide } | undefined>(
-      `/properties/${propertyId}/guest-portal-setup/suggestions/guide`,
-    ),
-  });
-  const proposedFields = (['arrival', 'house', 'departure'] as const).flatMap((field) => {
-    const value = generate.data?.guide?.[field];
-    return typeof value === 'string' && value.trim() ? [{ field, value }] : [];
-  });
+    mutationFn: async (run: number) => {
+      async function loadDraft(path: string, fast: boolean) {
+        const result = await ApiClient.post<{ guide?: HouseGuide; guideSource?: 'ai' | 'property' } | undefined>(path);
+        const fields = result?.guide;
+        if (!fields || generation.current !== run) return;
+        const usable = Object.fromEntries(guideFields.flatMap((field) => {
+          const value = fields[field];
+          return typeof value === 'string' && value.trim() ? [[field, value]] : [];
+        })) as HouseGuide;
+        if (Object.keys(usable).length === 0) return;
+        const kind = result?.guideSource ?? (fast ? 'property' : 'ai');
+        setGenerated((current) => ({
+          ...current,
+          [kind]: kind === 'ai' && !fast ? { ...current[kind], ...usable } : { ...usable, ...current[kind] },
+        }));
+      }
 
-  const fillableFields = proposedFields.filter(({ field }) => !guide[field]?.trim());
+      await Promise.allSettled([loadDraft(`${source}?fast=true`, true), loadDraft(source, false)]);
+    },
+  });
+  const [guideAlreadyFilled, setGuideAlreadyFilled] = useState(false);
+  const waitingForDraft = generate.isPending && !draftReady;
+
+  function fillGuide() {
+    if (guideFields.every((field) => guide[field]?.trim())) {
+      setGuideAlreadyFilled(true);
+      generate.reset();
+      return;
+    }
+
+    setGuideAlreadyFilled(false);
+    setDraft((current) => {
+      const next = { ...current, ...suggestedFields };
+      for (const field of guideFields) {
+        if (!next[field]?.trim()) delete next[field];
+      }
+      return next;
+    });
+    setGenerated({});
+    save.reset();
+    generate.mutate(++generation.current);
+  }
 
   function renderField(field: typeof guideFields[number]) {
     return (
@@ -80,7 +123,11 @@ export function GuestHouseGuideEditor({ propertyId, suggestion, section, withAi 
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    save.mutate();
+    if (waitingForDraft || save.isPending) return;
+
+    generation.current++;
+    generate.reset();
+    save.mutate(guide);
   }
 
   return (
@@ -108,30 +155,24 @@ export function GuestHouseGuideEditor({ propertyId, suggestion, section, withAi 
                     <p className="text-sm text-muted-foreground">{t('guestPortal.guide.aiDescription')}</p>
                   </div>
                 </div>
-                <Button type="button" className="min-h-11" loading={generate.isPending} disabled={save.isPending}
-                  onClick={() => generate.mutate()}>{t('guestPortal.guide.aiGenerate')}</Button>
+                <Button type="button" className="min-h-11" loading={waitingForDraft}
+                  disabled={save.isPending || (generate.isPending && draftReady)}
+                  onClick={fillGuide}>{t('guestPortal.guide.aiGenerate')}</Button>
               </div>
-              {(generate.isError || (generate.isSuccess && proposedFields.length === 0)) && (
-                <p role="status" className="text-sm text-muted-foreground">{t('guestPortal.guide.aiUnavailable')}</p>
+              {waitingForDraft && (
+                <p role="status" className="text-sm text-muted-foreground">{t('guestPortal.guide.aiGenerating')}</p>
               )}
-              {proposedFields.length > 0 && (
-                <div className="space-y-4 rounded-lg border bg-card p-4">
-                  <dl className="space-y-4">
-                    {proposedFields.map(({ field, value }) => (
-                      <div key={field}>
-                        <dt className="text-sm font-semibold">{t(`guestPortal.guide.${field}`)}</dt>
-                        <dd className="mt-1 whitespace-pre-wrap break-words text-sm text-muted-foreground">{value}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                  {fillableFields.length > 0 ? <Button type="button" variant="outline" disabled={save.isPending || generate.isPending} onClick={() => {
-                    setDraft((current) => ({ ...current, ...Object.fromEntries(fillableFields.map(({ field, value }) => [field, value])) }));
-                    save.reset();
-                    generate.reset();
-                  }}>{t('guestPortal.guide.aiApply')}</Button> : (
-                    <p className="text-sm text-muted-foreground">{t('guestPortal.guide.aiNoEmptyFields')}</p>
-                  )}
-                </div>
+              {generate.isSuccess && !draftReady && (
+                <p role="alert" className="text-sm text-muted-foreground">{t('guestPortal.guide.aiUnavailable')}</p>
+              )}
+              {guideAlreadyFilled && (
+                <p role="status" className="text-sm text-muted-foreground">{t('guestPortal.guide.aiNoEmptyFields')}</p>
+              )}
+              {draftReady && !guideAlreadyFilled && !save.isSuccess && (
+                <p role="status" className="text-sm text-muted-foreground">
+                  {generated.ai ? t('guestPortal.guide.aiReady')
+                    : generate.isPending ? t('guestPortal.guide.aiRefining') : t('guestPortal.guide.aiPropertyReady')}
+                </p>
               )}
             </section>
           )}
@@ -175,7 +216,7 @@ export function GuestHouseGuideEditor({ propertyId, suggestion, section, withAi 
               </label>
             ))}
           </fieldset>}
-          <Button type="submit" className="min-h-11 justify-self-start" disabled={save.isPending}>{t('guestPortal.guide.save')}</Button>
+          <Button type="submit" className="min-h-11 justify-self-start" disabled={save.isPending || waitingForDraft}>{t('guestPortal.guide.save')}</Button>
           {save.isSuccess && <p role="status">{t('guestPortal.guide.saved')}</p>}
           {save.isError && <p role="alert">{t('guestPortal.host.changeError')}</p>}
         </>

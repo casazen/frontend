@@ -25,6 +25,7 @@ interface BookingNextStepProps {
   /** The host may act on the booking (`booking.write`): without it the block says what is going on and leads back to the list. */
   canWrite: boolean;
   viewingCheckIn?: boolean;
+  useGuestPortal?: boolean;
   onConfirm: () => void;
   onDecline: () => void;
   onArrival: () => void;
@@ -46,7 +47,7 @@ interface StepView {
  * not started, Alloggiati Web for one in progress or over. It says what is going on, whose turn it is, and gives the one
  * button that does it, with the actions and the permissions the page always had.
  */
-export function BookingNextStep({ booking, canWrite, viewingCheckIn, onConfirm, onDecline, onArrival }: BookingNextStepProps) {
+export function BookingNextStep({ booking, canWrite, viewingCheckIn, useGuestPortal = false, onConfirm, onDecline, onArrival }: BookingNextStepProps) {
   const { t, i18n } = useTranslation();
   const today = todayInRome();
   const needs = documentsNeeded(booking, today);
@@ -123,7 +124,11 @@ export function BookingNextStep({ booking, canWrite, viewingCheckIn, onConfirm, 
       : null;
   const sendCheckInLink: CalmAction | null =
     canWrite && link?.canIssueLink
-      ? { label: t('booking.list.actions.sendLink'), onClick: () => sendLink.mutate(booking.id), loading: sendLink.isPending, testId: 'booking-next-send-link' }
+      ? useGuestPortal
+        ? viewingCheckIn
+          ? { label: t('guestPortal.host.checkInAccess'), onClick: () => document.getElementById('booking-guest-checkin-link')?.focus() }
+          : { label: t('guestPortal.host.checkInAccess'), href: `${BOOKINGS_PATH}/${booking.id}?tab=guest` }
+        : { label: t('booking.list.actions.sendLink'), onClick: () => sendLink.mutate(booking.id), loading: sendLink.isPending, testId: 'booking-next-send-link' }
       : null;
 
   const viewOfStep = (): StepView => {
@@ -177,7 +182,7 @@ export function BookingNextStep({ booking, canWrite, viewingCheckIn, onConfirm, 
             date: formatStayDate(addDays(stayDateOf(booking.checkInDate), -(flow?.checkInLinkDaysBefore ?? 0)), language),
           }),
           primary: toBookings,
-          secondary: sendCheckInLink ? { ...sendCheckInLink, label: t('booking.next.linkScheduled.action') } : completeInWizard ?? undefined,
+          secondary: sendCheckInLink ? (useGuestPortal ? sendCheckInLink : { ...sendCheckInLink, label: t('booking.next.linkScheduled.action') }) : completeInWizard ?? undefined,
         };
       case 'sendLink':
         return {

@@ -153,7 +153,7 @@ export function GuestPortalPayments({ path, language, direct, tax, checkIn, docu
         <section className="stay-card stay-content">
           <h2>{labels.tax}</h2>
           {canPayTax ? (
-            <><p>{format(tax.payable, tax.currency)}</p><a href={checkIn} rel="noreferrer">{labels.payTax}</a></>
+            <><p>{format(tax.payable, tax.currency)}</p><Link to={checkIn}>{labels.payTax}</Link></>
           ) : <p>{taxSettled ? labels.settled : labels.unavailable}</p>}
         </section>
       )}

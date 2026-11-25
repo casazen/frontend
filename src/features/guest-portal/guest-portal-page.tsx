@@ -6,6 +6,7 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { ApiClient } from '@/api/client';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useGuestTouristTax } from '@/queries/use-checkin';
+import { GuestCheckInFlow } from '@/features/checkin/checkin-page';
 import { guestTaxAvailability, guestTaxOutlook } from '@/features/checkin/lib/tourist-tax-model';
 import { getHttpStatus } from '@/lib/api-errors';
 import { useSeoMeta } from '@/lib/seo-meta';
@@ -54,6 +55,7 @@ const copy = {
   next: ['Prossimo passo', 'Next step', 'Nächster Schritt', 'Prochaine étape', 'Siguiente paso'],
   complete: ['Completa il check-in', 'Complete check-in', 'Check-in abschließen', 'Terminez le check-in', 'Completa el registro'],
   open: ['Fai il check-in', 'Start check-in', 'Check-in starten', 'Faire le check-in', 'Iniciar el registro'],
+  checkInSection: ['Check-in online', 'Online check-in', 'Online-Check-in', 'Enregistrement en ligne', 'Registro en línea'],
   checkInHelp: ['Inserisci i dati degli ospiti per preparare il tuo arrivo.', 'Enter guest details to prepare for arrival.', 'Gib die Gästedaten für die Anreise ein.', 'Renseignez les données des voyageurs avant votre arrivée.', 'Introduce los datos de los huéspedes antes de llegar.'],
   checkInWait: ['L’host ti avviserà quando potrai fare il check-in.', 'Your host will let you know when check-in opens.', 'Dein Gastgeber informiert dich, sobald der Check-in öffnet.', 'Votre hôte vous indiquera quand le check-in sera ouvert.', 'Tu anfitrión te avisará cuando se abra el registro.'],
   payTax: ['Paga la tassa di soggiorno', 'Pay the tourist tax', 'Kurtaxe bezahlen', 'Payer la taxe de séjour', 'Paga la tasa turística'],
@@ -192,10 +194,11 @@ function GuestPortalPage({ token }: { token: string }) {
     ?? supportedLanguage(navigator.language) ?? 'it';
   const text = (key: keyof typeof copy) => copy[key][languages.indexOf(language)];
   const section = params.get('page');
+  const checkingIn = section === 'checkin';
   const services = section === 'services';
   const extras = section === 'extras';
   const extraCatalog = useGuestHostExtras(path, language, Boolean(stay) && !extras);
-  const hasExtras = Boolean(extraCatalog.data?.offers.length || extraCatalog.data?.orders.length);
+  const hasExtras = Boolean(extraCatalog.data?.offers?.length || extraCatalog.data?.orders?.length);
   const guide = section === 'guide';
   const details = section === 'details';
   const chat = section === 'chat' && stay?.status !== 'cancelled';
@@ -208,7 +211,7 @@ function GuestPortalPage({ token }: { token: string }) {
   const accent = normalizeHexColor(overview?.branding.primaryColor) ?? '#1F3A3D';
   useStayManifest(token, failed ? undefined : overview?.branding.name, accent);
   const href = (page?: string) => `?${new URLSearchParams(page ? { lang: language, page } : { lang: language })}`;
-  const checkIn = `/checkin/stay_${token}?lang=${language}`;
+  const checkIn = href('checkin');
   const date = (value: string) => new Date(`${value.slice(0, 10)}T12:00:00Z`);
   const range = stay && new Intl.DateTimeFormat(language, {
     dateStyle: 'medium', timeZone: 'UTC',
@@ -218,14 +221,14 @@ function GuestPortalPage({ token }: { token: string }) {
   const phase = stay && (stay.status === 'checkedOut' || stay.status === 'cancelled' || today >= stay.checkOut)
     ? 'after' : stay && today >= stay.checkIn ? 'during' : 'before';
 
-  const home = !services && !extras && !guide && !details && !chat && !documents && !payments
+  const home = !checkingIn && !services && !extras && !guide && !details && !chat && !documents && !payments
     && !supplierOrders && !review && !privacy && !cancellation;
   const nav = [
-    { key: 'stay', page: undefined, icon: House, current: home },
+    { key: 'stay', page: undefined, icon: House, current: home || checkingIn },
     { key: 'guide', page: 'guide', icon: BookOpen, current: guide },
     { key: 'services', page: 'services', icon: ShoppingBag, current: services || extras || supplierOrders },
     { key: 'chat', page: 'chat', icon: MessageCircle, current: chat },
-    { key: 'more', page: 'details', icon: Ellipsis, current: !home && !guide && !services && !extras && !supplierOrders && !chat },
+    { key: 'more', page: 'details', icon: Ellipsis, current: !home && !checkingIn && !guide && !services && !extras && !supplierOrders && !chat },
   ] as const;
   const hasLayout = Boolean(stay && !failed);
 
@@ -258,7 +261,7 @@ function GuestPortalPage({ token }: { token: string }) {
           )}
         </div>
       </header>
-      <main className="stay-width stay-main">
+      <main className="stay-width stay-main" data-checkin={checkingIn || undefined}>
         {!stay && !failed && <p role="status">{text('load')}</p>}
         {failed && (
           <>
@@ -268,19 +271,24 @@ function GuestPortalPage({ token }: { token: string }) {
         )}
         {stay && !failed && (
           <>
-            <div className={home ? 'stay-intro' : undefined}>
-            {home ? <span className="stay-phase">{text(phase)}</span> : (
-              <Link to={href()} className="stay-back"><ArrowLeft aria-hidden="true" />{text('back')}</Link>
-            )}
-            <h1>{extras ? extraLabels[language][0] : text(services ? 'servicesAndExtras' : supplierOrders ? 'supplierOrders' : guide ? 'guide' : details ? 'booking' : chat ? 'chat' : documents ? 'documents' : payments ? 'payments' : review ? 'review' : cancellation ? 'cancellation' : privacy ? 'privacy' : 'title')}</h1>
-            <p className="stay-meta">{home ? <>{range} · {stay.guests} {guestLabel(language, stay.guests)}</> : stay.propertyName}</p>
-            {home && (
-              <p className="stay-property"><MapPin aria-hidden="true" />{stay.propertyName}
-                <small className="stay-mobile-code">· {stay.bookingCode}</small>
-              </p>
-            )}
+            <div className={home ? 'stay-intro' : checkingIn ? 'stay-checkin-intro' : undefined}>
+              {home ? <span className="stay-phase">{text(phase)}</span> : (
+                <Link to={href()} className="stay-back"><ArrowLeft aria-hidden="true" />{text('back')}</Link>
+              )}
+              {(!checkingIn || !stay.checkInAvailable) && <h1>{checkingIn ? text('checkInSection') : extras ? extraLabels[language][0] : text(services ? 'servicesAndExtras' : supplierOrders ? 'supplierOrders' : guide ? 'guide' : details ? 'booking' : chat ? 'chat' : documents ? 'documents' : payments ? 'payments' : review ? 'review' : cancellation ? 'cancellation' : privacy ? 'privacy' : 'title')}</h1>}
+              {!checkingIn && <p className="stay-meta">{home ? <>{range} · {stay.guests} {guestLabel(language, stay.guests)}</> : stay.propertyName}</p>}
+              {home && (
+                <p className="stay-property"><MapPin aria-hidden="true" />{stay.propertyName}
+                  <small className="stay-mobile-code">· {stay.bookingCode}</small>
+                </p>
+              )}
             </div>
-            {services ? (
+            {checkingIn ? (
+              stay.checkInAvailable ? <GuestCheckInFlow token={`stay_${token}`} embedded onCompleted={() => {
+                void queryClient.invalidateQueries({ queryKey: ['guest-portal', token] });
+                void queryClient.invalidateQueries({ queryKey });
+              }} /> : <p className="stay-card">{text(overview?.checkInCompleted ? 'done' : 'checkInWait')}</p>
+            ) : services ? (
               <>
                 <GuestHostExtras path={path} language={language} />
                 {overview?.features?.supplierServices && <GuestSupplierOrders path={path} language={language} />}
@@ -363,8 +371,8 @@ function GuestPortalPage({ token }: { token: string }) {
                     <h2>{text(nextStep)}</h2>
                     {!overview?.checkInCompleted && <p>{text(stay.checkInAvailable ? 'checkInHelp' : 'checkInWait')}</p>}
                     {nextStep === 'guide' && <Link to={href('guide')}>{text('guide')}</Link>}
-                    {nextStep === 'payTax' && <a href={checkIn} rel="noreferrer">{text('payTax')}</a>}
-                    {!overview?.checkInCompleted && stay.checkInAvailable && <a href={checkIn} rel="noreferrer">{text('open')}</a>}
+                    {nextStep === 'payTax' && <Link to={checkIn}>{text('payTax')}</Link>}
+                    {!overview?.checkInCompleted && stay.checkInAvailable && <Link to={checkIn}>{text('open')}</Link>}
                   </section>
                 )}
                 {phase === 'after' && stay.status !== 'cancelled' && (
@@ -386,9 +394,9 @@ function GuestPortalPage({ token }: { token: string }) {
                   {stay.status !== 'cancelled' && <StaySectionLink to={href('chat')} icon={MessageCircle} label={text('chat')} detail={text('chatNote')} />}
                   <StaySectionLink to={href('documents')} icon={FileText} label={text('documents')} detail={text('documentsNote')} />
                   {phase === 'after' && <StaySectionLink to={href('privacy')} icon={ClipboardCheck} label={text('privacy')} />}
-                  {overview?.checkInCompleted && (stay.checkInAvailable ? (
-                    <a className="stay-card" href={checkIn} rel="noreferrer"><ClipboardCheck aria-hidden="true" />{text('done')}<ChevronRight aria-hidden="true" /></a>
-                  ) : <div className="stay-card"><ClipboardCheck aria-hidden="true" />{text('done')}</div>)}
+                  {(phase !== 'after' || stay.checkInAvailable || overview?.checkInCompleted) && (
+                    <StaySectionLink to={checkIn} icon={ClipboardCheck} label={text(overview?.checkInCompleted ? 'done' : 'checkInSection')} />
+                  )}
                 </div>
               </>
             )}
