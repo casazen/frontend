@@ -66,7 +66,7 @@ it('carries a guest request through the supplier quote and completion using the 
 
   view = showGuest();
   fireEvent.click(await screen.findByRole('button', { name: 'Authorize simulated payment' }));
-  await screen.findByText(/Payment authorized/);
+  await screen.findByText(/Amount authorized/);
   view.unmount();
 
   view = showSupplier();

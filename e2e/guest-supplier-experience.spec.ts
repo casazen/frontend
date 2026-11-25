@@ -109,7 +109,7 @@ test('a guest and supplier agree a quote and complete an experience in separate 
     const guestOrder = guest.getByRole('article').filter({ hasText: offer.serviceName });
     await expect(guestOrder).toContainText('55', refresh);
     await guestOrder.getByRole('button', { name: 'Authorize simulated payment' }).click();
-    await expect(guestOrder).toContainText('Payment authorized');
+    await expect(guestOrder).toContainText('Amount authorized');
 
     await expect(supplierOrder.getByRole('button', { name: 'Accetta ordine' })).toBeVisible(refresh);
     await supplierOrder.getByRole('button', { name: 'Accetta ordine' }).click();
