@@ -81,11 +81,11 @@ function httpError(status: number, data: Record<string, unknown> = {}): AxiosErr
   return new AxiosError('failed', String(status), undefined, undefined, { status, data, statusText: '', headers: {}, config: {} as never });
 }
 
-function renderSection(options: { booking?: Booking; connector?: boolean; canWrite?: boolean } = {}) {
+function renderSection(options: { booking?: Booking; connector?: boolean; guestPortal?: boolean; canWrite?: boolean } = {}) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const view = render(
     <QueryClientProvider client={client}>
-      <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, octorateConnector: options.connector ?? true }, isLoading: false }}>
+      <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, octorateConnector: options.connector ?? true, guestPortal: options.guestPortal ?? false }, isLoading: false }}>
         <MemoryRouter>
           <BookingReviewsSection booking={options.booking ?? booking()} canWrite={options.canWrite ?? true} />
         </MemoryRouter>
@@ -279,6 +279,14 @@ describe('the section «Recensioni» of the booking (E05/F06/US02, NF-69)', () =
       await waitFor(() => expect(hostReviewsApi.getInviteStatus).toHaveBeenCalled());
       await waitFor(() => expect(container).toBeEmptyDOMElement());
     });
+  });
+
+  it.each([false, true])('offers a verified portal review for a checked-out OTA guest with channel sync %s', async (connector) => {
+    vi.mocked(hostReviewsApi.getInviteStatus).mockResolvedValue({ canInvite: true, reviewed: false });
+    renderSection({ connector, guestPortal: true });
+
+    expect(await screen.findByTestId('review-invite-open')).toBeInTheDocument();
+    expect(otaReviewsApi.getBookingReviews).toHaveBeenCalledTimes(connector ? 1 : 0);
   });
 
   describe('a reading that fails is not a list of reviews', () => {

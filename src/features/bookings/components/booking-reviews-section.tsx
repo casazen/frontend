@@ -19,7 +19,7 @@ import { formatRomeDateTime, todayInRome } from '@/lib/stay-dates';
 import { useBookingReviews, useRefreshBookingReviews } from '@/queries/use-ota-reviews';
 import { useReviewInviteStatus } from '@/queries/use-reviews';
 import { REVIEW_MAX_RATING, type Booking, type BookingReviewItem, type OtaReviewActionState } from '@/types';
-import { bookingReviewsKindOf, type BookingReviewsKind } from '../lib/booking-reviews';
+import { bookingReviewsKindOf, stayEndedForReviews, type BookingReviewsKind } from '../lib/booking-reviews';
 import { bookingSourceName } from '../lib/ota-stay';
 
 const PUBLISHED_FORMAT: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
@@ -94,19 +94,21 @@ interface BookingReviewsSectionProps {
  */
 export function BookingReviewsSection({ booking, canWrite }: BookingReviewsSectionProps) {
   const { flags } = useFeatureFlags();
-  const kind = bookingReviewsKindOf(booking, flags.octorateConnector, todayInRome());
-  if (kind === null) return null;
-  return <BookingReviewsBody booking={booking} canWrite={canWrite} kind={kind} />;
+  const today = todayInRome();
+  const kind = bookingReviewsKindOf(booking, flags.octorateConnector, today);
+  const inviteEnabled = kind === 'direct' || (flags.guestPortal && stayEndedForReviews(booking, today));
+  if (!kind && !inviteEnabled) return null;
+  return <BookingReviewsBody booking={booking} canWrite={canWrite} kind={kind} inviteEnabled={inviteEnabled} />;
 }
 
-function BookingReviewsBody({ booking, canWrite, kind }: BookingReviewsSectionProps & { kind: BookingReviewsKind }) {
+function BookingReviewsBody({ booking, canWrite, kind, inviteEnabled }: BookingReviewsSectionProps & { kind: BookingReviewsKind | null; inviteEnabled: boolean }) {
   const { t, i18n } = useTranslation();
-  const reviews = useBookingReviews(booking.id, true);
-  const invite = useReviewInviteStatus(booking.id, kind === 'direct');
+  const reviews = useBookingReviews(booking.id, kind !== null);
+  const invite = useReviewInviteStatus(booking.id, inviteEnabled);
   const refresh = useRefreshBookingReviews(booking.id);
 
   const title = t('reviews.booking.title');
-  if (reviews.isPending || (kind === 'direct' && invite.isPending)) {
+  if ((kind && reviews.isPending) || (inviteEnabled && invite.isPending)) {
     return (
       <PlainSection title={title} data-testid="booking-reviews">
         <div role="status" aria-busy="true" data-testid="booking-reviews-loading">
@@ -121,11 +123,12 @@ function BookingReviewsBody({ booking, canWrite, kind }: BookingReviewsSectionPr
   const data = reviews.isError ? undefined : reviews.data;
   const items = data?.items ?? [];
   const limit = data && !data.channelCapabilities.canRead ? data.channelCapabilities.reason : null;
-  const inviteStatus = kind === 'direct' ? invite.data : undefined;
+  const inviteStatus = inviteEnabled && !invite.isError ? invite.data : undefined;
   const inviteView = reviewInviteViewOf(inviteStatus);
 
   // Nothing to say: a booking with no reviews at all, or a stay of the site that nobody asked about and nobody reviewed.
-  if (data && (limit === 'no_reviews_for_booking_source' || (kind === 'direct' && inviteView === null && items.length === 0))) return null;
+  const showReviews = kind !== null && limit !== 'no_reviews_for_booking_source';
+  if (!inviteView && (!showReviews || (data && kind === 'direct' && items.length === 0))) return null;
 
   const canRefresh = kind === 'channel' && data !== undefined && data.channelCapabilities.canRead;
   const wait = getRetryAfterSeconds(refresh.error);
@@ -142,7 +145,7 @@ function BookingReviewsBody({ booking, canWrite, kind }: BookingReviewsSectionPr
         <ReviewInviteBlock bookingId={booking.id} status={inviteStatus} view={inviteView} canWrite={canWrite} showReviewsLink={!items.some((item) => item.source === 'Review')} />
       ) : null}
 
-      {reviews.isError && getHttpStatus(reviews.error) === 404 ? (
+      {!showReviews ? null : reviews.isError && getHttpStatus(reviews.error) === 404 ? (
         // A 404 is told as a 404, whatever an older reading holds: the reviews of a booking that is gone, or out of the reach of the caller, are not shown.
         <p className="max-w-prose text-sm text-foreground/70" role="status" data-testid="booking-reviews-not-found">
           {t('reviews.booking.notFound')}
