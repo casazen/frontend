@@ -609,7 +609,7 @@ test.describe('Aligned cards', () => {
       await expectAligned([0, 1, 2].map((index) => tiles.nth(index).locator('.text-2xl')), 'number');
     });
 
-    test('the Home of Affitti brevi lines its numbers up beside the list of the next arrivals', async ({ page }) => {
+    test('opening analytics from the short-stay dashboard aligns its metrics beside the next arrivals', async ({ page }) => {
       const arrival = (bookingId: string, guestName: string, day: string) => ({
         bookingId,
         propertyId: 'p1',
@@ -642,6 +642,11 @@ test.describe('Aligned cards', () => {
       await page.goto(demoUrl('/app/short-rent', 'short-stay'));
 
       const numbers = page.getByTestId('home-numbers');
+      await expect(page.getByTestId('home-today')).toBeVisible();
+      await expect(numbers).toHaveCount(0);
+      await page.getByTestId('page-header-more').click();
+      await page.getByRole('menuitem', { name: 'I numeri essenziali' }).click();
+      await expect(page).toHaveURL(/[?&]view=analytics(?:&|$)/);
       const tiles = numbers.getByRole('listitem').filter({ has: page.locator('.text-2xl') });
       await expect(tiles).toHaveCount(3);
       await expect(numbers.getByTestId('home-next-arrivals')).toBeVisible();
