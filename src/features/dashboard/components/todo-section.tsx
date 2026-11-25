@@ -24,7 +24,7 @@ export function TodoSection({ rows, showAll, onToggleAll }: TodoSectionProps) {
     rows.length > VISIBLE ? { actionLabel: showAll ? t('dashboard.todo.showLess') : t('dashboard.todo.seeAll', { count: rows.length }), onAction: onToggleAll } : {};
 
   return (
-    <PlainSection title={t('dashboard.todo.title')} count={rows.length} data-testid="home-todo" {...action}>
+    <PlainSection className="rounded-xl border border-border bg-card p-4 sm:p-5" title={t('dashboard.todo.title')} count={rows.length} data-testid="home-todo" {...action}>
       {rows.length > 0 ? (
         <ul role="list" className="divide-y divide-border border-y border-border">
           {shown.map((row) => (

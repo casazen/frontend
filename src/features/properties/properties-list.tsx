@@ -263,7 +263,7 @@ export function usePropertiesList({ canWrite, canReadBookings, busy, onPause, on
         const price = priceOf(property);
         const since = pausedSince(property);
         return {
-          lead: <PropertyThumb photoUrls={property.photoUrls} className="size-14" />,
+          lead: <PropertyThumb photoUrls={property.photoUrls} className="h-16 w-20" />,
           title: property.name,
           sub: formatPropertyLocation(property),
           status: <StatusBadge kind="property" status={propertyStatus(property)} />,
