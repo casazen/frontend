@@ -4173,6 +4173,17 @@
       "signOut": "Sign out"
     },
     "guide": {
+      "editorDescription": "Organize the information guests need before and during their stay.",
+      "arrivalGroup": "Arrival and parking",
+      "stayGroup": "During the stay",
+      "departureGroup": "Departure",
+      "privateGroup": "Private information",
+      "aiTitle": "AI draft",
+      "aiDescription": "Generate an arrival, stay and departure draft from property details. Review it before saving.",
+      "aiGenerate": "Generate draft",
+      "aiUnavailable": "AI generation did not return a draft. Try again or fill in the guide manually.",
+      "aiApply": "Fill empty fields",
+      "aiNoEmptyFields": "The suggested fields already have content. You can edit them directly in the guide.",
       "checkInHours": "Check-in hours",
       "checkOutHours": "Check-out hours",
       "parking": "Parking",
@@ -4202,6 +4213,10 @@
       "visibility": "Access instructions and Wi-Fi are visible after check-in. The other sections are also visible from the public QR code."
     },
     "host": {
+      "accessSection": "Guest access",
+      "accessDescription": "Share the private link for this stay or open the portal as your guest sees it.",
+      "preview": "Open guest portal",
+      "ordersSection": "Services and orders",
       "privacyRequests": "Portal privacy requests",
       "GuestDataCopyRequested": "Personal data copy request",
       "GuestDataErasureRequested": "Personal data erasure request",

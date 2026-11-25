@@ -1,4 +1,4 @@
-import { ArrowLeft, BookOpen, CalendarDays, ChevronRight, Ellipsis, Globe2, House, ClipboardCheck, CreditCard, FileText, Leaf, MessageCircle, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, BookOpen, CalendarDays, ChevronRight, Ellipsis, Globe2, House, MapPin, UsersRound, ClipboardCheck, CreditCard, FileText, Leaf, MessageCircle, ShoppingBag } from 'lucide-react';
 import { GuestSupplierOrders } from './guest-supplier-orders';
 import { useState, type CSSProperties, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -268,12 +268,18 @@ function GuestPortalPage({ token }: { token: string }) {
         )}
         {stay && !failed && (
           <>
+            <div className={home ? 'stay-intro' : undefined}>
             {home ? <span className="stay-phase">{text(phase)}</span> : (
               <Link to={href()} className="stay-back"><ArrowLeft aria-hidden="true" />{text('back')}</Link>
             )}
             <h1>{extras ? extraLabels[language][0] : text(services ? 'servicesAndExtras' : supplierOrders ? 'supplierOrders' : guide ? 'guide' : details ? 'booking' : chat ? 'chat' : documents ? 'documents' : payments ? 'payments' : review ? 'review' : cancellation ? 'cancellation' : privacy ? 'privacy' : 'title')}</h1>
             <p className="stay-meta">{home ? <>{range} · {stay.guests} {guestLabel(language, stay.guests)}</> : stay.propertyName}</p>
-            {home && <div className="stay-card stay-property"><CalendarDays aria-hidden="true" />{stay.propertyName} · {stay.bookingCode}</div>}
+            {home && (
+              <p className="stay-property"><MapPin aria-hidden="true" />{stay.propertyName}
+                <small className="stay-mobile-code">· {stay.bookingCode}</small>
+              </p>
+            )}
+            </div>
             {services ? (
               <>
                 <GuestHostExtras path={path} language={language} />
@@ -352,6 +358,7 @@ function GuestPortalPage({ token }: { token: string }) {
               <>
                 {phase !== 'after' && (
                   <section className="stay-next">
+                    <div className="stay-next-symbol"><ClipboardCheck aria-hidden="true" /></div>
                     <p>{text('next')}</p>
                     <h2>{text(nextStep)}</h2>
                     {!overview?.checkInCompleted && <p>{text(stay.checkInAvailable ? 'checkInHelp' : 'checkInWait')}</p>}
@@ -362,6 +369,7 @@ function GuestPortalPage({ token }: { token: string }) {
                 )}
                 {phase === 'after' && stay.status !== 'cancelled' && (
                   <section className="stay-next">
+                    <div className="stay-next-symbol"><ClipboardCheck aria-hidden="true" /></div>
                     <p>{text('next')}</p>
                     <h2>{text('reviewHeading')}</h2>
                     <p>{text('reviewUnavailable')}</p>
@@ -392,10 +400,11 @@ function GuestPortalPage({ token }: { token: string }) {
           <aside className="stay-summary" aria-label={text('yourBooking')}>
             <div className="stay-card">
               <h2>{text('yourBooking')}</h2>
-              <p>{stay.propertyName}</p>
-              <p>{range}</p>
-              <p>{stay.guests} {guestLabel(language, stay.guests)} · {stay.bookingCode}</p>
-              <StaySectionLink to={href('details')} icon={ChevronRight} label={text('viewBooking')} />
+              <p className="stay-summary-property">{stay.propertyName}</p>
+              <p><CalendarDays aria-hidden="true" />{range}</p>
+              <p><UsersRound aria-hidden="true" />{stay.guests} {guestLabel(language, stay.guests)}</p>
+              <p><FileText aria-hidden="true" />{stay.bookingCode}</p>
+              <Link className="stay-summary-action" to={href('details')}>{text('viewBooking')}<ChevronRight aria-hidden="true" /></Link>
             </div>
           </aside>
           <nav className="stay-nav" aria-label={text('stay')}>
