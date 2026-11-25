@@ -1,0 +1,65 @@
+/* The working canvas and the navigation use the two inks of the CasaZen mark.
+   Content and menus rendered in portals keep the semantic colours of their area. */
+html[data-ui='v2'] {
+  --workspace-canvas: var(--stone-50);
+  --rail-surface: var(--ink-800);
+  --rail-label: var(--ink-100);
+  --rail-muted: #c0d2cf;
+  --rail-highlight: #ffad83;
+  --rail-hover: #304c4e;
+  --panel-shadow: 0 1px 2px rgb(23 44 46 / 5%), 0 4px 14px -8px rgb(23 44 46 / 15%);
+}
+[data-context] > div > main {
+  background-color: var(--workspace-canvas, var(--color-background));
+}
+.workspace-rail {
+  --color-muted-foreground: var(--rail-muted);
+  --color-foreground: var(--rail-label);
+  --color-accent: var(--rail-hover);
+  --color-accent-foreground: white;
+  --color-border: #446062;
+  --color-ring: var(--rail-highlight);
+  --color-primary-text: var(--rail-highlight);
+  --color-card: var(--rail-hover);
+  color: var(--rail-label);
+  background: var(--rail-surface);
+}
+.workspace-rail a[aria-current='page'] {
+  background: var(--rail-hover);
+  color: white;
+}
+.workspace-rail a[aria-current='page'] > span[aria-hidden='true'] {
+  background: var(--rail-highlight);
+}
+.workspace-rail input { color: white; }
+.workspace-group-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: .4rem .75rem;
+  color: var(--rail-muted);
+  font-size: .72rem;
+  font-weight: 650;
+  letter-spacing: .045em;
+}
+.workspace-group-toggle:hover { color: white; }
+.workspace-page-heading {
+  padding-block: .25rem 1rem;
+  border-block-end: 1px solid var(--color-border);
+}
+.workspace-page-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: clamp(2.5rem, 4vw, 3.25rem);
+  aspect-ratio: 1;
+  border-radius: var(--radius-lg);
+  color: var(--color-primary-text, var(--color-primary));
+  background: var(--color-primary-soft, var(--color-muted));
+}
+.workspace-mobile-nav { box-shadow: 0 -3px 18px rgb(23 44 46 / 8%); }
+.workspace-entry { background: var(--ink-800, #172c2e); }
+@media (pointer: coarse) {
+  .workspace-group-toggle { min-height: var(--touch-min); }
+}
