@@ -17,7 +17,6 @@ const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      data-ui-card=""
       className={cn("flex flex-col space-y-1.5 p-6", className)}
       {...props}
     />
@@ -29,7 +28,6 @@ const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HT
   ({ className, ...props }, ref) => (
     <h3
       ref={ref}
-      data-ui-card=""
       className={cn("text-xl font-semibold leading-tight tracking-tight", className)}
       {...props}
     />
@@ -41,7 +39,6 @@ const CardDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttribu
   ({ className, ...props }, ref) => (
     <p
       ref={ref}
-      data-ui-card=""
       className={cn("text-sm text-muted-foreground", className)}
       {...props}
     />
@@ -60,7 +57,6 @@ const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      data-ui-card=""
       className={cn("flex items-center p-6 pt-0", className)}
       {...props}
     />
@@ -114,7 +110,6 @@ const AlignedCard = React.forwardRef<HTMLDivElement, AlignedCardProps>(({ rows, 
   from ? (
     <Card
       ref={ref}
-      data-ui-card=""
       className={cn("flex flex-col p-6", FROM[from], className)}
       style={{ ...style, "--aligned-rows": rows } as React.CSSProperties}
       {...props}
