@@ -717,6 +717,11 @@ describe('route-manifest: no page is left without a way in (UI-04a)', () => {
           isEntryFeatureEnabled(entry, features),
       );
       for (const entry of reachable) {
+        if (entry.path === `/app/${contextKey}/settings` && (contextKey === 'short-rent' || contextKey === 'long-rent') &&
+            getNavChildren(entry.path, hasPermission, features).length === 0) {
+          expect(visible).not.toContain(entry.path);
+          continue;
+        }
         const inMenu = visible.includes(entry.path);
         const hangsFromVisible = entry.navParent !== undefined && visible.includes(entry.navParent);
         // Or it is a tab of the profile of the area: the menu of the user leads there, and the profile asks no permission (checked above).

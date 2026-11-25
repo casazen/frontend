@@ -641,7 +641,7 @@ test.describe('Aligned cards', () => {
       await page.setViewportSize({ width: 1040, height: 900 });
       await page.goto(demoUrl('/app/short-rent', 'short-stay'));
 
-      await page.locator('details').filter({ has: page.getByTestId('dashboard-period') }).locator('summary').click();
+      await page.getByTestId('home-performance').getByRole('button').click();
       const numbers = page.getByTestId('home-numbers');
       const tiles = numbers.getByRole('listitem').filter({ has: page.locator('.text-2xl') });
       await expect(tiles).toHaveCount(3);

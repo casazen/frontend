@@ -18,9 +18,9 @@ for (const width of [1440, 390]) {
     await expect(main.getByRole('link', { name: 'Stripe Connect' })).toBeVisible();
     await page.goto(demoUrl('/app/short-rent', 'short-stay'));
     const performance = page.getByTestId('home-performance');
-    await expect(performance.locator('summary')).toBeVisible();
+    await expect(performance.getByRole('button')).toBeVisible();
     await expect(page.getByTestId('dashboard-period')).toBeHidden();
-    await performance.locator('summary').click();
+    await performance.getByRole('button').click();
     await expect(page.getByTestId('dashboard-period')).toBeVisible();
   });
 }

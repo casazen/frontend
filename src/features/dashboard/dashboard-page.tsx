@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Building2, ChartNoAxesColumn, ChevronDown, Plus, Workflow, Wrench } from 'lucide-react';
+import { Building2, ChartNoAxesColumn, Plus, Workflow, Wrench } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { FocusBlock } from '@/components/shared/calm';
@@ -10,6 +10,7 @@ import { Alert } from '@/components/ui/alert';
 import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { PHONE_QUERY, useMediaQuery } from '@/hooks/use-media-query';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Select } from '@/components/ui/select';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { ComplianceUrgentBlock } from '@/features/compliance/components/compliance-urgent-block';
@@ -225,13 +226,16 @@ export function DashboardPage() {
         ) : null}
 
         {canReadBookings && !noActiveProperty && (
-          <details data-testid="home-performance" className="group rounded-2xl border bg-card px-5 md:px-6" open={params.has('period') || undefined}>
-            <summary className="flex min-h-16 cursor-pointer list-none items-center gap-3 rounded-lg font-semibold focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
-              <ChartNoAxesColumn aria-hidden="true" className="size-5 text-primary-text" />
-              {t('dashboard.numbers.label')}
-              <ChevronDown aria-hidden="true" className="ml-auto size-4 transition-transform group-open:rotate-180 motion-reduce:transition-none" />
-            </summary>
-            <div className="space-y-5 border-t py-5">
+          <Accordion type="single" collapsible defaultValue={params.has('period') ? 'performance' : undefined}
+            className="rounded-2xl border bg-card px-5 md:px-6" data-testid="home-performance">
+            <AccordionItem value="performance">
+              <AccordionTrigger>
+                <span className="flex items-center gap-3">
+                  <ChartNoAxesColumn aria-hidden="true" className="size-5 text-primary-text" />
+                  {t('dashboard.numbers.label')}
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="space-y-5 border-t py-5">
               <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
                 <span className="text-sm font-medium">{t('dashboard.filter.period')}</span>
                 <Select
@@ -264,8 +268,9 @@ export function DashboardPage() {
                   </Alert>
                 )
               ) : null}
-            </div>
-          </details>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         )}
 
         <HomeNextStep />
