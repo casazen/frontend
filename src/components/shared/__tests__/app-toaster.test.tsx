@@ -108,7 +108,7 @@ describe('AppToaster (UI-04b)', () => {
       expect(toaster).toHaveAttribute('data-x-position', 'center');
       expect(toaster.style.getPropertyValue('--mobile-offset-top')).toContain('--header-height');
     } finally {
-      useUiStore.setState({ openWizards: 0 });
+      act(() => useUiStore.setState({ openWizards: 0 }));
     }
   });
 

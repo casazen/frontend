@@ -76,9 +76,9 @@
 
   --cz-font-body: 'Inter Variable', Inter, 'Segoe UI', system-ui, sans-serif;
   --cz-font-display: 'Fraunces Variable', Fraunces, 'Iowan Old Style', Georgia, serif;
-  --cz-radius-control: 0.625rem;
-  --cz-radius-panel: 0.875rem;
-  --cz-radius-media: 1.25rem;
+  --cz-radius-control: 10px;
+  --cz-radius-panel: 14px;
+  --cz-radius-media: 20px;
   --cz-shadow-raised: 0 1px 2px rgb(23 44 46 / 6%), 0 8px 24px rgb(23 44 46 / 8%);
   --cz-reading-width: 65ch;
   --cz-section-gap: clamp(1.5rem, 4vw, 2.5rem);

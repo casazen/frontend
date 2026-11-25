@@ -34,3 +34,9 @@ La verifica GitHub della #685 ha segnalato due test. Il primo assumeva un editor
 La #679 ha fatto emergere una sovrapposizione tra notifiche e pulsanti in un wizard su telefono. Nei wizard con schermo basso, le notifiche appaiono sotto l’intestazione e lasciano liberi i comandi del piè di pagina.
 
 I due test segnalati per la #686 dipendevano dalla classe tipografica del nome di un fornitore e dall’uso diretto di `PageHeader`. Il test del catalogo usa ora un selettore stabile, mentre le pagine dei servizi delegano a `PageHeader` icona, titolo e schede.
+
+## App nativa
+
+La [PR mobile #23](https://github.com/casazen/mobile/pull/23) è in bozza. Il diff introduce l’Inchiostro `#1F3A3D` e opzioni comuni per la barra di navigazione. Per allineare il tema nativo alle fondamenta, usa `#FBFAF8` per lo sfondo, `#FFFFFF` per le superfici, `#1F3A3D` per il testo di marca e gli stessi accenti semantici delle aree. Le schermate native continuano a usare componenti e unità di React Native.
+
+Typecheck, lint, unit test e bundle della bozza sono passati su GitHub. Maestro si è fermato durante la connessione all’emulatore Android sulla porta 5554. Il collaudo nativo resta aperto.

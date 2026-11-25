@@ -211,7 +211,11 @@ describe('tokens.css: shape, motion, layers', () => {
 
   it('Radius_Scale_IsTheDemosAndKeepsIncreasing', () => {
     const names = ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl'];
-    const values = names.map((name) => base[`--radius-${name}`]);
+    const values = names.map((name) => {
+      const value = base[`--radius-${name}`];
+      const alias = /^var\((--[\w-]+)\)$/.exec(value)?.[1];
+      return alias ? primitives[alias] : value;
+    });
     expect(values.every((value) => /^\d+px$/.test(value ?? ''))).toBe(true);
     expect(values.slice(0, 6)).toEqual(['4px', '6px', '10px', '14px', '20px', '28px']);
     const numbers = values.map(px);
