@@ -191,6 +191,16 @@ describe('SupplierRequestDetailPage (SU-08, SP-08c)', () => {
     expect(screen.getByTestId('supplier-request-now')).toHaveTextContent('Il lavoro è in programma');
   });
 
+  it('closes a taken housekeeping job and removes the complete action after confirmation', async () => {
+    requestsApi.completeServiceRequest.mockResolvedValue({});
+    supplierApi.fetchSupplierInboxItem.mockResolvedValueOnce(TAKEN_REQUEST)
+      .mockResolvedValue({ ...TAKEN_REQUEST, status: 'Completato' });
+    renderPage();
+    fireEvent.click(await screen.findByTestId('supplier-request-complete'));
+    await waitFor(() => expect(requestsApi.completeServiceRequest).toHaveBeenCalledWith(ID, undefined));
+    await waitFor(() => expect(screen.queryByTestId('supplier-request-complete')).not.toBeInTheDocument());
+  });
+
   it('SupplierRequestDetailPage_TakeConflict_ReloadsTheRequest', async () => {
     requestsApi.takeServiceRequest.mockRejectedValue(
       problem(409, 'service_request_state_changed', 'La richiesta è stata modificata da un altro utente.'),

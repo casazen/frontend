@@ -19,6 +19,13 @@ export interface GuestSupplierOrder {
   decision: string | null;
 }
 
-export const orderStatus = (state: string) => supplierOrderState(state, 'it');
+/** Poll visible order lists while the other party can still change the outcome. */
+export const GUEST_ORDER_REFRESH_MS = 15_000;
+
+export function orderNeedsUpdates(order: GuestSupplierOrder): boolean {
+  return ['PendingQuote', 'Quoted', 'Authorized', 'CardSaved', 'Accepted', 'Disputed'].includes(order.state);
+}
+
+export const orderStatus = (state: string, language = 'it') => supplierOrderState(state, language);
 export const orderMoney = (cents: number, language = 'it') =>
   new Intl.NumberFormat(language, { style: 'currency', currency: 'EUR' }).format(cents / 100);

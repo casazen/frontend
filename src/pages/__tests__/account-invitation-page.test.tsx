@@ -30,8 +30,7 @@ describe('activation from an account invitation email', () => {
     expect(window.location.hash).toBe('');
     const retry = screen.getByRole('button', { name: i18n.t('invitation.retry') });
     fireEvent.click(retry);
-    expect(retry).toBeDisabled();
-    fireEvent.click(retry);
+    expect(screen.queryByRole('button', { name: i18n.t('invitation.retry') })).not.toBeInTheDocument();
     expect(auth.login).toHaveBeenCalledTimes(2);
     expect(auth.login.mock.calls[0][0]).toEqual({
       authorizationParams: { organization: 'org_case123', invitation: 'inv_ticket123' },

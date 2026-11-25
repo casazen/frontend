@@ -115,7 +115,6 @@ function SignedOutCard({ invite }: { invite: OrgInvitationLookup }) {
       description={t('invitation.joinDescription')}
       summary={<InviteDetails invite={invite} />}
     >
-      <h2 className="text-lg font-semibold">{t('invitation.accountStep')}</h2>
       <p className="text-sm text-muted-foreground">{t('invitation.useSameEmail')}</p>
       <HandoffNotice status={handoff.status} />
       <Button className="w-full" size="lg" disabled={handoff.busy} onClick={() => enter(primary)} data-testid={primary.testId}>

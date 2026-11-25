@@ -1,3 +1,4 @@
+import { Building2 } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -71,7 +72,8 @@ export function NewLongRentRequest({ onClose, onCreated }: NewLongRentRequestPro
             {t('longRentRequests.new.noProperty')}
           </p>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-2 rounded-xl border border-border bg-muted/50 p-4">
+            <Building2 aria-hidden="true" className="size-5 text-primary-text" />
             <Label htmlFor="long-rent-request-property">{t('longRentRequests.new.property')}</Label>
             <Select id="long-rent-request-property" value={selected} onChange={(event) => setSelected(event.target.value)}>
               <option value="">{t('longRentRequests.new.choose')}</option>

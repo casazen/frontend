@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, CircleAlert, Clock3, CircleHelp } from 'lucide-react';
 import { NoteLine } from '@/features/dashboard/components/note-line';
 import type { NoteTone, RowNote } from '@/features/dashboard/lib/home-model';
 import type { LightSummary } from '../lib/compliance-light';
@@ -55,9 +55,20 @@ export function ComplianceSummaryLine({ lights, variant = 'page' }: ComplianceSu
 
   if (variant === 'page') {
     return (
-      <p data-testid="compliance-summary-line" data-tone={note.tone}>
-        <NoteLine note={note} />
-      </p>
+      <div data-testid="compliance-summary-line" data-tone={note.tone} className="space-y-3 rounded-xl border bg-card p-4 sm:p-5">
+        <h2 className="text-lg font-semibold">{lights.needs ? todo : text}</h2>
+        <ul className="flex flex-wrap gap-2 text-sm">
+          {([
+            [CircleAlert, lights.red, 'compliance.summary.line.red'],
+            [Clock3, lights.yellow, 'compliance.summary.line.yellow'],
+            [CircleHelp, lights.unknown + lights.unlisted, 'compliance.summary.line.unknown'],
+          ] as const).map(([Icon, count, key]) => count > 0 && (
+            <li key={key} className="inline-flex items-center gap-2 rounded-lg bg-muted/50 px-3 py-2">
+              <Icon aria-hidden="true" className="size-4" />{t(key, { count })}
+            </li>
+          ))}
+        </ul>
+      </div>
     );
   }
 

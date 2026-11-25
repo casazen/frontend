@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { FormProvider, useForm, useWatch, type FieldErrors } from 'react-hook-form';
 import { Check, Copy, Eye, Tag, Trash2 } from 'lucide-react';
-import { PageHeader } from '@/components/layout/page-header';
+import { ServicePageHeader } from '@/features/supplier/components/service-page-header';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
 import { StatusBadge } from '@/components/shared/status/status-badge';
@@ -48,7 +48,7 @@ function NotFound() {
   const { t } = useTranslation();
   return (
     <div className="min-w-0 space-y-6" data-testid="supplier-service-not-found">
-      <PageHeader title={t(`${T}.notFoundTitle`)} crumbs="auto" />
+      <ServicePageHeader icon={Tag} title={t(`${T}.notFoundTitle`)} crumbs="auto" />
       <div className="rounded-xl bg-card p-2 shadow-sm ring-1 ring-inset ring-border">
         <EmptyState
           icon={Tag}
@@ -193,7 +193,8 @@ function ServiceEditor({ service }: { service: SupplierService }) {
 
   return (
     <div className="min-w-0 space-y-6" data-testid="supplier-service-page">
-      <PageHeader
+      <ServicePageHeader
+        icon={Tag}
         title={service.name}
         description={[getServiceCategoryLabel(service.category, t), formatPrice(service, t, i18n.language), formatDuration(service.durationMinutes, t)].join(' · ')}
         crumbs="auto"
@@ -296,7 +297,7 @@ export function SupplierServiceDetailPage() {
     if (gone) return <NotFound />;
     return (
       <div className="min-w-0 space-y-6" data-testid="supplier-service-load-error">
-        <PageHeader title={t(`${T}.loadErrorTitle`)} crumbs="auto" />
+        <ServicePageHeader icon={Tag} title={t(`${T}.loadErrorTitle`)} crumbs="auto" />
         <ErrorState testId="supplier-service-error" title={t(`${T}.loadError`)} error={error} onRetry={() => void refetch()} />
       </div>
     );
@@ -304,7 +305,7 @@ export function SupplierServiceDetailPage() {
   if (isLoading || !data) {
     return (
       <div className="min-w-0 space-y-6" data-testid="supplier-service-loading" aria-busy="true">
-        <PageHeader title={t(`${T}.loadErrorTitle`)} crumbs="auto" />
+        <ServicePageHeader icon={Tag} title={t(`${T}.loadErrorTitle`)} crumbs="auto" />
         <SkeletonLine lines={8} label={t(`${T}.loading`)} />
       </div>
     );

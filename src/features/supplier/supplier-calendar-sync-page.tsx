@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { PageHeader } from '@/components/layout/page-header';
+import { ServicePageHeader } from '@/features/supplier/components/service-page-header';
 import { PlainSection } from '@/components/shared/calm';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import { Alert } from '@/components/ui/alert';
@@ -14,7 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useCalendarSyncStatus, useDisconnectIcalFeed, useSetIcalFeed, useSyncSupplierCalendarNow } from '@/queries/supplier/use-calendar';
 import { getProblemMessage } from '@/lib/api-errors';
-import { Loader2, RefreshCw } from 'lucide-react';
+import { CalendarSync, Loader2, RefreshCw } from 'lucide-react';
 
 /**
  * The iCal calendar of the supplier (SU-15), a page that hangs from the agenda: what the calendar says the supplier is busy with
@@ -33,7 +33,7 @@ export function SupplierCalendarSyncPage() {
   const [saving, setSaving] = useState(false);
 
   const header = (
-    <PageHeader title={t('supplier.calendarSyncTitle')} description={t('supplier.calendarSyncDescription')} crumbs="auto" />
+    <ServicePageHeader icon={CalendarSync} title={t('supplier.calendarSyncTitle')} description={t('supplier.calendarSyncDescription')} crumbs="auto" />
   );
 
   if (isLoading) {

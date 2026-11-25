@@ -46,14 +46,18 @@ describe('the copy of the address of the site', () => {
     ['failed', PLATFORM, `${APP}/book/villa-rossi/property/casa-mare`, 'warning', "URL copiato, ma è l'indirizzo di CasaZen: non riusciamo a leggere quello del tuo sito."],
     ['restricted', PLATFORM, `${APP}/book/villa-rossi/property/casa-mare`, 'warning', "URL copiato, ma è l'indirizzo di CasaZen: quello del tuo sito lo vede solo chi amministra l'account."],
   ] as const)('VetrinaPropertyRow_CopyIconWithTheSettings_%s_SaysWhatWasCopied', async (status, site, copied, toastKind, text) => {
-    render(<VetrinaPropertyRow property={home} bookingSite={bookingSite(status, site)} isSelected={false} onSelect={vi.fn()} />);
+    const onSelect = vi.fn();
+    render(<VetrinaPropertyRow property={home} bookingSite={bookingSite(status, site)} isSelected={false} onSelect={onSelect} />);
 
+    const row = screen.getByTestId('vetrina-property-row');
     const button = screen.getByTestId('vetrina-property-copy-url');
+    expect(row).not.toContainElement(button);
     await waitFor(() => expect(button).toBeEnabled());
     fireEvent.click(button);
 
     await waitFor(() => expect(toast[toastKind]).toHaveBeenCalledWith(text));
     expect(writeText).toHaveBeenCalledWith(copied);
+    expect(onSelect).not.toHaveBeenCalled();
     // «URL copiato» alone is said only for the address of the site: one message, the one of the state.
     expect(toast.success).toHaveBeenCalledTimes(toastKind === 'success' ? 1 : 0);
     expect(toast.warning).toHaveBeenCalledTimes(toastKind === 'warning' ? 1 : 0);

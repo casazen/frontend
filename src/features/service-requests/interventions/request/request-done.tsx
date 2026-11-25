@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { EmptyState } from '@/components/shared/empty-state';
 import { useTranslation } from 'react-i18next';
-import { BellRing, Clock, ExternalLink, ListChecks, Undo2 } from 'lucide-react';
+import { Clock, ExternalLink, ListChecks } from 'lucide-react';
 import { WizardDone } from '@/components/shared/wizard/wizard-done';
 import { getServiceRequestStatusLabel } from '@/lib/i18n-labels';
 import { formatRomeDateTime } from '@/lib/stay-dates';
@@ -79,8 +79,6 @@ export function RequestDone({ sent, values, stayId }: RequestDoneProps) {
         whatNext={[
           { text: pending ? t('requestWizard.done.answers') : t('requestWizard.housekeeping.status', { status: getServiceRequestStatusLabel(sent.request.status, t) }), icon: ListChecks },
           ...(respondBy ? [{ text: t('requestWizard.done.respondBy', { when: formatRomeDateTime(respondBy, i18n.language, { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }) }), icon: Clock }] : []),
-          { text: t(pending ? 'requestWizard.done.told' : 'requestWizard.housekeeping.track'), icon: BellRing },
-          ...(pending ? [{ text: t('requestWizard.done.cancel'), icon: Undo2 }] : []),
         ]}
         primary={{ label: t('requestWizard.done.see'), to: interventionPath(sent.request.id) }}
         secondary={backToStay ?? another}

@@ -66,7 +66,7 @@ export function IntegrationSettingsPage() {
     content = (
       <>
         {stale ? (
-          <p role="alert" className="text-sm text-danger-foreground" data-testid="integration-stale">
+          <p role="alert" className="rounded-lg border border-destructive/30 bg-card p-4 text-sm text-danger-foreground" data-testid="integration-stale">
             {t('onboardingPlan.integration.stale')}
           </p>
         ) : null}
@@ -79,7 +79,7 @@ export function IntegrationSettingsPage() {
   return (
     <AppShell>
       <div className={cn(FOCUS_COLUMN, 'space-y-6')} data-testid="integration-settings-page">
-        <PageHeader title={t('onboardingPlan.integration.title')} description={t('onboardingPlan.integration.description')} />
+        <PageHeader crumbs="auto" title={t('onboardingPlan.integration.title')} description={t('onboardingPlan.integration.description')} />
         {content}
       </div>
     </AppShell>

@@ -61,21 +61,22 @@ export function RentalTypeCard({ rentalType, onSelect, isLoading, selectedType }
       <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
         <Icon className="h-6 w-6" aria-hidden />
       </div>
-      <CardTitle className="mb-1.5">{t(meta.titleKey)}</CardTitle>
+      <CardTitle id={`rental-type-${rentalType}`} className="mb-1.5">{t(meta.titleKey)}</CardTitle>
       <CardDescription className="mb-6">{t(meta.descriptionKey)}</CardDescription>
-      <div className="mb-4 rounded-xl bg-muted/60 p-3">
-        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{t('onboarding.then')}</p>
+      <details className="mb-4">
+        <summary className="cursor-pointer rounded py-2 text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring">{t('onboarding.then')}</summary>
         <ol className="mt-2 list-decimal space-y-1 pl-4 text-sm text-muted-foreground">
           {PATH_STEPS[rentalType].map((key) => (
             <li key={key}>{t(key)}</li>
           ))}
         </ol>
-      </div>
+      </details>
       <Button
         type="button"
         className="w-full rounded-full"
         disabled={isLoading}
         onClick={() => onSelect(rentalType)}
+        aria-describedby={`rental-type-${rentalType}`}
       >
         {isLoading && isSelected ? t('onboarding.configuring') : t('onboarding.choose')}
       </Button>

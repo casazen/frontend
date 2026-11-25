@@ -82,7 +82,7 @@ export function BottomNav({ contextKey }: BottomNavProps) {
   return (
     <nav
       aria-label={t('shell.mobileNavigation')}
-      className="fixed bottom-0 inset-x-0 z-50 border-t bg-background md:hidden"
+      className="workspace-mobile-nav fixed bottom-0 inset-x-0 z-50 border-t bg-card md:hidden"
       style={{ height: 'calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px))' }}
     >
       <div className="flex h-full items-stretch pb-[env(safe-area-inset-bottom)]">

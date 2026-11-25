@@ -192,7 +192,7 @@ describe('the feature off (AC1: the proof of the flag)', () => {
     expect(shell).toHaveAttribute('data-state', 'unavailable');
     expect(screen.getByText('Questo widget non è disponibile')).toBeInTheDocument();
     expect(getPublicOrg).not.toHaveBeenCalled();
-    expect(robots()).toBe('noindex,nofollow');
+    await waitFor(() => expect(robots()).toBe('noindex,nofollow'));
   });
 
   it('embedShell_FlagsStillLoading_WaitsInsteadOfSayingNotAvailable_AndAsksNothing', async () => {

@@ -390,7 +390,7 @@ function GuestPortalPage({ token }: { token: string }) {
               <>
                 {phase !== 'after' && (
                   <section className="stay-next">
-                    <div className="stay-next-symbol"><ClipboardCheck aria-hidden="true" /></div>
+                    <div className="cz-icon-tile stay-next-symbol"><ClipboardCheck aria-hidden="true" /></div>
                     <p>{text('next')}</p>
                     <h2>{text(nextStep)}</h2>
                     {!overview?.checkInCompleted && <p>{text(stay.checkInAvailable ? 'checkInHelp' : 'checkInWait')}</p>}
@@ -401,7 +401,7 @@ function GuestPortalPage({ token }: { token: string }) {
                 )}
                 {phase === 'after' && stay.status !== 'cancelled' && stay.reviewAvailable && (
                   <section className="stay-next">
-                    <div className="stay-next-symbol"><ClipboardCheck aria-hidden="true" /></div>
+                    <div className="cz-icon-tile stay-next-symbol"><ClipboardCheck aria-hidden="true" /></div>
                     <p>{text('next')}</p>
                     <h2>{text('reviewHeading')}</h2>
                     <p>{text('reviewUnavailable')}</p>

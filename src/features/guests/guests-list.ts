@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
+import { createElement, useMemo } from 'react';
 import { Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { defineList } from '@/components/shared/list-view/define-list';
+import { GuestName } from './components/guest-name';
 import { formatDate } from '@/lib/utils';
 import type { GuestSummary } from '@/types';
 
@@ -32,7 +33,7 @@ export function useGuestsList() {
         rowKey: (guest) => guest.id,
         rowLabel: fullName,
         columns: [
-          { id: 'name', label: t('guests.anagrafica'), default: true, always: true, rowHeader: true, priority: 1, render: fullName },
+          { id: 'name', label: t('guests.anagrafica'), default: true, always: true, rowHeader: true, priority: 1, render: (guest) => createElement(GuestName, { guest }), csv: fullName },
           { id: 'email', label: t('guests.email'), default: true, priority: 2, render: (guest) => guest.email },
           { id: 'city', label: t('guests.city'), default: true, priority: 3, render: (guest) => guest.city || '—', csv: (guest) => guest.city },
           { id: 'createdAt', label: t('guests.createdAt'), default: true, priority: 4, render: (guest) => formatDate(guest.createdAt) },

@@ -34,7 +34,7 @@ function EntryLogo({ name, logoUrl, icon: Icon }: { name: string; logoUrl: strin
   const src = failed ? null : httpsUrlOrNull(logoUrl);
 
   return (
-    <span className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-primary/10 text-primary-text">
+    <span className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-primary-soft text-primary-text">
       {src ? (
         <img src={src} alt={t('marketplace.card.logoAlt', { name })} loading="lazy" onError={() => setFailed(true)} className="size-full object-contain" />
       ) : Icon ? (
@@ -86,7 +86,7 @@ export function MarketplaceEntryCard({ entry, builtIn, testId = `marketplace-ent
   };
 
   return (
-    <li className="flex h-full min-w-0 flex-col gap-3 rounded-lg border bg-card p-4" data-testid={testId}>
+    <li className="flex h-full min-w-0 flex-col gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm" data-testid={testId}>
       <div className="flex min-w-0 items-start gap-3">
         <EntryLogo key={entry.logoUrl ?? ''} name={entry.name} logoUrl={builtIn ? null : entry.logoUrl} icon={builtIn?.icon} />
         <div className="min-w-0 flex-1 space-y-1">
@@ -106,7 +106,7 @@ export function MarketplaceEntryCard({ entry, builtIn, testId = `marketplace-ent
           ) : null}
         </div>
       </div>
-      <div className="mt-auto flex flex-wrap items-center gap-2">
+      <div className="mt-auto flex flex-wrap items-center gap-2 border-t border-border pt-3">
         {action ? (
           <Button asChild variant={action.kind === 'manage' ? 'outline' : 'default'} size="sm">
             <Link to={action.to} aria-label={t(`marketplace.card.${action.kind}Aria`, { name: entry.name })} data-testid={`${testId}-action`}>

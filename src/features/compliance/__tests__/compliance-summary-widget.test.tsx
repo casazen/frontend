@@ -150,7 +150,7 @@ describe('ComplianceSummaryWidget (CO-11)', () => {
     renderWidget();
 
     // The most pressing thing is the highlighted block, with the button that leads to it; the server lists one of the twelve.
-    expect(await screen.findByTestId('compliance-summary-focus')).toHaveTextContent('Alloggiati Web da inviare: Mario Rossi');
+    expect(await screen.findByTestId('compliance-tier-fine')).toHaveTextContent('Alloggiati Web da inviare: Mario Rossi');
     expect(screen.getByTestId('compliance-summary-more')).toHaveTextContent('e altri 11');
     expect(screen.queryByTestId('compliance-summary-all-clear')).not.toBeInTheDocument();
   });
@@ -169,7 +169,7 @@ describe('ComplianceSummaryWidget (CO-11)', () => {
 
     // CO-17: "check-out completato ma property non pronta" is a pending task, never "all clear".
     expect(await screen.findByTestId('compliance-summary-turnovers-link')).toBeInTheDocument();
-    expect(screen.getByTestId('compliance-summary-focus')).toHaveTextContent('Villa Test · Paolo Gialli');
+    expect(screen.getByTestId('compliance-tier-chore')).toHaveTextContent('Paolo Gialli');
     expect(screen.queryByTestId('compliance-summary-all-clear')).not.toBeInTheDocument();
   });
 });
@@ -254,8 +254,8 @@ describe('ComplianceSummaryWidget levels', () => {
     expect(start).toHaveTextContent('Villa Test');
     expect(chore).toHaveTextContent('Luigi Bianchi');
     // The block on top is about the law, and says so.
-    expect(screen.getByTestId('compliance-summary-focus')).toHaveTextContent('Rischi una sanzione');
-    expect(screen.getByTestId('compliance-summary-focus')).toHaveTextContent('Alloggiati Web non accettato: Carla Neri');
+    expect(screen.queryByTestId('compliance-summary-focus')).not.toBeInTheDocument();
+    expect(fine).toHaveTextContent('Alloggiati Web non accettato: Carla Neri');
   });
 
   it('widget_ThingsTheLawDates_AreNeverCutBehindSeeAll', async () => {
@@ -287,7 +287,7 @@ describe('ComplianceSummaryWidget levels', () => {
     expect(rows).toHaveLength(2);
     expect(rows[0]).toHaveTextContent('Scaduto da 3 giorni');
     expect(rows[1]).toHaveTextContent('Entro oggi alle 16:30');
-    expect(screen.getByTestId('compliance-summary-focus')).toHaveTextContent('Scaduto da 3 giorni');
+    expect(screen.getAllByText('Scaduto da 3 giorni')).toHaveLength(1);
   });
 
   it('widget_ManyPropertiesToActivate_ShowThreeAndTheRestOnRequest', async () => {
@@ -312,10 +312,8 @@ describe('ComplianceSummaryWidget levels', () => {
     vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryWith({ propertiesPending: { count: 1, items: manyProperties(1) } }));
     renderWidget();
 
-    const focus = await screen.findByTestId('compliance-summary-focus');
-    expect(focus).toHaveTextContent('Per iniziare a lavorare');
-    expect(focus).toHaveTextContent('Completa l\'attivazione di Casa 1');
-    expect(focus).toHaveAttribute('data-tone', 'neutral');
+    const start = await screen.findByTestId('compliance-tier-start');
+    expect(start).toHaveTextContent('Casa 1');
     expect(screen.queryByTestId('compliance-tier-fine')).not.toBeInTheDocument();
   });
 
@@ -326,7 +324,7 @@ describe('ComplianceSummaryWidget levels', () => {
     );
     renderWidget();
 
-    expect(await screen.findByTestId('compliance-summary-focus')).toHaveAttribute('data-tone', 'danger');
+    expect(await screen.findByTestId('compliance-tier-fine')).toHaveTextContent('Scaduto');
   });
 
   it('widget_PropertiesInOrder_AreBehindOneLineAndNeverCountedAsToDo', async () => {
@@ -349,7 +347,7 @@ describe('ComplianceSummaryWidget levels', () => {
     renderWidget();
 
     // What it always said, with no light at all: the page keeps its block, and there is no new green line next to it.
-    expect(await screen.findByTestId('compliance-summary-all-clear')).toHaveTextContent('Sei in regola');
+    expect(await screen.findByTestId('compliance-summary-all-clear')).toHaveTextContent('Nessuna scadenza in elenco');
     expect(screen.queryByTestId('compliance-summary-line')).not.toBeInTheDocument();
     expect(screen.queryByTestId('compliance-tier-fine')).not.toBeInTheDocument();
   });
@@ -421,10 +419,12 @@ describe('ComplianceSummaryWidget traffic light', () => {
     renderWidget();
 
     const line = await screen.findByTestId('compliance-summary-line');
-    expect(line).toHaveTextContent('3 cose da fare: 2 da sistemare, 1 in corso');
+    expect(line).toHaveTextContent('3 cose da fare');
+    expect(line).toHaveTextContent('2 da sistemare');
+    expect(line).toHaveTextContent('1 in corso');
     expect(line).toHaveAttribute('data-tone', 'danger');
     // The title answers the question of the page; the line is above the list and the block.
-    expect(screen.getByTestId('compliance-summary-focus').compareDocumentPosition(line) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
+    expect(screen.getByTestId('compliance-tier-fine').compareDocumentPosition(line) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
   });
 
   it('widget_OnlyYellow_TheLineIsCalmAndSaysSo', async () => {

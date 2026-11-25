@@ -46,7 +46,7 @@ export function BookingPaymentTab({ booking }: { booking: Booking }) {
 
   return (
     <div className="space-y-8">
-      <PlainSection title={t('booking.detailPage.paymentSummaryTitle')} className="@container">
+      <PlainSection title={t('booking.detailPage.paymentSummaryTitle')} className="@container rounded-xl border bg-card p-4 sm:p-6">
         <div className={booking.paymentState ? CONTAINER_COLUMNS : 'grid grid-cols-1'}>
           <div className="min-w-0 space-y-3">
             {breakdown ? (
@@ -73,7 +73,7 @@ export function BookingPaymentTab({ booking }: { booking: Booking }) {
           </div>
 
           {booking.paymentState ? (
-            <dl className="min-w-0 space-y-2">
+            <dl className="min-w-0 space-y-3 rounded-lg bg-muted/50 p-4">
               <Amount label={t('booking.detailPage.paymentState')}>
                 <span data-testid="booking-payment-state" data-state={booking.paymentState}>
                   {t(`booking.list.payment.${booking.paymentState}`)}

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { ownerPortalPaths } from '@/features/owner-portal/paths';
 import { safeReturnTo } from '@/lib/auth-return-to';
 import { useTranslation } from 'react-i18next';
 import { LogIn } from 'lucide-react';
@@ -47,10 +48,16 @@ export function LoginPage() {
   const handoff = useLoginHandoff();
   const { start } = handoff;
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [params] = useSearchParams();
   const candidate = safeReturnTo(params.get('returnTo'));
   // Only application routes can be a post-login target; never external URLs or /login itself.
-  const returnTo = candidate?.startsWith('/app/') && new URL(candidate, window.location.origin).pathname.startsWith('/app/') ? candidate : null;
+  const destination = candidate && new URL(candidate, window.location.origin).pathname;
+  const ownerPage = destination === ownerPortalPaths.home ||
+    (destination?.startsWith(ownerPortalPaths.home + '/') &&
+      /^(?:immobili|calendario|contabilita|rendiconti|documenti|documenti-emessi|messaggi|contatti)(?:\/|$)/.test(destination.slice(ownerPortalPaths.home.length + 1)));
+  const returnTo = destination?.startsWith('/app/') || ownerPage ? candidate
+    : pathname === ownerPortalPaths.signIn ? ownerPortalPaths.home : null;
   const { t } = useTranslation();
   // Decided once, when the page opens.
   const [redirect] = useState(() => !startedRecently());
