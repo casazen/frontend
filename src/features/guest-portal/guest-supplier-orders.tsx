@@ -58,7 +58,7 @@ export function GuestSupplierOrders({ path, language }: { path: string; language
           </dl>}
           {order.state === 'Quoted' && <button disabled={change.isPending} onClick={() => change.mutate({
             suffix: `/${order.id}/authorize`, body: { totalCents: order.totalCents },
-          })}>Conferma con carta di test</button>}
+          })}>Simula autorizzazione</button>}
           {order.state === 'Completed' && <form onSubmit={(event) => {
             event.preventDefault();
             const text = new FormData(event.currentTarget).get('complaint');
