@@ -121,6 +121,16 @@ describe('Stepper extended', () => {
 });
 
 describe('Stepper compact', () => {
+  it('opens a completed step from the compact navigator and leaves future steps unavailable', () => {
+    const navigate = vi.fn();
+    render(<Stepper steps={STEPS} current={2} onStepSelect={navigate} />);
+    const select = screen.getByRole('combobox', { name: 'Passaggi' });
+    expect(select).toHaveValue('2');
+    expect(within(select).queryByRole('option', { name: 'Riepilogo' })).not.toBeInTheDocument();
+    fireEvent.change(select, { target: { value: '0' } });
+    expect(navigate).toHaveBeenCalledWith(0);
+  });
+
   it('Stepper_Compact_SaysWhichStepOfHowManyWithABar', () => {
     render(<Stepper steps={STEPS} current={1} />);
 
