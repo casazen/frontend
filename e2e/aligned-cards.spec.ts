@@ -537,11 +537,11 @@ test.describe('Aligned cards', () => {
       // The suppliers have the whole width of the page now (SR-09a), so how many lines a name takes depends on the font even more:
       // the first name is made long on purpose (see `setText`), the second is one line; only the first supplier has a bio.
       await setText(
-        cards.nth(0).locator('.font-medium').first(),
+        cards.nth(0).getByTestId('supplier-name'),
         'Servizi Integrati di Pulizia e Manutenzione per Strutture Ricettive del Lago di Como e della Brianza, con Lavanderia Industriale, Giardinaggio, Assistenza Tecnica Specializzata e Gestione Completa degli Ospiti S.r.l.',
       );
-      expect(await linesOf(cards.nth(0).locator('.font-medium').first())).toBeGreaterThanOrEqual(3);
-      expect(await linesOf(cards.nth(1).locator('.font-medium').first())).toBe(1);
+      expect(await linesOf(cards.nth(0).getByTestId('supplier-name'))).toBeGreaterThanOrEqual(3);
+      expect(await linesOf(cards.nth(1).getByTestId('supplier-name'))).toBe(1);
 
       await expectAligned([0, 1].map((index) => cards.nth(index).locator('.flex-wrap')), 'badges');
       await expectAligned([0, 1].map((index) => cards.nth(index)), 'card', 'bottom');

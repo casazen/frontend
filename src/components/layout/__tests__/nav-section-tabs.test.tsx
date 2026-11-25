@@ -256,6 +256,7 @@ describe('every page of a section has the head that draws the tabs', () => {
     const files = componentSources(path);
 
     expect(files.length, `no component found for ${path}`).toBeGreaterThan(0);
-    expect(files.some((source) => source.includes('<PageHeader')), `${path} has no <PageHeader>: its section has no tabs there`).toBe(true);
+    expect(files.some((source) => /<(PageHeader|ServicePageHeader)\b/.test(source)),
+      `${path} has no page header that renders the section tabs`).toBe(true);
   });
 });

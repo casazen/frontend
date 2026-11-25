@@ -1,18 +1,18 @@
 /* Owner accounts and tenant contracts share navigation mechanics, with separate role accents. */
 .resident-shell {
-  --resident-ink: #1f3a3d;
-  --resident-paper: #fbfaf8;
-  --resident-tint: #e9f1f0;
-  --resident-active: #1f3a3d;
+  --resident-ink: var(--ink-700);
+  --resident-paper: var(--stone-25);
+  --resident-tint: var(--ink-100);
+  --resident-active: var(--ink-700);
   --resident-line: #cfdad8;
   min-height: 100dvh;
   background: var(--resident-paper);
   color: var(--resident-ink);
 }
 .resident-shell--tenant {
-  --resident-active: #2147af;
-  --resident-tint: #eef3ff;
-  --resident-line: #dce3ef;
+  --resident-active: var(--savoia-700);
+  --resident-tint: var(--savoia-100);
+  --resident-line: var(--savoia-200);
 }
 .resident-rail {
   background: white;
@@ -38,7 +38,7 @@
   padding: .625rem;
   background: var(--resident-active);
   color: white;
-  border-radius: .875rem;
+  border-radius: var(--cz-radius-panel);
 }
 .resident-nav {
   display: grid;
@@ -50,7 +50,7 @@
   align-items: center;
   gap: .625rem;
   padding: .5rem .625rem;
-  border-radius: .625rem;
+  border-radius: var(--cz-radius-control);
   font-size: .875rem;
   font-weight: 550;
   line-height: 1.25;

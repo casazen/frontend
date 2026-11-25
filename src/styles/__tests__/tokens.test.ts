@@ -75,7 +75,10 @@ function declarationsOf(selector: string | RegExp, inside?: RegExp): Declaration
   return found;
 }
 
-const primitives = ruleDeclarations(tokens, ':root');
+const primitives = {
+  ...ruleDeclarations(parse(read('src/styles/design-foundations.css')), ':root'),
+  ...ruleDeclarations(tokens, ':root'),
+};
 const base = ruleDeclarations(tokens, GATE);
 const additive = themeDeclarations(tokens, 'static');
 const legacyTheme = themeDeclarations(globals, '');
@@ -342,7 +345,7 @@ describe('tokens.css and fonts.css: nothing changes without the redesign', () =>
     const imports = globals.nodes.filter((node): node is AtRule => node.type === 'atrule' && node.name === 'import').map((node) => normalize(node.params));
     // `tw-animate-css` (UI-07) is the last: the animation utilities the shadcn components ask for. The fonts and the tokens stay
     // right after Tailwind.
-    expect(imports).toEqual(['"tailwindcss"', '"./fonts.css"', '"./tokens.css"', '"tw-animate-css"']);
+    expect(imports).toEqual(['"tailwindcss"', '"./design-foundations.css"', '"./fonts.css"', '"./tokens.css"', '"./workspace.css"', '"tw-animate-css"']);
   });
 
   it('Tokens_RedesignBlock_OverridesTheExistingTokens', () => {
@@ -425,7 +428,8 @@ describe('fonts.css: Inter served by us', () => {
     ['--font-sans', ruleDeclarations(fonts, GATE)['--font-sans']],
     ['--font-display', themeDeclarations(fonts, 'static')['--font-display']],
   ])('Fonts_%s_FirstFamilyIsSelfHostedWithAnExistingFile', (_token, stack) => {
-    const family = /^'([^']+)'/.exec(stack ?? '')?.[1];
+    const alias = /^var\((--[\w-]+)\)$/.exec(stack ?? '')?.[1];
+    const family = /^'([^']+)'/.exec(alias ? primitives[alias] : stack ?? '')?.[1];
     expect(family, stack).toBeDefined();
     const file = faces().get(family!);
     expect(file, `@font-face of ${family}`).toBeDefined();
@@ -433,7 +437,8 @@ describe('fonts.css: Inter served by us', () => {
   });
 
   it('Fonts_SansStack_StartsWithInterAndEndsWithAGenericFamily', () => {
-    const stack = ruleDeclarations(fonts, GATE)['--font-sans'];
+    expect(ruleDeclarations(fonts, GATE)['--font-sans']).toBe('var(--cz-font-body)');
+    const stack = primitives['--cz-font-body'];
     expect(stack.startsWith("'Inter Variable', Inter, ")).toBe(true);
     expect(stack).toContain('system-ui');
     expect(stack.endsWith('sans-serif')).toBe(true);

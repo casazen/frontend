@@ -31,8 +31,8 @@ export function IconTile({
   className?: string;
 }) {
   return (
-    <span aria-hidden="true" className={`grid shrink-0 place-items-center rounded-2xl ${large ? 'size-14' : 'size-11'} ${TILE[tint]} ${className}`}>
-      <Icon className={large ? 'size-7' : 'size-5'} strokeWidth={1.9} />
+    <span aria-hidden="true" className={`cz-icon-tile ${large ? '[--cz-icon-tile-size:3.5rem] [--cz-icon-size:1.75rem]' : ''} ${TILE[tint]} ${className}`}>
+      <Icon strokeWidth={1.75} />
     </span>
   );
 }
@@ -70,15 +70,15 @@ export function Section({ title, intro, children, tone = 'plain', icon, tint = '
       {tone === 'ink' ? (
         <CasaZenRing size={420} color="#ff9b6b" className="pointer-events-none absolute -right-24 -top-28 opacity-[0.12]" />
       ) : null}
-      <div className="relative mx-auto max-w-6xl px-5 py-8 sm:py-20">
+      <div className="relative mx-auto max-w-6xl px-5 py-[var(--cz-section-gap)] sm:py-16">
         {icon ? (
           <div className="mb-6">
             <IconTile icon={icon} tint={tint} large />
           </div>
         ) : null}
         <h2 className={`max-w-4xl text-balance font-display text-3xl font-semibold leading-tight tracking-tight sm:text-4xl lg:text-5xl ${style.title}`}>{title}</h2>
-        {intro && <p className={`mt-4 max-w-3xl text-base leading-relaxed sm:text-lg ${style.intro}`}>{intro}</p>}
-        {children && <div className="mt-10">{children}</div>}
+        {intro && <p className={`mt-4 max-w-[var(--cz-reading-width)] text-base leading-relaxed sm:text-lg ${style.intro}`}>{intro}</p>}
+        {children && <div className="mt-6 sm:mt-9">{children}</div>}
       </div>
     </section>
   );
@@ -113,7 +113,7 @@ export function FeatureCard({ title, text, icon, tint = 'terra', heading: Headin
   const hasExtra = extra || (children !== undefined && children !== null && children !== false);
   const rows = 1 + (icon ? 1 : 0) + (text ? 1 : 0) + (hasExtra ? 1 : 0);
   return (
-    <div className={`flex flex-col rounded-2xl border border-ink-700/15 bg-white p-5 sm:p-6 sm:grid sm:grid-rows-subgrid sm:gap-y-0 ${FEATURE_ROW_SPANS[rows]}`}>
+    <div className={`flex flex-col rounded-[var(--cz-radius-panel)] border border-ink-700/15 bg-white p-[var(--cz-panel-padding)] sm:grid sm:grid-rows-subgrid sm:gap-y-0 ${FEATURE_ROW_SPANS[rows]}`}>
       {icon ? <IconTile icon={icon} tint={tint} className="mb-5" /> : null}
       <Heading className="text-lg font-semibold text-ink-800">{title}</Heading>
       {text && <p className="mt-2 text-[0.95rem] leading-relaxed text-ink-500">{text}</p>}

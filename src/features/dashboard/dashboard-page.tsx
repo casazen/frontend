@@ -138,7 +138,7 @@ export function DashboardPage() {
 
   return (
     <AppShell>
-      <div className="space-y-6 md:space-y-8" data-testid="sr-home">
+      <div className="space-y-[var(--cz-section-gap)]" data-testid="sr-home">
         <div className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-6 lg:border-s-4 lg:border-s-primary">
           <PageHeader
             title={firstName ? t('dashboard.title', { name: firstName }) : t('dashboard.titleNoName')}

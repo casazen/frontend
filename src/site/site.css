@@ -4,7 +4,7 @@
  * Fraunces (the display face of the public booking site, `public-fonts.css`) is the one of the headings: a face is
  * downloaded only when an element uses it.
  *
- * The palette is the brand's: the ink and the terracotta of the logo, the warm neutrals of the redesign (`tokens.css`:
+ * The palette is the brand's: the ink and the terracotta of the logo, the warm neutrals of the redesign (`design-foundations.css`:
  * "Pietra", `terra-*`, `ink-*`, and the accents of the four areas: salvia = suppliers, savoia = long rent, ametista =
  * administration), so that the site, the app and the public pages read as one. Contrast of the pairs the site uses (WCAG AA,
  * checked when the palette was chosen): ink-700 on white 12.1, ink-500 text on cream 5.0 to 5.6, white on terra-600 5.9,
@@ -13,56 +13,57 @@
  * app (`src/styles/public-brand.css`), so that the buttons of the site and of the search and guides are the same color.
  */
 @import "tailwindcss" source(none);
+@import "../styles/design-foundations.css";
 @import "../styles/public-fonts.css";
 @source "./";
 
-@theme {
-  --font-display: "Fraunces Variable", Fraunces, "Iowan Old Style", Georgia, "Times New Roman", serif;
+@theme inline {
+  --font-display: var(--cz-font-display);
 
   /* Warm paper tones of the pages. */
-  --color-cream-50: #fdfaf6;
-  --color-cream-100: #f8f1e6;
-  --color-cream-200: #f1e6d4;
+  --color-cream-50: var(--cream-50);
+  --color-cream-100: var(--cream-100);
+  --color-cream-200: var(--cream-200);
 
   /* Brand ink (the house of the logo): text, dark bands, footer. `500` is the secondary text color. */
-  --color-ink-50: #f3f8f7;
-  --color-ink-100: #e9f1f0;
-  --color-ink-200: #cde0df;
-  --color-ink-300: #a9c4c3;
-  --color-ink-500: #4a6d71;
-  --color-ink-600: #2b4f53;
-  --color-ink-700: #1f3a3d;
-  --color-ink-800: #172c2e;
-  --color-ink-900: #0f1e20;
+  --color-ink-50: var(--ink-50);
+  --color-ink-100: var(--ink-100);
+  --color-ink-200: var(--ink-200);
+  --color-ink-300: var(--ink-300);
+  --color-ink-500: var(--ink-500);
+  --color-ink-600: var(--ink-600);
+  --color-ink-700: var(--ink-700);
+  --color-ink-800: var(--ink-800);
+  --color-ink-900: var(--ink-900);
 
   /* Terracotta (the ring of the logo): calls to action and accents. `500` is the logo's, graphics only; `600` takes white text. */
-  --color-terra-50: #fff7f2;
-  --color-terra-100: #fff1ea;
-  --color-terra-200: #ffe2d3;
-  --color-terra-300: #f6b898;
-  --color-terra-400: #ff9b6b;
-  --color-terra-500: #e2622d;
-  --color-terra-600: #b53a0a;
-  --color-terra-700: #a8380a;
-  --color-terra-800: #9a3412;
+  --color-terra-50: var(--terra-50);
+  --color-terra-100: var(--terra-100);
+  --color-terra-200: var(--terra-200);
+  --color-terra-300: var(--terra-300);
+  --color-terra-400: var(--terra-400);
+  --color-terra-500: var(--terra-500);
+  --color-terra-600: var(--terra-public);
+  --color-terra-700: var(--terra-700);
+  --color-terra-800: var(--terra-800);
 
   /* The accents of the areas of the app, used for the tiles of the features. */
-  --color-salvia-100: #e8f6f1;
-  --color-salvia-600: #0b7461;
-  --color-salvia-800: #075d4e;
-  --color-savoia-100: #eef3ff;
-  --color-savoia-600: #2852c9;
-  --color-savoia-800: #1e3f9e;
-  --color-ametista-100: #f3eeff;
-  --color-ametista-600: #6a3fc7;
-  --color-ametista-800: #52309c;
+  --color-salvia-100: var(--salvia-100);
+  --color-salvia-600: var(--salvia-600);
+  --color-salvia-800: var(--salvia-800);
+  --color-savoia-100: var(--savoia-100);
+  --color-savoia-600: var(--savoia-600);
+  --color-savoia-800: var(--savoia-800);
+  --color-ametista-100: var(--ametista-100);
+  --color-ametista-600: var(--ametista-600);
+  --color-ametista-800: var(--ametista-800);
 
-  --shadow-soft: 0 1px 2px rgb(23 44 46 / 0.06), 0 10px 30px rgb(23 44 46 / 0.07);
+  --shadow-soft: var(--cz-shadow-raised);
 }
 
 html {
-  font-family: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
-  background-color: var(--color-cream-50);
+  font-family: var(--cz-font-body);
+  background-color: var(--cream-50);
 }
 
 /* Anchors of the header do not hide what they lead to behind the sticky bar. */
@@ -77,7 +78,7 @@ html {
 }
 
 .site-product-scene {
-  background-image: radial-gradient(ellipse at top left, var(--color-ink-500), transparent 70%);
+  background-image: radial-gradient(ellipse at top left, var(--ink-500), transparent 70%);
 }
 
 @media (prefers-reduced-motion: no-preference) {

@@ -4,6 +4,9 @@ import { PHONE_QUERY, useMediaQuery } from '@/hooks/use-media-query';
 import { useUiStore } from '@/store/ui-store';
 
 /** How far from the bottom edge the toasts of a phone stay when the bottom bar is there: the bar, the home indicator, a margin. */
+const SHORT_VIEWPORT = '(height < 36rem)';
+const BELOW_THE_HEADER = 'calc(var(--header-height) + env(safe-area-inset-top, 0px) + 0.75rem)';
+
 const ABOVE_THE_BAR = 'calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px) + 0.75rem)';
 
 /** The same when the page also has its primary action fixed above the bar (`PageHeader.mobilePrimary`): over both of them. */
@@ -16,23 +19,26 @@ const ABOVE_THE_BAR_AND_THE_PRIMARY_ACTION =
  * header and its profile menu nor the bar, nor are covered by it (under 600 px the library makes them as wide as the
  * screen, minus its margin). A page that fixes its primary action above the bar (UI-05) raises them over it too. The public
  * pages have no bar and keep the top right, where nothing of theirs is: the booking bar of the public site and the cookie
- * notice sit at the bottom.
+ * notice sit at the bottom. Short wizards keep notifications below the header to leave their buttons visible.
  */
 export function AppToaster() {
   const { t } = useTranslation();
   const isPhone = useMediaQuery(PHONE_QUERY);
+  const isShort = useMediaQuery(SHORT_VIEWPORT);
   const barIsThere = useUiStore((state) => state.bottomBarVisible);
   const primaryActionIsThere = useUiStore((state) => state.mobilePrimaryVisible);
+  const wizardOpen = useUiStore((state) => state.openWizards > 0);
   const aboveTheBar = isPhone && barIsThere;
+  const shortWizard = aboveTheBar && primaryActionIsThere && isShort && wizardOpen;
   const bottom = primaryActionIsThere ? ABOVE_THE_BAR_AND_THE_PRIMARY_ACTION : ABOVE_THE_BAR;
+  const position = shortWizard ? 'top-center' : aboveTheBar ? 'bottom-center' : 'top-right';
+  const offset = shortWizard ? { top: BELOW_THE_HEADER } : aboveTheBar ? { bottom } : undefined;
 
   return (
     <Toaster
-      position={aboveTheBar ? 'bottom-center' : 'top-right'}
-      // Only the bottom margin is ours, and only then: the library's own margins stay. `offset` is for a window wider than
-      // 600 px, `mobileOffset` for a narrower one.
-      offset={aboveTheBar ? { bottom } : undefined}
-      mobileOffset={aboveTheBar ? { bottom } : undefined}
+      position={position}
+      offset={offset}
+      mobileOffset={offset}
       containerAriaLabel={t('notifications.title')}
       closeButton
       toastOptions={{
