@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useEffect, useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { ArrowRight, IdCard } from 'lucide-react';
@@ -76,6 +76,11 @@ export function StayStep({ agesMissing, onAgesChange }: StayStepProps) {
   } = useFormContext<NewBookingValues>();
   const values = useWatch({ control }) as NewBookingValues;
   const { query: propertiesQuery, list: properties, property } = useShortProperties(values.propertyId);
+  useEffect(() => {
+    if (propertiesQuery.isSuccess && !values.propertyId && properties.length === 1) {
+      setValue('propertyId', properties[0].id, { shouldValidate: true });
+    }
+  }, [properties, propertiesQuery.isSuccess, setValue, values.propertyId]);
 
   const payload = toQuotePayload(values);
   const quote = useHostBookingQuote(payload);
@@ -125,6 +130,9 @@ export function StayStep({ agesMissing, onAgesChange }: StayStepProps) {
         {propertiesQuery.isError && (
           <p role="alert" className="text-sm text-destructive" data-testid="booking-properties-error">
             {t('booking.form.propertiesLoadError')}
+            <Button type="button" variant="link" disabled={propertiesQuery.isFetching} onClick={() => void propertiesQuery.refetch()}>
+              {t('shared.errorFallback.tryAgain')}
+            </Button>
           </p>
         )}
         {!propertiesQuery.isLoading && !propertiesQuery.isError && properties.length === 0 && (

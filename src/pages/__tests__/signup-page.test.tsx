@@ -128,6 +128,7 @@ describe('SignupPage (SE-03, A8-03)', () => {
     const { rerender } = renderSignup();
     expect(auth0.loginWithRedirect).not.toHaveBeenCalled();
     // The attribution is stored before Auth0 is even ready.
+    expect(screen.queryByTestId('signup-continue')).not.toBeInTheDocument();
     expect(pendingAttribution()).toMatchObject({ comune: 'como' });
 
     auth0.isLoading = false;

@@ -19,6 +19,8 @@ function renderPage(path = '/login') {
     <MemoryRouter initialEntries={[path]}>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/portale-proprietari/accedi" element={<LoginPage />} />
+        <Route path="/portale-proprietari/messaggi/:id" element={<div data-testid="owner-conversation" />} />
         <Route path="/app/choose-context" element={<div data-testid="area-picker" />} />
       </Routes>
     </MemoryRouter>,
@@ -99,6 +101,18 @@ describe('LoginPage', () => {
     const returnTo = '/app/long-rent/documents/upload?leaseId=0b6f7a3e-5a2d-4c58-9e0a-6c8b0f2e1d11';
     renderPage(`/login?returnTo=${encodeURIComponent(returnTo)}`);
     expect(login).toHaveBeenCalledWith({ returnTo });
+  });
+
+  it('keeps the owner in the portal when starting from its sign-in page', () => {
+    const login = setAuth();
+    renderPage('/portale-proprietari/accedi');
+    expect(login).toHaveBeenCalledWith({ returnTo: '/portale-proprietari' });
+  });
+
+  it('resumes the owner conversation from the original link after sign-in', () => {
+    setAuth({ isAuthenticated: true, user: { sub: 'owner' } });
+    renderPage('/login?returnTo=%2Fportale-proprietari%2Fmessaggi%2Fexample');
+    expect(screen.getByTestId('owner-conversation')).toBeInTheDocument();
   });
 
   it.each(['https://evil.example/app/', '//evil.example/app/', '/login', '/app/../../login'])('rejects unsafe login destinations: %s', (returnTo) => {

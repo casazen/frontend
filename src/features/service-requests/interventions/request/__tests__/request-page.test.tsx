@@ -425,6 +425,27 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
     expect(createServiceRequest).toHaveBeenCalledTimes(1);
   });
 
+  it('uses the property checkout hour and preserves an explicit earlier slot when the host returns from review', async () => {
+    vi.mocked(propertiesApi.getAll).mockResolvedValue([{ ...property, checkOutBy: '12:00:00' }]);
+    vi.mocked(bookingsApi.getAll).mockResolvedValue([stay] as never);
+    vi.mocked(fetchHostSupplierSlots).mockResolvedValue({
+      serviceId: SERVICE_ID, durationMinutes: 120, from: '2026-09-28', to: '2026-09-28',
+      slots: [
+        { startUtc: '2026-09-28T08:00:00Z', endUtc: '2026-09-28T10:00:00Z' },
+        { startUtc: '2026-09-28T10:00:00Z', endUtc: '2026-09-28T12:00:00Z' },
+      ],
+    });
+    renderPage(`propertyId=${PROPERTY_ID}&type=cleaning&supplierOrgId=${SUPPLIER_ID}&serviceId=${SERVICE_ID}&date=2026-09-28`);
+    const allSlots = await screen.findByTestId('request-slots-all', undefined, WAIT);
+    expect(screen.queryByTestId('request-slot-10:00')).not.toBeInTheDocument();
+    fireEvent.click(allSlots);
+    fireEvent.click(screen.getByTestId('request-slot-10:00'));
+    next();
+    await screen.findByTestId('request-supplier-sees', undefined, WAIT);
+    fireEvent.click(screen.getByTestId('request-back'));
+    expect(await screen.findByTestId('request-slot-10:00', undefined, WAIT)).toHaveAttribute('aria-pressed', 'true');
+  });
+
   it('RequestInterventionPage_SlotTakenMeanwhile_BringsTheHostBackToTheDetailsWithTheAnswersKept', async () => {
     vi.mocked(createServiceRequest).mockRejectedValue(refusal(409, 'supplier_slot_unavailable'));
     renderPage();

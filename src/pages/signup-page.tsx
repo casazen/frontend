@@ -71,17 +71,16 @@ export function SignupPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center gap-4">
-          {busy && <Spinner size="lg" />}
-          <Button
-            className="w-full"
-            size="lg"
-            disabled={isLoading || busy}
-            onClick={() => start({ authorizationParams: SIGNUP_SCREEN })}
-            data-testid="signup-continue"
-          >
-            <UserPlus className="mr-2 h-5 w-5" />
-            {t('signup.continue')}
-          </Button>
+          {isLoading || busy ? <Spinner size="lg" /> : (
+            <Button
+              className="w-full"
+              size="lg"
+              onClick={() => start({ authorizationParams: SIGNUP_SCREEN })}
+              data-testid="signup-continue"
+            >
+              {t('signup.continue')}
+            </Button>
+          )}
         </CardContent>
       </Card>
     </div>

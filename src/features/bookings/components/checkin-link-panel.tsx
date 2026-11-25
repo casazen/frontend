@@ -315,10 +315,13 @@ export function CheckInLinkPanel({ bookingId, canWrite, children, useGuestPortal
         </div>
       )}
       {useGuestPortal && canWrite && (session.canIssueLink || completed) && (
-        <GuestPortalLinkPanel bookingId={bookingId} checkIn={{
+        <details className="rounded-lg border bg-card px-4">
+          <summary className="cursor-pointer py-3 text-sm font-medium">{t('guestPortal.host.checkInAccess')}</summary>
+          <GuestPortalLinkPanel bookingId={bookingId} checkIn={{
           ready: completed || (hasLink && status !== 'Scaduto'),
           prepare: session.canIssueLink ? () => create.mutateAsync() : undefined,
-        }} />
+          }} />
+        </details>
       )}
       {children}
     </div>

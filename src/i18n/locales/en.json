@@ -1,4 +1,8 @@
 {
+  "complianceNoDeadlines": "No deadlines listed",
+  "dashboardNoPending": "No operational priorities listed",
+  "dashboardPrioritiesPartial": "Some priorities are unavailable.",
+  "dashboardPendingHeading": "Operational priorities",
   "activationStaff": {
     "selectProperties": "Properties in this batch",
     "title": "Prepare properties",

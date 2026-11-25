@@ -15,12 +15,12 @@ import { DEFAULT_PROPERTY_TIMEZONE } from '../schemas/property.schema';
 import { isDuplicateAddressError } from '../property-errors';
 
 const baseShape = {
-  name: z.string().min(3, 'property.validation.name.minLength').max(100, 'property.validation.name.maxLength'),
-  address: z.string().min(5, 'property.validation.address.required'),
+  name: z.string().trim().min(3, 'property.validation.name.minLength').max(100, 'property.validation.name.maxLength'),
+  address: z.string().trim().min(5, 'property.validation.address.required'),
   // The comune is the one thing a property cannot do without afterwards: regional rules, CIN check and tourist tax follow it.
   comuneIstatCode: z.string().regex(/^[0-9]{6}$/, 'property.quick.validation.comuneRequired'),
   city: z.string().min(2, 'property.validation.city.required'),
-  postalCode: z.string().min(3, 'property.validation.postalCode.required'),
+  postalCode: z.string().trim().min(3, 'property.validation.postalCode.required'),
 };
 
 const shortRentSchema = z.object({
@@ -79,10 +79,10 @@ export function QuickPropertyForm({ variant, onSubmit, isLoading, disabled, onFu
       });
     } catch (error) {
       if (isDuplicateAddressError(error)) {
-        setError('address', { type: 'server', message: 'property.quick.validation.duplicate' });
+        setError('address', { type: 'server', message: 'property.quick.validation.duplicate' }, { shouldFocus: true });
         return;
       }
-      throw error;
+      // The create mutation reports other failures. Keep the form and its values available for a retry.
     }
   };
 
@@ -104,26 +104,28 @@ export function QuickPropertyForm({ variant, onSubmit, isLoading, disabled, onFu
                   id="comune"
                   istatCode={comuneIstatCode}
                   disabled={disabled}
-                  describedBy="comune-hint"
+                  describedBy={errors.comuneIstatCode || errors.city ? 'comune-hint comune-error' : 'comune-hint'}
+                  invalid={Boolean(errors.comuneIstatCode || errors.city)}
                   onChange={(comune) => {
                     setValue('comuneIstatCode', comune?.istatCode ?? '', { shouldValidate: true });
-                    if (comune) setValue('city', comune.name, { shouldValidate: true });
+                    setValue('city', comune?.name ?? '', { shouldValidate: true });
                   }}
                 />
                 <p id="comune-hint" className="text-xs text-muted-foreground">{t('property.form.comune.hint')}</p>
-                <FormFieldError error={errors.comuneIstatCode ?? errors.city} />
+                <FormFieldError id="comune-error" error={errors.comuneIstatCode ?? errors.city} />
               </div>
             </div>
             <div className="min-w-0 space-y-5">
               <div className="grid gap-4 sm:grid-cols-3">
                 <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="address">{t('property.form.address')}</Label>
-                  <Input id="address" {...register('address')} placeholder={t('property.form.placeholder.address')} disabled={disabled} />
-                  <FormFieldError error={errors.address} />
+                  <Input id="address" autoComplete="street-address" aria-invalid={Boolean(errors.address)} aria-describedby={errors.address ? 'address-error' : undefined}
+                    {...register('address')} placeholder={t('property.form.placeholder.address')} disabled={disabled} />
+                  <FormFieldError id="address-error" error={errors.address} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="postalCode">{t('property.form.postalCode')}</Label>
-                  <Input id="postalCode" inputMode="numeric" {...register('postalCode')} disabled={disabled} />
+                  <Input id="postalCode" inputMode="numeric" autoComplete="postal-code" {...register('postalCode')} disabled={disabled} />
                   <FormFieldError error={errors.postalCode} />
                 </div>
               </div>

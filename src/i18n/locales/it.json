@@ -1,4 +1,8 @@
 {
+  "complianceNoDeadlines": "Nessuna scadenza in elenco",
+  "dashboardNoPending": "Nessuna priorità operativa in elenco",
+  "dashboardPrioritiesPartial": "Alcune priorità non sono disponibili.",
+  "dashboardPendingHeading": "Priorità operative",
   "activationStaff": {
     "selectProperties": "Immobili del lotto",
     "title": "Preparazione strutture",

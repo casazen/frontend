@@ -99,7 +99,7 @@ function LiveNotificationBell({ userId, getAccessToken }: { userId: string; getA
   // A new notification is told on screen as it arrives, with the way to open what it is about: a host with the app open must not
   // find out from the badge alone. The same event (type and entity) is one pop-up however many times it is sent.
   const announceNew = (change: NotificationsChange) => {
-    if (change.type === null) return;
+    if (change.type === null || open) return;
     const route = notificationRoute({ type: change.type, entityId: change.entityId }, shell?.contextKey ?? null, hasPermission);
     toast(t(notificationKind(change.type).textKey), {
       id: `notification:${change.type}:${change.entityId ?? ''}`,
@@ -163,10 +163,8 @@ function LiveNotificationBell({ userId, getAccessToken }: { userId: string; getA
               <span
                 data-testid="notification-badge"
                 aria-hidden="true"
-                className="absolute right-0.5 top-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-semibold leading-none text-primary-foreground ring-2 ring-background"
-              >
-                {badgeText(unread)}
-              </span>
+                className="absolute right-1.5 top-1.5 size-2 rounded-full bg-primary ring-2 ring-background"
+              ><span className="sr-only">{badgeText(unread)}</span></span>
             ) : null}
           </button>
         </PopoverTrigger>

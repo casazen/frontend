@@ -48,7 +48,12 @@ function StatementCard({ statement, downloads }: { statement: OwnerPortalStateme
       </div>
 
       <StatementNet net={statement.totals.net} currency={statement.currency} />
-      <StatementTotalsList totals={statement.totals} currency={statement.currency} />
+      <details className="text-sm">
+        <summary className="min-h-11 w-fit cursor-pointer rounded py-3 font-medium text-muted-foreground focus-visible:ring-2">
+          {t('ownerPortal.accounting.detail.summaryTitle')}
+        </summary>
+        <StatementTotalsList totals={statement.totals} currency={statement.currency} />
+      </details>
       {currencyCode(statement.currency) ? null : <MoneyNote testId="owner-statement-currency-missing">{t('ownerPortal.accounting.currencyMissing')}</MoneyNote>}
       {statement.superseded ? <p className="text-sm text-muted-foreground">{t('ownerPortal.accounting.supersededNote')}</p> : null}
 
