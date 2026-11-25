@@ -75,3 +75,20 @@ html {
     scroll-behavior: auto;
   }
 }
+
+.site-product-scene {
+  background-image: radial-gradient(ellipse at top left, var(--color-ink-500), transparent 70%);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .site-product-scene img {
+    animation: scene-arrival 420ms ease-out both;
+  }
+  .site-product-scene img + img {
+    animation-delay: 100ms;
+  }
+  @keyframes scene-arrival {
+    from { transform: translateY(0.6rem); }
+    to { transform: translateY(0); }
+  }
+}

@@ -47,11 +47,11 @@ export function OwnerPortalShell() {
   return (
     <div className="min-h-screen bg-background">
       <SkipLink targetId={MAIN_ID} />
-      <header className="border-b border-border">
-        <div className="mx-auto flex max-w-5xl min-w-0 flex-col gap-3 px-4 py-4 md:flex-row md:items-center md:justify-between">
-          <p className="min-w-0 break-words text-lg font-semibold text-[#1f3a3d]">{t('ownerPortal.shell.title')}</p>
+      <header className="border-b border-border bg-card">
+        <div className="mx-auto flex max-w-6xl min-w-0 flex-col gap-3 px-4 py-4 sm:px-6">
+          <p className="min-w-0 break-words border-s-4 border-primary ps-3 text-lg font-semibold tracking-tight text-foreground">{t('ownerPortal.shell.title')}</p>
           {/* The places of the portal and the way out are one row that wraps: the same order for the eye and for the keyboard, nothing fixed to the screen. */}
-          <nav aria-label={t('ownerPortal.shell.nav.label')} className="flex min-w-0 flex-wrap items-center gap-1" data-testid="owner-nav">
+          <nav aria-label={t('ownerPortal.shell.nav.label')} className="grid min-w-0 grid-cols-2 gap-1 rounded-xl bg-muted p-1 sm:flex sm:flex-wrap sm:items-center" data-testid="owner-nav">
             <NavLink to={ownerPortalPaths.home} end className={linkClass}>
               {t('ownerPortal.shell.nav.home')}
             </NavLink>
@@ -77,14 +77,14 @@ export function OwnerPortalShell() {
                 {t('ownerPortal.shell.nav.contacts')}
               </NavLink>
             ) : null}
-            <Button type="button" variant="outline" className="min-h-11 shrink-0 md:ml-2" onClick={signOut} data-testid="owner-sign-out">
+            <Button type="button" variant="outline" className="min-h-11 shrink-0 sm:ml-auto" onClick={signOut} data-testid="owner-sign-out">
               <LogOut aria-hidden="true" className="size-4" />
               {t('ownerPortal.shell.signOut')}
             </Button>
           </nav>
         </div>
       </header>
-      <main id={MAIN_ID} tabIndex={-1} className="mx-auto min-w-0 max-w-5xl px-4 py-6 focus:outline-none">
+      <main id={MAIN_ID} tabIndex={-1} className="mx-auto min-w-0 max-w-6xl px-4 py-6 sm:px-6 lg:py-10 focus:outline-none">
         <Outlet />
       </main>
     </div>

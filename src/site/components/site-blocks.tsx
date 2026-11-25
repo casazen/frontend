@@ -39,7 +39,7 @@ export function IconTile({
 
 /** The small colored label above a heading. */
 export function Eyebrow({ children }: { children: ReactNode }) {
-  return <p className="inline-flex rounded-full bg-terra-100 px-3.5 py-1 text-sm font-semibold text-terra-800">{children}</p>;
+  return <p className="inline-flex items-center gap-3 text-sm font-semibold tracking-wide text-terra-800 before:h-px before:w-8 before:bg-current">{children}</p>;
 }
 
 /** The band a section sits on: the page alternates paper tones, and one dark band gives it a center of gravity. */
@@ -76,7 +76,7 @@ export function Section({ title, intro, children, tone = 'plain', icon, tint = '
             <IconTile icon={icon} tint={tint} large />
           </div>
         ) : null}
-        <h2 className={`font-display text-3xl font-semibold tracking-tight sm:text-4xl ${style.title}`}>{title}</h2>
+        <h2 className={`max-w-4xl text-balance font-display text-3xl font-semibold leading-tight tracking-tight sm:text-4xl lg:text-5xl ${style.title}`}>{title}</h2>
         {intro && <p className={`mt-4 max-w-3xl text-base leading-relaxed sm:text-lg ${style.intro}`}>{intro}</p>}
         {children && <div className="mt-10">{children}</div>}
       </div>
@@ -113,7 +113,7 @@ export function FeatureCard({ title, text, icon, tint = 'terra', heading: Headin
   const hasExtra = extra || (children !== undefined && children !== null && children !== false);
   const rows = 1 + (icon ? 1 : 0) + (text ? 1 : 0) + (hasExtra ? 1 : 0);
   return (
-    <div className={`flex flex-col rounded-3xl border border-ink-700/10 bg-white p-6 shadow-soft sm:grid sm:grid-rows-subgrid sm:gap-y-0 ${FEATURE_ROW_SPANS[rows]}`}>
+    <div className={`flex flex-col rounded-2xl border border-ink-700/15 bg-white p-5 sm:p-6 sm:grid sm:grid-rows-subgrid sm:gap-y-0 ${FEATURE_ROW_SPANS[rows]}`}>
       {icon ? <IconTile icon={icon} tint={tint} className="mb-5" /> : null}
       <Heading className="text-lg font-semibold text-ink-800">{title}</Heading>
       {text && <p className="mt-2 text-[0.95rem] leading-relaxed text-ink-500">{text}</p>}
@@ -266,7 +266,7 @@ export function Steps({ items }: { items: { title?: string; text: string }[] }) 
       {items.map((item, index) => (
         <li
           key={item.text}
-          className={`flex flex-col rounded-3xl border border-ink-700/10 bg-white p-6 shadow-soft md:grid md:grid-rows-subgrid md:gap-y-0 ${titled ? 'md:row-span-3' : 'md:row-span-2'}`}
+          className={`flex flex-col rounded-2xl border border-ink-700/15 bg-white p-5 sm:p-6 md:grid md:grid-rows-subgrid md:gap-y-0 ${titled ? 'md:row-span-3' : 'md:row-span-2'}`}
         >
           <span className="grid size-10 place-items-center rounded-full bg-terra-100 font-display text-lg font-semibold text-terra-800 lining-nums">
             {index + 1}

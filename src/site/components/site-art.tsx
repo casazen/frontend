@@ -1,48 +1,27 @@
-import type { ReactNode } from 'react';
-import { Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { CasaZenMark, CasaZenRing } from '@/components/brand/casazen-mark';
 import { PUBLIC_SITE_THEME_PALETTES } from '@/lib/public-site-themes';
 
-/**
- * The illustrations of the public site (SEO-VETRINA): decoration only, so every one is `aria-hidden` and carries no claim
- * that the text does not make. The labels on the chips are the names of the checks of the "Adempimenti" section.
- */
-
-function Chip({ className, dot, children }: { className: string; dot: string; children: ReactNode }) {
-  return (
-    <span
-      className={`absolute flex items-center gap-2 rounded-full bg-white py-2 pl-2.5 pr-4 text-sm font-semibold text-ink-800 shadow-lg shadow-ink-900/15 ring-1 ring-ink-700/10 ${className}`}
-    >
-      <span className={`grid size-5 place-items-center rounded-full text-white ${dot}`}>
-        <Check className="size-3" strokeWidth={3.5} />
-      </span>
-      {children}
-    </span>
-  );
-}
-
-/** The brand on a dark panel, with three of the checks of the product around it. */
+/** The host workspace and guest check-in, using the product's own demo captures. */
 export function HeroArt() {
   const { t } = useTranslation();
   return (
-    <div aria-hidden="true" className="relative mx-auto w-full max-w-sm sm:max-w-md lg:max-w-none">
-      <div className="relative aspect-square overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-ink-600 via-ink-700 to-ink-900 shadow-2xl shadow-ink-900/30">
-        <CasaZenRing size={460} color="#ff9b6b" className="absolute -right-24 -top-24 opacity-[0.16]" />
-        <div className="absolute inset-0 grid place-items-center">
-          <CasaZenMark size={216} tone="dark" />
-        </div>
-      </div>
-      <Chip className="left-3 top-8 sm:-left-5" dot="bg-terra-600">
-        {t('site.home.compliance.cinTitle')}
-      </Chip>
-      <Chip className="right-3 top-[46%] sm:-right-5" dot="bg-salvia-600">
-        {t('site.home.compliance.checkinTitle')}
-      </Chip>
-      <Chip className="bottom-8 left-6 sm:-left-1" dot="bg-ametista-600">
-        {t('site.home.compliance.touristTaxTitle')}
-      </Chip>
-    </div>
+    <figure className="site-product-scene relative isolate mx-auto w-full max-w-2xl rounded-3xl bg-ink-800 px-[6%] pb-[13%] pt-[10%]">
+      <img
+        src="/site/cockpit.webp"
+        alt={t('site.home.showcase.cockpit.alt')}
+        width={1600}
+        height={1000}
+        fetchPriority="high"
+        className="block w-full rounded-xl border border-ink-200 bg-white shadow-xl"
+      />
+      <img
+        src="/site/checkin-poster.webp"
+        alt={t('site.home.showcase.checkin.alt')}
+        width={390}
+        height={780}
+        className="absolute bottom-[4%] right-[3%] w-[20%] rounded-[12%/6%] border-4 border-ink-900 bg-white shadow-xl"
+      />
+    </figure>
   );
 }
 

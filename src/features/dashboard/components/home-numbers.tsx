@@ -43,8 +43,7 @@ function NextArrivals({ arrivals, today }: { arrivals: DashboardArrival[]; today
 
 /**
  * The numbers of the Home, each against the period before: occupancy, revenue (only for who may read payments: the server leaves
- * it out for the others), the bookings to come with how many wait for an answer, and who arrives next. On a phone they scroll
- * sideways, one at a time.
+ * it out for the others), the bookings to come with how many wait for an answer, and who arrives next. On a phone all values are visible in the same grid.
  */
 export function HomeNumbers({ overview, period }: HomeNumbersProps) {
   const { t, i18n } = useTranslation();
@@ -59,7 +58,7 @@ export function HomeNumbers({ overview, period }: HomeNumbersProps) {
     <StatStrip
       label={t('dashboard.numbers.label')}
       data-testid="home-numbers"
-      className="max-sm:[&>ul]:flex max-sm:[&>ul]:snap-x max-sm:[&>ul]:snap-mandatory max-sm:[&>ul]:overflow-x-auto max-sm:[&>ul>li]:w-[78%] max-sm:[&>ul>li]:shrink-0 max-sm:[&>ul>li]:snap-start"
+      className="rounded-xl border bg-card px-4 max-sm:[&>ul]:grid-cols-2 max-sm:[&>ul]:gap-x-4 max-sm:[&>ul>li:last-child]:col-span-full"
     >
       <StatTile
         label={t('dashboard.numbers.occupancy')}

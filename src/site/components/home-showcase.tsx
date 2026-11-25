@@ -1,8 +1,26 @@
 import { ChevronDown } from 'lucide-react';
-import { useState } from 'react';
+import { useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { INTEGRATION_GROUPS, type IntegrationEntry, type IntegrationGroup, type IntegrationGroupId } from '../integrations-catalog';
 import { Section } from './site-blocks';
+
+/** One tab stop per panel group. Arrow keys move focus and activate the adjacent panel. */
+function navigateTabs(event: KeyboardEvent<HTMLDivElement>) {
+  const tabs = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+  const index = tabs.findIndex(tab => tab === event.target);
+  if (index < 0) return;
+  let next: number;
+  switch (event.key) {
+    case 'ArrowRight': next = (index + 1) % tabs.length; break;
+    case 'ArrowLeft': next = (index + tabs.length - 1) % tabs.length; break;
+    case 'Home': next = 0; break;
+    case 'End': next = tabs.length - 1; break;
+    default: return;
+  }
+  event.preventDefault();
+  tabs[next].focus();
+  tabs[next].click();
+}
 
 /** The best known sales channels, in the order they are shown right under the first screen of the home page. */
 const MAIN_CHANNELS = ['Booking.com', 'Airbnb', 'Vrbo', 'Expedia', 'Agoda', 'Hotels.com', 'HomeToGo', 'Holidu'] as const;
@@ -40,7 +58,7 @@ function CategoryPanel({ group, active }: { group: IntegrationGroup; active: boo
   const first = logos.slice(0, VISIBLE_LOGOS);
   const rest = logos.slice(VISIBLE_LOGOS);
   return (
-    <div role="tabpanel" id={`channels-${group.id}`} aria-labelledby={`channels-tab-${group.id}`} hidden={!active}>
+    <div role="tabpanel" tabIndex={0} id={`channels-${group.id}`} aria-labelledby={`channels-tab-${group.id}`} hidden={!active}>
       <p className="mb-5 max-w-3xl text-ink-500">{t(`site.home.channels.groups.${group.id}.intro`)}</p>
       {first.length > 0 && (
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
@@ -115,17 +133,18 @@ export function ChannelsCatalogue() {
   return (
     <Section title={t('site.home.channels.catalogTitle')} intro={t('site.home.channels.catalogIntro')} tone="cream">
       <div id="integrazioni" className="scroll-mt-24">
-        <div role="tablist" aria-label={t('site.home.channels.tabs')} className="mb-6 flex flex-wrap gap-2">
+        <div role="tablist" onKeyDown={navigateTabs} aria-label={t('site.home.channels.tabs')} className="mb-6 flex flex-wrap gap-2">
           {INTEGRATION_GROUPS.map((group) => (
             <button
               key={group.id}
               type="button"
               role="tab"
               id={`channels-tab-${group.id}`}
+              tabIndex={active === group.id ? 0 : -1}
               aria-selected={active === group.id}
               aria-controls={`channels-${group.id}`}
               onClick={() => setActive(group.id)}
-              className={`rounded-full border px-4 py-1.5 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-terra-700 ${
+              className={`min-h-11 rounded-full border px-4 py-1.5 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-terra-700 ${
                 active === group.id
                   ? 'border-ink-800 bg-ink-800 text-white'
                   : 'border-ink-700/15 bg-white text-ink-700 hover:border-terra-500 hover:text-terra-800'
@@ -169,19 +188,18 @@ const EXPLORER_TABS: readonly { key: ExplorerKey; image?: string }[] = [
   { key: 'lease', image: '/site/lease.webp' },
 ];
 
-/** The guest check-in on a phone: a short muted loop, with its first frame as the poster (and for those who cannot play it). */
+/** The guest check-in on a phone: a short user-controlled clip, with its first frame as the poster (and for those who cannot play it). */
 function PhoneVideo({ label }: { label: string }) {
   return (
-    <div className="mx-auto w-[240px] overflow-hidden rounded-[2.2rem] border-[7px] border-ink-900 bg-ink-900 shadow-lift sm:w-[270px]">
+    <div className="mx-auto w-full max-w-[240px] overflow-hidden rounded-[2.2rem] border-[7px] border-ink-900 bg-ink-900 shadow-lift sm:max-w-[270px]">
       <video
         className="block h-auto w-full"
         width={390}
         height={780}
         poster="/site/checkin-poster.webp"
         aria-label={label}
-        autoPlay
+        controls
         muted
-        loop
         playsInline
         preload="metadata"
       >
@@ -204,17 +222,18 @@ export function ProductShowcase({ only }: { only?: readonly ExplorerKey[] } = {}
   const tab = tabs.find((candidate) => candidate.key === active) ?? tabs[0];
   return (
     <Section title={t('site.home.showcase.title')} intro={t('site.home.showcase.intro')}>
-      <div role="tablist" aria-label={t('site.home.showcase.title')} className="mb-8 flex flex-wrap gap-2">
+      <div role="tablist" onKeyDown={navigateTabs} aria-label={t('site.home.showcase.title')} className="mb-8 flex flex-wrap gap-2">
         {tabs.map((item) => (
           <button
             key={item.key}
             type="button"
             role="tab"
             id={`showcase-tab-${item.key}`}
+            tabIndex={active === item.key ? 0 : -1}
             aria-selected={active === item.key}
             aria-controls="showcase-panel"
             onClick={() => setActive(item.key)}
-            className={`rounded-full border px-4 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-terra-700 ${
+            className={`min-h-11 rounded-full border px-4 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-terra-700 ${
               active === item.key
                 ? 'border-terra-600 bg-terra-600 text-white'
                 : 'border-ink-700/15 bg-white text-ink-700 hover:border-terra-500 hover:text-terra-800'
@@ -225,6 +244,7 @@ export function ProductShowcase({ only }: { only?: readonly ExplorerKey[] } = {}
         ))}
       </div>
       <div
+        tabIndex={0}
         role="tabpanel"
         id="showcase-panel"
         aria-labelledby={`showcase-tab-${active}`}
