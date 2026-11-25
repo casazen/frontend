@@ -1022,6 +1022,18 @@
           "title": "Reconnect the channel manager",
           "why": "The connection with the channel manager was lost."
         },
+        "GuestDataCopyRequested": {
+          "title": "Guest data copy",
+          "why": "Verify the request and prepare a copy using the privacy tools."
+        },
+        "GuestDataErasureRequested": {
+          "title": "Guest data erasure",
+          "why": "Verify the request and retention requirements before proceeding."
+        },
+        "GuestInvoiceCorrectionRequested": {
+          "title": "Guest invoice correction",
+          "why": "Review the invoice with the guest and apply the required correction."
+        },
         "RoutineTask": {
           "title": "Manual reminder from a routine",
           "why": "A routine you set up asks you to take care of this booking."
@@ -4141,6 +4153,12 @@
       "visibility": "Access instructions and Wi-Fi are visible after check-in. The other sections are also visible from the public QR code."
     },
     "host": {
+      "privacyRequests": "Portal privacy requests",
+      "GuestDataCopyRequested": "Personal data copy request",
+      "GuestDataErasureRequested": "Personal data erasure request",
+      "completePrivacyRequest": "Close request",
+      "completePrivacyDescription": "Confirm once you have handled the request and replied to the guest.",
+      "completePrivacyError": "Could not close the request.",
       "revoke": "Revoke link",
       "confirmRevoke": "Confirm revocation",
       "resend": "Send email",

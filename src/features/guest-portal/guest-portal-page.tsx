@@ -20,6 +20,7 @@ import type { HouseGuide } from './house-guide-fields';
 import { GuestPortalCancellation } from './guest-portal-cancellation';
 import { useStayManifest } from './use-stay-manifest';
 import { guestAccountStaysPath } from './guest-account-stays-page';
+import { GuestPortalPrivacy } from './guest-portal-privacy';
 import './guest-portal.css';
 
 const poweredBy = 'Powered by CasaZen';
@@ -75,6 +76,14 @@ const copy = {
   refundChanged: ['Controlla il rimborso aggiornato prima di confermare.', 'Review the updated refund before confirming.', 'Prüfe die neue Erstattung vor der Bestätigung.', 'Vérifiez le nouveau remboursement avant de confirmer.', 'Revisa el nuevo reembolso antes de confirmar.'],
   accessCode: ['Mostra il codice di accesso', 'Show access code', 'Zugangscode anzeigen', 'Afficher le code d’accès', 'Mostrar código de acceso'],
   account: ['I miei soggiorni', 'My stays', 'Meine Aufenthalte', 'Mes séjours', 'Mis estancias'],
+  privacy: ['Privacy e dati personali', 'Privacy and personal data', 'Datenschutz und personenbezogene Daten', 'Confidentialité et données personnelles', 'Privacidad y datos personales'],
+  dataCopy: ['Richiedi una copia dei dati', 'Request a copy of your data', 'Eine Kopie deiner Daten anfordern', 'Demander une copie de vos données', 'Solicitar una copia de tus datos'],
+  dataErasure: ['Richiedi la cancellazione dei dati', 'Request erasure of your data', 'Die Löschung deiner Daten beantragen', 'Demander l’effacement de vos données', 'Solicitar la supresión de tus datos'],
+  requestConfirm: ['Conferma richiesta', 'Confirm request', 'Anfrage bestätigen', 'Confirmer la demande', 'Confirmar solicitud'],
+  requestReceived: ['Richiesta ricevuta dall’host.', 'Your host received the request.', 'Dein Gastgeber hat die Anfrage erhalten.', 'Votre hôte a reçu la demande.', 'Tu anfitrión ha recibido la solicitud.'],
+  requestClosed: ['Richiesta chiusa', 'Request closed', 'Anfrage abgeschlossen', 'Demande clôturée', 'Solicitud cerrada'],
+  back: ['Indietro', 'Back', 'Zurück', 'Retour', 'Atrás'],
+  correction: ['Chiedi una correzione', 'Request a correction', 'Eine Korrektur anfordern', 'Demander une correction', 'Solicitar una corrección'],
   language: ['Lingua', 'Language', 'Sprache', 'Langue', 'Idioma'],
 } satisfies Record<string, readonly [string, string, string, string, string]>;
 
@@ -154,6 +163,7 @@ function GuestPortalPage({ token }: { token: string }) {
   const chat = section === 'chat' && stay?.status !== 'cancelled';
   const documents = section === 'documents';
   const review = section === 'review';
+  const privacy = section === 'privacy';
   const cancellation = section === 'cancellation' && stay?.isDirect;
   const accent = normalizeHexColor(overview?.branding.primaryColor) ?? '#1F3A3D';
   useStayManifest(token, failed ? undefined : overview?.branding.name, accent);
@@ -201,7 +211,7 @@ function GuestPortalPage({ token }: { token: string }) {
         {stay && !failed && (
           <>
             <span className="stay-phase">{t(phase)}</span>
-            <h1>{t(guide ? 'guide' : details ? 'details' : chat ? 'chat' : documents ? 'documents' : review ? 'review' : cancellation ? 'cancellation' : 'title')}</h1>
+            <h1>{t(guide ? 'guide' : details ? 'details' : chat ? 'chat' : documents ? 'documents' : review ? 'review' : cancellation ? 'cancellation' : privacy ? 'privacy' : 'title')}</h1>
             <p className="stay-meta">{range} · {stay.guests} {guestLabel(language, stay.guests)}</p>
             <div className="stay-card stay-property"><CalendarDays aria-hidden="true" />{stay.propertyName} · {stay.bookingCode}</div>
             {guide ? (
@@ -227,6 +237,12 @@ function GuestPortalPage({ token }: { token: string }) {
             ) : documents ? (
               <GuestPortalDocuments path={path} language={language} labels={{
                 loading: t('load'), failed: t('error'), empty: t('emptyDocuments'), download: t('download'),
+                correction: t('correction'), requested: t('requestReceived'),
+              }} />
+            ) : privacy ? (
+              <GuestPortalPrivacy path={path} language={language} labels={{
+                copy: t('dataCopy'), erasure: t('dataErasure'), confirm: t('requestConfirm'), back: t('back'),
+                requested: t('requestReceived'), closed: t('requestClosed'), failed: t('error'), loading: t('load'),
               }} />
             ) : review ? (
               <GuestPortalReview path={path} labels={{
@@ -245,6 +261,7 @@ function GuestPortalPage({ token }: { token: string }) {
               }} />
                 : <div className="stay-card stay-content"><h2>{t('arrival')}</h2><p>{stay.arrivalTime === 'late' ? t('late') : stay.arrivalTime ?? '—'}</p></div>}
                 {stay.isDirect && phase === 'before' && <Link className="stay-card" to={href('cancellation')}>{t('cancellation')}</Link>}
+                <Link className="stay-card" to={href('privacy')}>{t('privacy')}<ChevronRight aria-hidden="true" /></Link>
                 {stay.isOta && <p className="stay-card">{t('otaChanges')}</p>}
               </>
             ) : (
@@ -280,7 +297,7 @@ function GuestPortalPage({ token }: { token: string }) {
       </footer>
       {stay && !failed && (
         <nav className="stay-nav" aria-label={t('stay')}>
-          <Link to={href()} aria-current={!guide && !chat && !documents && !review ? 'page' : undefined}><CalendarDays aria-hidden="true" />{t('stay')}</Link>
+          <Link to={href()} aria-current={!guide && !chat && !documents && !review && !privacy ? 'page' : undefined}><CalendarDays aria-hidden="true" />{t('stay')}</Link>
           <Link to={href('guide')} aria-current={guide ? 'page' : undefined}><BookOpen aria-hidden="true" />{t('guide')}</Link>
         </nav>
       )}

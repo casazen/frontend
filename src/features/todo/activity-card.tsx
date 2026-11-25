@@ -257,6 +257,10 @@ export const ACTION_ROUTE_MAP = {
  *   rule are told and the regime is recorded (the page of the booking decides nothing); for an item that names no booking, the page of the booking is the fallback of its action.
  */
 const ROUTE_MAP_BY_TYPE = {
+  GuestInvoiceCorrectionRequested: {
+    route: { path: '/app/short-rent/fiscal/documents', onlyFor: [FISCAL_DOCUMENT], entityParam: 'document' },
+    fallback: { path: '/app/short-rent/fiscal' },
+  },
   TouristTaxRefundDue: {
     route: { path: '/app/short-rent/bookings/:id/check-in', target: 'entity', entityType: BOOKING, search: { step: 'tax' } },
   },

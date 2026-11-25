@@ -1022,6 +1022,18 @@
           "title": "Riconnetti il gestionale dei canali",
           "why": "Il collegamento con il gestionale dei canali si è interrotto."
         },
+        "GuestDataCopyRequested": {
+          "title": "Copia dei dati ospite",
+          "why": "Verifica la richiesta e prepara la copia con gli strumenti privacy."
+        },
+        "GuestDataErasureRequested": {
+          "title": "Cancellazione dei dati ospite",
+          "why": "Verifica la richiesta e gli obblighi di conservazione prima di procedere."
+        },
+        "GuestInvoiceCorrectionRequested": {
+          "title": "Correzione della fattura ospite",
+          "why": "Controlla la fattura con l’ospite e applica la correzione necessaria."
+        },
         "RoutineTask": {
           "title": "Promemoria manuale della routine",
           "why": "Una routine che hai impostato ti chiede di occuparti di questa prenotazione."
@@ -4141,6 +4153,12 @@
       "visibility": "Accesso e Wi-Fi sono visibili solo dopo il check-in. Le altre sezioni si vedono anche dal QR pubblico."
     },
     "host": {
+      "privacyRequests": "Richieste privacy dal portale",
+      "GuestDataCopyRequested": "Richiesta di copia dei dati",
+      "GuestDataErasureRequested": "Richiesta di cancellazione dei dati",
+      "completePrivacyRequest": "Chiudi richiesta",
+      "completePrivacyDescription": "Conferma dopo aver gestito la richiesta e risposto all’ospite.",
+      "completePrivacyError": "Impossibile chiudere la richiesta.",
       "revoke": "Revoca link",
       "confirmRevoke": "Conferma revoca",
       "resend": "Invia email",
