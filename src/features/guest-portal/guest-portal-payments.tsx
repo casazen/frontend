@@ -8,6 +8,8 @@ import { StripeIntentPayment } from '@/features/public-booking/components/stripe
 import { clientStatusFromRedirect } from '@/features/public-booking/checkout-outcome';
 import type { PublicTouristTax } from '@/types/public-checkin.types';
 
+const verificationWindowMs = 60_000;
+
 interface StayBalance {
   amount: number;
   total: number;
@@ -63,7 +65,7 @@ export function GuestPortalPayments({ path, language, direct, tax, checkIn, docu
     queryFn: ({ signal }) => ApiClient.get<StayBalance>(endpoint, undefined, { public: true, signal }),
     enabled: direct,
     refetchInterval: ({ state }) => (waitingSince !== null || state.data?.processing)
-      && state.data?.amount !== 0 && (waitingSince === null || Date.now() - waitingSince < 60_000) ? 2500 : false,
+      && state.data?.amount !== 0 && (waitingSince === null || Date.now() - waitingSince < verificationWindowMs) ? 2500 : false,
     gcTime: 0,
     retry: false,
   });
@@ -82,6 +84,7 @@ export function GuestPortalPayments({ path, language, direct, tax, checkIn, docu
   }, [params, setParams]);
 
   const amount = balance.data?.amount;
+  const verifying = waitingSince !== null && balance.dataUpdatedAt - waitingSince < verificationWindowMs;
   const returnUrl = new URL(window.location.pathname, window.location.origin);
   returnUrl.search = new URLSearchParams({ page: 'payments', lang: language }).toString();
   const taxOutlook = tax && guestTaxOutlook(tax);
@@ -102,7 +105,7 @@ export function GuestPortalPayments({ path, language, direct, tax, checkIn, docu
                 <p>{labels.total} · {format(balance.data.total, balance.data.currency)}</p>
                 <p>{labels.paid} · {format(balance.data.total - balance.data.amount, balance.data.currency)}</p>
                 <p><strong>{format(session.data?.amount ?? balance.data.amount, balance.data.currency)}</strong></p>
-                {waitingSince !== null || balance.data.processing ? (
+                {verifying || balance.data.processing ? (
                     <>
                       <p role="status">{labels.processing}</p>
                       <button type="button" disabled={balance.isFetching} onClick={() => { void balance.refetch(); }}>{labels.refresh}</button>
