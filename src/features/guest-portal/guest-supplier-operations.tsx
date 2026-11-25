@@ -1,3 +1,5 @@
+import { SupplierInviteIdentityFields } from '@/features/supplier/supplier-invite-identity-fields';
+import { readSupplierInviteIdentity } from '@/features/supplier/read-supplier-invite-identity';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -209,20 +211,21 @@ function ServiceOfferForm({ item, offer, busy, save }: {
 function InviteTrustedSupplier({ endpoint }: { endpoint: string }) {
   const [email, setEmail] = useState('');
   const invite = useMutation({
-    mutationFn: () => ApiClient.post<void>(`${endpoint}/invite`, { email: email.trim() }),
-    onSuccess: () => setEmail(''),
+    mutationFn: (form: HTMLFormElement) => ApiClient.post<void>(`${endpoint}/invite`, { email: email.trim(), ...readSupplierInviteIdentity(form) }),
+    onSuccess: (_, form) => { setEmail(''); form.reset(); },
   });
 
   return <div className="grid gap-2">
     <form className="grid gap-2 sm:grid-cols-[1fr_auto]" onSubmit={(event) => {
       event.preventDefault();
-      invite.mutate();
+      invite.mutate(event.currentTarget);
     }}>
       <label>Email del fornitore di fiducia<Input type="email" required maxLength={255} value={email}
         onChange={(event) => setEmail(event.target.value)} /></label>
-      <Button className="self-end" variant="outline" disabled={invite.isPending}>Invita fornitore</Button>
+      <div className="sm:col-span-2"><SupplierInviteIdentityFields /></div>
+      <Button className="justify-self-start" variant="outline" disabled={invite.isPending}>Invita fornitore</Button>
     </form>
-    {invite.isSuccess && <p role="status">Invito creato. Il fornitore potrà accettarlo dal link ricevuto via email.</p>}
+    {invite.isSuccess && <p role="status">Richiesta registrata. Dopo la verifica il fornitore riceverà il link per accettare.</p>}
     {invite.isError && <p role="alert">Impossibile creare l’invito.</p>}
   </div>;
 }

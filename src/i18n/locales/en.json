@@ -28476,6 +28476,24 @@
     }
   },
   "supplier": {
+    "identity": {
+      "fields": "Optional identifiers",
+      "fieldsHint": "Add the details you know to identify an existing supplier.",
+      "vat": "VAT number",
+      "fiscal": "Tax code",
+      "phone": "Phone",
+      "email": "Email",
+      "queue": "Invitations to review",
+      "submitted": "Email entered for the invitation: {{email}}",
+      "decide": "Choose who should receive the invitation",
+      "matched": "Matching identifiers: {{fields}}",
+      "distinct": "This is a different supplier. Send to {{email}}",
+      "reject": "Close this request without sending an invitation",
+      "confirm": "Confirm decision",
+      "resolveError": "Could not confirm. Refresh the list and try again.",
+      "loadError": "Could not load invitation reviews.",
+      "empty": "No invitations need review."
+    },
     "clients": {
       "chips": {
         "all": "All",
@@ -30802,8 +30820,8 @@
       "inviteEmail": "Supplier email",
       "inviteEmailPlaceholder": "supplier@example.com",
       "inviteSend": "Send invite",
-      "inviteHint": "The supplier gets an email with the link to sign in to CasaZen with that address. Once they accept, you find them on this page.",
-      "inviteSuccess": "Invite sent: the supplier will get an email with the link to accept",
+      "inviteHint": "Enter the supplier’s email address. The relationship starts when the profile owner accepts.",
+      "inviteSuccess": "Request recorded. After verification the supplier will receive a link to accept.",
       "inviteError": "Unable to send invite",
       "properties": "Assigned properties",
       "propertiesHint": "If you choose none, the supplier works on all your properties.",
