@@ -4177,6 +4177,7 @@
       "checkOutHours": "Orari di check-out",
       "parking": "Parcheggio",
       "autoReplyTitle": "Risposte automatiche della chat",
+      "autoReplyOrganization": "Attiva l’assistente per l’organizzazione",
       "autoReplyHelp": "Le risposte usano le informazioni pubblicate in questa guida. Le altre domande arrivano all’host.",
       "autoReplyTopics": {
         "enabled": "Attiva per questo alloggio",

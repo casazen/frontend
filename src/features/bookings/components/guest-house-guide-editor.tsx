@@ -5,6 +5,8 @@ import { ApiClient } from '@/api/client';
 import { Button } from '@/components/ui/button';
 import { autoReplyTopics, guideFields, type GuideAutoReplies, type HouseGuide } from '@/features/guest-portal/house-guide-fields';
 
+const orgSettingsPath = '/guest-portal/auto-reply-settings';
+
 const replyOptions = ['enabled', ...autoReplyTopics] as const;
 const chatGuideFields = ['checkInHours', 'checkOutHours', 'parking', 'wifi'] as const;
 
@@ -22,6 +24,16 @@ export function GuestHouseGuideEditor({ propertyId, suggestion, section, onSaved
     queryKey: ['guest-house-guide', propertyId],
     queryFn: () => ApiClient.get<HouseGuide>(endpoint),
     gcTime: 0,
+  });
+  const orgSettings = useQuery({
+    queryKey: ['guest-portal', 'auto-reply-settings', propertyId],
+    queryFn: () => ApiClient.get<{ enabled: boolean; canManage: boolean }>(orgSettingsPath),
+    retry: false,
+    gcTime: 0,
+  });
+  const saveOrgSettings = useMutation({
+    mutationFn: (enabled: boolean) => ApiClient.put(orgSettingsPath, { enabled }),
+    onSuccess: async () => { await orgSettings.refetch(); },
   });
   const [draft, setDraft] = useState<HouseGuide>({});
   const guide = { ...query.data, ...suggestion, ...draft };
@@ -58,6 +70,15 @@ export function GuestHouseGuideEditor({ propertyId, suggestion, section, onSaved
           {section !== 'guide' && <fieldset className="grid gap-2" disabled={save.isPending}>
             <legend className="font-medium">{t('guestPortal.guide.autoReplyTitle')}</legend>
             <p className="text-sm text-muted-foreground">{t('guestPortal.guide.autoReplyHelp')}</p>
+            {orgSettings.data && (
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={orgSettings.data.enabled}
+                  disabled={!orgSettings.data.canManage || saveOrgSettings.isPending}
+                  onChange={(event) => saveOrgSettings.mutate(event.currentTarget.checked)} />
+                {t('guestPortal.guide.autoReplyOrganization')}
+              </label>
+            )}
+            {saveOrgSettings.isError && <p role="alert">{t('guestPortal.host.changeError')}</p>}
             {replyOptions.map((topic) => (
               <label key={topic} className="flex items-center gap-2 text-sm">
                 <input type="checkbox" checked={guide.autoReplies?.[topic] ?? false} onChange={(event) => {

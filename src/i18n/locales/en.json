@@ -4177,6 +4177,7 @@
       "checkOutHours": "Check-out hours",
       "parking": "Parking",
       "autoReplyTitle": "Automatic chat replies",
+      "autoReplyOrganization": "Enable the assistant for the organization",
       "autoReplyHelp": "Replies use the information published in this guide. Other questions go to the host.",
       "autoReplyTopics": {
         "enabled": "Enable for this property",
