@@ -1,3 +1,5 @@
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
+import { GuestSupplierOperations } from '@/features/guest-portal/guest-supplier-operations';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
@@ -146,6 +148,7 @@ function SuppliersTab() {
  * required, audit trail), filtered and paginated by the server. The invites (suppliers and hosts) have their own section.
  */
 export function AdminSuppliersPage() {
+  const { flags } = useFeatureFlags();
   const { t } = useTranslation();
 
   return (
@@ -156,6 +159,7 @@ export function AdminSuppliersPage() {
 
       />
       <SuppliersTab />
+      {flags.guestPortal && flags.guestPortalSupplierServices && <GuestSupplierOperations scope={{ role: 'admin' }} />}
     </div>
   );
 }

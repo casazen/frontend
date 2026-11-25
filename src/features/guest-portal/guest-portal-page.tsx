@@ -1,10 +1,7 @@
+import { BookOpen, CalendarDays, ChevronRight, ClipboardCheck, CreditCard, FileText, Leaf, MessageCircle, ShoppingBag, Star } from 'lucide-react';
+import { GuestSupplierOrders } from './guest-supplier-orders';
 import { useState, type CSSProperties, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-<<<<<<< HEAD
-import { BookOpen, CalendarDays, ChevronRight, ClipboardCheck, CreditCard, FileText, Leaf, MessageCircle, Star } from 'lucide-react';
-=======
-import { BookOpen, CalendarDays, ChevronRight, ClipboardCheck, FileText, Leaf, MessageCircle, ShoppingBag, Star } from 'lucide-react';
->>>>>>> f7cb0c19 (Add guest extras catalog, ordering and host operations)
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { ApiClient } from '@/api/client';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
@@ -35,6 +32,7 @@ const languages = ['it', 'en', 'de', 'fr', 'es'] as const;
 type Language = typeof languages[number];
 
 const copy = {
+  supplierOrders: ['Servizi e ordini', 'Services and orders', 'Dienste und Bestellungen', 'Services et commandes', 'Servicios y pedidos'],
   title: ['Il tuo soggiorno', 'Your stay', 'Dein Aufenthalt', 'Votre séjour', 'Tu estancia'],
   before: ['Prima dell’arrivo', 'Before arrival', 'Vor der Anreise', 'Avant l’arrivée', 'Antes de llegar'],
   during: ['Durante il soggiorno', 'During your stay', 'Während des Aufenthalts', 'Pendant le séjour', 'Durante la estancia'],
@@ -107,6 +105,7 @@ const copy = {
 } satisfies Record<string, readonly [string, string, string, string, string]>;
 
 interface StayOverview {
+  features?: { supplierServices?: boolean };
   branding: { name: string; logoUrl: string | null; primaryColor: string | null };
   stay: {
     propertyName: string;
@@ -186,6 +185,7 @@ function GuestPortalPage({ token }: { token: string }) {
   const chat = section === 'chat' && stay?.status !== 'cancelled';
   const documents = section === 'documents';
   const payments = section === 'payments';
+  const supplierOrders = section === 'supplier-orders' && overview?.features?.supplierServices;
   const review = section === 'review';
   const privacy = section === 'privacy';
   const cancellation = section === 'cancellation' && stay?.isDirect;
@@ -235,11 +235,7 @@ function GuestPortalPage({ token }: { token: string }) {
         {stay && !failed && (
           <>
             <span className="stay-phase">{t(phase)}</span>
-<<<<<<< HEAD
-            <h1>{t(guide ? 'guide' : details ? 'details' : chat ? 'chat' : documents ? 'documents' : payments ? 'payments' : review ? 'review' : cancellation ? 'cancellation' : privacy ? 'privacy' : 'title')}</h1>
-=======
-            <h1>{extras ? extraLabels[language][0] : t(guide ? 'guide' : details ? 'details' : chat ? 'chat' : documents ? 'documents' : review ? 'review' : cancellation ? 'cancellation' : 'title')}</h1>
->>>>>>> f7cb0c19 (Add guest extras catalog, ordering and host operations)
+            <h1>{extras ? extraLabels[language][0] : t(supplierOrders ? 'supplierOrders' : guide ? 'guide' : details ? 'details' : chat ? 'chat' : documents ? 'documents' : payments ? 'payments' : review ? 'review' : cancellation ? 'cancellation' : privacy ? 'privacy' : 'title')}</h1>
             <p className="stay-meta">{range} · {stay.guests} {guestLabel(language, stay.guests)}</p>
             <div className="stay-card stay-property"><CalendarDays aria-hidden="true" />{stay.propertyName} · {stay.bookingCode}</div>
             {extras ? (
@@ -293,6 +289,8 @@ function GuestPortalPage({ token }: { token: string }) {
                 loading: t('load'), failed: t('error'), unavailable: t('cannotCancel'), cancelled: t('cancelled'),
                 refund: t('refund'), changed: t('refundChanged'), confirm: t('confirmCancellation'),
               }} />
+            ) : supplierOrders ? (
+              <GuestSupplierOrders path={path} language={language} />
             ) : details ? (
               <>
               {stay.canEditArrival ? <ArrivalForm stay={stay} path={path} t={t} onSaved={(arrivalTime) => {
@@ -322,11 +320,9 @@ function GuestPortalPage({ token }: { token: string }) {
                   <Link className="stay-card" to={href('details')}><CalendarDays aria-hidden="true" />{t('details')}<ChevronRight aria-hidden="true" /></Link>
                   <Link className="stay-card" to={href('guide')}><BookOpen aria-hidden="true" />{t('guide')}<ChevronRight aria-hidden="true" /></Link>
                   {stay.status !== 'cancelled' && <Link className="stay-card" to={href('chat')}><MessageCircle aria-hidden="true" />{t('chat')}<ChevronRight aria-hidden="true" /></Link>}
-<<<<<<< HEAD
                   <Link className="stay-card" to={href('payments')}><CreditCard aria-hidden="true" />{t('payments')}<ChevronRight aria-hidden="true" /></Link>
-=======
                   {hasExtras && <Link className="stay-card" to={href('extras')}><ShoppingBag aria-hidden="true" />{extraLabels[language][0]}<ChevronRight aria-hidden="true" /></Link>}
->>>>>>> f7cb0c19 (Add guest extras catalog, ordering and host operations)
+                  {overview?.features?.supplierServices && <Link className="stay-card" to={href('supplier-orders')}><ClipboardCheck aria-hidden="true" />{t('supplierOrders')}<ChevronRight aria-hidden="true" /></Link>}
                   <Link className="stay-card" to={href('documents')}><FileText aria-hidden="true" />{t('documents')}<ChevronRight aria-hidden="true" /></Link>
                   {phase === 'after' && stay.status !== 'cancelled' && <Link className="stay-card" to={href('review')}><Star aria-hidden="true" />{t('review')}<ChevronRight aria-hidden="true" /></Link>}
                   {overview?.checkInCompleted && (stay.checkInAvailable ? (

@@ -1,3 +1,5 @@
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
+import { GuestSupplierOperations } from '@/features/guest-portal/guest-supplier-operations';
 import { useMemo, useState } from 'react';
 import { CalendarClock, Inbox } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
@@ -46,6 +48,7 @@ function comuneOptionsOf(profile: SupplierProfile | undefined): ListOption[] {
  * tab the console has loaded, and the page says so.
  */
 export function SupplierInboxPage() {
+  const { flags } = useFeatureFlags();
   const { t } = useTranslation();
   const actions = useRequestActions();
   const counts = useSupplierInboxCounts();
@@ -103,6 +106,7 @@ export function SupplierInboxPage() {
   return (
     <div className="min-w-0 space-y-6" data-testid="supplier-inbox-page">
       <PageHeader title={t('supplier.requests.title')} description={t('supplier.requests.description')} crumbs="auto" primary={primary} />
+      {flags.guestPortal && flags.guestPortalSupplierServices && <GuestSupplierOperations scope={{ role: 'supplier' }} />}
 
       {nothingYet ? (
         <div className="rounded-xl bg-card p-2 shadow-sm ring-1 ring-inset ring-border" data-testid="supplier-inbox-empty">

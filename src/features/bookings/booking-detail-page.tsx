@@ -1,3 +1,4 @@
+import { GuestSupplierOperations } from '@/features/guest-portal/guest-supplier-operations';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { Building2, CalendarDays, Pencil, XCircle } from 'lucide-react';
@@ -290,6 +291,9 @@ export function BookingDetailPage() {
             <div className="grid gap-4">
               <GuestStayChangePanel bookingId={booking.id} onApproved={() => { void refetch(); }} />
               <GuestPortalLinkPanel key={booking.id} bookingId={booking.id} />
+              {flags.guestPortalSupplierServices && hasPermission('short-rent', 'guestportal.manage') && (
+                <GuestSupplierOperations scope={{ role: 'host', propertyId: booking.propertyId }} />
+              )}
               {hasPermission('short-rent', 'guestportal.manage') && (
                 <>
                   <GuestHouseGuideEditor key={booking.propertyId} propertyId={booking.propertyId} />

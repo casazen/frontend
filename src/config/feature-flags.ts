@@ -119,6 +119,7 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    */
   crmMarketing: false,
   guestPortal: false,
+  guestPortalSupplierServices: false,
   /**
    * The compliance traffic light (backend `ComplianceTrafficLight`, E03/F02/US01/T03): a light for each obligation, and the coverage report of the
    * proofs of a period (`GET /api/compliance/report` and its export, which answer 404 while it is off). Off until the product owner turns it on. The
