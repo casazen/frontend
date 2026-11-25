@@ -54,7 +54,7 @@ function SectionTabs({ className }: NavSectionTabsProps) {
     canOpenPath,
   );
   const [head, ...pages] = section;
-  if (!head || !TAB_AREAS.includes(head.context)) return null;
+  if (!head || !TAB_AREAS.includes(head.context) || head.path.endsWith('/settings') && (head.context === 'short-rent' || head.context === 'long-rent')) return null;
 
   return hasQueryClient && pages.some((page) => page.navCount) ? (
     <CountedSectionTabs section={section} className={className} />

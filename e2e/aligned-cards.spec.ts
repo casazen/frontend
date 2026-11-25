@@ -342,7 +342,7 @@ test.describe('Aligned cards', () => {
       await page.goto(demoUrl('/app/admin', 'admin'));
 
       // The six numbers are the cards with a big number; the CIN and OTA cards under them are another grid.
-      const cards = page.locator('div.grid > div.rounded-lg').filter({ has: page.locator('.text-2xl') });
+      const cards = page.locator('div.grid > [data-ui-card]').filter({ has: page.locator('.text-2xl') });
       await expect(cards).toHaveCount(6);
       const row = (first: number) => [first, first + 1, first + 2].map((index) => cards.nth(index));
 
@@ -475,7 +475,7 @@ test.describe('Aligned cards', () => {
       await page.setViewportSize({ width: 1280, height: 900 });
       await page.goto(demoUrl('/app/short-rent/ota', 'short-stay'));
 
-      const cards = page.locator('div.grid > div.rounded-lg.border').filter({ has: page.getByRole('button') });
+      const cards = page.locator('div.grid > [data-ui-card].border').filter({ has: page.getByRole('button') });
       await expect(cards).toHaveCount(3);
       const each = (selector: string) => [0, 1, 2].map((index) => cards.nth(index).locator(selector).first());
       await expectAligned(each('h3'), 'name');

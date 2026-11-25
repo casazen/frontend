@@ -19,7 +19,7 @@ export function VetrinaPage() {
   const { org } = useCurrentUser();
   const { data: properties = [], isLoading: propertiesLoading } = useProperties({ mode: 'short' });
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
-  const [orgUrlCollapsed, setOrgUrlCollapsed] = useState(false);
+  const [orgUrlCollapsed, setOrgUrlCollapsed] = useState(true);
 
   const orgSlug = org?.slug ?? null;
   const orgBookingPath = orgSlug ? buildOrgBookingPath(orgSlug) : null;
@@ -49,8 +49,8 @@ export function VetrinaPage() {
             </div>
           </div>
 
-          <div className="flex min-h-0 flex-1 overflow-hidden">
-            <div className="flex w-72 shrink-0 flex-col overflow-hidden border-r">
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
+            <div className="flex max-h-[40%] shrink-0 flex-col overflow-hidden border-b md:max-h-none md:w-72 md:border-r md:border-b-0">
               <div className="flex-1 overflow-y-auto px-3 py-3">
                 <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   {t('directBooking.propertiesLabel')}
@@ -67,6 +67,7 @@ export function VetrinaPage() {
               <div className="border-t">
                 <button
                   type="button"
+                  aria-expanded={!orgUrlCollapsed}
                   onClick={() => setOrgUrlCollapsed((v) => !v)}
                   className="flex w-full items-center justify-between px-3 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:bg-muted/50"
                 >

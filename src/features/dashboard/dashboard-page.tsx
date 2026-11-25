@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Building2, Plus, Workflow, Wrench } from 'lucide-react';
+import { Building2, ChartNoAxesColumn, ChevronDown, Plus, Workflow, Wrench } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { FocusBlock } from '@/components/shared/calm';
@@ -139,6 +139,7 @@ export function DashboardPage() {
   return (
     <AppShell>
       <div className="space-y-6 md:space-y-8" data-testid="sr-home">
+        <div className="rounded-2xl border bg-gradient-to-br from-primary-soft via-card to-card p-5 md:p-7">
         <PageHeader
           title={firstName ? t('dashboard.title', { name: firstName }) : t('dashboard.titleNoName')}
           description={canReadBookings && today.data && !today.isError && !noActiveProperty ? purposeOf(today.data, propertyId, t, locale) : undefined}
@@ -159,6 +160,7 @@ export function DashboardPage() {
           ]}
           mobilePrimary="none"
         />
+        </div>
 
         {/* «Sono in regola?» in one line, and, without the traffic light, what carries a risk of a sanction as the first block, whatever the filter below says: it is the host's, not a property's. */}
         {!noActiveProperty && canReadBookings ? <ComplianceUrgentBlock /> : null}
@@ -223,9 +225,15 @@ export function DashboardPage() {
         ) : null}
 
         {canReadBookings && !noActiveProperty && (
-          <section aria-labelledby="home-numbers-title" className="space-y-3">
+          <details className="group rounded-2xl border bg-card px-5 md:px-6" open={params.has('period') || undefined}>
+            <summary className="flex min-h-16 cursor-pointer list-none items-center gap-3 rounded-lg font-semibold focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
+              <ChartNoAxesColumn aria-hidden="true" className="size-5 text-primary-text" />
+              {t('dashboard.numbers.label')}
+              <ChevronDown aria-hidden="true" className="ml-auto size-4 transition-transform group-open:rotate-180 motion-reduce:transition-none" />
+            </summary>
+            <div className="space-y-5 border-t py-5">
             <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-              <h2 id="home-numbers-title" className="text-lg font-semibold">{t('dashboard.numbers.label')}</h2>
+              <span className="text-sm font-medium">{t('dashboard.filter.period')}</span>
               <Select
                 size="sm"
                 aria-label={t('dashboard.filter.period')}
@@ -247,11 +255,7 @@ export function DashboardPage() {
             ) : (
               <SkeletonLine lines={3} />
             )}
-          </section>
-        )}
-
-        <div className={TWO_COLUMNS}>
-          {canReadBookings && !noActiveProperty && overview.data && !overview.isError && !overview.isPlaceholderData ? (
+          {overview.data && !overview.isError && !overview.isPlaceholderData ? (
             overview.data.series && overview.data.revenue ? (
               <RevenueChart series={overview.data.series} currency={overview.data.revenue.currency} />
             ) : (
@@ -260,8 +264,11 @@ export function DashboardPage() {
               </Alert>
             )
           ) : null}
-          <HomeNextStep />
-        </div>
+            </div>
+          </details>
+        )}
+
+        <HomeNextStep />
 
         {otaEnabled ? <OtaStatusCard /> : null}
       </div>

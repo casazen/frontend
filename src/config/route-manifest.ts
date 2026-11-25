@@ -490,10 +490,10 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   {
     // The domain of the booking site: the last tab of the section, after its look and its documents.
     path: '/app/short-rent/settings/domain',
+    navParent: '/app/short-rent/settings',
     context: 'short-rent',
     requiredPermissions: ['property.write'],
     navKey: 'nav.domain',
-    navParent: '/app/short-rent/vetrina',
     navOrder: 3,
     icon: 'Globe',
     component: async () => ({
@@ -504,6 +504,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     // Plans and Stripe checkout; also the return page of the checkout and of the billing portal (backend PL-11). In no
     // menu since UI-04a: the org badge of the header leads here (`usePlanPagePath`) and the page links to the billing one.
     path: '/app/short-rent/settings/plan',
+    navParent: '/app/short-rent/settings',
     context: 'short-rent',
     requiredPermissions: [],
     orgBillingAdmin: true,
@@ -515,6 +516,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   {
     // In no menu since UI-04a: the plan page links to it (and the org badge to the plan page).
     path: '/app/short-rent/settings/billing',
+    navParent: '/app/short-rent/settings',
     context: 'short-rent',
     requiredPermissions: [],
     orgBillingAdmin: true,
@@ -524,15 +526,24 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
+    path: '/app/short-rent/settings',
+    context: 'short-rent',
+    requiredPermissions: [],
+    navKey: 'nav.settings',
+    navPlacement: 'footer',
+    navOrder: 40,
+    icon: 'Settings',
+    component: async () => ({ default: (await import('@/features/settings/settings-index')).SettingsIndex }),
+  },
+  {
     // Org identity: name, public slug and contact email opt-in (A1-22, A1-23). «Impostazioni», pinned at the foot of the sidebar: the integration
     // and the assistant are its tabs, and the menu calls it by the section while its tab keeps the name of the page («Organizzazione»).
     path: '/app/short-rent/settings/organization',
+    navParent: '/app/short-rent/settings',
     context: 'short-rent',
     requiredPermissions: [],
     orgBillingAdmin: true,
-    navKey: 'nav.settings',
-    navTabKey: 'nav.organization',
-    navPlacement: 'footer',
+    navKey: 'nav.organization',
     navOrder: 40,
     icon: 'Settings',
     component: async () => ({
@@ -542,11 +553,11 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   {
     // Public-site branding: logo, hero, color, tagline, theme (BK-12, A3-17). Short-rent only: it is the booking site.
     path: '/app/short-rent/settings/site-appearance',
+    navParent: '/app/short-rent/settings',
     context: 'short-rent',
     requiredPermissions: [],
     orgBillingAdmin: true,
     navKey: 'nav.siteAppearance',
-    navParent: '/app/short-rent/vetrina',
     navOrder: 1,
     icon: 'Palette',
     component: async () => ({
@@ -556,11 +567,11 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   {
     // The host's own privacy notice and booking terms, shown on the public site (BK-14, A3-21). Short-rent only.
     path: '/app/short-rent/settings/site-documents',
+    navParent: '/app/short-rent/settings',
     context: 'short-rent',
     requiredPermissions: [],
     orgBillingAdmin: true,
     navKey: 'nav.siteDocuments',
-    navParent: '/app/short-rent/vetrina',
     navOrder: 2,
     icon: 'FileText',
     component: async () => ({
@@ -570,10 +581,10 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   {
     // Where the host connects the account that the booking payments go to: the last tab of Incassi.
     path: '/app/short-rent/settings/payments',
+    navParent: '/app/short-rent/settings',
     context: 'short-rent',
     requiredPermissions: ['property.write'],
     navKey: 'nav.stripeConnect',
-    navParent: '/app/short-rent/payments',
     navOrder: 4,
     icon: 'Wallet',
     component: async () => ({
@@ -584,10 +595,10 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     // A host recommends CasaZen to a friend: any member of a host org, whatever the role (backend policy `SharedPropertyRead`, held by every
     // host role). Daily quota per org. No role is assigned: the invited person signs up as usual. Pinned at the foot of the sidebar, under «Impostazioni».
     path: '/app/short-rent/settings/invitations',
+    navParent: '/app/short-rent/settings',
     context: 'short-rent',
     requiredPermissions: ['property.read'],
     navKey: 'nav.hostInvites',
-    navPlacement: 'footer',
     navOrder: 41,
     icon: 'Gift',
     component: async () => ({
@@ -596,9 +607,9 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   },
   {
     path: '/app/short-rent/settings/ai',
+    navParent: '/app/short-rent/settings',
     context: 'short-rent',
     requiredPermissions: ['property.write'],
-    navParent: '/app/short-rent/settings/organization',
     navKey: 'aiSettings.title',
     navOrder: 2,
     icon: 'Sparkles',
@@ -1219,6 +1230,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   // UI-04a (the org badge of the header leads to the plan page, which links to the billing one).
   {
     path: '/app/long-rent/settings/plan',
+    navParent: '/app/long-rent/settings',
     context: 'long-rent',
     requiredPermissions: [],
     orgBillingAdmin: true,
@@ -1229,6 +1241,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   },
   {
     path: '/app/long-rent/settings/billing',
+    navParent: '/app/long-rent/settings',
     context: 'long-rent',
     requiredPermissions: [],
     orgBillingAdmin: true,
@@ -1240,13 +1253,22 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   // Org identity: same page as in short-rent (A1-22, A1-23), inside the long-rent shell. «Impostazioni» pinned at the foot of the sidebar, as in
   // short-rent, so the two rental areas keep their settings in the same place.
   {
+    path: '/app/long-rent/settings',
+    context: 'long-rent',
+    requiredPermissions: [],
+    navKey: 'nav.settings',
+    navPlacement: 'footer',
+    navOrder: 40,
+    icon: 'Settings',
+    component: async () => ({ default: (await import('@/features/settings/settings-index')).SettingsIndex }),
+  },
+  {
     path: '/app/long-rent/settings/organization',
+    navParent: '/app/long-rent/settings',
     context: 'long-rent',
     requiredPermissions: [],
     orgBillingAdmin: true,
-    navKey: 'nav.settings',
-    navTabKey: 'nav.organization',
-    navPlacement: 'footer',
+    navKey: 'nav.organization',
     navOrder: 40,
     icon: 'Settings',
     component: async () => ({
@@ -1255,10 +1277,10 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   },
   {
     path: '/app/long-rent/settings/invitations',
+    navParent: '/app/long-rent/settings',
     context: 'long-rent',
     requiredPermissions: ['property.read'],
     navKey: 'nav.hostInvites',
-    navPlacement: 'footer',
     navOrder: 41,
     icon: 'Gift',
     component: async () => ({

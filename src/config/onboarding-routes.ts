@@ -81,7 +81,7 @@ export const ONBOARDING_ROUTES: RouteManifestEntry[] = [
     orgBillingAdmin: true,
     featureFlag: 'octorateOnboarding',
     navKey: 'nav.integrationSettings',
-    navParent: '/app/short-rent/settings/organization',
+    navParent: '/app/short-rent/settings',
     navOrder: 1,
     icon: 'Settings',
     component: async () => ({ default: (await import('@/features/onboarding/integration-settings-page')).IntegrationSettingsPage }),
