@@ -3,6 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
+import { RegisterSearch } from './components/register-search';
+import { matchesSearch } from '@/components/shared/list-view/list-data';
 import { PageHeader } from '@/components/layout/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -98,7 +100,9 @@ export function AdminTaxRatesPage() {
     }
   };
 
+  const [query, setQuery] = useState('');
   const items = rates ?? [];
+  const visible = items.filter(rate => matchesSearch([rate.city, rate.regionCode, rate.accommodationCategory].filter(Boolean).join(' '), query));
   const isFormLoading = createMutation.isPending || updateMutation.isPending;
 
   return (
@@ -121,8 +125,9 @@ export function AdminTaxRatesPage() {
         />
 
         <Card>
-          <CardHeader>
+          <CardHeader className="space-y-3 border-b bg-surface-2">
             <CardTitle>{t('taxRates.listTitle')}</CardTitle>
+            {items.length > 0 && <RegisterSearch value={query} onChange={setQuery} label={t('taxRates.city') + ' / ' + t('taxRates.region')} />}
           </CardHeader>
           <CardContent>
             {/* Loading State */}
@@ -197,7 +202,8 @@ export function AdminTaxRatesPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {items.map((rate) => (
+                    {visible.length === 0 && <tr><td colSpan={9} className="p-5 text-center text-muted-foreground" role="status">{t('listView.noResults.title')}</td></tr>}
+                    {visible.map((rate) => (
                       <tr
                         key={rate.id}
                         className="border-b last:border-0 hover:bg-muted/30 transition-colors"
