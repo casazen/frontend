@@ -32,6 +32,24 @@ describe('lease-owned partner documents', () => {
     renderPage(query); expect(screen.getByText(i18n.t('cfDocuments.invalidLease'))).toBeInTheDocument();
     expect(get).not.toHaveBeenCalled(); expect(post).not.toHaveBeenCalled();
   });
+  it('filters the contract chooser by property or reference before reading its documents', async () => {
+    const secondId = '12345678-0000-4000-8000-000000000001';
+    const contracts = [
+      { ...buildSummary({ id }), property: { name: 'Casa del Caffè' } },
+      { ...buildSummary({ id: secondId }), property: { name: 'Casa al Lago' } },
+    ];
+    get.mockImplementation((url) => url === '/leases' ? Promise.resolve({ data: contracts }) : Promise.reject(httpError(404)));
+    renderPage();
+    const search = await screen.findByRole('searchbox');
+    fireEvent.change(search, { target: { value: 'caffe' } });
+    expect(screen.getByRole('link', { name: /Casa del Caffè/ })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Casa al Lago/ })).not.toBeInTheDocument();
+    fireEvent.change(search, { target: { value: secondId } });
+    expect(screen.getByRole('link', { name: /Casa al Lago/ })).toHaveAttribute('href', expect.stringContaining(secondId));
+    fireEvent.change(search, { target: { value: 'nessuna corrispondenza' } });
+    expect(screen.getByText(i18n.t('listView.noResults.title'))).toBeInTheDocument();
+    expect(get.mock.calls.every(([url]) => url === '/leases')).toBe(true);
+  });
   it('never reads documents when the lease is forbidden', async () => {
     get.mockRejectedValue(httpError(403)); renderPage(`?leaseId=${id}`);
     expect(await screen.findByText(i18n.t('cfDocuments.leaseError'))).toBeInTheDocument();
