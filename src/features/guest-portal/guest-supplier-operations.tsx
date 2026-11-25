@@ -57,9 +57,12 @@ export function GuestSupplierOperations({ scope }: { scope: Scope }) {
       <h2 className="font-semibold">Servizi e ordini ospiti</h2>
       <p>Ambiente di test. Pagamenti e rimborsi simulati.</p>
       {scope.role === 'admin' && <MarketplaceSettings endpoint={endpoint} />}
-      {scope.role === 'host' && <ConfigureOffer endpoint={endpoint} offers={query.data.offers}
-        busy={change.isPending} save={(id, commissionBasisPoints, enabled) =>
-          change.mutate({ suffix: `/offers/${id}`, method: 'put', body: { commissionBasisPoints, enabled } })} />}
+      {scope.role === 'host' && <>
+        <InviteTrustedSupplier endpoint={endpoint} />
+        <ConfigureOffer endpoint={endpoint} offers={query.data.offers}
+          busy={change.isPending} save={(id, commissionBasisPoints, enabled) =>
+            change.mutate({ suffix: `/offers/${id}`, method: 'put', body: { commissionBasisPoints, enabled } })} />
+      </>}
       {scope.role === 'supplier' && query.data.offers.map((offer) => (
         <div className="flex flex-wrap items-center gap-3" key={offer.id}>
           <span>Commissione {offer.hostOrigin ? 'host' : 'CasaZen'} {offer.commissionBasisPoints / 100}% · {offer.accepted ? 'Accettata' : 'In attesa'}</span>
@@ -169,6 +172,27 @@ function ConfigureOffer({ endpoint, offers, busy, save }: {
   </>;
 }
 
+
+function InviteTrustedSupplier({ endpoint }: { endpoint: string }) {
+  const [email, setEmail] = useState('');
+  const invite = useMutation({
+    mutationFn: () => ApiClient.post<void>(`${endpoint}/invite`, { email: email.trim() }),
+    onSuccess: () => setEmail(''),
+  });
+
+  return <div className="grid gap-2">
+    <form className="grid gap-2 sm:grid-cols-[1fr_auto]" onSubmit={(event) => {
+      event.preventDefault();
+      invite.mutate();
+    }}>
+      <label>Email del fornitore di fiducia<Input type="email" required maxLength={255} value={email}
+        onChange={(event) => setEmail(event.target.value)} /></label>
+      <Button className="self-end" variant="outline" disabled={invite.isPending}>Invita fornitore</Button>
+    </form>
+    {invite.isSuccess && <p role="status">Invito creato. Il fornitore potrà accettarlo dal link ricevuto via email.</p>}
+    {invite.isError && <p role="alert">Impossibile creare l’invito.</p>}
+  </div>;
+}
 
 function MarketplaceSettings({ endpoint }: { endpoint: string }) {
   const [term, setTerm] = useState('');
