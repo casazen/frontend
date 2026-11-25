@@ -25,6 +25,14 @@ const copy = {
   es: ['Modificar la estancia', 'Llegada', 'Salida', 'Adultos', 'Niños', 'Edad del niño', 'Calcular el precio', 'Total actual', 'Nuevo total', 'Enviar solicitud', 'Pendiente de aprobación', 'Cambio aprobado', 'Solicitud rechazada', 'Comprueba las fechas y los huéspedes o inténtalo de nuevo.', 'Cerrar'],
 } as const;
 
+const quoteCopy = {
+  it: ['Differenza se approvata', 'L’host deve approvare le nuove date o il numero di ospiti.', 'Paga la differenza'],
+  en: ['Difference if approved', 'The host must approve the new dates or guest count.', 'Pay the difference'],
+  de: ['Differenz bei Genehmigung', 'Der Gastgeber muss die neuen Daten oder die Gästezahl genehmigen.', 'Differenz bezahlen'],
+  fr: ['Différence si la demande est acceptée', 'L’hôte doit approuver les nouvelles dates ou le nombre de voyageurs.', 'Payer la différence'],
+  es: ['Diferencia si se aprueba', 'El anfitrión debe aprobar las nuevas fechas o el número de huéspedes.', 'Pagar la diferencia'],
+} as const;
+
 export function GuestPortalStayChange({ path, language, arrival, departure, paymentsHref }: {
   path: string;
   language: keyof typeof copy;
@@ -52,20 +60,20 @@ export function GuestPortalStayChange({ path, language, arrival, departure, paym
   }, [approvedAt, client, path]);
   if (!status.data) return status.isError && getHttpStatus(status.error) !== 404 ? <p role="alert">{error}</p> : null;
   if (!status.data.canRequest && !latest) return null;
-  const paymentLabels = { it: "Vai ai pagamenti", en: "Go to payments", de: "Zu den Zahlungen", fr: "Accéder aux paiements", es: "Ir a los pagos" };
+  const [difference, approvalTerms, payDifference] = quoteCopy[language];
   const dateRange = (start: string, end: string) => new Intl.DateTimeFormat(language, { dateStyle: 'medium', timeZone: 'UTC' })
     .formatRange(new Date(start), new Date(end));
   return (
     <section className="stay-card stay-content">
       <h2>{title}</h2>
       {latest && <p role="status">{latest.approvedAt ? approved : latest.rejectedAt ? rejected : pending} · {dateRange(latest.arrival, latest.departure)}</p>}
-      {latest?.approvedAt && latest.newTotal > latest.previousTotal && <Link to={paymentsHref}>{paymentLabels[language]}</Link>}
+      {latest?.approvedAt && latest.newTotal > latest.previousTotal && <Link to={paymentsHref}>{payDifference}</Link>}
       {status.data.canRequest && (
         <>
           <button type="button" onClick={() => setOpen(!open)} aria-expanded={open}>{open ? close : title}</button>
           {open && <StayChangeForm endpoint={endpoint} arrival={arrival} departure={departure} adults={status.data.adults}
             children={status.data.children} language={language}
-            labels={{ arriveLabel, leaveLabel, adultsLabel, childrenLabel, ageLabel, calculate, before, after, send, error }}
+            labels={{ arriveLabel, leaveLabel, adultsLabel, childrenLabel, ageLabel, calculate, before, after, send, error, difference, approvalTerms }}
             onSent={() => { setOpen(false); void status.refetch(); }} />}
         </>
       )}
@@ -80,7 +88,7 @@ function StayChangeForm({ endpoint, arrival, departure, adults, children, langua
   adults: number;
   children: number;
   language: string;
-  labels: Record<'arriveLabel' | 'leaveLabel' | 'adultsLabel' | 'childrenLabel' | 'ageLabel' | 'calculate' | 'before' | 'after' | 'send' | 'error', string>;
+  labels: Record<'arriveLabel' | 'leaveLabel' | 'adultsLabel' | 'childrenLabel' | 'ageLabel' | 'calculate' | 'before' | 'after' | 'send' | 'error' | 'difference' | 'approvalTerms', string>;
   onSent: () => void;
 }) {
   const [childCount, setChildCount] = useState(children);
@@ -105,16 +113,17 @@ function StayChangeForm({ endpoint, arrival, departure, adults, children, langua
   const money = (value: number, currency: string) => new Intl.NumberFormat(language, { style: 'currency', currency }).format(value);
   return (
     <>
+      <p>{labels.approvalTerms}</p>
       <form className="grid gap-3" onSubmit={preview} onChange={() => { quote.reset(); submit.reset(); }}>
         <fieldset className="grid gap-3 sm:grid-cols-2" disabled={submit.isPending || quote.isPending}>
-          <label className="grid gap-1">{labels.arriveLabel}<input className="rounded border px-2 py-1" name="arrival" type="date" defaultValue={arrival.slice(0, 10)} required /></label>
-          <label className="grid gap-1">{labels.leaveLabel}<input className="rounded border px-2 py-1" name="departure" type="date" defaultValue={departure.slice(0, 10)} required /></label>
-          <label className="grid gap-1">{labels.adultsLabel}<input className="rounded border px-2 py-1" name="adults" type="number" min={1} max={100} defaultValue={adults} required /></label>
-          <label className="grid gap-1">{labels.childrenLabel}<input className="rounded border px-2 py-1" type="number" min={0} max={100} value={childCount} onChange={(event) => setChildCount(Math.min(100, Math.max(0, Math.floor(event.target.valueAsNumber || 0))))} required /></label>
+          <label className="grid gap-1">{labels.arriveLabel}<input className="min-h-11 rounded-lg border px-2 py-1" name="arrival" type="date" defaultValue={arrival.slice(0, 10)} required /></label>
+          <label className="grid gap-1">{labels.leaveLabel}<input className="min-h-11 rounded-lg border px-2 py-1" name="departure" type="date" defaultValue={departure.slice(0, 10)} required /></label>
+          <label className="grid gap-1">{labels.adultsLabel}<input className="min-h-11 rounded-lg border px-2 py-1" name="adults" type="number" min={1} max={100} defaultValue={adults} required /></label>
+          <label className="grid gap-1">{labels.childrenLabel}<input className="min-h-11 rounded-lg border px-2 py-1" type="number" min={0} max={100} value={childCount} onChange={(event) => setChildCount(Math.min(100, Math.max(0, Math.floor(event.target.valueAsNumber || 0))))} required /></label>
           {Array.from({ length: childCount }, (_, index) => (
-            <label className="grid gap-1" key={index}>{labels.ageLabel} {index + 1}<input className="rounded border px-2 py-1" name="age" type="number" min={0} max={17} required /></label>
+            <label className="grid gap-1" key={index}>{labels.ageLabel} {index + 1}<input className="min-h-11 rounded-lg border px-2 py-1" name="age" type="number" min={0} max={17} required /></label>
           ))}
-          <button type="submit">{labels.calculate}</button>
+          {!quote.isSuccess && <button type="submit">{labels.calculate}</button>}
         </fieldset>
       </form>
       {quote.isError || submit.isError ? <p role="alert">{labels.error}</p> : null}
@@ -122,6 +131,7 @@ function StayChangeForm({ endpoint, arrival, departure, adults, children, langua
         <div>
           <p>{labels.before} <strong>{money(quote.data.previousTotal, quote.data.currency)}</strong></p>
           <p>{labels.after} <strong>{money(quote.data.newTotal, quote.data.currency)}</strong></p>
+          <p>{labels.difference} <strong>{money(quote.data.newTotal - quote.data.previousTotal, quote.data.currency)}</strong></p>
           <button type="button" disabled={submit.isPending} onClick={() => submit.mutate()}>{labels.send}</button>
         </div>
       )}
