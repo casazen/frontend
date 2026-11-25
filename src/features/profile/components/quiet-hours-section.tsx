@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Moon } from 'lucide-react';
 import { PlainSection } from '@/components/shared/calm';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/ui/field';
@@ -37,7 +38,7 @@ export function QuietHoursSection({ quietHours }: QuietHoursSectionProps) {
 
   return (
     <PlainSection title={t('notificationPreferences.quietHours.title')} data-testid="quiet-hours">
-      <p className="text-sm text-foreground/70">{t('notificationPreferences.quietHours.description')}</p>
+      <p className="flex items-start gap-3 rounded-xl bg-primary-soft p-4 text-sm text-primary-text"><Moon aria-hidden="true" className="size-5 shrink-0" />{t('notificationPreferences.quietHours.description')}</p>
 
       <form onSubmit={submit} noValidate className="space-y-4" data-testid="quiet-hours-form">
         <div className="grid grid-cols-2 gap-4">
