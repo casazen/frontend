@@ -18,6 +18,7 @@ import { GuestPortalReview } from './guest-portal-review';
 import { HouseGuideSections } from './house-guide';
 import type { HouseGuide } from './house-guide-fields';
 import { GuestPortalCancellation } from './guest-portal-cancellation';
+import { GuestPortalStayChange } from './guest-portal-stay-change';
 import { useStayManifest } from './use-stay-manifest';
 import { guestAccountStaysPath } from './guest-account-stays-page';
 import { GuestPortalPrivacy } from './guest-portal-privacy';
@@ -260,6 +261,9 @@ function GuestPortalPage({ token }: { token: string }) {
                 queryClient.setQueryData<StayDetails>(queryKey, (current) => current && { ...current, arrivalTime });
               }} />
                 : <div className="stay-card stay-content"><h2>{t('arrival')}</h2><p>{stay.arrivalTime === 'late' ? t('late') : stay.arrivalTime ?? '—'}</p></div>}
+                {stay.isDirect && overview?.stay && <GuestPortalStayChange path={path} language={language}
+                  arrival={overview.stay.checkIn} departure={overview.stay.checkOut}
+                  paymentsHref={href('payments')} />}
                 {stay.isDirect && phase === 'before' && <Link className="stay-card" to={href('cancellation')}>{t('cancellation')}</Link>}
                 <Link className="stay-card" to={href('privacy')}>{t('privacy')}<ChevronRight aria-hidden="true" /></Link>
                 {stay.isOta && <p className="stay-card">{t('otaChanges')}</p>}

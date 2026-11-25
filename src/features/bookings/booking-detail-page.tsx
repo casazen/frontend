@@ -30,6 +30,7 @@ import { CheckInDialog } from './components/check-in-dialog';
 import { CheckInLinkPanel } from './components/checkin-link-panel';
 import { GuestHouseGuideEditor } from './components/guest-house-guide-editor';
 import { GuestPortalLinkPanel } from './components/guest-portal-link-panel';
+import { GuestStayChangePanel } from './components/guest-stay-change-panel';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { ConfirmBookingDialog } from './components/confirm-booking-dialog';
 import { DeclineBookingDialog } from './components/decline-booking-dialog';
@@ -286,6 +287,7 @@ export function BookingDetailPage() {
 
           {activeTab === 'portal' && (
             <div className="grid gap-4">
+              <GuestStayChangePanel bookingId={booking.id} onApproved={() => { void refetch(); }} />
               <GuestPortalLinkPanel key={booking.id} bookingId={booking.id} />
               {hasPermission('short-rent', 'guestportal.manage') && (
                 <GuestHouseGuideEditor key={booking.propertyId} propertyId={booking.propertyId} />
