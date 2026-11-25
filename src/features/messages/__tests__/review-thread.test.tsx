@@ -164,7 +164,7 @@ describe('the page of a review (E05/F06/US02, NF-69)', () => {
   });
 
   describe('what is on the page', () => {
-    it('ReviewThreadView_ReviewOfAChannel_ShowsTheStarsTheCategoriesTheWordsAndTheBookingBesideThem', async () => {
+    it('shows the channel review and opens its booking details on request', async () => {
       renderReview();
 
       expect(await screen.findByTestId('review-guest-text')).toHaveTextContent('Casa pulita e host gentilissimo.');
@@ -175,7 +175,11 @@ describe('the page of a review (E05/F06/US02, NF-69)', () => {
       expect(screen.getByTestId('review-categories')).toHaveTextContent('Pulizia');
       expect(screen.getByTestId('review-categories')).toHaveTextContent('5 su 5');
       expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Sofia Marino');
-      expect(within(screen.getByTestId('booking-card')).getByTestId('booking-card-code')).toHaveTextContent('ABCDE-12345');
+      expect(screen.queryByTestId('booking-card')).not.toBeInTheDocument();
+      const detailsLabel = i18n.t('messages.bookingCard.details');
+      fireEvent.click(screen.getByRole('button', { name: detailsLabel }));
+      const bookingDialog = await screen.findByRole('dialog', { name: detailsLabel });
+      expect(within(bookingDialog).getByTestId('booking-card-code')).toHaveTextContent('ABCDE-12345');
       // The list beside it is the one of the reviews, and the review has no unread count: nothing is marked as read.
       expect(messageHubApi.list).toHaveBeenCalledWith(expect.objectContaining({ kind: 'Review' }));
       expect(messageHubApi.markRead).not.toHaveBeenCalled();
