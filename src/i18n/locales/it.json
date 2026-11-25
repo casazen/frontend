@@ -1,4 +1,153 @@
 {
+  "activationStaff": {
+    "selectProperties": "Immobili del lotto",
+    "title": "Preparazione strutture",
+    "importTitle": "Schede importate",
+    "importFile": "Elenco JSON delle schede CasaZen e delle fonti",
+    "invalidImport": "Usa un file JSON con da 1 a 300 schede distinte e le relative fonti.",
+    "selection_one": "{{count}} immobile selezionato",
+    "selection_other": "{{count}} immobili selezionati",
+    "importAction": "Registra le fonti",
+    "importing": "Registrazione in corso…",
+    "imported": "Fonte registrata",
+    "importFailure": "Operazione non completata. Controlla i dati e riprova.",
+    "prepareTitle": "Lotti di strutture",
+    "start": "Prepara gli immobili selezionati",
+    "loadError": "Non riusciamo a caricare i lotti",
+    "batch": "Lotto {{id}}",
+    "status": {
+      "Queued": "In coda",
+      "ReconcileCreation": "Da riconciliare",
+      "WaitingForLicense": "In attesa di abilitazione",
+      "Ready": "Pronta per i collegamenti",
+      "NeedsReview": "Da verificare"
+    },
+    "externalId": "ID struttura Octorate",
+    "reconcile": "Rileggi e associa",
+    "reference": "Riferimento della richiesta a Octorate",
+    "save": "Salva il riferimento",
+    "resume": "Riprendi e verifica",
+    "saved": "Operazione registrata.",
+    "reasons": {
+      "octorate_preparation_creation_uncertain": "Verifica l’esistenza della struttura in Octorate e indica il suo ID.",
+      "octorate_preparation_candidate_found": "È stata trovata una struttura simile. Verifica e indica l’ID corretto.",
+      "octorate_preparation_license_pending": "Attendi la conferma della licenza.",
+      "octorate_preparation_already_linked": "La struttura è già associata.",
+      "octorate_preparation_product_required": "Verifica le camere e le tariffe della struttura.",
+      "octorate_preparation_invalid_data": "Verifica indirizzo, coordinate e contatti CasaZen."
+    }
+  },
+  "activationJourney": {
+    "preparation": {
+      "title": "Preparazione della struttura",
+      "NotStarted": "Da avviare",
+      "Queued": "Preparazione collegamenti",
+      "ReconcileCreation": "Lo staff sta verificando la struttura",
+      "WaitingForLicense": "In attesa di abilitazione",
+      "Ready": "Struttura pronta",
+      "NeedsReview": "Verifica dello staff necessaria"
+    },
+    "accounts": {
+      "staffApproval": "Per il passaggio di autorizzazione, chiedi a CasaZen dopo avere creato il collegamento.",
+      "title": "Credenziali per uno o più immobili",
+      "service": "Servizio",
+      "scope": "Ambito",
+      "single": "Un solo immobile",
+      "shared": "Più immobili",
+      "username": "Nome utente",
+      "password": "Password",
+      "webServiceKey": "Chiave Web Service",
+      "unitCode": "Codice di {{name}}",
+      "submit_one": "Conferma per {{count}} immobile",
+      "submit_other": "Conferma per {{count}} immobili",
+      "expiry": "Credenziale disponibile fino al {{date}}",
+      "resume": "Riprendi",
+      "revoke": "Revoca credenziale",
+      "confirmRevoke": "Conferma revoca",
+      "needsReview": "Verifica i dati per proseguire.",
+      "recorded": "Richiesta registrata"
+    },
+    "import": {
+      "loadError": "Non riusciamo a caricare la revisione",
+      "source": "Fonte · {{provider}}",
+      "findingSource": "Apri la fonte del controllo",
+      "complete": "I controlli di importazione sono completi.",
+      "edit": "Apri il campo",
+      "confirm": "Conferma il valore",
+      "recheck": "Controlla di nuovo",
+      "todoTitle": "Rivedi la scheda importata",
+      "todoWhy": "Controlla i campi indicati e la loro fonte.",
+      "fields": {
+        "descriptionIt": "Descrizione italiana",
+        "descriptionEn": "Descrizione inglese",
+        "beds": "Letti",
+        "maxGuests": "Capienza",
+        "cin": "CIN",
+        "photos": "Foto",
+        "nightlyRate": "Tariffa per notte",
+        "ratePlans": "Piani tariffari"
+      },
+      "states": {
+        "missing": "Da compilare",
+        "confirm": "Da confermare",
+        "mapping": "Da mappare"
+      },
+      "priceKinds": {
+        "quote": "Preventivo osservato",
+        "list": "Listino",
+        "effective": "Prezzo effettivo"
+      }
+    },
+    "services": {
+      "title": "Adempimenti",
+      "configure": "Portali richiesti",
+      "save": "Salva i portali",
+      "noPortals": "Nessun portale",
+      "notApplicable": "Alloggiati e ISTAT non si applicano a questa struttura.",
+      "pending": "In attesa di sincronizzazione: {{names}}.",
+      "waiting": "Pubblica la scheda e conferma i portali richiesti per proseguire.",
+      "available": "Puoi chiedere a CasaZen di configurare i servizi applicabili.",
+      "alloggiati": "Alloggiati",
+      "istat": "ISTAT",
+      "confirm": "Richiedi allo staff di configurare {{service}} per questo immobile.",
+      "send": "Conferma la richiesta",
+      "cancel": "Annulla",
+      "sent": "Richiesta inviata allo staff.",
+      "openCompliance": "Apri Adempimenti",
+      "loadError": "Non riusciamo a leggere lo stato degli adempimenti"
+    },
+    "staffChannel": "Per proseguire, chiedi aiuto a CasaZen.",
+    "connectionPreparation": "La struttura è in attesa della preparazione per i collegamenti.",
+    "title": "Attivazione immobili",
+    "description": "Controlla la scheda e lo stato dei portali per ciascun immobile.",
+    "properties": "Immobili da seguire",
+    "search": "Cerca per nome o città",
+    "noResults": "Nessun immobile trovato.",
+    "propertiesError": "Non riusciamo a leggere gli immobili",
+    "selectProperty": "Scegli un immobile per vedere come proseguire.",
+    "back": "Torna agli immobili",
+    "reviewTitle": "Controllo dei dati e pubblicazione",
+    "published": "Pubblicato su CasaZen",
+    "needsAttention": "Da completare",
+    "review": "Rivedi la scheda",
+    "openProperty": "Apri la scheda",
+    "channels": "Portali di prenotazione",
+    "channelsError": "Non riusciamo a leggere i portali",
+    "noChannels": "Nessun portale disponibile per questo immobile.",
+    "channelStatus": {
+      "Active": "Attivo",
+      "NotActive": "Disponibile",
+      "Unavailable": "Non abilitato",
+      "Pending": "In configurazione",
+      "ToFix": "Da verificare"
+    },
+    "searchChannels": "Cerca un portale",
+    "openChannel": "Apri il percorso per {{name}}",
+    "connect": "Collega",
+    "resume": "Riprendi",
+    "integrations": "Integrazioni",
+    "readyForReview": "Da rivedere prima della pubblicazione"
+  },
   "agentPlayground": {
     "trainWithAi": "Addestra con l’AI",
     "trainWithAiHint": "Descrivi il comportamento atteso nelle istruzioni. L’AI genera esempi e verifica fino a 12 scenari distinti, inclusi casi limite ed eccezioni.",
@@ -1742,6 +1891,12 @@
     "forbidden": "Non hai i permessi per eseguire questa operazione.",
     "tooManyRequests": "Troppe richieste in poco tempo. Riprova tra qualche istante.",
     "codes": {
+      "marketplaceCalendarPending": "Prezzi e disponibilità sono ancora da verificare. Riprova dopo il controllo del calendario.",
+      "marketplaceCalendarSourceRequired": "Chiedi allo staff di indicare da quale portale importare il calendario iniziale.",
+      "marketplaceSyncPending": "Il portale non ha ancora confermato la sincronizzazione. Riprova tra poco.",
+      "marketplaceConnectionUnconfirmed": "Chiedi allo staff di riconciliare il collegamento prima di riprovare.",
+      "marketplaceMappingPending": "Verifica le associazioni e riprova.",
+      "marketplaceActivationBusy": "È in corso un’altra operazione per questa struttura. Riprova tra poco.",
       "accountantPackageContentsInvalid": "Scegli almeno una cartella del pacchetto, ognuna una volta sola.",
       "accountantPackageInvalidPeriod": "Il periodo scelto non è valido: serve un mese o un anno.",
       "accountantPackageNotSent": "Il pacchetto non è partito: non è stato inviato niente. Riprova tra poco; se succede ancora, scrivi all’assistenza.",
@@ -15500,8 +15655,8 @@
       "activate": {
         "finish": "Attiva {{name}}",
         "intro": "Rileggi cosa succederà. Se qualcosa non va, torna indietro con «Modifica».",
-        "summary": "Collegheremo {{name}} a «{{property}}»: prenotazioni e disponibilità passeranno nei due sensi.",
-        "when": "Può richiedere fino a 30 minuti prima che {{name}} mostri tutto. Dopo l'attivazione CasaZen controlla il collegamento ogni 30 minuti."
+        "summary": "CasaZen importa le prenotazioni, verifica prezzi e disponibilità e completa il collegamento con {{name}} per «{{property}}».",
+        "when": "Puoi riprendere se un controllo è ancora in corso. Se il calendario è vuoto, lo staff può indicare da quale portale importarlo."
       },
       "chooseFirst": {
         "action": "Scegli gli immobili",
@@ -15550,7 +15705,7 @@
         "fixAccess": "Correggi i dati di accesso",
         "fixConnection": "Torna al collegamento",
         "fixProperty": "Cambia gli immobili",
-        "intro": "Il tuo channel manager importa le camere, le prenotazioni e il calendario di {{name}}. Di solito bastano pochi minuti, a volte di più.",
+        "intro": "CasaZen controlla l’arrivo delle camere di {{name}} prima del mapping.",
         "items": {
           "calendar": "Calendario",
           "reservations": "Prenotazioni",
@@ -16276,6 +16431,8 @@
     }
   },
   "nav": {
+    "propertyPreparation": "Preparazione strutture",
+    "propertyActivation": "Attivazione",
     "accountant": "Commercialista",
     "accountHome": "Home",
     "people": "Persone",
@@ -17286,7 +17443,8 @@
         "description": "Per {{subject}}. Ogni apertura è registrata e l'utente la vede nel registro delle attività.",
         "error": "Non è stato possibile aprire le credenziali.",
         "fields": {
-          "extraCode": "Codice aggiuntivo",
+          "unitCode": "Codice appartamento",
+        "extraCode": "Codice aggiuntivo",
           "password": "Password",
           "username": "Nome utente"
         },
@@ -22056,7 +22214,7 @@
       },
       "description": {
         "minLength": "La descrizione deve essere di almeno 10 caratteri",
-        "maxLength": "La descrizione deve essere inferiore a 1000 caratteri"
+        "maxLength": "La descrizione può avere al massimo 10.000 caratteri"
       },
       "address": {
         "required": "L'indirizzo e' obbligatorio"
@@ -23351,7 +23509,7 @@
       "comune": {
         "required": "Scegli il comune dall'elenco."
       },
-      "description": "La descrizione può avere al massimo 2.000 caratteri.",
+      "description": "La descrizione può avere al massimo 10.000 caratteri.",
       "descriptions": {
         "enDescription": "Scrivi la descrizione in inglese.",
         "enTitle": "Scrivi il titolo in inglese.",
