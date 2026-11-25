@@ -5,6 +5,7 @@ import { ApiClient } from '@/api/client';
 import { Button } from '@/components/ui/button';
 import { autoReplyTopics, guideFields, type GuideAutoReplies, type HouseGuide } from '@/features/guest-portal/house-guide-fields';
 
+const replyOptions = ['enabled', ...autoReplyTopics] as const;
 const defaultReplies: GuideAutoReplies = { enabled: false, checkIn: false, checkOut: false, parking: false, wifi: false };
 
 export function GuestHouseGuideEditor({ propertyId, suggestion }: { propertyId: string; suggestion?: HouseGuide }) {
@@ -46,7 +47,7 @@ export function GuestHouseGuideEditor({ propertyId, suggestion }: { propertyId: 
           <fieldset className="grid gap-2" disabled={save.isPending}>
             <legend className="font-medium">{t('guestPortal.guide.autoReplyTitle')}</legend>
             <p className="text-sm text-muted-foreground">{t('guestPortal.guide.autoReplyHelp')}</p>
-            {(['enabled', ...autoReplyTopics] as const).map((topic) => (
+            {replyOptions.map((topic) => (
               <label key={topic} className="flex items-center gap-2 text-sm">
                 <input type="checkbox" checked={guide.autoReplies?.[topic] ?? false} onChange={(event) => {
                   const checked = event.currentTarget.checked;
