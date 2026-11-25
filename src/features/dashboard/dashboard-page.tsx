@@ -1,15 +1,18 @@
 import { useCallback, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Building2, ChartColumn, Plus, Wrench } from 'lucide-react';
+import { Building2, ChartNoAxesColumn, Plus, Workflow, Wrench } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { FocusBlock } from '@/components/shared/calm';
 import { ErrorState } from '@/components/shared/error-state';
 import { Alert } from '@/components/ui/alert';
 import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
+import { useCommercialRouteAccess } from '@/hooks/use-commercial-profile';
+import { useRoutines } from '@/queries/routines';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { PHONE_QUERY, useMediaQuery } from '@/hooks/use-media-query';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Select } from '@/components/ui/select';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { requestInterventionPath } from '@/features/service-requests/interventions/paths';
@@ -60,6 +63,12 @@ export function DashboardPage() {
   const canReadBookings = hasPermission('short-rent', 'booking.read');
   const canWriteProperty = hasPermission('short-rent', 'property.write');
   const canRequestService = hasPermission('short-rent', 'servicerequest.write');
+  const canOpenPath = useCommercialRouteAccess();
+  const showRoutineStatus = flags.routines && canWriteProperty && canOpenPath('/app/short-rent/automations');
+  const routines = useRoutines(showRoutineStatus);
+  const activeRoutineCount = showRoutineStatus && routines.isSuccess
+    ? routines.data.filter(routine => routine.active && !routine.testMode).length
+    : 0;
 
   const canReadProperties = hasPermission('short-rent', 'property.read');
   const properties = useProperties({ mode: 'short' }, { enabled: canReadProperties });
@@ -117,14 +126,20 @@ export function DashboardPage() {
 
   return (
     <AppShell>
-      <div className="space-y-[var(--cz-section-gap)]" data-testid="sr-home">
-        <div>
+      <div className="space-y-6 md:space-y-8" data-testid="sr-home">
+        <div className="rounded-2xl border bg-gradient-to-br from-primary-soft via-card to-card p-5 md:p-7">
           <PageHeader
             title={firstName ? t('dashboard.title', { name: firstName }) : t('dashboard.titleNoName')}
             description={canReadBookings && today.data && !today.isError && !noActiveProperty ? purposeOf(today.data, propertyId, t, locale) : undefined}
             primary={phone ? undefined : createBooking}
+            action={showRoutineStatus && routines.isSuccess ? (
+              <Link to={routines.data.length ? '/app/short-rent/automations' : '/app/short-rent/automations?view=library'} className="inline-flex min-h-11 items-center gap-2 rounded-lg border px-3 text-sm font-medium text-primary-text hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring">
+                <Workflow aria-hidden="true" className="size-4" />
+                {activeRoutineCount > 0 ? t('routines.dashboardActive', { count: activeRoutineCount }) : t(routines.data.length ? 'nav.routines' : 'aiSettings.firstRoutine')}
+              </Link>
+            ) : undefined}
             secondary={[
-              ...(canReadBookings ? [{ label: t(analytics ? 'nav.dashboard' : 'dashboard.numbers.label'), icon: ChartColumn, onClick: () => setQuery({ view: analytics ? null : 'analytics', period: null }) }] : []),
+              ...(canReadBookings ? [{ label: t(analytics ? 'nav.dashboard' : 'dashboard.numbers.label'), icon: ChartNoAxesColumn, onClick: () => setQuery({ view: analytics ? null : 'analytics', period: null }) }] : []),
               ...(phone && createBooking ? [createBooking] : []),
               ...(canWriteProperty ? [{ label: t('dashboard.actions.addProperty'), icon: Building2, to: '/app/short-rent/properties/create' }] : []),
               // «Richiedi un intervento» (SR-08b): the guided request, on the property the Home is filtered to; for who may ask for one.
@@ -185,40 +200,53 @@ export function DashboardPage() {
           </div>
         ) : null}
 
-        {analytics && canReadBookings && !noActiveProperty && (
-          <section aria-labelledby="home-numbers-title" className="space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-              <h2 id="home-numbers-title" className="text-lg font-semibold">{t('dashboard.numbers.label')}</h2>
-              <Select
-                size="sm"
-                aria-label={t('dashboard.filter.period')}
-                wrapperClassName="w-auto max-w-full"
-                data-testid="dashboard-period"
-                value={period}
-                onChange={event => setQuery({ period: event.target.value === 'month' ? null : event.target.value })}
-              >
-                {HOME_PERIODS.map(value => <option key={value} value={value}>{t(`dashboard.period.${value}`)}</option>)}
-              </Select>
-            </div>
-            {overview.data && !overview.isError && !overview.isPlaceholderData ? (
-              <HomeNumbers overview={overview.data} period={period} />
-            ) : overview.isError ? (
-              <ErrorState title={t('dashboard.error.overview')} error={overview.error} onRetry={() => void overview.refetch()} />
-            ) : (
-              <SkeletonLine lines={3} />
-            )}
-          </section>
+        {canReadBookings && !noActiveProperty && (
+          <Accordion type="single" collapsible key={analytics ? 'analytics' : 'daily'} defaultValue={analytics ? 'performance' : undefined}
+            className="rounded-2xl border bg-card px-5 md:px-6" data-testid="home-performance">
+            <AccordionItem value="performance">
+              <AccordionTrigger>
+                <span className="flex items-center gap-3">
+                  <ChartNoAxesColumn aria-hidden="true" className="size-5 text-primary-text" />
+                  {t('dashboard.numbers.label')}
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="space-y-5 border-t py-5">
+              <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+                <span className="text-sm font-medium">{t('dashboard.filter.period')}</span>
+                <Select
+                  size="sm"
+                  aria-label={t('dashboard.filter.period')}
+                  wrapperClassName="w-auto max-w-full"
+                  data-testid="dashboard-period"
+                  value={period}
+                  onChange={event => setQuery({ period: event.target.value === 'month' ? null : event.target.value })}
+                >
+                  {HOME_PERIODS.map(value => <option key={value} value={value}>{t(`dashboard.period.${value}`)}</option>)}
+                </Select>
+              </div>
+              {overview.data && !overview.isError && !overview.isPlaceholderData ? (
+                <HomeNumbers overview={overview.data} period={period} />
+              ) : overview.isError ? (
+                // One error is enough when the day failed too: its retry reloads both.
+                today.isError ? null : (
+                  <ErrorState title={t('dashboard.error.overview')} error={overview.error} onRetry={() => void overview.refetch()} />
+                )
+              ) : (
+                <SkeletonLine lines={3} />
+              )}
+              {overview.data && !overview.isError && !overview.isPlaceholderData ? (
+                overview.data.series && overview.data.revenue ? (
+                  <RevenueChart series={overview.data.series} currency={overview.data.revenue.currency} />
+                ) : (
+                  <Alert variant="info" title={t('dashboard.chart.locked.title')} data-testid="home-chart-locked">
+                    {t('dashboard.chart.locked.text')}
+                  </Alert>
+                )
+              ) : null}
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         )}
-
-        {analytics && canReadBookings && !noActiveProperty && overview.data && !overview.isError && !overview.isPlaceholderData ? (
-            overview.data.series && overview.data.revenue ? (
-              <RevenueChart series={overview.data.series} currency={overview.data.revenue.currency} />
-            ) : (
-              <Alert variant="info" title={t('dashboard.chart.locked.title')} data-testid="home-chart-locked">
-                {t('dashboard.chart.locked.text')}
-              </Alert>
-            )
-          ) : null}
 
         {analytics && otaEnabled ? <OtaStatusCard /> : null}
       </div>

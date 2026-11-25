@@ -1,7 +1,8 @@
 import { useCommercialRouteAccess } from '@/hooks/use-commercial-profile';
 import { useContext } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { QueryClientContext } from '@tanstack/react-query';
-import { useInRouterContext, useLocation } from 'react-router-dom';
+import { Link, useInRouterContext, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { RouteTabs, type RouteTabItem } from '@/components/ui/route-tabs';
 import { getNavSection, type AppContextKey, type RouteManifestEntry } from '@/config/route-manifest';
@@ -42,6 +43,7 @@ export function NavSectionTabs({ className }: NavSectionTabsProps) {
 
 function SectionTabs({ className }: NavSectionTabsProps) {
   const { pathname } = useLocation();
+  const { t } = useTranslation();
   const workspace = useContext(WorkspaceContext);
   const { flags } = useFeatureFlags();
   const canOpenPath = useCommercialRouteAccess();
@@ -55,6 +57,14 @@ function SectionTabs({ className }: NavSectionTabsProps) {
   );
   const [head, ...pages] = section;
   if (!head || !TAB_AREAS.includes(head.context)) return null;
+  if (head.path === '/app/short-rent/settings' || head.path === '/app/long-rent/settings') {
+    if (pathname.replace(/\/$/, '') === head.path) return null;
+    return (
+      <Link to={head.path} className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-primary-text hover:underline">
+        <ArrowLeft aria-hidden="true" className="size-4" />{t('nav.settings')}
+      </Link>
+    );
+  }
 
   return hasQueryClient && pathname !== '/app/short-rent' && pages.some((page) => page.navCount) ? (
     <CountedSectionTabs section={section} className={className} />

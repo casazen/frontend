@@ -107,12 +107,11 @@ describe('route-manifest main menu (UI-04a)', () => {
     expect(paths(getSecondaryNavEntries('short-rent', allowAll))).toEqual([]);
     expect(paths(getSecondaryNavEntries('short-rent', allowAll, flags))).toEqual([]);
     expect(paths(getFooterNavEntries('short-rent', allowAll, flags))).toEqual([
-      '/app/short-rent/settings/organization',
-      '/app/short-rent/settings/invitations',
+      '/app/short-rent/settings',
     ]);
     // The menu calls the settings by the section and its tab by the page.
-    expect(entryOf('/app/short-rent/settings/organization').navKey).toBe('nav.settings');
-    expect(entryOf('/app/short-rent/settings/organization').navTabKey).toBe('nav.organization');
+    expect(entryOf('/app/short-rent/settings').navKey).toBe('nav.settings');
+    expect(entryOf('/app/short-rent/settings/organization').navKey).toBe('nav.organization');
     expect(entryOf('/app/short-rent/onboarding').navPlacement).toBeUndefined();
   });
 
@@ -128,8 +127,7 @@ describe('route-manifest main menu (UI-04a)', () => {
       '/app/long-rent/payments',
     ]);
     expect(paths(getFooterNavEntries('long-rent', allowAll))).toEqual([
-      '/app/long-rent/settings/organization',
-      '/app/long-rent/settings/invitations',
+      '/app/long-rent/settings',
     ]);
 
     // The menu of the supplier is built page by page up to seven entries (Home, Richieste, Agenda e disponibilità, Servizi e
@@ -418,7 +416,7 @@ describe('route-manifest bottom bar (UI-04a, drawn by UI-04b)', () => {
     ]);
     // Profilo is not here: the menu of the user (header, sheet of the phone) leads to it. The settings close the sheet, as they close the sidebar.
     expect(paths(nav.more)).toEqual([]);
-    expect(paths(nav.footer)).toEqual(['/app/short-rent/settings/organization', '/app/short-rent/settings/invitations']);
+    expect(paths(nav.footer)).toEqual(['/app/short-rent/settings']);
   });
 });
 
@@ -430,11 +428,8 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
     // What waits for the host: the «Da fare» list, the approvals and the verifications of the guests are the tabs of the Cruscotto.
     '/app/short-rent': ['/app/short-rent/activities', '/app/short-rent/approval-queue', '/app/short-rent/verifications'],
     // «Impostazioni»: the organization, then the integration, the assistant and the automations (each behind its flag).
-    '/app/short-rent/settings/organization': [
-      '/app/short-rent/settings/integration',
-      '/app/short-rent/settings/ai',
-      '/app/short-rent/settings/guest-portal',
-    ],
+    '/app/short-rent/settings': ['/app/short-rent/settings/organization', '/app/short-rent/settings/invitations', '/app/short-rent/settings/site-appearance', '/app/short-rent/settings/domain', '/app/short-rent/settings/site-documents', '/app/short-rent/settings/payments', '/app/short-rent/settings/plan', '/app/short-rent/settings/billing', '/app/short-rent/settings/guest-portal', '/app/short-rent/settings/integration', '/app/short-rent/settings/ai'],
+    '/app/long-rent/settings': ['/app/long-rent/settings/organization', '/app/long-rent/settings/invitations', '/app/long-rent/settings/plan', '/app/long-rent/settings/billing'],
     '/app/short-rent/settings/ai': [
       '/app/short-rent/settings/assistant',
     ],
@@ -470,11 +465,6 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
       '/app/short-rent/activation',
       '/app/short-rent/ota',
     ],
-    '/app/short-rent/vetrina': [
-      '/app/short-rent/settings/site-appearance',
-      '/app/short-rent/settings/site-documents',
-      '/app/short-rent/settings/domain',
-    ],
     // Documenti (NF-99) is the tab right after Report: it asks for 2.5, and Regime fiscale keeps its 3. Documenti fiscali (E06/F03/US04/T01, behind the flags of the documents) is next to Regime fiscale, at 3.5.
     // Commercialista (E15/F02/US01/T01, behind its flag) is next to Report too, at 2.25: while its flag is off Documenti is right after Report, as it was.
     '/app/short-rent/payments': [
@@ -484,7 +474,6 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
       '/app/short-rent/documents',
       '/app/short-rent/fiscal',
       '/app/short-rent/fiscal/documents',
-      '/app/short-rent/settings/payments',
     ],
     // Profilo is in no menu (the menu of the user leads to it): Notifiche is its second tab.
     '/app/short-rent/profile': ['/app/short-rent/profile/notifications'],
@@ -569,7 +558,7 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
     const noPayments = without('payment.read');
     expect(paths(getVisibleNavEntries('short-rent', noPayments))).not.toContain('/app/short-rent/payments');
     expect(paths(getSecondaryNavEntries('short-rent', noPayments))).toEqual(
-      expect.arrayContaining(['/app/short-rent/fiscal', '/app/short-rent/settings/payments']),
+      expect.arrayContaining(['/app/short-rent/fiscal']),
     );
     expect(paths(getSecondaryNavEntries('short-rent', noPayments))).not.toContain('/app/short-rent/reports');
     // The documents page asks what the API asks at its door, the properties and not the payments: it is in "Altro" for them too.
@@ -602,12 +591,12 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
       '/app/short-rent/compliance/identification',
     );
     // The branding and documents pages are for the org billing administrator; the domain is not.
-    expect(paths(getNavChildren('/app/short-rent/vetrina', notBillingAdmin))).toEqual(['/app/short-rent/settings/domain']);
-    expect(paths(getNavChildren('/app/short-rent/vetrina', allowAll))).toEqual([
+    expect(paths(getNavChildren('/app/short-rent/settings', notBillingAdmin))).toContain('/app/short-rent/settings/domain');
+    expect(paths(getNavChildren('/app/short-rent/settings', allowAll))).toEqual(expect.arrayContaining([
       '/app/short-rent/settings/site-appearance',
       '/app/short-rent/settings/site-documents',
       '/app/short-rent/settings/domain',
-    ]);
+    ]));
   });
 });
 
@@ -622,7 +611,6 @@ describe('route-manifest sections as tabs (UI-04a)', () => {
       '/app/short-rent/reports',
       '/app/short-rent/documents',
       '/app/short-rent/fiscal',
-      '/app/short-rent/settings/payments',
     ];
     for (const page of payments) expect(paths(getNavSection(page, allowAll)), page).toEqual(payments);
 
@@ -686,15 +674,12 @@ describe('route-manifest sections as tabs (UI-04a)', () => {
     // Who may not write the properties has no Stripe tab in Incassi.
     expect(paths(getNavSection('/app/short-rent/payments', without('property.write')))).not.toContain('/app/short-rent/settings/payments');
     // The branding and the documents are for the org billing administrator only.
-    expect(paths(getNavSection('/app/short-rent/vetrina', notBillingAdmin))).toEqual([
-      '/app/short-rent/vetrina',
-      '/app/short-rent/settings/domain',
-    ]);
+    expect(paths(getNavSection('/app/short-rent/vetrina', notBillingAdmin))).toEqual([]);
   });
 
   it('draws no tabs when the user cannot open the entry: its pages are entries of "Altro" of their own', () => {
     const noPayments = without('payment.read');
-    for (const page of ['/app/short-rent/payments', '/app/short-rent/fiscal', '/app/short-rent/settings/payments']) {
+    for (const page of ['/app/short-rent/payments', '/app/short-rent/fiscal']) {
       expect(paths(getNavSection(page, noPayments)), page).toEqual([]);
     }
     // And no tabs for a page the user cannot open, even when its entry is open to them.
@@ -735,6 +720,11 @@ describe('route-manifest: no page is left without a way in (UI-04a)', () => {
           isEntryFeatureEnabled(entry, features),
       );
       for (const entry of reachable) {
+        if (entry.path === `/app/${contextKey}/settings` && (contextKey === 'short-rent' || contextKey === 'long-rent') &&
+            getNavChildren(entry.path, hasPermission, features).length === 0) {
+          expect(visible).not.toContain(entry.path);
+          continue;
+        }
         const inMenu = visible.includes(entry.path);
         const hangsFromVisible = entry.navParent !== undefined && visible.includes(entry.navParent);
         // Or it is a tab of the profile of the area: the menu of the user leads there, and the profile asks no permission (checked above).
@@ -794,10 +784,10 @@ describe('route-manifest: no page is left without a way in (UI-04a)', () => {
     for (const page of REACHED_BY_THE_ORG_BADGE) {
       const entry = entryOf(page);
       expect(entry.navPlacement, page).toBeUndefined();
-      expect(entry.navParent, page).toBeUndefined();
+      expect(entry.navParent, page).toBe(`/app/${entry.context}/settings`);
     }
-    expect(paths(getFooterNavEntries('long-rent', allowAll))).toContain('/app/long-rent/settings/organization');
-    expect(paths(getFooterNavEntries('short-rent', allowAll))).toContain('/app/short-rent/settings/organization');
+    expect(paths(getFooterNavEntries('long-rent', allowAll))).toContain('/app/long-rent/settings');
+    expect(paths(getFooterNavEntries('short-rent', allowAll))).toContain('/app/short-rent/settings');
   });
 
   it('keeps Profilo one click from the menu of the user and in no menu of the rental areas', () => {
@@ -902,9 +892,9 @@ describe('route-manifest nav helpers', () => {
     }
     expect(paths(getVisibleNavEntries('short-rent', notBillingAdmin))).not.toContain(orgPaths[0]);
     expect(paths(getVisibleNavEntries('long-rent', notBillingAdmin))).not.toContain(orgPaths[1]);
-    expect(paths(getVisibleNavEntries('short-rent', without('booking.read'))).includes(orgPaths[0])).toBe(true);
+    expect(paths(getNavChildren('/app/short-rent/settings', without('booking.read'))).includes(orgPaths[0])).toBe(true);
     // Stripe Connect (a tab of Incassi) does not need to be the org administrator.
-    expect(paths(getNavChildren('/app/short-rent/payments', notBillingAdmin))).toContain('/app/short-rent/settings/payments');
+    expect(paths(getNavChildren('/app/short-rent/settings', notBillingAdmin))).toContain('/app/short-rent/settings/payments');
   });
 
   // TN-3 / PL-12: plan and billing are for the org billing administrator, wherever the user finds them.
@@ -920,10 +910,10 @@ describe('route-manifest nav helpers', () => {
     for (const path of ['/app/short-rent/settings/site-appearance', '/app/short-rent/settings/site-documents']) {
       const entry = entryOf(path);
       expect(entry.orgBillingAdmin).toBe(true);
-      expect(entry.navParent).toBe('/app/short-rent/vetrina');
+      expect(entry.navParent).toBe('/app/short-rent/settings');
       expect(ROUTE_MANIFEST.some((candidate) => candidate.path === path.replace('short-rent', 'long-rent'))).toBe(false);
-      expect(paths(getNavChildren('/app/short-rent/vetrina', notBillingAdmin))).not.toContain(path);
-      expect(paths(getNavChildren('/app/short-rent/vetrina', allowAll))).toContain(path);
+      expect(paths(getNavChildren('/app/short-rent/settings', notBillingAdmin))).not.toContain(path);
+      expect(paths(getNavChildren('/app/short-rent/settings', allowAll))).toContain(path);
     }
   });
 
@@ -1153,8 +1143,7 @@ describe('route-manifest nav helpers', () => {
     expect(paths(visible)).toEqual([
       '/app/long-rent/properties',
       '/app/long-rent/payments',
-      '/app/long-rent/settings/organization',
-      '/app/long-rent/settings/invitations',
+      '/app/long-rent/settings',
     ]);
     // Profilo is no entry of the menu: for a user the area gives nothing, `getFirstOpenablePage` leads to it.
     const nothing = getVisibleNavEntries('long-rent', (_ctx, permission) => !permission);
@@ -1167,7 +1156,7 @@ describe('route-manifest nav helpers', () => {
       const entry = entryOf(`/app/${context}/settings/invitations`);
       expect(entry.context).toBe(context);
       expect(entry.navKey).toBe('nav.hostInvites');
-      expect(entry.navPlacement).toBe('footer');
+      expect(entry.navParent).toBe(`/app/${context}/settings`);
       // Backend policy SharedPropertyRead: the permission every host role holds, owner or collaborator.
       expect(entry.requiredPermissions).toEqual(['property.read']);
       expect(entry.orgBillingAdmin).toBeUndefined();

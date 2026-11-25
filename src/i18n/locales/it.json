@@ -16590,6 +16590,13 @@
   "nav": {
     "propertyPreparation": "Preparazione strutture",
     "propertyActivation": "Attivazione",
+    "settingsGroups": {
+      "workspace": "Area di lavoro",
+      "website": "Sito di prenotazione",
+      "money": "Pagamenti e piano",
+      "tools": "Integrazioni e assistente",
+      "empty": "Nessuna impostazione disponibile per il tuo ruolo."
+    },
     "accountant": "Commercialista",
     "accountHome": "Home",
     "people": "Persone",

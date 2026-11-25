@@ -5,6 +5,7 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
+      data-ui-card=""
       className={cn("rounded-lg border bg-card text-card-foreground shadow-[var(--panel-shadow,var(--shadow-sm))]", className)}
       {...props}
     />

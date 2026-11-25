@@ -121,7 +121,7 @@ describe('MoreSheet (UI-04b)', () => {
       // The settings close the sheet as they close the sidebar; the queues are tabs of the Cruscotto, the profile is in the account row
       // at the end of the sheet: there is no "Altro" group left.
       expect(groups[3]).toHaveAccessibleName('Impostazioni e inviti');
-      expect(tiles(groups[3])).toEqual(['Impostazioni', 'Consiglia CasaZen']);
+      expect(tiles(groups[3])).toEqual(['Impostazioni']);
       // The destinations of the bar are not repeated.
       for (const name of ['Cruscotto', 'Calendario', 'Prenotazioni', 'Immobili']) {
         expect(within(sheet()).queryByRole('link', { name })).not.toBeInTheDocument();
@@ -151,7 +151,7 @@ describe('MoreSheet (UI-04b)', () => {
       open();
 
       expect(within(sheet()).getByRole('link', { name: 'Incassi' })).toHaveAttribute('href', '/app/short-rent/payments');
-      expect(within(sheet()).getByRole('link', { name: 'Impostazioni' })).toHaveAttribute('href', '/app/short-rent/settings/organization');
+      expect(within(sheet()).getByRole('link', { name: 'Impostazioni' })).toHaveAttribute('href', '/app/short-rent/settings');
     });
 
     it('MoreSheet_AreaWithJustAltro_HasNoGroupHeadings', () => {

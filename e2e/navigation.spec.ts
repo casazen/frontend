@@ -96,9 +96,8 @@ test.describe('Navigation (#252 / #259)', () => {
       // The pages of a section are not tiles: they are the tabs on top of the page of their entry.
       await expect(sheet.getByRole('link', { name: /Stripe Connect/i })).toHaveCount(0);
 
-      await sheet.getByRole('link', { name: /Incassi|Payments/i }).click();
-      await expect(page).toHaveURL(/\/app\/short-rent\/payments/);
-      await page.getByTestId('nav-section-select').selectOption({ label: 'Stripe Connect' });
+      await sheet.getByRole('link', { name: /^(Impostazioni|Settings)$/ }).click();
+      await page.getByRole('main').getByRole('link', { name: 'Stripe Connect' }).click();
       await expect(page).toHaveURL(/\/app\/short-rent\/settings\/payments/);
     });
 

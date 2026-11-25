@@ -19,7 +19,7 @@ export function VetrinaPage() {
   const { org } = useCurrentUser();
   const { data: properties = [], isLoading: propertiesLoading } = useProperties({ mode: 'short' });
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
-  const [orgUrlCollapsed, setOrgUrlCollapsed] = useState(false);
+  const [orgUrlCollapsed, setOrgUrlCollapsed] = useState(true);
 
   const orgSlug = org?.slug ?? null;
   const orgBookingPath = orgSlug ? buildOrgBookingPath(orgSlug) : null;

@@ -71,7 +71,6 @@ export function ContextSidebar({ contextKey, organizationName = null }: ContextS
   const matchEntries = getNavMatchEntries(contextKey, permissionCheck, flags, canOpenPath);
   const counts = useNavCounts(getVisibleNavEntries(contextKey, permissionCheck, flags, canOpenPath));
 
-  const footerLabel = area.footerKey ? t(area.footerKey) : 'v1.0.0 · casazen.io';
 
   return (
     // Sticky to the window, as tall as the visible viewport (`dvh`), with the menu scrolling inside it: the window is
@@ -117,9 +116,7 @@ export function ContextSidebar({ contextKey, organizationName = null }: ContextS
             label={collapsed ? t('nav.expand') : t('nav.collapse')}
             onToggle={toggleCollapsed}
           />
-          {collapsed ? null : (
-            <p className="text-center text-[10px] tracking-wide text-muted-foreground">{footerLabel}</p>
-          )}
+
         </div>
       )}
     </aside>

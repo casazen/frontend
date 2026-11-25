@@ -70,7 +70,7 @@ export function PageHeader({ title, description, icon, action, crumbs, primary, 
       <>
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
           <div className="min-w-0 grow basis-56">
-            <h1 className="break-words text-3xl font-bold tracking-tight">{title}</h1>
+            <h1 className="break-words text-3xl font-semibold tracking-tight text-balance">{title}</h1>
             {description && (
               <p className="text-muted-foreground mt-2 break-words">{description}</p>
             )}

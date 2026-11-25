@@ -1022,7 +1022,7 @@ describe('the route of the routines page (E01/F04/US02/T01, behind the flag rout
     }
     expect(getVisibleNavEntries('short-rent', reader, ON).map(page => page.path)).not.toContain(ROUTINES_PATH);
     expect(getSecondaryNavEntries('short-rent', admin, ON).map((page) => page.path)).not.toContain(ROUTINES_PATH);
-    expect(getSecondaryNavEntries('short-rent', writer, ON).map((page) => page.path)).toContain('/app/short-rent/settings/ai');
+    expect(getNavChildren('/app/short-rent/settings', writer, ON).map((page) => page.path)).toContain('/app/short-rent/settings/ai');
     expect(getSecondaryNavEntries('short-rent', reader, ON).map((page) => page.path)).not.toContain(ROUTINES_PATH);
   });
 

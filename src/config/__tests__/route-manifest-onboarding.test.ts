@@ -120,7 +120,7 @@ describe('route manifest: the integration settings (E10/F03/US03/T01)', () => {
     expect(settings?.requiredPermissions).toEqual([]);
     expect(settings?.orgBillingAdmin).toBe(true);
     expect(settings?.navKey).toBe('nav.integrationSettings');
-    expect(settings?.navParent).toBe('/app/short-rent/settings/organization');
+    expect(settings?.navParent).toBe('/app/short-rent/settings');
     expect(settings?.navPlacement).toBeUndefined();
     expect(settings?.icon).toBe('Settings');
     expect(settings?.icon && NAV_ICONS[settings.icon]).toBeDefined();
