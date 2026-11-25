@@ -582,7 +582,7 @@ function WizardShellBody<TValues extends FieldValues, TResult = void>({
               id={formId}
               noValidate
               aria-labelledby={titleId}
-              className="min-w-0 space-y-6 px-3 pb-6 sm:px-6 max-md:[&_[aria-invalid=true]]:scroll-mb-40"
+              className="mx-3 min-w-0 space-y-6 pb-6 sm:mx-6 max-md:[&_[aria-invalid=true]]:scroll-mb-40"
               onBlur={serverOn ? draft.onBlur : undefined}
               onSubmit={(event) => {
                 event.preventDefault();
