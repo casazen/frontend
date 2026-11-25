@@ -4137,6 +4137,18 @@
       "signOut": "Esci"
     },
     "guide": {
+      "checkInHours": "Orari di check-in",
+      "checkOutHours": "Orari di check-out",
+      "parking": "Parcheggio",
+      "autoReplyTitle": "Risposte automatiche della chat",
+      "autoReplyHelp": "Le risposte usano le informazioni pubblicate in questa guida. Le altre domande arrivano all’host.",
+      "autoReplyTopics": {
+        "enabled": "Attiva per questo alloggio",
+        "checkIn": "Orari di check-in",
+        "checkOut": "Orari di check-out",
+        "parking": "Parcheggio",
+        "wifi": "Indica dove trovare le credenziali Wi-Fi dopo il check-in"
+      },
       "houseRules": "Regole della casa",
       "acceptRules": "Accetto queste regole della casa",
       "title": "Guida della casa",

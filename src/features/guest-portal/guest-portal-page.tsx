@@ -231,7 +231,7 @@ function GuestPortalPage({ token }: { token: string }) {
                 {stay.houseRules && <><h2>{t('rules')}</h2><p className="stay-rules">{stay.houseRules}</p></>}
               </div>
             ) : chat ? (
-              <GuestPortalChat path={path} labels={{
+              <GuestPortalChat path={path} language={language} labels={{
                 message: t('message'), send: t('send'), loading: t('load'), failed: t('error'),
                 empty: t('emptyChat'), closed: t('closedChat'),
               }} />
