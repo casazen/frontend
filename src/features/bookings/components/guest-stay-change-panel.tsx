@@ -19,18 +19,18 @@ export function GuestStayChangePanel({ bookingId, onApproved }: { bookingId: str
   const endpoint = `/bookings/${bookingId}/guest-stay-change`;
   const query = useQuery({
     queryKey: ['guest-stay-change', bookingId],
-    queryFn: () => ApiClient.get<StayChange | undefined>(endpoint),
+    queryFn: () => ApiClient.get<{ pending: StayChange | null }>(endpoint),
     retry: false,
     refetchInterval: 30000,
   });
   const decision = useMutation({
-    mutationFn: (action: 'approve' | 'decline') => ApiClient.post<void>(`${endpoint}/${query.data!.id}/${action}`),
+    mutationFn: (action: 'approve' | 'decline') => ApiClient.post<void>(`${endpoint}/${query.data!.pending!.id}/${action}`),
     onSuccess: (_, action) => {
       void query.refetch();
       if (action === 'approve') onApproved();
     },
   });
-  const change = query.data;
+  const change = query.data?.pending;
   if (!change) return decision.isSuccess && decision.variables === 'approve' ? <p role="status">{t('guestPortal.host.stayChangeApproved')}</p> : null;
   const money = new Intl.NumberFormat(i18n.language, { style: 'currency', currency: change.currency });
   const dates = new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium', timeZone: 'UTC' })
