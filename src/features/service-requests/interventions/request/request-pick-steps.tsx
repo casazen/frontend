@@ -102,7 +102,7 @@ export function ChannelStep({ channel, explicit, onChannel }: ChannelStepProps) 
   const propertyId = useWatch({ control, name: 'propertyId' });
   const property = useWizardProperty(propertyId);
   const hasComune = !!property?.comuneIstatCode;
-  const suppliers = useMarketplaceSuppliers({ propertyId: hasComune ? propertyId : undefined });
+  const suppliers = useMarketplaceSuppliers({ includeTrusted: true, propertyId: hasComune ? propertyId : undefined });
   const noNetwork = !hasComune || (suppliers.isSuccess && suppliers.data.items.length === 0);
   // The external channel is offered while a partner of the catalog covers a kind of work the wizard offers (or the catalog is being read)
   // and not otherwise: a way nobody can follow. A partner that lists no such kind has no tile on the service step, so with it alone (and
@@ -184,7 +184,7 @@ export function ServiceStep({ channel }: { channel: RequestChannel }) {
   const { partnersFor } = usePartnersByServiceCategory();
   const propertyId = useWatch({ control, name: 'propertyId' });
   const property = useWizardProperty(propertyId);
-  const suppliers = useMarketplaceSuppliers({ propertyId: channel === 'casazen' && property?.comuneIstatCode ? propertyId : undefined });
+  const suppliers = useMarketplaceSuppliers({ includeTrusted: true, propertyId: channel === 'casazen' && property?.comuneIstatCode ? propertyId : undefined });
   const counts = useMemo(() => countByCategory(suppliers.data?.items ?? []), [suppliers.data]);
   const field = register('category');
 

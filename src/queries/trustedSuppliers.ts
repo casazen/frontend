@@ -28,22 +28,6 @@ export function useInviteSupplier() {
   });
 }
 
-export function useUpdateVisibility() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ id, visible }: { id: string; visible: boolean }) =>
-      trustedSuppliersApi.updateVisibility(id, { visible }),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: [TRUSTED_SUPPLIERS_KEY] });
-      toast.success(i18n.t('supplier.trusted.visibilitySuccess'));
-    },
-    onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('supplier.trusted.visibilityError'));
-    },
-  });
-}
-
 export function useRemoveSupplier() {
   const queryClient = useQueryClient();
 

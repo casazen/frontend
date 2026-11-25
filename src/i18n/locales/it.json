@@ -30824,6 +30824,8 @@
       "exposed": "Disponibile nel portale dopo il consenso",
       "save": "Salva servizio",
       "serviceSaved": "Servizio aggiornato.",
+      "loadingProperties": "Caricamento delle proprietà…",
+      "propertiesError": "Impossibile caricare le proprietà da assegnare.",
       "browseMarketplace": "Cerca fornitori nel marketplace CasaZen",
       "supplierLabel": "Fornitore {{id}}"
     }

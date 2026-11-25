@@ -30824,6 +30824,8 @@
       "exposed": "Available in the portal after acceptance",
       "save": "Save service",
       "serviceSaved": "Service updated.",
+      "loadingProperties": "Loading properties…",
+      "propertiesError": "Could not load the properties to assign.",
       "browseMarketplace": "Find suppliers in the CasaZen marketplace",
       "supplierLabel": "Supplier {{id}}"
     }

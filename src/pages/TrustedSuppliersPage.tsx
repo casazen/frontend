@@ -22,8 +22,8 @@ export function TrustedSuppliersPage() {
   const inviteSupplier = useInviteSupplier();
   const removeSupplier = useRemoveSupplier();
   // The host picks the properties by name (bug #977: the dialog asked for their ids); none picked = all of them.
-  const { data: properties } = useProperties();
-  const propertyList = Array.isArray(properties) ? properties : [];
+  const properties = useProperties();
+  const propertyList = properties.data ?? [];
   const propertyNames = new Map(propertyList.map((property) => [property.id, property.name]));
 
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
@@ -35,7 +35,7 @@ export function TrustedSuppliersPage() {
 
   const handleInvite = () => {
     const email = inviteEmail.trim();
-    if (!email) return;
+    if (!email || !properties.isSuccess || inviteSupplier.isPending) return;
 
     inviteSupplier.mutate(
       { email, propertyIds: invitePropertyIds },
@@ -105,7 +105,13 @@ export function TrustedSuppliersPage() {
                     data-testid="invite-email-input"
                   />
                 </div>
-                {propertyList.length > 0 && (
+                {properties.isPending && <p role="status">{t('supplier.trusted.loadingProperties')}</p>}
+                {properties.isError && <div className="space-y-2">
+                  <p role="alert">{t('supplier.trusted.propertiesError')}</p>
+                  <Button type="button" variant="outline" onClick={() => void properties.refetch()}>{t('common.retry')}</Button>
+                </div>}
+                {properties.isSuccess && propertyList.length === 0 && <p>{t('supplier.trusted.allProperties')}</p>}
+                {properties.isSuccess && propertyList.length > 0 && (
                   <fieldset className="space-y-2" data-testid="invite-properties">
                     <legend className="text-sm font-medium">{t('supplier.trusted.properties')}</legend>
                     <p className="text-xs text-muted-foreground">{t('supplier.trusted.propertiesHint')}</p>
@@ -129,7 +135,7 @@ export function TrustedSuppliersPage() {
                   </Button>
                   <Button
                     type="submit"
-                    disabled={!inviteEmail || inviteSupplier.isPending}
+                    disabled={!inviteEmail.trim() || !properties.isSuccess || inviteSupplier.isPending}
                     data-testid="invite-submit-button"
                   >
                     {inviteSupplier.isPending ? t('common.sending') : t('supplier.trusted.inviteSend')}

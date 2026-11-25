@@ -64,7 +64,6 @@ export function GuestSupplierOperations({ scope }: { scope: Scope }) {
     <section className="grid gap-4 rounded-lg border bg-card p-4">
       <h2 className="font-semibold">Servizi e ordini ospiti</h2>
       <p>Ambiente di test. Pagamenti e rimborsi simulati.</p>
-      {scope.role === 'admin' && <MarketplaceSettings endpoint={endpoint} />}
       {scope.role === 'host' && <>
         <ConfigureOffer endpoint={endpoint} offers={query.data.offers}
           busy={change.isPending} save={(id, commissionBasisPoints, enabled) =>
@@ -226,19 +225,20 @@ function InviteTrustedSupplier({ endpoint }: { endpoint: string }) {
   </div>;
 }
 
-function MarketplaceSettings({ endpoint }: { endpoint: string }) {
+export function MarketplaceSettings() {
+  const endpoint = '/admin/suppliers/marketplace';
   const [term, setTerm] = useState('');
   const suppliers = useQuery({
     queryKey: ['guest-supplier-marketplace', term],
     queryFn: ({ signal }) => ApiClient.get<{ orgId: string; legalName: string; enabled: boolean }[]>(
-      `${endpoint}/marketplace`, { search: term }, { signal },
+      endpoint, { search: term }, { signal },
     ),
     enabled: term.length >= 2,
     retry: false,
   });
   const publish = useMutation({
     mutationFn: ({ orgId, enabled }: { orgId: string; enabled: boolean }) =>
-      ApiClient.put<void>(`${endpoint}/marketplace/${orgId}`, { enabled }),
+      ApiClient.put<void>(`${endpoint}/${orgId}`, { enabled }),
     onSuccess: () => { void suppliers.refetch(); },
   });
 
