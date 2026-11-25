@@ -119,7 +119,7 @@ function TrainingWorkspace({ preset, initial }: { preset: Preset; initial: State
   const version = (candidate: { version: number } | null) => candidate ? 'v' + candidate.version : t('agentPlayground.base');
   const change = (patch: Partial<Draft>) => { setDraft({ ...draft, ...patch }); setDirty(true); };
   return (
-    <>
+    <div className="grid min-w-0 gap-5 2xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] 2xl:items-start">
       <Card>
         <CardHeader><CardTitle>{t('agentPlayground.training')}</CardTitle></CardHeader>
         <CardContent>
@@ -180,7 +180,7 @@ function TrainingWorkspace({ preset, initial }: { preset: Preset; initial: State
           </div>
         </CardContent>
       </Card>
-    </>
+    </div>
   );
 }
 
@@ -196,7 +196,7 @@ export function AgentPlaygroundPage() {
       {access.isPending && <p>{t('agentPlayground.running')}</p>}
       {!access.isPending && !access.data?.allowed && <p role="alert">{t('agentPlayground.forbidden')}</p>}
       {access.data?.allowed && <>
-        <label className="grid max-w-sm gap-2 text-sm font-medium">{t('agentPlayground.preset')}
+        <label className="grid max-w-md gap-2 rounded-xl border bg-surface-2 p-4 text-sm font-medium">{t('agentPlayground.preset')}
           <select className={selectStyle} value={preset} onChange={e => setPreset(e.target.value as Preset)}>
             {(Object.keys(presets) as Preset[]).map(key => <option key={key} value={key}>{t('routines.library.' + presets[key])}</option>)}
           </select>
