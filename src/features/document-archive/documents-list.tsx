@@ -52,8 +52,8 @@ export function useDocumentsList({ types, properties, withoutFile, downloading, 
     const typeLine = (document: ArchiveDocument): ReactNode => {
       const Icon = archiveTypeMeta(document.type).icon;
       return (
-        <span className="inline-flex items-center gap-1.5 text-sm text-foreground/70">
-          <Icon className="size-4 shrink-0" aria-hidden="true" />
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
+          <Icon className="size-3.5 shrink-0 text-primary" aria-hidden="true" />
           {typeName(document)}
         </span>
       );
@@ -96,8 +96,8 @@ export function useDocumentsList({ types, properties, withoutFile, downloading, 
           rowHeader: true,
           render: (document) => (
             <div className="min-w-0">
-              <span className="break-words font-medium">{document.title}</span>
-              <span className="mt-0.5 block">{typeLine(document)}</span>
+              <span className="break-words font-semibold">{document.title}</span>
+              <span className="mt-1 block">{typeLine(document)}</span>
             </div>
           ),
         },
