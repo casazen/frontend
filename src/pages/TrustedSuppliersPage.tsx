@@ -108,7 +108,7 @@ export function TrustedSuppliersPage() {
                 {properties.isPending && <p role="status">{t('supplier.trusted.loadingProperties')}</p>}
                 {properties.isError && <div className="space-y-2">
                   <p role="alert">{t('supplier.trusted.propertiesError')}</p>
-                  <Button type="button" variant="outline" onClick={() => void properties.refetch()}>{t('common.retry')}</Button>
+                  <Button type="button" variant="outline" onClick={() => void properties.refetch()}>{t('shared.errorState.retry')}</Button>
                 </div>}
                 {properties.isSuccess && propertyList.length === 0 && <p>{t('supplier.trusted.allProperties')}</p>}
                 {properties.isSuccess && propertyList.length > 0 && (

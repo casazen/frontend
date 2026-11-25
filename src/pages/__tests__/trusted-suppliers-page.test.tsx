@@ -68,7 +68,7 @@ describe('TrustedSuppliersPage invite (bug #977)', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Impossibile caricare le proprietà');
     expect(screen.getByTestId('invite-submit-button')).toBeDisabled();
     expect(trustedSuppliersApi.invite).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: i18n.t('common.retry') }));
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('shared.errorState.retry') }));
     await waitFor(() => expect(screen.getByTestId('invite-submit-button')).toBeEnabled());
     fireEvent.click(screen.getByTestId('invite-submit-button'));
     await waitFor(() => expect(trustedSuppliersApi.invite).toHaveBeenCalledWith({ email: 'supplier@example.com', propertyIds: [] }));
