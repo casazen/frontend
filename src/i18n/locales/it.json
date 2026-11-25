@@ -4201,6 +4201,7 @@
       "aiUnavailable": "Impossibile compilare la guida. Riprova.",
       "aiGenerating": "La guida è in preparazione…",
       "aiReady": "Bozza compilata. Seleziona Salva guida per renderla visibile agli ospiti.",
+      "aiRefining": "Bozza pronta da salvare. L’AI sta rifinendo i testi.",
       "aiPropertyReady": "Bozza compilata dai dati dell’alloggio. Seleziona Salva guida per renderla visibile agli ospiti.",
       "aiNoEmptyFields": "La guida è già compilata.",
       "checkInHours": "Orari di check-in",

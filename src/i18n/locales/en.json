@@ -4201,6 +4201,7 @@
       "aiUnavailable": "Could not fill the guide. Try again.",
       "aiGenerating": "Preparing the guide…",
       "aiReady": "Draft ready. Select Save guide to make it visible to guests.",
+      "aiRefining": "Draft ready to save. AI is refining the text.",
       "aiPropertyReady": "Draft filled from your property details. Select Save guide to make it visible to guests.",
       "aiNoEmptyFields": "The guide is already filled in.",
       "checkInHours": "Check-in hours",
