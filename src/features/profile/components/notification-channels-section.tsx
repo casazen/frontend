@@ -1,3 +1,4 @@
+import { Bell, Mail, Monitor, Smartphone, type LucideIcon } from 'lucide-react';
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PlainSection } from '@/components/shared/calm';
@@ -18,6 +19,15 @@ import {
   type ChannelAvailability,
   type EventRowModel,
 } from '../notification-preferences-model';
+
+const channelIcons: Record<NotificationChannel, LucideIcon> = {
+  MobilePush: Smartphone, BrowserPush: Monitor, Email: Mail, CounterOnly: Bell,
+};
+
+function ChannelIcon({ channel }: { channel: NotificationChannel }) {
+  const Icon = channelIcons[channel];
+  return <Icon aria-hidden="true" className="size-4 shrink-0 text-primary-text" />;
+}
 
 interface NotificationChannelsSectionProps {
   preferences: NotificationPreferences;
@@ -43,7 +53,7 @@ export function NotificationChannelsSection({ preferences }: NotificationChannel
       <p className="text-sm text-foreground/70">{t('notificationPreferences.channelsHint')}</p>
 
       {isPhone ? (
-        <ul role="list" aria-label={t('notificationPreferences.tableCaption')} className="divide-y rounded-lg border" data-testid="notification-cards">
+        <ul role="list" aria-label={t('notificationPreferences.tableCaption')} className="grid gap-3" data-testid="notification-cards">
           {rows.map((row) => (
             <EventRow key={row.eventType} row={row} availability={availability} layout="card" idPrefix={idPrefix} />
           ))}
@@ -53,13 +63,13 @@ export function NotificationChannelsSection({ preferences }: NotificationChannel
           <table className="w-full min-w-[34rem] border-collapse text-left text-sm" data-testid="notification-table">
             <caption className="sr-only">{t('notificationPreferences.tableCaption')}</caption>
             <thead>
-              <tr className="bg-muted/40">
+              <tr className="bg-surface-2">
                 <th scope="col" className="px-4 py-3 text-left align-bottom font-medium">
                   {t('notificationPreferences.eventColumn')}
                 </th>
                 {NOTIFICATION_CHANNELS.map((channel) => (
                   <th key={channel} scope="col" className="w-28 px-2 py-3 text-center align-bottom font-medium">
-                    {t(CHANNEL_TEXTS[channel].labelKey)}
+                    <span className="inline-flex flex-col items-center gap-1"><ChannelIcon channel={channel} />{t(CHANNEL_TEXTS[channel].labelKey)}</span>
                     {availability[channel] ? null : (
                       <span id={reasonId(idPrefix, channel)} className="mt-0.5 block text-xs font-normal text-foreground/70">
                         {t('notificationPreferences.channelUnavailable')}
@@ -170,7 +180,7 @@ function EventRow({ row, availability, layout, idPrefix }: EventRowProps) {
   }
 
   return (
-    <li className="p-4" aria-busy={save.isPending || undefined} data-testid={`notification-row-${row.eventType}`}>
+    <li className="rounded-xl border bg-card p-4" aria-busy={save.isPending || undefined} data-testid={`notification-row-${row.eventType}`}>
       <div role="group" aria-labelledby={titleId}>
         <div>{heading}</div>
         <ul role="list" className="mt-2 divide-y">
@@ -178,7 +188,7 @@ function EventRow({ row, availability, layout, idPrefix }: EventRowProps) {
             <li key={channel}>
               <label className="flex min-h-11 cursor-pointer items-center justify-between gap-3 has-[:disabled]:cursor-not-allowed">
                 <span className="min-w-0 text-sm">
-                  {t(CHANNEL_TEXTS[channel].labelKey)}
+                  <span className="inline-flex items-center gap-2"><ChannelIcon channel={channel} />{t(CHANNEL_TEXTS[channel].labelKey)}</span>
                   {availability[channel] ? null : (
                     <span id={reasonId(idPrefix, channel, row.eventType)} className="block text-xs text-foreground/70">
                       {t('notificationPreferences.channelUnavailable')}
