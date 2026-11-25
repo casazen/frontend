@@ -2,16 +2,15 @@ import { useEffect, useRef } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { AlertTriangle, CheckCircle2, Circle, Clock, Loader2 } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Circle, Loader2 } from 'lucide-react';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { getProblemMessage, translateErrorCode } from '@/lib/api-errors';
 import { isImportRequested, useActivationMappings, useImportActivation } from '@/queries/use-marketplace';
 import {
   ACTIVATION_STEP,
-  IMPORT_ITEMS,
   hasAccessStep,
-  importItemState,
+  importRoomState,
   problemCodeOf,
   propertyNameOf,
   stepToFix,
@@ -29,19 +28,11 @@ const TOUCH_TARGET = 'h-auto min-h-11 whitespace-normal py-2 text-center leading
 const ITEM_TEXT: Readonly<Record<ImportItemState, string>> = {
   queued: 'marketplace.activation.import.state.queued',
   starting: 'marketplace.activation.import.state.starting',
-  requested: 'marketplace.activation.import.state.requested',
   waiting: 'marketplace.activation.import.state.waiting',
   done: 'marketplace.activation.import.state.done',
 };
 
-/** The three imports, with their words. */
-const ITEM_NAME_TEXT = {
-  rooms: 'marketplace.activation.import.items.rooms',
-  reservations: 'marketplace.activation.import.items.reservations',
-  calendar: 'marketplace.activation.import.items.calendar',
-} as const;
-
-const ITEM_ICON: Readonly<Record<ImportItemState, typeof Circle>> = { queued: Circle, starting: Loader2, requested: Clock, waiting: Loader2, done: CheckCircle2 };
+const ITEM_ICON: Readonly<Record<ImportItemState, typeof Circle>> = { queued: Circle, starting: Loader2, waiting: Loader2, done: CheckCircle2 };
 
 interface ImportStepProps {
   context: ActivationContext;
@@ -52,15 +43,7 @@ interface ImportStepProps {
   onChoose: () => void;
 }
 
-/**
- * Step «Importazione» (E09/F02/US04/T02, MKT-03, LST-02): CasaZen asks the channel manager to import the rooms, the reservations and the calendar of the channel
- * (`POST /api/marketplace/activations/{id}/import`) for each chosen property, one after the other, and shows where each stands. The channel manager does it on its
- * own and the server cannot be asked how far the reservations and the calendar are: only the rooms can be seen to arrive (the mapping read gives them), so only the rooms
- * are shown as done; the other two are shown as asked, never as finished. It starts by itself, once for each activation in this session, and it goes on by itself when
- * the rooms of every property are in and this visit saw the work.
- *
- * It says how long it may take and that the person can leave with «Salva ed esci»: the import goes on in the channel manager.
- */
+/** Requests and checks imported rooms for each property before the mapping step. */
 export function ImportStep({ context, onFix, onAdvance, onChoose }: ImportStepProps) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -142,24 +125,17 @@ export function ImportStep({ context, onFix, onAdvance, onChoose }: ImportStepPr
                 ? (translateErrorCode(code, t) ?? getProblemMessage(error, t) ?? t(importError ? 'marketplace.activation.import.failed' : 'marketplace.activation.import.readError'))
                 : null;
 
-          // Only the rooms can be seen to arrive: the reservations and the calendar are asked, and arrive on their own.
-          const items = IMPORT_ITEMS.map((id) => ({ id, state: importItemState(id, { starting: running === propertyId, requested, roomsIn }) }));
+          const state = importRoomState({ starting: running === propertyId, requested, roomsIn });
+          const Icon = ITEM_ICON[state];
 
           return (
             <li key={propertyId} className="min-w-0 space-y-3 rounded-lg border p-4" data-testid={`activation-import-${propertyId}`} data-rooms={roomsIn ? 'in' : 'not-yet'}>
               <p className="break-words font-medium">{propertyNameOf(context.properties, propertyId) ?? propertyId}</p>
               <ul className="space-y-1.5" role="list">
-                {items.map(({ id, state }) => {
-                  const Icon = ITEM_ICON[state];
-                  return (
-                    <li key={id} className="flex items-center gap-2 text-sm" data-item={id} data-state={state}>
-                      <Icon aria-hidden="true" className={state === 'starting' || state === 'waiting' ? 'size-4 shrink-0 animate-spin motion-reduce:animate-none' : 'size-4 shrink-0'} />
-                      <span className="min-w-0 break-words">
-                        {t(ITEM_NAME_TEXT[id])}: {t(ITEM_TEXT[state])}
-                      </span>
-                    </li>
-                  );
-                })}
+                <li className="flex items-center gap-2 text-sm" data-item="rooms" data-state={state}>
+                  <Icon aria-hidden="true" className={state === 'starting' || state === 'waiting' ? 'size-4 shrink-0 animate-spin motion-reduce:animate-none' : 'size-4 shrink-0'} />
+                  <span>{t('marketplace.activation.import.items.rooms')} · {t(ITEM_TEXT[state])}</span>
+                </li>
               </ul>
 
               {problem ? (

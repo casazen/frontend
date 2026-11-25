@@ -451,7 +451,7 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
       '/app/account/channel-commissions',
     ],
     '/app/admin/seo': ['/app/admin/marketing'],
-    '/app/admin/jobs': ['/app/admin/ai', '/app/admin/demo'],
+    '/app/admin/jobs': ['/app/admin/ai', '/app/admin/demo', '/app/admin/property-preparation'],
     // The CRM is no tab of Prenotazioni any more: it is an entry of "Altro" behind its flag (below), and its pages hang from it as tabs:
     // for now the merge proposals (E07/F01/US04/T03), the last of the tabs the epic has (the audiences, campaigns and automations come first).
     '/app/short-rent/crm/guests': ['/app/short-rent/crm/merge'],
@@ -467,6 +467,7 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
       '/app/short-rent/interventions',
       '/app/short-rent/trusted-suppliers',
       '/app/short-rent/channels',
+      '/app/short-rent/activation',
       '/app/short-rent/ota',
     ],
     '/app/short-rent/vetrina': [
@@ -666,12 +667,14 @@ describe('route-manifest sections as tabs (UI-04a)', () => {
       '/app/short-rent/properties',
       '/app/short-rent/interventions',
       '/app/short-rent/channels',
+      '/app/short-rent/activation',
     ]);
     expect(paths(getNavSection('/app/short-rent/properties', allowAll, { agencyTier: true }))).toEqual([
       '/app/short-rent/properties',
       '/app/short-rent/interventions',
       '/app/short-rent/trusted-suppliers',
       '/app/short-rent/channels',
+      '/app/short-rent/activation',
     ]);
     expect(paths(getNavSection('/app/short-rent/properties', allowAll, { otaPartnerApi: true }))).toContain('/app/short-rent/ota');
     expect(paths(getNavSection('/app/short-rent/properties', without('ota.read'), { otaPartnerApi: true }))).not.toContain(

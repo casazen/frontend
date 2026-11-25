@@ -607,6 +607,7 @@ const BACKEND_ACTIONS = [
   'CopyCheckInLink',
   'FixScheduledMessage',
   'StateCleaningVat',
+  'ReviewImportedProperty',
 ] as const;
 
 /** The actions whose page does not exist in the app yet: the mapping of the listings of the channel manager and the stays and documents of the owner portal. */

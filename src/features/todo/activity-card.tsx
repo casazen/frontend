@@ -118,6 +118,9 @@ const OWNER_STATEMENT_VERSION = 'OwnerStatementVersion';
  * out and the row leads to the list). A conversation is opened through its key (`target: 'thread'`), which the kind of entity tells apart.
  */
 export const ACTION_ROUTE_MAP = {
+  ReviewImportedProperty: {
+    route: { path: '/app/short-rent/activation', propertyParam: 'propertyId', onlyFor: ['PropertyImportReview'] },
+  },
   ReviewBooking: {
     route: { path: '/app/short-rent/bookings/:id', target: 'entity', entityType: BOOKING },
   },

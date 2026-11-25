@@ -1,4 +1,153 @@
 {
+  "activationStaff": {
+    "selectProperties": "Properties in this batch",
+    "title": "Prepare properties",
+    "importTitle": "Imported listings",
+    "importFile": "JSON inventory of CasaZen listings and their sources",
+    "invalidImport": "Use a JSON file with 1 to 300 distinct listings and their sources.",
+    "selection_one": "{{count}} property selected",
+    "selection_other": "{{count}} properties selected",
+    "importAction": "Record sources",
+    "importing": "Recording sources…",
+    "imported": "Source recorded",
+    "importFailure": "The operation did not finish. Check the data and retry.",
+    "prepareTitle": "Property batches",
+    "start": "Prepare selected properties",
+    "loadError": "We couldn’t load preparation batches",
+    "batch": "Batch {{id}}",
+    "status": {
+      "Queued": "Queued",
+      "ReconcileCreation": "Awaiting reconciliation",
+      "WaitingForLicense": "Awaiting license",
+      "Ready": "Ready for connections",
+      "NeedsReview": "Needs review"
+    },
+    "externalId": "Octorate property ID",
+    "reconcile": "Verify and link",
+    "reference": "Octorate support request reference",
+    "save": "Save reference",
+    "resume": "Resume and verify",
+    "saved": "Operation recorded.",
+    "reasons": {
+      "octorate_preparation_creation_uncertain": "Check whether the property exists in Octorate and enter its ID.",
+      "octorate_preparation_candidate_found": "A similar property was found. Check and enter its ID.",
+      "octorate_preparation_license_pending": "Waiting for the license to be confirmed.",
+      "octorate_preparation_already_linked": "The property is already linked.",
+      "octorate_preparation_product_required": "Check the property’s rooms and rates.",
+      "octorate_preparation_invalid_data": "Check the address, coordinates and CasaZen contacts."
+    }
+  },
+  "activationJourney": {
+    "preparation": {
+      "title": "Property preparation",
+      "NotStarted": "Not started",
+      "Queued": "Preparing connections",
+      "ReconcileCreation": "Staff is checking this property",
+      "WaitingForLicense": "Awaiting activation",
+      "Ready": "Property ready",
+      "NeedsReview": "Staff review required"
+    },
+    "accounts": {
+      "staffApproval": "After creating the connection, ask CasaZen to complete the authorization step.",
+      "title": "Credentials for one or more properties",
+      "service": "Service",
+      "scope": "Scope",
+      "single": "One property",
+      "shared": "Several properties",
+      "username": "Username",
+      "password": "Password",
+      "webServiceKey": "Web Service key",
+      "unitCode": "Code for {{name}}",
+      "submit_one": "Confirm for {{count}} property",
+      "submit_other": "Confirm for {{count}} properties",
+      "expiry": "Credential available until {{date}}",
+      "resume": "Resume",
+      "revoke": "Revoke credential",
+      "confirmRevoke": "Confirm revocation",
+      "needsReview": "Check the details to continue.",
+      "recorded": "Request recorded"
+    },
+    "import": {
+      "loadError": "We couldn’t load the listing review",
+      "source": "Source · {{provider}}",
+      "findingSource": "Open the source of this check",
+      "complete": "Import checks are complete.",
+      "edit": "Open field",
+      "confirm": "Confirm value",
+      "recheck": "Check again",
+      "todoTitle": "Review imported listing",
+      "todoWhy": "Check the flagged fields and their source.",
+      "fields": {
+        "descriptionIt": "Italian description",
+        "descriptionEn": "English description",
+        "beds": "Beds",
+        "maxGuests": "Guest capacity",
+        "cin": "CIN",
+        "photos": "Photos",
+        "nightlyRate": "Nightly price",
+        "ratePlans": "Rate plans"
+      },
+      "states": {
+        "missing": "Missing information",
+        "confirm": "Awaiting confirmation",
+        "mapping": "Mapping needed"
+      },
+      "priceKinds": {
+        "quote": "Observed quote",
+        "list": "Listed rate",
+        "effective": "Effective rate"
+      }
+    },
+    "services": {
+      "title": "Compliance",
+      "configure": "Required booking channels",
+      "save": "Save required channels",
+      "noPortals": "No booking channels",
+      "notApplicable": "Alloggiati and ISTAT do not apply to this property.",
+      "pending": "Awaiting synchronization: {{names}}.",
+      "waiting": "Publish the listing and confirm the required booking channels to continue.",
+      "available": "Ask CasaZen to set up the applicable services.",
+      "alloggiati": "Alloggiati",
+      "istat": "ISTAT",
+      "confirm": "Ask staff to set up {{service}} for this property.",
+      "send": "Confirm request",
+      "cancel": "Cancel",
+      "sent": "Request sent to staff.",
+      "openCompliance": "Open Compliance",
+      "loadError": "We couldn’t load the compliance status"
+    },
+    "staffChannel": "Ask CasaZen for help with this connection.",
+    "connectionPreparation": "This property is waiting to be prepared for connections.",
+    "title": "Property activation",
+    "description": "Review each listing and check where its booking channels stand.",
+    "properties": "Your properties",
+    "search": "Search by name or city",
+    "noResults": "No properties found.",
+    "propertiesError": "We couldn’t load your properties",
+    "selectProperty": "Choose a property to see its next step.",
+    "back": "Back to properties",
+    "reviewTitle": "Review and publish",
+    "published": "Published on CasaZen",
+    "needsAttention": "Needs attention",
+    "review": "Review listing",
+    "openProperty": "Open listing",
+    "channels": "Booking channels",
+    "channelsError": "We couldn’t load booking channels",
+    "noChannels": "No booking channels are available for this property.",
+    "channelStatus": {
+      "Active": "Active",
+      "NotActive": "Available",
+      "Unavailable": "Unavailable",
+      "Pending": "Setting up",
+      "ToFix": "Needs review"
+    },
+    "searchChannels": "Search booking channels",
+    "openChannel": "Open setup for {{name}}",
+    "connect": "Connect",
+    "resume": "Resume",
+    "integrations": "Integrations",
+    "readyForReview": "Ready for publication review"
+  },
   "agentPlayground": {
     "trainWithAi": "Train with AI",
     "trainWithAiHint": "Describe the expected behavior in the instructions. AI generates examples and checks up to 12 distinct scenarios, including edge cases and exceptions.",
@@ -1742,6 +1891,12 @@
     "forbidden": "You do not have permission to perform this action.",
     "tooManyRequests": "Too many requests in a short time. Try again in a moment.",
     "codes": {
+      "marketplaceCalendarPending": "Prices and availability are awaiting verification. Retry after checking the calendar.",
+      "marketplaceCalendarSourceRequired": "Ask staff to select the portal for the initial calendar import.",
+      "marketplaceSyncPending": "The portal has not confirmed synchronization yet. Try again shortly.",
+      "marketplaceConnectionUnconfirmed": "Ask staff to reconcile the connection before retrying.",
+      "marketplaceMappingPending": "Check the mappings and retry.",
+      "marketplaceActivationBusy": "Another operation is running for this property. Try again shortly.",
       "accountantPackageContentsInvalid": "Choose at least one folder of the package, each one only once.",
       "accountantPackageInvalidPeriod": "The period you chose is not valid: it has to be a month or a year.",
       "accountantPackageNotSent": "The package did not go out: nothing was sent. Try again in a moment; if it happens again, write to support.",
@@ -15542,8 +15697,8 @@
       "activate": {
         "finish": "Activate {{name}}",
         "intro": "Read what will happen again. If something is not right, go back with “Edit”.",
-        "summary": "We will connect {{name}} to “{{property}}”: bookings and availability will flow both ways.",
-        "when": "It can take up to 30 minutes before {{name}} shows everything. After the activation CasaZen checks the connection every 30 minutes."
+        "summary": "CasaZen imports reservations, verifies prices and availability, and completes the {{name}} connection for “{{property}}”.",
+        "when": "You can resume while a check is in progress. If the calendar is empty, staff can select the portal for the initial import."
       },
       "chooseFirst": {
         "action": "Choose properties",
@@ -15592,7 +15747,7 @@
         "fixAccess": "Fix the access details",
         "fixConnection": "Back to the connection",
         "fixProperty": "Change the properties",
-        "intro": "Your channel manager imports the rooms, the reservations and the calendar of {{name}}. A few minutes are usually enough, sometimes more.",
+        "intro": "CasaZen checks that rooms from {{name}} have arrived before mapping.",
         "items": {
           "calendar": "Calendar",
           "reservations": "Reservations",
@@ -16318,6 +16473,8 @@
     }
   },
   "nav": {
+    "propertyPreparation": "Prepare properties",
+    "propertyActivation": "Activation",
     "accountant": "Accountant",
     "accountHome": "Home",
     "people": "People",
@@ -17328,7 +17485,8 @@
         "description": "For {{subject}}. Every opening is recorded and the user sees it in the activity log.",
         "error": "The credentials could not be opened.",
         "fields": {
-          "extraCode": "Further code",
+          "unitCode": "Unit code",
+        "extraCode": "Further code",
           "password": "Password",
           "username": "User name"
         },
@@ -22098,7 +22256,7 @@
       },
       "description": {
         "minLength": "Description must be at least 10 characters",
-        "maxLength": "Description must be less than 1000 characters"
+        "maxLength": "The description can have at most 10,000 characters"
       },
       "address": {
         "required": "Address is required"
@@ -23393,7 +23551,7 @@
       "comune": {
         "required": "Choose the comune from the list."
       },
-      "description": "The description can have at most 2,000 characters.",
+      "description": "The description can have at most 10,000 characters.",
       "descriptions": {
         "enDescription": "Write the description in English.",
         "enTitle": "Write the title in English.",

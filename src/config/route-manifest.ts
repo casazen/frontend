@@ -434,6 +434,16 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/channels/channels-page')).ChannelsPage }),
   },
   {
+    path: '/app/short-rent/activation',
+    context: 'short-rent',
+    requiredPermissions: ['property.read'],
+    navKey: 'nav.propertyActivation',
+    navParent: '/app/short-rent/properties',
+    navOrder: 4,
+    icon: 'ListChecks',
+    component: async () => ({ default: (await import('@/features/properties/property-activation-page')).PropertyActivationPage }),
+  },
+  {
     // Identity verification console (NF-12, NF-50, NF-51): the verifications that wait for an operator, with why and the checks, and the figures.
     // The last tab of the Cruscotto, after «Da approvare», the other queue of decisions. It asks the permission the API asks for every call of it,
     // `verification.decision` (the owner, the administrators and the property managers; E03/F04/US02/T01): an entry the user opens must not end on a 403.
@@ -1591,6 +1601,16 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     icon: 'Workflow',
     component: async () => ({ default: (await import('@/features/admin/admin-jobs-page')).AdminJobsPage }),
     legacyPaths: ['/admin/jobs'],
+  },
+  {
+    path: '/app/admin/property-preparation',
+    context: 'admin',
+    requiredPermissions: ['admin.jobs.read'],
+    navKey: 'nav.propertyPreparation',
+    navParent: '/app/admin/jobs',
+    navOrder: 5,
+    icon: 'ListChecks',
+    component: async () => ({ default: (await import('@/features/admin/admin-property-preparation-page')).AdminPropertyPreparationPage }),
   },
   {
     path: '/app/admin/ai',
