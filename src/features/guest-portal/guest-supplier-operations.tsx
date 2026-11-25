@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { getHttpStatus } from '@/lib/api-errors';
-import { orderMoney, orderStatus, type GuestSupplierOrder } from './guest-supplier-order-model';
+import { GUEST_ORDER_REFRESH_MS, orderMoney, orderStatus, type GuestSupplierOrder } from './guest-supplier-order-model';
 
 interface OfferTerms {
   id: string;
@@ -50,6 +50,8 @@ export function GuestSupplierOperations({ scope }: { scope: Scope }) {
       return ApiClient.get<OrderList>(endpoint, undefined, { signal });
     },
     retry: false,
+    refetchOnWindowFocus: 'always',
+    refetchInterval: ({ state }) => scope.role === 'supplier' && state.data && !state.error ? GUEST_ORDER_REFRESH_MS : false,
   });
   const change = useMutation({
     mutationFn: ({ suffix, body, method }: { suffix: string; body: object; method?: 'put' }) =>

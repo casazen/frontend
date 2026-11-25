@@ -4,7 +4,7 @@ import { ShoppingBag } from 'lucide-react';
 import { ApiClient } from '@/api/client';
 import { getHttpStatus } from '@/lib/api-errors';
 import { romeWallTimeToUtc } from '@/lib/stay-dates';
-import { orderMoney, orderStatus, type GuestSupplierOrder } from './guest-supplier-order-model';
+import { GUEST_ORDER_REFRESH_MS, orderMoney, orderNeedsUpdates, orderStatus, type GuestSupplierOrder } from './guest-supplier-order-model';
 import { supplierOrderText } from './guest-supplier-order-text';
 
 interface Offer {
@@ -28,6 +28,8 @@ export function GuestSupplierOrders({ path, language }: { path: string; language
     ),
     retry: false,
     gcTime: 0,
+    refetchOnWindowFocus: 'always',
+    refetchInterval: ({ state }) => state.data?.orders.some(orderNeedsUpdates) ? GUEST_ORDER_REFRESH_MS : false,
   });
   const change = useMutation({
     mutationFn: (args: { suffix: string; body: object }) =>
