@@ -89,7 +89,7 @@ export function GuestSupplierOrders({ path, language }: { path: string; language
               update={verified => client.setQueryData<Catalog>(['guest-supplier-orders', endpoint], previous =>
                 previous && { ...previous, orders: previous.orders.map(item => item.id === verified.id ? verified : item) })} />
           )}
-          {!order.stripeSandbox && order.state === 'Quoted' && <button disabled={change.isPending} onClick={() => change.mutate({
+          {!sandbox && !order.stripeSandbox && order.state === 'Quoted' && <button disabled={change.isPending} onClick={() => change.mutate({
             suffix: `/${order.id}/authorize`, body: { totalCents: order.totalCents },
           })}>{text.authorize}</button>}
           {order.state === 'Completed' && (!order.stripeSandbox || (order.completedAt && Date.now() < Date.parse(order.completedAt) + 24 * 3600000)) && <form onSubmit={(event) => {

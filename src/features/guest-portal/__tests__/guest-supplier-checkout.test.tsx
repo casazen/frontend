@@ -70,6 +70,14 @@ describe('guest supplier sandbox checkout', () => {
     expect(screen.queryByTestId('payment')).not.toBeInTheDocument();
   });
 
+  it('shows a legacy simulated order as read-only when the catalog is in Stripe sandbox mode', async () => {
+    vi.mocked(ApiClient.get).mockResolvedValue({ ...response, orders: [{ ...order, stripeSandbox: false }] });
+    show();
+    expect(await screen.findByText('Transfer')).toBeVisible();
+    expect(screen.queryByRole('button', { name: /authorize/i })).not.toBeInTheDocument();
+    expect(ApiClient.post).not.toHaveBeenCalled();
+  });
+
   it('keeps simulated orders on their original endpoint and never mounts Stripe for them', async () => {
     vi.mocked(ApiClient.get).mockResolvedValue({ environment: 'simulation', offers: [], orders: [{ ...order, stripeSandbox: false }] });
     show();
