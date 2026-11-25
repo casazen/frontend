@@ -1,4 +1,4 @@
-import { useContext, useEffect, type ReactNode } from 'react';
+import { useContext, useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useFormContext, useWatch } from 'react-hook-form';
 import type { TFunction } from 'i18next';
@@ -66,6 +66,9 @@ export function PropertiesStep() {
   const values = useWatch({ control }) as BulkChangeValues;
   const properties = useProperties({ mode: 'short' });
   const list = Array.isArray(properties.data) ? properties.data : [];
+  const [query, setQuery] = useState('');
+  const search = query.trim().toLocaleLowerCase();
+  const visible = list.filter((property) => [property.name, property.city].some((value) => value?.toLocaleLowerCase().includes(search)));
   const canRead = useContext(WorkspaceContext)?.hasPermission('short-rent', 'property.read') ?? false;
   // With the connector of the channel manager off nothing is sent there: the step says nothing about it.
   const connectorOn = useFeatureFlags().flags.octorateConnector;
@@ -74,6 +77,8 @@ export function PropertiesStep() {
   const chosen = values.propertyIds ?? [];
 
   const choose = (ids: string[]) => setValue('propertyIds', ids, { shouldDirty: true });
+  const selectVisible = () => choose([...new Set([...chosen, ...visible.map((property) => property.id)])].slice(0, BULK_MAX_PROPERTIES));
+  const clearVisible = () => choose(chosen.filter((id) => !visible.some((property) => property.id === id)));
   const toggle = (id: string, on: boolean) => choose(on ? [...chosen.filter((other) => other !== id), id] : chosen.filter((other) => other !== id));
   const message = errorText((errors.propertyIds as { message?: string } | undefined)?.message);
 
@@ -90,24 +95,26 @@ export function PropertiesStep() {
         </p>
       ) : null}
 
-      {list.length > 1 ? (
-        <div className="flex flex-wrap gap-2">
-          <Button type="button" size="sm" variant="outline" onClick={() => choose(list.slice(0, BULK_MAX_PROPERTIES).map((property) => property.id))} data-testid="bulk-select-all">
+      {list.length > 1 || query ? (
+        <div className="flex flex-wrap items-center gap-2">
+          <Input type="search" className="min-w-40 flex-1" aria-label={t('property.list.search')} placeholder={t('property.list.search')} value={query} onChange={(event) => setQuery(event.target.value)} />
+          <Button type="button" size="sm" variant="outline" onClick={selectVisible} data-testid="bulk-select-all">
             {t('booking.calendar.bulk.properties.all')}
           </Button>
-          <Button type="button" size="sm" variant="outline" onClick={() => choose([])} data-testid="bulk-select-none">
+          <Button type="button" size="sm" variant="outline" onClick={clearVisible} data-testid="bulk-select-none">
             {t('booking.calendar.bulk.properties.none')}
           </Button>
         </div>
       ) : null}
 
-      <ul className="space-y-2" role="list">
-        {list.map((property) => {
+      {search && visible.length === 0 && <p role="status" className="rounded-xl bg-muted p-4 text-sm">{t('listView.noResults.title')}</p>}
+      <ul className="grid gap-2 sm:grid-cols-2" role="list">
+        {visible.map((property) => {
           const mirrored = connectorOn ? layer?.get(property.id)?.mirrored : undefined;
           const Icon = mirrored ? PlugZap : Plug;
           return (
             <li key={property.id}>
-              <label className="flex min-h-11 cursor-pointer items-start gap-3 rounded-md border px-3 py-2">
+              <label className="flex h-full min-h-11 cursor-pointer items-start gap-3 rounded-xl border px-4 py-3 has-checked:border-primary/60 has-checked:bg-primary/5">
                 <input
                   type="checkbox"
                   className="mt-1 size-5 shrink-0 accent-[color:var(--color-primary)]"
@@ -226,7 +233,8 @@ export function ChangesStep() {
         const rule = rules[field];
         const unit = flag ? null : NUMBER_UNIT[field as NumberRuleField];
         return (
-          <div key={field} className="space-y-2" data-testid={`bulk-rule-${field}`}>
+          <div key={field} className="space-y-3 rounded-xl border bg-card p-4" data-testid={`bulk-rule-${field}`}>
+            <p className="font-semibold">{t(FIELD_KEYS[field].name)}</p>
             <Segmented<FieldAction>
               label={t(FIELD_KEYS[field].name)}
               value={rule.action}
@@ -237,7 +245,6 @@ export function ChangesStep() {
                 testId: `bulk-rule-${field}-${action}`,
               }))}
             />
-            <p className="text-sm font-medium">{t(FIELD_KEYS[field].name)}</p>
             {rule.action === 'Set' && unit ? (
               <Field
                 label={t(unit === 'currency' ? 'booking.calendar.bulk.changes.priceLabel' : unit === 'nights' ? 'booking.calendar.bulk.changes.nightsLabel' : 'booking.calendar.bulk.changes.daysLabel')}

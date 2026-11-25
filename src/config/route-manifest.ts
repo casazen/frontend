@@ -610,6 +610,17 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     // answers 404 to every endpoint of the assistant. The page asks `property.write` (the exceptions and the answers of a property are written with it); inside it, the
     // rules, the situations and the answers of the organization are changed by the organization administrator alone, and the others read them with the reason in words.
     // Who may not open «Impostazioni» (not the organization administrator) finds it in "Altro", as every page whose section is closed to its user.
+    path: '/app/short-rent/settings/guest-portal',
+    context: 'short-rent',
+    requiredPermissions: ['guestportal.manage', 'property.read'],
+    featureFlag: 'guestPortal',
+    navKey: 'guestPortal.host.title',
+    navParent: '/app/short-rent/settings/organization',
+    navOrder: 8,
+    icon: 'Settings',
+    component: async () => ({ default: (await import('@/features/settings/guest-portal-settings-page')).GuestPortalSettingsPage }),
+  },
+  {
     path: '/app/short-rent/settings/assistant',
     context: 'short-rent',
     requiredPermissions: ['property.write'],

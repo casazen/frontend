@@ -22,7 +22,7 @@ export function CategoryTile({ category, count }: CategoryTileProps) {
   return (
     <Link
       to={marketplaceCategoryPath(category)}
-      className="flex min-h-16 min-w-0 items-center gap-3 rounded-lg border bg-card p-4 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="flex min-h-16 min-w-0 items-center gap-3 rounded-2xl border border-border bg-card p-4 transition-colors hover:border-primary hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       data-testid={`marketplace-category-${category}`}
     >
       <span aria-hidden="true" className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary-text">

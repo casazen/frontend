@@ -3,8 +3,8 @@ import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 import { useFormContext, type UseFormReturn } from 'react-hook-form';
-import { CalendarCheck, EyeOff, Pencil, Send } from 'lucide-react';
-import { PageHeader } from '@/components/layout/page-header';
+import { PackagePlus, CalendarCheck, EyeOff, Pencil, Send } from 'lucide-react';
+import { ServicePageHeader } from '@/features/supplier/components/service-page-header';
 import { FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { EmptyState } from '@/components/shared/empty-state';
 import { LoadingScreen } from '@/components/shared/loading-screen';
@@ -410,7 +410,7 @@ export function SupplierServiceWizardPage() {
 
   return (
     <div className="min-w-0 space-y-6" data-testid="supplier-service-wizard-page">
-      <PageHeader title={t(`${T}.title`)} description={t(`${T}.description`)} crumbs="auto" />
+      <ServicePageHeader icon={PackagePlus} title={t(`${T}.title`)} description={t(`${T}.description`)} crumbs="auto" />
       <div className={FOCUS_COLUMN}>{duplicateId ? <DuplicateStarter sourceId={duplicateId} /> : <WizardEntry />}</div>
     </div>
   );

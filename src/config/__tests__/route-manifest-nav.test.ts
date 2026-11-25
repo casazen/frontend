@@ -433,6 +433,7 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
     '/app/short-rent/settings/organization': [
       '/app/short-rent/settings/integration',
       '/app/short-rent/settings/ai',
+      '/app/short-rent/settings/guest-portal',
     ],
     '/app/short-rent/settings/ai': [
       '/app/short-rent/settings/assistant',
@@ -500,6 +501,7 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
     fiscalDocumentIssuance: true,
     octorateOnboarding: true,
     messageAssistant: true,
+    guestPortal: true,
     ownerInvoicing: true,
     accountantPackage: true,
     routines: true,
@@ -708,6 +710,7 @@ describe('route-manifest sections as tabs (UI-04a)', () => {
       fiscalDocumentIssuance: true,
       octorateOnboarding: true,
       messageAssistant: true,
+      guestPortal: true,
       ownerInvoicing: true,
       accountantPackage: true,
       routines: true,

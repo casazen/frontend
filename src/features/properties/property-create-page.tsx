@@ -6,7 +6,6 @@ import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { FOCUS_COLUMN } from '@/components/layout/page-columns';
-import { toast } from 'sonner';
 import { QuickPropertyForm } from './components/quick-property-form';
 import { useCreateProperty } from '@/queries/use-properties';
 import { useEntitlement } from '@/queries/use-users';
@@ -41,7 +40,6 @@ function FirstPropertyPage() {
       await createProperty.mutateAsync(data);
       // The profile carries `hasProperties`: refresh it before leaving, or the guard would send the host back here.
       await queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY });
-      toast.success(t('property.quick.created'));
       navigate('/app/short-rent');
     } catch (error) {
       if (isPlanLimitError(error)) {

@@ -53,6 +53,7 @@ async function newActors(browser: Browser, errors5xx: string[]): Promise<{ actor
   ];
   const [admin, host, supplier, guest] = await Promise.all(contexts.map((c) => c.newPage()));
   for (const [name, page] of Object.entries({ admin, host, supplier, guest })) {
+    page.setDefaultTimeout(30_000);
     page.on('response', (res) => {
       if (res.url().includes('/api/') && res.status() >= 500) errors5xx.push(`${name}: ${res.status()} ${res.url()}`);
     });
@@ -181,8 +182,11 @@ async function runGoldenJourney(browser: Browser, stack: StackEnv, request: impo
 
     await step('Host registers the arrival (booking CheckedIn)', async () => {
       await host.goto(`/app/short-rent/bookings/${ids.bookingId}`);
-      await host.getByTestId('open-register-arrival').click();
-      await host.getByTestId('register-arrival-submit').click();
+      const registerArrival = host.getByTestId('open-register-arrival');
+      const guidance = host.locator('details').filter({ has: registerArrival });
+      await guidance.locator('summary').click();
+      await registerArrival.click();
+      await host.getByRole('dialog').getByTestId('register-arrival-submit').click();
       await expect
         .poll(async () => (await hostApi.get<Booking>(`/bookings/${ids.bookingId}`)).status, { timeout: 30_000 })
         .toBe('CheckedIn');
@@ -254,7 +258,7 @@ async function runGoldenJourney(browser: Browser, stack: StackEnv, request: impo
     });
 
     await step('Host marks the supplier as paid', async () => {
-      await host.getByRole('button', { name: 'Segna pagato' }).click();
+      await host.getByTestId(`mark-paid-${ids.serviceRequestId}`).click();
       await host.getByTestId('mark-paid-confirm').click();
       await expect
         .poll(async () => (await hostApi.get<ServiceRequest>(`/service-requests/${ids.serviceRequestId}`)).status, {

@@ -33,8 +33,6 @@ import { assign, NO_SERVICE, useUpcomingStays } from './request-form';
 import {
   CUSTOM_SERVICE,
   dayForStay,
-  DEFAULT_CHECK_IN_FROM,
-  DEFAULT_CHECK_OUT_BY,
   DURATION_OTHER,
   DURATIONS,
   isCatalogService,
@@ -51,6 +49,7 @@ import {
   typedDuration,
   URGENCIES,
   type RequestValues,
+  type TurnoverWindow,
 } from './request-model';
 
 /* ---------------------------------------------------------------------------------------------------- ⑤ Dettagli */
@@ -83,20 +82,19 @@ function serviceDescription(service: HostSupplierService, t: TFunction, language
  * The services of the supplier for the category, one to choose, or «altro lavoro» outside the catalog. A supplier with a single service
  * has it chosen already, and so does the service the address names (the page of a supplier: «Richiedi» of one of its services).
  */
-function ServiceChoices() {
+function ServiceChoices({ window }: { window: TurnoverWindow | null }) {
   const { t, i18n } = useTranslation();
   const { control, setValue, formState } = useFormContext<RequestValues>();
-  const [supplierOrgId, propertyId, category, day, serviceId, serviceName] = useWatch({
+  const [supplierOrgId, propertyId, category, serviceId, serviceName] = useWatch({
     control,
-    name: ['supplierOrgId', 'propertyId', 'category', 'day', 'serviceId', 'serviceName'],
+    name: ['supplierOrgId', 'propertyId', 'category', 'serviceId', 'serviceName'],
   });
   const services = useHostSupplierServices(supplierOrgId, propertyId, category);
-  const { all } = useUpcomingStays(propertyId);
   const items = services.data?.items;
 
   const applyService = useCallback(
     (service: HostSupplierService) => {
-      const proposal = proposedSchedule(category === 'cleaning' ? turnoverWindow(day, all ?? []) : null);
+      const proposal = proposedSchedule(window);
       assign(setValue, {
         ...NO_SERVICE,
         serviceId: service.id,
@@ -110,12 +108,12 @@ function ServiceChoices() {
         ...(service.durationMinutes === null ? { startTime: proposal.startTime, durationChoice: proposal.durationChoice } : {}),
       });
     },
-    [category, day, all, setValue],
+    [window, setValue],
   );
 
   const chooseCustom = () => {
     if (serviceId === CUSTOM_SERVICE) return;
-    const proposal = proposedSchedule(category === 'cleaning' ? turnoverWindow(day, all ?? []) : null);
+    const proposal = proposedSchedule(window);
     assign(setValue, { ...NO_SERVICE, serviceId: CUSTOM_SERVICE, startTime: proposal.startTime, durationChoice: proposal.durationChoice });
   };
 
@@ -165,21 +163,21 @@ function ServiceChoices() {
 }
 
 /** The slots of the day, as buttons; the advised hours first for a cleaning; the nearest days when the day has none. */
-function SlotChoices() {
+function SlotChoices({ window }: { window: TurnoverWindow | null }) {
   const { t, i18n } = useTranslation();
   const { control, setValue, formState } = useFormContext<RequestValues>();
-  const [supplierOrgId, serviceId, propertyId, category, day, startTime] = useWatch({
+  const [supplierOrgId, serviceId, propertyId, day, startTime] = useWatch({
     control,
-    name: ['supplierOrgId', 'serviceId', 'propertyId', 'category', 'day', 'startTime'],
+    name: ['supplierOrgId', 'serviceId', 'propertyId', 'day', 'startTime'],
   });
   const slots = useHostSupplierSlots(supplierOrgId, serviceId, propertyId, day, true);
-  const { all: stays } = useUpcomingStays(propertyId);
-  const window = category === 'cleaning' ? turnoverWindow(day, stays ?? []) : null;
   const [showEvery, setShowEvery] = useState(false);
 
   const free = useMemo(() => slotsOfDay(slots.data?.slots ?? [], day), [slots.data, day]);
   const advised = useMemo(() => slotsInWindow(free, window), [free, window]);
-  const filtered = window !== null && advised.length > 0 && !showEvery;
+  // Returning from review must keep a previously chosen time visible, even outside the turnover window.
+  const selectedOutsideWindow = Boolean(startTime) && free.some(slot => slot.time === startTime) && !advised.some(slot => slot.time === startTime);
+  const filtered = window !== null && advised.length > 0 && !showEvery && !selectedOutsideWindow;
   const shown = filtered ? advised : free;
   const nearby = useMemo(() => daysWithSlots(slots.data?.slots ?? []).filter((candidate) => candidate > day).slice(0, 4), [slots.data, day]);
   const dayText = formatStayDate(day, i18n.language, { weekday: 'long', day: 'numeric', month: 'long' });
@@ -226,9 +224,11 @@ function SlotChoices() {
               ? t('requestWizard.who.advised.both', { from: window.from, to: window.to })
               : t('requestWizard.who.advised.open', { from: window?.from })}
           </span>
-          <Button type="button" variant="ghost" size="sm" className="min-h-11" onClick={() => setShowEvery(true)} data-testid="request-slots-all">
-            {t('requestWizard.who.showEvery')}
-          </Button>
+          {free.length > advised.length && (
+            <Button type="button" variant="ghost" size="sm" className="min-h-11" onClick={() => setShowEvery(true)} data-testid="request-slots-all">
+              {t('requestWizard.who.showEvery')}
+            </Button>
+          )}
         </p>
       ) : null}
       {window !== null && advised.length === 0 && free.length > 0 ? <p className="text-sm text-foreground/70">{t('requestWizard.who.advised.none')}</p> : null}
@@ -314,10 +314,10 @@ function CustomTime() {
 }
 
 /** When the work is: a slot of the service, or the time the host gives. */
-function TimeChoices() {
+function TimeChoices({ window }: { window: TurnoverWindow | null }) {
   const { control } = useFormContext<RequestValues>();
   const [serviceId, serviceMinutes] = useWatch({ control, name: ['serviceId', 'serviceMinutes'] });
-  return timedByHost({ serviceId, serviceMinutes }) ? <CustomTime /> : <SlotChoices />;
+  return timedByHost({ serviceId, serviceMinutes }) ? <CustomTime /> : <SlotChoices window={window} />;
 }
 
 /**
@@ -333,8 +333,14 @@ export function DetailsStep({ goTo, linkedStay }: { goTo: (stepId: string) => vo
     name: ['propertyId', 'category', 'supplierOrgId', 'supplierName', 'serviceId', 'day', 'notes'],
   });
   const suppliers = useSuppliersByProperty(propertyId, category);
-  const { stays, all } = useUpcomingStays(propertyId, linkedStay);
-  const window = category === 'cleaning' ? turnoverWindow(day, all ?? []) : null;
+  const { stays } = useUpcomingStays(propertyId, linkedStay);
+  const properties = useProperties({ mode: 'short' });
+  const property = properties.data?.find(candidate => candidate.id === propertyId);
+  const checkInFrom = property?.checkInFrom?.slice(0, 5);
+  const checkOutBy = property?.checkOutBy?.slice(0, 5);
+  const window = useMemo(() => category === 'cleaning'
+    ? turnoverWindow(day, stays, { checkOutBy, checkInFrom })
+    : null, [category, day, stays, checkOutBy, checkInFrom]);
   const stayField = register('bookingId');
   const notAvailable = supplierOrgId !== '' && suppliers.isSuccess && !suppliers.data.items.some((supplier) => supplier.orgId === supplierOrgId);
 
@@ -362,7 +368,7 @@ export function DetailsStep({ goTo, linkedStay }: { goTo: (stepId: string) => vo
       ) : null}
 
       <PlainSection title={t('requestWizard.details.service')}>
-        <ServiceChoices />
+        <ServiceChoices window={window} />
       </PlainSection>
 
       {supplierOrgId !== '' && serviceId !== '' ? (
@@ -376,11 +382,10 @@ export function DetailsStep({ goTo, linkedStay }: { goTo: (stepId: string) => vo
                 <CalendarClock aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-foreground/70" />
                 <span className="min-w-0 break-words">
                   {window.to ? t('requestWizard.when.window.both', { from: window.from, to: window.to }) : t('requestWizard.when.window.open', { from: window.from })}{' '}
-                  <span className="text-foreground/70">{t('requestWizard.when.window.defaults', { checkOut: DEFAULT_CHECK_OUT_BY, checkIn: DEFAULT_CHECK_IN_FROM })}</span>
                 </span>
               </p>
             ) : null}
-            <TimeChoices />
+            <TimeChoices window={window} />
           </div>
         </PlainSection>
       ) : null}

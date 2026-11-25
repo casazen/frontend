@@ -80,10 +80,13 @@ export function GuestPortalLinkPanel({ bookingId, checkIn }: {
           {url && !needsPreparation && !confirmation && (
             <>
               {!checkIn && (
-                <>
+                <details className="rounded-lg px-2">
+                  <summary className="cursor-pointer py-3 text-sm font-medium">{t('nav.settings')}</summary>
+                  <div className="flex flex-wrap gap-2 pb-2">
                   <Button variant="outline" disabled={change.isPending} onClick={() => setConfirmation('rotate')}>{t('guestPortal.host.rotate')}</Button>
                   <Button variant="outline" disabled={change.isPending} onClick={() => setConfirmation('revoke')}>{t('guestPortal.host.revoke')}</Button>
-                </>
+                  </div>
+                </details>
               )}
               <Button variant="outline" disabled={change.isPending} onClick={() => change.mutate('resend')}>{t('guestPortal.host.resend')}</Button>
             </>

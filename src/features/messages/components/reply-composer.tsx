@@ -81,10 +81,10 @@ export function ReplyComposer({ threadKey, withChannelTemplates, value, onChange
         event.preventDefault();
         submit();
       }}
-      className="space-y-3 rounded-xl border bg-background p-3 focus-within:ring-1 focus-within:ring-ring sm:p-4"
+      className="space-y-2 rounded-2xl border bg-card p-3 shadow-sm focus-within:ring-2 focus-within:ring-ring sm:p-4"
       data-testid="reply-composer"
     >
-      <label htmlFor={fieldId} className="sr-only">
+      <label htmlFor={fieldId} className="block text-sm font-semibold text-foreground">
         {t('messages.composer.label')}
       </label>
       <Textarea
@@ -96,7 +96,7 @@ export function ReplyComposer({ threadKey, withChannelTemplates, value, onChange
         rows={3}
         placeholder={t('messages.composer.placeholder')}
         aria-describedby={hintId}
-        className="min-h-20 resize-y"
+        className="min-h-20 resize-y border-transparent bg-transparent px-1 shadow-none"
       />
       <div id={hintId} className="space-y-1 text-xs text-muted-foreground">
         {blocked ? (
@@ -110,7 +110,7 @@ export function ReplyComposer({ threadKey, withChannelTemplates, value, onChange
         {notice ? <p role="status">{notice}</p> : null}
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2 border-t pt-3">
         <TemplatePicker threadKey={threadKey} withChannelTemplates={withChannelTemplates} onInsert={insert} />
         <Select
           size="sm"

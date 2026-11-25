@@ -31,7 +31,7 @@ const childLinks = (page: Page) => page.getByTestId('nav-child-links');
 const sectionMenu = (page: Page) => page.getByTestId('nav-section-select');
 
 const PAGES: HeaderPage[] = [
-  { name: 'dashboard (period select)', path: '/app/short-rent', profile: 'dual', heading: /^Buongiorno/, controls: (page) => page.getByTestId('dashboard-period') },
+  { name: 'dashboard analytics (period select)', path: '/app/short-rent?view=analytics', profile: 'dual', heading: /^Buongiorno/, controls: (page) => page.getByTestId('dashboard-period') },
   // The page answers «Sono in regola?» (NF-52): the entry of the menu is still «Adempimenti».
   { name: 'compliance (menu of its section)', path: '/app/short-rent/compliance', profile: 'dual', heading: 'Sono in regola?', controls: sectionMenu },
   { name: 'booking site (menu of its section)', path: '/app/short-rent/vetrina', profile: 'dual', heading: 'Direct Booking', controls: sectionMenu },

@@ -9,7 +9,7 @@ export function GuestAvatar({ name, className }: { name?: string | null; classNa
     .toLocaleUpperCase();
 
   return (
-    <span aria-hidden="true" className={cn('grid size-10 shrink-0 place-items-center rounded-full bg-accent text-xs font-semibold text-accent-foreground', className)}>
+    <span aria-hidden="true" className={cn('grid size-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-sm font-semibold tracking-tight text-primary-text', className)}>
       {initials || <UserRound className="size-4" />}
     </span>
   );
