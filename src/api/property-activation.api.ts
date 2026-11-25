@@ -55,6 +55,8 @@ export const propertyActivationApi = {
 };
 
 export type PreparationSelection = { orgId: string; propertyId: string };
+export type PreparationCandidate = PreparationSelection & { organizationName: string; propertyName: string; missingFields: string[] };
+export type PreparationCandidates = { items: PreparationCandidate[]; hasMore: boolean };
 export type PreparationRow = PreparationSelection & {
   id: string;
   batchId: string;
@@ -70,6 +72,7 @@ export type PreparationBatch = { id: string; rows: PreparationRow[] };
 const preparationPath = '/admin/octorate-preparation';
 export const propertyPreparationApi = {
   recent: () => ApiClient.get<PreparationRow[]>(preparationPath),
+  candidates: (search: string) => ApiClient.get<PreparationCandidates>(`${preparationPath}/candidates?search=${encodeURIComponent(search)}`),
   start: (properties: PreparationSelection[]) => ApiClient.post<PreparationBatch>(preparationPath, { properties }),
   resume: (batchId: string) => ApiClient.post<void>(`${preparationPath}/${batchId}/resume`, {}),
   supplierReference: (batchId: string, reference: string) => ApiClient.put<void>(`${preparationPath}/${batchId}/supplier-reference`, { reference }),
