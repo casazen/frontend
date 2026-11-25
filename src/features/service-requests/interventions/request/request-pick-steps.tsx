@@ -341,6 +341,7 @@ export function ProposalsStep({ onChannel, goTo }: { onChannel: ChangeChannel; g
             title={
               <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 {supplier.legalName}
+                {supplier.hostOrigin !== undefined && <Badge variant="outline">{t(supplier.hostOrigin ? 'supplier.trusted.privateSupplier' : 'supplier.trusted.marketplace')}</Badge>}
                 {supplier.recommended ? <RecommendedBadge /> : null}
                 {supplier.verified ? <VerifiedBadge /> : null}
               </span>

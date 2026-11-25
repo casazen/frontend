@@ -409,7 +409,7 @@ test.describe('Marketplace suppliers (#340)', () => {
     await expect(page.getByTestId('request-assist-result')).toBeVisible();
     expect(assisted).toEqual([{ propertyId: PROPERTY_ID, text: words }]);
     await expect(page.getByTestId('request-assist-category')).toHaveText('Pulizie');
-    await expect(page.getByTestId('request-assist-who')).toContainText('Un fornitore CasaZen');
+    await expect(page.getByTestId('request-assist-who')).toContainText('Un fornitore disponibile');
     await expect(page.getByTestId('ai-content-notice')).toBeVisible();
     // The host has decided nothing yet.
     await expect(page.getByTestId('request-wizard')).toHaveAttribute('data-step', 'channel');

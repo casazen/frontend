@@ -327,13 +327,13 @@ describe('who cleans, for many properties (E24/F01/US02/T01)', () => {
       workspace.permissions = ['short-rent:property.write'];
     });
 
-    it('BulkCleaningDialog_SupplierForPropertiesOfOneComune_AsksOnceAndSaysHowManyItCovers', async () => {
+    it('BulkCleaningDialog_SupplierForPropertiesOfOneComune_RespectsPrivateSupplierPropertyAssignments', async () => {
       vi.mocked(fetchSuppliersByProperty).mockImplementation(
-        async () =>
+        async (propertyId) =>
           ({
             items: [
               { orgId: 's-1', legalName: 'Pulizie Lago' },
-              { orgId: 's-2', legalName: 'Impresa Monti' },
+              ...(propertyId === 'p4' ? [{ orgId: 's-2', legalName: 'Impresa Monti', hostOrigin: true }] : []),
             ],
             totalCount: 2,
             page: 1,
@@ -342,14 +342,14 @@ describe('who cleans, for many properties (E24/F01/US02/T01)', () => {
       );
       renderDialog();
 
-      // Two properties in euro, in the same comune: the suppliers are asked for once, and each says how many of the two it covers.
+      // Two properties in euro, in the same comune: the private supplier is assigned to only the second property.
       await choose('p3');
       await choose('p4');
 
       expect(screen.getByTestId('bulk-cleaning-kind-supplier')).toBeChecked();
       await screen.findByRole('option', { name: 'Pulizie Lago (copre 2 immobili)' });
-      expect(screen.getByRole('option', { name: 'Impresa Monti (copre 2 immobili)' })).toBeInTheDocument();
-      expect(fetchSuppliersByProperty).toHaveBeenCalledTimes(1);
+      expect(screen.getByRole('option', { name: 'Impresa Monti (copre 1 immobile) · Fornitore di fiducia' })).toBeInTheDocument();
+      expect(fetchSuppliersByProperty).toHaveBeenCalledTimes(2);
       expect(fetchSuppliersByProperty).toHaveBeenCalledWith('p3', 'cleaning');
     });
 
@@ -368,7 +368,7 @@ describe('who cleans, for many properties (E24/F01/US02/T01)', () => {
       expect(screen.queryByRole('option', { name: /Pulizie Lago/ })).not.toBeInTheDocument();
     });
 
-    it('BulkCleaningDialog_ThreePropertiesInTwoComuni_AsksOncePerComuneAndASupplierOfOneComuneCoversOneOfThree', async () => {
+    it('BulkCleaningDialog_ThreePropertiesInTwoComuni_ReadsEveryPropertyAndASupplierOfOneComuneCoversOneOfThree', async () => {
       // Roma (two of the properties) is served by one supplier, Milano (the third) by another: neither covers all three.
       vi.mocked(fetchSuppliersByProperty).mockImplementation(
         async (propertyId) =>
@@ -387,8 +387,8 @@ describe('who cleans, for many properties (E24/F01/US02/T01)', () => {
 
       await screen.findByRole('option', { name: 'Pulizie Milano (copre 1 immobile)' });
       expect(screen.getByRole('option', { name: 'Impresa Roma (copre 2 immobili)' })).toBeInTheDocument();
-      // One read for each comune (the first property of it), never one for each property.
-      await waitFor(() => expect(fetchSuppliersByProperty).toHaveBeenCalledTimes(2));
+      // Assignments may differ even when two properties share a comune.
+      await waitFor(() => expect(fetchSuppliersByProperty).toHaveBeenCalledTimes(3));
       expect(fetchSuppliersByProperty).toHaveBeenCalledWith('p3', 'cleaning');
       expect(fetchSuppliersByProperty).toHaveBeenCalledWith('p5', 'cleaning');
     });
