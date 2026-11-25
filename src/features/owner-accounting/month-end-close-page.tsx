@@ -207,7 +207,7 @@ function OwnerGroupSection({ group, period, monthOver, owners, nameOf }: OwnerGr
         {t(`ownerAccounting.groups.${group}.title`)} <span className="text-sm font-semibold tabular-nums text-foreground/70">{owners.length}</span>
       </h3>
       <p className="break-words text-sm text-foreground/70">{t(`ownerAccounting.groups.${group}.hint`)}</p>
-      <ul role="list" className="divide-y divide-border">
+      <ul role="list" className="grid gap-2 pt-2">
         {sorted.map((owner) => (
           <OwnerCloseRow key={owner.ownerId} period={period} owner={owner} name={nameOf(owner.ownerId)} monthOver={monthOver} />
         ))}

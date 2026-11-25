@@ -97,7 +97,7 @@ function SearchBox({ label, placeholder, value, onCommit }: SearchBoxProps) {
         value={draft}
         placeholder={placeholder}
         autoComplete="off"
-        className="pl-9"
+        className="min-h-11 rounded-full bg-surface-2 pl-9"
         onChange={(event) => setDraft(event.target.value)}
       />
     </form>
@@ -190,7 +190,7 @@ export function ListToolbar<Row>({
   ];
 
   return (
-    <div className="flex flex-col gap-3 border-b p-3 sm:p-4" data-testid="list-toolbar">
+    <div className="flex flex-col gap-3 border-b bg-card px-3 py-4 sm:px-5" data-testid="list-toolbar">
       <div className="flex flex-wrap items-center gap-2">
         {list.search ? (
           <SearchBox label={list.search.label} placeholder={list.search.placeholder} value={state.q} onCommit={(q) => listState.setQ(q, { typing: true })} />
@@ -215,9 +215,9 @@ export function ListToolbar<Row>({
           {presets.length > 0 || savedViews.enabled ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button ref={viewsButton} type="button" variant="outline" size="sm" data-testid="list-views-button" className="pointer-coarse:min-w-11">
+                <Button ref={viewsButton} type="button" variant="outline" size="sm" aria-label={t('listView.views.button')} data-testid="list-views-button" className="pointer-coarse:min-w-11">
                   <Bookmark className="size-4" aria-hidden="true" />
-                  <span className="max-md:sr-only">{t('listView.views.button')}</span>
+                  <span className="max-w-48 truncate max-md:sr-only">{presetNow?.label ?? savedNow?.name ?? t('listView.views.button')}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-56">

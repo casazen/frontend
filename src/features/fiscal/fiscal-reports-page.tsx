@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
+import { Select } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -53,9 +54,9 @@ const EXPORT_TEST_IDS: Record<FiscalReportKind, string> = {
 
 const SHORT_DATE: Intl.DateTimeFormatOptions = { dateStyle: 'short' };
 
-const th = 'pb-2 pr-3 font-medium';
+const th = 'bg-surface-2 px-3 py-2 text-xs font-semibold text-foreground/80';
 const thNum = `${th} text-right`;
-const td = 'py-1.5 pr-3 align-top';
+const td = 'px-3 py-3 align-top';
 const tdNum = `${td} text-right tabular-nums`;
 
 export function FiscalReportsPage() {
@@ -86,15 +87,14 @@ export function FiscalReportsPage() {
         <p data-testid="fiscal-pack-label" className="text-sm font-medium">
           {t('fiscal.reports.packLabel')}
         </p>
-        <div className="flex flex-wrap items-end gap-4">
+        <div className="flex flex-wrap items-end gap-4 rounded-xl border bg-surface-2 p-4">
           <div className="space-y-1">
             <label htmlFor="fiscal-report-year" className="text-sm font-medium">
               {t('fiscal.reports.year')}
             </label>
-            <select
+            <Select
               id="fiscal-report-year"
               data-testid="fiscal-report-year"
-              className="block rounded-md border bg-background px-3 py-2 text-sm"
               value={year}
               onChange={(e) => setYear(Number(e.target.value))}
             >
@@ -103,16 +103,15 @@ export function FiscalReportsPage() {
                   {y}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
           <div className="space-y-1">
             <label htmlFor="fiscal-report-period" className="text-sm font-medium">
               {t('fiscal.reports.period')}
             </label>
-            <select
+            <Select
               id="fiscal-report-period"
               data-testid="fiscal-report-period"
-              className="block rounded-md border bg-background px-3 py-2 text-sm"
               value={preset}
               onChange={(e) => setPreset(e.target.value as FiscalPeriodPreset)}
             >
@@ -121,7 +120,7 @@ export function FiscalReportsPage() {
                   {t(`fiscal.reports.periods.${p}`)}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
         </div>
 
@@ -260,7 +259,7 @@ function AnnualTable({ report }: { report: AnnualIncomeReport }) {
   const { totals, rules } = report;
   return (
     <div className="space-y-4">
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto rounded-xl border">
         <table className="w-full text-sm" data-testid="fiscal-annual-table">
           <thead>
             <tr className="border-b text-left text-muted-foreground">
@@ -302,7 +301,7 @@ function AnnualTable({ report }: { report: AnnualIncomeReport }) {
             ))}
           </tbody>
           <tfoot>
-            <tr className="font-medium" data-testid="fiscal-annual-total">
+            <tr className="bg-primary-soft font-semibold" data-testid="fiscal-annual-total">
               <td className={td}>{t('fiscal.reports.total')}</td>
               <td className={td} />
               <td className={tdNum}>{money(totals.grossIncome)}</td>
@@ -316,7 +315,7 @@ function AnnualTable({ report }: { report: AnnualIncomeReport }) {
         </table>
       </div>
       {report.taxpayers.length > 1 && (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto rounded-xl border">
           <table className="w-full text-sm" data-testid="fiscal-annual-taxpayers">
             <thead>
               <tr className="border-b text-left text-muted-foreground">
@@ -369,7 +368,7 @@ function WithholdingTables({ report }: { report: WithholdingReport }) {
   const money = (v: number) => formatMoney(v, i18n.language, FISCAL_REPORT_CURRENCY);
   return (
     <div className="space-y-4">
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto rounded-xl border">
         <table className="w-full text-sm" data-testid="fiscal-withholding-by-ota">
           <thead>
             <tr className="border-b text-left text-muted-foreground">
@@ -402,7 +401,7 @@ function WithholdingTables({ report }: { report: WithholdingReport }) {
           </tfoot>
         </table>
       </div>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto rounded-xl border">
         <table className="w-full text-sm" data-testid="fiscal-withholding-lines">
           <thead>
             <tr className="border-b text-left text-muted-foreground">
@@ -445,7 +444,7 @@ function TouristTaxTable({ report }: { report: TouristTaxReport }) {
   const money = (v: number) => formatMoney(v, i18n.language, FISCAL_REPORT_CURRENCY);
   return (
     <div className="space-y-4">
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto rounded-xl border">
         <table className="w-full text-sm" data-testid="fiscal-tourist-tax-table">
           <thead>
             <tr className="border-b text-left text-muted-foreground">
