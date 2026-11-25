@@ -1,6 +1,6 @@
 import { useState, type CSSProperties, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { BookOpen, CalendarDays, ChevronRight, ClipboardCheck, FileText, Leaf, MessageCircle, Star } from 'lucide-react';
+import { BookOpen, CalendarDays, ChevronRight, ClipboardCheck, CreditCard, FileText, Leaf, MessageCircle, Star } from 'lucide-react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { ApiClient } from '@/api/client';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
@@ -14,6 +14,7 @@ import { normalizeHexColor } from '@/lib/public-site-themes';
 import { LegacySupplierShowcaseRedirect } from '@/pages/supplier-showcase';
 import { GuestPortalChat } from './guest-portal-chat';
 import { GuestPortalDocuments } from './guest-portal-documents';
+import { GuestPortalPayments } from './guest-portal-payments';
 import { GuestPortalReview } from './guest-portal-review';
 import { HouseGuideSections } from './house-guide';
 import type { HouseGuide } from './house-guide-fields';
@@ -59,6 +60,18 @@ const copy = {
   send: ['Invia', 'Send', 'Senden', 'Envoyer', 'Enviar'],
   emptyChat: ['Ancora nessun messaggio.', 'No messages yet.', 'Noch keine Nachrichten.', 'Aucun message pour le moment.', 'Todavía no hay mensajes.'],
   closedChat: ['La chat è chiusa.', 'The chat is closed.', 'Der Chat ist geschlossen.', 'La discussion est fermée.', 'El chat está cerrado.'],
+  payments: ['Pagamenti', 'Payments', 'Zahlungen', 'Paiements', 'Pagos'],
+  balance: ['Saldo prenotazione', 'Booking balance', 'Offener Buchungsbetrag', 'Solde de la réservation', 'Saldo de la reserva'],
+  paymentTotal: ['Totale soggiorno', 'Stay total', 'Gesamtbetrag', 'Total du séjour', 'Total de la estancia'],
+  paymentPaid: ['Già versato', 'Already paid', 'Bereits bezahlt', 'Déjà versé', 'Ya pagado'],
+  touristTax: ['Tassa di soggiorno', 'Tourist tax', 'Kurtaxe', 'Taxe de séjour', 'Tasa turística'],
+  payNow: ['Paga ora', 'Pay now', 'Jetzt bezahlen', 'Payer maintenant', 'Pagar ahora'],
+  paymentSettled: ['Nessun importo da pagare.', 'Nothing left to pay.', 'Kein offener Betrag.', 'Aucun montant à payer.', 'No queda nada por pagar.'],
+  paymentDeferred: ['Addebito previsto alla scadenza.', 'Payment is scheduled for the deadline.', 'Abbuchung zum Fälligkeitstermin.', 'Débit prévu à la date limite.', 'Cargo programado para la fecha límite.'],
+  paymentProcessing: ['Pagamento in corso di verifica.', 'Payment is being verified.', 'Die Zahlung wird geprüft.', 'Paiement en cours de vérification.', 'El pago se está verificando.'],
+  servicePayments: ['Pagamenti dei servizi', 'Service payments', 'Zahlungen für Leistungen', 'Paiements des services', 'Pagos de servicios'],
+  refreshPayment: ['Aggiorna lo stato', 'Refresh status', 'Status aktualisieren', 'Actualiser le statut', 'Actualizar estado'],
+  paymentUnavailable: ['Pagamento online non disponibile.', 'Online payment is unavailable.', 'Online-Zahlung nicht verfügbar.', 'Paiement en ligne indisponible.', 'Pago en línea no disponible.'],
   documents: ['Documenti e ricevute', 'Documents and receipts', 'Dokumente und Belege', 'Documents et reçus', 'Documentos y recibos'],
   emptyDocuments: ['Non ci sono documenti disponibili.', 'No documents are available.', 'Keine Dokumente verfügbar.', 'Aucun document disponible.', 'No hay documentos disponibles.'],
   download: ['Scarica PDF', 'Download PDF', 'PDF herunterladen', 'Télécharger le PDF', 'Descargar PDF'],
@@ -103,6 +116,7 @@ interface StayOverview {
   };
   language: string;
   checkInCompleted: boolean;
+  features?: { supplierServices?: boolean };
 }
 
 interface StayDetails {
@@ -163,6 +177,7 @@ function GuestPortalPage({ token }: { token: string }) {
   const details = section === 'details';
   const chat = section === 'chat' && stay?.status !== 'cancelled';
   const documents = section === 'documents';
+  const payments = section === 'payments';
   const review = section === 'review';
   const privacy = section === 'privacy';
   const cancellation = section === 'cancellation' && stay?.isDirect;
@@ -212,7 +227,7 @@ function GuestPortalPage({ token }: { token: string }) {
         {stay && !failed && (
           <>
             <span className="stay-phase">{t(phase)}</span>
-            <h1>{t(guide ? 'guide' : details ? 'details' : chat ? 'chat' : documents ? 'documents' : review ? 'review' : cancellation ? 'cancellation' : privacy ? 'privacy' : 'title')}</h1>
+            <h1>{t(guide ? 'guide' : details ? 'details' : chat ? 'chat' : documents ? 'documents' : payments ? 'payments' : review ? 'review' : cancellation ? 'cancellation' : privacy ? 'privacy' : 'title')}</h1>
             <p className="stay-meta">{range} · {stay.guests} {guestLabel(language, stay.guests)}</p>
             <div className="stay-card stay-property"><CalendarDays aria-hidden="true" />{stay.propertyName} · {stay.bookingCode}</div>
             {guide ? (
@@ -245,6 +260,15 @@ function GuestPortalPage({ token }: { token: string }) {
                 copy: t('dataCopy'), erasure: t('dataErasure'), confirm: t('requestConfirm'), back: t('back'),
                 requested: t('requestReceived'), closed: t('requestClosed'), failed: t('error'), loading: t('load'),
               }} />
+            ) : payments ? (
+              <GuestPortalPayments path={path} language={language} direct={stay.isDirect && stay.status !== 'cancelled'}
+                tax={taxAvailable ? tax.data : undefined} checkIn={checkIn}
+                documents={href('documents')} services={overview?.features?.supplierServices ? href('supplier-orders') : undefined} labels={{
+                  balance: t('balance'), total: t('paymentTotal'), paid: t('paymentPaid'), tax: t('touristTax'),
+                  payNow: t('payNow'), loading: t('load'), failed: t('error'), settled: t('paymentSettled'),
+                  deferred: t('paymentDeferred'), processing: t('paymentProcessing'), unavailable: t('paymentUnavailable'),
+                  documents: t('documents'), payTax: t('payTax'), services: t('servicePayments'), refresh: t('refreshPayment'),
+                }} />
             ) : review ? (
               <GuestPortalReview path={path} labels={{
                 rating: t('rating'), comment: t('comment'), showName: t('showName'), send: t('send'),
@@ -284,6 +308,7 @@ function GuestPortalPage({ token }: { token: string }) {
                   <Link className="stay-card" to={href('details')}><CalendarDays aria-hidden="true" />{t('details')}<ChevronRight aria-hidden="true" /></Link>
                   <Link className="stay-card" to={href('guide')}><BookOpen aria-hidden="true" />{t('guide')}<ChevronRight aria-hidden="true" /></Link>
                   {stay.status !== 'cancelled' && <Link className="stay-card" to={href('chat')}><MessageCircle aria-hidden="true" />{t('chat')}<ChevronRight aria-hidden="true" /></Link>}
+                  <Link className="stay-card" to={href('payments')}><CreditCard aria-hidden="true" />{t('payments')}<ChevronRight aria-hidden="true" /></Link>
                   <Link className="stay-card" to={href('documents')}><FileText aria-hidden="true" />{t('documents')}<ChevronRight aria-hidden="true" /></Link>
                   {phase === 'after' && stay.status !== 'cancelled' && <Link className="stay-card" to={href('review')}><Star aria-hidden="true" />{t('review')}<ChevronRight aria-hidden="true" /></Link>}
                   {overview?.checkInCompleted && (stay.checkInAvailable ? (
@@ -301,7 +326,7 @@ function GuestPortalPage({ token }: { token: string }) {
       </footer>
       {stay && !failed && (
         <nav className="stay-nav" aria-label={t('stay')}>
-          <Link to={href()} aria-current={!guide && !chat && !documents && !review && !privacy ? 'page' : undefined}><CalendarDays aria-hidden="true" />{t('stay')}</Link>
+          <Link to={href()} aria-current={!guide && !chat && !documents && !payments && !review && !privacy ? 'page' : undefined}><CalendarDays aria-hidden="true" />{t('stay')}</Link>
           <Link to={href('guide')} aria-current={guide ? 'page' : undefined}><BookOpen aria-hidden="true" />{t('guide')}</Link>
         </nav>
       )}
