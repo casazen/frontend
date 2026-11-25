@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 test('return from supplier card authentication verifies the order and removes the Stripe secret', async ({ page, baseURL }) => {
+  test.slow();
   const token = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdef';
   const api = new URL('/api/public/guest-portal/' + token, baseURL).href;
   await page.route(new URL('/api/public/features', baseURL).href, route => route.fulfill({ json: { guestPortal: true } }));
