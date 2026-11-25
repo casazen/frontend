@@ -56,7 +56,7 @@ export function GuidedFormSubmitted({ practice, onStatusChanged }: SubmittedView
     <>
       <Card data-testid="guided-form-submitted">
         <CardHeader>
-          <h1 className="text-2xl font-semibold leading-none tracking-tight">{t('guidedForm.submitted')}</h1>
+          <h1 className="text-3xl font-semibold leading-tight tracking-tight">{t('guidedForm.submitted')}</h1>
         </CardHeader>
         <CardContent className="space-y-3">
           <dl className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2 text-sm">
@@ -131,7 +131,7 @@ export function GuidedFormSubmitted({ practice, onStatusChanged }: SubmittedView
             ) : null}
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 border-t pt-5">
             <h3 className="text-sm font-semibold">{t('guidedForm.documents.title')}</h3>
             <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
               {CF_SIMULATOR_PANEL_DOCUMENTS.map((kind) => (
