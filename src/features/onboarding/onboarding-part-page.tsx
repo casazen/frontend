@@ -86,7 +86,7 @@ export function OnboardingPartPage() {
   } else if (part) {
     content = (
       <>
-        <section className="min-w-0 space-y-2 rounded-lg border p-4" aria-label={t('onboardingPlan.part.statusLabel')} data-testid="onboarding-part-status" data-state={state}>
+        <section className="min-w-0 space-y-3 rounded-2xl border bg-card p-4 shadow-sm sm:p-6" aria-label={t('onboardingPlan.part.statusLabel')} data-testid="onboarding-part-status" data-state={state}>
           <p className="break-words text-sm text-foreground/70">{t(partWhatKey(part.code))}</p>
           <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
             <span className="font-semibold" data-testid="onboarding-part-state">
@@ -94,6 +94,9 @@ export function OnboardingPartPage() {
             </span>
             {part.total > 0 ? <span data-testid="onboarding-part-progress">{t('onboardingPlan.progress', { done: part.done, total: part.total })}</span> : null}
           </p>
+          {part.total > 0 && (
+            <progress aria-label={t('onboardingPlan.part.statusLabel')} value={part.done} max={part.total} className="block h-2 w-full overflow-hidden rounded-full accent-primary" />
+          )}
           {reason ? (
             <p className="break-words text-sm" data-testid="onboarding-part-reason">
               {reason}

@@ -1,3 +1,4 @@
+import { SectionJumps } from './components/section-jumps';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { FOCUS_COLUMN } from '@/components/layout/page-columns';
@@ -34,6 +35,9 @@ export function OnboardingBulkPage() {
         <PageHeader title={t('onboardingPlan.bulk.title')} description={t('onboardingPlan.bulk.description')} />
         {isAdmin ? (
           <>
+            <SectionJumps label={t('onboardingPlan.bulk.title')} sections={['selection', 'import', 'pilot'].map((key) => ({
+              id: `bulk-${key}`, label: t(`onboardingPlan.bulk.${key}.title`),
+            }))} />
             <BulkProgressCard progress={progress} />
             <BulkSelectionPanel />
             <BulkImportPanel />
