@@ -27,6 +27,11 @@ export function GuestSupplierOrders({ path, language }: { path: string; language
   const endpoint = `${path}/supplier-orders`;
   const text = supplierOrderText(language);
   const [submittedOrders, setSubmittedOrders] = useState<Record<string, string>>({});
+  const [now, setNow] = useState(Date.now);
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
   const client = useQueryClient();
   const [params, setParams] = useSearchParams();
   const returnId = params.get('supplierOrderReturn');
@@ -68,7 +73,7 @@ export function GuestSupplierOrders({ path, language }: { path: string; language
       <h2>{text.catalog}</h2>
       {offers.length === 0 && <p>{text.emptyCatalog}</p>}
       {Object.keys(submittedOrders).length > 0 && <p role="status" className="stay-card stay-content">{text.sent} <a href="#guest-service-orders">{text.orders}</a></p>}
-      {offers.map((offer) => <OfferForm key={`${offer.id}:${submittedOrders[offer.id] ?? ''}`} offer={offer} language={language} sandbox={sandbox}
+      {offers.map((offer) => <OfferForm key={`${offer.id}:${submittedOrders[offer.id] ?? ''}`} offer={offer} language={language} sandbox={sandbox} now={now}
         busy={change.isPending} submit={(body) => change.mutate({ suffix: '', body })} />)}
       <h2 id="guest-service-orders" tabIndex={-1}>{text.orders}</h2>
       {query.data.orders.length === 0 && <p>{text.emptyOrders}</p>}
@@ -92,7 +97,7 @@ export function GuestSupplierOrders({ path, language }: { path: string; language
           {!sandbox && !order.stripeSandbox && order.state === 'Quoted' && <button disabled={change.isPending} onClick={() => change.mutate({
             suffix: `/${order.id}/authorize`, body: { totalCents: order.totalCents },
           })}>{text.authorize}</button>}
-          {order.state === 'Completed' && (!order.stripeSandbox || (order.completedAt && Date.now() < Date.parse(order.completedAt) + 24 * 3600000)) && <form onSubmit={(event) => {
+          {order.state === 'Completed' && (!order.stripeSandbox || (order.completedAt && now < Date.parse(order.completedAt) + 24 * 3600000)) && <form onSubmit={(event) => {
             event.preventDefault();
             const text = new FormData(event.currentTarget).get('complaint');
             change.mutate({ suffix: `/${order.id}/dispute`, body: { text } });
@@ -109,8 +114,8 @@ export function GuestSupplierOrders({ path, language }: { path: string; language
   );
 }
 
-function OfferForm({ offer, language, sandbox, busy, submit }: {
-  offer: Offer; language: string; sandbox: boolean; busy: boolean; submit: (body: object) => void;
+function OfferForm({ offer, language, sandbox, now, busy, submit }: {
+  offer: Offer; language: string; sandbox: boolean; now: number; busy: boolean; submit: (body: object) => void;
 }) {
   const [requestId, setRequestId] = useState(() => crypto.randomUUID());
   const [invalidTime, setInvalidTime] = useState(false);
@@ -139,8 +144,8 @@ function OfferForm({ offer, language, sandbox, busy, submit }: {
       }}>
         <p>{offer.category} · {offer.supplierName}</p>
         {offer.summary && <p>{offer.summary}</p>}
-        <label>{text.date} <input className="stay-supplier-input" type="date" name="date" min={sandbox ? romeDateOf(new Date().toISOString()) : undefined}
-          max={sandbox ? romeDateOf(new Date(Date.now() + 48 * 3600000).toISOString()) : undefined} required /></label>
+        <label>{text.date} <input className="stay-supplier-input" type="date" name="date" min={sandbox ? romeDateOf(new Date(now).toISOString()) : undefined}
+          max={sandbox ? romeDateOf(new Date(now + 48 * 3600000).toISOString()) : undefined} required /></label>
         <label>{text.time} <input className="stay-supplier-input" type="time" name="time" required /></label>
         {invalidTime && <p role="alert">{sandbox ? checkoutText(language)('sandboxTime') : text.invalidTime}</p>}
         <label>{text.note} <textarea className="stay-supplier-input" name="note" maxLength={2000} /></label>
