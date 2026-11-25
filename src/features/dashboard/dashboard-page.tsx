@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Building2, ChartColumn, Plus, Wrench } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
@@ -20,6 +20,8 @@ import { useDashboardIcalFeeds, useDashboardOverview, useDashboardToday } from '
 import { useProperties } from '@/queries/use-properties';
 import { useCurrentUser } from '@/queries/use-users';
 import type { DashboardList, DashboardToday } from '@/types/dashboard.types';
+import { planResumeHref } from '@/features/onboarding/plan-resume';
+import { usePlanResume } from '@/features/onboarding/use-plan-resume';
 import { HomeFilterBar } from './components/home-filter-bar';
 import { HomeNumbers } from './components/home-numbers';
 import { OtaStatusCard } from './components/ota-status-card';
@@ -28,6 +30,17 @@ import { TodayCard } from './components/today-card';
 import { TodoSection } from './components/todo-section';
 import { buildTodayRows, buildTodoRows } from './lib/home-model';
 import { HOME_PERIODS, overviewQueryFor, parseHomePeriod } from './lib/home-period';
+
+function ResumeOnboardingLink({ userId, orgId }: { userId?: string; orgId?: string }) {
+  const { t } = useTranslation();
+  const { step } = usePlanResume(userId, orgId);
+  return step ? (
+    <Link className="inline-flex items-center py-2 text-sm font-medium text-primary underline-offset-4 hover:underline"
+      data-testid="home-resume-onboarding" to={planResumeHref(step)}>
+      {t('commercial.resume')}
+    </Link>
+  ) : null;
+}
 
 /** Two columns from a wide screen: the thing that matters on the left (60 %), the one beside it on the right. */
 const TWO_COLUMNS = 'grid gap-8 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] xl:items-start';
@@ -121,6 +134,7 @@ export function DashboardPage() {
             ]}
             mobilePrimary="none"
           />
+          {flags.octorateOnboarding && <ResumeOnboardingLink userId={user?.id} orgId={user?.org?.id} />}
         </div>
 
         {canReadBookings && !noActiveProperty && (propertyList.length > 1 || propertyId) ? (
