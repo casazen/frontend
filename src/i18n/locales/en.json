@@ -4189,6 +4189,9 @@
     },
     "account": {
       "title": "My stays",
+      "attach": "Add this stay to my account",
+      "dismiss": "Cancel",
+      "attachError": "This stay could not be linked. Check the link with the property.",
       "verifyEmail": "Verify your account email address and sign in again.",
       "empty": "No open stays with this email address.",
       "signOut": "Sign out"
@@ -24080,6 +24083,14 @@
     "termsNote": "Also read the operator's <terms>booking terms</terms>."
   },
   "publicCheckout": {
+    "extras": {
+      "changed": "The availability or price of an extra has changed. Review your selection before continuing.",
+      "review": "Update selection",
+      "title": "Optional extras",
+      "quantity": "Quantity",
+      "approval": "Authorize your card in the guest portal. You will only be charged if the host confirms.",
+      "portal": "Pay in the guest portal once your booking is confirmed."
+    },
     "backToHome": "Back to the home",
     "details": {
       "arrivalHint": "Check-in from {{from}} to {{to}}",
@@ -28476,6 +28487,20 @@
     }
   },
   "supplier": {
+    "adjustments": {
+      "recorded": "Decision recorded.",
+      "amount": "Refund in euros (0 to close without a refund)",
+      "confirm": "Resolve dispute",
+      "retry": "Retry refund",
+      "processing": "Refund processing",
+      "failed": "Refund failed",
+      "review": "Refund needs reconciliation with Stripe",
+      "succeeded": "Refund confirmed",
+      "bank_open": "Bank dispute open",
+      "bank_closed": "Bank dispute closed without loss",
+      "bank_lost": "Bank dispute lost",
+      "bank_recovery_pending": "Transfer recovery in progress"
+    },
     "identity": {
       "fields": "Optional identifiers",
       "fieldsHint": "Add the details you know to identify an existing supplier.",
@@ -28773,6 +28798,7 @@
     "available": "Available",
     "eventBlock": "block",
     "eventExtraOpening": "extra opening",
+    "eventGuestOrder": "Guest order",
     "eventFromCalendar": "from calendar",
     "eventRequest": "job",
     "eventTimeOff": "time off",

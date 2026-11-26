@@ -71,4 +71,13 @@ describe('supplier-agenda helpers', () => {
     expect(days[0].available).toBe(true);
     expect(days[0].events[0]).toMatchObject({ label: 'Dentista', timeRange: '10:00–11:00', kind: 'calendar' });
   });
+
+  it('shows the guest appointment on its Rome calendar day without inventing an end time', () => {
+    const days = buildWorkingDays({ dates: ['2026-11-26', '2026-11-27'], workingHours: [], closedDays: [],
+      timeOff: [], blocks: [], requests: [], guestOrders: [{ id: 'guest-1', serviceName: 'Transfer',
+        requestedFor: '2026-11-26T23:30:00Z' }] });
+    expect(days[0].events).toEqual([]);
+    expect(days[1].events).toContainEqual({ id: 'guest-order-guest-1', kind: 'guestOrder', guestOrderId: 'guest-1',
+      label: 'Transfer', timeRange: '00:30' });
+  });
 });

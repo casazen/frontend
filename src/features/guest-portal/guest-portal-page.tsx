@@ -25,6 +25,7 @@ import type { HouseGuide } from './house-guide-fields';
 import { GuestPortalCancellation } from './guest-portal-cancellation';
 import { GuestPortalStayChange } from './guest-portal-stay-change';
 import { useStayManifest } from './use-stay-manifest';
+import { rememberStayForAccount } from './guest-account-attachment';
 import { guestAccountStaysPath } from './guest-account-stays-page';
 import { GuestPortalPrivacy } from './guest-portal-privacy';
 import './guest-portal.css';
@@ -112,6 +113,7 @@ const copy = {
   refund: ['Rimborso previsto', 'Expected refund', 'Voraussichtliche Erstattung', 'Remboursement prévu', 'Reembolso previsto'],
   refundChanged: ['Controlla il rimborso aggiornato prima di confermare.', 'Review the updated refund before confirming.', 'Prüfe die neue Erstattung vor der Bestätigung.', 'Vérifiez le nouveau remboursement avant de confirmer.', 'Revisa el nuevo reembolso antes de confirmar.'],
   accessCode: ['Mostra il codice di accesso', 'Show access code', 'Zugangscode anzeigen', 'Afficher le code d’accès', 'Mostrar código de acceso'],
+  attachAccount: ['Aggiungi al mio account', 'Add to my account', 'Meinem Konto hinzufügen', 'Ajouter à mon compte', 'Añadir a mi cuenta'],
   account: ['I miei soggiorni', 'My stays', 'Meine Aufenthalte', 'Mes séjours', 'Mis estancias'],
   privacy: ['Privacy e dati personali', 'Privacy and personal data', 'Datenschutz und personenbezogene Daten', 'Confidentialité et données personnelles', 'Privacidad y datos personales'],
   dataCopy: ['Richiedi una copia dei dati', 'Request a copy of your data', 'Eine Kopie deiner Daten anfordern', 'Demander une copie de vos données', 'Solicitar una copia de tus datos'],
@@ -175,7 +177,6 @@ export function GuestPortalEntry({ hostOnly = false }: { hostOnly?: boolean }) {
 function GuestPortalPage({ token }: { token: string }) {
   const [params, setParams] = useSearchParams();
   const path = `/public/guest-portal/${token}`;
-  const queryKey = ['guest-portal-details', token];
   const queryClient = useQueryClient();
   const query = useQuery({
     queryKey: ['guest-portal', token],
@@ -183,14 +184,18 @@ function GuestPortalPage({ token }: { token: string }) {
     gcTime: 0,
     retry: false,
   });
+  const overview = query.data;
+  const language = supportedLanguage(params.get('lang')) ?? supportedLanguage(overview?.language)
+    ?? supportedLanguage(navigator.language) ?? 'it';
+  const guideLanguage = params.get('page') === 'guide' ? language : undefined;
+  const queryKey = ['guest-portal-details', token, guideLanguage];
   const stayQuery = useQuery({
     queryKey,
-    queryFn: ({ signal }) => ApiClient.get<StayDetails>(`${path}/stay`, undefined, { public: true, signal }),
+    queryFn: ({ signal }) => ApiClient.get<StayDetails>(`${path}/stay`, guideLanguage ? { guideLanguage } : undefined, { public: true, signal }),
     enabled: query.isSuccess,
     gcTime: 0,
     retry: false,
   });
-  const overview = query.data;
   const stay = overview && stayQuery.data ? { ...overview.stay, ...stayQuery.data } : null;
   const failed = query.isError ? query.error : stayQuery.error;
   const { flags } = useFeatureFlags();
@@ -203,8 +208,6 @@ function GuestPortalPage({ token }: { token: string }) {
   const taxAvailable = guestTaxAvailability({ ...tax, enabled: taxEnabled, hasData: tax.data !== undefined }) === 'ready';
   const shouldPayTax = taxAvailable && tax.data && guestTaxOutlook(tax.data) === 'payable';
   const nextStep = shouldPayTax ? 'payTax' : overview?.checkInCompleted ? 'guide' : 'complete';
-  const language = supportedLanguage(params.get('lang')) ?? supportedLanguage(overview?.language)
-    ?? supportedLanguage(navigator.language) ?? 'it';
   const text = (key: keyof typeof copy) => copy[key][languages.indexOf(language)];
   const section = params.get('page');
   const checkingIn = section === 'checkin';
@@ -383,7 +386,7 @@ function GuestPortalPage({ token }: { token: string }) {
                 <Link className="stay-card" to={href('payments')}><CreditCard aria-hidden="true" />{text('payments')}<ChevronRight aria-hidden="true" /></Link>
                 <Link className="stay-card" to={href('documents')}><FileText aria-hidden="true" />{text('documents')}<ChevronRight aria-hidden="true" /></Link>
                 <Link className="stay-card" to={href('privacy')}>{text('privacy')}<ChevronRight aria-hidden="true" /></Link>
-                <Link className="stay-card" to={guestAccountStaysPath}>{text('account')}<ChevronRight aria-hidden="true" /></Link>
+                <Link className="stay-card" to={guestAccountStaysPath} onClick={() => { if (stay.isOta) rememberStayForAccount(token); }}>{text(stay.isOta ? 'attachAccount' : 'account')}<ChevronRight aria-hidden="true" /></Link>
                 {stay.isOta && <p className="stay-card">{text('otaChanges')} {channel && <a href={channel.url} rel="noreferrer">{channel.name}</a>}</p>}
               </>
             ) : (

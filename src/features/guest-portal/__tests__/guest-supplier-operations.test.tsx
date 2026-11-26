@@ -39,3 +39,32 @@ it('keeps private offers visible and shows the fixed CasaZen commission before a
     client.clear();
   }
 });
+
+it('lets staff request a partial refund on a marketplace order and keeps the pending decision read-only', async () => {
+  await i18n.changeLanguage('it');
+  const order = {
+    id: 'ord-1', serviceName: 'Transfer', supplierName: 'Lago', stripeSandbox: true, requestedFor: '2026-11-25',
+    state: 'Disputed', totalCents: 1100, refundCents: 0, hostOrigin: false, refundStatus: null as string | null,
+  };
+  const get = vi.spyOn(ApiClient, 'get').mockImplementation(async () => [{ ...order }]);
+  const post = vi.spyOn(ApiClient, 'post').mockImplementation(async () => {
+    order.refundStatus = 'processing';
+    return {};
+  });
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+  try {
+    render(<QueryClientProvider client={client}><GuestSupplierOperations scope={{ role: 'admin' }} /></QueryClientProvider>);
+    fireEvent.change(await screen.findByRole('spinbutton'), { target: { value: '5.50' } });
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Servizio parziale' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Risolvi controversia' }));
+    await waitFor(() => expect(post).toHaveBeenCalledWith('/admin/guest-supplier-orders/ord-1/resolve', {
+      refundCents: 550, text: 'Servizio parziale',
+    }));
+    expect(await screen.findByText(/Rimborso in elaborazione/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Risolvi controversia' })).not.toBeInTheDocument();
+  } finally {
+    get.mockRestore();
+    post.mockRestore();
+    client.clear();
+  }
+});

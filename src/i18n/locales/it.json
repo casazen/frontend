@@ -4189,6 +4189,9 @@
     },
     "account": {
       "title": "I miei soggiorni",
+      "attach": "Aggiungi questo soggiorno al mio account",
+      "dismiss": "Annulla",
+      "attachError": "Impossibile associare il soggiorno. Verifica il link con la struttura.",
       "verifyEmail": "Verifica l’indirizzo email del tuo account e accedi di nuovo.",
       "empty": "Nessun soggiorno aperto con questo indirizzo email.",
       "signOut": "Esci"
@@ -24080,6 +24083,14 @@
     "termsNote": "Leggi anche i <terms>termini di prenotazione</terms> dell'operatore."
   },
   "publicCheckout": {
+    "extras": {
+      "changed": "La disponibilità o il prezzo degli extra è cambiato. Controlla la selezione prima di continuare.",
+      "review": "Aggiorna la selezione",
+      "title": "Extra facoltativi",
+      "quantity": "Quantità",
+      "approval": "Autorizza la carta nel portale ospite. Pagherai solo se l’host conferma.",
+      "portal": "Da pagare nel portale ospite dopo la conferma della prenotazione."
+    },
     "backToHome": "Torna alla casa",
     "details": {
       "arrivalHint": "Check-in dalle {{from}} alle {{to}}",
@@ -28476,6 +28487,20 @@
     }
   },
   "supplier": {
+    "adjustments": {
+      "recorded": "Decisione registrata.",
+      "amount": "Rimborso in euro (0 per chiudere senza rimborso)",
+      "confirm": "Risolvi controversia",
+      "retry": "Riprova il rimborso",
+      "processing": "Rimborso in elaborazione",
+      "failed": "Rimborso non riuscito",
+      "review": "Rimborso da verificare con Stripe",
+      "succeeded": "Rimborso confermato",
+      "bank_open": "Contestazione bancaria in corso",
+      "bank_closed": "Contestazione bancaria chiusa senza perdita",
+      "bank_lost": "Contestazione bancaria persa",
+      "bank_recovery_pending": "Recupero dei trasferimenti in corso"
+    },
     "identity": {
       "fields": "Identificativi facoltativi",
       "fieldsHint": "Aggiungi i dati che conosci per riconoscere un fornitore già registrato.",
@@ -28773,6 +28798,7 @@
     "available": "Disponibile",
     "eventBlock": "blocco",
     "eventExtraOpening": "apertura extra",
+    "eventGuestOrder": "Ordine ospite",
     "eventFromCalendar": "dal calendario",
     "eventRequest": "incarico",
     "eventTimeOff": "ferie",

@@ -11,6 +11,9 @@ export interface GuestSupplierOrder {
   commissionCents: number;
   totalCents: number;
   refundCents: number;
+  refundStatus?: 'processing' | 'failed' | 'review' | 'succeeded' | 'not_requested' | null;
+  refundRequestedCents?: number;
+  bankDisputeStatus?: 'open' | 'lost' | 'closed' | 'recovery_pending' | null;
   hostOrigin: boolean;
   stripeSandbox?: boolean;
   stripeDeferred?: boolean;

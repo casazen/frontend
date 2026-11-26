@@ -1,3 +1,4 @@
+import { GuestSupplierCasePanel } from './guest-supplier-case-panel';
 import { useEffect, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
@@ -91,8 +92,13 @@ export function GuestSupplierOrders({ path, language, checkIn, checkOut }: {
             <div><dt>{text.price}</dt><dd>{orderMoney(order.supplierPriceCents, language)}</dd></div>
             <div><dt>{text.fee}</dt><dd>{orderMoney(order.commissionCents, language)}</dd></div>
             <div><dt>{text.total}</dt><dd>{orderMoney(order.totalCents, language)}</dd></div>
+            {(order.refundStatus === 'processing' || order.refundStatus === 'failed' || order.refundStatus === 'review') &&
+              <div><dt>{checkoutText(language)(order.refundStatus === 'processing' ? 'refundProcessing' :
+                order.refundStatus === 'failed' ? 'refundFailed' : 'refundReview')}</dt>
+                <dd>{orderMoney(order.refundRequestedCents ?? 0, language)}</dd></div>}
             {order.refundCents > 0 && <div><dt>{text.refund}</dt><dd>{orderMoney(order.refundCents, language)}</dd></div>}
           </dl>}
+          <GuestSupplierCasePanel endpoint={endpoint} role="guest" language={language} order={order} />
           {order.stripeSandbox && (['Quoted', 'PaymentActionRequired', 'PaymentFailed', 'PaymentProcessing'].includes(order.state) || returnId === order.id) && (
             <GuestSupplierCheckout key={order.totalCents} endpoint={endpoint} order={order} language={language} returned={returnId === order.id} refresh={() => { void query.refetch(); }}
               update={verified => client.setQueryData<Catalog>(['guest-supplier-orders', endpoint], previous =>
