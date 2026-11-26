@@ -149,8 +149,9 @@ describe('SupplierDashboardPage (SP-08a)', () => {
     expect(block.queryByTestId('take-r-job')).not.toBeInTheDocument();
     expect(api.fetchSupplierToday).toHaveBeenCalledWith(7);
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Buongiorno, Marco');
-    expect(screen.getByTestId('home-purpose')).toHaveTextContent('1 lavoro oggi, 1 richiesta da rispondere');
-    expect(screen.getByTestId('supplier-home-urgent')).toHaveAttribute('href', '/app/supplier/inbox/r-new');
+    expect(screen.getByTestId('home-purpose')).toHaveTextContent('1 lavoro oggi');
+    expect(screen.queryByTestId('supplier-home-urgent')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('supplier-todo-clear')).not.toBeInTheDocument();
 
     fireEvent.click(block.getByTestId('take-r-new'));
 
@@ -190,6 +191,7 @@ describe('SupplierDashboardPage (SP-08a)', () => {
 
   it('SupplierDashboardPage_NothingToDoAndNotBegun_InvitesToSetTheAvailability', async () => {
     api.fetchSupplierToday.mockResolvedValue(NOTHING);
+    api.fetchSupplierInboxCounts.mockResolvedValue({ ...COUNTS, toAnswer: 0 });
     api.fetchSupplierChecklist.mockResolvedValue({ ...CHECKLIST, profileComplete: false, activeServices: 0, hoursConfigured: false, showcasePublished: false, firstRequestAnswered: false });
     renderPage();
 
@@ -202,11 +204,53 @@ describe('SupplierDashboardPage (SP-08a)', () => {
 
   it('SupplierDashboardPage_NothingToDoAndBegun_SaysTheDayIsFreeAndHidesTheFinishedChecklist', async () => {
     api.fetchSupplierToday.mockResolvedValue(NOTHING);
+    api.fetchSupplierInboxCounts.mockResolvedValue({ ...COUNTS, toAnswer: 0 });
     renderPage();
 
-    expect(await within(await screen.findByTestId('supplier-today')).findByText('Giornata libera')).toBeInTheDocument();
-    await screen.findByTestId('supplier-todo-clear');
+    expect(await within(await screen.findByTestId('supplier-today')).findByText('Nessun lavoro in agenda nei prossimi giorni')).toBeInTheDocument();
+    expect(screen.queryByTestId('supplier-todo')).not.toBeInTheDocument();
     expect(screen.queryByTestId('supplier-next-step')).not.toBeInTheDocument();
+  });
+
+  it('keeps unanswered inbox requests reachable when the daily preview has no rows', async () => {
+    api.fetchSupplierToday.mockResolvedValue(NOTHING);
+    renderPage();
+
+    const inbox = await screen.findByRole('link', { name: '1 richiesta da rispondere' });
+    expect(inbox).toHaveAttribute('href', '/app/supplier/inbox?chip=da-rispondere');
+    expect(screen.queryByTestId('supplier-today-free')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('supplier-todo-clear')).not.toBeInTheDocument();
+  });
+
+  it('waits for the inbox before showing an empty agenda', async () => {
+    api.fetchSupplierToday.mockResolvedValue(NOTHING);
+    let resolveCounts!: (value: SupplierInboxCounts) => void;
+    api.fetchSupplierInboxCounts.mockReturnValue(new Promise<SupplierInboxCounts>(resolve => { resolveCounts = resolve; }));
+    renderPage();
+
+    await screen.findByTestId('supplier-kpi-acceptance');
+    expect(screen.queryByTestId('supplier-today-free')).not.toBeInTheDocument();
+    resolveCounts(COUNTS);
+    expect(await screen.findByRole('link', { name: '1 richiesta da rispondere' })).toBeVisible();
+  });
+
+  it('keeps the inbox reachable without an all-clear when counts fail and the agenda has no rows', async () => {
+    api.fetchSupplierToday.mockResolvedValue(NOTHING);
+    api.fetchSupplierInboxCounts.mockRejectedValue(new Error('unavailable'));
+    renderPage();
+
+    await screen.findByTestId('supplier-todo-error');
+    expect(screen.queryByTestId('supplier-today-free')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Tutte le richieste' })).toHaveAttribute('href', '/app/supplier/inbox');
+  });
+
+  it('keeps the request actionable when the other task counts cannot load', async () => {
+    api.fetchSupplierInboxCounts.mockRejectedValue(new Error('unavailable'));
+    renderPage();
+
+    await screen.findByTestId('supplier-todo-error');
+    expect(screen.getByTestId('take-r-new')).toBeInTheDocument();
+    expect(screen.queryByTestId('supplier-todo-clear')).not.toBeInTheDocument();
   });
 
   it('SupplierDashboardPage_PendingFreeEventsAndLatePayments_AreInTheListOfWhatWaits', async () => {

@@ -28852,8 +28852,7 @@
         "title": "Dì ai clienti quando lavori"
       },
       "free": {
-        "body": "Nessun lavoro né richieste nei prossimi giorni. Tieni aggiornati orari e servizi per riceverne di più.",
-        "title": "Giornata libera"
+        "title": "Nessun lavoro in agenda nei prossimi giorni"
       },
       "greeting": "Buongiorno, {{name}}",
       "greetingAnonymous": "Buongiorno",

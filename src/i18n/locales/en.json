@@ -28852,8 +28852,7 @@
         "title": "Tell customers when you work"
       },
       "free": {
-        "body": "No jobs or requests in the next few days. Keep your hours and services up to date to get more.",
-        "title": "A free day"
+        "title": "No jobs scheduled for the next few days"
       },
       "greeting": "Good morning, {{name}}",
       "greetingAnonymous": "Good morning",
