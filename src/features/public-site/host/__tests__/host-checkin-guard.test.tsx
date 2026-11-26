@@ -94,8 +94,50 @@ describe('HostCheckInGuard (NF-140)', () => {
     expect(screen.queryByTestId('host-site-page-not-found')).not.toBeInTheDocument();
   });
 
+  it('HostCheckInGuard_OrgSlugOfAnotherAgencyAndNoPrivacyNotice_IsNotFound', async () => {
+    // The agency of the link has no published privacy notice (or withdrew it): the answer carries no `privacyNoticeOrgSlug`, only the agency of the link. It used to open on this domain.
+    vi.mocked(publicCheckinApi.getContext).mockResolvedValue(context({ privacyNoticeVersion: undefined, orgSlug: 'another-agency' }));
+
+    renderGuard();
+
+    expect(await screen.findByTestId('host-site-page-not-found')).toBeInTheDocument();
+    // Nothing of the other agency's page is shown.
+    expect(screen.queryByTestId('checkin-page')).not.toBeInTheDocument();
+    expect(screen.queryByText('Casa Mare')).not.toBeInTheDocument();
+  });
+
+  it('HostCheckInGuard_OrgSlugOfThisAgencyAndNoPrivacyNotice_ShowsThePageAndAsksOnce', async () => {
+    vi.mocked(publicCheckinApi.getContext).mockResolvedValue(context({ privacyNoticeVersion: undefined, orgSlug: OWN }));
+
+    renderGuard();
+
+    expect(await screen.findByText('Casa Mare')).toBeInTheDocument();
+    expect(screen.queryByTestId('host-site-page-not-found')).not.toBeInTheDocument();
+    // The guard and the page share the request: it is made once.
+    expect(publicCheckinApi.getContext).toHaveBeenCalledTimes(1);
+  });
+
+  it('HostCheckInGuard_OrgSlugOfThisAgencyInAnotherCase_StillShowsThePage', async () => {
+    vi.mocked(publicCheckinApi.getContext).mockResolvedValue(context({ privacyNoticeVersion: undefined, orgSlug: 'VILLA-Rossi' }));
+
+    renderGuard();
+
+    expect(await screen.findByText('Casa Mare')).toBeInTheDocument();
+    expect(screen.queryByTestId('host-site-page-not-found')).not.toBeInTheDocument();
+  });
+
+  it('HostCheckInGuard_OrgSlugAndPrivacyNoticeSlugDiffer_TheOrgSlugDecides', async () => {
+    // `orgSlug` is read first and the slug of the privacy notice only as a fallback: when the two differ, `orgSlug` decides (here it names another agency, so the page is not shown).
+    vi.mocked(publicCheckinApi.getContext).mockResolvedValue(context({ orgSlug: 'another-agency', privacyNoticeOrgSlug: OWN }));
+
+    renderGuard();
+
+    expect(await screen.findByTestId('host-site-page-not-found')).toBeInTheDocument();
+    expect(screen.queryByTestId('checkin-page')).not.toBeInTheDocument();
+  });
+
   it('HostCheckInGuard_ContextWithoutAnAgencySlug_LeavesThePageToDecide', async () => {
-    // A link with no privacy notice, and a link already completed (the server then sends no data) name no agency: the page decides what it shows, as it always did.
+    // An answer that names no agency at all (a backend that does not send `orgSlug` yet, for a link with no privacy notice) leaves the page to decide what it shows, as it always did.
     vi.mocked(publicCheckinApi.getContext).mockResolvedValue(context({ privacyNoticeVersion: undefined }));
 
     renderGuard();
