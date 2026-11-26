@@ -21,6 +21,9 @@ async function expectShellEdges(element: Locator, fullWidth = true) {
   }).toBeLessThan(2);
 }
 
+// Each scenario visits several lazy-loaded routes on the demo development server.
+test.describe.configure({ timeout: 90_000 });
+
 for (const width of [390, 1920]) {
   test(`section headings, tabs and filters share the shell gutters at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
@@ -31,7 +34,7 @@ for (const width of [390, 1920]) {
       createdAt: '2026-10-01T08:00:00Z', expiresAt: '2027-01-01T08:00:00Z', originActionStatus: 'NotRequired',
     }] }));
     await page.route('**/api/verification/pending', route => route.fulfill({ json: [] }));
-    await page.goto(demoUrl('/app/short-rent/activities', 'short-stay'));
+    await page.goto(demoUrl('/app/short-rent/activities', 'short-stay'), { waitUntil: 'domcontentloaded' });
     const header = page.getByTestId('page-header');
     await expectShellEdges(header);
     const initialY = (await header.boundingBox())!.y;
@@ -47,13 +50,13 @@ for (const width of [390, 1920]) {
       expect(Math.abs((await header.boundingBox())!.y - initialY)).toBeLessThan(2);
     }
     await page.route('**/api/approval-queue', route => route.fulfill({ json: [] }));
-    await page.goto(demoUrl('/app/short-rent/approval-queue', 'short-stay'));
+    await page.goto(demoUrl('/app/short-rent/approval-queue', 'short-stay'), { waitUntil: 'domcontentloaded' });
     await expect(page.getByText('Nessun elemento', { exact: true })).toBeVisible();
     await expect(page.locator('#type-filter')).toHaveCount(0);
     await expectShellEdges(header);
 
     for (const path of ['/app/short-rent/settings', '/app/short-rent/settings/ai']) {
-      await page.goto(demoUrl(path, 'short-stay'));
+      await page.goto(demoUrl(path, 'short-stay'), { waitUntil: 'domcontentloaded' });
       await expect(page).toHaveURL(new RegExp(path + '\\?'));
       await expectShellEdges(header);
     }
@@ -69,7 +72,7 @@ for (const width of [390, 1920]) {
       ['/app/supplier/dashboard', 'supplier'],
     ] as const) {
       await test.step(path, async () => {
-        await page.goto(demoUrl(path, profile));
+        await page.goto(demoUrl(path, profile), { waitUntil: 'domcontentloaded' });
         await expect(page).toHaveURL(new RegExp(path + '\\?'));
         await expectShellEdges(page.getByTestId('page-header'));
       });
