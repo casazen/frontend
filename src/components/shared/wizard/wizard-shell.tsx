@@ -25,6 +25,7 @@ import { useWizardDraft, type UseWizardDraft, type WizardDraftServer } from "@/h
 import { translateValidationMessage } from "@/i18n/validation-message";
 import { getProblemMessage } from "@/lib/api-errors";
 import { formatRomeDateTime } from "@/lib/stay-dates";
+import { useAppShell } from "@/components/layout/app-shell-context";
 import { useUiStore } from "@/store/ui-store";
 import { useWizardOpenFlag } from "@/store/use-wizard-open-flag";
 import type { WizardDraft } from "@/lib/wizard-draft";
@@ -377,7 +378,10 @@ function WizardShellBody<TValues extends FieldValues, TResult = void>({
   // From `2xl` the steps are a column beside the step. Decided here and not by two copies of them hidden by CSS: there is one list of
   // steps on the page, for a screen reader as for a test. Only where the steps are drawn changes: the step, its form and its buttons
   // keep their place in the tree, so a window that crosses `2xl` keeps what is typed and where the focus is.
-  const wide = useMediaQuery(FROM_WIDE_QUERY);
+  const viewKey = useAppShell()?.viewKey;
+  const focusForms = useUiStore(state => Boolean(viewKey && state.workspaceViews[viewKey]?.focusForms));
+  const wideScreen = useMediaQuery(FROM_WIDE_QUERY);
+  const wide = wideScreen && !focusForms;
 
   // Every change of an answer is queued for the draft, with the step it was made on.
   const saveDraft = draft.save;
@@ -567,7 +571,14 @@ function WizardShellBody<TValues extends FieldValues, TResult = void>({
           </Alert>
         )}
 
-        {wide ? null : <Stepper className="rounded-t-2xl border-b bg-muted/45 px-3 py-3 sm:px-6 sm:py-4" steps={stepperSteps} current={stepIndex} onStepSelect={selectStep} />}
+        {focusForms ? (
+          <details key={step.id} className="rounded-t-2xl border-b px-4 py-2">
+            <summary className="min-h-11 cursor-pointer content-center text-sm font-medium focus-visible:outline-ring">
+              {t("ui.stepper.stepOf", { current: stepIndex + 1, total: steps.length })}
+            </summary>
+            <Stepper orientation="vertical" steps={stepperSteps} current={stepIndex} onStepSelect={selectStep} />
+          </details>
+        ) : wide ? null : <Stepper className="rounded-t-2xl border-b bg-muted/45 px-3 py-3 sm:px-6 sm:py-4" steps={stepperSteps} current={stepIndex} onStepSelect={selectStep} />}
 
         <div className="min-w-0 space-y-2 px-3 pb-5 pt-6 sm:px-6 sm:pt-8">
           <h2 id={titleId} ref={titleRef} tabIndex={-1} className="break-words text-2xl font-semibold leading-tight tracking-tight outline-none sm:text-3xl">
