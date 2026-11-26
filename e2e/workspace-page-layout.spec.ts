@@ -55,6 +55,12 @@ for (const width of [390, 1920]) {
     await expect(page.locator('#type-filter')).toHaveCount(0);
     await expectShellEdges(header);
 
+  });
+
+  test(`settings pages share the workspace gutters at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await setDemoProfile(page, 'short-stay');
+    const header = page.getByTestId('page-header');
     for (const path of ['/app/short-rent/settings', '/app/short-rent/settings/ai']) {
       await page.goto(demoUrl(path, 'short-stay'), { waitUntil: 'domcontentloaded' });
       await expect(page).toHaveURL(new RegExp(path + '\\?'));
