@@ -13,7 +13,9 @@
 #   - uninstall removes what the plugin stored.
 #
 # No outbound network: the mu-plugin tests/smoke/mu-plugins/casazen-mock-http.php, mapped into the site by .wp-env.json (in the
-# development environment only), answers the three requests of the plugin with canned JSON and refuses every other request.
+# development environment only), answers the three requests of the plugin with canned JSON and refuses every other request. It also
+# gives WordPress the answer of its own update checks ("checked a moment ago, nothing to update"): without it every page of the admin
+# would ask api.wordpress.org, and WordPress itself would write three warnings in the debug log that this test reads.
 #
 # Run it from the folder of the plugin, after `npm ci` and `npm exec --no -- wp-env start`. The versions of PHP and WordPress are the
 # ones wp-env was started with (WP_ENV_PHP_VERSION and WP_ENV_CORE). The same script runs on PHP 7.4 and 8.3.

@@ -114,3 +114,42 @@ function casazen_smoke_pre_http_request( $preempt, $args, $url ) {
 }
 
 add_filter( 'pre_http_request', 'casazen_smoke_pre_http_request', 10, 3 );
+
+/**
+ * The state "checked a moment ago, nothing to update" of the three update checks of WordPress (core, plugins and themes).
+ *
+ * Every page of the admin asks api.wordpress.org, at most every 12 hours, whether there is an update, and when the answer is an
+ * error WordPress itself writes a PHP warning in the debug log ("Something may be wrong with WordPress.org"). There is no network
+ * here and the updates are not what the smoke test is about, so WordPress is given the answer ready and does not ask. Only these
+ * three values are answered: the requests of the plugin go on to the canned answers above, and the check of the log is as strict as
+ * ever.
+ *
+ * @param false|object $pre What an earlier filter decided.
+ * @return object
+ */
+function casazen_smoke_updates_none( $pre ) {
+	if ( false !== $pre ) {
+		return $pre;
+	}
+
+	$state = array(
+		'last_checked' => time(),
+		'translations' => array(),
+	);
+
+	if ( 'pre_site_transient_update_core' === current_filter() ) {
+		$state['updates']         = array();
+		$state['version_checked'] = $GLOBALS['wp_version'];
+		return (object) $state;
+	}
+
+	// Plugins and themes: nothing to update, nothing to list.
+	$state['checked']   = array();
+	$state['response']  = array();
+	$state['no_update'] = array();
+	return (object) $state;
+}
+
+add_filter( 'pre_site_transient_update_core', 'casazen_smoke_updates_none' );
+add_filter( 'pre_site_transient_update_plugins', 'casazen_smoke_updates_none' );
+add_filter( 'pre_site_transient_update_themes', 'casazen_smoke_updates_none' );
