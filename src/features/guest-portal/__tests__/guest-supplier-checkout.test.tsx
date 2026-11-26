@@ -2,14 +2,16 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, useLocation } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { loadStripe } from '@stripe/stripe-js';
 import { ApiClient } from '@/api/client';
 import { GuestSupplierOrders } from '../guest-supplier-orders';
 
+vi.mock('@stripe/stripe-js', () => ({ loadStripe: vi.fn() }));
 vi.mock('@/api/client', () => ({ ApiClient: { get: vi.fn(), post: vi.fn() } }));
 vi.mock('@/features/public-booking/components/stripe-intent-payment', () => ({
-  StripeIntentPayment: ({ onSubmitted, onError, returnUrl, publishableKey }: {
-    onSubmitted: () => void; onError: (error: string) => void; returnUrl: string; publishableKey: string;
-  }) => <section data-testid="payment" data-return={returnUrl} data-key={publishableKey}>
+  StripeIntentPayment: ({ onSubmitted, onError, returnUrl, publishableKey, mode }: {
+    onSubmitted: () => void; onError: (error: string) => void; returnUrl: string; publishableKey: string; mode: string;
+  }) => <section data-testid="payment" data-return={returnUrl} data-key={publishableKey} data-mode={mode}>
     <button onClick={() => onError('Card declined')}>Decline</button>
     <button onClick={() => onSubmitted()}>Confirm with Stripe</button>
   </section>,
@@ -59,6 +61,47 @@ describe('guest supplier sandbox checkout', () => {
     await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('?page=supplier-orders&lang=en'));
     await waitFor(() => expect(screen.getByTestId('location').textContent).toBe('?page=supplier-orders&lang=en'));
     expect(await screen.findByText(/Amount authorized/i)).toBeInTheDocument();
+    expect(ApiClient.post).toHaveBeenCalledTimes(2);
+  });
+
+  it('requires explicit consent for the quoted amount and saves a card without charging', async () => {
+    vi.mocked(ApiClient.get).mockResolvedValue({ ...response, orders: [{ ...order, stripeDeferred: true }] });
+    vi.mocked(ApiClient.post).mockResolvedValueOnce({ ...checkout, mode: 'setup' })
+      .mockResolvedValueOnce({ ...order, stripeDeferred: true, state: 'CardSaved' });
+    show();
+    const button = await screen.findByRole('button', { name: 'Save test card' });
+    expect(button).toBeDisabled();
+    fireEvent.click(screen.getByRole('checkbox', { name: /single charge.*11.*Acme/i }));
+    fireEvent.click(button);
+    expect(await screen.findByTestId('payment')).toHaveAttribute('data-mode', 'setup');
+    fireEvent.click(await screen.findByText('Confirm with Stripe'));
+    expect(await screen.findByText(/Test card saved/i)).toBeVisible();
+    expect(ApiClient.post).toHaveBeenNthCalledWith(1, base + '/o1/checkout',
+      { totalCents: 1100, consentVersion: 'guest-service-order-off-session-v1' }, { public: true });
+  });
+
+  it('handles an off-session bank challenge, then rereads the order without a second charge', async () => {
+    const handleNextAction = vi.fn().mockResolvedValue({});
+    vi.mocked(loadStripe).mockResolvedValue({ handleNextAction } as unknown as NonNullable<Awaited<ReturnType<typeof loadStripe>>>);
+    vi.mocked(ApiClient.get).mockResolvedValue({ ...response, orders: [{ ...order, stripeDeferred: true, state: 'PaymentActionRequired' }] });
+    vi.mocked(ApiClient.post).mockResolvedValueOnce({ ...checkout, mode: 'next-action' })
+      .mockResolvedValueOnce({ ...order, stripeDeferred: true, state: 'Accepted' });
+    show();
+    fireEvent.click(await screen.findByRole('button', { name: 'Confirm payment' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Verify with your bank' }));
+    expect(await screen.findByText(/Acme.*Booked/i)).toBeVisible();
+    expect(handleNextAction).toHaveBeenCalledOnce();
+    expect(ApiClient.post).toHaveBeenCalledTimes(2);
+  });
+
+  it('reopens the existing payment after a declined off-session charge', async () => {
+    vi.mocked(ApiClient.get).mockResolvedValue({ ...response, orders: [{ ...order, stripeDeferred: true, state: 'PaymentFailed' }] });
+    vi.mocked(ApiClient.post).mockResolvedValueOnce({ ...checkout, mode: 'payment' })
+      .mockResolvedValueOnce({ ...order, stripeDeferred: true, state: 'Accepted' });
+    show();
+    fireEvent.click(await screen.findByRole('button', { name: 'Confirm payment' }));
+    fireEvent.click(await screen.findByText('Confirm with Stripe'));
+    expect(await screen.findByText(/Acme.*Booked/i)).toBeVisible();
     expect(ApiClient.post).toHaveBeenCalledTimes(2);
   });
 
