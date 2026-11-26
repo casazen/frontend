@@ -32714,6 +32714,27 @@
     "undoFailed": "Could not undo this.",
     "commitFailed": "Could not complete the action."
   },
+  "comoStayTour": {
+    "title": "Monthly return · Como",
+    "period": "Return month",
+    "taxable": "Taxable guests",
+    "nights": "Taxable guest nights",
+    "amount": "Tax due from the host",
+    "reason": "Exemption reason",
+    "guests": "Guests",
+    "overnights": "Guest nights",
+    "missing": "Stays with missing or outdated figures: {{count}}. Their amounts are excluded from the totals.",
+    "channel": "Departures this month with tax collected by a platform: {{count}}. Check intermediary statements for all collections in the month, including those for stays departing in other months.",
+    "basis": "Figures include departures in the selected month with confirmed host-collected tax. Check exemption reasons before filing in StayTour.",
+    "attach": "Archive the StayTour confirmation",
+    "archive": "View confirmations for this month",
+    "error": "Report unavailable",
+    "retry": "Retry",
+    "over_four_nights": "Nights after the fourth",
+    "unknown": "Reason to review",
+    "restricted": "Restricted reason",
+    "loading": "Loading report"
+  },
   "touristTax": {
     "exemption": {
       "disability_companion": "Companion of a person with a disability",

@@ -32714,6 +32714,27 @@
     "undoFailed": "Non è stato possibile annullare.",
     "commitFailed": "Non è stato possibile completare l'operazione."
   },
+  "comoStayTour": {
+    "title": "Dichiarazione mensile · Como",
+    "period": "Mese della dichiarazione",
+    "taxable": "Ospiti imponibili",
+    "nights": "Pernottamenti imponibili",
+    "amount": "Imposta a carico del gestore",
+    "reason": "Causale",
+    "guests": "Ospiti",
+    "overnights": "Pernottamenti",
+    "missing": "Soggiorni con dati mancanti o da riconfermare: {{count}}. I relativi importi sono esclusi dai totali.",
+    "channel": "Soggiorni con uscita nel mese e riscossione del portale: {{count}}. Verifica sugli estratti degli intermediari tutte le riscossioni del mese, anche per soggiorni con uscita in altri mesi.",
+    "basis": "I totali comprendono i soggiorni con uscita nel mese e imposta confermata a carico del gestore. Verifica le causali di esenzione prima della dichiarazione su StayTour.",
+    "attach": "Archivia la conferma di StayTour",
+    "archive": "Consulta le conferme del mese",
+    "error": "Rendiconto indisponibile",
+    "retry": "Riprova",
+    "over_four_nights": "Pernottamenti successivi al quarto",
+    "unknown": "Causale da verificare",
+    "restricted": "Causale riservata",
+    "loading": "Caricamento del rendiconto"
+  },
   "touristTax": {
     "exemption": {
       "disability_companion": "Accompagnatore di una persona con disabilità",
