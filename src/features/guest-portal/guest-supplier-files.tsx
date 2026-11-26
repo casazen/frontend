@@ -42,7 +42,7 @@ export function GuestSupplierFiles({ endpoint, language, orders }: { endpoint: s
     <h3>{text.title}</h3>
     {orders.map(order => <div key={order.id} className="stay-document">
       <span>{order.serviceName}</span>
-      <span>{text.issuer.replace('{seller}', order.supplierName)}</span>
+      <span>{text.issuer.replace('{seller}', () => order.supplierName)}</span>
       <button type="button" disabled={receipt.isPending} onClick={() => receipt.mutate(order.id)}>{text.receipt}</button>
       {order.documents.map(file => <button type="button" key={file.id} disabled={download.isPending}
         onClick={() => download.mutate(file)}>{file.fileName}</button>)}

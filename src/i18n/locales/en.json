@@ -28528,7 +28528,7 @@
       "hostFee": "Host commission payable by {{seller}}, included in the price",
       "platformFee": "CasaZen commission payable by {{seller}}, included in the price",
       "feeRefund": "Commission adjustment on the refund",
-      "note": "Test commercial amounts. The VAT rate and treatment depend on the tax profile and the service."
+      "note": "Gross test amounts. Determine VAT on the service and VAT on the commission separately using each transaction and the tax profiles of the parties involved."
     },
     "adjustments": {
       "recorded": "Decision recorded.",

@@ -28528,7 +28528,7 @@
       "hostFee": "Commissione dell’host a carico di {{seller}}, inclusa nel prezzo",
       "platformFee": "Commissione di CasaZen a carico di {{seller}}, inclusa nel prezzo",
       "feeRefund": "Quota di commissione da rettificare sul rimborso",
-      "note": "Importi commerciali di prova. Aliquota e trattamento IVA dipendono dal profilo fiscale e dalla prestazione."
+      "note": "Importi lordi di prova. Classificare separatamente l’IVA del servizio e quella della commissione secondo le rispettive operazioni e i profili fiscali delle parti."
     },
     "adjustments": {
       "recorded": "Decisione registrata.",

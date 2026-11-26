@@ -85,7 +85,7 @@ export function GuestSupplierOrders({ path, language, checkIn, checkOut }: {
       {query.data.orders.map((order) => (
         <article className="stay-card stay-content" key={order.id}>
           <h3>{order.serviceName}</h3>
-          <p>{text.seller.replace('{seller}', order.supplierName)} · {orderStatus(order.state, language)}</p>
+          <p>{text.seller.replace('{seller}', () => order.supplierName)} · {orderStatus(order.state, language)}</p>
           <p>{new Intl.DateTimeFormat(language, { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Europe/Rome' })
             .format(new Date(order.requestedFor))}</p>
           {order.totalCents > 0 && <dl>
@@ -150,7 +150,7 @@ function OfferForm({ offer, language, sandbox, earliestDate, latestDate, busy, s
         setRequestId(crypto.randomUUID());
         setInvalidTime(false);
       }}>
-        <p>{offer.category} · {text.seller.replace('{seller}', offer.supplierName)}</p>
+        <p>{offer.category} · {text.seller.replace('{seller}', () => offer.supplierName)}</p>
         {offer.summary && <p>{offer.summary}</p>}
         <label>{text.date} <input className="stay-supplier-input" type="date" name="date" min={sandbox ? earliestDate : undefined} max={sandbox ? latestDate : undefined} required /></label>
         <label>{text.time} <input className="stay-supplier-input" type="time" name="time" required /></label>
