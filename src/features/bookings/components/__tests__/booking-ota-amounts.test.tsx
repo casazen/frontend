@@ -239,7 +239,7 @@ describe('BookingPaymentTab (amounts of the channel)', () => {
     // What the API answers to who may not read payments: the state, and no amount, no collection, no source (permission and privacy rule).
     renderTab(booking({ source: 'Expedia', otaSource: 'Expedia', paymentState: 'Paid' }));
 
-    expect(screen.getByTestId('booking-payment-state')).toHaveTextContent('Incassato');
+    expect(screen.getByTestId('booking-payment-state')).toHaveTextContent('Soggiorno saldato');
     expect(screen.queryByTestId('booking-ota-amounts')).toBeNull();
     expect(screen.queryByTestId('booking-amount-source')).toBeNull();
     expect(screen.queryByTestId('booking-paid-amount')).toBeNull();
@@ -247,7 +247,7 @@ describe('BookingPaymentTab (amounts of the channel)', () => {
     expect(screen.queryByText(/Importi del canale/)).toBeNull();
   });
 
-  it('BookingPaymentTab_DirectBooking_TagsTheTotalWhatCameInAndTheBalanceWithStripe', () => {
+  it('BookingPaymentTab_DirectBooking_ShowsTheCommonSourceOnceForAllAmounts', () => {
     renderTab(
       booking({
         source: 'Direct',
@@ -258,7 +258,7 @@ describe('BookingPaymentTab (amounts of the channel)', () => {
     );
 
     const tags = screen.getAllByTestId('booking-amount-source');
-    expect(tags).toHaveLength(3);
+    expect(tags).toHaveLength(1);
     for (const tag of tags) {
       expect(tag).toHaveAttribute('data-source', 'Stripe');
       expect(tag).toHaveTextContent('Stripe');
