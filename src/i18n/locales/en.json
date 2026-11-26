@@ -1,4 +1,14 @@
 {
+  "institutionalPortals": {
+    "ross1000": "ROSS1000 · Lombardy",
+    "title": "Government portals",
+    "sender": "Configure sender and submission",
+    "tax": "Tourist tax",
+    "como": "Sign in to StayTour with SPID or CIE to file the monthly return with the City of Como. Use the report to check the amounts for the period.",
+    "municipality": "Follow the filing procedure of the municipality where the property is located.",
+    "report": "Open the report by municipality",
+    "openComo": "Sign in to StayTour Como"
+  },
   "workspaceView": {
     "focusForms": "Keep the step list collapsed in guided flows",
     "propertySettings": "Property settings",

@@ -33,20 +33,24 @@ export function QuesturaCredentialsCard({ propertyId, canEdit }: QuesturaCredent
   const [errors, setErrors] = useState<QuesturaCredentialsErrors>({});
   const [confirmRemove, setConfirmRemove] = useState(false);
 
-  const configured = status.data?.configured === true;
+  const busy = save.isPending || remove.isPending;
+  const configured = status.isSuccess && status.data.configured;
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
+    if (busy) return;
     const found = validateQuesturaCredentials(values);
     setErrors(found);
     if (Object.keys(found).length > 0) return;
     save.mutate(values, {
       // Write-only: the values leave the page as soon as the API has them.
       onSuccess: () => setValues(EMPTY_QUESTURA_CREDENTIALS),
+      onSettled: () => save.reset(),
     });
   };
 
   const handleRemove = () => {
+    if (busy) return;
     remove.mutate(undefined, { onSettled: () => setConfirmRemove(false) });
   };
 
@@ -87,7 +91,7 @@ export function QuesturaCredentialsCard({ propertyId, canEdit }: QuesturaCredent
 
         <p className="text-xs text-muted-foreground">{t('questuraCredentials.writeOnlyHint')}</p>
 
-        {canEdit && status.data && (
+        {canEdit && status.isSuccess && (
           <form className="@container min-w-0 space-y-3" onSubmit={handleSubmit} noValidate data-testid="questura-credentials-form">
             <QuesturaCredentialsFields
               values={values}
@@ -98,7 +102,7 @@ export function QuesturaCredentialsCard({ propertyId, canEdit }: QuesturaCredent
               }}
             />
             <div className="flex flex-wrap items-center gap-2 pt-1">
-              <Button type="submit" disabled={save.isPending} data-testid="questura-credentials-save">
+              <Button type="submit" disabled={busy} data-testid="questura-credentials-save">
                 {save.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {configured ? t('questuraCredentials.replace') : t('questuraCredentials.save')}
               </Button>
@@ -109,7 +113,7 @@ export function QuesturaCredentialsCard({ propertyId, canEdit }: QuesturaCredent
                       type="button"
                       variant="destructive"
                       onClick={handleRemove}
-                      disabled={remove.isPending}
+                      disabled={busy}
                       data-testid="questura-credentials-remove-confirm"
                     >
                       {remove.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -123,6 +127,7 @@ export function QuesturaCredentialsCard({ propertyId, canEdit }: QuesturaCredent
                   <Button
                     type="button"
                     variant="outline"
+                    disabled={busy}
                     onClick={() => setConfirmRemove(true)}
                     data-testid="questura-credentials-remove"
                   >
