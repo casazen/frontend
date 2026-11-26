@@ -103,7 +103,7 @@ export function GuestSupplierOperations({ scope }: { scope: Scope }) {
             {order.decision && <p>Decisione: {order.decision}{(!order.refundStatus || order.refundStatus === 'not_requested') && <> · Rimborso {orderMoney(order.refundCents)}</>}</p>}
             {order.refundStatus && order.refundStatus !== 'not_requested' &&
               <p role="status">{t('supplier.adjustments.' + order.refundStatus)} · {orderMoney(order.refundRequestedCents ?? order.refundCents)}</p>}
-            {order.bankDisputeStatus && <p>{t('supplier.adjustments.bank_' + order.bankDisputeStatus)}</p>}
+            {order.bankDisputeStatus && <p>{t(`supplier.adjustments.bank_${order.bankDisputeStatus}`)}</p>}
             {scope.role === 'supplier' && <>
               {order.state === 'PendingQuote' && <ActionForm amountLabel="Prezzo in euro" button="Invia preventivo" busy={change.isPending}
                 send={(priceCents) => transition('quote', { priceCents })} />}
