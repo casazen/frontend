@@ -13,6 +13,7 @@
     "delegation": "Accept the transmission delegation before activating Alloggiati Web.",
     "activationFailed": "Activation failed. Check the credentials and submission status before retrying.",
     "routeError": "Unable to read the sender for this property.",
+    "receiptHash": "Receipt SHA-256",
     "guestOutcome": "Guest {{number}} · {{outcome}}",
     "outcomes": {
       "accepted": "Accepted",

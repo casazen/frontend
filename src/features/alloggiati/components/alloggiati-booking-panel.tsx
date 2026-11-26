@@ -41,7 +41,7 @@ export function AlloggiatiBookingPanel({ bookingId, checkInDate }: AlloggiatiBoo
   // actions «Riprova» and «Correggi») stays on screen.
   const notFound = isError && getHttpStatus(error) === 404;
   const status = notFound ? undefined : data;
-  const channelView = status ? stayChannelViewOf(status) : null;
+  const channelView = status && !status.directSubmission ? stayChannelViewOf(status) : null;
   const download = useMutation({
     mutationFn: () => alloggiatiApi.downloadDirectReceipt(bookingId),
     onSuccess: (blob) => saveBlobAs(blob, `alloggiati-${bookingId}.pdf`),
@@ -99,7 +99,7 @@ export function AlloggiatiBookingPanel({ bookingId, checkInDate }: AlloggiatiBoo
                 </div>
               )}
 
-              {status.status === 'DaInviareManualmente' && !receiptArchived && (
+              {status.status === 'DaInviareManualmente' && !status.directSubmission && !receiptArchived && (
                 <Alert variant="warning" data-testid="alloggiati-manual-notice">
                   {t('alloggiati.manualNotice')}
                 </Alert>
@@ -112,7 +112,7 @@ export function AlloggiatiBookingPanel({ bookingId, checkInDate }: AlloggiatiBoo
               )}
               {status.status === 'Inviato' && status.confirmationNumber && (
                 <div className="text-sm">
-                  <span className="text-muted-foreground">{t('booking.detailPage.confirmation')}</span>
+                  <span className="text-muted-foreground">{t(status.directSubmission ? 'institutionalPortals.receiptHash' : 'booking.detailPage.confirmation')}</span>
                   {status.confirmationNumber}
                 </div>
               )}

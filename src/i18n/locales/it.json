@@ -13,6 +13,7 @@
     "delegation": "Per Alloggiati Web occorre prima accettare la delega alla trasmissione.",
     "activationFailed": "Attivazione non riuscita. Controlla le credenziali e lo stato degli invii prima di riprovare.",
     "routeError": "Impossibile leggere il mittente della struttura.",
+    "receiptHash": "Impronta SHA-256 della ricevuta",
     "guestOutcome": "Ospite {{number}} · {{outcome}}",
     "outcomes": {
       "accepted": "Acquisito",
