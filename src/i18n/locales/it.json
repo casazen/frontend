@@ -3024,6 +3024,7 @@
       "situations": "Non hai i permessi per leggere le situazioni dell’assistente."
     },
     "notice": {
+      "localDraft": "Questa risposta usa un testo predefinito. Puoi modificarla, inviarla oppure rifiutarla.",
       "transparency": "Questa bozza è scritta da un modello di intelligenza artificiale. Non parte nulla senza la tua approvazione e gli ospiti non vengono avvisati che l'ha scritta l'assistente: questo avviso resta qui, in CasaZen."
     },
     "property": {

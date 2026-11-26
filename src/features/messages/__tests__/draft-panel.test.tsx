@@ -80,22 +80,30 @@ function deferred<T>() {
   return { promise, resolve };
 }
 
-function renderPanel(options: { flag?: boolean; canAsk?: boolean } = {}) {
+function renderPanel(options: { flag?: boolean; canAsk?: boolean; portal?: boolean; threadKey?: string } = {}) {
   const { flag = true, canAsk = true } = options;
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const invalidate = vi.spyOn(client, 'invalidateQueries');
   const wrapper = ({ children }: { children: ReactNode }) => (
     <QueryClientProvider client={client}>
-      <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, messageAssistant: flag }, isLoading: false }}>
+      <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, messageAssistant: flag, guestPortal: !!options.portal, guestPortalAutoReplies: !!options.portal }, isLoading: false }}>
         <MemoryRouter>{children}</MemoryRouter>
       </FeatureFlagsContext.Provider>
     </QueryClientProvider>
   );
-  const view = render(<DraftPanel threadKey={KEY} canAsk={canAsk} />, { wrapper });
+  const view = render(<DraftPanel threadKey={options.threadKey ?? KEY} canAsk={canAsk} />, { wrapper });
   return { ...view, client, invalidate };
 }
 
 describe('the draft of the assistant in the conversation (E05/F05/US04/T01)', () => {
+  it('offers a local portal draft for review with external drafting disabled', async () => {
+    const threadKey = 'direct:6f1c9a52-1111-4222-8333-944455556666';
+    vi.mocked(approvalQueueApi.getPending).mockResolvedValue([item({ threadKey, contentText: 'Ti rispondo qui.', contentVersion: 'portal-local-v1', isAiGenerated: false })]);
+    renderPanel({ flag: false, portal: true, threadKey });
+    expect(await screen.findByTestId('assistant-draft-text')).toHaveTextContent('Ti rispondo qui.');
+    expect(assistantDraftsApi.requestDraft).not.toHaveBeenCalled();
+  });
+
   beforeEach(async () => {
     vi.clearAllMocks();
     grants.permissions = new Set(['approval.decide', 'booking.write', 'property.write']);

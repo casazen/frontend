@@ -3024,6 +3024,7 @@
       "situations": "You do not have the permission to read the situations of the assistant."
     },
     "notice": {
+      "localDraft": "This reply uses a prepared text. You can edit it, send it or reject it.",
       "transparency": "This draft is written by an AI model. Nothing is sent without your approval, and guests are not told that the assistant wrote it: this notice stays here, in CasaZen."
     },
     "property": {
