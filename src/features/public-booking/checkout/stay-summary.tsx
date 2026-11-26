@@ -10,14 +10,13 @@ import { useBooking } from '@/features/public-booking/booking/booking-context';
 import { PriceLines } from '@/features/public-booking/booking/price-lines';
 import { quoteTotalCents } from '@/features/public-booking/booking/quote-helpers';
 import { policyStages } from '@/features/public-booking/lib/property-profile';
-import type { CheckoutMode } from '@/features/public-booking/checkout/checkout-model';
+import { checkoutExtraLines, type CheckoutMode } from '@/features/public-booking/checkout/checkout-model';
+import type { CheckoutExtraSelection } from '@/types/direct-booking.types';
 import { displayableMediaUrls } from '@/lib/media-url';
 import { siteLocale } from '@/lib/site-language';
 import { cn } from '@/lib/utils';
 import '@/features/public-booking/checkout/checkout.css';
 
-import type { CheckoutExtraSelection } from '@/types/direct-booking.types';
-import { checkoutExtraLines } from './checkout-model';
 
 interface StaySummaryProps {
   extras?: CheckoutExtraSelection[];

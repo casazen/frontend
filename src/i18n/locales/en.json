@@ -24081,6 +24081,8 @@
   },
   "publicCheckout": {
     "extras": {
+      "changed": "The availability or price of an extra has changed. Review your selection before continuing.",
+      "review": "Update selection",
       "title": "Optional extras",
       "quantity": "Quantity",
       "approval": "Authorize your card in the guest portal. You will only be charged if the host confirms.",

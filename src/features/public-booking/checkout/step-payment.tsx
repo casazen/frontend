@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { isAxiosError } from 'axios';
+import { useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, ArrowLeft, CalendarClock, CreditCard, Hourglass, Info, Lock, Mail, Receipt, Send, ShieldCheck, User, WifiOff } from 'lucide-react';
 import { ChoiceCard, ChoiceGroup } from '@/components/ui/choice-card';
 import { useCreateDirectBooking } from '@/queries/use-public-booking';
@@ -51,6 +52,7 @@ export function StepPayment({ org, orgSlug, draft, onDraft, ages, onBack, onEdit
   const model = useBooking();
   const { property, stay, quote, online, currency, hostLabel } = model;
   const createBooking = useCreateDirectBooking();
+  const queryClient = useQueryClient();
   const locale = siteLocale(i18n.language);
 
   // The booking is made once: a second press (a double tap, a slow connection) before the answer comes does nothing.
@@ -65,6 +67,7 @@ export function StepPayment({ org, orgSlug, draft, onDraft, ages, onBack, onEdit
   const offers = ready?.quote.extraOffers ?? [];
   const selections = (draft.extras ?? []).filter((selection) =>
     offers.some((offer) => offer.id === selection.id && offer.unitPrice === selection.expectedUnitPrice));
+  const hasChangedExtras = !!ready && selections.length !== (draft.extras?.length ?? 0);
   const extrasCents = checkoutExtraLines(offers, selections, draft.mode).reduce((sum, line) => sum + line.cents, 0);
   const total = ready ? formatPrice(quoteTotalCents(ready.quote) + extrasCents, currency, locale) : '';
   const request = draft.mode === 'request';
@@ -86,6 +89,7 @@ export function StepPayment({ org, orgSlug, draft, onDraft, ages, onBack, onEdit
   let blocked: string | null = null;
   if (!online) blocked = t('publicCheckout.offline');
   else if (!ready) blocked = quote.status === 'loading' ? t('propertyBooking.price.calculating') : t('publicCheckout.pay.fixStay');
+  else if (hasChangedExtras) blocked = t('publicCheckout.extras.changed');
   else if (!detailsOk) blocked = t('publicCheckout.pay.missingDetails');
   else if (!draft.consent) blocked = t('publicCheckout.pay.needConsent');
   const canSubmit = blocked === null && !createBooking.isPending;
@@ -131,6 +135,11 @@ export function StepPayment({ org, orgSlug, draft, onDraft, ages, onBack, onEdit
     } catch (failure) {
       // Every checkout error has its own message (the code of the ProblemDetails of the backend).
       setError(getProblemMessage(failure, t) ?? t('publicBooking.checkoutError'));
+      if (isAxiosError(failure) && getProblemCode(failure.response?.data) === 'guest_host_extra_unavailable') {
+        onDraft({ extras: [], consent: false });
+        setError(t('publicCheckout.extras.changed'));
+        await queryClient.invalidateQueries({ queryKey: ['public-booking-quote'] });
+      }
       if (isAxiosError(failure) && getProblemCode(failure.response?.data) === 'booking_dates_unavailable') {
         setOwnPending(findPendingCheckout(property.id, stay.checkIn, stay.checkOut));
       }
@@ -247,6 +256,10 @@ export function StepPayment({ org, orgSlug, draft, onDraft, ages, onBack, onEdit
         </section>
       )}
 
+      {hasChangedExtras && <div role="alert">
+        <p>{t('publicCheckout.extras.changed')}</p>
+        <button type="button" onClick={() => onDraft({ extras: selections, consent: false })}>{t('publicCheckout.extras.review')}</button>
+      </div>}
       {offers.length > 0 && (
         <fieldset className="co-section space-y-3" disabled={createBooking.isPending}>
           <legend>{t('publicCheckout.extras.title')}</legend>

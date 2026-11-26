@@ -194,6 +194,25 @@ describe('CheckoutPage', () => {
     ]);
   });
 
+  it('refreshes a rejected extra and asks the guest to confirm the new price', async () => {
+    const offer = { id: 'kit', name: 'Kit', description: '', byQuantity: false, unitPrice: 15, requiresApproval: false };
+    vi.mocked(publicBookingApi.quoteDirectBooking).mockResolvedValue({ ...quote, extraOffers: [offer] });
+    vi.mocked(publicBookingApi.createDirectBooking).mockRejectedValueOnce({
+      isAxiosError: true, response: { status: 409, data: { code: 'guest_host_extra_unavailable' } },
+    });
+    renderCheckout();
+    await goToDetails();
+    await fillDetailsAndGoToPayment();
+    fireEvent.click(screen.getByRole('checkbox', { name: /Kit/ }));
+    fireEvent.click(document.getElementById('data-consent') as HTMLElement);
+    vi.mocked(publicBookingApi.quoteDirectBooking).mockResolvedValue({ ...quote, extraOffers: [{ ...offer, unitPrice: 20 }] });
+    fireEvent.click(screen.getByTestId('checkout-submit'));
+    await screen.findByRole('checkbox', { name: /Kit.*20/ });
+    expect(screen.getByRole('checkbox', { name: /Kit/ })).not.toBeChecked();
+    expect(document.getElementById('data-consent')).not.toBeChecked();
+    expect(publicBookingApi.createDirectBooking).toHaveBeenCalledTimes(1);
+  });
+
   it('CheckoutPage_ThreeSteps_NeverPutThePersonalDataInTheAddress', async () => {
     renderCheckout();
     await goToDetails();
