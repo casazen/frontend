@@ -9,6 +9,9 @@
   "preview": "Prepara anteprima",
   "send": "Invia il movimento alla Lombardia",
   "totals": "{{arrivals}} arrivi · {{departures}} partenze",
+  "recordOutcomes": "Esiti per identificativo ROSS1000",
+  "recordAccepted": "Accettato",
+  "recordRejected": "Respinto",
   "states": {
     "preview_only": "Anteprima locale. Per trasmettere serve il collegamento diretto attivo alla data scelta.",
     "ready": "Pronto per l’invio.",

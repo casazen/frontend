@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { todayInRome } from '@/lib/stay-dates';
 
-interface Preview { hash: string; arrivals: number; departures: number; state: string; accepted: number; rejected: number }
+interface Preview { hash: string; arrivals: number; departures: number; state: string; accepted: number; rejected: number; records: { key: string; state: string }[] }
 interface Capacity { open: boolean; occupiedRooms: number; availableRooms: number; availableBeds: number }
 
 export function Ross1000Panel({ propertyId, canWrite, canSend = false }: { propertyId: string; canWrite: boolean; canSend?: boolean }) {
@@ -65,6 +65,14 @@ function DayPanel({ propertyId, canSend }: { propertyId: string; canSend: boolea
       {info && <div className="space-y-2" role="status">
         <p>{t('ross1000.totals', { arrivals: info.arrivals, departures: info.departures })}</p>
         <p>{t(`ross1000.states.${info.state}`, { accepted: info.accepted, rejected: info.rejected })}</p>
+        {!!info.records?.length && <details>
+          <summary>{t('ross1000.recordOutcomes')}</summary>
+          <ul className="mt-2 space-y-1 text-sm">
+            {info.records.map(record => <li key={record.key}>
+              <code>{record.key}</code> · {t(record.state === 'accepted' ? 'ross1000.recordAccepted' : 'ross1000.recordRejected')}
+            </li>)}
+          </ul>
+        </details>}
         {maySend && <Button type="button" disabled={submit.isPending}
           onClick={() => submit.mutate({ action: 'send', capacity, hash: info.hash })}>{t('ross1000.send')}</Button>}
       </div>}

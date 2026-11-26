@@ -9,6 +9,9 @@
   "preview": "Prepare preview",
   "send": "Submit movement to Lombardy",
   "totals": "{{arrivals}} arrivals · {{departures}} departures",
+  "recordOutcomes": "Outcomes by ROSS1000 identifier",
+  "recordAccepted": "Accepted",
+  "recordRejected": "Rejected",
   "states": {
     "preview_only": "Local preview. Direct submission must be active on the selected date to send.",
     "ready": "Ready to submit.",
