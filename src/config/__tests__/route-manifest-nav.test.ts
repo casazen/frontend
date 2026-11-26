@@ -623,7 +623,7 @@ describe('route-manifest sections as tabs (UI-04a)', () => {
     const queue = ['/app/short-rent', '/app/short-rent/activities', '/app/short-rent/approval-queue', '/app/short-rent/verifications'];
     for (const page of queue) expect(paths(getNavSection(page, allowAll)), page).toEqual(queue);
     // The collaborator decides nothing: the home and its «Da fare» list only.
-    expect(paths(getNavSection('/app/short-rent', without('approval.decide', 'verification.decision')))).toEqual([
+    expect(paths(getNavSection('/app/short-rent', without('approval.decide', 'marketing.manage', 'verification.decision')))).toEqual([
       '/app/short-rent',
       '/app/short-rent/activities',
     ]);
