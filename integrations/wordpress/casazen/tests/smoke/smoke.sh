@@ -2,7 +2,9 @@
 #
 # Smoke test of the CasaZen plugin on a real WordPress (wp-env, the Docker runtime). It is the proof of AC-NF148-1 and AC-NF148-2:
 #
-#   - the plugin activates with no PHP warning, notice, deprecation or fatal error and no "called incorrectly" in the debug log;
+#   - the plugin activates with no PHP warning, notice, deprecation or fatal error and no "called incorrectly" in the debug log
+#     (first the log is proved to be live: a line that PHP writes on purpose must reach wp-content/debug.log, otherwise an empty
+#     log would only mean that nothing can be written, not that nothing went wrong);
 #   - the settings are saved and the connection test reports the name of the agency;
 #   - a published page with [casazen_booking], [casazen_search] and [casazen_owner_login] prints the three elements, ONE loader
 #     script tag with `defer` and the link to the owner area;
@@ -77,6 +79,14 @@ step 'The site'
 wpcli eval 'echo "PHP " . PHP_VERSION . ", WordPress " . get_bloginfo( "version" ) . ", environment " . wp_get_environment_type() . "\n";'
 MOCK="$(wpcli eval 'echo function_exists( "casazen_smoke_pre_http_request" ) ? "mock network: on" : "mock network: OFF";')"
 [[ "$MOCK" == *'mock network: on'* ]] || fail 'The mu-plugin of the mock network is not loaded: check "mappings" in .wp-env.json.'
+
+step 'The debug log is live'
+# A canary: PHP writes one line on purpose and it must show up in wp-content/debug.log. Without this proof an empty log at the end
+# would not mean "no warning": it could also mean that WP_DEBUG_LOG writes nothing (see "config" in .wp-env.json).
+in_site sh -c ': > wp-content/debug.log'
+wpcli eval 'error_log( "casazen-smoke-canary" );'
+CANARY_LOG="$(debug_log)"
+[[ "$CANARY_LOG" == *'casazen-smoke-canary'* ]] || fail 'PHP does not write to wp-content/debug.log: the check of the log at the end would prove nothing (see "config" in .wp-env.json).'
 
 step 'Activate the plugin with an empty log'
 wpcli plugin deactivate "$PLUGIN"
