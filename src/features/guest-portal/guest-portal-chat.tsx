@@ -3,6 +3,14 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { ApiClient } from '@/api/client';
 import type { GuestThread } from '@/types/guest-message.types';
 
+const channelLabels = {
+  it: { open: 'Apri {channel} per rispondere sul canale', local: 'Chat privata con l’host in CasaZen' },
+  en: { open: 'Open {channel} to reply on the booking channel', local: 'Private chat with your host in CasaZen' },
+  de: { open: '{channel} öffnen und über das Buchungsportal antworten', local: 'Privater Chat mit dem Gastgeber in CasaZen' },
+  fr: { open: 'Ouvrir {channel} pour répondre sur la plateforme', local: 'Conversation privée avec votre hôte sur CasaZen' },
+  es: { open: 'Abrir {channel} para responder en el canal de reserva', local: 'Chat privado con el anfitrión en CasaZen' },
+} as const;
+
 const chatLabels = {
   it: { handoff: 'Scrivi all’host', guest: 'Tu', host: 'Host', assistant: 'Assistente automatico', automation: 'Messaggio automatico' },
   en: { handoff: 'Write to the host', guest: 'You', host: 'Host', assistant: 'Automatic assistant', automation: 'Automatic message' },
@@ -20,7 +28,15 @@ interface Labels {
   closed: string;
 }
 
-export function GuestPortalChat({ path, language, labels }: { path: string; language: keyof typeof chatLabels; labels: Labels }) {
+interface GuestPortalChatProps {
+  path: string;
+  language: keyof typeof chatLabels;
+  labels: Labels;
+  isOta: boolean;
+  channel?: { name: string; url: string };
+}
+
+export function GuestPortalChat({ path, language, labels, isOta, channel }: GuestPortalChatProps) {
   const copy = chatLabels[language];
   const time = new Intl.DateTimeFormat(language, { hour: 'numeric', minute: 'numeric' });
   const [input, setInput] = useState('');
@@ -55,6 +71,10 @@ export function GuestPortalChat({ path, language, labels }: { path: string; lang
 
   return (
     <section className="stay-card stay-content">
+      {isOta && channel && (
+        <p><a href={channel.url} rel="noreferrer">{channelLabels[language].open.replace('{channel}', channel.name)}</a></p>
+      )}
+      {isOta && <h2>{channelLabels[language].local}</h2>}
       {thread.isPending && <p role="status">{labels.loading}</p>}
       {(thread.isError || send.isError) && <p role="alert">{labels.failed}</p>}
       {thread.data?.messages.length === 0 && <p>{labels.empty}</p>}
