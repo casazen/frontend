@@ -137,13 +137,6 @@ describe('BookingInvoiceDataSection - what it says', () => {
     expect(line).toHaveAttribute('data-source', source);
   });
 
-  it('uses a single status when the guest has not requested an invoice and the recipient is empty', async () => {
-    stored = invoiceData({ invoiceRequested: false });
-    renderSection();
-    expect(await screen.findByTestId('booking-invoice-empty')).toHaveTextContent('Nessuna richiesta di fattura registrata.');
-    expect(screen.queryByText('Nessun dato di fatturazione per questa prenotazione.')).not.toBeInTheDocument();
-  });
-
   it('section_TheGuestAskedForTheInvoiceButWroteNothing_SaysSoAndOffersToAddTheData', async () => {
     stored = invoiceData({ invoiceRequested: true, source: 'CheckIn' });
     renderSection();
@@ -156,7 +149,8 @@ describe('BookingInvoiceDataSection - what it says', () => {
   it('section_NoDataAtAll_SaysSoWithoutASource', async () => {
     renderSection();
 
-    expect(await screen.findByTestId('booking-invoice-empty')).toHaveTextContent('Nessun dato di fatturazione');
+    expect(await screen.findByTestId('booking-invoice-empty')).toHaveTextContent('Nessuna richiesta di fattura registrata.');
+    expect(screen.queryByText('Nessun dato di fatturazione per questa prenotazione.')).not.toBeInTheDocument();
     expect(screen.queryByTestId('booking-invoice-requested')).not.toBeInTheDocument();
     expect(screen.queryByTestId('booking-invoice-source')).not.toBeInTheDocument();
     expect(screen.getByTestId('booking-invoice-open')).toHaveTextContent('Aggiungi i dati');
