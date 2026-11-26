@@ -48,6 +48,36 @@ runs:
         tools: wp-cli
         coverage: none
 
+    # setup-php does not fail the job when it cannot install a tool: it only prints "Could not setup wp-cli" (the download from GitHub
+    # failed, seen in a run of Plugin Check), and the step that compiles the translations then dies with "wp: command not found". So `wp`
+    # is checked here and, when it is missing or does not run, installed by hand: two sources, three tries each. When WP-CLI still is not
+    # there the step fails with a clear message: nothing is hidden.
+    - name: Make sure WP-CLI is there
+      shell: bash
+      run: |
+        if wp --version; then
+          exit 0
+        fi
+        echo "::warning::WP-CLI is missing after setup-php (its download failed): installing it by hand."
+        bin="$RUNNER_TEMP/wp-cli-bin"
+        mkdir -p "$bin"
+        for url in \
+          'https://github.com/wp-cli/wp-cli/releases/latest/download/wp-cli.phar' \
+          'https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar'; do
+          for attempt in 1 2 3; do
+            if curl --fail --silent --show-error --location --connect-timeout 15 --max-time 120 --output "$bin/wp" "$url" \
+              && chmod +x "$bin/wp" \
+              && "$bin/wp" --version; then
+              echo "$bin" >> "$GITHUB_PATH"
+              exit 0
+            fi
+            echo "::warning::WP-CLI from $url, attempt $attempt of 3: it did not work."
+            sleep 5
+          done
+        done
+        echo "::error::WP-CLI is not available: setup-php could not install it and neither download worked."
+        exit 1
+
     - name: Install the build tools
       shell: bash
       working-directory: integrations/wordpress/casazen
