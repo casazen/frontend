@@ -6,11 +6,11 @@ import axios from '@/lib/axios';
 import type { ServiceFiles, SupplierFile } from './use-guest-supplier-files';
 
 const labels = {
-  it: { title: 'Documenti dei servizi', receipt: 'Ricevuta del pagamento', upload: 'Carica PDF', file: 'Documento del fornitore (PDF, massimo 8 MB)', saved: 'Documento disponibile all’ospite.', failed: 'Operazione non riuscita. Riprova.', invalid: 'Scegli un PDF fino a 8 MB.' },
-  en: { title: 'Service documents', receipt: 'Payment receipt', upload: 'Upload PDF', file: 'Supplier document (PDF, up to 8 MB)', saved: 'The document is available to the guest.', failed: 'This action failed. Try again.', invalid: 'Choose a PDF up to 8 MB.' },
-  de: { title: 'Unterlagen zu den Leistungen', receipt: 'Zahlungsbeleg', upload: 'PDF hochladen', file: 'Anbieterdokument (PDF, bis zu 8 MB)', saved: 'Das Dokument ist für den Gast verfügbar.', failed: 'Vorgang fehlgeschlagen. Bitte erneut versuchen.', invalid: 'Wählen Sie eine PDF-Datei bis 8 MB.' },
-  fr: { title: 'Documents des prestations', receipt: 'Reçu de paiement', upload: 'Importer le PDF', file: 'Document du prestataire (PDF, 8 Mo maximum)', saved: 'Le document est disponible pour le voyageur.', failed: 'Échec de l’opération. Réessayez.', invalid: 'Choisissez un PDF de 8 Mo maximum.' },
-  es: { title: 'Documentos de los servicios', receipt: 'Recibo del pago', upload: 'Subir PDF', file: 'Documento del proveedor (PDF, hasta 8 MB)', saved: 'El documento está disponible para el huésped.', failed: 'La operación ha fallado. Inténtalo de nuevo.', invalid: 'Elige un PDF de hasta 8 MB.' },
+  it: { title: 'Documenti dei servizi', receipt: 'Ricevuta del pagamento Stripe', issuer: 'Il documento fiscale del servizio è di competenza di {seller}.', upload: 'Carica PDF', file: 'Documento del fornitore (PDF, massimo 8 MB)', saved: 'Documento disponibile all’ospite.', failed: 'Operazione non riuscita. Riprova.', invalid: 'Scegli un PDF fino a 8 MB.' },
+  en: { title: 'Service documents', receipt: 'Stripe payment receipt', issuer: '{seller} is responsible for the tax document for this service.', upload: 'Upload PDF', file: 'Supplier document (PDF, up to 8 MB)', saved: 'The document is available to the guest.', failed: 'This action failed. Try again.', invalid: 'Choose a PDF up to 8 MB.' },
+  de: { title: 'Unterlagen zu den Leistungen', receipt: 'Stripe-Zahlungsbeleg', issuer: 'Für den Steuerbeleg dieser Leistung ist {seller} zuständig.', upload: 'PDF hochladen', file: 'Anbieterdokument (PDF, bis zu 8 MB)', saved: 'Das Dokument ist für den Gast verfügbar.', failed: 'Vorgang fehlgeschlagen. Bitte erneut versuchen.', invalid: 'Wählen Sie eine PDF-Datei bis 8 MB.' },
+  fr: { title: 'Documents des prestations', receipt: 'Reçu de paiement Stripe', issuer: '{seller} est responsable du document fiscal de cette prestation.', upload: 'Importer le PDF', file: 'Document du prestataire (PDF, 8 Mo maximum)', saved: 'Le document est disponible pour le voyageur.', failed: 'Échec de l’opération. Réessayez.', invalid: 'Choisissez un PDF de 8 Mo maximum.' },
+  es: { title: 'Documentos de los servicios', receipt: 'Recibo de pago de Stripe', issuer: '{seller} es responsable del documento fiscal de este servicio.', upload: 'Subir PDF', file: 'Documento del proveedor (PDF, hasta 8 MB)', saved: 'El documento está disponible para el huésped.', failed: 'La operación ha fallado. Inténtalo de nuevo.', invalid: 'Elige un PDF de hasta 8 MB.' },
 };
 function copy(language = 'it') {
   return labels[language.toLowerCase().split('-')[0] as keyof typeof labels] ?? labels.en;
@@ -41,7 +41,8 @@ export function GuestSupplierFiles({ endpoint, language, orders }: { endpoint: s
   return <section>
     <h3>{text.title}</h3>
     {orders.map(order => <div key={order.id} className="stay-document">
-      <span>{order.serviceName} · {order.supplierName}</span>
+      <span>{order.serviceName}</span>
+      <span>{text.issuer.replace('{seller}', order.supplierName)}</span>
       <button type="button" disabled={receipt.isPending} onClick={() => receipt.mutate(order.id)}>{text.receipt}</button>
       {order.documents.map(file => <button type="button" key={file.id} disabled={download.isPending}
         onClick={() => download.mutate(file)}>{file.fileName}</button>)}

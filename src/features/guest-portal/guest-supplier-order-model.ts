@@ -14,6 +14,18 @@ export interface GuestSupplierOrder {
   refundStatus?: 'processing' | 'failed' | 'review' | 'succeeded' | 'not_requested' | null;
   refundRequestedCents?: number;
   bankDisputeStatus?: 'open' | 'lost' | 'closed' | 'recovery_pending' | null;
+  documentPlan?: {
+    sellerOrgId: string;
+    guestGrossCents: number;
+    guestRefundCents: number;
+    commission: {
+      issuerRole: 'host' | 'platform';
+      issuerOrgId: string | null;
+      debtorOrgId: string;
+      grossCents: number;
+      refundedCents: number;
+    } | null;
+  } | null;
   hostOrigin: boolean;
   stripeSandbox?: boolean;
   stripeDeferred?: boolean;

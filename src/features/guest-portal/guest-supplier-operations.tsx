@@ -110,6 +110,22 @@ export function GuestSupplierOperations({ scope }: { scope: Scope }) {
             <h3 className="font-semibold">{order.serviceName} · {order.supplierName}</h3>
             <p>{orderStatus(order.state)} · {orderMoney(order.totalCents)} · {order.stripeSandbox ? 'Stripe sandbox' : 'Simulazione'}</p>
             <p>{new Date(order.requestedFor).toLocaleString('it-IT', { timeZone: 'Europe/Rome' })}</p>
+            {order.documentPlan && <details>
+              <summary className="min-h-11 cursor-pointer py-3 font-medium">{t('supplier.documentPlan.title')}</summary>
+              <dl className="grid gap-2">
+                <div><dt>{t('supplier.documentPlan.sale', { seller: order.supplierName })}</dt>
+                  <dd>{orderMoney(order.documentPlan.guestGrossCents, i18n.language)}</dd></div>
+                {order.documentPlan.guestRefundCents > 0 && <div><dt>{t('supplier.documentPlan.saleRefund')}</dt>
+                  <dd>{orderMoney(order.documentPlan.guestRefundCents, i18n.language)}</dd></div>}
+                {order.documentPlan.commission && <>
+                  <div><dt>{t(order.documentPlan.commission.issuerRole === 'host' ? 'supplier.documentPlan.hostFee' : 'supplier.documentPlan.platformFee', { seller: order.supplierName })}</dt>
+                    <dd>{orderMoney(order.documentPlan.commission.grossCents, i18n.language)}</dd></div>
+                  {order.documentPlan.commission.refundedCents > 0 && <div><dt>{t('supplier.documentPlan.feeRefund')}</dt>
+                    <dd>{orderMoney(order.documentPlan.commission.refundedCents, i18n.language)}</dd></div>}
+                </>}
+              </dl>
+              <p className="text-sm">{t('supplier.documentPlan.note')}</p>
+            </details>}
             {order.requestNote && <p>Note: {order.requestNote}</p>}
             {order.complaint && <p>Segnalazione: {order.complaint}</p>}
             {order.supplierReply && <p>Risposta fornitore: {order.supplierReply}</p>}

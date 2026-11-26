@@ -57,9 +57,9 @@ describe('stay invoice recipient', () => {
   it('shows the seller PDF and receipt when the stay has no host invoice', async () => {
     show(false, [{ id: 'order-1', serviceName: 'Transfer', supplierName: 'Example supplier',
       documents: [{ id: 'doc-1', fileName: 'invoice.pdf', uploadedAt: '2026-11-26T12:00:00Z' }] }]);
-    expect(await screen.findByText('Transfer · Example supplier')).toBeInTheDocument();
+    expect(await screen.findByText('Example supplier is responsible for the tax document for this service.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'invoice.pdf' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Payment receipt' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Stripe payment receipt' })).toBeInTheDocument();
     expect(screen.queryByText(labels.empty)).not.toBeInTheDocument();
   });
 });
