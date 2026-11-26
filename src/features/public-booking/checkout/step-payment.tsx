@@ -11,7 +11,7 @@ import type { CheckoutOutcomeLocationState } from '@/features/public-booking/che
 import { useBooking } from '@/features/public-booking/booking/booking-context';
 import { quoteTotalCents } from '@/features/public-booking/booking/quote-helpers';
 import { PaymentPanel } from '@/features/public-booking/checkout/payment-panel';
-import { buildBookingPayload, type CheckoutDraft } from '@/features/public-booking/checkout/checkout-model';
+import { buildBookingPayload, checkoutExtraLines, type CheckoutDraft } from '@/features/public-booking/checkout/checkout-model';
 import { detailsSchema } from '@/features/public-booking/checkout/details-schema';
 import { formatDayMonth, formatPrice } from '@/features/public-site/stay/stay-format';
 import { getProblemCode, getProblemMessage } from '@/lib/api-errors';
@@ -62,7 +62,11 @@ export function StepPayment({ org, orgSlug, draft, onDraft, ages, onBack, onEdit
   const ready = quote.status === 'ready' ? quote : null;
   const paymentOptions = ready?.quote.paymentOptions;
   const deferredDate = paymentOptions?.deferredPaymentAvailable === true ? paymentOptions.deferredChargeDate : null;
-  const total = ready ? formatPrice(quoteTotalCents(ready.quote), currency, locale) : '';
+  const offers = ready?.quote.extraOffers ?? [];
+  const selections = (draft.extras ?? []).filter((selection) =>
+    offers.some((offer) => offer.id === selection.id && offer.unitPrice === selection.expectedUnitPrice));
+  const extrasCents = checkoutExtraLines(offers, selections, draft.mode).reduce((sum, line) => sum + line.cents, 0);
+  const total = ready ? formatPrice(quoteTotalCents(ready.quote) + extrasCents, currency, locale) : '';
   const request = draft.mode === 'request';
   const pay = !request && draft.pay === 'deadline' && deferredDate ? 'deadline' : 'now';
   const detailsOk = detailsSchema.safeParse(draft.details).success;
@@ -102,7 +106,7 @@ export function StepPayment({ org, orgSlug, draft, onDraft, ages, onBack, onEdit
           pets: stay.pets,
           // The ages go only when the tax depends on them and every child has one.
           childrenAges: ready.quote.touristTax.ageRulesApply ? completeChildrenAges(ages) : undefined,
-          draft: { ...draft, pay },
+          draft: { ...draft, pay, extras: selections },
           marketingConsentVersion: org.marketingConsentVersion,
           softOptInNoticeVersion: org.softOptInNoticeVersion,
           // Where the guest came from: the `utm_*` of the address (a link the agency copied) and, with them or with the consent to statistics (DB-02b), the host of the site they
@@ -243,6 +247,34 @@ export function StepPayment({ org, orgSlug, draft, onDraft, ages, onBack, onEdit
         </section>
       )}
 
+      {offers.length > 0 && (
+        <fieldset className="co-section space-y-3" disabled={createBooking.isPending}>
+          <legend>{t('publicCheckout.extras.title')}</legend>
+          {offers.map((offer) => {
+            const selected = selections.find((item) => item.id === offer.id);
+            const change = (quantity: number) => onDraft({ extras: [
+              ...selections.filter((item) => item.id !== offer.id),
+              ...(quantity > 0 ? [{ id: offer.id, expectedUnitPrice: offer.unitPrice, quantity }] : []),
+            ] });
+            return (
+              <div key={offer.id}>
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" checked={!!selected} onChange={(event) => change(event.target.checked ? 1 : 0)} />
+                  <span>{offer.name} · {formatPrice(Math.round(offer.unitPrice * 100), currency, locale)}</span>
+                </label>
+                {offer.description && <p>{offer.description}</p>}
+                {(offer.requiresApproval || request) && <p>{t(offer.requiresApproval ? 'publicCheckout.extras.approval' : 'publicCheckout.extras.portal')}</p>}
+                {selected && offer.byQuantity && <label>{t('publicCheckout.extras.quantity')}
+                  <input type="number" min={1} max={100} value={selected.quantity} onChange={(event) => {
+                    const quantity = event.target.valueAsNumber;
+                    if (Number.isInteger(quantity) && quantity >= 1 && quantity <= 100) change(quantity);
+                  }} />
+                </label>}
+              </div>
+            );
+          })}
+        </fieldset>
+      )}
       <section className="co-section" aria-label={t('publicCheckout.pay.consentTitle')}>
         <ConsentCheckbox checked={draft.consent} onCheckedChange={(consent) => onDraft({ consent })} orgSlug={orgSlug} />
       </section>

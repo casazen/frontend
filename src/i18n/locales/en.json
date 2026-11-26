@@ -24080,6 +24080,12 @@
     "termsNote": "Also read the operator's <terms>booking terms</terms>."
   },
   "publicCheckout": {
+    "extras": {
+      "title": "Optional extras",
+      "quantity": "Quantity",
+      "approval": "Authorize your card in the guest portal. You will only be charged if the host confirms.",
+      "portal": "Pay in the guest portal once your booking is confirmed."
+    },
     "backToHome": "Back to the home",
     "details": {
       "arrivalHint": "Check-in from {{from}} to {{to}}",

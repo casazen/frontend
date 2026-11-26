@@ -16,7 +16,11 @@ import { siteLocale } from '@/lib/site-language';
 import { cn } from '@/lib/utils';
 import '@/features/public-booking/checkout/checkout.css';
 
+import type { CheckoutExtraSelection } from '@/types/direct-booking.types';
+import { checkoutExtraLines } from './checkout-model';
+
 interface StaySummaryProps {
+  extras?: CheckoutExtraSelection[];
   mode: CheckoutMode;
   /** Takes the guest back to the first step; absent once the booking is made, when the stay is fixed. */
   onEdit?: () => void;
@@ -43,7 +47,7 @@ function cancellationLine(model: ReturnType<typeof useBooking>, language: string
  * server sends them (never added up here), and what a cancellation gives back for these dates. A desktop has it as a receipt on the
  * right; a phone as a sheet behind the bar. The new total is announced when it changes.
  */
-export function StaySummary({ mode, onEdit, variant = 'aside' }: StaySummaryProps) {
+export function StaySummary({ mode, extras, onEdit, variant = 'aside' }: StaySummaryProps) {
   const { t, i18n } = useTranslation();
   const model = useBooking();
   const { property, stay, nights, quote, currency } = model;
@@ -57,7 +61,7 @@ export function StaySummary({ mode, onEdit, variant = 'aside' }: StaySummaryProp
     <section className={cn('co-sum', variant === 'sheet' && 'co-sum--sheet')} aria-labelledby={`co-sum-title-${variant}`} data-testid="checkout-summary">
       <p role="status" aria-live="polite" className="sr-only">
         {quote.status === 'ready'
-          ? t('publicCheckout.summary.updated', { total: formatPrice(quoteTotalCents(quote.quote), currency, locale), count: quote.quote.nights || nights })
+          ? t('publicCheckout.summary.updated', { total: formatPrice(quoteTotalCents(quote.quote) + checkoutExtraLines(quote.quote.extraOffers, extras, mode).reduce((sum, line) => sum + line.cents, 0), currency, locale), count: quote.quote.nights || nights })
           : ''}
       </p>
 
@@ -96,7 +100,7 @@ export function StaySummary({ mode, onEdit, variant = 'aside' }: StaySummaryProp
       </dl>
 
       {shown ? (
-        <PriceLines quote={shown.quote} estimatedTax={shown.estimatedTax} stale={quote.status === 'loading'} idPrefix={`co-sum-${variant}`} />
+        <PriceLines extras={checkoutExtraLines(shown.quote.extraOffers, extras, mode)} quote={shown.quote} estimatedTax={shown.estimatedTax} stale={quote.status === 'loading'} idPrefix={`co-sum-${variant}`} />
       ) : (
         <p className="co-sum__wait" role="status">
           {quote.status === 'loading' ? t('propertyBooking.price.calculating') : t('publicCheckout.summary.noPrice')}
@@ -129,7 +133,7 @@ export function StaySummary({ mode, onEdit, variant = 'aside' }: StaySummaryProp
  * On a phone and a tablet the summary is behind a bar at the foot of the page: «Totale · Dettagli». The bar leaves room for itself
  * (`pb-24` of the page) so it covers no button.
  */
-export function SummaryBar({ mode, onEdit }: Pick<StaySummaryProps, 'mode' | 'onEdit'>) {
+export function SummaryBar({ mode, extras, onEdit }: Pick<StaySummaryProps, 'mode' | 'extras' | 'onEdit'>) {
   const { t, i18n } = useTranslation();
   const isDesktop = useMediaQuery(FROM_DESKTOP_QUERY);
   const portal = usePortalRootProps();
@@ -147,7 +151,7 @@ export function SummaryBar({ mode, onEdit }: Pick<StaySummaryProps, 'mode' | 'on
           <button type="button" className="co-bar__btn" aria-haspopup="dialog">
             <span className="co-bar__total">
               <small>{t('publicCheckout.summary.total')}</small>
-              <strong data-testid="checkout-bar-total">{total ? formatPrice(quoteTotalCents(total), currency, locale) : '—'}</strong>
+              <strong data-testid="checkout-bar-total">{total ? formatPrice(quoteTotalCents(total) + checkoutExtraLines(total.extraOffers, extras, mode).reduce((sum, line) => sum + line.cents, 0), currency, locale) : '—'}</strong>
             </span>
             <span className="co-bar__more">
               {t('publicCheckout.summary.details')}
@@ -162,6 +166,7 @@ export function SummaryBar({ mode, onEdit }: Pick<StaySummaryProps, 'mode' | 'on
         <div className="stay-sheet__body">
           <StaySummary
             mode={mode}
+            extras={extras}
             variant="sheet"
             onEdit={
               onEdit

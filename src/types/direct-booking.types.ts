@@ -28,7 +28,22 @@ export interface DirectBookingAttributionPayload {
   referrer?: string;
 }
 
+export interface CheckoutExtraSelection {
+  id: string;
+  quantity: number;
+  expectedUnitPrice: number;
+}
+export interface CheckoutExtraOffer {
+  id: string;
+  name: string;
+  description: string;
+  unitPrice: number;
+  byQuantity: boolean;
+  requiresApproval: boolean;
+}
+
 export interface CreateDirectBookingPayload {
+  extras?: CheckoutExtraSelection[];
   propertyId: string;
   checkInDate: string;
   checkOutDate: string;
@@ -128,6 +143,7 @@ export interface StayCancellation {
 
 /** Price computed by the backend: the same numbers the booking records and charges. */
 export interface DirectBookingQuote {
+  extraOffers?: CheckoutExtraOffer[];
   propertyId: string;
   checkInDate: string;
   checkOutDate: string;

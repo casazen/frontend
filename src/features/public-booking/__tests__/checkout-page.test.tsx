@@ -170,6 +170,30 @@ describe('CheckoutPage', () => {
     expect(screen.getByTestId('checkout-next')).not.toHaveAttribute('aria-disabled');
   });
 
+  it('adds selected units to the payment once and leaves approval-only extras out of the charge', async () => {
+    vi.mocked(publicBookingApi.quoteDirectBooking).mockResolvedValue({ ...quote, extraOffers: [
+      { id: 'kit', name: 'Kit', description: '', byQuantity: true, unitPrice: 15, requiresApproval: false },
+      { id: 'breakfast', name: 'Colazione', description: '', byQuantity: false, unitPrice: 10, requiresApproval: true },
+    ] });
+    renderCheckout();
+    await goToDetails();
+    await fillDetailsAndGoToPayment();
+    fireEvent.click(screen.getByRole('checkbox', { name: /Kit/ }));
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Quantità' }), { target: { value: '2' } });
+    fireEvent.click(screen.getByRole('checkbox', { name: /Colazione/ }));
+    expect(screen.getByTestId('price-breakdown-total')).toHaveTextContent('532,50');
+    fireEvent.click(document.getElementById('data-consent') as HTMLElement);
+    const submit = screen.getByTestId('checkout-submit');
+    fireEvent.click(submit);
+    fireEvent.click(submit);
+    await screen.findByTestId('checkout-payment');
+    expect(publicBookingApi.createDirectBooking).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(publicBookingApi.createDirectBooking).mock.calls[0][0].extras).toEqual([
+      { id: 'kit', expectedUnitPrice: 15, quantity: 2 },
+      { id: 'breakfast', expectedUnitPrice: 10, quantity: 1 },
+    ]);
+  });
+
   it('CheckoutPage_ThreeSteps_NeverPutThePersonalDataInTheAddress', async () => {
     renderCheckout();
     await goToDetails();
