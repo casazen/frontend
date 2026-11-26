@@ -46,11 +46,15 @@ function PropertyChoice({ origin, propertyId, onPropertyChange }: ChoiceProps & 
       ),
     [homes.data],
   );
-  const chosen = publishable.find((home) => home.id === propertyId) ?? publishable[0];
+  // A read that failed leaves the homes of the last one that worked in the query: the code is not built on them, since the page says they could not be read (the places of the search bar
+  // are held to the same rule).
+  const chosen = homes.isError ? undefined : (publishable.find((home) => home.id === propertyId) ?? publishable[0]);
 
   let plan: SnippetPlan;
   if (chosen) {
     plan = { state: 'ready', input: { ...origin, widget: 'property', property: chosen.slug?.trim() || chosen.id } };
+  } else if (homes.isError) {
+    plan = { state: 'waiting', message: t('embed.settings.snippet.waiting.homesFailed') };
   } else {
     plan = { state: 'waiting', message: homes.isLoading ? t('embed.settings.property.loading') : t('embed.settings.snippet.waiting.property') };
   }

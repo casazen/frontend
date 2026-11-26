@@ -9915,6 +9915,7 @@
         "waiting": {
           "destinations": "Leggo le località del tuo sito…",
           "destinationsFailed": "Il codice aspetta le località del tuo sito: riprova a leggerle.",
+          "homesFailed": "Il codice aspetta i tuoi alloggi: riprova a leggerli.",
           "property": "Scegli un alloggio per vedere il codice.",
           "target": "Scrivi l'indirizzo della pagina per vedere il codice."
         }

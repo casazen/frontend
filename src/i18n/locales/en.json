@@ -9915,6 +9915,7 @@
         "waiting": {
           "destinations": "Reading the places of your site…",
           "destinationsFailed": "The code waits for the places of your site: try reading them again.",
+          "homesFailed": "The code waits for your homes: try reading them again.",
           "property": "Choose a home to see the code.",
           "target": "Write the address of the page to see the code."
         }

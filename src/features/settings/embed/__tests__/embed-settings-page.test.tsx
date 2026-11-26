@@ -422,6 +422,27 @@ describe('EmbedSettingsPage (E41/F03/US01, NF-147, NF-149)', () => {
       expect(screen.queryByTestId('embed-snippet')).not.toBeInTheDocument();
     });
 
+    it('picker_PropertyHomesReadAgainFails_GivesNoCodeFromTheOlderRead_AndOffersToTryAgain', async () => {
+      // A read that fails leaves the homes of the last one that worked in the query: the page says they could not be read, so no code and no preview stand on them.
+      const refetch = vi.fn();
+      vi.mocked(useProperties).mockReturnValue({ data: HOMES, isLoading: false, isError: true, refetch } as unknown as ReturnType<typeof useProperties>);
+      renderPage();
+      await loaded();
+
+      pickWidget('property');
+      await act(async () => undefined);
+
+      expect(screen.getByTestId('embed-property-error')).toBeInTheDocument();
+      expect(screen.queryByTestId('embed-property-select')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('embed-snippet')).not.toBeInTheDocument();
+      expect(screen.getByTestId('embed-snippet-copy')).toBeDisabled();
+      expect(screen.getByTestId('embed-snippet-waiting')).toHaveTextContent(i18n.t('embed.settings.snippet.waiting.homesFailed'));
+      expect(mount).not.toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ widget: 'property' }));
+
+      fireEvent.click(within(screen.getByTestId('embed-property-error')).getByRole('button', { name: i18n.t('embed.settings.retry') }));
+      expect(refetch).toHaveBeenCalledTimes(1);
+    });
+
     it('picker_Search_AsksTheAddressOfThePageAndWritesItWithThePlaces', async () => {
       withDomain(OWN);
       renderPage();
