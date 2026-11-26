@@ -12,7 +12,8 @@ name: WordPress plugin release
 # new release. Nothing here runs on a pull request or on a push to a branch, and nothing is sent to WordPress.org.
 #
 # This is the only workflow with `contents: write` (a release is written to the repository). It uses no secret: the token is the
-# one that GitHub gives to the run.
+# one that GitHub gives to the run. The checkout does not keep it on disk (`persist-credentials: false`), so the steps that run code
+# of third parties (npm ci, the build of the blocks, the setup actions) never see it: only the last step gets it, through GH_TOKEN.
 
 on:
   push:
@@ -33,6 +34,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       # Builds the blocks and the translations and runs tools/check-version.mjs against the tag: the build stops here when the
       # tag is not `wp-plugin-v` plus the version of the plugin.

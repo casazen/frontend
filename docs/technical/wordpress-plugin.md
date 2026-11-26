@@ -79,7 +79,7 @@ Lo ZIP (job `package`, azione `.github/actions/build-wordpress-plugin`) si produ
 
 ## Rilascio
 
-Il rilascio è un tag `wp-plugin-v<versione>` (un prefisso che non si confonde con i tag dell’applicazione). Il workflow `.github/workflows/wordpress-plugin-release.yml` parte solo sui tag `wp-plugin-v*`, costruisce lo ZIP con la stessa azione, **rifiuta un tag diverso dalla versione del plugin** e crea una release di GitHub (normale, non bozza) con `casazen-<versione>.zip` in allegato, con `gh release create --verify-tag --generate-notes`. È l’unico workflow con `contents: write` e non usa segreti. Non pubblica su WordPress.org (decisione dell’utente, a parte).
+Il rilascio è un tag `wp-plugin-v<versione>` (un prefisso che non si confonde con i tag dell’applicazione). Il workflow `.github/workflows/wordpress-plugin-release.yml` parte solo sui tag `wp-plugin-v*`, costruisce lo ZIP con la stessa azione, **rifiuta un tag diverso dalla versione del plugin** e crea una release di GitHub (normale, non bozza) con `casazen-<versione>.zip` in allegato, con `gh release create --verify-tag --generate-notes`. È l’unico workflow con `contents: write` e non usa segreti; il checkout non conserva il token sul disco (`persist-credentials: false`), così `npm ci`, la build dei blocchi e le azioni di terzi non lo vedono: lo riceve solo l’ultimo passo, che crea la release. Non pubblica su WordPress.org (decisione dell’utente, a parte).
 
 Per fare un rilascio:
 
