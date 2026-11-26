@@ -311,7 +311,7 @@ describe('GuestRegisterLayer, the guest register of a property in Switzerland (E
       // The host closes the layer while the file is on its way; the file arrives afterwards and the request runs to its end.
       unmount();
       deliver({ blob: new Blob([`\uFEFF${CSV}`], { type: 'text/csv' }), contentDisposition: null });
-      await waitFor(() => expect(mutation.state.status).toBe('success'));
+      await waitFor(() => expect(mutation?.state.status).toBe('success'));
 
       expect(print).not.toHaveBeenCalled();
       expect(document.querySelector('.guest-register-sheet')).toBeNull();
