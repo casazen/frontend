@@ -15,7 +15,8 @@ export interface StayCalendarData {
   today: string;
   /** End of the loaded range (excluded). */
   end: string;
-  currency: string;
+  /** The currency of the prices of the nights, as the server says it; `null` while there is none (nothing is loaded, or the load failed): no price is drawn then. Never a default. */
+  currency: string | null;
   /** Why the days could not be loaded (a translated problem message), when `status` is `error`. */
   errorMessage?: string;
   onRetry: () => void;
@@ -57,13 +58,13 @@ export function usePublicPropertyCalendar(
         days: [],
         today,
         end: addDays(today, DEFAULT_MONTHS_AHEAD * 31),
-        currency: 'EUR',
+        currency: null,
         errorMessage: getProblemMessage(error, t),
         onRetry: retry,
       };
     }
     if (!data) {
-      return { status: 'loading', days: [], today, end: today, currency: 'EUR', onRetry: retry };
+      return { status: 'loading', days: [], today, end: today, currency: null, onRetry: retry };
     }
     return {
       status: 'ready',

@@ -392,6 +392,24 @@ describe('the exit to the checkout (AC2, AC3)', () => {
   });
 });
 
+describe('a home whose data says no currency (CHF-MONEY)', () => {
+  it('embedProperty_quote_thatSaysNoCurrency_isWrittenWithNoSymbolAndTheWidgetStillDraws', async () => {
+    // The home, its calendar and its quote carry no currency (a malformed answer): the frame writes the amounts bare with the phrase that says so, and never a euro.
+    getOrgProperty.mockResolvedValue({ ...property, currency: '' } as PublicPropertyDetailDto);
+    getCalendar.mockResolvedValue({ ...calendar, currency: '' });
+    quoteDirectBooking.mockResolvedValue({ ...quote, currency: '' });
+    open();
+    await page.attach();
+    await cta();
+
+    expect(screen.getByTestId('embed-property')).toBeInTheDocument();
+    expect(screen.getByTestId('booking-price')).toHaveTextContent('519,50 (valuta non disponibile)');
+    expect(screen.getByTestId('price-breakdown-total')).toHaveTextContent('519,50 (valuta non disponibile)');
+    expect(screen.getByTestId('booking-price')).not.toHaveTextContent(/EUR|€/);
+    expect(screen.getByTestId('price-breakdown-total')).not.toHaveTextContent(/EUR|€/);
+  });
+});
+
 describe('what is told to the page (AC5)', () => {
   it('embedProperty_ViewItem_IsSentOnceForTheHomeAndTheStay_WithTheTotalOfTheQuote', async () => {
     const { router, client } = open();

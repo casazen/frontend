@@ -57,7 +57,8 @@ export function PriceLines({ quote, estimatedTax, stale = false, idPrefix, extra
   const uid = useId();
   const [taxOpen, setTaxOpen] = useState(false);
   const locale = siteLocale(i18n.language);
-  const money = (cents: number) => formatPrice(cents, quote.currency || 'EUR', locale);
+  // The currency of the quote, as the server says it: a quote that says none is written with no symbol and the phrase that says so.
+  const money = (cents: number) => formatPrice(cents, quote.currency, locale, t);
   const noteId = `${idPrefix ?? uid}-tax-note`;
 
   const label = (line: QuoteLine): string => {

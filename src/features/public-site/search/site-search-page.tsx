@@ -33,6 +33,9 @@ import './search.css';
 /** From here the list and the map are side by side; under it the page shows one of them and a button to change. */
 const FROM_DESKTOP_QUERY = '(width >= 64rem)';
 
+/** The homes of a site whose list could not be read: the same list every time, so the facets made from it do not change at every render. */
+const NO_HOMES: readonly PublicStayCard[] = [];
+
 interface PublicBookingContext {
   org: PublicOrgDto;
 }
@@ -76,10 +79,14 @@ export function SearchResultsPage({ scope = PLATFORM_SCOPE }: { scope?: SearchSc
 
   // What the controls offer, whatever else is asked: every home of the site, or the facets of the place asked across all the sites.
   // A guest with a pet is always asked, and the list says which homes take it (the server answers a home that does not with the reason `pets`).
-  const everyHome = useOrgStays(platform ? undefined : slug, {}).data?.items;
+  const everyHomeQuery = useOrgStays(platform ? undefined : slug, {});
   // (A page of one home: only its facets are wanted. The previous ones stay while the next place is asked, so the controls do not blink.)
-  const placeFacets = usePlatformStays({ where: placeAsked }, { enabled: platform, pageSize: 1, keepPrevious: true }).data?.facets;
-  const facets = useMemo(() => (platform ? facetsOfServer(placeFacets) : facetsOfCards(everyHome ?? [])), [platform, placeFacets, everyHome]);
+  const placeQuery = usePlatformStays({ where: placeAsked }, { enabled: platform, pageSize: 1, keepPrevious: true });
+  // `undefined` while the answer is on its way: nothing is known yet, and that is not «no currency» (a price chip waits for it, it does not say that the currency is
+  // not available). An answer that came without what the controls need, or failed, ends the wait: they then offer what is known (nothing) and the data say no currency.
+  const everyHome = everyHomeQuery.isPending ? undefined : (everyHomeQuery.data?.items ?? NO_HOMES);
+  const placeFacets = placeQuery.isPending ? undefined : (placeQuery.data?.facets ?? null);
+  const facets = useMemo(() => (platform ? facetsOfServer(placeFacets) : facetsOfCards(everyHome)), [platform, placeFacets, everyHome]);
   const destinations = useScopedDestinations(scope);
   const favorites = useFavorites(platform ? undefined : slug);
   const state = useSearchState({ maxGuests: facets.maxGuests });
@@ -192,7 +199,7 @@ export function SearchResultsPage({ scope = PLATFORM_SCOPE }: { scope?: SearchSc
               </h1>
               <p className="sr-head__sub">{sub}</p>
             </header>
-            <ActiveFilterChips filters={search.filters} currency={facets.currency} onChange={(filters) => setSearch({ filters })} />
+            <ActiveFilterChips filters={search.filters} facets={facets} onChange={(filters) => setSearch({ filters })} />
 
             {stays.isPending ? (
               <div role="status" aria-busy="true" data-testid="search-loading" className="sr-cards">

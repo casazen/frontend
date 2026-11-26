@@ -42,14 +42,14 @@ export function ResultsMapPane({ cards, orgSlug, nights, stay, link }: ResultsMa
     () =>
       cards.map((card) => {
         const price = cardPrice(card, nights);
-        const currency = card.price.currency || 'EUR';
         const cents = price.kind === 'total' ? price.totalCents : price.perNightCents;
         return {
           id: card.id,
           lat: card.latitude,
           lon: card.longitude,
           place: card.comune,
-          label: formatPrice(cents, currency, locale),
+          // The currency of the pin is the one the home says; a home that says none has its price written with no symbol and the phrase that says so.
+          label: formatPrice(cents, card.price.currency, locale, t),
           name: card.name,
           href: linkOf(orgSlug ?? card.orgSlug ?? '', card, stay),
           available: card.availability.available,

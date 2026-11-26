@@ -60,7 +60,7 @@ export function StaySummary({ mode, extras, onEdit, variant = 'aside' }: StaySum
     <section className={cn('co-sum', variant === 'sheet' && 'co-sum--sheet')} aria-labelledby={`co-sum-title-${variant}`} data-testid="checkout-summary">
       <p role="status" aria-live="polite" className="sr-only">
         {quote.status === 'ready'
-          ? t('publicCheckout.summary.updated', { total: formatPrice(quoteTotalCents(quote.quote) + checkoutExtraLines(quote.quote.extraOffers, extras, mode).reduce((sum, line) => sum + line.cents, 0), currency, locale), count: quote.quote.nights || nights })
+          ? t('publicCheckout.summary.updated', { total: formatPrice(quoteTotalCents(quote.quote) + checkoutExtraLines(quote.quote.extraOffers, extras, mode).reduce((sum, line) => sum + line.cents, 0), currency, locale, t), count: quote.quote.nights || nights })
           : ''}
       </p>
 
@@ -150,7 +150,7 @@ export function SummaryBar({ mode, extras, onEdit }: Pick<StaySummaryProps, 'mod
           <button type="button" className="co-bar__btn" aria-haspopup="dialog">
             <span className="co-bar__total">
               <small>{t('publicCheckout.summary.total')}</small>
-              <strong data-testid="checkout-bar-total">{total ? formatPrice(quoteTotalCents(total) + checkoutExtraLines(total.extraOffers, extras, mode).reduce((sum, line) => sum + line.cents, 0), currency, locale) : '—'}</strong>
+              <strong data-testid="checkout-bar-total">{total ? formatPrice(quoteTotalCents(total) + checkoutExtraLines(total.extraOffers, extras, mode).reduce((sum, line) => sum + line.cents, 0), currency, locale, t) : '—'}</strong>
             </span>
             <span className="co-bar__more">
               {t('publicCheckout.summary.details')}

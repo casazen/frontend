@@ -51,13 +51,13 @@ export function usePublicSiteCalendar(
         days: [],
         today,
         end: addDays(today, DEFAULT_MONTHS_AHEAD * 31),
-        currency: 'EUR',
+        currency: null,
         errorMessage: getProblemMessage(error, t),
         onRetry: retry,
       };
     }
     if (!data) {
-      return { status: 'loading', days: [], today, end: today, currency: 'EUR', onRetry: retry };
+      return { status: 'loading', days: [], today, end: today, currency: null, onRetry: retry };
     }
     return {
       status: 'ready',

@@ -71,7 +71,8 @@ export function HouseCard({ card, orgSlug, variant = 'grid', nights = null, stay
   const to = linkOf(site, card, stay);
   const facts = cardFacts(card);
   const price = cardPrice(card, nights);
-  const currency = card.price.currency || 'EUR';
+  // The currency is the one the home says; a home that says none is written with no symbol and the phrase that says so (`formatPrice`).
+  const currency = card.price.currency;
   const place = placeOfCard(card, i18n.language);
   const favourite = isGuestFavourite(card);
   const freeUntil = variant === 'row' ? freeCancellationUntil(card) : null;
@@ -188,11 +189,11 @@ export function HouseCard({ card, orgSlug, variant = 'grid', nights = null, stay
           ) : price.kind === 'total' ? (
             <>
               <p className="hcard__price" data-testid="house-card-price" data-kind="total">
-                <strong>{formatPrice(price.totalCents, currency, locale)}</strong>
+                <strong>{formatPrice(price.totalCents, currency, locale, t)}</strong>
                 <span>{t('siteHome.card.totalFor', { count: price.nights })}</span>
               </p>
               <p className="hcard__sub">
-                {t('siteHome.card.perNightAverage', { price: formatPrice(price.perNightCents, currency, locale) })}
+                {t('siteHome.card.perNightAverage', { price: formatPrice(price.perNightCents, currency, locale, t) })}
                 {' · '}
                 {t(`siteHome.card.tax.${price.tax}`)}
                 {price.tax === 'estimated' ? (
@@ -205,7 +206,7 @@ export function HouseCard({ card, orgSlug, variant = 'grid', nights = null, stay
           ) : (
             <p className="hcard__price" data-testid="house-card-price" data-kind="from">
               <span>{t('publicSite.card.from')}</span>
-              <strong>{formatPrice(price.perNightCents, currency, locale)}</strong>
+              <strong>{formatPrice(price.perNightCents, currency, locale, t)}</strong>
               <span>/ {t('siteHome.card.night')}</span>
             </p>
           )}

@@ -1,8 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { formatStayDate, romeDateOf } from '@/lib/stay-dates';
-import { formatCurrency } from '@/lib/utils';
 import type { GuestCancellationPreview } from '@/types';
-import { chargesNothing } from '../cancellation-preview';
+import { cancellationMoney, chargesNothing } from '../cancellation-preview';
 
 /**
  * The one highlighted block of the cancellation (DB-08b): what the guest gets back if they cancel today, in a sentence, and where the figure
@@ -10,7 +9,7 @@ import { chargesNothing } from '../cancellation-preview';
  */
 export function RefundSummary({ preview }: { preview: GuestCancellationPreview }) {
   const { t, i18n } = useTranslation();
-  const money = (amount: number) => formatCurrency(amount, preview.currency);
+  const money = (amount: number) => cancellationMoney(amount, preview.currency, t);
   const today = formatStayDate(romeDateOf(preview.generatedAt), i18n.language, { day: 'numeric', month: 'long' });
 
   const nothingToPay = chargesNothing(preview);
