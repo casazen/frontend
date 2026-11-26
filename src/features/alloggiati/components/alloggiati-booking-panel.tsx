@@ -42,10 +42,6 @@ export function AlloggiatiBookingPanel({ bookingId, checkInDate }: AlloggiatiBoo
   const notFound = isError && getHttpStatus(error) === 404;
   const status = notFound ? undefined : data;
   const channelView = status && !status.directSubmission ? stayChannelViewOf(status) : null;
-  const download = useMutation({
-    mutationFn: () => alloggiatiApi.downloadDirectReceipt(bookingId),
-    onSuccess: (blob) => saveBlobAs(blob, `alloggiati-${bookingId}.pdf`),
-  });
   const queued = status?.directSubmission && (status.status === 'DaInviareManualmente' || status.status === 'DaInviare');
   const receiptArchived = channelView === 'receiptArchived';
 
@@ -134,10 +130,7 @@ export function AlloggiatiBookingPanel({ bookingId, checkInDate }: AlloggiatiBoo
                   ))}
                 </ul>
               )}
-              {status.canDownloadDirectReceipt && <Button disabled={download.isPending} variant="outline" onClick={() => download.mutate()}>
-                {t('institutionalPortals.receipt')}
-              </Button>}
-              {download.isError && <p role="alert">{t('institutionalPortals.downloadError')}</p>}
+              {status.canDownloadDirectReceipt && <DirectReceiptDownload key={bookingId} bookingId={bookingId} />}
               {channelView === null && !status.directSubmission && (
                 <MarkSentManuallyButton
                   bookingId={bookingId}
@@ -162,5 +155,19 @@ export function AlloggiatiBookingPanel({ bookingId, checkInDate }: AlloggiatiBoo
         </div>
       )}
     </div>
+  );
+}
+
+function DirectReceiptDownload({ bookingId }: { bookingId: string }) {
+  const { t } = useTranslation();
+  const download = useMutation({
+    mutationFn: () => alloggiatiApi.downloadDirectReceipt(bookingId),
+    onSuccess: (blob) => saveBlobAs(blob, `alloggiati-${bookingId}.pdf`),
+  });
+  return (
+    <>
+      <Button disabled={download.isPending} variant="outline" onClick={() => download.mutate()}>{t('institutionalPortals.receipt')}</Button>
+      {download.isError && <p role="alert">{t('institutionalPortals.downloadError')}</p>}
+    </>
   );
 }

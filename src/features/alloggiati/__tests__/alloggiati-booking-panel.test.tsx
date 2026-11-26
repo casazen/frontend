@@ -67,3 +67,11 @@ describe('AlloggiatiBookingPanel: a stay that owes no communication', () => {
     expect(screen.getByTestId('test-guest-summary')).toBeInTheDocument();
   });
 });
+
+
+it('keeps a direct submission with the CasaZen queue instead of asking for a manual upload', () => {
+  current.status = { ...statusOf('DaInviareManualmente'), directSubmission: true };
+  renderPanel();
+  expect(screen.getByText(i18n.t('institutionalPortals.directQueue'))).toBeInTheDocument();
+  expect(screen.queryByTestId('alloggiati-manual-notice')).not.toBeInTheDocument();
+});
