@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAppShell } from '@/components/layout/app-shell-context';
-import { PropertySettingsLinks, propertySettingsOptions } from './property-settings-links';
+import { PropertySettingsLinks } from './property-settings-links';
+import { propertySettingsOptions } from './property-settings-options';
 import { WorkspaceViewDialog } from '@/components/layout/workspace-view-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

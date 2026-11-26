@@ -18,6 +18,7 @@ export function WorkspaceViewDialog({ contextKey, viewKey, onClose }: { contextK
   const { sections } = getContextNav(contextKey, hasPermission, flags, { canOpenPath, withoutBottom: phone });
   const view = useUiStore(state => state.workspaceViews[viewKey] ?? DEFAULT_WORKSPACE_VIEW);
   const update = useUiStore(state => state.updateWorkspaceView);
+  const showDashboardPreference = contextKey === 'short-rent' && hasPermission('short-rent', 'booking.read');
   function togglePath(path: string) {
     update(viewKey, current => ({
       ...current,
@@ -40,7 +41,7 @@ export function WorkspaceViewDialog({ contextKey, viewKey, onClose }: { contextK
           <input type="checkbox" checked={Boolean(view.focusForms)} onChange={() => update(viewKey, current => ({ ...current, focusForms: !current.focusForms }))} />
           {t('workspaceView.focusForms')}
         </label>
-        {contextKey === 'short-rent' && hasPermission('short-rent', 'booking.read') && <label className="flex min-h-11 items-center gap-3 font-medium">
+        {showDashboardPreference && <label className="flex min-h-11 items-center gap-3 font-medium">
           <input type="checkbox" checked={Boolean(view.tasksFirst)} onChange={() => update(viewKey, current => ({ ...current, tasksFirst: !current.tasksFirst }))} />
           {t('workspaceView.tasksFirst')}
         </label>}
