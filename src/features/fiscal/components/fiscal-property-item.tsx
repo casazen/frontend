@@ -8,7 +8,7 @@ import { Select } from '@/components/ui/select';
 import { ROW_BUTTON } from '@/features/compliance/components/compliance-row';
 import { NoteLine } from '@/features/dashboard/components/note-line';
 import type { NoteTone } from '@/features/dashboard/lib/home-model';
-import { fiscalRegimeStatus, fiscalRegimeSelectId } from '@/features/fiscal/fiscal-focus';
+import { fiscalRegimeStatus } from '@/features/fiscal/fiscal-focus';
 import { TAX_NOTE_KEYS } from '@/features/fiscal/fiscal-format';
 import { cn } from '@/lib/utils';
 import {
@@ -54,13 +54,14 @@ export function FiscalPropertyItem({ row, snapshot, pending, canWrite, onAssign 
   const unavailableReason = (regime: StrFiscalRegime) =>
     IMPRESA_REGIMES.includes(regime) ? t('fiscal.unavailable.partitaIva') : t('fiscal.unavailable.threshold');
   const impresaBlocked = IMPRESA_REGIMES.every((r) => !available.has(r));
+  const confirmableRegime = status !== 'Confirmed' && row.recommendedRegime && available.has(row.recommendedRegime) ? row.recommendedRegime : null;
   const canDesignate = available.has('CedolareSecca21') && row.assignedRegime !== 'CedolareSecca21';
   const movesReducedRate =
     canDesignate && taxpayer?.reducedRatePropertyId != null && taxpayer.reducedRatePropertyId !== row.propertyId;
   const showRecommended = row.recommendedRegime != null && row.recommendedRegime !== row.assignedRegime;
   // With one taxpayer, the organization's, the line says nothing; it matters when there are several or a person's own.
   const showTaxpayer = taxpayer != null && (taxpayers.length > 1 || !taxpayer.isOrgTaxProfile);
-  const selectId = fiscalRegimeSelectId(row.propertyId);
+  const selectId = `fiscal-regime-${row.propertyId}`;
   const confirmLabel = t('fiscal.confirmRecommended');
   const primaryLabel = t('fiscal.primary');
   const taxNoteKey = row.taxNote ? TAX_NOTE_KEYS[row.taxNote] : undefined;
@@ -141,7 +142,7 @@ export function FiscalPropertyItem({ row, snapshot, pending, canWrite, onAssign 
               ))}
             </Select>
           </Field>
-          {status !== 'Confirmed' && row.recommendedRegime && available.has(row.recommendedRegime) ? (
+          {confirmableRegime ? (
             <Button
               variant="outline"
               size="sm"
@@ -149,30 +150,28 @@ export function FiscalPropertyItem({ row, snapshot, pending, canWrite, onAssign 
               data-testid={`fiscal-confirm-${row.propertyId}`}
               aria-label={t('dashboard.row.actionFor', { action: confirmLabel, name: row.name })}
               disabled={pending}
-              onClick={() => onAssign(row.recommendedRegime!)}
+              onClick={() => onAssign(confirmableRegime)}
             >
               {confirmLabel}
             </Button>
           ) : null}
-          {canDesignate ? (
-            <div className="space-y-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className={ROW_BUTTON}
-                data-testid={`fiscal-primary-${row.propertyId}`}
-                aria-label={t('dashboard.row.actionFor', { action: primaryLabel, name: row.name })}
-                disabled={pending}
-                onClick={() => onAssign('CedolareSecca21')}
-              >
-                {primaryLabel}
-              </Button>
-              {movesReducedRate ? (
-                <p data-testid={`fiscal-primary-moves-${row.propertyId}`}>
-                  <NoteLine note={{ text: t('fiscal.primaryMoves'), tone: 'warning' }} />
-                </p>
-              ) : null}
-            </div>
+          {canDesignate && confirmableRegime !== 'CedolareSecca21' ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className={ROW_BUTTON}
+              data-testid={`fiscal-primary-${row.propertyId}`}
+              aria-label={t('dashboard.row.actionFor', { action: primaryLabel, name: row.name })}
+              disabled={pending}
+              onClick={() => onAssign('CedolareSecca21')}
+            >
+              {primaryLabel}
+            </Button>
+          ) : null}
+          {movesReducedRate ? (
+            <p data-testid={`fiscal-primary-moves-${row.propertyId}`}>
+              <NoteLine note={{ text: t('fiscal.primaryMoves'), tone: 'warning' }} />
+            </p>
           ) : null}
         </div>
       ) : null}

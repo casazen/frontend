@@ -30,13 +30,19 @@ function addressLine(data: BookingInvoiceData, language: string): string {
  * It is for who may read payments (`payment.read`: the API refuses the data to the others, so the section is not there for them); who may not
  * write them (`payment.write`) reads the data and finds no button.
  */
-export function BookingInvoiceDataSection({ bookingId }: { bookingId: string }) {
+export function BookingInvoiceDataSection({ bookingId, editing: controlledEditing, onEditingChange }: {
+  bookingId: string;
+  editing?: boolean;
+  onEditingChange?: (editing: boolean) => void;
+}) {
   const { t, i18n } = useTranslation();
   const { hasPermission } = useWorkspace();
   const canRead = hasPermission('short-rent', 'payment.read');
   const canWrite = hasPermission('short-rent', 'payment.write');
   const invoice = useInvoiceData(bookingId, { enabled: canRead });
-  const [editing, setEditing] = useState(false);
+  const [localEditing, setLocalEditing] = useState(false);
+  const editing = controlledEditing ?? localEditing;
+  const setEditing = onEditingChange ?? setLocalEditing;
 
   // When the sub-step closes the focus goes back to the button that opened it, not to the top of the page.
   const opener = useRef<HTMLButtonElement>(null);
@@ -64,7 +70,7 @@ export function BookingInvoiceDataSection({ bookingId }: { bookingId: string }) 
   const company = form.recipientKind === 'Company';
 
   return (
-    <PlainSection title={t('invoiceData.section.title')} data-testid="booking-invoice-data">
+    <PlainSection title={t('invoiceData.section.title')} className={`rounded-xl border bg-card p-4 sm:p-6 only:col-span-full ${editing ? 'col-span-full' : ''}`} data-testid="booking-invoice-data">
       <div className="@container min-w-0 space-y-3">
         {editing ? (
           <InvoiceDataSubstep bookingId={bookingId} onDone={close} onCancel={close} />
@@ -87,6 +93,8 @@ export function BookingInvoiceDataSection({ bookingId }: { bookingId: string }) 
               <p className="text-sm font-medium" data-testid="booking-invoice-requested">
                 {t('invoiceData.section.requested')}
               </p>
+            ) : data?.invoiceRequested === false && hasRecipient ? (
+              <p className="text-sm text-foreground/70">{t('invoiceData.section.notRequested')}</p>
             ) : null}
 
             {hasRecipient ? (
@@ -94,15 +102,20 @@ export function BookingInvoiceDataSection({ bookingId }: { bookingId: string }) 
                 <p data-testid="booking-invoice-kind" data-kind={form.recipientKind}>
                   {t(`invoiceData.section.kind.${form.recipientKind}`)}
                 </p>
-                <Facts className="@4xl:grid @4xl:grid-cols-2 @4xl:gap-x-8 @4xl:gap-y-3 @4xl:space-y-0">
-                  {form.name ? <Fact label={t(`invoiceData.fields.name.${form.recipientKind}`)}>{form.name}</Fact> : null}
-                  {form.vatNumber && company ? <Fact label={t('invoiceData.fields.vatNumber.label')}>{form.vatNumber}</Fact> : null}
-                  {form.fiscalCode ? <Fact label={t('invoiceData.fields.fiscalCode.label')}>{form.fiscalCode}</Fact> : null}
-                  {form.vatNumber && !company ? <Fact label={t('invoiceData.fields.vatNumber.label')}>{form.vatNumber}</Fact> : null}
-                  {address ? <Fact label={t('invoiceData.fields.address.legend')}>{address}</Fact> : null}
-                  {form.sdiRecipientCode ? <Fact label={t('invoiceData.fields.sdiRecipientCode.label')}>{form.sdiRecipientCode}</Fact> : null}
-                  {form.pec ? <Fact label={t('invoiceData.fields.pec.label')}>{form.pec}</Fact> : null}
-                </Facts>
+                {form.name ? <dl><Fact label={t(`invoiceData.fields.name.${form.recipientKind}`)}>{form.name}</Fact></dl> : null}
+                {form.vatNumber || form.fiscalCode || address || form.sdiRecipientCode || form.pec ? (
+                  <details>
+                    <summary className="w-fit cursor-pointer py-2 text-sm font-medium text-primary">{t('invoiceData.section.recipientDetails')}</summary>
+                    <Facts>
+                      {form.vatNumber && company ? <Fact label={t('invoiceData.fields.vatNumber.label')}>{form.vatNumber}</Fact> : null}
+                      {form.fiscalCode ? <Fact label={t('invoiceData.fields.fiscalCode.label')}>{form.fiscalCode}</Fact> : null}
+                      {form.vatNumber && !company ? <Fact label={t('invoiceData.fields.vatNumber.label')}>{form.vatNumber}</Fact> : null}
+                      {address ? <Fact label={t('invoiceData.fields.address.legend')}>{address}</Fact> : null}
+                      {form.sdiRecipientCode ? <Fact label={t('invoiceData.fields.sdiRecipientCode.label')}>{form.sdiRecipientCode}</Fact> : null}
+                      {form.pec ? <Fact label={t('invoiceData.fields.pec.label')}>{form.pec}</Fact> : null}
+                    </Facts>
+                  </details>
+                ) : null}
                 {missing ? (
                   <p className="text-sm text-orange-700" data-testid="booking-invoice-missing" data-field={missing}>
                     {t(`invoiceData.section.missing.${missing === 'vatNumber' ? 'vatNumber' : 'fiscalCode'}`)}
@@ -116,7 +129,7 @@ export function BookingInvoiceDataSection({ bookingId }: { bookingId: string }) 
               </>
             ) : (
               <p className="text-sm text-foreground/70" data-testid="booking-invoice-empty">
-                {data?.invoiceRequested ? t('invoiceData.section.requestedNoData') : t('invoiceData.section.empty')}
+                {data ? t(data.invoiceRequested ? 'invoiceData.section.requestedNoData' : 'invoiceData.section.notRequested') : t('invoiceData.section.empty')}
               </p>
             )}
 

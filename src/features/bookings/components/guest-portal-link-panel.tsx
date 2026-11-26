@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowUpRight, Copy, Link2 } from 'lucide-react';
+import { ArrowUpRight, Check, Copy, Link2, Mail } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiClient } from '@/api/client';
@@ -15,6 +15,7 @@ export function GuestPortalLinkPanel({ bookingId, checkIn }: {
   checkIn?: { ready: boolean; prepare?: () => Promise<unknown> };
 }) {
   const { t } = useTranslation();
+  const Heading = checkIn ? 'h3' : 'h2';
   const endpoint = `/bookings/${bookingId}/guest-portal`;
   const queryKey = ['guest-portal-link', bookingId];
   const client = useQueryClient();
@@ -48,12 +49,12 @@ export function GuestPortalLinkPanel({ bookingId, checkIn }: {
     }
   }
   return (
-    <section id={checkIn ? "booking-guest-checkin-link" : undefined} tabIndex={checkIn ? -1 : undefined} className="grid gap-5 rounded-xl border bg-card p-5 sm:p-7">
+    <section id={checkIn ? "booking-guest-checkin-link" : undefined} tabIndex={checkIn ? -1 : undefined} className="flex min-w-0 flex-wrap items-center justify-between gap-x-5 gap-y-3 rounded-xl border bg-card p-4">
       <header className="flex items-start gap-4">
         <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-muted text-foreground"><Link2 className="size-5" aria-hidden="true" /></span>
         <div className="space-y-1">
-          <h2 className="text-xl font-semibold tracking-tight">{t(checkIn ? 'guestPortal.host.checkInAccess' : 'guestPortal.host.accessSection')}</h2>
-          <p className="text-sm text-muted-foreground">{t(checkIn ? 'guestPortal.host.checkInAccessDescription' : 'guestPortal.host.accessDescription')}</p>
+          <Heading className="text-base font-semibold">{t(checkIn ? 'guestPortal.host.guestLink' : 'guestPortal.host.accessSection')}</Heading>
+          {!checkIn && <p className="text-sm text-muted-foreground">{t('guestPortal.host.accessDescription')}</p>}
         </div>
       </header>
       {link.isPending && <p role="status">{t('guestPortal.host.loading')}</p>}
@@ -68,7 +69,7 @@ export function GuestPortalLinkPanel({ bookingId, checkIn }: {
           {shareUrl && !needsPreparation && (
             <>
               <Button className="min-h-11" onClick={() => void copyLink(shareUrl)}>
-                <Copy aria-hidden="true" className="size-4" />{t('guestPortal.host.copy')}
+                {copyStatus === 'copied' ? <Check aria-hidden="true" className="size-4" /> : <Copy aria-hidden="true" className="size-4" />}{t('guestPortal.host.copy')}
               </Button>
               <Button asChild className="min-h-11" variant="outline">
                 <a href={shareUrl} rel="noreferrer" target="_blank">
@@ -88,7 +89,7 @@ export function GuestPortalLinkPanel({ bookingId, checkIn }: {
                   </div>
                 </details>
               )}
-              <Button variant="outline" disabled={change.isPending} onClick={() => change.mutate('resend')}>{t('guestPortal.host.resend')}</Button>
+              <Button variant="outline" disabled={change.isPending} onClick={() => change.mutate('resend')}><Mail className="size-4" aria-hidden="true" />{t('guestPortal.host.resend')}</Button>
             </>
           )}
           {confirmation && (

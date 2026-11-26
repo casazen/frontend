@@ -26,7 +26,7 @@ export function AiSettingsPage() {
     { path: '/app/admin/ai', icon: Settings2, title: 'nav.ai', description: 'aiSettings.provider', visible: hasPermission('admin', 'admin.seo.read') },
   ];
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="workspace-page space-y-6">
       <PageHeader title={t('aiSettings.pageTitle')} crumbs="auto" />
       {flags.routines && canConfigure && (
         <section aria-labelledby="settings-routines-title" className="grid overflow-hidden rounded-2xl border bg-card sm:grid-cols-[minmax(0,3fr)_minmax(13rem,2fr)]" data-testid="ai-routines-entry">

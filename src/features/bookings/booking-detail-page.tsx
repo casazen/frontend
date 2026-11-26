@@ -159,7 +159,7 @@ export function BookingDetailPage() {
   // The line under the name: where, when, for how long, how many.
   const summary = [
     booking.propertyName,
-    `${day(booking.checkInDate)} → ${day(booking.checkOutDate)}`,
+    `${day(booking.checkInDate)} – ${day(booking.checkOutDate)}`,
     nights > 0 ? t('booking.list.nights', { count: nights }) : '',
     t('booking.list.guestCount', { count: booking.numberOfGuests }),
   ]
@@ -222,7 +222,12 @@ export function BookingDetailPage() {
             : 'auto'}
           title={guestName}
           description={summary}
-          action={<StatusBadge kind="booking" status={booking.status} size="lg" data-testid="booking-detail-status" />}
+          action={
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <StatusBadge kind="booking" status={booking.status} size="lg" data-testid="booking-detail-status" />
+              {activeTab === 'details' && nextStep}
+            </div>
+          }
           secondary={menu}
         />
 
@@ -238,7 +243,7 @@ export function BookingDetailPage() {
           className={showMessages ? 'lg:flex lg:min-h-[26rem] lg:flex-1 lg:flex-col' : undefined}
           panelClassName={showMessages ? 'lg:flex lg:min-h-0 lg:flex-1 lg:flex-col' : undefined}
         >
-          {activeTab === 'details' && <div className="space-y-4">{nextStep}<BookingStayTab booking={booking} /></div>}
+          {activeTab === 'details' && <BookingStayTab booking={booking} />}
 
           {showMessages && (
             <PlainSection title={t('booking.messages.title')} className="lg:flex lg:min-h-0 lg:flex-1 lg:flex-col">

@@ -167,11 +167,14 @@ test.describe('Tabs in the booking detail (pilot)', () => {
     expect(composer.y + composer.height).toBeLessThan(1100);
     await expect(page.getByTestId('booking-next-step')).toHaveCount(0);
     await page.getByTestId('booking-tab-details').click();
-    const guidance = page.locator('details').filter({ has: page.getByTestId('booking-next-step') });
-    await expect(guidance.locator('summary')).toBeVisible();
+    const guidance = page.getByTestId('booking-guidance-trigger');
+    await expect(guidance).toBeVisible();
     await expect(page.getByTestId('booking-next-step')).toBeHidden();
-    await guidance.locator('summary').click();
+    await guidance.focus();
+    await guidance.press('Enter');
     await expect(page.getByTestId('booking-next-step')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(guidance).toBeFocused();
   });
 
   test('invoice data fills the payment tab on desktop and stacks on mobile', async ({ page }) => {

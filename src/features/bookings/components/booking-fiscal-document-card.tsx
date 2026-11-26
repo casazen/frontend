@@ -1,5 +1,8 @@
 import { useState } from 'react';
-import { Send } from 'lucide-react';
+import { FilePenLine, Send } from 'lucide-react';
+import { isAxiosError } from 'axios';
+import { Link } from 'react-router-dom';
+import { BILLING_SETUP_PATH, BILLING_STEPS } from '@/features/fiscal/billing-wizard/billing-wizard-ids';
 import { useTranslation } from 'react-i18next';
 import { PlainSection } from '@/components/shared/calm';
 import { ErrorState } from '@/components/shared/error-state';
@@ -18,7 +21,7 @@ import { FISCAL_DOCUMENTS_PATH } from '@/features/fiscal/documents/document-path
 import { StatePill } from '@/features/fiscal/documents/document-state-badge';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
-import { getHttpStatus } from '@/lib/api-errors';
+import { getHttpStatus, getProblemCode, getProblemMessage } from '@/lib/api-errors';
 import { useBookingFiscalDocuments, useCreateFiscalDraft, useDocumentsBusy } from '@/queries/use-fiscal-documents';
 import type { BookingFiscalDocument } from '@/types';
 
@@ -34,7 +37,7 @@ const NO_DOCUMENTS: readonly BookingFiscalDocument[] = [];
  * an empty card. The buttons wait while any write on the documents of this booking runs. The server says why a draft cannot be made (the data of the invoice missing, the rules of the document not
  * configured, the issuer's data incomplete) and the card tells it in words.
  */
-export function BookingFiscalDocumentCard({ bookingId }: { bookingId: string }) {
+export function BookingFiscalDocumentCard({ bookingId, onEditRecipient }: { bookingId: string; onEditRecipient?: () => void }) {
   const { t, i18n } = useTranslation();
   const { hasPermission } = useWorkspace();
   const { flags } = useFeatureFlags();
@@ -52,10 +55,15 @@ export function BookingFiscalDocumentCard({ bookingId }: { bookingId: string }) 
   const read = documentsReadOf({ enabled: canRead, isError: documents.isError, status: getHttpStatus(documents.error), hasData: documents.data !== undefined });
   const rows = read === 'ok' ? (documents.data ?? NO_DOCUMENTS) : NO_DOCUMENTS;
   const language = i18n.language;
-  const pageLink = canOpenPage ? { actionLabel: t('fiscalDocuments.bookingCard.open'), href: FISCAL_DOCUMENTS_PATH } : {};
+  const pageLink = canOpenPage && rows.length > 0 ? { actionLabel: t('fiscalDocuments.bookingCard.open'), href: FISCAL_DOCUMENTS_PATH } : {};
+
+  const failure = create.isError && create.variables?.bookingId === bookingId ? create.error : null;
+  const reason = isAxiosError(failure) ? getProblemCode(failure.response?.data) : undefined;
+  const setup = reason === 'issuer_profile_incomplete' ? `${BILLING_SETUP_PATH}?step=${BILLING_STEPS.issuer}`
+    : reason === 'document_rule_not_configured' ? `${BILLING_SETUP_PATH}?step=${BILLING_STEPS.vat}` : null;
 
   return (
-    <PlainSection title={t('fiscalDocuments.bookingCard.title')} data-testid="booking-fiscal-document" {...pageLink}>
+    <PlainSection className="rounded-xl border bg-card p-4 sm:p-6" title={t('fiscalDocuments.bookingCard.title')} data-testid="booking-fiscal-document" {...pageLink}>
       <div className="min-w-0 space-y-3">
         {read === 'loading' || read === 'idle' ? (
           <p role="status" className="text-sm text-foreground/70" data-testid="booking-fiscal-document-loading">
@@ -74,8 +82,18 @@ export function BookingFiscalDocumentCard({ bookingId }: { bookingId: string }) 
         ) : rows.length === 0 ? (
           <div className="space-y-3">
             <p className="text-sm text-foreground/70" data-testid="booking-fiscal-document-empty">
-              {t(canWrite ? 'fiscalDocuments.bookingCard.emptyWrite' : 'fiscalDocuments.bookingCard.empty')}
+              {t(canWrite && !failure ? 'fiscalDocuments.bookingCard.emptyWrite' : 'fiscalDocuments.bookingCard.empty')}
             </p>
+            {failure ? (
+              <div role="alert" className="space-y-1 rounded-lg bg-muted p-3 text-sm" data-testid="booking-fiscal-document-blocker">
+                <p>{reason === 'document_rule_not_configured' ? t('fiscalDocuments.bookingCard.ruleBlocked') : getProblemMessage(failure, t) ?? t('fiscalDocuments.bookingCard.draftFailed')}</p>
+                {reason === 'document_invoice_data_missing' && canWrite && onEditRecipient ? (
+                  <Button type="button" size="sm" variant="link" onClick={onEditRecipient}>{t('fiscalDocuments.bookingCard.editRecipient')}</Button>
+                ) : setup && canOpenPage ? (
+                  <Link to={setup} className="inline-flex py-2 font-medium text-primary underline">{t(reason === 'document_rule_not_configured' ? 'fiscalDocuments.bookingCard.checkVat' : 'fiscalDocuments.bookingCard.checkIssuer')}</Link>
+                ) : null}
+              </div>
+            ) : null}
             {canWrite ? (
               <Button
                 type="button"
@@ -85,7 +103,8 @@ export function BookingFiscalDocumentCard({ bookingId }: { bookingId: string }) 
                 onClick={() => create.mutate({ bookingId })}
                 data-testid="booking-fiscal-document-create"
               >
-                {t('fiscalDocuments.bookingCard.createDraft')}
+                <FilePenLine className="size-4" aria-hidden="true" />
+                {failure ? t('invoiceData.retry') : t('fiscalDocuments.bookingCard.createDraft')}
               </Button>
             ) : null}
           </div>
@@ -100,9 +119,11 @@ export function BookingFiscalDocumentCard({ bookingId }: { bookingId: string }) 
                     <p className="break-words font-medium" data-testid="booking-fiscal-document-name">
                       {name}
                     </p>
-                    <p className="text-sm text-foreground/70" data-testid="booking-fiscal-document-date">
-                      {document.issueDate ? t('fiscalDocuments.bookingCard.issuedOn', { date: formatDocumentDay(document.issueDate, language) }) : t('fiscalDocuments.list.noDate')}
-                    </p>
+                    {document.issueDate ? (
+                      <p className="text-sm text-foreground/70" data-testid="booking-fiscal-document-date">
+                        {t('fiscalDocuments.bookingCard.issuedOn', { date: formatDocumentDay(document.issueDate, language) })}
+                      </p>
+                    ) : null}
                     <div className="flex flex-wrap items-center gap-1.5">
                       <StatePill state={bookingDocumentStateOf(document)} testId="booking-fiscal-document-state" />
                       {payment ? <StatePill state={payment} testId="booking-fiscal-document-payment" /> : null}

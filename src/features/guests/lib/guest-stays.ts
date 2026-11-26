@@ -3,9 +3,9 @@ import { formatStayDate } from '@/lib/stay-dates';
 import type { Booking } from '@/types';
 
 /** Where the stay in focus is: the guest is in the property now, is about to arrive, or has left. */
-export type GuestStayPhase = 'inProgress' | 'upcoming' | 'past';
+type GuestStayPhase = 'inProgress' | 'upcoming' | 'past';
 
-export interface GuestFocusStay {
+interface GuestFocusStay {
   booking: Booking;
   phase: GuestStayPhase;
 }

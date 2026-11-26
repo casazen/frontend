@@ -47,7 +47,7 @@ export function VerificationQueuePage() {
   // The list that could not be read is an error, even when an older one is still in memory: nothing here may look like an empty queue.
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="workspace-page">
         <Alert
           variant="danger"
           title={t('shared.error')}
@@ -65,12 +65,12 @@ export function VerificationQueuePage() {
   }
 
   return (
-    <div className="container mx-auto space-y-6 px-4 py-8">
+    <div className="workspace-page space-y-6">
       <PageHeader title={t('verification.queue.title')} description={t('verification.queue.description')} />
 
       <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_19rem]">
         <div className="min-w-0 space-y-4">
-          <div className="grid gap-3 rounded-2xl border bg-card p-4 sm:grid-cols-2">
+          <div className="grid max-w-2xl gap-3 sm:grid-cols-2">
             <div className="min-w-0">
               <label htmlFor="reason-filter" className="text-sm font-medium mb-2 block">
                 {t('verification.filter.reason')}

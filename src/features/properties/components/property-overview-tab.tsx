@@ -24,14 +24,13 @@ interface PropertyOverviewTabProps {
   canWrite: boolean;
   /** The page of the property on the booking site, when a guest can open it (it is published); nothing otherwise. */
   publicPath: string | null;
-  onEditCin: () => void;
 }
 
 /**
  * The tab Panoramica (SR-07d): the photos, the data of the property, its prices and what it has. Sections without a box, a
  * title and what it says; the changes are links to the pages that make them (the form, the photos, the suggestions).
  */
-export function PropertyOverviewTab({ property, canWrite, publicPath, onEditCin }: PropertyOverviewTabProps) {
+export function PropertyOverviewTab({ property, canWrite, publicPath }: PropertyOverviewTabProps) {
   const { t } = useTranslation();
   // The listing on the channels (E02/F03/US01/T04) is told only where the channel manager is connected: its endpoints answer 404 otherwise.
   const connectorOn = useFeatureFlags().flags.octorateConnector;
@@ -49,7 +48,7 @@ export function PropertyOverviewTab({ property, canWrite, publicPath, onEditCin 
         <Fact label={t('property.drawer.address')}>{formatPropertyLocation(property)}</Fact>
         <Fact label={t('property.drawer.spaces')}>{spaces}</Fact>
         {requiresItalianCin(property.country) ? <Fact label={t('property.drawer.cin')}>
-          <PropertyCinBadge cinStatus={property.cinStatus} cinCode={property.cinCode} onEdit={canWrite ? onEditCin : undefined} />
+          <PropertyCinBadge cinStatus={property.cinStatus} cinCode={property.cinCode} />
         </Fact> : null}
         <Fact label={t('property.info.timezone')}>{property.timezone}</Fact>
         {publicPath ? (

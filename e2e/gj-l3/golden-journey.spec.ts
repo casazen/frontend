@@ -183,8 +183,7 @@ async function runGoldenJourney(browser: Browser, stack: StackEnv, request: impo
     await step('Host registers the arrival (booking CheckedIn)', async () => {
       await host.goto(`/app/short-rent/bookings/${ids.bookingId}`);
       const registerArrival = host.getByTestId('open-register-arrival');
-      const guidance = host.locator('details').filter({ has: registerArrival });
-      await guidance.locator('summary').click();
+      await host.getByTestId('booking-guidance-trigger').click();
       await registerArrival.click();
       await host.getByRole('dialog').getByTestId('register-arrival-submit').click();
       await expect

@@ -67,7 +67,7 @@ export function AlloggiatiBookingPanel({ bookingId, checkInDate }: AlloggiatiBoo
 
       {status && (
         <>
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <span className="text-sm text-muted-foreground">{t('booking.detailPage.communicationStatus')}</span>
             {/* A stay with its receipt archived is not late: whatever the term says, the server holds the proof. */}
             <AlloggiatiStatusBadge status={status.status} isOverdue={receiptArchived ? false : status.isOverdue} receiptArchived={receiptArchived} />

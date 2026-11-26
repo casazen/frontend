@@ -4,7 +4,7 @@ import { ErrorState } from '@/components/shared/error-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatCurrency } from '@/lib/utils';
 import type { PricingAdapterConfig, SeasonalSuggestionsResponse } from '@/types';
-import { ruleSentences } from '../seasonal-rules';
+import { Button } from '@/components/ui/button';
 
 /** What the query of the suggestions says, as the block needs it (a `useQuery` result fits). */
 interface SuggestionsState {
@@ -19,32 +19,23 @@ interface PricingFocusProps {
   propertyId: string;
   config: PricingAdapterConfig;
   suggestions: SuggestionsState;
-  /** The rules are being saved or the suggestions turned on or off. */
-  isSaving: boolean;
   isApplying: boolean;
   isRecalculating: boolean;
-  onEnable: () => void;
   onApplyAll: () => void;
   onRecalculate: () => void;
 }
 
-/**
- * The one highlighted block of the page: the base price and the rule that is on, in plain words, with the one button that
- * moves things on. What the button is depends on where the suggestions stand: off (turn them on), no price (set it), nothing
- * computed yet (compute), the price changed since they were computed (compute again) or ready (apply them).
- */
+/** Keep actionable exceptions above the nights. Ready suggestions need only a price summary and batch actions. */
 export function PricingFocus({
   propertyId,
   config,
   suggestions,
-  isSaving,
   isApplying,
   isRecalculating,
-  onEnable,
   onApplyAll,
   onRecalculate,
 }: PricingFocusProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const data = suggestions.data;
   const basePrice = data?.currentBasePrice ?? 0;
 
@@ -63,19 +54,10 @@ export function PricingFocus({
 
   if (!config.isEnabled) {
     return (
-      <FocusBlock
-        data-testid="pricing-focus"
-        data-state="off"
-        kicker={t('pricing.focus.kicker')}
-        title={t('pricing.dashboard.disabledTitle')}
-        body={
-          <>
-            <p>{t('pricing.dashboard.disabledDescription')}</p>
-            {basePrice > 0 ? <p className="mt-2">{t('pricing.focus.offPrice', { price: formatCurrency(basePrice) })}</p> : null}
-          </>
-        }
-        primary={{ label: t('pricing.focus.enable'), onClick: onEnable, loading: isSaving, testId: 'pricing-enable' }}
-      />
+      <div className="space-y-2 text-sm text-muted-foreground" data-testid="pricing-focus" data-state="off">
+        <p>{t('pricing.dashboard.disabledDescription')}</p>
+        {basePrice > 0 && <p>{t('pricing.focus.offPrice', { price: formatCurrency(basePrice) })}</p>}
+      </div>
     );
   }
 
@@ -147,23 +129,17 @@ export function PricingFocus({
     );
   }
 
-  const rules = ruleSentences(config, t, i18n.language);
   return (
-    <FocusBlock
-      data-testid="current-base-price"
-      data-state="ready"
-      kicker={t('pricing.focus.kicker')}
-      title={t('pricing.focus.price', { price: formatCurrency(basePrice) })}
-      body={
-        <>
-          {rules.length > 0 ? rules.map((sentence) => <p key={sentence}>{sentence}</p>) : <p>{t('pricing.focus.noRules')}</p>}
-          <p className="mt-2" data-testid="apply-notice">
-            {t('pricing.suggestions.applyNotice')}
-          </p>
-        </>
-      }
-      primary={applyAll}
-      secondary={recalculate}
-    />
+    <div className="flex flex-wrap items-center justify-between gap-3" data-testid="current-base-price" data-state="ready">
+      <div className="space-y-1">
+        <p className="text-sm text-muted-foreground">{t('pricing.focus.kicker')}</p>
+        <p className="text-xl font-semibold tabular-nums">{t('pricing.focus.price', { price: formatCurrency(basePrice) })}</p>
+        <p className="text-sm text-muted-foreground" data-testid="apply-notice">{t('pricing.suggestions.applyNotice')}</p>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <Button onClick={onApplyAll} loading={isApplying} data-testid={applyAll.testId}>{applyAll.label}</Button>
+        <Button variant="outline" onClick={onRecalculate} loading={isRecalculating} data-testid={recalculate.testId}>{recalculate.label}</Button>
+      </div>
+    </div>
   );
 }
