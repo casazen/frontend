@@ -89,7 +89,7 @@ class Plugin {
 					restore_current_blog();
 				}
 				$offset += 100;
-			} while ( 100 === count( $site_ids ) );
+			} while ( isset( $site_ids[99] ) ); // A full page of 100 sites: there may be more.
 			return;
 		}
 		self::unschedule_events();

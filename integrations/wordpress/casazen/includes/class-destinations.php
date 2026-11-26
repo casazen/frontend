@@ -216,17 +216,17 @@ class Destinations {
 	 * Letters with accents are written as they are (not as `à`), so that 200 places stay far below the 60 000 characters the
 	 * search bar accepts; should the text still be longer, the last places are left out until it fits.
 	 *
-	 * @param array[] $list The list returned by for_search().
+	 * @param array[] $places The list returned by for_search().
 	 * @return string
 	 */
-	public static function to_json( array $list ) {
-		$list = self::clean_list( $list );
-		while ( array() !== $list ) {
-			$json = wp_json_encode( $list, JSON_UNESCAPED_UNICODE );
+	public static function to_json( array $places ) {
+		$places = self::clean_list( $places );
+		while ( array() !== $places ) {
+			$json = wp_json_encode( $places, JSON_UNESCAPED_UNICODE );
 			if ( is_string( $json ) && strlen( $json ) <= self::MAX_JSON_LENGTH ) {
 				return $json;
 			}
-			array_pop( $list );
+			array_pop( $places );
 		}
 		return '';
 	}

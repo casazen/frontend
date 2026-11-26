@@ -17,6 +17,7 @@ class Test_Uninstall extends WP_UnitTestCase {
 	 */
 	private function casazen_transient_rows() {
 		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- the test lists the rows that the uninstall must leave none of.
 		return $wpdb->get_col(
 			$wpdb->prepare(
 				"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",

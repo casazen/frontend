@@ -91,19 +91,20 @@ class Pages {
 			return 0;
 		}
 
+		// WPML: get_posts() leaves the filters of WPML out unless it is asked to apply them (`suppress_filters` is true by default),
+		// so the page is found in every language, like with `lang` below for Polylang.
 		$ids = get_posts(
 			array(
-				'post_type'        => 'page',
-				'post_status'      => $status,
-				'meta_key'         => self::META_KEY, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- one page, found by its role.
-				'meta_value'       => $role, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- same as above.
-				'fields'           => 'ids',
-				'numberposts'      => 1,
-				'orderby'          => 'ID',
-				'order'            => 'ASC',
-				'lang'             => '', // Polylang: every language, not only the current one.
-				'suppress_filters' => true, // WPML: the same.
-				'no_found_rows'    => true,
+				'post_type'     => 'page',
+				'post_status'   => $status,
+				'meta_key'      => self::META_KEY, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- one page, found by its role.
+				'meta_value'    => $role, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- same as above.
+				'fields'        => 'ids',
+				'numberposts'   => 1,
+				'orderby'       => 'ID',
+				'order'         => 'ASC',
+				'lang'          => '', // Polylang: every language, not only the current one.
+				'no_found_rows' => true,
 			)
 		);
 		return empty( $ids ) ? 0 : (int) $ids[0];

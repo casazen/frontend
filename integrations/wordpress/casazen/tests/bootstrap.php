@@ -19,7 +19,7 @@ if ( ! $casazen_polyfills && is_readable( dirname( __DIR__ ) . '/vendor/yoast/ph
 	$casazen_polyfills = dirname( __DIR__ ) . '/vendor/yoast/phpunit-polyfills';
 }
 if ( $casazen_polyfills && ! defined( 'WP_TESTS_PHPUNIT_POLYFILLS_PATH' ) ) {
-	define( 'WP_TESTS_PHPUNIT_POLYFILLS_PATH', $casazen_polyfills );
+	define( 'WP_TESTS_PHPUNIT_POLYFILLS_PATH', $casazen_polyfills ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- the name that the WordPress test library reads.
 }
 
 if ( ! file_exists( $casazen_tests_dir . '/includes/functions.php' ) ) {

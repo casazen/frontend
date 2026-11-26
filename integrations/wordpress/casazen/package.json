@@ -7,10 +7,15 @@
 	"scripts": {
 		"build": "wp-scripts build --webpack-src-dir=blocks/src --output-path=blocks/build",
 		"start": "wp-scripts start --webpack-src-dir=blocks/src --output-path=blocks/build",
-		"lint:php-syntax": "node tools/check-php-syntax.mjs"
+		"lint:php-syntax": "node tools/check-php-syntax.mjs",
+		"check:version": "node tools/check-version.mjs",
+		"zip": "node tools/build-zip.mjs",
+		"test:tools": "node --test tools/package.test.mjs"
 	},
 	"devDependencies": {
+		"@wordpress/env": "^12.2.0",
 		"@wordpress/scripts": "^26.19.0",
+		"archiver": "^8.0.0",
 		"php-parser": "^3.7.0"
 	}
 }
