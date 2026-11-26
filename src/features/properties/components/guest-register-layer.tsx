@@ -3,6 +3,7 @@ import { flushSync } from 'react-dom';
 import { isAxiosError } from 'axios';
 import { Download, Loader2, Printer } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import type { DetailContentProps, DetailTitleProps } from '@/components/shared/detail-drawer/detail-registry';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -104,6 +105,12 @@ function GuestRegisterLayer({ propertyId, close }: GuestRegisterLayerProps) {
   }, []);
   const print = usePrintGuestRegister(propertyId, (table, printed) => {
     if (!isOpen.current) return;
+    // The count was not up to date and nobody arrived in the period after all: there is nothing to sign, so nothing is printed. The layer says so and reads the count again.
+    if (table.rows.length === 0) {
+      toast.warning(t('guestRegister.preview.empty'));
+      void info.refetch();
+      return;
+    }
     // The sheet has to be in the page when the browser draws it: it is drawn now, then printed, and taken away when the printing is over (or the layer is closed).
     flushSync(() => setSheet({ table, period: printed }));
     window.addEventListener('afterprint', () => setSheet(null), { once: true });
@@ -122,6 +129,8 @@ function GuestRegisterLayer({ propertyId, close }: GuestRegisterLayerProps) {
   // There is something to keep or to print only when somebody arrived in the period (an empty period has the header alone: the line says so, and there is nothing to sign).
   const hasGuests = problem === null && data !== undefined && data.rowCount > 0;
   const loading = problem === null && data === undefined && !info.isError;
+  // The printed sheet carries the name of the property in its header: «Stampa» waits for it (the register of nobody in particular is not a record to keep).
+  const propertyName = property.data?.name?.trim() ?? '';
 
   return (
     <div className="space-y-5 pb-2" data-testid="guest-register-layer" aria-busy={busy || undefined}>
@@ -187,7 +196,7 @@ function GuestRegisterLayer({ propertyId, close }: GuestRegisterLayerProps) {
         <Button
           type="button"
           variant="outline"
-          disabled={!hasGuests || busy}
+          disabled={!hasGuests || busy || propertyName === ''}
           loading={print.isPending}
           onClick={() => print.mutate(period)}
           iconRight={<Printer />}
@@ -207,7 +216,7 @@ function GuestRegisterLayer({ propertyId, close }: GuestRegisterLayerProps) {
         </Button>
       </div>
 
-      {sheet ? <GuestRegisterSheet table={sheet.table} propertyName={property.data?.name?.trim() ?? ''} period={sheet.period} /> : null}
+      {sheet ? <GuestRegisterSheet table={sheet.table} propertyName={propertyName} period={sheet.period} /> : null}
     </div>
   );
 }

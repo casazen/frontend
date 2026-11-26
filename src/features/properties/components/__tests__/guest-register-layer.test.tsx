@@ -16,9 +16,11 @@ import { GuestRegisterLayerContent } from '../guest-register-layer';
 vi.mock('@/api/guest-register.api', () => ({ guestRegisterApi: { getInfo: vi.fn(), download: vi.fn() } }));
 vi.mock('@/lib/file-download', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/file-download')>()), saveBlobAs: vi.fn() }));
 vi.mock('sonner', () => ({ toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn(), warning: vi.fn(), info: vi.fn() }) }));
+// The name of the property the layer is about; `undefined` while the read of the property has not answered (or has failed).
+const property = vi.hoisted(() => ({ name: 'Casa Sciaffusa' as string | undefined }));
 vi.mock('@/queries/use-properties', () => ({
   PROPERTIES_KEY: 'properties',
-  useProperty: () => ({ data: { name: 'Casa Sciaffusa' } }),
+  useProperty: () => ({ data: property.name === undefined ? undefined : { name: property.name } }),
   useUpdateProperty: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 
@@ -38,6 +40,8 @@ const CSV = [
   '19.11.2026;22.11.2026;"Verdi; Bianchi";Anna;12.05.1990;',
   '',
 ].join('\r\n');
+/** The file of a period with nobody in it: the header alone. */
+const HEADER_ONLY = 'Arrivo;Partenza;Cognome;Nome;Data di nascita;Firma\r\n';
 
 function infoOf(overrides: Partial<GuestRegisterInfo> = {}): GuestRegisterInfo {
   return { propertyId: PROPERTY_ID, ...DEFAULT_PERIOD, rowCount: 2, retentionYears: 5, regimeCode: 'CH-TI', ...overrides };
@@ -69,6 +73,7 @@ beforeEach(async () => {
   vi.useFakeTimers({ toFake: ['Date'] });
   vi.setSystemTime(new Date(NOW));
   permissions.granted = ['guest.read', 'booking.read'];
+  property.name = 'Casa Sciaffusa';
   await i18n.changeLanguage('it');
   vi.mocked(guestRegisterApi.getInfo).mockResolvedValue(infoOf());
   vi.mocked(guestRegisterApi.download).mockResolvedValue({
@@ -310,6 +315,34 @@ describe('GuestRegisterLayer, the guest register of a property in Switzerland (E
 
       expect(print).not.toHaveBeenCalled();
       expect(document.querySelector('.guest-register-sheet')).toBeNull();
+    });
+
+    // The sheet carries the name of the property in its header: while the property has not answered (or its read failed) there is no name to print, and the print waits.
+    it('GuestRegisterLayer_ThePropertyHasNoNameYet_PrintWaitsForItAndTheDownloadDoesNot', async () => {
+      property.name = undefined;
+      renderLayer();
+
+      expect(await screen.findByTestId('guest-register-count')).toBeInTheDocument();
+      expect(screen.getByTestId('guest-register-print')).toBeDisabled();
+      expect(screen.getByTestId('guest-register-download')).toBeEnabled();
+    });
+
+    // The count of a moment ago can be out of date: when the file comes there is nobody in the register, and a sheet with no guest to sign is never printed.
+    it('GuestRegisterLayer_AFileWithNobodyInItWhileTheCountSaidThereWere_PrintsNothingSaysSoAndReadsTheCountAgain', async () => {
+      const print = vi.spyOn(window, 'print').mockImplementation(() => undefined);
+      vi.mocked(guestRegisterApi.download).mockResolvedValue({ blob: new Blob([HEADER_ONLY], { type: 'text/csv' }), contentDisposition: null });
+      renderLayer();
+      const button = await screen.findByTestId('guest-register-print');
+      await waitFor(() => expect(button).toBeEnabled());
+      vi.mocked(guestRegisterApi.getInfo).mockResolvedValue(infoOf({ rowCount: 0 }));
+
+      fireEvent.click(button);
+
+      await waitFor(() => expect(toast.warning).toHaveBeenCalledWith(i18n.t('guestRegister.preview.empty')));
+      expect(print).not.toHaveBeenCalled();
+      expect(document.querySelector('.guest-register-sheet')).toBeNull();
+      await waitFor(() => expect(screen.getByTestId('guest-register-count')).toHaveTextContent('Nessun ospite è arrivato in questo periodo'));
+      expect(screen.getByTestId('guest-register-print')).toBeDisabled();
     });
 
     it('GuestRegisterLayer_AFailedPrint_IsToldAndNothingIsPrinted', async () => {
