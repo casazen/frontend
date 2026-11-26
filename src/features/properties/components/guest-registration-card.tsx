@@ -12,6 +12,7 @@ import type { StatusTone } from '@/lib/status-dictionary';
 import { useGuestRegistration, useSetGuestRegistrationOverride } from '@/queries/guestRegistration';
 import { certaintyView, isPlaceUnknown, isTicinoRegime, missingCodesOf, portalLink, regimeFacts } from '../lib/guest-registration-model';
 import { GuestRegistrationDuty } from './guest-registration-duty';
+import { GuestRegistrationLayers } from './guest-registration-layers';
 import { RefreshFailedNotice } from './guest-registration-notice';
 import { GuestRegistrationReadiness } from './guest-registration-readiness';
 
@@ -201,6 +202,9 @@ export function GuestRegistrationCard({ propertyId, variant, canWrite, onFixMuni
           municipalityHref={municipalityHref}
           onSaved={numberSaved}
         />
+
+        {/* The register and the assisted notification are layers over the page of the property: a step of a wizard in progress never opens them (it never leaves the process). */}
+        {variant === 'page' ? <GuestRegistrationLayers propertyId={propertyId} regime={regime} effectiveDuty={query.data.effectiveDuty} /> : null}
       </>
     );
   }

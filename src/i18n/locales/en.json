@@ -2270,8 +2270,12 @@
       "supportVaultSecretMissing": "These credentials are not there yet: save them first, or ask the user for them.",
       "supportVaultTooManyOpenings": "You already opened the credentials 5 times in the last hour for this request: try again later.",
       "supportVaultValueInvalid": "User name and password are required, 200 characters at most; the further code 100 at most.",
+      "swissDeclarationDayInFuture": "This day has not started yet: you can declare the notification from the day of the arrival.",
       "swissMunicipalityNotApplicable": "A Swiss municipality can only be set for a property in Switzerland.",
       "swissMunicipalityUnknown": "The municipality you chose is not in the official list of the Swiss municipalities: choose the place again.",
+      "swissNotificationNotApplicable": "The assisted notification does not apply to this property.",
+      "swissPeriodInvalid": "The last day cannot be before the first.",
+      "swissPeriodTooLong": "The period can last at most 366 days.",
       "swissPlacesUnavailable": "The official list of the Swiss places is not available right now: try again later.",
       "swissReceiptDateTooOld": "The day of this document is more than 5 years ago: it cannot be filed.",
       "swissReceiptFileInvalid": "The file is empty or too big: 10 MB at most.",
@@ -2414,6 +2418,8 @@
       "guestMarketingConsentUnavailable": "We cannot save your choice right now: please try again later.",
       "guestMarketingEmailInvalid": "Type a correct e-mail address: the one of the booking cannot be used for offers.",
       "guestMarketingPhoneInvalid": "Check the phone number: it does not look right.",
+      "guestRegisterFormatInvalid": "The format of the register is not valid.",
+      "guestRegisterNotAvailable": "The guest register is only for properties in Switzerland.",
       "guestRegistrationCountryNotSupported": "CasaZen does not have the guest notification rules for the country of this property yet.",
       "guestRegistrationOverrideNotApplicable": "The answer on guest notification can only be given for a property in Switzerland.",
       "welcomeAdultRequired": "To continue you must declare that you are at least 18 years old.",
@@ -7489,7 +7495,8 @@
         "overdueDays_other": "Overdue by {{count}} days",
         "endOfToday": "By today",
         "endOfTomorrow": "By tomorrow",
-        "endOfDay": "By {{date}}"
+        "endOfDay": "By {{date}}",
+        "unknown": "Deadline not known"
       },
       "active": {
         "toggle_one": "{{count}} property in order",
@@ -7520,6 +7527,7 @@
       "ConfirmPropertyReady": "Property ready for the next guest",
       "DeclareTouristTax": "Tourist tax of {{period}}",
       "EnterMunicipalityTaxRate": "Tourist tax rate of the municipality",
+      "NotifyGuestsAuthority": "Notification to the authority of the arrivals of {{period}}",
       "RenewPoliceCredentials": "Questura credentials",
       "ResolveAlloggiatiFailure": "Alloggiati Web",
       "SendAlloggiati": "Alloggiati Web",
@@ -9309,6 +9317,10 @@
         "cta": "Enter the rate",
         "title": "Enter the tourist tax rate of the municipality: {{label}}"
       },
+      "NotifyGuestsAuthority": {
+        "cta": "Notify",
+        "title": "Notify the authority of the guests who arrived on {{period}}: {{label}}"
+      },
       "PayServiceRequest": {
         "cta": "Pay",
         "title": "Pay {{label}}'s job"
@@ -10527,6 +10539,56 @@
       "today": "Today"
     }
   },
+  "guestRegister": {
+    "actions": {
+      "download": "Download CSV",
+      "print": "Print"
+    },
+    "card": {
+      "open": "Open the guest register"
+    },
+    "download": {
+      "done": "Register downloaded.",
+      "failed": "Could not download the register. Try again."
+    },
+    "layer": {
+      "close": "Close",
+      "forbidden": "You do not have permission to see the guests of this property.",
+      "intro": "The register lists the guests who arrived in the period you choose, with a column for the signature. You keep it and show it to the police if asked.",
+      "notAvailable": "The CasaZen guest register is only for properties in Switzerland.",
+      "notFound": "We cannot find this property, or you do not have access.",
+      "responsibility": "The register is your responsibility: CasaZen prepares it from the check-in data, does not save it, sends it to nobody and gives no legal advice. Check with the municipality or the police what your canton asks.",
+      "title": "Guest register",
+      "titleFor": "Guest register: {{property}}",
+      "unavailable": "The guest register is not active."
+    },
+    "period": {
+      "from": "From",
+      "hint": "It counts the day the guests arrive. At most 366 days.",
+      "missing": "Choose the first and the last day.",
+      "order": "The last day cannot be before the first.",
+      "title": "Period",
+      "to": "To",
+      "tooLong": "The period can last at most 366 days."
+    },
+    "preview": {
+      "count_one": "{{count}} guest arrived in the period",
+      "count_other": "{{count}} guests arrived in the period",
+      "empty": "No guest arrived in this period: there is nothing to keep or to print.",
+      "failed": "I cannot count the guests of this period. Try again.",
+      "loading": "Counting the guests…",
+      "refreshFailed": "I cannot refresh the count: what you see may not be up to date.",
+      "retention_one": "To be kept for at least {{count}} year, according to the sources of your canton.",
+      "retention_other": "To be kept for at least {{count}} years, according to the sources of your canton.",
+      "unknownPlace": "We do not know which municipality the property is in, so we do not know how long to keep the register: set it in the details of the property and check with the municipality or the police.",
+      "unknownRetention": "The sources do not say how long to keep it: check with the municipality or the police."
+    },
+    "print": {
+      "failed": "Could not prepare the print. Try again.",
+      "period": "From {{from}} to {{to}}",
+      "title": "Guest register"
+    }
+  },
   "guestRegistration": {
     "card": {
       "forbidden": "You do not have access to this property.",
@@ -10623,9 +10685,9 @@
       "value": "Identification number: {{value}}"
     },
     "support": {
-      "AssistedNotification": "Coming soon: CasaZen will prepare the data and remind you of the deadline; you will make the notification.",
+      "AssistedNotification": "CasaZen prepares the guests' data for you to copy and reminds you of the deadline; you make the notification.",
       "FileExport": "Prepares the file in the official format: you upload it on the portal.",
-      "GuestRegister": "Coming soon: CasaZen will collect the guests' data for the register; you will keep it and show it to the police if asked.",
+      "GuestRegister": "CasaZen prepares the guest register for you to download and print, with a column for the signature; you keep it and show it to the police if asked.",
       "InformationOnly": "Tells you what the canton asks: it sends nothing."
     },
     "toVerify": "To check with the municipality or the police"
@@ -16964,6 +17026,9 @@
       "domainVerified": "Your domain has been verified: it is now active.",
       "ownerLoginFailed": "Owner sign-in on your domain could not be activated: try again from the domain settings.",
       "ownerLoginReady": "Owner sign-in on your domain is active.",
+      "swissNotificationDeclared": "Someone on your team updated the notification to the authority of an arrival.",
+      "swissNotificationDue": "The guests of an arrival must be notified to the cantonal authority by the deadline.",
+      "swissNotificationOverdue": "The deadline to notify the cantonal authority of the guests of an arrival has passed.",
       "ticinoNotificationDeclared": "Someone on your team updated the police notification of an arrival in Ticino.",
       "ticinoNotificationDue": "The guests of an arrival in Ticino must be notified to the cantonal police within 24 hours.",
       "ticinoNotificationOverdue": "The 24 hours to notify the cantonal police of the guests of an arrival in Ticino have passed."
@@ -32190,6 +32255,139 @@
     "warnings": {
       "group_sheet_incomplete": "The sheet of a group misses the name or the nationality of a member: complete the data of the guests.",
       "parental_authorization_needed": "There are minors without an adult: the written authorization of the parents is needed, kept for 5 years (add it in the last step). Without it, tell the police at once."
+    }
+  },
+  "swissNotification": {
+    "actions": {
+      "next": "Next"
+    },
+    "canton": {
+      "title": "What the canton asks",
+      "titleFor": "What the canton of {{canton}} asks"
+    },
+    "card": {
+      "open": "Open the notification of the guests"
+    },
+    "certainty": {
+      "Partial": "The sources are not all official or do not say everything. Check with the municipality or the police: CasaZen does not give legal advice.",
+      "Unverified": "We have not found an official source for this canton. Check with the municipality or the police: CasaZen does not give legal advice.",
+      "Verified": "Read on the official sources. If in doubt, check with the municipality or the police: CasaZen does not give legal advice."
+    },
+    "copy": {
+      "all": "Copy everything",
+      "allFor": "Copy all the data: {{name}}",
+      "done": "Copied.",
+      "failed": "I cannot copy: select the text and copy it by hand.",
+      "fieldFor": "Copy {{field}}: {{name}}"
+    },
+    "day": {
+      "declared": "Already notified on {{when}} by {{who}}.",
+      "declaredAnonymous": "Already notified on {{when}}.",
+      "declaredBare": "Already notified.",
+      "due": "To be notified by {{when}}.",
+      "future": "This day has not started yet: you can declare the notification from the day of the arrival.",
+      "noDeadline": "Deadline not known: the sources do not give one. Notify as soon as you can and check with the municipality or the police.",
+      "none": "No arrival on this day.",
+      "otherDays": "Other days to notify:",
+      "overdue": "The deadline to notify this day has passed ({{when}}): notify as soon as you can.",
+      "title": "Arrivals of {{day}}"
+    },
+    "declare": {
+      "action": "I notified",
+      "alreadyDone": "The day was already declared as notified.",
+      "body": "When you have notified the guests on the portal, say so here: the day leaves the compliance tasks and the people who work with you see it at once.",
+      "done": "Done: the day is declared as notified.",
+      "failed": "Could not record the notification. Try again.",
+      "needsSubmit": "Declaring the notification is for who can send the communications to the authorities: ask whoever manages the property.",
+      "notYet": "Have you not done it yet? Go back to the step «Open the portal».",
+      "undo": "I did not notify: reopen the day",
+      "undoFailed": "Could not undo the declaration. Try again.",
+      "undone": "Declaration undone."
+    },
+    "documentType": {
+      "identityCard": "Identity card",
+      "other": "Other",
+      "passport": "Passport"
+    },
+    "duty": {
+      "Ask": "The sources do not say for certain whether this notification applies to who lets a private home: you decide. You can change the answer in the card of the property.",
+      "NotRequired": "You answered that you need not notify for this property: the day does not appear among the compliance tasks. You can still prepare the data here."
+    },
+    "field": {
+      "arrival": "Arrival",
+      "birthDate": "Date of birth",
+      "city": "Town",
+      "departure": "Departure",
+      "documentNumber": "Document number",
+      "documentType": "Type of document",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "nationality": "Nationality",
+      "nationalityCode": "Nationality (code)",
+      "placeOfBirth": "Place of birth",
+      "plate": "Number plate",
+      "postalCode": "Postal code",
+      "residenceCountryCode": "Country of residence (code)",
+      "street": "Address"
+    },
+    "guests": {
+      "intro": "Copy the data of each guest onto the portal of the canton: a button for each field and one for each guest.",
+      "none": "No guest of this day has the data of the check-in yet.",
+      "unnamed": "Guest {{number}}"
+    },
+    "issues": {
+      "body": "Complete the data here (or ask the guest to complete the check-in): the list updates. If that is not possible, enter that data by hand on the portal.",
+      "bodyNoEdit": "Ask someone who can edit the booking, or ask the guest to complete the check-in: the list updates. If that is not possible, enter that data by hand on the portal.",
+      "complete": "Complete the data",
+      "completeFor": "Complete the data: {{name}}",
+      "missing": {
+        "birthDate": "date of birth",
+        "documentType": "type of document",
+        "firstName": "first name",
+        "guests": "the data of all the guests of the booking",
+        "lastName": "last name",
+        "nationality": "nationality"
+      },
+      "title_one": "{{count}} guest is missing something",
+      "title_other": "{{count}} guests are missing something"
+    },
+    "layer": {
+      "forbidden": "You do not have permission to see the guests of this property.",
+      "intro": "In some cantons the guests must be notified to an authority, usually on its portal. CasaZen prepares the data to copy and reminds you of the deadline: you make the notification.",
+      "later": "Continue later",
+      "loadFailed": "Could not load the notification.",
+      "loading": "Loading the notification…",
+      "notApplicable": "The assisted notification does not apply to this property: its canton only asks to keep a register, or has a way of its own (like Ticino), or we do not know yet which municipality it is in.",
+      "notFound": "We cannot find this property, or you do not have access.",
+      "refreshFailed": "We cannot refresh this day: what you see is the last reading.",
+      "steps": "Steps of the notification",
+      "title": "Notification of the guests",
+      "titleFor": "Notification of the guests: {{property}}",
+      "unavailable": "The assisted notification is not active."
+    },
+    "portal": {
+      "body": "Open the portal, paste the data of the guests you copied and confirm. Then come back here to say you did it.",
+      "newTab": "opens in a new tab",
+      "next": "I am done: go to the last step",
+      "none": "This canton has no portal to open from here: follow the way described above.",
+      "open": "Open the official portal ({{host}})",
+      "privacy": "CasaZen does not sign in to the portal and does not know your credentials: you make the notification."
+    },
+    "steps": {
+      "declare": {
+        "title": "I notified"
+      },
+      "guests": {
+        "title": "Guests"
+      },
+      "portal": {
+        "title": "Open the portal"
+      },
+      "state": {
+        "attention": "To complete",
+        "done": "Done",
+        "todo": "To do"
+      }
     }
   },
   "swissPlace": {

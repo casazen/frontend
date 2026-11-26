@@ -1,6 +1,7 @@
 import { AlertTriangle, BedDouble, Bell, CalendarClock, ClipboardCheck, Coins, FileCheck, FileWarning, Globe, LifeBuoy, LogOut, MessageSquare, ShieldAlert, ShieldCheck, Star, UserCheck, Wrench, type LucideIcon } from 'lucide-react';
 import type { InAppNotification } from '@/api/notifications.api';
 import type { AppContextKey, PermissionPredicate } from '@/config/route-manifest';
+import { swissLayerPath } from '@/features/compliance/swiss/swiss-layer-address';
 import { ticinoLayerPath } from '@/features/compliance/ticino/ticino-layer-address';
 import { ONBOARDING_PLAN_PATH } from '@/lib/onboarding-parts';
 
@@ -33,14 +34,20 @@ const serviceRequestRoute = (id: string, context: AppContextKey | null) =>
 const serviceRequest = (textKey: string): NotificationKind => ({ icon: Wrench, textKey, route: serviceRequestRoute });
 
 /**
- * The notification of the guests of a Ticino arrival day to the cantonal police (E30/F02/US03/T01, NF-127): the entity of the bell entry is the PROPERTY (`QueuedInAppNotification.From`), never the
- * day, so the click opens the layer of that property over the cockpit, which opens on its first day still to notify (`ticinoLayerPath`). The cockpit asks `property.read` and `booking.read` (the
- * day it lists also asks the guests): whoever may not open it goes to the page of the property, as before the layer.
+ * The notification of the guests of an arrival day to the cantonal authority (Ticino: E30/F02/US03/T01, NF-127; the other cantons: E31/F02/US02/T02, NF-131): the entity of the bell entry
+ * is the PROPERTY (`QueuedInAppNotification.From`), never the day, so the click opens the layer of that property over the cockpit, which opens on its first day still to notify
+ * (`ticinoLayerPath`, `swissLayerPath`). The cockpit asks `property.read` and `booking.read` (the day it lists also asks the guests): whoever may not open it goes to the page of the
+ * property, as before the layer.
  */
-const ticinoRoute = (id: string, _context: AppContextKey | null, hasPermission?: PermissionPredicate) =>
-  hasPermission && !(hasPermission('short-rent', 'property.read') && hasPermission('short-rent', 'booking.read'))
-    ? `/app/short-rent/properties/${encodeURIComponent(id)}`
-    : ticinoLayerPath(id);
+const propertyLayerRoute =
+  (layerPath: (propertyId: string) => string) =>
+  (id: string, _context: AppContextKey | null, hasPermission?: PermissionPredicate) =>
+    hasPermission && !(hasPermission('short-rent', 'property.read') && hasPermission('short-rent', 'booking.read'))
+      ? `/app/short-rent/properties/${encodeURIComponent(id)}`
+      : layerPath(id);
+
+const ticinoRoute = propertyLayerRoute(ticinoLayerPath);
+const swissRoute = propertyLayerRoute(swissLayerPath);
 
 /** The console of the identity verifications: the bell tells the operators (who hold `verification.decision`) that a guest waits for a person. */
 const VERIFICATIONS_ROUTE = '/app/short-rent/verifications';
@@ -130,6 +137,11 @@ const KINDS: Record<string, NotificationKind> = {
   'ticino-notification-due': { icon: CalendarClock, textKey: 'notifications.types.ticinoNotificationDue', route: ticinoRoute },
   'ticino-notification-overdue': { icon: ShieldAlert, textKey: 'notifications.types.ticinoNotificationOverdue', route: ticinoRoute },
   'ticino-notification-declared': { icon: FileCheck, textKey: 'notifications.types.ticinoNotificationDeclared', route: ticinoRoute },
+  // E31/F02/US01/T01 (`PushTypes.SwissNotificationDue`, `SwissNotificationOverdue`, `SwissNotificationDeclared`, to the hosts of the property): the deadline of the notification of the guests of an arrival
+  // day to the cantonal authority (a canton other than Ticino) is near or over, or a person of the org declared the day notified (or undid it). The entity is the property: the click opens the layer.
+  'swiss-notification-due': { icon: CalendarClock, textKey: 'notifications.types.swissNotificationDue', route: swissRoute },
+  'swiss-notification-overdue': { icon: ShieldAlert, textKey: 'notifications.types.swissNotificationOverdue', route: swissRoute },
+  'swiss-notification-declared': { icon: FileCheck, textKey: 'notifications.types.swissNotificationDeclared', route: swissRoute },
   // E40/F02/US02 (`be-auth0-host-sync`, to the administrators of the org; the entity is the ORG): the domain was verified, and the sign-in of the owners on it became active or could not be made active.
   // The click opens the domain settings, where the page shows the new state (and «Riprova» when it failed); the open page reads it again as the push arrives (`use-notifications-realtime.ts`).
   'domain-verified': { icon: Globe, textKey: 'notifications.types.domainVerified', route: () => DOMAIN_SETTINGS_ROUTE },

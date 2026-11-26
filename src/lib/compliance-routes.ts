@@ -2,6 +2,7 @@ import { generatePath } from 'react-router-dom';
 import { getManifestEntry, type PermissionPredicate } from '@/config/route-manifest';
 import type { BookingTab } from '@/features/bookings/lib/booking-tabs';
 import { CONNECTION_HEALTH_SECTION } from '@/features/compliance/lib/connection-health-model';
+import { SWISS_LAYER_KIND, swissLayerPath } from '@/features/compliance/swiss/swiss-layer-address';
 import { COMPLIANCE_COCKPIT_PATH, TICINO_LAYER_KIND, ticinoLayerPath } from '@/features/compliance/ticino/ticino-layer-address';
 import type { ComplianceCockpitAction, ComplianceSummaryItem } from '@/types/compliance.types';
 
@@ -15,15 +16,15 @@ const PERIOD = /^\d{4}-(0[1-9]|1[0-2])$/;
  * Parameters a page of the cockpit opens with, for a page that shows its content already filtered (the archive of the proofs): a fixed
  * `kind`, and, when asked, the `property` and the `period` (`yyyy-MM`) of the item. A parameter the item cannot give is left out: the page then
  * shows more than the item, never another thing. `section` is a fixed part of the page to open on (the connection health of the property page).
- * `layer` is a layer of the page that opens on the item instead of another page (`?detail=ticino:<property>:<day>`, E30/F02/US03): the item names the
- * property and, in `period`, the arrival day (a month, or anything that is not a day, is left out: the layer then opens on the first day to notify).
+ * `layer` is a layer of the page that opens on the item instead of another page (`?detail=ticino:<property>:<day>`, E30/F02/US03; `?detail=swiss-notification:<property>:<day>`,
+ * E31/F02/US02): the item names the property and, in `period`, the arrival day (a month, or anything that is not a day, is left out: the layer then opens on the first day to notify).
  */
 interface ComplianceActionQuery {
   kind?: ComplianceArchiveKind;
   property?: boolean;
   period?: boolean;
   section?: typeof CONNECTION_HEALTH_SECTION;
-  layer?: typeof TICINO_LAYER_KIND;
+  layer?: typeof TICINO_LAYER_KIND | typeof SWISS_LAYER_KIND;
 }
 
 /** A page of the ROUTE_MANIFEST (pattern with `:id`), optionally on a tab of the booking detail or with the filters of the archive. */
@@ -154,6 +155,14 @@ export const COMPLIANCE_ACTION_TARGETS: Record<ComplianceCockpitAction, Complian
     route: { path: COMPLIANCE_COCKPIT_PATH, query: { layer: TICINO_LAYER_KIND } },
     write: 'alloggiati.submit',
   },
+  // casazen/backend#979 (E31/F02/US02/T02): the assisted notification of the guests of a property in another canton to the cantonal authority, on the arrival day of the item. A layer over the
+  // cockpit too (`?detail=swiss-notification:<property>:<day>`): it asks what the cockpit asks (`property.read` and `booking.read`), and whoever may not declare the day
+  // (`alloggiati.submit`) is told «Apri» and sees the guests to copy but is not asked to declare it.
+  NotifyGuestsAuthority: {
+    target: 'property',
+    route: { path: COMPLIANCE_COCKPIT_PATH, query: { layer: SWISS_LAYER_KIND } },
+    write: 'alloggiati.submit',
+  },
 };
 
 function buildRoute(
@@ -167,8 +176,10 @@ function buildRoute(
   if (hasPermission && !entry.requiredPermissions.every((permission) => hasPermission(entry.context, permission))) {
     return null;
   }
-  // A layer of the page (the guided notification of a Ticino property): the address is the page with the layer open on the property and the day of the item.
+  // A layer of the page (the guided notification of a Ticino property, the assisted notification of another canton): the address is the page with the layer open on the property and the
+  // day of the item.
   if (route.query?.layer === TICINO_LAYER_KIND) return ticinoLayerPath(item.propertyId, item.period);
+  if (route.query?.layer === SWISS_LAYER_KIND) return swissLayerPath(item.propertyId, item.period);
   const path = generatePath(entry.path, { id });
   const params = new URLSearchParams();
   if (route.tab && route.tab !== 'details') params.set('tab', route.tab);

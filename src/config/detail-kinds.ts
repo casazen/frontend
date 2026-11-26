@@ -1,6 +1,8 @@
 import { lazy } from 'react';
 import { registerDetail } from '@/components/shared/detail-drawer/detail-registry';
+import { SWISS_LAYER_KIND } from '@/features/compliance/swiss/swiss-layer-address';
 import { TICINO_LAYER_KIND } from '@/features/compliance/ticino/ticino-layer-address';
+import { GUEST_REGISTER_LAYER_KIND } from '@/features/properties/lib/guest-register-address';
 import { interventionPath } from '@/features/service-requests/interventions/paths';
 
 /**
@@ -41,4 +43,20 @@ registerDetail(TICINO_LAYER_KIND, {
   title: lazy(() => import('@/features/compliance/ticino/ticino-notification-layer').then((module) => ({ default: module.TicinoLayerTitle }))),
   Content: lazy(() => import('@/features/compliance/ticino/ticino-notification-layer').then((module) => ({ default: module.TicinoLayerContent }))),
   width: 'wide',
+});
+
+// The assisted notification of the guests of a property in another canton to the cantonal authority (E31/F02/US02/T02, casazen/backend#979): `?detail=swiss-notification:<property>[:<day>]`
+// over the cockpit of the adempimenti, as the Ticino one. The cockpit row, the bell and the card of the regime of the property page open it; it has no page of its own. Hidden while
+// `Features:GuestRegistrationRegimes` is off.
+registerDetail(SWISS_LAYER_KIND, {
+  title: lazy(() => import('@/features/compliance/swiss/swiss-notification-layer').then((module) => ({ default: module.SwissLayerTitle }))),
+  Content: lazy(() => import('@/features/compliance/swiss/swiss-notification-layer').then((module) => ({ default: module.SwissLayerContent }))),
+  width: 'wide',
+});
+
+// The guest register of a property in Switzerland (E31/F02/US02/T01, casazen/backend#979): `?detail=guest-register:<property>` over the page that is open (the property page, where the
+// card of the regime opens it). The deep link is the drawer: no page, no route of the manifest. Hidden while `Features:GuestRegistrationRegimes` is off.
+registerDetail(GUEST_REGISTER_LAYER_KIND, {
+  title: lazy(() => import('@/features/properties/components/guest-register-layer').then((module) => ({ default: module.GuestRegisterLayerTitle }))),
+  Content: lazy(() => import('@/features/properties/components/guest-register-layer').then((module) => ({ default: module.GuestRegisterLayerContent }))),
 });

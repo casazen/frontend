@@ -526,6 +526,47 @@ describe('buildCockpit and the traffic light (NF-52)', () => {
     expect(readOnly.fine.rows[0].to).toBe('/app/short-rent/compliance?detail=ticino:p1:2026-09-23');
   });
 
+  // E31/F02/US02/T02 (NF-131): the day of a property in another canton to notify to the authority is a row of the law too, its button opens the layer of the assisted notification on that day, and the
+  // item is counted in the red number of the menu.
+  it('buildCockpit_ADayToNotifyToTheAuthorityOfAnotherCanton_IsARowOfTheLawWhoseButtonOpensTheLayerOnThatDay', () => {
+    const swiss = (day: string) => ({ ...period('NotifyGuestsAuthority', 'p1', day), dueAt: hoursFromNow(5) });
+    const model = build(summaryOf({ swissNotifications: { count: 2, items: [swiss('2026-09-23'), swiss('2026-09-24')] } }));
+
+    expect(model.fine.rows.map((row) => row.tier)).toEqual(['fine', 'fine']);
+    expect(model.fine.total).toBe(2);
+    expect(model.fine.rows.map((row) => row.to)).toEqual([
+      '/app/short-rent/compliance?detail=swiss-notification:p1:2026-09-23',
+      '/app/short-rent/compliance?detail=swiss-notification:p1:2026-09-24',
+    ]);
+    expect(model.fine.rows[0].title).toBe('Notifica all\'autorità gli ospiti arrivati il 23 settembre: Casa Como');
+    // «Notifica» for who may declare it, «Apri» for who may only look: the layer is the same.
+    expect(model.fine.rows[0].cta).toBe('Notifica');
+    const readOnly = buildCockpit(summaryOf({ swissNotifications: { count: 1, items: [swiss('2026-09-23')] } }), {}, { ...context, hasPermission: (_area, permission) => permission !== 'alloggiati.submit' }, NOW);
+    expect(readOnly.fine.rows[0].cta).toBe('Apri');
+    expect(readOnly.fine.rows[0].to).toBe('/app/short-rent/compliance?detail=swiss-notification:p1:2026-09-23');
+  });
+
+  // The sources of Basel-Stadt, Fribourg, Neuchâtel, Thurgau and Zurich give no deadline: the row says so, and a time is never made up.
+  it('buildCockpit_ADayOfACantonWithNoDeadline_SaysTheDeadlineIsNotKnownAndNeverADate', () => {
+    const model = build(summaryOf({ swissNotifications: { count: 1, items: [{ ...period('NotifyGuestsAuthority', 'p1', '2026-09-23'), dueAt: null }] } }));
+
+    expect(model.fine.rows[0].note).toEqual({ text: 'Scadenza non nota', tone: 'neutral' });
+    // The same item with a deadline says the deadline; nothing else of the law says «non nota» (the others have their deadline or none to tell).
+    const dated = build(summaryOf({ swissNotifications: { count: 1, items: [{ ...period('NotifyGuestsAuthority', 'p1', '2026-09-23'), dueAt: hoursFromNow(-30) }] } }));
+    expect(dated.fine.rows[0].note?.text).toBe('Scaduto da 1 giorno');
+    const ticino = build(summaryOf({ ticinoNotifications: { count: 1, items: [period('NotifyTicinoPolice', 'p1', '2026-09-23')] } }));
+    expect(ticino.fine.rows[0].note).toBeUndefined();
+  });
+
+  it('fineCount_ADayOfAnotherCantonDeclaredByACoHost_LeavesTheRedCounterOfTheMenuWithoutAReload', () => {
+    const open = summaryOf({ swissNotifications: { count: 3, items: [] }, ticinoNotifications: { count: 1, items: [] } });
+    const afterDeclaration = summaryOf({ swissNotifications: { count: 2, items: [] }, ticinoNotifications: { count: 1, items: [] } });
+
+    // The menu counter and the page read the same summary: once it is read again the declared day is not counted, and the Ticino ones are counted as they were.
+    expect(fineCount(open)).toBe(4);
+    expect(fineCount(open) - fineCount(afterDeclaration)).toBe(1);
+  });
+
   // E29/F02/US02/T01: a property in Switzerland kept from starting by its municipality or its structure number says so like any other step (the item carries the reason as `code`, the step as `field`).
   it('buildCockpit_SwissPropertyToActivate_NamesTheNotificationOfTheGuestsAsWhatItLacks', () => {
     const swiss = { ...property('p1', 'Casa Lugano'), missing: [{ code: 'ticino_structure_id_missing', field: 'guest-registration' }] };

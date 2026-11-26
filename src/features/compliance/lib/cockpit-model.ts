@@ -123,6 +123,8 @@ const SECTIONS: readonly Section[] = [
   { field: 'alloggiatiManualRequired', testKey: 'alloggiati-manual', icon: Send, group: 'stay', badge: { kind: 'alloggiati', status: 'DaInviareManualmente' } },
   // casazen/backend#979: the guests of a Ticino property to notify to the cantonal police, an arrival day per row.
   { field: 'ticinoNotifications', testKey: 'ticino', icon: Send, group: 'propertyItem' },
+  // casazen/backend#979 (E31/F02): the guests of a property in another canton with an electronic duty to notify to the cantonal authority, an arrival day per row.
+  { field: 'swissNotifications', testKey: 'swiss', icon: Send, group: 'propertyItem' },
   { field: 'manualSendsRequired', testKey: 'manual-sends', icon: Send, group: 'stay' },
   { field: 'receiptsToUpload', testKey: 'receipts', icon: FileCheck, group: 'stay' },
   { field: 'guestCheckInsIncomplete', testKey: 'checkins', icon: Users, group: 'stay' },
@@ -228,6 +230,15 @@ export function deadlineNote(dueAt: string | null, { t, locale }: Pick<CockpitCo
   return urgencyOf(dueAt, { t, locale }, now);
 }
 
+/**
+ * The notification of the guests of a canton whose sources give no deadline (`dueAt` null: Basel-Stadt, Fribourg, Neuchâtel, Thurgau, Zurich) says so: «Scadenza non nota». A time is never made
+ * up, and an item that is on the page because the law asks for it does not leave the host wondering when. Nothing else of the cockpit says it: for the others no deadline means nothing to
+ * tell (`deadlineNote`).
+ */
+function unknownDeadlineNote(item: Pick<ComplianceSummaryItem, 'action'>, dueAt: string | null, { t }: Pick<CockpitContext, 't'>): RowNote | undefined {
+  return item.action === 'NotifyGuestsAuthority' && !Number.isFinite(dueTime(dueAt)) ? { text: t('compliance.cockpit.deadline.unknown'), tone: 'neutral' } : undefined;
+}
+
 interface RowFacts {
   /** What the Home's "Da fare" says about the same item: the property of a stay. */
   stay?: DashboardTodoItem;
@@ -267,8 +278,8 @@ function rowOf(item: ComplianceSummaryItem, section: Section, tier: CockpitTier,
     detail: done ? undefined : missingDetail(item, context),
     light,
     reason: reasonText(item.reason, light, context),
-    // Only what the law dates has its deadline in words, and only while it is not done: the other levels stay calm.
-    note: tier === 'fine' && !done ? deadlineNote(facts.dueAt, context, now) : undefined,
+    // Only what the law dates has its deadline in words, and only while it is not done: the other levels stay calm. A canton with no deadline says «scadenza non nota».
+    note: tier === 'fine' && !done ? (deadlineNote(facts.dueAt, context, now) ?? unknownDeadlineNote(item, facts.dueAt, context)) : undefined,
     // The state of the Alloggiati Web communication is what the reason says once the API sends the light: one pill, not two.
     badge:
       section.group === 'property'

@@ -24,7 +24,8 @@ import { NOTIFICATIONS_QUERY, UNREAD_COUNT_KEY } from '@/queries/use-notificatio
 import { PAYMENTS_KEY } from '@/queries/use-payments';
 import { PROPERTIES_KEY } from '@/queries/use-properties';
 import { SCHEDULED_MESSAGES_KEY } from '@/queries/use-scheduled-messages';
-import { TICINO_POLICE_KEY } from '@/queries/swissCompliance';
+import { GUEST_REGISTER_KEY } from '@/queries/guestRegister';
+import { SWISS_NOTIFICATION_KEY, TICINO_POLICE_KEY } from '@/queries/swissCompliance';
 import { TOURIST_TAX_SUMMARY_KEY } from '@/queries/use-tourist-tax-summary';
 import { VERIFICATION_KEY } from '@/queries/verification';
 import type { PendingAlert } from '@/types/alert';
@@ -329,6 +330,51 @@ describe('useNotificationsRealtime', () => {
       for (const root of [BOOKINGS_KEY, CHECKIN_SESSION_KEY, ALLOGGIATI_KEY, DASHBOARD_KEY, SCHEDULED_MESSAGES_KEY]) expect(keys, root).not.toContainEqual([root]);
     },
   );
+
+  // E31/F02/US01/T01 (NF-131): the alerts of the deadline of an arrival day of another canton and the declaration of a day are new notices for the bell, which shows its pop-up; the cockpit (and the counter of the
+  // menu), the days of THAT property and the properties read again. The entity is the property: no thread of a booking is read, and the days of the Ticino notification are not touched.
+  it.each(['swiss-notification-due', 'swiss-notification-overdue', 'swiss-notification-declared'])(
+    'useNotificationsRealtime_%sArrives_TellsTheBellAndReadsTheCockpitTheDaysOfThatPropertyAndThePropertiesOnly',
+    (type) => {
+      const { queryClient, wrapper } = setup();
+      queryClient.setQueryData(UNREAD_COUNT_KEY, 0);
+      const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+      const client = fakeClient();
+      const onNewNotification = vi.fn();
+      renderHook(() => useNotificationsRealtime({ enabled: true, userId: 'host-1', getAccessToken, client, onNewNotification }), { wrapper });
+
+      const change = { unreadCount: 1, type, entityId: 'p-1' };
+      act(() => client.emit(change));
+
+      expect(onNewNotification).toHaveBeenCalledWith(change);
+      const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+      expect(keys).toContainEqual([COMPLIANCE_KEY]);
+      expect(keys).toContainEqual([SWISS_NOTIFICATION_KEY, 'p-1']);
+      expect(keys).toContainEqual([PROPERTIES_KEY]);
+      // The entity is a property, never a booking: no thread, and nothing of what a check-in, a scheduled message or the Ticino notification changes.
+      expect(keys).not.toContainEqual([BOOKING_THREAD_QUERY, 'p-1']);
+      expect(keys).not.toContainEqual([SWISS_NOTIFICATION_KEY]);
+      expect(keys).not.toContainEqual([TICINO_POLICE_KEY]);
+      for (const root of [BOOKINGS_KEY, CHECKIN_SESSION_KEY, ALLOGGIATI_KEY, DASHBOARD_KEY, SCHEDULED_MESSAGES_KEY]) expect(keys, root).not.toContainEqual([root]);
+    },
+  );
+
+  it('useNotificationsRealtime_ReconnectAfterAGap_AlsoReadsAgainTheAssistedNotification', () => {
+    const { queryClient, wrapper } = setup();
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    const client = fakeClient();
+    renderHook(() => useNotificationsRealtime({ enabled: true, userId: 'u1', getAccessToken, client }), { wrapper });
+
+    act(() => client.setState('connected'));
+    act(() => client.setState('connecting'));
+    act(() => client.setState('connected'));
+
+    // A day declared, or whose deadline ran out, while the socket was down sent no message: the cockpit, every open day and the properties are read again.
+    const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+    expect(keys).toContainEqual([COMPLIANCE_KEY]);
+    expect(keys).toContainEqual([SWISS_NOTIFICATION_KEY]);
+    expect(keys).toContainEqual([PROPERTIES_KEY]);
+  });
 
   it('useNotificationsRealtime_ReconnectAfterAGap_AlsoReadsAgainTheTicinoNotification', () => {
     const { queryClient, wrapper } = setup();
@@ -701,6 +747,41 @@ describe('applyNotificationsChange', () => {
     const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
     expect(keys).toContainEqual([TICINO_POLICE_KEY]);
   });
+
+  // The same check-in changes the guests of the arrival day of another canton (the data to copy, and what is still missing) and the count of the guest register: the layers that are open show it without a reload.
+  it('applyNotificationsChange_GuestCheckInCompleted_ReadsAgainTheDaysOfTheAssistedNotificationAndTheCountOfTheGuestRegister', () => {
+    const { queryClient } = setup();
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    applyNotificationsChange(queryClient, { unreadCount: 1, type: 'guest-checkin-completed', entityId: 'b-1' });
+    const keys = invalidate.mock.calls.map(([filters]) => (filters as { queryKey: unknown[] }).queryKey);
+    expect(keys).toContainEqual([SWISS_NOTIFICATION_KEY]);
+    expect(keys).toContainEqual([GUEST_REGISTER_KEY]);
+  });
+
+  it.each(['swiss-notification-due', 'swiss-notification-overdue', 'swiss-notification-declared'])(
+    'applyNotificationsChange_%s_AnOpenCockpitAndAnOpenDayReadTheNewStateWithoutAReload_AndTheDayOfAnotherPropertyIsLeftAlone',
+    async (type) => {
+      const { queryClient, wrapper } = setup();
+      const readSummary = vi.fn().mockResolvedValue({ swissNotifications: { count: 1, items: [] } });
+      const readThisProperty = vi.fn().mockResolvedValue({ alreadyDeclared: false });
+      const readAnotherProperty = vi.fn().mockResolvedValue({ alreadyDeclared: false });
+      renderHook(
+        () => ({
+          summary: useQuery({ queryKey: [COMPLIANCE_KEY, 'summary'], queryFn: readSummary }),
+          mine: useQuery({ queryKey: [SWISS_NOTIFICATION_KEY, 'p-1', '2026-11-19'], queryFn: readThisProperty }),
+          other: useQuery({ queryKey: [SWISS_NOTIFICATION_KEY, 'p-2', '2026-11-19'], queryFn: readAnotherProperty }),
+        }),
+        { wrapper },
+      );
+      await waitFor(() => expect(readThisProperty).toHaveBeenCalledTimes(1));
+
+      act(() => applyNotificationsChange(queryClient, { unreadCount: 1, type, entityId: 'p-1' }));
+
+      await waitFor(() => expect(readSummary).toHaveBeenCalledTimes(2));
+      await waitFor(() => expect(readThisProperty).toHaveBeenCalledTimes(2));
+      expect(readAnotherProperty).toHaveBeenCalledTimes(1);
+    },
+  );
 
   it('applyNotificationsChange_VerificationRequired_ReadsAgainTheQueueTheFiguresAndTheCockpit', () => {
     const { queryClient } = setup();
