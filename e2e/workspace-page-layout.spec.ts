@@ -1,6 +1,7 @@
 import type { Locator } from '@playwright/test';
 import { expect, test } from './test';
 import { demoUrl, setDemoProfile } from './helpers/demo-profile';
+import { mockEmptyAdminStats } from './helpers/admin-stats';
 import { mockSupplierConsoleApi } from './helpers/supplier-console-mock';
 import { pinE2eLocale } from './helpers/locale';
 
@@ -61,14 +62,17 @@ for (const width of [390, 1920]) {
   test(`workspace content uses the same gutters in each operating area at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await mockSupplierConsoleApi(page, { active: true });
+    await mockEmptyAdminStats(page);
     for (const [path, profile] of [
       ['/app/long-rent/settings', 'long-term'],
       ['/app/admin', 'admin'],
       ['/app/supplier/dashboard', 'supplier'],
     ] as const) {
-      await page.goto(demoUrl(path, profile));
-      await expect(page).toHaveURL(new RegExp(path + '\\?'));
-      await expectShellEdges(page.getByTestId('page-header'));
+      await test.step(path, async () => {
+        await page.goto(demoUrl(path, profile));
+        await expect(page).toHaveURL(new RegExp(path + '\\?'));
+        await expectShellEdges(page.getByTestId('page-header'));
+      });
     }
   });
 }
