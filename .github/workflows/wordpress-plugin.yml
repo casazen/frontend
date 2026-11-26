@@ -74,6 +74,10 @@ jobs:
       - name: PHP syntax (Node checker)
         run: npm run lint:php-syntax
 
+      # The proof of the release rules: a tag that is not the plugin version is refused, and the ZIP holds no development file.
+      - name: Node tests of the packaging tools
+        run: npm run test:tools
+
       - name: WordPress coding standards and PHP 7.4+ compatibility
         run: vendor/bin/phpcs
 
