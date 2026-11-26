@@ -5,9 +5,12 @@
 	"description": "Development tooling of the CasaZen WordPress plugin. Not shipped in the plugin ZIP.",
 	"license": "GPL-2.0-or-later",
 	"scripts": {
+		"build": "wp-scripts build --webpack-src-dir=blocks/src --output-path=blocks/build",
+		"start": "wp-scripts start --webpack-src-dir=blocks/src --output-path=blocks/build",
 		"lint:php-syntax": "node tools/check-php-syntax.mjs"
 	},
 	"devDependencies": {
+		"@wordpress/scripts": "^26.19.0",
 		"php-parser": "^3.7.0"
 	}
 }

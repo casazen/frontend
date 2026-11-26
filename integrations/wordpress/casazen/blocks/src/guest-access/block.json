@@ -1,0 +1,40 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "casazen/guest-access",
+	"title": "CasaZen guest access",
+	"category": "widgets",
+	"icon": "tickets-alt",
+	"description": "Lets your guests open and manage their booking.",
+	"textdomain": "casazen",
+	"supports": {
+		"html": false,
+		"customClassName": false
+	},
+	"attributes": {
+		"lang": {
+			"type": "string",
+			"default": ""
+		},
+		"datalayer": {
+			"type": "boolean",
+			"default": true
+		},
+		"min_height": {
+			"type": "integer"
+		},
+		"primary": {
+			"type": "string",
+			"default": ""
+		},
+		"radius": {
+			"type": "string",
+			"default": ""
+		},
+		"font": {
+			"type": "string",
+			"default": ""
+		}
+	},
+	"editorScript": "file:./index.js"
+}

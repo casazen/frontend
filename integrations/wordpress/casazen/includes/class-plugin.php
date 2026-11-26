@@ -30,8 +30,19 @@ class Plugin {
 		Settings::init();
 		add_action( self::CRON_EVENT, array( __NAMESPACE__ . '\\Connection', 'refresh' ) );
 
+		// The widgets: the shortcodes, the blocks, the loader script and the places of the search bar.
+		Shortcodes::init();
+		Blocks::init();
+		Assets::init();
+		Destinations::init();
+
+		// The language of Polylang and WPML, and the static placeholder of the Elementor editor. Neither plugin is needed.
+		Compat\Polylang_Wpml::init();
+		Compat\Elementor::init();
+
 		if ( is_admin() ) {
 			Admin::init();
+			Wizard::init();
 		}
 	}
 
@@ -56,7 +67,7 @@ class Plugin {
 	}
 
 	/**
-	 * Deactivation: clears the cron event of the plugin, on every site of a network when it was network-deactivated.
+	 * Deactivation: clears the cron events of the plugin, on every site of a network when it was network-deactivated.
 	 *
 	 * @param bool $network_wide Whether the plugin was deactivated for the whole network.
 	 * @return void
@@ -74,13 +85,23 @@ class Plugin {
 				);
 				foreach ( $site_ids as $site_id ) {
 					switch_to_blog( (int) $site_id );
-					wp_unschedule_hook( self::CRON_EVENT );
+					self::unschedule_events();
 					restore_current_blog();
 				}
 				$offset += 100;
 			} while ( 100 === count( $site_ids ) );
 			return;
 		}
+		self::unschedule_events();
+	}
+
+	/**
+	 * Clears every cron event of the plugin on the current site.
+	 *
+	 * @return void
+	 */
+	private static function unschedule_events() {
 		wp_unschedule_hook( self::CRON_EVENT );
+		wp_unschedule_hook( Destinations::CRON_EVENT );
 	}
 }
