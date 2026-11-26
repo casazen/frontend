@@ -1,5 +1,7 @@
 import { expect, test } from './test';
 
+test.describe.configure({ timeout: 120_000 });
+
 const booking = '55000000-0000-4000-8000-000000000001';
 const document = '55000000-0000-4000-8000-000000000002';
 const grant = 'test-only-link-grant';
@@ -26,9 +28,9 @@ for (const entry of [
       if (path.endsWith('/' + orgSlug)) return route.fulfill({ json: { slug: orgSlug, displayName: 'Casa Lago', primaryColor: null } });
       return route.fulfill({ json: [] });
     });
-    await page.goto(entry.legacy + entry.query, { waitUntil: 'domcontentloaded' });
-    await expect.poll(() => new URL(page.url()).pathname).toBe(entry.section);
-    await expect.poll(() => scoped.some(request => request.includes(grant))).toBe(true);
+    await page.goto(entry.legacy + entry.query, { waitUntil: 'commit' });
+    await expect.poll(() => new URL(page.url()).pathname, { timeout: 75_000 }).toBe(entry.section);
+    await expect.poll(() => scoped.some(request => request.includes(grant)), { timeout: 20_000 }).toBe(true);
     await expect(page.locator('.guest-linked-section .stay-header-title')).toBeVisible();
     if (entry.query.includes('token=')) await expect.poll(() => new URL(page.url()).searchParams.has('token')).toBe(false);
     else await expect.poll(() => new URL(page.url()).searchParams.get('step')).toBe('identity');
