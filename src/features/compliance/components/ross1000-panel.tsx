@@ -68,8 +68,8 @@ function DayPanel({ propertyId, canSend }: { propertyId: string; canSend: boolea
         {!!info.records?.length && <details>
           <summary>{t('ross1000.recordOutcomes')}</summary>
           <ul className="mt-2 space-y-1 text-sm">
-            {info.records.map(record => <li key={record.key}>
-              <code>{record.key}</code> · {t(record.state === 'accepted' ? 'ross1000.recordAccepted' : 'ross1000.recordRejected')}
+            {info.records.map(record => <li key={record.key} className="flex gap-2">
+              <code>{record.key}</code><span>{t(record.state === 'accepted' ? 'ross1000.recordAccepted' : 'ross1000.recordRejected')}</span>
             </li>)}
           </ul>
         </details>}
