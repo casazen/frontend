@@ -428,7 +428,7 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
     // What waits for the host: the «Da fare» list, the approvals and the verifications of the guests are the tabs of the Cruscotto.
     '/app/short-rent': ['/app/short-rent/activities', '/app/short-rent/approval-queue', '/app/short-rent/verifications'],
     // «Impostazioni»: the organization, then the integration, the assistant and the automations (each behind its flag).
-    '/app/short-rent/settings': ['/app/short-rent/settings/organization', '/app/short-rent/settings/invitations', '/app/short-rent/settings/site-appearance', '/app/short-rent/settings/domain', '/app/short-rent/settings/site-documents', '/app/short-rent/settings/payments', '/app/short-rent/settings/plan', '/app/short-rent/settings/billing', '/app/short-rent/settings/guest-portal', '/app/short-rent/settings/integration', '/app/short-rent/settings/ai'],
+    '/app/short-rent/settings': ['/app/short-rent/settings/organization', '/app/short-rent/settings/invitations', '/app/short-rent/settings/site-appearance', '/app/short-rent/settings/domain', '/app/short-rent/settings/embed', '/app/short-rent/settings/site-documents', '/app/short-rent/settings/payments', '/app/short-rent/settings/plan', '/app/short-rent/settings/billing', '/app/short-rent/settings/guest-portal', '/app/short-rent/settings/integration', '/app/short-rent/settings/ai'],
     '/app/long-rent/settings': ['/app/long-rent/settings/organization', '/app/long-rent/settings/invitations', '/app/long-rent/settings/plan', '/app/long-rent/settings/billing'],
     '/app/short-rent/settings/ai': [
       '/app/short-rent/settings/assistant',
@@ -494,6 +494,7 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
     ownerInvoicing: true,
     accountantPackage: true,
     routines: true,
+    siteEmbed: true,
   };
 
   it('lists the pages of each section in tab order, and no other page hangs', () => {
@@ -699,6 +700,7 @@ describe('route-manifest sections as tabs (UI-04a)', () => {
       ownerInvoicing: true,
       accountantPackage: true,
       routines: true,
+      siteEmbed: true,
     };
     for (const entry of ROUTE_MANIFEST.filter((candidate) => candidate.navParent)) {
       const tabs = paths(getNavSection(entry.path, allowAll, flags));

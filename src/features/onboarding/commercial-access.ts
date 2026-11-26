@@ -3,7 +3,7 @@ import type { UserDetail } from '@/types';
 /** Product modules, independently of technical rollout flags and of team permissions. */
 export function commercialModuleForPath(path: string): string | null {
   if (/\/(?:integrations\/octorate|channels|ota)(?:\/|$)/.test(path)) return 'channels';
-  if (/\/(?:settings\/(?:domain|site-appearance|site-documents|payments)|vetrina)(?:\/|$)/.test(path)) return 'direct-booking';
+  if (/\/(?:settings\/(?:domain|embed|site-appearance|site-documents|payments)|vetrina)(?:\/|$)/.test(path)) return 'direct-booking';
   if (/\/compliance\/identification(?:\/|$)|\/verifications(?:\/|$)/.test(path)) return 'identification';
   if (/\/(?:compliance|alloggiati)(?:\/|$)/.test(path)) return 'compliance';
   if (/\/automations(?:\/|$)/.test(path)) return 'ai-agents';

@@ -503,6 +503,24 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
+    // «Incorpora nel tuo sito» (E41/F03/US01, NF-147, NF-149): where the agency takes a booking widget to its own website (code to paste, preview, plugin for WordPress, tag manager). The tab
+    // right after the domain, which it extends and links to. Only with the flag `siteEmbed` (backend `SiteEmbed`, off by default): while it is off the tab is not there and the address leads to the
+    // home of the area. It is the page of the account administrator (`orgBillingAdmin`, as the tabs around it): the domain settings it reads are the administrator's to read, and a refused read would
+    // send the whole app to the page of no access, so anyone else who opens the address is told so and nothing is asked.
+    path: '/app/short-rent/settings/embed',
+    navParent: '/app/short-rent/settings',
+    context: 'short-rent',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    featureFlag: 'siteEmbed',
+    navKey: 'nav.embed',
+    icon: 'Store',
+    navOrder: 41,
+    component: async () => ({
+      default: (await import('@/features/settings/embed/embed-settings-page')).EmbedSettingsPage,
+    }),
+  },
+  {
     // Plans and Stripe checkout; also the return page of the checkout and of the billing portal (backend PL-11). In no
     // menu since UI-04a: the org badge of the header leads here (`usePlanPagePath`) and the page links to the billing one.
     path: '/app/short-rent/settings/plan',

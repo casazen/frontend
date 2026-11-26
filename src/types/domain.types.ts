@@ -74,6 +74,14 @@ export interface DomainSurfaces {
   effective: DomainSurfacesEffective;
 }
 
+/**
+ * What the agency set for the tracking of its pages (E40/F01/US01/T04, NF-149): its Google Tag Manager container, `null` when it set none. The same shape in the domain
+ * settings (`tracking`) and in the answer of `PUT /orgs/{id}/domain/tracking`.
+ */
+export interface OrgDomainTracking {
+  gtmContainerId: string | null;
+}
+
 export interface OrgDomainConfig {
   orgId: string;
   publicHostMode: PublicHostMode;
@@ -86,6 +94,8 @@ export interface OrgDomainConfig {
   status?: DomainStatusInfo;
   /** `null` while the platform has the surfaces of the agency domain off, absent on an older backend: either way there is nothing to show (E40/F02/US02). */
   surfaces?: DomainSurfaces | null;
+  /** `null` while the platform has the embeddable pages off (flag `SiteEmbed`), absent on an older backend: either way no container is known (E41/F03/US01). */
+  tracking?: OrgDomainTracking | null;
 }
 
 export interface SetOrgDomainRequest {
@@ -96,6 +106,9 @@ export interface SetOrgDomainRequest {
 
 /** `PUT /orgs/{id}/domain/surfaces`: the three choices of the agency, always all three. */
 export type SetDomainSurfacesRequest = Pick<DomainSurfaces, 'guestAreaOnOwnDomain' | 'ownerPortalOnOwnDomain' | 'useOwnDomainForLinks'>;
+
+/** `PUT /orgs/{id}/domain/tracking`: the container as the agency typed it (the server trims and upper-cases it), or `null` (or empty) to clear it. */
+export type SetOrgTrackingRequest = OrgDomainTracking;
 
 export interface OrgDomainVerifyResult {
   domainVerificationStatus: DomainVerificationStatus;
@@ -115,7 +128,7 @@ export interface ResolveHostResponse {
   /** The embeddable pages (`/embed/*`) are on for this host: the flag `SiteEmbed` and the plan allow them (E40, NF-144). Absent on an older backend: off. */
   embedEnabled?: boolean;
   /** What the agency set for tracking: its Google Tag Manager container, or null when it set none (E40, NF-149). Absent on an older backend. */
-  tracking?: { gtmContainerId: string | null } | null;
+  tracking?: OrgDomainTracking | null;
   /**
    * What the domain serves besides the booking site (E40, NF-140): the guest check-in page and the owner portal. True only with the flag `WhiteLabelHost`, an allowed plan, a verified domain and the setting of the
    * agency. Absent on an older backend, and a missing member of it: off, the host then serves exactly what it served before.

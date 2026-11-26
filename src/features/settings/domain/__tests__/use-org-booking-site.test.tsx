@@ -51,6 +51,8 @@ describe('useOrgBookingSite', () => {
     expect(result.current?.status).toBe('loading');
     await waitFor(() => expect(result.current?.status).toBe('ready'));
     expect(result.current?.site).toMatchObject({ baseUrl: 'https://www.agenzia.it', ownHost: true });
+    // The settings the links were built from are handed out with it (the page «Incorpora nel tuo sito» shows more of them than the address).
+    expect(result.current?.config).toEqual(SERVED);
     expect(DomainApi.getDomain).toHaveBeenCalledWith(ORG_ID);
   });
 
@@ -60,6 +62,7 @@ describe('useOrgBookingSite', () => {
     const { result } = renderSite();
 
     expect(result.current?.status).toBe('restricted');
+    expect(result.current?.config).toBeUndefined();
     expect(result.current?.site).toMatchObject({ baseUrl: expect.stringMatching(/\/book\/villa-rossi$/), ownHost: false });
     expect(DomainApi.getDomain).not.toHaveBeenCalled();
   });
@@ -76,6 +79,8 @@ describe('useOrgBookingSite', () => {
     // The settings of the read that worked are still in the query: the links are not built on them once the next read has failed.
     await waitFor(() => expect(result.current?.status).toBe('failed'));
     expect(result.current?.site).toMatchObject({ ownHost: false });
+    // Nor are they handed out: a page that shows them would show settings the read that just failed did not confirm.
+    expect(result.current?.config).toBeUndefined();
   });
 
   it('useOrgBookingSite_AnswerWithNoAddresses_IsFailedAndNotStillLoading', async () => {

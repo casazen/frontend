@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import type { DomainSurfaces, OrgDomainConfig, SetDomainSurfacesRequest } from '@/types/domain.types';
+import type { OrgDomainConfig, SetDomainSurfacesRequest } from '@/types/domain.types';
+import { ownerLoginState } from './domain-state';
 import { useRequestOwnerLogin, useSetDomainSurfaces } from './use-org-domain';
 
 interface DomainSurfacesPanelProps {
@@ -50,20 +51,6 @@ function SurfaceSwitch({ id, label, help, note, checked, disabled, onCheckedChan
       />
     </li>
   );
-}
-
-/** The words of the line of the owner sign-in (`domain.surfaces.ownerLogin.state.*`): one per state the server can be in, and two for `Pending` (CasaZen enables it by hand, or it registers by itself). */
-function ownerLoginState(surfaces: DomainSurfaces): 'failed' | 'notRequested' | 'pendingAutomatic' | 'pendingManual' | 'ready' {
-  switch (surfaces.ownerLoginHostState) {
-    case 'Pending':
-      return surfaces.ownerLoginAutomatic ? 'pendingAutomatic' : 'pendingManual';
-    case 'Ready':
-      return 'ready';
-    case 'Failed':
-      return 'failed';
-    default:
-      return 'notRequested';
-  }
 }
 
 /**
