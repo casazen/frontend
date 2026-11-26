@@ -141,7 +141,7 @@ interface StayOverview {
   };
   language: string;
   checkInCompleted: boolean;
-  features?: { supplierServices?: boolean };
+  features?: { supplierServices?: boolean; hasSyncedChannelConversation?: boolean };
 }
 
 interface StayDetails {
@@ -338,7 +338,8 @@ function GuestPortalPage({ token }: { token: string }) {
                 {stay.houseRules && <><h2>{text('rules')}</h2><p className="stay-rules">{stay.houseRules}</p></>}
               </div>
             ) : chat ? (
-              <GuestPortalChat path={path} language={language} labels={{
+              <GuestPortalChat path={path} language={language} isOta={stay.isOta}
+                channel={overview?.features?.hasSyncedChannelConversation ? channel : undefined} labels={{
                 message: text('message'), send: text('send'), loading: text('load'), failed: text('error'),
                 empty: text('emptyChat'), closed: text('closedChat'),
               }} />
