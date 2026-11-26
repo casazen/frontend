@@ -552,11 +552,27 @@ class Admin {
 			return;
 		}
 
-		$labels = self::role_labels();
-		$items  = ( isset( $result['menu']['items'] ) && is_array( $result['menu']['items'] ) ) ? $result['menu']['items'] : array();
+		$labels  = self::role_labels();
+		$items   = ( isset( $result['menu']['items'] ) && is_array( $result['menu']['items'] ) ) ? $result['menu']['items'] : array();
+		$outcome = self::wizard_outcome( $result );
 
-		echo '<div class="notice notice-success inline" id="casazen-wizard-result">';
-		echo '<p><strong>' . esc_html__( 'The setup is done.', 'casazen' ) . '</strong></p><ul>';
+		// The box says how the run went: green only when everything that was asked is there.
+		switch ( $outcome ) {
+			case 'failed':
+				$class = 'notice-error';
+				$title = __( 'The setup is not complete.', 'casazen' );
+				break;
+			case 'nothing':
+				$class = 'notice-warning';
+				$title = __( 'Nothing was done: no page was ticked.', 'casazen' );
+				break;
+			default:
+				$class = 'notice-success';
+				$title = __( 'The setup is done.', 'casazen' );
+		}
+
+		printf( '<div class="notice %s inline" id="casazen-wizard-result">', esc_attr( $class ) );
+		echo '<p><strong>' . esc_html( $title ) . '</strong></p><ul>';
 		foreach ( Pages::roles() as $role ) {
 			if ( ! isset( $result['pages'][ $role ] ) || ! is_array( $result['pages'][ $role ] ) ) {
 				continue;
@@ -564,6 +580,9 @@ class Admin {
 			echo '<li>' . self::wizard_page_line( $labels[ $role ], $result['pages'][ $role ], isset( $items[ $role ] ) ? (string) $items[ $role ] : '' ) . '</li>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped piece by piece in wizard_page_line().
 		}
 		echo '</ul>';
+		if ( 'failed' === $outcome ) {
+			echo '<p>' . esc_html__( 'What was made is kept and nothing is made twice: run the setup again when the problem is solved.', 'casazen' ) . '</p>';
+		}
 
 		if ( isset( $result['menu']['name'] ) ) {
 			printf(
@@ -582,6 +601,48 @@ class Admin {
 			echo '<p>' . esc_html__( 'The pages are in the default language. Translate the pages from the Polylang screen.', 'casazen' ) . '</p>';
 		}
 		echo '</div>';
+	}
+
+	/**
+	 * How a run of the setup went, for the colour and the title of its result box.
+	 *
+	 * - `failed`: a page or a menu entry that was asked for could not be made.
+	 * - `nothing`: no page was ticked, so nothing was done.
+	 * - `done`: everything that was asked is there. A page that the setup made as a draft because the box «Publish the pages now» was
+	 *   not ticked is what was asked for.
+	 *
+	 * @param array $result The result of Wizard::run().
+	 * @return string One of `failed`, `nothing` and `done`.
+	 */
+	private static function wizard_outcome( array $result ) {
+		$items  = ( isset( $result['menu']['items'] ) && is_array( $result['menu']['items'] ) ) ? $result['menu']['items'] : array();
+		$chosen = 0;
+		$failed = false;
+
+		foreach ( Pages::roles() as $role ) {
+			if ( ! isset( $result['pages'][ $role ] ) || ! is_array( $result['pages'][ $role ] ) ) {
+				continue;
+			}
+			$page   = $result['pages'][ $role ];
+			$status = isset( $page['status'] ) ? $page['status'] : '';
+			if ( 'skipped' === $status ) {
+				continue;
+			}
+
+			++$chosen;
+			if ( ! in_array( $status, array( 'created', 'exists' ), true ) || empty( $page['id'] ) ) {
+				$failed = true;
+				continue;
+			}
+			if ( isset( $items[ $role ] ) && 'failed' === $items[ $role ] ) {
+				$failed = true;
+			}
+		}
+
+		if ( $failed ) {
+			return 'failed';
+		}
+		return 0 === $chosen ? 'nothing' : 'done';
 	}
 
 	/**

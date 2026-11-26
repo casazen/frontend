@@ -983,6 +983,100 @@ class Test_Wizard extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Prints the tab «Guided setup» after a run, as the user sees it: the result is kept for the user and shown once.
+	 *
+	 * @param array $result The result of a run (or one written by hand).
+	 * @return string The HTML of the page.
+	 */
+	private function show_result( array $result ) {
+		set_transient( Wizard::RESULT_PREFIX . $this->admin_id, $result, Wizard::RESULT_TTL );
+		$_GET['tab'] = 'setup';
+		ob_start();
+		Admin::render_page();
+		return (string) ob_get_clean();
+	}
+
+	/**
+	 * The kind of notice that holds the result of a run: `notice-success`, `notice-warning` or `notice-error`.
+	 *
+	 * @param string $html The HTML of the page.
+	 * @return string The class, or an empty string when the page shows no result.
+	 */
+	private function result_box( $html ) {
+		return 1 === preg_match( '/<div class="notice (notice-[a-z]+) inline" id="casazen-wizard-result">/', $html, $found ) ? $found[1] : '';
+	}
+
+	/**
+	 * A page or a menu entry that could not be made is shown as what it is: the box is an error that says the setup is not
+	 * complete, never the green box of a success.
+	 */
+	public function test_a_page_or_a_menu_entry_that_could_not_be_made_is_not_shown_as_a_success() {
+		// WordPress refuses to save the guest access page (a filter calls it empty): the other two are made.
+		$refuse = static function ( $is_empty, $postarr ) {
+			$role = isset( $postarr['meta_input'][ Pages::META_KEY ] ) ? $postarr['meta_input'][ Pages::META_KEY ] : '';
+			return Pages::ROLE_GUEST_ACCESS === $role ? true : $is_empty;
+		};
+		add_filter( 'wp_insert_post_empty_content', $refuse, 10, 2 );
+		$result = Wizard::run( $this->form() );
+		remove_filter( 'wp_insert_post_empty_content', $refuse, 10 );
+
+		$this->assertSame( 'failed', $result['pages'][ Pages::ROLE_GUEST_ACCESS ]['status'] );
+		$this->assertSame( 'created', $result['pages'][ Pages::ROLE_BOOKING ]['status'] );
+		$this->assertSame( 0, Pages::find( Pages::ROLE_GUEST_ACCESS, 'any' ) );
+
+		$html = $this->show_result( $result );
+		$this->assertSame( 'notice-error', $this->result_box( $html ) );
+		$this->assertStringContainsString( 'The setup is not complete.', $html );
+		$this->assertStringContainsString( 'The page could not be created.', $html );
+		$this->assertStringContainsString( 'run the setup again', $html );
+		$this->assertStringNotContainsString( 'The setup is done.', $html );
+		$this->assertStringNotContainsString( 'notice-success', $html );
+
+		// Run again, the missing page is made and what exists is not made twice: now it is a success.
+		$again = Wizard::run( $this->form() );
+		$this->assertSame( 'created', $again['pages'][ Pages::ROLE_GUEST_ACCESS ]['status'] );
+		$this->assertSame( 'exists', $again['pages'][ Pages::ROLE_BOOKING ]['status'] );
+		$html = $this->show_result( $again );
+		$this->assertSame( 'notice-success', $this->result_box( $html ) );
+		$this->assertStringContainsString( 'The setup is done.', $html );
+
+		// A menu entry that WordPress refuses to save is a failure too, though the pages are fine.
+		$menu_id        = wp_create_nav_menu( 'Main' );
+		$refuse_entries = static function ( $is_empty, $postarr ) {
+			return ( isset( $postarr['post_type'] ) && 'nav_menu_item' === $postarr['post_type'] ) ? true : $is_empty;
+		};
+		add_filter( 'wp_insert_post_empty_content', $refuse_entries, 10, 2 );
+		$result = Wizard::run( $this->form( array( 'menu' => (string) $menu_id ) ) );
+		remove_filter( 'wp_insert_post_empty_content', $refuse_entries, 10 );
+
+		$this->assertSame( 'failed', $result['menu']['items'][ Pages::ROLE_BOOKING ] );
+		$this->assertEmpty( wp_get_nav_menu_items( $menu_id ), 'No entry was made.' );
+		$html = $this->show_result( $result );
+		$this->assertSame( 'notice-error', $this->result_box( $html ) );
+		$this->assertStringContainsString( 'Could not be added to the menu.', $html );
+		$this->assertStringNotContainsString( 'notice-success', $html );
+	}
+
+	/**
+	 * A run with no page ticked does nothing and says so: it is not the green box of a success.
+	 */
+	public function test_a_run_with_no_page_ticked_says_that_nothing_was_done() {
+		$form = $this->form();
+		foreach ( Pages::roles() as $role ) {
+			unset( $form['pages'][ $role ]['enabled'] );
+		}
+
+		$this->submit( $form );
+
+		$this->assertSame( 0, $this->count_pages(), 'Nothing was created.' );
+		$html = $this->show_result( Wizard::take_result() );
+		$this->assertSame( 'notice-warning', $this->result_box( $html ) );
+		$this->assertStringContainsString( 'Nothing was done: no page was ticked.', $html );
+		$this->assertStringNotContainsString( 'The setup is done.', $html );
+		$this->assertStringNotContainsString( 'notice-success', $html );
+	}
+
+	/**
 	 * A user who is not the one who ran the setup does not see its result, and the result waits only five minutes.
 	 */
 	public function test_the_result_belongs_to_the_user_and_expires() {

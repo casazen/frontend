@@ -381,117 +381,129 @@ msgstr ""
 msgid "The menu you chose does not exist. Nothing was created."
 msgstr ""
 
-#: includes/class-admin.php:559
+#: includes/class-admin.php:563
+msgid "The setup is not complete."
+msgstr ""
+
+#: includes/class-admin.php:567
+msgid "Nothing was done: no page was ticked."
+msgstr ""
+
+#: includes/class-admin.php:571
 msgid "The setup is done."
 msgstr ""
 
+#: includes/class-admin.php:584
+msgid "What was made is kept and nothing is made twice: run the setup again when the problem is solved."
+msgstr ""
+
 #. translators: %s: the name of a menu.
-#: includes/class-admin.php:573
+#: includes/class-admin.php:592
 #, php-format
 msgid "Menu: %s"
 msgstr ""
 
-#: includes/class-admin.php:579
+#: includes/class-admin.php:598
 msgid "Your theme is a block theme, so no menu was changed. Add them to the Navigation block in the Site Editor."
 msgstr ""
 
-#: includes/class-admin.php:582
+#: includes/class-admin.php:601
 msgid "The pages are in the default language. Translate the pages from the Polylang screen."
 msgstr ""
 
-#: includes/class-admin.php:600
+#: includes/class-admin.php:661
 msgid "Skipped."
 msgstr ""
 
-#: includes/class-admin.php:603
+#: includes/class-admin.php:664
 msgid "The page could not be created."
 msgstr ""
 
-#: includes/class-admin.php:611
+#: includes/class-admin.php:672
 msgid "Page created."
 msgstr ""
 
-#: includes/class-admin.php:613
+#: includes/class-admin.php:674
 msgid "It is a draft: publish it when you are ready."
 msgstr ""
 
 #. translators: 1: the address the title asked for, 2: the address the page got.
-#: includes/class-admin.php:618
+#: includes/class-admin.php:679
 #, php-format
 msgid "The address \"%1$s\" belongs to another page, so this page uses \"%2$s\"."
 msgstr ""
 
-#: includes/class-admin.php:624
+#: includes/class-admin.php:685
 msgid "The page already exists and was not changed."
 msgstr ""
 
-#: includes/class-admin.php:628
+#: includes/class-admin.php:689
 msgid "Added to the menu."
 msgstr ""
 
-#: includes/class-admin.php:630
+#: includes/class-admin.php:691
 msgid "Already in the menu."
 msgstr ""
 
-#: includes/class-admin.php:632
+#: includes/class-admin.php:693
 msgid "Could not be added to the menu."
 msgstr ""
 
-#: includes/class-admin.php:647
+#: includes/class-admin.php:708
 msgid "Hero search bar"
 msgstr ""
 
 #. translators: 1: the shortcode of the search bar. 2: the title of the page that holds the booking engine.
-#: includes/class-admin.php:652
+#: includes/class-admin.php:713
 #, php-format
 msgid "Add the shortcode %1$s to the home page (in Elementor, the Shortcode widget): it sends the guest to the page %2$s with the dates and the guests."
 msgstr ""
 
-#: includes/class-admin.php:717
+#: includes/class-admin.php:778
 msgid "Connection status"
 msgstr ""
 
-#: includes/class-admin.php:719
+#: includes/class-admin.php:780
 msgid "No check has been made yet. Use the Test connection button below."
 msgstr ""
 
-#: includes/class-admin.php:724
+#: includes/class-admin.php:785
 msgid "Agency"
 msgstr ""
 
-#: includes/class-admin.php:728
+#: includes/class-admin.php:789
 msgid "Embedding"
 msgstr ""
 
-#: includes/class-admin.php:732
+#: includes/class-admin.php:793
 msgid "Owner sign-in"
 msgstr ""
 
-#: includes/class-admin.php:736
+#: includes/class-admin.php:797
 msgid "Last check"
 msgstr ""
 
-#: includes/class-admin.php:742
+#: includes/class-admin.php:803
 msgid "Script address"
 msgstr ""
 
-#: includes/class-admin.php:757
+#: includes/class-admin.php:818
 msgid "On"
 msgstr ""
 
-#: includes/class-admin.php:760
+#: includes/class-admin.php:821
 msgid "Off"
 msgstr ""
 
-#: includes/class-admin.php:762 includes/class-admin.php:778
+#: includes/class-admin.php:823 includes/class-admin.php:839
 msgid "Unknown"
 msgstr ""
 
-#: includes/class-admin.php:773
+#: includes/class-admin.php:834
 msgid "Ready"
 msgstr ""
 
-#: includes/class-admin.php:776
+#: includes/class-admin.php:837
 msgid "Not ready yet"
 msgstr ""
 
