@@ -1,3 +1,5 @@
+import { useAppShell } from '@/components/layout/app-shell-context';
+import { useUiStore } from '@/store/ui-store';
 import { useCallback, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -56,6 +58,8 @@ export function DashboardPage() {
   const [params, setParams] = useSearchParams();
   const { hasPermission } = useWorkspace();
   const { user } = useCurrentUser();
+  const viewKey = useAppShell()?.viewKey;
+  const tasksFirst = useUiStore(state => Boolean(viewKey && state.workspaceViews[viewKey]?.tasksFirst));
   // OTA partner API in freeze (D10): no widget and no request while the flag is off.
   const { flags } = useFeatureFlags();
   const otaEnabled = flags.otaPartnerApi;
@@ -175,10 +179,10 @@ export function DashboardPage() {
         ) : canReadBookings && !analytics ? (
           <div className={TWO_COLUMNS}>
             {today.data && !today.isError ? (
-              <>
-                <TodayCard rows={todayRows} today={today.data} propertyId={propertyId} />
-                <TodoSection rows={todoRows} incomplete={threads.isError || (canReadProperties && feeds.isError)} loading={threads.isLoading || (canReadProperties && feeds.isLoading)} showAll={showAllTodo} onToggleAll={() => setQuery({ todo: showAllTodo ? null : 'all' })} />
-              </>
+              (tasksFirst ? ['tasks', 'today'] : ['today', 'tasks']).map(section => section === 'today' ?
+                <TodayCard key="today" rows={todayRows} today={today.data} propertyId={propertyId} /> :
+                <TodoSection key="tasks" rows={todoRows} incomplete={threads.isError || (canReadProperties && feeds.isError)} loading={threads.isLoading || (canReadProperties && feeds.isLoading)} showAll={showAllTodo} onToggleAll={() => setQuery({ todo: showAllTodo ? null : 'all' })} />
+              )
             ) : today.isError ? (
               <div className="xl:col-span-2">
                 <ErrorState

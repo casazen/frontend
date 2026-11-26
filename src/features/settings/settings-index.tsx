@@ -1,9 +1,12 @@
 import { useState } from 'react';
+import { useAppShell } from '@/components/layout/app-shell-context';
+import { WorkspaceViewDialog } from '@/components/layout/workspace-view-dialog';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { matchesSearch } from '@/components/shared/list-view/list-data';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ChevronRight, Search } from 'lucide-react';
+import { ChevronRight, Search, SlidersHorizontal } from 'lucide-react';
 import { getNavChildren } from '@/config/route-manifest';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
@@ -27,6 +30,8 @@ export function SettingsIndex() {
   const canOpen = useCommercialRouteAccess();
   const entries = getNavChildren(pathname.replace(/\/$/, ''), hasPermission, flags, canOpen);
   const [query, setQuery] = useState('');
+  const shell = useAppShell();
+  const [personalizing, setPersonalizing] = useState(false);
   const visible = groups.map(({ name, pages }) => ({
     name,
     links: pages.flatMap(page => entries.filter(entry => entry.path.endsWith('/' + page)))
@@ -34,7 +39,12 @@ export function SettingsIndex() {
   })).filter(group => group.links.length > 0);
   return (
     <div className="workspace-page space-y-8">
-      <PageHeader title={t('nav.settings')} />
+      <PageHeader title={t('nav.settings')} action={shell?.viewKey && (
+        <Button variant="outline" onClick={() => setPersonalizing(true)}>
+          <SlidersHorizontal aria-hidden="true" className="size-4" />{t('workspaceView.title')}
+        </Button>
+      )} />
+      {personalizing && shell?.viewKey && <WorkspaceViewDialog key={shell.viewKey} viewKey={shell.viewKey} contextKey={shell.contextKey} onClose={() => setPersonalizing(false)} />}
       {entries.length > 0 && <label className="relative block max-w-md">
         <Search aria-hidden="true" className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input type="search" className="min-h-11 ps-10" aria-label={t('workspaceView.search')} placeholder={t('workspaceView.search')} value={query} onChange={event => setQuery(event.target.value)} />

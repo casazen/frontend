@@ -29,6 +29,7 @@ function uiStorage(): StateStorage {
 }
 
 export interface WorkspaceView {
+  tasksFirst?: boolean;
   compact: boolean;
   secondaryPaths: string[];
 }
@@ -82,7 +83,7 @@ export const useUiStore = create<UiState>()(
       updateWorkspaceView: (key, change) => set(state => {
         const next = change(state.workspaceViews[key] ?? DEFAULT_WORKSPACE_VIEW);
         const workspaceViews = { ...state.workspaceViews };
-        if (next.compact || next.secondaryPaths.length) workspaceViews[key] = next;
+        if (next.compact || next.tasksFirst || next.secondaryPaths.length) workspaceViews[key] = next;
         else delete workspaceViews[key];
         return { workspaceViews };
       }),

@@ -1,5 +1,6 @@
 {
   "workspaceView": {
+    "tasksFirst": "Show tasks first on the dashboard",
     "title": "Customize workspace",
     "scope": "Preferences are saved on this device for your profile and this workspace.",
     "compact": "Compact tables and margins",

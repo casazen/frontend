@@ -1,6 +1,6 @@
 import { useRef, useState, type FormEvent } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { BookOpen, LockKeyhole, Sparkles } from 'lucide-react';
+import { ChevronDown, BookOpen, LockKeyhole, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ApiClient } from '@/api/client';
 import { Button } from '@/components/ui/button';
@@ -180,15 +180,19 @@ export function GuestHouseGuideEditor({ propertyId, suggestion, section, withAi 
           {section === 'chat' ? (
             <div className="grid gap-4 sm:grid-cols-2">{chatGuideFields.map(renderField)}</div>
           ) : guideGroups.map(({ label, fields }) => (
-            <fieldset key={label} className="min-w-0 rounded-xl border px-4 pb-4 sm:px-5">
-              <legend className="px-2 text-sm font-semibold">
+            <details key={label} open={label === 'arrivalGroup'} className="group min-w-0 rounded-xl border px-4 sm:px-5">
+              <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 font-semibold focus-visible:outline-ring [&::-webkit-details-marker]:hidden">
                 <span className="flex items-center gap-2">
                   {label === 'privateGroup' && <LockKeyhole aria-hidden="true" className="size-4" />}
                   {t(`guestPortal.guide.${label}`)}
                 </span>
-              </legend>
-              <div className="grid gap-4 pt-2 sm:grid-cols-2">{fields.map(renderField)}</div>
-            </fieldset>
+                <ChevronDown aria-hidden="true" className="size-4 shrink-0 group-open:rotate-180" />
+              </summary>
+              <fieldset className="grid gap-4 border-t py-4 sm:grid-cols-2">
+                <legend className="sr-only">{t(`guestPortal.guide.${label}`)}</legend>
+                {fields.map(renderField)}
+              </fieldset>
+            </details>
           ))}
           {section !== 'guide' && <fieldset className="grid gap-3 rounded-xl border px-5 pb-5" disabled={save.isPending}>
             <legend className="px-2 font-semibold">{t('guestPortal.guide.autoReplyTitle')}</legend>

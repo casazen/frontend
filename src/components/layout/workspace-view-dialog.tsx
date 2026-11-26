@@ -36,6 +36,10 @@ export function WorkspaceViewDialog({ contextKey, viewKey, onClose }: { contextK
           <input type="checkbox" checked={view.compact} onChange={() => update(viewKey, current => ({ ...current, compact: !current.compact }))} />
           {t('workspaceView.compact')}
         </label>
+        {contextKey === 'short-rent' && hasPermission('short-rent', 'booking.read') && <label className="flex min-h-11 items-center gap-3 font-medium">
+          <input type="checkbox" checked={Boolean(view.tasksFirst)} onChange={() => update(viewKey, current => ({ ...current, tasksFirst: !current.tasksFirst }))} />
+          {t('workspaceView.tasksFirst')}
+        </label>}
         <p className="text-sm text-muted-foreground">{t('workspaceView.help')}</p>
         {sections.map(section => (
           <fieldset key={section.group} className="grid gap-x-3 sm:grid-cols-2">
@@ -49,7 +53,7 @@ export function WorkspaceViewDialog({ contextKey, viewKey, onClose }: { contextK
           </fieldset>
         ))}
         <div className="flex flex-wrap justify-between gap-2 border-t pt-3">
-          <Button variant="ghost" disabled={!view.compact && !view.secondaryPaths.length} onClick={() => update(viewKey, () => DEFAULT_WORKSPACE_VIEW)}>{t('workspaceView.reset')}</Button>
+          <Button variant="ghost" disabled={!view.compact && !view.tasksFirst && !view.secondaryPaths.length} onClick={() => update(viewKey, () => DEFAULT_WORKSPACE_VIEW)}>{t('workspaceView.reset')}</Button>
           <Button onClick={onClose}>{t('workspaceView.done')}</Button>
         </div>
       </DialogContent>
