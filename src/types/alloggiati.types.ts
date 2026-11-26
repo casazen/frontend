@@ -16,6 +16,9 @@ export type AlloggiatiWebStatus =
   | 'DaInviareManualmente'
   | 'InviatoManualmente'
   | 'Inviato'
+  | 'Sending'
+  | 'PartiallyAccepted'
+  | 'ToVerify'
   | 'SentReceiptPending'
   | 'Rifiutato'
   | 'Errore'
@@ -83,6 +86,9 @@ export interface AlloggiatiRetryResultDto {
 }
 
 export interface AlloggiatiStatusDto {
+  directSubmission?: boolean;
+  directAttempt?: string | null;
+  canDownloadDirectReceipt?: boolean;
   bookingId: string;
   status: AlloggiatiWebStatus;
   /** Receipt reference, only with `Inviato`. */
