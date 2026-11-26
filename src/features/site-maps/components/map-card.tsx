@@ -2,27 +2,17 @@ import { ArrowRight, Star, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
-
-export interface MapCardData {
-  id: string;
-  name: string;
-  /** Zone or town. */
-  zone?: string;
-  photoUrl?: string;
-  /** 0..5, only when the house has reviews. */
-  rating?: number;
-  /** The price as the page writes it («145 € a notte»). */
-  priceLabel: string;
-  /** Why the house is not free, when it is not («Non libera dal 12 ottobre»). */
-  unavailableNote?: string;
-  /** The page of the house. */
-  href?: string;
-}
+import type { MapCardData } from './map-card-data';
 
 interface MapCardProps {
   data: MapCardData | null;
   /** On a phone the card is a sheet from the bottom; elsewhere it sits over the map. */
   phone: boolean;
+  /**
+   * `over` (the default): over the map, or a sheet from the bottom of the window on a phone. `flow`: a block in the flow of the page, where the page puts
+   * it (under the map), whatever the width: for a page in a frame that is as tall as its content, where an overlay would be far from the guest.
+   */
+  layout?: 'over' | 'flow';
   onClose: () => void;
 }
 
@@ -70,8 +60,31 @@ function CardBody({ data }: { data: MapCardData }) {
  * a phone it is a sheet from the bottom (touching outside or Esc closes it) and the first touch on a pin opens it: a second
  * touch, on the card, goes to the page of the house.
  */
-export function MapCard({ data, phone, onClose }: MapCardProps) {
+export function MapCard({ data, phone, layout = 'over', onClose }: MapCardProps) {
   const { t } = useTranslation();
+  if (layout === 'flow') {
+    if (!data) return null;
+    return (
+      <div
+        role="group"
+        aria-label={data.name}
+        data-testid="map-card"
+        className="flex items-start gap-1 rounded-2xl border border-[var(--cz-public-border,rgba(0,0,0,0.15))] bg-[var(--cz-public-surface,#fff)] p-1 shadow-sm"
+      >
+        <div className="min-w-0 flex-1">
+          <CardBody data={data} />
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={t('siteMap.cardClose')}
+          className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-[var(--cz-public-text,#111)] hover:bg-[var(--cz-public-bg,#f5f5f5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--cz-public-primary-text,#1d4ed8)]"
+        >
+          <X className="h-5 w-5" aria-hidden="true" />
+        </button>
+      </div>
+    );
+  }
   if (phone) {
     return (
       <Sheet open={data !== null} onOpenChange={(open) => !open && onClose()}>

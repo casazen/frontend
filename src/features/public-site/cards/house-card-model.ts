@@ -1,4 +1,8 @@
+import { useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import type { TFunction } from 'i18next';
+import { useEmbed } from '@/features/embed/embed-context';
+import { embedCampaignOf, embedPropertyHref } from '@/features/embed/embed-urls';
 import { buildPropertyBookingPath } from '@/lib/booking-url';
 import { formatDayMonth } from '@/features/public-site/stay/stay-format';
 import { stayHref, type StayState } from '@/features/public-site/stay/stay-state';
@@ -92,6 +96,25 @@ export function cardLink(orgSlug: string, card: Pick<PublicStayCard, 'id' | 'slu
   return stay && stay.checkIn && stay.checkOut ? stayHref(path, stay) : path;
 }
 
+/** What `useCardLink` gives: the same arguments as `cardLink`. */
+export type CardLink = (orgSlug: string, card: Pick<PublicStayCard, 'id' | 'slug'>, stay: StayState | null) => string;
+
+/**
+ * Where the card of a home (and its pin, and its row in the list of the ones that are not free) leads. On the booking site it is `cardLink`, the page of
+ * the home on the site. Inside the frame of an embeddable widget (NF-144) the site is not there: it is the property widget in the same frame, with the
+ * stay, `from=booking` and the campaign of the page (`embedPropertyHref`), so that no link of the frame ever leaves it for `/book/…`.
+ */
+export function useCardLink(): CardLink {
+  const embed = useEmbed();
+  const { search } = useLocation();
+  // Only a frame carries the campaign of its page from card to card.
+  const campaign = embed ? embedCampaignOf(search) : null;
+
+  return useCallback<CardLink>(
+    (orgSlug, card, stay) => (embed ? embedPropertyHref(embed, card, { stay, campaign }) : cardLink(orgSlug, card, stay)),
+    [embed, campaign],
+  );
+}
 
 /** The home that costs least per night, for the examples that need one (the receipt of the home, the zones). */
 export function cheapestCard<T extends Pick<PublicStayCard, 'price'>>(cards: readonly T[]): T | undefined {

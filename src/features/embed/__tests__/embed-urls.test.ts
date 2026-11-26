@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { bookingAttributionOf } from '@/lib/booking-link';
-import { buildEmbedCheckoutUrl, embedHref } from '../embed-urls';
+import {
+  buildEmbedCheckoutUrl,
+  buildEmbedGuestAreaAddress,
+  buildEmbedGuestAreaUrl,
+  buildEmbedPropertyUrl,
+  embedBookingHref,
+  embedCampaignOf,
+  embedHref,
+  embedPropertyHref,
+} from '../embed-urls';
 
 /**
  * The addresses a widget writes (E41/F01/US01/T02, NF-144, NF-145): the links inside the frame, which keep what a reload needs, and the link out of
@@ -194,5 +203,144 @@ describe('buildEmbedCheckoutUrl (the exit to the checkout, AC4)', () => {
       medium: 'embed',
       referrer: 'quokka360.com',
     });
+  });
+});
+
+describe('the links of the booking widget to the property widget (E41/F01/US02/T01, T02)', () => {
+  const stay = { checkIn: '2026-12-01', checkOut: '2026-12-05', adults: 2, children: 1, pets: true };
+
+  it('embedPropertyHref_WithDates_LeadsToThePropertyWidgetOfTheSameFrame_WithTheStayAndWhereFrom', () => {
+    const href = embedPropertyHref(PLATFORM, HOME, { stay });
+
+    const url = new URL(href, 'https://x.example');
+    expect(url.pathname).toBe('/embed/villa-rossi/property/casa-mare');
+    expect(Object.fromEntries(url.searchParams)).toEqual({
+      checkin: '2026-12-01',
+      checkout: '2026-12-05',
+      guests: '3',
+      children: '1',
+      pets: '1',
+      from: 'booking',
+      lang: 'it',
+      parent: PARENT,
+      v: '1',
+    });
+  });
+
+  it('embedPropertyHref_OnAnAgencyDomain_StartsAtEmbed_AndWithoutASlugUsesTheId', () => {
+    const href = embedPropertyHref(HOST, { id: HOME.id }, { stay });
+
+    expect(new URL(href, 'https://x.example').pathname).toBe(`/embed/property/${HOME.id}`);
+  });
+
+  it('embedPropertyHref_WithoutBothDates_CarriesNoStay', () => {
+    for (const half of [null, undefined, {}, { checkIn: '2026-12-01', checkOut: '' }, { checkIn: '', checkOut: '2026-12-05' }]) {
+      const query = new URL(embedPropertyHref(PLATFORM, HOME, { stay: half }), 'https://x.example').searchParams;
+      expect([...query.keys()].sort()).toEqual(['from', 'lang', 'parent', 'v']);
+    }
+  });
+
+  it('embedPropertyHref_ASlugFromTheServer_CannotAddASegmentOfItsOwn', () => {
+    const href = embedPropertyHref(PLATFORM, { id: 'x', slug: '../book/other/checkout?x=1' });
+
+    expect(new URL(href, 'https://x.example').pathname).toBe('/embed/villa-rossi/property/..%2Fbook%2Fother%2Fcheckout%3Fx%3D1');
+    expect(href.startsWith('/embed/villa-rossi/property/')).toBe(true);
+  });
+
+  it('embedPropertyHref_TheCampaign_GoesOnOnlyWhenItIsAPlainName', () => {
+    expect(new URL(embedPropertyHref(PLATFORM, HOME, { campaign: 'Estate-2026' }), 'https://x.example').searchParams.get('utm_campaign')).toBe('estate-2026');
+    for (const bad of ['mario.rossi@example.com', '3331234567890', 'two words', 'x'.repeat(81), '']) {
+      expect(new URL(embedPropertyHref(PLATFORM, HOME, { campaign: bad }), 'https://x.example').searchParams.has('utm_campaign')).toBe(false);
+    }
+  });
+
+  it('embedBookingHref_IsTheBookingWidgetWithTheSameStayAndCampaign', () => {
+    const url = new URL(embedBookingHref(HOST, { stay, campaign: 'estate-2026' }), 'https://x.example');
+
+    expect(url.pathname).toBe('/embed/booking');
+    expect(Object.fromEntries(url.searchParams)).toEqual({
+      checkin: '2026-12-01',
+      checkout: '2026-12-05',
+      guests: '3',
+      children: '1',
+      pets: '1',
+      utm_campaign: 'estate-2026',
+      lang: 'en',
+      parent: PARENT,
+      v: '1',
+    });
+  });
+
+  it('embedCampaignOf_TheAddressOfTheFrame_IsAPlainTokenOrNothing', () => {
+    expect(embedCampaignOf('?utm_campaign=Estate-2026&x=1')).toBe('estate-2026');
+    expect(embedCampaignOf(new URLSearchParams('utm_campaign=mario%40example.com'))).toBe('');
+    expect(embedCampaignOf('?checkin=2026-12-01')).toBe('');
+  });
+});
+
+describe('buildEmbedPropertyUrl («Open on the site»)', () => {
+  const input = { origin: 'https://prenota.quokka360.com', hostMode: 'host', orgSlug: 'villa-rossi', property: HOME, stay: STAY, lang: 'en', campaign: 'estate-2026' } as const;
+
+  it('buildEmbedPropertyUrl_OnTheAgencyDomain_IsThePageOfTheHomeAtTheRootOfTheSite_WithTheAttributionOfTheCheckout', () => {
+    const url = new URL(buildEmbedPropertyUrl(input));
+
+    expect(url.origin).toBe('https://prenota.quokka360.com');
+    expect(url.pathname).toBe('/property/casa-mare');
+    expect(Object.fromEntries(url.searchParams)).toEqual({
+      checkin: '2026-12-01',
+      checkout: '2026-12-05',
+      guests: '3',
+      children: '1',
+      pets: '1',
+      lang: 'en',
+      utm_source: 'agency-site',
+      utm_medium: 'embed',
+      utm_campaign: 'estate-2026',
+    });
+  });
+
+  it('buildEmbedPropertyUrl_OnTheCasazenDomain_IsThePageUnderTheOrg_AndTheCheckoutIsTheSameWithTheCheckoutSegment', () => {
+    const platform = { ...input, hostMode: 'platform', origin: 'https://app.example.test' } as const;
+
+    expect(new URL(buildEmbedPropertyUrl(platform)).pathname).toBe('/book/villa-rossi/property/casa-mare');
+    expect(new URL(buildEmbedCheckoutUrl(platform)).pathname).toBe('/book/villa-rossi/property/casa-mare/checkout');
+    // The two differ by the segment and nothing else.
+    expect(new URL(buildEmbedPropertyUrl(platform)).search).toBe(new URL(buildEmbedCheckoutUrl(platform)).search);
+  });
+});
+
+describe('the address of the guest area («Manage your booking», E41/F01/US02/T03)', () => {
+  const guest = { orgSlug: 'villa-rossi', lang: 'en', code: 'K7M4Q-9XP2H' } as const;
+
+  it('buildEmbedGuestAreaUrl_OnTheAgencyDomain_IsMyBookingsAtTheRoot_WithTheCodeAndTheLanguageOnly', () => {
+    const url = new URL(buildEmbedGuestAreaUrl({ ...guest, origin: 'https://prenota.quokka360.com', hostMode: 'host' }));
+
+    expect(url.origin).toBe('https://prenota.quokka360.com');
+    expect(url.pathname).toBe('/my-bookings');
+    expect([...url.searchParams.entries()]).toEqual([
+      ['code', 'K7M4Q-9XP2H'],
+      ['lang', 'en'],
+    ]);
+  });
+
+  it('buildEmbedGuestAreaUrl_OnTheCasazenDomain_IsMyBookingsUnderTheOrg', () => {
+    const url = new URL(buildEmbedGuestAreaUrl({ ...guest, origin: 'https://app.example.test', hostMode: 'platform' }));
+
+    expect(url.pathname).toBe('/book/villa-rossi/my-bookings');
+    expect([...url.searchParams.keys()]).toEqual(['code', 'lang']);
+  });
+
+  it('buildEmbedGuestAreaAddress_IsThePageWithNoQuery', () => {
+    expect(buildEmbedGuestAreaAddress({ origin: 'https://prenota.quokka360.com', hostMode: 'host', orgSlug: 'villa-rossi' })).toBe('https://prenota.quokka360.com/my-bookings');
+    expect(buildEmbedGuestAreaAddress({ origin: 'https://app.example.test/book/x?y=1', hostMode: 'platform', orgSlug: 'villa-rossi' })).toBe(
+      'https://app.example.test/book/villa-rossi/my-bookings',
+    );
+  });
+
+  it('buildEmbedGuestAreaUrl_AnOrgSlugFromTheAddress_CannotAddASegmentOfItsOwn', () => {
+    const url = new URL(buildEmbedGuestAreaUrl({ ...guest, orgSlug: '../x?y=1', origin: 'https://app.example.test', hostMode: 'platform' }));
+
+    expect(url.pathname).toBe('/book/..%2Fx%3Fy%3D1/my-bookings');
+    expect(url.origin).toBe('https://app.example.test');
   });
 });

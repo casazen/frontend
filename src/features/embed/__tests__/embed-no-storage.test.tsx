@@ -18,7 +18,15 @@ import type { PublicOrgDto } from '@/types';
  * them, and a browser that blocks third-party storage must not break the widget. The proof is a spy on everything a page could write to or read
  * from, while each of the three widgets renders in each of its states, and while the whole app starts on such an address.
  */
-vi.mock('@/api/public-org.api', () => ({ publicOrgApi: { getPublicOrg: vi.fn() } }));
+vi.mock('@/api/public-org.api', () => ({ publicOrgApi: { getPublicOrg: vi.fn(), getOrgProperty: vi.fn(() => new Promise(() => undefined)) } }));
+// The widgets are the real ones: none of their calls reaches the network here (the proof of what the booking widget keeps is in `booking-widget.test.tsx`, with fixtures).
+vi.mock('@/api/public-site-search.api', () => ({
+  publicSiteSearchApi: {
+    getStays: vi.fn(() => new Promise(() => undefined)),
+    getSiteCalendar: vi.fn(() => new Promise(() => undefined)),
+    getDestinations: vi.fn(() => new Promise(() => undefined)),
+  },
+}));
 
 // The whole app (`App`) on an address of the widgets: its routes are the ones of the widgets and of the booking site, nothing else.
 const signIn = vi.hoisted(() => ({ mounted: vi.fn() }));

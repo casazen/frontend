@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import type { UIEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Grid2x2, ImageOff } from 'lucide-react';
+import { useEmbed } from '@/features/embed/embed-context';
 import { PhotoViewer } from '@/features/public-site/components/PhotoViewer';
 import { displayableMediaUrls } from '@/lib/media-url';
 import { cn } from '@/lib/utils';
@@ -30,9 +31,13 @@ function tilePlacement(index: number, count: number): string {
  * The photos of a property: a carousel across the width of the phone (a swipe, with the counter), a mosaic from 768 px (one
  * big photo and four small ones). Every photo opens the viewer. A photo that does not load is left out; without any, a
  * plain block says so.
+ *
+ * In the frame of an embeddable widget (NF-144) there is no viewer: it is a dialog fixed to the window, and the window of a frame is as tall as its content, so it
+ * would open far from the guest. The photos are the carousel under `md` and the mosaic of the first five from `md`; all of them are on the page of the site.
  */
 export function PropertyGallery({ photoUrls, alt }: PropertyGalleryProps) {
   const { t } = useTranslation();
+  const embed = useEmbed();
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const [slide, setSlide] = useState(0);
   const [broken, setBroken] = useState<ReadonlySet<string>>(() => new Set());
@@ -67,17 +72,12 @@ export function PropertyGallery({ photoUrls, alt }: PropertyGalleryProps) {
         onScroll={onScroll}
         className="flex snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] md:grid md:h-[24rem] md:snap-none md:grid-cols-4 md:grid-rows-2 md:gap-2 md:overflow-hidden md:rounded-[var(--cz-public-radius)] lg:h-[28rem] [&::-webkit-scrollbar]:hidden"
       >
-        {photos.map((url, index) => (
-          <button
-            key={url}
-            type="button"
-            aria-label={t('publicSite.openPhoto', { index: index + 1, total: photos.length })}
-            onClick={(event) => open(index, event.currentTarget)}
-            className={cn(
-              'relative block aspect-[4/3] w-full shrink-0 snap-start overflow-hidden bg-[var(--cz-public-border)] focus-visible:z-10 focus-visible:outline-offset-[-3px]! md:aspect-auto md:h-full',
-              tilePlacement(index, photos.length),
-            )}
-          >
+        {photos.map((url, index) => {
+          const tile = cn(
+            'relative block aspect-[4/3] w-full shrink-0 snap-start overflow-hidden bg-[var(--cz-public-border)] focus-visible:z-10 focus-visible:outline-offset-[-3px]! md:aspect-auto md:h-full',
+            tilePlacement(index, photos.length),
+          );
+          const photo = (
             <img
               src={url}
               alt={t('publicSite.photoAlt', { name: alt, index: index + 1 })}
@@ -87,8 +87,23 @@ export function PropertyGallery({ photoUrls, alt }: PropertyGalleryProps) {
               decoding="async"
               onError={() => setBroken((previous) => new Set(previous).add(url))}
             />
-          </button>
-        ))}
+          );
+          return embed ? (
+            <div key={url} className={tile}>
+              {photo}
+            </div>
+          ) : (
+            <button
+              key={url}
+              type="button"
+              aria-label={t('publicSite.openPhoto', { index: index + 1, total: photos.length })}
+              onClick={(event) => open(index, event.currentTarget)}
+              className={tile}
+            >
+              {photo}
+            </button>
+          );
+        })}
       </div>
 
       {photos.length > 1 ? (
@@ -99,14 +114,16 @@ export function PropertyGallery({ photoUrls, alt }: PropertyGalleryProps) {
           >
             {current + 1} / {photos.length}
           </span>
-          <button
-            type="button"
-            onClick={(event) => open(0, event.currentTarget)}
-            className="absolute bottom-3 right-3 hidden items-center gap-2 rounded-[var(--cz-public-radius)] bg-[var(--cz-public-surface)] px-4 py-2 text-sm font-medium text-[var(--cz-public-text)] shadow-[var(--cz-public-shadow-card)] hover:bg-[var(--cz-public-bg)] md:inline-flex pointer-coarse:min-h-11"
-          >
-            <Grid2x2 className="h-4 w-4" aria-hidden />
-            {t('publicProperty.gallery.showAll', { total: photos.length })}
-          </button>
+          {embed ? null : (
+            <button
+              type="button"
+              onClick={(event) => open(0, event.currentTarget)}
+              className="absolute bottom-3 right-3 hidden items-center gap-2 rounded-[var(--cz-public-radius)] bg-[var(--cz-public-surface)] px-4 py-2 text-sm font-medium text-[var(--cz-public-text)] shadow-[var(--cz-public-shadow-card)] hover:bg-[var(--cz-public-bg)] md:inline-flex pointer-coarse:min-h-11"
+            >
+              <Grid2x2 className="h-4 w-4" aria-hidden />
+              {t('publicProperty.gallery.showAll', { total: photos.length })}
+            </button>
+          )}
         </>
       ) : null}
 

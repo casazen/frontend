@@ -1,0 +1,9 @@
+/*
+ * The frame of an embeddable widget (NF-144). The frame is exactly as tall as its wrapper (the element that `useEmbedBridgeController` measures), and
+ * a popover (the dates, the guests, the places) is drawn by the browser over the frame, outside the wrapper: it takes no room in it. A frame with
+ * little under the bar would cut it. While one is open the wrapper is tall enough for it, and the frame follows it (a message `resize`); it goes back when
+ * the popover closes. The trigger of a popover says it is open (`aria-expanded`), so no widget has to tell the shell.
+ */
+.embed-frame:has([aria-haspopup='dialog'][aria-expanded='true']) {
+  min-height: 46rem;
+}

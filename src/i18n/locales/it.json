@@ -9810,14 +9810,37 @@
     "signIn": "Accedi"
   },
   "embed": {
+    "booking": {
+      "more": {
+        "button": "Mostra altre case",
+        "shown": "Stai vedendo {{shown}} case su {{total}}"
+      },
+      "noResults": {
+        "capacity": "Le case di questo sito ospitano fino a {{count}} persone.",
+        "dates": "In queste date le case sono già prenotate. Prova altre date, anche vicine.",
+        "none": "In questo momento nessuna casa è prenotabile online."
+      }
+    },
     "error": {
       "description": "Non siamo riusciti a raggiungere il server. Riprova tra poco.",
       "title": "Non riusciamo a caricare i contenuti"
+    },
+    "guestAccess": {
+      "label": "Gestisci la tua prenotazione",
+      "submit": "Continua"
     },
     "loading": "Caricamento in corso…",
     "notFound": {
       "description": "Non troviamo il sito di prenotazione che questo widget dovrebbe mostrare.",
       "title": "Sito non trovato"
+    },
+    "property": {
+      "backToResults": "Torna ai risultati",
+      "navLabel": "Navigazione della casa",
+      "notFound": {
+        "description": "Il link potrebbe essere vecchio o incompleto, oppure la casa non è più prenotabile online."
+      },
+      "openOnSite": "Apri sul sito"
     },
     "title": "Prenota · {{name}}",
     "unavailable": {

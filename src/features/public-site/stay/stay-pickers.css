@@ -414,6 +414,13 @@
   padding-top: 14px;
 }
 
+/* In a frame narrower than a tablet the popover is as wide as the frame allows: the days keep their room. */
+@media (max-width: 767.98px) {
+  .public-site-root.stay-pop[data-embed] {
+    padding-inline: 10px;
+  }
+}
+
 .public-site-root.stay-sheet {
   display: flex;
   flex-direction: column;
@@ -586,6 +593,34 @@
     grid-column: 1 / -1;
     margin: 8px 0 0;
   }
+}
+
+/*
+ * The bar inside a frame narrower than a tablet (NF-144): a phone has the field that opens a sheet, and a frame has no sheet (it is fixed to a window as
+ * tall as the content of the frame). The three fields stay and go one under the other, each with its popover, and the button takes the width.
+ */
+.stay-search[data-stacked],
+.stay-search[data-stacked][data-single] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.stay-search[data-stacked] .stay-search__field {
+  min-height: 56px;
+  padding: 10px 18px;
+}
+
+.stay-search[data-stacked] .stay-search__field + .stay-search__field::before {
+  top: 0;
+  right: 18px;
+  bottom: auto;
+  left: 18px;
+  width: auto;
+  height: 1px;
+}
+
+.stay-search[data-stacked] .stay-search__go {
+  width: 100%;
+  margin: 8px 0 0;
 }
 
 /* A phone: one field that opens the sheet. */
