@@ -24086,6 +24086,14 @@
     "termsNote": "Also read the operator's <terms>booking terms</terms>."
   },
   "publicCheckout": {
+    "extras": {
+      "changed": "The availability or price of an extra has changed. Review your selection before continuing.",
+      "review": "Update selection",
+      "title": "Optional extras",
+      "quantity": "Quantity",
+      "approval": "Authorize your card in the guest portal. You will only be charged if the host confirms.",
+      "portal": "Pay in the guest portal once your booking is confirmed."
+    },
     "backToHome": "Back to the home",
     "details": {
       "arrivalHint": "Check-in from {{from}} to {{to}}",
@@ -28793,6 +28801,7 @@
     "available": "Available",
     "eventBlock": "block",
     "eventExtraOpening": "extra opening",
+    "eventGuestOrder": "Guest order",
     "eventFromCalendar": "from calendar",
     "eventRequest": "job",
     "eventTimeOff": "time off",

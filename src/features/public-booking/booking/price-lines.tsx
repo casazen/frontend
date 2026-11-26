@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { Fragment, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Info } from 'lucide-react';
 import { formatPrice } from '@/features/public-site/stay/stay-format';
@@ -7,6 +7,7 @@ import type { DirectBookingQuote, QuoteLine } from '@/types';
 import '@/features/public-booking/booking/booking.css';
 
 interface PriceLinesProps {
+  extras?: { id: string; name: string; quantity: number; cents: number }[];
   quote: DirectBookingQuote;
   /** The tax was worked out for the oldest age of a minor because the ages are not asked yet: it is called an estimate, and says so. */
   estimatedTax: boolean;
@@ -51,7 +52,7 @@ function linesOf(quote: DirectBookingQuote): QuoteLine[] {
  * ordinary ones and, when the home asks more for them, the weekend ones), the cleaning, the tourist tax with its explanation and the
  * total. Nothing is added up here: the total is the one the server sends, and so the one the checkout charges.
  */
-export function PriceLines({ quote, estimatedTax, stale = false, idPrefix }: PriceLinesProps) {
+export function PriceLines({ quote, estimatedTax, stale = false, idPrefix, extras = [] }: PriceLinesProps) {
   const { t, i18n } = useTranslation();
   const uid = useId();
   const [taxOpen, setTaxOpen] = useState(false);
@@ -84,10 +85,18 @@ export function PriceLines({ quote, estimatedTax, stale = false, idPrefix }: Pri
         {lines.map((line, index) => {
           if (line.kind === 'Total') {
             return (
-              <div key={`${line.kind}-${index}`} className="pp-line pp-line--total">
-                <dt>{label(line)}</dt>
-                <dd data-testid="price-breakdown-total">{money(line.amountCents)}</dd>
-              </div>
+              <Fragment key={`${line.kind}-${index}`}>
+                {extras.map((extra) => (
+                  <div className="pp-line" key={extra.id}>
+                    <dt>{extra.name}{extra.quantity > 1 && ` × ${extra.quantity}`}</dt>
+                    <dd>{money(extra.cents)}</dd>
+                  </div>
+                ))}
+                <div className="pp-line pp-line--total">
+                  <dt>{label(line)}</dt>
+                  <dd data-testid="price-breakdown-total">{money(line.amountCents + extras.reduce((sum, extra) => sum + extra.cents, 0))}</dd>
+                </div>
+              </Fragment>
             );
           }
           return (

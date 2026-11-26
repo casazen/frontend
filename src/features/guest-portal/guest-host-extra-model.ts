@@ -10,11 +10,11 @@ export const extraLabels = {
 } as const;
 
 const statuses = {
-  it: ['Richiesto', 'Da pagare', 'Pagato', 'Rifiutato', 'Erogato', 'Annullato', 'Carta da autorizzare', 'Incasso in corso'],
-  en: ['Requested', 'Awaiting payment', 'Paid', 'Declined', 'Fulfilled', 'Cancelled', 'Card authorization required', 'Payment processing'],
-  de: ['Angefragt', 'Zahlung ausstehend', 'Bezahlt', 'Abgelehnt', 'Erbracht', 'Storniert', 'Kartenautorisierung erforderlich', 'Zahlung wird verarbeitet'],
-  fr: ['Demandé', 'En attente du paiement', 'Payé', 'Refusé', 'Fourni', 'Annulé', 'Autorisation de la carte requise', 'Paiement en cours'],
-  es: ['Solicitado', 'Pendiente de pago', 'Pagado', 'Rechazado', 'Entregado', 'Cancelado', 'Se requiere autorización de la tarjeta', 'Pago en curso'],
+  it: ['Richiesto', 'Da pagare', 'Pagato', 'Rifiutato', 'Erogato', 'Annullato', 'Carta da autorizzare', 'Incasso in corso', 'Con il pagamento del soggiorno'],
+  en: ['Requested', 'Awaiting payment', 'Paid', 'Declined', 'Fulfilled', 'Cancelled', 'Card authorization required', 'Payment processing', 'With the stay payment'],
+  de: ['Angefragt', 'Zahlung ausstehend', 'Bezahlt', 'Abgelehnt', 'Erbracht', 'Storniert', 'Kartenautorisierung erforderlich', 'Zahlung wird verarbeitet', 'Mit der Zahlung des Aufenthalts'],
+  fr: ['Demandé', 'En attente du paiement', 'Payé', 'Refusé', 'Fourni', 'Annulé', 'Autorisation de la carte requise', 'Paiement en cours', 'Avec le paiement du séjour'],
+  es: ['Solicitado', 'Pendiente de pago', 'Pagado', 'Rechazado', 'Entregado', 'Cancelado', 'Se requiere autorización de la tarjeta', 'Pago en curso', 'Con el pago de la estancia'],
 } as const;
 
 export type Language = keyof typeof extraLabels;
@@ -27,7 +27,7 @@ interface Offer {
   byQuantity: boolean;
   requiresApproval: boolean;
 }
-const statusKeys = ['Requested', 'ReadyToPay', 'Paid', 'Declined', 'Fulfilled', 'Cancelled', 'AwaitingAuthorization', 'CapturePending'] as const;
+const statusKeys = ['Requested', 'ReadyToPay', 'Paid', 'Declined', 'Fulfilled', 'Cancelled', 'AwaitingAuthorization', 'CapturePending', 'PendingBookingPayment'] as const;
 export const canPayExtraOrder = (status: HostExtraStatus) => status === 'ReadyToPay' || status === 'AwaitingAuthorization';
 export type HostExtraStatus = typeof statusKeys[number];
 
