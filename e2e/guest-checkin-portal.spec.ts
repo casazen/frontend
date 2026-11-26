@@ -202,9 +202,18 @@ test('confirms a misread name, reuses the front after consent and submits the ve
       sessionId: 'demo', propertyName: 'Demo', language: 'it', declaredGuests: 1, guests: [guest],
       availableCodeTables: [], identityVerification: state, privacyNoticeOrgSlug: 'demo', privacyNoticeVersion: 'v1', marketingConsentVersion: 'v1' });
     if (end === 'read-document') {
+      const bytes = request.postDataBuffer()!;
+      if (bytes.includes(Buffer.from('fixture-unrelated'))) {
+        steps.push('rejected');
+        return reply({ read: false, reason: 'not_document' });
+      }
+      if (bytes.includes(Buffer.from('fixture-back'))) {
+        steps.push('scan-back');
+        return reply({ read: true, side: 'back', guestPosition: 0, guest: { documentNumber: 'CA12345AB', residenceInItaly: true, residenceCityName: 'Firenze', residenceProvince: 'FI' } });
+      }
       steps.push('scan');
-      return reply({ read: true, confirmGuest: true, guestPosition: 0, guest: { ...guest, firstName: 'Euca', documentKind: 'IdentityCard',
-        documentNumber: 'CA12345AB', issuePlace: 'Roma', documentIssuedOn: '2022-03-11', documentExpiresOn: '2032-03-11' } });
+      return reply({ read: true, side: 'front', confirmGuest: true, guestPosition: 0, guest: { ...guest, firstName: 'Euca', documentKind: 'IdentityCard',
+        issuePlace: 'Roma', documentIssuedOn: '2022-03-11', documentExpiresOn: '2032-03-11' } });
     }
     if (end === 'legal-texts') return reply({ language: 'it', texts: [{ kind: 'biometric-consent', version: 'v1',
       language: 'it', isDraft: false, contentHtml: '<p>Confronto del documento e del selfie.</p>' }] });
@@ -230,7 +239,7 @@ test('confirms a misread name, reuses the front after consent and submits the ve
     if (end === 'scan-flow' && request.method() === 'POST') {
       const body = request.postDataJSON();
       expect(body.guests).toHaveLength(1);
-      expect(body.guests[0]).toMatchObject({ firstName: 'Luca', documentNumber: 'CA12345AB', documentIssuedOn: '2022-03-11' });
+      expect(body.guests[0]).toMatchObject({ firstName: 'Luca', documentNumber: 'CA12345AB', documentIssuedOn: '2022-03-11', residenceComuneName: 'Firenze', residenceProvince: 'FI' });
       expect(body).toMatchObject({ privacyNoticeAcknowledged: true, marketingConsentEmail: false, marketingConsentWhatsApp: false });
       expect(body).not.toHaveProperty('invoice');
       steps.push('submit');
@@ -240,8 +249,13 @@ test('confirms a misread name, reuses the front after consent and submits the ve
   });
   await page.goto('/checkin/scan-flow');
   const upload = (side: string) => ({ name: side + '.jpg', mimeType: 'image/jpeg', buffer: Buffer.from('fixture-' + side) });
+  await page.getByTestId('checkin-document-file').setInputFiles(upload('unrelated'));
+  await expect(page.getByTestId('checkin-document-message')).toContainText('non è stata riconosciuta');
+  await expect(page.getByTestId('checkin-scan-continue')).toHaveCount(0);
   await page.getByTestId('checkin-document-file').setInputFiles(upload('front'));
   await page.getByRole('button', { name: 'Confermo il nominativo della prenotazione' }).click();
+  await expect(page.getByTestId('checkin-scan-continue')).toBeEnabled();
+  await page.getByTestId('checkin-document-file').setInputFiles(upload('back'));
   await page.getByTestId('checkin-scan-continue').click();
   await expect(page.locator('#guest-0-firstName')).toHaveValue('Luca');
   await expect(page.getByTestId('checkin-add-guest')).toHaveCount(0);
@@ -260,5 +274,5 @@ test('confirms a misread name, reuses the front after consent and submits the ve
   await page.locator('#privacy-read').check();
   await page.getByTestId('checkin-submit').click();
   await expect(page.getByTestId('checkin-success')).toBeVisible();
-  expect(steps).toEqual(['scan', 'consent', 'front', 'back', 'selfie', 'submit']);
+  expect(steps).toEqual(['rejected', 'scan', 'scan-back', 'consent', 'front', 'back', 'selfie', 'submit']);
 });

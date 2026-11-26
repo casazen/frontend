@@ -350,6 +350,7 @@ describe('the words of the identity step in the five languages of the page', () 
     // The document on two sides (E22/F01/US01/T02): which side comes next.
     'document_back_needed',
     'document_front_needed',
+    'document_not_recognized',
   ];
 
   it('guidanceCodes_AreExactlyTheOnesTheApiSends', () => {

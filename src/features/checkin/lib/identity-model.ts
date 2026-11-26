@@ -46,6 +46,7 @@ export const GUIDANCE_CODES = [
   'tip_remove_mask',
   'document_back_needed',
   'document_front_needed',
+  'document_not_recognized',
 ] as const;
 
 /** The key of the words of a guidance code, or of the generic sentence for a code that is not known. */

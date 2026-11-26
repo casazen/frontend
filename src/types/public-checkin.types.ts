@@ -243,6 +243,7 @@ export interface AlloggiatiCodeEntryDto {
 
 /** Answer of `POST /public/checkin/{token}/read-document`. The photo is not returned. */
 export interface CheckInDocumentReadResult {
+  side?: 'front' | 'back' | 'single' | null;
   guestPosition?: number | null;
   confirmGuest?: boolean;
   read: boolean;
@@ -254,6 +255,12 @@ export interface CheckInDocumentReadResult {
     dateOfBirth?: string | null;
     bornInItaly?: boolean | null;
     birthPlace?: string | null;
+    residenceStreet?: string | null;
+    residencePostalCode?: string | null;
+    residenceCityName?: string | null;
+    residenceProvince?: string | null;
+    residenceCountryName?: string | null;
+    residenceInItaly?: boolean | null;
     birthProvince?: string | null;
     citizenship?: string | null;
     documentKind?: string | null;

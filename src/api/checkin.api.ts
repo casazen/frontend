@@ -60,6 +60,8 @@ export const publicCheckinApi = {
     body.append('file', file);
     const response = await axios.post<CheckInDocumentReadResult>(`/public/checkin/${token}/read-document`, body, {
       public: true,
+      // The vision provider, MRZ and printed-field readers each have a separate deadline.
+      timeout: 60_000,
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return response.data;
