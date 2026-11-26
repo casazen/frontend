@@ -9842,6 +9842,118 @@
       },
       "openOnSite": "Apri sul sito"
     },
+    "settings": {
+      "description": "Porta la prenotazione nel sito che hai già: scegli il widget, copia il codice oppure usa il plugin per WordPress.",
+      "focus": {
+        "description": "Copia il codice nel tuo sito. Il widget in anteprima è quello vero.",
+        "title": "Scegli cosa incorporare"
+      },
+      "gtm": {
+        "cleared": "Identificativo rimosso",
+        "description": "Se usi Google Tag Manager, scrivi qui il tuo contenitore: le pagine di prenotazione sul tuo dominio lo caricano, solo con il consenso dell'ospite. Lascialo vuoto per non usarne nessuno.",
+        "failed": "Non siamo riusciti a salvare l'identificativo: riprova tra poco.",
+        "hint": "GTM- seguito da 4-12 lettere o cifre.",
+        "invalid": "Non è un identificativo valido: deve essere GTM- seguito da 4-12 lettere o cifre (ad esempio GTM-ABC123).",
+        "label": "Identificativo del contenitore",
+        "placeholder": "GTM-ABC123",
+        "save": "Salva",
+        "saved": "Identificativo salvato",
+        "title": "Google Tag Manager"
+      },
+      "loadError": "Non riusciamo a leggere le impostazioni del tuo dominio.",
+      "loading": "Caricamento…",
+      "noOrg": "Nessuna organizzazione trovata per il tuo account.",
+      "picker": {
+        "label": "Cosa incorporare"
+      },
+      "plugin": {
+        "description": "Se il tuo sito è in WordPress non devi incollare nessun codice.",
+        "download": "Scarica il plugin",
+        "step1": "Installa e attiva il plugin CasaZen sul tuo sito WordPress.",
+        "step2Own": "Nelle impostazioni del plugin scrivi l'indirizzo CasaZen: {{address}}.",
+        "step2Slug": "Nelle impostazioni del plugin scrivi l'indirizzo CasaZen ({{address}}) e l'identificativo dell'organizzazione, lo slug ({{slug}}).",
+        "step3": "Apri la procedura guidata: crea le pagine «Prenota», «Check-in online» e «Area proprietari».",
+        "title": "Plugin per WordPress"
+      },
+      "preview": {
+        "failed": "Non riusciamo a caricare l'anteprima da {{address}}: l'indirizzo potrebbe non essere ancora attivo o non rispondere.",
+        "hint": "È il widget vero. Se provi a prenotare, il pagamento si apre in una pagina intera e lasci questa: per tornare usa il tasto indietro del browser.",
+        "hintSearch": "È la barra vera, come la vedono i tuoi visitatori. Qui controlla date e ospiti ma non cambia pagina: sul tuo sito porterà alla pagina che hai scritto.",
+        "loading": "Caricamento dell'anteprima…",
+        "region": "Anteprima del widget",
+        "retry": "Riprova",
+        "title": "Anteprima",
+        "waiting": "L'anteprima compare appena la scelta è completa."
+      },
+      "property": {
+        "empty": "Nessun alloggio è pubblicato sul tuo sito: pubblicane uno per poterlo incorporare.",
+        "label": "Alloggio",
+        "loadError": "Non riusciamo a leggere i tuoi alloggi.",
+        "loading": "Caricamento degli alloggi…"
+      },
+      "restricted": {
+        "description": "Il dominio e il codice da incorporare sono gestiti dall'amministratore della tua organizzazione: contatta l'amministratore per usarli.",
+        "title": "Riservato all'amministratore dell'organizzazione"
+      },
+      "retry": "Riprova",
+      "search": {
+        "destinationsFailed": "Non riusciamo a leggere le località del tuo sito.",
+        "destinationsIncluded_one": "La barra propone {{count}} località del tuo sito, così come sono oggi. Se aggiungi alloggi in un posto nuovo, copia di nuovo il codice.",
+        "destinationsIncluded_other": "La barra propone {{count}} località del tuo sito, così come sono oggi. Se aggiungi alloggi in un posto nuovo, copia di nuovo il codice.",
+        "destinationsNone": "Il tuo sito non ha ancora località da proporre: la barra chiederà solo date e ospiti.",
+        "targetHint": "La barra porta qui l'ospite con le date e gli ospiti scelti. Scrivi l'indirizzo completo.",
+        "targetInvalid": "Scrivi un indirizzo completo che inizia con http:// o https://, senza nome utente né password.",
+        "targetLabel": "Pagina del tuo sito con il motore di prenotazione",
+        "targetPlaceholder": "https://www.example.com/prenota"
+      },
+      "snippet": {
+        "copied": "Copiato",
+        "copy": "Copia",
+        "copyFailed": "Non siamo riusciti a copiare: seleziona il testo e copialo a mano.",
+        "hint": "Incollalo dove vuoi il widget nella pagina. In WordPress usa un blocco «HTML personalizzato».",
+        "title": "Codice da incollare",
+        "waiting": {
+          "destinations": "Leggo le località del tuo sito…",
+          "destinationsFailed": "Il codice aspetta le località del tuo sito: riprova a leggerle.",
+          "homesFailed": "Il codice aspetta i tuoi alloggi: riprova a leggerli.",
+          "property": "Scegli un alloggio per vedere il codice.",
+          "target": "Scrivi l'indirizzo della pagina per vedere il codice."
+        }
+      },
+      "status": {
+        "domain": "Dominio",
+        "guestArea": "Area ospite",
+        "links": "Link che invii",
+        "linksCasazen": "restano quelli di CasaZen",
+        "linksOwn": "partono dal tuo dominio",
+        "manage": "Gestisci il dominio",
+        "noDomain": "Senza un dominio verificato il codice usa l'indirizzo di CasaZen e il nome del tuo sito ({{slug}}): con il dominio attivo userà il tuo.",
+        "noDomainValue": "ancora nessuno",
+        "ownerPortal": "Portale proprietari",
+        "surfaceCasazen": "sull'indirizzo di CasaZen",
+        "surfaceOwn": "sul tuo dominio",
+        "title": "Il tuo dominio"
+      },
+      "title": "Incorpora nel tuo sito",
+      "widgets": {
+        "booking": {
+          "help": "Il motore di prenotazione completo: date, ospiti e alloggi disponibili.",
+          "label": "Prenotazione"
+        },
+        "guestAccess": {
+          "help": "L'ingresso dei tuoi ospiti: scrivono il codice della prenotazione e gestiscono il soggiorno in una pagina intera.",
+          "label": "Area ospite"
+        },
+        "property": {
+          "help": "La pagina di un alloggio, con calendario e prezzo.",
+          "label": "Un alloggio"
+        },
+        "search": {
+          "help": "Una barra con date e ospiti per la prima pagina del tuo sito: porta l'ospite al tuo motore di prenotazione.",
+          "label": "Barra di ricerca"
+        }
+      }
+    },
     "title": "Prenota · {{name}}",
     "unavailable": {
       "description": "Questa funzione non è attiva per il sito, oppure l'indirizzo non è corretto.",
@@ -16800,6 +16912,7 @@
     "longRentPayments": "Spese condominiali",
     "stripeConnect": "Stripe Connect",
     "domain": "Dominio pubblico",
+    "embed": "Incorpora nel tuo sito",
     "organization": "Organizzazione",
     "accountSettings": "Impostazioni",
     "settings": "Impostazioni",
