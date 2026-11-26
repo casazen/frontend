@@ -18,7 +18,8 @@ interface EmbedOutletContext {
  * One home inside the frame: `/embed/property/:propertySlugOrId` on the agency's domain, `/embed/<orgSlug>/property/:propertySlugOrId` on the CasaZen one
  * (NF-144). It is also the page the cards of the booking widget lead to, in the same frame. The data are the ones of the page of the home on the site (`useOrgPublicProperty`),
  * for the org of the frame only, and the states are the ones that page shows: a skeleton while it loads, «not available» for a 404 (the API answers 404 for a home that
- * does not exist and for one that is not bookable online), and an error with a retry for any other failure. The two that leave the frame with nothing to show also tell
+ * does not exist and for one that is not bookable online), and an error with a retry for any other failure (a read that waits for the network, offline, included).
+ * The two that leave the frame with nothing to show also tell
  * the page that frames it (`error`), which then shows its own link to the site.
  *
  * A 404 is «not found» even when TanStack Query still holds an older answer for the home (it keeps the data it had on an error): what the server says last wins.
@@ -32,10 +33,14 @@ export function PropertyWidget() {
   const { send } = useEmbedBridge();
   const orgSlug = embed?.orgSlug ?? org.slug;
   // Asked again every time the widget opens: the guest moves between the results and the homes without the frame being loaded afresh.
-  const { data: property, isLoading, isError, error, refetch } = useOrgPublicProperty(orgSlug, propertySlugOrId, { fresh: true });
+  const { data: property, isError, isPaused, error, refetch } = useOrgPublicProperty(orgSlug, propertySlugOrId, { fresh: true });
 
-  const notFound = (isError && isAxiosError(error) && error.response?.status === 404) || (!isLoading && !isError && !property);
-  const failed = !notFound && !property && isError;
+  // A 404 is «not found», and so is an address that names no home to ask for (no org, no home: nothing is asked).
+  const notFound = (isError && isAxiosError(error) && error.response?.status === 404) || !orgSlug || !propertySlugOrId;
+  // A read that waits for the network (the browser is offline: TanStack Query pauses it, it is not loading) has no home to show and the server has said nothing: it is an
+  // error with a retry like any other failure, never «not found» (and the page that frames the widget is told `load_failed`, not `not_found`). It goes on by itself
+  // when the connection comes back.
+  const failed = !notFound && !property && (isError || isPaused);
 
   // The frame has nothing to show: the page is told, once for each time the widget gets there.
   useEffect(() => {

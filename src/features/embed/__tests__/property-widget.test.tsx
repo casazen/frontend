@@ -1,5 +1,6 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { onlineManager } from '@tanstack/react-query';
 import { AxiosError, AxiosHeaders } from 'axios';
 import i18n from '@/i18n/config';
 import { publicBookingApi } from '@/api/public-booking.api';
@@ -171,6 +172,7 @@ beforeEach(async () => {
 
 afterEach(() => {
   cleanup();
+  onlineManager.setOnline(true);
   spies?.restore();
   spies = undefined;
   page.restore();
@@ -517,6 +519,30 @@ describe('the states (AC6)', () => {
 
     expect(await screen.findByTestId('embed-property')).toBeInTheDocument();
     expect(getOrgProperty).toHaveBeenCalledTimes(2);
+  });
+
+  it('embedProperty_WhileTheBrowserIsOffline_IsAnErrorWithARetry_NeverNotFound_AndTheHomeComesWhenTheConnectionDoes', async () => {
+    // The read of the home waits for the network (TanStack Query pauses it, it is no more «loading»): there is no home yet and the server has said nothing, which is not
+    // «this home does not exist». The org of the frame is already known (the shell is up), so the widget is what meets the offline browser.
+    const client = newQueryClient(APP_QUERY_DEFAULTS);
+    client.setQueryData(['public-org', 'villa-rossi'], ORG);
+    onlineManager.setOnline(false);
+    open(STAY, { client });
+
+    const state = await screen.findByTestId('embed-property-error');
+    expect(state).toHaveAttribute('role', 'alert');
+    expect(screen.queryByTestId('embed-property-not-found')).not.toBeInTheDocument();
+    expect(getOrgProperty).not.toHaveBeenCalled();
+    // The page that frames the widget hears `load_failed` and never `not_found`.
+    await waitFor(() => expect(page.sent('error').filter((message) => message.type === 'error' && message.code === 'load_failed')).toHaveLength(1));
+    expect(page.sent('error').filter((message) => message.type === 'error' && message.code === 'not_found')).toHaveLength(0);
+
+    // The connection comes back: the read goes on by itself and the home is there.
+    act(() => onlineManager.setOnline(true));
+
+    expect(await screen.findByTestId('embed-property')).toBeInTheDocument();
+    expect(screen.queryByTestId('embed-property-error')).not.toBeInTheDocument();
+    expect(getOrgProperty).toHaveBeenCalledTimes(1);
   });
 
   it('embedProperty_TheStayProblems_AreTheOnesOfTheSitePage', async () => {
