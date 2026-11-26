@@ -5,6 +5,7 @@ import { isAxiosError } from 'axios';
 import { ApiClient } from '@/api/client';
 import { Button } from '@/components/ui/button';
 import { delegationTextKey } from '@/features/compliance/sender-wizard/sender-wizard-model';
+import { useTestConnection } from '@/queries/use-property-sender';
 import { getProblemCode } from '@/lib/api-errors';
 
 export type DirectService = 'alloggiati' | 'istat';
@@ -28,6 +29,7 @@ export function DirectPortalActivation({ propertyId, service, routes, canWrite }
 }) {
   const { t } = useTranslation();
   const cache = useQueryClient();
+  const verify = useTestConnection(propertyId);
   const [confirming, setConfirming] = useState(false);
   const [reconciled, setReconciled] = useState(false);
   const [disabled, setDisabled] = useState(false);
@@ -45,7 +47,14 @@ export function DirectPortalActivation({ propertyId, service, routes, canWrite }
     },
   });
   const date = routes.effectiveFrom[service];
-  if (date) return <p className="font-medium" role="status">{t('institutionalPortals.directSince', { date })}</p>;
+  if (date) return <div className="space-y-2">
+    <p className="font-medium" role="status">{t('institutionalPortals.directSince', { date })}</p>
+    {needsConsent && canWrite && routes.alloggiatiAvailable && (
+      <Button variant="outline" disabled={verify.isPending} onClick={() => verify.mutate()}>{t('institutionalPortals.verifyAccount')}</Button>
+    )}
+    {verify.data && <p role="status">{t(verify.data.outcome === 'Verified' ? 'institutionalPortals.accountVerified' : 'institutionalPortals.verifyFailed')}</p>}
+    {verify.isError && <p role="alert">{t('institutionalPortals.verifyFailed')}</p>}
+  </div>;
   if (!canWrite || !(service === 'istat' ? routes.istatAvailable : routes.alloggiatiAvailable)) return null;
   const code = isAxiosError(mutation.error) ? getProblemCode(mutation.error.response?.data) : undefined;
   return (
