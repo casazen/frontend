@@ -6384,8 +6384,8 @@
       "capture": {
         "attemptsRemaining": "Attempts left: {{count}}",
         "neutral": "Look straight at the camera for the first photo. Then follow the next instruction.",
-        "turnRight": "Keep the camera still. Turn your head until your nose points to the following side of the preview right →.",
-        "turnLeft": "Keep the camera still. Turn your head until your nose points to the following side of the preview left ←.",
+        "turnRight": "Keep the camera still. Turn your head about 30° until your nose points to the following side of the preview right →.",
+        "turnLeft": "Keep the camera still. Turn your head about 30° until your nose points to the following side of the preview left ←.",
         "restartPose": "Start again",
         "challengeFailed": "Verification unavailable. Try again or ask for a person.",
         "cameraDenied": "The browser blocked the camera. To allow it, tap the lock or camera icon next to the web address, choose \"Allow\" for the camera and press \"Try again\".",

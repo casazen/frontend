@@ -197,8 +197,8 @@
       "capture": {
         "attemptsRemaining": "Verbleibende Versuche: {{count}}",
         "neutral": "Schauen Sie für das erste Foto gerade in die Kamera. Folgen Sie anschließend der Aufforderung.",
-        "turnRight": "Halten Sie die Kamera ruhig. Drehen Sie den Kopf in der Vorschau mit der Nase nach rechts →.",
-        "turnLeft": "Halten Sie die Kamera ruhig. Drehen Sie den Kopf in der Vorschau mit der Nase nach links ←.",
+        "turnRight": "Halten Sie die Kamera ruhig. Drehen Sie den Kopf um etwa 30°. In der Vorschau zeigt die Nase nach rechts →.",
+        "turnLeft": "Halten Sie die Kamera ruhig. Drehen Sie den Kopf um etwa 30°. In der Vorschau zeigt die Nase nach links ←.",
         "restartPose": "Neu beginnen",
         "challengeFailed": "Prüfung nicht verfügbar. Versuchen Sie es erneut oder bitten Sie um Hilfe.",
         "cameraDenied": "Der Browser hat die Kamera blockiert. Zum Erlauben tippen Sie auf das Schloss- oder Kamerasymbol neben der Webadresse, wählen Sie für die Kamera „Zulassen“ und drücken Sie „Erneut versuchen“.",

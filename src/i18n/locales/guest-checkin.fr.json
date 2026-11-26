@@ -197,8 +197,8 @@
       "capture": {
         "attemptsRemaining": "Essais restants : {{count}}",
         "neutral": "Regardez la caméra de face pour la première photo. Suivez ensuite la consigne.",
-        "turnRight": "Gardez la caméra immobile. Dans l’aperçu, tournez le nez vers la droite →.",
-        "turnLeft": "Gardez la caméra immobile. Dans l’aperçu, tournez le nez vers la gauche ←.",
+        "turnRight": "Gardez la caméra immobile. Dans l’aperçu, tournez la tête d’environ 30°, le nez vers la droite →.",
+        "turnLeft": "Gardez la caméra immobile. Dans l’aperçu, tournez la tête d’environ 30°, le nez vers la gauche ←.",
         "restartPose": "Recommencer",
         "challengeFailed": "Vérification indisponible. Réessayez ou demandez de l’aide.",
         "cameraDenied": "Le navigateur a bloqué la caméra. Pour l'autoriser, touchez l'icône du cadenas ou de la caméra à côté de l'adresse web, choisissez « Autoriser » pour la caméra, puis appuyez sur « Réessayer ».",

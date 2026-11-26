@@ -197,8 +197,8 @@
       "capture": {
         "attemptsRemaining": "Intentos restantes: {{count}}",
         "neutral": "Mire de frente a la cámara para la primera foto. Luego siga la indicación.",
-        "turnRight": "Mantenga la cámara quieta. Gire la cabeza hasta que en la vista previa la nariz apunte a la derecha →.",
-        "turnLeft": "Mantenga la cámara quieta. Gire la cabeza hasta que en la vista previa la nariz apunte a la izquierda ←.",
+        "turnRight": "Mantenga la cámara quieta. Gire la cabeza unos 30° hasta que en la vista previa la nariz apunte a la derecha →.",
+        "turnLeft": "Mantenga la cámara quieta. Gire la cabeza unos 30° hasta que en la vista previa la nariz apunte a la izquierda ←.",
         "restartPose": "Volver a empezar",
         "challengeFailed": "Verificación no disponible. Inténtelo de nuevo o pida ayuda.",
         "cameraDenied": "El navegador bloqueó la cámara. Para permitirla, toque el icono del candado o de la cámara junto a la dirección web, elija «Permitir» para la cámara y pulse «Reintentar».",
