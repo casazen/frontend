@@ -1,3 +1,5 @@
+import { mockPropertiesApi } from './helpers/properties-api-mock';
+import { buildCreatedProperty } from './fixtures/properties.fixtures';
 import { test, expect } from './test';
 import { demoUrl, setDemoProfile } from './helpers/demo-profile';
 
@@ -35,3 +37,20 @@ for (const width of [390, 1440]) {
     await expect(settings.getByRole('checkbox', { name: 'Marketplace', exact: true })).toBeChecked();
   });
 }
+
+test('property settings search carries the selected property into the rule editor', async ({ page }) => {
+  await setDemoProfile(page, 'short-stay');
+  const first = buildCreatedProperty({ name: 'Casa Lago' });
+  const second = buildCreatedProperty({ id: '8bb0418c-484d-4cb4-93de-1a54c493acba', name: 'Casa Bosco' });
+  await mockPropertiesApi(page, [first, second]);
+  await page.goto(demoUrl('/app/short-rent/settings', 'short-stay'));
+  const search = page.getByRole('searchbox', { name: 'Cerca nelle impostazioni' });
+  await search.fill('zzznonesiste');
+  await expect(page.getByRole('status').filter({ hasText: 'Nessuna impostazione' })).toBeVisible();
+  await search.fill('regole');
+  await page.getByLabel('Immobile', { exact: true }).selectOption(second.id);
+  const link = page.locator('a[href*="step=rules"]');
+  await expect(link).toHaveAttribute('href', new RegExp(second.id));
+  await link.click();
+  await expect(page).toHaveURL(new RegExp('propertyId=' + second.id + '&step=rules'));
+});
