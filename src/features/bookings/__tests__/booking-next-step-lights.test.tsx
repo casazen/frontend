@@ -118,6 +118,7 @@ describe('BookingNextStep and the compliance lights of the stay', () => {
       summaryOf({ receiptsToUpload: section(item('UploadAlloggiatiReceipt', 'Red', 'receipt_missing')), identityPending: section(item('VerifyIdentity', 'Green', 'identity_verified')) }),
     );
     renderStep();
+    expect(await screen.findByTestId('booking-compliance-action')).toHaveAttribute('href', `/app/short-rent/bookings/${BOOKING_ID}?tab=alloggiati`);
     fireEvent.click(await screen.findByTestId('booking-guidance-trigger'));
 
     const block = await screen.findByTestId('booking-next-step');

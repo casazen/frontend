@@ -300,7 +300,7 @@ export function BookingNextStep({ booking, canWrite, viewingCheckIn, useGuestPor
   return (
     <>
       {requiresComplianceAction && <CalmActionButton action={{ ...view.primary, testId: 'booking-compliance-action' }} variant="outline" size="sm" />}
-      <ContextualHint testId="booking-guidance-trigger" label={view.title} tone={step.tone}>
+      <ContextualHint testId="booking-guidance-trigger" label={view.title} tone={step.tone} iconOnly={requiresComplianceAction}>
         <FocusBlock data-testid="booking-next-step" data-next-step={step.kind} tone={step.tone} {...view} body={body} />
       </ContextualHint>
     </>
