@@ -233,7 +233,7 @@ class Test_Renderer extends WP_UnitTestCase {
 	 * An invalid date, number or colour falls back to its default, and an unknown attribute is ignored.
 	 */
 	public function test_invalid_values_fall_back_to_their_defaults() {
-		$invalid = array(
+		$invalid    = array(
 			'checkin'    => '2027-02-30',
 			'checkout'   => '14/05/2027',
 			'guests'     => '31',
@@ -343,12 +343,12 @@ class Test_Renderer extends WP_UnitTestCase {
 	 */
 	public function test_search_target_refuses_script_schemes() {
 		$accepted = array(
-			'/prenota/'                                  => '/prenota/',
-			'/prenota/?a=1&b=2#top'                      => '/prenota/?a=1&b=2#top',
-			'https://other.example.org/it/search'        => 'https://other.example.org/it/search',
-			'HTTPS://Other.Example.org/'                 => 'HTTPS://Other.Example.org/',
-			'https://prenota.example.com/book/casa'      => 'https://prenota.example.com/book/casa',
-			home_url( '/prenota/' )                      => home_url( '/prenota/' ),
+			'/prenota/'                             => '/prenota/',
+			'/prenota/?a=1&b=2#top'                 => '/prenota/?a=1&b=2#top',
+			'https://other.example.org/it/search'   => 'https://other.example.org/it/search',
+			'HTTPS://Other.Example.org/'            => 'HTTPS://Other.Example.org/',
+			'https://prenota.example.com/book/casa' => 'https://prenota.example.com/book/casa',
+			home_url( '/prenota/' )                 => home_url( '/prenota/' ),
 		);
 		foreach ( $accepted as $target => $expected ) {
 			$this->assertSame( $expected, Renderer::sanitize_target( $target ), 'Accepted: ' . $target );

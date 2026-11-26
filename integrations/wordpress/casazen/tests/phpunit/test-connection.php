@@ -166,7 +166,16 @@ class Test_Connection extends WP_UnitTestCase {
 	private function configure( $address, $slug = '' ) {
 		remove_action( 'add_option_' . Settings::OPTION, array( Settings::class, 'on_add' ), 10 );
 		remove_action( 'update_option_' . Settings::OPTION, array( Settings::class, 'on_update' ), 10 );
-		update_option( Settings::OPTION, array_merge( Settings::defaults(), array( 'address' => $address, 'org_slug' => $slug ) ) );
+		update_option(
+			Settings::OPTION,
+			array_merge(
+				Settings::defaults(),
+				array(
+					'address'  => $address,
+					'org_slug' => $slug,
+				)
+			)
+		);
 		add_action( 'add_option_' . Settings::OPTION, array( Settings::class, 'on_add' ), 10, 2 );
 		add_action( 'update_option_' . Settings::OPTION, array( Settings::class, 'on_update' ), 10, 2 );
 	}
@@ -525,10 +534,28 @@ class Test_Connection extends WP_UnitTestCase {
 			'rate limited'       => array( 429, array() ),
 			'not json'           => array( 200, 'plain text' ),
 			'no slug'            => array( 200, array( 'branding' => array( 'displayName' => 'X' ) ) ),
-			'no display name'    => array( 200, array( 'slug' => 'x', 'branding' => array() ) ),
+			'no display name'    => array(
+				200,
+				array(
+					'slug'     => 'x',
+					'branding' => array(),
+				),
+			),
 			'no branding'        => array( 200, array( 'slug' => 'x' ) ),
-			'branding a string'  => array( 200, array( 'slug' => 'x', 'branding' => 'x' ) ),
-			'display name empty' => array( 200, array( 'slug' => 'x', 'branding' => array( 'displayName' => '  ' ) ) ),
+			'branding a string'  => array(
+				200,
+				array(
+					'slug'     => 'x',
+					'branding' => 'x',
+				),
+			),
+			'display name empty' => array(
+				200,
+				array(
+					'slug'     => 'x',
+					'branding' => array( 'displayName' => '  ' ),
+				),
+			),
 		);
 	}
 
@@ -631,6 +658,7 @@ class Test_Connection extends WP_UnitTestCase {
 		$this->assertSame( 'resolve_unreachable', $result['code'] );
 
 		$this->replies['/api/public/orgs/villa-rossi'] = new WP_Error( 'http_request_failed', 'timeout' );
+
 		$result = Connection::test( 'https://app.example.com', 'villa-rossi' );
 		$this->assertSame( 'resolve_unreachable', $result['code'] );
 	}
@@ -894,7 +922,16 @@ class Test_Connection extends WP_UnitTestCase {
 		$old_key        = Connection::cache_key( 'https://one.example.com', 'first' );
 		$this->requests = array();
 
-		update_option( Settings::OPTION, array_merge( Settings::defaults(), array( 'address' => 'https://one.example.com', 'org_slug' => 'second' ) ) );
+		update_option(
+			Settings::OPTION,
+			array_merge(
+				Settings::defaults(),
+				array(
+					'address'  => 'https://one.example.com',
+					'org_slug' => 'second',
+				)
+			)
+		);
 
 		$this->assertFalse( get_transient( $old_key ) );
 		$this->assertNotFalse( get_transient( Connection::cache_key( 'https://one.example.com', 'second' ) ) );
@@ -911,7 +948,16 @@ class Test_Connection extends WP_UnitTestCase {
 		$result         = Connection::refresh();
 		$this->requests = array();
 
-		update_option( Settings::OPTION, array_merge( Settings::defaults(), array( 'address' => 'https://one.example.com', 'load_script' => false ) ) );
+		update_option(
+			Settings::OPTION,
+			array_merge(
+				Settings::defaults(),
+				array(
+					'address'     => 'https://one.example.com',
+					'load_script' => false,
+				)
+			)
+		);
 
 		$this->assertSame( array(), $this->requests );
 		$this->assertSame( $result, Connection::cached() );

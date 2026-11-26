@@ -10,6 +10,8 @@ use Casazen\Connection;
 use Casazen\Destinations;
 use Casazen\Settings;
 
+// phpcs:disable Generic.Files.OneObjectStructurePerFile.MultipleFound -- the exception below is a helper of the test class of this file alone.
+
 /**
  * Thrown by the `wp_redirect` filter of the tests, so that the handler does not reach its `exit`.
  */
@@ -185,7 +187,7 @@ class Test_Admin extends WP_UnitTestCase {
 	 */
 	private function run_handler() {
 		$catch = static function ( $location ) {
-			throw new Casazen_Test_Redirect( $location );
+			throw new Casazen_Test_Redirect( $location ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- the address goes back to the test, it is never printed.
 		};
 		add_filter( 'wp_redirect', $catch );
 		try {
@@ -209,7 +211,7 @@ class Test_Admin extends WP_UnitTestCase {
 		// No capability: an editor with a valid nonce is refused and CasaZen is not called.
 		wp_set_current_user( $this->editor_id );
 		$_REQUEST[ Admin::NONCE_FIELD ] = wp_create_nonce( Admin::TEST_ACTION );
-		$refused              = false;
+		$refused                        = false;
 		try {
 			Admin::handle_test_connection();
 		} catch ( WPDieException $e ) {
