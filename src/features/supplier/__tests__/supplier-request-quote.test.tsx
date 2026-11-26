@@ -338,6 +338,25 @@ describe('SupplierRequestDetailPage: quote and payment (SP-04b, SP-08d)', () => 
     await waitFor(() => expect(requestsApi.requestServiceRequestPayment).toHaveBeenCalledWith(ID));
   });
 
+  it.each([0, 1000])('shows the host sale and only a positive B2B commission from D21 terms (%i)', async (commissionCents) => {
+    supplierApi.fetchSupplierInboxItem.mockResolvedValue({
+      ...COMPLETED_ONLINE, payment: {
+        ...COMPLETED_ONLINE.payment, hostDocuments: { grossCents: 11000, refundedCents: 5500, commissionCents, commissionRefundedCents: commissionCents / 2 },
+      },
+    });
+    renderPage();
+    expect(await screen.findByText('Vendita del fornitore all’host, importo lordo')).toBeInTheDocument();
+    expect(screen.getByTestId('supplier-request-payment-amount')).toHaveTextContent('110,00 €');
+    expect(screen.getByText('Rimborso commerciale all’host')).toBeInTheDocument();
+    if (commissionCents > 0) {
+      expect(screen.getByText(/Commissione B2B di CasaZen a carico del fornitore/)).toBeInTheDocument();
+      expect(screen.getByTestId('supplier-request-payment-commission')).toHaveTextContent('10,00 €');
+      expect(screen.getByText('Rettifica della commissione per il rimborso')).toBeInTheDocument();
+    } else {
+      expect(screen.queryByTestId('supplier-request-payment-commission')).not.toBeInTheDocument();
+    }
+  });
+
   it('SupplierRequestDetailPage_PaymentPanel_ShowsTheFiguresOfTheServerAsTheyCome', async () => {
     supplierApi.fetchSupplierInboxItem.mockResolvedValue(COMPLETED_ONLINE);
     renderPage();
