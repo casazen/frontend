@@ -1,3 +1,4 @@
+import { GuestMarketingCategories } from '@/components/campaigns/GuestMarketingCategories';
 import { Star, UserRoundSearch } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
@@ -236,6 +237,7 @@ export default function GuestDetail() {
       <div className={PAGE_COLUMNS}>
         <div className={PAGE_COLUMN}>
           <ProfileContacts profileId={profile.id} contacts={profile.contacts} primaryGuestId={profile.primaryGuestId} canWrite={canWrite} />
+          {hasPermission('short-rent', 'marketing.manage') && <GuestMarketingCategories profileId={profile.id}/>}
           <ProfileTags profileId={profile.id} tags={profile.tags} canWrite={canWrite} />
         </div>
         <ProfileFigures profile={profile} />

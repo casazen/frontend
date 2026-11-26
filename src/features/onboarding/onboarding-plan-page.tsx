@@ -1,3 +1,4 @@
+import { MarketingSetupEntry } from '@/components/campaigns/MarketingSettingsForm';
 import { useCommercialProfile } from '@/hooks/use-commercial-profile';
 import { commercialPartAllowed, commercialRouteAllowed } from './commercial-access';
 import { Fragment, useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
@@ -267,6 +268,7 @@ export function OnboardingPlanPage() {
           {planReady && needs.length > 0 && <div className="order-3 lg:col-start-2 lg:row-start-2"><OnboardingNeedsPanel needs={needs} /></div>}
           {!senderPrimary && senderPanel}
           {planReady ? showOutline && content : <div className="order-5 lg:col-span-2">{content}</div>}
+          {flags.crmMarketing && hasPermission('short-rent', 'marketing.manage') && commercialRouteAllowed(commercial,'/app/short-rent/crm/campaigns') && <MarketingSetupEntry/>}
           {flags.guestPortal && hasPermission('short-rent', 'guestportal.manage') && <GuestPortalSetupEntry />}
         </div>
       </div>

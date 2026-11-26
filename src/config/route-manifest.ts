@@ -57,6 +57,7 @@ export interface RouteManifestEntry {
   path: string;
   context: AppContextKey;
   requiredPermissions: string[];
+  permissionMode?: 'any';
   navKey?: string;
   /**
    * The name of the entry on its tab, when the menu names the whole section and the tab names the page (the menu says «Impostazioni»,
@@ -463,7 +464,8 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     // managers; not the collaborator or the accountant), the one the API asks for every call of the queue: an entry the user opens must not end on a 403.
     path: '/app/short-rent/approval-queue',
     context: 'short-rent',
-    requiredPermissions: ['approval.decide'],
+    requiredPermissions: ['approval.decide','marketing.manage'],
+    permissionMode: 'any',
     navKey: 'nav.approvalQueue',
     navTabKey: 'nav.toApprove',
     navParent: '/app/short-rent',
@@ -1763,6 +1765,28 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/pages/crm/GuestDetail')).default }),
   },
   {
+    path: '/app/short-rent/crm/segments',
+    context: 'short-rent',
+    requiredPermissions: ['marketing.manage'],
+    featureFlag: 'crmMarketing',
+    navKey: 'nav.crmSegments',
+    navParent: '/app/short-rent/crm/guests',
+    navOrder: 1,
+    icon: 'Users',
+    component: async () => ({ default: (await import('@/pages/SegmentsPage')).SegmentsPage }),
+  },
+  {
+    path: '/app/short-rent/crm/campaigns',
+    context: 'short-rent',
+    requiredPermissions: ['marketing.manage'],
+    featureFlag: 'crmMarketing',
+    navKey: 'nav.crmCampaigns',
+    navParent: '/app/short-rent/crm/guests',
+    navOrder: 2,
+    icon: 'Users',
+    component: async () => ({ default: (await import('@/pages/CampaignsPage')).CampaignsPage }),
+  },
+  {
     // The merge proposals (E07/F01/US04/T03, NF-88): the pairs of profiles the matching thinks are one guest, which the host decides. The
     // last tab of the CRM (after the audiences, the campaigns and the automations). The API lists them for `guest.read` but merges and
     // dismisses for `guest.write`, and the page is for deciding, so it asks `guest.write`.
@@ -2060,6 +2084,7 @@ export function hasEntryPermission(
 ): boolean {
   if (!hasPermission) return true;
   if (entry.orgBillingAdmin && !hasPermission(entry.context, ORG_BILLING_ADMIN_PERMISSION)) return false;
+  if (entry.permissionMode === 'any') return entry.requiredPermissions.some(permission => hasPermission(entry.context, permission));
   return entry.requiredPermissions.every((permission) =>
     hasPermission(entry.context, permission),
   );

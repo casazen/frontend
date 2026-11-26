@@ -15,11 +15,12 @@ describe('route manifest: the approval queue (E05/F04/US02, NF-68, AC-NF68-5)', 
   it('RouteManifest_ApprovalQueue_NeedsTheDedicatedPermissionToDecideAndNoLongerPropertyWrite', () => {
     expect(entry).toBeDefined();
     expect(entry?.context).toBe('short-rent');
-    expect(entry?.requiredPermissions).toEqual(['approval.decide']);
+    expect(entry?.requiredPermissions).toEqual(['approval.decide', 'marketing.manage']);
   });
 
   it('RouteManifest_ApprovalQueue_IsReachableOnlyWithApprovalDecide', () => {
     expect(entry && hasEntryPermission(entry, holding('approval.decide'))).toBe(true);
+    expect(entry && hasEntryPermission(entry, holding('marketing.manage'))).toBe(true);
     // A collaborator holds `property.write` in part (and every read permission) but may not decide: the API refuses it, so the page does not open.
     expect(entry && hasEntryPermission(entry, holding('property.read', 'property.write', 'booking.read', 'booking.write', 'servicerequest.write'))).toBe(false);
     expect(entry && hasEntryPermission(entry, holding())).toBe(false);
