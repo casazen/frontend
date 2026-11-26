@@ -1,6 +1,7 @@
 name: Build the CasaZen WordPress plugin ZIP
 description: >-
-  Checks the version, builds the blocks, compiles the translations and writes integrations/wordpress/casazen/dist/casazen-<version>.zip.
+  Checks the version, builds the blocks, compiles the translations, checks that WordPress finds the texts of the block editor and writes
+  integrations/wordpress/casazen/dist/casazen-<version>.zip.
   Used by the workflows "WordPress plugin" (the package job and plugin-check) and "WordPress plugin release". Needs the repository
   checked out first. It reads no secret and publishes nothing.
 
@@ -94,6 +95,15 @@ runs:
       run: |
         wp i18n make-mo languages
         wp i18n make-json languages --no-purge
+
+    # The texts of the block editor are loaded from languages/casazen-<locale>-<md5 of the path of the BUILT script>.json, and `wp i18n make-json`
+    # names each file after the md5 of the path that the catalog cites. When the two paths differ the files are written and never loaded: the
+    # editor stays in English on an Italian site and nothing else fails. This step computes the names the way WordPress does and fails when a
+    # built block script has no file for a language of the plugin (tools/check-translations.mjs, proved by npm run test:tools).
+    - name: Check the translation files of the block editor
+      shell: bash
+      working-directory: integrations/wordpress/casazen
+      run: node tools/check-translations.mjs
 
     # Writes dist/casazen-<version>.zip, reads it back and checks it (one top-level folder, nothing that is not for the user).
     - name: Build the ZIP

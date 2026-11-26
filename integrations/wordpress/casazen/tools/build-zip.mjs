@@ -12,7 +12,8 @@
  *      there, nothing that must not (tests, tools, node_modules, vendor, composer and package files, dotfiles, keys).
  *
  * It prints the file list and the size. The blocks (`npm run build`) and the translations (`wp i18n make-mo` and
- * `make-json`) are built BEFORE: the check fails when `blocks/build` or the compiled translations are missing. On a machine
+ * `make-json`) are built BEFORE: the check fails when `blocks/build` or the compiled translations are missing, and when the
+ * ZIP lacks the file that WordPress asks for to translate the editor script of a block (see check-translations.mjs). On a machine
  * without WP-CLI, `--allow-missing-translations` skips only the check of the compiled translations.
  *
  * Under GitHub Actions it also writes the step outputs `version` and `zip` (the path of the ZIP).
@@ -25,6 +26,7 @@ import { basename, dirname, join, relative, resolve, sep } from 'node:path';
 import { pipeline } from 'node:stream/promises';
 import { fileURLToPath } from 'node:url';
 import { ZipArchive } from 'archiver';
+import { builtBlockScripts, readTextDomain, scriptTranslationFileName } from './check-translations.mjs';
 import { checkVersions } from './check-version.mjs';
 
 /** The one folder at the top of the ZIP: WordPress installs the plugin in a folder of this name. */
@@ -181,9 +183,12 @@ export function listZip(zipPath) {
  * @param {object} [options]
  * @param {string[]} [options.blocks] The names of the blocks: each needs `blocks/build/<name>/block.json` and `index.js`.
  * @param {boolean} [options.requireTranslations] Whether compiled translations (`.mo` and `.json`) must be in `languages/`.
+ * @param {string[]} [options.scripts] The scripts of the built blocks, as paths below the plugin folder (`blocks/build/booking/index.js`):
+ *   with `requireTranslations`, the ZIP must hold, for each of them and each language it ships, the JSON file that WordPress asks for.
+ * @param {string} [options.domain] The text domain of the plugin (the prefix of the files of `languages/`).
  * @returns {string[]}
  */
-export function verifyEntries(entries, { blocks = [], requireTranslations = true } = {}) {
+export function verifyEntries(entries, { blocks = [], requireTranslations = true, scripts = [], domain = TOP_FOLDER } = {}) {
 	const problems = [];
 	const names = entries.map((entry) => entry.name);
 	const prefix = `${TOP_FOLDER}/`;
@@ -206,6 +211,20 @@ export function verifyEntries(entries, { blocks = [], requireTranslations = true
 		const languages = inside.filter((name) => name.startsWith('languages/'));
 		if (!languages.some((name) => name.endsWith('.mo'))) problems.push(`The ZIP has no compiled translation (languages/*.mo): run "wp i18n make-mo languages" first.`);
 		if (!languages.some((name) => name.endsWith('.json'))) problems.push(`The ZIP has no translation for the editor (languages/*.json): run "wp i18n make-json languages --no-purge" first.`);
+
+		// A JSON file is only loaded under the name WordPress asks for: `<domain>-<locale>-<md5 of the path of the built script>.json`.
+		// `wp i18n make-json` takes that md5 from the path that the catalog cites, so a catalog that cites other paths gives files that
+		// are in the ZIP and never loaded: the texts of the editor stay in English and nothing else says so.
+		const catalogPrefix = `languages/${domain}-`;
+		const locales = [...new Set(inside.filter((name) => name.startsWith(catalogPrefix) && (name.endsWith('.mo') || name.endsWith('.po'))).map((name) => name.slice(catalogPrefix.length, -'.mo'.length)))].sort();
+		for (const locale of locales) {
+			for (const script of scripts) {
+				const file = `languages/${scriptTranslationFileName(domain, locale, script)}`;
+				if (!files.has(file)) {
+					problems.push(`The ZIP has no ${prefix}${file}: WordPress asks for it to translate ${script} into ${locale}, and "wp i18n make-json" names it after the md5 of the path that the catalog cites (see tools/check-translations.mjs).`);
+				}
+			}
+		}
 	}
 
 	for (const path of inside) {
@@ -288,7 +307,12 @@ export async function buildZip({ root = PLUGIN_ROOT, outDir = resolve(root, 'dis
 
 		// Read the ZIP back, as an installer does, and check what is in it.
 		const listed = listZip(zipPath);
-		const wrong = verifyEntries(listed, { blocks: blockNames(root), requireTranslations: !allowMissingTranslations });
+		const wrong = verifyEntries(listed, {
+			blocks: blockNames(root),
+			requireTranslations: !allowMissingTranslations,
+			scripts: builtBlockScripts(root).map(({ script }) => script),
+			domain: readTextDomain(root) ?? TOP_FOLDER,
+		});
 		if (wrong.length > 0) {
 			rmSync(zipPath, { force: true });
 			throw new Error(`The ZIP is not good:\n  ${wrong.join('\n  ')}`);
