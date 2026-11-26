@@ -1,8 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { SupplierOrderFiles } from './guest-supplier-files';
+import { GuestSupplierCasePanel } from './guest-supplier-case-panel';
 import { SupplierInviteIdentityFields } from '@/features/supplier/supplier-invite-identity-fields';
 import { readSupplierInviteIdentity } from '@/features/supplier/read-supplier-invite-identity';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ApiClient } from '@/api/client';
@@ -42,7 +42,7 @@ interface CatalogMatch {
 type Scope = { role: 'host'; propertyId: string } | { role: 'supplier' } | { role: 'admin' };
 
 export function GuestSupplierOperations({ scope }: { scope: Scope }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const endpoint = scope.role === 'host' ? `/properties/${scope.propertyId}/guest-supplier-orders`
     : scope.role === 'supplier' ? '/supplier/guest-orders' : '/admin/guest-supplier-orders';
   const query = useQuery({
@@ -55,7 +55,7 @@ export function GuestSupplierOperations({ scope }: { scope: Scope }) {
     },
     retry: false,
     refetchOnWindowFocus: 'always',
-    refetchInterval: ({ state }) => scope.role === 'supplier' && state.data && !state.error ? GUEST_ORDER_REFRESH_MS : false,
+    refetchInterval: ({ state }) => state.data && !state.error && (scope.role === 'supplier' || state.data.orders.some(o => o.refundStatus === 'processing' || o.bankDisputeStatus === 'recovery_pending')) ? GUEST_ORDER_REFRESH_MS : false,
   });
   const lastFocusedOrder = useRef('');
   useEffect(() => {
@@ -103,6 +103,8 @@ export function GuestSupplierOperations({ scope }: { scope: Scope }) {
           suffix: `/${order.id}/transition`, body: { action, ...data },
         });
         const disputable = order.state === 'Disputed';
+        const canResolve = disputable && (scope.role === 'admin' ? !order.hostOrigin : scope.role === 'host' && order.hostOrigin) &&
+          (!order.bankDisputeStatus || order.bankDisputeStatus === 'closed');
         return (
           <article className="grid gap-2 rounded-lg border p-3" key={order.id} id={`guest-order-${order.id}`} tabIndex={-1}>
             <h3 className="font-semibold">{order.serviceName} · {order.supplierName}</h3>
@@ -111,7 +113,10 @@ export function GuestSupplierOperations({ scope }: { scope: Scope }) {
             {order.requestNote && <p>Note: {order.requestNote}</p>}
             {order.complaint && <p>Segnalazione: {order.complaint}</p>}
             {order.supplierReply && <p>Risposta fornitore: {order.supplierReply}</p>}
-            {order.decision && <p>Decisione: {order.decision} · Rimborso {orderMoney(order.refundCents)}</p>}
+            {order.decision && <p>Decisione: {order.decision}{(!order.refundStatus || order.refundStatus === 'not_requested') && <> · Rimborso {orderMoney(order.refundCents)}</>}</p>}
+            {order.refundStatus && order.refundStatus !== 'not_requested' &&
+              <p role="status">{t('supplier.adjustments.' + order.refundStatus)} · {orderMoney(order.refundRequestedCents ?? order.refundCents)}</p>}
+            {order.bankDisputeStatus && <p>{t(`supplier.adjustments.bank_${order.bankDisputeStatus}`)}</p>}
             {scope.role === 'supplier' && <>
               {order.stripeSandbox && ['Accepted', 'Completed', 'Disputed', 'Resolved', 'Released'].includes(order.state) &&
                 <SupplierOrderFiles orderId={order.id} />}
@@ -126,13 +131,19 @@ export function GuestSupplierOperations({ scope }: { scope: Scope }) {
               {disputable && !order.supplierReply && <ActionForm textLabel="Risposta alla segnalazione" button="Invia risposta"
                 busy={change.isPending} send={(_, text) => transition('reply', { text })} />}
             </>}
-            {disputable && (scope.role === 'admin' || (scope.role === 'host' && order.hostOrigin)) && <ActionForm
-              amountLabel={order.stripeSandbox ? undefined : 'Rimborso in euro'} textLabel="Motivazione della decisione"
-              button={order.stripeSandbox ? 'Chiudi senza rimborso' : 'Risolvi controversia'} maxCents={order.totalCents}
+            {canResolve && !order.refundStatus && <ActionForm
+              amountLabel={t('supplier.adjustments.amount')} textLabel="Motivazione della decisione"
+              button={t('supplier.adjustments.confirm')} maxCents={order.totalCents}
               busy={change.isPending} send={(refundCents, text) => change.mutate({ suffix: `/${order.id}/resolve`, body: { refundCents, text } })} />}
+            {canResolve && order.refundStatus === 'failed' && order.decision && <Button disabled={change.isPending}
+              onClick={() => change.mutate({ suffix: `/${order.id}/resolve`, body: {
+                refundCents: order.refundRequestedCents, text: order.decision, retry: true,
+              } })}>{t('supplier.adjustments.retry')}</Button>}
+            <GuestSupplierCasePanel endpoint={endpoint} role={scope.role} language={i18n.language} order={order} />
           </article>
         );
       })}
+      {change.isSuccess && change.variables.suffix.endsWith('/resolve') && <p role="status">{t('supplier.adjustments.recorded')}</p>}
       {change.isSuccess && change.variables.method === 'put' && <p role="status">{t('supplier.trusted.serviceSaved')}</p>}
       {change.isError && <p role="alert">Operazione non riuscita. Aggiorna la pagina e riprova.</p>}
     </section>
