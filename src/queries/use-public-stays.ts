@@ -94,13 +94,17 @@ export function usePlatformDestinations(enabled = true) {
   });
 }
 
-/** The places of the site, for the «Dove» field. */
-export function useOrgDestinations(slug: string | undefined) {
+/**
+ * The places of the site, for the «Dove» field. `fresh`: read again every time the screen opens, for the one that writes them into code the agency pastes into its own site
+ * (the page «Incorpora nel tuo sito»): the places change when a home is published, on pages this one does not watch.
+ */
+export function useOrgDestinations(slug: string | undefined, options: { fresh?: boolean } = {}) {
   return useQuery({
     queryKey: ['public-destinations', slug] as const,
     queryFn: () => publicSiteSearchApi.getDestinations(slug!),
     enabled: Boolean(slug),
-    staleTime: 5 * 60_000,
+    staleTime: options.fresh ? 0 : 5 * 60_000,
+    ...(options.fresh ? { refetchOnMount: 'always' as const } : {}),
     retry: retryTransientErrors(1),
   });
 }

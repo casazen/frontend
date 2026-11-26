@@ -9842,6 +9842,117 @@
       },
       "openOnSite": "Open on the site"
     },
+    "settings": {
+      "description": "Bring booking to the website you already have: choose the widget, copy the code or use the WordPress plugin.",
+      "focus": {
+        "description": "Copy the code into your site. The widget in the preview is the real one.",
+        "title": "Choose what to embed"
+      },
+      "gtm": {
+        "cleared": "Container ID removed",
+        "description": "If you use Google Tag Manager, write your container here: the booking pages on your domain load it, only with the guest's consent. Leave it empty to use none.",
+        "failed": "We could not save the container ID: try again shortly.",
+        "hint": "GTM- followed by 4 to 12 letters or digits.",
+        "invalid": "This is not a valid container ID: it must be GTM- followed by 4 to 12 letters or digits (for example GTM-ABC123).",
+        "label": "Container ID",
+        "placeholder": "GTM-ABC123",
+        "save": "Save",
+        "saved": "Container ID saved",
+        "title": "Google Tag Manager"
+      },
+      "loadError": "We cannot read the settings of your domain.",
+      "loading": "Loading…",
+      "noOrg": "No organization found for your account.",
+      "picker": {
+        "label": "What to embed"
+      },
+      "plugin": {
+        "description": "If your site runs on WordPress you do not need to paste any code.",
+        "download": "Download the plugin",
+        "step1": "Install and activate the CasaZen plugin on your WordPress site.",
+        "step2Own": "In the plugin settings, write the CasaZen address: {{address}}.",
+        "step2Slug": "In the plugin settings, write the CasaZen address ({{address}}) and the organization slug ({{slug}}).",
+        "step3": "Open the guided setup: it creates the pages “Book”, “Online check-in” and “Owner area”.",
+        "title": "WordPress plugin"
+      },
+      "preview": {
+        "failed": "We could not load the preview from {{address}}: the address may not be active yet or may not be answering.",
+        "hint": "This is the real widget. If you try to book, the payment opens in a full page and you leave this one: use the back button of your browser to return.",
+        "hintSearch": "This is the real bar, as your visitors see it. Here it checks the dates and the guests but does not change page: on your site it takes them to the page you wrote.",
+        "loading": "Loading the preview…",
+        "region": "Widget preview",
+        "retry": "Try again",
+        "title": "Preview",
+        "waiting": "The preview appears as soon as the choice is complete."
+      },
+      "property": {
+        "empty": "No home is published on your site yet: publish one to embed it.",
+        "label": "Home",
+        "loadError": "We cannot read your homes.",
+        "loading": "Loading your homes…"
+      },
+      "restricted": {
+        "description": "The domain and the code to embed are managed by your organization's administrator: contact the administrator to use them.",
+        "title": "Reserved for the organization administrator"
+      },
+      "retry": "Try again",
+      "search": {
+        "destinationsFailed": "We cannot read the places of your site.",
+        "destinationsIncluded_one": "The bar offers {{count}} place of your site, as they are today. After adding homes in a new place, copy the code again.",
+        "destinationsIncluded_other": "The bar offers {{count}} places of your site, as they are today. After adding homes in a new place, copy the code again.",
+        "destinationsNone": "Your site has no places to offer yet: the bar will only ask for the dates and the guests.",
+        "targetHint": "The bar takes the guest there with the dates and the guests chosen. Write the full address.",
+        "targetInvalid": "Write a full address that starts with http:// or https://, without a user name or password.",
+        "targetLabel": "Page of your site with the booking engine",
+        "targetPlaceholder": "https://www.example.com/book"
+      },
+      "snippet": {
+        "copied": "Copied",
+        "copy": "Copy",
+        "copyFailed": "We could not copy: select the text and copy it by hand.",
+        "hint": "Paste it where you want the widget on the page. In WordPress, use a “Custom HTML” block.",
+        "title": "Code to paste",
+        "waiting": {
+          "destinations": "Reading the places of your site…",
+          "destinationsFailed": "The code waits for the places of your site: try reading them again.",
+          "property": "Choose a home to see the code.",
+          "target": "Write the address of the page to see the code."
+        }
+      },
+      "status": {
+        "domain": "Domain",
+        "guestArea": "Guest area",
+        "links": "Links you send",
+        "linksCasazen": "stay the CasaZen ones",
+        "linksOwn": "start from your domain",
+        "manage": "Manage the domain",
+        "noDomain": "Without a verified domain the code uses the CasaZen address and the name of your site ({{slug}}): once the domain is active it will use yours.",
+        "noDomainValue": "none yet",
+        "ownerPortal": "Owner portal",
+        "surfaceCasazen": "on the CasaZen address",
+        "surfaceOwn": "on your domain",
+        "title": "Your domain"
+      },
+      "title": "Embed in your site",
+      "widgets": {
+        "booking": {
+          "help": "The whole booking engine: dates, guests and the homes that are available.",
+          "label": "Booking"
+        },
+        "guestAccess": {
+          "help": "The entry of your guests: they write the code of their booking and manage the stay in a full page.",
+          "label": "Guest area"
+        },
+        "property": {
+          "help": "The page of one home, with its calendar and price.",
+          "label": "One home"
+        },
+        "search": {
+          "help": "A bar with dates and guests for the first page of your site: it takes the guest to your booking engine.",
+          "label": "Search bar"
+        }
+      }
+    },
     "title": "Book · {{name}}",
     "unavailable": {
       "description": "This feature is not turned on for the site, or the address is not right.",
@@ -16800,6 +16911,7 @@
     "longRentPayments": "Condominium payments",
     "stripeConnect": "Stripe Connect",
     "domain": "Public domain",
+    "embed": "Embed in your site",
     "organization": "Organization",
     "accountSettings": "Settings",
     "settings": "Settings",
