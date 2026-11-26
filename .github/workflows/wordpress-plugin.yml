@@ -1,0 +1,249 @@
+name: WordPress plugin
+
+# The delivery pipeline of the CasaZen WordPress plugin (integrations/wordpress/casazen): PHP syntax and WordPress coding standards,
+# PHPUnit, a smoke test on a real WordPress, Plugin Check, and the ZIP as a build artifact (14 days).
+#
+# Path filtered on purpose: it runs only when the plugin or this pipeline changes. A required check that does not run blocks the
+# pull request, so this workflow must NOT be made a required check in the branch protection: the required check stays
+# `CI / Lint, typecheck, unit tests, build` (ci.yml), which has no path filter.
+#
+# It publishes nothing and reads no secret. A release (a GitHub release with the ZIP) is made by wordpress-plugin-release.yml,
+# when a tag wp-plugin-v<version> is pushed.
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'integrations/wordpress/**'
+      - '.github/workflows/wordpress-plugin*.yml'
+      - '.github/actions/build-wordpress-plugin/**'
+  push:
+    branches: [main, develop]
+    paths:
+      - 'integrations/wordpress/**'
+      - '.github/workflows/wordpress-plugin*.yml'
+      - '.github/actions/build-wordpress-plugin/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wordpress-plugin-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    working-directory: integrations/wordpress/casazen
+
+jobs:
+  # PHP syntax on the two ends of the supported range (php -l, and the Node syntax checker that also runs on a machine
+  # without PHP), then WordPress coding standards (WPCS 3) and PHP 7.4+ compatibility (phpcs.xml.dist).
+  lint:
+    name: Lint (PHP ${{ matrix.php }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.4', '8.3']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: integrations/wordpress/casazen/package-lock.json
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer
+          coverage: none
+
+      - name: Install the PHP tools
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: PHP syntax (php -l)
+        run: find . -name '*.php' -not -path './vendor/*' -not -path './node_modules/*' -print0 | xargs -0 -n1 php -l
+
+      - name: Install the Node tools
+        run: npm ci
+
+      - name: PHP syntax (Node checker)
+        run: npm run lint:php-syntax
+
+      - name: WordPress coding standards and PHP 7.4+ compatibility
+        run: vendor/bin/phpcs
+
+  # The tests of the plugin (tests/phpunit) in wp-env, with the WordPress test library of the environment. PHP 7.4 runs
+  # with the oldest WordPress the plugin supports, PHP 8.3 with the latest one.
+  phpunit:
+    name: PHPUnit (${{ matrix.label }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: 'php 7.4 · wp 6.4'
+            php: '7.4'
+            core: 'WordPress/WordPress#6.4'
+          - label: 'php 8.3 · wp latest'
+            php: '8.3'
+            core: ''
+    env:
+      # wp-env reads these two: an empty WP_ENV_CORE means the latest WordPress.
+      WP_ENV_PHP_VERSION: ${{ matrix.php }}
+      WP_ENV_CORE: ${{ matrix.core }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: integrations/wordpress/casazen/package-lock.json
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer
+          coverage: none
+
+      # PHPUnit 9.6 is resolved for PHP 7.4 through config.platform.php of composer.json, on both legs.
+      - name: Install the PHP tools
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Install the Node tools
+        run: npm ci
+
+      - name: Build the blocks
+        run: npm run build
+
+      - name: Start wp-env
+        run: npm exec --no -- wp-env start
+
+      - name: PHPUnit
+        run: npm exec --no -- wp-env run tests-cli --env-cwd=wp-content/plugins/casazen vendor/bin/phpunit
+
+      - name: Collect the logs of wp-env
+        if: failure()
+        run: |
+          mkdir -p "$RUNNER_TEMP/wp-env-logs"
+          npm exec --no -- wp-env logs all --no-watch > "$RUNNER_TEMP/wp-env-logs/containers.log" 2>&1 || true
+
+      - name: Upload the logs of wp-env
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phpunit-logs-php${{ matrix.php }}
+          path: ${{ runner.temp }}/wp-env-logs
+          retention-days: 7
+          if-no-files-found: ignore
+
+  # A real WordPress with the plugin active (tests/smoke/smoke.sh). The mu-plugin tests/smoke/mu-plugins/casazen-mock-http.php, mapped
+  # into the site by .wp-env.json, answers the requests of the plugin with canned JSON and refuses every other: no outbound network.
+  smoke:
+    name: Smoke (${{ matrix.label }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: 'php 7.4 · wp 6.4'
+            php: '7.4'
+            core: 'WordPress/WordPress#6.4'
+          - label: 'php 8.3 · wp latest'
+            php: '8.3'
+            core: ''
+    env:
+      WP_ENV_PHP_VERSION: ${{ matrix.php }}
+      WP_ENV_CORE: ${{ matrix.core }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: integrations/wordpress/casazen/package-lock.json
+
+      - name: Install the Node tools
+        run: npm ci
+
+      - name: Build the blocks
+        run: npm run build
+
+      - name: Start wp-env
+        run: npm exec --no -- wp-env start
+
+      - name: Smoke test
+        run: bash tests/smoke/smoke.sh
+
+      - name: Collect the logs of wp-env
+        if: failure()
+        run: |
+          mkdir -p "$RUNNER_TEMP/wp-env-logs"
+          npm exec --no -- wp-env logs all --no-watch > "$RUNNER_TEMP/wp-env-logs/containers.log" 2>&1 || true
+          npm exec --no -- wp-env run cli -- sh -c 'test -f wp-content/debug.log && cat wp-content/debug.log || true' > "$RUNNER_TEMP/wp-env-logs/debug.log" 2>&1 || true
+
+      - name: Upload the logs of wp-env
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-logs-php${{ matrix.php }}
+          path: ${{ runner.temp }}/wp-env-logs
+          retention-days: 7
+          if-no-files-found: ignore
+
+  # The checks of the WordPress.org team on the folder that people install (the unpacked ZIP, not the sources). The calls to the
+  # CasaZen service are the "External services" section of readme.txt. Warnings are shown and do not fail the job; errors do.
+  plugin-check:
+    name: Plugin Check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the ZIP
+        id: build
+        uses: ./.github/actions/build-wordpress-plugin
+
+      - name: Unpack the ZIP
+        env:
+          ZIP: ${{ steps.build.outputs.zip }}
+        run: |
+          rm -rf dist/unpacked
+          mkdir -p dist/unpacked
+          unzip -q "$ZIP" -d dist/unpacked
+          ls dist/unpacked
+
+      - name: Plugin Check
+        uses: WordPress/plugin-check-action@v1
+        with:
+          build-dir: integrations/wordpress/casazen/dist/unpacked/casazen
+          ignore-warnings: true
+
+  # The ZIP, as a build artifact. It needs the three jobs above: a ZIP that did not pass them is not offered.
+  package:
+    name: ZIP package
+    needs: [lint, phpunit, smoke]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the ZIP
+        id: build
+        uses: ./.github/actions/build-wordpress-plugin
+
+      - name: Upload the ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: casazen-wordpress-plugin
+          path: integrations/wordpress/casazen/dist/casazen-${{ steps.build.outputs.version }}.zip
+          if-no-files-found: error
+          retention-days: 14

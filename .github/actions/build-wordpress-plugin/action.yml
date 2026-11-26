@@ -1,0 +1,73 @@
+name: Build the CasaZen WordPress plugin ZIP
+description: >-
+  Checks the version, builds the blocks, compiles the translations and writes integrations/wordpress/casazen/dist/casazen-<version>.zip.
+  Used by the workflows "WordPress plugin" (the package job and plugin-check) and "WordPress plugin release". Needs the repository
+  checked out first. It reads no secret and publishes nothing.
+
+inputs:
+  tag:
+    description: >-
+      The release tag (wp-plugin-v<version>) that the version of the plugin must match. Empty for a build that is not a release.
+    required: false
+    default: ''
+
+outputs:
+  version:
+    description: The version of the plugin (the one string of the header, the constant and the Stable tag).
+    value: ${{ steps.zip.outputs.version }}
+  zip:
+    description: The absolute path of the ZIP.
+    value: ${{ steps.zip.outputs.zip }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: npm
+        cache-dependency-path: integrations/wordpress/casazen/package-lock.json
+
+    # First of all, before anything is installed or built: a tag that is not wp-plugin-v<version> stops the run here.
+    - name: Check the version
+      shell: bash
+      working-directory: integrations/wordpress/casazen
+      env:
+        TAG: ${{ inputs.tag }}
+      run: |
+        if [ -n "$TAG" ]; then
+          node tools/check-version.mjs --tag "$TAG"
+        else
+          node tools/check-version.mjs
+        fi
+
+    # PHP 8.3 and WP-CLI: only for `wp i18n`, which compiles the translations. The plugin itself is not run here.
+    - uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        tools: wp-cli
+        coverage: none
+
+    - name: Install the build tools
+      shell: bash
+      working-directory: integrations/wordpress/casazen
+      run: npm ci
+
+    - name: Build the blocks
+      shell: bash
+      working-directory: integrations/wordpress/casazen
+      run: npm run build
+
+    - name: Compile the translations
+      shell: bash
+      working-directory: integrations/wordpress/casazen
+      run: |
+        wp i18n make-mo languages
+        wp i18n make-json languages --no-purge
+
+    # Writes dist/casazen-<version>.zip, reads it back and checks it (one top-level folder, nothing that is not for the user).
+    - name: Build the ZIP
+      id: zip
+      shell: bash
+      working-directory: integrations/wordpress/casazen
+      run: node tools/build-zip.mjs

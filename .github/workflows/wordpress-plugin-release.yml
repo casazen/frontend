@@ -1,0 +1,54 @@
+name: WordPress plugin release
+
+# Publishes the ZIP of the CasaZen WordPress plugin as a GitHub release when a tag `wp-plugin-v<version>` is pushed. The prefix cannot
+# clash with the tags of the application. People install the plugin from this release (Plugins, Add New, Upload Plugin).
+#
+# To cut a release: set the same version in casazen.php (the Version header and CASAZEN_VERSION) and in readme.txt (Stable tag),
+# merge it, then, from the commit that passed the workflow "WordPress plugin":
+#
+#   git tag wp-plugin-v0.1.0 && git push origin wp-plugin-v0.1.0
+#
+# The run builds the ZIP, refuses a tag that is not `wp-plugin-v` plus the version of the plugin, and attaches casazen-<version>.zip to a
+# new release. Nothing here runs on a pull request or on a push to a branch, and nothing is sent to WordPress.org.
+#
+# This is the only workflow with `contents: write` (a release is written to the repository). It uses no secret: the token is the
+# one that GitHub gives to the run.
+
+on:
+  push:
+    tags:
+      - 'wp-plugin-v*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: wordpress-plugin-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Release the ZIP
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      # Builds the blocks and the translations and runs tools/check-version.mjs against the tag: the build stops here when the
+      # tag is not `wp-plugin-v` plus the version of the plugin.
+      - name: Build the ZIP
+        id: build
+        uses: ./.github/actions/build-wordpress-plugin
+        with:
+          tag: ${{ github.ref_name }}
+
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          VERSION: ${{ steps.build.outputs.version }}
+        run: |
+          gh release create "$TAG" "integrations/wordpress/casazen/dist/casazen-${VERSION}.zip" \
+            --verify-tag \
+            --title "CasaZen for WordPress ${VERSION}" \
+            --generate-notes
