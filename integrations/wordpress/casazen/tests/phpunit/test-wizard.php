@@ -1077,6 +1077,70 @@ class Test_Wizard extends WP_UnitTestCase {
 	}
 
 	/**
+	 * A page that exists but is not published is left exactly as it is (the setup never changes a page) and the result says that it
+	 * is not on the site: the box is a warning, not the green box of a success, and the line says what to do.
+	 */
+	public function test_an_existing_page_that_is_not_published_is_not_shown_as_a_plain_success() {
+		foreach ( array( 'draft', 'private', 'pending', 'future' ) as $status ) {
+			$page_id = self::factory()->post->create(
+				array(
+					'post_type'   => 'page',
+					'post_status' => $status,
+					'post_title'  => 'My ' . $status . ' booking page',
+					'post_date'   => 'future' === $status ? gmdate( 'Y-m-d H:i:s', time() + DAY_IN_SECONDS ) : current_time( 'mysql' ),
+				)
+			);
+			update_post_meta( $page_id, Pages::META_KEY, Pages::ROLE_BOOKING );
+			$this->age( $page_id );
+			$before = $this->snapshot( $page_id );
+
+			$result = Wizard::run( $this->form() );
+
+			$this->assertSame( 'exists', $result['pages'][ Pages::ROLE_BOOKING ]['status'], $status );
+			$this->assertSame( $status, $result['pages'][ Pages::ROLE_BOOKING ]['post_status'], $status );
+			$this->assertSame( $before, $this->snapshot( $page_id ), 'The ' . $status . ' page was not touched.' );
+
+			$html = $this->show_result( $result );
+			$this->assertSame( 'notice-warning', $this->result_box( $html ), $status );
+			$this->assertStringContainsString( 'The setup is done, but a page is not published yet.', $html, $status );
+			$this->assertSame( 1, substr_count( $html, 'It is not published, so your visitors do not see it' ), 'Only the page that is not published says so (' . $status . ').' );
+			$this->assertStringNotContainsString( 'notice-success', $html, $status );
+
+			wp_delete_post( $page_id, true );
+			foreach ( $this->role_pages() as $role_page ) {
+				if ( $role_page ) {
+					wp_delete_post( $role_page, true );
+				}
+			}
+		}
+
+		// A page that exists and is published is a plain success.
+		$page_id = self::factory()->post->create(
+			array(
+				'post_type'   => 'page',
+				'post_status' => 'publish',
+				'post_title'  => 'My published booking page',
+			)
+		);
+		update_post_meta( $page_id, Pages::META_KEY, Pages::ROLE_BOOKING );
+		$html = $this->show_result( Wizard::run( $this->form() ) );
+		$this->assertSame( 'notice-success', $this->result_box( $html ) );
+		$this->assertStringNotContainsString( 'It is not published', $html );
+
+		// Pages that the setup made as drafts, because the box «Publish the pages now» was not ticked, are what was asked for.
+		wp_delete_post( $page_id, true );
+		foreach ( $this->role_pages() as $role_page ) {
+			if ( $role_page ) {
+				wp_delete_post( $role_page, true );
+			}
+		}
+		$html = $this->show_result( Wizard::run( $this->form( array( 'publish' => '' ) ) ) );
+		$this->assertSame( 'notice-success', $this->result_box( $html ) );
+		$this->assertStringContainsString( 'It is a draft: publish it when you are ready.', $html );
+		$this->assertStringNotContainsString( 'It is not published', $html );
+	}
+
+	/**
 	 * A user who is not the one who ran the setup does not see its result, and the result waits only five minutes.
 	 */
 	public function test_the_result_belongs_to_the_user_and_expires() {

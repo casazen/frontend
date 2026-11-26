@@ -566,6 +566,10 @@ class Admin {
 				$class = 'notice-warning';
 				$title = __( 'Nothing was done: no page was ticked.', 'casazen' );
 				break;
+			case 'attention':
+				$class = 'notice-warning';
+				$title = __( 'The setup is done, but a page is not published yet.', 'casazen' );
+				break;
 			default:
 				$class = 'notice-success';
 				$title = __( 'The setup is done.', 'casazen' );
@@ -608,16 +612,19 @@ class Admin {
 	 *
 	 * - `failed`: a page or a menu entry that was asked for could not be made.
 	 * - `nothing`: no page was ticked, so nothing was done.
+	 * - `attention`: everything was made, but a page that already existed is not published. The setup never changes such a page, and
+	 *   the widget is not on the site until its owner publishes it.
 	 * - `done`: everything that was asked is there. A page that the setup made as a draft because the box «Publish the pages now» was
 	 *   not ticked is what was asked for.
 	 *
 	 * @param array $result The result of Wizard::run().
-	 * @return string One of `failed`, `nothing` and `done`.
+	 * @return string One of `failed`, `nothing`, `attention` and `done`.
 	 */
 	private static function wizard_outcome( array $result ) {
-		$items  = ( isset( $result['menu']['items'] ) && is_array( $result['menu']['items'] ) ) ? $result['menu']['items'] : array();
-		$chosen = 0;
-		$failed = false;
+		$items   = ( isset( $result['menu']['items'] ) && is_array( $result['menu']['items'] ) ) ? $result['menu']['items'] : array();
+		$chosen  = 0;
+		$failed  = false;
+		$waiting = false;
 
 		foreach ( Pages::roles() as $role ) {
 			if ( ! isset( $result['pages'][ $role ] ) || ! is_array( $result['pages'][ $role ] ) ) {
@@ -637,12 +644,18 @@ class Admin {
 			if ( isset( $items[ $role ] ) && 'failed' === $items[ $role ] ) {
 				$failed = true;
 			}
+			if ( 'exists' === $status && isset( $page['post_status'] ) && 'publish' !== $page['post_status'] ) {
+				$waiting = true;
+			}
 		}
 
 		if ( $failed ) {
 			return 'failed';
 		}
-		return 0 === $chosen ? 'nothing' : 'done';
+		if ( 0 === $chosen ) {
+			return 'nothing';
+		}
+		return $waiting ? 'attention' : 'done';
 	}
 
 	/**
@@ -683,6 +696,10 @@ class Admin {
 			}
 		} else {
 			$line .= esc_html__( 'The page already exists and was not changed.', 'casazen' );
+			// The setup never changes a page that exists, so a page that is not published stays so: say it, the widget is not on the site.
+			if ( isset( $page['post_status'] ) && 'publish' !== $page['post_status'] ) {
+				$line .= ' ' . esc_html__( 'It is not published, so your visitors do not see it: publish it from the page editor.', 'casazen' );
+			}
 		}
 
 		if ( 'added' === $menu_state ) {

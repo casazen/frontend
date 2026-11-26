@@ -393,120 +393,128 @@ msgid "Nothing was done: no page was ticked."
 msgstr "Non è stato fatto nulla: nessuna pagina era selezionata."
 
 #: includes/class-admin.php:571
+msgid "The setup is done, but a page is not published yet."
+msgstr "La procedura è terminata, ma una pagina non è ancora pubblicata."
+
+#: includes/class-admin.php:575
 msgid "The setup is done."
 msgstr "La procedura è terminata."
 
-#: includes/class-admin.php:584
+#: includes/class-admin.php:588
 msgid "What was made is kept and nothing is made twice: run the setup again when the problem is solved."
 msgstr "Quello che è stato creato resta e nulla viene creato due volte: riesegui la procedura quando il problema è risolto."
 
 #. translators: %s: the name of a menu.
-#: includes/class-admin.php:592
+#: includes/class-admin.php:596
 #, php-format
 msgid "Menu: %s"
 msgstr "Menu: %s"
 
-#: includes/class-admin.php:598
+#: includes/class-admin.php:602
 msgid "Your theme is a block theme, so no menu was changed. Add them to the Navigation block in the Site Editor."
 msgstr "Il tuo tema è un tema a blocchi, quindi nessun menu è stato modificato. Aggiungile al blocco Navigazione nell'Editor del sito."
 
-#: includes/class-admin.php:601
+#: includes/class-admin.php:605
 msgid "The pages are in the default language. Translate the pages from the Polylang screen."
 msgstr "Le pagine sono nella lingua predefinita. Traduci le pagine dalla schermata di Polylang."
 
-#: includes/class-admin.php:661
+#: includes/class-admin.php:674
 msgid "Skipped."
 msgstr "Saltata."
 
-#: includes/class-admin.php:664
+#: includes/class-admin.php:677
 msgid "The page could not be created."
 msgstr "Non è stato possibile creare la pagina."
 
-#: includes/class-admin.php:672
+#: includes/class-admin.php:685
 msgid "Page created."
 msgstr "Pagina creata."
 
-#: includes/class-admin.php:674
+#: includes/class-admin.php:687
 msgid "It is a draft: publish it when you are ready."
 msgstr "È una bozza: pubblicala quando sei pronto."
 
 #. translators: 1: the address the title asked for, 2: the address the page got.
-#: includes/class-admin.php:679
+#: includes/class-admin.php:692
 #, php-format
 msgid "The address \"%1$s\" belongs to another page, so this page uses \"%2$s\"."
 msgstr "L'indirizzo \"%1$s\" appartiene a un'altra pagina, quindi questa pagina usa \"%2$s\"."
 
-#: includes/class-admin.php:685
+#: includes/class-admin.php:698
 msgid "The page already exists and was not changed."
 msgstr "La pagina esiste già e non è stata modificata."
 
-#: includes/class-admin.php:689
+#: includes/class-admin.php:701
+msgid "It is not published, so your visitors do not see it: publish it from the page editor."
+msgstr "Non è pubblicata, quindi i tuoi visitatori non la vedono: pubblicala dall'editor delle pagine."
+
+#: includes/class-admin.php:706
 msgid "Added to the menu."
 msgstr "Aggiunta al menu."
 
-#: includes/class-admin.php:691
+#: includes/class-admin.php:708
 msgid "Already in the menu."
 msgstr "Già presente nel menu."
 
-#: includes/class-admin.php:693
+#: includes/class-admin.php:710
 msgid "Could not be added to the menu."
 msgstr "Non è stato possibile aggiungerla al menu."
 
-#: includes/class-admin.php:708
+#: includes/class-admin.php:725
 msgid "Hero search bar"
 msgstr "Barra di ricerca della home"
 
 #. translators: 1: the shortcode of the search bar. 2: the title of the page that holds the booking engine.
-#: includes/class-admin.php:713
+#: includes/class-admin.php:730
 #, php-format
 msgid "Add the shortcode %1$s to the home page (in Elementor, the Shortcode widget): it sends the guest to the page %2$s with the dates and the guests."
 msgstr "Aggiungi lo shortcode %1$s alla home page (in Elementor, il widget Shortcode): porta l'ospite alla pagina %2$s con le date e gli ospiti."
 
-#: includes/class-admin.php:778
+#: includes/class-admin.php:795
 msgid "Connection status"
 msgstr "Stato della connessione"
 
-#: includes/class-admin.php:780
+#: includes/class-admin.php:797
 msgid "No check has been made yet. Use the Test connection button below."
 msgstr "Non è ancora stata fatta nessuna verifica. Usa il pulsante «Prova la connessione» qui sotto."
 
-#: includes/class-admin.php:785
+#: includes/class-admin.php:802
 msgid "Agency"
 msgstr "Agenzia"
 
-#: includes/class-admin.php:789
+#: includes/class-admin.php:806
 msgid "Embedding"
 msgstr "Incorporamento"
 
-#: includes/class-admin.php:793
+#: includes/class-admin.php:810
 msgid "Owner sign-in"
 msgstr "Accesso dei proprietari"
 
-#: includes/class-admin.php:797
+#: includes/class-admin.php:814
 msgid "Last check"
 msgstr "Ultima verifica"
 
-#: includes/class-admin.php:803
+#: includes/class-admin.php:820
 msgid "Script address"
 msgstr "Indirizzo dello script"
 
-#: includes/class-admin.php:818
+#: includes/class-admin.php:835
 msgid "On"
 msgstr "Attivo"
 
-#: includes/class-admin.php:821
+#: includes/class-admin.php:838
 msgid "Off"
 msgstr "Non attivo"
 
-#: includes/class-admin.php:823 includes/class-admin.php:839
+#: includes/class-admin.php:840 includes/class-admin.php:856
 msgid "Unknown"
 msgstr "Sconosciuto"
 
-#: includes/class-admin.php:834
+#: includes/class-admin.php:851
 msgid "Ready"
 msgstr "Pronto"
 
-#: includes/class-admin.php:837
+#: includes/class-admin.php:854
 msgid "Not ready yet"
 msgstr "Non ancora pronto"
 
