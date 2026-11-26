@@ -92,6 +92,25 @@ it('creates a manual draft then submits the saved campaign to the shared approva
   );
 });
 
+it.each(['property', 'audience'])('clears the generated draft when its %s changes', async (field) => {
+  view(<CampaignsPage />);
+  fireEvent.click(screen.getByRole('button', { name: 'New campaign' }));
+  const property = screen.getByLabelText('Property', { exact: true });
+  const audience = screen.getByLabelText(i18n.t('campaigns.editor.segment'), { exact: true });
+  fireEvent.change(property, { target: { value: 'house' } });
+  await screen.findByRole('option', { name: 'Loyal guests' });
+  fireEvent.change(audience, { target: { value: 'audience' } });
+  fireEvent.change(screen.getByLabelText(i18n.t('marketingStudio.brief')), { target: { value: 'Summer offer' } });
+  vi.mocked(ApiClient.post).mockResolvedValueOnce({ id: 'asset', subject: 'Villa Sofia', body: 'Stay at Sofia' });
+  fireEvent.click(screen.getByRole('button', { name: i18n.t('campaigns.editor.generate') }));
+  await screen.findByDisplayValue('Stay at Sofia');
+  fireEvent.change(field === 'property' ? property : audience, { target: { value: '' } });
+  expect(screen.getByLabelText(i18n.t('campaigns.editor.subject'))).toHaveValue('');
+  expect(screen.getByLabelText(i18n.t('campaigns.editor.body'))).toHaveValue('');
+  fireEvent.change(field === 'property' ? property : audience, { target: { value: field === 'property' ? 'house' : 'audience' } });
+  expect(screen.getByRole('button', { name: i18n.t('campaigns.editor.saveDraft') })).toBeDisabled();
+});
+
 it('saves the edited voice before moving to the audience settings step', async () => {
   view(<CampaignsPage />);
   fireEvent.click(screen.getByRole('button', { name: 'Marketing settings' }));

@@ -49,6 +49,15 @@ export function CampaignEditor({ onSaved }: { onSaved: () => void }) {
       void client.invalidateQueries({ queryKey: assetQueryKey });
     },
   });
+  function resetGeneratedContent() {
+    if (generated) {
+      setSubject('');
+      setBody('');
+    }
+    generate.reset();
+    setGenerated(false);
+  }
+
   const save = useCreateDraft();
   const email = channel === 'email' || channel === 'newsletter';
   const busy = generate.isPending || events.isPending || save.isPending || assetDraft.isPending;
@@ -62,8 +71,7 @@ export function CampaignEditor({ onSaved }: { onSaved: () => void }) {
             value={propertyId}
             onChange={(v) => {
               setProperty(v);
-              generate.reset();
-              setGenerated(false);
+              resetGeneratedContent();
               events.reset();
               setEvent('');
             }}
@@ -73,8 +81,7 @@ export function CampaignEditor({ onSaved }: { onSaved: () => void }) {
             value={segmentId}
             onChange={(v) => {
               setSegment(v);
-              generate.reset();
-              setGenerated(false);
+              resetGeneratedContent();
             }}
           />
         </div>
