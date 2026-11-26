@@ -37,8 +37,12 @@ function PropertyChoice({ origin, propertyId, onPropertyChange }: ChoiceProps & 
   const homes = useProperties({ mode: 'short' }, { fresh: true, enabled: hasPermission('short-rent', 'property.read') });
   const publishable = useMemo(
     () =>
-      (homes.data ?? []).filter((home) =>
-        isPropertyPublishable({ isActive: home.isActive, isPaused: home.isPaused, complianceStatus: home.complianceStatus ?? undefined }),
+      (homes.data ?? []).filter(
+        (home) =>
+          // The switch «Mostra la casa sul sito» of the host is one more condition of `PublicListing.IsPublished` (a home it hides answers 404 to the widget): `false` only, so a row
+          // that does not carry it stays as it was.
+          home.publishedOnSite !== false &&
+          isPropertyPublishable({ isActive: home.isActive, isPaused: home.isPaused, complianceStatus: home.complianceStatus ?? undefined }),
       ),
     [homes.data],
   );

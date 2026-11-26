@@ -372,6 +372,31 @@ describe('EmbedSettingsPage (E41/F03/US01, NF-147, NF-149)', () => {
       expect(screen.getByTestId('embed-snippet-waiting')).toHaveTextContent(i18n.t('embed.settings.snippet.waiting.property'));
     });
 
+    it('picker_PropertyHiddenByTheHost_IsNotOfferedAndIsNeverTheStart', async () => {
+      // The switch «Mostra la casa sul sito» of the host: a home it hides answers 404 to the widget, active, not paused and compliant as it may be.
+      const hidden = { ...HOMES[0], id: 'p4', name: 'Casa nascosta', slug: 'casa-nascosta', publishedOnSite: false };
+      vi.mocked(useProperties).mockReturnValue({ data: [hidden, { ...HOMES[0], publishedOnSite: true }], isLoading: false, isError: false, refetch: vi.fn() } as unknown as ReturnType<typeof useProperties>);
+      renderPage();
+      await loaded();
+
+      pickWidget('property');
+
+      expect(within(screen.getByTestId('embed-property-select')).getAllByRole('option').map((option) => option.textContent)).toEqual(['Casa Mare (Lugano)']);
+      expect(attributesOf(snippetText())).toMatchObject({ widget: 'property', property: 'casa-mare' });
+    });
+
+    it('picker_PropertyEveryHomeHiddenByTheHost_SaysSoAndGivesNoCode', async () => {
+      vi.mocked(useProperties).mockReturnValue({ data: [{ ...HOMES[0], publishedOnSite: false }], isLoading: false, isError: false, refetch: vi.fn() } as unknown as ReturnType<typeof useProperties>);
+      renderPage();
+      await loaded();
+
+      pickWidget('property');
+
+      expect(screen.getByTestId('embed-property-empty')).toBeInTheDocument();
+      expect(screen.queryByTestId('embed-snippet')).not.toBeInTheDocument();
+      expect(screen.getByTestId('embed-snippet-copy')).toBeDisabled();
+    });
+
     it('picker_PropertyHomesOnTheirWay_SaysSoWhereTheCodeWillBe_NotThatThereAreNone', async () => {
       vi.mocked(useProperties).mockReturnValue({ data: undefined, isLoading: true, isError: false, refetch: vi.fn() } as unknown as ReturnType<typeof useProperties>);
       renderPage();
