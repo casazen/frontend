@@ -1,3 +1,5 @@
+import { connectReturnScope, inventoryPlanPart, rememberConnectReturn, takeConnectReturn } from '@/features/onboarding/plan-return';
+import { useCommercialProfile } from '@/hooks/use-commercial-profile';
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
@@ -54,6 +56,8 @@ function isHttpsAddress(value: unknown): value is string {
  */
 export function useOctorateConnect(): OctorateConnect {
   const [searchParams, setSearchParams] = useSearchParams();
+  const profile = useCommercialProfile();
+  const scope = connectReturnScope(profile?.id, profile?.org?.id);
   const [callback] = useState(() => readOctorateCallback(searchParams));
   // Back from the channel manager the answer comes from the exchange of the code, not from a second reading of the state.
   const connection = useOctorateConnection({ enabled: callback === null });
@@ -64,9 +68,14 @@ export function useOctorateConnect(): OctorateConnect {
   useEffect(() => {
     if (!callback || handled.current) return;
     handled.current = true;
-    setSearchParams((previous) => withoutOctorateCallback(previous), { replace: true });
+    const part = takeConnectReturn(scope);
+    setSearchParams(previous => {
+      const next = withoutOctorateCallback(previous);
+      if (part) next.set('planPart', part);
+      return next;
+    }, { replace: true });
     if (callback.kind === 'granted') completeConsent({ code: callback.code, state: callback.state });
-  }, [callback, completeConsent, setSearchParams]);
+  }, [callback, completeConsent, scope, setSearchParams]);
 
   // Back from the channel manager with the "back" button, the browser may bring this page back as it was left, button busy included.
   useEffect(() => {
@@ -88,6 +97,7 @@ export function useOctorateConnect(): OctorateConnect {
   const start = async (): Promise<void> => {
     const { authorizationUrl } = await startConsent.mutateAsync();
     if (!isHttpsAddress(authorizationUrl)) throw new Error('The consent address is not an https address');
+    rememberConnectReturn(scope, inventoryPlanPart(searchParams));
     window.location.assign(authorizationUrl);
     await new Promise<never>(() => undefined);
   };

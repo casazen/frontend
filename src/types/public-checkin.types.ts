@@ -81,6 +81,8 @@ export interface PublicCheckInGuestPrefill {
  * `completed` and `status`: no booking data and no guest data.
  */
 export interface PublicCheckInContextDto {
+  houseRules?: string | null;
+  houseRulesVersion?: string | null;
   completed: boolean;
   status: GuestCheckInSessionStatus;
   sessionId?: string;
@@ -208,6 +210,7 @@ export interface PublicCheckInInvoiceRequest extends InvoiceDataText {
  * NF-05 adds per-channel consent with a separate marketing email.
  */
 export interface PublicCheckInSubmitRequest {
+  houseRulesVersion?: string;
   privacyNoticeAcknowledged?: boolean;
   guests: StayGuestSubmit[];
   /** Guest ticked the email marketing channel (NF-05). */
@@ -240,6 +243,7 @@ export interface AlloggiatiCodeEntryDto {
 
 /** Answer of `POST /public/checkin/{token}/read-document`. The photo is not returned. */
 export interface CheckInDocumentReadResult {
+  side?: 'front' | 'back' | 'single' | null;
   guestPosition?: number | null;
   confirmGuest?: boolean;
   read: boolean;
@@ -251,6 +255,12 @@ export interface CheckInDocumentReadResult {
     dateOfBirth?: string | null;
     bornInItaly?: boolean | null;
     birthPlace?: string | null;
+    residenceStreet?: string | null;
+    residencePostalCode?: string | null;
+    residenceCityName?: string | null;
+    residenceProvince?: string | null;
+    residenceCountryName?: string | null;
+    residenceInItaly?: boolean | null;
     birthProvince?: string | null;
     citizenship?: string | null;
     documentKind?: string | null;

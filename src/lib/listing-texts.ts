@@ -9,7 +9,7 @@ import type { ListingLanguage, ListingTexts, SiteProfile, SiteProfileRequest, Te
 
 /** The limits of the backend: the headline is 60 characters, the description 2,000. */
 export const LISTING_TITLE_MAX = 60;
-export const LISTING_DESCRIPTION_MAX = 2000;
+export const LISTING_DESCRIPTION_MAX = 10_000;
 
 /** The languages of the channel manager besides Italian: English first (required to publish), then the twelve optional ones. */
 export const TRANSLATED_LANGUAGES: readonly ListingLanguage[] = LISTING_LANGUAGES.filter((language) => language !== 'it');

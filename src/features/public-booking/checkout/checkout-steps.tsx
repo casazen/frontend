@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next';
-import { Check } from 'lucide-react';
+import { CalendarDays, Check, ContactRound, CreditCard } from 'lucide-react';
 import type { CheckoutStep } from '@/features/public-booking/checkout/checkout-model';
 import '@/features/public-booking/checkout/checkout.css';
 
+const STEP_ICONS = { 1: CalendarDays, 2: ContactRound, 3: CreditCard } as const;
 const STEPS: readonly CheckoutStep[] = [1, 2, 3];
 
 type StepState = 'done' | 'now' | 'todo';
@@ -32,11 +33,12 @@ export function CheckoutSteps({ step, canGoBack, onGo }: CheckoutStepsProps) {
       <ol className="co-steps__list">
         {STEPS.map((number) => {
           const state = stateOf(number, step);
+          const Icon = state === 'done' ? Check : STEP_ICONS[number];
           const label = t(`publicCheckout.steps.step${number}`);
           const inner = (
             <>
               <span className="co-steps__n" aria-hidden="true">
-                {state === 'done' ? <Check /> : number}
+                <Icon />
               </span>
               <span className="co-steps__label">{label}</span>
               {state === 'done' ? <span className="sr-only"> ({t('publicCheckout.steps.done')})</span> : null}

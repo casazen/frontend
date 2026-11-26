@@ -1,3 +1,4 @@
+import { mockEmptyAdminStats } from './helpers/admin-stats';
 import { expect, test } from './test';
 import { demoUrl } from './helpers/demo-profile';
 import { mockLeasesApiEmpty } from './helpers/lease-api-mock';
@@ -73,22 +74,7 @@ test.describe('Context workspace switcher (#189)', () => {
   test('admin-only user lands in admin context', async ({ page }) => {
     // The dashboard of the console reads its numbers from the API: unanswered, the dev server answers with the page of the
     // app and the dashboard fails while the test looks at the menu (a race that made this test flaky).
-    await page.route('**/api/admin/stats', (route) =>
-      route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          totalProperties: 0,
-          activeProperties: 0,
-          totalBookings: 0,
-          bookingsThisMonth: 0,
-          upcomingCheckIns: 0,
-          totalRevenue: 0,
-          cinCompliance: { total: 0, valid: 0, missing: 0, invalid: 0 },
-          otaSyncHealth: { synced: 0, failed: 0, neverSynced: 0 },
-        }),
-      }),
-    );
+    await mockEmptyAdminStats(page);
     await page.goto(demoUrl('/app/choose-context', 'admin'));
     await expect(page).toHaveURL(/\/app\/admin/);
     await expect(page.getByRole('link', { name: 'Utenti' })).toBeVisible();

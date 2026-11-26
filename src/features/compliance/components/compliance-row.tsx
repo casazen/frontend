@@ -58,14 +58,14 @@ export function ComplianceRow({ icon: Icon, title, to, sub, detail, light, reaso
     <li
       data-testid={testId}
       className={cn(
-        'grid gap-x-3 gap-y-1 py-3 sm:items-center',
+        'grid min-w-0 gap-x-3 gap-y-1 p-3 sm:items-center sm:px-4',
         Icon ? 'grid-cols-[2.25rem_minmax(0,1fr)] sm:grid-cols-[2.25rem_minmax(0,1fr)_auto]' : 'grid-cols-[minmax(0,1fr)] sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-x-4',
       )}
     >
       {Icon ? (
         <span
           aria-hidden="true"
-          className={cn('grid size-9 place-items-center rounded-full', urgent ? 'bg-danger-soft text-danger-foreground' : 'bg-muted text-foreground/70')}
+          className={cn('grid size-9 place-items-center rounded-xl', urgent ? 'bg-danger-soft text-danger-foreground' : 'bg-muted text-foreground/70')}
         >
           <Icon className="size-[18px]" />
         </span>

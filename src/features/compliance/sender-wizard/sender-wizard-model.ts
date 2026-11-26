@@ -239,7 +239,7 @@ export class SenderStepBlockedError extends Error {
  * what leaves the step with them typed is lost: the main button saves them first and «Salva ed esci» says that they were not kept.
  */
 export function hasTypedCredentials(values: SetQuesturaCredentialsRequest): boolean {
-  return Object.values(values).some((value) => value.trim() !== '');
+  return [values.username, values.password, values.wsKey].some((value) => value.trim() !== '');
 }
 
 /** What the result of the connection test, or of the state of the sender, means for the host. Only `active` is shown as «Attivo». */

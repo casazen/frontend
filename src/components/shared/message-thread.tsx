@@ -93,8 +93,8 @@ export function MessageThread<T extends ThreadItem = ThreadItem>({ items, label,
             </p>
             <div
               className={cn(
-                'max-w-[85%] whitespace-pre-wrap rounded-2xl border px-3 py-2 text-sm [overflow-wrap:anywhere]',
-                item.mine ? 'border-transparent bg-primary text-primary-foreground' : 'bg-card',
+                'max-w-[min(85%,60ch)] whitespace-pre-wrap rounded-2xl border px-3.5 py-2.5 text-sm leading-relaxed [overflow-wrap:anywhere]',
+                item.mine ? 'rounded-br-sm border-primary/20 bg-primary-soft text-primary-text' : 'rounded-bl-sm bg-card shadow-sm',
                 item.status === 'sending' && 'opacity-70',
               )}
             >

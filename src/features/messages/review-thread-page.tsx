@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
-import { FROM_DESKTOP_QUERY, FROM_WIDE_QUERY, useMediaQuery } from '@/hooks/use-media-query';
+import { FROM_DESKTOP_QUERY, useMediaQuery } from '@/hooks/use-media-query';
 import { usePageTitle } from '@/hooks/use-page-title';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { getHttpStatus } from '@/lib/api-errors';
@@ -52,7 +52,6 @@ export function ReviewThreadView({ threadKey }: { threadKey: string }) {
   const { search } = useLocation();
   const canWrite = hasPermission('short-rent', 'booking.write');
   const withList = useMediaQuery(FROM_DESKTOP_QUERY);
-  const withBookingPane = useMediaQuery(FROM_WIDE_QUERY);
   const thread = useReviewThread(threadKey);
   // `null` is a box nobody touched: it shows the words of a reply the channel refused (the host changes them and tries again), else nothing.
   const [typedReply, setTypedReply] = useState<string | null>(null);
@@ -94,7 +93,7 @@ export function ReviewThreadView({ threadKey }: { threadKey: string }) {
     );
     content = (
       <div
-        className="grid min-w-0 flex-1 overflow-hidden rounded-2xl border bg-card lg:min-h-[26rem] lg:grid-cols-[minmax(18rem,22rem)_minmax(0,1fr)] lg:grid-rows-[minmax(0,1fr)] 2xl:grid-cols-[minmax(18rem,22rem)_minmax(0,1fr)_minmax(16rem,23%)]"
+        className="grid min-w-0 flex-1 overflow-hidden rounded-2xl border bg-card lg:min-h-[26rem] lg:grid-cols-[minmax(18rem,22rem)_minmax(0,1fr)] lg:grid-rows-[minmax(0,1fr)]"
         data-testid="messages-workspace"
       >
         {withList ? (
@@ -108,7 +107,7 @@ export function ReviewThreadView({ threadKey }: { threadKey: string }) {
           canWrite={canWrite}
           listPath={listPath}
           bookingDetails={
-            withBookingPane ? null : (
+            (
               <Dialog>
                 <DialogTrigger asChild>
                   <Button type="button" variant="outline" size="sm" className="min-h-11 shrink-0">
@@ -130,11 +129,6 @@ export function ReviewThreadView({ threadKey }: { threadKey: string }) {
           hostDraft={hostDraft}
           onHostDraft={setHostDraft}
         />
-        {withBookingPane ? (
-          <aside aria-label={t('messages.bookingCard.details')} className="min-h-0 min-w-0 overflow-y-auto border-l bg-muted/20 p-3">
-            {booking}
-          </aside>
-        ) : null}
       </div>
     );
   }

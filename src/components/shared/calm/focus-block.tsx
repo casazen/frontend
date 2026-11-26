@@ -27,17 +27,7 @@ export interface FocusBlockProps extends Omit<React.HTMLAttributes<HTMLElement>,
   icon?: LucideIcon;
 }
 
-/**
- * The one highlighted block of a screen: what to do now, whose turn it is, how long it takes, what comes after, and the
- * button that does it. A page has at most one (the redesign conventions, §7bis, "un solo punto focale"): two colored blocks together
- * and the person does not know where to look.
- *
- * It is a `region` named by its title, so a screen reader finds it from the list of landmarks; the title is the `h2` of the
- * page area. The tone is told three ways, never by color alone: the tint, the icon, and the words you give it.
- *
- *     <FocusBlock tone="warning" kicker="Adesso" title="Il canone di ottobre non è arrivato" who="Tocca a te"
- *       when="Scaduto da 3 giorni" primary={{ label: 'Invia il sollecito', onClick: sendReminder }} />
- */
+/** A named section for a current task, its owner and its actions. The tone is conveyed by the icon and the wording. */
 export function FocusBlock({ tone = 'neutral', kicker, title, body, who, when, primary, secondary, then, icon, className, ...props }: FocusBlockProps) {
   const titleId = React.useId();
   const style = TONE_STYLES[tone];
@@ -49,23 +39,20 @@ export function FocusBlock({ tone = 'neutral', kicker, title, body, who, when, p
       aria-labelledby={titleId}
       data-tone={tone}
       className={cn(
-        'relative flex min-w-0 flex-col gap-3 overflow-hidden rounded-xl p-4 pl-5 shadow-sm ring-1 ring-inset forced-colors:outline-1 sm:flex-row sm:gap-4 sm:p-6 sm:pl-7',
-        style.surface,
+        'flex min-w-0 items-start gap-2.5',
         className,
       )}
     >
-      {/* The tone on the edge, not on the whole block: a card with a colored edge reads as "the next thing", a tinted block as an error. */}
-      <span aria-hidden="true" className={cn('absolute inset-y-0 left-0 w-1', style.bar)} />
-      <span aria-hidden="true" className={cn('grid size-10 shrink-0 place-items-center rounded-full sm:size-12', style.badge, style.accent)}>
-        <Icon className="size-5 sm:size-6" />
+      <span aria-hidden="true" className={cn('cz-icon-tile forced-colors:outline-1 [--cz-icon-tile-size:2rem] [--cz-icon-size:1rem]', style.badge, style.accent)}>
+        <Icon strokeWidth={1.75} />
       </span>
 
-      <div className="min-w-0 flex-1 space-y-2">
+      <div className="min-w-0 flex-1 space-y-1.5">
         {kicker ? <p className={cn('break-words text-xs font-semibold uppercase tracking-wide', style.accent)}>{kicker}</p> : null}
-        <h2 id={titleId} className="break-words text-lg font-semibold leading-snug sm:text-xl">
+        <h2 id={titleId} className="break-words text-base font-semibold leading-snug">
           {title}
         </h2>
-        {body ? <div className="break-words text-sm text-foreground/80 sm:text-base">{body}</div> : null}
+        {body ? <div className="break-words text-sm text-foreground/80">{body}</div> : null}
 
         {who || when ? (
           <ul role="list" className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-foreground/70">

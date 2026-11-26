@@ -161,12 +161,13 @@ function StandardRequestNow({ request, actions }: { request: SupplierServiceRequ
 
   const lines = (
     <>
-      <dl className="grid gap-x-4 gap-y-2 sm:grid-cols-[auto_1fr]">
-        <dt className="text-sm font-semibold text-foreground/70">{t('supplier.requests.now.label.you')}</dt>
-        <dd className="min-w-0 break-words">{t(online ? `${base}.youOnline` : quoteFirst ? `${base}.youQuote` : `${base}.you`, { time: until })}</dd>
-        <dt className="text-sm font-semibold text-foreground/70">{t('supplier.requests.now.label.client')}</dt>
-        <dd className="min-w-0 break-words">{t(`${base}.client`)}</dd>
-      </dl>
+      <p className="min-w-0 break-words">{t(online ? `${base}.youOnline` : quoteFirst ? `${base}.youQuote` : `${base}.you`, { time: until })}</p>
+      <details className="mt-1">
+        <summary className="w-fit cursor-pointer rounded py-2 text-sm font-medium focus-visible:ring-2 focus-visible:ring-ring">
+          {t('supplier.requests.now.label.client')}
+        </summary>
+        <p className="pb-2 text-sm text-muted-foreground">{t(`${base}.client`)}</p>
+      </details>
       {primaryHint ? (
         <p className="mt-2 break-words text-foreground/80" data-testid="supplier-request-backup-hint">
           {primaryHint}
@@ -272,7 +273,7 @@ export function RequestFacts({ request, compact = false }: { request: SupplierSe
   const showcase = request.source === 'showcase';
 
   return (
-    <dl className={cn('grid grid-cols-1 gap-x-6 gap-y-4 border-y py-4 sm:grid-cols-2', !compact && 'lg:grid-cols-4')} data-testid="supplier-request-facts">
+    <dl className={cn('grid grid-cols-1 gap-x-4 gap-y-4 rounded-2xl border border-border bg-card p-4 sm:grid-cols-2', !compact && 'lg:grid-cols-4')} data-testid="supplier-request-facts">
       <Fact
         testId="supplier-request-when"
         label={t('supplier.requests.facts.when')}

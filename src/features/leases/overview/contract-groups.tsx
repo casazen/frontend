@@ -14,7 +14,7 @@ export function ContractGroups({ leases }: { leases: LongRentLeaseCounters }) {
     : {};
 
   return (
-    <PlainSection title={t('longRentOverview.contracts.title')} {...action} data-testid="long-rent-contracts">
+    <PlainSection className="min-w-0 rounded-xl border bg-card p-4 sm:p-5" title={t('longRentOverview.contracts.title')} {...action} data-testid="long-rent-contracts">
       <StatStrip label={t('longRentOverview.contracts.title')}>
         {contractGroups(leases).map((group) => (
           <StatTile key={group.chip} label={t(group.labelKey)} value={group.count} />

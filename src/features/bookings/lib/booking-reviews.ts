@@ -9,6 +9,10 @@ const CHANNEL_SOURCES: readonly string[] = [...OTA_STAY_SOURCES, 'OtherChannel']
 /** The statuses of a stay that happens (the one definition of the product: a request, a hold and a cancelled booking are not). */
 const STAY_STATUSES: readonly string[] = ['Confirmed', 'CheckedIn', 'CheckedOut'];
 
+export function stayEndedForReviews(booking: Pick<Booking, 'status' | 'checkOutDate'>, today: string): boolean {
+  return STAY_STATUSES.includes(booking.status) && booking.checkOutDate.slice(0, 10) < today;
+}
+
 /** Which reviews a booking can have: the one of the booking site (`direct`) or the ones of a portal (`channel`). */
 export type BookingReviewsKind = 'direct' | 'channel';
 
@@ -21,6 +25,6 @@ export type BookingReviewsKind = 'direct' | 'channel';
  */
 export function bookingReviewsKindOf(booking: Pick<Booking, 'source' | 'status' | 'checkOutDate'>, connectorOn: boolean, today: string): BookingReviewsKind | null {
   if (!STAY_STATUSES.includes(booking.status)) return null;
-  if (booking.source === 'Direct') return booking.checkOutDate.slice(0, 10) < today ? 'direct' : null;
+  if (booking.source === 'Direct') return stayEndedForReviews(booking, today) ? 'direct' : null;
   return connectorOn && booking.source !== undefined && CHANNEL_SOURCES.includes(booking.source) ? 'channel' : null;
 }

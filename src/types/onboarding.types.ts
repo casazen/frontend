@@ -782,6 +782,7 @@ export interface SupportVaultReveal {
   password: string;
   /** The further code (the web service key of the police credentials, the code of the structure of the ISTAT ones); `null` when there is none. */
   extraCode: string | null;
+  unitCode?: string | null;
   openedAt: Instant;
   visibleUntil: Instant;
 }

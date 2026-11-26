@@ -1,7 +1,7 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, BadgeCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
@@ -97,9 +97,9 @@ function TaxProfileForm({ saved }: { saved: FiscalTaxProfile }) {
 
   return (
     // The two numbers side by side once the form is wide enough for them (under each other when it is not).
-    <form className="@container space-y-6" onSubmit={onSubmit} noValidate data-testid="fiscal-wizard-form">
+    <form className="@container space-y-5 rounded-2xl border bg-card p-4 sm:p-6" onSubmit={onSubmit} noValidate data-testid="fiscal-wizard-form">
       <div className="space-y-5">
-        <label className="flex min-h-11 w-fit max-w-full cursor-pointer items-center gap-3 text-sm font-medium">
+        <label className="flex min-h-14 cursor-pointer items-center gap-3 rounded-xl border border-primary/25 bg-primary/5 px-4 py-3 font-medium">
           <Checkbox
             data-testid="fiscal-has-piva"
             checked={hasPartitaIva}
@@ -159,6 +159,7 @@ function TaxProfileForm({ saved }: { saved: FiscalTaxProfile }) {
         loading={update.isPending}
         disabled={!hasChanges}
       >
+        <BadgeCheck aria-hidden="true" className="size-4" />
         {t('fiscal.wizard.save')}
       </Button>
     </form>

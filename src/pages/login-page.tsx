@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { ownerPortalPaths } from '@/features/owner-portal/paths';
 import { safeReturnTo } from '@/lib/auth-return-to';
 import { useTranslation } from 'react-i18next';
 import { LogIn } from 'lucide-react';
-import { CasaZenLogo, CasaZenMark } from '@/components/brand/casazen-mark';
+import { PublicAccessFrame } from './public-access-frame';
+import { CasaZenMark } from '@/components/brand/casazen-mark';
 import { Button } from '@/components/ui/button';
+import { useLoginHandoff } from '@/hooks/use-login-handoff';
 import { useAuth } from '@/hooks/use-auth';
 
 /** When this page last sent the visitor to Auth0 (`sessionStorage`, one tab). */
@@ -41,16 +44,30 @@ function rememberStart(): void {
  * the login page used to.
  */
 export function LoginPage() {
-  const { isAuthenticated, isLoading, user, login } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
+  const handoff = useLoginHandoff();
+  const { start } = handoff;
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [params] = useSearchParams();
   const candidate = safeReturnTo(params.get('returnTo'));
   // Only application routes can be a post-login target; never external URLs or /login itself.
-  const returnTo = candidate?.startsWith('/app/') && new URL(candidate, window.location.origin).pathname.startsWith('/app/') ? candidate : null;
+  const destination = candidate && new URL(candidate, window.location.origin).pathname;
+  const ownerPage = destination === ownerPortalPaths.home ||
+    (destination?.startsWith(ownerPortalPaths.home + '/') &&
+      /^(?:immobili|calendario|contabilita|rendiconti|documenti|documenti-emessi|messaggi|contatti)(?:\/|$)/.test(destination.slice(ownerPortalPaths.home.length + 1)));
+  const returnTo = destination?.startsWith('/app/') || ownerPage ? candidate
+    : pathname === ownerPortalPaths.signIn ? ownerPortalPaths.home : null;
   const { t } = useTranslation();
   // Decided once, when the page opens.
   const [redirect] = useState(() => !startedRecently());
   const started = useRef(false);
+  const [slowInitialization, setSlowInitialization] = useState(false);
+  useEffect(() => {
+    if (!isLoading) return;
+    const timer = window.setTimeout(() => setSlowInitialization(true), RESTART_WINDOW_MS);
+    return () => window.clearTimeout(timer);
+  }, [isLoading]);
 
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -60,26 +77,33 @@ export function LoginPage() {
     if (!redirect || isLoading || isAuthenticated || started.current) return;
     started.current = true;
     rememberStart();
-    login(returnTo ? { returnTo } : undefined);
-  }, [redirect, isAuthenticated, isLoading, user, login, navigate, returnTo]);
+    start(returnTo ? { returnTo } : undefined);
+  }, [redirect, isAuthenticated, isLoading, user, start, navigate, returnTo]);
 
-  if (redirect) {
+  const initializationStalled = isLoading && slowInitialization;
+  const handoffProblem = handoff.status === 'failed' || handoff.status === 'delayed';
+  if (!initializationStalled && !handoffProblem && (handoff.busy || isLoading || redirect)) {
     return (
-      <div role="status" className="flex min-h-screen flex-col items-center justify-center gap-5 bg-[#fbfaf8] px-4 text-center">
+      <div role="status" className="flex min-h-svh flex-col items-center justify-center gap-5 bg-background px-4 text-center">
         <CasaZenMark size={56} className="animate-pulse motion-reduce:animate-none" />
-        <p className="text-sm text-[#4a6d71]">{t('login.redirecting')}</p>
+        <p className="text-sm text-muted-foreground">{t('login.redirecting')}</p>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-[#fbfaf8] px-4 text-center">
-      <CasaZenLogo size={44} />
-      <p className="max-w-sm text-sm text-[#4a6d71]">{t('login.signInMessage')}</p>
-      <Button onClick={() => login(returnTo ? { returnTo } : undefined)} size="lg" className="bg-[#1f3a3d] text-white hover:bg-[#2b4f53]">
-        <LogIn className="mr-2 h-5 w-5" />
-        {t('login.signInButton')}
+    <PublicAccessFrame title={t('login.resumeTitle')} icon={LogIn} description={
+      <p role={handoffProblem || initializationStalled ? 'alert' : undefined} className="text-sm leading-relaxed text-muted-foreground">
+        {t(initializationStalled ? 'login.initializationSlow' : handoffProblem ? 'login.handoffFailed' : 'login.resumeBody')}
+      </p>
+    }>
+      <Button type="button" onClick={() => {
+        if (initializationStalled) window.location.reload();
+        else { rememberStart(); start(returnTo ? { returnTo } : undefined); }
+      }} size="lg" className="w-full">
+        <LogIn aria-hidden="true" className="size-5" />
+        {t(initializationStalled ? 'login.reload' : 'login.signInButton')}
       </Button>
-    </div>
+    </PublicAccessFrame>
   );
 }

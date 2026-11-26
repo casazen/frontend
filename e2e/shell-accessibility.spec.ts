@@ -81,7 +81,7 @@ test.describe('Shell: window scroll and accessibility (UI-03)', () => {
       await page.keyboard.press('Enter');
       const menu = page.getByRole('menu');
       await expect(menu).toBeVisible();
-      await expect(menu.getByRole('menuitem')).toHaveText(['Profilo', 'Esci']);
+      await expect(menu.getByRole('menuitem')).toHaveText(['Profilo', 'Personalizza area di lavoro', 'Esci']);
       await expect(menu.getByRole('menuitemradio')).toHaveText(['Italiano', 'English', 'Affitti brevi', 'Affitti lunghi']);
 
       // Home and End walk the rows, Escape closes the menu and the focus is back on the avatar.

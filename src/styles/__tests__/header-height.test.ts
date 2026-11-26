@@ -38,11 +38,11 @@ describe('the height of the header', () => {
     expect(source).not.toContain("'4rem'");
   });
 
-  it('HeaderHeight_FullHeightPageOfTheBookingSiteEditor_SubtractsTheVariable', () => {
+  it('HeaderHeight_BookingSiteEditor_SubtractsTheVariableFromTheDesktopViewport', () => {
     const source = read('src/features/settings/vetrina-page.tsx');
 
-    expect(source).toContain('100svh-var(--header-height)');
-    expect(source).toContain('100svh-var(--header-height)-var(--bottom-nav-height)');
+    expect(source).toMatch(/lg:h-\[calc\(100dvh-var\(--header-height\)/);
+    expect(source).not.toMatch(/(?:^|\s)h-\[calc\(100[ds]vh/);
     expect(source).not.toContain('4rem');
   });
 

@@ -172,7 +172,8 @@ describe('the steps of the wizard (NF-31, NF-37)', () => {
     // The whole schema of the step without the channel manager: the texts of the listing are optional, as they always were.
     expect(descriptionsLengthsSchema.safeParse({ ...NEW_PROPERTY_DEFAULTS }).success).toBe(true);
     expect(descriptionsLengthsSchema.safeParse({ ...NEW_PROPERTY_DEFAULTS, listingTitle: 'x'.repeat(61) }).success).toBe(false);
-    expect(descriptionsLengthsSchema.safeParse({ ...NEW_PROPERTY_DEFAULTS, description: 'x'.repeat(2001) }).success).toBe(false);
+    expect(descriptionsLengthsSchema.safeParse({ ...NEW_PROPERTY_DEFAULTS, description: 'x'.repeat(10_000) }).success).toBe(true);
+    expect(descriptionsLengthsSchema.safeParse({ ...NEW_PROPERTY_DEFAULTS, description: 'x'.repeat(10_001) }).success).toBe(false);
     expect(
       descriptionsLengthsSchema.safeParse({ ...NEW_PROPERTY_DEFAULTS, texts: { ...NEW_PROPERTY_DEFAULTS.texts, fr: { title: 'x'.repeat(61), description: '' } } }).success,
     ).toBe(false);

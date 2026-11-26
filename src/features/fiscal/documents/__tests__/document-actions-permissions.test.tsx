@@ -240,6 +240,36 @@ describe('the card of the booking (permission and flag rule)', () => {
     expect(await screen.findByTestId('booking-fiscal-document-create')).toBeInTheDocument();
   });
 
+  it.each([
+    ['issuer_profile_incomplete', '/app/short-rent/fiscal/setup?step=issuer'],
+    ['document_rule_not_configured', '/app/short-rent/fiscal/setup?step=vat'],
+    ['document_invoice_data_missing', null],
+  ])('offers the relevant correction when the server reports %s', async (code, href) => {
+    env.permissions = new Set(WRITE);
+    vi.mocked(api.listBookingDocuments).mockResolvedValue([]);
+    vi.mocked(api.createDraft).mockRejectedValue({ isAxiosError: true, response: { status: 422, data: { code } } });
+    const edit = vi.fn();
+    renderInProviders(createElement(BookingFiscalDocumentCard, { bookingId: BOOKING_ID, onEditRecipient: edit }));
+    fireEvent.click(await screen.findByTestId('booking-fiscal-document-create'));
+    const blocker = await screen.findByTestId('booking-fiscal-document-blocker');
+    if (href) {
+      expect(within(blocker).getByRole('link')).toHaveAttribute('href', href);
+    } else {
+      fireEvent.click(within(blocker).getByRole('button'));
+      expect(edit).toHaveBeenCalledOnce();
+    }
+  });
+
+  it('keeps the setup refusal visible without linking to a settings route outside the caller permissions', async () => {
+    env.permissions = new Set(['payment.read', 'payment.write']);
+    vi.mocked(api.listBookingDocuments).mockResolvedValue([]);
+    vi.mocked(api.createDraft).mockRejectedValue({ isAxiosError: true, response: { status: 422, data: { code: 'issuer_profile_incomplete' } } });
+    renderInProviders(createElement(BookingFiscalDocumentCard, { bookingId: BOOKING_ID }));
+    fireEvent.click(await screen.findByTestId('booking-fiscal-document-create'));
+    const blocker = await screen.findByTestId('booking-fiscal-document-blocker');
+    expect(within(blocker).queryByRole('link')).not.toBeInTheDocument();
+  });
+
   it('BookingFiscalDocumentCard_WhileTheIssuanceIsOff_IsNotThereAndAsksNothing', () => {
     env.permissions = new Set(WRITE);
     env.flags = { fiscalDocumentIssuance: false };

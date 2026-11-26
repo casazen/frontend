@@ -50,7 +50,7 @@ export function bandsForDay(hours: SupplierAgendaHoursDay[] | undefined, date: s
   return hours?.find((day) => day.weekday === weekday)?.bands ?? [];
 }
 
-export type DayEventKind = 'calendar' | 'block' | 'extra' | 'request' | 'timeOff';
+export type DayEventKind = 'calendar' | 'block' | 'extra' | 'request' | 'guestOrder' | 'timeOff';
 
 export interface DayEvent {
   id: string;
@@ -64,6 +64,7 @@ export interface DayEvent {
   timeRange: string | null;
   /** A request: where to open it and how it stands (the status of the API). */
   requestId?: string;
+  guestOrderId?: string;
   status?: string;
   /** A request: the service of the catalog it is for (none: the category is its name), who asks and where (SP-03b). */
   serviceName?: string | null;
@@ -164,6 +165,7 @@ export function buildWorkingDays(input: {
   timeOff: SupplierAgendaTimeOff[];
   blocks: SupplierAgendaBlock[];
   requests: SupplierAgendaRequest[];
+  guestOrders?: { id: string; serviceName: string; requestedFor: string }[];
   /** How serious the worst conflict of a request is, by request id (the next 30 days). */
   conflicts?: ReadonlyMap<string, SupplierConflictSeverity>;
   /** Fallback when the calendar API is not loaded yet: the day grid from GET /availability. */
@@ -201,6 +203,12 @@ export function buildWorkingDays(input: {
         timeRange: timeRangeOnDay(day, block.startUtc, block.endUtc),
       });
     }
+  }
+
+  for (const order of input.guestOrders ?? []) {
+    const time = romeWallClock(order.requestedFor);
+    if (time) push(time.date, { id: `guest-order-${order.id}`, kind: 'guestOrder', guestOrderId: order.id,
+      label: order.serviceName, timeRange: formatClock(time.hour, time.minute) });
   }
 
   for (const request of input.requests) {

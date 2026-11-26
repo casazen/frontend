@@ -1,6 +1,6 @@
 import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { CreditCard } from 'lucide-react';
+import { CalendarClock, CreditCard, ContactRound } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { PAGE_COLUMNS } from '@/components/layout/page-columns';
@@ -149,10 +149,10 @@ function SubscriptionCard({ subscription, effectiveTier }: SubscriptionCardProps
   return (
     <Card data-testid="subscription-card">
       <CardHeader>
-        <CardTitle className="text-xl">{t('billing.settings.subscriptionTitle')}</CardTitle>
+        <CardTitle className="flex items-center gap-2 text-xl"><CreditCard aria-hidden="true" className="size-5 text-primary" />{t('billing.settings.subscriptionTitle')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <dl className="grid gap-3 text-sm sm:grid-cols-3">
+        <dl className="grid gap-3 rounded-lg bg-muted/50 p-4 text-sm sm:grid-cols-3">
           <div>
             <dt className="text-muted-foreground">{t('billing.settings.plan')}</dt>
             <dd className="mt-1">
@@ -167,7 +167,7 @@ function SubscriptionCard({ subscription, effectiveTier }: SubscriptionCardProps
           </div>
           {nextDue && (
             <div>
-              <dt className="text-muted-foreground">{t('billing.settings.nextDue')}</dt>
+              <dt className="flex items-center gap-1 text-muted-foreground"><CalendarClock aria-hidden="true" className="size-4" />{t('billing.settings.nextDue')}</dt>
               <dd className="mt-1 font-medium" data-testid="subscription-next-due">
                 {nextDue}
               </dd>
@@ -212,7 +212,7 @@ function BillingProfileCard({ subscription }: { subscription: BillingSubscriptio
   return (
     <Card data-testid="billing-profile-card">
       <CardHeader>
-        <CardTitle className="text-xl">{t('billing.profile.title')}</CardTitle>
+        <CardTitle className="flex items-center gap-2 text-xl"><ContactRound aria-hidden="true" className="size-5 text-primary" />{t('billing.profile.title')}</CardTitle>
         <CardDescription>{t('billing.profile.description')}</CardDescription>
       </CardHeader>
       <CardContent>

@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
-import { FROM_DESKTOP_QUERY, FROM_WIDE_QUERY, useMediaQuery } from '@/hooks/use-media-query';
+import { FROM_DESKTOP_QUERY, useMediaQuery } from '@/hooks/use-media-query';
 import { useOnlineStatus } from '@/hooks/use-online-status';
 import { usePageVisible } from '@/hooks/use-page-visible';
 import { usePageTitle } from '@/hooks/use-page-title';
@@ -176,7 +176,6 @@ function ThreadView({ threadKey }: { threadKey: string }) {
   const canWrite = hasPermission('short-rent', 'booking.write');
   const visible = usePageVisible();
   const withList = useMediaQuery(FROM_DESKTOP_QUERY);
-  const withBookingPane = useMediaQuery(FROM_WIDE_QUERY);
   const thread = useMessageThread(threadKey);
   const { mutate: markAsRead } = useMarkHubThreadRead(threadKey);
   const { pending, send, retry, discard } = useSendHubReply(threadKey);
@@ -258,7 +257,7 @@ function ThreadView({ threadKey }: { threadKey: string }) {
       </p>
     );
     content = (
-      <div className="grid min-w-0 flex-1 overflow-hidden rounded-2xl border bg-card lg:min-h-[26rem] lg:grid-cols-[minmax(18rem,22rem)_minmax(0,1fr)] lg:grid-rows-[minmax(0,1fr)] 2xl:grid-cols-[minmax(18rem,22rem)_minmax(0,1fr)_minmax(16rem,23%)]" data-testid="messages-workspace">
+      <div className="grid min-w-0 flex-1 overflow-hidden rounded-2xl border bg-card lg:min-h-[26rem] lg:grid-cols-[minmax(18rem,22rem)_minmax(0,1fr)] lg:grid-rows-[minmax(0,1fr)]" data-testid="messages-workspace">
         {withList ? (
           <aside aria-label={t('messages.inbox.title')} className="flex min-h-0 min-w-0 flex-col">
             <InboxPane selectedKey={threadKey} compact canWrite={canWrite} />
@@ -269,7 +268,7 @@ function ThreadView({ threadKey }: { threadKey: string }) {
           thread={data}
           title={title}
           listPath={listPath}
-          bookingDetails={withBookingPane ? null : (
+          bookingDetails={(
             <Dialog>
               <DialogTrigger asChild>
                 <Button type="button" variant="outline" size="sm" className="min-h-11 shrink-0">
@@ -295,7 +294,6 @@ function ThreadView({ threadKey }: { threadKey: string }) {
           }}
           busy={busy}
         />
-        {withBookingPane ? <aside aria-label={t('messages.bookingCard.details')} className="min-h-0 min-w-0 overflow-y-auto border-l bg-muted/20 p-3">{booking}</aside> : null}
       </div>
     );
   }
@@ -316,7 +314,7 @@ function ThreadView({ threadKey }: { threadKey: string }) {
 }
 
 /**
- * `/app/short-rent/messages/:threadKey`: one conversation (NF-61, NF-63, NF-64). The messages in the middle, oldest first, with the inbox beside them on desktop and the booking in a third pane on wide screens. On narrower screens the booking opens on demand. A conversation with no booking yet is a «Richiesta», and offers
+ * `/app/short-rent/messages/:threadKey`: one conversation (NF-61, NF-63, NF-64). The messages in the middle, oldest first, with the inbox beside them on desktop. Booking details open on demand at every width. A conversation with no booking yet is a «Richiesta», and offers
  * only what its channel allows. It reads again when it opens, on return to the window and every minute while visible, and marks the
  * guest's messages as read once it is in front of the host.
  *

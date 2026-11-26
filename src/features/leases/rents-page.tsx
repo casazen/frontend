@@ -161,18 +161,18 @@ export function RentsPage() {
 
       {/* Quiet, under the numbers: the way to stop marking payments one by one is there when there is something to collect. */}
       {canManage && data && !register.isError && !noContracts && data.counters.overdue.count + data.counters.pending.count > 0 ? (
-        <p className="text-sm text-foreground/70" data-testid="rents-import-hint">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card px-4 py-3 text-sm" data-testid="rents-import-hint">
           {t('longRentRents.bankImport.hint')}{' '}
           <button
             type="button"
-            className="font-medium text-primary underline underline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex min-h-11 items-center gap-2 rounded-md border bg-background px-3 font-medium text-primary disabled:opacity-60"
             disabled={held.has(BANK_IMPORT_KEY)}
             onClick={() => setImporting(true)}
             data-testid="rents-import-hint-button"
           >
-            {t('longRentRents.bankImport.action')}
+            <Upload aria-hidden="true" className="size-4" />{t('longRentRents.bankImport.action')}
           </button>
-        </p>
+        </div>
       ) : null}
 
       {noContracts ? (

@@ -1,6 +1,7 @@
 import { useId, type ReactNode } from 'react';
 import { CheckCircle2, CircleDashed, type LucideIcon } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
+import { SectionJumps } from './components/section-jumps';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { FOCUS_COLUMN } from '@/components/layout/page-columns';
@@ -140,7 +141,8 @@ function Phase({ phase, index, state, highlighted, children }: PhaseProps) {
   const headingId = useId();
   return (
     <li
-      className={cn('min-w-0 space-y-3 rounded-lg border p-4', highlighted && 'border-primary/30 bg-primary/5')}
+      className={cn('min-w-0 scroll-mt-24 space-y-3 rounded-2xl border bg-card p-4 sm:p-6', highlighted && 'border-primary/30 bg-primary/5')}
+      id={`phase-${phase}`} tabIndex={-1}
       data-testid={`owner-phase-${phase}`}
       data-state={state}
       data-highlighted={highlighted ? 'true' : undefined}
@@ -256,6 +258,9 @@ export function OwnerOnboardingPage() {
           </Alert>
         ) : null}
 
+        <SectionJumps label={t('ownerOnboarding.title')} sections={OWNER_PHASES.map((phase) => ({
+          id: `phase-${phase}`, label: t(ownerPhaseTitleKey(phase)),
+        }))} />
         <ol role="list" className="space-y-4" data-testid="owner-phases">
           {OWNER_PHASES.map((phase, index) => (
             <Phase key={phase} phase={phase} index={index} state={states[phase]} highlighted={focus === phase}>

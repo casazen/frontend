@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate, useOutletContext, useParams, useSearchP
 import { useTranslation } from 'react-i18next';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTrackPurchase } from '@/features/host-tracking/use-track-ecommerce';
 import { useOnlineStatus } from '@/hooks/use-online-status';
 import { useCheckoutOutcome } from '@/queries/use-public-booking';
 import { useOrgPublicProperty } from '@/queries/use-public-org';
@@ -186,6 +187,10 @@ function OutcomeContent({
   useEffect(() => {
     if (view !== null && isFinalView(view)) clearPendingCheckout(bookingId);
   }, [view, bookingId]);
+
+  // A booking the server says is confirmed is one `purchase` of the agency's analytics on its own domain, with the visitor's consent, ONCE per booking from this
+  // browser (NF-149): not on a reload and not when the link of the e-mail is opened again. Only the state the backend reports counts, never what the browser guesses.
+  useTrackPurchase(data);
 
   const refresh = () => {
     setAttempt(0);

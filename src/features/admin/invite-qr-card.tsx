@@ -84,16 +84,16 @@ export function InviteQrCard({
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </div>
-      <div className="mb-4 flex justify-center rounded-md border bg-white p-3">
+      <div className="mb-4 flex items-center justify-center rounded-xl border bg-white p-4">
         {image ? (
-          <img src={image} alt={t('admin.inviteQr.qrAlt', { title })} className="h-56 w-56" data-testid={`${testId}-image`} />
+          <img src={image} alt={t('admin.inviteQr.qrAlt', { title })} className="aspect-square h-auto w-56 max-w-full" data-testid={`${testId}-image`} />
         ) : failed ? (
           <p role="alert" className="p-4 text-sm text-destructive">{t('admin.staffInvite.qrError')}</p>
         ) : (
           <div className="h-56 w-56 animate-pulse rounded bg-muted" aria-hidden />
         )}
       </div>
-      <p className="mb-4 break-all text-xs text-muted-foreground" data-testid={`${testId}-url`}>
+      <p className="mb-4 break-all rounded-lg bg-surface-2 p-3 font-mono text-xs text-foreground" data-testid={`${testId}-url`}>
         {url}
       </p>
       <div className="flex flex-wrap content-start gap-2">

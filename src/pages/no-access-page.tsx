@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { PublicAccessFrame } from './public-access-frame';
+import { ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { useAuth } from '@/hooks/use-auth';
@@ -25,31 +26,23 @@ export function NoAccessPage() {
   const backTo = contexts.length === 1 ? contexts[0].defaultRoute : '/app/choose-context';
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/20 px-4">
-      <Card className="w-full max-w-lg text-center">
-        <CardHeader>
-          <CardTitle>{t(hasAreas ? 'shared.noAccess.pageTitle' : 'shared.noAccess.title')}</CardTitle>
-          <CardDescription>
-            {t(hasAreas ? 'shared.noAccess.pageDescription' : 'shared.noAccess.description')}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col items-center gap-3">
-          {hasAreas ? (
-            <>
-              <Button asChild>
-                <Link to={backTo} replace>
-                  {t(contexts.length === 1 ? 'shared.noAccess.goHome' : 'shared.noAccess.chooseArea')}
-                </Link>
-              </Button>
-              <Button variant="ghost" onClick={() => forceReauth()}>
-                {t('shared.noAccess.loginAgain')}
-              </Button>
-            </>
-          ) : (
-            <Button onClick={() => forceReauth()}>{t('shared.noAccess.loginAgain')}</Button>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+    <PublicAccessFrame icon={ShieldAlert}
+      title={t(hasAreas ? 'shared.noAccess.pageTitle' : 'shared.noAccess.title')}
+      description={t(hasAreas ? 'shared.noAccess.pageDescription' : 'shared.noAccess.description')}>
+      {hasAreas ? (
+        <>
+          <Button asChild>
+            <Link to={backTo} replace>
+              {t(contexts.length === 1 ? 'shared.noAccess.goHome' : 'shared.noAccess.chooseArea')}
+            </Link>
+          </Button>
+          <Button variant="ghost" onClick={() => forceReauth()}>
+            {t('shared.noAccess.loginAgain')}
+          </Button>
+        </>
+      ) : (
+        <Button onClick={() => forceReauth()}>{t('shared.noAccess.loginAgain')}</Button>
+      )}
+    </PublicAccessFrame>
   );
 }

@@ -109,7 +109,7 @@ function QueueSection({ title, query, page, onPage, now, busy, onUpdate, testId,
   }
 
   return (
-    <section className="min-w-0 space-y-3" aria-label={title ?? t('onboardingPlan.assist.listLabel')} data-testid={testId}>
+    <section className="min-w-0 space-y-3 rounded-xl border bg-card p-4" aria-label={title ?? t('onboardingPlan.assist.listLabel')} data-testid={testId}>
       {title ? <h2 className="text-lg font-semibold">{title}</h2> : null}
       {body}
     </section>
@@ -180,7 +180,7 @@ export function AdminAssistQueuePage() {
     <div className="space-y-6" data-testid="admin-assist-queue-page">
       <PageHeader title={t('onboardingPlan.assist.title')} description={t('onboardingPlan.assist.description')} />
 
-      <div className="space-y-1 text-sm text-foreground/70" data-testid="assist-notes">
+      <div className="space-y-1 rounded-xl bg-surface-2 p-4 text-sm text-foreground/80" data-testid="assist-notes">
         <p>{t('onboardingPlan.assist.hostSees')}</p>
         <p>{t('onboardingPlan.assist.askTheUser')}</p>
       </div>

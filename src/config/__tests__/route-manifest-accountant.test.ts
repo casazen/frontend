@@ -38,7 +38,6 @@ describe('route manifest: the page «Commercialista» (E15/F02/US01/T01, NF-101,
       '/app/short-rent/reports',
       '/app/short-rent/documents',
       '/app/short-rent/fiscal',
-      '/app/short-rent/settings/payments',
     ]);
   });
 

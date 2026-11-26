@@ -6,7 +6,7 @@ for (const viewport of [{ width: 320, height: 740 }, { width: 768, height: 1024 
     await page.route('**/api/org-invitations/lookup', (route) => route.fulfill({
       json: {
         orgName: 'Agenzia Casa Lago',
-        email: 'collaborator@example.test',
+        email: 'demo@casazen.com',
         name: 'Collaboratore',
         role: 'Admin',
         areas: ['short-rent', 'long-rent'],

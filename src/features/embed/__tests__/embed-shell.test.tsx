@@ -201,7 +201,7 @@ describe('the feature off (AC1: the proof of the flag)', () => {
     expect(shell).toHaveAttribute('data-state', 'unavailable');
     expect(screen.getByText('Questo widget non è disponibile')).toBeInTheDocument();
     expect(getPublicOrg).not.toHaveBeenCalled();
-    expect(robots()).toBe('noindex,nofollow');
+    await waitFor(() => expect(robots()).toBe('noindex,nofollow'));
   });
 
   it('embedShell_FlagsStillLoading_WaitsInsteadOfSayingNotAvailable_AndAsksNothing', async () => {
@@ -394,7 +394,7 @@ describe('the states of the shell (AC7)', () => {
 
     expect(shell).toHaveAttribute('data-state', 'loading');
     expect(screen.getByRole('status')).toHaveAttribute('aria-busy', 'true');
-    expect(robots()).toBe('noindex,nofollow');
+    await waitFor(() => expect(robots()).toBe('noindex,nofollow'));
   });
 
   it('embedShell_Org404_IsNotFoundNeverTheErrorAndHasNoWayOutOfTheFrame', async () => {
@@ -404,7 +404,7 @@ describe('the states of the shell (AC7)', () => {
     expect(await screen.findByTestId('embed-not-found')).toBeInTheDocument();
     expect(screen.queryByTestId('embed-error')).not.toBeInTheDocument();
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
-    expect(robots()).toBe('noindex,nofollow');
+    await waitFor(() => expect(robots()).toBe('noindex,nofollow'));
   });
 
   it('embedShell_Org404WithAnOlderAnswerInTheCache_IsStillNotFound', async () => {
@@ -425,7 +425,7 @@ describe('the states of the shell (AC7)', () => {
     const retry = await screen.findByRole('button', { name: i18n.t('shared.errorFallback.tryAgain') });
     expect(screen.getByTestId('embed-error')).toHaveAttribute('role', 'alert');
     expect(screen.queryByTestId('embed-not-found')).not.toBeInTheDocument();
-    expect(robots()).toBe('noindex,nofollow');
+    await waitFor(() => expect(robots()).toBe('noindex,nofollow'));
 
     fireEvent.click(retry);
 
@@ -444,7 +444,7 @@ describe('the states of the shell (AC7)', () => {
     renderEmbed(`/embed/villa-rossi/booking?${ADDRESS}`);
     await screen.findByTestId('embed-widget-booking');
 
-    expect(robots()).toBe('noindex,nofollow');
+    await waitFor(() => expect(robots()).toBe('noindex,nofollow'));
     expect(document.title).toBe('Prenota · Villa Rossi');
   });
 });
@@ -487,7 +487,7 @@ describe('the agency domain (AC1, AC2: the proof of the isolation)', () => {
     expect(screen.queryByTestId('host-site-page-not-found')).not.toBeInTheDocument();
     expect(document.querySelectorAll('a, [role="link"]')).toHaveLength(0);
     expect(getPublicOrg).not.toHaveBeenCalled();
-    expect(robots()).toBe('noindex,nofollow');
+    await waitFor(() => expect(robots()).toBe('noindex,nofollow'));
   });
 
   it.each([
@@ -614,7 +614,7 @@ describe('an address under /embed that is no widget: the frame never leads to th
     expect(screen.queryByText('home of the app')).not.toBeInTheDocument();
     expect(document.querySelectorAll('a, [role="link"]')).toHaveLength(0);
     expect(getPublicOrg).not.toHaveBeenCalled();
-    expect(robots()).toBe('noindex,nofollow');
+    await waitFor(() => expect(robots()).toBe('noindex,nofollow'));
   });
 
   it('embedShell_ACatchAllAddress_WithTheFeatureOff_IsTheSameStateAndAsksNothing', async () => {

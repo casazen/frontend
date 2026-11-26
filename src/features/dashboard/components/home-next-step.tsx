@@ -5,6 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ActivationChecklist } from '@/features/onboarding/components/activation-checklist';
 import { OnboardingPathCard } from '@/features/onboarding/components/onboarding-path-card';
+import { planResumeHref } from '@/features/onboarding/plan-resume';
+import { usePlanResume } from '@/features/onboarding/use-plan-resume';
+import { useCommercialProfile } from '@/hooks/use-commercial-profile';
+import { partTitleKey } from '@/lib/onboarding-parts';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { activationStepDetail } from '@/lib/activation-labels';
 import { activationStepCtaKey, activationStepLinkState, activationStepRoute } from '@/lib/activation-routes';
@@ -24,11 +28,21 @@ import { useOnboardingStatus } from '@/queries/use-onboarding-status';
 export function HomeNextStep() {
   const { t, i18n } = useTranslation();
   const { hasPermission } = useWorkspace();
+  const profile = useCommercialProfile();
+  const resume = usePlanResume(profile?.id, profile?.org?.id);
   const status = useOnboardingStatus();
-  const path = useVisibleOnboardingPath();
+  const path = useVisibleOnboardingPath({ enabled: !resume.step && !resume.pending });
   const [listOpen, setListOpen] = useState(false);
 
-  if (path.pending) return null;
+  if (resume.step) return (
+    <NextStepCard
+      kicker={t('onboardingPlan.title')}
+      title={t(resume.step === 'mittente' ? 'orgComplianceSender.title' : partTitleKey(resume.step))}
+      cta={{ label: t('commercial.resume'), href: planResumeHref(resume.step), testId: 'home-resume-onboarding' }}
+      data-testid="home-next-step"
+    />
+  );
+  if (resume.pending || path.pending) return null;
   if (path.path) {
     return (
       <div className="min-w-0" data-testid="home-next-step">

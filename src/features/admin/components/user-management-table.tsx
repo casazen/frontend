@@ -38,42 +38,44 @@ export function UserManagementTable({ users, isLoading }: UserManagementTablePro
 
   return (
     <>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b text-left text-muted-foreground">
-              <th className="pb-2 pr-4 font-medium">{t('admin.users.table.name')}</th>
-              <th className="pb-2 pr-4 font-medium">{t('admin.users.table.email')}</th>
-              <th className="pb-2 pr-4 font-medium">{t('admin.users.table.role')}</th>
-              <th className="pb-2 pr-4 font-medium">{t('admin.users.table.plan')}</th>
-              <th className="pb-2 pr-4 font-medium">{t('admin.users.table.status')}</th>
-              <th className="pb-2 pr-4 font-medium">{t('admin.users.table.createdAt')}</th>
-              <th className="pb-2 font-medium">{t('admin.users.table.actions')}</th>
+      <div className="min-w-0 xl:overflow-x-auto">
+        <table aria-label={t('admin.users.title')} className="block w-full text-sm xl:table">
+          <thead className="max-xl:sr-only">
+            <tr className="border-b bg-surface-2 text-left text-xs text-foreground/80">
+              <th scope="col" className="px-2 py-3 pr-4 font-medium">{t('admin.users.table.name')}</th>
+              <th scope="col" className="px-2 py-3 pr-4 font-medium">{t('admin.users.table.email')}</th>
+              <th scope="col" className="px-2 py-3 pr-4 font-medium">{t('admin.users.table.role')}</th>
+              <th scope="col" className="px-2 py-3 pr-4 font-medium">{t('admin.users.table.plan')}</th>
+              <th scope="col" className="px-2 py-3 pr-4 font-medium">{t('admin.users.table.status')}</th>
+              <th scope="col" className="px-2 py-3 pr-4 font-medium">{t('admin.users.table.createdAt')}</th>
+              <th scope="col" className="px-2 py-3 font-medium">{t('admin.users.table.actions')}</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="grid gap-3 md:grid-cols-2 xl:table-row-group">
             {users.map((user) => (
-              <tr key={user.id} className="border-b last:border-0">
-                <td className="py-3 pr-4 font-medium">
+              <tr key={user.id} className="grid min-w-0 grid-cols-2 items-start gap-3 rounded-xl border p-4 xl:table-row xl:border-x-0 xl:border-t-0 xl:p-0">
+                <th scope="row" className="col-span-2 text-left text-base font-semibold xl:px-2 xl:py-3 xl:text-sm">
                   {formatUserDisplayName(user)}
-                </td>
-                <td className="py-3 pr-4 text-muted-foreground">{user.email || '—'}</td>
-                <td className="py-3 pr-4">
+                </th>
+                <td className="col-span-2 min-w-0 break-all text-foreground/75 xl:px-2 xl:py-3">{user.email || '—'}</td>
+                <td className="xl:px-2 xl:py-3">
+                  <span aria-hidden="true" className="mb-1 block text-xs text-foreground/70 xl:hidden">{t('admin.users.table.role')}</span>
                   <Badge variant="outline">{getRoleLabel(user.role, t)}</Badge>
                 </td>
-                <td className="py-3 pr-4">
+                <td className="xl:px-2 xl:py-3">
+                  <span aria-hidden="true" className="mb-1 block text-xs text-foreground/70 xl:hidden">{t('admin.users.table.plan')}</span>
                   <Badge variant="secondary">{user.planTier ? getPlanTierLabel(user.planTier, t) : '—'}</Badge>
                 </td>
-                <td className="py-3 pr-4">
-                  {user.isActive ? (
-                    <Badge variant="default">{t('admin.users.table.active')}</Badge>
-                  ) : (
-                    <Badge variant="secondary">{t('admin.users.table.inactive')}</Badge>
-                  )}
+                <td className="xl:px-2 xl:py-3">
+                  <span aria-hidden="true" className="mb-1 block text-xs text-foreground/70 xl:hidden">{t('admin.users.table.status')}</span>
+                  <Badge variant={user.isActive ? 'success' : 'secondary'}>{t(user.isActive ? 'admin.users.table.active' : 'admin.users.table.inactive')}</Badge>
                 </td>
-                <td className="py-3 pr-4 text-muted-foreground">{formatDate(user.createdAt)}</td>
-                <td className="py-3">
-                  <div className="flex gap-2">
+                <td className="text-foreground/75 xl:px-2 xl:py-3">
+                  <span aria-hidden="true" className="mb-1 block text-xs xl:hidden">{t('admin.users.table.createdAt')}</span>
+                  {formatDate(user.createdAt)}
+                </td>
+                <td className="col-span-2 border-t pt-3 xl:border-0 xl:px-2 xl:py-3">
+                  <div className="flex flex-wrap gap-2">
                     <Button
                       variant="outline"
                       size="sm"

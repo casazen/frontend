@@ -11,6 +11,7 @@ import { fetchHostSupplierServices, fetchHostSupplierSlots } from '@/api/host-su
 import { propertiesApi } from '@/api/properties.api';
 import { fetchServiceCategories } from '@/api/service-categories.api';
 import { createServiceRequest, fetchMarketplaceSuppliers, fetchSuppliersByProperty } from '@/api/service-requests.api';
+import { getServiceRequestStatusLabel } from '@/lib/i18n-labels';
 import { NOON_UTC, freezeClock } from '@/test/clock';
 import type { Booking, MarketplaceCatalogEntry, Property } from '@/types';
 import type { ServiceRequest, SupplierPicker } from '@/types/service-request';
@@ -25,7 +26,7 @@ vi.mock('@/components/layout/page-header', () => ({
 }));
 vi.mock('@/api/bookings.api', () => ({
   asBookingPage: (data: unknown) => ({ items: Array.isArray(data) ? data : [], totalCount: 0, page: 1, pageSize: 10 }),
-  bookingsApi: { getAll: vi.fn() },
+  bookingsApi: { getAll: vi.fn(), getById: vi.fn() },
 }));
 vi.mock('@/api/properties.api', () => ({ propertiesApi: { getAll: vi.fn() } }));
 vi.mock('@/api/service-categories.api', () => ({ fetchServiceCategories: vi.fn() }));
@@ -200,6 +201,31 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
     expect(await screen.findByTestId('wizard-done-primary', undefined, WAIT)).toHaveAttribute('href', '/app/short-rent/interventions/sr-1');
   });
 
+  it('keeps the addressed departure when it is past or beyond the first page of stays', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue({ ...stay, checkOutDate: '2026-09-15T00:00:00Z' } as Booking);
+    vi.mocked(createServiceRequest).mockResolvedValue({ id: 'sr-linked', status: 'PresoInCarico' } as ServiceRequest);
+    renderPage(`propertyId=${PROPERTY_ID}&bookingId=${STAY_ID}&type=cleaning&date=2026-09-25`);
+    expect(await screen.findByTestId('cleaning-brief', undefined, WAIT)).toHaveTextContent('Soggiorno collegato');
+    await reachSummary();
+    fireEvent.click(screen.getByTestId('request-finish'));
+    expect(await screen.findByTestId('wizard-done-secondary', undefined, WAIT)).toHaveAttribute('href', `/app/short-rent/bookings/${STAY_ID}`);
+    expect(screen.getByTestId('request-done')).toHaveTextContent(i18n.t('requestWizard.housekeeping.status', { status: getServiceRequestStatusLabel('PresoInCarico', i18n.t) }));
+    expect(vi.mocked(createServiceRequest).mock.calls[0][0]).toMatchObject({ bookingId: STAY_ID, propertyId: PROPERTY_ID, category: 'cleaning' });
+  });
+
+  it('does not turn a cancelled or mismatched stay into a property-only request', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue({ ...stay, propertyId: OTHER_PROPERTY_ID } as Booking);
+    renderPage(`propertyId=${PROPERTY_ID}&bookingId=${STAY_ID}&type=cleaning`);
+    expect(await screen.findByText(i18n.t('requestWizard.housekeeping.stayUnavailable'), undefined, WAIT)).toBeInTheDocument();
+    expect(screen.queryByTestId('request-finish')).not.toBeInTheDocument();
+  });
+
+  it('opens the requests list instead of claiming success from an address without a receipt', async () => {
+    renderPage('step=fatto');
+    expect(await screen.findByText(i18n.t('requestWizard.housekeeping.verifyTitle'), undefined, WAIT)).toBeInTheDocument();
+    expect(createServiceRequest).not.toHaveBeenCalled();
+  });
+
   it('RequestInterventionPage_AStayIsOnlyALink_ChosenAtTheEnd', async () => {
     vi.mocked(bookingsApi.getAll).mockResolvedValue([stay] as never);
     vi.mocked(createServiceRequest).mockResolvedValue({ id: 'sr-2', status: 'Richiesto' } as ServiceRequest);
@@ -265,8 +291,8 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
   });
 
   it('RequestInterventionPage_TheBestRankedSupplier_IsMarkedRecommended_AndOnlyThatOne', async () => {
-    const other = { ...supplier, orgId: 'b1b2c3d4-0000-4000-8000-000000000002', legalName: 'Pulizie Bianchi' } as SupplierPicker;
-    vi.mocked(fetchSuppliersByProperty).mockResolvedValue({ items: [{ ...supplier, recommended: true }, other], totalCount: 2, page: 1, pageSize: 20 });
+    const other = { ...supplier, orgId: 'b1b2c3d4-0000-4000-8000-000000000002', legalName: 'Pulizie Bianchi', hostOrigin: false } as SupplierPicker;
+    vi.mocked(fetchSuppliersByProperty).mockResolvedValue({ items: [{ ...supplier, recommended: true, hostOrigin: true }, other], totalCount: 2, page: 1, pageSize: 20 });
     renderPage();
 
     const first = await screen.findByTestId(`request-supplier-${SUPPLIER_ID}`, undefined, WAIT);
@@ -276,6 +302,8 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
     expect(screen.getAllByTestId('supplier-recommended-badge')).toHaveLength(1);
     expect(badge).toHaveTextContent('Consigliato');
     expect(first.closest('label')).toContainElement(badge);
+    expect(first.closest('label')).toHaveTextContent('Fornitore di fiducia');
+    expect(screen.getByTestId('request-supplier-b1b2c3d4-0000-4000-8000-000000000002').closest('label')).toHaveTextContent('Marketplace CasaZen');
     expect(screen.getByTestId('request-supplier-b1b2c3d4-0000-4000-8000-000000000002').closest('label')).not.toContainElement(badge);
     // The order is the server's, and the host is told what it means.
     expect(screen.getByText(/in ordine di affidabilità e disponibilità/)).toBeInTheDocument();
@@ -303,7 +331,7 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
 
     await stepIs('channel');
     // Nobody of CasaZen in the zone: the partners are the way, and the reason is said; CasaZen cannot be picked.
-    expect(await screen.findByTestId('request-no-network', undefined, WAIT)).toHaveTextContent('non ci sono ancora fornitori CasaZen');
+    expect(await screen.findByTestId('request-no-network', undefined, WAIT)).toHaveTextContent('Non ci sono ancora fornitori disponibili');
     await waitFor(() => expect(screen.getByTestId('request-channel-external')).toBeChecked(), WAIT);
     expect(screen.getByTestId('request-channel-casazen')).toBeDisabled();
     next();
@@ -334,7 +362,7 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
     await stepIs('channel');
     // Nobody of CasaZen in the zone and no partner either: the reason is said, without promising partners.
     const note = await screen.findByTestId('request-no-network', undefined, WAIT);
-    expect(note).toHaveTextContent('non ci sono ancora fornitori CasaZen');
+    expect(note).toHaveTextContent('Non ci sono ancora fornitori disponibili');
     expect(note).not.toHaveTextContent('partner');
     expect(screen.queryByTestId('request-channel-external')).not.toBeInTheDocument();
     expect(screen.getByTestId('request-channel-casazen')).toBeDisabled();
@@ -358,7 +386,7 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
 
       await stepIs('channel');
       const note = await screen.findByTestId('request-no-network', undefined, WAIT);
-      expect(note).toHaveTextContent('non ci sono ancora fornitori CasaZen');
+      expect(note).toHaveTextContent('Non ci sono ancora fornitori disponibili');
       expect(note).not.toHaveTextContent('partner');
       expect(screen.queryByTestId('request-channel-external')).not.toBeInTheDocument();
       expect(screen.getByTestId('request-channel-casazen')).toBeDisabled();
@@ -386,6 +414,38 @@ describe('RequestInterventionPage (SR-08b)', { timeout: 30000 }, () => {
     fireEvent.click(await screen.findByTestId('request-slot-10:00', undefined, WAIT));
     next();
     await screen.findByTestId('request-supplier-sees', undefined, WAIT);
+  });
+
+  it('offers a way to check recorded work after an uncertain send and never repeats the submission itself', async () => {
+    vi.mocked(createServiceRequest).mockRejectedValue(new AxiosError('Network Error', AxiosError.ERR_NETWORK));
+    renderPage();
+    await reachSummary();
+    fireEvent.click(screen.getByTestId('request-finish'));
+    expect(await screen.findByRole('link', { name: i18n.t('requestWizard.housekeeping.checkList') }, WAIT))
+      .toHaveAttribute('href', '/app/short-rent/interventions');
+    expect(screen.getByTestId('request-finish-error')).toHaveTextContent(i18n.t('requestWizard.housekeeping.unknown'));
+    expect(createServiceRequest).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses the property checkout hour and preserves an explicit earlier slot when the host returns from review', async () => {
+    vi.mocked(propertiesApi.getAll).mockResolvedValue([{ ...property, checkOutBy: '12:00:00' }]);
+    vi.mocked(bookingsApi.getAll).mockResolvedValue([stay] as never);
+    vi.mocked(fetchHostSupplierSlots).mockResolvedValue({
+      serviceId: SERVICE_ID, durationMinutes: 120, from: '2026-09-28', to: '2026-09-28',
+      slots: [
+        { startUtc: '2026-09-28T08:00:00Z', endUtc: '2026-09-28T10:00:00Z' },
+        { startUtc: '2026-09-28T10:00:00Z', endUtc: '2026-09-28T12:00:00Z' },
+      ],
+    });
+    renderPage(`propertyId=${PROPERTY_ID}&type=cleaning&supplierOrgId=${SUPPLIER_ID}&serviceId=${SERVICE_ID}&date=2026-09-28`);
+    const allSlots = await screen.findByTestId('request-slots-all', undefined, WAIT);
+    expect(screen.queryByTestId('request-slot-10:00')).not.toBeInTheDocument();
+    fireEvent.click(allSlots);
+    fireEvent.click(screen.getByTestId('request-slot-10:00'));
+    next();
+    await screen.findByTestId('request-supplier-sees', undefined, WAIT);
+    fireEvent.click(screen.getByTestId('request-back'));
+    expect(await screen.findByTestId('request-slot-10:00', undefined, WAIT)).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('RequestInterventionPage_SlotTakenMeanwhile_BringsTheHostBackToTheDetailsWithTheAnswersKept', async () => {

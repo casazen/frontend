@@ -1,3 +1,4 @@
+import { Building2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { StatusBadge } from '@/components/shared/status/status-badge';
@@ -7,7 +8,7 @@ import { Select } from '@/components/ui/select';
 import { ROW_BUTTON } from '@/features/compliance/components/compliance-row';
 import { NoteLine } from '@/features/dashboard/components/note-line';
 import type { NoteTone } from '@/features/dashboard/lib/home-model';
-import { fiscalRegimeStatus, fiscalRegimeSelectId } from '@/features/fiscal/fiscal-focus';
+import { fiscalRegimeStatus } from '@/features/fiscal/fiscal-focus';
 import { TAX_NOTE_KEYS } from '@/features/fiscal/fiscal-format';
 import { cn } from '@/lib/utils';
 import {
@@ -53,13 +54,14 @@ export function FiscalPropertyItem({ row, snapshot, pending, canWrite, onAssign 
   const unavailableReason = (regime: StrFiscalRegime) =>
     IMPRESA_REGIMES.includes(regime) ? t('fiscal.unavailable.partitaIva') : t('fiscal.unavailable.threshold');
   const impresaBlocked = IMPRESA_REGIMES.every((r) => !available.has(r));
+  const confirmableRegime = status !== 'Confirmed' && row.recommendedRegime && available.has(row.recommendedRegime) ? row.recommendedRegime : null;
   const canDesignate = available.has('CedolareSecca21') && row.assignedRegime !== 'CedolareSecca21';
   const movesReducedRate =
     canDesignate && taxpayer?.reducedRatePropertyId != null && taxpayer.reducedRatePropertyId !== row.propertyId;
   const showRecommended = row.recommendedRegime != null && row.recommendedRegime !== row.assignedRegime;
   // With one taxpayer, the organization's, the line says nothing; it matters when there are several or a person's own.
   const showTaxpayer = taxpayer != null && (taxpayers.length > 1 || !taxpayer.isOrgTaxProfile);
-  const selectId = fiscalRegimeSelectId(row.propertyId);
+  const selectId = `fiscal-regime-${row.propertyId}`;
   const confirmLabel = t('fiscal.confirmRecommended');
   const primaryLabel = t('fiscal.primary');
   const taxNoteKey = row.taxNote ? TAX_NOTE_KEYS[row.taxNote] : undefined;
@@ -69,12 +71,15 @@ export function FiscalPropertyItem({ row, snapshot, pending, canWrite, onAssign 
       data-testid={`fiscal-property-card-${row.propertyId}`}
       // One column on a phone, with the controls under the text; text and controls side by side from `md` when there are controls.
       className={cn(
-        'grid min-w-0 grid-cols-[minmax(0,1fr)] gap-x-8 gap-y-3 py-4',
+        'grid min-w-0 grid-cols-[minmax(0,1fr)] gap-x-8 gap-y-4 rounded-xl border bg-card p-4',
         canWrite && 'md:grid-cols-[minmax(0,1fr)_minmax(0,20rem)] md:items-start',
       )}
     >
       <div className="min-w-0 space-y-1.5">
-        <p className="break-words font-semibold">{row.name}</p>
+        <p className="flex items-center gap-2 text-base font-semibold">
+          <Building2 aria-hidden="true" className="size-5 shrink-0 text-primary-text" />
+          <span className="min-w-0 break-words">{row.name}</span>
+        </p>
         <p data-testid={`fiscal-assigned-${row.propertyId}`} className="break-words text-sm text-foreground/70">
           {t('fiscal.assigned')}: <span className="font-medium text-foreground">{regimeLabel(row.assignedRegime)}</span>
         </p>
@@ -137,7 +142,7 @@ export function FiscalPropertyItem({ row, snapshot, pending, canWrite, onAssign 
               ))}
             </Select>
           </Field>
-          {status !== 'Confirmed' && row.recommendedRegime && available.has(row.recommendedRegime) ? (
+          {confirmableRegime ? (
             <Button
               variant="outline"
               size="sm"
@@ -145,30 +150,28 @@ export function FiscalPropertyItem({ row, snapshot, pending, canWrite, onAssign 
               data-testid={`fiscal-confirm-${row.propertyId}`}
               aria-label={t('dashboard.row.actionFor', { action: confirmLabel, name: row.name })}
               disabled={pending}
-              onClick={() => onAssign(row.recommendedRegime!)}
+              onClick={() => onAssign(confirmableRegime)}
             >
               {confirmLabel}
             </Button>
           ) : null}
-          {canDesignate ? (
-            <div className="space-y-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className={ROW_BUTTON}
-                data-testid={`fiscal-primary-${row.propertyId}`}
-                aria-label={t('dashboard.row.actionFor', { action: primaryLabel, name: row.name })}
-                disabled={pending}
-                onClick={() => onAssign('CedolareSecca21')}
-              >
-                {primaryLabel}
-              </Button>
-              {movesReducedRate ? (
-                <p data-testid={`fiscal-primary-moves-${row.propertyId}`}>
-                  <NoteLine note={{ text: t('fiscal.primaryMoves'), tone: 'warning' }} />
-                </p>
-              ) : null}
-            </div>
+          {canDesignate && confirmableRegime !== 'CedolareSecca21' ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className={ROW_BUTTON}
+              data-testid={`fiscal-primary-${row.propertyId}`}
+              aria-label={t('dashboard.row.actionFor', { action: primaryLabel, name: row.name })}
+              disabled={pending}
+              onClick={() => onAssign('CedolareSecca21')}
+            >
+              {primaryLabel}
+            </Button>
+          ) : null}
+          {movesReducedRate ? (
+            <p data-testid={`fiscal-primary-moves-${row.propertyId}`}>
+              <NoteLine note={{ text: t('fiscal.primaryMoves'), tone: 'warning' }} />
+            </p>
           ) : null}
         </div>
       ) : null}

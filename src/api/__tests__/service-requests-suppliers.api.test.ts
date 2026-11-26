@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fetchMarketplaceSuppliers } from '../service-requests.api';
+import { fetchMarketplaceSuppliers, fetchSuppliersByProperty } from '../service-requests.api';
 import { ApiClient } from '../client';
 
 vi.mock('../client');
@@ -23,4 +23,11 @@ describe('fetchMarketplaceSuppliers (SP-REL): the order of the list', () => {
 
     expect(ApiClient.get).toHaveBeenCalledWith('/suppliers', { propertyId: 'p1', q: 'pulizie', sort: 'price' });
   });
+});
+
+it('includes assigned trusted suppliers for the operational picker and keeps marketplace discovery separate', async () => {
+  await fetchSuppliersByProperty('p1', 'cleaning');
+  await fetchMarketplaceSuppliers({ accountScope: true });
+  expect(ApiClient.get).toHaveBeenNthCalledWith(1, '/suppliers', { propertyId: 'p1', category: 'cleaning', includeTrusted: true });
+  expect(ApiClient.get).toHaveBeenNthCalledWith(2, '/suppliers', { accountScope: true });
 });

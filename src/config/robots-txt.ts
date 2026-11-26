@@ -31,6 +31,7 @@ export const SUPPLIER_SITEMAP_PATH = '/sitemap-supplier.xml';
 export const DISALLOWED_PATHS = [
   '/app/',
   '/checkin/',
+  '/s/',
   // The page where an invited person accepts (AM-04c): its address carries the secret of the invitation until the page takes it out.
   '/invite/',
   // The welcome page behind the QR code a host prints for a house (CRM-03): its address carries the secret of the link, in the path.

@@ -1,5 +1,6 @@
+import { WorkspaceContext, type WorkspaceContextValue } from '@/contexts/workspace-context';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '@/i18n/config';
 import type { Property } from '@/types';
@@ -8,7 +9,7 @@ import { PropertyWizard } from '../property-wizard';
 import type { WizardListingSeed } from '../property-wizard-model';
 
 const { flags, createMock, saveMock, saveTextsMock, ownerReadinessMock, entitlement, org, workspace, activation, toast, ADOPTED } = vi.hoisted(() => ({
-  flags: { octorateConnector: false },
+  flags: { octorateConnector: false, octorateOnboarding: true },
   createMock: vi.fn(),
   ownerReadinessMock: vi.fn(),
   entitlement: { data: undefined as { isAgency: boolean } | undefined },
@@ -106,14 +107,26 @@ const SEED: WizardListingSeed = {
   siteProfile: { translations: { en: { title: 'Old title', description: 'Old description written in CasaZen' } } } as unknown as WizardListingSeed['siteProfile'],
 };
 
+const inventoryWorkspace: WorkspaceContextValue = {
+  contexts: [], activeContext: 'short-rent', isReady: true, setActiveContext: () => undefined,
+  hasPermission: () => true, getDefaultRoute: () => '/app/short-rent',
+};
+
+function PlanLocation() {
+  return <p data-testid="plan-arrival">{useLocation().hash}</p>;
+}
+
 function open(search = '') {
   return render(
-    <MemoryRouter initialEntries={[`/app/short-rent/properties/create${search}`]}>
+    <WorkspaceContext.Provider value={inventoryWorkspace}>
+      <MemoryRouter initialEntries={[`/app/short-rent/properties/create${search}`]}>
       <Routes>
         <Route path="/app/short-rent/properties/create" element={<PropertyWizard />} />
         <Route path="/app/short-rent/properties" element={<p>Elenco immobili</p>} />
+        <Route path="/app/short-rent/onboarding" element={<PlanLocation />} />
       </Routes>
-    </MemoryRouter>,
+      </MemoryRouter>
+    </WorkspaceContext.Provider>,
   );
 }
 
@@ -184,6 +197,13 @@ describe('PropertyWizard (E02/F03/US01)', () => {
     expect(await screen.findByText('Draft saved')).toBeInTheDocument();
     expect(ownerReadinessMock).not.toHaveBeenCalled();
     expect(saveMock).not.toHaveBeenCalled();
+  });
+
+  it('returns to the exact inventory task when the property wizard was opened from the plan', () => {
+    open('?planPart=listings');
+    fireEvent.click(screen.getByTestId('property-wizard-save-close'));
+    expect(screen.getByTestId('plan-arrival')).toHaveTextContent('#passo-listings');
+    expect(createMock).not.toHaveBeenCalled();
   });
 
   it('firstStep_SaveAndExitIsThereToo_NothingIsSavedSoItOnlyExits', () => {

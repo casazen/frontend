@@ -32,11 +32,11 @@ function actionsMock(): BubbleActions {
   return { onResend: vi.fn(), onCheck: vi.fn(), checking: false, onRetryPending: vi.fn(), onEditPending: vi.fn() };
 }
 
-function renderBubble(item: HubThreadItem, actions = actionsMock(), props: { canWrite?: boolean; resent?: ReadonlySet<string> } = {}) {
+function renderBubble(item: HubThreadItem, actions = actionsMock(), props: { canWrite?: boolean; resent?: ReadonlySet<string>; threadKey?: string } = {}) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   render(
     <QueryClientProvider client={client}>
-      <MessageBubble item={item} threadKey={THREAD} hostLanguage="it" canWrite={props.canWrite ?? true} resent={props.resent ?? new Set()} actions={actions} />
+      <MessageBubble item={item} threadKey={props.threadKey ?? THREAD} hostLanguage="it" canWrite={props.canWrite ?? true} resent={props.resent ?? new Set()} actions={actions} />
     </QueryClientProvider>,
   );
   return actions;
@@ -230,6 +230,12 @@ describe('MessageBubble: files and translation of a message', () => {
     fireEvent.click(screen.getByTestId('translate-button'));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('La traduzione non è disponibile in questo momento.');
+  });
+
+  it('hides translation for a portal message when AI translation is disabled', () => {
+    renderBubble(itemOf(message({ direction: 'Inbound', origin: 'Guest', text: 'Hello', deliveryState: null }), 'Anna'), actionsMock(), { threadKey: 'direct:6f1c9a52-1111-4222-8333-944455556666' });
+    expect(screen.queryByTestId('translate-button')).not.toBeInTheDocument();
+    expect(messageHubApi.translate).not.toHaveBeenCalled();
   });
 
   it('MessageBubble_MessageOfTheHost_HasNoTranslateButton', () => {

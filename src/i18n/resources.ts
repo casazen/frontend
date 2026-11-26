@@ -1,3 +1,7 @@
+import ross1000It from './locales/ross1000.it.json';
+import ross1000En from './locales/ross1000.en.json';
+import marketingIt from './locales/marketing.it.json';
+import marketingEn from './locales/marketing.en.json';
 import { askMessages } from './ask-messages';
 import { ownerMandateWizardMessages } from './owner-mandate-messages';
 import onboardingAccessIt from './locales/it-onboarding-access.json';
@@ -20,6 +24,7 @@ export const APP_RESOURCES = {
     ...onboardingAccessIt,
     ask: askMessages.it,
     ...it,
+    marketingStudio: marketingIt,
     listingAi: listingAiIt,
     propertySetup: propertySetupIt,
     userRemoval: userRemovalMessages.it,
@@ -32,12 +37,14 @@ export const APP_RESOURCES = {
       auth0DeleteNotAllowed: userRemovalMessages.it.deleteNotAllowed,
     } },
     ...priceEstimateIt,
+    ross1000: ross1000It,
     ownerMandate: { ...it.ownerMandate, wizard: ownerMandateWizardMessages.it },
   } },
   en: { translation: {
     ...onboardingAccessEn,
     ask: askMessages.en,
     ...en,
+    marketingStudio: marketingEn,
     listingAi: listingAiEn,
     propertySetup: propertySetupEn,
     userRemoval: userRemovalMessages.en,
@@ -50,6 +57,7 @@ export const APP_RESOURCES = {
       auth0DeleteNotAllowed: userRemovalMessages.en.deleteNotAllowed,
     } },
     ...priceEstimateEn,
+    ross1000: ross1000En,
     ownerMandate: { ...en.ownerMandate, wizard: ownerMandateWizardMessages.en },
   } },
 };

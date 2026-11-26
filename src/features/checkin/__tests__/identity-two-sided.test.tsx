@@ -115,7 +115,7 @@ describe('the document on two sides: nothing of a picture is kept once it is sen
 
     await sendSelfie(result);
     // The server has the pictures (outside Ticino): the selfie goes alone, and the page has none to send again.
-    expect(vi.mocked(publicCheckinApi.postSelfie).mock.calls[0].slice(2)).toEqual([null, null]);
+    expect(vi.mocked(publicCheckinApi.postSelfie).mock.calls[0].slice(2, 4)).toEqual([null, null]);
     expect(result.current.progress).toMatchObject({ stage: 'done', lockCode: '4821', documentSidesTaken: [] });
     expect(holdsAPicture(result.current)).toBe(false);
     expect(storage).not.toHaveBeenCalled();

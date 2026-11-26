@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { usePlanReturn } from '@/features/onboarding/plan-return';
 import { CalendarDays } from 'lucide-react';
 import { toast } from 'sonner';
 import { propertyIcalApi } from '@/api/property-ical.api';
@@ -41,6 +42,7 @@ function useNow(): Date {
  */
 export function ChannelsPage() {
   const { t } = useTranslation();
+  const planReturn = usePlanReturn();
   const overview = useCalendarOverview();
   const { mutate: syncFeed, isPending: syncRequested, variables: syncVariables } = useSyncCalendarFeed();
   const { hasPermission } = useWorkspace();
@@ -72,7 +74,8 @@ export function ChannelsPage() {
   return (
     <AppShell>
       <div className="space-y-6" data-testid="channels-page">
-        <PageHeader title={t('channels.title')} description={t('channels.description')} />
+        <PageHeader title={t('channels.title')} description={t('channels.description')}
+          crumbs={planReturn ? [{ label: t('onboardingPlan.launch.backToPlan'), to: planReturn }, { label: t('channels.title') }] : undefined} />
 
         {overview.isError && !data ? (
           <ErrorState title={t('channels.loadError')} error={overview.error} onRetry={() => void overview.refetch()} testId="channels-error-state" />
@@ -90,7 +93,7 @@ export function ChannelsPage() {
           />
         ) : (
           <>
-            <div className="space-y-2 text-sm text-foreground/80" data-testid="channels-intro">
+            <div className="space-y-2 rounded-xl border-s-4 border-primary bg-primary-soft p-4 text-sm text-primary-text" data-testid="channels-intro">
               <p>
                 {t('channels.intro', { count: data.syncEveryMinutes })}{' '}
                 <HelpTip title={t('channels.help.title')} learnMoreHref="/help/ical" learnMoreLabel={t('ical.helpLink')}>
@@ -100,7 +103,7 @@ export function ChannelsPage() {
               <p>{t('channels.privacy')}</p>
             </div>
 
-            <ul role="list" className="divide-y divide-border border-y border-border" data-testid="channels-list">
+            <ul role="list" className="divide-y divide-border rounded-xl border bg-card px-4" data-testid="channels-list">
               {rows.map((row) => (
                 <CalendarRowItem
                   key={row.key}

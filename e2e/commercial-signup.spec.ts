@@ -7,7 +7,7 @@ test.beforeEach(async ({ page }) => {
   await page.route('**/api/billing/plans', route => route.fulfill({ json: plans }));
   await page.route('**/api/billing/commercial-catalog', route => route.fulfill({ json: [
     { code: 'channels', context: 'short-rent', priceMonthly: 3, currency: 'EUR', purchasable: true, agencyIncluded: true, agencyPurchasable: true },
-    { code: 'operations', context: 'all', priceMonthly: 2, currency: 'EUR', purchasable: true },
+    { code: 'ai-agents', context: 'short-rent', priceMonthly: 2, currency: 'EUR', purchasable: true, agencyPurchasable: true, agencyPriceMonthly: 2 },
   ] }));
 });
 test('three profiles, Starter lock and per-room agency summary on desktop and mobile', async ({ page }) => {
@@ -76,4 +76,38 @@ test('checkout request carries the chosen modules independently of the room esti
   await page.goto(demoUrl('/onboarding?checkout=success', 'onboarding'), { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: 'Stiamo verificando l’attivazione.' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Entra e inizia la configurazione' })).toHaveCount(0);
+});
+
+test('pause and resume agency setup on a phone without accepting legal documents or starting checkout', async ({ page }) => {
+  let writes = 0;
+  await page.route('**/api/users/onboarding', route => { writes++; return route.abort(); });
+  await page.route('**/api/billing/checkout-session', route => { writes++; return route.abort(); });
+  await page.setViewportSize({ width: 320, height: 780 });
+  await page.goto(demoUrl('/onboarding', 'onboarding'));
+  await page.getByTestId('signup-profile-agency').click();
+  await page.getByRole('button', { name: 'Vai al riepilogo' }).click();
+  const name = page.getByLabel('Nome dell’agenzia');
+  await expect(name).toBeFocused();
+  await expect(name).toHaveAttribute('aria-invalid', 'true');
+  await name.fill('Agenzia Campione');
+  await page.getByRole('radio', { name: 'Affitti brevi e lunghi' }).check();
+  await expect(page.getByRole('checkbox', { name: /Canali e distribuzione/ })).toHaveCount(0);
+  await page.getByRole('checkbox', { name: /AI Agents/ }).check();
+  await page.getByRole('button', { name: 'Vai al riepilogo' }).click();
+  await page.getByRole('button', { name: 'Metti in pausa' }).click();
+  await expect(page.getByRole('heading', { name: 'Configurazione in pausa' })).toBeFocused();
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'La tua configurazione' })).toBeVisible();
+  await expect(page.getByText('Agenzia Campione', { exact: true })).toBeVisible();
+  await expect(page.getByRole('listitem').filter({ hasText: /^AI Agents$/ })).toBeVisible();
+  await expect(page.locator('body')).toHaveJSProperty('scrollWidth', 320);
+  await page.getByRole('button', { name: 'Continua all’attivazione' }).click();
+  const consents = page.getByTestId('onboarding-consents-step');
+  await consents.getByRole('checkbox').first().check();
+  await expect(consents.getByRole('status')).toContainText('1 su 4');
+  await page.reload();
+  await page.getByRole('button', { name: 'Continua all’attivazione' }).click();
+  await expect(consents.getByRole('checkbox').first()).not.toBeChecked();
+  await expect(consents.getByRole('status')).toContainText('0 su 4');
+  expect(writes).toBe(0);
 });

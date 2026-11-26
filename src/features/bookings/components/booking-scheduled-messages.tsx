@@ -1,7 +1,7 @@
 import { useRef, useState, type ReactNode } from 'react';
 import { Link, generatePath } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Loader2 } from 'lucide-react';
+import { CalendarClock, Loader2 } from 'lucide-react';
 import { PlainSection } from '@/components/shared/calm';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import { Badge } from '@/components/ui/badge';
@@ -132,17 +132,12 @@ export function BookingScheduledMessages({ booking, canWrite }: BookingScheduled
       </p>
     );
   } else if (query.data.length === 0) {
-    body = (
-      <div className="space-y-1" data-testid="scheduled-messages-empty">
-        <p className="max-w-prose text-sm text-foreground/70">{t('booking.scheduledMessages.empty')}</p>
-        {/* The routines are where messages are switched on: the link is offered only to who may open that page, and only while the routines exist. Without it the sentence stands alone. */}
-        {links.routines ? (
-          <Link to={links.routines} className={LINK_CLASS} data-testid="scheduled-messages-routines-link">
-            {t('booking.scheduledMessages.emptyLink')}
-          </Link>
-        ) : null}
-      </div>
-    );
+    return links.routines ? (
+      <Link to={links.routines} className={LINK_CLASS} data-testid="scheduled-messages-routines-link">
+        <CalendarClock aria-hidden="true" className="mr-2 size-4" />
+        {t('booking.scheduledMessages.emptyLink')}
+      </Link>
+    ) : null;
   } else {
     body = (
       <ol role="list" aria-label={t('booking.scheduledMessages.listLabel')} className="divide-y divide-border" data-testid="scheduled-messages-list">

@@ -51,10 +51,10 @@ export function TodayCard({ rows, today, propertyId }: TodayCardProps) {
 
   return (
     <section aria-labelledby="home-today-title" data-testid="home-today" className="min-w-0 rounded-xl border border-border bg-card">
-      <header className="space-y-3 border-b border-border px-4 py-4 sm:px-5">
+      <header className="space-y-4 rounded-t-xl border-b border-border bg-primary/5 px-4 py-4 sm:px-5">
         <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-          <h2 id="home-today-title" className="text-xl font-bold tracking-tight">{t('dashboard.today.title')}</h2>
-          <time dateTime={today.today} className="text-sm text-foreground/75">
+          <h2 id="home-today-title" className="flex items-center gap-2 text-xl font-bold tracking-tight"><CalendarDays aria-hidden="true" className="size-6 text-primary-text" />{t('dashboard.today.title')}</h2>
+          <time dateTime={today.today} className="rounded-md border bg-card px-2 py-1 text-sm font-medium text-foreground">
             {formatStayDate(today.today, i18n.language, { weekday: 'long', day: 'numeric', month: 'long' })}
           </time>
         </div>

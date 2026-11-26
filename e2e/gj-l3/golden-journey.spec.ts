@@ -53,6 +53,7 @@ async function newActors(browser: Browser, errors5xx: string[]): Promise<{ actor
   ];
   const [admin, host, supplier, guest] = await Promise.all(contexts.map((c) => c.newPage()));
   for (const [name, page] of Object.entries({ admin, host, supplier, guest })) {
+    page.setDefaultTimeout(30_000);
     page.on('response', (res) => {
       if (res.url().includes('/api/') && res.status() >= 500) errors5xx.push(`${name}: ${res.status()} ${res.url()}`);
     });
@@ -87,6 +88,16 @@ async function runGoldenJourney(browser: Browser, stack: StackEnv, request: impo
       const profile = await supplierApi.get<{ status: string; orgId: string }>('/supplier/profile');
       expect(profile.status, 'supplier profile is Active').toBe('Active');
       ids.supplierOrgId = profile.orgId;
+    });
+
+    await step('Platform admin publishes the supplier in the CasaZen marketplace', async () => {
+      await loginAs(actors.admin, stack, emails.admin);
+      await actors.admin.goto('/app/admin/suppliers');
+      const search = actors.admin.getByLabel('Fornitori nel marketplace CasaZen');
+      await search.fill(supplierName);
+      await search.press('Enter');
+      await actors.admin.getByRole('button', { name: 'Pubblica nel marketplace' }).click();
+      await expect(actors.admin.getByRole('button', { name: 'Rimuovi dal marketplace' })).toBeVisible();
     });
 
     await step('Host onboards, creates the property and completes the activation wizard (publication)', async () => {
@@ -171,29 +182,55 @@ async function runGoldenJourney(browser: Browser, stack: StackEnv, request: impo
 
     await step('Host registers the arrival (booking CheckedIn)', async () => {
       await host.goto(`/app/short-rent/bookings/${ids.bookingId}`);
-      await host.getByTestId('open-register-arrival').click();
-      await host.getByTestId('register-arrival-submit').click();
+      const registerArrival = host.getByTestId('open-register-arrival');
+      await host.getByTestId('booking-guidance-trigger').click();
+      await registerArrival.click();
+      await host.getByRole('dialog').getByTestId('register-arrival-submit').click();
       await expect
         .poll(async () => (await hostApi.get<Booking>(`/bookings/${ids.bookingId}`)).status, { timeout: 30_000 })
         .toBe('CheckedIn');
     });
 
     await step('Host asks the supplier for a cleaning of the stay', async () => {
-      await host.goto(`/app/short-rent/bookings/${ids.bookingId}`);
-      await host.getByTestId('request-supplier-btn').click();
-      await host.locator('#sr-supplier').selectOption({ label: supplierName });
-      await host.locator('#sr-notes').fill(`Pulizia di fine soggiorno ${run}`);
-      await host.getByTestId('service-request-start-time').fill('10:00');
-      await host.getByTestId('service-request-duration').selectOption('120');
-      await host.getByTestId('submit-service-request').click();
-      await expect(host.getByText('In attesa che il fornitore accetti o rifiuti.')).toBeVisible({ timeout: 20_000 });
+      const stayPath = `/app/short-rent/bookings/${ids.bookingId}`;
+      await host.goto(stayPath);
+      await host.getByTestId('booking-request-cleaning').click();
+      await expect(host.getByTestId('cleaning-brief')).toContainText(PROPERTY.name);
+      const supplierOption = host.getByTestId(`request-supplier-${ids.supplierOrgId}`);
+      const supplierChoice = host.locator('label').filter({ has: supplierOption });
+      await expect(supplierChoice).toContainText(supplierName);
+      await supplierChoice.click();
+      await host.getByTestId('request-next').click();
+      await expect(host.getByTestId('request-stay')).toHaveValue(ids.bookingId);
+      // The date appears after selecting the service.
+      await host.locator('label').filter({ has: host.getByTestId('request-service-custom') }).click();
+      await expect(host.getByTestId('request-day')).toHaveValue(checkOut);
+      await host.getByTestId('request-start-time').fill('10:00');
+      await host.getByTestId('request-duration').selectOption('120');
+      const notes = `Pulizia di fine soggiorno ${run}`;
+      await host.getByTestId('request-notes').fill(notes);
+      await host.getByTestId('request-next').click();
+      await expect(host.getByTestId('request-wizard')).toHaveAttribute('data-step', 'review');
+      await expect(host.getByTestId('request-wizard')).toContainText(notes);
+      await host.getByTestId('request-finish').click();
+      await expect(host.getByTestId('request-done')).toContainText(supplierName, { timeout: 20_000 });
       const requests = await hostApi.get<ServiceRequest[] | { items: ServiceRequest[] }>(
         `/service-requests?bookingId=${ids.bookingId}`,
       );
       const list = Array.isArray(requests) ? requests : requests.items;
-      expect(list, 'one service request for the stay').toHaveLength(1);
-      expect(list[0].status).toBe('Richiesto');
+      expect(list, 'one cleaning request for this stay and supplier').toHaveLength(1);
+      expect(list[0]).toMatchObject({
+        status: 'Richiesto', bookingId: ids.bookingId, supplierOrgId: ids.supplierOrgId, propertyId: ids.propertyId, category: 'cleaning',
+      });
       ids.serviceRequestId = list[0].id;
+      await expect(host.getByTestId('wizard-done-primary')).toHaveAttribute('href', `/app/short-rent/interventions/${ids.serviceRequestId}`);
+      await host.getByTestId('wizard-done-secondary').click();
+      await expect(host).toHaveURL(new RegExp(stayPath + '$'));
+      // The stay card refetches on mount after the wizard; wait for the new request like marketplace-l3.
+      await expect(host.getByTestId(`service-request-${ids.serviceRequestId}`)).toContainText(
+        'In attesa che il fornitore accetti o rifiuti.',
+        { timeout: 30_000 },
+      );
     });
 
     await step('F1: supplier (phone) takes the request in charge from the inbox', async () => {
@@ -220,7 +257,7 @@ async function runGoldenJourney(browser: Browser, stack: StackEnv, request: impo
     });
 
     await step('Host marks the supplier as paid', async () => {
-      await host.getByRole('button', { name: 'Segna pagato' }).click();
+      await host.getByTestId(`mark-paid-${ids.serviceRequestId}`).click();
       await host.getByTestId('mark-paid-confirm').click();
       await expect
         .poll(async () => (await hostApi.get<ServiceRequest>(`/service-requests/${ids.serviceRequestId}`)).status, {

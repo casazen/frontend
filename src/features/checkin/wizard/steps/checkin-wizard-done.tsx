@@ -4,11 +4,12 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { WizardDone } from '@/components/shared/wizard/wizard-done';
+import { WizardDone, type WizardDoneProps } from '@/components/shared/wizard/wizard-done';
 import { CheckInDialog } from '@/features/bookings/components/check-in-dialog';
 import { BOOKINGS_PATH } from '@/features/bookings/lib/booking-list-query';
 import { getProblemMessage } from '@/lib/api-errors';
 import { formatCurrency } from '@/lib/utils';
+import { formatTaxMoney } from '../../lib/tourist-tax-model';
 import { useBooking } from '@/queries/use-bookings';
 import { useConfirmCheckIn } from '@/queries/use-checkin-wizard';
 import type { CheckInConfirmation } from '@/types/checkin-wizard.types';
@@ -33,6 +34,7 @@ const TAX_REASON_KEYS: Readonly<Record<string, string>> = {
 interface CheckInWizardDoneProps {
   bookingId: string;
   guestName: string;
+  returnPath: string;
   result: CheckInConfirmation;
 }
 
@@ -43,7 +45,7 @@ interface CheckInWizardDoneProps {
  * next, a warning when data already sent to the police changed, and one next step: "Register arrival" when the stay can be registered. This
  * is the end of the flow: it may link out.
  */
-export function CheckInWizardDone({ bookingId, guestName, result }: CheckInWizardDoneProps) {
+export function CheckInWizardDone({ bookingId, guestName, returnPath, result }: CheckInWizardDoneProps) {
   const { t, i18n } = useTranslation();
   const confirm = useConfirmCheckIn(bookingId);
   const booking = useBooking(bookingId);
@@ -53,10 +55,14 @@ export function CheckInWizardDone({ bookingId, guestName, result }: CheckInWizar
 
   const { octorate, tax, alloggiati, state } = current;
   const kind = octorateResultKind(octorate);
+  const syncFailed = kind === 'failed' || kind === 'partlyFailed';
   const failed = failedGuestPositions(octorate);
   const errorCode = octorate.guests.find((guest) => guest.errorCode)?.errorCode ?? octorate.reason ?? null;
   const errorText = errorCode && OCTORATE_ERROR_KEYS[errorCode] ? t(OCTORATE_ERROR_KEYS[errorCode]) : t('checkin.wizard.done.octorateError.unknown');
-  const money = (amount: number) => formatCurrency(amount, 'EUR', i18n.language.startsWith('en') ? 'en-GB' : 'it-IT');
+  const locale = i18n.language.startsWith('en') ? 'en-GB' : 'it-IT';
+  const money = (amount: number) => state.tax?.collection
+    ? formatTaxMoney(amount, state.tax.collection.currency, locale)
+    : formatCurrency(amount, 'EUR', locale);
 
   const retry = async () => {
     setRetryError(null);
@@ -68,7 +74,7 @@ export function CheckInWizardDone({ bookingId, guestName, result }: CheckInWizar
   };
 
   const octorateLine =
-    kind === 'failed' || kind === 'partlyFailed'
+    syncFailed
       ? t(`checkin.wizard.done.octorate.${kind}`, { count: failed.length, reason: errorText })
       : t(`checkin.wizard.done.octorate.${kind}`);
 
@@ -81,10 +87,10 @@ export function CheckInWizardDone({ bookingId, guestName, result }: CheckInWizar
         reason: tax.reason && TAX_REASON_KEYS[tax.reason] ? t(TAX_REASON_KEYS[tax.reason]) : t('checkin.wizard.done.taxReason.unknown'),
       });
 
-  const whatNext = [
-    { text: octorateLine, icon: kind === 'failed' || kind === 'partlyFailed' ? CircleAlert : Users },
-    { text: taxLine, icon: tax.saved ? CheckCircle2 : Info },
-    { text: t(`checkin.wizard.done.police.${alloggiati.step}`), icon: Info },
+  const whatNext: WizardDoneProps['whatNext'] = [
+    { text: octorateLine, icon: syncFailed ? CircleAlert : Users, tone: syncFailed ? 'problem' : undefined },
+    { text: taxLine, icon: tax.saved ? CheckCircle2 : Info, tone: tax.saved ? undefined : 'attention' },
+    { text: t(`checkin.wizard.done.police.${alloggiati.step}`), icon: Info, tone: alloggiati.step === 'Manual' ? 'attention' : undefined },
   ];
 
   const stay = `${BOOKINGS_PATH}/${bookingId}`;
@@ -94,11 +100,11 @@ export function CheckInWizardDone({ bookingId, guestName, result }: CheckInWizar
       title={t('checkin.wizard.done.title')}
       description={t('checkin.wizard.done.description', { guest: guestName })}
       whatNext={whatNext}
-      primary={{ label: t('checkin.wizard.done.toBooking'), to: stay }}
+      primary={{ label: t('checkin.wizard.done.toBooking'), to: returnPath }}
       secondary={{ label: t('checkin.wizard.done.toCompliance'), to: '/app/short-rent/compliance' }}
     >
       <div className="space-y-4" data-testid="checkin-wizard-done">
-        {(kind === 'failed' || kind === 'partlyFailed') && (
+        {syncFailed && (
           <Alert
             variant="danger"
             title={t('checkin.wizard.done.retryTitle')}

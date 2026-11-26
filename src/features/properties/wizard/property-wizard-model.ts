@@ -38,11 +38,8 @@ import {
 } from './rooms-model';
 import { MAX_STAY_DISCOUNTS, stayDiscountDraftsFromServer, stayDiscountProblem, type StayDiscountDraft } from './stay-discounts-model';
 
-/** The steps of «Aggiungi immobile», in order. The address carries the id (`?step=photos`), so a step can be linked to. */
-export const WIZARD_STEP_IDS = [
-  'base', 'owner', 'photos', 'amenities', 'descriptions', 'rules', 'prices', 'channels', 'compliance', 'billing', 'finish',
-] as const;
-export type WizardStepId = (typeof WIZARD_STEP_IDS)[number];
+import { WIZARD_STEP_IDS, type WizardStepId } from './property-setup-progress';
+export { WIZARD_STEP_IDS, type WizardStepId } from './property-setup-progress';
 
 /** Name of the query parameter that carries the property once it exists on the server (the end of the first step). */
 export const PROPERTY_ID_PARAM = 'propertyId';

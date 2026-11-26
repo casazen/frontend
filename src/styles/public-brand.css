@@ -1,7 +1,7 @@
 /*
  * The look of CasaZen's own public pages: the search, the guides and calculators of the SEO hub, the legal documents and the
  * supplier showcase. The brand's ink and terracotta (the colors of the logo) over warm paper, with Fraunces for the headings:
- * the same palette as the public site of CasaZen (`src/site/site.css`) and the primitives of the redesign (`tokens.css`).
+ * the same palette as the public site of CasaZen (`src/site/site.css`) and the primitives of the redesign (`design-foundations.css`).
  *
  * Scoped by `data-brand='casazen'`, which `PublicSiteShell` sets only outside an org's booking site (`mode="default"`): a
  * host's site keeps its own theme and color. It is deliberately not a `[data-theme]` block: the themes a host can choose are a
@@ -14,22 +14,22 @@
  * own 10% tint (`bg-primary/10 text-primary`, the chips), and that pair needs 4.5:1 on white and on the paper (4.5 and 5.0).
  */
 .public-site-root[data-brand='casazen'] {
-  --cz-public-font-display: 'Fraunces Variable', Fraunces, 'Iowan Old Style', Georgia, 'Times New Roman', serif;
-  --cz-public-font-body: 'Inter Variable', Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --cz-public-font-display: var(--cz-font-display);
+  --cz-public-font-body: var(--cz-font-body);
   --cz-public-display-weight: 600;
   --cz-public-display-tracking: -0.01em;
-  --cz-public-primary: #b53a0a;
-  --cz-public-on-primary: #ffffff;
-  --cz-public-primary-text: #a8380a;
+  --cz-public-primary: var(--terra-public);
+  --cz-public-on-primary: var(--stone-0);
+  --cz-public-primary-text: var(--terra-700);
   --cz-public-hover: #942f08;
-  --cz-public-ink: #9a3412;
-  --cz-public-soft: #fff1ea;
-  --cz-public-bg: #f8f1e6;
-  --cz-public-surface: #ffffff;
-  --cz-public-surface-2: #f1e6d4;
+  --cz-public-ink: var(--terra-800);
+  --cz-public-soft: var(--terra-100);
+  --cz-public-bg: var(--cream-100);
+  --cz-public-surface: var(--stone-0);
+  --cz-public-surface-2: var(--cream-200);
   --cz-public-surface-3: #e8dac4;
-  --cz-public-text: #1f3a3d;
-  --cz-public-muted: #4a6d71;
+  --cz-public-text: var(--ink-700);
+  --cz-public-muted: var(--ink-500);
   --cz-public-border: rgba(31, 58, 61, 0.14);
   --cz-public-line-strong: rgba(31, 58, 61, 0.3);
   --cz-public-radius-sm: 8px;
@@ -38,20 +38,20 @@
   --cz-public-radius-xl: 28px;
   --cz-public-radius: 14px;
   --cz-public-btn-radius: 14px;
-  --cz-public-shadow-card: 0 1px 2px rgba(23, 44, 46, 0.06), 0 10px 28px rgba(23, 44, 46, 0.07);
+  --cz-public-shadow-card: var(--cz-shadow-raised);
   --cz-public-shadow-widget: 0 12px 36px rgba(23, 44, 46, 0.16);
   --cz-public-section-y: 4rem;
 
   /* Used only by the brand pages: the ink, its soft and deep tones, the terracotta tints and the paper tones. */
-  --cz-brand-ink: #1f3a3d;
-  --cz-brand-ink-deep: #172c2e;
-  --cz-brand-ink-soft: #e9f1f0;
-  --cz-brand-ink-hover: #2b4f53;
-  --cz-brand-tint: #fff1ea;
-  --cz-brand-tint-strong: #ffe2d3;
-  --cz-brand-tint-text: #9a3412;
-  --cz-brand-paper: #fdfaf6;
-  --cz-brand-paper-deep: #f1e6d4;
+  --cz-brand-ink: var(--ink-700);
+  --cz-brand-ink-deep: var(--ink-800);
+  --cz-brand-ink-soft: var(--ink-100);
+  --cz-brand-ink-hover: var(--ink-600);
+  --cz-brand-tint: var(--terra-100);
+  --cz-brand-tint-strong: var(--terra-200);
+  --cz-brand-tint-text: var(--terra-800);
+  --cz-brand-paper: var(--cream-50);
+  --cz-brand-paper-deep: var(--cream-200);
 
   /*
    * The shared UI components read the console's tokens; `.public-site-root` (public-tokens.css) maps the main ones to the

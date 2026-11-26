@@ -3,7 +3,7 @@ import { installDemoUserMeMock, mockPlansCatalog } from './helpers/org-api-mock'
 import { mockPropertiesApi } from './helpers/properties-api-mock';
 import { mockCinComplianceApi } from './helpers/cin-mock';
 
-async function installDefaultDemoApiMocks(page: import('@playwright/test').Page): Promise<void> {
+export async function installDefaultDemoApiMocks(page: import('@playwright/test').Page): Promise<void> {
   const emptyServiceRequests = { items: [], total: 0, page: 1, pageSize: 50 };
   const emptySuppliers = { items: [], totalCount: 0, page: 1, pageSize: 50 };
   const emptyList = { count: 0, items: [] };

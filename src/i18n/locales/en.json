@@ -1,4 +1,231 @@
 {
+  "institutionalPortals": {
+    "verifyAccount": "Verify police credentials",
+    "accountVerified": "The police service confirmed authentication.",
+    "verifyFailed": "Verification failed. Check the credentials before submitting.",
+    "directSince": "CasaZen sends directly from {{date}}",
+    "chooseDirect": "Set up direct submission",
+    "cutoverTitle": "Switch to CasaZen",
+    "cutoverHint": "Switching stops all government submissions through Octorate for this property. Handle the other service manually until you activate it.",
+    "disabled": "I have disabled previous automatic submissions, including any forwarding from ROSS1000 to the police.",
+    "reconciled": "I have reconciled earlier dates. Today's records for this service still need to be submitted.",
+    "activate": "Activate CasaZen from today",
+    "delegation": "Accept the transmission delegation before activating Alloggiati Web.",
+    "activationFailed": "Activation failed. Check the credentials and submission status before retrying.",
+    "routeError": "Unable to read the sender for this property.",
+    "receiptHash": "Receipt SHA-256",
+    "guestOutcome": "Guest {{number}} · {{outcome}}",
+    "outcomes": {
+      "accepted": "Accepted",
+      "rejected": "Rejected",
+      "validated": "Validated",
+      "pending": "Pending"
+    },
+    "downloadError": "Could not download the receipt.",
+    "receipt": "Download police receipt",
+    "testRejected": "Police validation failed. Check the guest records.",
+    "directQueue": "CasaZen direct submission pending",
+    "accountProfile": "Alloggiati Web account profile",
+    "preserve": "Use current configuration",
+    "single": "Single property",
+    "apartments": "Apartment management",
+    "apartmentId": "Apartment ID assigned by the police",
+    "invalidApartment": "Enter a valid apartment ID.",
+    "ross1000": "ROSS1000 · Lombardy",
+    "title": "Government portals",
+    "sender": "Configure sender and submission",
+    "tax": "Tourist tax",
+    "como": "Sign in to StayTour with SPID or CIE to file the monthly return with the City of Como. Use the report to check the amounts for the period.",
+    "municipality": "Follow the filing procedure of the municipality where the property is located.",
+    "report": "Open the report by municipality",
+    "openComo": "Sign in to StayTour Como"
+  },
+  "workspaceView": {
+    "focusForms": "Keep the step list collapsed in guided flows",
+    "propertySettings": "Property settings",
+    "property": "Property",
+    "chooseProperty": "Choose a property",
+    "tasksFirst": "Show tasks first on the dashboard",
+    "title": "Customize workspace",
+    "scope": "Preferences are saved on this device for your profile and this workspace.",
+    "compact": "Compact tables and margins",
+    "help": "Choose the entries to keep in view. The others remain under Other tools and in search.",
+    "other": "Other tools",
+    "reset": "Restore default view",
+    "done": "Done",
+    "search": "Search settings",
+    "noMatches": "No settings match your search."
+  },
+  "complianceNoDeadlines": "No deadlines listed",
+  "dashboardNoPending": "No operational priorities listed",
+  "dashboardPrioritiesPartial": "Some priorities are unavailable.",
+  "dashboardPendingHeading": "Operational priorities",
+  "activationStaff": {
+    "selectProperties": "Properties in this batch",
+    "title": "Prepare properties",
+    "candidatesTitle": "Properties to connect to Octorate",
+    "search": "Search by property or organization",
+    "loadingCandidates": "Loading properties…",
+    "candidatesError": "We couldn’t load properties",
+    "emptyCandidates": "No properties to connect were found.",
+    "moreCandidates": "Use search to find more properties.",
+    "missingFields": "Required: {{fields}}",
+    "emptyBatches": "No batches have started.",
+    "fields": {
+      "name": "name",
+      "address": "address",
+      "city": "city",
+      "zipCode": "postal code",
+      "country": "country",
+      "location": "coordinates",
+      "contact": { "email": "organization email", "phone": "organization phone" }
+    },
+    "importTitle": "Record sources (optional)",
+    "importFile": "JSON inventory of CasaZen listings and their sources",
+    "invalidImport": "Use a JSON file with 1 to 300 distinct listings and their sources.",
+    "selection_one": "{{count}} property selected",
+    "selection_other": "{{count}} properties selected",
+    "importAction": "Record sources",
+    "importing": "Recording sources…",
+    "imported": "Source recorded",
+    "importFailure": "The operation did not finish. Check the data and retry.",
+    "prepareTitle": "Property batches",
+    "start": "Prepare selected properties",
+    "loadError": "We couldn’t load preparation batches",
+    "batch": "Batch {{id}}",
+    "status": {
+      "Queued": "Queued",
+      "ReconcileCreation": "Awaiting reconciliation",
+      "WaitingForLicense": "Awaiting license",
+      "Ready": "Ready for connections",
+      "NeedsReview": "Needs review"
+    },
+    "externalId": "Octorate property ID",
+    "reconcile": "Verify and link",
+    "reference": "Octorate support request reference",
+    "save": "Save reference",
+    "resume": "Resume and verify",
+    "saved": "Operation recorded.",
+    "reasons": {
+      "octorate_preparation_creation_uncertain": "Check whether the property exists in Octorate and enter its ID.",
+      "octorate_preparation_candidate_found": "A similar property was found. Check and enter its ID.",
+      "octorate_preparation_license_pending": "Waiting for the license to be confirmed.",
+      "octorate_preparation_already_linked": "The property is already linked.",
+      "octorate_preparation_product_required": "Check the property’s rooms and rates.",
+      "octorate_preparation_invalid_data": "Check the address, coordinates and CasaZen contacts."
+    }
+  },
+  "activationJourney": {
+    "preparation": {
+      "title": "Property preparation",
+      "NotStarted": "Not started",
+      "Queued": "Preparing connections",
+      "ReconcileCreation": "Staff is checking this property",
+      "WaitingForLicense": "Awaiting activation",
+      "Ready": "Property ready",
+      "NeedsReview": "Staff review required"
+    },
+    "accounts": {
+      "staffApproval": "After creating the connection, ask CasaZen to complete the authorization step.",
+      "title": "Credentials for one or more properties",
+      "service": "Service",
+      "scope": "Scope",
+      "single": "One property",
+      "shared": "Several properties",
+      "username": "Username",
+      "password": "Password",
+      "webServiceKey": "Web Service key",
+      "unitCode": "Code for {{name}}",
+      "submit_one": "Confirm for {{count}} property",
+      "submit_other": "Confirm for {{count}} properties",
+      "expiry": "Credential available until {{date}}",
+      "resume": "Resume",
+      "revoke": "Revoke credential",
+      "confirmRevoke": "Confirm revocation",
+      "needsReview": "Check the details to continue.",
+      "recorded": "Request recorded"
+    },
+    "import": {
+      "loadError": "We couldn’t load the listing review",
+      "source": "Source · {{provider}}",
+      "findingSource": "Open the source of this check",
+      "complete": "Import checks are complete.",
+      "edit": "Open field",
+      "confirm": "Confirm value",
+      "recheck": "Check again",
+      "todoTitle": "Review imported listing",
+      "todoWhy": "Check the flagged fields and their source.",
+      "fields": {
+        "descriptionIt": "Italian description",
+        "descriptionEn": "English description",
+        "beds": "Beds",
+        "maxGuests": "Guest capacity",
+        "cin": "CIN",
+        "photos": "Photos",
+        "nightlyRate": "Nightly price",
+        "ratePlans": "Rate plans"
+      },
+      "states": {
+        "missing": "Missing information",
+        "confirm": "Awaiting confirmation",
+        "mapping": "Mapping needed"
+      },
+      "priceKinds": {
+        "quote": "Observed quote",
+        "list": "Listed rate",
+        "effective": "Effective rate"
+      }
+    },
+    "services": {
+      "title": "Compliance",
+      "configure": "Required booking channels",
+      "save": "Save required channels",
+      "noPortals": "No booking channels",
+      "notApplicable": "Alloggiati and ISTAT do not apply to this property.",
+      "pending": "Awaiting synchronization: {{names}}.",
+      "waiting": "Publish the listing and confirm the required booking channels to continue.",
+      "available": "Ask CasaZen to set up the applicable services.",
+      "alloggiati": "Alloggiati",
+      "istat": "ISTAT",
+      "confirm": "Ask staff to set up {{service}} for this property.",
+      "send": "Confirm request",
+      "cancel": "Cancel",
+      "sent": "Request sent to staff.",
+      "openCompliance": "Open Compliance",
+      "loadError": "We couldn’t load the compliance status"
+    },
+    "staffChannel": "Ask CasaZen for help with this connection.",
+    "connectionPreparation": "This property is waiting to be prepared for connections.",
+    "title": "Property activation",
+    "description": "Review each listing and check where its booking channels stand.",
+    "properties": "Your properties",
+    "search": "Search by name or city",
+    "noResults": "No properties found.",
+    "propertiesError": "We couldn’t load your properties",
+    "selectProperty": "Choose a property to see its next step.",
+    "back": "Back to properties",
+    "reviewTitle": "Review and publish",
+    "published": "Published on CasaZen",
+    "needsAttention": "Needs attention",
+    "review": "Review listing",
+    "openProperty": "Open listing",
+    "channels": "Booking channels",
+    "channelsError": "We couldn’t load booking channels",
+    "noChannels": "No booking channels are available for this property.",
+    "channelStatus": {
+      "Active": "Active",
+      "NotActive": "Available",
+      "Unavailable": "Unavailable",
+      "Pending": "Setting up",
+      "ToFix": "Needs review"
+    },
+    "searchChannels": "Search booking channels",
+    "openChannel": "Open setup for {{name}}",
+    "connect": "Connect",
+    "resume": "Resume",
+    "integrations": "Integrations",
+    "readyForReview": "Ready for publication review"
+  },
   "agentPlayground": {
     "trainWithAi": "Train with AI",
     "trainWithAiHint": "Describe the expected behavior in the instructions. AI generates examples and checks up to 12 distinct scenarios, including edge cases and exceptions.",
@@ -873,6 +1100,18 @@
           "title": "Reconnect the channel manager",
           "why": "The connection with the channel manager was lost."
         },
+        "GuestDataCopyRequested": {
+          "title": "Guest data copy",
+          "why": "Verify the request and prepare a copy using the privacy tools."
+        },
+        "GuestDataErasureRequested": {
+          "title": "Guest data erasure",
+          "why": "Verify the request and retention requirements before proceeding."
+        },
+        "GuestInvoiceCorrectionRequested": {
+          "title": "Guest invoice correction",
+          "why": "Review the invoice with the guest and apply the required correction."
+        },
         "RoutineTask": {
           "title": "Manual reminder from a routine",
           "why": "A routine you set up asks you to take care of this booking."
@@ -979,10 +1218,15 @@
         "invalid": "Invalid"
       },
       "ota": {
-        "title": "OTA Sync Health",
-        "synced": "Synced",
-        "failed": "Failed",
-        "neverSynced": "Never synced"
+        "title": "Channel synchronization",
+        "synced": "Up to date",
+        "failed": "Overdue (over 6 hours)",
+        "neverSynced": "Never synced",
+        "filter": "Sync status",
+        "loadError": "Could not load the connections.",
+        "empty": "No connections on this page.",
+        "pages": "Connection pages",
+        "page": "Page {{page}} of {{pages}}"
       }
     },
     "cin": {
@@ -1606,6 +1850,9 @@
       "NotDue": "Not due",
       "Rifiutato": "Rejected",
       "Errore": "Error",
+      "Sending": "Submitting",
+      "PartiallyAccepted": "Partially accepted · check guests on the portal",
+      "ToVerify": "Unknown outcome · check the portal before resubmitting",
       "SentReceiptPending": "Sent, receipt pending"
     },
     "deadline": "Deadline",
@@ -1622,7 +1869,7 @@
       "Errore": "Error while preparing the communication: send it on the Questura portal.",
       "Rifiutato": "The portal rejected the communication: fix the data and send it again on the Questura portal."
     },
-    "notDueNotice": "No Italian police communication is due for this stay. Obligations in other countries are available in their dedicated section.",
+    "notDueNotice": "No Italian police communication is due for this stay.",
     "statusError": "Unable to load the status of the Alloggiati communication.",
     "statusNotFound": "We cannot find the Alloggiati status of this stay: it may no longer exist or may not be yours.",
     "summaryError": "Unable to load the Alloggiati communications.",
@@ -1742,6 +1989,12 @@
     "forbidden": "You do not have permission to perform this action.",
     "tooManyRequests": "Too many requests in a short time. Try again in a moment.",
     "codes": {
+      "marketplaceCalendarPending": "Prices and availability are awaiting verification. Retry after checking the calendar.",
+      "marketplaceCalendarSourceRequired": "Ask staff to select the portal for the initial calendar import.",
+      "marketplaceSyncPending": "The portal has not confirmed synchronization yet. Try again shortly.",
+      "marketplaceConnectionUnconfirmed": "Ask staff to reconcile the connection before retrying.",
+      "marketplaceMappingPending": "Check the mappings and retry.",
+      "marketplaceActivationBusy": "Another operation is running for this property. Try again shortly.",
       "accountantPackageContentsInvalid": "Choose at least one folder of the package, each one only once.",
       "accountantPackageInvalidPeriod": "The period you chose is not valid: it has to be a month or a year.",
       "accountantPackageNotSent": "The package did not go out: nothing was sent. Try again in a moment; if it happens again, write to support.",
@@ -2836,6 +3089,7 @@
       "situations": "You do not have the permission to read the situations of the assistant."
     },
     "notice": {
+      "localDraft": "This reply uses a prepared text. You can edit it, send it or reject it.",
       "transparency": "This draft is written by an AI model. Nothing is sent without your approval, and guests are not told that the assistant wrote it: this notice stays here, in CasaZen."
     },
     "property": {
@@ -3962,6 +4216,134 @@
     "thresholdsRange": "The thresholds go from {{min}} to {{max}}: the higher the value, the stricter the comparison.",
     "title": "Identity check"
   },
+  "guestPortal": {
+    "setup": {
+      "suggest": "Generate suggestions",
+      "suggestLocal": "Find local tips",
+      "applySuggestion": "Use in the draft guide",
+      "suggestionsUnavailable": "There are no suggestions available. You can continue setup manually.",
+      "manageSuppliers": "Manage trusted suppliers",
+      "title": "Guest portal",
+      "subtitle": "Set up the portal for each property. Resume from the steps saved for your property.",
+      "open": "Set up",
+      "property": "Property",
+      "noProperties": "Add a property to set up the portal.",
+      "steps": "Setup steps",
+      "confirmed": "Completed",
+      "complete": "Guest portal setup is complete.",
+      "brand": "Brand",
+      "brandNote": "Check the name, logo and colour guests will see in the portal.",
+      "guide": "House guide",
+      "guideNote": "Add information for the stay and save it in the guide.",
+      "extras": "Host extras",
+      "extrasNote": "Check the extras and prices you want to offer guests at this property.",
+      "extrasConfirm": "I have checked the extras and prices.",
+      "suppliers": "Suppliers",
+      "suppliersNote": "Do you want to offer services from CasaZen regional suppliers to guests?",
+      "chat": "Chat",
+      "chatNote": "Configure automatic replies using the information in the guide.",
+      "chatConfirm": "I have checked the chat settings.",
+      "reviews": "Reviews",
+      "reviewsNote": "Do you want guests to leave a review from the portal?",
+      "ota": "OTA rules",
+      "otaNote": "Check the channel’s terms for offering paid services. The host is responsible for following these terms.",
+      "hideAirbnb": "Hide paid services for Airbnb stays",
+      "yes": "Yes",
+      "no": "No",
+      "save": "Save step",
+      "saveGuide": "Enter at least one piece of information and save the guide before completing this step."
+    },
+    "account": {
+      "title": "My stays",
+      "attach": "Add this stay to my account",
+      "dismiss": "Cancel",
+      "attachError": "This stay could not be linked. Check the link with the property.",
+      "verifyEmail": "Verify your account email address and sign in again.",
+      "empty": "No open stays with this email address.",
+      "signOut": "Sign out"
+    },
+    "guide": {
+      "editorDescription": "Organize the information guests need before and during their stay.",
+      "arrivalGroup": "Arrival and parking",
+      "stayGroup": "During the stay",
+      "departureGroup": "Departure",
+      "privateGroup": "Private information",
+      "aiTitle": "AI draft",
+      "aiDescription": "Fill the empty guide fields in one click using your property details.",
+      "aiGenerate": "Fill guide with AI",
+      "aiUnavailable": "Could not fill the guide. Try again.",
+      "aiGenerating": "Preparing the guide…",
+      "aiReady": "Draft ready. Select Save guide to make it visible to guests.",
+      "aiRefining": "Draft ready to save. AI is refining the text.",
+      "aiPropertyReady": "Draft filled from your property details. Select Save guide to make it visible to guests.",
+      "aiNoEmptyFields": "The guide is already filled in.",
+      "checkInHours": "Check-in hours",
+      "checkOutHours": "Check-out hours",
+      "parking": "Parking",
+      "autoReplyTitle": "Automatic chat replies",
+      "autoReplyOrganization": "Enable the assistant for the organization",
+      "autoReplyHelp": "Replies use the information published in this guide. Other questions go to the host.",
+      "autoReplyTopics": {
+        "enabled": "Enable for this property",
+        "checkIn": "Check-in hours",
+        "checkOut": "Check-out hours",
+        "parking": "Parking",
+        "wifi": "Show where to find Wi-Fi details after check-in"
+      },
+      "houseRules": "House rules",
+      "acceptRules": "I accept these house rules",
+      "title": "House guide",
+      "arrival": "Getting here",
+      "house": "The house",
+      "departure": "Departure",
+      "contacts": "Useful numbers",
+      "localTips": "Local tips",
+      "access": "Access instructions",
+      "wifi": "Wi-Fi",
+      "save": "Save guide",
+      "saved": "Guide updated.",
+      "openStay": "Open your stay",
+      "visibility": "Access instructions and Wi-Fi are visible after check-in. The other sections are also visible from the public QR code."
+    },
+    "host": {
+      "checkInAccess": "Check-in in the guest portal",
+      "guestLink": "Guest’s personal link",
+      "checkInAccessDescription": "Share the private link to open the Check-in section of the guest portal.",
+      "prepareCheckIn": "Enable check-in in the portal",
+      "accessSection": "Guest access",
+      "accessDescription": "Share the private link for this stay or open the portal as your guest sees it.",
+      "preview": "Open guest portal",
+      "ordersSection": "Services and orders",
+      "privacyRequests": "Portal privacy requests",
+      "GuestDataCopyRequested": "Personal data copy request",
+      "GuestDataErasureRequested": "Personal data erasure request",
+      "completePrivacyRequest": "Close request",
+      "completePrivacyDescription": "Confirm once you have handled the request and replied to the guest.",
+      "completePrivacyError": "Could not close the request.",
+      "stayChangeGuests": "Adults: {{adults}} · Children: {{children}}",
+      "stayChangeTotals": "Current total {{previous}} · Proposed total {{proposed}}",
+      "stayChangeApprove": "Approve change",
+      "stayChangeDecline": "Decline request",
+      "stayChangeApproved": "Stay change approved.",
+      "stayChangeError": "Could not update the request. Verify the dates, price and permissions, or try again.",
+      "revoke": "Revoke link",
+      "confirmRevoke": "Confirm revocation",
+      "resend": "Send email",
+      "resent": "Email queued.",
+      "title": "Guest portal",
+      "loading": "Loading…",
+      "unavailable": "The stay link is unavailable.",
+      "generate": "Generate link",
+      "copy": "Copy link",
+      "rotate": "Replace link",
+      "rotateNotice": "The link you shared will stop working.",
+      "confirm": "Confirm replacement",
+      "cancel": "Cancel",
+      "copied": "Link copied.",
+      "copyError": "Select and copy the link address.",
+      "changeError": "Could not update the link. Try again."
+    }
+  },
   "booking": {
     "status": {
       "pending": "Pending",
@@ -4915,6 +5297,8 @@
       "paidAmount": "Amount collected",
       "paymentState": "Payment status",
       "recordPayment": "Record payment",
+      "stayPaid": "Stay paid in full",
+      "amountsSource": "Source of amounts",
       "paymentSummaryTitle": "Payment summary",
       "total": "Total",
       "alloggiatiWeb": "Alloggiati Web",
@@ -4933,6 +5317,8 @@
       "cleaningFee": "Cleaning",
       "touristTax": "Tourist tax",
       "noPriceBreakdown": "Price breakdown not available for this booking.",
+      "referenceDetails": "Booking references",
+      "openCheckInWizard": "Open guided check-in",
       "checkInOnline": "Online check-in",
       "code": "Booking code",
       "fallbackTitle": "Booking",
@@ -5008,16 +5394,16 @@
       },
       "toBookings": "Go to bookings",
       "waitingDocuments": {
-        "body": "The online check-in link has been sent. If needed, you can send it again.",
-        "title": "Wait for the guests' documents"
+        "body": "The link has been sent. The guest enters their documents in the portal. You can share the link again if needed.",
+        "title": "Guest needs to complete check-in"
       },
       "waitingGuestEmail": {
         "body": "The guest still has to confirm their email: only then can you answer the request.",
-        "title": "Wait for the guest to confirm the email"
+        "title": "Guest needs to confirm their email"
       },
       "waitingPayment": {
         "body": "The guest has not completed the payment yet. If they don't in time, the booking expires and the dates are free again.",
-        "title": "Wait for the guest's payment"
+        "title": "Awaiting payment from the guest"
       },
       "whoGuest": "The guest's turn",
       "whoHost": "Your turn"
@@ -5675,6 +6061,9 @@
       "scheduleError": "Could not schedule campaign"
     },
     "report": {
+      "opened": "Opened",
+      "clicked": "Clicked",
+      "bounced": "Bounced",
       "title": "Campaign report",
       "sent": "Sent",
       "errors": "Errors",
@@ -5918,8 +6307,15 @@
       }
     },
     "loading": "Loading check-in...",
+    "reopen": {
+      "loadTitle": "Check-in is temporarily unavailable",
+      "loadHint": "Check your connection and try this link again.",
+      "retry": "Try again",
+      "nextStep": "Next · {{name}}",
+      "resumed": "Details already recorded by the property are filled in. Please re-enter any changes you had not submitted."
+    },
     "invalidLink": "Invalid link",
-    "invalidLinkDescription": "The check-in link is invalid or expired. Contact the property manager.",
+    "invalidLinkDescription": "This link is invalid or has expired. Ask the property for a new link through your booking.",
     "guestCheckIn": "Guest check-in",
     "checkInComplete": "Check-in complete. Thank you!",
     "personalData": "Personal data",
@@ -5963,7 +6359,7 @@
     "submit": "Submit check-in",
     "fixHighlightedFields": "Some details are not valid: fix the highlighted fields and submit again.",
     "successTitle": "Check-in complete!",
-    "successDescription": "Your details have been recorded. Thank you!",
+    "successDescription": "The property has received your stay details. To make a correction, contact the property through your booking.",
     "alreadyCompletedTitle": "Check-in already completed",
     "alreadyCompletedDescription": "The details for this stay have already been submitted. To protect your privacy they are no longer shown. To correct them, contact the property manager.",
     "marketingConsent": "I agree to receive promotional communications (optional).",
@@ -5986,13 +6382,14 @@
       "Scaduto": "Expired"
     },
     "stepScan": "Document",
-    "scanIntro": "Start by uploading a photo of each guest's identity document. The details are read automatically: you check and correct them on the next step.",
+    "scanIntro": "Fill in the guest details from a document photo or enter them by hand. You can review them before sending them to the property.",
     "scanHint": "JPG, PNG or WebP, up to 5 MB. If you choose online verification and give consent, you can use the same photo to verify your document.",
     "scanButton": "Take or upload a photo",
     "scanReading": "Reading the document…",
-    "scanAnother": "Upload another guest's document",
+    "scanAnother": "Upload the reverse side or another guest’s document",
     "scanManual": "Enter the details by hand",
     "scanReadOk": "Details read for {{name}}. Check them before sending.",
+    "invoiceHostManaged": "You can add missing details. Contact your host to change details they have already entered.",
     "invoiceSave": "Save answer",
     "invoiceFinished": "Done.",
     "scanMismatch": "This document could not be matched to a named guest on the booking. Check the photo or contact the property to correct a name.",
@@ -6002,6 +6399,7 @@
     "privacyRead": "I have read the privacy notice.",
     "marketingOptIn": "I would like to receive promotional messages.",
     "documentNumberPlausibility": "Check the number printed on the document. Enter at least four characters including a digit.",
+    "scanNotDocument": "We could not identify a document in this photo. Upload a photo of an identity card, passport or driving licence.",
     "scanUnread": "The document could not be read. Upload another photo or enter the details by hand.",
     "scanUnavailable": "Automatic reading is unavailable right now. Enter the details by hand.",
     "stepGuests": "Guests",
@@ -6032,6 +6430,11 @@
     "biometric": {
       "capture": {
         "attemptsRemaining": "Attempts left: {{count}}",
+        "neutral": "Look straight at the camera for the first photo. Then follow the next instruction.",
+        "turnRight": "Keep the camera still. Turn your head about 30° until your nose points to the following side of the preview right →.",
+        "turnLeft": "Keep the camera still. Turn your head about 30° until your nose points to the following side of the preview left ←.",
+        "restartPose": "Start again",
+        "challengeFailed": "Verification unavailable. Try again or ask for a person.",
         "cameraDenied": "The browser blocked the camera. To allow it, tap the lock or camera icon next to the web address, choose \"Allow\" for the camera and press \"Try again\".",
         "cameraNotFound": "No camera was found on this device.",
         "cameraTitle": "The camera is not available",
@@ -6252,6 +6655,8 @@
       "guidance": {
         "avoid_glare": "Avoid reflections: tilt the document a little or move away from the light.",
         "document_back_needed": "Now photograph the back of the card, where the lines of letters are.",
+        "active_pose_retry": "Take both photos again following the direction shown.",
+        "document_not_recognized": "We could not identify a document in this photo. Upload a photo of an identity card, passport or driving licence.",
         "document_front_needed": "Photograph the side of the card with your photo.",
         "hold_still": "Hold the phone still: the photo is blurred.",
         "less_light": "There is too much light: move to a softer light.",
@@ -6485,6 +6890,7 @@
     },
     "wizard": {
       "checks": {
+        "entireStay": "Entire stay",
         "allGood": "Everything is in place",
         "allGoodText": "The data of the guests are enough to go on.",
         "blockingText": "You cannot go on until they are fixed.",
@@ -9381,6 +9787,8 @@
     }
   },
   "emailVerified": {
+    "resumeInvite": "Resume your invitation",
+    "inviteTab": "If you were accepting an invitation in another tab, return to that tab to finish.",
     "title": "Email confirmed",
     "description": "Your address is verified. Sign in: we will walk you through the first steps.",
     "unknownTitle": "Email verification",
@@ -9659,11 +10067,15 @@
       "tooMany": "You can issue at most {{max}} documents at a time: clear the extra ones."
     },
     "bookingCard": {
-      "createDraft": "Create draft",
-      "draftCreated": "Draft created. Check it and issue it when you are ready.",
+      "editRecipient": "Edit recipient",
+      "checkVat": "Check VAT settings",
+      "checkIssuer": "Check issuer details",
+      "ruleBlocked": "CasaZen could not find an applicable rule for this stay. Check the configured VAT regime.",
+      "createDraft": "Prepare fiscal document",
+      "draftCreated": "Draft prepared. You can review it before issuing it.",
       "draftFailed": "We could not create the draft. Try again in a moment.",
       "empty": "This booking has no fiscal document yet.",
-      "emptyWrite": "This booking has no fiscal document yet. Create the draft, check it and issue it when you are ready.",
+      "emptyWrite": "This stay has no fiscal document. You can prepare a draft to review the recipient and amounts before issuing it.",
       "issuedOn": "Issued on {{date}}",
       "loadError": "We cannot load the fiscal documents of this booking.",
       "loading": "Loading the fiscal documents…",
@@ -10939,6 +11351,9 @@
     }
   },
   "invitation": {
+    "accountStep": "1. Sign in with the invited email",
+    "acceptStep": "2. Confirm and join the team",
+    "signInAfterVerification": "I verified my email, sign in again",
     "accept": "Accept and enter",
     "acceptTitle": "Accept the invitation of {{org}}",
     "details": {
@@ -11087,6 +11502,8 @@
     "retry": "Try again",
     "saved": "Invoice data saved.",
     "section": {
+      "recipientDetails": "Tax details",
+      "notRequested": "No invoice request recorded.",
       "add": "Add the data",
       "edit": "Check or change",
       "empty": "No invoice data for this booking yet.",
@@ -12965,6 +13382,15 @@
     }
   },
   "leaseWizardGuide": {
+    "exit": {
+      "title": "Save before leaving?",
+      "description": "The server has yet to confirm some changes to this draft. Stay on this step or save and continue.",
+      "failed": "Saving failed. Your changes are still on this page.",
+      "stay": "Stay on draft",
+      "save": "Save and continue",
+      "saving": "Saving…",
+      "discard": "Leave without saving the latest changes"
+    },
     "adminNotice": {
       "action": "Go to the documents",
       "message": "Legal documents updated: accept them to see your workspaces again"
@@ -14009,9 +14435,14 @@
     }
   },
   "login": {
+    "resumeTitle": "Resume sign-in",
+    "resumeBody": "Continue with your CasaZen account to return to the page you were opening.",
+    "handoffFailed": "The sign-in page did not open. Check your connection and try again here.",
+    "initializationSlow": "The sign-in service is taking longer than expected. You can reload this page.",
+    "reload": "Reload this page",
     "redirecting": "Taking you to sign in…",
     "signInMessage": "Sign in to manage your properties, bookings, and payments",
-    "signInButton": "Sign in with Auth0",
+    "signInButton": "Continue to sign in",
     "signIn": "Log in"
   },
   "longRentDeadlines": {
@@ -15489,8 +15920,8 @@
       "activate": {
         "finish": "Activate {{name}}",
         "intro": "Read what will happen again. If something is not right, go back with “Edit”.",
-        "summary": "We will connect {{name}} to “{{property}}”: bookings and availability will flow both ways.",
-        "when": "It can take up to 30 minutes before {{name}} shows everything. After the activation CasaZen checks the connection every 30 minutes."
+        "summary": "CasaZen imports reservations, verifies prices and availability, and completes the {{name}} connection for “{{property}}”.",
+        "when": "You can resume while a check is in progress. If the calendar is empty, staff can select the portal for the initial import."
       },
       "chooseFirst": {
         "action": "Choose properties",
@@ -15539,7 +15970,7 @@
         "fixAccess": "Fix the access details",
         "fixConnection": "Back to the connection",
         "fixProperty": "Change the properties",
-        "intro": "Your channel manager imports the rooms, the reservations and the calendar of {{name}}. A few minutes are usually enough, sometimes more.",
+        "intro": "CasaZen checks that rooms from {{name}} have arrived before mapping.",
         "items": {
           "calendar": "Calendar",
           "reservations": "Reservations",
@@ -16265,6 +16696,15 @@
     }
   },
   "nav": {
+    "propertyPreparation": "Prepare properties",
+    "propertyActivation": "Activation",
+    "settingsGroups": {
+      "workspace": "Workspace",
+      "website": "Booking website",
+      "money": "Payments and plan",
+      "tools": "Integrations and assistant",
+      "empty": "No settings are available for your role."
+    },
     "accountant": "Accountant",
     "accountHome": "Home",
     "people": "People",
@@ -16369,6 +16809,11 @@
     "documents": "Documents",
     "collapse": "Collapse menu",
     "expand": "Expand menu",
+    "searchMenu": "Search the menu",
+    "clearMenuSearch": "Clear menu search",
+    "menuResults_one": "{{count}} page found",
+    "menuResults_other": "{{count}} pages found",
+    "noMenuResults": "No pages found. Try another word or clear the search.",
     "menuLabel": "{{area}} menu",
     "childLinksLabel": "Related pages",
     "sectionLabel": "Sections of {{section}}",
@@ -16388,7 +16833,7 @@
     "inviteQr": "Invite QR codes",
     "reviews": "Reviews",
     "bookingFlow": "Flow",
-    "routines": "AI Agents",
+    "routines": "AI routines",
     "channelCommissions": "Channel commissions",
     "channels": "Channels and calendars",
     "verifications": "Verifications",
@@ -16483,6 +16928,8 @@
     "listLabel": "Notifications list",
     "toastOpen": "Open",
     "types": {
+      "guestPortalRequest": "New request from the guest portal",
+      "guestStayChange": "A guest requested a change to their stay.",
       "routineOwner": "A routine notified the owner about this booking.",
       "routineStaff": "A routine notified you as the person responsible for the property.",
       "routineTeam": "A routine notified the team about this booking.",
@@ -17038,6 +17485,7 @@
     }
   },
   "onboarding": {
+    "consentProgress": "You have completed {{accepted}} of {{total}} required confirmations.",
     "casaZen": "CasaZen",
     "howToUse": "Where do you want to start?",
     "editOperatorType": "Edit operator type",
@@ -17119,6 +17567,8 @@
     "readSubprocessors": "See the full list of subprocessors"
   },
   "onboardingPlan": {
+    "availableProgress": "You have completed {{done}} of {{total}} parts of your plan",
+    "backToHome": "Back to home",
     "actions": {
       "doNow": "Do it now",
       "group": "Exit and help",
@@ -17267,7 +17717,8 @@
         "description": "For {{subject}}. Every opening is recorded and the user sees it in the activity log.",
         "error": "The credentials could not be opened.",
         "fields": {
-          "extraCode": "Further code",
+          "unitCode": "Unit code",
+        "extraCode": "Further code",
           "password": "Password",
           "username": "User name"
         },
@@ -18185,7 +18636,21 @@
       "run": "Run the final test",
       "title": "Final test"
     },
-    "title": "Start with CasaZen"
+    "title": "Start with CasaZen",
+    "workspace": {
+      "details": "View details",
+      "title": "Set up your short-term rentals",
+      "progress": "Setup progress",
+      "progressCount": "{{done}} of {{total}} complete",
+      "prepare": "What to have ready",
+      "upNext": "Next step",
+      "otherSteps": "Other setup tasks",
+      "allSteps": "Browse the setup plan",
+      "connect": "Set up connection",
+      "later": "Continue later",
+      "finished": "You have completed all available parts of the plan.",
+      "waiting": "There are no open steps right now. Open the plan to see deferred tasks and their prerequisites."
+    }
   },
   "org": {
     "tier": {
@@ -18280,6 +18745,11 @@
       "never": "Never"
     },
     "setup": {
+      "suggest": "Generate suggestions",
+      "suggestLocal": "Find local tips",
+      "applySuggestion": "Use in the draft guide",
+      "suggestionsUnavailable": "There are no suggestions available. You can continue setup manually.",
+      "manageSuppliers": "Manage trusted suppliers",
       "title": "Add OTA Integration",
       "description": "Connect a property to an online travel agency platform",
       "platformTitle": "Platform Selection",
@@ -21447,6 +21917,10 @@
     }
   },
   "productGuide": {
+    "allTopics": "Back to topics",
+    "backToWork": "Return to the page you came from",
+    "areaHome": "Return to the area home",
+    "clearSearch": "Clear search",
     "title": "CasaZen guide",
     "description": "How to work with properties, bookings, guests and collaborators.",
     "open": "Guide",
@@ -21459,7 +21933,9 @@
         "title": "Getting started and work areas",
         "keywords": "login organisation agency pilot",
         "steps": [
-          "Sign in and complete the required profile and consent steps. If invited to an organisation, open the invitation with the intended recipient account.",
+          "If invited, open the invitation with the recipient account. If setting up your own business, choose your role, area and plan before confirming the legal documents and proceeding to billing.",
+          "Use “Pause setup” while choosing your plan or reviewing your choices. Saved choices remain in this tab for 24 hours. Reloading restores the saved step and you confirm the documents again.",
+          "When Start with CasaZen is available, the administrator can open the plan from the Short stays home. For Italian properties, choose who submits guest data and review the summary before confirming. The plan shows the next task. You can leave and return from Home or the Guide.",
           "Choose Short-term rentals, Long-term rentals, Administration or Suppliers. Available areas and actions depend on your role and assigned properties.",
           "Check the area and organization at the top. On a phone, open More to switch areas. On a computer, use the sidebar selector. Choose Search to find pages you can access.",
           "Ask CasaZen finds accessible pages by name. In short-term rentals, ask which arrivals today have incomplete check-in. Check the scope shown and open a booking to verify it. The demo uses sample records. You can also open arrivals directly from the Dashboard.",
@@ -21480,11 +21956,13 @@
         "title": "Bookings and calendar",
         "keywords": "arrivals departures check in checkout blocks",
         "steps": [
+          "In Stay, choose “Request housekeeping”. Check the property and departure date, choose a supplier and time, then review the request. After reloading, confirm availability again and re-enter any notes. From the confirmation, track the request or return to the booking.",
           "Open Bookings to use the list or calendar. Check the property, dates, party size, status and amounts before creating or editing a stay.",
           "From the Dashboard, under Today, choose one property or all assigned properties. In arrivals, select the check-in link to open Documents for the booking. Check the property, dates and status. If data is partial, open the source record before acting. Arrival dates use Rome time.",
           "Use manual calendar blocks to close unavailable dates. A calendar block does not necessarily include a full booking or guest details.",
           "Check booking details before recording arrival. The check-in link lets guests complete required information; completing it does not submit an Alloggiati report.",
-          "At departure, open the check-out flow and review the information shown. Check stay status and payment status separately."
+          "At departure, open the check-out flow and review the information shown. Check stay status and payment status separately.",
+          "For a recurring task, open Short-term rentals → AI routines. On a phone, start from More. Choose a template from the library, review its trigger and actions, then test the configuration."
         ]
       },
       "ical": {
@@ -21544,7 +22022,7 @@
         "keywords": "landlords tenants energy certificate rli rent signature",
         "steps": [
           "In Long-term rentals, open Properties and choose a home. For a rented home, Check rent payments opens the installments for its current lease. The Leases tab also shows leases in preparation.",
-          "Resume a saved draft and review missing information before confirmation. If two tabs edit the same draft, reload the latest data before retrying.",
+          "To resume a draft, open the lease and choose Continue. If you leave while editing, stay on the step or save before continuing. If saving fails, retry while your entries are still in the form. In Rent, View installment takes you to the due date to check, with the balance and status.",
           "Review the lease before downloading it for signature. Downloading is not proof that it has been signed or registered.",
           "Check registration statuses, available receipts and rent payments in the lease record. Generating a file does not complete registration; verify the actual outcome through the channel used."
         ]
@@ -21556,7 +22034,8 @@
           "Property operators can find services in the marketplace and send requests with the correct dates and details. Check request status before treating a service as confirmed.",
           "In Suppliers, complete your profile and activation, set up services and availability and use the inbox to manage incoming requests.",
           "Update your calendar and check conflicts before accepting work. The Suppliers iCal guide explains where to find external calendar links.",
-          "A suspended profile or incomplete activation may limit operations. Read the on-screen notice and contact the representative shown in the app."
+          "A suspended profile or incomplete activation may limit operations. Read the on-screen notice and contact the representative shown in the app.",
+          "To request cleaning for a stay, open the booking and choose Request cleaning. Review the property, date and supplier. After submitting, open the request to check its status."
         ]
       },
       "troubleshooting": {
@@ -22014,7 +22493,7 @@
       },
       "description": {
         "minLength": "Description must be at least 10 characters",
-        "maxLength": "Description must be less than 1000 characters"
+        "maxLength": "The description can have at most 10,000 characters"
       },
       "address": {
         "required": "Address is required"
@@ -23309,7 +23788,7 @@
       "comune": {
         "required": "Choose the comune from the list."
       },
-      "description": "The description can have at most 2,000 characters.",
+      "description": "The description can have at most 10,000 characters.",
       "descriptions": {
         "enDescription": "Write the description in English.",
         "enTitle": "Write the title in English.",
@@ -23708,6 +24187,14 @@
     "termsNote": "Also read the operator's <terms>booking terms</terms>."
   },
   "publicCheckout": {
+    "extras": {
+      "changed": "The availability or price of an extra has changed. Review your selection before continuing.",
+      "review": "Update selection",
+      "title": "Optional extras",
+      "quantity": "Quantity",
+      "approval": "Authorize your card in the guest portal. You will only be charged if the host confirms.",
+      "portal": "Pay in the guest portal once your booking is confirmed."
+    },
     "backToHome": "Back to the home",
     "details": {
       "arrivalHint": "Check-in from {{from}} to {{to}}",
@@ -24281,6 +24768,18 @@
     }
   },
   "rent": {
+    "focus": {
+      "noPlan": "No rent schedule has been set up.",
+      "attention_one": "{{count}} installment to review",
+      "attention_other": "{{count}} installments to review",
+      "processing": "Payment processing",
+      "next": "Next rent installment",
+      "closed": "No open installments in this schedule",
+      "due": "Due {{date}}",
+      "open": "View installment",
+      "leaseType": "Lease type",
+      "monthlyRent": "Monthly rent"
+    },
     "title": "Rent",
     "description": "Installment schedule generated from the lease. An installment is paid only when Stripe confirms the online payment or when you record a payment received outside CasaZen.",
     "loading": "Loading the rent schedule…",
@@ -24998,6 +25497,23 @@
     }
   },
   "requestWizard": {
+    "housekeeping": {
+      "other": "Other service",
+      "resume": "To continue, choose your supplier and an available time again. If you added notes, re-enter them in the details step.",
+      "unknown": "CasaZen did not receive confirmation. Check your service requests before sending again.",
+      "checkList": "Check service requests",
+      "track": "Follow the job and its updates in your service requests list.",
+      "stayRecovery": "Open service requests to check what has already been requested. You can start a new cleaning request from a booking you can access.",
+      "stayUnavailable": "This stay is unavailable for this request",
+      "status": "Request status: {{status}}.",
+      "request": "Request housekeeping",
+      "at": "Housekeeping for {{property}}",
+      "linked": "Linked to the stay",
+      "brief": "Housekeeping request",
+      "follow": "Track the housekeeping request",
+      "verifyTitle": "Check your request",
+      "verifyText": "Open the service requests list to check which requests have been recorded and see their status."
+    },
     "assist": {
       "change": "Change",
       "chosen": "The AI chose: {{service}}.",
@@ -25017,10 +25533,10 @@
       },
       "open": "Describe it",
       "result": {
-        "casazen_one": "A CasaZen supplier in your area",
-        "casazen_other": "{{count}} CasaZen suppliers in your area",
+        "casazen_one": "A supplier available in your area",
+        "casazen_other": "{{count}} suppliers available in your area",
         "edit": "Change the words",
-        "external": "An external partner: there are no CasaZen suppliers in your area yet for this service",
+        "external": "An external partner: no suppliers are currently available in your area for this service",
         "note": "Note for the supplier",
         "service": "Service",
         "skip": "I'll choose",
@@ -25046,8 +25562,8 @@
       "addComune": "Add the comune",
       "casazen": {
         "none": "There are none yet in the area of this property.",
-        "text": "Professionals of your area, with clear prices and times: you choose who to call.",
-        "title": "A CasaZen supplier"
+        "text": "Choose from your trusted suppliers and CasaZen marketplace suppliers available for this property.",
+        "title": "A supplier for this property"
       },
       "external": {
         "text": "Outside companies for cleaning, check-in and maintenance: the work is organised on their site.",
@@ -25056,8 +25572,8 @@
       "legend": "Who do you want to ask",
       "noComune": "To look for the suppliers of your area the comune of the property is needed: until it is there we propose the external partners.",
       "noComuneNoPartners": "To look for the suppliers of your area the comune of the property is needed.",
-      "noNetwork": "There are no CasaZen suppliers yet in the area of this property: we propose the external partners.",
-      "noNetworkNoPartners": "There are no CasaZen suppliers yet in the area of this property.",
+      "noNetwork": "No suppliers are available for this property yet: we propose the external partners.",
+      "noNetworkNoPartners": "No suppliers are available for this property yet.",
       "recommended": "Recommended"
     },
     "details": {
@@ -25171,7 +25687,7 @@
     "steps": {
       "channel": {
         "label": "Who",
-        "purpose": "We advise a CasaZen supplier from your area. Otherwise you can turn to an external service.",
+        "purpose": "We suggest a supplier available for this property. Otherwise you can turn to an external service.",
         "title": "Who do you want to ask?"
       },
       "details": {
@@ -25482,6 +25998,19 @@
     "None": "Not activated"
   },
   "aiSettings": {
+    "example": "Schedule cleaning for stays of at least three nights. For shorter stays, notify staff.",
+    "exampleTrigger": "At check-out",
+    "exampleAction": "Request cleaning for the property",
+    "firstRoutine": "Try an AI routine",
+    "pageTitle": "AI settings",
+    "routineDescription": "Plan your work around arrivals and departures. Choose what triggers a routine, review its actions and test it before activation.",
+    "openRoutines": "Open routines",
+    "browseTemplates": "Browse templates",
+    "assistantDescription": "Review the rules for replies to guests.",
+    "openSettings": "Open settings",
+    "advancedVerification": "Verification and thresholds",
+    "enabledSummary": "Automatic comparison enabled",
+    "manualSummary": "Manual verification",
     "cleaningGoal": "Arrange cleaning after check-out for stays that took place.",
     "instructionsGoal": "Send arrival instructions for confirmed bookings.",
     "reviewGoal": "Invite guests to review completed direct stays.",
@@ -25489,14 +26018,13 @@
     "title": "AI",
     "provider": "Manage the platform provider, models and budget.",
     "objective": "Agent objective",
-    "example": "Schedule cleaning for stays of at least three nights. For shorter stays, notify staff.",
     "hint": "Use the booking channel, status, stay length and guest count. Leave blank to request all configured actions.",
     "invalidPlan": "AI returned an invalid action plan. Execution stopped.",
     "notSelected": "The agent skipped this action for this event."
   },
   "routines": {
-    "dashboardActive_one": "{{count}} active AI agent",
-    "dashboardActive_other": "{{count}} active AI agents",
+    "dashboardActive_one": "{{count}} active AI routine",
+    "dashboardActive_other": "{{count}} active AI routines",
     "tag": "Guest profile tag",
     "savedTemplate": "Saved template",
     "aiCondition": "AI agent condition (optional)",
@@ -25593,10 +26121,10 @@
     },
     "conditions": "Conditions",
     "conditionsHint": "Without conditions the routine runs for every booking. Add some to narrow it down.",
-    "create": "Create agent",
+    "create": "Create routine",
     "createError": "Cannot create routine",
     "createSuccess": "Routine created successfully",
-    "createTitle": "New AI agent",
+    "createTitle": "New routine",
     "days": "days",
     "deactivatedSuccess": "Routine deactivated",
     "delete": "Delete",
@@ -25605,12 +26133,12 @@
     "deleteLogGoes": "The log of its runs is deleted too.",
     "deleteSuccess": "Routine deleted",
     "deleteTitle": "Delete the routine?",
-    "description": "Choose an agent or build your own. At each event, AI assesses the stay and selects which of your authorized operations to run.",
+    "description": "Choose what happens when a booking is confirmed or a guest arrives or leaves. You can try each routine before activating it.",
     "editorDescription": "Define the objective, trigger and allowed actions. Review decisions in the execution log.",
-    "editTitle": "Edit AI agent",
+    "editTitle": "Edit routine",
     "empty": {
-      "description": "Choose an agent from the library or create your first AI agent.",
-      "title": "No agents configured"
+      "description": "Start with a template for cleaning, arrival instructions or review requests.",
+      "title": "No routines to show"
     },
     "events": {
       "activityCompleted": "Activity completed",
@@ -25649,7 +26177,7 @@
       "createInTestMode": "Create in test mode",
       "daysCount_one": "{{count}} day",
       "daysCount_other": "{{count}} days",
-      "description": "Choose an agent and customize its objective.",
+      "description": "Choose a template, review its trigger and customize the actions. The new routine starts paused.",
       "documentReminderDescription": "Reminds your guests to send their documents 3 days before check-in. It goes to every guest, also to those who already sent them: routines do not read the state of the documents yet.",
       "documentReminderTitle": "Documents reminder before arrival",
       "hoursCount_one": "{{count}} hour",
@@ -25660,8 +26188,8 @@
       "reviewDescription": "One day after check-out it asks for a review the guest who booked on your site, once for each booking. Bookings from the portals, cancelled ones and ones with no email address get no invitation, and the log says why.",
       "reviewTitle": "Review request",
       "setupCleaners": "Set who cleans",
-      "title": "AI Agents library",
-      "unavailableNote": "It holds actions that are not available yet: you can only create it in test mode, where it is simulated and nothing is sent."
+      "title": "Routine templates",
+      "unavailableNote": "Some actions are available only in simulation."
     },
     "loadError": "Cannot load routines",
     "loading": "Loading routines…",
@@ -25703,6 +26231,7 @@
         "noEmail": "There is no email address to write to (none was given, or the guest was erased or asked for the erasure): no invitation sent.",
         "noShow": "The guest did not show up (the stay is marked as a no-show): no invitation sent.",
         "notConfirmed": "The booking was cancelled or never confirmed: no invitation sent.",
+        "reviewsDisabled": "Reviews are turned off for this property.",
         "notDirect": "The booking does not come from your booking site (a portal asks its own guests for the review): no invitation sent.",
         "reviewInviteNotSent": "The invitation e-mail did not go out (the mail is not configured, or it could not be queued): you can still ask for the review by hand from the booking.",
         "reviewNeedsBooking": "The review is requested for a booking and this event has none.",
@@ -25732,10 +26261,10 @@
     "name": "Name",
     "namePlaceholder": "E.g.: Send instructions 2 days before",
     "noActions": "No actions configured. Add at least one action.",
-    "noActiveRoutines": "No active agents. Choose one from the library or create your own.",
+    "noActiveRoutines": "No live routines",
     "noExecutions": "No executions recorded",
-    "noInactiveRoutines": "No inactive agents",
-    "noTestRoutines": "No agents in test mode",
+    "noInactiveRoutines": "No paused routines",
+    "noTestRoutines": "No routines simulating events",
     "problem": {
       "messageTemplate": "Select a message template.",
       "tag": "Enter a tag to add to the guest profile.",
@@ -25754,7 +26283,7 @@
     "testModeOnSuccess": "Test mode enabled",
     "testTab": "Test",
     "timing": "Timing",
-    "title": "AI Agents",
+    "title": "AI routines",
     "toggleActiveError": "Cannot change routine status",
     "toggleTestModeError": "Cannot change test mode",
     "unavailable": {
@@ -25764,7 +26293,56 @@
     "updateError": "Cannot update routine",
     "updateSuccess": "Routine updated",
     "waitDays": "Days to wait",
-    "waitHours": "Hours to wait"
+    "waitHours": "Hours to wait",
+    "flow": {
+      "edit": "Edit",
+      "useTestMode": "Switch to simulation",
+      "useLiveMode": "Switch to real actions",
+      "confirmTitle": "Enable live actions?",
+      "confirmDescription": "When the event occurs, “{{name}}” can perform these actions for stays matching the conditions.",
+      "confirmLive": "Confirm activation",
+      "all": "All",
+      "when": "Trigger",
+      "what": "Actions",
+      "models": "Choose a template",
+      "configure": "Configure template",
+      "savePaused": "Save paused routine",
+      "savedPaused": "Your routine will be saved paused. After saving, you can try it on a booking.",
+      "paused": "Paused",
+      "live": "Live · performs actions",
+      "testing": "Simulating events",
+      "resume": "Open routines to resume",
+      "simulate": "Try on a booking",
+      "simulateName": "Try “{{name}}”",
+      "simulateHint": "Choose a booking to preview how the routine would respond. The booking and routine settings stay unchanged.",
+      "search": "Search by code or guest",
+      "searchButton": "Search",
+      "retry": "Retry",
+      "chooseBooking": "Choose a booking",
+      "refine": "Showing the first {{count}} bookings. Search to find another.",
+      "noBookings": "No bookings found. Try another code or name.",
+      "noBookingAccess": "You need access to the bookings list to choose a booking.",
+      "bookingsError": "Available bookings could not be loaded.",
+      "try": "Simulate with this booking",
+      "result": "Simulation result",
+      "invalid": "The routine configuration needs review.",
+      "unmatched": "This booking does not match the routine conditions.",
+      "matched": "This booking matches the conditions. These are the expected actions.",
+      "skipped": "The routine would skip this event.",
+      "blocked": "Blocked",
+      "possible": "Expected in this simulation",
+      "scope": "Routines apply to your organization. Saving and testing them requires access to all its properties.",
+      "atCheckin": "At check-in",
+      "atCheckout": "At check-out",
+      "timing": {
+        "BeforeCheckin": "{{delay}} before check-in",
+        "AfterCheckin": "{{delay}} after check-in",
+        "BeforeCheckout": "{{delay}} before check-out",
+        "AfterCheckout": "{{delay}} after check-out"
+      },
+      "createLive": "Create and activate routine",
+      "skippedAction": "Skipped"
+    }
   },
   "serviceCategories": {
     "loading": "Loading categories…",
@@ -26095,8 +26673,6 @@
   },
   "site": {
     "tour": {
-      "shortIntro": "Open a sample booking and check its check-in status in two steps. No account needed.",
-      "longIntro": "Open a sample property and check its lease and rent in two steps. No account needed.",
       "shortIntro": "Synthetic demo. Check an arrival in two steps, without an account.",
       "longIntro": "Synthetic demo. Check a lease in two steps, without an account.",
       "shortCta": "See today’s arrivals",
@@ -26105,12 +26681,24 @@
       "sampleDay": "Demo · Synthetic data for {{day}}",
       "shortTitle": "Arrivals for the day",
       "longTitle": "Rental property",
-      "openStay": "Open the booking for {{guest}} · {{property}}",
-      "openProperty": "Open {{property}}",
+      "openStay": "Review the stay for {{guest}}",
+      "openProperty": "Lease details for {{property}}",
+      "tenant": "Tenant · {{name}}",
+      "figures": {
+        "guests": "Guests",
+        "nights": "Nights",
+        "rent": "Monthly rent",
+        "overdue": "Overdue instalments"
+      },
+      "dates": {
+        "stayStart": "Arrival",
+        "stayEnd": "Departure",
+        "leaseStart": "Lease starts",
+        "leaseEnd": "Lease ends"
+      },
       "checkInState": "Online check-in in progress",
       "checkInStep": "The guest has started entering their details. Check that their documents are complete before registering the arrival.",
       "leaseState": "Registered, active lease",
-      "rentState": "Monthly rent {{rent}} EUR. No overdue instalments in this example.",
       "contactTitle": "Use CasaZen for your properties",
       "inviteText": "Request an invitation. An email will open for you to review and send.",
       "referralText": "Access is by invitation. You can write to the host who introduced you to CasaZen. Add their address in your email app.",
@@ -27858,6 +28446,18 @@
       }
     },
     "alloggiati": {
+      "Sending": {
+        "label": "Sending",
+        "explain": "CasaZen is transmitting the guest records to Alloggiati Web."
+      },
+      "PartiallyAccepted": {
+        "label": "Partially accepted",
+        "explain": "Check which guests the portal accepted before correcting the remaining records."
+      },
+      "ToVerify": {
+        "label": "Outcome to verify",
+        "explain": "Check the portal before sending again to avoid duplicates."
+      },
       "ChannelManagerWriteFailed": {
         "label": "To correct",
         "explain": "Your channel manager did not take all the guests: see the reason for each one, correct the data or retry.",
@@ -28006,6 +28606,47 @@
     }
   },
   "supplier": {
+    "documentPlan": {
+      "title": "Test document breakdown",
+      "sale": "Sale by {{seller}} to the guest, full price",
+      "saleRefund": "Commercial refund to the guest",
+      "hostFee": "Host commission payable by {{seller}}, included in the price",
+      "platformFee": "CasaZen commission payable by {{seller}}, included in the price",
+      "feeRefund": "Commission adjustment on the refund",
+      "note": "Gross test amounts. Determine VAT on the service and VAT on the commission separately using each transaction and the tax profiles of the parties involved."
+    },
+    "adjustments": {
+      "recorded": "Decision recorded.",
+      "amount": "Refund in euros (0 to close without a refund)",
+      "confirm": "Resolve dispute",
+      "retry": "Retry refund",
+      "processing": "Refund processing",
+      "failed": "Refund failed",
+      "review": "Refund needs reconciliation with Stripe",
+      "succeeded": "Refund confirmed",
+      "bank_open": "Bank dispute open",
+      "bank_closed": "Bank dispute closed without loss",
+      "bank_lost": "Bank dispute lost",
+      "bank_recovery_pending": "Transfer recovery in progress"
+    },
+    "identity": {
+      "fields": "Optional identifiers",
+      "fieldsHint": "Add the details you know to identify an existing supplier.",
+      "vat": "VAT number",
+      "fiscal": "Tax code",
+      "phone": "Phone",
+      "email": "Email",
+      "queue": "Invitations to review",
+      "submitted": "Email entered for the invitation: {{email}}",
+      "decide": "Choose who should receive the invitation",
+      "matched": "Matching identifiers: {{fields}}",
+      "distinct": "This is a different supplier. Send to {{email}}",
+      "reject": "Close this request without sending an invitation",
+      "confirm": "Confirm decision",
+      "resolveError": "Could not confirm. Refresh the list and try again.",
+      "loadError": "Could not load invitation reviews.",
+      "empty": "No invitations need review."
+    },
     "clients": {
       "chips": {
         "all": "All",
@@ -28285,6 +28926,7 @@
     "available": "Available",
     "eventBlock": "block",
     "eventExtraOpening": "extra opening",
+    "eventGuestOrder": "Guest order",
     "eventFromCalendar": "from calendar",
     "eventRequest": "job",
     "eventTimeOff": "time off",
@@ -28356,8 +28998,7 @@
         "title": "Tell customers when you work"
       },
       "free": {
-        "body": "No jobs or requests in the next few days. Keep your hours and services up to date to get more.",
-        "title": "A free day"
+        "title": "No jobs scheduled for the next few days"
       },
       "greeting": "Good morning, {{name}}",
       "greetingAnonymous": "Good morning",
@@ -30332,8 +30973,8 @@
       "inviteEmail": "Supplier email",
       "inviteEmailPlaceholder": "supplier@example.com",
       "inviteSend": "Send invite",
-      "inviteHint": "The supplier gets an email with the link to sign in to CasaZen with that address. Once they accept, you find them on this page.",
-      "inviteSuccess": "Invite sent: the supplier will get an email with the link to accept",
+      "inviteHint": "Enter the supplier’s email address. The relationship starts when the profile owner accepts.",
+      "inviteSuccess": "Request recorded. After verification the supplier will receive a link to accept.",
       "inviteError": "Unable to send invite",
       "properties": "Assigned properties",
       "propertiesHint": "If you choose none, the supplier works on all your properties.",
@@ -30348,6 +30989,29 @@
       "removeConfirm": "Do you really want to remove this trusted supplier?",
       "removeSuccess": "Supplier removed",
       "removeError": "Unable to remove supplier",
+      "hostOrigin": "Trusted supplier · Host commission",
+      "marketplaceOrigin": "Marketplace supplier · CasaZen commission",
+      "allProperties": "All properties",
+      "source": "Supplier source",
+      "privateSupplier": "Trusted supplier",
+      "privateDirectory": "Trusted suppliers",
+      "marketplace": "CasaZen marketplace",
+      "hostTerms": "Set the commission your trusted supplier will be asked to accept.",
+      "marketplaceTerms": "CasaZen sets and receives the commission for these services.",
+      "configured": "Services configured for this property",
+      "noneConfigured": "No services configured.",
+      "findServices": "Search for more services or suppliers",
+      "noMatches": "No other services found.",
+      "accepted": "Commission accepted",
+      "pending": "Awaiting consent",
+      "hostRate": "Host commission (%)",
+      "platformRate": "CasaZen commission: {{rate}}%",
+      "exposed": "Available in the portal after acceptance",
+      "save": "Save service",
+      "serviceSaved": "Service updated.",
+      "loadingProperties": "Loading properties…",
+      "propertiesError": "Could not load the properties to assign.",
+      "browseMarketplace": "Find suppliers in the CasaZen marketplace",
       "supplierLabel": "Supplier {{id}}"
     }
   },
@@ -31798,13 +32462,17 @@
     },
     "invitationsUnavailable": "We could not read the invitations: the list shows only the people who are already in the team.",
     "invite": {
+      "areasLoadError": "We couldn’t load the agency’s active areas.",
+      "backToPeople": "Back to People",
       "areasUnavailable": "At least one active agency area is required to send an invitation.",
       "cta": "Invite",
       "done": {
         "account": "The invited person chooses their own password: you never see it. On entering they accept the Terms, the Privacy notice and the DPA again.",
         "another": "Invite another person",
         "copyLink": "Copy the link",
-        "description": "{{email}} gets the email in a few seconds.",
+        "checkPeople": "People lists pending invitations and current team members.",
+        "checkStatus": "Check the invitation status",
+        "description": "The email to {{email}} is queued for delivery.",
         "emailFailedText": "The invitation exists, but we could not send the email. Copy the link and send it to the person yourself: the link of an email that may already have gone out stops working.",
         "emailFailedTitle": "The email did not go out",
         "expires": "The invitation lasts 7 days, until {{date}}. After 3 days we send a reminder.",
@@ -31849,6 +32517,7 @@
       "role": {
         "compare": "Compare the roles in a table",
         "legend": "Role",
+        "noneAssignable": "Your account has no roles it can assign. Ask an agency administrator to send the invitation.",
         "loadError": "We cannot read the roles you can give."
       },
       "seats": {
@@ -32118,6 +32787,28 @@
     "undo": "Undo",
     "undoFailed": "Could not undo this.",
     "commitFailed": "Could not complete the action."
+  },
+  "comoStayTour": {
+    "departures": "Stays with a missing departure or a departure date different from the tax calculation: {{count}}. Their amounts are excluded from totals.",
+    "title": "Monthly return · Como",
+    "period": "Return month",
+    "taxable": "Taxable guests",
+    "nights": "Taxable guest nights",
+    "amount": "Tax due from the host",
+    "reason": "Exemption reason",
+    "guests": "Guests",
+    "overnights": "Guest nights",
+    "missing": "Stays with missing or outdated figures: {{count}}. Their amounts are excluded from the totals.",
+    "channel": "Departures this month with tax collected by a platform: {{count}}. Check intermediary statements for all collections in the month, including those for stays departing in other months.",
+    "basis": "Figures include departures in the selected month with confirmed host-collected tax. Check exemption reasons before filing in StayTour.",
+    "attach": "Archive the StayTour confirmation",
+    "archive": "View confirmations for this month",
+    "error": "Report unavailable",
+    "retry": "Retry",
+    "over_four_nights": "Nights after the fourth",
+    "unknown": "Reason to review",
+    "restricted": "Restricted reason",
+    "loading": "Loading report"
   },
   "touristTax": {
     "exemption": {
@@ -33370,6 +34061,19 @@
     }
   },
   "commercial": {
+    "firstPropertyTitle": "Add your first property",
+    "firstPropertyText": "You will open a new property in {{area}}. Have its name and address ready.",
+    "workspaceTitle": "Continue to your workspace",
+    "workspaceText": "You will open the {{area}} home with the properties and tasks you can access.",
+    "stepPosition": "Step {{current}} of {{total}} · {{step}}",
+    "pause": "Pause setup",
+    "pauseTitle": "Setup paused",
+    "pauseSaved": "Your choices stay in this tab for 24 hours. Return here before closing the tab to continue from the saved step.",
+    "pauseMemory": "Your choices are available while this page stays open.",
+    "resume": "Resume setup",
+    "resumeFrom": "You will resume at “{{step}}”.",
+    "restored": "Your saved choices have been restored in this tab.",
+    "agencyNameRequired": "Enter the agency name to review your setup.",
     "secure": "Secure setup",
     "progress": "Your setup journey",
     "kicker": "Your workspace, your way",
@@ -33382,14 +34086,14 @@
     },
     "headings": {
       "profile": "How will you use CasaZen?",
-      "features": "Make CasaZen yours.",
-      "summary": "Everything you need, clearly priced.",
-      "consents": "One last step before payment.",
+      "features": "Choose your plan and features",
+      "summary": "Review your setup and cost",
+      "consents": "Review and confirm the documents",
       "payment": "Activate your workspace.",
       "ready": "Welcome to CasaZen."
     },
     "descriptions": {
-      "profile": "Start with your business. We will tailor the journey and tools to your needs.",
+      "profile": "Choose your role. Owners and agencies then select a plan, review the legal documents and set up billing. Suppliers follow their own registration.",
       "features": "The essentials are included. Add only what your business needs.",
       "summary": "Review your plan and extras. Nothing activates before payment is confirmed.",
       "consents": "Read the documents and confirm your choices, then proceed to secure payment.",
@@ -33542,7 +34246,7 @@
         "text": "Tools to support pricing and performance."
       },
       "crm": {
-        "title": "Guest CRM",
+        "title": "CRM and Marketing",
         "text": "Organize contacts and maintain guest relationships."
       }
     },
@@ -33564,44 +34268,47 @@
     "invitationOnly": "Joining an existing agency? Open the invitation link from its administrator. You do not need to create an agency or buy a personal plan."
   },
   "complianceJurisdiction": {
-      "foreignTitle": "Requirements in the property’s country",
-      "foreignDescription": "Italian Questura, Alloggiati Web and ISTAT do not apply to this property. Their credentials and an Italian sender choice are not required. Check the local requirements instead: CasaZen does not automatically consider them fulfilled.",
-      "ticinoLink": "Ticino · guest notifications to the cantonal police",
-      "guideTitle": "How to complete this request",
-      "guidePrepare": "Check the property and its country. Confirm who sends the data: if the channel manager sends it, open its panel using the property’s access.",
-      "guidePolice": "Open the Alloggiati Web connection in the panel. Use the credentials issued by the competent Questura and the apartment identifier where required.",
-      "guideIstat": "Open the statistics connection for the property’s region in the panel. Check the regional portal and enter the credentials and property code required by that service.",
-      "guideBoth": "Set up the Alloggiati Web connection and the regional statistics connection separately. These services may use different credentials.",
-      "guideCheck": "Test the connection before closing the request. If the system cannot verify it, record a declared outcome with a note explaining the check performed.",
-      "guideMissing": "If an access is missing, ask the user through the established support process. Never put credentials in the request notes."
-  }
-,
+    "foreignTitle": "Requirements in the property’s country",
+    "foreignDescription": "Italian Questura, Alloggiati Web and ISTAT do not apply to this property. Their credentials and an Italian sender choice are not required. Check the local requirements instead: CasaZen does not automatically consider them fulfilled.",
+    "ticinoLink": "Ticino · guest notifications to the cantonal police",
+    "guideTitle": "How to complete this request",
+    "guidePrepare": "Check the property and its country. Confirm who sends the data: if the channel manager sends it, open its panel using the property’s access.",
+    "guidePolice": "Open the Alloggiati Web connection in the panel. Use the credentials issued by the competent Questura and the apartment identifier where required.",
+    "guideIstat": "Open the statistics connection for the property’s region in the panel. Check the regional portal and enter the credentials and property code required by that service.",
+    "guideBoth": "Set up the Alloggiati Web connection and the regional statistics connection separately. These services may use different credentials.",
+    "guideCheck": "Test the connection before closing the request. If the system cannot verify it, record a declared outcome with a note explaining the check performed.",
+    "guideMissing": "If an access is missing, ask the user through the established support process. Never put credentials in the request notes."
+  },
   "orgComplianceSender": {
     "loading": "Loading your sending preference…",
     "retry": "Try again",
     "loadError": "We could not load the account preference. Try again before changing it.",
-    "scope": "One choice for your account",
     "title": "Who sends your guests’ details?",
-    "description": "Choose once for your current and future Italian properties. Properties with a specific choice keep it; properties abroad follow local requirements.",
-    "channel": "My channel manager",
-    "channelHint": "Choose Octorate. Each property must then be connected and verified before sending.",
-    "manual": "I send on the portals",
-    "manualHint": "Download stay files and send details to the Police and regional statistics portals where required.",
-    "continue": "Continue: review",
-    "review": "Review your choice before saving",
-    "effect": "Italian properties without their own choice inherit this preference. It does not activate external services, validate credentials or prove that sending works.",
+    "description": "For your Italian properties, choose who submits guest details to the police and, where required, to regional statistics portals.",
+    "channel": "Octorate",
+    "channelHint": "The channel manager submits the details once each property is connected and verified.",
+    "manual": "Manual submission",
+    "manualHint": "You download the stay files from CasaZen and submit them to the portals yourself.",
+    "continue": "Review choice",
+    "review": "Review the submission method",
+    "effect": "This saves the method for current and future Italian properties that use the account preference. Activation and verification are managed on each property’s page.",
     "overrides_one": "{{count}} property keeps its specific choice. Change it on the property page.",
-    "overrides_other": "{{count}} properties keep their specific choices. Change them on their property pages.",
-    "confirm": "I confirm this choice for properties that inherit it. Before changing service, I will ensure the previous automatic sender is disabled to prevent duplicate submissions.",
-    "save": "Save for my account",
-    "back": "Back",
-    "saved": "Saved preference: {{sender}}",
+    "overrides_other": "{{count}} properties keep their specific choices. Change them on the property pages.",
+    "confirm": "I confirm this choice for properties that use the account preference. If I change services, I will first turn off the previous sender to avoid duplicate submissions.",
+    "save": "Save preference",
+    "back": "Back to choice",
     "edit": "Change choice",
     "saveError": "Your choice was not saved. Try again.",
-    "accountsTitle": "Credentials and apartment ID: what changes?",
-    "accounts": "An Alloggiati Web account enabled for “Gestione Appartamenti” can manage multiple properties for an agency or private host. The competent Questura, province and authorised accommodation category still apply: this is not a single nationwide account. Each apartment keeps its own portal identifier (IdAppartamento). Follow the authorisation issued by the Questura; ISTAT depends on the regional system. This preference does not copy or share credentials between properties.",
+    "accountsTitle": "Property credentials and identifiers",
+    "accounts": "Credentials and verification are managed for each property. An Alloggiati Web account enabled for “Gestione Appartamenti” can manage several properties under the authorisation granted by the local Questura for the relevant province and accommodation category. Each apartment keeps its own portal identifier (IdAppartamento). Regional rules apply to statistics. Properties abroad follow local requirements.",
     "source": "Official Alloggiati Web manual · section 8",
     "inherited": "This property inherits your account preference. You can set an exception for this property here.",
-    "editAccount": "View account preference"
+    "editAccount": "View account preference",
+    "savedTitle": "Guest data submission",
+    "autoLabel": "Transfer guest details to Octorate automatically",
+    "autoOn": "For all properties in the organisation, CasaZen transfers the details to Octorate once they are complete and identity is verified.",
+    "autoOff": "CasaZen transfers the details to Octorate when you confirm check-in.",
+    "cancel": "Cancel changes",
+    "effectLabel": "What happens next"
   }
 }

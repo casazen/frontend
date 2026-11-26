@@ -22,7 +22,7 @@ export function MoneyReportFilters({ filters, testId }: MoneyReportFiltersProps)
   const { preset, custom, days, problem, propertyId, properties } = filters;
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 rounded-2xl border bg-surface-2 p-4">
       <div role="group" aria-label={t('reports.dialog.period')} className="flex flex-wrap items-end gap-3" data-testid={`${testId}-filters`}>
         <Field label={t('reports.dialog.period')} className="w-full sm:w-56">
           <Select value={preset} onChange={(event) => filters.choosePreset(event.target.value as PeriodPresetId)} data-testid={`${testId}-period`}>

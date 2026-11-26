@@ -7,6 +7,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { fetchComplianceSummary } from '@/api/compliance.api';
 import type { AppContextKey } from '@/config/route-manifest';
 import i18n from '@/i18n/config';
+import { useBookingCheckInSession } from '@/queries/use-checkin';
 import { useAlloggiatiStatus } from '@/queries/use-alloggiati';
 import { expectNoAxeViolations } from '@/test/axe';
 import { freezeClock, NOON_UTC } from '@/test/clock';
@@ -17,7 +18,7 @@ import { BookingNextStep } from '../components/booking-next-step';
 vi.mock('@/api/compliance.api', () => ({ fetchComplianceSummary: vi.fn() }));
 vi.mock('@/queries/use-alloggiati', () => ({ useAlloggiatiStatus: vi.fn() }));
 vi.mock('@/queries/use-checkin', () => ({
-  useBookingCheckInSession: () => ({ data: undefined, isLoading: false }),
+  useBookingCheckInSession: vi.fn(() => ({ data: undefined, isLoading: false })),
   useSendCheckInLink: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 const workspace = vi.hoisted(() => ({ granted: [] as string[] }));
@@ -81,6 +82,7 @@ function renderStep(booking = stay('CheckedOut'), canWrite = true) {
 
 beforeEach(async () => {
   freezeClock(NOON_UTC);
+  vi.mocked(useBookingCheckInSession).mockReturnValue({ data: undefined, isLoading: false } as ReturnType<typeof useBookingCheckInSession>);
   workspace.granted = HOST;
   await i18n.changeLanguage('it');
   // A stay that is over, whose communication was sent: the step it gives is «concluso» until a light says otherwise.
@@ -99,11 +101,25 @@ afterEach(() => {
 
 // E03/F03/US01/T02 (NF-52, AC-NF52-9): the booking card shows the light of its compliance items, with the same component and words as the page.
 describe('BookingNextStep and the compliance lights of the stay', () => {
+  it('shows who must complete check-in before opening the guidance', async () => {
+    vi.mocked(useBookingCheckInSession).mockReturnValue({
+      data: { status: 'Inviato', canIssueLink: true }, isLoading: false,
+    } as unknown as ReturnType<typeof useBookingCheckInSession>);
+    renderStep({ ...stay('Confirmed'), checkInDate: '2026-10-01', checkOutDate: '2026-10-04' });
+
+    const hint = await screen.findByRole('button', { name: 'L’ospite deve completare il check-in' });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    fireEvent.click(hint);
+    expect(await screen.findByRole('dialog')).toHaveTextContent('L’ospite inserisce i documenti nel suo portale');
+  });
+
   it('BookingNextStep_RedReceipt_IsTheNextStepWithTheButtonOfTheRightTab', async () => {
     vi.mocked(fetchComplianceSummary).mockResolvedValue(
       summaryOf({ receiptsToUpload: section(item('UploadAlloggiatiReceipt', 'Red', 'receipt_missing')), identityPending: section(item('VerifyIdentity', 'Green', 'identity_verified')) }),
     );
     renderStep();
+    expect(await screen.findByTestId('booking-compliance-action')).toHaveAttribute('href', `/app/short-rent/bookings/${BOOKING_ID}?tab=alloggiati`);
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger'));
 
     const block = await screen.findByTestId('booking-next-step');
     await waitFor(() => expect(block).toHaveAttribute('data-next-step', 'compliance'));
@@ -121,6 +137,7 @@ describe('BookingNextStep and the compliance lights of the stay', () => {
   it('BookingNextStep_ItemInHandWithTheChannelManager_IsYellowAndTheBlockSaysItIsInProgress', async () => {
     vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryOf({ receiptsToUpload: section(item('UploadAlloggiatiReceipt', 'Yellow', 'entrusted_to_channel_manager')) }));
     renderStep();
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger'));
 
     const block = await screen.findByTestId('booking-next-step');
     await waitFor(() => expect(block).toHaveAttribute('data-next-step', 'compliance'));
@@ -135,6 +152,7 @@ describe('BookingNextStep and the compliance lights of the stay', () => {
       summaryOf({ receiptsToUpload: section(item('UploadAlloggiatiReceipt', 'Red', 'receipt_missing')), identityPending: section(item('VerifyIdentity', 'Yellow', 'selfie_awaited')) }),
     );
     renderStep();
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger'));
 
     const lines = await screen.findByTestId('compliance-lines');
     const [line] = within(lines).getAllByTestId('compliance-line');
@@ -152,6 +170,7 @@ describe('BookingNextStep and the compliance lights of the stay', () => {
       summaryOf({ receiptsToUpload: section(item('UploadAlloggiatiReceipt', 'Green', 'receipt_archived')), identityPending: section(item('VerifyIdentity', 'Green', 'identity_verified')) }),
     );
     renderStep();
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger'));
 
     const lines = await screen.findByTestId('compliance-lines');
     expect(screen.getByTestId('booking-next-step')).toHaveAttribute('data-next-step', 'completed');
@@ -171,6 +190,7 @@ describe('BookingNextStep and the compliance lights of the stay', () => {
       }),
     );
     renderStep();
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger'));
 
     await waitFor(() => expect(fetchComplianceSummary).toHaveBeenCalled());
     const block = await screen.findByTestId('booking-next-step');
@@ -181,6 +201,7 @@ describe('BookingNextStep and the compliance lights of the stay', () => {
   it('BookingNextStep_WithoutTheRightToReadTheBookings_NeverAsksTheSummary', async () => {
     workspace.granted = ['property.read'];
     renderStep();
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger'));
 
     // A bare 403 on a GET takes the user to «nessun accesso»: the card does not ask what it may not read.
     expect(await screen.findByTestId('booking-next-step')).toHaveAttribute('data-next-step', 'completed');
@@ -189,6 +210,7 @@ describe('BookingNextStep and the compliance lights of the stay', () => {
 
   it.each(['Pending', 'Cancelled'] as const)('BookingNextStep_%sStay_NeverAsksTheSummary', async (status) => {
     renderStep(stay(status));
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger'));
 
     await screen.findByTestId('booking-next-step');
     expect(fetchComplianceSummary).not.toHaveBeenCalled();
@@ -198,13 +220,13 @@ describe('BookingNextStep and the compliance lights of the stay', () => {
     let answer: (summary: ComplianceSummaryResult) => void = () => {};
     vi.mocked(fetchComplianceSummary).mockReturnValue(new Promise<ComplianceSummaryResult>((resolve) => (answer = resolve)));
     renderStep();
-
     // «Concluso» would be said and taken back a moment later: the block keeps its place and waits.
     expect(await screen.findByTestId('booking-next-step-loading')).toBeInTheDocument();
     expect(screen.queryByTestId('booking-next-step')).not.toBeInTheDocument();
 
     answer(summaryOf({ receiptsToUpload: section(item('UploadAlloggiatiReceipt', 'Red', 'receipt_missing')) }));
 
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger'));
     await waitFor(() => expect(screen.getByTestId('booking-next-step')).toHaveAttribute('data-next-step', 'compliance'));
     expect(screen.queryByTestId('booking-next-step-loading')).not.toBeInTheDocument();
   });
@@ -216,6 +238,7 @@ describe('BookingNextStep and the compliance lights of the stay', () => {
       isLoading: false,
     } as unknown as ReturnType<typeof useAlloggiatiStatus>);
     renderStep();
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger'));
 
     expect(await screen.findByTestId('booking-next-step')).toHaveAttribute('data-next-step', 'sendAlloggiati');
   });
@@ -241,6 +264,7 @@ describe('BookingNextStep and the compliance lights of the stay', () => {
     vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryOf({ receiptsToUpload: section(item('UploadAlloggiatiReceipt', 'Red', 'receipt_missing')) }));
     fireEvent.click(within(block).getByRole('button', { name: 'Riprova' }));
 
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger'));
     await waitFor(() => expect(screen.getByTestId('booking-next-step')).toHaveAttribute('data-next-step', 'compliance'));
     expect(fetchComplianceSummary).toHaveBeenCalledTimes(2);
   });
@@ -248,6 +272,7 @@ describe('BookingNextStep and the compliance lights of the stay', () => {
   it('BookingNextStep_SummaryNotFound_IsTheTrafficLightOffAndTheCardIsWhatItWas', async () => {
     vi.mocked(fetchComplianceSummary).mockRejectedValue(httpError(404));
     renderStep();
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger'));
 
     expect(await screen.findByTestId('booking-next-step')).toHaveAttribute('data-next-step', 'completed');
     expect(screen.queryByTestId('compliance-lines')).not.toBeInTheDocument();
@@ -262,6 +287,7 @@ describe('BookingNextStep and the compliance lights of the stay', () => {
       isLoading: false,
     } as unknown as ReturnType<typeof useAlloggiatiStatus>);
     renderStep();
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger'));
 
     // Alloggiati Web to send is asked, not claimed to be fine: there is nothing to take back.
     await waitFor(() => expect(fetchComplianceSummary).toHaveBeenCalled());
@@ -272,6 +298,7 @@ describe('BookingNextStep and the compliance lights of the stay', () => {
     workspace.granted = ['booking.read', 'property.read'];
     vi.mocked(fetchComplianceSummary).mockResolvedValue(summaryOf({ receiptsToUpload: section(item('UploadAlloggiatiReceipt', 'Red', 'receipt_missing')) }));
     renderStep(stay('CheckedOut'), false);
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger'));
 
     const action = await screen.findByTestId('booking-next-compliance');
     expect(action).toHaveTextContent('Apri');
@@ -283,9 +310,10 @@ describe('BookingNextStep and the compliance lights of the stay', () => {
     vi.mocked(fetchComplianceSummary).mockResolvedValue(
       summaryOf({ receiptsToUpload: section(item('UploadAlloggiatiReceipt', 'Red', 'receipt_missing')), identityPending: section(item('VerifyIdentity', 'Yellow', 'selfie_awaited')) }),
     );
-    const { container } = renderStep();
+    renderStep();
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger'));
 
     await screen.findByTestId('compliance-lines');
-    await expectNoAxeViolations(container);
+    await expectNoAxeViolations(await screen.findByRole('dialog'));
   });
 });

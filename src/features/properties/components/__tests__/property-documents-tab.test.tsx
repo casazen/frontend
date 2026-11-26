@@ -35,7 +35,7 @@ const session = vi.hoisted(() => ({
   contexts: [] as Array<{ contextKey: string; roleKey: string }>,
 }));
 vi.mock('@/hooks/use-feature-flags', () => ({ useFeatureFlags: () => ({ flags: session.flags, isLoading: false }) }));
-vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ contexts: session.contexts }) }));
+vi.mock('@/hooks/use-workspace', () => ({ useWorkspace: () => ({ contexts: session.contexts, hasPermission: () => true }) }));
 
 const PROPERTY_ID = 'pppppppp-pppp-pppp-pppp-pppppppppppp';
 
@@ -87,6 +87,18 @@ describe('PropertyDocumentsTab, the credentials of the portals under the documen
     await waitFor(() => expect(onboardingAssistApi.getIstatCredentialsStatus).toHaveBeenCalledWith(PROPERTY_ID));
     // The caller may write the property: the form is there, empty.
     expect(await screen.findByTestId('istat-credentials-form')).toBeInTheDocument();
+  });
+
+  it('opens the sender for this property and the municipal portal for Como', () => {
+    renderTab('IT', true, { comuneIstatCode: '013075' });
+    expect(screen.getByRole('link', { name: 'Configura mittente e invio' })).toHaveAttribute('href', `/app/short-rent/compliance/sender?property=${PROPERTY_ID}`);
+    expect(screen.getByRole('link', { name: 'Accedi a StayTour Como' })).toHaveAttribute('href', 'https://imposta-soggiorno.org/como/index_op.php');
+  });
+
+  it('uses the registered municipality before the free-text city', () => {
+    renderTab('IT', false, { comuneIstatCode: '013030', city: 'Como' });
+    expect(screen.queryByRole('link', { name: 'Accedi a StayTour Como' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Configura mittente e invio' })).toBeNull();
   });
 
   it('PropertyDocumentsTab_ActivationOff_DrawsNoIstatCardAndAsksNothingOfTheirEndpoints', async () => {

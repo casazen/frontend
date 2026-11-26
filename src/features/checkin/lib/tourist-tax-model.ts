@@ -215,8 +215,17 @@ export function formatTaxMoney(amount: number, currency: string | null | undefin
 }
 
 /** The address Stripe sends the guest back to after a method that redirects: the page itself, with no query and no secret. */
-export function paymentReturnUrlOf(location: { origin: string; pathname: string }): string {
-  return `${location.origin}${location.pathname}`;
+export function paymentReturnUrlOf(location: { origin: string; pathname: string; search?: string }): string {
+  const url = new URL(location.origin);
+  url.pathname = location.pathname;
+  const current = new URLSearchParams(location.search);
+  if (/^\/s\/[A-Za-z0-9_-]{32}\/?$/.test(url.pathname) && current.get('page') === 'checkin') {
+    url.searchParams.set('page', 'checkin');
+    const language = current.get('lang');
+    if (language && /^(it|en|de|fr|es)$/.test(language)) url.searchParams.set('lang', language);
+    if (current.get('resume') === 'guests') url.searchParams.set('resume', 'guests');
+  }
+  return url.href;
 }
 
 /**

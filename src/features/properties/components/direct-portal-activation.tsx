@@ -1,0 +1,68 @@
+import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
+import { isAxiosError } from 'axios';
+import { ApiClient } from '@/api/client';
+import { Button } from '@/components/ui/button';
+import { delegationTextKey } from '@/features/compliance/sender-wizard/sender-wizard-model';
+import { useTestConnection } from '@/queries/use-property-sender';
+import { getProblemCode } from '@/lib/api-errors';
+
+import { directRoutesKey, directRoutesPath, type DirectService, type DirectRoutes } from '@/queries/use-direct-routes';
+
+export function DirectPortalActivation({ propertyId, service, routes, canWrite }: {
+  propertyId: string; service: DirectService; routes: DirectRoutes; canWrite: boolean;
+}) {
+  const { t } = useTranslation();
+  const cache = useQueryClient();
+  const verify = useTestConnection(propertyId);
+  const [confirming, setConfirming] = useState(false);
+  const [reconciled, setReconciled] = useState(false);
+  const [disabled, setDisabled] = useState(false);
+  const [consentVersion, setConsentVersion] = useState('');
+  const consentKey = delegationTextKey(routes.delegationVersion);
+  const needsConsent = service === 'alloggiati';
+  const mutation = useMutation({
+    mutationFn: () => ApiClient.put<DirectRoutes>(`${directRoutesPath(propertyId)}/${service}`, {
+      previousSendersDisabled: disabled, periodReconciled: reconciled, delegationVersion: needsConsent ? consentVersion : null,
+    }),
+    onSuccess: (value) => {
+      cache.setQueryData(directRoutesKey(propertyId), value);
+      void cache.invalidateQueries({ predicate: (query) => query.queryKey.includes(propertyId) });
+      setConfirming(false);
+    },
+  });
+  const date = routes.effectiveFrom[service];
+  if (date) return <div className="space-y-2">
+    <p className="font-medium" role="status">{t('institutionalPortals.directSince', { date })}</p>
+    {needsConsent && canWrite && routes.alloggiatiAvailable && (
+      <Button variant="outline" disabled={verify.isPending} onClick={() => verify.mutate()}>{t('institutionalPortals.verifyAccount')}</Button>
+    )}
+    {verify.data && <p role="status">{t(verify.data.outcome === 'Verified' ? 'institutionalPortals.accountVerified' : 'institutionalPortals.verifyFailed')}</p>}
+    {verify.isError && <p role="alert">{t('institutionalPortals.verifyFailed')}</p>}
+  </div>;
+  if (!canWrite || !(service === 'istat' ? routes.istatAvailable : routes.alloggiatiAvailable)) return null;
+  const code = isAxiosError(mutation.error) ? getProblemCode(mutation.error.response?.data) : undefined;
+  return (
+    <div className="space-y-3 border-t pt-3">
+      {!confirming ? <Button variant="outline" onClick={() => setConfirming(true)}>{t('institutionalPortals.chooseDirect')}</Button> : (
+        <fieldset className="space-y-3" disabled={mutation.isPending}>
+          <legend className="font-semibold">{t('institutionalPortals.cutoverTitle')}</legend>
+          <p className="text-sm">{t('institutionalPortals.cutoverHint')}</p>
+          <label className="flex items-start gap-2"><input type="checkbox" checked={disabled} onChange={e => setDisabled(e.target.checked)} />{t('institutionalPortals.disabled')}</label>
+          <label className="flex items-start gap-2"><input type="checkbox" checked={reconciled} onChange={e => setReconciled(e.target.checked)} />{t('institutionalPortals.reconciled')}</label>
+          {needsConsent && consentKey && <>
+            <p className="text-sm">{t(consentKey)}</p>
+            <label className="flex items-start gap-2"><input type="checkbox" checked={consentVersion === routes.delegationVersion}
+              onChange={e => setConsentVersion(e.target.checked ? routes.delegationVersion : '')} />{t('compliance.sender.delegation.consent')}</label>
+          </>}
+          <div className="flex flex-wrap gap-2">
+            <Button disabled={!disabled || !reconciled || (needsConsent && (!consentKey || consentVersion !== routes.delegationVersion)) || mutation.isPending} onClick={() => mutation.mutate()}>{t('institutionalPortals.activate')}</Button>
+            <Button variant="ghost" onClick={() => { setConfirming(false); setDisabled(false); setReconciled(false); setConsentVersion(''); mutation.reset(); }}>{t('questuraCredentials.cancel')}</Button>
+          </div>
+          {mutation.isError && <p role="alert">{t(code === 'alloggiati_delegation_required' ? 'institutionalPortals.delegation' : 'institutionalPortals.activationFailed')}</p>}
+        </fieldset>
+      )}
+    </div>
+  );
+}

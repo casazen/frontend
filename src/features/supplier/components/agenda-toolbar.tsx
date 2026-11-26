@@ -1,6 +1,8 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { isStayDate } from '@/lib/stay-dates';
 import { Segmented } from '@/components/ui/segmented';
 import { AGENDA_VIEWS, agendaLabel, shiftAgendaDate, type AgendaView } from '../lib/agenda-range';
 
@@ -21,7 +23,10 @@ export function AgendaToolbar({ view, date, today, onViewChange, onDateChange }:
   const { t, i18n } = useTranslation();
 
   return (
-    <div className="space-y-3" data-testid="agenda-toolbar">
+    <div className="space-y-3 rounded-xl bg-muted/60 p-3" data-testid="agenda-toolbar">
+      <h2 className="break-words text-lg font-semibold first-letter:uppercase" aria-live="polite" aria-atomic="true" data-testid="agenda-label">
+        {agendaLabel(view, date, i18n.language)}
+      </h2>
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-3">
         <Segmented<AgendaView>
           label={t('supplier.agenda.views.label')}
@@ -29,7 +34,13 @@ export function AgendaToolbar({ view, date, today, onViewChange, onDateChange }:
           onValueChange={onViewChange}
           options={AGENDA_VIEWS.map((value) => ({ value, label: t(`supplier.agenda.views.${value}`), testId: `agenda-view-${value}` }))}
         />
-        <div role="group" aria-label={t('supplier.agenda.period')} className="flex items-center gap-1">
+        <div role="group" aria-label={t('supplier.agenda.period')} className="flex max-w-full flex-wrap items-center gap-1">
+          <label className="me-1 flex min-w-0 items-center gap-2 text-sm font-medium">
+            {t('booking.calendar.toolbar.date')}
+            <Input type="date" value={date} className="min-h-11 w-auto max-w-full" onChange={(event) => {
+              if (isStayDate(event.target.value)) onDateChange(event.target.value);
+            }} />
+          </label>
           <Button
             type="button"
             variant="outline"
@@ -55,9 +66,6 @@ export function AgendaToolbar({ view, date, today, onViewChange, onDateChange }:
           </Button>
         </div>
       </div>
-      <h2 className="break-words text-lg font-semibold first-letter:uppercase" aria-live="polite" aria-atomic="true" data-testid="agenda-label">
-        {agendaLabel(view, date, i18n.language)}
-      </h2>
     </div>
   );
 }

@@ -78,7 +78,6 @@ function renderStep(options: { status?: PropertyStatus; photos?: string[]; canWr
           status: options.status ?? 'Active',
           canWrite: options.canWrite ?? true,
           canReadBookings: workspace.granted.includes('booking.read'),
-          onEditCin: vi.fn(),
           onReactivate: vi.fn(),
           reactivating: false,
         }),

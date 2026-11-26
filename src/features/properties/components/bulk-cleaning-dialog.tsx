@@ -23,7 +23,6 @@ import {
   cleaningReadOf,
   cleaningStaffOf,
   emptyCleaningForm,
-  groupByComune,
   memberName,
   supplierChoicesOf,
   type CleaningForm,
@@ -105,14 +104,13 @@ function BulkCleaningBody({ save, onClose, routineLink }: { save: BulkSave; onCl
   // The suppliers work in euro: for a property in another currency a member of the staff cleans, whatever was chosen before.
   const form: CleaningForm = currency !== null && currency !== SUPPLIER_CURRENCY && draft.kind === 'Supplier' ? { ...draft, kind: 'Staff' } : draft;
 
-  const groups = useMemo(() => groupByComune(chosen), [chosen]);
   const supplierReads = useCleaningSuppliers(
-    groups.map((group) => group[0].id),
+    chosen.map((property) => property.id),
     form.kind === 'Supplier' && ready,
   );
   // A list that failed to be read again is not used, as for one property: the old suppliers are never offered as if they were still there (the warning says they are not read).
   const supplierChoices = supplierChoicesOf(
-    groups.map((group, index) => ({ size: group.length, suppliers: supplierReads[index]?.isError ? [] : (supplierReads[index]?.data?.items ?? []) })),
+    supplierReads.map((read) => read.isError ? [] : (read.data?.items ?? [])),
     false,
   );
   // The team is read again every time the layer opens, and only by who may list it (the server answers 403 to the others, which sends the whole app to the page of no access).

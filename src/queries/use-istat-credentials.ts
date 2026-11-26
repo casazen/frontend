@@ -37,6 +37,7 @@ export function useSetIstatCredentials(propertyId: string) {
       }
     },
     onSuccess: (status: IstatCredentialsStatus) => {
+      void queryClient.invalidateQueries({ queryKey: ['institutional-routes', propertyId] });
       queryClient.setQueryData(istatCredentialsKey(propertyId), status);
       toast.success(i18n.t('istatCredentials.saved'));
     },
@@ -52,6 +53,7 @@ export function useRemoveIstatCredentials(propertyId: string) {
   return useMutation({
     mutationFn: () => onboardingAssistApi.removeIstatCredentials(propertyId),
     onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['institutional-routes', propertyId] });
       queryClient.setQueryData<IstatCredentialsStatus>(istatCredentialsKey(propertyId), { configured: false, configuredAt: null });
       toast.success(i18n.t('istatCredentials.removed'));
     },

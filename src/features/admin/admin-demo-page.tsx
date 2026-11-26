@@ -111,7 +111,7 @@ export function AdminDemoPage() {
       {data?.available ? (
         <Card>
           <CardContent className="space-y-6 py-6">
-            <label className="flex items-center gap-3">
+            <label className="flex min-h-12 items-center gap-3 rounded-xl border bg-surface-2 p-3 font-semibold">
               <input
                 type="checkbox"
                 checked={data.enabled}
@@ -154,9 +154,9 @@ export function AdminDemoPage() {
 
             <div className="space-y-2">
               <h2 className="text-sm font-medium">{t('admin.demo.scenariosTitle')}</h2>
-              <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+              <ul className="grid gap-2 text-sm sm:grid-cols-2">
                 {data.scenarios.map((scenario) => (
-                  <li key={scenario}>{scenario}</li>
+                  <li key={scenario} className="rounded-md bg-surface-2 px-3 py-2">{scenario}</li>
                 ))}
               </ul>
             </div>
@@ -172,8 +172,8 @@ export function AdminDemoPage() {
             <p className="text-sm text-muted-foreground">{t('admin.demo.applyHelp')}</p>
             <p className="text-sm text-muted-foreground">{t('admin.demo.resetHelp')}</p>
 
-            {notice ? <p className="text-sm">{notice}</p> : null}
-            {actionError ? <p className="text-sm text-destructive">{actionError}</p> : null}
+            {notice ? <p role="status" className="rounded-lg bg-success-soft p-3 text-sm text-success-foreground">{notice}</p> : null}
+            {actionError ? <p role="alert" className="rounded-lg bg-danger-soft p-3 text-sm text-danger-foreground">{actionError}</p> : null}
           </CardContent>
         </Card>
       ) : null}

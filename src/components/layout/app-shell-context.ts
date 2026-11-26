@@ -4,6 +4,7 @@ import type { AppContextKey } from '@/config/route-manifest';
 /** The shell a page is rendered in (UI-03). */
 export interface AppShellContextValue {
   contextKey: AppContextKey;
+  viewKey?: string;
 }
 
 /** Set by `AppShellLayout` around the page of the route; read by `AppShell` to avoid nesting a second shell. */

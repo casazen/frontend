@@ -110,12 +110,12 @@ export function RecordPaymentForm({ options, fixedBookingId, initialBookingId, o
           )}
 
           {balance !== null ? (
-            <p className="text-sm text-foreground/70" data-testid="record-payment-balance">
+            <p className="rounded-xl border border-primary/20 bg-primary/5 p-3 text-sm font-semibold tabular-nums" role="status" data-testid="record-payment-balance">
               {t('payment.create.balance', { amount: formatCurrency(balance) })}
             </p>
           ) : null}
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 @xl:grid-cols-2">
             <Field id="amount" label={t('payment.create.amount')} error={errors.amount}>
               <Input type="number" step="0.01" inputMode="decimal" {...register('amount', { valueAsNumber: true })} placeholder={t('payment.create.amountPlaceholder')} />
             </Field>
@@ -150,7 +150,7 @@ export function RecordPaymentForm({ options, fixedBookingId, initialBookingId, o
         </Alert>
       ) : null}
 
-      <div className="flex justify-end gap-4">
+      <div className="flex flex-wrap justify-end gap-3 border-t pt-4">
         <Button type="button" variant="outline" onClick={onCancel}>
           {t('payment.create.cancel')}
         </Button>

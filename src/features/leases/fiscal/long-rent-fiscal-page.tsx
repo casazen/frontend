@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
-import { Download } from 'lucide-react';
+import { CalendarDays, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { longRentFiscalFileName } from '@/api/long-rent-fiscal.api';
 import { PageHeader } from '@/components/layout/page-header';
@@ -66,18 +66,14 @@ export function LongRentFiscalPage() {
         mobilePrimary="none"
       />
 
-      <Alert variant="info" title={t('longRentFiscal.estimate.title')} data-testid="long-rent-fiscal-estimate">
-        {t('longRentFiscal.estimate.text')}
-      </Alert>
-
       <Tabs
         label={t('longRentFiscal.yearsLabel')}
         param={FISCAL_YEAR_PARAM}
         value={String(year)}
         defaultValue={String(years.current)}
         items={[
-          { value: String(years.current), label: String(years.current), testId: 'long-rent-fiscal-year-current' },
-          { value: String(years.previous), label: String(years.previous), testId: 'long-rent-fiscal-year-previous' },
+          { value: String(years.current), label: String(years.current), icon: CalendarDays, testId: 'long-rent-fiscal-year-current' },
+          { value: String(years.previous), label: String(years.previous), icon: CalendarDays, testId: 'long-rent-fiscal-year-previous' },
         ]}
         className="space-y-6"
       >
@@ -96,6 +92,10 @@ export function LongRentFiscalPage() {
               />
             </StatStrip>
           ) : null}
+
+          <Alert variant="info" title={t('longRentFiscal.estimate.title')} data-testid="long-rent-fiscal-estimate">
+            {t('longRentFiscal.estimate.text')}
+          </Alert>
 
           <ListView
             list={list}

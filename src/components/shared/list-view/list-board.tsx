@@ -60,7 +60,7 @@ export function ListBoardView<Row>({ list, rows, card, menu, onMove, dragEnabled
       onPointerDown={onPointerDown}
       // `relative`: the hidden texts for screen readers (`sr-only`) are placed absolutely; without a positioned box around them
       // they belong to the page and sit where the board has scrolled to, widening the page.
-      className="relative flex snap-x snap-proximity items-start gap-3 overflow-x-auto p-3 sm:p-4"
+      className="relative flex snap-x snap-proximity items-start gap-4 overflow-x-auto bg-surface-2 p-3 sm:p-4"
     >
       {board.columns.map((column) => {
         const items = rows.filter(column.test);
@@ -72,11 +72,11 @@ export function ListBoardView<Row>({ list, rows, card, menu, onMove, dragEnabled
             data-board-column={column.id}
             aria-labelledby={headingId}
             className={cn(
-              'flex w-[84%] shrink-0 snap-start flex-col rounded-lg border bg-muted/40 sm:w-72',
+              'flex w-[84%] shrink-0 snap-start flex-col rounded-xl border bg-card sm:w-72',
               over === column.id && dragging !== null && 'border-dashed border-primary bg-primary/5',
             )}
           >
-            <header className="flex items-center justify-between gap-2 px-3 pb-2 pt-3">
+            <header className="flex items-center justify-between mb-2 gap-2 border-b px-3 py-3">
               <h2 id={headingId} className="inline-flex min-w-0 items-center gap-2 text-sm font-semibold">
                 {Icon ? <Icon className={cn('size-4 shrink-0', TONE_ICON[column.tone ?? 'neutral'])} aria-hidden="true" /> : null}
                 <span className="min-w-0 break-words">{column.label}</span>
@@ -101,7 +101,7 @@ export function ListBoardView<Row>({ list, rows, card, menu, onMove, dragEnabled
                       data-board-card={key}
                       data-testid={`list-board-card-${key}`}
                       data-dragging={dragging === key ? 'true' : undefined}
-                      className={cn('rounded-md border bg-background p-3 shadow-sm', dragEnabled && 'md:cursor-grab', dragging === key && 'opacity-40')}
+                      className={cn('rounded-lg border bg-surface-2 p-3 focus-within:ring-2 focus-within:ring-ring', dragEnabled && 'md:cursor-grab', dragging === key && 'opacity-40')}
                     >
                       <ListCardBody content={built.content} title={built.title} />
                       <div className="mt-3 flex items-center justify-between gap-2" data-no-drag="">

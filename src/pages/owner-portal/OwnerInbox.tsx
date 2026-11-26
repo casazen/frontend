@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { MessageSquarePlus } from 'lucide-react';
+import { Mail, MessageSquarePlus } from 'lucide-react';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { NewConversationForm } from '@/features/owner-portal/new-conversation-form';
@@ -64,7 +64,7 @@ export function OwnerInbox() {
 
   return (
     <div className="space-y-6">
-      <PortalPageHeading
+      <PortalPageHeading icon={Mail}
         title={t('ownerPortal.inbox.title')}
         description={t('ownerPortal.inbox.description')}
         actions={

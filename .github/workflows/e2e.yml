@@ -49,6 +49,41 @@ jobs:
         env:
           CI: true
 
+      - name: Compare the first setup screen with the base branch
+        if: github.event_name == 'pull_request' && matrix.shard == 1
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git fetch --no-tags --depth 1 origin "$BASE_SHA"
+          if git diff --quiet "$BASE_SHA" HEAD -- src/features/onboarding/onboarding-plan-page.tsx src/features/onboarding/components/org-sender-preference.tsx; then
+            exit 0
+          fi
+          before="$RUNNER_TEMP/casazen-setup-before"
+          git worktree add --detach "$before" "$BASE_SHA"
+          cp e2e/onboarding-plan-screen.spec.ts e2e/test.ts "$before/e2e/"
+          cp e2e/helpers/onboarding-plan-screen.ts "$before/e2e/helpers/"
+          cd "$before"
+          npm ci
+          npx playwright test e2e/onboarding-plan-screen.spec.ts --project=chromium --grep 'prima vista' --workers=1 --output="$RUNNER_TEMP/setup-before-results"
+
+      - name: Upload base branch setup screens
+        if: always() && github.event_name == 'pull_request' && matrix.shard == 1
+        uses: actions/upload-artifact@v4
+        with:
+          name: onboarding-plan-before
+          path: ${{ runner.temp }}/setup-before-results/**/piano-avvio-*
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: Upload short-rent setup visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: onboarding-plan-visual-${{ matrix.shard }}
+          path: test-results/**/piano-avvio-*
+          if-no-files-found: ignore
+          retention-days: 30
+
       - name: Upload owner onboarding visual evidence
         if: always()
         uses: actions/upload-artifact@v4

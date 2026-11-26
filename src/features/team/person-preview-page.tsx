@@ -32,9 +32,9 @@ function AreaBlock({ menu }: { menu: AreaMenu }) {
   const titleId = useId();
 
   return (
-    <section aria-labelledby={titleId} className="min-w-0 rounded-2xl border border-border bg-card p-5" data-testid={`preview-area-${menu.area}`}>
-      <h3 id={titleId} className="flex items-center gap-2 break-words font-semibold">
-        {menu.enters ? <CheckCircle2 className="size-5 shrink-0 text-success" aria-hidden /> : <LockKeyhole className="size-5 shrink-0 text-muted-foreground" aria-hidden />}
+    <section aria-labelledby={titleId} className={menu.enters ? "min-w-0 rounded-2xl border border-primary/25 bg-card p-5 shadow-sm" : "min-w-0 rounded-2xl border border-dashed border-border bg-muted/40 p-5"} data-testid={`preview-area-${menu.area}`}>
+      <h3 id={titleId} className="flex flex-wrap items-center gap-3 break-words font-semibold">
+        {menu.enters ? <CheckCircle2 className="size-9 shrink-0 rounded-xl bg-success-soft p-2 text-success-foreground" aria-hidden /> : <LockKeyhole className="size-9 shrink-0 rounded-xl bg-muted p-2 text-muted-foreground" aria-hidden />}
         {areaName(menu.area, t)}
       </h3>
       {menu.enters ? (
@@ -142,7 +142,7 @@ function PersonPreview({ row, callerRole, roles }: { row: PersonRow; callerRole:
   if (may.changeRole) secondary.push({ label: t('team.roles.title'), to: ACCOUNT_ROLES_PATH, testId: 'preview-roles-link' });
 
   return (
-    <div className="mx-auto min-w-0 max-w-6xl space-y-8" data-testid="person-preview">
+    <div className="workspace-page space-y-8" data-testid="person-preview">
       <PageHeader
         title={row.kind === 'invitation' ? t('team.access.titleInvited', { name: row.name }) : t('team.access.title', { name: row.name })}
         description={t('team.access.description', { role: orgRoleLabel(shown.role, t) })}
@@ -157,7 +157,7 @@ function PersonPreview({ row, callerRole, roles }: { row: PersonRow; callerRole:
       />
 
       {tryable.length > 1 && !deactivated ? (
-        <section className="min-w-0 space-y-3 rounded-2xl border border-border bg-card p-5" aria-label={t('team.access.tryLabel')} data-testid="preview-try">
+        <section className="grid min-w-0 items-center gap-4 rounded-3xl border border-primary/20 bg-card p-5 shadow-sm xl:grid-cols-[minmax(12rem,1fr)_minmax(0,2fr)] xl:p-6" aria-label={t('team.access.tryLabel')} data-testid="preview-try">
           <div className="space-y-1">
             <h2 className="font-semibold">{t('team.access.tryRole')}</h2>
             <p className="text-sm text-muted-foreground">{t('team.access.previewHint')}</p>
@@ -235,7 +235,7 @@ function PersonPreview({ row, callerRole, roles }: { row: PersonRow; callerRole:
           ) : null}
 
           <PlainSection title={t('team.access.menuTitle')}>
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3" data-testid="preview-areas">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3" data-testid="preview-areas">
               {menus.map((menu) => (
                 <AreaBlock key={menu.area} menu={menu} />
               ))}

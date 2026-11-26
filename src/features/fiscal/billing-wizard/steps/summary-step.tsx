@@ -136,13 +136,16 @@ export function SummaryStep({ setup, values, steps, preview, accountant }: Summa
         </Alert>
       ) : null}
 
-      <WizardSummary items={rows} />
-
-      <DocumentExample
-        rule={preview.data?.rule}
-        state={preview.isPending ? 'loading' : preview.isError ? 'error' : 'ready'}
-        currency={currency}
-      />
+      <div className="@container">
+        <div className="grid min-w-0 gap-5 @4xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] @4xl:items-start">
+          <WizardSummary items={rows} />
+          <DocumentExample
+            rule={preview.data?.rule}
+            state={preview.isPending ? 'loading' : preview.isError ? 'error' : 'ready'}
+            currency={currency}
+          />
+        </div>
+      </div>
     </>
   );
 }

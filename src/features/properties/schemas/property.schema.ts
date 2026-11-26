@@ -1,3 +1,4 @@
+import { LISTING_DESCRIPTION_MAX } from '@/lib/listing-texts';
 import { z } from 'zod';
 import { optionalCinSchema } from '@/lib/cin-format';
 import type { CreatePropertyDto, Property } from '@/types';
@@ -11,7 +12,7 @@ export const DEFAULT_PROPERTY_TIMEZONE = 'Europe/Rome';
  */
 export const propertyFormSchema = z.object({
   name: z.string().min(3, 'property.validation.name.minLength').max(100, 'property.validation.name.maxLength'),
-  description: z.string().min(10, 'property.validation.description.minLength').max(1000, 'property.validation.description.maxLength'),
+  description: z.string().min(10, 'property.validation.description.minLength').max(LISTING_DESCRIPTION_MAX, 'property.validation.description.maxLength'),
   address: z.string().min(5, 'property.validation.address.required'),
   /** Interno / scala (PC-06): optional, the limit of the API. */
   unit: z.string().max(30, 'property.validation.unit.maxLength').optional(),

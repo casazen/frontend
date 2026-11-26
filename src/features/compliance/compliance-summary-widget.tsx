@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ChevronDown, ChevronRight } from 'lucide-react';
-import { FocusBlock, PlainSection } from '@/components/shared/calm';
+import { CheckCircle2, ChevronDown, ChevronRight, ListChecks } from 'lucide-react';
+import { PlainSection } from '@/components/shared/calm';
 import { ErrorState } from '@/components/shared/error-state';
 import { StatusBadge } from '@/components/shared/status/status-badge';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,7 @@ import { ComplianceRow, ROW_BUTTON } from '@/features/compliance/components/comp
 import { ComplianceSummaryLine } from '@/features/compliance/components/compliance-summary-line';
 import { ComplianceDrawerButton } from '@/features/compliance/compliance-drawer/compliance-drawer-button';
 import { useComplianceDrawerAvailable } from '@/features/compliance/compliance-drawer/use-compliance-drawer';
-import { focusBodyOf, focusToneOf, thenOf, type CockpitBadge, type CockpitRow } from '@/features/compliance/lib/cockpit-model';
+import { type CockpitBadge, type CockpitRow } from '@/features/compliance/lib/cockpit-model';
 import { useCockpit } from '@/features/compliance/use-cockpit';
 import { NoteLine } from '@/features/dashboard/components/note-line';
 
@@ -70,7 +70,7 @@ function CockpitRowItem({ row }: { row: CockpitRow }) {
 /** The rows of a section, one under the other with a line between them. */
 function RowList({ rows }: { rows: readonly CockpitRow[] }) {
   return (
-    <ul role="list" className="divide-y divide-border border-y border-border">
+    <ul role="list" className="divide-y divide-border rounded-2xl border bg-card">
       {rows.map((row) => (
         <CockpitRowItem key={row.id} row={row} />
       ))}
@@ -91,16 +91,7 @@ function Disclosure({ id, label, open, onToggle, testId, children }: { id: strin
   );
 }
 
-/**
- * "Sono in regola?", on the page `/compliance`: first the answer in one line («5 cose da fare: 3 da sistemare, 2 in corso», from the lights
- * the API sends; with nothing to do the block «Sei in regola» it always had, and no new green line: green is what the server proves), then the
- * one thing to do first in the block on top, then what is still to do in three levels that
- * do not weigh the same: what the law dates (the Alloggiati Web communications and the guest data they need, ISTAT, the tourist tax: red,
- * with its deadline in words, never cut, the nearest first), what keeps a property from starting (the activation, calm: without it the
- * property just does not work), and the upkeep of the stays. Inside a level the rows are red first, then yellow, then what has no light
- * («da verificare»); what the API says is in order (green) is behind one line, as are the properties in order. Everything comes from
- * `GET api/compliance/summary`.
- */
+/** Group open obligations by deadline, activation and upkeep. Each action appears once, in its own row. */
 export function ComplianceSummaryWidget() {
   const { t } = useTranslation();
   const { model, summary } = useCockpit({ freshProperties: true });
@@ -109,7 +100,7 @@ export function ComplianceSummaryWidget() {
   const [showGreen, setShowGreen] = useState(false);
   const [showActive, setShowActive] = useState(false);
 
-  if (!model) {
+  if (!model || summary.isError) {
     return (
       <div data-testid="compliance-summary-widget" className="space-y-6">
         {summary.isError ? (
@@ -124,7 +115,7 @@ export function ComplianceSummaryWidget() {
     );
   }
 
-  const { fine, start, chore, focus } = model;
+  const { fine, start, chore } = model;
   const shown = (rows: CockpitRow[], expanded: boolean) => (expanded ? rows : rows.slice(0, CALM_VISIBLE));
   const more = (rows: CockpitRow[], expanded: boolean, toggle: () => void) =>
     rows.length > CALM_VISIBLE
@@ -135,26 +126,12 @@ export function ComplianceSummaryWidget() {
     <div data-testid="compliance-summary-widget" className="space-y-6 md:space-y-8">
       {model.total > 0 ? <ComplianceSummaryLine lights={model.lights} /> : null}
 
-      {focus?.to ? (
-        <FocusBlock
-          tone={focusToneOf(focus)}
-          kicker={t(`compliance.cockpit.kicker.${focus.tier}`)}
-          title={focus.title}
-          body={focusBodyOf(focus)}
-          when={focus.note?.text}
-          then={thenOf(model, focus, t)}
-          primary={{ label: focus.cta, href: focus.to, ariaLabel: `${focus.cta}: ${focus.subject}`, testId: 'compliance-summary-focus-cta' }}
-          data-testid="compliance-summary-focus"
-        />
-      ) : model.total === 0 ? (
-        <FocusBlock
-          tone="success"
-          title={t('compliance.cockpit.allClear.title')}
-          body={t('compliance.cockpit.allClear.body')}
-          primary={{ label: t('compliance.cockpit.allClear.cta'), href: '/app/short-rent/properties', testId: 'compliance-summary-all-clear-cta' }}
-          data-testid="compliance-summary-all-clear"
-        />
-      ) : null}
+      {model.total === 0 && (
+        <div className="flex items-center gap-3 rounded-xl border bg-card p-5" data-testid="compliance-summary-all-clear">
+          {model.lights.lightsOn ? <CheckCircle2 aria-hidden="true" className="size-6 text-success-foreground" /> : <ListChecks aria-hidden="true" className="size-6" />}
+          <h2 className="text-lg font-semibold">{t(model.lights.lightsOn ? 'compliance.cockpit.allClear.title' : 'complianceNoDeadlines')}</h2>
+        </div>
+      )}
 
       {fine.total > 0 ? (
         <PlainSection title={t('compliance.cockpit.fine.title')} count={fine.total} data-testid="compliance-tier-fine">

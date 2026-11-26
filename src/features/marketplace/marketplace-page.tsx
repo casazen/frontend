@@ -1,3 +1,4 @@
+import { Cable, Globe2, Handshake, House, SlidersHorizontal } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -30,6 +31,14 @@ const BUILT_IN_STATUS: Record<'active' | 'pending' | 'inactive', MarketplaceCard
   inactive: 'NotActive',
 };
 
+const DISCOVERY_GROUPS = [
+  { id: 'salesChannels', icon: Globe2 },
+  { id: 'connectedTools', icon: Cable },
+  { id: 'channelManagerFunctions', icon: SlidersHorizontal },
+  { id: 'homeServices', icon: House },
+  { id: 'partners', icon: Handshake },
+] as const;
+
 type CatalogQuery = ReturnType<typeof useMarketplaceCatalog>;
 
 /**
@@ -55,9 +64,21 @@ export function MarketplacePage() {
         />
       }
     >
-      <ChannelManagerGroups />
-      <HomeServicesGroup />
-      <PartnersGroup />
+      <div className="grid min-w-0 gap-5 2xl:grid-cols-[14rem_minmax(0,1fr)]">
+        <nav aria-label={t('marketplace.title')} className="flex flex-wrap content-start gap-1.5 self-start 2xl:sticky 2xl:top-[calc(var(--header-height)+1rem)] 2xl:flex-col">
+          {DISCOVERY_GROUPS.map(({ id, icon: Icon }) => (
+            <a key={id} href={`#catalog-${id}`} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-border bg-card px-3 text-sm font-medium hover:bg-primary-soft focus-visible:outline-2 focus-visible:outline-ring 2xl:rounded-lg">
+              <Icon aria-hidden="true" className="size-4 shrink-0 text-primary-text" />
+              {t(`marketplace.groups.${id}.title`)}
+            </a>
+          ))}
+        </nav>
+        <div className="min-w-0 space-y-8">
+          <ChannelManagerGroups />
+          <HomeServicesGroup />
+          <PartnersGroup />
+        </div>
+      </div>
       <MarketplaceEntryDrawer />
     </MarketplaceFrame>
   );

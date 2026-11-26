@@ -76,7 +76,11 @@ export function AdminLtrReferenceDataPage() {
     <div className="space-y-6">
       <PageHeader title={t('ltrReferenceData.title')} description={t('ltrReferenceData.description')} />
 
-      <Card>
+      <nav aria-label={t('ltrReferenceData.title')} className="flex flex-wrap gap-2">
+        <a href="#ltr-agreements-register" className="inline-flex min-h-11 items-center rounded-lg border bg-card px-4 text-sm font-medium hover:bg-muted">{t('ltrReferenceData.agreementsTitle')}</a>
+        <a href="#ltr-imu-register" className="inline-flex min-h-11 items-center rounded-lg border bg-card px-4 text-sm font-medium hover:bg-muted">{t('ltrReferenceData.imuTitle')}</a>
+      </nav>
+      <Card id="ltr-agreements-register" tabIndex={-1} className="scroll-mt-24">
         <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
           <CardTitle>{t('ltrReferenceData.agreementsTitle')}</CardTitle>
           <div className="flex items-center gap-2">
@@ -120,7 +124,7 @@ export function AdminLtrReferenceDataPage() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card id="ltr-imu-register" tabIndex={-1} className="scroll-mt-24">
         <CardHeader>
           <CardTitle>{t('ltrReferenceData.imuTitle')}</CardTitle>
         </CardHeader>

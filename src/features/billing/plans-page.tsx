@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { CheckCircle2, Info, Loader2, PackageOpen } from 'lucide-react';
+import { Check, CheckCircle2, Info, Loader2, PackageOpen } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
@@ -332,9 +332,9 @@ function BillingPlanCard({ plan, action, portalPending, onCheckout, onPortal }: 
             : t('plan.upToProperties', { count: plan.unitAllowance })}
         </p>
         {plan.features.length > 0 && (
-          <ul className="list-disc space-y-1 pl-5 text-sm">
+          <ul className="space-y-2 border-t pt-4 text-sm">
             {plan.features.map((feature) => (
-              <li key={feature}>{feature}</li>
+              <li key={feature} className="flex items-start gap-2"><Check aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-success-foreground" />{feature}</li>
             ))}
           </ul>
         )}
@@ -383,8 +383,8 @@ function Banner({ tone, testId, busy = false, children }: BannerProps) {
       data-testid={testId}
       className={cn(
         'flex flex-col gap-3 rounded-md border px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between',
-        tone === 'success' && 'border-green-600/40 bg-green-600/10',
-        tone === 'warning' && 'border-amber-500/50 bg-amber-500/10',
+        tone === 'success' && 'border-success-border bg-success-soft',
+        tone === 'warning' && 'border-warning-border bg-warning-soft',
         tone === 'info' && 'bg-muted/40',
       )}
     >

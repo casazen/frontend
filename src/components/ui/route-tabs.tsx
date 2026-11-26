@@ -87,8 +87,8 @@ export function RouteTabs({ label, items, className, selectTestId }: RouteTabsPr
 
   return (
     <nav aria-label={label} className={cn('min-w-0', className)}>
-      {isPhone ? (
-        <div className="mb-4">
+      {isPhone || items.length > 5 ? (
+        <div className="mb-4 max-w-sm">
           <label htmlFor={`${baseId}-select`} className="sr-only">
             {label}
           </label>

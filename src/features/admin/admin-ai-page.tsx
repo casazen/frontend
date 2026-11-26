@@ -61,7 +61,7 @@ function AiProviderForm({ settings }: { settings: AiAdminSettings }) {
 
   return (
     <>
-      <p className="text-sm" data-testid="admin-ai-status">
+      <p role="status" className="rounded-xl bg-primary-soft px-4 py-3 text-sm font-medium text-primary-text" data-testid="admin-ai-status">
         {settings.externalActive
           ? t('admin.ai.statusActive', { provider: settings.provider })
           : t('admin.ai.statusInactive')}
@@ -74,7 +74,7 @@ function AiProviderForm({ settings }: { settings: AiAdminSettings }) {
                   <Label htmlFor="admin-ai-provider">{t('admin.ai.providerLabel')}</Label>
                   <select
                     id="admin-ai-provider"
-                    className="w-full rounded-md border px-3 py-2 text-sm"
+                    className="min-h-11 w-full rounded-md border bg-card px-3 py-2 text-base md:text-sm"
                     value={provider}
                     onChange={(event) => handleProvider(event.target.value as AiProviderName)}
                     data-testid="admin-ai-provider"
@@ -138,7 +138,7 @@ function AiProviderForm({ settings }: { settings: AiAdminSettings }) {
               </div>
 
               {external && (
-                <p className="text-sm text-muted-foreground" data-testid="admin-ai-transfer-warning">
+                <p className="rounded-lg bg-warning-soft p-3 text-sm text-warning-foreground" data-testid="admin-ai-transfer-warning">
                   {provider === 'DeepSeek' ? t('admin.ai.deepSeekWarning') : t('admin.ai.transferWarning')}
                 </p>
               )}

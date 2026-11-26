@@ -1,16 +1,11 @@
 import { LEASE_DRAFT_PLACEHOLDER_DATE, type LeaseDetail } from '@/types';
 
-/**
- * The tabs of the sheet of a lease, in the order they are shown. The names are those of the address (`?tab=`): they never change.
- * `guida` is the first and the one the sheet opens on (LR-GUIDE-1): what to do about the contract, with the tools to decide it; `dati`
- * holds the contract data and `inquilini` holds this contract's tenants. (The jobs asked of suppliers belong to the property's
- * Interventi tab; an address that still names it opens the guide, like any name the sheet does not know.)
- */
-export const LEASE_TABS = ['guida', 'inquilini', 'dati', 'documenti', 'pagamenti', 'scadenze'] as const;
+/** Stable section identifiers also used in bookmarks and action links. */
+export const LEASE_TABS = ['dati', 'inquilini', 'documenti', 'pagamenti', 'scadenze', 'guida'] as const;
 export type LeaseTab = (typeof LEASE_TABS)[number];
 
 /** The tab the sheet opens on when the address says none (or one that does not exist). */
-export const DEFAULT_LEASE_TAB: LeaseTab = 'guida';
+export const DEFAULT_LEASE_TAB: LeaseTab = 'dati';
 
 /** Addresses of the old page and of the design that lead to the tab holding what they showed. */
 const LEGACY_TABS: Readonly<Record<string, LeaseTab>> = { canoni: 'pagamenti', cronologia: 'dati', panoramica: 'dati' };

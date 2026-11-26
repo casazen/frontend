@@ -60,6 +60,7 @@ export interface MarketplaceCatalogEntry {
    * Absent or `false` for the others (Airbnb authorises with a token, Vrbo is activated by the channel manager's support): they go through its panel.
    */
   connectByPropertyId?: boolean;
+  requiresCredentials?: boolean;
 }
 
 export interface MarketplaceCatalogGroup {
@@ -191,6 +192,8 @@ export type MarketplaceActivationRequirement = (typeof MARKETPLACE_ACTIVATION_RE
  * says the portal cannot be connected through the API (the wizard cannot start).
  */
 export interface MarketplaceActivationPlan {
+  verifiedHotelId?: string | null;
+  managedByStaff?: boolean;
   kind: MarketplaceConnectionKind;
   code: string;
   name: string;

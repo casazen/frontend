@@ -65,6 +65,7 @@ function RevealedValues({ values, endsAt, onEnd }: RevealedValuesProps) {
   const lines = [
     { key: 'username', value: values.username },
     { key: 'password', value: values.password },
+    ...(values.unitCode ? [{ key: 'unitCode', value: values.unitCode }] : []),
     ...(values.extraCode ? [{ key: 'extraCode', value: values.extraCode }] : []),
   ];
 

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { AlertTriangle, CheckCircle2, type LucideIcon } from 'lucide-react';
+import { AlertTriangle, type LucideIcon } from 'lucide-react';
 import { PlainSection } from '@/components/shared/calm';
 import { ErrorState } from '@/components/shared/error-state';
 import { Button } from '@/components/ui/button';
@@ -82,21 +82,7 @@ export function TodoSection() {
     });
   }
 
-  if (items.length === 0) {
-    return (
-      <PlainSection title={t('supplier.home.todo.title')} actionLabel={t('supplier.home.todo.requests')} href={INBOX_PATH} data-testid="supplier-todo">
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3" data-testid="supplier-todo-clear">
-          <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-full bg-success-soft text-success-foreground">
-            <CheckCircle2 className="size-[22px]" />
-          </span>
-          <div className="min-w-0 flex-1 basis-52">
-            <p className="font-semibold">{t('supplier.home.todo.allClear')}</p>
-            <p className="text-sm text-foreground/70">{t('supplier.home.todo.allClearHint')}</p>
-          </div>
-        </div>
-      </PlainSection>
-    );
-  }
+  if (items.length === 0) return null;
 
   return (
     <PlainSection title={t('supplier.home.todo.title')} count={items.length} data-testid="supplier-todo">

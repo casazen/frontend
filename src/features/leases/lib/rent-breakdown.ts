@@ -79,3 +79,6 @@ export function rentBreakdown(row: RentMoneySource): RentBreakdown {
     residual: euros(residualCents),
   };
 }
+
+/** The keyboard link and its installment row share this fragment. */
+export const installmentAnchor = (id: string) => `rent-installment-${id}`;

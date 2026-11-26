@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { EmbedSearchResults } from '@/features/embed/booking/embed-search-results';
 import { useEmbedSearchEvents } from '@/features/embed/booking/use-embed-search-events';
 import { useEmbed } from '@/features/embed/embed-context';
+import { useTrackViewItemList } from '@/features/host-tracking/use-track-ecommerce';
 import { HouseCard } from '@/features/public-site/cards/house-card';
 import { useFavorites } from '@/features/public-site/favorites/use-favorites';
 import { formatStayRange } from '@/features/public-site/stay/stay-format';
@@ -95,6 +96,9 @@ export function SearchResultsPage({ scope = PLATFORM_SCOPE }: { scope?: SearchSc
   // Across all the sites the server lists only the free homes; on a site the others follow, with the reason.
   const free = items.filter((card) => card.availability.available);
   const notFree = items.filter((card) => !card.availability.available);
+  // On an agency's own domain, with the visitor's consent, the homes of the list go to its analytics (NF-149): the booking site of an org only (not the search across all
+  // the sites), and not while the list on screen is still the previous answer.
+  useTrackViewItemList(!platform && result && !stays.isPlaceholderData ? free : null);
   const hasFilters = activeFilterCount(search.filters) > 0 || search.filters.tags.length > 0;
   // The map shows the same homes as the list (the ones free first, then the others) and is not loaded at all while a phone shows the list.
   const showMap = items.length > 0 && (desktop || search.view === 'map');

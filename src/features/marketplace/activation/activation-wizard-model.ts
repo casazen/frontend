@@ -144,6 +144,13 @@ export interface MissingAccess {
 }
 
 /** The access data the portal asks for that is not there yet. Nothing is asked that the portal does not ask for. */
+export function hotelIdsFor(entered: Readonly<Record<string, string>>, plans: ReadonlyMap<string, MarketplaceActivationPlan>) {
+  return {
+    ...entered,
+    ...Object.fromEntries([...plans].flatMap(([id, plan]) => plan.verifiedHotelId ? [[id, plan.verifiedHotelId]] : [])),
+  };
+}
+
 export function missingAccess(
   requirements: ActivationRequirements,
   propertyIds: readonly string[],
@@ -233,20 +240,12 @@ export function stepToFix(code: string | null | undefined, accessStep = true): A
 /** The refusal of the channel itself (the channel manager's 550): told as «the channel refused the connection», never as an error of CasaZen. */
 export const CHANNEL_REFUSAL_CODE = 'octorate_partner_failed';
 
-/** The three imports the channel manager makes for a channel, in the order they are asked. */
-export const IMPORT_ITEMS = ['rooms', 'reservations', 'calendar'] as const;
-export type ImportItem = (typeof IMPORT_ITEMS)[number];
+export type ImportItemState = 'queued' | 'starting' | 'waiting' | 'done';
 
-/** Where one import stands for the screen: not asked yet, being asked, asked (and done by the channel manager on its own), the rooms awaited, the rooms arrived. */
-export type ImportItemState = 'queued' | 'starting' | 'requested' | 'waiting' | 'done';
-
-/**
- * What CasaZen can say of one import. Only the rooms can be seen to arrive (the mapping read gives them), so only the rooms are ever `done`; the reservations and the
- * calendar are `requested` once asked, and never shown as finished: the server cannot be asked how far they are.
- */
-export function importItemState(item: ImportItem, progress: { starting: boolean; requested: boolean; roomsIn: boolean }): ImportItemState {
-  if (item === 'rooms' && progress.roomsIn) return 'done';
-  if (progress.requested) return item === 'rooms' ? 'waiting' : 'requested';
+/** What CasaZen can verify about the rooms before mapping. */
+export function importRoomState(progress: { starting: boolean; requested: boolean; roomsIn: boolean }): ImportItemState {
+  if (progress.roomsIn) return 'done';
+  if (progress.requested) return 'waiting';
   return progress.starting ? 'starting' : 'queued';
 }
 

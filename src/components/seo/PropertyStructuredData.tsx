@@ -7,7 +7,7 @@ interface PropertyStructuredDataProps {
 }
 
 /**
- * JSON-LD structured data for a property page (schema.org LodgingBusiness, AC-NF25-1).
+ * JSON-LD structured data for a property page (schema.org VacationRental, AC-NF25-1).
  * The script is added to the `<head>` and removed on unmount: crawlers read the data,
  * link previews may show rich snippets. Only properties with a canonical URL are indexed.
  */
@@ -20,7 +20,12 @@ export function PropertyStructuredData({ property, org }: PropertyStructuredData
 
     const structuredData = {
       '@context': 'https://schema.org',
-      '@type': 'LodgingBusiness',
+      '@type': 'VacationRental',
+      identifier: property.id,
+      containsPlace: {
+        '@type': 'Accommodation',
+        ...(property.maxGuests > 0 ? { occupancy: { '@type': 'QuantitativeValue', value: property.maxGuests } } : {}),
+      },
       name: property.name,
       ...(property.description ? { description: property.description } : {}),
       address: {

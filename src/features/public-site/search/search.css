@@ -91,8 +91,12 @@
 .sr-bar {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
   margin-bottom: 28px;
+  padding: clamp(12px, 2vw, 24px);
+  border: 1px solid var(--cz-public-border);
+  border-radius: var(--cz-public-radius-xl);
+  background: var(--cz-public-surface);
 }
 
 .sr-bar__stay {
@@ -719,4 +723,25 @@
   justify-content: space-between;
   gap: 10px;
   margin-top: 16px;
+}
+
+/* Without a map, compare media-led listings side by side. With a map, keep the compact rows. */
+@media (min-width: 56rem) {
+  .sr-body:not(.sr-body--map) .sr-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+    align-items: stretch;
+  }
+  .sr-body:not(.sr-body--map) .hcard--row {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+  }
+  .sr-body:not(.sr-body--map) .hcard__media {
+    width: 100%;
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+  }
+  .sr-body:not(.sr-body--map) .hcard--row .hcard__body { padding: 1rem; }
 }

@@ -2,6 +2,15 @@ import { ApiClient } from './client';
 import type { GuestDataExport, GuestPrivacySummary } from '@/types';
 
 export const gdprApi = {
+  getPortalRequests: (guestId: string) => ApiClient.get<{
+    id: string;
+    activityType: 'GuestDataCopyRequested' | 'GuestDataErasureRequested';
+    deadline: string | null;
+  }[]>(`/gdpr/guests/${guestId}/portal-requests`),
+
+  completePortalRequest: (guestId: string, requestId: string) =>
+    ApiClient.post<void>(`/gdpr/guests/${guestId}/portal-requests/${requestId}/complete`),
+
   /** Consents with their versions, retention per category and status of the guest's data (CO-15). */
   getSummary: (guestId: string) => ApiClient.get<GuestPrivacySummary>(`/gdpr/guests/${guestId}`),
 
