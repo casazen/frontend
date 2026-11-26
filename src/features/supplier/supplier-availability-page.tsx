@@ -68,6 +68,7 @@ export function SupplierAvailabilityPage() {
             closedDays: agenda.closedDays,
             timeOff: agenda.timeOff,
             blocks: agenda.blocks,
+            guestOrders: agenda.guestOrders,
             requests: agenda.requests,
             conflicts: conflictMarks,
           })

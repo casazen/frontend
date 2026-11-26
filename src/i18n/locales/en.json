@@ -28773,6 +28773,7 @@
     "available": "Available",
     "eventBlock": "block",
     "eventExtraOpening": "extra opening",
+    "eventGuestOrder": "Guest order",
     "eventFromCalendar": "from calendar",
     "eventRequest": "job",
     "eventTimeOff": "time off",

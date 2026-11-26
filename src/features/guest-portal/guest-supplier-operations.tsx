@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react';
+import { SupplierOrderFiles } from './guest-supplier-files';
 import { SupplierInviteIdentityFields } from '@/features/supplier/supplier-invite-identity-fields';
 import { readSupplierInviteIdentity } from '@/features/supplier/read-supplier-invite-identity';
 import { useState } from 'react';
@@ -55,6 +57,17 @@ export function GuestSupplierOperations({ scope }: { scope: Scope }) {
     refetchOnWindowFocus: 'always',
     refetchInterval: ({ state }) => scope.role === 'supplier' && state.data && !state.error ? GUEST_ORDER_REFRESH_MS : false,
   });
+  const lastFocusedOrder = useRef('');
+  useEffect(() => {
+    if (scope.role !== 'supplier' || !query.data) return;
+    const anchor = window.location.hash.slice(1);
+    if (!anchor.startsWith('guest-order-') || lastFocusedOrder.current === anchor) return;
+    const order = document.getElementById(anchor);
+    if (order) {
+      lastFocusedOrder.current = anchor;
+      order.focus();
+    }
+  }, [scope.role, query.data]);
   const change = useMutation({
     mutationFn: ({ suffix, body, method }: { suffix: string; body: object; method?: 'put' }) =>
       method === 'put' ? ApiClient.put(`${endpoint}${suffix}`, body) : ApiClient.post(`${endpoint}${suffix}`, body),
@@ -91,7 +104,7 @@ export function GuestSupplierOperations({ scope }: { scope: Scope }) {
         });
         const disputable = order.state === 'Disputed';
         return (
-          <article className="grid gap-2 rounded-lg border p-3" key={order.id}>
+          <article className="grid gap-2 rounded-lg border p-3" key={order.id} id={`guest-order-${order.id}`} tabIndex={-1}>
             <h3 className="font-semibold">{order.serviceName} · {order.supplierName}</h3>
             <p>{orderStatus(order.state)} · {orderMoney(order.totalCents)} · {order.stripeSandbox ? 'Stripe sandbox' : 'Simulazione'}</p>
             <p>{new Date(order.requestedFor).toLocaleString('it-IT', { timeZone: 'Europe/Rome' })}</p>
@@ -100,6 +113,8 @@ export function GuestSupplierOperations({ scope }: { scope: Scope }) {
             {order.supplierReply && <p>Risposta fornitore: {order.supplierReply}</p>}
             {order.decision && <p>Decisione: {order.decision} · Rimborso {orderMoney(order.refundCents)}</p>}
             {scope.role === 'supplier' && <>
+              {order.stripeSandbox && ['Accepted', 'Completed', 'Disputed', 'Resolved', 'Released'].includes(order.state) &&
+                <SupplierOrderFiles orderId={order.id} />}
               {order.state === 'PendingQuote' && <ActionForm amountLabel="Prezzo in euro" button="Invia preventivo" busy={change.isPending}
                 send={(priceCents) => transition('quote', { priceCents })} />}
               <div className="flex flex-wrap gap-2">
