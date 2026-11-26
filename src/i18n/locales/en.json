@@ -4189,6 +4189,9 @@
     },
     "account": {
       "title": "My stays",
+      "attach": "Add this stay to my account",
+      "dismiss": "Cancel",
+      "attachError": "This stay could not be linked. Check the link with the property.",
       "verifyEmail": "Verify your account email address and sign in again.",
       "empty": "No open stays with this email address.",
       "signOut": "Sign out"

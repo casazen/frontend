@@ -25,7 +25,7 @@ import type { HouseGuide } from './house-guide-fields';
 import { GuestPortalCancellation } from './guest-portal-cancellation';
 import { GuestPortalStayChange } from './guest-portal-stay-change';
 import { useStayManifest } from './use-stay-manifest';
-import { guestAccountStaysPath } from './guest-account-stays-page';
+import { guestAccountStaysPath, rememberStayForAccount } from './guest-account-stays-page';
 import { GuestPortalPrivacy } from './guest-portal-privacy';
 import './guest-portal.css';
 
@@ -112,6 +112,7 @@ const copy = {
   refund: ['Rimborso previsto', 'Expected refund', 'Voraussichtliche Erstattung', 'Remboursement prévu', 'Reembolso previsto'],
   refundChanged: ['Controlla il rimborso aggiornato prima di confermare.', 'Review the updated refund before confirming.', 'Prüfe die neue Erstattung vor der Bestätigung.', 'Vérifiez le nouveau remboursement avant de confirmer.', 'Revisa el nuevo reembolso antes de confirmar.'],
   accessCode: ['Mostra il codice di accesso', 'Show access code', 'Zugangscode anzeigen', 'Afficher le code d’accès', 'Mostrar código de acceso'],
+  attachAccount: ['Aggiungi al mio account', 'Add to my account', 'Meinem Konto hinzufügen', 'Ajouter à mon compte', 'Añadir a mi cuenta'],
   account: ['I miei soggiorni', 'My stays', 'Meine Aufenthalte', 'Mes séjours', 'Mis estancias'],
   privacy: ['Privacy e dati personali', 'Privacy and personal data', 'Datenschutz und personenbezogene Daten', 'Confidentialité et données personnelles', 'Privacidad y datos personales'],
   dataCopy: ['Richiedi una copia dei dati', 'Request a copy of your data', 'Eine Kopie deiner Daten anfordern', 'Demander une copie de vos données', 'Solicitar una copia de tus datos'],
@@ -383,7 +384,7 @@ function GuestPortalPage({ token }: { token: string }) {
                 <Link className="stay-card" to={href('payments')}><CreditCard aria-hidden="true" />{text('payments')}<ChevronRight aria-hidden="true" /></Link>
                 <Link className="stay-card" to={href('documents')}><FileText aria-hidden="true" />{text('documents')}<ChevronRight aria-hidden="true" /></Link>
                 <Link className="stay-card" to={href('privacy')}>{text('privacy')}<ChevronRight aria-hidden="true" /></Link>
-                <Link className="stay-card" to={guestAccountStaysPath}>{text('account')}<ChevronRight aria-hidden="true" /></Link>
+                <Link className="stay-card" to={guestAccountStaysPath} onClick={() => { if (stay.isOta) rememberStayForAccount(token); }}>{text(stay.isOta ? 'attachAccount' : 'account')}<ChevronRight aria-hidden="true" /></Link>
                 {stay.isOta && <p className="stay-card">{text('otaChanges')} {channel && <a href={channel.url} rel="noreferrer">{channel.name}</a>}</p>}
               </>
             ) : (

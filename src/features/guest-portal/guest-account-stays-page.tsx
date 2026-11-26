@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { ApiClient } from '@/api/client';
@@ -8,6 +9,24 @@ import { useSeoMeta } from '@/lib/seo-meta';
 import { useAuth } from '@/hooks/use-auth';
 
 export const guestAccountStaysPath = '/app/guest-stays';
+
+const pendingStayKey = 'guest-stay-to-attach';
+
+export function rememberStayForAccount(token: string) {
+  try {
+    sessionStorage.setItem(pendingStayKey, JSON.stringify({ token, expires: Date.now() + 10 * 60_000 }));
+  } catch { /* The guest can still open their existing stays without browser storage. */ }
+}
+
+function readPendingStay(): string | null {
+  try {
+    const item = JSON.parse(sessionStorage.getItem(pendingStayKey) ?? 'null');
+    if (typeof item?.token === 'string' && /^[A-Za-z0-9_-]{32}$/.test(item.token) && item.expires > Date.now()) {
+      return item.token;
+    }
+  } catch { /* Storage may be unavailable in private browsing. */ }
+  return null;
+}
 
 interface Stay {
   id: string;
@@ -29,6 +48,15 @@ export function GuestAccountStaysPage() {
     gcTime: 0,
     retry: false,
   });
+  const [pendingStay, setPendingStay] = useState(readPendingStay);
+  const clearPending = () => {
+    setPendingStay(null);
+    try { sessionStorage.removeItem(pendingStayKey); } catch { /* Storage is optional. */ }
+  };
+  const attach = useMutation({
+    mutationFn: () => ApiClient.post('/guest/stays/attach', { token: readPendingStay() }, { localAuthRecovery: true }),
+    onSuccess: () => { clearPending(); void stays.refetch(); },
+  });
   const open = useMutation({
     mutationFn: (id: string) => ApiClient.post<{ url: string }>(`/guest/stays/${id}/open`, undefined, { localAuthRecovery: true }),
     onSuccess: ({ url }) => window.location.assign(url),
@@ -46,6 +74,11 @@ export function GuestAccountStaysPage() {
       {stays.isError && <p role="alert">
         {t(getHttpStatus(stays.error) === 403 ? 'guestPortal.account.verifyEmail' : 'guestPortal.host.unavailable')}
       </p>}
+      {stays.isSuccess && pendingStay && flags.guestPortal && <div className="flex flex-wrap gap-3">
+        <Button onClick={() => attach.mutate()} disabled={attach.isPending}>{t('guestPortal.account.attach')}</Button>
+        <Button variant="outline" onClick={clearPending} disabled={attach.isPending}>{t('guestPortal.account.dismiss')}</Button>
+        {attach.isError && <p role="alert">{t('guestPortal.account.attachError')}</p>}
+      </div>}
       {open.isError && <p role="alert">{t('guestPortal.host.changeError')}</p>}
       {stays.data?.length === 0 && <p>{t('guestPortal.account.empty')}</p>}
       {stays.data?.map((stay) => (

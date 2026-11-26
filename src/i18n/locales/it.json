@@ -4189,6 +4189,9 @@
     },
     "account": {
       "title": "I miei soggiorni",
+      "attach": "Aggiungi questo soggiorno al mio account",
+      "dismiss": "Annulla",
+      "attachError": "Impossibile associare il soggiorno. Verifica il link con la struttura.",
       "verifyEmail": "Verifica l’indirizzo email del tuo account e accedi di nuovo.",
       "empty": "Nessun soggiorno aperto con questo indirizzo email.",
       "signOut": "Esci"
