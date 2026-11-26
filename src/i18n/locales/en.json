@@ -28524,6 +28524,15 @@
     }
   },
   "supplier": {
+    "documentPlan": {
+      "title": "Test document breakdown",
+      "sale": "Sale by {{seller}} to the guest, full price",
+      "saleRefund": "Commercial refund to the guest",
+      "hostFee": "Host commission payable by {{seller}}, included in the price",
+      "platformFee": "CasaZen commission payable by {{seller}}, included in the price",
+      "feeRefund": "Commission adjustment on the refund",
+      "note": "Gross test amounts. Determine VAT on the service and VAT on the commission separately using each transaction and the tax profiles of the parties involved."
+    },
     "adjustments": {
       "recorded": "Decision recorded.",
       "amount": "Refund in euros (0 to close without a refund)",

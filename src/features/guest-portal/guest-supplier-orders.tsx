@@ -85,12 +85,10 @@ export function GuestSupplierOrders({ path, language, checkIn, checkOut }: {
       {query.data.orders.map((order) => (
         <article className="stay-card stay-content" key={order.id}>
           <h3>{order.serviceName}</h3>
-          <p>{order.supplierName} · {orderStatus(order.state, language)}</p>
+          <p>{text.seller.replace('{seller}', () => order.supplierName)} · {orderStatus(order.state, language)}</p>
           <p>{new Intl.DateTimeFormat(language, { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Europe/Rome' })
             .format(new Date(order.requestedFor))}</p>
           {order.totalCents > 0 && <dl>
-            <div><dt>{text.price}</dt><dd>{orderMoney(order.supplierPriceCents, language)}</dd></div>
-            <div><dt>{text.fee}</dt><dd>{orderMoney(order.commissionCents, language)}</dd></div>
             <div><dt>{text.total}</dt><dd>{orderMoney(order.totalCents, language)}</dd></div>
             {(order.refundStatus === 'processing' || order.refundStatus === 'failed' || order.refundStatus === 'review') &&
               <div><dt>{checkoutText(language)(order.refundStatus === 'processing' ? 'refundProcessing' :
@@ -152,7 +150,7 @@ function OfferForm({ offer, language, sandbox, earliestDate, latestDate, busy, s
         setRequestId(crypto.randomUUID());
         setInvalidTime(false);
       }}>
-        <p>{offer.category} · {offer.supplierName}</p>
+        <p>{offer.category} · {text.seller.replace('{seller}', () => offer.supplierName)}</p>
         {offer.summary && <p>{offer.summary}</p>}
         <label>{text.date} <input className="stay-supplier-input" type="date" name="date" min={sandbox ? earliestDate : undefined} max={sandbox ? latestDate : undefined} required /></label>
         <label>{text.time} <input className="stay-supplier-input" type="time" name="time" required /></label>

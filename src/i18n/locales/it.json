@@ -28524,6 +28524,15 @@
     }
   },
   "supplier": {
+    "documentPlan": {
+      "title": "Prospetto documenti di test",
+      "sale": "Vendita di {{seller}} all’ospite, prezzo complessivo",
+      "saleRefund": "Rimborso commerciale all’ospite",
+      "hostFee": "Commissione dell’host a carico di {{seller}}, inclusa nel prezzo",
+      "platformFee": "Commissione di CasaZen a carico di {{seller}}, inclusa nel prezzo",
+      "feeRefund": "Quota di commissione da rettificare sul rimborso",
+      "note": "Importi lordi di prova. Classificare separatamente l’IVA del servizio e quella della commissione secondo le rispettive operazioni e i profili fiscali delle parti."
+    },
     "adjustments": {
       "recorded": "Decisione registrata.",
       "amount": "Rimborso in euro (0 per chiudere senza rimborso)",
