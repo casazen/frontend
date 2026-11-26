@@ -149,6 +149,11 @@ jobs:
     name: E2E embed (cross-origin)
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    env:
+      # The step builds the whole app: the `webServer` of Playwright runs `npm run build` and passes its environment on (`{ ...process.env, ...env }`).
+      # On Node 20 a process dies at about 2 GB of heap ("JavaScript heap out of memory", exit 134), and that build needs more at times, so that a
+      # rerun sometimes passes: the heap of every Node process of the job is raised to 4 GB.
+      NODE_OPTIONS: --max-old-space-size=4096
     steps:
       - uses: actions/checkout@v4
 
