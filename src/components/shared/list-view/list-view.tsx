@@ -1,3 +1,4 @@
+import { useAppShell } from '@/components/layout/app-shell-context';
 import { useMemo, useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Download, Inbox, ListFilter, SearchX } from 'lucide-react';
@@ -115,7 +116,9 @@ export function ListView<Row>({
   const isPhone = useMediaQuery(PHONE_QUERY);
   const listState = useListState(list);
   const { state } = listState;
-  const savedViews = useSavedViews(list.key, viewsScope);
+  const shell = useAppShell();
+  const defaultScope = shell?.viewKey ? { userId: shell.viewKey, context: shell.contextKey } : null;
+  const savedViews = useSavedViews(list.key, viewsScope === undefined ? defaultScope : viewsScope);
   const detailFocus = useReturnFocus();
   const detailDrawer = useDetailDrawer();
 

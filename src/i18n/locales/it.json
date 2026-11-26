@@ -1,4 +1,20 @@
 {
+  "workspaceView": {
+    "focusForms": "Nei percorsi guidati, tieni chiuso l’elenco dei passaggi",
+    "propertySettings": "Configurazione per immobile",
+    "property": "Immobile",
+    "chooseProperty": "Scegli un immobile",
+    "tasksFirst": "Mostra prima le attività nel cruscotto",
+    "title": "Personalizza area di lavoro",
+    "scope": "Le preferenze si salvano su questo dispositivo per il tuo profilo e per questa area.",
+    "compact": "Tabelle e margini compatti",
+    "help": "Scegli le voci da tenere in primo piano. Le altre restano in Altre funzioni e nella ricerca.",
+    "other": "Altre funzioni",
+    "reset": "Ripristina vista iniziale",
+    "done": "Fine",
+    "search": "Cerca nelle impostazioni",
+    "noMatches": "Nessuna impostazione corrisponde alla ricerca."
+  },
   "complianceNoDeadlines": "Nessuna scadenza in elenco",
   "dashboardNoPending": "Nessuna priorità operativa in elenco",
   "dashboardPrioritiesPartial": "Alcune priorità non sono disponibili.",

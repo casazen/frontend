@@ -9,6 +9,8 @@ import type { ContextNav, RouteManifestEntry } from '@/config/route-manifest';
 import type { NavCounts } from '@/hooks/use-nav-counts';
 import { NavCountPill } from './nav-count-pill';
 import { NavIcon } from './nav-icon';
+import { useAppShell } from './app-shell-context';
+import { DEFAULT_WORKSPACE_VIEW, useUiStore } from '@/store/ui-store';
 import { useRailTooltip } from './rail-tooltip';
 
 /** `sidebar`: the list of the sidebar (or its rail of icons). `sheet`: the tiles of the sheet "Altro" of the phone. */
@@ -229,7 +231,7 @@ export function FooterNavLinks({ entries, matchEntries, collapsed = false, count
  * and shows "Altro" and the foot of the sidebar as two more groups.
  */
 export function GroupedNavLinks({
-  nav,
+  nav: originalNav,
   matchEntries,
   variant = 'sidebar',
   collapsed = false,
@@ -239,6 +241,13 @@ export function GroupedNavLinks({
   const { t } = useTranslation();
   const { pathname } = useLocation();
   const baseId = useId();
+  const key = useAppShell()?.viewKey;
+  const view = useUiStore(state => (key && state.workspaceViews[key]) || DEFAULT_WORKSPACE_VIEW);
+  const moved = originalNav.sections.flatMap(section => section.entries.filter(entry => view.secondaryPaths.includes(entry.path)));
+  const nav = moved.length ? {
+    ...originalNav,
+    sections: originalNav.sections.map(section => ({ ...section, entries: section.entries.filter(entry => !view.secondaryPaths.includes(entry.path)) })).filter(section => section.entries.length),
+  } : originalNav;
   const [folded, setFolded] = useState<Record<string, boolean>>({});
   const activePath = resolveActiveNavEntry(pathname, matchEntries)?.path;
   const isSheet = variant === 'sheet';
@@ -308,6 +317,14 @@ export function GroupedNavLinks({
           </div>
         );
       })}
+      {moved.length > 0 && (
+        <details key={activePath} open={moved.some(entry => entry.path === activePath)} className="min-w-0">
+          <summary className="min-h-11 cursor-pointer content-center rounded-lg px-2 text-sm font-medium focus-visible:outline-ring" aria-label={t('workspaceView.other')}>
+            <span className={collapsed ? 'sr-only' : undefined}>{t('workspaceView.other')}</span>
+          </summary>
+          <ul className={listClass}>{moved.map(renderEntry)}</ul>
+        </details>
+      )}
       {nav.more.length === 0 ? null : isSheet ? (
         <div
           role="group"

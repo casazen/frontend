@@ -320,7 +320,7 @@ export function DataView<Row>({
         {/* `relative`: the caption and the hidden title of the actions are `sr-only`, that is absolutely placed; without a
             positioned box around them they belong to the page, and sit where the table has scrolled to, widening it. */}
         <div className="relative overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="workspace-data-table w-full text-sm">
             <caption className="sr-only">{label}</caption>
             <thead>
               <tr className="border-b bg-surface-2">

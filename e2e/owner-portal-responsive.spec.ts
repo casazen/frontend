@@ -364,6 +364,14 @@ test.describe('Owner portal: phones, tablet and desktop (E07/F07/US01/T03)', () 
 
         await page.keyboard.press('Tab');
         await expect(page.getByRole('link', { name: 'Vai al contenuto' })).toBeFocused();
+        await page.keyboard.press('Tab');
+        const toggle = page.getByRole('button', { name: 'Comprimi menu' });
+        await expect(toggle).toBeFocused();
+        await page.keyboard.press('Enter');
+        await expect(nav).toBeHidden();
+        await expect(page.getByRole('button', { name: 'Espandi menu' })).toBeFocused();
+        await page.keyboard.press('Enter');
+        await expect(nav).toBeVisible();
         for (const name of ['Panoramica', 'Immobili e calendario', 'Contabilità', 'Documenti', 'Messaggi', 'Contatti']) {
           await page.keyboard.press('Tab');
           const link = nav.getByRole('link', { name, exact: true });

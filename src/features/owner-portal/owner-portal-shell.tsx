@@ -1,3 +1,4 @@
+import { ResidentNavigation } from '@/components/layout/resident-navigation';
 import { useEffect } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -47,7 +48,7 @@ export function OwnerPortalShell() {
         <div className="resident-rail__inner">
           <p className="resident-title"><Building2 aria-hidden="true" />{t('ownerPortal.shell.title')}</p>
           {/* The places of the portal and the way out are one row that wraps: the same order for the eye and for the keyboard, nothing fixed to the screen. */}
-          <nav aria-label={t('ownerPortal.shell.nav.label')} className="resident-nav" data-testid="owner-nav">
+          <ResidentNavigation label={t('ownerPortal.shell.nav.label')} testId="owner-nav">
             <NavLink to={ownerPortalPaths.home} end className={linkClass}>
               <LayoutDashboard aria-hidden="true" />{t('ownerPortal.shell.nav.home')}
             </NavLink>
@@ -77,7 +78,7 @@ export function OwnerPortalShell() {
               <LogOut aria-hidden="true" className="size-4" />
               {t('ownerPortal.shell.signOut')}
             </Button>
-          </nav>
+          </ResidentNavigation>
         </div>
       </header>
       <main id={MAIN_ID} tabIndex={-1} className="resident-main focus:outline-none">

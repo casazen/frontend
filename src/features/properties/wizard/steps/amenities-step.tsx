@@ -7,6 +7,7 @@ import { ChoiceCard, ChoiceGroup } from '@/components/ui/choice-card';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import { describeAmenity } from '@/lib/public-amenities';
 import { getProblemMessage } from '@/lib/api-errors';
 import { labelLanguage, useAmenityCatalog } from '@/queries/use-amenity-catalog';
 import { matchesAmenity } from '../amenity-search';
@@ -96,6 +97,7 @@ export function AmenitiesStep({ form, propertyId }: AmenitiesStepProps) {
                   key={entry.name}
                   type="checkbox"
                   value={entry.name}
+                  icon={describeAmenity(entry.name)?.icon}
                   title={entry.label[language]}
                   checked={amenities.includes(entry.name)}
                   onChange={() => toggle(entry.name)}
