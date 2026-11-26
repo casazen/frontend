@@ -44,6 +44,7 @@ import {
   formatDayMonth,
   formatMonthYear,
   formatPrice,
+  formatPriceShort,
   weekdayInitials,
   weekdayName,
 } from './stay-format';
@@ -82,7 +83,7 @@ interface DayCellProps {
   priceCents: number | null;
   /** A free night that no stay can start on (the host closed the arrival): marked with an icon and named in the label of the day. */
   closedToArrival: boolean;
-  /** The currency the calendar says; `null` when it says none (the price is then written with no symbol and the phrase that says so). */
+  /** The currency the calendar says; `null` when it says none (the cell then writes the number alone; the name of the day and the total of the stay say that the currency is not available). */
   currency: string | null;
   locale: string;
   showPrice: boolean;
@@ -173,7 +174,8 @@ const DayCell = memo(function DayCell({
       >
         <span className="stay-cal__n">{dayNumber}</span>
         {showPrice && !busy && priceCents !== null ? (
-          <span className="stay-cal__p">{formatPrice(priceCents, currency, locale, t)}</span>
+          // A cell is 54px wide: with no currency it holds the number alone (the phrase is in the name of the day, above, and in the total of the stay).
+          <span className="stay-cal__p">{formatPriceShort(priceCents, currency, locale, t)}</span>
         ) : null}
         {closedToArrival ? <DoorClosed className="stay-cal__x" aria-hidden="true" /> : null}
       </button>

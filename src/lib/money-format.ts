@@ -42,6 +42,15 @@ function numberFormat(locale: string, code: string | null, digits: MoneyDigits |
 }
 
 /**
+ * An amount with nothing said about its currency: only the number, in the language of the page (`145,00`). It is for the places where there is no one currency to
+ * name (a slider that spans homes of two currencies) or no room for the phrase (a cell of the calendar, which has the phrase in its name): never for data that lacks a
+ * currency where there is room to say so, which `formatMoney` writes with the phrase.
+ */
+export function formatAmount(amount: number, locale: string, digits?: MoneyDigits): string {
+  return numberFormat(locale, null, digits).format(amount);
+}
+
+/**
  * An amount in the language of the page: `145,00 €` in Italian, `€145.00` in English, `CHF 145.00` for a home in Switzerland. The currency is the one
  * the data says (`currency`, an ISO 4217 code), never a default. When the data says none, or says something that is not a code, the amount is written
  * with no symbol and the phrase of `siteMoney.currencyNotAvailable` after it (`145,00 (valuta non disponibile)`), and nothing is converted. It never throws.

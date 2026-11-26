@@ -50,10 +50,13 @@ describe('StayCalendar currency', () => {
     ['missing', undefined],
     ['null', null],
     ['not a code (XX1)', 'XX1'],
-  ] as const)('StayCalendar_Currency%s_WritesPricesWithNoSymbolAndTheNameOfTheDayAndTheTotalSayTheCurrencyIsNotAvailable', (_name, currency) => {
+  ] as const)('StayCalendar_Currency%s_WritesTheNumberAloneInTheCellAndTheNameOfTheDayAndTheTotalSayTheCurrencyIsNotAvailable', (_name, currency) => {
     render(<Harness calendar={data(currency)} />);
 
-    expect(price('2026-11-10')).toBe('150 (valuta non disponibile)');
+    // A cell has no room for the phrase: the number alone, with no symbol (a long phrase would run over the days next to it)...
+    expect(price('2026-11-10')).toBe('150');
+    expect(document.querySelector('[data-testid="stay-calendar"] .stay-cal__p')?.textContent).not.toContain('valuta');
+    // ...and the phrase is where there is room for it: the name of the day (what a screen reader says) and the total of the stay.
     expect(day('2026-11-10').getAttribute('aria-label')).toContain('150 (valuta non disponibile) a notte');
 
     fireEvent.click(day('2026-11-10'));
@@ -66,7 +69,8 @@ describe('StayCalendar currency', () => {
     await i18n.changeLanguage('en');
     render(<Harness calendar={data('')} />);
 
-    expect(price('2026-11-10')).toBe('150 (currency not available)');
+    expect(price('2026-11-10')).toBe('150');
+    expect(day('2026-11-10').getAttribute('aria-label')).toContain('150 (currency not available)');
     fireEvent.click(day('2026-11-10'));
     fireEvent.click(day('2026-11-13'));
     expect(status()).toContain('3 nights, 450 (currency not available).');

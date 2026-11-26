@@ -1,7 +1,19 @@
+import type { TFunction } from 'i18next';
 import { SITE_TAGS, countTags, isSiteTag, type SiteTag } from '@/features/public-site/cards/site-tags';
 import { maxGuestsOf } from '@/features/public-site/home/home-model';
+import { formatPrice, formatPriceAmount } from '@/features/public-site/stay/stay-format';
+import { currencyCodeOf } from '@/lib/money-format';
 import type { PublicStayCard, PublicStaysFacets } from '@/types/public-stays.types';
 import { AREA_STEP, PRICE_STEP, areaBounds, boundsFromRange, priceBounds, type Bounds } from './filters-model';
+
+/**
+ * What the currency of the price sliders and their chips is, as the data say it:
+ * - `pending`: the homes the facets come from are not in yet, so nothing is known (this is not «none»: nothing about the currency is written yet);
+ * - `one`: every home that says a currency says the same one (`SearchFacets.currency`);
+ * - `mixed`: the homes say different currencies, so a slider has no one currency to name;
+ * - `none`: no home says a usable one (the data lack it, or give something that is not a code).
+ */
+export type FacetsCurrencyState = 'pending' | 'one' | 'mixed' | 'none';
 
 /**
  * What the controls of the results need to know about the homes they search (DB-07c): how many guests a home takes, how far the price
@@ -19,33 +31,54 @@ export interface SearchFacets {
   areas: Bounds | null;
   tags: { tag: SiteTag; count: number }[];
   /**
-   * What the price sliders and their chips are written in (ISO 4217: `EUR`, or `CHF` for the homes in Switzerland). Only what the data says: `null`
-   * when no home says one, or when the homes say different ones (a slider has one currency), and the sliders then write their amounts with no
-   * symbol and the phrase that says the currency is not available.
+   * What the price sliders and their chips are written in (ISO 4217: `EUR`, or `CHF` for the homes in Switzerland). Only what the data says: the one
+   * currency the homes say (`currencyState` `one`), else `null`: while the homes are not in (`pending`), when they say different ones (`mixed`) and when
+   * none says a usable one (`none`).
    */
   currency: string | null;
+  /** Why `currency` is what it is: `writeFacetPrice` writes a price the way each state asks, and a price chip waits while it is `pending`. */
+  currencyState: FacetsCurrencyState;
 }
 
-/** Nothing is known yet: no limits, no slider, no label, no currency. */
-export const NO_FACETS: SearchFacets = { maxGuests: undefined, prices: null, areas: null, tags: [], currency: null };
+/** The part of the facets that says how a price of the filters is written. */
+export type FacetsCurrency = Pick<SearchFacets, 'currency' | 'currencyState'>;
 
-/** The facets of a booking site, from every home of it. */
-export function facetsOfCards(cards: readonly PublicStayCard[]): SearchFacets {
-  const currencies = new Set(cards.map((card) => card.price.currency).filter(Boolean));
+/** Nothing is known yet: no limits, no slider, no label, and nothing about the currency (not even that there is none). */
+export const NO_FACETS: SearchFacets = { maxGuests: undefined, prices: null, areas: null, tags: [], currency: null, currencyState: 'pending' };
+
+/** The currency the homes of a list say, from the codes they gave. */
+function currencyOfCodes(codes: ReadonlySet<string>): FacetsCurrency {
+  if (codes.size === 1) return { currency: [...codes][0], currencyState: 'one' };
+  return { currency: null, currencyState: codes.size === 0 ? 'none' : 'mixed' };
+}
+
+/** The facets of a booking site, from every home of it; `undefined` while the homes are not in (nothing is known yet). */
+export function facetsOfCards(cards: readonly PublicStayCard[] | undefined): SearchFacets {
+  if (!cards) return NO_FACETS;
+  // A home that says no usable currency does not count: the homes of a site share theirs, and if they ever do not, no one currency is chosen for them.
+  const codes = new Set<string>();
+  for (const card of cards) {
+    const code = currencyCodeOf(card.price.currency);
+    if (code) codes.add(code);
+  }
   return {
     maxGuests: maxGuestsOf(cards),
     prices: priceBounds(cards),
     areas: areaBounds(cards),
     tags: countTags(cards),
-    // The homes of a site share their currency; if they ever do not, no currency is chosen for them.
-    currency: currencies.size === 1 ? [...currencies][0] : null,
+    ...currencyOfCodes(codes),
   };
 }
 
-/** The facets the server worked out for the place asked in the search across all the sites. */
+/**
+ * The facets the server worked out for the place asked in the search across all the sites. `undefined` while the answer is on its way (nothing is known
+ * yet); `null` when the answer came, or failed, without any (nothing is known, and the data say no currency).
+ */
 export function facetsOfServer(facets: PublicStaysFacets | null | undefined): SearchFacets {
-  if (!facets) return NO_FACETS;
+  if (facets === undefined) return NO_FACETS;
+  if (facets === null) return { ...NO_FACETS, currencyState: 'none' };
   const counts = new Map(facets.tags.filter((item) => isSiteTag(item.tag)).map((item) => [item.tag, item.count]));
+  const currency = currencyCodeOf(facets.currency);
   return {
     maxGuests: facets.maxGuests > 0 ? facets.maxGuests : undefined,
     prices: boundsFromRange(
@@ -55,6 +88,19 @@ export function facetsOfServer(facets: PublicStaysFacets | null | undefined): Se
     ),
     areas: boundsFromRange(facets.minAreaSqm, facets.maxAreaSqm, AREA_STEP),
     tags: SITE_TAGS.filter((tag) => counts.has(tag)).map((tag) => ({ tag, count: counts.get(tag) ?? 0 })),
-    currency: facets.currency || null,
+    currency,
+    currencyState: currency ? 'one' : 'none',
   };
+}
+
+/**
+ * A price of the filters (a number of the currency of the homes, per night) written the way the facets say:
+ * - one currency: in it (`150 CHF`);
+ * - no usable currency (`none`): the amount and the phrase that says the currency is not available (`150 (valuta non disponibile)`);
+ * - different currencies (`mixed`): the number alone, with no symbol and no phrase: the currency is not missing, a slider just has no one to name;
+ * - `pending`: the number alone as well (nothing is known about the currency yet), though the chip of the price is not drawn until it is.
+ */
+export function writeFacetPrice(value: number, facets: FacetsCurrency, locale: string, t: TFunction): string {
+  if (facets.currencyState === 'mixed' || facets.currencyState === 'pending') return formatPriceAmount(value * 100, locale);
+  return formatPrice(value * 100, facets.currency, locale, t);
 }

@@ -12,13 +12,12 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { usePortalRootProps } from '@/features/public-site/site-appearance-context';
-import { formatPrice } from '@/features/public-site/stay/stay-format';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { listAmenities } from '@/lib/public-amenities';
 import { siteLocale } from '@/lib/site-language';
 import { cn } from '@/lib/utils';
 import { PRICE_STEP, AREA_STEP, dropUnsupported, isUnsupported } from './filters-model';
-import type { SearchFacets } from './search-facets';
+import { writeFacetPrice, type SearchFacets } from './search-facets';
 import { useScopedStays, type SearchScope } from './search-scope';
 import {
   FILTER_AMENITIES,
@@ -136,8 +135,8 @@ function FiltersForm({ scope, state, facets, onClose, inline = false }: FiltersS
   const { prices, areas } = facets;
   const update = (patch: Partial<SearchFilters>) => setDraft((current) => ({ ...current, ...patch }));
   const toggle = <T extends string>(list: T[], value: T): T[] => (list.includes(value) ? list.filter((item) => item !== value) : [...list, value]);
-  // Written in the currency of the homes (francs in Switzerland); without one, with no symbol and the phrase that says so.
-  const euros = (value: number) => formatPrice(value * 100, facets.currency, locale, t);
+  // Written in the currency of the homes (francs in Switzerland); with none, with no symbol and the phrase that says so; with homes of two currencies, the number alone.
+  const euros = (value: number) => writeFacetPrice(value, facets, locale, t);
   // The icon and the words of each service are the catalog of the site (the same as on the page of a home).
   // What the server could not apply is not offered.
   const amenityOptions = FILTER_AMENITIES.flatMap((name) => {

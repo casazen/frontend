@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import i18n from '@/i18n/config';
-import { currencyCodeOf, formatMoney } from '../money-format';
+import { currencyCodeOf, formatAmount, formatMoney } from '../money-format';
 
 /**
  * The currency comes only from the data (CHF-MONEY): a stay priced in francs never shows a euro, and a stay whose data says no currency never gets one invented.
@@ -89,5 +89,24 @@ describe('formatMoney', () => {
     expect(formatMoney(145, 'CHF', 'it-IT', italian)).toContain('CHF');
     expect(formatMoney(145, 'CHF', 'it-IT', italian)).not.toContain('€');
     expect(formatMoney(145, '', 'it-IT', italian)).toBe('145,00 (valuta non disponibile)');
+    // The number alone has a format of its own too: it never gets the one kept for the euro, and the euro never gets it.
+    expect(formatAmount(145, 'it-IT')).toBe('145,00');
+    expect(formatMoney(145, 'EUR', 'it-IT', italian)).toContain('€');
+  });
+});
+
+describe('formatAmount', () => {
+  it('FormatAmount_Number_IsWrittenAloneInTheLanguageOfThePage', () => {
+    expect(formatAmount(145, 'it-IT')).toBe('145,00');
+    expect(formatAmount(145, 'en-GB')).toBe('145.00');
+    expect(formatAmount(145, 'it-IT', { minimumFractionDigits: 0, maximumFractionDigits: 0 })).toBe('145');
+    expect(formatAmount(145.5, 'en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })).toBe('145.50');
+  });
+
+  it('FormatAmount_Number_HasNoSymbolNoCodeAndNoPhrase', () => {
+    for (const written of [formatAmount(145, 'it-IT'), formatAmount(145, 'en-GB')]) {
+      expect(written).not.toMatch(ANY_CURRENCY);
+      expect(written).toMatch(/^[\d.,]+$/);
+    }
   });
 });

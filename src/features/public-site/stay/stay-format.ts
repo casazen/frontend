@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next';
-import { formatMoney } from '@/lib/money-format';
+import { currencyCodeOf, formatAmount, formatMoney, type MoneyDigits } from '@/lib/money-format';
 import { isStayDate } from '@/lib/stay-dates';
 
 /**
@@ -73,8 +73,29 @@ export function weekdayName(index: number, locale: string): string {
  * currency is not available (`165 (valuta non disponibile)`).
  */
 export function formatPrice(cents: number, currency: string | null | undefined, locale: string, t: TFunction): string {
+  return formatMoney(cents / 100, currency, locale, t, digitsOf(cents));
+}
+
+/** The cents are written only when there are some: `165`, but `165,50`. */
+function digitsOf(cents: number): MoneyDigits {
   const digits = Math.round(cents) % 100 !== 0 ? 2 : 0;
-  return formatMoney(cents / 100, currency, locale, t, { minimumFractionDigits: digits, maximumFractionDigits: digits });
+  return { minimumFractionDigits: digits, maximumFractionDigits: digits };
+}
+
+/**
+ * The price with nothing said about its currency: only the number (`165`, `165,50`), with the same rule of the cents. It is for where a slider spans homes of
+ * two currencies and there is no one currency to name; data that lacks a currency is written with the phrase (`formatPrice`).
+ */
+export function formatPriceAmount(cents: number, locale: string): string {
+  return formatAmount(cents / 100, locale, digitsOf(cents));
+}
+
+/**
+ * The price for a place too small for the phrase (a cell of the calendar): as `formatPrice` when the data say a currency, and only the number when they do
+ * not. The phrase that says the currency is not available is then in the name of the day and in the total of the stay, where there is room for it.
+ */
+export function formatPriceShort(cents: number, currency: string | null | undefined, locale: string, t: TFunction): string {
+  return currencyCodeOf(currency) ? formatPrice(cents, currency, locale, t) : formatPriceAmount(cents, locale);
 }
 
 /** `3 ospiti · con animale`: the guests in a field of the search bar. */
