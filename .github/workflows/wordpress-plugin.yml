@@ -192,7 +192,7 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/wp-env-logs"
           npm exec --no -- wp-env logs all --no-watch > "$RUNNER_TEMP/wp-env-logs/containers.log" 2>&1 || true
-          npm exec --no -- wp-env run cli -- sh -c 'test -f wp-content/debug.log && cat wp-content/debug.log || true' > "$RUNNER_TEMP/wp-env-logs/debug.log" 2>&1 || true
+          npm exec --no -- wp-env run cli sh -- -c 'test -f wp-content/debug.log && cat wp-content/debug.log || true' > "$RUNNER_TEMP/wp-env-logs/debug.log" 2>&1 || true
 
       - name: Upload the logs of wp-env
         if: failure()
