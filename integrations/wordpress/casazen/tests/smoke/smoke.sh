@@ -98,8 +98,10 @@ STORED="$(wpcli option get casazen_settings --format=json)"
 step 'Save the settings and test the connection'
 SETTINGS='{"address":"'"$ADDRESS"'","org_slug":"","language_map":{"it_IT":"it","en_US":"en"},"load_script":true}'
 wpcli option update casazen_settings "$SETTINGS" --format=json
-STORED="$(wpcli option get casazen_settings --format=json)"
-[[ "$STORED" == *"\"address\":\"$ADDRESS\""* ]] || fail 'The address was not saved.'
+# WP-CLI prints JSON the way PHP does, and escapes every slash ("https:\/\/prenota.example.com"): the backslashes (octal 134) are taken
+# out before the comparison.
+STORED="$(wpcli option get casazen_settings --format=json | tr -d '\134')"
+[[ "$STORED" == *"\"address\":\"$ADDRESS\""* ]] || fail "The address was not saved (the option holds: $STORED)."
 RESULT="$(wpcli eval 'echo wp_json_encode( Casazen\Connection::refresh() );')"
 echo "$RESULT"
 for expected in '"ok":true' '"code":"ok"' '"agency":"Agenzia Esempio"' '"embedEnabled":true'; do
