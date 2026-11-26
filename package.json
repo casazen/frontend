@@ -23,6 +23,7 @@
     "test:e2e:staging-gj": "cross-env E2E_STAGING=1 playwright test --project=staging-gj",
     "test:e2e:l3": "cross-env E2E_LOCAL=1 playwright test --project=local",
     "test:e2e:prod": "cross-env E2E_PROD_SMOKE=1 playwright test prod-deploy-smoke",
+    "test:e2e:embed": "cross-env E2E_EMBED=1 playwright test --project=embed",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed"
   },
