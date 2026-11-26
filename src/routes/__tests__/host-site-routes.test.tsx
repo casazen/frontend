@@ -220,6 +220,15 @@ describe('guest check-in and owner portal on an org own host (NF-140)', () => {
     expect(screen.queryByText('Casa di altri')).not.toBeInTheDocument();
   });
 
+  it('CheckInRoute_CompletedLinkOfAnotherAgency_IsNotFoundAndShowsNoClosingCard', async () => {
+    // A link that is already completed answers with its status and the agency of the link only: the closing card of another agency's guest is not shown under the name of this domain either.
+    vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ completed: true, status: 'Completo', orgSlug: 'another-agency' });
+    renderHostSite('/checkin/tok-1', GUEST_ONLY);
+
+    expect(await screen.findByTestId('host-site-page-not-found')).toBeInTheDocument();
+    expect(screen.queryByTestId('checkin-success')).not.toBeInTheDocument();
+  });
+
   it('CheckInRoute_OwnAgencyContextWithOnlyTheOrgSlug_ShowsTheCheckInPageInsideTheFrameOfTheAgency', async () => {
     vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ completed: true, status: 'Completo', orgSlug: 'villa-rossi' });
     renderHostSite('/checkin/tok-1', GUEST_ONLY);

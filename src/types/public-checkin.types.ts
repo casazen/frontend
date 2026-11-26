@@ -78,7 +78,7 @@ export interface PublicCheckInGuestPrefill {
 
 /**
  * Context of `GET /public/checkin/{token}`. Once the guest has submitted (`completed`), the API returns only
- * `completed` and `status`: no booking data and no guest data.
+ * `completed`, `status` and `orgSlug` (public data): no booking data and no guest data.
  */
 export interface PublicCheckInContextDto {
   houseRules?: string | null;

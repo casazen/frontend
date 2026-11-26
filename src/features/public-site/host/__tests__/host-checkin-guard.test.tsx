@@ -106,6 +106,17 @@ describe('HostCheckInGuard (NF-140)', () => {
     expect(screen.queryByText('Casa Mare')).not.toBeInTheDocument();
   });
 
+  it('HostCheckInGuard_CompletedLinkOfAnotherAgency_IsNotFound', async () => {
+    // A link that is already completed answers with its status and the agency of the link only (no property, no guests, no privacy notice): that is enough to refuse it on this domain.
+    vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ completed: true, status: 'Completo', orgSlug: 'another-agency' });
+
+    renderGuard();
+
+    expect(await screen.findByTestId('host-site-page-not-found')).toBeInTheDocument();
+    // Nothing of the other agency's page is shown.
+    expect(screen.queryByTestId('checkin-page')).not.toBeInTheDocument();
+  });
+
   it('HostCheckInGuard_OrgSlugOfThisAgencyAndNoPrivacyNotice_ShowsThePageAndAsksOnce', async () => {
     vi.mocked(publicCheckinApi.getContext).mockResolvedValue(context({ privacyNoticeVersion: undefined, orgSlug: OWN }));
 
