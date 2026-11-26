@@ -121,8 +121,11 @@ describe('the shell of the widgets on the CasaZen domain (AC1, AC7)', () => {
     expect(shell).toHaveClass('public-site-root');
     // Transparent, no margin, no horizontal scroll, and a height that is the one of the content.
     expect(shell.style.background).toBe('transparent');
-    expect(document.body.style.margin).toBe('0px');
-    expect(document.documentElement.style.overflowX).toBe('hidden');
+    // The margin and the scroll of the document are set by an effect of the shell, after the commit that shows the widget: waited for, never read at once.
+    await waitFor(() => {
+      expect(document.body.style.margin).toBe('0px');
+      expect(document.documentElement.style.overflowX).toBe('hidden');
+    });
     expect(shell.className).not.toMatch(/min-h-screen|h-screen|\bvh\b/);
     // No header, footer, cookie banner, skip link or favourites: none of the frame of the booking site.
     expect(screen.queryByTestId('public-site-shell')).not.toBeInTheDocument();
@@ -138,7 +141,13 @@ describe('the shell of the widgets on the CasaZen domain (AC1, AC7)', () => {
 
   it('embedShell_PutsTheDocumentBackWhenItGoes', async () => {
     renderEmbed(`/embed/villa-rossi/booking?${ADDRESS}`);
-    await screen.findByTestId('embed-shell');
+    await screen.findByTestId('embed-widget-booking');
+    // What the shell puts on the document is written by effects: it has to be there before there is something to put back.
+    await waitFor(() => {
+      expect(document.documentElement.style.overflowX).toBe('hidden');
+      expect(document.body.style.margin).toBe('0px');
+      expect(document.documentElement.style.getPropertyValue('--cz-public-primary')).toBe('#1a6b8f');
+    });
 
     cleanup();
 
@@ -360,16 +369,20 @@ describe('the language of the page (AC4)', () => {
     renderEmbed(`/embed/villa-rossi/guest-access?lang=en&${ADDRESS}`);
 
     expect(await screen.findByLabelText('Booking code')).toBeInTheDocument();
-    await waitFor(() => expect(i18n.language).toBe('en'));
-    expect(document.documentElement.lang).toBe('en');
+    await waitFor(() => {
+      expect(i18n.language).toBe('en');
+      expect(document.documentElement.lang).toBe('en');
+    });
   });
 
   it.each([['?lang=de&'], ['?lang=&'], ['?']])('embedShell_AddressWith%s_GivesItalian', async (query) => {
     await i18n.changeLanguage('en');
+    // The page that frames the widget was in English: the document ends in Italian only if the shell puts it there.
+    document.documentElement.lang = 'en';
     renderEmbed(`/embed/villa-rossi/guest-access${query}${ADDRESS}`);
 
     expect(await screen.findByLabelText('Codice prenotazione')).toBeInTheDocument();
-    expect(document.documentElement.lang).toBe('it');
+    await waitFor(() => expect(document.documentElement.lang).toBe('it'));
   });
 
   it('embedShell_Language_IsNeverWrittenToTheBrowser', async () => {
@@ -404,7 +417,11 @@ describe('the states of the shell (AC7)', () => {
     expect(await screen.findByTestId('embed-not-found')).toBeInTheDocument();
     expect(screen.queryByTestId('embed-error')).not.toBeInTheDocument();
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
-    await waitFor(() => expect(robots()).toBe('noindex,nofollow'));
+    // The loading state before it had written a `noindex` already: the title is what says that the effect of THIS state ran.
+    await waitFor(() => {
+      expect(document.title).toBe(i18n.t('embed.notFound.title'));
+      expect(robots()).toBe('noindex,nofollow');
+    });
   });
 
   it('embedShell_Org404WithAnOlderAnswerInTheCache_IsStillNotFound', async () => {
@@ -425,7 +442,11 @@ describe('the states of the shell (AC7)', () => {
     const retry = await screen.findByRole('button', { name: i18n.t('shared.errorFallback.tryAgain') });
     expect(screen.getByTestId('embed-error')).toHaveAttribute('role', 'alert');
     expect(screen.queryByTestId('embed-not-found')).not.toBeInTheDocument();
-    await waitFor(() => expect(robots()).toBe('noindex,nofollow'));
+    // The loading state before it had written a `noindex` already: the title is what says that the effect of THIS state ran.
+    await waitFor(() => {
+      expect(document.title).toBe(i18n.t('embed.error.title'));
+      expect(robots()).toBe('noindex,nofollow');
+    });
 
     fireEvent.click(retry);
 
@@ -444,8 +465,12 @@ describe('the states of the shell (AC7)', () => {
     renderEmbed(`/embed/villa-rossi/booking?${ADDRESS}`);
     await screen.findByTestId('embed-widget-booking');
 
-    await waitFor(() => expect(robots()).toBe('noindex,nofollow'));
-    expect(document.title).toBe('Prenota · Villa Rossi');
+    // The title and the `noindex` are written by an effect, after the commit that shows the widget, and the loading state had written a `noindex` already:
+    // the title is what says that the effect of THIS state has run, so the two are waited for together.
+    await waitFor(() => {
+      expect(document.title).toBe('Prenota · Villa Rossi');
+      expect(robots()).toBe('noindex,nofollow');
+    });
   });
 });
 
