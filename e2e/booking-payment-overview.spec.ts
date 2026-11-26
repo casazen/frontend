@@ -72,3 +72,15 @@ for (const [code, step] of [
     await expect(settings).toHaveAttribute('href', `/app/short-rent/fiscal/setup?step=${step}`);
   });
 }
+
+test('missing invoice recipient opens the in-place editor from a blocked draft', async ({ page }) => {
+  await mockPaidStay(page);
+  await page.route('**/api/fiscal/documents', (route) => route.fulfill({
+    status: 422, contentType: 'application/problem+json', json: { status: 422, code: 'document_invoice_data_missing' },
+  }));
+  await page.goto(demoUrl(`/app/short-rent/bookings/${bookingId}?tab=payment`, 'short-stay'));
+  await page.getByTestId('booking-fiscal-document-create').click();
+  await page.getByTestId('booking-fiscal-document-blocker').getByRole('button').click();
+  await expect(page.getByTestId('invoice-data-name')).toBeVisible();
+  await expect(page).toHaveURL(/tab=payment/);
+});

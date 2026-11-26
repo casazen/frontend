@@ -93,7 +93,7 @@ export function BookingInvoiceDataSection({ bookingId, editing: controlledEditin
               <p className="text-sm font-medium" data-testid="booking-invoice-requested">
                 {t('invoiceData.section.requested')}
               </p>
-            ) : data?.invoiceRequested === false ? (
+            ) : data?.invoiceRequested === false && hasRecipient ? (
               <p className="text-sm text-foreground/70">{t('invoiceData.section.notRequested')}</p>
             ) : null}
 
@@ -129,7 +129,7 @@ export function BookingInvoiceDataSection({ bookingId, editing: controlledEditin
               </>
             ) : (
               <p className="text-sm text-foreground/70" data-testid="booking-invoice-empty">
-                {data?.invoiceRequested ? t('invoiceData.section.requestedNoData') : t('invoiceData.section.empty')}
+                {data ? t(data.invoiceRequested ? 'invoiceData.section.requestedNoData' : 'invoiceData.section.notRequested') : t('invoiceData.section.empty')}
               </p>
             )}
 

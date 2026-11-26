@@ -159,7 +159,7 @@ export function BookingDetailPage() {
   // The line under the name: where, when, for how long, how many.
   const summary = [
     booking.propertyName,
-    `${day(booking.checkInDate)} → ${day(booking.checkOutDate)}`,
+    `${day(booking.checkInDate)} – ${day(booking.checkOutDate)}`,
     nights > 0 ? t('booking.list.nights', { count: nights }) : '',
     t('booking.list.guestCount', { count: booking.numberOfGuests }),
   ]
