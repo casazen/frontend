@@ -1,3 +1,4 @@
+import { GuestSupplierCasePanel } from './guest-supplier-case-panel';
 import { SupplierInviteIdentityFields } from '@/features/supplier/supplier-invite-identity-fields';
 import { readSupplierInviteIdentity } from '@/features/supplier/read-supplier-invite-identity';
 import { useState } from 'react';
@@ -40,7 +41,7 @@ interface CatalogMatch {
 type Scope = { role: 'host'; propertyId: string } | { role: 'supplier' } | { role: 'admin' };
 
 export function GuestSupplierOperations({ scope }: { scope: Scope }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const endpoint = scope.role === 'host' ? `/properties/${scope.propertyId}/guest-supplier-orders`
     : scope.role === 'supplier' ? '/supplier/guest-orders' : '/admin/guest-supplier-orders';
   const query = useQuery({
@@ -124,6 +125,7 @@ export function GuestSupplierOperations({ scope }: { scope: Scope }) {
               onClick={() => change.mutate({ suffix: `/${order.id}/resolve`, body: {
                 refundCents: order.refundRequestedCents, text: order.decision, retry: true,
               } })}>{t('supplier.adjustments.retry')}</Button>}
+            <GuestSupplierCasePanel endpoint={endpoint} role={scope.role} language={i18n.language} order={order} />
           </article>
         );
       })}
