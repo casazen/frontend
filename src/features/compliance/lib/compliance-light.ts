@@ -39,6 +39,7 @@ export const SECTION_FIELDS = [
   'connectionsToFix',
   'periodItems',
   'ticinoNotifications',
+  'swissNotifications',
 ] as const satisfies readonly (keyof ComplianceSummaryResult)[];
 export type SectionField = (typeof SECTION_FIELDS)[number];
 
@@ -92,9 +93,9 @@ export function summarizeLights(summary: SummaryLike): LightSummary {
   return totals;
 }
 
-/** `2026-09` as the host says it ("settembre 2026"), and `2026-11-19` ("19 novembre", the day of a Ticino notification); empty otherwise. */
+/** `2026-09` as the host says it ("settembre 2026"), and `2026-11-19` ("19 novembre", the day of a notification of the guests); empty otherwise. */
 export function periodName(period: string | null | undefined, locale: string): string {
-  // casazen/backend#979: the arrival day of a Ticino police notification (yyyy-MM-dd).
+  // casazen/backend#979: the arrival day of a police notification (Ticino) or of an assisted notification (the other cantons), yyyy-MM-dd.
   if (period && /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(period)) return formatStayDate(period, locale, { day: 'numeric', month: 'long' });
   return period && /^\d{4}-(0[1-9]|1[0-2])$/.test(period) ? formatStayDate(`${period}-01`, locale, { month: 'long', year: 'numeric' }) : '';
 }

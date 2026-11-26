@@ -1,0 +1,44 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "casazen/search",
+	"title": "CasaZen search bar",
+	"category": "widgets",
+	"icon": "search",
+	"description": "Shows the search bar of CasaZen (place, dates and guests) and leads to the page with the booking engine.",
+	"textdomain": "casazen",
+	"supports": {
+		"html": false,
+		"customClassName": false
+	},
+	"attributes": {
+		"target": {
+			"type": "string",
+			"default": ""
+		},
+		"lang": {
+			"type": "string",
+			"default": ""
+		},
+		"destinations": {
+			"type": "string",
+			"default": "yes"
+		},
+		"max_guests": {
+			"type": "integer"
+		},
+		"primary": {
+			"type": "string",
+			"default": ""
+		},
+		"radius": {
+			"type": "string",
+			"default": ""
+		},
+		"font": {
+			"type": "string",
+			"default": ""
+		}
+	},
+	"editorScript": "file:./index.js"
+}

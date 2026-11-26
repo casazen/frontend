@@ -70,6 +70,12 @@ const SOFTWARE_SUPPLIER = /hoko|unisys|u-stay|feratel|chekin|stellar\s*check-?in
 /** Where the regimes of the registration of the guests are told to the person. */
 const OF_THE_REGIMES = [
   'guestRegistration',
+  // E31/F02/US02: the guest register of a Swiss property and the assisted notification of the cantons other than Ticino, and the sentences of the bell about the second.
+  'guestRegister',
+  'swissNotification',
+  'notifications.types.swissNotificationDue',
+  'notifications.types.swissNotificationOverdue',
+  'notifications.types.swissNotificationDeclared',
   'onboardingPlan.parts.guestRegistration',
   'onboardingPlan.part.missing',
   'onboardingPlan.reasons.no_swiss_property',

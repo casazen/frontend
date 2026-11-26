@@ -56,6 +56,8 @@ const EXPECTED: Record<ComplianceCockpitAction, string> = {
   RenewPoliceCredentials: '/app/short-rent/alloggiati',
   // casazen/backend#979: the guided notification of a Ticino property to the cantonal police is a layer of the cockpit (E30/F02/US03/T02); without a day it opens on the first one to notify.
   NotifyTicinoPolice: `/app/short-rent/compliance?detail=ticino:${PROPERTY_ID}`,
+  // casazen/backend#979 (E31/F02/US02/T02): the assisted notification of a property in another canton is a layer of the cockpit too; without a day it opens on the first one to notify.
+  NotifyGuestsAuthority: `/app/short-rent/compliance?detail=swiss-notification:${PROPERTY_ID}`,
 };
 
 describe('complianceActionRoute (CO-04, A5-09)', () => {
@@ -197,6 +199,29 @@ describe('complianceActionRoute of the periods (E03/F03/US01/T01, AC-NF52-5)', (
     expect(COMPLIANCE_ACTION_TARGETS.NotifyTicinoPolice.write).toBe('alloggiati.submit');
     expect(complianceActionRoute(periodItem('NotifyTicinoPolice', '2026-11-19'), permissions(['booking.read']))).toBeNull();
     expect(complianceActionRoute(periodItem('NotifyTicinoPolice', '2026-11-19'), permissions(['property.read']))).toBeNull();
+  });
+
+  // E31/F02/US02/T02 (NF-131): the item of the assisted notification names the property and, in `period`, the arrival day; its button opens the layer of the cockpit on that day.
+  it('complianceActionRoute_NotifyGuestsAuthority_OpensTheLayerOfTheCockpitOnThePropertyAndTheArrivalDay', () => {
+    const url = complianceActionRoute(periodItem('NotifyGuestsAuthority', '2026-11-19'));
+
+    expect(url).toBe(`/app/short-rent/compliance?detail=swiss-notification:${PROPERTY_ID}:2026-11-19`);
+    expect(manifestEntryOf(url!).entry?.path).toBe('/app/short-rent/compliance');
+    // A month, or anything that is not a day, is left out: the layer then opens on the first day to notify, never on a date nobody asked for.
+    expect(complianceActionRoute(periodItem('NotifyGuestsAuthority', '2026-11'))).toBe(EXPECTED.NotifyGuestsAuthority);
+    expect(complianceActionRoute(periodItem('NotifyGuestsAuthority', '2026-02-31'))).toBe(EXPECTED.NotifyGuestsAuthority);
+    expect(complianceActionRoute(periodItem('NotifyGuestsAuthority', '2026-11-19/../x'))).toBe(EXPECTED.NotifyGuestsAuthority);
+    expect(complianceActionRoute(periodItem('NotifyGuestsAuthority', null))).toBe(EXPECTED.NotifyGuestsAuthority);
+  });
+
+  it('complianceActionRoute_NotifyGuestsAuthority_NeedsWhatTheCockpitNeeds_AndWhoMayNotDeclareIsStillLedToTheLayer', () => {
+    const reader = permissions(['property.read', 'booking.read']);
+
+    expect(complianceActionRoute(periodItem('NotifyGuestsAuthority', '2026-11-19'), reader)).toBe(`/app/short-rent/compliance?detail=swiss-notification:${PROPERTY_ID}:2026-11-19`);
+    // Whoever lacks the permission to declare (`alloggiati.submit`) is told «Apri» by the row, never asked to declare what the layer will not let them.
+    expect(COMPLIANCE_ACTION_TARGETS.NotifyGuestsAuthority.write).toBe('alloggiati.submit');
+    expect(complianceActionRoute(periodItem('NotifyGuestsAuthority', '2026-11-19'), permissions(['booking.read']))).toBeNull();
+    expect(complianceActionRoute(periodItem('NotifyGuestsAuthority', '2026-11-19'), permissions(['property.read']))).toBeNull();
   });
 
   it('complianceActionRoute_PeriodOnAnActionThatTakesNone_IsNotInTheAddress', () => {

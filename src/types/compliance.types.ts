@@ -210,6 +210,8 @@ export const COMPLIANCE_COCKPIT_ACTIONS = [
   'RenewPoliceCredentials',
   // casazen/backend#979: an arrival day of a property in canton Ticino whose guests are not notified to the cantonal police yet.
   'NotifyTicinoPolice',
+  // casazen/backend#979 (E31/F02/US01/T01): an arrival day of a property in another canton with an electronic duty, whose guests are not notified to the cantonal authority yet.
+  'NotifyGuestsAuthority',
 ] as const;
 export type ComplianceCockpitAction = (typeof COMPLIANCE_COCKPIT_ACTIONS)[number];
 
@@ -330,6 +332,12 @@ export interface ComplianceSummaryResult {
   periodItems?: ComplianceSummarySection;
   /** The arrival days of the Ticino properties whose guests are not notified to the cantonal police yet (`NotifyTicinoPolice`, the day in `period`, yyyy-MM-dd). */
   ticinoNotifications?: ComplianceSummarySection;
+  /**
+   * The arrival days of the properties in the other cantons with an electronic duty (`Required`) whose guests are not notified to the cantonal authority yet (`NotifyGuestsAuthority`, the day
+   * in `period`, yyyy-MM-dd; the deadline of the canton in `dueAt`, `null` where the sources give none: the screen says «scadenza non nota» and never a date of its own). Empty while
+   * `Features:GuestRegistrationRegimes` is off.
+   */
+  swissNotifications?: ComplianceSummarySection;
 }
 
 /** The 5 steps of the check-out wizard, in order (CO-17, A5-24): `steps[].id` and `currentStep` of the API. */

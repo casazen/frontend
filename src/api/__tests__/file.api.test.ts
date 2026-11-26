@@ -31,6 +31,17 @@ describe('the files of the agency\'s money pages come through the authenticated 
     expect(config).toMatchObject({ params: { month: 11, year: 2026 }, responseType: 'blob' });
   });
 
+  it('FileApi_Get_AFileThatTheApiWritesInTheLanguageOfTheRequest_SendsTheHeadersItIsGiven', async () => {
+    vi.mocked(axios.get).mockResolvedValue({ data: new Blob(['a;b']), headers: {} });
+
+    await fileApi.get('/properties/p1/swiss/guest-register', { from: '2026-10-23' }, { 'Accept-Language': 'en' });
+    await fileApi.get('/statements/1/pdf');
+
+    // Only the call that asks for them carries headers: the others are as they were.
+    expect(vi.mocked(axios.get).mock.calls[0]![1]).toMatchObject({ params: { from: '2026-10-23' }, responseType: 'blob', headers: { 'Accept-Language': 'en' } });
+    expect(vi.mocked(axios.get).mock.calls[1]![1]).not.toHaveProperty('headers');
+  });
+
   it.each([
     ['a plain object, as the name came', { 'Content-Disposition': 'attachment; filename="a.xml"' }, 'attachment; filename="a.xml"'],
     ['a plain object in lower case', { 'content-disposition': 'attachment; filename="a.xml"' }, 'attachment; filename="a.xml"'],

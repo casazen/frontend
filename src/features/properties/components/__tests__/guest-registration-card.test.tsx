@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import i18n from '@/i18n/config';
 import { guestRegistrationApi } from '@/api/guest-registration.api';
 import { propertiesApi } from '@/api/properties.api';
+import { WorkspaceContext, type WorkspaceContextValue } from '@/contexts/workspace-context';
 import { problemError } from '@/features/onboarding/__tests__/onboarding-fixtures';
 import { guestRegistrationKey } from '@/queries/guestRegistration';
 import { expectNoAxeViolations } from '@/test/axe';
@@ -26,15 +27,29 @@ function newClient() {
   return new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
 }
 
-function renderCard(props: Partial<ComponentProps<typeof GuestRegistrationCard>> = {}, client: QueryClient = newClient()) {
+/** The workspace of a person who holds exactly these permissions of the short-rent area (the card reads them to offer the register and the notification of the guests). */
+function workspaceOf(permissions: readonly string[]): WorkspaceContextValue {
+  return {
+    contexts: [],
+    activeContext: 'short-rent',
+    isReady: true,
+    setActiveContext: vi.fn(),
+    hasPermission: (contextKey, permission) => contextKey === 'short-rent' && permissions.includes(permission),
+    getDefaultRoute: () => '/app',
+  };
+}
+
+function renderCard(props: Partial<ComponentProps<typeof GuestRegistrationCard>> = {}, client: QueryClient = newClient(), permissions?: readonly string[]) {
   return {
     client,
     ...render(
       <I18nextProvider i18n={i18n}>
         <QueryClientProvider client={client}>
-          <MemoryRouter>
-            <GuestRegistrationCard propertyId={PROPERTY_ID} variant="page" canWrite {...props} />
-          </MemoryRouter>
+          <WorkspaceContext.Provider value={permissions ? workspaceOf(permissions) : undefined}>
+            <MemoryRouter>
+              <GuestRegistrationCard propertyId={PROPERTY_ID} variant="page" canWrite {...props} />
+            </MemoryRouter>
+          </WorkspaceContext.Provider>
         </QueryClientProvider>
       </I18nextProvider>,
     ),
@@ -486,18 +501,20 @@ describe('GuestRegistrationCard, the regime of the canton of a property (E29/F02
       for (const raw of ['Mandatory', 'Pigeon', 'Yearly', 'Magic', 'Maybe']) expect(document.body.textContent).not.toContain(raw);
     });
 
-    // The register of the guests and the assisted notification arrive with S011-S013: until then the card says they are coming and does not tell what CasaZen does in the present.
+    // The register of the guests and the assisted notification exist (E31/F02/US02): the card says what CasaZen does in the present, no longer that it is coming.
     it.each([
-      ['it', 'AssistedNotification', /In arrivo:/],
-      ['it', 'GuestRegister', /In arrivo:/],
-      ['en', 'AssistedNotification', /Coming soon:/],
-      ['en', 'GuestRegister', /Coming soon:/],
-    ] as const)('GuestRegistrationCard_%s_%sNotBuiltYet_SaysItIsComing', async (language, support, coming) => {
+      ['it', 'AssistedNotification', /CasaZen prepara i dati degli ospiti da copiare e ti ricorda la scadenza; la notifica la fai tu\./],
+      ['it', 'GuestRegister', /CasaZen prepara il registro degli ospiti da scaricare e stampare/],
+      ['en', 'AssistedNotification', /CasaZen prepares the guests' data for you to copy and reminds you of the deadline; you make the notification\./],
+      ['en', 'GuestRegister', /CasaZen prepares the guest register for you to download and print/],
+    ] as const)('GuestRegistrationCard_%s_%sBuilt_SaysWhatCasaZenDoesInThePresent', async (language, support, present) => {
       await i18n.changeLanguage(language);
       vi.mocked(guestRegistrationApi.get).mockResolvedValue(card({ regime: regime({ casaZenSupport: support }) }));
       renderCard();
 
-      expect(await screen.findByTestId('guest-registration-fact-support')).toHaveTextContent(coming);
+      const sentence = await screen.findByTestId('guest-registration-fact-support');
+      expect(sentence).toHaveTextContent(present);
+      expect(sentence.textContent).not.toMatch(/In arrivo|Coming soon/);
     });
 
     it('GuestRegistrationCard_TheFileOfTicino_StillSaysWhatCasaZenDoesToday', async () => {
@@ -541,5 +558,69 @@ describe('GuestRegistrationCard, the regime of the canton of a property (E29/F02
       await screen.findByTestId('ticino-structure-id-form');
       await expectNoAxeViolations(container);
     });
+  });
+});
+
+// E31/F02/US02/T01 and T02: the card opens the guest register of a property in Switzerland and, where the canton asks for an electronic notification, the assisted notification. Both are layers over
+// the page (`?detail=…`), offered to whoever may read the guests, never in a step of a wizard, never for a property in Italy.
+describe('GuestRegistrationCard, the register and the notification of the guests (E31/F02/US02)', () => {
+  const READ_GUESTS = ['guest.read', 'booking.read'];
+  const italy = () => card({ regime: regime({ code: 'IT', countryCode: 'IT', cantonCode: null, casaZenSupport: 'InformationOnly' }), place: null });
+
+  it('GuestRegistrationCard_SwissPropertyAndWhoMayReadTheGuests_OffersTheRegisterAsALayerOverThePage', async () => {
+    renderCard({}, newClient(), READ_GUESTS);
+
+    const link = await screen.findByTestId('guest-register-link');
+    expect(link).toHaveTextContent(t('guestRegister.card.open'));
+    // Without a drawer to open it in, the address is the page of the property with the layer in it: nothing leaves the process.
+    expect(link).toHaveAttribute('href', `/app/short-rent/properties/${PROPERTY_ID}?detail=guest-register:${PROPERTY_ID}`);
+    // Ticino has a file to upload, not an assisted notification.
+    expect(screen.queryByTestId('swiss-notification-link')).not.toBeInTheDocument();
+  });
+
+  it('GuestRegistrationCard_ACantonWithAnAssistedNotification_OffersTheNotificationToo', async () => {
+    vi.mocked(guestRegistrationApi.get).mockResolvedValue(zurichCard());
+    renderCard({}, newClient(), READ_GUESTS);
+
+    const link = await screen.findByTestId('swiss-notification-link');
+    expect(link).toHaveTextContent(t('swissNotification.card.open'));
+    expect(link).toHaveAttribute('href', `/app/short-rent/compliance?detail=swiss-notification:${PROPERTY_ID}`);
+    expect(screen.getByTestId('guest-register-link')).toBeInTheDocument();
+  });
+
+  it('GuestRegistrationCard_TheHostAnsweredThatNothingIsToBeNotified_StillOffersTheRegisterButNotTheNotification', async () => {
+    vi.mocked(guestRegistrationApi.get).mockResolvedValue(zurichCard({ effectiveDuty: 'NotRequired', override: 'NotRequired' }));
+    renderCard({}, newClient(), READ_GUESTS);
+
+    expect(await screen.findByTestId('guest-register-link')).toBeInTheDocument();
+    expect(screen.queryByTestId('swiss-notification-link')).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ['somebody who may not read the guests', ['booking.read']],
+    ['somebody who may not read the bookings', ['guest.read']],
+    ['a page with no workspace to say what is allowed', undefined],
+  ])('GuestRegistrationCard_%s_IsOfferedNeitherLayer', async (_who, permissions) => {
+    vi.mocked(guestRegistrationApi.get).mockResolvedValue(zurichCard());
+    renderCard({}, newClient(), permissions);
+
+    await screen.findByTestId('guest-registration-summary');
+    expect(screen.queryByTestId('guest-registration-layers')).not.toBeInTheDocument();
+  });
+
+  it('GuestRegistrationCard_AStepOfAWizard_NeverOpensALayer', async () => {
+    vi.mocked(guestRegistrationApi.get).mockResolvedValue(zurichCard());
+    renderCard({ variant: 'wizard' }, newClient(), READ_GUESTS);
+
+    await screen.findByTestId('guest-registration-summary');
+    expect(screen.queryByTestId('guest-registration-layers')).not.toBeInTheDocument();
+  });
+
+  it('GuestRegistrationCard_APropertyInItaly_HasNoGuestRegisterAndNoNotification', async () => {
+    vi.mocked(guestRegistrationApi.get).mockResolvedValue(italy());
+    renderCard({}, newClient(), READ_GUESTS);
+
+    await screen.findByTestId('guest-registration-summary');
+    expect(screen.queryByTestId('guest-registration-layers')).not.toBeInTheDocument();
   });
 });

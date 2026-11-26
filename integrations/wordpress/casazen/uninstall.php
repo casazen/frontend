@@ -31,6 +31,7 @@ $casazen_uninstall_site = static function () {
 	);
 
 	wp_unschedule_hook( 'casazen_refresh_connection' );
+	wp_unschedule_hook( 'casazen_refresh_destinations' );
 };
 
 if ( is_multisite() ) {

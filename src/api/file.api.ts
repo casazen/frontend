@@ -24,12 +24,12 @@ function headerOf(headers: unknown, name: string): string | null {
 /**
  * The files of the agency's money pages (statements, F24, wire files): always through the authenticated client, never a link that carries a token, and
  * never kept: the caller saves the bytes and lets them go. With `responseType: 'blob'` a refusal arrives as a Blob too, so its problem body is read
- * before it is thrown and its `code` can be told in words.
+ * before it is thrown and its `code` can be told in words. A file the API writes in the language of the request (`Accept-Language`) takes its `headers`.
  */
 export const fileApi = {
-  get: async (path: string, params?: Record<string, unknown>): Promise<DownloadedFile> => {
+  get: async (path: string, params?: Record<string, unknown>, headers?: Record<string, string>): Promise<DownloadedFile> => {
     try {
-      const res = await axios.get<Blob>(path, { params, responseType: 'blob' });
+      const res = await axios.get<Blob>(path, { params, responseType: 'blob', ...(headers ? { headers } : {}) });
       return { blob: res.data, contentDisposition: headerOf(res.headers, 'content-disposition') };
     } catch (error) {
       throw await withJsonErrorBody(error);
