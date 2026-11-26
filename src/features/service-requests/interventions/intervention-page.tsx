@@ -91,7 +91,7 @@ function InterventionDetail({ request, returned }: InterventionDetailProps) {
         crumbs="auto"
         title={title}
         description={[request.propertyName, request.propertyCity, when.day].filter(Boolean).join(' · ') || undefined}
-        action={<StatusBadge kind="request" status={request.status} size="lg" data-testid="intervention-status" />}
+        status={<StatusBadge kind="request" status={request.status} data-testid="intervention-status" />}
         secondary={menu}
       />
 

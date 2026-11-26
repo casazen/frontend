@@ -22,7 +22,8 @@ const DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year:
 type Downloads = ReturnType<typeof useOwnerDownload>;
 
 /** A statement with its net and its totals in its own currency, the way to open its lines, its PDF and the way to ask the agency about it. */
-function StatementCard({ statement, downloads }: { statement: OwnerPortalStatement; downloads: Downloads }) {
+// `latest`: only the newest statement has the filled «Apri»; the others open with an outline button, so the list has one primary action (UX round 2026-11).
+function StatementCard({ statement, downloads, latest = false }: { statement: OwnerPortalStatement; downloads: Downloads; latest?: boolean }) {
   const { t, i18n } = useTranslation();
   const { download, busyKey, failure } = downloads;
   const language = i18n.language;
@@ -58,7 +59,7 @@ function StatementCard({ statement, downloads }: { statement: OwnerPortalStateme
       {statement.superseded ? <p className="text-sm text-muted-foreground">{t('ownerPortal.accounting.supersededNote')}</p> : null}
 
       <div className="flex flex-wrap gap-2">
-        <Button asChild className={TOUCH}>
+        <Button asChild variant={latest ? 'default' : 'outline'} className={TOUCH}>
           <Link to={ownerPortalPaths.statement(statement.statementId)} aria-label={t('ownerPortal.accounting.openAria', { period, number: statement.version })} data-testid="owner-statement-open">
             {t('ownerPortal.accounting.open')}
           </Link>
@@ -276,8 +277,8 @@ export function OwnerStatements() {
           </p>
         ) : (
           <ul className="space-y-3" data-testid="owner-statements">
-            {statementList.map((statement) => (
-              <StatementCard key={statement.statementId} statement={statement} downloads={downloads} />
+            {statementList.map((statement, index) => (
+              <StatementCard key={statement.statementId} statement={statement} downloads={downloads} latest={index === 0} />
             ))}
           </ul>
         )}

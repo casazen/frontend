@@ -11,13 +11,13 @@ beforeEach(async () => {
 afterEach(cleanup);
 
 /** The pulsing blocks of a preset (everything that is a `Skeleton`). */
-const blocksOf = (root: HTMLElement) => Array.from(root.querySelectorAll<HTMLElement>('.animate-pulse'));
+const blocksOf = (root: HTMLElement) => Array.from(root.querySelectorAll<HTMLElement>('.cz-shimmer'));
 
 describe('Skeleton', () => {
   it('Skeleton_Base_IsUnchanged', () => {
     render(<Skeleton data-testid="s" className="h-10 w-full" />);
 
-    expect(screen.getByTestId('s')).toHaveClass('animate-pulse', 'rounded-md', 'bg-muted', 'h-10', 'w-full');
+    expect(screen.getByTestId('s')).toHaveClass('cz-shimmer', 'rounded-md', 'bg-muted', 'h-10', 'w-full');
   });
 });
 

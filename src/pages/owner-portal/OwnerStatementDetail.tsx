@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ReceiptText, ArrowLeft, MessageSquare } from 'lucide-react';
 import { ownerPortalApi } from '@/api/ownerPortal.api';
+import { FocusBlock } from '@/components/shared/calm';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
@@ -145,16 +146,18 @@ export function OwnerStatementDetail() {
         </Alert>
       ) : null}
 
-      {statement.superseded ? (
+      {/* A newer version is the thing to do here: it is the one block «what now» of the page, not a notice with a button in it
+          (UX round 2026-11). Without the newer one to open it stays a notice. */}
+      {statement.superseded && statement.supersededByStatementId ? (
+        <FocusBlock
+          tone="info"
+          title={t('ownerPortal.accounting.supersededNote')}
+          primary={{ label: t('ownerPortal.accounting.detail.openNewer'), href: ownerPortalPaths.statement(statement.supersededByStatementId), testId: 'owner-statement-newer' }}
+          data-testid="owner-statement-superseded"
+        />
+      ) : statement.superseded ? (
         <Alert variant="info" data-testid="owner-statement-superseded">
           <p>{t('ownerPortal.accounting.supersededNote')}</p>
-          {statement.supersededByStatementId ? (
-            <Button asChild variant="outline" className={`${TOUCH} mt-2`}>
-              <Link to={ownerPortalPaths.statement(statement.supersededByStatementId)} data-testid="owner-statement-newer">
-                {t('ownerPortal.accounting.detail.openNewer')}
-              </Link>
-            </Button>
-          ) : null}
         </Alert>
       ) : null}
 

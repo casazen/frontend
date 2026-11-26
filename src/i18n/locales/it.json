@@ -57,7 +57,7 @@
     "noMatches": "Nessuna impostazione corrisponde alla ricerca."
   },
   "complianceNoDeadlines": "Nessuna scadenza in elenco",
-  "dashboardNoPending": "Nessuna priorità operativa in elenco",
+  "dashboardNoPending": "Tutto in ordine: niente da fare adesso",
   "dashboardPrioritiesPartial": "Alcune priorità non sono disponibili.",
   "dashboardPendingHeading": "Priorità operative",
   "activationStaff": {
@@ -4304,6 +4304,7 @@
       "departure": "Partenza",
       "contacts": "Numeri utili",
       "localTips": "Consigli sulla zona",
+      "stepOf": "Passo {{step}} di {{total}}",
       "access": "Istruzioni di accesso",
       "wifi": "Wi-Fi",
       "save": "Salva guida",
@@ -33367,6 +33368,7 @@
     "noContracts": "Non hai un contratto attivo da consultare.",
     "noContractsHint": "Il contratto compare qui quando il gestore ti aggiunge. I pagamenti stanno nella sezione Pagamenti.",
     "openContract": "Apri il contratto",
+    "signOut": "Esci",
     "nav": {
       "label": "Sezioni",
       "contracts": "Contratti",

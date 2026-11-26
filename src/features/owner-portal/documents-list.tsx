@@ -100,8 +100,10 @@ export function DocumentsList({ documents, emptyText, testId = 'owner-documents'
                   <span className="min-w-0 break-words text-muted-foreground">{versionLine(primary)}</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
+                  {/* Quiet in a list (UX round 2026-11): a filled button on every document made each row a call to action. */}
                   <Button
                     type="button"
+                    variant="outline"
                     className={TOUCH}
                     disabled={busyKey !== null}
                     loading={busyKey === primary.id}

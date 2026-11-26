@@ -38,14 +38,11 @@ export function TodoSection({ rows, incomplete, loading, showAll, onToggleAll }:
           {t(loading ? 'shared.loading.srOnly' : 'dashboardPrioritiesPartial')}
         </p>
       ) : (
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3">
-          <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-full bg-success-soft text-success-foreground">
-            <CheckCircle2 className="size-[22px]" />
-          </span>
-          <div className="min-w-0 flex-1 basis-52">
-            <p className="font-semibold">{t('dashboardNoPending')}</p>
-          </div>
-        </div>
+        // Nothing to do is good news, said in one quiet line: not a second highlight beside the day.
+        <p className="flex items-center gap-2 py-2 text-sm text-foreground/75" data-testid="home-todo-empty">
+          <CheckCircle2 aria-hidden="true" className="size-4 shrink-0 text-success" />
+          <span className="min-w-0">{t('dashboardNoPending')}</span>
+        </p>
       )}
     </PlainSection>
   );

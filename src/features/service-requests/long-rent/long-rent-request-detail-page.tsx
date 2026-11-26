@@ -115,7 +115,7 @@ function RequestDetail({ request, canManage, paymentSent, onPaymentSent }: Reque
         ]}
         title={title}
         description={[request.propertyName, when.day].filter(Boolean).join(' · ') || undefined}
-        action={<StatusBadge kind="request" status={request.status} size="lg" data-testid="long-rent-request-status" />}
+        status={<StatusBadge kind="request" status={request.status} data-testid="long-rent-request-status" />}
         secondary={menu}
       />
 

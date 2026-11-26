@@ -18,7 +18,7 @@ function EmptyCatalog() {
   const { t } = useTranslation();
   const steps = ['service', 'price', 'booking', 'photos'] as const;
   return (
-    <div className="rounded-xl bg-card p-2 shadow-sm ring-1 ring-inset ring-border" data-testid="supplier-services-empty">
+    <div data-testid="supplier-services-empty">
       <EmptyState
         icon={Tag}
         title={t(`${T}.empty.title`)}

@@ -57,7 +57,7 @@
     "noMatches": "No settings match your search."
   },
   "complianceNoDeadlines": "No deadlines listed",
-  "dashboardNoPending": "No operational priorities listed",
+  "dashboardNoPending": "All in order: nothing to do right now",
   "dashboardPrioritiesPartial": "Some priorities are unavailable.",
   "dashboardPendingHeading": "Operational priorities",
   "activationStaff": {
@@ -4304,6 +4304,7 @@
       "departure": "Departure",
       "contacts": "Useful numbers",
       "localTips": "Local tips",
+      "stepOf": "Step {{step}} of {{total}}",
       "access": "Access instructions",
       "wifi": "Wi-Fi",
       "save": "Save guide",
@@ -33367,6 +33368,7 @@
     "noContracts": "You have no active contract to open.",
     "noContractsHint": "The contract appears here when the manager adds you. Payments are in the Payments section.",
     "openContract": "Open the contract",
+    "signOut": "Sign out",
     "nav": {
       "label": "Sections",
       "contracts": "Contracts",

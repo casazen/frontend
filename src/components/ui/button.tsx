@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Slot, Slottable } from "@radix-ui/react-slot";
 import { Loader2 } from "lucide-react";
+import { PRESS_FEEDBACK } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -67,8 +68,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
+    // `transition-[…scale]`: the colors as before, and the press of the finger (`PRESS_FEEDBACK`), which a link-like button skips.
     const classes = cn(
-      "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+      "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold ring-offset-background transition-[color,background-color,border-color,box-shadow,scale] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+      variant !== "link" && PRESS_FEEDBACK,
       variantStyles[variant],
       sizeStyles[size],
       block && "w-full",
