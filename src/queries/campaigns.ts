@@ -37,11 +37,11 @@ export function useCreateSegment() {
   });
 }
 
-export function usePreviewCount(segmentId: string, enabled: boolean = true) {
+export function usePreviewCount(segmentId: string, propertyId?: string) {
   return useQuery({
-    queryKey: [SEGMENTS_KEY, segmentId, 'preview'],
-    queryFn: () => campaignsApi.getSegmentPreview(segmentId),
-    enabled: enabled && !!segmentId,
+    queryKey: [SEGMENTS_KEY, segmentId, 'preview', propertyId ?? null],
+    queryFn: () => campaignsApi.getSegmentPreview(segmentId, propertyId),
+    enabled: !!segmentId,
   });
 }
 

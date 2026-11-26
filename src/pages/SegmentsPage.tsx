@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation } from '@tanstack/react-query';
 import { ApiClient } from '@/api/client';
+import { useProperties } from '@/queries/use-properties';
 import { PageHeader } from '@/components/layout/page-header';
 import { AppShell } from '@/components/layout/app-shell';
 import { MarketingError } from '@/components/campaigns/MarketingInputs';
@@ -86,6 +87,7 @@ export function SegmentsPage() {
 function SegmentForm({ onSaved }: { onSaved: () => void }) {
   const { t } = useTranslation();
   const fields = useFields();
+  const properties = useProperties({mode:'short'});
   const save = useCreateSegment();
   const [name, setName] = useState('');
   const [phrase, setPhrase] = useState('');
@@ -199,7 +201,14 @@ function SegmentForm({ onSaved }: { onSaved: () => void }) {
                 </label>
                 <label>
                   {t('marketingStudio.value')}
-                  {field?.fieldType === 'Boolean' ? (
+                  {rule.fieldId === 'propertyHistory' || rule.fieldId === 'stage' ? (
+                    <select multiple required className="block w-full rounded-md border bg-card p-2" value={rule.value ? rule.value.split(',') : []}
+                      onChange={event => update(i, {value: Array.from(event.currentTarget.selectedOptions, option => option.value).join(',')})}>
+                      {rule.fieldId === 'propertyHistory'
+                        ? properties.data?.map(p => <option key={p.id} value={p.id}>{p.name}</option>)
+                        : ['upcoming','first','returning','loyal','lost'].map(stage => <option key={stage} value={stage}>{t('marketingStudio.category.' + stage)}</option>)}
+                    </select>
+                  ) : field?.fieldType === 'Boolean' ? (
                     <Select required value={rule.value} onChange={(e) => update(i, { value: e.target.value })}>
                       <option value="">—</option>
                       <option value="true">{t('marketingStudio.yes')}</option>

@@ -17,8 +17,8 @@ export const campaignsApi = {
 
   createSegment: (data: CreateSegmentDto) => ApiClient.post<Segment>('/campaigns/segments', data),
 
-  getSegmentPreview: (segmentId: string) =>
-    ApiClient.get<SegmentPreviewResult>(`/campaigns/segments/${segmentId}/preview`),
+  getSegmentPreview: (segmentId: string, propertyId?: string) =>
+    ApiClient.get<SegmentPreviewResult>(`/campaigns/segments/${segmentId}/preview`, propertyId ? {propertyId} : undefined),
 
   // Field catalog
   getFields: () => ApiClient.get<FieldDefinition[]>('/campaigns/fields'),

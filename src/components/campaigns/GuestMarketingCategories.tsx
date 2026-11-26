@@ -88,7 +88,7 @@ function CategoriesEditor({
             t('marketingStudio.fields.season'),
             c.period.map((s) => t('marketingStudio.category.' + s, { defaultValue: s })).join(', '),
           ],
-          [t('marketingStudio.spendBand'), c.spendBand ? t('marketingStudio.category.'+c.spendBand) : null],
+          [t('marketingStudio.spendBand'), c.spendBand ? t('marketingStudio.category.' + c.spendBand) : null],
           [t('marketingStudio.channel'), c.channels.join(', ')],
           [t('marketingStudio.recency'), c.daysSinceLastStay],
           [t('marketingStudio.stayLength'), c.averageStayNights],
@@ -106,7 +106,11 @@ function CategoriesEditor({
           {c.tripType.map((s) => t('marketingStudio.category.' + s, { defaultValue: s })).join(', ') || '—'}
         </summary>
         <div className="mt-2 flex flex-wrap gap-3">
-          {trip !== null && <Button variant="ghost" size="sm" onClick={() => setTrip(null)}>{t('marketingStudio.automatic')}</Button>}
+          {trip !== null && (
+            <Button variant="ghost" size="sm" onClick={() => setTrip(null)}>
+              {t('marketingStudio.automatic')}
+            </Button>
+          )}
           {['family', 'couple', 'group', 'business', 'withPets'].map((kind) => (
             <label className="flex items-center gap-1" key={kind}>
               <input
@@ -131,14 +135,16 @@ function CategoriesEditor({
           placeholder={t('marketingStudio.commaValues')}
         />
       </label>
-      {flags.marketingGuestInterestAi && <Button variant="outline" disabled={suggest.isPending} onClick={() => suggest.mutate()}>
-        {t('marketingStudio.suggestInterests')}
-      </Button>}
+      {flags.marketingGuestInterestAi && (
+        <Button variant="outline" disabled={suggest.isPending} onClick={() => suggest.mutate()}>
+          {t('marketingStudio.suggestInterests')}
+        </Button>
+      )}
       {suggestions
         .filter((s) => !dismissed.includes(s) && !interestList.includes(s))
         .map((s) => (
           <div key={s} className="flex flex-wrap items-center gap-2">
-            <span>{t('marketingStudio.category.'+s,{defaultValue:s})}</span>
+            <span>{t('marketingStudio.category.' + s, { defaultValue: s })}</span>
             <Button size="sm" variant="outline" onClick={() => setInterests([...interestList, s].join(', '))}>
               {t('marketingStudio.accept')}
             </Button>

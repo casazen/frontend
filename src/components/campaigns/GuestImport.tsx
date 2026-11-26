@@ -129,11 +129,13 @@ export function GuestImport() {
             {t('marketingStudio.source')}
             <Input required maxLength={100} value={source} onChange={(e) => setSource(e.target.value)} />
           </label>
-          {basis==='softOptIn' && mapping.lastStay===undefined && <p role="status">{t('marketingStudio.softOptInStay')}</p>}
-      <MarketingError error={submit.error} />
+          {basis === 'softOptIn' && mapping.lastStay === undefined && (
+            <p role="status">{t('marketingStudio.softOptInStay')}</p>
+          )}
+          <MarketingError error={submit.error} />
           {submit.data && (
             <div role="status">
-              <p>{t('marketingStudio.importResult', submit.data)}</p>
+              <p>{t('marketingStudio.importResult', {imported: submit.data.imported, skipped: submit.data.skipped})}</p>
               <ul>
                 {submit.data.errors.map((err) => (
                   <li key={err.row}>{t('marketingStudio.rowError', err)}</li>
@@ -141,7 +143,15 @@ export function GuestImport() {
               </ul>
             </div>
           )}
-          <Button type="submit" disabled={submit.isPending || submit.isSuccess || !Object.keys(mapping).length || (basis === 'softOptIn' && mapping.lastStay === undefined)}>
+          <Button
+            type="submit"
+            disabled={
+              submit.isPending ||
+              submit.isSuccess ||
+              !Object.keys(mapping).length ||
+              (basis === 'softOptIn' && mapping.lastStay === undefined)
+            }
+          >
             {t('marketingStudio.importTitle')}
           </Button>
         </>

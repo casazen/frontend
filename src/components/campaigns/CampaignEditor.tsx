@@ -30,11 +30,18 @@ export function CampaignEditor({ onSaved }: { onSaved: () => void }) {
       onSaved();
     },
   });
-  const preview = usePreviewCount(segmentId);
+  const preview = usePreviewCount(propertyId ? segmentId : '', propertyId);
   const events = useMutation({ mutationFn: () => marketingStudioApi.events(propertyId, from, to) });
   const generate = useMutation({
     mutationFn: () =>
-      marketingStudioApi.generate({ propertyId, segmentId, channel, brief: brief.trim() || eventName, eventName: eventName || undefined, sourceEvent: events.data?.find(e=>e.name===eventName) }),
+      marketingStudioApi.generate({
+        propertyId,
+        segmentId,
+        channel,
+        brief: brief.trim() || eventName,
+        eventName: eventName || undefined,
+        sourceEvent: events.data?.find((e) => e.name === eventName),
+      }),
     onSuccess: (result) => {
       setSubject(result.subject);
       setBody(result.body);

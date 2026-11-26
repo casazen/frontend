@@ -38,7 +38,10 @@ function Asset({ item }: { item: GeneratedContent }) {
     mutationFn: () => ApiClient.post<GeneratedContent>(assets + '/' + item.id + '/approve', {}),
     onSuccess: refresh,
   });
-  const dismiss = useMutation({mutationFn:()=>ApiClient.post<void>(assets+'/'+item.id+'/dismiss',{}), onSuccess:refresh});
+  const dismiss = useMutation({
+    mutationFn: () => ApiClient.post<void>(assets + '/' + item.id + '/dismiss', {}),
+    onSuccess: refresh,
+  });
   const draft = useMutation({
     mutationFn: () => saveAssetDraft(item),
     onSuccess: () => {
@@ -76,11 +79,22 @@ function Asset({ item }: { item: GeneratedContent }) {
       {open && (
         <div className="mt-3 space-y-3">
           <p className="whitespace-pre-wrap">{item.body}</p>
-          {item.sourceEvent && <div><strong>{item.sourceEvent.name}</strong> · {item.sourceEvent.date}
-            <p>{item.sourceEvent.description}</p>
-            {item.sourceEvent.confidence && <p>{t('marketingStudio.confidence')} {item.sourceEvent.confidence}</p>}
-            {/^https?:\/\//i.test(item.sourceEvent.source) && <a className="text-primary underline" href={item.sourceEvent.source} target="_blank" rel="noreferrer">{t('marketingStudio.eventSource')}</a>}
-          </div>}
+          {item.sourceEvent && (
+            <div>
+              <strong>{item.sourceEvent.name}</strong> &middot; {item.sourceEvent.date}
+              <p>{item.sourceEvent.description}</p>
+              {item.sourceEvent.confidence && (
+                <p>
+                  {t('marketingStudio.confidence')} {item.sourceEvent.confidence}
+                </p>
+              )}
+              {/^https?:\/\//i.test(item.sourceEvent.source) && (
+                <a className="text-primary underline" href={item.sourceEvent.source} target="_blank" rel="noreferrer">
+                  {t('marketingStudio.eventSource')}
+                </a>
+              )}
+            </div>
+          )}
           {(['keywords', 'audience', 'budget'] as const).map(
             (key) =>
               item[key] && (
@@ -105,7 +119,11 @@ function Asset({ item }: { item: GeneratedContent }) {
               {t(showResults ? 'campaigns.report.hide' : 'campaigns.report.view')}
             </Button>
           </div>
-          {!item.approvedAt && !item.campaignId && <Button variant="ghost" disabled={dismiss.isPending} onClick={()=>dismiss.mutate()}>{t('marketingStudio.dismiss')}</Button>}
+          {!item.approvedAt && !item.campaignId && (
+            <Button variant="ghost" disabled={dismiss.isPending} onClick={() => dismiss.mutate()}>
+              {t('marketingStudio.dismiss')}
+            </Button>
+          )}
           <MarketingError error={dismiss.error ?? approve.error ?? draft.error ?? copy.error ?? report.error} />
           {showResults && report.data && (
             <dl className="grid grid-cols-3 gap-2">
