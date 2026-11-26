@@ -214,7 +214,7 @@ function DraftPanelBody({ threadKey, canAsk, localOnly }: DraftPanelProps & { lo
         <p className="text-sm text-muted-foreground" data-testid="assistant-draft-none">
           {t('assistant.draft.none')}
         </p>
-        {canAsk && draft?.contentVersion !== 'portal-local-v1' ? (
+        {canAsk ? (
           <Button type="button" variant="outline" className="min-h-11" onClick={handleAsk} loading={request.isPending} disabled={busy && !request.isPending}>
             {t('assistant.draft.ask')}
           </Button>

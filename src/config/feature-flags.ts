@@ -16,6 +16,7 @@ export type FeatureFlagKey =
   | 'agencyTier'
   | 'crmMarketing'
   | 'guestPortal'
+  | 'guestPortalAutoReplies'
   | 'guestPortalSupplierServices'
   | 'complianceTrafficLight'
   | 'guestRegistrationRegimes'
@@ -121,6 +122,7 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    */
   crmMarketing: false,
   guestPortal: false,
+  guestPortalAutoReplies: false,
   guestPortalSupplierServices: false,
   /**
    * The compliance traffic light (backend `ComplianceTrafficLight`, E03/F02/US01/T03): a light for each obligation, and the coverage report of the
