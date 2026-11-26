@@ -427,6 +427,30 @@ describe('no hearts, no storage, no fixed elements (AC3)', () => {
     const none = await screen.findByTestId('search-no-results');
     expect(none).toHaveAttribute('data-reason', 'none');
     expect(screen.queryByTestId('search-write')).not.toBeInTheDocument();
+    // The sentence does not send the guest to a host they cannot write to from here: it says the fact and stops.
+    expect(none).toHaveTextContent('In questo momento nessuna casa è prenotabile online.');
+    expect(none).not.toHaveTextContent(/scrivi/i);
+    expect(none).not.toHaveTextContent('Giulia');
+  });
+
+  it('embedBooking_NoResultsForTheParty_SaysHowManyTheHomesTake_WithNoInvitationToWriteToTheHost', async () => {
+    getStays.mockResolvedValue(staysResult([stayCard(1, { availability: { available: false, reason: 'guests' } })]));
+    open(DATES);
+
+    const none = await screen.findByTestId('search-no-results');
+    expect(none).toHaveAttribute('data-reason', 'capacity');
+    expect(none).toHaveTextContent('Le case di questo sito ospitano fino a 4 persone.');
+    expect(none).not.toHaveTextContent(/scrivi/i);
+    expect(screen.queryByTestId('search-write')).not.toBeInTheDocument();
+  });
+
+  it('embedBooking_NoResults_InEnglish_HaveTheSameSentencesWithNoInvitationToWriteToTheHost', async () => {
+    getStays.mockResolvedValue(staysResult([]));
+    open('lang=en');
+
+    const none = await screen.findByTestId('search-no-results');
+    expect(none).toHaveTextContent('No home can be booked online right now.');
+    expect(none).not.toHaveTextContent(/write to/i);
   });
 
   it('embedSources_NeverTouchTheStorageTheCookiesNorTheSessionOfTheGuest', () => {
@@ -655,6 +679,9 @@ describe('states and money (AC6)', () => {
     expect(alternative.getAttribute('href')).toContain('checkin=2026-12-14');
     expect(alternative.getAttribute('href')).toContain('parent=');
     expect(screen.queryByTestId('search-write')).not.toBeInTheDocument();
+    // «Try other dates» without «or write to the host»: there is no way to do it in the frame.
+    expect(none).toHaveTextContent('In queste date le case sono già prenotate. Prova altre date, anche vicine.');
+    expect(none).not.toHaveTextContent(/scrivi/i);
   });
 
   it('embedBooking_prices_useEachPropertyCurrency', async () => {

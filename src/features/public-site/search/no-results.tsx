@@ -40,13 +40,20 @@ export function NoResults({ reason, scope, guests, maxGuests, alternatives, alte
   const embed = useEmbed();
   const locale = siteLocale(i18n.language);
   const words = scope.kind === 'org' ? 'siteSearch.none' : 'platformSearch.none';
+  // The sentences that send the guest to write to the host (no home for the party, nothing free, nothing bookable) have a version of their own in a frame, which has
+  // no way to write to the host: an invitation without the action would be a dead end.
+  const writesToTheHost = scope.kind === 'org' && (reason === 'capacity' || reason === 'dates' || reason === 'none');
+  const text =
+    embed && writesToTheHost
+      ? t(`embed.booking.noResults.${reason}`, { count: maxGuests ?? guests })
+      : t(`${words}.${reason}.text`, { count: maxGuests ?? guests, host: scope.kind === 'org' ? scope.hostName : '' });
 
   return (
     <div className="sr-state" data-testid="search-no-results" data-reason={reason}>
       <CalendarX aria-hidden="true" />
       <div>
         <h2>{t(`${words}.${reason}.title`, { guests })}</h2>
-        <p>{t(`${words}.${reason}.text`, { count: maxGuests ?? guests, host: scope.kind === 'org' ? scope.hostName : '' })}</p>
+        <p>{text}</p>
       </div>
       {alternatives.length > 0 ? (
         <ul className="sr-alts" aria-label={t('siteSearch.none.alternatives')}>

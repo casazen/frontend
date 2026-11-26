@@ -9802,6 +9802,11 @@
       "more": {
         "button": "Show more homes",
         "shown": "Showing {{shown}} of {{total}} homes"
+      },
+      "noResults": {
+        "capacity": "The homes of this site sleep up to {{count}} people.",
+        "dates": "The homes are already booked on these dates. Try other dates, nearby ones too.",
+        "none": "No home can be booked online right now."
       }
     },
     "error": {

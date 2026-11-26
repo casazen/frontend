@@ -9802,6 +9802,11 @@
       "more": {
         "button": "Mostra altre case",
         "shown": "Stai vedendo {{shown}} case su {{total}}"
+      },
+      "noResults": {
+        "capacity": "Le case di questo sito ospitano fino a {{count}} persone.",
+        "dates": "In queste date le case sono già prenotate. Prova altre date, anche vicine.",
+        "none": "In questo momento nessuna casa è prenotabile online."
       }
     },
     "error": {
