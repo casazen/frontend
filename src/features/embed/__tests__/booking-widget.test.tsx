@@ -354,6 +354,50 @@ describe('no hearts, no storage, no fixed elements (AC3)', () => {
     expect(screen.getByTestId('search-view-toggle').closest('.sr--embed')).not.toBeNull();
   });
 
+  it('embedBooking_OnAPhone_TheHelpOfTheEstimatedTax_IsABubbleBesideTheButton_NeverASheetFixedToTheFrame', async () => {
+    stubViewportWidth(390);
+    // A stay with a child: the tourist tax of the total is an estimate until the ages are known, and the card says so with a «?» (a sheet from the bottom on a phone of the site).
+    getStays.mockResolvedValue(
+      staysResult([stayCard(1, { price: { currency: 'EUR', perNightCents: 14500, totalCents: 43500, includesTouristTax: 'estimated' } })], {
+        checkIn: '2026-12-10',
+        checkOut: '2026-12-13',
+        nights: 3,
+        children: 1,
+      }),
+    );
+    open(`${DATES}&children=1`);
+    await screen.findAllByTestId('house-card');
+
+    fireEvent.click(await screen.findByRole('button', { name: /imposta è stimata/ }));
+
+    // The explanation is the bubble of a tablet, at the width of a phone too: a sheet would be fixed to the window of the frame, which is as tall as the whole list.
+    expect(await screen.findByTestId('help-tip-popover')).toHaveTextContent('Per ora contiamo tutti i bambini come se la pagassero');
+    expect(screen.queryByTestId('help-tip-sheet')).not.toBeInTheDocument();
+    // Nothing is fixed to the window but what a popover is made of: the box the library places beside the button, and its two invisible focus guards (no size, no pointer).
+    const fixed = [...document.body.querySelectorAll<HTMLElement>('*')].filter(
+      (element) =>
+        (element.classList.contains('fixed') || element.style.position === 'fixed') &&
+        !element.closest('[data-radix-popper-content-wrapper]') &&
+        !element.hasAttribute('data-radix-focus-guard'),
+    );
+    expect(fixed).toEqual([]);
+  });
+
+  it('houseCard_OutsideAFrame_OnAPhone_TheHelpOfTheEstimatedTax_IsStillASheet', async () => {
+    stubViewportWidth(390);
+    const card = stayCard(1, { price: { currency: 'EUR', perNightCents: 14500, totalCents: 43500, includesTouristTax: 'estimated' } });
+    render(
+      <MemoryRouter initialEntries={[`/book/${ORG_SLUG}/search`]}>
+        <HouseCard card={card} orgSlug={ORG_SLUG} variant="row" nights={3} stay={null} />
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /imposta è stimata/ }));
+
+    expect(await screen.findByTestId('help-tip-sheet')).toBeInTheDocument();
+    expect(screen.queryByTestId('help-tip-popover')).not.toBeInTheDocument();
+  });
+
   it('embedBooking_ThePinCard_IsInTheFlowUnderTheMapAndTheMapDrawsNoCardOfItsOwn', async () => {
     stubViewportWidth(1280);
     getStays.mockResolvedValue(withTotals());

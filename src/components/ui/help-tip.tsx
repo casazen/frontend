@@ -30,6 +30,12 @@ export interface HelpTipProps {
   learnMoreLabel?: string;
   /** Which side of the "?" the bubble prefers (a tablet or a desktop; on a phone it is a sheet from the bottom). */
   side?: 'top' | 'right' | 'bottom' | 'left';
+  /**
+   * On a phone the explanation is a sheet from the bottom of the window. Turn it off for a page that cannot hold something fixed to its window (the widgets
+   * of a frame that is as tall as its content: a sheet would sit at the bottom of all that content, far from the guest): it is then the bubble beside the
+   * "?" at every width. Default: on.
+   */
+  sheetOnPhone?: boolean;
   /** For the button: where it sits, next to the label of a field or the title of a card. */
   className?: string;
 }
@@ -71,7 +77,7 @@ function LearnMoreLink({ href, label, onNavigate }: { href: string; label: strin
  * A rule of content, not of code: at most three of them on a screen, and only for a word that is really technical (CIN,
  * RLI, cedolare secca). A page full of question marks says that the page is hard.
  */
-export function HelpTip({ children, title, label, learnMoreHref, learnMoreLabel, side = 'bottom', className }: HelpTipProps) {
+export function HelpTip({ children, title, label, learnMoreHref, learnMoreLabel, side = 'bottom', sheetOnPhone = true, className }: HelpTipProps) {
   const { t } = useTranslation();
   const isPhone = useMediaQuery(PHONE_QUERY);
   const [open, setOpen] = React.useState(false);
@@ -102,7 +108,7 @@ export function HelpTip({ children, title, label, learnMoreHref, learnMoreLabel,
     </button>
   );
 
-  if (isPhone) {
+  if (isPhone && sheetOnPhone) {
     return (
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>{trigger}</SheetTrigger>

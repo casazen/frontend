@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Award, Check, MapPin, Star } from 'lucide-react';
 import { HelpTip } from '@/components/ui/help-tip';
+import { useEmbed } from '@/features/embed/embed-context';
 import { FavoriteButton } from '@/features/public-site/favorites/favorite-button';
 import { formatAverage } from '@/features/reviews/lib/review-format';
 import { formatDayMonth, formatPrice } from '@/features/public-site/stay/stay-format';
@@ -59,6 +60,8 @@ export function HouseCard({ card, orgSlug, variant = 'grid', nights = null, stay
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const linkOf = useCardLink();
+  // Inside the frame of a widget nothing is fixed to the window (the explanation of the tax is a bubble at every width, not a sheet from the bottom of the frame).
+  const embed = useEmbed();
   const locale = siteLocale(i18n.language);
   // Across all the sites the home brings the slug of its own site; on a site it is the site's.
   const site = orgSlug ?? card.orgSlug ?? '';
@@ -193,7 +196,7 @@ export function HouseCard({ card, orgSlug, variant = 'grid', nights = null, stay
                 {' · '}
                 {t(`siteHome.card.tax.${price.tax}`)}
                 {price.tax === 'estimated' ? (
-                  <HelpTip title={t('siteHome.card.taxHelpTitle')} label={t('siteHome.card.taxHelpLabel')} className="hcard__help">
+                  <HelpTip title={t('siteHome.card.taxHelpTitle')} label={t('siteHome.card.taxHelpLabel')} sheetOnPhone={!embed} className="hcard__help">
                     {t('siteHome.card.taxHelp')}
                   </HelpTip>
                 ) : null}
