@@ -28,7 +28,6 @@ interface PropertyNextStepProps {
   canWrite: boolean;
   /** `booking.read`: the calendar is a page of the bookings. */
   canReadBookings: boolean;
-  onEditCin: () => void;
   onReactivate: () => void;
   reactivating: boolean;
 }
@@ -61,7 +60,7 @@ interface StepView {
  * wizard). It says what to do, whose turn it is, and gives the one button that does it, with the permissions the page always
  * had. A person who may not write is told what is going on and led back to the list.
  */
-export function PropertyNextStep({ property, status, canWrite, canReadBookings, onEditCin, onReactivate, reactivating }: PropertyNextStepProps) {
+export function PropertyNextStep({ property, status, canWrite, canReadBookings, onReactivate, reactivating }: PropertyNextStepProps) {
   const { t, i18n } = useTranslation();
   const language = i18n.language;
   const { hasPermission } = useWorkspace();
@@ -132,14 +131,14 @@ export function PropertyNextStep({ property, status, canWrite, canReadBookings, 
           title: t('property.next.cinMissing.title'),
           body: t('property.cin.badge.tooltipMissing'),
           hostTurn: canWrite,
-          primary: canWrite ? { label: t('property.next.cinMissing.action'), onClick: onEditCin, testId: 'property-next-cin' } : toProperties,
+          primary: canWrite ? { label: t('property.detail.tabs.documents'), href: propertyTabPath(property.id, 'documents'), testId: 'property-next-cin' } : toProperties,
         };
       case 'cinInvalid':
         return {
           title: t('property.next.cinInvalid.title'),
           body: t('property.cin.badge.tooltipInvalid'),
           hostTurn: canWrite,
-          primary: canWrite ? { label: t('property.next.cinInvalid.action'), onClick: onEditCin, testId: 'property-next-cin' } : toProperties,
+          primary: canWrite ? { label: t('property.detail.tabs.documents'), href: propertyTabPath(property.id, 'documents'), testId: 'property-next-cin' } : toProperties,
         };
       case 'compliance': {
         // The worst compliance item of the property (NF-52): red is the host's to do, yellow is in hand.

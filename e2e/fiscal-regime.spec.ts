@@ -13,9 +13,9 @@ const regimeMock = {
       propertyId: '11111111-1111-1111-1111-111111111111',
       name: 'Casa Test',
       recommendedRegime: 'CedolareSecca21',
-      assignedRegime: 'CedolareSecca21',
-      regimeConfirmed: true,
-      isPrimaryForCedolare: true,
+      assignedRegime: null,
+      regimeConfirmed: false,
+      isPrimaryForCedolare: false,
       shortStayInTaxYear: true,
       taxpayerIndex: 0,
       cedolareRate: 0.21,
@@ -152,6 +152,8 @@ test.describe('Fiscal regime 2026 (#3)', () => {
     await expect(page.getByTestId('fiscal-dashboard-page')).toBeVisible({ timeout: 20_000 });
     await expect(page.getByTestId('fiscal-disclaimer')).toContainText(/informativa|commercialista/i);
     await expect(page.getByTestId('fiscal-str-count')).toBeVisible();
+    await expect(page.getByRole('button', { name: /conferma il regime consigliato/i })).toHaveCount(1);
+    await expect(page.getByTestId('fiscal-confirm-11111111-1111-1111-1111-111111111111')).toBeVisible();
     await expect(page.getByTestId('fiscal-property-card-11111111-1111-1111-1111-111111111111')).toContainText(
       'Cedolare secca 21%',
     );

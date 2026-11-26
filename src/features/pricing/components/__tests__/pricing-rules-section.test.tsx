@@ -25,7 +25,7 @@ const BASE_CONFIG: PricingAdapterConfig = {
 function card(config: PricingAdapterConfig) {
   return (
     <I18nextProvider i18n={i18n}>
-      <PricingRulesSection config={config} isSaving={false} onToggle={vi.fn()} onSave={vi.fn()} />
+      <PricingRulesSection config={config} isSaving={false} onSave={vi.fn()} />
     </I18nextProvider>
   );
 }

@@ -136,7 +136,8 @@ describe('FiscalDashboardPage (CO-18, CO-19)', () => {
     expect(select).toBeEnabled();
     expect(screen.getByTestId('fiscal-assigned-p-irpef')).toHaveTextContent(i18n.t('fiscal.notAssigned'));
     // One apartment only: the 21% designation is still available (not only with exactly two properties).
-    fireEvent.click(screen.getByTestId('fiscal-primary-p-irpef'));
+    expect(screen.queryByTestId('fiscal-primary-p-irpef')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('fiscal-confirm-p-irpef'));
 
     await waitFor(() =>
       expect(fiscalApi.assignRegime).toHaveBeenCalledWith('p-irpef', {
@@ -307,6 +308,7 @@ describe('FiscalDashboardPage (CO-18, CO-19)', () => {
     renderPage();
 
     expect(await screen.findByTestId('fiscal-unconfirmed-p-irpef')).toHaveTextContent(i18n.t('fiscal.unconfirmed'));
+    expect(screen.getAllByRole('button', { name: /Conferma il regime consigliato/i })).toHaveLength(1);
     fireEvent.click(screen.getByTestId('fiscal-confirm-p-irpef'));
 
     await waitFor(() =>

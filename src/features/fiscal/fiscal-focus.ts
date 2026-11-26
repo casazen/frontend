@@ -1,4 +1,4 @@
-import type { FiscalPropertyRow, FiscalRegimeSnapshot, StrFiscalRegime } from '@/api/fiscal.api';
+import type { FiscalPropertyRow, FiscalRegimeSnapshot } from '@/api/fiscal.api';
 import type { FiscalRegimeStatus } from '@/lib/status-dictionary';
 
 /**
@@ -14,17 +14,12 @@ export function fiscalRegimeStatus(row: Pick<FiscalPropertyRow, 'assignedRegime'
 export type FiscalFocus =
   /** A taxpayer is over the threshold and no partita IVA is on record: the tax profile comes first. */
   | { kind: 'vat' }
-  /** A property has a detected regime that the host has not confirmed yet. */
-  | { kind: 'confirm'; row: FiscalPropertyRow; regime: StrFiscalRegime; others: number }
-  /** A property has no regime and none to confirm: the host picks one. */
-  | { kind: 'choose'; row: FiscalPropertyRow; others: number }
+  /** Assignment is handled in the property list. */
+  | { kind: 'properties' }
   /** Every property has its regime. */
   | { kind: 'ok' }
   /** Nothing the person can do here (no right to change, or nothing can be chosen): the reports are what is left. */
   | { kind: 'reports' };
-
-/** `id` of the select that chooses the regime of a property: the button of the focus block that says "Scegli il regime" moves the focus there. */
-export const fiscalRegimeSelectId = (propertyId: string) => `fiscal-regime-${propertyId}`;
 
 /** A taxpayer over the short-rental threshold is presumed to run a business, and the business regimes need a partita IVA. */
 function needsPartitaIva(snapshot: Pick<FiscalRegimeSnapshot, 'requiresPartitaIva' | 'hasPartitaIva'>): boolean {
@@ -42,17 +37,7 @@ export function fiscalFocus(snapshot: FiscalRegimeSnapshot, canWrite: boolean): 
 
   if (canWrite && missingVat) return { kind: 'vat' };
 
-  if (canWrite) {
-    const choosable = open.filter((row) => (row.availableRegimes ?? []).length > 0);
-    const [row] = choosable;
-    if (row) {
-      const others = choosable.length - 1;
-      const recommended = row.recommendedRegime;
-      return recommended && (row.availableRegimes ?? []).includes(recommended)
-        ? { kind: 'confirm', row, regime: recommended, others }
-        : { kind: 'choose', row, others };
-    }
-  }
+  if (canWrite && open.some((row) => (row.availableRegimes ?? []).length > 0)) return { kind: 'properties' };
 
   return open.length === 0 && !missingVat ? { kind: 'ok' } : { kind: 'reports' };
 }
