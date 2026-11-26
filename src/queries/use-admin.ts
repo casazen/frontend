@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { AdminApi } from '@/api/admin.api';
+import { AdminApi, type AdminOtaStatus } from '@/api/admin.api';
 
 const ADMIN_KEY = 'admin';
 
@@ -23,6 +23,13 @@ export function useCinCompliance(
         pageSize,
         ...(cinStatus ? { cinStatus } : {}),
       }),
+  });
+}
+
+export function useAdminOtaSync(status: AdminOtaStatus, page: number, pageSize: number) {
+  return useQuery({
+    queryKey: [ADMIN_KEY, 'ota-sync', status, page, pageSize],
+    queryFn: () => AdminApi.getOtaSync(status, page, pageSize),
   });
 }
 

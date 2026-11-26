@@ -1161,10 +1161,15 @@
         "invalid": "Invalid"
       },
       "ota": {
-        "title": "OTA Sync Health",
-        "synced": "Synced",
-        "failed": "Failed",
-        "neverSynced": "Never synced"
+        "title": "Channel synchronization",
+        "synced": "Up to date",
+        "failed": "Overdue (over 6 hours)",
+        "neverSynced": "Never synced",
+        "filter": "Sync status",
+        "loadError": "Could not load the connections.",
+        "empty": "No connections on this page.",
+        "pages": "Connection pages",
+        "page": "Page {{page}} of {{pages}}"
       }
     },
     "cin": {
@@ -26180,6 +26185,9 @@
     "waitDays": "Days to wait",
     "waitHours": "Hours to wait",
     "flow": {
+      "edit": "Edit",
+      "useTestMode": "Switch to simulation",
+      "useLiveMode": "Switch to real actions",
       "confirmTitle": "Enable live actions?",
       "confirmDescription": "When the event occurs, “{{name}}” can perform these actions for stays matching the conditions.",
       "confirmLive": "Confirm activation",

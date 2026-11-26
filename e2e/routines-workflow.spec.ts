@@ -76,7 +76,8 @@ test('opens the library directly, saves a configured template paused and simulat
   await expect(paused).toContainText('In pausa');
   expect(saved).toHaveLength(1);
   expect(saved[0]).toMatchObject({ active: false, testMode: true });
-  await paused.getByRole('button', { name: 'Prova su una prenotazione' }).click();
+  await paused.getByRole('button', { name: /Altre azioni/i }).press('Enter');
+  await page.getByRole('menuitem', { name: 'Prova su una prenotazione' }).click();
   await page.getByLabel('Scegli una prenotazione').selectOption(booking.id);
   await page.getByRole('button', { name: 'Simula con questi dati' }).click();
   await expect(page.getByText('Prevista nella simulazione')).toBeVisible();

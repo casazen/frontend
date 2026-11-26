@@ -1161,10 +1161,15 @@
         "invalid": "Non validi"
       },
       "ota": {
-        "title": "Salute OTA Sync",
-        "synced": "Sincronizzati",
-        "failed": "Falliti",
-        "neverSynced": "Mai sincronizzati"
+        "title": "Sincronizzazione dei canali",
+        "synced": "Aggiornati",
+        "failed": "In ritardo (oltre 6 ore)",
+        "neverSynced": "Mai sincronizzati",
+        "filter": "Stato della sincronizzazione",
+        "loadError": "Impossibile caricare le connessioni.",
+        "empty": "Nessuna connessione in questa pagina.",
+        "pages": "Pagine delle connessioni",
+        "page": "Pagina {{page}} di {{pages}}"
       }
     },
     "cin": {
@@ -26180,6 +26185,9 @@
     "waitDays": "Giorni di attesa",
     "waitHours": "Ore di attesa",
     "flow": {
+      "edit": "Modifica",
+      "useTestMode": "Passa alla simulazione",
+      "useLiveMode": "Passa alle azioni reali",
       "confirmTitle": "Attivare le azioni reali?",
       "confirmDescription": "Quando si verifica l’evento, «{{name}}» potrà eseguire queste azioni per i soggiorni che soddisfano le condizioni.",
       "confirmLive": "Conferma attivazione",

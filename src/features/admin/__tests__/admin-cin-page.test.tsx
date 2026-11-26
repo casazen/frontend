@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { createElement, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import i18n from '@/i18n/config';
@@ -35,9 +36,9 @@ const missingItem: CinComplianceItem = {
   city: 'Milano',
 };
 
-function renderPage() {
+function renderPage(url = "/app/admin/cin") {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  return render(createElement(QueryClientProvider, { client }, createElement(AdminCinPage)));
+  return render(createElement(QueryClientProvider, { client }, createElement(MemoryRouter, { initialEntries: [url] }, createElement(AdminCinPage))));
 }
 
 // A1-16: the admin CIN audit page was unreachable and untested; these tests cover its table, filter and error state.
@@ -61,6 +62,13 @@ describe('AdminCinPage', () => {
     expect(screen.getByText('owner1@example.com')).toBeInTheDocument();
     expect(screen.getByText('IT058091C27G5FFZDZ')).toBeInTheDocument();
     expect(AdminApi.getCinCompliance).toHaveBeenCalledWith({ page: 1, pageSize: 20 });
+  });
+
+  it('opens the counter filter directly on the requested page', async () => {
+    renderPage('/app/admin/cin?cinStatus=missing&page=2');
+    await screen.findByText('Casa Verdi');
+    expect(screen.getByTestId('cin-status-filter')).toHaveValue('missing');
+    expect(AdminApi.getCinCompliance).toHaveBeenCalledWith({ page: 2, pageSize: 20, cinStatus: 'missing' });
   });
 
   it('changeFilter_Missing_RequestsServerSideFilteredFirstPage', async () => {
