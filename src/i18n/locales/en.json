@@ -9810,14 +9810,37 @@
     "signIn": "Sign in"
   },
   "embed": {
+    "booking": {
+      "more": {
+        "button": "Show more homes",
+        "shown": "Showing {{shown}} of {{total}} homes"
+      },
+      "noResults": {
+        "capacity": "The homes of this site sleep up to {{count}} people.",
+        "dates": "The homes are already booked on these dates. Try other dates, nearby ones too.",
+        "none": "No home can be booked online right now."
+      }
+    },
     "error": {
       "description": "We could not reach the server. Please try again shortly.",
       "title": "We could not load the content"
+    },
+    "guestAccess": {
+      "label": "Manage your booking",
+      "submit": "Continue"
     },
     "loading": "Loading…",
     "notFound": {
       "description": "We can't find the booking site this widget should show.",
       "title": "Site not found"
+    },
+    "property": {
+      "backToResults": "Back to results",
+      "navLabel": "Navigation for this home",
+      "notFound": {
+        "description": "The link may be old or incomplete, or the home can no longer be booked online."
+      },
+      "openOnSite": "Open on the site"
     },
     "title": "Book · {{name}}",
     "unavailable": {

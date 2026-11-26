@@ -1,8 +1,9 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Info } from 'lucide-react';
-import { RegionMap, type MapLink, type MapPinData } from '@/features/site-maps';
-import { availabilityNote, cardLink, cardPrice, placeOfCard } from '@/features/public-site/cards/house-card-model';
+import { MapCard, RegionMap, mapCardOfPin, type MapLink, type MapPinData } from '@/features/site-maps';
+import { useEmbed } from '@/features/embed/embed-context';
+import { availabilityNote, cardPrice, placeOfCard, useCardLink } from '@/features/public-site/cards/house-card-model';
 import { formatPrice } from '@/features/public-site/stay/stay-format';
 import type { StayState } from '@/features/public-site/stay/stay-state';
 import { displayableMediaUrls } from '@/lib/media-url';
@@ -25,10 +26,17 @@ interface ResultsMapPaneProps {
  * grey and striped for a home that is not free, on the schematic map of DB-19 (no tiles, no provider). The pins sit at the rounded
  * position the server publishes (about a kilometre) and the map says so; the information is also in the list next to it, so the
  * map is an aid and nothing is only there. A pin selected opens a card with the photo and the link to the home (a sheet on a phone).
+ *
+ * Inside the frame of an embeddable widget (NF-144) the pins lead to the property widget of the same frame, and the card of the selected pin is a block
+ * in the flow under the map: a frame is as tall as its content, so a sheet from the bottom of its window, or a card over the map, would sit far from the
+ * guest. Every pin stays on the map, whatever the list shows.
  */
 export function ResultsMapPane({ cards, orgSlug, nights, stay, link }: ResultsMapPaneProps) {
   const { t, i18n } = useTranslation();
+  const embed = useEmbed();
+  const linkOf = useCardLink();
   const locale = siteLocale(i18n.language);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const pins = useMemo<MapPinData[]>(
     () =>
@@ -43,7 +51,7 @@ export function ResultsMapPane({ cards, orgSlug, nights, stay, link }: ResultsMa
           place: card.comune,
           label: formatPrice(cents, currency, locale),
           name: card.name,
-          href: cardLink(orgSlug ?? card.orgSlug ?? '', card, stay),
+          href: linkOf(orgSlug ?? card.orgSlug ?? '', card, stay),
           available: card.availability.available,
           unavailableNote: availabilityNote(card, t, locale) ?? undefined,
           card: {
@@ -53,12 +61,24 @@ export function ResultsMapPane({ cards, orgSlug, nights, stay, link }: ResultsMa
           },
         };
       }),
-    [cards, nights, orgSlug, stay, locale, i18n.language, t],
+    [cards, nights, orgSlug, stay, locale, i18n.language, t, linkOf],
   );
+
+  // The card of the pin selected, only in a frame: the pin may be gone when the list changed under it, and then there is no card.
+  const selectedPin = embed ? pins.find((pin) => pin.id === selectedId) : undefined;
+  const flowCard = selectedPin ? mapCardOfPin(selectedPin, t) : null;
 
   return (
     <div className="sr-map" data-testid="results-map">
-      <RegionMap pins={pins} activeId={link.activeId} onActiveChange={link.setActiveId} labels="auto" className="sr-map__box" />
+      <RegionMap
+        pins={pins}
+        activeId={link.activeId}
+        onActiveChange={link.setActiveId}
+        labels="auto"
+        className="sr-map__box"
+        {...(embed ? { selectedId, onSelect: setSelectedId, hideCard: true } : {})}
+      />
+      {flowCard ? <MapCard data={flowCard} phone={false} layout="flow" onClose={() => setSelectedId(null)} /> : null}
       <p className="sr-map__note">
         <Info aria-hidden="true" />
         {t('siteSearch.map.note')}

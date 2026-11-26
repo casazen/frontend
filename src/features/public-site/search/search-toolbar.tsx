@@ -1,6 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Heart } from 'lucide-react';
+import { useEmbed } from '@/features/embed/embed-context';
 import { SITE_TAG_ICONS, type SiteTag } from '@/features/public-site/cards/site-tags';
 import { destinationOptions } from '@/features/public-site/home/home-model';
 import { SearchBar } from '@/features/public-site/stay/search-bar';
@@ -8,7 +9,7 @@ import { usePublicSiteCalendar } from '@/features/public-site/stay/use-public-si
 import { cn } from '@/lib/utils';
 import type { PublicDestination, PublicStaysSort } from '@/types/public-stays.types';
 import { SORTS } from './search-state';
-import { FiltersSheet } from './filters-sheet';
+import { FiltersPanel, FiltersPanelButton, FiltersSheet } from './filters-sheet';
 import type { SearchFacets } from './search-facets';
 import type { SearchScope } from './search-scope';
 import type { useSearchState } from './use-search-state';
@@ -36,9 +37,19 @@ function typedPlaceLabel(text: string): string {
  * The bar above the results (DB-07c): the stay (the «Dove · Quando · Chi» of the site, as on the home), the sort, the labels of the
  * homes as chips to press, and the hearts. Everything it changes is the address: the list under it follows. The stay and the place
  * are the `SearchBar` of DB-20, which on a phone is one field that opens a sheet.
+ *
+ * Inside the frame of an embeddable widget (NF-144) the filters are a panel under the bar and not a dialog, and there are no hearts, so no «only the hearts» chip.
  */
 export function SearchToolbar({ scope, state, facets, destinations, favoritesCount, onSearch }: SearchToolbarProps) {
   const { t } = useTranslation();
+  const embed = useEmbed();
+  // The panel of the filters of a frame (see `FiltersPanel`): opened by its button, closed by it or by «Mostra N case», which gives the focus back to the button.
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const filtersButton = useRef<HTMLButtonElement>(null);
+  const closeFilters = () => {
+    setFiltersOpen(false);
+    filtersButton.current?.focus({ preventScroll: true });
+  };
   const { stay, setStay, where, setWhere, search, setSearch } = state;
   const platform = scope.kind === 'platform';
   // A guest with a pet is always asked (the bar is not told whether the homes take it): the list says which homes do.
@@ -77,7 +88,11 @@ export function SearchToolbar({ scope, state, facets, destinations, favoritesCou
         />
       </div>
       <div className="sr-bar__tools">
-        <FiltersSheet scope={scope} state={state} facets={facets} />
+        {embed ? (
+          <FiltersPanelButton ref={filtersButton} state={state} open={filtersOpen} onToggle={() => setFiltersOpen((open) => !open)} />
+        ) : (
+          <FiltersSheet scope={scope} state={state} facets={facets} />
+        )}
         <label className="sr-only" htmlFor="sr-sort">
           {t('siteSearch.sort.label')}
         </label>
@@ -95,7 +110,7 @@ export function SearchToolbar({ scope, state, facets, destinations, favoritesCou
           ))}
         </select>
         <ul className="sr-cats" aria-label={t('siteSearch.categories')}>
-          {!platform && (favoritesCount > 0 || search.onlyFavorites) ? (
+          {!platform && !embed && (favoritesCount > 0 || search.onlyFavorites) ? (
             <li>
               <button
                 type="button"
@@ -123,6 +138,7 @@ export function SearchToolbar({ scope, state, facets, destinations, favoritesCou
           })}
         </ul>
       </div>
+      {embed ? <FiltersPanel scope={scope} state={state} facets={facets} open={filtersOpen} onClose={closeFilters} /> : null}
     </div>
   );
 }

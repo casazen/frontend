@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CalendarX, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useEmbed } from '@/features/embed/embed-context';
 import { ContactHostDialog } from '@/features/public-site/contact/contact-host-dialog';
 import { formatStayRange } from '@/features/public-site/stay/stay-format';
 import { siteLocale } from '@/lib/site-language';
@@ -30,18 +31,29 @@ interface NoResultsProps {
  * When there is nothing to show (DB-07c): a title that says why (no home for so many guests, none free on those dates, none with
  * these filters, no heart saved), up to three nearby dates with homes that are free, a way to remove the filters in one press and
  * a way to ask the host. Never an empty page: every case has something to do next.
+ *
+ * Inside the frame of an embeddable widget (NF-144) there is no way to write to the host: it is a form with personal data in a dialog, and those pages hold
+ * neither (the host answers where the guest books).
  */
 export function NoResults({ reason, scope, guests, maxGuests, alternatives, alternativeHref, canClearFilters, onClearFilters }: NoResultsProps) {
   const { t, i18n } = useTranslation();
+  const embed = useEmbed();
   const locale = siteLocale(i18n.language);
   const words = scope.kind === 'org' ? 'siteSearch.none' : 'platformSearch.none';
+  // The sentences that send the guest to write to the host (no home for the party, nothing free, nothing bookable) have a version of their own in a frame, which has
+  // no way to write to the host: an invitation without the action would be a dead end.
+  const writesToTheHost = scope.kind === 'org' && (reason === 'capacity' || reason === 'dates' || reason === 'none');
+  const text =
+    embed && writesToTheHost
+      ? t(`embed.booking.noResults.${reason}`, { count: maxGuests ?? guests })
+      : t(`${words}.${reason}.text`, { count: maxGuests ?? guests, host: scope.kind === 'org' ? scope.hostName : '' });
 
   return (
     <div className="sr-state" data-testid="search-no-results" data-reason={reason}>
       <CalendarX aria-hidden="true" />
       <div>
         <h2>{t(`${words}.${reason}.title`, { guests })}</h2>
-        <p>{t(`${words}.${reason}.text`, { count: maxGuests ?? guests, host: scope.kind === 'org' ? scope.hostName : '' })}</p>
+        <p>{text}</p>
       </div>
       {alternatives.length > 0 ? (
         <ul className="sr-alts" aria-label={t('siteSearch.none.alternatives')}>
@@ -61,7 +73,7 @@ export function NoResults({ reason, scope, guests, maxGuests, alternatives, alte
             {t('siteSearch.none.clear')}
           </Button>
         ) : null}
-        {scope.kind === 'org' ? (
+        {scope.kind === 'org' && !embed ? (
           <ContactHostDialog
             site={scope.slug}
             hostName={scope.hostName}
