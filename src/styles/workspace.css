@@ -69,3 +69,8 @@ html[data-ui='v2'] {
 @media (pointer: coarse) {
   .workspace-group-toggle { min-height: var(--touch-min); }
 }
+
+@media (min-width: 48rem) {
+  [data-density='compact'] { --workspace-gutter: 1rem; }
+  [data-density='compact'] .workspace-data-table :is(td, th) { padding-block: .375rem; }
+}

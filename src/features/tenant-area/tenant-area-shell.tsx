@@ -1,3 +1,4 @@
+import { ResidentNavigation } from '@/components/layout/resident-navigation';
 import { NavLink, Outlet, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FileText, FolderOpen, House, Landmark, Wrench } from 'lucide-react';
@@ -19,7 +20,7 @@ export function TenantAreaShell() {
         <div className="resident-rail__inner">
           <p className="resident-title"><House aria-hidden="true" />{t('tenantArea.title')}</p>
           {leaseId ? (
-            <nav aria-label={t('tenantArea.nav.label')} className="resident-nav">
+            <ResidentNavigation label={t('tenantArea.nav.label')}>
               <NavLink to={tenantContractPath(leaseId)} end className={linkClass}>
                 <FileText aria-hidden="true" />{t('tenantArea.nav.contract')}
               </NavLink>
@@ -32,7 +33,7 @@ export function TenantAreaShell() {
               <NavLink to={tenantMaintenancePath(leaseId)} className={linkClass}>
                 <Wrench aria-hidden="true" />{t('tenantArea.nav.maintenance')}
               </NavLink>
-            </nav>
+            </ResidentNavigation>
           ) : (
             <NavLink to={TENANT_AREA_PATH} className={linkClass}>
               <House aria-hidden="true" />{t('tenantArea.nav.contracts')}

@@ -28,7 +28,16 @@ function uiStorage(): StateStorage {
   return window.localStorage;
 }
 
+export interface WorkspaceView {
+  compact: boolean;
+  secondaryPaths: string[];
+}
+
+export const DEFAULT_WORKSPACE_VIEW: WorkspaceView = { compact: false, secondaryPaths: [] };
+
 interface UiState {
+  workspaceViews: Record<string, WorkspaceView>;
+  updateWorkspaceView: (key: string, change: (view: WorkspaceView) => WorkspaceView) => void;
   /**
    * On a phone (< md): the sheet "Altro" of the bottom bar is open (`MoreSheet`, UI-04b). The bar and the menu button of the
    * header opened it too until UI-05, which took the menu button out. The name is the one the drawer that slid in from the
@@ -69,6 +78,14 @@ interface UiState {
 export const useUiStore = create<UiState>()(
   persist(
     (set) => ({
+      workspaceViews: {},
+      updateWorkspaceView: (key, change) => set(state => {
+        const next = change(state.workspaceViews[key] ?? DEFAULT_WORKSPACE_VIEW);
+        const workspaceViews = { ...state.workspaceViews };
+        if (next.compact || next.secondaryPaths.length) workspaceViews[key] = next;
+        else delete workspaceViews[key];
+        return { workspaceViews };
+      }),
       sidebarOpen: false,
       setSidebarOpen: (open) => set({ sidebarOpen: open }),
       sidebarCollapsed: false,
@@ -91,7 +108,7 @@ export const useUiStore = create<UiState>()(
       version: 1,
       // The sheet of the phone starts closed on every visit and the bar says by itself that it is there: only the
       // preference is kept.
-      partialize: (state) => ({ sidebarCollapsed: state.sidebarCollapsed }),
+      partialize: (state) => ({ sidebarCollapsed: state.sidebarCollapsed, ...(Object.keys(state.workspaceViews).length ? { workspaceViews: state.workspaceViews } : {}) }),
     },
   ),
 );

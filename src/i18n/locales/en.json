@@ -1,4 +1,15 @@
 {
+  "workspaceView": {
+    "title": "Customize workspace",
+    "scope": "Preferences are saved on this device for your profile and this workspace.",
+    "compact": "Compact tables and margins",
+    "help": "Choose the entries to keep in view. The others remain under Other tools and in search.",
+    "other": "Other tools",
+    "reset": "Restore default view",
+    "done": "Done",
+    "search": "Search settings",
+    "noMatches": "No settings match your search."
+  },
   "complianceNoDeadlines": "No deadlines listed",
   "dashboardNoPending": "No operational priorities listed",
   "dashboardPrioritiesPartial": "Some priorities are unavailable.",
