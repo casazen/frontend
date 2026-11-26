@@ -124,3 +124,53 @@ test('a guest and supplier agree a quote and complete an experience in separate 
     await guestContext.close();
   }
 });
+
+test('a supplier shares a private PDF with the guest of a paid order', async ({ browser, page: supplier, baseURL }) => {
+  test.setTimeout(120_000);
+  const order = { id: 'paid-order', serviceName: offer.serviceName, supplierName: offer.supplierName,
+    state: 'Accepted', stripeSandbox: true, requestedFor: '2027-07-02T10:00:00Z', totalCents: 5500,
+    supplierPriceCents: 5500, commissionCents: 0, refundCents: 0, hostOrigin: false };
+  const pdf = Buffer.from('%PDF-1.4\n% synthetic service receipt\n%%EOF', 'utf8');
+  const file = { id: 'service-file', fileName: 'servizio.pdf', uploadedAt: '2027-07-02T10:00:00Z' };
+  let uploaded = false;
+  await setDemoProfile(supplier, 'supplier');
+  await mockSupplierConsoleApi(supplier, { active: true });
+  await enableGuestOrders(supplier);
+  await supplier.route('**/api/supplier/guest-orders', route => route.fulfill({ json: { offers: [], orders: [order] } }));
+  await supplier.route('**/api/supplier/guest-orders/paid-order/documents', route => {
+    if (route.request().method() === 'POST') {
+      expect(route.request().postDataBuffer()?.includes(pdf)).toBe(true);
+      expect(route.request().postDataBuffer()?.includes(Buffer.from(file.fileName))).toBe(true);
+      uploaded = true;
+      return route.fulfill({ json: file });
+    }
+    return route.fulfill({ json: uploaded ? [file] : [] });
+  });
+  await supplier.goto(demoUrl('/app/supplier/inbox', 'supplier') + '#guest-order-paid-order', { waitUntil: 'domcontentloaded' });
+  const card = supplier.locator('#guest-order-paid-order');
+  await expect(card).toBeFocused();
+  await card.locator('summary').click();
+  await card.locator('input[type=file]').setInputFiles({ name: file.fileName, mimeType: 'application/pdf', buffer: pdf });
+  await card.getByRole('button', { name: /Carica PDF|Upload PDF/ }).click();
+  await expect(card.getByText(file.fileName)).toBeVisible();
+  const guest = await browser.newContext({ baseURL, locale: 'en-GB' });
+  try {
+    const page = await guest.newPage();
+    await enableGuestOrders(page);
+    await page.route('**' + portal, route => route.fulfill({ json: {
+      branding: { name: 'Casa Lago', logoUrl: null, primaryColor: null }, language: 'en', checkInCompleted: true,
+      features: { supplierServices: true }, stay: { propertyName: 'Casa Lago', city: 'Como',
+        checkIn: '2027-07-01', checkOut: '2027-07-05', bookingCode: 'DEMO', guests: 2, status: 'confirmed', isDirect: true, isOta: false },
+    } }));
+    await page.route('**' + portal + '/documents', route => route.fulfill({ json: [] }));
+    await page.route('**' + portal + '/documents/invoice-data', route => route.fulfill({ json: { issued: true, invoiceRequested: false, hostManaged: false } }));
+    await page.route('**' + portal + '/documents/supplier-services', route => route.fulfill({ json: [{ ...order, documents: uploaded ? [file] : [] }] }));
+    await page.route('**' + portal + '/documents/supplier-services/service-file/pdf', route => route.fulfill({ contentType: 'application/pdf', body: pdf }));
+    await page.goto('/s/' + token + '?lang=en&page=documents', { waitUntil: 'domcontentloaded' });
+    const download = page.waitForEvent('download');
+    await page.getByRole('button', { name: file.fileName }).click();
+    expect((await download).suggestedFilename()).toBe(file.fileName);
+  } finally {
+    await guest.close();
+  }
+});

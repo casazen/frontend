@@ -1,3 +1,5 @@
+import { useGuestSupplierFiles } from './use-guest-supplier-files';
+import { GuestSupplierFiles } from './guest-supplier-files';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ApiClient } from '@/api/client';
 import axios from '@/lib/axios';
@@ -23,6 +25,7 @@ export function GuestPortalDocuments({ path, language, labels }: {
   labels: { loading: string; failed: string; empty: string; download: string; correction: string; requested: string };
 }) {
   const endpoint = `${path}/documents`;
+  const supplierFiles = useGuestSupplierFiles(endpoint);
   const docs = useQuery({
     queryKey: ['guest-portal-documents', endpoint],
     queryFn: ({ signal }) => ApiClient.get<DocumentSummary[]>(endpoint, undefined, { public: true, signal }),
@@ -54,8 +57,8 @@ export function GuestPortalDocuments({ path, language, labels }: {
   });
   return (
     <section className="stay-card stay-content">
-      {(docs.isPending || invoice.isPending) && <p role="status">{labels.loading}</p>}
-      {(docs.isError || invoice.isError || pdf.isError || correction.isError) && <p role="alert">{labels.failed}</p>}
+      {(docs.isPending || invoice.isPending || supplierFiles.isPending) && <p role="status">{labels.loading}</p>}
+      {(docs.isError || supplierFiles.isError || invoice.isError || pdf.isError || correction.isError) && <p role="alert">{labels.failed}</p>}
       {correction.isSuccess && <p role="status">{labels.requested}</p>}
       {invoice.data && !invoice.data.issued && <>
         {invoice.data.hostManaged && <p>{t('checkin.invoiceHostManaged')}</p>}
@@ -70,7 +73,7 @@ export function GuestPortalDocuments({ path, language, labels }: {
             await invoice.refetch();
           }} />
       </>}
-      {docs.data?.length === 0 && <p>{labels.empty}</p>}
+      {docs.data?.length === 0 && supplierFiles.data?.length === 0 && <p>{labels.empty}</p>}
       {docs.data?.map((document) => (
         <div key={document.id} className="stay-document">
           <span>{document.number} · {new Intl.NumberFormat(language, { style: 'currency', currency: document.currency }).format(document.total)}</span>
@@ -81,6 +84,7 @@ export function GuestPortalDocuments({ path, language, labels }: {
           <button disabled={pdf.isPending} onClick={() => pdf.mutate(document)}>{labels.download}</button>
         </div>
       ))}
+      <GuestSupplierFiles endpoint={endpoint} language={language} orders={supplierFiles.data ?? []} />
     </section>
   );
 }
