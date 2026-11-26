@@ -20,7 +20,7 @@ describe('Como StayTour declaration', () => {
   it('reads the selected property and month and archives the declaration separately from the payment', async () => {
     vi.mocked(ApiClient.get).mockResolvedValue({
       taxableGuests: 2, taxableGuestNights: 4, hostTax: 8, unconfirmedStays: 1,
-      channelStaysToReconcile: 0, exemptions: { over_four_nights: { guests: 1, guestNights: 1 } },
+      departuresToReview: 1, channelStaysToReconcile: 0, exemptions: { over_four_nights: { guests: 1, guestNights: 1 } },
     });
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     render(<I18nextProvider i18n={i18n}><QueryClientProvider client={client}><MemoryRouter>
@@ -29,6 +29,7 @@ describe('Como StayTour declaration', () => {
     fireEvent.change(screen.getByLabelText('Mese della dichiarazione'), { target: { value: '2024-11' } });
     await waitFor(() => expect(ApiClient.get).toHaveBeenCalledWith('/properties/p1/staytour/como/2024-11'));
     expect(await screen.findByText('Pernottamenti successivi al quarto')).toBeInTheDocument();
+    expect(screen.getByText(/Soggiorni da riconciliare per data di uscita/)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Consulta le conferme del mese' })).toHaveAttribute('href', expect.stringContaining('kind=TouristTaxDeclaration'));
     fireEvent.click(screen.getByRole('button', { name: 'Archivia la conferma di StayTour' }));
     expect(screen.getByText('p1/2024-11/TouristTaxDeclaration')).toBeInTheDocument();

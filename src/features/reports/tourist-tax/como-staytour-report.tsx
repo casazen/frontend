@@ -15,6 +15,7 @@ export interface ComoMonthlyDeclaration {
   taxableGuestNights: number;
   hostTax: number;
   unconfirmedStays: number;
+  departuresToReview: number;
   channelStaysToReconcile: number;
   exemptions: Record<string, { guests: number; guestNights: number }>;
 }
@@ -50,6 +51,7 @@ export function ComoStayTourReport({ propertyId, propertyName }: { propertyId: s
       {report.isError && <div role="alert">{t(key + 'error')} <Button variant="ghost" onClick={() => void report.refetch()}>{t(key + 'retry')}</Button></div>}
       {data && <>
         <p className="text-sm text-muted-foreground">{t(key + 'basis')}</p>
+        {data.departuresToReview > 0 && <p role="status">{t(key + 'departures', { count: data.departuresToReview })}</p>}
         {data.unconfirmedStays > 0 && <p role="status">{t(key + 'missing', { count: data.unconfirmedStays })}</p>}
         <dl className="grid gap-3 sm:grid-cols-3">
           <div><dt>{t(key + 'taxable')}</dt><dd className="font-semibold">{data.taxableGuests}</dd></div>

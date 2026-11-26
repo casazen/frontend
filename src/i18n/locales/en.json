@@ -32741,6 +32741,7 @@
     "commitFailed": "Could not complete the action."
   },
   "comoStayTour": {
+    "departures": "Stays with a missing departure or a departure date different from the tax calculation: {{count}}. Their amounts are excluded from totals.",
     "title": "Monthly return · Como",
     "period": "Return month",
     "taxable": "Taxable guests",

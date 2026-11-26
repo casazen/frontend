@@ -32741,6 +32741,7 @@
     "commitFailed": "Non è stato possibile completare l'operazione."
   },
   "comoStayTour": {
+    "departures": "Soggiorni da riconciliare per data di uscita mancante o diversa da quella usata per il calcolo: {{count}}. Gli importi sono esclusi dai totali.",
     "title": "Dichiarazione mensile · Como",
     "period": "Mese della dichiarazione",
     "taxable": "Ospiti imponibili",
