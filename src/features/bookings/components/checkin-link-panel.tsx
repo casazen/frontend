@@ -226,7 +226,8 @@ export function CheckInLinkPanel({ bookingId, canWrite, children, useGuestPortal
           </span>
         )}
         {hasLink && session.expiresAt && status !== 'Scaduto' && (
-          <span className="text-xs text-muted-foreground" data-testid="checkin-link-expiry">
+          <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground" data-testid="checkin-link-expiry">
+            <Clock className="size-4" aria-hidden="true" />
             {t('checkin.link.expiresAt', { date: formatDateTime(session.expiresAt) })}
           </span>
         )}
@@ -315,13 +316,10 @@ export function CheckInLinkPanel({ bookingId, canWrite, children, useGuestPortal
         </div>
       )}
       {useGuestPortal && canWrite && (session.canIssueLink || completed) && (
-        <details className="rounded-lg border bg-card px-4">
-          <summary className="cursor-pointer py-3 text-sm font-medium">{t('guestPortal.host.checkInAccess')}</summary>
-          <GuestPortalLinkPanel bookingId={bookingId} checkIn={{
+        <GuestPortalLinkPanel bookingId={bookingId} checkIn={{
           ready: completed || (hasLink && status !== 'Scaduto'),
           prepare: session.canIssueLink ? () => create.mutateAsync() : undefined,
-          }} />
-        </details>
+        }} />
       )}
       {children}
     </div>

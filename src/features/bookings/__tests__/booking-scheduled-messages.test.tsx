@@ -325,27 +325,26 @@ describe('the timeline', () => {
 });
 
 describe('nothing scheduled', () => {
-  it('empty_SaysNothingIsSentUntilARoutineIsActivated_WithTheLinkToTheRoutinesForWhoMayOpenThem', async () => {
+  it('empty_OffersTheRoutinesShortcutWithoutAnEmptySection', async () => {
     state.granted = new Set(['booking.read', 'property.write']);
     list.mockResolvedValue([]);
     renderSection({ flags: { routines: true } });
 
-    const empty = await screen.findByTestId('scheduled-messages-empty');
-    expect(empty).toHaveTextContent("Non c'è niente di programmato per questa prenotazione. I messaggi partono da soli solo dopo che attivi una routine che li contiene.");
-    expect(within(empty).getByTestId('scheduled-messages-routines-link')).toHaveAttribute('href', '/app/short-rent/automations');
+    expect(await screen.findByTestId('scheduled-messages-routines-link')).toHaveAttribute('href', '/app/short-rent/automations');
+    expect(screen.queryByTestId('booking-scheduled-messages')).not.toBeInTheDocument();
     expect(screen.queryByTestId('scheduled-messages-list')).not.toBeInTheDocument();
   });
 
   it.each([
     ['the routines are closed (flag off)', ['booking.read', 'property.write'], false],
     ['the person cannot change the properties', ['booking.read'], true],
-  ])('empty_WhenOnly_%s_TheSentenceStandsAloneWithNoLink', async (_why, permissions, routines) => {
+  ])('empty_WhenOnly_%s_HidesTheEmptySection', async (_why, permissions, routines) => {
     state.granted = new Set(permissions);
     list.mockResolvedValue([]);
     renderSection({ flags: { routines } });
 
-    const empty = await screen.findByTestId('scheduled-messages-empty');
-    expect(empty).toHaveTextContent('I messaggi partono da soli solo dopo che attivi una routine che li contiene.');
+    await waitFor(() => expect(list).toHaveBeenCalled());
+    await waitFor(() => expect(screen.queryByTestId('booking-scheduled-messages')).not.toBeInTheDocument());
     expect(screen.queryByTestId('scheduled-messages-routines-link')).not.toBeInTheDocument();
   });
 });

@@ -1809,7 +1809,7 @@
       "Errore": "Errore nella preparazione della comunicazione: inviala dal portale della Questura.",
       "Rifiutato": "Il portale ha rifiutato la comunicazione: correggi i dati e inviala di nuovo dal portale della Questura."
     },
-    "notDueNotice": "Per questo soggiorno non è prevista nessuna comunicazione alla Questura italiana. Gli adempimenti di altri paesi si consultano nella sezione dedicata.",
+    "notDueNotice": "Per questo soggiorno non è prevista nessuna comunicazione alla Questura italiana.",
     "statusError": "Impossibile caricare lo stato della comunicazione Alloggiati.",
     "statusNotFound": "Non troviamo lo stato Alloggiati di questo soggiorno: potrebbe non esistere più o non essere tuo.",
     "summaryError": "Impossibile caricare le comunicazioni Alloggiati.",
@@ -4243,6 +4243,7 @@
     },
     "host": {
       "checkInAccess": "Check-in nel Portale ospiti",
+      "guestLink": "Link personale dell’ospite",
       "checkInAccessDescription": "Condividi il link personale con l’ospite per aprire la sezione Check-in del suo portale.",
       "prepareCheckIn": "Abilita il check-in nel portale",
       "accessSection": "Accesso ospite",
@@ -5327,16 +5328,16 @@
       },
       "toBookings": "Vai alle prenotazioni",
       "waitingDocuments": {
-        "body": "Il link per il check-in online è stato inviato. Se serve, puoi mandarlo di nuovo.",
-        "title": "Aspetta i documenti degli ospiti"
+        "body": "Il link è stato inviato. L’ospite inserisce i documenti nel suo portale. Se serve, puoi condividere di nuovo il link.",
+        "title": "L’ospite deve completare il check-in"
       },
       "waitingGuestEmail": {
         "body": "L'ospite deve ancora confermare la sua email: solo dopo potrai rispondere alla richiesta.",
-        "title": "Aspetta che l'ospite confermi l'email"
+        "title": "L’ospite deve confermare la sua email"
       },
       "waitingPayment": {
         "body": "L'ospite non ha ancora completato il pagamento. Se non lo fa in tempo, la prenotazione scade e le date tornano libere.",
-        "title": "Aspetta il pagamento dell'ospite"
+        "title": "Pagamento in attesa dell’ospite"
       },
       "whoGuest": "Tocca all'ospite",
       "whoHost": "Tocca a te"
@@ -5596,7 +5597,7 @@
         "GuestDocumentsReceived": "Documenti dell'ospite ricevuti",
         "GuestEmailPending": "Aspetta la conferma dell'email dell'ospite",
         "HostConfirmationPending": "Aspetta la tua conferma",
-        "PaymentPending": "Aspetta il pagamento dell'ospite",
+        "PaymentPending": "Pagamento in attesa dell’ospite",
         "PaymentReceived": "Pagamento ricevuto",
         "Refund": "Rimborso",
         "RequestReceived": "Richiesta ricevuta"
