@@ -13,7 +13,7 @@ export function GuestLinkedSection({ action, legacy = false, children }: {
   const params = useParams();
   const location = useLocation();
   const { t } = useTranslation();
-  if (isLoading) return <p role="status">{t('common.loading')}</p>;
+  if (isLoading) return <p role="status">{t('embed.loading')}</p>;
   if (!flags.guestPortal) return <>{children}</>;
   if (legacy) {
     // Preserve the original query and Stripe return parameters until the destination consumes them.
