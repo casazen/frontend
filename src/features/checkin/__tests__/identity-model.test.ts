@@ -351,6 +351,7 @@ describe('the words of the identity step in the five languages of the page', () 
     'document_back_needed',
     'document_front_needed',
     'document_not_recognized',
+    'active_pose_retry',
   ];
 
   it('guidanceCodes_AreExactlyTheOnesTheApiSends', () => {

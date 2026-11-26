@@ -196,6 +196,11 @@
     "biometric": {
       "capture": {
         "attemptsRemaining": "Essais restants : {{count}}",
+        "neutral": "Regardez la caméra de face pour la première photo. Suivez ensuite la consigne.",
+        "turnRight": "Gardez la caméra immobile. Dans l’aperçu, tournez le nez vers la droite →.",
+        "turnLeft": "Gardez la caméra immobile. Dans l’aperçu, tournez le nez vers la gauche ←.",
+        "restartPose": "Recommencer",
+        "challengeFailed": "Vérification indisponible. Réessayez ou demandez de l’aide.",
         "cameraDenied": "Le navigateur a bloqué la caméra. Pour l'autoriser, touchez l'icône du cadenas ou de la caméra à côté de l'adresse web, choisissez « Autoriser » pour la caméra, puis appuyez sur « Réessayer ».",
         "cameraNotFound": "Aucune caméra n'a été trouvée sur cet appareil.",
         "cameraTitle": "La caméra n'est pas disponible",
@@ -344,6 +349,7 @@
       "guidance": {
         "avoid_glare": "Évitez les reflets : inclinez un peu le document ou éloignez-vous de la lumière.",
         "document_back_needed": "Photographiez maintenant le verso de la carte, où se trouvent les lignes de lettres.",
+        "active_pose_retry": "Reprenez les deux photos en suivant la direction indiquée.",
         "document_not_recognized": "Aucun document reconnu sur cette photo. Chargez une photo de votre carte d’identité, passeport ou permis de conduire.",
         "document_front_needed": "Photographiez le côté de la carte avec votre photo.",
         "hold_still": "Tenez le téléphone immobile : la photo est floue.",

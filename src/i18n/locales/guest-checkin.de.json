@@ -196,6 +196,11 @@
     "biometric": {
       "capture": {
         "attemptsRemaining": "Verbleibende Versuche: {{count}}",
+        "neutral": "Schauen Sie für das erste Foto gerade in die Kamera. Folgen Sie anschließend der Aufforderung.",
+        "turnRight": "Halten Sie die Kamera ruhig. Drehen Sie den Kopf in der Vorschau mit der Nase nach rechts →.",
+        "turnLeft": "Halten Sie die Kamera ruhig. Drehen Sie den Kopf in der Vorschau mit der Nase nach links ←.",
+        "restartPose": "Neu beginnen",
+        "challengeFailed": "Prüfung nicht verfügbar. Versuchen Sie es erneut oder bitten Sie um Hilfe.",
         "cameraDenied": "Der Browser hat die Kamera blockiert. Zum Erlauben tippen Sie auf das Schloss- oder Kamerasymbol neben der Webadresse, wählen Sie für die Kamera „Zulassen“ und drücken Sie „Erneut versuchen“.",
         "cameraNotFound": "Auf diesem Gerät wurde keine Kamera gefunden.",
         "cameraTitle": "Die Kamera ist nicht verfügbar",
@@ -344,6 +349,7 @@
       "guidance": {
         "avoid_glare": "Vermeiden Sie Spiegelungen: Neigen Sie das Dokument leicht oder gehen Sie vom Licht weg.",
         "document_back_needed": "Fotografieren Sie jetzt die Rückseite der Karte, auf der die Zeilen mit Buchstaben stehen.",
+        "active_pose_retry": "Nehmen Sie beide Fotos erneut in der angegebenen Richtung auf.",
         "document_not_recognized": "Auf diesem Foto wurde kein Ausweisdokument erkannt. Laden Sie ein Foto eines Personalausweises, Reisepasses oder Führerscheins hoch.",
         "document_front_needed": "Fotografieren Sie die Seite der Karte mit Ihrem Foto.",
         "hold_still": "Halten Sie das Handy ruhig: Das Foto ist unscharf.",

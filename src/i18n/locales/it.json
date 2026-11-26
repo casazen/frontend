@@ -6383,6 +6383,11 @@
     "biometric": {
       "capture": {
         "attemptsRemaining": "Tentativi rimasti: {{count}}",
+        "neutral": "Guarda dritto nella fotocamera per il primo scatto. Poi gira la testa come indicato.",
+        "turnRight": "Tieni ferma la fotocamera. Ruota la testa finché nell’anteprima il naso punta verso destra →.",
+        "turnLeft": "Tieni ferma la fotocamera. Ruota la testa finché nell’anteprima il naso punta verso sinistra ←.",
+        "restartPose": "Riparti dal primo scatto",
+        "challengeFailed": "Verifica non disponibile. Riprova o chiedi aiuto a una persona.",
         "cameraDenied": "Il browser ha bloccato la fotocamera. Per consentirla, tocca l'icona del lucchetto o della fotocamera accanto all'indirizzo web, scegli «Consenti» per la fotocamera e premi «Riprova».",
         "cameraNotFound": "Su questo dispositivo non è stata trovata nessuna fotocamera.",
         "cameraTitle": "La fotocamera non è disponibile",
@@ -6603,6 +6608,7 @@
       "guidance": {
         "avoid_glare": "Evita i riflessi: inclina un poco il documento o allontanati dalla luce.",
         "document_back_needed": "Ora fotografa il retro della carta, dove ci sono le righe di lettere.",
+        "active_pose_retry": "Ripeti i due scatti seguendo la direzione mostrata.",
         "document_not_recognized": "Questa foto non è stata riconosciuta come documento. Carica una foto della carta d’identità, del passaporto o della patente.",
         "document_front_needed": "Fotografa il lato della carta con la tua foto.",
         "hold_still": "Tieni fermo il telefono: la foto è sfocata.",

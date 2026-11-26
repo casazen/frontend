@@ -10,6 +10,8 @@ interface SelfieCaptureProps {
    * Sends the picture. Resolves `true` when the API answered (the picture is let go at once) and `false` when the call failed (the picture stays on
    * the screen, to be sent again without taking it again).
    */
+  instruction?: string;
+  confirmLabel?: string;
   onCapture: (image: Blob) => Promise<boolean>;
   /** Attempts left before a person takes over; shown when known. */
   attemptsRemaining?: number | null;
@@ -46,7 +48,7 @@ function canOpenCamera(): boolean {
  * When the browser blocks the camera the screen says how to allow it and offers a person; it never offers a file picker. The picture is drawn at most
  * 1920 px wide as a JPEG at 80 % (ADR-013-R12), held in memory for the request only and let go once the API has answered.
  */
-export function SelfieCapture({ onCapture, attemptsRemaining = null, isProcessing = false, onRequestOperator }: SelfieCaptureProps) {
+export function SelfieCapture({ onCapture, instruction, confirmLabel, attemptsRemaining = null, isProcessing = false, onRequestOperator }: SelfieCaptureProps) {
   const { t } = useTranslation();
   const titleId = useId();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -166,7 +168,7 @@ export function SelfieCapture({ onCapture, attemptsRemaining = null, isProcessin
         <h4 id={titleId} className="text-base font-semibold">
           {t('checkin.biometric.capture.title')}
         </h4>
-        <p className="text-sm text-muted-foreground">{t('checkin.biometric.capture.instructions')}</p>
+        <p className="text-sm text-muted-foreground">{instruction ?? t('checkin.biometric.capture.instructions')}</p>
       </div>
 
       <ul className="list-disc space-y-0.5 pl-5 text-sm text-muted-foreground">
@@ -244,7 +246,7 @@ export function SelfieCapture({ onCapture, attemptsRemaining = null, isProcessin
                   className="flex-1"
                   data-testid="selfie-send"
                 >
-                  {isProcessing ? t('checkin.biometric.capture.sending') : t('checkin.biometric.capture.submit')}
+                  {isProcessing ? t('checkin.biometric.capture.sending') : (confirmLabel ?? t('checkin.biometric.capture.submit'))}
                 </Button>
               </>
             )}

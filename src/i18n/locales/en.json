@@ -6383,6 +6383,11 @@
     "biometric": {
       "capture": {
         "attemptsRemaining": "Attempts left: {{count}}",
+        "neutral": "Look straight at the camera for the first photo. Then follow the next instruction.",
+        "turnRight": "Keep the camera still. Turn your head until your nose points to the following side of the preview right →.",
+        "turnLeft": "Keep the camera still. Turn your head until your nose points to the following side of the preview left ←.",
+        "restartPose": "Start again",
+        "challengeFailed": "Verification unavailable. Try again or ask for a person.",
         "cameraDenied": "The browser blocked the camera. To allow it, tap the lock or camera icon next to the web address, choose \"Allow\" for the camera and press \"Try again\".",
         "cameraNotFound": "No camera was found on this device.",
         "cameraTitle": "The camera is not available",
@@ -6603,6 +6608,7 @@
       "guidance": {
         "avoid_glare": "Avoid reflections: tilt the document a little or move away from the light.",
         "document_back_needed": "Now photograph the back of the card, where the lines of letters are.",
+        "active_pose_retry": "Take both photos again following the direction shown.",
         "document_not_recognized": "We could not identify a document in this photo. Upload a photo of an identity card, passport or driving licence.",
         "document_front_needed": "Photograph the side of the card with your photo.",
         "hold_still": "Hold the phone still: the photo is blurred.",

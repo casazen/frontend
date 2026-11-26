@@ -230,8 +230,12 @@ test('confirms a misread name, reuses the front after consent and submits the ve
       return reply({ success: true, acceptable: !front, guidanceCodes: front ? ['document_back_needed'] : [],
         documentStored: false, documentNotArchived: true, side, sides: front ? ['front'] : ['front', 'back'] });
     }
+    if (end === 'selfie-challenge') return reply({ challengeToken: 'test-challenge', noseToRight: true,
+      expiresAt: new Date(Date.now() + 120_000).toISOString() });
     if (end === 'selfie') {
       const data = request.postDataBuffer()!;
+      expect(data.includes(Buffer.from('test-challenge'))).toBe(true);
+      expect(data.includes(Buffer.from('turnedSelfie'))).toBe(true);
       for (const side of ['front', 'back']) expect(data.includes(Buffer.from('fixture-' + side))).toBe(true);
       steps.push('selfie');
       return reply({ result: 'ok', guidanceCodes: [], attemptsRemaining: 2, operatorPathOpen: true });
@@ -265,6 +269,10 @@ test('confirms a misread name, reuses the front after consent and submits the ve
   await page.getByTestId('checkin-biometric-accept').click();
   await expect(page.getByTestId('checkin-identity-document')).toHaveAttribute('data-side', 'back');
   await page.getByTestId('checkin-identity-document-file').setInputFiles(upload('back'));
+  await expect.poll(() => page.locator('video').evaluate((v: HTMLVideoElement) => v.videoWidth)).toBeGreaterThan(0);
+  await page.getByTestId('selfie-take').click();
+  await page.getByTestId('selfie-send').click();
+  await expect(page.getByText(/il naso punta verso destra/)).toBeVisible();
   await expect.poll(() => page.locator('video').evaluate((v: HTMLVideoElement) => v.videoWidth)).toBeGreaterThan(0);
   await page.getByTestId('selfie-take').click();
   await page.getByTestId('selfie-send').click();
