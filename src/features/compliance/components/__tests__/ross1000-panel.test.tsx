@@ -11,7 +11,7 @@ vi.mock('@/api/client', () => ({ ApiClient: { post: vi.fn() } }));
 
 function mount() {
   return render(<I18nextProvider i18n={i18n}><QueryClientProvider client={new QueryClient()}>
-    <Ross1000Panel propertyId="p1" canWrite />
+    <Ross1000Panel canSend propertyId="p1" canWrite />
   </QueryClientProvider></I18nextProvider>);
 }
 beforeEach(async () => {

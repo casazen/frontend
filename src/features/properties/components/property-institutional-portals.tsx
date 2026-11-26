@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { ComplianceDrawerButton } from '@/features/compliance/compliance-drawer/compliance-drawer-button';
+import { Ross1000Panel } from '@/features/compliance/components/ross1000-panel';
 import { IstatCredentialsCard } from '@/features/compliance/components/istat-credentials-card';
 import { senderWizardPath } from '@/features/compliance/lib/connection-health-model';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
@@ -44,6 +45,9 @@ export function PropertyInstitutionalPortals({ property, canWrite }: { property:
           {direct && <DirectPortalActivation propertyId={property.id} service="istat" routes={direct} canWrite={canWrite} />}
           {!migrated && <ComplianceDrawerButton target={{ topic: 'Istat', propertyId: property.id }} subject="ISTAT" />}
         </div>
+      )}
+      {property.comuneIstatCode?.startsWith('013') && (
+        <Ross1000Panel propertyId={property.id} canWrite={canWrite} canSend={Boolean(direct?.istatAvailable && direct?.effectiveFrom.istat)} />
       )}
       <div className={panelClass}>
         <h3 className="text-lg font-semibold">{t('institutionalPortals.tax')}</h3>

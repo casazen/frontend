@@ -11,13 +11,13 @@ import { todayInRome } from '@/lib/stay-dates';
 interface Preview { hash: string; arrivals: number; departures: number; state: string; accepted: number; rejected: number }
 interface Capacity { open: boolean; occupiedRooms: number; availableRooms: number; availableBeds: number }
 
-export function Ross1000Panel({ propertyId, canWrite }: { propertyId: string; canWrite: boolean }) {
+export function Ross1000Panel({ propertyId, canWrite, canSend = false }: { propertyId: string; canWrite: boolean; canSend?: boolean }) {
   const { hasPermission } = useWorkspace();
   if (!canWrite || !hasPermission('short-rent', 'guest.read')) return null;
-  return <DayPanel key={propertyId} propertyId={propertyId} />;
+  return <DayPanel key={propertyId} propertyId={propertyId} canSend={canSend} />;
 }
 
-function DayPanel({ propertyId }: { propertyId: string }) {
+function DayPanel({ propertyId, canSend }: { propertyId: string; canSend: boolean }) {
   const { t } = useTranslation();
   const [day, setDay] = useState(todayInRome());
   const [open, setOpen] = useState(true);
@@ -31,7 +31,7 @@ function DayPanel({ propertyId }: { propertyId: string }) {
         action === 'preview' ? capacity : { capacity, hash }),
   });
   const info = submit.data;
-  const maySend = !!info && ['ready', 'correction', 'rejected', 'credentials_rejected'].includes(info.state);
+  const maySend = canSend && !!info && ['ready', 'correction', 'rejected', 'credentials_rejected'].includes(info.state);
   const capacity = {
     open,
     occupiedRooms: open ? Number(occupied) : 0,
