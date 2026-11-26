@@ -4,11 +4,11 @@ import { ApiClient } from '@/api/client';
 import type { GuestThread } from '@/types/guest-message.types';
 
 const channelLabels = {
-  it: { open: 'Apri {channel} per rispondere sul canale', local: 'Chat privata con l’host in CasaZen' },
+  it: { open: 'Apri {channel} per rispondere sul canale', local: 'Chat privata con lâ€™host in CasaZen' },
   en: { open: 'Open {channel} to reply on the booking channel', local: 'Private chat with your host in CasaZen' },
-  de: { open: '{channel} öffnen und über das Buchungsportal antworten', local: 'Privater Chat mit dem Gastgeber in CasaZen' },
-  fr: { open: 'Ouvrir {channel} pour répondre sur la plateforme', local: 'Conversation privée avec votre hôte sur CasaZen' },
-  es: { open: 'Abrir {channel} para responder en el canal de reserva', local: 'Chat privado con el anfitrión en CasaZen' },
+  de: { open: '{channel} Ã¶ffnen und Ã¼ber das Buchungsportal antworten', local: 'Privater Chat mit dem Gastgeber in CasaZen' },
+  fr: { open: 'Ouvrir {channel} pour rÃ©pondre sur la plateforme', local: 'Conversation privÃ©e avec votre hÃ´te sur CasaZen' },
+  es: { open: 'Abrir {channel} para responder en el canal de reserva', local: 'Chat privado con el anfitriÃ³n en CasaZen' },
 } as const;
 
 const chatLabels = {
