@@ -8,6 +8,7 @@ import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import type { PropertyDetailDto } from '@/types';
 import { DirectPortalActivation, useDirectRoutes } from './direct-portal-activation';
+import { ComoStayTourReport } from '@/features/reports/tourist-tax/como-staytour-report';
 import { QuesturaCredentialsCard } from './questura-credentials-card';
 
 export function PropertyInstitutionalPortals({ property, canWrite }: { property: PropertyDetailDto; canWrite: boolean }) {
@@ -57,6 +58,7 @@ export function PropertyInstitutionalPortals({ property, canWrite }: { property:
             </Button>
           )}
         </div>
+        {isComo && canReadReport && <ComoStayTourReport propertyId={property.id} propertyName={property.name} />}
       </div>
     </section>
   );
