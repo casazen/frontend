@@ -16,9 +16,11 @@ export type FeatureFlagKey =
   | 'agencyTier'
   | 'crmMarketing'
   | 'guestPortal'
+  | 'guestPortalAutoReplies'
   | 'guestPortalSupplierServices'
   | 'complianceTrafficLight'
   | 'guestRegistrationRegimes'
+  | 'messageTranslationAi'
   | 'messageAssistant'
   | 'fiscalDocumentIssuance'
   | 'octorateDocumentImport'
@@ -120,6 +122,7 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    */
   crmMarketing: false,
   guestPortal: false,
+  guestPortalAutoReplies: false,
   guestPortalSupplierServices: false,
   /**
    * The compliance traffic light (backend `ComplianceTrafficLight`, E03/F02/US01/T03): a light for each obligation, and the coverage report of the
@@ -144,6 +147,7 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * home of the area, nothing asks the server and the backend answers 404 to every endpoint of the assistant. Even with the flag on, an organization is served only
    * after it switches its own assistant on in its rules, and a draft is never sent without the host's approval.
    */
+  messageTranslationAi: false,
   messageAssistant: false,
   /**
    * The issuance of fiscal documents by CasaZen (backend `FiscalDocumentIssuance`, E06/F02/US02/T02, NF-82, FIS-02, PO-05), off until the accountant has approved the rules of the
