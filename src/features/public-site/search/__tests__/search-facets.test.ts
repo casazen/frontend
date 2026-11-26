@@ -63,8 +63,12 @@ describe('facetsOfServer (SEARCH-GLOBAL): the controls of the search across all 
     expect(result.prices).toEqual({ min: 150, max: 400 });
   });
 
-  it('FacetsOfServer_NoCurrencySaid_IsEuros', () => {
-    expect(facetsOfServer({ maxGuests: 2, petsAllowed: true, tags: [] }).currency).toBe('EUR');
+  it('FacetsOfServer_NoCurrencySaid_HasNoCurrencyAndNoneIsGuessed', () => {
+    // The currency comes only from the data (CHF-MONEY): the sliders do not speak euros when the server did not say so.
+    expect(facetsOfServer({ maxGuests: 2, petsAllowed: true, tags: [] }).currency).toBeNull();
+    expect(facetsOfServer({ maxGuests: 2, petsAllowed: true, tags: [], currency: null }).currency).toBeNull();
+    expect(facetsOfServer({ maxGuests: 2, petsAllowed: true, tags: [], currency: '' }).currency).toBeNull();
+    expect(NO_FACETS.currency).toBeNull();
   });
 
   it('FacetsOfServer_HomesThatDoNotDiffer_HaveNoSlider', () => {
@@ -79,8 +83,16 @@ describe('facetsOfCards (DB-07c): a site reads the same from every home it has',
     expect(facetsOfCards([card({ price: { currency: 'CHF', perNightCents: 20_000 } }), card({ id: 'p-2', price: { currency: 'CHF', perNightCents: 25_000 } })]).currency).toBe('CHF');
   });
 
-  it('FacetsOfCards_HomesOfTwoCurrencies_SpeakEuros', () => {
-    expect(facetsOfCards([card(), card({ id: 'p-2', price: { currency: 'CHF', perNightCents: 20_000 } })]).currency).toBe('EUR');
+  it('FacetsOfCards_HomesOfTwoCurrencies_HaveNoCommonCurrencyAndNoneIsChosenForThem', () => {
+    // A slider has one currency: with two there is none to speak, and it is not the euro that is picked (CHF-MONEY).
+    expect(facetsOfCards([card(), card({ id: 'p-2', price: { currency: 'CHF', perNightCents: 20_000 } })]).currency).toBeNull();
+  });
+
+  it('FacetsOfCards_HomesThatSayNoCurrency_HaveNoCurrency', () => {
+    const silent = (id: string, currency: string | undefined) => card({ id, price: { currency: currency as string, perNightCents: 20_000 } });
+
+    expect(facetsOfCards([silent('p-1', ''), silent('p-2', undefined)]).currency).toBeNull();
+    expect(facetsOfCards([]).currency).toBeNull();
   });
 
   it('FacetsOfCards_TheGuestsTheSliderAndTheLabelsComeFromTheCards', () => {

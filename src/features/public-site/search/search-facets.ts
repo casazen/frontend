@@ -13,19 +13,21 @@ import { AREA_STEP, PRICE_STEP, areaBounds, boundsFromRange, priceBounds, type B
 export interface SearchFacets {
   /** Most guests any home takes; `undefined` while that is not known (the picker then has no limit). */
   maxGuests: number | undefined;
-  /** In euros per night; `null` when the homes do not differ. */
+  /** In the currency of the homes (`currency`) per night, as a number; `null` when the homes do not differ. */
   prices: Bounds | null;
   /** In square metres. */
   areas: Bounds | null;
   tags: { tag: SiteTag; count: number }[];
-  /** What the price sliders and their chips are written in (ISO 4217: `EUR`, or `CHF` for the homes in Switzerland). */
-  currency: string;
+  /**
+   * What the price sliders and their chips are written in (ISO 4217: `EUR`, or `CHF` for the homes in Switzerland). Only what the data says: `null`
+   * when no home says one, or when the homes say different ones (a slider has one currency), and the sliders then write their amounts with no
+   * symbol and the phrase that says the currency is not available.
+   */
+  currency: string | null;
 }
 
-const DEFAULT_CURRENCY = 'EUR';
-
-/** Nothing is known yet: no limits, no slider, no label. */
-export const NO_FACETS: SearchFacets = { maxGuests: undefined, prices: null, areas: null, tags: [], currency: DEFAULT_CURRENCY };
+/** Nothing is known yet: no limits, no slider, no label, no currency. */
+export const NO_FACETS: SearchFacets = { maxGuests: undefined, prices: null, areas: null, tags: [], currency: null };
 
 /** The facets of a booking site, from every home of it. */
 export function facetsOfCards(cards: readonly PublicStayCard[]): SearchFacets {
@@ -35,8 +37,8 @@ export function facetsOfCards(cards: readonly PublicStayCard[]): SearchFacets {
     prices: priceBounds(cards),
     areas: areaBounds(cards),
     tags: countTags(cards),
-    // The homes of a site share their currency; if they ever do not, the sliders speak euros.
-    currency: currencies.size === 1 ? [...currencies][0] : DEFAULT_CURRENCY,
+    // The homes of a site share their currency; if they ever do not, no currency is chosen for them.
+    currency: currencies.size === 1 ? [...currencies][0] : null,
   };
 }
 
@@ -53,6 +55,6 @@ export function facetsOfServer(facets: PublicStaysFacets | null | undefined): Se
     ),
     areas: boundsFromRange(facets.minAreaSqm, facets.maxAreaSqm, AREA_STEP),
     tags: SITE_TAGS.filter((tag) => counts.has(tag)).map((tag) => ({ tag, count: counts.get(tag) ?? 0 })),
-    currency: facets.currency || DEFAULT_CURRENCY,
+    currency: facets.currency || null,
   };
 }

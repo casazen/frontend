@@ -12,17 +12,17 @@ import type { SearchFilters } from './search-state';
  */
 export function ActiveFilterChips({
   filters,
-  currency = 'EUR',
+  currency,
   onChange,
 }: {
   filters: SearchFilters;
-  /** What the price of the chip is written in: the currency of the homes (francs in Switzerland). */
-  currency?: string;
+  /** What the price of the chip is written in: the currency of the homes (francs in Switzerland). Without one the chip writes the amount with no symbol and says so. */
+  currency?: string | null;
   onChange: (patch: Partial<SearchFilters>) => void;
 }) {
   const { t, i18n } = useTranslation();
   const locale = siteLocale(i18n.language);
-  const euros = (value: number) => formatPrice(value * 100, currency, locale);
+  const euros = (value: number) => formatPrice(value * 100, currency, locale, t);
 
   const chips: { id: string; label: string; remove: () => void }[] = [];
   if (filters.minPrice || filters.maxPrice) {

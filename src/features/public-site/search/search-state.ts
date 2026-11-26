@@ -37,7 +37,7 @@ export type FilterRule = (typeof FILTER_RULES)[number];
 export const SORTS: readonly PublicStaysSort[] = ['recommended', 'priceAsc', 'priceDesc', 'rating', 'largest'];
 
 export interface SearchFilters {
-  /** Price per night, in euros. */
+  /** Price per night, in the currency of the homes (`SearchFacets.currency`). */
   minPrice: number | null;
   maxPrice: number | null;
   bedrooms: number | null;

@@ -6,10 +6,9 @@ import { PolicyTimeline } from '@/features/public-site/components/PolicyTimeline
 import { useOnlineStatus } from '@/hooks/use-online-status';
 import { getProblemMessage, getRetryAfterSeconds, isTransientRequestError } from '@/lib/api-errors';
 import { formatStayDate, romeDateOf } from '@/lib/stay-dates';
-import { formatCurrency } from '@/lib/utils';
 import { newIdempotencyKey, refundChangedPreview } from '@/queries/use-guest-cancellation';
 import type { GuestCancelResult, GuestCancellationPreview } from '@/types';
-import { chargesNothing } from '../cancellation-preview';
+import { cancellationMoney, chargesNothing } from '../cancellation-preview';
 import { CancellationOutcome } from './cancellation-outcome';
 import { RefundSummary } from './refund-summary';
 
@@ -47,7 +46,7 @@ export function CancellationPanel({ preview, result, onCancel }: CancellationPan
   const outcomeTitle = useRef<HTMLParagraphElement>(null);
   const focusOutcome = useRef(false);
 
-  const money = (amount: number) => formatCurrency(amount, preview.currency);
+  const money = (amount: number) => cancellationMoney(amount, preview.currency, t);
   const withdraw = preview.kind === 'withdrawRequest';
   const outcome = preview.outcome ?? (result ? { refundAmount: result.refundAmount, refundStatus: result.refundStatus } : null);
 

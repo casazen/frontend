@@ -136,8 +136,8 @@ function FiltersForm({ scope, state, facets, onClose, inline = false }: FiltersS
   const { prices, areas } = facets;
   const update = (patch: Partial<SearchFilters>) => setDraft((current) => ({ ...current, ...patch }));
   const toggle = <T extends string>(list: T[], value: T): T[] => (list.includes(value) ? list.filter((item) => item !== value) : [...list, value]);
-  // Written in the currency of the homes (francs in Switzerland).
-  const euros = (value: number) => formatPrice(value * 100, facets.currency, locale);
+  // Written in the currency of the homes (francs in Switzerland); without one, with no symbol and the phrase that says so.
+  const euros = (value: number) => formatPrice(value * 100, facets.currency, locale, t);
   // The icon and the words of each service are the catalog of the site (the same as on the page of a home).
   // What the server could not apply is not offered.
   const amenityOptions = FILTER_AMENITIES.flatMap((name) => {

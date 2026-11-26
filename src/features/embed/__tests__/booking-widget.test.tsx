@@ -717,6 +717,34 @@ describe('states and money (AC6)', () => {
     expect(itemsOf(list).every((item) => item.price === undefined)).toBe(true);
   });
 
+  it('embedBooking_prices_ofAHomeThatSaysNoCurrency_haveNoSymbolAndSayTheCurrencyIsNotAvailable', async () => {
+    // CHF-MONEY: a home whose data carries no currency (an empty one, or none at all) is drawn with its amount only and the phrase that says so, never in a euro nobody said;
+    // the home that says its currency keeps it, and the pins say the same as the cards.
+    stubViewportWidth(1280);
+    getStays.mockResolvedValue(
+      staysResult(
+        [
+          stayCard(1, { name: 'Casa Lago', price: { currency: 'EUR', perNightCents: 14500, totalCents: 43500 } }),
+          stayCard(2, { name: 'Casa Muta', price: { currency: '', perNightCents: 12000, totalCents: 36000 } }),
+          stayCard(3, { name: 'Casa Senza', price: { currency: undefined as unknown as string, perNightCents: 11000, totalCents: 33000 } }),
+        ],
+        { checkIn: '2026-12-10', checkOut: '2026-12-13', nights: 3 },
+      ),
+    );
+    open(DATES);
+
+    const [euro, empty, missing] = await screen.findAllByTestId('house-card-price');
+    expect(euro).toHaveTextContent('€');
+    expect(euro).not.toHaveTextContent('valuta non disponibile');
+    expect(empty).toHaveTextContent('360 (valuta non disponibile)');
+    expect(missing).toHaveTextContent('330 (valuta non disponibile)');
+    expect(empty).not.toHaveTextContent(/EUR|€/);
+    expect(missing).not.toHaveTextContent(/EUR|€/);
+    const labels = map.props?.pins.map((pin) => pin.label) ?? [];
+    expect(labels[1]).toBe('360 (valuta non disponibile)');
+    expect(labels[2]).toBe('330 (valuta non disponibile)');
+  });
+
   it('embedBooking_searchesOnlyTheFrameOrg', async () => {
     // Whatever the address says, the org is the one of the frame: no parameter names another.
     setHostSite({ host: 'prenota.villa-rossi.example.test', slug: ORG_SLUG, displayName: 'Villa Rossi', embedEnabled: true });

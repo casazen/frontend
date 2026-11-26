@@ -25,7 +25,7 @@ function PriceHead() {
   const { t, i18n } = useTranslation();
   const { quote, fromPriceCents, currency, nights } = useBooking();
   const locale = siteLocale(i18n.language);
-  const money = (cents: number) => formatPrice(cents, currency, locale);
+  const money = (cents: number) => formatPrice(cents, currency, locale, t);
   const shown = quote.status === 'ready' ? quote.quote : quote.status === 'loading' ? quote.stale : null;
 
   if (shown) {
@@ -374,7 +374,7 @@ export function BookingCard({ variant = 'aside' }: BookingCardProps) {
       <p role="status" aria-live="polite" className="sr-only" data-testid="booking-announce">
         {quote.status === 'ready'
           ? t('propertyBooking.announce.total', {
-              total: formatPrice(quoteTotalCents(quote.quote), quote.quote.currency || 'EUR', locale),
+              total: formatPrice(quoteTotalCents(quote.quote), quote.quote.currency, locale, t),
               count: quote.quote.nights || nights,
             })
           : ''}

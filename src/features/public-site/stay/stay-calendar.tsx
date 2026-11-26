@@ -82,7 +82,8 @@ interface DayCellProps {
   priceCents: number | null;
   /** A free night that no stay can start on (the host closed the arrival): marked with an icon and named in the label of the day. */
   closedToArrival: boolean;
-  currency: string;
+  /** The currency the calendar says; `null` when it says none (the price is then written with no symbol and the phrase that says so). */
+  currency: string | null;
   locale: string;
   showPrice: boolean;
   isToday: boolean;
@@ -126,7 +127,7 @@ const DayCell = memo(function DayCell({
   else {
     label += `, ${t('stayPickers.calendar.freeNight')}`;
     if (showPrice && priceCents !== null) {
-      label += `, ${t('stayPickers.calendar.perNight', { price: formatPrice(priceCents, currency, locale) })}`;
+      label += `, ${t('stayPickers.calendar.perNight', { price: formatPrice(priceCents, currency, locale, t) })}`;
     }
     if (closedToArrival) label += `, ${t('stayPickers.day.closedToArrival')}`;
   }
@@ -172,7 +173,7 @@ const DayCell = memo(function DayCell({
       >
         <span className="stay-cal__n">{dayNumber}</span>
         {showPrice && !busy && priceCents !== null ? (
-          <span className="stay-cal__p">{formatPrice(priceCents, currency, locale)}</span>
+          <span className="stay-cal__p">{formatPrice(priceCents, currency, locale, t)}</span>
         ) : null}
         {closedToArrival ? <DoorClosed className="stay-cal__x" aria-hidden="true" /> : null}
       </button>
@@ -189,7 +190,7 @@ interface MonthProps {
   showPrices: boolean;
   loading: boolean;
   locale: string;
-  currency: string;
+  currency: string | null;
   titleId: string;
   initials: string[];
   names: string[];
@@ -464,7 +465,7 @@ export function StayCalendar({
             checkIn: formatDayMonth(value.checkIn, locale),
             checkOut: formatDayMonth(value.checkOut, locale),
             count: nights,
-            total: formatPrice(total, data.currency, locale),
+            total: formatPrice(total, data.currency, locale, t),
           });
   } else if (value.checkIn) {
     status = t('stayPickers.calendar.chooseDeparture', {

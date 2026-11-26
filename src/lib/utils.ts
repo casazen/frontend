@@ -10,7 +10,8 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
- * Format currency values. Italian by default; the booking site passes the locale of the guest's language (`useSiteMoney`).
+ * Format currency values. Italian and euro by default. The booking site and the widgets do not rely on those defaults: they write the amounts of a
+ * guest with `formatMoney` (`lib/money-format.ts`, through `useSiteMoney`, `formatPrice` and `cancellationMoney`), where the currency is only the one of the data.
  */
 export function formatCurrency(amount: number, currency: string = 'EUR', locale: string = 'it-IT'): string {
   return new Intl.NumberFormat(locale, {

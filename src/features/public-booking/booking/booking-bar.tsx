@@ -36,7 +36,7 @@ export function BookingBar() {
 
   if (isDesktop || embed) return null;
 
-  const money = (cents: number) => formatPrice(cents, currency, locale);
+  const money = (cents: number) => formatPrice(cents, currency, locale, t);
   const ready = quote.status === 'ready' ? quote.quote : null;
 
   let info: { main: ReactNode; sub: ReactNode };
