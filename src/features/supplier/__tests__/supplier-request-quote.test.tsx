@@ -346,11 +346,11 @@ describe('SupplierRequestDetailPage: quote and payment (SP-04b, SP-08d)', () => 
     });
     renderPage();
     expect(await screen.findByText('Vendita del fornitore all’host, importo lordo')).toBeInTheDocument();
-    expect(screen.getByTestId('supplier-request-payment-amount')).toHaveTextContent('110,00 €');
+    expect(screen.getByTestId('supplier-request-payment-amount')).toHaveTextContent('110 €');
     expect(screen.getByText('Rimborso commerciale all’host')).toBeInTheDocument();
     if (commissionCents > 0) {
       expect(screen.getByText(/Commissione B2B di CasaZen a carico del fornitore/)).toBeInTheDocument();
-      expect(screen.getByTestId('supplier-request-payment-commission')).toHaveTextContent('10,00 €');
+      expect(screen.getByTestId('supplier-request-payment-commission')).toHaveTextContent('10 €');
       expect(screen.getByText('Rettifica della commissione per il rimborso')).toBeInTheDocument();
     } else {
       expect(screen.queryByTestId('supplier-request-payment-commission')).not.toBeInTheDocument();
