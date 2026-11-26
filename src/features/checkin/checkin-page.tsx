@@ -32,6 +32,7 @@ import {
   type StayGuestFormValues,
 } from './schemas/checkin.schema';
 import { StayGuestDocumentFields, StayGuestPersonalFields, VehiclePlateField } from './components/stay-guest-fields';
+import { getDocumentTypeLabel } from '@/lib/i18n-labels';
 import { DocumentReadStep } from './components/document-read-step';
 import { GuestPageFrame } from './components/guest-page-frame';
 import { GuestInvoiceForm } from './guest-invoice-form';
@@ -87,6 +88,7 @@ function stepAfterGone(gone: number, steps: readonly number[]): number {
 }
 
 function scanReasonKey(reason?: string | null): string {
+  if (reason === 'not_document') return 'checkin.scanNotDocument';
   return reason === 'unavailable' || reason === 'budget' ? 'checkin.scanUnavailable' : 'checkin.scanUnread';
 }
 
@@ -416,17 +418,23 @@ export function GuestCheckInFlow({ token, embedded = false, onCompleted }: {
     index: number,
     list: AlloggiatiCodeList,
     query: string | null | undefined,
-    nameField: 'documentTypeLabel' | 'birthComuneName' | 'birthCountryName' | 'citizenshipName' | 'documentIssuePlaceName',
-    codeField: 'documentTypeCode' | 'birthComuneCode' | 'birthCountryCode' | 'citizenshipCode' | 'documentIssuePlaceCode',
+    nameField: 'documentTypeLabel' | 'birthComuneName' | 'birthCountryName' | 'citizenshipName' | 'documentIssuePlaceName' | 'residenceComuneName' | 'residenceCountryName',
+    codeField: 'documentTypeCode' | 'birthComuneCode' | 'birthCountryCode' | 'citizenshipCode' | 'documentIssuePlaceCode' | 'residenceComuneCode' | 'residenceCountryCode',
+    province?: string | null,
   ) => {
     if (query) setValue(`guests.${index}.${codeField}`, '', { shouldDirty: true });
     if (!query || !isListAvailable(codeSource, list)) return;
     const entries = await codeSource.search(list, query).catch(() => []);
     const norm = (value: string) => value.trim().toLocaleLowerCase('it');
-    const hit = entries.find((entry) => norm(entry.code) === norm(query) || norm(entry.description) === norm(query) || (entry.citizenshipLabel != null && norm(entry.citizenshipLabel) === norm(query)));
-    if (!hit) return;
+    const matches = entries.filter((entry) =>
+      (!province || norm(entry.province ?? '') === norm(province)) &&
+      [entry.code, entry.description, entry.citizenshipLabel].some((value) => value && norm(value) === norm(query)));
+    if (matches.length !== 1) return;
+    const [hit] = matches;
     setValue(`guests.${index}.${nameField}`, hit.description, { shouldDirty: true });
     setValue(`guests.${index}.${codeField}`, hit.code, { shouldDirty: true });
+    if (nameField === 'documentTypeLabel') setValue(`guests.${index}.documentType`, '', { shouldDirty: true });
+    if (hit.province && nameField === 'residenceComuneName') setValue(`guests.${index}.residenceProvince`, hit.province, { shouldDirty: true });
     if (hit.province && nameField === 'birthComuneName') setValue(`guests.${index}.birthProvince`, hit.province, { shouldDirty: true });
   };
 
@@ -439,7 +447,9 @@ export function GuestCheckInFlow({ token, embedded = false, onCompleted }: {
     }
     const booked = context?.guests?.[index];
     if (!booked) return;
-    if (context?.identityVerification?.verifyingGuestPosition === index) verifyingPhoto.current = file;
+    if (context?.identityVerification?.verifyingGuestPosition === index && result.side !== 'back') {
+      if (result.side || !verifyingPhoto.current) verifyingPhoto.current = file;
+    }
     const write = (field: keyof StayGuestFormValues, value: string | null | undefined) => {
       if (value) setValue(`guests.${index}.${field}`, value, { shouldDirty: true });
     };
@@ -456,12 +466,23 @@ export function GuestCheckInFlow({ token, embedded = false, onCompleted }: {
       write('birthCountryName', guest.birthPlace);
     }
     write('citizenshipName', guest.citizenship);
+    write('residenceStreet', guest.residenceStreet);
+    write('residencePostalCode', guest.residencePostalCode);
+    write('residenceCityName', guest.residenceCityName);
+    write('residenceCountryName', guest.residenceCountryName);
+    if (guest.residenceInItaly != null) {
+      write('residenceInItaly', guest.residenceInItaly ? 'yes' : 'no');
+      if (guest.residenceInItaly) {
+        write('residenceComuneName', guest.residenceCityName);
+        write('residenceProvince', guest.residenceProvince);
+      }
+    }
     let officialKind: string | undefined;
     if (guest.documentKind === 'Passport' || guest.documentKind === 'IdentityCard' || guest.documentKind === 'DriversLicense') {
       if (isListAvailable(codeSource, 'documenti')) {
         officialKind = { Passport: 'PASOR', IdentityCard: 'IDENT', DriversLicense: 'PATEN' }[guest.documentKind];
-        setValue(`guests.${index}.documentType`, '', { shouldDirty: true });
-        setValue(`guests.${index}.documentTypeLabel`, '', { shouldDirty: true });
+        write('documentType', guest.documentKind);
+        write('documentTypeLabel', getDocumentTypeLabel(guest.documentKind, t));
       } else {
         write('documentType', guest.documentKind);
       }
@@ -472,7 +493,9 @@ export function GuestCheckInFlow({ token, embedded = false, onCompleted }: {
     write('documentIssuePlaceName', guest.issuePlace);
     await Promise.all([
       bindOfficial(index, 'documenti', officialKind, 'documentTypeLabel', 'documentTypeCode'),
-      guest.bornInItaly === true && bindOfficial(index, 'comuni', guest.birthPlace, 'birthComuneName', 'birthComuneCode'),
+      guest.bornInItaly === true && bindOfficial(index, 'comuni', guest.birthPlace, 'birthComuneName', 'birthComuneCode', guest.birthProvince),
+      guest.residenceInItaly === true && bindOfficial(index, 'comuni', guest.residenceCityName, 'residenceComuneName', 'residenceComuneCode', guest.residenceProvince),
+      bindOfficial(index, 'stati', guest.residenceCountryName, 'residenceCountryName', 'residenceCountryCode'),
       guest.bornInItaly === false && bindOfficial(index, 'stati', guest.birthPlace, 'birthCountryName', 'birthCountryCode'),
       bindOfficial(index, 'stati', guest.citizenship, 'citizenshipName', 'citizenshipCode'),
       bindOfficial(index, 'luoghi', guest.issuePlace, 'documentIssuePlaceName', 'documentIssuePlaceCode'),

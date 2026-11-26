@@ -6386,7 +6386,7 @@
     "scanHint": "JPG, PNG or WebP, up to 5 MB. If you choose online verification and give consent, you can use the same photo to verify your document.",
     "scanButton": "Take or upload a photo",
     "scanReading": "Reading the document…",
-    "scanAnother": "Upload another guest's document",
+    "scanAnother": "Upload the reverse side or another guest’s document",
     "scanManual": "Enter the details by hand",
     "scanReadOk": "Details read for {{name}}. Check them before sending.",
     "invoiceHostManaged": "You can add missing details. Contact your host to change details they have already entered.",
@@ -6399,6 +6399,7 @@
     "privacyRead": "I have read the privacy notice.",
     "marketingOptIn": "I would like to receive promotional messages.",
     "documentNumberPlausibility": "Check the number printed on the document. Enter at least four characters including a digit.",
+    "scanNotDocument": "We could not identify a document in this photo. Upload a photo of an identity card, passport or driving licence.",
     "scanUnread": "The document could not be read. Upload another photo or enter the details by hand.",
     "scanUnavailable": "Automatic reading is unavailable right now. Enter the details by hand.",
     "stepGuests": "Guests",
@@ -6429,6 +6430,11 @@
     "biometric": {
       "capture": {
         "attemptsRemaining": "Attempts left: {{count}}",
+        "neutral": "Look straight at the camera for the first photo. Then follow the next instruction.",
+        "turnRight": "Keep the camera still. Turn your head about 30° until your nose points to the following side of the preview right →.",
+        "turnLeft": "Keep the camera still. Turn your head about 30° until your nose points to the following side of the preview left ←.",
+        "restartPose": "Start again",
+        "challengeFailed": "Verification unavailable. Try again or ask for a person.",
         "cameraDenied": "The browser blocked the camera. To allow it, tap the lock or camera icon next to the web address, choose \"Allow\" for the camera and press \"Try again\".",
         "cameraNotFound": "No camera was found on this device.",
         "cameraTitle": "The camera is not available",
@@ -6649,6 +6655,8 @@
       "guidance": {
         "avoid_glare": "Avoid reflections: tilt the document a little or move away from the light.",
         "document_back_needed": "Now photograph the back of the card, where the lines of letters are.",
+        "active_pose_retry": "Take both photos again following the direction shown.",
+        "document_not_recognized": "We could not identify a document in this photo. Upload a photo of an identity card, passport or driving licence.",
         "document_front_needed": "Photograph the side of the card with your photo.",
         "hold_still": "Hold the phone still: the photo is blurred.",
         "less_light": "There is too much light: move to a softer light.",

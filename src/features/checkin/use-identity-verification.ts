@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { publicCheckinApi } from '@/api/checkin.api';
+import { publicCheckinApi, type SelfiePose } from '@/api/checkin.api';
 import { prepareDocumentPhoto } from '@/lib/image-capture';
 import type { DocumentSide, IdentityVerificationState } from '@/types/public-checkin.types';
 import {
@@ -40,7 +40,7 @@ export interface IdentityVerificationController {
    */
   sendDocument: (file: File) => Promise<boolean>;
   /** The selfie. Resolves `true` when the API answered, `false` when the call failed (the guest sends the same picture again). */
-  sendSelfie: (selfie: Blob) => Promise<boolean>;
+  sendSelfie: (selfie: Blob, pose?: SelfiePose) => Promise<boolean>;
   /** The guest asks for a person, from any screen of the step (GDPR art. 22). */
   askOperator: () => Promise<void>;
   /** The guest takes again what the guidance asked for (from the screen of a `retry`). */
@@ -153,7 +153,7 @@ export function useIdentityVerification(token: string, initial: IdentityVerifica
     );
   };
 
-  const sendSelfie = async (selfie: Blob): Promise<boolean> => {
+  const sendSelfie = async (selfie: Blob, pose?: SelfiePose): Promise<boolean> => {
     const needsDocument = progress?.documentNotArchived === true;
     const needsBack = needsDocument && progress?.documentTwoSided === true;
     const held = documentPictures.current;
@@ -167,7 +167,7 @@ export function useIdentityVerification(token: string, initial: IdentityVerifica
     const front = needsDocument ? held.front : null;
     const back = needsBack ? held.back : null;
     return run(async () => {
-      const answer = await publicCheckinApi.postSelfie(token, selfie, front, back);
+      const answer = await publicCheckinApi.postSelfie(token, selfie, front, back, pose);
       // A pass or a person ends the step: the pictures of the document are let go. After a retry they are needed for the next selfie.
       if (answer.result !== 'retry') letGoOfThePictures();
       return answer;
