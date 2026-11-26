@@ -180,6 +180,8 @@ describe('LeaseDetailPage', () => {
     expect(within(screen.getByTestId('page-header')).getByText('Casa Trastevere · Roma')).toBeInTheDocument();
     expect(within(screen.getByTestId('lease-facts')).getByText(/950,00\s€\/mese/)).toBeInTheDocument();
     // History with translated event types, never the raw enum value (A7-26), the latest first, with who did it.
+    expect(screen.getByTestId('lease-timeline')).not.toHaveAttribute('open');
+    fireEvent.click(screen.getByText(i18n.t('leases.timeline')));
     const events = within(screen.getByTestId('lease-timeline')).getAllByRole('listitem');
     expect(within(events[0]).getByText('Delega RLI registrata')).toBeInTheDocument();
     expect(within(events[1]).getByText('Bozza creata')).toBeInTheDocument();
@@ -196,6 +198,7 @@ describe('LeaseDetailPage', () => {
     renderPage('?tab=dati');
 
     expect(await screen.findByText('Landlord')).toBeInTheDocument();
+    fireEvent.click(screen.getByText(i18n.t('leases.timeline')));
     expect(screen.getByText('Draft created')).toBeInTheDocument();
     expect(screen.getByText('Rejected')).toBeInTheDocument();
   });
@@ -281,21 +284,29 @@ describe('LeaseDetailPage', () => {
     expect(screen.queryByTestId('guide-tool-rent')).not.toBeInTheDocument();
   });
 
-  it('render_TheSheetOpensOnTheGuide_AndTheOldNamesOfTheTabsStillLead', async () => {
+  it('render_TheSheetOpensOnContractData_AndLegacyHistoryOpensOnDemand', async () => {
     mockLease(() => Promise.resolve({ data: buildDetail({ status: 'Registered' }) }));
 
     const { unmount } = renderPage();
-    expect(await screen.findByTestId('lease-guide')).toBeInTheDocument();
-    expect(screen.getByTestId('lease-tab-guida')).toHaveAttribute('aria-selected', 'true');
+    expect(await screen.findByTestId('lease-tab-dati')).toHaveAttribute('aria-selected', 'true');
+    expect(screen.queryByTestId('lease-guide')).not.toBeInTheDocument();
     unmount();
 
     // An address of the old page (`?tab=cronologia`) leads to the tab that holds what it showed.
     const { unmount: unmountOld } = renderPage('?tab=cronologia');
     expect(await screen.findAllByTestId('lease-party')).toHaveLength(2);
+    expect(screen.getByTestId('lease-timeline')).toHaveAttribute('open');
     unmountOld();
 
-    // The jobs asked of the suppliers had a tab here: it was taken away, an address that still names it opens the guide.
+    // The jobs asked of the suppliers had a tab here: it was taken away, an address that still names it opens the contract data.
     renderPage('?tab=interventi');
+    expect(await screen.findByTestId('lease-tab-dati')).toHaveAttribute('aria-selected', 'true');
+    expect(screen.queryByTestId('lease-guide')).not.toBeInTheDocument();
+  });
+
+  it('preserves operation links without an explicit guide tab', async () => {
+    mockLease(() => Promise.resolve({ data: buildDetail({ status: 'Registered' }) }));
+    renderPage('?operazione=rinnovo');
     expect(await screen.findByTestId('lease-guide')).toBeInTheDocument();
     expect(screen.getByTestId('lease-tab-guida')).toHaveAttribute('aria-selected', 'true');
   });
@@ -308,12 +319,12 @@ describe('LeaseDetailPage', () => {
     await screen.findAllByTestId('lease-party');
     const tabs = within(screen.getByRole('tablist')).getAllByRole('tab');
     expect(tabs.map((tab) => tab.getAttribute('data-testid'))).toEqual([
-      'lease-tab-guida',
-      'lease-tab-inquilini',
       'lease-tab-dati',
+      'lease-tab-inquilini',
       'lease-tab-documenti',
       'lease-tab-pagamenti',
       'lease-tab-scadenze',
+      'lease-tab-guida',
     ]);
     expect(screen.queryByTestId('lease-tab-interventi')).not.toBeInTheDocument();
     expect(screen.queryByTestId('lease-requests')).not.toBeInTheDocument();

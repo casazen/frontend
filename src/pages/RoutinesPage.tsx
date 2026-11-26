@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { BookOpen, Clock, FlaskConical, Pencil, Play, Plus, Repeat, Trash2 } from 'lucide-react';
 import { PageHeader } from '@/components/layout/page-header';
 import { PAGE_COLUMNS } from '@/components/layout/page-columns';
+import { ListRowActions } from '@/components/shared/list-view/list-row-actions';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
@@ -426,37 +427,17 @@ function RoutineCard({ routine, availability, busy, onEdit, onSimulate, onDelete
               {t(!routine.active ? 'routines.flow.paused' : routine.testMode ? 'routines.flow.testing' : 'routines.flow.live')}
             </Badge>
           </div>
-          <div className="flex shrink-0 gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={t('routines.card.edit', { name: routine.name })}
-              onClick={() => onEdit(routine)}
-              disabled={busy}
-              data-testid={`edit-routine-${routine.id}`}
-            >
-              <Pencil className="h-4 w-4" aria-hidden="true" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={t('routines.card.log', { name: routine.name })}
-              onClick={() => onShowLog(routine)}
-              data-testid={`show-log-${routine.id}`}
-            >
-              <Clock className="h-4 w-4" aria-hidden="true" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={t('routines.card.delete', { name: routine.name })}
-              onClick={() => onDelete(routine)}
-              disabled={busy}
-              data-testid={`delete-routine-${routine.id}`}
-            >
-              <Trash2 className="h-4 w-4" aria-hidden="true" />
-            </Button>
-          </div>
+          <ListRowActions
+            name={routine.name}
+            primary={{ label: t('routines.flow.edit'), icon: Pencil, disabled: busy, onSelect: () => onEdit(routine), testId: `edit-routine-${routine.id}` }}
+            menu={[
+              { label: t('routines.flow.simulate'), icon: FlaskConical, disabled: busy, onSelect: () => onSimulate(routine), testId: `simulate-${routine.id}` },
+              { label: t('routines.card.log', { name: routine.name }), icon: Clock, onSelect: () => onShowLog(routine), testId: `show-log-${routine.id}` },
+              { label: t(routine.testMode ? 'routines.flow.useLiveMode' : 'routines.flow.useTestMode'), icon: Repeat, disabled: busy, onSelect: () => onToggleTestMode(routine), testId: `toggle-test-mode-${routine.id}` },
+              'separator',
+              { label: t('routines.delete'), icon: Trash2, danger: true, disabled: busy, onSelect: () => onDelete(routine), testId: `delete-routine-${routine.id}` },
+            ]}
+          />
         </div>
       </CardHeader>
       <CardContent>
@@ -470,7 +451,6 @@ function RoutineCard({ routine, availability, busy, onEdit, onSimulate, onDelete
                 </ol>
               ) : t('routines.noActions')}</dd></div>
             </dl>
-            <Button type="button" variant="outline" onClick={() => onSimulate(routine)} disabled={busy} data-testid={`simulate-${routine.id}`}><FlaskConical aria-hidden="true" />{t('routines.flow.simulate')}</Button>
             {cannotRun.length > 0 && (
               <p data-testid={`routine-unavailable-${routine.id}`}>
                 {t('routines.card.unavailableNote', {
@@ -497,18 +477,7 @@ function RoutineCard({ routine, availability, busy, onEdit, onSimulate, onDelete
             />
           </div>
 
-          <div className="flex items-center justify-between">
-            <span className="text-sm" id={`test-mode-label-${routine.id}`}>
-              {t('routines.testMode')}
-            </span>
-            <Switch
-              checked={routine.testMode}
-              disabled={busy}
-              aria-labelledby={`test-mode-label-${routine.id}`}
-              onCheckedChange={() => onToggleTestMode(routine)}
-              data-testid={`toggle-test-mode-${routine.id}`}
-            />
-          </div>
+
         </div>
       </CardContent>
     </Card>

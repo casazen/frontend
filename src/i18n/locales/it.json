@@ -1161,10 +1161,15 @@
         "invalid": "Non validi"
       },
       "ota": {
-        "title": "Salute OTA Sync",
-        "synced": "Sincronizzati",
-        "failed": "Falliti",
-        "neverSynced": "Mai sincronizzati"
+        "title": "Sincronizzazione dei canali",
+        "synced": "Aggiornati",
+        "failed": "In ritardo (oltre 6 ore)",
+        "neverSynced": "Mai sincronizzati",
+        "filter": "Stato della sincronizzazione",
+        "loadError": "Impossibile caricare le connessioni.",
+        "empty": "Nessuna connessione in questa pagina.",
+        "pages": "Pagine delle connessioni",
+        "page": "Pagina {{page}} di {{pages}}"
       }
     },
     "cin": {
@@ -1804,7 +1809,7 @@
       "Errore": "Errore nella preparazione della comunicazione: inviala dal portale della Questura.",
       "Rifiutato": "Il portale ha rifiutato la comunicazione: correggi i dati e inviala di nuovo dal portale della Questura."
     },
-    "notDueNotice": "Per questo soggiorno non è prevista nessuna comunicazione alla Questura italiana. Gli adempimenti di altri paesi si consultano nella sezione dedicata.",
+    "notDueNotice": "Per questo soggiorno non è prevista nessuna comunicazione alla Questura italiana.",
     "statusError": "Impossibile caricare lo stato della comunicazione Alloggiati.",
     "statusNotFound": "Non troviamo lo stato Alloggiati di questo soggiorno: potrebbe non esistere più o non essere tuo.",
     "summaryError": "Impossibile caricare le comunicazioni Alloggiati.",
@@ -4241,6 +4246,7 @@
     },
     "host": {
       "checkInAccess": "Check-in nel Portale ospiti",
+      "guestLink": "Link personale dell’ospite",
       "checkInAccessDescription": "Condividi il link personale con l’ospite per aprire la sezione Check-in del suo portale.",
       "prepareCheckIn": "Abilita il check-in nel portale",
       "accessSection": "Accesso ospite",
@@ -5230,6 +5236,8 @@
       "paidAmount": "Importo incassato",
       "paymentState": "Stato del pagamento",
       "recordPayment": "Registra incasso",
+      "stayPaid": "Soggiorno saldato",
+      "amountsSource": "Fonte degli importi",
       "paymentSummaryTitle": "Riepilogo pagamento",
       "total": "Totale",
       "alloggiatiWeb": "Alloggiati Web",
@@ -5325,16 +5333,16 @@
       },
       "toBookings": "Vai alle prenotazioni",
       "waitingDocuments": {
-        "body": "Il link per il check-in online è stato inviato. Se serve, puoi mandarlo di nuovo.",
-        "title": "Aspetta i documenti degli ospiti"
+        "body": "Il link è stato inviato. L’ospite inserisce i documenti nel suo portale. Se serve, puoi condividere di nuovo il link.",
+        "title": "L’ospite deve completare il check-in"
       },
       "waitingGuestEmail": {
         "body": "L'ospite deve ancora confermare la sua email: solo dopo potrai rispondere alla richiesta.",
-        "title": "Aspetta che l'ospite confermi l'email"
+        "title": "L’ospite deve confermare la sua email"
       },
       "waitingPayment": {
         "body": "L'ospite non ha ancora completato il pagamento. Se non lo fa in tempo, la prenotazione scade e le date tornano libere.",
-        "title": "Aspetta il pagamento dell'ospite"
+        "title": "Pagamento in attesa dell’ospite"
       },
       "whoGuest": "Tocca all'ospite",
       "whoHost": "Tocca a te"
@@ -5594,7 +5602,7 @@
         "GuestDocumentsReceived": "Documenti dell'ospite ricevuti",
         "GuestEmailPending": "Aspetta la conferma dell'email dell'ospite",
         "HostConfirmationPending": "Aspetta la tua conferma",
-        "PaymentPending": "Aspetta il pagamento dell'ospite",
+        "PaymentPending": "Pagamento in attesa dell’ospite",
         "PaymentReceived": "Pagamento ricevuto",
         "Refund": "Rimborso",
         "RequestReceived": "Richiesta ricevuta"
@@ -9972,11 +9980,15 @@
       "tooMany": "Puoi emettere al massimo {{max}} documenti alla volta: deseleziona quelli in più."
     },
     "bookingCard": {
-      "createDraft": "Crea bozza",
-      "draftCreated": "Bozza creata. Controllala ed emettila quando sei pronto.",
+      "editRecipient": "Modifica intestatario",
+      "checkVat": "Controlla il regime IVA",
+      "checkIssuer": "Controlla i dati emittente",
+      "ruleBlocked": "CasaZen non ha trovato una regola applicabile a questo soggiorno. Controlla il regime IVA impostato.",
+      "createDraft": "Prepara documento fiscale",
+      "draftCreated": "Bozza preparata. Puoi controllarla prima dell’emissione.",
       "draftFailed": "Non siamo riusciti a creare la bozza. Riprova tra poco.",
       "empty": "Per questa prenotazione non c’è ancora nessun documento fiscale.",
-      "emptyWrite": "Per questa prenotazione non c’è ancora nessun documento fiscale. Crea la bozza, controllala ed emettila quando sei pronto.",
+      "emptyWrite": "Nessun documento fiscale per questo soggiorno. Puoi preparare una bozza per controllare intestatario e importi prima dell’emissione.",
       "issuedOn": "Emesso il {{date}}",
       "loadError": "Non riusciamo a caricare i documenti fiscali di questa prenotazione.",
       "loading": "Carico i documenti fiscali…",
@@ -11403,6 +11415,8 @@
     "retry": "Riprova",
     "saved": "Dati di fatturazione salvati.",
     "section": {
+      "recipientDetails": "Dettagli fiscali",
+      "notRequested": "Nessuna richiesta di fattura registrata.",
       "add": "Aggiungi i dati",
       "edit": "Controlla o modifica",
       "empty": "Nessun dato di fatturazione per questa prenotazione.",
@@ -26194,6 +26208,9 @@
     "waitDays": "Giorni di attesa",
     "waitHours": "Ore di attesa",
     "flow": {
+      "edit": "Modifica",
+      "useTestMode": "Passa alla simulazione",
+      "useLiveMode": "Passa alle azioni reali",
       "confirmTitle": "Attivare le azioni reali?",
       "confirmDescription": "Quando si verifica l’evento, «{{name}}» potrà eseguire queste azioni per i soggiorni che soddisfano le condizioni.",
       "confirmLive": "Conferma attivazione",
@@ -28873,8 +28890,7 @@
         "title": "Dì ai clienti quando lavori"
       },
       "free": {
-        "body": "Nessun lavoro né richieste nei prossimi giorni. Tieni aggiornati orari e servizi per riceverne di più.",
-        "title": "Giornata libera"
+        "title": "Nessun lavoro in agenda nei prossimi giorni"
       },
       "greeting": "Buongiorno, {{name}}",
       "greetingAnonymous": "Buongiorno",

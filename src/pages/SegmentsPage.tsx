@@ -37,7 +37,7 @@ export function SegmentsPage() {
   const preview = usePreviewCount(selected);
   return (
     <AppShell>
-      <div className="space-y-5">
+      <div className="workspace-page space-y-5">
         <PageHeader title={t('nav.crmSegments')} description={t('campaigns.segment.description')} crumbs="auto" />
         <div className="flex flex-wrap gap-2">
           {(['list', 'new', 'import'] as const).map((item, i) => (

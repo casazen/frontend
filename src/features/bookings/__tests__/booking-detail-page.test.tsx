@@ -229,6 +229,7 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
 
     renderPage();
 
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger', undefined, WAIT));
     expect(await screen.findByTestId('booking-pending-manual', undefined, WAIT)).toBeInTheDocument();
     fireEvent.click(screen.getByTestId('open-confirm-booking'));
     const dialog = await screen.findByRole('dialog');
@@ -251,6 +252,7 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
 
     renderPage();
 
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger', undefined, WAIT));
     fireEvent.click(await screen.findByTestId('open-confirm-booking', undefined, WAIT));
     const dialog = await screen.findByRole('dialog');
     fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('booking.confirm.submit') }));
@@ -276,6 +278,7 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
 
     renderPage();
 
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger', undefined, WAIT));
     fireEvent.click(await screen.findByTestId('open-confirm-booking', undefined, WAIT));
     const dialog = await screen.findByRole('dialog');
     fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('booking.confirm.submit') }));
@@ -398,6 +401,7 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
 
     renderPage();
 
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger', undefined, WAIT));
     const link = await screen.findByTestId('open-checkout-wizard', undefined, WAIT);
     expect(link).toHaveAttribute('href', `/app/short-rent/bookings/${BOOKING_ID}/checkout`);
     expect(screen.queryByTestId('open-confirm-booking')).not.toBeInTheDocument();
@@ -420,6 +424,7 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
 
     renderPage();
 
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger', undefined, WAIT));
     const link = await screen.findByTestId('booking-next-check-in-wizard', undefined, WAIT);
     expect(link).toHaveAttribute('href', `/app/short-rent/bookings/${BOOKING_ID}/check-in`);
     expect(screen.getByTestId('booking-next-step')).toHaveAttribute('data-next-step', 'completeGuestData');
@@ -432,6 +437,7 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
 
     renderPage();
 
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger', undefined, WAIT));
     expect(await screen.findByTestId('booking-next-step', undefined, WAIT)).toHaveAttribute('data-next-step', 'allInOrder');
     expect(screen.queryByTestId('booking-next-check-in-wizard')).not.toBeInTheDocument();
   });
@@ -443,6 +449,7 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
 
     renderPage();
 
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger', undefined, WAIT));
     expect(await screen.findByTestId('open-checkout-wizard', undefined, WAIT)).toBeInTheDocument();
   });
 
@@ -457,6 +464,7 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
 
     renderPage();
 
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger', undefined, WAIT));
     fireEvent.click(await screen.findByTestId('open-register-arrival', undefined, WAIT));
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByTestId('register-arrival-late')).toBeInTheDocument();
@@ -490,6 +498,7 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
 
     renderPage();
 
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger', undefined, WAIT));
     fireEvent.click(await screen.findByTestId('open-register-arrival', undefined, WAIT));
     const dialog = await screen.findByRole('dialog');
     expect(await within(dialog).findByTestId('guest-data-complete', undefined, WAIT)).toBeInTheDocument();
@@ -671,11 +680,12 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
     expect(serviceRequestsApi.createServiceRequest).not.toHaveBeenCalled();
   });
 
-  it('lets a reader follow existing requests without a creation action', async () => {
+  it('hides empty supplier requests when a reader has no creation action', async () => {
     denied.add('servicerequest.write');
     vi.mocked(bookingsApi.getById).mockResolvedValue(booking());
     renderPage();
-    expect(await screen.findByTestId('booking-service-requests', undefined, WAIT)).toBeInTheDocument();
+    await waitFor(() => expect(serviceRequestsApi.fetchServiceRequests).toHaveBeenCalled());
+    await waitFor(() => expect(screen.queryByTestId('booking-service-requests')).not.toBeInTheDocument());
     expect(screen.queryByTestId('booking-request-cleaning')).not.toBeInTheDocument();
   });
 
@@ -684,7 +694,8 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
 
     renderPage();
 
-    expect(await screen.findByTestId('booking-service-requests', undefined, WAIT)).toBeInTheDocument();
+    await waitFor(() => expect(serviceRequestsApi.fetchServiceRequests).toHaveBeenCalled());
+    await waitFor(() => expect(screen.queryByTestId('booking-service-requests')).not.toBeInTheDocument());
     expect(screen.queryByTestId('booking-request-cleaning')).not.toBeInTheDocument();
   });
 });

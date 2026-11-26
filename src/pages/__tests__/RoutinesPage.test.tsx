@@ -120,6 +120,12 @@ function renderPage() {
   return { ...view, client };
 }
 
+async function routineMenuItem(id: string, action: string) {
+  const card = await screen.findByTestId(`routine-card-${id}`);
+  fireEvent.keyDown(within(card).getByRole('button', { name: /altre azioni/i }), { key: 'Enter' });
+  return screen.findByTestId(`${action}-${id}`);
+}
+
 /** Opens «Crea routine» and waits for the form. */
 async function openCreateEditor() {
   fireEvent.click(await screen.findByTestId('create-routine-button'));
@@ -579,14 +585,14 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       const pending = deferred<Routine>();
       vi.mocked(routinesApi.setTestMode).mockReturnValue(pending.promise);
       renderPage();
-      const mode = await screen.findByTestId('toggle-test-mode-r2');
+      const mode = await routineMenuItem('r2', 'toggle-test-mode');
       fireEvent.click(mode);
       const preview = await screen.findByRole('dialog', { name: 'Attivare le azioni reali?' });
       expect(preview).toHaveTextContent('2 giorni prima del check-in');
       expect(preview).toHaveTextContent(i18n.t('routines.actionTypes.messageToGuest'));
       fireEvent.click(within(preview).getByRole('button', { name: i18n.t('shared.cancel') }));
       expect(routinesApi.setTestMode).not.toHaveBeenCalled();
-      fireEvent.click(mode);
+      fireEvent.click(await routineMenuItem('r2', 'toggle-test-mode'));
       const confirm = await screen.findByRole('button', { name: 'Conferma attivazione' });
       fireEvent.click(confirm);
       fireEvent.click(confirm);
@@ -635,16 +641,17 @@ describe('the routines page (E01/F04/US02/T01)', () => {
 
       fireEvent.click(await screen.findByTestId('toggle-active-r1'));
 
-      await waitFor(() => expect(screen.getByTestId('toggle-test-mode-r1')).toBeDisabled());
+      await waitFor(() => expect(screen.getByTestId('edit-routine-r1')).toBeDisabled());
       expect(screen.getByTestId('toggle-active-r1')).toBeDisabled();
-      expect(screen.getByTestId('edit-routine-r1')).toBeDisabled();
-      expect(screen.getByTestId('delete-routine-r1')).toBeDisabled();
+      expect(await routineMenuItem('r1', 'toggle-test-mode')).toHaveAttribute('aria-disabled', 'true');
+      expect(screen.getByTestId('delete-routine-r1')).toHaveAttribute('aria-disabled', 'true');
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
       // Another routine is not waiting for it.
       expect(screen.getByTestId('toggle-active-r5')).toBeEnabled();
-      expect(screen.getByTestId('toggle-test-mode-r5')).toBeEnabled();
+      expect(screen.getByTestId('edit-routine-r5')).toBeEnabled();
 
       pending.resolve({ ...CLEANING, active: false });
-      await waitFor(() => expect(screen.getByTestId('toggle-test-mode-r1')).toBeEnabled());
+      await waitFor(() => expect(screen.getByTestId('edit-routine-r1')).toBeEnabled());
     });
 
     it('RoutinesPage_WritesOnTwoCardsInFlightAtOnce_KeepEachCardWaitingUntilItsOwnAnswer', async () => {
@@ -657,26 +664,25 @@ describe('the routines page (E01/F04/US02/T01)', () => {
 
       // A write on the first card and, while it is still on its way, one with the same hook on the second: a mutation hook follows only its last call.
       fireEvent.click(await screen.findByTestId('toggle-active-r1'));
-      await waitFor(() => expect(screen.getByTestId('toggle-test-mode-r1')).toBeDisabled());
+      await waitFor(() => expect(screen.getByTestId('edit-routine-r1')).toBeDisabled());
       fireEvent.click(screen.getByTestId('toggle-active-r5'));
-      await waitFor(() => expect(screen.getByTestId('toggle-test-mode-r5')).toBeDisabled());
+      await waitFor(() => expect(screen.getByTestId('edit-routine-r5')).toBeDisabled());
 
       // The first card still waits for its own answer.
-      for (const control of ['toggle-active-r1', 'toggle-test-mode-r1', 'edit-routine-r1', 'delete-routine-r1']) {
+      for (const control of ['toggle-active-r1', 'edit-routine-r1']) {
         expect(screen.getByTestId(control), control).toBeDisabled();
       }
 
       // The answer of the second one frees the second card only.
       second.resolve({ ...other, active: false });
-      await waitFor(() => expect(screen.getByTestId('toggle-test-mode-r5')).toBeEnabled());
-      for (const control of ['toggle-active-r1', 'toggle-test-mode-r1', 'edit-routine-r1', 'delete-routine-r1']) {
+      await waitFor(() => expect(screen.getByTestId('edit-routine-r5')).toBeEnabled());
+      for (const control of ['toggle-active-r1', 'edit-routine-r1']) {
         expect(screen.getByTestId(control), control).toBeDisabled();
       }
 
       first.resolve({ ...CLEANING, active: false });
-      await waitFor(() => expect(screen.getByTestId('toggle-test-mode-r1')).toBeEnabled());
-      expect(screen.getByTestId('edit-routine-r1')).toBeEnabled();
-      expect(screen.getByTestId('delete-routine-r1')).toBeEnabled();
+      await waitFor(() => expect(screen.getByTestId('edit-routine-r1')).toBeEnabled());
+      expect(await routineMenuItem('r1', 'delete-routine')).not.toHaveAttribute('aria-disabled', 'true');
     });
 
     it('RoutinesPage_WritesOfDifferentKindsOnTwoCards_KeepEachCardWaitingUntilItsOwnAnswer', async () => {
@@ -690,7 +696,7 @@ describe('the routines page (E01/F04/US02/T01)', () => {
 
       fireEvent.click(await screen.findByTestId('toggle-active-r1'));
       await waitFor(() => expect(screen.getByTestId('edit-routine-r1')).toBeDisabled());
-      fireEvent.click(screen.getByTestId('toggle-test-mode-r5'));
+      fireEvent.click(await routineMenuItem('r5', 'toggle-test-mode'));
       await waitFor(() => expect(screen.getByTestId('edit-routine-r5')).toBeDisabled());
       expect(screen.getByTestId('edit-routine-r1')).toBeDisabled();
 
@@ -784,7 +790,7 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       const search = vi.spyOn(bookingsApi, 'search');
       try {
         renderPage();
-        fireEvent.click(await screen.findByTestId('simulate-r1'));
+        fireEvent.click(await routineMenuItem('r1', 'simulate'));
         expect(screen.getByRole('dialog')).toHaveTextContent(i18n.t('routines.flow.noBookingAccess'));
         expect(search).not.toHaveBeenCalled();
         expect(routinesApi.simulate).not.toHaveBeenCalled();
@@ -803,7 +809,7 @@ describe('the routines page (E01/F04/US02/T01)', () => {
           actions: [{ index: 0, type: 'CreateActivity', wouldBlock: true, code: 'routine_action_not_available' }] });
       try {
         renderPage();
-        fireEvent.click(await screen.findByTestId('simulate-r1'));
+        fireEvent.click(await routineMenuItem('r1', 'simulate'));
         fireEvent.change(await screen.findByLabelText(i18n.t('routines.flow.chooseBooking')), { target: { value: 'stay' } });
         const simulate = screen.getByRole('button', { name: i18n.t('routines.flow.try') });
         fireEvent.click(simulate);
@@ -851,7 +857,7 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       vi.mocked(routinesApi.getExecutions).mockResolvedValue([waiting, simulated, blocked]);
       renderPage();
 
-      fireEvent.click(await screen.findByTestId('show-log-r1'));
+      fireEvent.click(await routineMenuItem('r1', 'show-log'));
 
       const waitingRow = await screen.findByTestId('execution-e1');
       expect(waitingRow).toHaveTextContent('In attesa');
@@ -887,7 +893,7 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       ]);
       renderPage();
 
-      fireEvent.click(await screen.findByTestId('show-log-r1'));
+      fireEvent.click(await routineMenuItem('r1', 'show-log'));
 
       // Nothing to do for this booking: neutral, never a green «Completata», and the reason in words.
       const skipped = await screen.findByTestId('execution-outcome-k1');
@@ -935,7 +941,7 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       ]);
       renderPage();
 
-      fireEvent.click(await screen.findByTestId('show-log-r1'));
+      fireEvent.click(await routineMenuItem('r1', 'show-log'));
 
       const done = await screen.findByTestId('execution-outcome-d1');
       expect(done).toHaveTextContent('Completata');
@@ -955,7 +961,7 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       vi.mocked(routinesApi.delete).mockResolvedValue(undefined);
       renderPage();
 
-      fireEvent.click(await screen.findByTestId('delete-routine-r1'));
+      fireEvent.click(await routineMenuItem('r1', 'delete-routine'));
 
       const dialog = await screen.findByRole('dialog');
       expect(dialog).toHaveTextContent('Vuoi eliminare la routine «Pulizia al check-out»?');

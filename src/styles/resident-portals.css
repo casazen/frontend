@@ -63,9 +63,7 @@
 .resident-main {
   min-width: 0;
   width: 100%;
-  max-width: 75rem;
-  margin-inline: auto;
-  padding: clamp(1rem,3vw,2.5rem);
+  padding: var(--workspace-gutter);
 }
 @media (min-width: 40rem) and (max-width: 63.99rem) {
   .resident-nav { grid-template-columns: repeat(4,minmax(0,1fr)); }
@@ -76,5 +74,4 @@
   .resident-rail__inner { position: sticky; top: 0; max-height: 100dvh; overflow-y: auto; gap: 2rem; padding: 1.5rem 1rem; }
   .resident-title { padding-bottom: 1.25rem; border-bottom: 1px solid var(--resident-line); }
   .resident-nav { grid-template-columns: 1fr; }
-  .resident-shell--tenant .resident-main { max-width: 62rem; }
 }

@@ -1,3 +1,6 @@
+import { Link, useSearchParams } from 'react-router-dom';
+import { useWorkspace } from '@/hooks/use-workspace';
+import { AdminOtaReport } from './admin-ota-report';
 import { PageHeader } from '@/components/layout/page-header';
 import { AdminKpiCard } from './components/admin-kpi-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -5,9 +8,26 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useAdminStats } from '@/queries/use-admin';
 import { useTranslation } from 'react-i18next';
 import { ErrorState } from '@/components/shared/error-state';
-import { Building2, Calendar, Wallet, FileCheck, Wifi } from 'lucide-react';
+import { Building2, Calendar, Wallet, FileCheck, Wifi, ChevronRight } from 'lucide-react';
 
 export function AdminDashboardPage() {
+  const [params] = useSearchParams();
+  const filter = params.get('otaStatus');
+  return filter === 'failed' || filter === 'neverSynced' || filter === 'synced'
+    ? <AdminOtaReport status={filter} /> : <AdminOverview />;
+}
+
+function CounterRow({ label, count, to, tone }: { label: string; count: number; to?: string; tone: string }) {
+  const content = <><span className={tone}>{label}</span><span className="inline-flex items-center gap-2 font-semibold tabular-nums">{count}{to && <ChevronRight className="size-4" aria-hidden="true" />}</span></>;
+  const layout = 'flex min-h-11 items-center justify-between gap-4 text-sm';
+  return to
+    ? <Link to={to} className={layout + ' rounded-sm hover:underline focus-visible:ring-2 focus-visible:ring-ring'}>{content}</Link>
+    : <div className={layout}>{content}</div>;
+}
+
+function AdminOverview() {
+  const { hasPermission } = useWorkspace();
+  const canReadCin = hasPermission('admin', 'admin.cin.read');
   const { t, i18n } = useTranslation();
   const { data: stats, isLoading, error, refetch } = useAdminStats();
 
@@ -68,23 +88,12 @@ export function AdminDashboardPage() {
                   {t('admin.dashboard.cin.title')}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="divide-y divide-border [&>div]:py-2.5">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">{t('admin.dashboard.cin.total')}</span>
-                  <span className="font-semibold tabular-nums">{stats.cinCompliance.total}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-success-foreground">{t('admin.dashboard.cin.valid')}</span>
-                  <span className="font-semibold tabular-nums">{stats.cinCompliance.valid}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-warning-foreground">{t('admin.dashboard.cin.missing')}</span>
-                  <span className="font-semibold tabular-nums">{stats.cinCompliance.missing}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-danger-foreground">{t('admin.dashboard.cin.invalid')}</span>
-                  <span className="font-semibold tabular-nums">{stats.cinCompliance.invalid}</span>
-                </div>
+              <CardContent className="divide-y divide-border">
+                {(['total', 'valid', 'missing', 'invalid'] as const).map(status => (
+                  <CounterRow key={status} label={t(`admin.dashboard.cin.${status}`)} count={stats.cinCompliance[status]}
+                    tone={{ total: 'text-muted-foreground', valid: 'text-success-foreground', missing: 'text-warning-foreground', invalid: 'text-danger-foreground' }[status]}
+                    to={canReadCin ? (status === 'total' ? '/app/admin/cin' : `/app/admin/cin?cinStatus=${status}`) : undefined} />
+                ))}
               </CardContent>
             </Card>
 
@@ -95,19 +104,12 @@ export function AdminDashboardPage() {
                   {t('admin.dashboard.ota.title')}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="divide-y divide-border [&>div]:py-2.5">
-                <div className="flex justify-between text-sm">
-                  <span className="text-success-foreground">{t('admin.dashboard.ota.synced')}</span>
-                  <span className="font-semibold tabular-nums">{stats.otaSyncHealth.synced}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-danger-foreground">{t('admin.dashboard.ota.failed')}</span>
-                  <span className="font-semibold tabular-nums">{stats.otaSyncHealth.failed}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">{t('admin.dashboard.ota.neverSynced')}</span>
-                  <span className="font-semibold tabular-nums">{stats.otaSyncHealth.neverSynced}</span>
-                </div>
+              <CardContent className="divide-y divide-border">
+                {(['synced', 'failed', 'neverSynced'] as const).map(status => (
+                  <CounterRow key={status} label={t(`admin.dashboard.ota.${status}`)} count={stats.otaSyncHealth[status]}
+                    tone={{ synced: 'text-success-foreground', failed: 'text-danger-foreground', neverSynced: 'text-muted-foreground' }[status]}
+                    to={`/app/admin?otaStatus=${status}`} />
+                ))}
               </CardContent>
             </Card>
           </div>

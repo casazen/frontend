@@ -149,7 +149,8 @@ describe('BookingInvoiceDataSection - what it says', () => {
   it('section_NoDataAtAll_SaysSoWithoutASource', async () => {
     renderSection();
 
-    expect(await screen.findByTestId('booking-invoice-empty')).toHaveTextContent('Nessun dato di fatturazione');
+    expect(await screen.findByTestId('booking-invoice-empty')).toHaveTextContent('Nessuna richiesta di fattura registrata.');
+    expect(screen.queryByText('Nessun dato di fatturazione per questa prenotazione.')).not.toBeInTheDocument();
     expect(screen.queryByTestId('booking-invoice-requested')).not.toBeInTheDocument();
     expect(screen.queryByTestId('booking-invoice-source')).not.toBeInTheDocument();
     expect(screen.getByTestId('booking-invoice-open')).toHaveTextContent('Aggiungi i dati');

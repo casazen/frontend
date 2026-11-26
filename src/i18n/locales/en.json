@@ -1161,10 +1161,15 @@
         "invalid": "Invalid"
       },
       "ota": {
-        "title": "OTA Sync Health",
-        "synced": "Synced",
-        "failed": "Failed",
-        "neverSynced": "Never synced"
+        "title": "Channel synchronization",
+        "synced": "Up to date",
+        "failed": "Overdue (over 6 hours)",
+        "neverSynced": "Never synced",
+        "filter": "Sync status",
+        "loadError": "Could not load the connections.",
+        "empty": "No connections on this page.",
+        "pages": "Connection pages",
+        "page": "Page {{page}} of {{pages}}"
       }
     },
     "cin": {
@@ -1804,7 +1809,7 @@
       "Errore": "Error while preparing the communication: send it on the Questura portal.",
       "Rifiutato": "The portal rejected the communication: fix the data and send it again on the Questura portal."
     },
-    "notDueNotice": "No Italian police communication is due for this stay. Obligations in other countries are available in their dedicated section.",
+    "notDueNotice": "No Italian police communication is due for this stay.",
     "statusError": "Unable to load the status of the Alloggiati communication.",
     "statusNotFound": "We cannot find the Alloggiati status of this stay: it may no longer exist or may not be yours.",
     "summaryError": "Unable to load the Alloggiati communications.",
@@ -4241,6 +4246,7 @@
     },
     "host": {
       "checkInAccess": "Check-in in the guest portal",
+      "guestLink": "Guest’s personal link",
       "checkInAccessDescription": "Share the private link to open the Check-in section of the guest portal.",
       "prepareCheckIn": "Enable check-in in the portal",
       "accessSection": "Guest access",
@@ -5230,6 +5236,8 @@
       "paidAmount": "Amount collected",
       "paymentState": "Payment status",
       "recordPayment": "Record payment",
+      "stayPaid": "Stay paid in full",
+      "amountsSource": "Source of amounts",
       "paymentSummaryTitle": "Payment summary",
       "total": "Total",
       "alloggiatiWeb": "Alloggiati Web",
@@ -5325,16 +5333,16 @@
       },
       "toBookings": "Go to bookings",
       "waitingDocuments": {
-        "body": "The online check-in link has been sent. If needed, you can send it again.",
-        "title": "Wait for the guests' documents"
+        "body": "The link has been sent. The guest enters their documents in the portal. You can share the link again if needed.",
+        "title": "Guest needs to complete check-in"
       },
       "waitingGuestEmail": {
         "body": "The guest still has to confirm their email: only then can you answer the request.",
-        "title": "Wait for the guest to confirm the email"
+        "title": "Guest needs to confirm their email"
       },
       "waitingPayment": {
         "body": "The guest has not completed the payment yet. If they don't in time, the booking expires and the dates are free again.",
-        "title": "Wait for the guest's payment"
+        "title": "Awaiting payment from the guest"
       },
       "whoGuest": "The guest's turn",
       "whoHost": "Your turn"
@@ -9972,11 +9980,15 @@
       "tooMany": "You can issue at most {{max}} documents at a time: clear the extra ones."
     },
     "bookingCard": {
-      "createDraft": "Create draft",
-      "draftCreated": "Draft created. Check it and issue it when you are ready.",
+      "editRecipient": "Edit recipient",
+      "checkVat": "Check VAT settings",
+      "checkIssuer": "Check issuer details",
+      "ruleBlocked": "CasaZen could not find an applicable rule for this stay. Check the configured VAT regime.",
+      "createDraft": "Prepare fiscal document",
+      "draftCreated": "Draft prepared. You can review it before issuing it.",
       "draftFailed": "We could not create the draft. Try again in a moment.",
       "empty": "This booking has no fiscal document yet.",
-      "emptyWrite": "This booking has no fiscal document yet. Create the draft, check it and issue it when you are ready.",
+      "emptyWrite": "This stay has no fiscal document. You can prepare a draft to review the recipient and amounts before issuing it.",
       "issuedOn": "Issued on {{date}}",
       "loadError": "We cannot load the fiscal documents of this booking.",
       "loading": "Loading the fiscal documents…",
@@ -11403,6 +11415,8 @@
     "retry": "Try again",
     "saved": "Invoice data saved.",
     "section": {
+      "recipientDetails": "Tax details",
+      "notRequested": "No invoice request recorded.",
       "add": "Add the data",
       "edit": "Check or change",
       "empty": "No invoice data for this booking yet.",
@@ -26194,6 +26208,9 @@
     "waitDays": "Days to wait",
     "waitHours": "Hours to wait",
     "flow": {
+      "edit": "Edit",
+      "useTestMode": "Switch to simulation",
+      "useLiveMode": "Switch to real actions",
       "confirmTitle": "Enable live actions?",
       "confirmDescription": "When the event occurs, “{{name}}” can perform these actions for stays matching the conditions.",
       "confirmLive": "Confirm activation",
@@ -28873,8 +28890,7 @@
         "title": "Tell customers when you work"
       },
       "free": {
-        "body": "No jobs or requests in the next few days. Keep your hours and services up to date to get more.",
-        "title": "A free day"
+        "title": "No jobs scheduled for the next few days"
       },
       "greeting": "Good morning, {{name}}",
       "greetingAnonymous": "Good morning",

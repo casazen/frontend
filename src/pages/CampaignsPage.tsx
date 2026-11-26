@@ -21,7 +21,7 @@ export function CampaignsPage() {
   const campaigns = useCampaigns();
   return (
     <AppShell>
-      <div className="space-y-5">
+      <div className="workspace-page space-y-5">
         <PageHeader title={t('campaigns.title')} description={t('campaigns.description')} crumbs="auto" />
         <div className="flex flex-wrap gap-2" aria-label={t('campaigns.title')}>
           {sections.map((key) => (

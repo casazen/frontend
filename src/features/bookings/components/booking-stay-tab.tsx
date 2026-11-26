@@ -1,7 +1,8 @@
-import { ArrowRight, CalendarDays } from 'lucide-react';
+import { ArrowRight, Brush, CalendarDays, Flag, Mail, MessageSquare, Phone, UserRound, UsersRound, Wrench } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { PlainSection } from '@/components/shared/calm';
+import { PropertyThumb } from '@/features/properties/components/property-thumb';
+import { useProperty } from '@/queries/use-properties';
 import { requestInterventionPath } from '@/features/service-requests/interventions/paths';
 import { Button } from '@/components/ui/button';
 import { ServiceRequestsCard } from '@/features/service-requests/components/service-requests-card';
@@ -35,6 +36,7 @@ export function BookingStayTab({ booking }: BookingStayTabProps) {
   const { flags } = useFeatureFlags();
   // The stay's own requests (D2), with the same query as the app's booking screen.
   const canReadProperty = hasPermission('short-rent', 'property.read');
+  const property = useProperty(canReadProperty ? booking.propertyId : '').data;
   // Always ask for the stay's requests when the booking page is open: the list is what the host sees after creating one
   // (GJ L3 pay-at-property). Gating the query on property.read hid the card after the cleaning wizard returned.
   const serviceRequests = useServiceRequests({ bookingId: booking.id, pageSize: 50 });
@@ -45,11 +47,11 @@ export function BookingStayTab({ booking }: BookingStayTabProps) {
     <div className="flex flex-wrap items-center gap-2">
       <Button asChild size="sm" variant="outline" className="min-h-11">
         <Link to={requestInterventionPath(booking.propertyId, { bookingId: booking.id, type: 'cleaning' })} data-testid="booking-request-cleaning">
-          {t('requestWizard.housekeeping.request')}
+          <Brush aria-hidden="true" />{t('requestWizard.housekeeping.request')}
         </Link>
       </Button>
       <Button asChild size="sm" variant="ghost" className="min-h-11">
-        <Link to={requestInterventionPath(booking.propertyId, { bookingId: booking.id })}>{t('requestWizard.housekeeping.other')}</Link>
+        <Link to={requestInterventionPath(booking.propertyId, { bookingId: booking.id })}><Wrench aria-hidden="true" />{t('requestWizard.housekeeping.other')}</Link>
       </Button>
     </div>
   ) : undefined;
@@ -73,48 +75,50 @@ export function BookingStayTab({ booking }: BookingStayTabProps) {
   checkInParams.set('tab', 'guest');
   const reviewCheckIn = booking.status === 'Confirmed' || booking.status === 'CheckedIn';
 
+  const guestName = [guest?.firstName, guest?.lastName].filter(Boolean).join(' ') || t('compliance.checkout.guestFallback');
+  const guestInitials = [guest?.firstName?.trim()[0], guest?.lastName?.trim()[0]].filter(Boolean).join('');
+  const country = guest?.country && /^[a-z]{2}$/i.test(guest.country)
+    ? new Intl.DisplayNames([i18n.language], { type: 'region' }).of(guest.country.toUpperCase())
+    : guest?.country;
+  const propertyName = booking.propertyName || property?.name || t('booking.detailPage.openProperty');
+
   return (
-    <div className="space-y-8">
-      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 rounded-xl border border-primary/25 bg-primary-soft p-4 text-primary-text sm:gap-4 sm:p-5">
-        <dl>
-          <dt className="flex items-center gap-2 text-sm"><CalendarDays aria-hidden="true" className="size-4" />{t('booking.detail.checkIn')}</dt>
-          <dd className="mt-1 text-lg font-semibold tabular-nums">{stayDate(booking.checkInDate)}</dd>
-        </dl>
-        <div aria-hidden="true" className="flex items-center"><ArrowRight className="size-5" /></div>
-        <dl>
-          <dt className="text-sm">{t('booking.detail.checkOut')}</dt>
-          <dd className="mt-1 text-lg font-semibold tabular-nums">{stayDate(booking.checkOutDate)}</dd>
-        </dl>
-      </div>
-      <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]" data-testid="booking-stay-overview">
-        <PlainSection
-          className="rounded-xl border bg-card p-4 sm:p-5"
-          title={t('booking.detailPage.stayTitle')}
-          actionTestId="booking-review-checkin"
-          {...(reviewCheckIn ? {
-            actionLabel: t('dashboard.today.action.openCheckIn'),
-            href: `?${checkInParams}`,
-          } : { actionLabel: undefined })}
-        >
-          <Facts className="divide-y divide-border space-y-0 [&>div]:py-2">
-            <Fact label={t('booking.detailPage.property')}>
-              {canReadProperty ? (
-                <Link to={`/app/short-rent/properties/${booking.propertyId}`} className={FACT_LINK}>
-                  {booking.propertyName || t('booking.detailPage.openProperty')}
-                </Link>
-              ) : booking.propertyName || '—'}
-            </Fact>
-            <Fact label={t('booking.detail.guests')}>
-              {t('booking.list.guestCount', { count: booking.numberOfGuests })}
-              {children > 0 ? ` · ${t('booking.detailPage.childrenCount', { count: children })}` : ''}
-            </Fact>
-            {booking.specialRequests ? <Fact label={t('booking.detail.specialRequests')}>{booking.specialRequests}</Fact> : null}
-            {booking.status === 'Cancelled' && booking.cancellationNote ? (
-              <Fact label={t('booking.detailPage.cancellationNote')}>
-                <span data-testid="booking-cancellation-note">{booking.cancellationNote}</span>
-              </Fact>
-            ) : null}
-          </Facts>
+    <div className="space-y-5">
+      <div className="grid min-w-0 items-start gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]" data-testid="booking-stay-overview">
+        <section className="min-w-0 overflow-hidden rounded-xl border bg-card" aria-labelledby="stay-overview-heading">
+          <div className="flex items-center gap-4 p-4 sm:p-5">
+            <PropertyThumb photoUrls={property?.photoUrls} className="h-20 w-20 sm:h-24 sm:w-32" />
+            <div className="min-w-0">
+              <h2 id="stay-overview-heading" className="text-sm text-muted-foreground">{t('booking.detailPage.stayTitle')}</h2>
+              <div className="mt-1 break-words text-lg font-semibold leading-tight">
+                {canReadProperty ? <Link to={`/app/short-rent/properties/${booking.propertyId}`} className="rounded hover:underline focus-visible:outline-ring">{propertyName}</Link> : propertyName}
+              </div>
+              <p className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+                <UsersRound aria-hidden="true" className="size-4 shrink-0" />
+                {t('booking.list.guestCount', { count: booking.numberOfGuests })}
+                {children > 0 ? ` · ${t('booking.detailPage.childrenCount', { count: children })}` : ''}
+              </p>
+            </div>
+          </div>
+          <div className="border-t px-4 sm:px-5">
+            <dl className="grid grid-cols-2 gap-3 py-3">
+              {[[t('booking.detail.checkIn'), booking.checkInDate], [t('booking.detail.checkOut'), booking.checkOutDate]].map(([label, value]) => (
+                <div key={label} className="min-w-0">
+                  <dt className="flex items-center gap-2 text-sm text-muted-foreground"><CalendarDays aria-hidden="true" className="size-4 shrink-0" />{label}</dt>
+                  <dd className="mt-1 font-semibold"><time dateTime={stayDateOf(value)}>{stayDate(value)}</time></dd>
+                </div>
+              ))}
+            </dl>
+            {booking.specialRequests && <div className="flex items-start gap-2 border-t py-3">
+              <MessageSquare aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-primary-text" />
+              <div className="min-w-0"><p className="text-sm text-muted-foreground">{t('booking.detail.specialRequests')}</p><p className="break-words">{booking.specialRequests}</p></div>
+            </div>}
+            {booking.status === 'Cancelled' && booking.cancellationNote && <p className="border-t py-3" data-testid="booking-cancellation-note">
+              <span className="block text-sm text-muted-foreground">{t('booking.detailPage.cancellationNote')}</span>{booking.cancellationNote}
+            </p>}
+            {reviewCheckIn && <Link to={`?${checkInParams}`} data-testid="booking-review-checkin" className="flex min-h-11 w-fit items-center gap-2 rounded text-sm font-medium text-primary-text hover:underline">
+              {t('dashboard.today.action.openCheckIn')}<ArrowRight aria-hidden="true" className="size-4"/>
+            </Link>}
           {editLock ? (
             <p className="max-w-prose text-sm text-foreground/70" data-testid="booking-edit-locked" data-reason={editLock}>
               {t(`booking.detailPage.editLocked.${editLock}`)}
@@ -126,30 +130,23 @@ export function BookingStayTab({ booking }: BookingStayTabProps) {
               {cancelGuidance ? <OtaChangeGuidance action="cancel" channel={cancelGuidance.channel} /> : null}
             </div>
           ) : null}
-        </PlainSection>
+          </div>
+        </section>
 
-        {guest ? (
-          <PlainSection className="rounded-xl border bg-card p-4 sm:p-5" title={t('booking.detailPage.guestInformationTitle')}>
-            <Facts>
-              <Fact label={t('booking.detail.guestName')}>{`${guest.firstName ?? ''} ${guest.lastName ?? ''}`.trim() || t('compliance.checkout.guestFallback')}</Fact>
-              {guest.email ? (
-                <Fact label={t('booking.detail.guestEmail')}>
-                  <a href={`mailto:${guest.email}`} className={FACT_LINK}>
-                    {guest.email}
-                  </a>
-                </Fact>
-              ) : null}
-              {guest.phone ? (
-                <Fact label={t('booking.detail.guestPhone')}>
-                  <a href={`tel:${guest.phone}`} className={FACT_LINK}>
-                    {guest.phone}
-                  </a>
-                </Fact>
-              ) : null}
-              {guest.country ? <Fact label={t('booking.detail.guestCountry')}>{guest.country}</Fact> : null}
-            </Facts>
-          </PlainSection>
-        ) : null}
+        {guest && <section className="min-w-0 rounded-xl border bg-card p-4 sm:p-5" aria-labelledby="stay-guest-heading">
+          <div className="flex items-center gap-3">
+            <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-full bg-primary-soft font-semibold text-primary-text">{guestInitials || <UserRound className="size-5" />}</span>
+            <div className="min-w-0">
+              <h2 id="stay-guest-heading" className="text-sm text-muted-foreground">{t('booking.detailPage.guestInformationTitle')}</h2>
+              <p className="break-words font-semibold">{guestName}</p>
+            </div>
+          </div>
+          {(guest.email || guest.phone || country) && <ul className="mt-3 border-t pt-2 text-sm">
+            {guest.email && <li className="flex min-h-11 items-center gap-3"><Mail aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" /><a href={`mailto:${guest.email}`} className={FACT_LINK}>{guest.email}</a></li>}
+            {guest.phone && <li className="flex min-h-11 items-center gap-3"><Phone aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" /><a href={`tel:${guest.phone}`} className={FACT_LINK}>{guest.phone}</a></li>}
+            {country && <li className="flex items-center gap-3 py-2"><Flag aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" /><span><span className="sr-only">{t('booking.detail.guestCountry')} </span>{country}</span></li>}
+          </ul>}
+        </section>}
       </div>
 
       <details className="rounded-lg border border-border px-4" data-testid="booking-stay-reference">
@@ -178,14 +175,14 @@ export function BookingStayTab({ booking }: BookingStayTabProps) {
       {/* The one section of the reviews of the stay (E05/F06/US02): the host asks the guest of the site for a review (DB-12b) and reads the reviews of the guests, of the site and of the channel. It draws nothing where there is nothing to say. */}
       <BookingReviewsSection booking={booking} canWrite={canWrite} />
 
-      <ServiceRequestsCard
+      {serviceRequests.data?.items.length === 0 && !serviceRequests.isError ? cleaningAction : <ServiceRequestsCard
         plain
         query={serviceRequests}
         emptyText={t('serviceRequest.emptyForStay')}
         canManage={canManageSupplierRequests}
         testId="booking-service-requests"
         action={cleaningAction}
-      />
+      />}
 
       {/* NF-71: what the routines will send to the guest of this stay, after the sections above (they keep their place). Only with the flag on and for who may read the booking: off, nothing is drawn and nothing is asked. */}
       {flags.scheduledMessages && canRead ? <BookingScheduledMessages booking={booking} canWrite={canWrite} /> : null}

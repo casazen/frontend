@@ -9,9 +9,11 @@ export function GuestPortalSettingsPage() {
   const [params] = useSearchParams();
   return (
     <AppShell>
-      <div className="mx-auto w-full max-w-4xl space-y-5">
+      <div className="workspace-page space-y-5">
         <PageHeader title={t('guestPortal.setup.title')} crumbs="auto" />
-        <PropertySetupSelection initialPropertyId={params.get('propertyId') ?? undefined} />
+        <div className="max-w-4xl">
+          <PropertySetupSelection initialPropertyId={params.get('propertyId') ?? undefined} />
+        </div>
       </div>
     </AppShell>
   );
