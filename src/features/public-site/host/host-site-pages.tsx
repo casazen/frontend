@@ -84,18 +84,20 @@ export function HostOrgGuard({ children }: { children: ReactNode }) {
 
 /**
  * The same rule for the check-in page of an org's own host (NF-140): a link of another agency's guest, typed or followed on this domain, is «not found» here, so a domain never shows
- * another agency's page under its name. The answer of the link names the agency whose privacy notice it carries (`privacyNoticeOrgSlug`); when that slug is there and is not the host's
- * the page is not shown. It reads the answer with the hook of the page itself (`useCheckInContext`), so the two share one request and the check-in page is not touched. While the
- * answer is not here, or when it fails, or when it carries no slug (a link that has no privacy notice, or one that is completed: the server then sends no data), the page decides
- * what it shows, as it always did; a cached answer of another agency stays «not found» whatever a later failure says.
+ * another agency's page under its name. The answer of the link names the agency it belongs to (`orgSlug`, sent for every usable link whether or not the agency has a published privacy notice);
+ * an answer of a backend that does not send that field yet names it only through the privacy notice the link carries (`privacyNoticeOrgSlug`), which is the fallback. When the slug is there and is
+ * not the host's the page is not shown. It reads the answer with the hook of the page itself (`useCheckInContext`), so the two share one request and the check-in page is not touched. While the
+ * answer is not here, or when it fails, or when it carries no slug at all (an old backend with a link that has no privacy notice, or an answer that holds no data), the page decides what it
+ * shows, as it always did; a cached answer of another agency stays «not found» whatever a later failure says.
  */
 export function HostCheckInGuard({ children }: { children: ReactNode }) {
   const { token = '' } = useParams<{ token: string }>();
   const { data: context } = useCheckInContext(token);
   const hostSite = getHostSite();
 
-  // Slugs are lower case; the comparison does not depend on it, so a case that differs never turns an agency's own guest away.
-  const linkSlug = context?.privacyNoticeOrgSlug?.toLowerCase();
+  // The agency of the link: `orgSlug` first, the slug of its privacy notice as a fallback. Slugs are lower case; the comparison does not depend on it, so a case that differs never turns an
+  // agency's own guest away.
+  const linkSlug = (context?.orgSlug ?? context?.privacyNoticeOrgSlug)?.toLowerCase();
   const ofAnotherAgency = Boolean(linkSlug) && linkSlug !== hostSite?.slug.toLowerCase();
   return hostSite && !ofAnotherAgency ? <>{children}</> : <HostSiteNotFoundPage />;
 }

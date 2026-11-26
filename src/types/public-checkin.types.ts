@@ -78,7 +78,7 @@ export interface PublicCheckInGuestPrefill {
 
 /**
  * Context of `GET /public/checkin/{token}`. Once the guest has submitted (`completed`), the API returns only
- * `completed` and `status`: no booking data and no guest data.
+ * `completed`, `status` and `orgSlug` (public data): no booking data and no guest data.
  */
 export interface PublicCheckInContextDto {
   houseRules?: string | null;
@@ -98,6 +98,11 @@ export interface PublicCheckInContextDto {
   /** Version of the privacy notice shown (art. 13 GDPR); absent when not configured. */
   privacyNoticeVersion?: string;
   privacyNoticeOrgSlug?: string;
+  /**
+   * Slug of the agency the link belongs to (NF-140): sent for every usable link, whether or not the agency has a published privacy notice. The check-in page of an agency's own domain is
+   * shown only for the agency of that domain. Optional so that an answer of a backend that does not send it yet still types; the guard then reads `privacyNoticeOrgSlug`.
+   */
+  orgSlug?: string;
   /** Version of the optional marketing consent text; absent when the consent is not offered. */
   marketingConsentVersion?: string;
   /**

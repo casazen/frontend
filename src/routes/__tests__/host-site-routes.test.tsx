@@ -211,6 +211,33 @@ describe('guest check-in and owner portal on an org own host (NF-140)', () => {
     expect(screen.queryByText('Casa di altri')).not.toBeInTheDocument();
   });
 
+  it('CheckInRoute_AnotherAgencyContextWithOnlyTheOrgSlug_IsNotFoundInTheFrameOfNoOne', async () => {
+    // An agency with no published privacy notice (or one that withdrew it): the answer names the agency of the link by `orgSlug` only, and that is enough to refuse it on this domain.
+    vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ completed: false, status: 'InCompilazione', propertyName: 'Casa di altri', orgSlug: 'another-agency' });
+    renderHostSite('/checkin/tok-1', GUEST_ONLY);
+
+    expect(await screen.findByTestId('host-site-page-not-found')).toBeInTheDocument();
+    expect(screen.queryByText('Casa di altri')).not.toBeInTheDocument();
+  });
+
+  it('CheckInRoute_CompletedLinkOfAnotherAgency_IsNotFoundAndShowsNoClosingCard', async () => {
+    // A link that is already completed answers with its status and the agency of the link only: the closing card of another agency's guest is not shown under the name of this domain either.
+    vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ completed: true, status: 'Completo', orgSlug: 'another-agency' });
+    renderHostSite('/checkin/tok-1', GUEST_ONLY);
+
+    expect(await screen.findByTestId('host-site-page-not-found')).toBeInTheDocument();
+    expect(screen.queryByTestId('checkin-success')).not.toBeInTheDocument();
+  });
+
+  it('CheckInRoute_OwnAgencyContextWithOnlyTheOrgSlug_ShowsTheCheckInPageInsideTheFrameOfTheAgency', async () => {
+    vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ completed: true, status: 'Completo', orgSlug: 'villa-rossi' });
+    renderHostSite('/checkin/tok-1', GUEST_ONLY);
+
+    const frame = await screen.findByTestId('host-surface-frame');
+    expect(await within(frame).findByTestId('checkin-success')).toBeInTheDocument();
+    expect(screen.queryByTestId('host-site-page-not-found')).not.toBeInTheDocument();
+  });
+
   it.each(['/portale-proprietari/accedi', '/portale-proprietari/invito', '/portale-proprietari/contatto', '/portale-proprietari', '/portale-proprietari/contabilita', '/portale-proprietari/accesso-negato'])(
     'surface off means not found: owner portal %s',
     async (path) => {
