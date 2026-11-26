@@ -86,6 +86,7 @@ export interface AlloggiatiRetryResultDto {
 }
 
 export interface AlloggiatiStatusDto {
+  directGuests?: { position: number; outcome: string }[];
   directSubmission?: boolean;
   directAttempt?: string | null;
   canDownloadDirectReceipt?: boolean;

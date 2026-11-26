@@ -1,5 +1,8 @@
 {
   "institutionalPortals": {
+    "verifyAccount": "Verify police credentials",
+    "accountVerified": "The police service confirmed authentication.",
+    "verifyFailed": "Verification failed. Check the credentials before submitting.",
     "directSince": "CasaZen sends directly from {{date}}",
     "chooseDirect": "Set up direct submission",
     "cutoverTitle": "Switch to CasaZen",
@@ -10,6 +13,13 @@
     "delegation": "Accept the transmission delegation before activating Alloggiati Web.",
     "activationFailed": "Activation failed. Check the credentials and submission status before retrying.",
     "routeError": "Unable to read the sender for this property.",
+    "guestOutcome": "Guest {{number}} · {{outcome}}",
+    "outcomes": {
+      "accepted": "Accepted",
+      "rejected": "Rejected",
+      "validated": "Validated",
+      "pending": "Pending"
+    },
     "downloadError": "Could not download the receipt.",
     "receipt": "Download police receipt",
     "testRejected": "Police validation failed. Check the guest records.",

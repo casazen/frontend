@@ -1,5 +1,8 @@
 {
   "institutionalPortals": {
+    "verifyAccount": "Verifica le credenziali Questura",
+    "accountVerified": "Autenticazione confermata dalla Questura.",
+    "verifyFailed": "Verifica non riuscita. Controlla le credenziali prima di inviare.",
     "directSince": "CasaZen invia direttamente dal {{date}}",
     "chooseDirect": "Configura invio diretto",
     "cutoverTitle": "Passaggio a CasaZen",
@@ -10,6 +13,13 @@
     "delegation": "Per Alloggiati Web occorre prima accettare la delega alla trasmissione.",
     "activationFailed": "Attivazione non riuscita. Controlla le credenziali e lo stato degli invii prima di riprovare.",
     "routeError": "Impossibile leggere il mittente della struttura.",
+    "guestOutcome": "Ospite {{number}} · {{outcome}}",
+    "outcomes": {
+      "accepted": "Acquisito",
+      "rejected": "Respinto",
+      "validated": "Convalidato",
+      "pending": "In attesa"
+    },
     "downloadError": "Scaricamento della ricevuta non riuscito.",
     "receipt": "Scarica ricevuta Questura",
     "testRejected": "La Questura ha rifiutato il controllo preliminare. Verifica i dati degli ospiti.",

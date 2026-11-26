@@ -125,6 +125,15 @@ export function AlloggiatiBookingPanel({ bookingId, checkInDate }: AlloggiatiBoo
               )}
 
               {status.directAttempt === 'TestRejected' && <p role="status">{t('institutionalPortals.testRejected')}</p>}
+              {(status.directAttempt === 'PartiallyAccepted' || status.directAttempt === 'TestRejected' || status.directAttempt === 'Rejected') && (
+                <ul className="list-disc pl-5 text-sm">
+                  {status.directGuests?.map((guest) => (
+                    <li key={guest.position}>{t('institutionalPortals.guestOutcome', {
+                      number: guest.position + 1, outcome: t(`institutionalPortals.outcomes.${guest.outcome}`),
+                    })}</li>
+                  ))}
+                </ul>
+              )}
               {status.canDownloadDirectReceipt && <Button disabled={download.isPending} variant="outline" onClick={() => download.mutate()}>
                 {t('institutionalPortals.receipt')}
               </Button>}
