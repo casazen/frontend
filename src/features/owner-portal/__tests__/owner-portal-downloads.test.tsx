@@ -10,7 +10,9 @@ import type { OwnerDocument, OwnerMessage } from '@/types';
 
 vi.mock('@/api/ownerPortal.api', () => ({ ownerPortalApi: { downloadDocument: vi.fn(), downloadAttachment: vi.fn() } }));
 vi.mock('@/lib/file-download', () => ({ saveBlobAs: vi.fn(), withJsonErrorBody: vi.fn() }));
+vi.mock('sonner', () => ({ toast: { error: vi.fn() } }));
 
+import { toast } from 'sonner';
 import { ownerPortalApi } from '@/api/ownerPortal.api';
 
 const api = vi.mocked(ownerPortalApi);
@@ -136,8 +138,9 @@ describe('the documents of the owner: the version in force, its dates and its ex
 
     fireEvent.click(screen.getByTestId('owner-document-download'));
 
-    const failed = await screen.findByTestId('owner-document-download-failed');
-    expect(failed.textContent).toContain('Questo documento non è disponibile');
+    // News about a click, said in a toast (UX round 2026-11): no red box stays in the list.
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('Questo documento non è disponibile')));
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     expect(saveBlobAs).not.toHaveBeenCalled();
     await waitFor(() => expect(screen.getByTestId('owner-document-download')).toBeEnabled());
   });
@@ -174,7 +177,7 @@ describe('the attachment of a message is downloaded from the authenticated API u
 
     fireEvent.click(screen.getByTestId('owner-attachment-download'));
 
-    expect((await screen.findByTestId('owner-attachment-failed')).textContent).toContain('Questo allegato non è disponibile');
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('Questo allegato non è disponibile')));
     expect(saveBlobAs).not.toHaveBeenCalled();
   });
 });

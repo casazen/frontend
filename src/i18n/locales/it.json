@@ -6364,6 +6364,7 @@
     "next": "Avanti",
     "back": "Indietro",
     "submit": "Invia check-in",
+    "submitHint": "Per inviare, spunta prima le caselle obbligatorie qui sopra.",
     "fixHighlightedFields": "Alcuni dati non sono validi: correggi i campi evidenziati e invia di nuovo.",
     "successTitle": "Check-in completato!",
     "successDescription": "La struttura ha ricevuto i dati del soggiorno. Per correggerli, contattala tramite la tua prenotazione.",
@@ -7465,7 +7466,8 @@
       "allClear": {
         "title": "Sei in regola",
         "body": "Nessun adempimento in sospeso: gli immobili sono attivi e i soggiorni sono a posto.",
-        "cta": "Apri gli immobili"
+        "cta": "Apri gli immobili",
+        "noDeadlinesBody": "Quando una casa o un soggiorno avranno qualcosa da fare per legge, lo troverai qui."
       },
       "then": {
         "lead": "Poi: {{what}}",
@@ -7476,6 +7478,7 @@
         "chore_one": "{{count}} da chiudere",
         "chore_other": "{{count}} da chiudere"
       },
+      "why": "Perché conta",
       "fine": {
         "title": "Scadenze di legge",
         "intro": "Scadenze fissate dalla legge: Alloggiati Web va inviato entro 24 ore dall'arrivo (6 ore se il soggiorno non supera le 24), poi ci sono ISTAT e l'imposta di soggiorno. Se non partono in tempo rischi una sanzione.",
@@ -29421,9 +29424,8 @@
         "service": "Servizio",
         "stay": "Soggiorno",
         "stayDates": "Dal {{from}} al {{to}}",
-        "sub": "Servizio, urgenza e note",
-        "title": "Il lavoro",
-        "urgency": "Urgenza"
+        "sub": "Servizio, immobile e note",
+        "title": "Il lavoro"
       },
       "list": {
         "columns": {

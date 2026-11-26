@@ -182,6 +182,40 @@
     scale: .97;
   }
 }
+/* One filled action where there is something to pay, the way out of it a plain link (UX round 2, 2026-11): the other buttons
+   of the portal stay outlined. */
+.stay-main:not([data-checkin]) button.stay-action-primary {
+  border-color: transparent;
+  background: var(--stay-accent);
+  color: var(--stay-on-accent);
+}
+.stay-main:not([data-checkin]) button.stay-action-primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--stay-accent) 88%, black);
+}
+.stay-main:not([data-checkin]) button.stay-action-link {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  border: 0;
+  padding-inline: 0;
+  background: transparent;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+/* Cards straight on the page, without a padded box around them. */
+.stay-stack {
+  display: grid;
+  gap: .75rem;
+  margin-top: .75rem;
+}
+.stay-stack-title {
+  margin-top: .5rem;
+  font-weight: 650;
+}
+.stay-note {
+  color: var(--stay-muted);
+  font-size: .875rem;
+}
 .stay-checkbox {
   min-height: 44px;
   display: flex;
@@ -274,6 +308,62 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: .5rem;
+}
+
+.stay-document .stay-action-link {
+  margin-inline-start: auto;
+}
+
+/* The rating of a review: five stars, one radio each, filled up to the chosen one (UX round 2, 2026-11). */
+.stay-stars {
+  display: flex;
+  gap: .25rem;
+}
+.stay-star {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--cz-radius-control);
+  color: var(--stone-500);
+  cursor: pointer;
+}
+/* The radio covers the whole star (a replaced element does not stretch with `inset` alone) and the drawing lets the click through. */
+.stay-star input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.stay-star svg {
+  width: 1.75rem;
+  height: 1.75rem;
+  pointer-events: none;
+}
+.stay-star[data-on] {
+  color: var(--stay-text);
+}
+.stay-star[data-on] svg {
+  fill: currentColor;
+}
+.stay-star:hover {
+  background: var(--stay-tint);
+}
+.stay-star:has(input:focus-visible) {
+  outline: 2px solid var(--blue-solid);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .stay-star svg {
+    transition: scale 120ms cubic-bezier(0.2, 0, 0, 1);
+  }
+  .stay-star:active svg {
+    scale: .9;
+  }
 }
 
 .stay-account-link {

@@ -73,7 +73,7 @@ export function SupplierRequestDetailPage() {
           {isInquiry(request) ? <InquiryMessages request={request} actions={actions} /> : null}
         </div>
         <div className="min-w-0 space-y-4">
-          <RequestFacts request={request} compact />
+          <RequestFacts request={request} compact withDetails />
           <RequestDetails request={request} />
         </div>
       </div>

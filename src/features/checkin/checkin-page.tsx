@@ -2,7 +2,7 @@ import { isGuestPortalToken } from '@/lib/guest-portal-path';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FormProvider, useFieldArray, useForm, useWatch, type FieldErrors, type FieldPath } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Navigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingScreen } from '@/components/shared/loading-screen';
@@ -195,10 +195,12 @@ export function CheckInPage() {
   return <GuestCheckInFlow key={token} token={token} />;
 }
 
-export function GuestCheckInFlow({ token, embedded = false, onCompleted }: {
+export function GuestCheckInFlow({ token, embedded = false, onCompleted, next }: {
   token: string;
   embedded?: boolean;
   onCompleted?: () => void;
+  /** Where the guest goes once the check-in is done (the guest portal hands in its house guide): the one action of the receipt. */
+  next?: { href: string; label: string };
 }) {
   const { t } = useTranslation();
   const { data: context, isLoading, isFetching, error: contextError, refetch } = useCheckInContext(token);
@@ -252,6 +254,7 @@ export function GuestCheckInFlow({ token, embedded = false, onCompleted }: {
   const [acceptedRulesVersion, setAcceptedRulesVersion] = useState<string | undefined>();
   const activeRulesVersion = context?.houseRulesVersion ?? undefined;
   const rulesAccepted = !activeRulesVersion || activeRulesVersion === acceptedRulesVersion;
+  const consentsGiven = privacyRead && rulesAccepted;
   useEffect(() => {
     if (!identity.progress || identity.concluded || submitted) verifyingPhoto.current = null;
   }, [identity.progress, identity.concluded, submitted]);
@@ -636,6 +639,8 @@ export function GuestCheckInFlow({ token, embedded = false, onCompleted }: {
   if (completed) {
     // A completed check-in still pays its tax (the server allows it): what can still be paid, and what was paid, is under the card, when the API offers the payment.
     const taxStillToSay = taxView !== null && isShownOnCompletedCheckIn(guestTaxOutlook(taxView));
+    // A tax still to pay is the action of the page (its card is below): the way on is then the quiet one.
+    const taxToPay = taxView !== null && guestTaxOutlook(taxView) === 'payable';
     return (
       <GuestPageFrame embedded={embedded} switcher={switcher} testId="checkin-success">
         <Card className="mx-auto w-full max-w-md text-center">
@@ -648,6 +653,11 @@ export function GuestCheckInFlow({ token, embedded = false, onCompleted }: {
               {submitted ? t('checkin.successDescription') : t('checkin.alreadyCompletedDescription')}
             </p>
             {context.propertyName && <p className="text-sm font-medium">{context.propertyName}</p>}
+            {next && (
+              <Button asChild variant={taxToPay ? 'outline' : 'default'} className="w-full sm:w-auto">
+                <Link to={next.href} data-testid="checkin-success-next">{next.label}</Link>
+              </Button>
+            )}
           </CardContent>
         </Card>
         {taxStillToSay && (
@@ -694,7 +704,8 @@ export function GuestCheckInFlow({ token, embedded = false, onCompleted }: {
           <CardHeader>
             <CardDescription>{t('checkin.stepOf', { step: stepIndex + 1, total: totalSteps })}</CardDescription>
             <h2 ref={stepHeading} tabIndex={-1} className="scroll-mt-4 text-2xl font-semibold tracking-tight">{t(STEP_LABEL[current])}</h2>
-            {stepIndex + 1 < totalSteps && (
+            {/* The photo step already says what follows it (the guest checks the data before sending): no second line for it. */}
+            {current !== STEP_SCAN && stepIndex + 1 < totalSteps && (
               <CardDescription>{t('checkin.reopen.nextStep', { name: t(STEP_LABEL[steps[stepIndex + 1]]) })}</CardDescription>
             )}
           </CardHeader>
@@ -789,9 +800,18 @@ export function GuestCheckInFlow({ token, embedded = false, onCompleted }: {
                 {current === STEP_CONSENTS && (
                   <>
                     {activeRulesVersion && context.houseRules && (
-                      <section className="space-y-3 rounded-md border p-4">
-                        <h2 className="font-semibold">{t('guestPortal.guide.houseRules')}</h2>
-                        <p className="whitespace-pre-wrap break-words">{context.houseRules}</p>
+                      <section className="space-y-3 border-t pt-4" data-testid="checkin-house-rules">
+                        <h2 id="checkin-house-rules-title" className="font-semibold">{t('guestPortal.guide.houseRules')}</h2>
+                        {/* Long rules scroll in their own box, so the box to tick and the button stay near. A named region that takes the focus:
+                            the keys scroll it, and a screen reader says what it is. */}
+                        <div
+                          role="region"
+                          tabIndex={0}
+                          aria-labelledby="checkin-house-rules-title"
+                          className="max-h-40 overflow-auto whitespace-pre-wrap break-words rounded-sm text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                          {context.houseRules}
+                        </div>
                         <label className="flex items-center gap-2">
                           <input type="checkbox" checked={rulesAccepted}
                             onChange={(event) => setAcceptedRulesVersion(event.target.checked ? activeRulesVersion : undefined)} />
@@ -831,11 +851,23 @@ export function GuestCheckInFlow({ token, embedded = false, onCompleted }: {
                       {t('checkin.next')}<ChevronRight className="ml-1 h-4 w-4" />
                     </Button>
                   ) : (
-                    <Button key="checkin-submit" type="submit" disabled={submitCheckIn.isPending || !privacyRead || !rulesAccepted} data-testid="checkin-submit">
+                    <Button
+                      key="checkin-submit"
+                      type="submit"
+                      disabled={submitCheckIn.isPending || !consentsGiven}
+                      aria-describedby={consentsGiven ? undefined : 'checkin-submit-hint'}
+                      data-testid="checkin-submit"
+                    >
                       {submitCheckIn.isPending ? t('checkin.saving') : t('checkin.submit')}
                     </Button>
                   )}
                 </div>
+                )}
+                {/* A disabled button says nothing on its own: the line under it says what it waits for. */}
+                {current === STEP_CONSENTS && !consentsGiven && (
+                  <p id="checkin-submit-hint" className="text-right text-xs text-foreground/70" data-testid="checkin-submit-hint">
+                    {t('checkin.submitHint')}
+                  </p>
                 )}
               </form>
             </FormProvider>

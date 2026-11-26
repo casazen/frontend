@@ -86,9 +86,10 @@ export function SupplierPaymentsPanel() {
     );
   }
 
+  // Once the account is on the page its block says where it stands, and «Controlla di nuovo» turns while Stripe is asked again: the line
+  // «Controlliamo con Stripe…» is only for the first read (UX round 2026-11).
   return (
     <div className="space-y-8" data-testid="supplier-payments-page">
-      {account.askingStripe ? <CheckingNote /> : null}
       {/* The account and, beside it from `xl`, the data on the invoices (under each other on a narrower screen). */}
       <div className={cn(PAGE_COLUMNS, 'gap-8')}>
         <PaymentsFocus account={data} mark={mark} checking={account.askingStripe} onCheckAgain={account.askStripeAgain} />

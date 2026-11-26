@@ -18,7 +18,7 @@ export function ConsentStep({ privacyRead, onPrivacyRead, privacyNoticeVersion, 
   return (
     <div className="space-y-4">
       <section
-        className="rounded-md border p-4 space-y-2 text-sm"
+        className="space-y-2 border-t pt-4 text-sm"
         aria-labelledby="checkin-privacy-notice-title"
         data-testid="checkin-privacy-notice"
       >
@@ -46,7 +46,7 @@ export function ConsentStep({ privacyRead, onPrivacyRead, privacyNoticeVersion, 
       {/* Marketing consent: optional, offered only when context has marketingConsentVersion */}
       {marketingConsentVersion && (
         <section
-          className="rounded-md border p-4 space-y-4"
+          className="space-y-4 border-t pt-4"
           aria-labelledby="checkin-marketing-consent-title"
           data-testid="checkin-marketing-consent"
         >

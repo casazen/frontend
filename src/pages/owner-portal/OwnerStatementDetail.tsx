@@ -36,7 +36,7 @@ export function OwnerStatementDetail() {
   const { t, i18n } = useTranslation();
   const { statementId } = useParams<{ statementId: string }>();
   const read = useOwnerStatement(statementId);
-  const { download, busyKey, failure } = useOwnerDownload();
+  const { download, busyKey } = useOwnerDownload();
   const language = i18n.language;
 
   const back = (
@@ -84,7 +84,6 @@ export function OwnerStatementDetail() {
   const period = periodLabel(statement.year, statement.month, language);
   const sections = sectionsWithLines(detail.sections);
   const key = `statement:${statement.statementId}`;
-  const failed = failure?.key === key ? failure : null;
   const month = String(statement.month).padStart(2, '0');
   const invoiceNumber = detail.ownerInvoiceNumber?.trim();
   const subtitle = [
@@ -140,11 +139,6 @@ export function OwnerStatementDetail() {
           {t('ownerPortal.accounting.pdf.notAvailable')}
         </p>
       )}
-      {failed ? (
-        <Alert variant="danger" data-testid="owner-statement-download-failed">
-          {failed.message}
-        </Alert>
-      ) : null}
 
       {/* A newer version is the thing to do here: it is the one block «what now» of the page, not a notice with a button in it
           (UX round 2026-11). Without the newer one to open it stays a notice. */}

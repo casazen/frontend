@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Landmark, ExternalLink, MessageSquare } from 'lucide-react';
 import { ownerPortalApi } from '@/api/ownerPortal.api';
-import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { DocumentsList } from '@/features/owner-portal/documents-list';
 import { currentData, isAccountingDocument, safeDownloadName, safeExternalUrl } from '@/features/owner-portal/owner-portal-model';
@@ -25,11 +24,10 @@ type Downloads = ReturnType<typeof useOwnerDownload>;
 // `latest`: only the newest statement has the filled «Apri»; the others open with an outline button, so the list has one primary action (UX round 2026-11).
 function StatementCard({ statement, downloads, latest = false }: { statement: OwnerPortalStatement; downloads: Downloads; latest?: boolean }) {
   const { t, i18n } = useTranslation();
-  const { download, busyKey, failure } = downloads;
+  const { download, busyKey } = downloads;
   const language = i18n.language;
   const period = periodLabel(statement.year, statement.month, language);
   const key = `statement:${statement.statementId}`;
-  const failed = failure?.key === key ? failure : null;
   const month = String(statement.month).padStart(2, '0');
 
   return (
@@ -92,11 +90,6 @@ function StatementCard({ statement, downloads, latest = false }: { statement: Ow
           {t('ownerPortal.accounting.pdf.notAvailable')}
         </p>
       )}
-      {failed ? (
-        <Alert variant="danger" data-testid="owner-statement-download-failed">
-          {failed.message}
-        </Alert>
-      ) : null}
     </li>
   );
 }
@@ -104,7 +97,7 @@ function StatementCard({ statement, downloads, latest = false }: { statement: Ow
 /** An invoice of the property manager to the owner: its number, its day, its total in its own currency, and its PDF. */
 function PmInvoiceCard({ invoice, statements, downloads }: { invoice: OwnerPortalInvoice; statements: readonly OwnerPortalStatement[]; downloads: Downloads }) {
   const { t, i18n } = useTranslation();
-  const { download, busyKey, failure } = downloads;
+  const { download, busyKey } = downloads;
   const language = i18n.language;
   const kind = invoiceKindOf(invoice.kind);
   const title = t('ownerPortal.accounting.pmInvoices.cardTitle', {
@@ -120,7 +113,6 @@ function PmInvoiceCard({ invoice, statements, downloads }: { invoice: OwnerPorta
         ? periodLabel(statement.year, statement.month, language)
         : null;
   const key = `invoice:${invoice.invoiceId}`;
-  const failed = failure?.key === key ? failure : null;
   const file = t('ownerPortal.accounting.pdf.invoiceFile');
 
   return (
@@ -168,11 +160,6 @@ function PmInvoiceCard({ invoice, statements, downloads }: { invoice: OwnerPorta
           </Button>
         ) : null}
       </div>
-      {failed ? (
-        <Alert variant="danger" data-testid="owner-pm-invoice-download-failed">
-          {failed.message}
-        </Alert>
-      ) : null}
     </li>
   );
 }

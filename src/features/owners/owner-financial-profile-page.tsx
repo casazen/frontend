@@ -175,7 +175,15 @@ function ProfileBody({ ownerId }: { ownerId: string }) {
     const startsAfterTheMonth = fromMonth && readiness.ready && readiness.from > startOfPeriod(period);
     content = (
       <div className="space-y-8">
-        <ReadinessFocus readiness={readiness} canEdit={canEdit} backTo={backTo} onEdit={() => setDialog('profile')} onApprove={setApproving} onNewPolicy={() => setDialog('policy')} />
+        <ReadinessFocus
+          readiness={readiness}
+          uncovered={startsAfterTheMonth ? period : null}
+          canEdit={canEdit}
+          backTo={backTo}
+          onEdit={() => setDialog('profile')}
+          onApprove={setApproving}
+          onNewPolicy={() => setDialog('policy')}
+        />
         <FinanceSectionLinks label={title} links={[
           ...(current ? [{ id: 'profile-facts', label: t('ownerProfile.facts.title'), icon: Wallet }] : []),
           { id: 'profile-policy', label: t('ownerProfile.policy.title'), icon: ScrollText },
@@ -183,9 +191,6 @@ function ProfileBody({ ownerId }: { ownerId: string }) {
           ...(profileList.length > 1 ? [{ id: 'profile-history', label: t('ownerProfile.history.title'), icon: HistoryIcon }] : []),
         ]} />
         <OwnerWarnings warnings={ownerEntry?.warnings ?? []} />
-        {startsAfterTheMonth && readiness.ready ? (
-          <MonthNotCovered from={readiness.from} period={period} />
-        ) : null}
         {current?.masked ? (
           <Alert variant="info" data-testid="profile-masked-notice">
             {t('ownerProfile.maskedNotice')}
@@ -232,6 +237,8 @@ function ProfileBody({ ownerId }: { ownerId: string }) {
 
 interface ReadinessFocusProps {
   readiness: OwnerReadiness;
+  /** The month that sent the person here when the data start after it: it stays blocked, and that is what the block says. */
+  uncovered: Period | null;
   canEdit: boolean;
   /** Where the way back goes: the month-end close, on the month that sent the person here when there is one. */
   backTo: string;
@@ -242,11 +249,26 @@ interface ReadinessFocusProps {
 
 /**
  * The one highlighted block: whether the owner can be used for the statements and the payouts, and the next step if not. It is judged on today, and says from which day the data
- * holds: a profile that starts today does not cover the months before it.
+ * holds: a profile that starts today does not cover the months before it. When the month that sent the person here is one of those, the block says so itself, as a warning: a
+ * green «pronti» above a yellow «quel mese resta bloccato» said two opposite things (UX round 2026-11).
  */
-function ReadinessFocus({ readiness, canEdit, backTo, onEdit, onApprove, onNewPolicy }: ReadinessFocusProps) {
+function ReadinessFocus({ readiness, uncovered, canEdit, backTo, onEdit, onApprove, onNewPolicy }: ReadinessFocusProps) {
   const { t } = useTranslation();
-  const { date } = useOwnerFormat();
+  const { date, month } = useOwnerFormat();
+
+  if (readiness.ready && uncovered) {
+    return (
+      <FocusBlock
+        tone="warning"
+        kicker={t('ownerProfile.focus.kicker')}
+        title={t('ownerProfile.monthNotCovered.title', { period: month(uncovered.year, uncovered.month) })}
+        body={t('ownerProfile.monthNotCovered.body', { from: date(readiness.from) })}
+        primary={{ label: t('ownerProfile.focus.back'), href: backTo, testId: 'profile-focus-back' }}
+        data-testid="profile-focus"
+        data-month-not-covered="true"
+      />
+    );
+  }
 
   if (readiness.ready) {
     return (
@@ -319,16 +341,6 @@ function OwnerWarnings({ warnings }: { warnings: readonly OwnerOnboardingWarning
 }
 
 /** The data is ready, but from a day after the month that sent the person here: that month stays blocked, and the page says so instead of «ready». */
-function MonthNotCovered({ from, period }: { from: string; period: Period }) {
-  const { t } = useTranslation();
-  const { date, month } = useOwnerFormat();
-  return (
-    <Alert variant="warning" title={t('ownerProfile.monthNotCovered.title', { period: month(period.year, period.month) })} data-testid="profile-month-not-covered">
-      {t('ownerProfile.monthNotCovered.body', { from: date(from) })}
-    </Alert>
-  );
-}
-
 function ProfileFacts({ profile, policy }: { profile: OwnerFiscalProfile; policy: OwnerAccountingPolicy | null }) {
   const { t } = useTranslation();
   const { date } = useOwnerFormat();

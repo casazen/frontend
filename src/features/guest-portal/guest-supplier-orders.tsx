@@ -74,14 +74,14 @@ export function GuestSupplierOrders({ path, language, checkIn, checkOut }: {
     || offer.priceCents + Math.round(offer.priceCents * offer.commissionBasisPoints / 10000) >= 50) : query.data.offers;
   return (
     <div className="stay-supplier-orders">
-      <p className="stay-content">{sandbox ? checkoutText(language)('sandboxMode') : text.simulation}</p>
+      <p className="stay-note">{sandbox ? checkoutText(language)('sandboxMode') : text.simulation}</p>
       <h2>{text.catalog}</h2>
       {offers.length === 0 && <p>{text.emptyCatalog}</p>}
       {Object.keys(submittedOrders).length > 0 && <p role="status" className="stay-card stay-content">{text.sent} <a href="#guest-service-orders">{text.orders}</a></p>}
       {offers.map((offer) => <OfferForm key={`${offer.id}:${submittedOrders[offer.id] ?? ''}`} offer={offer} language={language} sandbox={sandbox} earliestDate={earliestDate} latestDate={checkOut?.slice(0, 10)}
         busy={change.isPending} submit={(body) => change.mutate({ suffix: '', body })} />)}
-      <h2 id="guest-service-orders" tabIndex={-1}>{text.orders}</h2>
-      {query.data.orders.length === 0 && <p>{text.emptyOrders}</p>}
+      {/* The orders are a part of the page only once there is one: before that the catalogue is all there is to see. */}
+      {query.data.orders.length > 0 && <h2 id="guest-service-orders" tabIndex={-1}>{text.orders}</h2>}
       {query.data.orders.map((order) => (
         <article className="stay-card stay-content" key={order.id}>
           <h3>{order.serviceName}</h3>
@@ -102,7 +102,7 @@ export function GuestSupplierOrders({ path, language, checkIn, checkOut }: {
               update={verified => client.setQueryData<Catalog>(['guest-supplier-orders', endpoint], previous =>
                 previous && { ...previous, orders: previous.orders.map(item => item.id === verified.id ? verified : item) })} />
           )}
-          {!sandbox && !order.stripeSandbox && order.state === 'Quoted' && <button disabled={change.isPending} onClick={() => change.mutate({
+          {!sandbox && !order.stripeSandbox && order.state === 'Quoted' && <button className="stay-action-primary" disabled={change.isPending} onClick={() => change.mutate({
             suffix: `/${order.id}/authorize`, body: { totalCents: order.totalCents },
           })}>{text.authorize}</button>}
           {order.state === 'Completed' && (!order.stripeSandbox || (order.completedAt && now < Date.parse(order.completedAt) + 24 * 3600000)) && <form onSubmit={(event) => {

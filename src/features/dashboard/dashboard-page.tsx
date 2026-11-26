@@ -8,7 +8,6 @@ import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { FocusBlock } from '@/components/shared/calm';
 import { ErrorState } from '@/components/shared/error-state';
-import { Alert } from '@/components/ui/alert';
 import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
 import { useCommercialRouteAccess } from '@/hooks/use-commercial-profile';
 import { useRoutines } from '@/queries/routines';
@@ -242,9 +241,10 @@ export function DashboardPage() {
                 overview.data.series && overview.data.revenue ? (
                   <RevenueChart series={overview.data.series} currency={overview.data.revenue.currency} />
                 ) : (
-                  <Alert variant="info" title={t('dashboard.chart.locked.title')} data-testid="home-chart-locked">
-                    {t('dashboard.chart.locked.text')}
-                  </Alert>
+                  // Not news, only why the chart is not there (UX round 2026-11): a quiet line instead of a blue box.
+                  <p className="text-sm text-foreground/70" data-testid="home-chart-locked">
+                    {t('dashboard.chart.locked.title')}. {t('dashboard.chart.locked.text')}
+                  </p>
                 )
               ) : null}
               </AccordionContent>

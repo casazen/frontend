@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { ErrorState } from '@/components/shared/error-state';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,7 +12,7 @@ import { getServiceCategoryLabel } from '@/lib/i18n-labels';
 import { formatDate } from '@/lib/utils';
 import { useCreateTenantMaintenance, useTenantMaintenance, useTenantMaintenanceRequest } from '@/queries/use-tenant-area';
 import type { TenantMaintenanceUrgency } from '@/types';
-import { TenantGate } from './tenant-gate';
+import { TenantGate, TenantLoading } from './tenant-gate';
 import { tenantMaintenancePath } from './paths';
 import { useLeaseId, useTenantContractPage } from './use-tenant-contract';
 
@@ -23,7 +24,7 @@ export function TenantMaintenanceListPage() {
   const leaseId = useLeaseId();
   const list = useTenantMaintenance(leaseId);
 
-  if (list.isLoading) return <p data-testid="tenant-loading">{t('tenantArea.loading')}</p>;
+  if (list.isLoading) return <TenantLoading />;
   if (list.isError) {
     return <ErrorState title={t('tenantArea.loadError')} error={list.error} onRetry={() => void list.refetch()} testId="tenant-error" />;
   }
@@ -31,10 +32,14 @@ export function TenantMaintenanceListPage() {
   const items = list.data ?? [];
   return (
     <div className="space-y-4" data-testid="tenant-maintenance">
-      <h1 className="text-3xl font-semibold tracking-tight">{t('tenantArea.nav.maintenance')}</h1>
-      <Button asChild>
-        <Link to={tenantMaintenancePath(leaseId, 'nuova')}>{t('tenantArea.maintenance.new')}</Link>
-      </Button>
+      <PageHeader
+        title={t('tenantArea.nav.maintenance')}
+        action={
+          <Button asChild>
+            <Link to={tenantMaintenancePath(leaseId, 'nuova')}>{t('tenantArea.maintenance.new')}</Link>
+          </Button>
+        }
+      />
       {items.length === 0 ? <p className="text-sm text-muted-foreground">{t('tenantArea.maintenance.empty')}</p> : null}
       <ul className="space-y-2">
         {items.map((request) => (
@@ -80,8 +85,7 @@ export function TenantMaintenanceFormPage() {
         );
       }}
     >
-      <h1 className="text-3xl font-semibold tracking-tight">{t('tenantArea.maintenance.new')}</h1>
-      <p className="text-sm text-muted-foreground">{t('tenantArea.maintenance.sentToManager')}</p>
+      <PageHeader title={t('tenantArea.maintenance.new')} description={t('tenantArea.maintenance.sentToManager')} />
       <div className="space-y-1">
         <Label htmlFor="tenant-maintenance-category">{t('tenantArea.maintenance.category')}</Label>
         <select
@@ -144,41 +148,42 @@ export function TenantMaintenanceDetailPage() {
   const { requestId = '' } = useParams();
   const request = useTenantMaintenanceRequest(leaseId, requestId);
 
-  if (request.isLoading) return <p data-testid="tenant-loading">{t('tenantArea.loading')}</p>;
+  if (request.isLoading) return <TenantLoading />;
   if (request.isError || !request.data) {
     return <ErrorState title={t('tenantArea.loadError')} error={request.error} onRetry={() => void request.refetch()} testId="tenant-error" />;
   }
 
   const item = request.data;
+  // The page has its title, as every page of the portal (it had none: the name of the request was the title of the card).
   return (
-    <Card data-testid="tenant-maintenance-detail">
-      <CardHeader>
-        <CardTitle className="text-base">{getServiceCategoryLabel(item.category, t)}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3 text-sm">
-        <p data-testid="tenant-request-status">{t(`tenantArea.maintenance.status.${item.status}`)}</p>
-        <p>{t(`tenantArea.maintenance.urgencyLevel.${item.urgency in { Normal: 1, High: 1, Emergency: 1 } ? item.urgency : 'Normal'}`)}</p>
-        <p>{item.description}</p>
-        {item.submittedAt ? <p>{t('tenantArea.maintenance.submittedAt', { date: formatDate(item.submittedAt) })}</p> : null}
-        <p className="text-muted-foreground">{t('tenantArea.maintenance.sentToManager')}</p>
-        {item.urgency === 'Emergency' ? <p>{t('tenantArea.maintenance.emergencyNotImmediate')}</p> : null}
-        {item.attachments.length > 0 ? (
-          <ul>
-            {item.attachments.map((file) => (
-              <li key={file.id}>{file.name}</li>
-            ))}
-          </ul>
-        ) : null}
-        {item.updates.length > 0 ? (
-          <ul className="space-y-2" data-testid="tenant-request-updates">
-            {item.updates.map((update) => (
-              <li key={update.id} className="rounded-md bg-muted p-2">
-                {update.text}
-              </li>
-            ))}
-          </ul>
-        ) : null}
-      </CardContent>
-    </Card>
+    <div className="space-y-4">
+      <PageHeader title={getServiceCategoryLabel(item.category, t)} />
+      <Card data-testid="tenant-maintenance-detail">
+        <CardContent className="space-y-3 pt-6 text-sm">
+          <p data-testid="tenant-request-status">{t(`tenantArea.maintenance.status.${item.status}`)}</p>
+          <p>{t(`tenantArea.maintenance.urgencyLevel.${item.urgency in { Normal: 1, High: 1, Emergency: 1 } ? item.urgency : 'Normal'}`)}</p>
+          <p>{item.description}</p>
+          {item.submittedAt ? <p>{t('tenantArea.maintenance.submittedAt', { date: formatDate(item.submittedAt) })}</p> : null}
+          <p className="text-muted-foreground">{t('tenantArea.maintenance.sentToManager')}</p>
+          {item.urgency === 'Emergency' ? <p>{t('tenantArea.maintenance.emergencyNotImmediate')}</p> : null}
+          {item.attachments.length > 0 ? (
+            <ul>
+              {item.attachments.map((file) => (
+                <li key={file.id}>{file.name}</li>
+              ))}
+            </ul>
+          ) : null}
+          {item.updates.length > 0 ? (
+            <ul className="space-y-2" data-testid="tenant-request-updates">
+              {item.updates.map((update) => (
+                <li key={update.id} className="rounded-md bg-muted p-2">
+                  {update.text}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </CardContent>
+      </Card>
+    </div>
   );
 }

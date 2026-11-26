@@ -399,6 +399,11 @@ describe('ComplianceSummaryWidget traffic light', () => {
     const rows = (await screen.findByTestId('compliance-tier-fine')).querySelectorAll<HTMLElement>('[data-testid="compliance-summary-row"]');
     // The server listed them green first and yellow before red: the page puts the red one first and keeps the green one out of the list.
     expect(rows).toHaveLength(2);
+    // Why the section matters is one click away, closed (UX round 2026-11): it no longer takes the room of the rows each time.
+    const why = screen.getByTestId('compliance-tier-fine-why');
+    expect(why.tagName).toBe('DETAILS');
+    expect(why).not.toHaveAttribute('open');
+    expect(why).toHaveTextContent('Perché conta');
     const [red, yellow] = Array.from(rows);
     expect(within(red).getByTestId('compliance-light')).toHaveAttribute('data-light', 'red');
     expect(within(red).getByTestId('compliance-light')).toHaveTextContent('Da fare');

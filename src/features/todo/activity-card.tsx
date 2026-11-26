@@ -1,9 +1,9 @@
 /* eslint-disable react-refresh/only-export-components -- ACTION_ROUTE_MAP (ADR-026-R6) is declared in this file and the task that raises a "To do" of a new action appends its entry here: fast refresh falls back to a full reload of this file, nothing else. */
 import { Link, generatePath } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { AlertCircle, AlertTriangle, Clock, Info, type LucideIcon } from 'lucide-react';
-import type { ActivityUrgency, TodoActivity } from '@/api/internal-activities.api';
-import { Badge, type BadgeProps } from '@/components/ui/badge';
+import { AlertCircle, Clock } from 'lucide-react';
+import type { TodoActivity } from '@/api/internal-activities.api';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { getManifestEntry, hasEntryPermission, type PermissionPredicate } from '@/config/route-manifest';
 import type { BookingTab } from '@/features/bookings/lib/booking-tabs';
@@ -353,12 +353,6 @@ export function todoActionRoute(activity: TodoRouteSubject, hasPermission?: Perm
   return null;
 }
 
-const URGENCY_STYLE: Record<ActivityUrgency, { variant: NonNullable<BadgeProps['variant']>; Icon: LucideIcon }> = {
-  High: { variant: 'destructive', Icon: AlertCircle },
-  Medium: { variant: 'warning', Icon: AlertTriangle },
-  Low: { variant: 'secondary', Icon: Info },
-};
-
 interface TodoActivityCardProps {
   activity: TodoActivity;
   /** The names of the host's properties, by id (the item carries the id only). */
@@ -369,6 +363,8 @@ interface TodoActivityCardProps {
    * such button: what cannot be checked is not offered).
    */
   hasPermission?: PermissionPredicate;
+  /** The card holds the one filled "Do now" of the page (the first card that has one, UX round 2026-11); the others are outlined. */
+  primary?: boolean;
 }
 
 /**
@@ -376,11 +372,10 @@ interface TodoActivityCardProps {
  * Completion follows the saved business state; this card cannot dismiss a deadline or unfinished process.
  * Manual staff work keeps its separate status controls in `components/activities/ActivityCard`.
  */
-export function TodoActivityCard({ activity, propertyNames, hasPermission }: TodoActivityCardProps) {
+export function TodoActivityCard({ activity, propertyNames, hasPermission, primary = false }: TodoActivityCardProps) {
   const { t, i18n } = useTranslation();
   const text = describeTodo(activity, { t, exists: (key) => i18n.exists(key), locale: i18n.language, propertyNames });
   const route = todoActionRoute(activity, hasPermission);
-  const { variant, Icon } = URGENCY_STYLE[text.urgency];
 
   return (
     <li
@@ -398,10 +393,14 @@ export function TodoActivityCard({ activity, propertyNames, hasPermission }: Tod
             {text.object}
           </p>
         </div>
-        <Badge variant={variant} className="gap-1" data-testid="todo-urgency">
-          <Icon aria-hidden="true" className="size-3.5 shrink-0" />
-          {text.urgencyLabel}
-        </Badge>
+        {/* Only what is urgent says so (UX round 2026-11): the list is already in the order of urgency, and a badge on every card
+            read as noise. The word is there, never the color alone. */}
+        {text.urgency === 'High' ? (
+          <Badge variant="destructive" className="gap-1" data-testid="todo-urgency">
+            <AlertCircle aria-hidden="true" className="size-3.5 shrink-0" />
+            {text.urgencyLabel}
+          </Badge>
+        ) : null}
       </div>
 
       {text.deadline ? (
@@ -423,7 +422,7 @@ export function TodoActivityCard({ activity, propertyNames, hasPermission }: Tod
 
       {route ? (
         <div className="flex flex-wrap gap-2">
-          <Button asChild size="sm" className="min-h-11 md:min-h-0">
+          <Button asChild size="sm" variant={primary ? 'default' : 'outline'} className="min-h-11 md:min-h-0">
             <Link to={route} aria-label={t('activity.todo.actions.doNowFor', { title: text.title })} data-testid="todo-do-now">
               {t('activity.todo.actions.doNow')}
             </Link>

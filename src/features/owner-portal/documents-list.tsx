@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Download, MessageSquare } from 'lucide-react';
-import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { ownerPortalApi } from '@/api/ownerPortal.api';
 import { formatStayDate } from '@/lib/stay-dates';
@@ -42,7 +41,7 @@ interface DocumentsListProps {
  */
 export function DocumentsList({ documents, emptyText, testId = 'owner-documents', headingAs: Heading = 'h3' }: DocumentsListProps) {
   const { t, i18n } = useTranslation();
-  const { download, busyKey, failure } = useOwnerDownload();
+  const { download, busyKey } = useOwnerDownload();
 
   if (documents.length === 0) {
     return (
@@ -73,7 +72,6 @@ export function DocumentsList({ documents, emptyText, testId = 'owner-documents'
       {documents.map((document) => {
         const primary = primaryVersion(document);
         const older = otherVersions(document);
-        const failed = failure && document.versions.some((version) => version.id === failure.key) ? failure : null;
         return (
           <li key={document.id} className="min-w-0 rounded-md border bg-card p-4" data-testid="owner-document">
             <div className="flex flex-wrap items-start justify-between gap-2">
@@ -156,12 +154,6 @@ export function DocumentsList({ documents, emptyText, testId = 'owner-documents'
                   ))}
                 </ul>
               </details>
-            ) : null}
-
-            {failed ? (
-              <Alert variant="danger" className="mt-3" data-testid="owner-document-download-failed">
-                {failed.message}
-              </Alert>
             ) : null}
           </li>
         );

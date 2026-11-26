@@ -101,6 +101,7 @@ const copy = {
   reviewAction: ['Scrivi una recensione', 'Write a review', 'Bewertung schreiben', 'Écrire un avis', 'Escribir una reseña'],
   review: ['Recensione', 'Review', 'Bewertung', 'Avis', 'Reseña'],
   rating: ['Valutazione', 'Rating', 'Bewertung', 'Note', 'Puntuación'],
+  ratingValue: ['{value} su 5', '{value} out of 5', '{value} von 5', '{value} sur 5', '{value} de 5'],
   comment: ['Commento facoltativo', 'Optional comment', 'Optionaler Kommentar', 'Commentaire facultatif', 'Comentario opcional'],
   showName: ['Mostra il mio nome', 'Show my first name', 'Meinen Vornamen anzeigen', 'Afficher mon prénom', 'Mostrar mi nombre'],
   reviewSubmitted: ['Recensione inviata.', 'Review submitted.', 'Bewertung gesendet.', 'Avis envoyé.', 'Reseña enviada.'],
@@ -348,7 +349,7 @@ function GuestPortalPage({ token }: { token: string }) {
               )}
             </div>
             {checkingIn ? (
-              stay.checkInAvailable ? <GuestCheckInFlow token={`stay_${token}`} embedded onCompleted={() => {
+              stay.checkInAvailable ? <GuestCheckInFlow token={`stay_${token}`} embedded next={{ href: href('guide'), label: text('openGuide') }} onCompleted={() => {
                 void queryClient.invalidateQueries({ queryKey: ['guest-portal', token] });
                 void queryClient.invalidateQueries({ queryKey });
               }} /> : <p className="stay-card">{text(overview?.checkInCompleted ? 'done' : 'checkInWait')}</p>
@@ -416,7 +417,7 @@ function GuestPortalPage({ token }: { token: string }) {
                 }} />
             ) : review ? (
               <GuestPortalReview path={path} onSubmitted={() => { void stayQuery.refetch(); }} labels={{
-                rating: text('rating'), comment: text('comment'), showName: text('showName'), send: text('send'),
+                rating: text('rating'), ratingValue: text('ratingValue'), comment: text('comment'), showName: text('showName'), send: text('send'),
                 loading: text('load'), failed: text('error'), submitted: text('reviewSubmitted'), unavailable: text('reviewUnavailable'),
               }} />
             ) : cancellation ? (
@@ -474,7 +475,8 @@ function GuestPortalPage({ token }: { token: string }) {
                   {stay.status !== 'cancelled' && <StaySectionLink to={href('chat')} icon={MessageCircle} label={text('chat')} detail={text(stay.chatOpen === false ? 'closedChat' : 'chatNote')} />}
                   <StaySectionLink to={href('documents')} icon={FileText} label={text('documents')} detail={text('documentsNote')} />
                   {phase === 'after' && <StaySectionLink to={href('privacy')} icon={ClipboardCheck} label={text('privacy')} />}
-                  {(phase !== 'after' || stay.checkInAvailable || overview?.checkInCompleted) && (
+                  {/* Once the stay is over a check-in that is done is no news: the row stays only while there is something to do in it. */}
+                  {(phase !== 'after' || (stay.checkInAvailable && !overview?.checkInCompleted)) && (
                     <StaySectionLink to={checkIn} icon={ClipboardCheck} label={text(overview?.checkInCompleted ? 'done' : 'checkInSection')} />
                   )}
                 </div>
