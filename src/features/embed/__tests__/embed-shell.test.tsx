@@ -417,7 +417,11 @@ describe('the states of the shell (AC7)', () => {
     expect(await screen.findByTestId('embed-not-found')).toBeInTheDocument();
     expect(screen.queryByTestId('embed-error')).not.toBeInTheDocument();
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
-    await waitFor(() => expect(robots()).toBe('noindex,nofollow'));
+    // The loading state before it had written a `noindex` already: the title is what says that the effect of THIS state ran.
+    await waitFor(() => {
+      expect(document.title).toBe(i18n.t('embed.notFound.title'));
+      expect(robots()).toBe('noindex,nofollow');
+    });
   });
 
   it('embedShell_Org404WithAnOlderAnswerInTheCache_IsStillNotFound', async () => {
@@ -438,7 +442,11 @@ describe('the states of the shell (AC7)', () => {
     const retry = await screen.findByRole('button', { name: i18n.t('shared.errorFallback.tryAgain') });
     expect(screen.getByTestId('embed-error')).toHaveAttribute('role', 'alert');
     expect(screen.queryByTestId('embed-not-found')).not.toBeInTheDocument();
-    await waitFor(() => expect(robots()).toBe('noindex,nofollow'));
+    // The loading state before it had written a `noindex` already: the title is what says that the effect of THIS state ran.
+    await waitFor(() => {
+      expect(document.title).toBe(i18n.t('embed.error.title'));
+      expect(robots()).toBe('noindex,nofollow');
+    });
 
     fireEvent.click(retry);
 
