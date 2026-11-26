@@ -62,8 +62,10 @@ jobs:
           tools: composer
           coverage: none
 
+      # A second try of the same command: the packages come from api.github.com, and a timeout there is the network, not the plugin. A real
+      # error (a package that does not exist) fails both tries, and both are in the log.
       - name: Install the PHP tools
-        run: composer install --no-interaction --prefer-dist --no-progress
+        run: composer install --no-interaction --prefer-dist --no-progress || composer install --no-interaction --prefer-dist --no-progress
 
       - name: PHP syntax (php -l)
         run: find . -name '*.php' -not -path './vendor/*' -not -path './node_modules/*' -print0 | xargs -0 -n1 php -l
@@ -116,9 +118,10 @@ jobs:
           tools: composer
           coverage: none
 
-      # PHPUnit 9.6 is resolved for PHP 7.4 through config.platform.php of composer.json, on both legs.
+      # PHPUnit 9.6 is resolved for PHP 7.4 through config.platform.php of composer.json, on both legs. A second try of the same command
+      # for the network (see the lint job): a real error fails both tries.
       - name: Install the PHP tools
-        run: composer install --no-interaction --prefer-dist --no-progress
+        run: composer install --no-interaction --prefer-dist --no-progress || composer install --no-interaction --prefer-dist --no-progress
 
       - name: Install the Node tools
         run: npm ci
@@ -126,8 +129,10 @@ jobs:
       - name: Build the blocks
         run: npm run build
 
+      # Up to three attempts (tests/start-wp-env.sh): the build of the images downloads PHPUnit from api.github.com inside Docker, where a
+      # timeout is the network of the runner and nothing the job can configure. A start that fails three times fails the job.
       - name: Start wp-env
-        run: npm exec --no -- wp-env start
+        run: bash tests/start-wp-env.sh
 
       - name: PHPUnit
         run: npm exec --no -- wp-env run tests-cli --env-cwd=wp-content/plugins/casazen vendor/bin/phpunit
@@ -181,8 +186,10 @@ jobs:
       - name: Build the blocks
         run: npm run build
 
+      # Up to three attempts (tests/start-wp-env.sh): the build of the images downloads PHPUnit from api.github.com inside Docker, where a
+      # timeout is the network of the runner and nothing the job can configure. A start that fails three times fails the job.
       - name: Start wp-env
-        run: npm exec --no -- wp-env start
+        run: bash tests/start-wp-env.sh
 
       - name: Smoke test
         run: bash tests/smoke/smoke.sh
