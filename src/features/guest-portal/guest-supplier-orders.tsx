@@ -65,8 +65,8 @@ export function GuestSupplierOrders({ path, language }: { path: string; language
     ? text.unavailable : text.failed}</p>;
 
   const sandbox = query.data.environment === 'stripe-sandbox';
-  const offers = sandbox ? query.data.offers.filter(offer => offer.priceCents !== null
-    && offer.priceCents + Math.round(offer.priceCents * offer.commissionBasisPoints / 10000) >= 50) : query.data.offers;
+  const offers = sandbox ? query.data.offers.filter(offer => offer.priceCents === null
+    || offer.priceCents + Math.round(offer.priceCents * offer.commissionBasisPoints / 10000) >= 50) : query.data.offers;
   return (
     <div className="stay-supplier-orders">
       <p className="stay-content">{sandbox ? checkoutText(language)('sandboxMode') : text.simulation}</p>
@@ -89,7 +89,7 @@ export function GuestSupplierOrders({ path, language }: { path: string; language
             <div><dt>{text.total}</dt><dd>{orderMoney(order.totalCents, language)}</dd></div>
             {order.refundCents > 0 && <div><dt>{text.refund}</dt><dd>{orderMoney(order.refundCents, language)}</dd></div>}
           </dl>}
-          {order.stripeSandbox && (order.state === 'Quoted' || returnId === order.id) && (
+          {order.stripeSandbox && (['Quoted', 'PaymentActionRequired', 'PaymentFailed', 'PaymentProcessing'].includes(order.state) || returnId === order.id) && (
             <GuestSupplierCheckout key={order.totalCents} endpoint={endpoint} order={order} language={language} returned={returnId === order.id} refresh={() => { void query.refetch(); }}
               update={verified => client.setQueryData<Catalog>(['guest-supplier-orders', endpoint], previous =>
                 previous && { ...previous, orders: previous.orders.map(item => item.id === verified.id ? verified : item) })} />
@@ -125,7 +125,7 @@ function OfferForm({ offer, language, sandbox, now, busy, submit }: {
     const data = new FormData(event.currentTarget);
     const requestedFor = romeWallTimeToUtc(String(data.get('date')), String(data.get('time')));
     const time = Date.parse(requestedFor);
-    if (!requestedFor || (sandbox && (time <= Date.now() || time > Date.now() + 48 * 3600000))) {
+    if (!requestedFor || (sandbox && time <= Date.now())) {
       setInvalidTime(true);
       return;
     }
@@ -145,7 +145,7 @@ function OfferForm({ offer, language, sandbox, now, busy, submit }: {
         <p>{offer.category} · {offer.supplierName}</p>
         {offer.summary && <p>{offer.summary}</p>}
         <label>{text.date} <input className="stay-supplier-input" type="date" name="date" min={sandbox ? romeDateOf(new Date(now).toISOString()) : undefined}
-          max={sandbox ? romeDateOf(new Date(now + 48 * 3600000).toISOString()) : undefined} required /></label>
+          required /></label>
         <label>{text.time} <input className="stay-supplier-input" type="time" name="time" required /></label>
         {invalidTime && <p role="alert">{sandbox ? checkoutText(language)('sandboxTime') : text.invalidTime}</p>}
         <label>{text.note} <textarea className="stay-supplier-input" name="note" maxLength={2000} /></label>

@@ -104,7 +104,7 @@ export function GuestSupplierOperations({ scope }: { scope: Scope }) {
                 send={(priceCents) => transition('quote', { priceCents })} />}
               <div className="flex flex-wrap gap-2">
                 {['Authorized', 'CardSaved'].includes(order.state) && <Button disabled={change.isPending} onClick={() => transition('accept')}>Accetta ordine</Button>}
-                {['PendingQuote', 'Quoted', 'Authorized', 'CardSaved'].includes(order.state) && <Button variant="outline"
+                {['PendingQuote', 'Quoted', 'Authorized', 'CardSaved', 'PaymentFailed', 'PaymentActionRequired'].includes(order.state) && <Button variant="outline"
                   disabled={change.isPending} onClick={() => transition('decline')}>Rifiuta ordine</Button>}
                 {order.state === 'Accepted' && <Button disabled={change.isPending} onClick={() => transition('complete')}>Completa servizio</Button>}
               </div>

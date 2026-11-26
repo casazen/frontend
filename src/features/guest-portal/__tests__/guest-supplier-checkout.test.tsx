@@ -62,6 +62,32 @@ describe('guest supplier sandbox checkout', () => {
     expect(ApiClient.post).toHaveBeenCalledTimes(2);
   });
 
+  it('requires explicit consent for the quoted amount and saves a card without charging', async () => {
+    vi.mocked(ApiClient.get).mockResolvedValue({ ...response, orders: [{ ...order, stripeDeferred: true }] });
+    vi.mocked(ApiClient.post).mockResolvedValueOnce({ ...checkout, mode: 'setup' })
+      .mockResolvedValueOnce({ ...order, stripeDeferred: true, state: 'CardSaved' });
+    show();
+    const button = await screen.findByRole('button', { name: 'Save test card' });
+    expect(button).toBeDisabled();
+    fireEvent.click(screen.getByRole('checkbox', { name: /single charge.*11.*Acme/i }));
+    fireEvent.click(button);
+    fireEvent.click(await screen.findByText('Confirm with Stripe'));
+    expect(await screen.findByText(/Test card saved/i)).toBeVisible();
+    expect(ApiClient.post).toHaveBeenNthCalledWith(1, base + '/o1/checkout',
+      { totalCents: 1100, consentVersion: 'guest-service-order-off-session-v1' }, { public: true });
+  });
+
+  it('reopens the existing payment after a declined off-session charge', async () => {
+    vi.mocked(ApiClient.get).mockResolvedValue({ ...response, orders: [{ ...order, stripeDeferred: true, state: 'PaymentFailed' }] });
+    vi.mocked(ApiClient.post).mockResolvedValueOnce({ ...checkout, mode: 'payment' })
+      .mockResolvedValueOnce({ ...order, stripeDeferred: true, state: 'Accepted' });
+    show();
+    fireEvent.click(await screen.findByRole('button', { name: 'Confirm payment' }));
+    fireEvent.click(await screen.findByText('Confirm with Stripe'));
+    expect(await screen.findByText(/Acme.*Booked/i)).toBeVisible();
+    expect(ApiClient.post).toHaveBeenCalledTimes(2);
+  });
+
   it('never mounts Stripe with a live publishable key in the sandbox', async () => {
     vi.mocked(ApiClient.post).mockResolvedValue({ ...checkout, publishableKey: 'pk_live_example' });
     show();

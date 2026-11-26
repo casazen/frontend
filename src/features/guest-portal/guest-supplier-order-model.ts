@@ -13,6 +13,7 @@ export interface GuestSupplierOrder {
   refundCents: number;
   hostOrigin: boolean;
   stripeSandbox?: boolean;
+  stripeDeferred?: boolean;
   requestNote: string | null;
   complaint: string | null;
   supplierReply: string | null;
@@ -23,7 +24,7 @@ export interface GuestSupplierOrder {
 export const GUEST_ORDER_REFRESH_MS = 15_000;
 
 export function orderNeedsUpdates(order: GuestSupplierOrder): boolean {
-  return ['PendingQuote', 'Quoted', 'Authorized', 'CardSaved', 'Accepted', 'Disputed'].includes(order.state);
+  return ['PendingQuote', 'Quoted', 'Authorized', 'CardSaved', 'PaymentActionRequired', 'PaymentFailed', 'PaymentProcessing', 'Accepted', 'Disputed'].includes(order.state);
 }
 
 export const orderStatus = (state: string, language = 'it') => supplierOrderState(state, language);
