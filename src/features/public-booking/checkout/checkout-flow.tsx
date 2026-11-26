@@ -154,11 +154,11 @@ export function CheckoutFlow({ org, orgSlug, draft, onDraft }: CheckoutFlowProps
         </div>
 
         <aside className="co__aside" aria-label={t('publicCheckout.summary.title')}>
-          <StaySummary mode={draft.mode} onEdit={editStay} />
+          <StaySummary mode={draft.mode} extras={draft.extras} onEdit={editStay} />
         </aside>
       </div>
 
-      <SummaryBar mode={draft.mode} onEdit={editStay} />
+      <SummaryBar mode={draft.mode} extras={draft.extras} onEdit={editStay} />
 
       <footer className="co-foot" data-testid="checkout-footer">
         <span>

@@ -24083,6 +24083,14 @@
     "termsNote": "Leggi anche i <terms>termini di prenotazione</terms> dell'operatore."
   },
   "publicCheckout": {
+    "extras": {
+      "changed": "La disponibilità o il prezzo degli extra è cambiato. Controlla la selezione prima di continuare.",
+      "review": "Aggiorna la selezione",
+      "title": "Extra facoltativi",
+      "quantity": "Quantità",
+      "approval": "Autorizza la carta nel portale ospite. Pagherai solo se l’host conferma.",
+      "portal": "Da pagare nel portale ospite dopo la conferma della prenotazione."
+    },
     "backToHome": "Torna alla casa",
     "details": {
       "arrivalHint": "Check-in dalle {{from}} alle {{to}}",
