@@ -297,7 +297,7 @@ class Renderer {
 		$map   = self::attribute_map();
 		$clean = array();
 		foreach ( $map[ $widget ] as $name => $definition ) {
-			$value           = array_key_exists( $name, $atts ) ? self::clean_value( $name, $definition['type'], $atts[ $name ] ) : null;
+			$value          = array_key_exists( $name, $atts ) ? self::clean_value( $name, $definition['type'], $atts[ $name ] ) : null;
 			$clean[ $name ] = null === $value ? $definition['default'] : $value;
 		}
 		return $clean;

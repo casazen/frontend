@@ -50,7 +50,7 @@ if ( is_multisite() ) {
 			restore_current_blog();
 		}
 		$casazen_offset += 100;
-	} while ( 100 === count( $casazen_site_ids ) );
+	} while ( isset( $casazen_site_ids[99] ) ); // A full page of 100 sites: there may be more.
 } else {
 	$casazen_uninstall_site();
 }

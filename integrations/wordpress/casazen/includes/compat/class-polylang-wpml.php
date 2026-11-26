@@ -60,7 +60,7 @@ class Polylang_Wpml {
 		}
 
 		if ( defined( 'ICL_SITEPRESS_VERSION' ) ) {
-			$code = apply_filters( 'wpml_current_language', null );
+			$code = apply_filters( 'wpml_current_language', null ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- a filter of WPML, not a hook of this plugin.
 			return ( is_string( $code ) && '' !== $code && 'all' !== $code ) ? $code : null;
 		}
 
@@ -84,7 +84,7 @@ class Polylang_Wpml {
 		if ( function_exists( 'pll_get_post' ) ) {
 			$translated = pll_get_post( $page_id, $language );
 		} elseif ( defined( 'ICL_SITEPRESS_VERSION' ) ) {
-			$translated = apply_filters( 'wpml_object_id', $page_id, 'page', true, $language );
+			$translated = apply_filters( 'wpml_object_id', $page_id, 'page', true, $language ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- a filter of WPML, not a hook of this plugin.
 		} else {
 			return $page_id;
 		}
