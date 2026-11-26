@@ -8,7 +8,8 @@ import { senderWizardPath } from '@/features/compliance/lib/connection-health-mo
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import type { PropertyDetailDto } from '@/types';
-import { DirectPortalActivation, useDirectRoutes } from './direct-portal-activation';
+import { useDirectRoutes } from '@/queries/use-direct-routes';
+import { DirectPortalActivation } from './direct-portal-activation';
 import { ComoStayTourReport } from '@/features/reports/tourist-tax/como-staytour-report';
 import { QuesturaCredentialsCard } from './questura-credentials-card';
 

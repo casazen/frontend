@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { isAxiosError } from 'axios';
 import { ApiClient } from '@/api/client';
@@ -8,21 +8,7 @@ import { delegationTextKey } from '@/features/compliance/sender-wizard/sender-wi
 import { useTestConnection } from '@/queries/use-property-sender';
 import { getProblemCode } from '@/lib/api-errors';
 
-export type DirectService = 'alloggiati' | 'istat';
-interface DirectRoutes {
-  effectiveFrom: Record<DirectService, string | null>;
-  alloggiatiAvailable: boolean;
-  istatAvailable: boolean;
-  istatSupported: boolean;
-  delegationVersion: string;
-}
-
-const route = (id: string) => `/properties/${encodeURIComponent(id)}/institutional-routes`;
-const key = (id: string) => ['institutional-routes', id] as const;
-
-export function useDirectRoutes(id: string) {
-  return useQuery({ queryKey: key(id), queryFn: () => ApiClient.get<DirectRoutes>(route(id)) });
-}
+import { directRoutesKey, directRoutesPath, type DirectService, type DirectRoutes } from '@/queries/use-direct-routes';
 
 export function DirectPortalActivation({ propertyId, service, routes, canWrite }: {
   propertyId: string; service: DirectService; routes: DirectRoutes; canWrite: boolean;
@@ -37,11 +23,11 @@ export function DirectPortalActivation({ propertyId, service, routes, canWrite }
   const consentKey = delegationTextKey(routes.delegationVersion);
   const needsConsent = service === 'alloggiati';
   const mutation = useMutation({
-    mutationFn: () => ApiClient.put<DirectRoutes>(`${route(propertyId)}/${service}`, {
+    mutationFn: () => ApiClient.put<DirectRoutes>(`${directRoutesPath(propertyId)}/${service}`, {
       previousSendersDisabled: disabled, periodReconciled: reconciled, delegationVersion: needsConsent ? consentVersion : null,
     }),
     onSuccess: (value) => {
-      cache.setQueryData(key(propertyId), value);
+      cache.setQueryData(directRoutesKey(propertyId), value);
       void cache.invalidateQueries({ predicate: (query) => query.queryKey.includes(propertyId) });
       setConfirming(false);
     },
