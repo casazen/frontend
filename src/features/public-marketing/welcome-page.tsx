@@ -280,15 +280,16 @@ function WelcomeForm({ page, version, submit }: WelcomeFormProps) {
  * Public and never behind the CRM flag (a code already printed must keep working), not indexed, with no menu and no analytics.
  */
 export function WelcomePage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const language = i18n.language.split('-')[0];
   const { token = '' } = useParams<{ token: string }>();
   useSeoMeta({ title: t('marketing.welcome.pageTitle'), noindex: true });
   const page = useWelcomePage(token);
   const { flags } = useFeatureFlags();
   const houseGuide = useQuery({
-    queryKey: ['public-house-guide', token],
+    queryKey: ['public-house-guide', token, language],
     queryFn: () => ApiClient.get<{ guide: HouseGuide; orgSlug: string; houseRules: string }>(
-      `/public/welcome/${encodeURIComponent(token)}/guide`, undefined, { public: true },
+      `/public/welcome/${encodeURIComponent(token)}/guide`, { language }, { public: true },
     ),
     enabled: flags.guestPortal && page.isSuccess,
     retry: false,

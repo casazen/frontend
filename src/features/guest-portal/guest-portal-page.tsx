@@ -175,7 +175,6 @@ export function GuestPortalEntry({ hostOnly = false }: { hostOnly?: boolean }) {
 function GuestPortalPage({ token }: { token: string }) {
   const [params, setParams] = useSearchParams();
   const path = `/public/guest-portal/${token}`;
-  const queryKey = ['guest-portal-details', token];
   const queryClient = useQueryClient();
   const query = useQuery({
     queryKey: ['guest-portal', token],
@@ -183,14 +182,18 @@ function GuestPortalPage({ token }: { token: string }) {
     gcTime: 0,
     retry: false,
   });
+  const overview = query.data;
+  const language = supportedLanguage(params.get('lang')) ?? supportedLanguage(overview?.language)
+    ?? supportedLanguage(navigator.language) ?? 'it';
+  const guideLanguage = params.get('page') === 'guide' ? language : undefined;
+  const queryKey = ['guest-portal-details', token, guideLanguage];
   const stayQuery = useQuery({
     queryKey,
-    queryFn: ({ signal }) => ApiClient.get<StayDetails>(`${path}/stay`, undefined, { public: true, signal }),
+    queryFn: ({ signal }) => ApiClient.get<StayDetails>(`${path}/stay`, guideLanguage ? { guideLanguage } : undefined, { public: true, signal }),
     enabled: query.isSuccess,
     gcTime: 0,
     retry: false,
   });
-  const overview = query.data;
   const stay = overview && stayQuery.data ? { ...overview.stay, ...stayQuery.data } : null;
   const failed = query.isError ? query.error : stayQuery.error;
   const { flags } = useFeatureFlags();
@@ -203,8 +206,6 @@ function GuestPortalPage({ token }: { token: string }) {
   const taxAvailable = guestTaxAvailability({ ...tax, enabled: taxEnabled, hasData: tax.data !== undefined }) === 'ready';
   const shouldPayTax = taxAvailable && tax.data && guestTaxOutlook(tax.data) === 'payable';
   const nextStep = shouldPayTax ? 'payTax' : overview?.checkInCompleted ? 'guide' : 'complete';
-  const language = supportedLanguage(params.get('lang')) ?? supportedLanguage(overview?.language)
-    ?? supportedLanguage(navigator.language) ?? 'it';
   const text = (key: keyof typeof copy) => copy[key][languages.indexOf(language)];
   const section = params.get('page');
   const checkingIn = section === 'checkin';
