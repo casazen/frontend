@@ -25,7 +25,8 @@ import type { HouseGuide } from './house-guide-fields';
 import { GuestPortalCancellation } from './guest-portal-cancellation';
 import { GuestPortalStayChange } from './guest-portal-stay-change';
 import { useStayManifest } from './use-stay-manifest';
-import { guestAccountStaysPath, rememberStayForAccount } from './guest-account-stays-page';
+import { rememberStayForAccount } from './guest-account-attachment';
+import { guestAccountStaysPath } from './guest-account-stays-page';
 import { GuestPortalPrivacy } from './guest-portal-privacy';
 import './guest-portal.css';
 
