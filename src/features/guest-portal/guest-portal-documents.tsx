@@ -1,4 +1,5 @@
-import { GuestSupplierFiles, useGuestSupplierFiles } from './guest-supplier-files';
+import { useGuestSupplierFiles } from './use-guest-supplier-files';
+import { GuestSupplierFiles } from './guest-supplier-files';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ApiClient } from '@/api/client';
 import axios from '@/lib/axios';

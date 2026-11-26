@@ -3,10 +3,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { ApiClient } from '@/api/client';
 import axios from '@/lib/axios';
-import { getHttpStatus } from '@/lib/api-errors';
-
-interface SupplierFile { id: string; fileName: string; uploadedAt: string }
-interface ServiceFiles { id: string; serviceName: string; supplierName: string; documents: SupplierFile[] }
+import type { ServiceFiles, SupplierFile } from './use-guest-supplier-files';
 
 const labels = {
   it: { title: 'Documenti dei servizi', receipt: 'Ricevuta del pagamento', upload: 'Carica PDF', file: 'Documento del fornitore (PDF, massimo 8 MB)', saved: 'Documento disponibile all’ospite.', failed: 'Operazione non riuscita. Riprova.', invalid: 'Scegli un PDF fino a 8 MB.' },
@@ -17,18 +14,6 @@ const labels = {
 };
 function copy(language = 'it') {
   return labels[language.toLowerCase().split('-')[0] as keyof typeof labels] ?? labels.en;
-}
-
-export function useGuestSupplierFiles(endpoint: string) {
-  return useQuery({
-    queryKey: ['guest-service-documents', endpoint],
-    queryFn: async ({ signal }) => {
-      try { return await ApiClient.get<ServiceFiles[]>(`${endpoint}/supplier-services`, undefined, { public: true, signal }); }
-      catch (error) { if (getHttpStatus(error) === 404) return []; throw error; }
-    },
-    retry: false,
-    gcTime: 0,
-  });
 }
 
 export function GuestSupplierFiles({ endpoint, language, orders }: { endpoint: string; language: string; orders: ServiceFiles[] }) {
