@@ -1,5 +1,15 @@
 {
   "institutionalPortals": {
+    "directSince": "CasaZen sends directly from {{date}}",
+    "chooseDirect": "Set up direct submission",
+    "cutoverTitle": "Switch to CasaZen",
+    "cutoverHint": "Switching stops all government submissions through Octorate for this property. Handle the other service manually until you activate it.",
+    "disabled": "I have disabled previous automatic submissions, including any forwarding from ROSS1000 to the police.",
+    "reconciled": "I have reconciled earlier dates. Today's records for this service still need to be submitted.",
+    "activate": "Activate CasaZen from today",
+    "delegation": "Accept the transmission delegation before activating Alloggiati Web.",
+    "activationFailed": "Activation failed. Check the credentials and submission status before retrying.",
+    "routeError": "Unable to read the sender for this property.",
     "ross1000": "ROSS1000 · Lombardy",
     "title": "Government portals",
     "sender": "Configure sender and submission",

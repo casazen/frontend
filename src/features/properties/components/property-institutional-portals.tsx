@@ -7,12 +7,16 @@ import { senderWizardPath } from '@/features/compliance/lib/connection-health-mo
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWorkspace } from '@/hooks/use-workspace';
 import type { PropertyDetailDto } from '@/types';
+import { DirectPortalActivation, useDirectRoutes } from './direct-portal-activation';
 import { QuesturaCredentialsCard } from './questura-credentials-card';
 
 export function PropertyInstitutionalPortals({ property, canWrite }: { property: PropertyDetailDto; canWrite: boolean }) {
   const { t } = useTranslation();
   const { flags } = useFeatureFlags();
   const { hasPermission } = useWorkspace();
+  const routes = useDirectRoutes(property.id);
+  const direct = routes.isSuccess ? routes.data : undefined;
+  const migrated = Boolean(direct?.effectiveFrom.alloggiati || direct?.effectiveFrom.istat);
   const senderPath = canWrite ? senderWizardPath(property.id, hasPermission) : null;
   const canReadReport = hasPermission('short-rent', 'payment.read');
   const isComo = property.comuneIstatCode
@@ -24,17 +28,20 @@ export function PropertyInstitutionalPortals({ property, canWrite }: { property:
     <section aria-label={t('institutionalPortals.title')} className="space-y-4">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-xl font-semibold">{t('institutionalPortals.title')}</h2>
-        {senderPath && <Button asChild variant="outline"><Link to={senderPath}>{t('institutionalPortals.sender')}</Link></Button>}
+        {!migrated && senderPath && <Button asChild variant="outline"><Link to={senderPath}>{t('institutionalPortals.sender')}</Link></Button>}
       </header>
+      {routes.isError && <p role="alert">{t('institutionalPortals.routeError')} <Button variant="ghost" onClick={() => void routes.refetch()}>{t('questuraCredentials.retry')}</Button></p>}
       <div className={panelClass}>
         <QuesturaCredentialsCard propertyId={property.id} canEdit={canWrite} />
-        <ComplianceDrawerButton target={{ topic: 'Alloggiati', propertyId: property.id }} subject="Alloggiati Web" />
+        {direct && <DirectPortalActivation propertyId={property.id} service="alloggiati" routes={direct} canWrite={canWrite} />}
+        {!migrated && <ComplianceDrawerButton target={{ topic: 'Alloggiati', propertyId: property.id }} subject="Alloggiati Web" />}
       </div>
-      {flags.octorateOnboarding && (
+      {(flags.octorateOnboarding || direct?.istatSupported || direct?.effectiveFrom.istat) && (
         <div className={panelClass}>
           {property.regionCode === 'LOM' && <p className="text-sm font-medium">{t('institutionalPortals.ross1000')}</p>}
           <IstatCredentialsCard propertyId={property.id} canEdit={canWrite} />
-          <ComplianceDrawerButton target={{ topic: 'Istat', propertyId: property.id }} subject="ISTAT" />
+          {direct && <DirectPortalActivation propertyId={property.id} service="istat" routes={direct} canWrite={canWrite} />}
+          {!migrated && <ComplianceDrawerButton target={{ topic: 'Istat', propertyId: property.id }} subject="ISTAT" />}
         </div>
       )}
       <div className={panelClass}>

@@ -1,5 +1,15 @@
 {
   "institutionalPortals": {
+    "directSince": "CasaZen invia direttamente dal {{date}}",
+    "chooseDirect": "Configura invio diretto",
+    "cutoverTitle": "Passaggio a CasaZen",
+    "cutoverHint": "Il passaggio interrompe tutti gli invii istituzionali tramite Octorate per questa struttura. Gestisci manualmente l’altro adempimento fino alla sua attivazione.",
+    "disabled": "Ho disattivato gli invii automatici precedenti, compreso l’eventuale inoltro alla Questura da ROSS1000.",
+    "reconciled": "Ho riconciliato i giorni precedenti. I dati di oggi di questo servizio devono ancora essere trasmessi.",
+    "activate": "Attiva CasaZen da oggi",
+    "delegation": "Per Alloggiati Web occorre prima accettare la delega alla trasmissione.",
+    "activationFailed": "Attivazione non riuscita. Controlla le credenziali e lo stato degli invii prima di riprovare.",
+    "routeError": "Impossibile leggere il mittente della struttura.",
     "ross1000": "ROSS1000 · Lombardia",
     "title": "Portali istituzionali",
     "sender": "Configura mittente e invio",
