@@ -185,6 +185,10 @@ const axiosInstance: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  // The API takes a bearer token and never a cookie, so there is no XSRF token to look for. Left on, axios reads `document.cookie` for one on every request to the origin
+  // of the page (an API under the host of the page: the dev server, the L2 suite, the cross-origin proof of the widgets), and a page of `/embed/*` reads no cookie
+  // (NF-144, AC-NF144-3): where the browser refuses the cookie that read throws and takes every request with it, the widget never loads.
+  withXSRFToken: false,
 });
 
 async function handleResponseError(error: unknown): Promise<AxiosResponse> {
