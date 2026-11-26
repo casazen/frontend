@@ -537,6 +537,7 @@ export interface SupplierPickerService {
 export type SupplierPickerSort = 'recommended' | 'name' | 'price' | 'response';
 
 export interface SupplierPicker {
+  hostOrigin?: boolean;
   orgId: string;
   legalName: string;
   phone: string;

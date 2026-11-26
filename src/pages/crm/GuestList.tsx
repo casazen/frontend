@@ -202,7 +202,7 @@ export default function GuestList() {
           testId="crm-profiles"
           footer={
             data && totalCount > 0 ? (
-              <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card p-3">
                 <p role="status" className="text-sm text-foreground/70" data-testid="crm-count">
                   {t('crm.list.count', { count: totalCount })}
                 </p>

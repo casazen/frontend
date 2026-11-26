@@ -81,6 +81,16 @@ describe('Pagamenti of the long-term landlord', () => {
     expect(get.mock.calls.some(([url]) => String(url).includes('/leases'))).toBe(false);
   });
 
+  it('reports a failed manual payment register on the first visit', async () => {
+    permissions.add('property.read');
+    get.mockImplementation(async (url) => {
+      if (String(url).endsWith('/manual-payments')) throw new Error('Unavailable');
+      return { data: [] };
+    });
+    renderPage();
+    expect(await screen.findByText(i18n.t('tenantSepa.error'))).toHaveAttribute('role', 'alert');
+  });
+
   it('requires property.read to list manual condominium dues', () => {
     expect(ROUTE_MANIFEST.find((route) => route.path === PATH)?.requiredPermissions).toEqual(['property.read']);
   });

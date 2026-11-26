@@ -18,6 +18,7 @@ vi.mock('@/api/checkin.api', () => ({
     postBiometricConsent: vi.fn(),
     postDocument: vi.fn(),
     postSelfie: vi.fn(),
+    startSelfieChallenge: vi.fn(),
     requestOperator: vi.fn(),
   },
 }));
@@ -146,14 +147,23 @@ function stubRedraw() {
   });
 }
 
-async function takeAndSendSelfie() {
+async function takeAndConfirmPhoto() {
   await waitFor(() => expect(screen.getByTestId('selfie-take')).toBeEnabled());
   fireEvent.click(screen.getByTestId('selfie-take'));
   fireEvent.click(await screen.findByTestId('selfie-send'));
 }
 
+async function takeAndSendSelfie() {
+  await takeAndConfirmPhoto();
+  await screen.findByText(i18n.t('checkin.biometric.capture.turnRight'));
+  await takeAndConfirmPhoto();
+}
+
 beforeEach(async () => {
   vi.clearAllMocks();
+  vi.mocked(publicCheckinApi.startSelfieChallenge).mockResolvedValue({
+    challengeToken: 'test-challenge', noseToRight: true, expiresAt: new Date(Date.now() + 120_000).toISOString(),
+  });
   vi.mocked(publicCheckinApi.getLegalTexts).mockResolvedValue(servedTexts());
   await i18n.changeLanguage('it');
 });
@@ -545,6 +555,17 @@ describe('IdentityStep: the selfie (AC-NF50-1, ADR-013-R11, R12)', () => {
     expect(stop).toHaveBeenCalled();
   });
 
+  it('offers a human and keeps the code hidden if a challenge cannot be issued', async () => {
+    stubCamera();
+    vi.mocked(publicCheckinApi.startSelfieChallenge).mockRejectedValueOnce(new Error('unavailable'));
+    renderStep(selfieState);
+    await takeAndConfirmPhoto();
+    expect(await screen.findByText(i18n.t('checkin.biometric.capture.challengeFailed'))).toBeVisible();
+    expect(screen.getByRole('button', { name: i18n.t('checkin.identity.operator.ask') })).toBeEnabled();
+    expect(publicCheckinApi.postSelfie).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('identity-lock-code')).toBeNull();
+  });
+
   it('IdentityStep_SelfieThatPassed_ShowsTheLockCodeInLargeTextAndSaysItIsAlsoSentByEmail', async () => {
     stubCamera();
     vi.mocked(publicCheckinApi.postSelfie).mockResolvedValue({ result: 'ok', guidanceCodes: [], attemptsRemaining: 2, operatorPathOpen: true, lockCode: '4821' });
@@ -882,6 +903,8 @@ describe('IdentityStep: the camera and the picture are let go (ADR-013-R2, R11)'
     stubCamera();
     vi.mocked(publicCheckinApi.postSelfie).mockResolvedValue({ result: 'ok', guidanceCodes: [], attemptsRemaining: 2, operatorPathOpen: true, lockCode: '4821' });
     renderStep(selfieState);
+    await takeAndConfirmPhoto();
+    await screen.findByText(i18n.t('checkin.biometric.capture.turnRight'));
     const canvas = await takePicture();
 
     fireEvent.click(await screen.findByTestId('selfie-send'));
@@ -896,6 +919,8 @@ describe('IdentityStep: the camera and the picture are let go (ADR-013-R2, R11)'
     stubCamera();
     vi.mocked(publicCheckinApi.postSelfie).mockRejectedValue(httpError(undefined, undefined, AxiosError.ERR_NETWORK));
     renderStep(selfieState);
+    await takeAndConfirmPhoto();
+    await screen.findByText(i18n.t('checkin.biometric.capture.turnRight'));
     const canvas = await takePicture();
 
     fireEvent.click(await screen.findByTestId('selfie-send'));

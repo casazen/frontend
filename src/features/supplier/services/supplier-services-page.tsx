@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { Eye, Plus, Store, Tag } from 'lucide-react';
-import { PageHeader } from '@/components/layout/page-header';
+import { Tags, Eye, Plus, Store, Tag } from 'lucide-react';
+import { ServicePageHeader } from '@/features/supplier/components/service-page-header';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
 import { ListView } from '@/components/shared/list-view/list-view';
@@ -55,7 +55,8 @@ export function SupplierServicesPage() {
   const list = useServicesList({ atLimit, busy: actions.busy, onPublish: actions.publishService, onPause: actions.pauseService, onDelete: actions.askDelete });
 
   const header = (
-    <PageHeader
+    <ServicePageHeader
+        icon={Tags}
       title={t(`${T}.title`)}
       description={t(`${T}.description`)}
       crumbs="auto"

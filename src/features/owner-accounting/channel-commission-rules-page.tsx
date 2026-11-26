@@ -96,39 +96,43 @@ function ChannelCommissionRulesBody() {
     );
   } else {
     content = (
-      <form onSubmit={(event) => void onSubmit(event)} noValidate className="grid gap-4" data-testid="channel-rules-form">
-        <CommissionPercentsEditor
-          set={set}
-          typed={typed}
-          onChange={(channel, value) => {
-            setFailure(null);
-            setTyped((current) => ({ ...current, [channel]: value }));
-          }}
-          errorOf={(channel) => problems[channel]}
-          disabled={save.isPending}
-        />
-        <Field label={t('ownerAccounting.channelRules.fromLabel')} hint={t('ownerAccounting.channelRules.fromHint')} error={fromProblem} className="sm:max-w-xs">
-          <Input
-            type="date"
-            value={from}
-            onChange={(event) => {
+      <form onSubmit={(event) => void onSubmit(event)} noValidate className="grid items-start gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(16rem,1fr)]" data-testid="channel-rules-form">
+        <div className="rounded-2xl border bg-card p-4 sm:p-6">
+          <CommissionPercentsEditor
+            set={set}
+            typed={typed}
+            onChange={(channel, value) => {
               setFailure(null);
-              setFrom(event.target.value);
+              setTyped((current) => ({ ...current, [channel]: value }));
             }}
+            errorOf={(channel) => problems[channel]}
             disabled={save.isPending}
-            data-testid="channel-rules-from"
           />
-        </Field>
-        {failure ? (
-          <Alert variant="danger" data-testid="channel-rules-error">
-            {failure}
-          </Alert>
-        ) : null}
-        <div className="flex flex-wrap items-center gap-3">
-          <Button type="submit" loading={save.isPending} disabled={request === null || invalid} data-testid="channel-rules-save">
-            {t('ownerAccounting.channelRules.save')}
-          </Button>
-          {request === null && !invalid ? <p className="text-sm text-foreground/70">{t('ownerAccounting.channelRules.noChange')}</p> : null}
+        </div>
+        <div className="space-y-4 rounded-2xl border border-primary/25 bg-primary/5 p-4 sm:p-6">
+          <Field label={t('ownerAccounting.channelRules.fromLabel')} hint={t('ownerAccounting.channelRules.fromHint')} error={fromProblem} className="w-full">
+            <Input
+              type="date"
+              value={from}
+              onChange={(event) => {
+                setFailure(null);
+                setFrom(event.target.value);
+              }}
+              disabled={save.isPending}
+              data-testid="channel-rules-from"
+            />
+          </Field>
+          {failure ? (
+            <Alert variant="danger" data-testid="channel-rules-error">
+              {failure}
+            </Alert>
+          ) : null}
+          <div className="flex flex-wrap items-center gap-3">
+            <Button type="submit" loading={save.isPending} disabled={request === null || invalid} data-testid="channel-rules-save">
+              {t('ownerAccounting.channelRules.save')}
+            </Button>
+            {request === null && !invalid ? <p className="text-sm text-foreground/70">{t('ownerAccounting.channelRules.noChange')}</p> : null}
+          </div>
         </div>
       </form>
     );

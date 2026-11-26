@@ -249,7 +249,7 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
       renderNav('/app/short-rent');
 
       expect(screen.queryByRole('button', { name: 'Altro' })).not.toBeInTheDocument();
-      for (const name of ['Coda di approvazione', 'Da fare', 'Organizzazione', 'Impostazioni', 'Consiglia CasaZen', 'Inizia con CasaZen']) {
+      for (const name of ['Coda di approvazione', 'Da fare', 'Organizzazione', 'Impostazioni', 'Inizia con CasaZen']) {
         expect(screen.queryByRole('link', { name }), name).not.toBeInTheDocument();
       }
     });
@@ -306,10 +306,8 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
       ['/app/short-rent/payments/revenue', 'Incassi'],
       ['/app/short-rent/documents', 'Incassi'],
       ['/app/short-rent/fiscal', 'Incassi'],
-      ['/app/short-rent/settings/payments', 'Incassi'],
       ['/app/short-rent/channels', 'Immobili'],
       ['/app/short-rent/interventions', 'Immobili'],
-      ['/app/short-rent/settings/domain', 'Sito di prenotazione'],
     ])('GroupedNavLinks_TabOfASection_%s_MarksTheEntryOfTheSection_%s', (path, entry) => {
       renderNav(path);
 
@@ -385,7 +383,6 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
       expect(within(screen.getByTestId('nav-more')).getAllByRole('link').map((item) => item.textContent)).toEqual([
         'Documenti',
         'Regime fiscale',
-        'Stripe Connect',
       ]);
     });
   });
@@ -405,9 +402,8 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
 
       expect(within(screen.getByTestId('nav-footer')).getAllByRole('link').map((item) => item.textContent)).toEqual([
         'Impostazioni',
-        'Consiglia CasaZen',
       ]);
-      expect(link('Impostazioni')).toHaveAttribute('href', '/app/short-rent/settings/organization');
+      expect(link('Impostazioni')).toHaveAttribute('href', '/app/short-rent/settings');
       expect(link('Impostazioni')).not.toHaveAttribute('aria-current');
     });
 
@@ -504,7 +500,7 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
       // Entries of the bar are left out; the others are all there.
       expect(screen.queryByRole('link', { name: 'Cruscotto' })).not.toBeInTheDocument();
       expect(screen.queryByRole('link', { name: 'Prenotazioni' })).not.toBeInTheDocument();
-      for (const name of ['Sito di prenotazione', 'Marketplace', 'Incassi', 'Impostazioni', 'Consiglia CasaZen']) {
+      for (const name of ['Sito di prenotazione', 'Marketplace', 'Incassi', 'Impostazioni']) {
         expect(link(name)).toBeVisible();
       }
       // The pages of a section are its tabs, and Profilo is in the account block of the sheet: none is a tile.
@@ -514,16 +510,14 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
       expect(screen.queryByRole('button', { name: 'Altro' })).not.toBeInTheDocument();
     });
 
-    it('GroupedNavLinks_Sheet_DrawsTilesInTwoColumnsNotARowPerEntry', () => {
+    it('GroupedNavLinks_Sheet_UsesFullWidthRowsOnNarrowPhonesAndTwoColumnsWhenTheyFit', () => {
       renderNav('/app/short-rent', { variant: 'sheet' });
 
       const offer = screen.getByRole('group', { name: 'La tua offerta' });
-      expect(within(offer).getByRole('list')).toHaveClass('grid', 'grid-cols-2');
-      // Far taller than the 44 px a finger needs, the icon above the name (the name is first in the markup: it is read
-      // before the counter).
-      expect(link('Marketplace')).toHaveClass('min-h-[4.5rem]', 'flex-col-reverse');
-      expect(link('Marketplace').querySelector('svg')).not.toBeNull();
-      expect(link('Marketplace').firstElementChild).toHaveTextContent('Marketplace');
+      expect(within(offer).getByRole('list')).toHaveClass('grid', 'grid-cols-1', 'min-[23rem]:grid-cols-2');
+      expect(link('Marketplace')).toHaveClass('min-h-12', 'items-center');
+      expect(link('Marketplace')).toHaveAccessibleName('Marketplace');
+      expect(link('Marketplace').querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
     });
 
     it('GroupedNavLinks_Sheet_DoesNotUseBorderColorsThePageResetsAndTellsTheOpenPageByBackgroundAndRing', () => {
@@ -548,7 +542,7 @@ describe('GroupedNavLinks (UI-04a, UI-04b)', () => {
     it('GroupedNavLinks_Sheet_MarksTheOpenPage', () => {
       renderNav('/app/short-rent/settings/site-appearance', { variant: 'sheet' });
 
-      expect(link('Sito di prenotazione')).toHaveAttribute('aria-current', 'page');
+      expect(link('Impostazioni')).toHaveAttribute('aria-current', 'page');
     });
 
     it('GroupedNavLinks_Sheet_ShowsTheCountOnTheCornerOfTheTileAndSaysItAloud', () => {

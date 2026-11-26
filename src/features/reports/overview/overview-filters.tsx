@@ -37,7 +37,7 @@ export function OverviewFilters({ state, days, properties, propertyId, groupings
   };
 
   return (
-    <div role="group" aria-label={t('reports.overview.filters.label')} data-testid="reports-overview-filters" className="space-y-3">
+    <div role="group" aria-label={t('reports.overview.filters.label')} data-testid="reports-overview-filters" className="space-y-3 rounded-2xl border bg-surface-2 p-4">
       <div className="flex flex-wrap items-end gap-3">
         <Field label={t('reports.overview.filters.period')} className="w-full sm:w-56">
           <Select

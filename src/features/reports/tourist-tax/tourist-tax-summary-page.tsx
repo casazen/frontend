@@ -99,7 +99,7 @@ export function TouristTaxSummaryPage() {
           }
         />
 
-        <div role="group" aria-label={t('reports.dialog.period')} className="flex flex-wrap items-end gap-3" data-testid="tourist-tax-filters">
+        <div role="group" aria-label={t('reports.dialog.period')} className="flex flex-wrap items-end gap-3 rounded-2xl border bg-card p-4" data-testid="tourist-tax-filters">
           <Field label={t('reports.dialog.period')} className="w-full sm:w-56">
             <Select value={preset} onChange={(event) => choosePreset(event.target.value as PeriodPresetId)} data-testid="tourist-tax-period">
               {PERIOD_PRESETS.map((id) => (

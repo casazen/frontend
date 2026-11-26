@@ -296,9 +296,14 @@ describe('PropertyDetailPage', () => {
     );
   });
 
-  it('AC9: CIN badge opens edit dialog on click', () => {
+  it('edits the CIN from Documents while the overview shows its status', () => {
     renderPage();
-    fireEvent.click(screen.getByRole('button', { name: /Stato CIN: CIN valido/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Stato CIN/i }));
+    expect(screen.getByRole('tooltip')).toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('property-tab-documents'));
+    expect(screen.queryByTestId('property-next-step')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('property.detail.editCin') }));
     expect(screen.getByRole('dialog', { name: 'Codice CIN' })).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: 'Codice CIN' })).toHaveValue('IT058091C27G5FFZDZ');
   });

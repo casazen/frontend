@@ -191,6 +191,9 @@ export const STATUS_DICTIONARY = {
     Scaduto: { tone: "danger", icon: "alert-circle", next: "Inviato", need: true },
   }),
   alloggiati: defineKind<AlloggiatiWebStatus>({
+    Sending: { tone: "info", icon: "send" },
+    PartiallyAccepted: { tone: "warning", icon: "alert-triangle" },
+    ToVerify: { tone: "warning", icon: "alert-circle" },
     DaInviare: { tone: "neutral", icon: "clock" },
     DaInviareManualmente: { tone: "warning", icon: "alert-triangle", next: "InviatoManualmente", need: true },
     InviatoManualmente: { tone: "success", icon: "shield-check" },

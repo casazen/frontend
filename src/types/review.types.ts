@@ -92,6 +92,8 @@ export interface ReportReviewPayload {
 /** Why the host cannot ask for a review of a booking (backend `ReviewInviteStatusDto.reason`). */
 export type ReviewInviteBlock =
   | 'not_direct_booking'
+  | 'reviews_disabled'
+  | 'no_show'
   | 'booking_not_confirmed'
   | 'stay_not_ended'
   | 'window_closed'

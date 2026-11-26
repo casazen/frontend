@@ -47,8 +47,9 @@ export function DraftPanel({ threadKey, canAsk }: DraftPanelProps) {
   const { flags } = useFeatureFlags();
   const { hasPermission } = useWorkspace();
 
-  if (!flags.messageAssistant || !hasPermission('short-rent', 'approval.decide')) return null;
-  return <DraftPanelBody threadKey={threadKey} canAsk={canAsk} />;
+  const localDrafts = flags.guestPortal && flags.guestPortalAutoReplies && threadKey.startsWith('direct:');
+  if ((!flags.messageAssistant && !localDrafts) || !hasPermission('short-rent', 'approval.decide')) return null;
+  return <DraftPanelBody threadKey={threadKey} canAsk={canAsk && flags.messageAssistant} localOnly={!flags.messageAssistant} />;
 }
 
 /** A line that tells what happened to a draft the host decided on this page: it stays until the next thing the host does. */
@@ -61,7 +62,7 @@ function noticeOf(outcome: ApprovalOutcome): Notice {
   return { tone: outcome.tone, key: outcome.key };
 }
 
-function DraftPanelBody({ threadKey, canAsk }: DraftPanelProps) {
+function DraftPanelBody({ threadKey, canAsk, localOnly }: DraftPanelProps & { localOnly: boolean }) {
   const { t, i18n } = useTranslation();
   const { hasPermission } = useWorkspace();
   const pending = usePendingApprovals();
@@ -79,7 +80,10 @@ function DraftPanelBody({ threadKey, canAsk }: DraftPanelProps) {
   const [failure, setFailure] = useState<{ id: string; code: string } | null>(null);
   const [notice, setNotice] = useState<Notice | null>(null);
 
-  const draft = useMemo(() => pendingDraftOf(pending.data, threadKey), [pending.data, threadKey]);
+  const draft = useMemo(() => {
+    const items = localOnly ? pending.data?.filter((item) => item.contentVersion === 'portal-local-v1') : pending.data;
+    return pendingDraftOf(items, threadKey);
+  }, [localOnly, pending.data, threadKey]);
   const busy = approve.isPending || edit.isPending || saveAndApprove.isPending || reject.isPending || request.isPending;
   const canOpenSettings = hasPermission('short-rent', 'property.write');
 
@@ -222,6 +226,11 @@ function DraftPanelBody({ threadKey, canAsk }: DraftPanelProps) {
   // What the last request for a draft ended in is the state of the panel only while there is no draft: once one is there it is the draft that counts.
   const outcome = request.data ? draftOutcomeView(request.data) : null;
   const requestError = request.isError && draft === null ? request.error : null;
+  if (!draft && pending.isSuccess && !request.data && !requestError && !notice && canAsk) {
+    return <Button type="button" size="sm" variant="ghost" className="w-fit" onClick={handleAsk} loading={request.isPending}>
+      <Sparkles aria-hidden="true" className="size-4" />{t('assistant.draft.ask')}
+    </Button>;
+  }
 
   return (
     <section aria-label={t('assistant.draft.title')} className="space-y-3 rounded-xl border bg-card p-4" data-testid="assistant-draft-panel">
@@ -265,7 +274,7 @@ function DraftPanelBody({ threadKey, canAsk }: DraftPanelProps) {
       ) : null}
 
       <p className="text-xs text-muted-foreground" data-testid="assistant-draft-transparency">
-        {t('assistant.notice.transparency')}
+        {t(draft?.contentVersion === 'portal-local-v1' ? 'assistant.notice.localDraft' : 'assistant.notice.transparency')}
       </p>
 
       <ApprovalRejectDialog

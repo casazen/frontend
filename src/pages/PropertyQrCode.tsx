@@ -51,18 +51,19 @@ function QrSheet({ propertyId, image, title, instructions, hint, extraAction }: 
   const { t } = useTranslation();
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-muted/30">
-      <Card className="max-w-2xl w-full text-center">
-        <CardHeader>
-          <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-primary/10">
+    <div className="mx-auto grid min-h-[65vh] w-full max-w-5xl items-center px-3 py-6 sm:px-6">
+      <Card className="grid w-full overflow-hidden md:grid-cols-2">
+        <CardHeader className="justify-center gap-3 bg-muted/40 p-6 sm:p-10">
+          <div className="mb-2 flex size-16 items-center justify-center rounded-full bg-primary/10">
             <QrCode className="size-8 text-primary" aria-hidden="true" />
           </div>
-          <CardTitle>{title}</CardTitle>
+          <h1 className="text-3xl font-semibold tracking-tight">{title}</h1>
           <CardDescription>{instructions}</CardDescription>
+          <p className="text-sm text-muted-foreground">{hint}</p>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="flex justify-center rounded-md border bg-white p-6">
-            <img src={image} alt={title} className="h-96 w-96" data-testid="property-qr-code" />
+        <CardContent className="flex min-w-0 flex-col items-center gap-5 p-4 sm:p-8">
+          <div className="grid w-full max-w-96 place-items-center rounded-2xl border bg-white p-4">
+            <img src={image} alt={title} className="aspect-square h-auto w-full object-contain" data-testid="property-qr-code" />
           </div>
 
           <div className="flex flex-wrap justify-center gap-3">
@@ -80,10 +81,9 @@ function QrSheet({ propertyId, image, title, instructions, hint, extraAction }: 
                 {t('property.qr.download')}
               </a>
             </Button>
-            {extraAction}
           </div>
 
-          <p className="text-sm text-muted-foreground">{hint}</p>
+          {extraAction && <div className="w-full border-t pt-4 text-center">{extraAction}</div>}
         </CardContent>
       </Card>
     </div>

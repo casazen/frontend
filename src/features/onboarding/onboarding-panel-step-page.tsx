@@ -93,14 +93,14 @@ function PanelPage({ children, title, description, backTo = ONBOARDING_PLAN_PATH
           title={title}
           description={description}
           action={
-            <Button asChild variant="ghost" className={TOUCH_TARGET}>
+            <Button asChild variant="outline" className={TOUCH_TARGET}>
               <Link to={backTo} data-testid="panel-step-back">
                 {t('onboardingPlan.panel.page.backToPlan')}
               </Link>
             </Button>
           }
         />
-        {children}
+        <div className="min-w-0 space-y-5 rounded-2xl border bg-card p-4 shadow-sm sm:p-6">{children}</div>
       </div>
     </AppShell>
   );

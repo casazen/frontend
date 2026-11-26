@@ -216,7 +216,7 @@ describe('AppShellLayout (UI-03)', () => {
       ['admin'],
     );
 
-    expect(within(screen.getByRole('complementary')).getByText(i18n.t('shell.adminFooter'))).toBeInTheDocument();
+    expect(within(screen.getByRole('complementary')).queryByText(i18n.t('shell.adminFooter'))).not.toBeInTheDocument();
   });
 
   it('AppShellLayout_SupplierSuspended_ShowsTheSuspensionBannerInsideTheContent', () => {

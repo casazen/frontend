@@ -12,7 +12,7 @@ import { NoteLine } from '@/features/dashboard/components/note-line';
 import { FiscalDisclaimer } from '@/features/fiscal/components/fiscal-disclaimer';
 import { FiscalPropertyItem } from '@/features/fiscal/components/fiscal-property-item';
 import { FISCAL_DOCUMENTS_PATH } from '@/features/fiscal/documents/document-paths';
-import { fiscalFocus, fiscalRegimeSelectId, type FiscalFocus } from '@/features/fiscal/fiscal-focus';
+import { fiscalFocus, type FiscalFocus } from '@/features/fiscal/fiscal-focus';
 import { currentFiscalYear } from '@/features/fiscal/fiscal-format';
 import { BILLING_SETUP_PATH } from '@/features/fiscal/billing-wizard/billing-wizard-ids';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
@@ -28,13 +28,10 @@ const PROPERTIES_PATH = '/app/short-rent/properties';
 interface FiscalFocusBlockProps {
   snapshot: FiscalRegimeSnapshot;
   focus: FiscalFocus;
-  /** A regime is being saved: the button of the block waits. */
-  pending: boolean;
-  onAssign: (propertyId: string, regime: StrFiscalRegime) => void;
 }
 
 /** The one highlighted block of the page: the next thing to do about the regime of the year, or that nothing is left. */
-function FiscalFocusBlock({ snapshot, focus, pending, onAssign }: FiscalFocusBlockProps) {
+function FiscalFocusBlock({ snapshot, focus }: FiscalFocusBlockProps) {
   const { t } = useTranslation();
   const reports = { label: t('fiscal.reports.link'), href: REPORTS_PATH, testId: 'fiscal-focus-cta' };
 
@@ -50,45 +47,8 @@ function FiscalFocusBlock({ snapshot, focus, pending, onAssign }: FiscalFocusBlo
           data-testid="fiscal-piva-alert"
         />
       );
-    case 'confirm': {
-      const label = t('fiscal.confirmRecommended');
-      return (
-        <FocusBlock
-          tone="warning"
-          kicker={t('compliance.cockpit.kicker.start')}
-          title={t('fiscal.focus.confirm.title', { name: focus.row.name })}
-          body={t('fiscal.focus.confirm.body', { regime: t(`fiscal.regime.${focus.regime}`) })}
-          then={focus.others > 0 ? t('compliance.cockpit.then', { count: focus.others }) : undefined}
-          primary={{
-            label,
-            ariaLabel: `${label}: ${focus.row.name}`,
-            onClick: () => onAssign(focus.row.propertyId, focus.regime),
-            loading: pending,
-            testId: 'fiscal-focus-cta',
-          }}
-          data-testid="fiscal-focus"
-        />
-      );
-    }
-    case 'choose': {
-      const label = t('fiscal.focus.choose.cta');
-      return (
-        <FocusBlock
-          tone="warning"
-          kicker={t('compliance.cockpit.kicker.start')}
-          title={t('fiscal.focus.choose.title', { name: focus.row.name })}
-          body={t('fiscal.taxNote.regimeNotAssigned')}
-          then={focus.others > 0 ? t('compliance.cockpit.then', { count: focus.others }) : undefined}
-          primary={{
-            label,
-            ariaLabel: `${label}: ${focus.row.name}`,
-            onClick: () => document.getElementById(fiscalRegimeSelectId(focus.row.propertyId))?.focus(),
-            testId: 'fiscal-focus-cta',
-          }}
-          data-testid="fiscal-focus"
-        />
-      );
-    }
+    case 'properties':
+      return null;
     case 'ok':
       return (
         <FocusBlock
@@ -135,7 +95,7 @@ function FiscalOverview({ snapshot, canWrite, pending, onAssign }: FiscalOvervie
 
   return (
     <>
-      <FiscalFocusBlock snapshot={snapshot} focus={focus} pending={pending} onAssign={onAssign} />
+      <FiscalFocusBlock snapshot={snapshot} focus={focus} />
 
       <PlainSection title={t('fiscal.list.title')} data-testid="fiscal-properties-section">
         {/* The block above already says it when the partita IVA is what is missing; otherwise it stays here as a note. */}
@@ -147,7 +107,7 @@ function FiscalOverview({ snapshot, canWrite, pending, onAssign }: FiscalOvervie
         <p data-testid="fiscal-str-count" className="text-sm text-foreground/70">
           {t('fiscal.count', { count: snapshot.strPropertyCount, year: snapshot.taxYear })}
         </p>
-        <ul role="list" className="divide-y divide-border border-y border-border">
+        <ul role="list" className="grid gap-3">
           {snapshot.properties.map((row) => (
             <FiscalPropertyItem
               key={row.propertyId}

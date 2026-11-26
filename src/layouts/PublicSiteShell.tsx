@@ -6,6 +6,7 @@ import { useOrgProperties, usePublicOrg } from '@/queries/use-public-org';
 import { useOrgSeoMeta } from '@/features/public-site/hooks/use-org-seo-meta';
 import { useSiteLanguage } from '@/features/public-site/hooks/use-site-language';
 import { CookieConsentBanner } from '@/components/shared/cookie-consent-banner';
+import { HostTracking } from '@/features/host-tracking/host-tracking';
 import { PublicOrgNotFoundPage } from '@/features/public-booking/public-org-not-found-page';
 import { PublicOrgErrorPage } from '@/features/public-booking/public-org-error-page';
 import { Footer } from '@/features/public-site/components/Footer';
@@ -25,6 +26,9 @@ interface PublicSiteShellProps {
 
 /** The same `/book/:orgSlug/...` path with the org's current slug (segments after the slug are kept as they are). */
 function canonicalOrgPath(pathname: string, slug: string): string {
+  if (pathname.startsWith('/s/action/org/')) {
+    return pathname.replace(/^\/s\/action\/org\/[^/]+/, () => `/s/action/org/${encodeURIComponent(slug)}`);
+  }
   const rest = pathname.split('/').slice(3).join('/');
   return `/book/${encodeURIComponent(slug)}${rest ? `/${rest}` : ''}`;
 }
@@ -204,6 +208,8 @@ export function PublicSiteShell({ mode = 'org' }: PublicSiteShellProps) {
               properties={isOrgMode ? properties : undefined}
             />
             <CookieConsentBanner />
+            {/* The agency's own Tag Manager container, only after the visitor allowed statistics and only on its own domain (NF-149): it renders nothing. */}
+            {isOrgMode ? <HostTracking /> : null}
           </>
         )}
       </div>

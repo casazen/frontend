@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { useMemo } from 'react';
 import { useMutation, useQueries, useQuery, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
 import { orgTeamApi } from '@/api/org-team.api';
@@ -90,8 +91,10 @@ export function useCopyOrgInvitationLink() {
 
 /** What the link of an invitation is for (anonymous). `token` null: no link, nothing is asked. No retry: the answer is final. */
 export function useOrgInvitationLookup(token: string | null) {
+  // Each mounted invitation has its own cache entry, without including its secret in the key.
+  const visit = useId();
   return useQuery({
-    queryKey: [ORG_INVITATION_LOOKUP_KEY],
+    queryKey: [ORG_INVITATION_LOOKUP_KEY, visit],
     queryFn: () => orgTeamApi.lookupInvitation(token ?? ''),
     enabled: token !== null,
     retry: false,

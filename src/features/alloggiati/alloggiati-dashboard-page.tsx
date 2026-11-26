@@ -1,7 +1,8 @@
+import { ComplianceQueue } from '@/features/compliance/components/compliance-queue';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { Info } from 'lucide-react';
+import { Info, Users } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { FocusBlock, PlainSection } from '@/components/shared/calm';
@@ -100,10 +101,12 @@ export function AlloggiatiDashboardPage() {
 
             {rows.length > 0 ? (
               <PlainSection title={t('alloggiati.list.title')} count={rows.length}>
-                <ul role="list" className="divide-y divide-border border-y border-border">
-                  {rows.map((row) => (
+                <ComplianceQueue rows={rows} textOf={row => [row.guestName, row.propertyName, formatRecordDate(row.checkInDate)].join(' ')} needsAction={row => rank(row) <= 1}>
+                  {row => (
                     <ComplianceRow
                       key={row.bookingId}
+                      icon={Users}
+                      urgent={row.isOverdue && !isAlloggiatiSent(row.status)}
                       testId={`alloggiati-row-${row.bookingId}`}
                       title={row.guestName}
                       to={bookingPath(row)}
@@ -121,12 +124,12 @@ export function AlloggiatiDashboardPage() {
                       }
                       action={<MarkSentManuallyButton bookingId={row.bookingId} status={row.status} checkInDate={row.checkInDate} />}
                     />
-                  ))}
-                </ul>
+                  )}
+                </ComplianceQueue>
               </PlainSection>
             ) : null}
 
-            <p className="flex items-start gap-2 text-sm text-foreground/70" data-testid="alloggiati-manual-banner">
+            <p className="flex items-start gap-3 rounded-xl bg-muted p-4 text-sm text-foreground/80" data-testid="alloggiati-manual-banner">
               <Info aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
               <span className="min-w-0 break-words">{t('alloggiati.manualBanner')}</span>
             </p>

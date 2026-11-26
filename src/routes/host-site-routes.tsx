@@ -11,6 +11,9 @@ import {
   HostSiteNotFoundPage,
 } from '@/features/public-site/host/host-site-pages';
 import { HostSurfaceFrame } from '@/features/public-site/host/host-surface-frame';
+
+import { linkedStayPaths } from '@/features/guest-portal/linked-stay-paths';
+import { GuestPortalEntry } from '@/features/guest-portal/guest-portal-page';
 import { LEGAL_DOCUMENT_PATHS, LEGAL_INDEX_PATH, LEGAL_SUBPROCESSORS_PATH } from '@/features/legal/legal-paths';
 import { getHostSite, isHostSurfaceOn, type HostSite } from '@/lib/host-site';
 import { buildEmbedRoutes } from './embed-routes';
@@ -87,15 +90,22 @@ export function buildHostSiteRoutes(appRoutes: RouteObject[], site: HostSite | n
   const orgSite = findAppRoute(appRoutes, `the booking site ${ORG_SITE_PATH}`, (route) => route.path === ORG_SITE_PATH);
 
   const surfaces: RouteObject[] = [];
-  if (isHostSurfaceOn(site, 'guestArea')) surfaces.push(checkInRoute(appRoutes));
+  if (isHostSurfaceOn(site, 'guestArea')) {
+    surfaces.push(checkInRoute(appRoutes));
+    const linked = appRoutes.find(route => route.path === linkedStayPaths.checkin);
+    if (linked) surfaces.push({ ...linked, element: <HostCheckInGuard>{linked.element}</HostCheckInGuard> });
+  }
+  const linkedOrg = appRoutes.find(route => route.path === '/s/action/org/:orgSlug');
   if (isHostSurfaceOn(site, 'ownerPortal')) {
     surfaces.push(site?.ownerLoginReady === true ? ownerPortalHostRoute(appRoutes) : ownerPortalNotEnabledRoute());
   }
 
   return [
     { ...orgSite, element: <HostOrgGuard>{orgSite.element}</HostOrgGuard> },
+    ...(linkedOrg ? [{ ...linkedOrg, element: <HostOrgGuard>{linkedOrg.element}</HostOrgGuard> }] : []),
     ...buildEmbedRoutes('host'),
     ...(surfaces.length > 0 ? [{ element: <HostSurfaceFrame />, children: surfaces }] : []),
+    { path: '/s/:slug', element: <GuestPortalEntry hostOnly /> },
     ...[LEGAL_INDEX_PATH, LEGAL_SUBPROCESSORS_PATH, ...Object.values(LEGAL_DOCUMENT_PATHS)].map((path) => ({
       path,
       element: <HostLegalRedirect />,

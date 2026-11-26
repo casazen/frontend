@@ -9,6 +9,8 @@ import type { ContextNav, RouteManifestEntry } from '@/config/route-manifest';
 import type { NavCounts } from '@/hooks/use-nav-counts';
 import { NavCountPill } from './nav-count-pill';
 import { NavIcon } from './nav-icon';
+import { useAppShell } from './app-shell-context';
+import { DEFAULT_WORKSPACE_VIEW, useUiStore } from '@/store/ui-store';
 import { useRailTooltip } from './rail-tooltip';
 
 /** `sidebar`: the list of the sidebar (or its rail of icons). `sheet`: the tiles of the sheet "Altro" of the phone. */
@@ -35,13 +37,8 @@ const LINK_STYLES: Record<NavVariant, { row: string; active: string; inactive: s
     active: `bg-primary/10 font-semibold ${ACCENT_TEXT}`,
     inactive: 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
   },
-  // Tiles, as the demo draws them: the icon above the name, a target far taller than the 44 px a finger needs. No border:
-  // the page keeps its own border color (UI-01), a tile tells the open page by its background and a ring. The name comes
-  // first in the markup and last on the screen (`flex-col-reverse`), so that a screen reader reads "Prenotazioni, 2
-  // richieste da approvare" and not the counter before the name. `h-full`: the tile is as tall as its cell, so that the two
-  // tiles of a row have the same background when one name takes two lines.
   sheet: {
-    row: 'relative flex h-full min-h-[4.5rem] flex-col-reverse justify-between gap-2 rounded-xl p-3 text-sm font-semibold leading-snug outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring',
+    row: 'relative flex h-full min-h-12 items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold leading-snug outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring',
     active: `bg-primary/10 ring-1 ring-inset ring-primary/40 ${ACCENT_TEXT}`,
     inactive: 'bg-muted/60 text-foreground hover:bg-muted',
   },
@@ -73,7 +70,7 @@ function NavLinkItem({ entry, active, collapsed, count, onNavigate }: NavLinkIte
       >
         {active ? <span aria-hidden="true" className="absolute -left-2 bottom-2 top-2 w-[3px] rounded-full bg-primary" /> : null}
         <NavIcon name={entry.icon} className="h-5 w-5 shrink-0" />
-        <span className={cn('truncate', collapsed && 'sr-only')}>{label}</span>
+        <span className={cn('min-w-0 break-words py-1 leading-snug', collapsed && 'sr-only')}>{label}</span>
         <NavCountPill
           entry={entry}
           count={count}
@@ -97,12 +94,9 @@ function NavTile({ entry, active, count, onNavigate }: Omit<NavLinkItemProps, 'c
       aria-current={active ? 'page' : undefined}
       className={cn(styles.row, active ? styles.active : styles.inactive)}
     >
-      {/* A wider font than the one tested (a Linux phone, a larger text size) breaks a long word instead of sticking out. */}
-      <span className="min-w-0 break-words">{getNavLabel(entry, t)}</span>
-      <span className="flex items-start justify-between">
-        <NavIcon name={entry.icon} className={cn('h-[1.375rem] w-[1.375rem] shrink-0', ACCENT_TEXT)} />
-        <NavCountPill entry={entry} count={count} className="-mr-1 -mt-1" />
-      </span>
+      <NavIcon name={entry.icon} className={cn('size-5 shrink-0', ACCENT_TEXT)} />
+      <span className="min-w-0 flex-1 break-words">{getNavLabel(entry, t)}</span>
+      <NavCountPill entry={entry} count={count} />
     </Link>
   );
 }
@@ -155,7 +149,7 @@ function NavMoreMenu({
         {...triggerProps}
       >
         <Ellipsis className="h-5 w-5 shrink-0" aria-hidden="true" />
-        <span className={cn('truncate', collapsed && 'sr-only')}>{label}</span>
+        <span className={cn('min-w-0 break-words py-1 leading-snug', collapsed && 'sr-only')}>{label}</span>
         {counted.map((entry) => (
           <NavCountPill
             key={entry.path}
@@ -237,7 +231,7 @@ export function FooterNavLinks({ entries, matchEntries, collapsed = false, count
  * and shows "Altro" and the foot of the sidebar as two more groups.
  */
 export function GroupedNavLinks({
-  nav,
+  nav: originalNav,
   matchEntries,
   variant = 'sidebar',
   collapsed = false,
@@ -247,6 +241,14 @@ export function GroupedNavLinks({
   const { t } = useTranslation();
   const { pathname } = useLocation();
   const baseId = useId();
+  const key = useAppShell()?.viewKey;
+  const view = useUiStore(state => (key && state.workspaceViews[key]) || DEFAULT_WORKSPACE_VIEW);
+  const moved = originalNav.sections.flatMap(section => section.entries.filter(entry => view.secondaryPaths.includes(entry.path)));
+  const nav = moved.length ? {
+    ...originalNav,
+    sections: originalNav.sections.map(section => ({ ...section, entries: section.entries.filter(entry => !view.secondaryPaths.includes(entry.path)) })).filter(section => section.entries.length),
+  } : originalNav;
+  const [folded, setFolded] = useState<Record<string, boolean>>({});
   const activePath = resolveActiveNavEntry(pathname, matchEntries)?.path;
   const isSheet = variant === 'sheet';
   const groupCount =
@@ -273,13 +275,17 @@ export function GroupedNavLinks({
     );
   };
 
-  const listClass = isSheet ? 'grid grid-cols-2 gap-2' : 'flex flex-col gap-0.5';
+  const listClass = isSheet ? 'grid grid-cols-1 gap-1.5 min-[23rem]:grid-cols-2' : 'flex flex-col gap-0.5';
 
   return (
     <div className={cn('flex flex-col', isSheet ? 'gap-5' : 'gap-4')}>
       {nav.sections.map((section, index) => {
         const label = getNavGroupLabel(section.group, t);
         const labelId = `${baseId}-${section.group}`;
+        const listId = `${labelId}-entries`;
+        const foldKey = `${pathname}:${section.group}`;
+        const foldable = showGroupLabels && !isSheet;
+        const expanded = !foldable || !folded[foldKey];
         return (
           <div
             key={section.group}
@@ -290,15 +296,35 @@ export function GroupedNavLinks({
             data-testid={`nav-group-${section.group}`}
             className={cn(collapsed && index > 0 && 'border-t pt-2')}
           >
-            {showGroupLabels ? (
+            {foldable ? (
+              <button
+                type="button"
+                id={labelId}
+                aria-controls={listId}
+                aria-expanded={expanded}
+                onClick={() => setFolded(previous => ({ ...previous, [foldKey]: expanded }))}
+                className="workspace-group-toggle"
+              >
+                {label}
+                <ChevronDown aria-hidden="true" className={cn('size-3.5', !expanded && '-rotate-90')} />
+              </button>
+            ) : showGroupLabels ? (
               <p id={labelId} className={GROUP_LABEL_STYLES[variant]}>
                 {label}
               </p>
             ) : null}
-            <ul className={listClass}>{section.entries.map(renderEntry)}</ul>
+            <ul id={listId} hidden={!expanded} className={expanded ? listClass : undefined}>{section.entries.map(renderEntry)}</ul>
           </div>
         );
       })}
+      {moved.length > 0 && (
+        <details key={activePath} open={moved.some(entry => entry.path === activePath)} className="min-w-0">
+          <summary className="min-h-11 cursor-pointer content-center rounded-lg px-2 text-sm font-medium focus-visible:outline-ring" aria-label={t('workspaceView.other')}>
+            <span className={collapsed ? 'sr-only' : undefined}>{t('workspaceView.other')}</span>
+          </summary>
+          <ul className={listClass}>{moved.map(renderEntry)}</ul>
+        </details>
+      )}
       {nav.more.length === 0 ? null : isSheet ? (
         <div
           role="group"

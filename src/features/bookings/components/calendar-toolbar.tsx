@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Segmented } from '@/components/ui/segmented';
 import { Select } from '@/components/ui/select';
-import { todayInRome } from '@/lib/stay-dates';
+import { Input } from '@/components/ui/input';
+import { isStayDate, todayInRome } from '@/lib/stay-dates';
 import { hostCalendarLabel, shiftHostCalendarDate } from '../lib/host-calendar';
 import {
   CALENDAR_PAGE_VIEWS,
@@ -56,7 +57,7 @@ export function CalendarToolbar({
     onDateChange(timeline ? shiftTimelineStart(date, zoom, direction) : shiftHostCalendarDate(view, date, direction));
 
   return (
-    <div role="group" aria-label={t('booking.calendar.filters.label')} className="flex flex-wrap items-center gap-x-3 gap-y-2" data-testid="calendar-filters">
+    <div role="group" aria-label={t('booking.calendar.filters.label')} className="flex flex-wrap items-center gap-x-3 gap-y-3 rounded-xl border bg-card p-3 sm:p-4" data-testid="calendar-filters">
       <div className="relative w-full min-w-0 sm:w-64">
         <label htmlFor="calendar-property" className="sr-only">
           {t('booking.calendar.property')}
@@ -101,7 +102,12 @@ export function CalendarToolbar({
               }))}
             />
           ) : null}
-          <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 md:ml-auto" role="group" aria-label={t('booking.calendar.filters.period')}>
+          <div className="flex w-full min-w-0 flex-wrap items-center gap-x-3 gap-y-2 border-t pt-3" role="group" aria-label={t('booking.calendar.filters.period')}>
+            <label className="flex min-w-0 flex-wrap items-center gap-x-2 text-sm font-medium">
+              {t('booking.calendar.toolbar.date')}
+              <Input type="date" value={date} className="w-auto max-w-full"
+                onChange={event => { if (isStayDate(event.target.value)) onDateChange(event.target.value); }} />
+            </label>
             <div className="flex items-center gap-1">
               <Button
                 type="button"
@@ -125,7 +131,7 @@ export function CalendarToolbar({
                 <ChevronRight className="size-4" aria-hidden="true" />
               </Button>
             </div>
-            <p className="min-w-0 break-words text-base font-semibold tabular-nums first-letter:uppercase" aria-live="polite" aria-atomic="true">
+            <p className="min-w-0 break-words text-base font-semibold tabular-nums md:ms-auto first-letter:uppercase" aria-live="polite" aria-atomic="true">
               {timeline ? timelineLabel(date, zoom, i18n.language) : hostCalendarLabel(view, date, i18n.language)}
             </p>
           </div>

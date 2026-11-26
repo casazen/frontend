@@ -19,8 +19,8 @@ const STATUS_VARIANTS: Record<TouristTaxSummaryStatus, NonNullable<BadgeProps['v
 
 // The first column stays in sight while the table scrolls sideways on a phone, so every figure keeps the name of its comune.
 const STICKY = 'sticky left-0 z-10 bg-background';
-const HEAD = 'px-3 py-2 font-medium';
-const FIGURE = 'px-3 py-2 text-right align-top tabular-nums';
+const HEAD = 'bg-muted px-3 py-3 text-xs font-semibold';
+const FIGURE = 'px-3 py-3 text-right align-top tabular-nums';
 
 interface ComuneSummaryTableProps {
   summary: TouristTaxSummary;

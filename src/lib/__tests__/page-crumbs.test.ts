@@ -37,7 +37,7 @@ describe('getManifestCrumbs (UI-05)', () => {
 
   it('getManifestCrumbs_PageThatHangsFromAnEntry_LeadsBackToThatEntry', () => {
     expect(crumbs('short-rent', '/app/short-rent/settings/site-appearance')).toEqual([
-      { label: 'Sito di prenotazione', to: '/app/short-rent/vetrina' },
+      { label: 'Impostazioni', to: '/app/short-rent/settings' },
       { label: 'Questa pagina' },
     ]);
     expect(crumbs('short-rent', '/app/short-rent/alloggiati')).toEqual([

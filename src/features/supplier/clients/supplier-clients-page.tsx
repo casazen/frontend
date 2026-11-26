@@ -1,5 +1,6 @@
+import { UsersRound } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { PageHeader } from '@/components/layout/page-header';
+import { ServicePageHeader } from '@/features/supplier/components/service-page-header';
 import { ListView } from '@/components/shared/list-view/list-view';
 import { useSupplierClients } from '@/queries/use-supplier-clients';
 import { useSupplierClientsList } from './supplier-clients-list';
@@ -19,7 +20,7 @@ export function SupplierClientsPage() {
 
   return (
     <div className="min-w-0 space-y-6" data-testid="supplier-clients-page">
-      <PageHeader title={t('supplier.clients.title')} description={t('supplier.clients.description')} crumbs="auto" />
+      <ServicePageHeader icon={UsersRound} title={t('supplier.clients.title')} description={t('supplier.clients.description')} crumbs="auto" />
       <ListView
         list={list}
         mode="client"

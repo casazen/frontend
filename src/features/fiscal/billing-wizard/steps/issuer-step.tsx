@@ -56,7 +56,7 @@ export function IssuerStep() {
         <Input autoComplete="organization" data-testid="billing-legal-name" {...register('legalName')} />
       </Field>
 
-      <div className="grid gap-5 sm:grid-cols-2" data-testid="billing-address">
+      <div className="grid gap-4 rounded-xl bg-muted/40 p-4 sm:grid-cols-2" data-testid="billing-address">
         <Field label={t('billingWizard.issuer.address.street.label')} example={t('billingWizard.issuer.address.street.example')} error={errors.addressStreet} className="sm:col-span-2">
           <Input autoComplete="address-line1" data-testid="billing-street" {...register('addressStreet')} />
         </Field>

@@ -426,7 +426,7 @@ describe('OnboardingPage (PL-01)', () => {
     await chooseShortTermWithConsents();
 
     await waitFor(() => expect(continuation).toHaveBeenCalledWith('/app/short-rent'));
-    expect(screen.queryByTestId('short-rent-home')).toBeInTheDocument();
+    expect(await screen.findByTestId('short-rent-home')).toBeInTheDocument();
     expect(UsersApi.postOnboarding).toHaveBeenCalledWith({
       rentalType: 'ShortTerm',
       consents: CONSENTS,

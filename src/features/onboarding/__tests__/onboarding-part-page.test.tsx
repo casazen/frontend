@@ -196,9 +196,18 @@ describe('OnboardingPartPage, one part of the plan (E10/F03/US02/T02)', () => {
     expect(await screen.findByTestId('part-launch-primary')).toHaveAttribute('href', '/app/short-rent/messages');
   });
 
+  it('does not offer a channel connection or load its draft to a reader without OTA write access', async () => {
+    workspace.hasPermission = (_context, permission) => permission === 'property.read';
+    vi.mocked(onboardingApi.getPlan).mockResolvedValue(plan({ octorateConnection: { state: 'open' } }));
+    renderPage('/app/short-rent/onboarding/parts/octorateConnection', { octorateConnector: true });
+    expect(await screen.findByTestId('part-launch-unavailable')).toBeInTheDocument();
+    expect(screen.queryByTestId('part-entry-question')).not.toBeInTheDocument();
+    expect(wizardDraftApi.get).not.toHaveBeenCalled();
+  });
+
   it('OnboardingPartPage_FirstPart_AsksWhereTheListingsAreAndKeepsTheAnswerInTheServerDraftBeforeOpeningTheConnectRoute', async () => {
     vi.mocked(onboardingApi.getPlan).mockResolvedValue(plan({ octorateConnection: { state: 'open', reason: 'inventory_scenario_missing', done: 0, total: 1, deferrable: false } }));
-    renderPage('/app/short-rent/onboarding/parts/octorateConnection');
+    renderPage('/app/short-rent/onboarding/parts/octorateConnection', { octorateConnector: true });
 
     expect(await screen.findByTestId('part-entry-question')).toBeInTheDocument();
     expect(screen.getAllByRole('radio')).toHaveLength(3);
@@ -206,12 +215,12 @@ describe('OnboardingPartPage, one part of the plan (E10/F03/US02/T02)', () => {
     fireEvent.click(screen.getByTestId('part-entry-onOtas'));
 
     // The answer opens the SAME connect route of E02 with the scenario; it never opens the listing wizard by itself.
-    expect(screen.getByTestId('part-entry-continue')).toHaveAttribute('href', '/app/short-rent/integrations/octorate?scenario=onOtas');
+    expect(screen.getByTestId('part-entry-continue')).toHaveAttribute('href', '/app/short-rent/integrations/octorate?scenario=onOtas&planPart=octorateConnection');
     await waitFor(() => expect(wizardDraftApi.save).toHaveBeenCalledWith('OnboardingActivation', expect.objectContaining({ data: expect.objectContaining({ step: 'scenario', values: expect.objectContaining({ scenario: 'onOtas' }) }) })));
     fireEvent.click(screen.getByTestId('part-entry-newInventory'));
-    expect(screen.getByTestId('part-entry-continue')).toHaveAttribute('href', '/app/short-rent/integrations/octorate?scenario=newInventory');
+    expect(screen.getByTestId('part-entry-continue')).toHaveAttribute('href', '/app/short-rent/integrations/octorate?scenario=newInventory&planPart=octorateConnection');
     fireEvent.click(screen.getByTestId('part-entry-mixed'));
-    expect(screen.getByTestId('part-entry-continue')).toHaveAttribute('href', '/app/short-rent/integrations/octorate?scenario=mixed');
+    expect(screen.getByTestId('part-entry-continue')).toHaveAttribute('href', '/app/short-rent/integrations/octorate?scenario=mixed&planPart=octorateConnection');
   });
 
   it('OnboardingPartPage_Page_HasNoViolationThatAxeCanFindWithoutABrowser', async () => {

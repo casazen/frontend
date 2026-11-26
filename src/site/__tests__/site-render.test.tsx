@@ -124,9 +124,15 @@ describe('public site render (SEO-VETRINA)', () => {
     const home = render('home');
     expect(home).toContain('href="/affitti-brevi#demo"');
     expect(home).toContain('href="/affitti-lunghi#demo"');
-    for (const [page, detail] of [['shortRent', 'Piet Jansen'], ['longRent', 'Casa dei Tigli']] as const) {
+    for (const [page, detail, expectedFigures] of [
+      ['shortRent', 'Piet Jansen', ['2', '2']],
+      ['longRent', 'Casa dei Tigli', ['850 EUR', '0']],
+    ] as const) {
       const doc = new DOMParser().parseFromString(render(page), 'text/html');
       const sample = doc.querySelector('#demo details');
+      const figures = Array.from(doc.querySelectorAll('#demo > div dl dd'), value => value.textContent?.replace(/\s+/g, ' '));
+      expect(figures).toEqual(expectedFigures);
+      expect(sample?.querySelectorAll('time[datetime]')).toHaveLength(2);
       expect(sample?.querySelector('summary')?.textContent).toContain(detail);
       expect(sample?.querySelector('a')?.getAttribute('href')).toMatch(/^mailto:info@example.com/);
       expect(sample?.querySelector('a[href^="/app/"]')).toBeNull();

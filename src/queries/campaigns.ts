@@ -3,7 +3,6 @@ import { campaignsApi } from '@/api/campaigns.api';
 import type {
   CreateDraftDto,
   CreateSegmentDto,
-  GenerateContentRequest,
   ScheduleCampaignDto,
   SubmitForApprovalDto,
 } from '@/types/campaign.types';
@@ -38,11 +37,11 @@ export function useCreateSegment() {
   });
 }
 
-export function usePreviewCount(segmentId: string, enabled: boolean = true) {
+export function usePreviewCount(segmentId: string, propertyId?: string) {
   return useQuery({
-    queryKey: [SEGMENTS_KEY, segmentId, 'preview'],
-    queryFn: () => campaignsApi.getSegmentPreview(segmentId),
-    enabled: enabled && !!segmentId,
+    queryKey: [SEGMENTS_KEY, segmentId, 'preview', propertyId ?? null],
+    queryFn: () => campaignsApi.getSegmentPreview(segmentId, propertyId),
+    enabled: !!segmentId,
   });
 }
 
@@ -59,6 +58,9 @@ export function useCampaigns() {
   return useQuery({
     queryKey: [CAMPAIGNS_KEY],
     queryFn: () => campaignsApi.getCampaigns(),
+    refetchOnMount: 'always',
+    refetchInterval: (query) =>
+      query.state.data?.some((c) => c.status === 'PendingApproval' || c.status === 'Scheduled') ? 15000 : false,
   });
 }
 
@@ -120,14 +122,5 @@ export function useCampaignReport(campaignId: string) {
     queryKey: [CAMPAIGNS_KEY, campaignId, 'report'],
     queryFn: () => campaignsApi.getCampaignReport(campaignId),
     enabled: !!campaignId,
-  });
-}
-
-export function useGenerateContent() {
-  return useMutation({
-    mutationFn: (data: GenerateContentRequest) => campaignsApi.generateContent(data),
-    onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('campaigns.generate.error'));
-    },
   });
 }

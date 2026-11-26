@@ -133,7 +133,7 @@ export function ChannelsFoundStep({ phase, onBackToConsent }: ChannelsFoundStepP
               return (
                 <li
                   key={listing.octorateAccommodationId}
-                  className="space-y-3 rounded-lg border p-4"
+                  className="space-y-3 rounded-xl border border-s-4 border-s-primary bg-card p-4"
                   data-testid={`octorate-channels-listing-${listing.octorateAccommodationId}`}
                 >
                   <div className="flex min-w-0 items-start justify-between gap-3">

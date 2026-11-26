@@ -1,6 +1,8 @@
+import { ContextualHint } from '@/components/shared/calm/contextual-hint';
 import { useMemo, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FocusBlock, type CalmAction } from '@/components/shared/calm';
+import { CalmActionButton } from '@/components/shared/calm/calm-action';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ComplianceLines } from '@/features/compliance/components/compliance-lines';
 import { reasonText, periodName } from '@/features/compliance/lib/compliance-light';
@@ -25,6 +27,7 @@ interface BookingNextStepProps {
   /** The host may act on the booking (`booking.write`): without it the block says what is going on and leads back to the list. */
   canWrite: boolean;
   viewingCheckIn?: boolean;
+  useGuestPortal?: boolean;
   onConfirm: () => void;
   onDecline: () => void;
   onArrival: () => void;
@@ -46,7 +49,7 @@ interface StepView {
  * not started, Alloggiati Web for one in progress or over. It says what is going on, whose turn it is, and gives the one
  * button that does it, with the actions and the permissions the page always had.
  */
-export function BookingNextStep({ booking, canWrite, viewingCheckIn, onConfirm, onDecline, onArrival }: BookingNextStepProps) {
+export function BookingNextStep({ booking, canWrite, viewingCheckIn, useGuestPortal = false, onConfirm, onDecline, onArrival }: BookingNextStepProps) {
   const { t, i18n } = useTranslation();
   const today = todayInRome();
   const needs = documentsNeeded(booking, today);
@@ -99,7 +102,9 @@ export function BookingNextStep({ booking, canWrite, viewingCheckIn, onConfirm, 
   // A read of the lights that failed (not a 404, which is the traffic light off) never lets the block say that all is well: it says it does not know, and
   // offers to try again. A step that asks something is said as it is.
   if (lightsFailed && claimsAllInOrder(step)) {
-    return <ComplianceUnavailable kicker={t('booking.next.heading')} testId="booking-next-step" onRetry={() => void lights.refetch()} retrying={lights.isFetching} />;
+    return (
+      <ComplianceUnavailable kicker={t('booking.next.heading')} testId="booking-next-step" onRetry={() => void lights.refetch()} retrying={lights.isFetching} />
+    );
   }
 
   const language = i18n.language;
@@ -118,12 +123,16 @@ export function BookingNextStep({ booking, canWrite, viewingCheckIn, onConfirm, 
       : null;
   // The host may fill the guest data in himself, whoever the link is waiting for: a stay whose data are incomplete leads to the wizard.
   const completeInWizard: CalmAction | null =
-    canWrite && booking.status === 'Confirmed' && guestData.data?.dataComplete === false
-      ? { label: t('booking.next.completeGuestData.action'), href: checkInWizardPath(booking.id), testId: 'booking-next-check-in-wizard' }
+    canWrite && hasPermission('short-rent', 'alloggiati.submit') && booking.status === 'Confirmed' && guestData.data?.dataComplete === false
+      ? { label: t('booking.next.completeGuestData.action'), href: checkInWizardPath(booking.id, viewingCheckIn), testId: 'booking-next-check-in-wizard' }
       : null;
   const sendCheckInLink: CalmAction | null =
     canWrite && link?.canIssueLink
-      ? { label: t('booking.list.actions.sendLink'), onClick: () => sendLink.mutate(booking.id), loading: sendLink.isPending, testId: 'booking-next-send-link' }
+      ? useGuestPortal
+        ? viewingCheckIn
+          ? { label: t('guestPortal.host.checkInAccess'), onClick: () => document.getElementById('booking-guest-checkin-link')?.focus() }
+          : { label: t('guestPortal.host.checkInAccess'), href: `${BOOKINGS_PATH}/${booking.id}?tab=guest` }
+        : { label: t('booking.list.actions.sendLink'), onClick: () => sendLink.mutate(booking.id), loading: sendLink.isPending, testId: 'booking-next-send-link' }
       : null;
 
   const viewOfStep = (): StepView => {
@@ -154,7 +163,7 @@ export function BookingNextStep({ booking, canWrite, viewingCheckIn, onConfirm, 
           body: t('booking.next.registerArrival.body', { date: arrival }),
           who: myTurn,
           primary: canWrite ? { label: t('booking.arrival.action'), onClick: onArrival, testId: 'open-register-arrival' } : toBookings,
-          secondary: checkOut ?? completeInWizard ?? undefined,
+          secondary: checkOut ?? (viewingCheckIn ? undefined : completeInWizard ?? undefined),
         };
       case 'arrivalAutomatic':
         return {
@@ -177,7 +186,7 @@ export function BookingNextStep({ booking, canWrite, viewingCheckIn, onConfirm, 
             date: formatStayDate(addDays(stayDateOf(booking.checkInDate), -(flow?.checkInLinkDaysBefore ?? 0)), language),
           }),
           primary: toBookings,
-          secondary: sendCheckInLink ? { ...sendCheckInLink, label: t('booking.next.linkScheduled.action') } : completeInWizard ?? undefined,
+          secondary: sendCheckInLink ? (useGuestPortal ? sendCheckInLink : { ...sendCheckInLink, label: t('booking.next.linkScheduled.action') }) : completeInWizard ?? undefined,
         };
       case 'sendLink':
         return {
@@ -279,7 +288,7 @@ export function BookingNextStep({ booking, canWrite, viewingCheckIn, onConfirm, 
 
   if (viewingCheckIn && !canWrite && step.kind === 'registerArrival') {
     return (
-      <section className="space-y-1 border-l-2 border-primary pl-3" data-testid="booking-next-step" data-next-step={step.kind}>
+      <section className="space-y-1 text-sm" data-testid="booking-next-step" data-next-step={step.kind}>
         <h2 className="font-semibold">{t('booking.next.heading')}</h2>
         <p className="text-sm">{t('dashboard.today.readOnlyArrival')}</p>
         {hasLinesToShow(lineView) && <ComplianceLines lines={lines} label={t('compliance.lines.ofStay')} hasPermission={hasPermission} greens="each" />}
@@ -287,16 +296,24 @@ export function BookingNextStep({ booking, canWrite, viewingCheckIn, onConfirm, 
     );
   }
 
-  return <FocusBlock data-testid="booking-next-step" data-next-step={step.kind} tone={step.tone} kicker={t('booking.next.heading')} {...view} body={body} />;
+  const requiresComplianceAction = step.kind === 'sendAlloggiati' || (step.kind === 'compliance' && step.line?.state === 'red');
+  return (
+    <>
+      {requiresComplianceAction && <CalmActionButton action={{ ...view.primary, testId: 'booking-compliance-action' }} variant="outline" size="sm" />}
+      <ContextualHint testId="booking-guidance-trigger" label={view.title} tone={step.tone} iconOnly={requiresComplianceAction}>
+        <FocusBlock data-testid="booking-next-step" data-next-step={step.kind} tone={step.tone} {...view} body={body} />
+      </ContextualHint>
+    </>
+  );
 }
 
-/** The block while the step is read: its place is kept, so that it does not jump when the step arrives. */
+/** Reserve room for the guidance control while its data loads. */
 function NextStepLoading() {
   const { t } = useTranslation();
   return (
     <div role="status" aria-busy="true" data-testid="booking-next-step-loading">
       <span className="sr-only">{t('shared.loading.srOnly')}</span>
-      <Skeleton aria-hidden="true" className="h-36 w-full rounded-xl motion-reduce:animate-none" />
+      <Skeleton aria-hidden="true" className="h-9 w-32 rounded-xl motion-reduce:animate-none" />
     </div>
   );
 }

@@ -17,11 +17,11 @@ export function AdminKpiCard({ title, value, description, icon: Icon }: AdminKpi
   return (
     <AlignedCard rows={description ? 3 : 2}>
       {/* `self-start`: in a row as tall as the longest title, a shorter title stays at the top, as the first line of the others. */}
-      <div className="mb-2 flex items-center justify-between self-start">
+      <div className="mb-2 flex items-center justify-between gap-2 self-start">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
+        <Icon aria-hidden="true" className="size-9 shrink-0 rounded-lg bg-primary-soft p-2 text-primary-text" />
       </div>
-      <div className="text-2xl font-bold">{value}</div>
+      <div className="text-2xl font-bold tabular-nums tracking-tight lg:text-3xl">{value}</div>
       {description && <p className="mt-1 text-xs text-muted-foreground">{description}</p>}
     </AlignedCard>
   );

@@ -208,7 +208,7 @@ export function MessageBubble({ item, threadKey, hostLanguage, canWrite, resent,
       data-origin={message?.origin}
     >
       <p className="flex flex-wrap items-center gap-x-1 px-1 text-xs text-muted-foreground">
-        <span>{item.author}</span>
+        <span className="font-semibold text-foreground">{item.author}</span>
         {sending ? <span>{`· ${t('messageThread.sending')}`}</span> : item.at ? <span>{`· ${formatMessageTime(item.at, i18n.language)}`}</span> : null}
         {state === 'Sent' ? (
           <span className="inline-flex items-center gap-0.5" data-testid="delivery-sent">
@@ -225,9 +225,9 @@ export function MessageBubble({ item, threadKey, hostLanguage, canWrite, resent,
       {hasText ? (
         <div
           className={cn(
-            'max-w-[85%] whitespace-pre-wrap rounded-2xl border px-3.5 py-2.5 text-sm leading-relaxed [overflow-wrap:anywhere]',
+            'max-w-[min(85%,60ch)] whitespace-pre-wrap rounded-2xl border px-3.5 py-2.5 text-sm leading-relaxed [overflow-wrap:anywhere]',
             item.mine ? 'rounded-tr-sm' : 'rounded-tl-sm',
-            automatic ? 'bg-muted text-foreground' : item.mine ? 'border-transparent bg-primary text-primary-foreground' : 'bg-card',
+            automatic ? 'border-dashed bg-muted text-foreground' : item.mine ? 'border-primary/20 bg-primary-soft text-primary-text' : 'bg-card shadow-sm',
             sending && 'opacity-70',
           )}
         >

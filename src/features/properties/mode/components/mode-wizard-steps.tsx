@@ -101,7 +101,7 @@ export function DateStep({ target, bounds, firstPreview }: DateStepProps) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="grid items-start gap-4 md:grid-cols-2">
       <Field
         label={t(toLong ? 'propertyMode.date.labelToLong' : 'propertyMode.date.labelToShort')}
         hint={t('propertyMode.date.hint', { earliest: dayLabel(bounds.earliest), latest: dayLabel(bounds.latest) })}
@@ -118,13 +118,16 @@ export function DateStep({ target, bounds, firstPreview }: DateStepProps) {
         />
       </Field>
 
-      <DateReason target={target} bounds={bounds} blockers={firstPreview?.blockers ?? []} />
+      <div className="space-y-3 rounded-xl bg-muted/50 p-4">
+        <div className="flex items-center gap-2 text-sm font-semibold"><CalendarDays className="size-4 text-primary" aria-hidden />{dayLabel(bounds.earliest)}</div>
+        <DateReason target={target} bounds={bounds} blockers={firstPreview?.blockers ?? []} />
 
-      {date !== bounds.earliest && (
-        <Button type="button" variant="outline" size="sm" className="min-h-11" data-testid="property-mode-use-earliest" onClick={pickEarliest}>
-          {t('propertyMode.date.useEarliest', { date: dayLabel(bounds.earliest) })}
-        </Button>
-      )}
+        {date !== bounds.earliest && (
+          <Button type="button" variant="outline" size="sm" className="min-h-11" data-testid="property-mode-use-earliest" onClick={pickEarliest}>
+            {t('propertyMode.date.useEarliest', { date: dayLabel(bounds.earliest) })}
+          </Button>
+        )}
+      </div>
     </div>
   );
 }
@@ -340,7 +343,7 @@ export function ConfirmStep({ propertyName, currentMode, target }: ConfirmStepPr
           { id: 'date', label: t('propertyMode.confirm.date'), value: day, stepId: 'date' },
         ]}
       />
-      <section className="space-y-2" aria-labelledby="property-mode-consequences">
+      <section className="space-y-3 rounded-xl border bg-muted/30 p-4" aria-labelledby="property-mode-consequences">
         <h3 id="property-mode-consequences" className="text-sm font-semibold">
           {t('propertyMode.confirm.consequences')}
         </h3>

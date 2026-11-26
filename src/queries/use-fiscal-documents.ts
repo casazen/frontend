@@ -455,9 +455,6 @@ export function useCreateFiscalDraft() {
     onSuccess: () => {
       toast.success(i18n.t('fiscalDocuments.bookingCard.draftCreated'));
     },
-    onError: (error) => {
-      toast.error(failureOf(error, 'fiscalDocuments.bookingCard.draftFailed'));
-    },
     onSettled: () => afterWrite(queryClient),
   });
 }

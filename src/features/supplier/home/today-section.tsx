@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Segmented } from '@/components/ui/segmented';
 import { SkeletonCard } from '@/components/ui/skeleton';
 import { formatRomeDateTime, romeDateOf, romeWallClock } from '@/lib/stay-dates';
-import { useSupplierChecklist, useSupplierToday } from '@/queries/supplier/use-inbox';
+import { useSupplierChecklist, useSupplierInboxCounts, useSupplierToday } from '@/queries/supplier/use-inbox';
 import type { SupplierServiceRequest } from '@/types/service-request';
 import { isInquiry } from '../inquiry/inquiry-model';
 import { INBOX_PATH, phaseOf, REQUEST_DRAWER_KIND, requestPath, requestTitle, requestWhen, respondByText } from '../requests/request-model';
@@ -67,6 +67,7 @@ export function TodaySection({ actions }: { actions: RequestActions }) {
   const [params, setParams] = useSearchParams();
   const query = useSupplierToday(HOME_DAYS);
   const checklist = useSupplierChecklist();
+  const inbox = useSupplierInboxCounts();
 
   if (query.isLoading) return <SkeletonCard lines={5} />;
   if (query.isError || !query.data) {
@@ -74,12 +75,13 @@ export function TodaySection({ actions }: { actions: RequestActions }) {
   }
 
   const today = query.data;
-  const { requests, jobs, moreRequests } = todayRows(today);
+  const { requests, jobs, moreRequests } = todayRows(today, inbox.data?.toAnswer);
   const open = (id: string) => drawer.open(REQUEST_DRAWER_KIND, id);
 
-  if (requests.length === 0 && jobs.length === 0) {
+  if (requests.length === 0 && jobs.length === 0 && moreRequests === 0) {
     // Nothing to do. For a supplier who has not begun (no service, no working hours) that is the moment to say where to begin.
-    if (checklist.isLoading) return <SkeletonCard lines={2} />;
+    if (inbox.isPending || checklist.isLoading) return <SkeletonCard lines={2} />;
+    if (inbox.isError) return <MoreLink to={INBOX_PATH}>{t('supplier.home.menu.requests')}</MoreLink>;
     if (hasNotBegun(checklist.data)) {
       return (
         <FocusBlock
@@ -137,13 +139,13 @@ export function TodaySection({ actions }: { actions: RequestActions }) {
         ) : null}
       </header>
 
-      {rows.length > 0 ? (
+      {rows.length > 0 || moreRequests > 0 ? (
         <>
-          <div className="px-4 sm:px-5">
+          {rows.length > 0 && <div className="px-4 sm:px-5">
             <DayList items={shown.map((row) => row.item)} className="border-y-0" />
-          </div>
+          </div>}
           <div className="flex flex-wrap gap-x-5 gap-y-1 border-t border-border px-4 py-1 sm:px-5">
-            {moreRequests > 0 ? <MoreLink to={`${INBOX_PATH}?chip=da-rispondere`}>{t('supplier.home.today.moreRequests', { count: moreRequests })}</MoreLink> : null}
+            {moreRequests > 0 ? <MoreLink to={`${INBOX_PATH}?chip=da-rispondere`}>{t(requests.length ? 'supplier.home.today.moreRequests' : 'supplier.home.purpose.toAnswer', { count: moreRequests })}</MoreLink> : null}
             <MoreLink to={AVAILABILITY_PATH}>{t('supplier.home.today.openAvailability')}</MoreLink>
           </div>
         </>
@@ -154,7 +156,6 @@ export function TodaySection({ actions }: { actions: RequestActions }) {
           </span>
           <div className="min-w-0 flex-1 basis-52">
             <p className="font-semibold">{t('supplier.home.free.title')}</p>
-            <p className="text-sm text-foreground/70">{t('supplier.home.free.body')}</p>
           </div>
           <Button asChild variant="outline" size="sm" className="h-auto min-h-11 whitespace-normal py-2">
             <Link to={AVAILABILITY_PATH}>{t('supplier.home.today.openAvailability')}</Link>

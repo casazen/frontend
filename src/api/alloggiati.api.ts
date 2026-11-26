@@ -11,6 +11,9 @@ import type {
 import type { AlloggiatiCodeEntryDto, AlloggiatiCodeList, StayGuestSubmit } from '@/types/public-checkin.types';
 
 export const alloggiatiApi = {
+  downloadDirectReceipt: async (bookingId: string): Promise<Blob> =>
+    (await axios.get<Blob>(`/alloggiati/${encodeURIComponent(bookingId)}/direct-receipt`, { responseType: 'blob' })).data,
+
   getSummary: (propertyId?: string) =>
     ApiClient.get<AlloggiatiSummaryDto[]>('/alloggiati/summary', propertyId ? { propertyId } : undefined),
 

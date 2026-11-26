@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Loader2 } from 'lucide-react';
+import { BriefcaseBusiness, CalendarClock, Layers, Loader2, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConsentsStep } from '@/features/onboarding/components/consents-step';
 import { areaName } from '@/features/team/team-labels';
@@ -10,6 +10,7 @@ import { dayOf } from '@/features/team/team-dates';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { supportConfig } from '@/config/support.config';
+import { useLoginHandoff } from '@/hooks/use-login-handoff';
 import { useAuth } from '@/hooks/use-auth';
 import { getProblemMessage } from '@/lib/api-errors';
 import {
@@ -58,6 +59,7 @@ function LoadingCard({ message }: { message: string }) {
 /** A link that does not work, and why when it is known. The only way on is CasaZen itself: a person who already accepted finds it. */
 function UnusableCard({ reason }: { reason: UnusableReason }) {
   const { t } = useTranslation();
+  useEffect(() => { clearPendingOrgInvite(); }, []);
   return (
     <InviteAcceptCard tone="broken" title={t(`invitation.unusable.${reason}.title`)} description={t(`invitation.unusable.${reason}.description`)}>
       <Button asChild className="w-full" variant="outline">
@@ -73,30 +75,39 @@ function UnusableCard({ reason }: { reason: UnusableReason }) {
 function InviteDetails({ invite }: { invite: OrgInvitationLookup }) {
   const { t, i18n } = useTranslation();
   const rows = [
-    { id: 'role', label: t('invitation.details.role'), value: orgRoleLabel(invite.role, t) },
-    { id: 'areas', label: t('invitation.details.areas'), value: invite.areas.map((area) => areaName(area, t)).join(', ') },
-    { id: 'email', label: t('invitation.details.email'), value: maskEmail(invite.email) },
-    { id: 'expires', label: t('invitation.details.expires'), value: dayOf(invite.expiresAt, i18n.language) },
+    { id: 'role', icon: BriefcaseBusiness, label: t('invitation.details.role'), value: orgRoleLabel(invite.role, t) },
+    { id: 'areas', icon: Layers, label: t('invitation.details.areas'), value: invite.areas.map((area) => areaName(area, t)).join(', ') },
+    { id: 'email', icon: Mail, label: t('invitation.details.email'), value: maskEmail(invite.email) },
+    { id: 'expires', icon: CalendarClock, label: t('invitation.details.expires'), value: dayOf(invite.expiresAt, i18n.language) },
   ];
   return (
-    <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2 rounded-md bg-muted p-3 text-sm" data-testid="invite-accept-details">
-      {rows.map((row) => (
-        <div key={row.id} className="contents">
-          <dt className="text-foreground/70">{row.label}</dt>
-          <dd className="break-words font-medium">{row.value}</dd>
+    <dl className="grid grid-cols-2 gap-x-3 gap-y-4 rounded-lg bg-muted/60 p-3 text-sm sm:p-4" data-testid="invite-accept-details">
+      {rows.map(({ id, icon: Icon, label, value }) => (
+        <div key={id} className="min-w-0 space-y-1">
+          <dt className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Icon aria-hidden="true" className="size-4 shrink-0" />{label}
+          </dt>
+          <dd className="break-words font-semibold">{value || '—'}</dd>
         </div>
       ))}
     </dl>
   );
 }
 
+function HandoffNotice({ status }: { status: ReturnType<typeof useLoginHandoff>['status'] }) {
+  const { t } = useTranslation();
+  if (status === 'idle') return null;
+  if (status === 'pending') return <p role="status" className="text-sm">{t('login.redirecting')}</p>;
+  return <Alert variant="warning">{t('login.handoffFailed')}</Alert>;
+}
+
 /** Not signed in: the page says what the invitation is and offers the way in that AM-D13 decided (`inviteEntryAction`, one place). */
 function SignedOutCard({ invite }: { invite: OrgInvitationLookup }) {
   const { t } = useTranslation();
-  const { login } = useAuth();
+  const handoff = useLoginHandoff();
   const { primary, secondary, hintKey } = inviteEntryAction();
   // Back to this page without the secret: it waits in this tab.
-  const enter = (button: InviteEntryButton) => login({ returnTo: ORG_INVITE_ACCEPT_PATH, authorizationParams: button.authorizationParams });
+  const enter = (button: InviteEntryButton) => handoff.start({ returnTo: ORG_INVITE_ACCEPT_PATH, authorizationParams: button.authorizationParams });
 
   return (
     <InviteAcceptCard
@@ -105,11 +116,12 @@ function SignedOutCard({ invite }: { invite: OrgInvitationLookup }) {
       summary={<InviteDetails invite={invite} />}
     >
       <p className="text-sm text-muted-foreground">{t('invitation.useSameEmail')}</p>
-      <Button className="w-full" size="lg" onClick={() => enter(primary)} data-testid={primary.testId}>
+      <HandoffNotice status={handoff.status} />
+      <Button className="w-full" size="lg" disabled={handoff.busy} onClick={() => enter(primary)} data-testid={primary.testId}>
         {t(primary.labelKey)}
       </Button>
       {secondary ? (
-        <Button className="w-full" variant="outline" onClick={() => enter(secondary)} data-testid={secondary.testId}>
+        <Button className="w-full" variant="outline" disabled={handoff.busy} onClick={() => enter(secondary)} data-testid={secondary.testId}>
           {t(secondary.labelKey)}
         </Button>
       ) : null}
@@ -130,10 +142,10 @@ interface FailureAlertProps {
   message: string | undefined;
   invite: OrgInvitationLookup;
   onSwitchAccount: () => void;
-  onRetry: () => void;
+  switching: boolean;
 }
 
-function FailureAlert({ failure, message, invite, onSwitchAccount, onRetry }: FailureAlertProps) {
+function FailureAlert({ failure, message, invite, onSwitchAccount, switching }: FailureAlertProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const support = supportConfig.email;
@@ -145,7 +157,7 @@ function FailureAlert({ failure, message, invite, onSwitchAccount, onRetry }: Fa
           variant="warning"
           title={t('invitation.failure.emailMismatch.title')}
           action={
-            <Button type="button" size="sm" className="min-h-11" onClick={onSwitchAccount} data-testid="invite-accept-switch">
+            <Button type="button" size="sm" className="min-h-11" disabled={switching} onClick={onSwitchAccount} data-testid="invite-accept-switch">
               {t('invitation.failure.emailMismatch.action')}
             </Button>
           }
@@ -159,8 +171,8 @@ function FailureAlert({ failure, message, invite, onSwitchAccount, onRetry }: Fa
           variant="warning"
           title={t('invitation.failure.emailNotVerified.title')}
           action={
-            <Button type="button" size="sm" variant="outline" className="min-h-11" onClick={onRetry}>
-              {t('invitation.retry')}
+            <Button type="button" size="sm" variant="outline" className="min-h-11" disabled={switching} onClick={onSwitchAccount}>
+              {t('invitation.signInAfterVerification')}
             </Button>
           }
         >
@@ -173,7 +185,7 @@ function FailureAlert({ failure, message, invite, onSwitchAccount, onRetry }: Fa
           variant="warning"
           title={t('invitation.failure.platformAdmin.title')}
           action={
-            <Button type="button" size="sm" className="min-h-11" onClick={onSwitchAccount}>
+            <Button type="button" size="sm" className="min-h-11" disabled={switching} onClick={onSwitchAccount}>
               {t('invitation.useAnother')}
             </Button>
           }
@@ -188,7 +200,7 @@ function FailureAlert({ failure, message, invite, onSwitchAccount, onRetry }: Fa
           title={t('invitation.failure.hasOrganization.title')}
           action={
             <>
-              <Button type="button" size="sm" variant="outline" className="min-h-11" onClick={onSwitchAccount}>
+              <Button type="button" size="sm" variant="outline" className="min-h-11" disabled={switching} onClick={onSwitchAccount}>
                 {t('invitation.useAnother')}
               </Button>
               {support ? (
@@ -238,12 +250,17 @@ function FailureAlert({ failure, message, invite, onSwitchAccount, onRetry }: Fa
 function SignedInCard({ token, invite }: { token: string; invite: OrgInvitationLookup }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { logout, user } = useAuth();
+  const { user } = useAuth();
+  const handoff = useLoginHandoff();
+  const switchAccount = () => handoff.start({ returnTo: ORG_INVITE_ACCEPT_PATH, authorizationParams: { prompt: 'login' } });
+  const submitting = useRef(false);
   const accept = useAcceptOrgInvitation();
   const [unusable, setUnusable] = useState<UnusableReason | null>(null);
   const [failed, setFailed] = useState<{ failure: Refusal; message: string | undefined } | null>(null);
 
   const submit = (consents: OnboardingConsentsPayload) => {
+    if (submitting.current) return;
+    submitting.current = true;
     setFailed(null);
     accept.mutate(
       { token, consents },
@@ -255,6 +272,7 @@ function SignedInCard({ token, invite }: { token: string; invite: OrgInvitationL
           navigate('/', { replace: true });
         },
         onError: (error) => {
+          submitting.current = false;
           const failure = acceptFailureOf(error);
           if (failure.kind === 'unusable') setUnusable(failure.reason);
           else setFailed({ failure, message: getProblemMessage(error, t) });
@@ -265,27 +283,33 @@ function SignedInCard({ token, invite }: { token: string; invite: OrgInvitationL
 
   if (unusable) return <UnusableCard reason={unusable} />;
 
-  const blocked = failed !== null && BLOCKING.includes(failed.failure.kind);
+  const emailMismatch = user?.email && user.email.trim().toLowerCase() !== invite.email.trim().toLowerCase();
+  const unverified = user && 'email_verified' in user && user.email_verified === false;
+  const accountIssue = emailMismatch ? 'emailMismatch' : unverified ? 'emailNotVerified' : null;
+  const refusal = failed ?? (accountIssue ? { failure: { kind: accountIssue } as Refusal, message: undefined } : null);
+  const blocked = refusal !== null && BLOCKING.includes(refusal.failure.kind);
   return (
     <InviteAcceptCard
       title={t('invitation.acceptTitle', { org: invite.orgName })}
       description={user?.email ? t('invitation.signedInAs', { email: user.email }) : undefined}
       summary={<InviteDetails invite={invite} />}
     >
-      {failed ? (
+      <h2 className="text-lg font-semibold">{t(blocked ? 'invitation.accountStep' : 'invitation.acceptStep')}</h2>
+      <HandoffNotice status={handoff.status} />
+      {refusal ? (
         <FailureAlert
-          failure={failed.failure}
-          message={failed.message}
+          failure={refusal.failure}
+          message={refusal.message}
           invite={invite}
-          onSwitchAccount={logout}
-          onRetry={() => setFailed(null)}
+          onSwitchAccount={switchAccount}
+          switching={handoff.busy}
         />
       ) : null}
       {blocked ? null : (
         <ConsentsStep
-          onBack={logout}
+          onBack={switchAccount}
           onContinue={submit}
-          isLoading={accept.isPending}
+          isLoading={accept.isPending || handoff.busy}
           backLabel={t('invitation.useAnother')}
           continueLabel={t('invitation.accept')}
           hideMarketing
@@ -306,38 +330,50 @@ function SignedInCard({ token, invite }: { token: string; invite: OrgInvitationL
  */
 export function InviteAcceptPage() {
   const { t } = useTranslation();
-  const { isLoading: authLoading, isAuthenticated } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   useNoReferrer();
   useSeoMeta({ title: t('invitation.pageTitle'), noindex: true });
 
   // Read once, when the page opens: the link of the email, or the one kept in this tab while the person signed in.
-  const [token] = useState(() => readOrgInviteToken(searchParams));
+  const [token, setToken] = useState(() => readOrgInviteToken(searchParams));
+  // A second invitation can be opened by client-side navigation in the same tab.
+  const incoming = searchParams.has('token') ? readOrgInviteToken(searchParams) : token;
+  if (incoming !== token) setToken(incoming);
 
   // The secret leaves the address bar (and the history entry) as soon as the page has it; it waits in this tab for the sign-in.
   useEffect(() => {
     if (!searchParams.has('token')) return;
     if (token) savePendingOrgInvite(token);
+    else clearPendingOrgInvite();
     const rest = new URLSearchParams(searchParams);
     rest.delete('token');
     setSearchParams(rest, { replace: true });
   }, [searchParams, setSearchParams, token]);
 
-  const lookup = useOrgInvitationLookup(token);
-
   if (token === null) return <UnusableCard reason="invalid" />;
+  return <InviteLookup key={token} token={token} />;
+}
+
+function InviteLookup({ token }: { token: string }) {
+  const { t } = useTranslation();
+  const { isLoading: authLoading, isAuthenticated } = useAuth();
+  const lookup = useOrgInvitationLookup(token);
   if (lookup.isPending || authLoading) return <LoadingCard message={t('invitation.loading')} />;
 
   if (lookup.isError) {
     const failure = lookupFailureOf(lookup.error);
     if (failure === 'invalid') return <UnusableCard reason="invalid" />;
     if (failure === 'unavailable') {
-      return <InviteAcceptCard tone="broken" title={t('invitation.unavailable.title')} description={t('invitation.unavailable.description')} />;
+      return (
+        <InviteAcceptCard tone="broken" title={t('invitation.unavailable.title')} description={t('invitation.unavailable.description')}>
+          <Button asChild variant="outline" className="w-full"><Link to="/login">{t('invitation.unusable.goToApp')}</Link></Button>
+        </InviteAcceptCard>
+      );
     }
     return (
       <InviteAcceptCard tone="attention" title={t('invitation.errorTitle')}>
         <Alert variant="danger">{getProblemMessage(lookup.error, t) ?? t('invitation.errorGeneric')}</Alert>
-        <Button className="w-full" variant="outline" onClick={() => void lookup.refetch()} data-testid="invite-accept-retry">
+        <Button className="w-full" variant="outline" onClick={() => void lookup.refetch()} disabled={lookup.isFetching} data-testid="invite-accept-retry">
           {t('invitation.retry')}
         </Button>
       </InviteAcceptCard>

@@ -26,12 +26,18 @@ test.describe('Seasonal suggestions (D4, PC-15)', () => {
     await mockPricingApiDefaults(page);
   });
 
-  test('page shows the seasonal suggestions settings, no AI wording', async ({ page }) => {
+  test('rules open on demand and nights remain available on a phone', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(demoUrl(PRICING_URL, 'short-stay'));
 
+    await expect(page.getByTestId('suggestions-table').locator('tbody tr').first()).toBeInViewport();
     await expect(page.getByRole('heading', { name: 'Seasonal suggestions', level: 1 })).toBeVisible();
     await expect(page.getByRole('switch', { name: /turn on seasonal suggestions/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: /save rules/i })).toBeVisible();
+    await expect(page.getByTestId('pricing-rules')).toHaveCount(0);
+    await page.getByTestId('pricing-open-rules').click();
+    await expect(page.getByRole('dialog').getByRole('button', { name: /save rules/i })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByTestId('pricing-open-rules')).toBeFocused();
     await expect(page.getByText(/\bAI\b/)).toHaveCount(0);
     await expect(page.getByText(/confidence/i)).toHaveCount(0);
   });
@@ -150,7 +156,8 @@ test.describe('Seasonal suggestions (D4, PC-15)', () => {
     await expect(page.getByText('Seasonal suggestions turned off')).toBeVisible();
     await expect.poll(() => deleteCallCount).toBe(1);
     await expect(page.getByTestId('recalculate-btn')).not.toBeVisible();
-    await expect(page.getByText('Seasonal suggestions are off')).toBeVisible();
+    await expect(toggle).not.toBeChecked();
+    await expect(page.getByTestId('suggestions-table')).toHaveCount(0);
   });
 
   test('save sends frequency and explicit rules', async ({ page }) => {
@@ -180,6 +187,7 @@ test.describe('Seasonal suggestions (D4, PC-15)', () => {
 
     await page.goto(demoUrl(PRICING_URL, 'short-stay'));
 
+    await page.getByTestId('pricing-open-rules').click();
     await page.getByTestId('frequency-weekly').check();
     await page.getByTestId('high-month-9').click();
     await page.getByTestId('holiday-multiplier').fill('1.4');

@@ -98,6 +98,19 @@ describe('viewItemListEvent', () => {
     expect(event.items.every((item) => item.price === 960.5)).toBe(true);
   });
 
+  it('viewItemListEvent_ForThePageItself_KeepsTheFirst20HomesWhateverTheirSize', () => {
+    // The `dataLayer` of an agency's own page is no message of the protocol: the 4 KB of the widgets do not apply, and the 20 homes of a site (about 4.6 KB) all go.
+    const cards = Array.from({ length: 25 }, (_, position) => realHome(position));
+
+    const event = viewItemListEvent(cards, LIST, { asEmbedMessage: false });
+
+    expect(event.items).toHaveLength(20);
+    expect(event.items.map((item) => item.item_id)).toEqual(cards.slice(0, 20).map((home) => home.id));
+    expect(event.items.map((item) => item.index)).toEqual(Array.from({ length: 20 }, (_, position) => position));
+    expect(event.currency).toBe('CHF');
+    expect(event.items.every((item) => item.price === 960.5)).toBe(true);
+  });
+
   it('viewItemListEvent_ShortHomesStillAllFit_AndSoDoesAListOfTwenty', () => {
     const cards = Array.from({ length: 20 }, (_, position) => card(position));
 

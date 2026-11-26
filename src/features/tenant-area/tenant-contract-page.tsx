@@ -33,7 +33,7 @@ export function TenantContractsPage() {
   }
 
   return (
-    <ul className="space-y-3" data-testid="tenant-contracts">
+    <ul className="grid gap-4 sm:grid-cols-2" data-testid="tenant-contracts">
       {items.map((contract) => (
         <li key={contract.id}>
           <Card>
@@ -66,7 +66,7 @@ export function TenantContractPage() {
     <div className="space-y-4" data-testid="tenant-contract">
       <Card>
         <CardHeader>
-          <CardTitle>{area.contract.label}</CardTitle>
+          <h1 className="text-3xl font-semibold tracking-tight">{area.contract.label}</h1>
         </CardHeader>
         <CardContent className="space-y-1 text-sm">
           <p data-testid="tenant-property">{area.property.name}</p>
@@ -100,7 +100,7 @@ export function TenantContractPage() {
 function NextPayment({ leaseId, due }: { leaseId: string; due: TenantDue }) {
   const { t } = useTranslation();
   return (
-    <Card data-testid="tenant-contract-next">
+    <Card data-testid="tenant-contract-next" className="border-s-4 border-s-primary bg-card">
       <CardHeader>
         <CardTitle className="text-base">{t('tenantArea.contract.nextDue')}</CardTitle>
       </CardHeader>

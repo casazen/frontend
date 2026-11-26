@@ -172,7 +172,7 @@ export async function recordOfflineServiceRequestPayment(id: string, reason?: st
 }
 
 export async function fetchSuppliersByProperty(propertyId: string, category?: string): Promise<SupplierListResponse> {
-  return ApiClient.get<SupplierListResponse>('/suppliers', { propertyId, category });
+  return ApiClient.get<SupplierListResponse>('/suppliers', { propertyId, category, includeTrusted: true });
 }
 
 /**
@@ -181,6 +181,7 @@ export async function fetchSuppliersByProperty(propertyId: string, category?: st
  * supplier comes with its services, "from" price, measured response time and «Verificato».
  */
 export async function fetchMarketplaceSuppliers(params: {
+  includeTrusted?: boolean;
   propertyId?: string;
   accountScope?: boolean;
   category?: string;

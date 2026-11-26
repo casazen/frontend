@@ -5,8 +5,6 @@ import type {
   CreateDraftDto,
   CreateSegmentDto,
   FieldDefinition,
-  GenerateContentRequest,
-  GenerateContentResponse,
   ScheduleCampaignDto,
   Segment,
   SegmentPreviewResult,
@@ -17,11 +15,10 @@ export const campaignsApi = {
   // Segments
   getSegments: () => ApiClient.get<Segment[]>('/campaigns/segments'),
 
-  createSegment: (data: CreateSegmentDto) =>
-    ApiClient.post<Segment>('/campaigns/segments', data),
+  createSegment: (data: CreateSegmentDto) => ApiClient.post<Segment>('/campaigns/segments', data),
 
-  getSegmentPreview: (segmentId: string) =>
-    ApiClient.get<SegmentPreviewResult>(`/campaigns/segments/${segmentId}/preview`),
+  getSegmentPreview: (segmentId: string, propertyId?: string) =>
+    ApiClient.get<SegmentPreviewResult>(`/campaigns/segments/${segmentId}/preview`, propertyId ? {propertyId} : undefined),
 
   // Field catalog
   getFields: () => ApiClient.get<FieldDefinition[]>('/campaigns/fields'),
@@ -31,19 +28,12 @@ export const campaignsApi = {
 
   getCampaignById: (id: string) => ApiClient.get<Campaign>(`/campaigns/${id}`),
 
-  createDraft: (data: CreateDraftDto) =>
-    ApiClient.post<Campaign>('/campaigns/draft', data),
+  createDraft: (data: CreateDraftDto) => ApiClient.post<Campaign>('/campaigns', data),
 
-  submitForApproval: (data: SubmitForApprovalDto) =>
-    ApiClient.post<Campaign>('/campaigns/submit-for-approval', data),
+  submitForApproval: (data: SubmitForApprovalDto) => ApiClient.post<void>(`/campaigns/${data.campaignId}/submit`, {}),
 
   scheduleCampaign: (data: ScheduleCampaignDto) =>
-    ApiClient.post<Campaign>('/campaigns/schedule', data),
+    ApiClient.post<void>(`/campaigns/${data.campaignId}/schedule`, { scheduledAt: data.scheduledAt }),
 
-  getCampaignReport: (campaignId: string) =>
-    ApiClient.get<CampaignReport>(`/campaigns/${campaignId}/report`),
-
-  // AI generation (NF-08 integration)
-  generateContent: (data: GenerateContentRequest) =>
-    ApiClient.post<GenerateContentResponse>('/campaigns/generate-content', data),
+  getCampaignReport: (campaignId: string) => ApiClient.get<CampaignReport>(`/campaigns/${campaignId}/report`),
 };

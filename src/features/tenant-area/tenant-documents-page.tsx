@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { FileText } from 'lucide-react';
+import { Download, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { tenantAreaApi } from '@/api/tenant-area.api';
 import { Button } from '@/components/ui/button';
@@ -28,7 +28,8 @@ export function TenantDocumentsPage() {
   }
 
   return (
-    <div data-testid="tenant-documents">
+    <div data-testid="tenant-documents" className="space-y-5">
+      <h1 className="text-3xl font-semibold tracking-tight">{t('tenantArea.nav.documents')}</h1>
       {documents.length === 0 ? (
         <div data-testid="tenant-documents-empty">
           <EmptyState
@@ -43,7 +44,7 @@ export function TenantDocumentsPage() {
           {documents.map((document) => (
             <li
               key={document.id}
-              className="flex min-w-0 flex-col gap-3 rounded-md border border-border p-3 sm:flex-row sm:items-center sm:justify-between"
+              className="flex min-w-0 flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between"
               data-testid={`tenant-document-${document.kind}`}
             >
               <span className="min-w-0 break-words">
@@ -51,7 +52,7 @@ export function TenantDocumentsPage() {
                 <span className="mt-1 block text-sm text-foreground/70 sm:mt-0 sm:ml-2 sm:inline">{t(`tenantArea.documents.kind.${kindKey(document.kind)}`)}</span>
               </span>
               <Button type="button" variant="outline" size="sm" className="h-auto min-h-11 w-full whitespace-normal sm:w-auto" onClick={() => void download(document.id, document.name)}>
-                {t('tenantArea.documents.download')}
+                <Download aria-hidden="true" className="size-4" />{t('tenantArea.documents.download')}
               </Button>
             </li>
           ))}

@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import i18n from '@/i18n/config';
 import { messageHubApi } from '@/api/message-hub.api';
+import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
+import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { ReplyComposer } from '../components/reply-composer';
 
 vi.mock('@/api/message-hub.api', () => ({
@@ -39,12 +41,14 @@ function Harness({ initial = '', busy = false, contactDetailsAllowed = true, wit
   );
 }
 
-function renderComposer(props: Partial<HarnessProps> = {}) {
+function renderComposer(props: Partial<HarnessProps> = {}, translationEnabled = true) {
   const onSend = vi.fn();
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   render(
     <QueryClientProvider client={client}>
-      <Harness onSend={onSend} {...props} />
+      <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, messageTranslationAi: translationEnabled }, isLoading: false }}>
+        <Harness onSend={onSend} {...props} />
+      </FeatureFlagsContext.Provider>
     </QueryClientProvider>,
   );
   return { onSend };
@@ -57,6 +61,11 @@ function httpError(status: number, data: Record<string, unknown> = {}): AxiosErr
 }
 
 describe('ReplyComposer (NF-63)', () => {
+  it('hides translation of unsent text while the translator is disabled', () => {
+    renderComposer({ initial: 'Hello' }, false);
+    expect(screen.queryByTestId('translate-button')).not.toBeInTheDocument();
+  });
+
   beforeEach(async () => {
     vi.clearAllMocks();
     vi.mocked(messageHubApi.listTemplates).mockResolvedValue([

@@ -35,11 +35,8 @@ for (const [width, height] of [[320, 568], [390, 844], [768, 1024], [1440, 900]]
     await expect(page.getByRole('heading', { name: guestName, exact: true })).toBeVisible();
     const status = page.getByTestId('checkin-session-badge');
     await expect(status).toHaveText(/compilazione/i);
-    const statePosition = await status.boundingBox();
-    const nextPosition = await page.getByTestId('booking-next-step').boundingBox();
-    expect(statePosition).not.toBeNull();
-    expect(nextPosition).not.toBeNull();
-    expect(statePosition!.y).toBeLessThan(nextPosition!.y);
+    await expect(status).toBeVisible();
+    await expect(page.getByTestId('booking-next-step')).toHaveCount(0);
     await expectNothingSticksOut(page, 'Scheda prenotazione');
     if (width === 320) await expectNoAxeViolations(page, { include: '#main-content' });
     await page.goBack();

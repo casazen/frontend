@@ -4,6 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { AlertCircle, Loader2, MessageSquare, RefreshCw } from 'lucide-react';
 import { MessageComposer, MessageThread, type ThreadItem } from '@/components/shared/message-thread';
 import { Button } from '@/components/ui/button';
+import { DraftPanel } from '@/features/messages/components/draft-panel';
+import { useContactOptions } from '@/queries/use-message-thread';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { usePageVisible } from '@/hooks/use-page-visible';
 import { useOnlineStatus } from '@/hooks/use-online-status';
 import { useWorkspace } from '@/hooks/use-workspace';
@@ -49,6 +52,9 @@ export function BookingMessagesSection({ booking, expanded = false }: BookingMes
   const canWrite = hasPermission('short-rent', 'booking.write');
   // The page of the messages asks `booking.read`: the link is for who may open it, never a link that ends on the page of no access.
   const canOpenMessages = hasPermission('short-rent', 'booking.read');
+  const { flags } = useFeatureFlags();
+  const askAllowed = canWrite && flags.messageAssistant && hasPermission('short-rent', 'approval.decide');
+  const contact = useContactOptions(booking.id, askAllowed);
   const online = useOnlineStatus();
   const thread = useBookingThread(booking.id);
   const { mutate: markAsRead } = useMarkThreadRead(booking.id);
@@ -146,6 +152,9 @@ export function BookingMessagesSection({ booking, expanded = false }: BookingMes
         </div>
       ) : canWrite ? (
         <div className={cn('space-y-1', expanded && 'lg:max-h-[55%] lg:shrink-0 lg:overflow-y-auto')}>
+          {askAllowed && contact.data?.channel === 'Direct' && contact.data.threadKey?.startsWith('direct:') && (
+            <DraftPanel threadKey={contact.data.threadKey} canAsk />
+          )}
           <MessageComposer
             label={t('booking.messages.composerLabel', { name: firstName })}
             placeholder={t('booking.messages.placeholder')}
@@ -160,8 +169,7 @@ export function BookingMessagesSection({ booking, expanded = false }: BookingMes
           {t('booking.messages.readOnly')}
         </p>
       )}
-
-      {canOpenMessages ? <MessagesLink bookingId={booking.id} /> : null}
+      {canOpenMessages && booking.source !== 'Direct' && <MessagesLink bookingId={booking.id} />}
     </div>
   );
 }

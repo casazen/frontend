@@ -1,3 +1,6 @@
+import { useContext } from 'react';
+import { WorkspaceContext } from '@/contexts/workspace-context';
+import { interventionPath, requestInterventionPath } from '@/features/service-requests/interventions/paths';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle, Clock, type LucideIcon } from 'lucide-react';
@@ -39,6 +42,12 @@ export function CheckoutDone({
   // With the connector of the channel manager off nothing is passed on to it: nothing is said about it.
   const connectorOn = useFeatureFlags().flags.octorateConnector;
 
+  const workspace = useContext(WorkspaceContext);
+  const cleaningLink = result.serviceRequestId && workspace?.hasPermission('short-rent', 'property.read')
+    ? { to: interventionPath(result.serviceRequestId), label: t('requestWizard.housekeeping.follow') }
+    : !result.serviceRequestId && result.wizard.cleaning.choice === 'Request' && workspace?.hasPermission('short-rent', 'servicerequest.write')
+      ? { to: requestInterventionPath(result.wizard.stay.propertyId, { bookingId, type: result.wizard.cleaning.category ?? 'cleaning' }), label: t('requestWizard.housekeeping.request') }
+      : undefined;
   const lines = checkoutResultLines(result, connectorOn && channelManager, t);
   const next = checkoutNextStepOf({ alloggiatiSent: result.wizard.alloggiati.sent, propertyReady: result.propertyReady });
 
@@ -53,6 +62,11 @@ export function CheckoutDone({
       secondary={{ label: t('compliance.checkout.done.compliance'), to: '/app/short-rent/compliance' }}
     >
       <div className="space-y-4" data-testid="checkout-done-details">
+        {cleaningLink && (
+          <Link to={cleaningLink.to} className="inline-flex min-h-11 items-center text-sm font-medium text-primary underline underline-offset-4" data-testid="checkout-done-cleaning">
+            {cleaningLink.label}
+          </Link>
+        )}
         <div className="rounded-lg border p-4" data-testid="checkout-done-next">
           <p className="text-sm font-medium">{t('compliance.checkout.done.next.title')}</p>
           <p className="mt-1 text-sm">{t(NEXT_STEP_KEYS[next])}</p>

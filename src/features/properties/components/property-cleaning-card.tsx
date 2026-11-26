@@ -69,7 +69,7 @@ export function PropertyCleaningCard({ propertyId }: PropertyCleaningCardProps) 
   const routines = useRoutines();
 
   const supplierChoices = useMemo(
-    () => supplierChoicesOf([{ size: 1, suppliers: suppliers.isError ? [] : (suppliers.data?.items ?? []) }], true),
+    () => supplierChoicesOf([suppliers.isError ? [] : (suppliers.data?.items ?? [])], true),
     [suppliers.data, suppliers.isError],
   );
   const staffChoices = useMemo<StaffChoice[]>(

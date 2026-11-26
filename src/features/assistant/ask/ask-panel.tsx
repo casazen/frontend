@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, CalendarCheck, MessageSquare, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -108,7 +108,7 @@ export default function AskPanel({
     >
       <DialogContent
         className={cn(
-          'max-h-[82dvh] overflow-y-auto overscroll-contain sm:max-w-lg',
+          'max-h-[82dvh] overflow-y-auto overscroll-contain sm:max-w-2xl',
           mobilePrimary &&
             'max-sm:bottom-[calc(var(--bottom-nav-height)+var(--mobile-primary-height)+env(safe-area-inset-bottom))] max-sm:max-h-[60dvh]',
         )}
@@ -121,12 +121,12 @@ export default function AskPanel({
           if (!navigated.current && opener.isConnected) opener.focus({ preventScroll: true });
         }}
       >
-        <DialogHeader>
-          <DialogTitle ref={title} tabIndex={-1} className="flex items-center gap-2 outline-none">
-            <Sparkles className="size-5 text-primary-text" aria-hidden="true" />
+        <DialogHeader className="rounded-xl bg-primary-soft px-4 py-4 pr-8 text-left">
+          <DialogTitle ref={title} tabIndex={-1} className="flex items-center gap-3 text-xl tracking-tight outline-none">
+            <Sparkles className="size-9 rounded-lg bg-card p-2 text-primary-text" aria-hidden="true" />
             {t('ask.title')}
           </DialogTitle>
-          <DialogDescription className="break-words">
+          <DialogDescription className="break-words text-primary-text">
             {queryLabel}
             {isDemoMode && <> · {t('ask.demo')}</>}
           </DialogDescription>
@@ -163,7 +163,7 @@ export default function AskPanel({
         ) : (
           <>
             {submitted && (
-              <div aria-live="polite" aria-busy={thinking} className="space-y-2 text-sm">
+              <div aria-live="polite" aria-busy={thinking} className="space-y-3 rounded-xl border bg-surface-2 p-4 text-sm">
                 <p className="font-medium">{thinking ? t('ask.resolving') : answer.message}</p>
                 {answer.links.length > 0 && (
                   <ul className="divide-y rounded-md border">
@@ -189,6 +189,7 @@ export default function AskPanel({
                 className="min-h-11 h-auto justify-start whitespace-normal text-left"
                 onClick={() => void ask(t('ask.question'))}
               >
+                <CalendarCheck aria-hidden="true" className="size-5 shrink-0" />
                 {t('ask.question')}
               </Button>
             )}
@@ -199,6 +200,7 @@ export default function AskPanel({
                 className="min-h-11 h-auto justify-start whitespace-normal text-left"
                 onClick={() => void ask(t('ask.draftPrompt'))}
               >
+                <MessageSquare aria-hidden="true" className="size-5 shrink-0" />
                 {t('ask.draftPrompt')}
               </Button>
             )}

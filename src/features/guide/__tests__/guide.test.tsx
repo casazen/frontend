@@ -10,6 +10,7 @@ import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import type { AppContextKey } from '@/config/route-manifest';
 import { useUiStore } from '@/store/ui-store';
+import { savePlanResume } from '@/features/onboarding/plan-resume';
 import { COLLABORATOR, OWNER, path, plan } from '@/features/onboarding/__tests__/onboarding-fixtures';
 import { FirstRunWizard } from '../first-run-wizard';
 import { GuideButton } from '../guide-panel';
@@ -26,11 +27,11 @@ vi.mock('@/api/internal-activities.api', () => ({
 }));
 vi.mock('@/queries/use-properties', () => ({ useProperties: () => ({ data: [{ id: 'p-1', name: 'Villa del Lago' }] }) }));
 
-const workspace = vi.hoisted(() => ({ contexts: [] as Array<{ contextKey: string; roleKey: string }> }));
+const workspace = vi.hoisted(() => ({ contexts: [] as Array<{ contextKey: string; roleKey: string }>, canReadProperties: true }));
 vi.mock('@/hooks/use-workspace', () => ({
-  useWorkspace: () => ({ contexts: workspace.contexts, hasPermission: () => true }),
+  useWorkspace: () => ({ contexts: workspace.contexts, hasPermission: (_area: string, permission: string) => permission !== 'property.read' || workspace.canReadProperties }),
 }));
-vi.mock('@/queries/use-users', () => ({ useCurrentUser: () => ({ user: { id: 'u-1', firstName: 'Luca' }, org: null }) }));
+vi.mock('@/queries/use-users', () => ({ useCurrentUser: () => ({ user: { id: 'u-1', firstName: 'Luca' }, org: { id: 'org-a', name: 'Casa Demo' } }) }));
 
 const TODO = [
   {
@@ -52,11 +53,11 @@ function Where() {
   return <p data-testid="where">{location.pathname}</p>;
 }
 
-function renderWith(node: React.ReactNode, at = '/app/short-rent') {
+function renderWith(node: React.ReactNode, at = '/app/short-rent', octorateOnboarding = true) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <I18nextProvider i18n={i18n}>
-      <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, octorateOnboarding: true }, isLoading: false }}>
+      <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, octorateOnboarding, octorateConnector: true }, isLoading: false }}>
         <QueryClientProvider client={client}>
           <MemoryRouter initialEntries={[at]}>
             <Routes>
@@ -96,11 +97,11 @@ describe('the guide of the header', () => {
 
   afterEach(() => cleanup());
 
-  it('GuideButton_UrgentThingsToDo_CarriesTheirNumberAndSaysIt', async () => {
+  it('GuideButton_DoesNotDuplicateTheUrgentActivityCount', async () => {
     renderButton();
 
-    expect(await screen.findByTestId('guide-button-count')).toHaveTextContent('3');
-    expect(screen.getByTestId('guide-button')).toHaveAccessibleName('Apri la guida: 3 cose urgenti da fare');
+    expect(screen.queryByTestId('guide-button-count')).not.toBeInTheDocument();
+    expect(screen.getByTestId('guide-button')).toHaveAccessibleName('Apri la guida');
   });
 
   it('GuidePanel_ShortRent_TellsTheSetupAndTheToDoListAsRoadsWithTheStepToDoNow', async () => {
@@ -158,6 +159,8 @@ describe('the welcome of the first access («Inizia con CasaZen» as the first w
   beforeEach(async () => {
     await i18n.changeLanguage('it');
     window.localStorage.clear();
+    window.sessionStorage.clear();
+    workspace.canReadProperties = true;
     act(() => useUiStore.setState({ guideOpen: false }));
     workspace.contexts = OWNER;
     vi.mocked(onboardingApi.getPath).mockReset().mockResolvedValue(path());
@@ -183,6 +186,26 @@ describe('the welcome of the first access («Inizia con CasaZen» as the first w
     expect(window.localStorage.getItem('casazen:welcome-seen:u-1')).toBe('1');
   });
 
+  it('opens the organization setup plan from the welcome while the parts remain available in the preview', async () => {
+    renderWith(<FirstRunWizard />);
+    await screen.findByTestId('first-run-welcome');
+    const start = screen.getByTestId('first-run-start');
+    expect(start).toHaveAccessibleName(i18n.t('onboardingPlan.title'));
+    fireEvent.click(start);
+    expect(screen.getByTestId('where').textContent).toBe('/app/short-rent/onboarding');
+    expect(screen.queryByTestId('first-run-wizard')).not.toBeInTheDocument();
+  });
+
+  it('opens the next permitted checklist task when this organization has no connected setup path', async () => {
+    vi.mocked(onboardingApi.getStatus).mockResolvedValue({ steps: [{ key: 'property', state: 'todo' }] } as never);
+    renderWith(<FirstRunWizard />, '/app/short-rent', false);
+    const start = await screen.findByTestId('first-run-start');
+    expect(start).toHaveAccessibleName(i18n.t('activation.cta.property'));
+    fireEvent.click(start);
+    expect(screen.getByTestId('where').textContent).toBe('/app/short-rent/properties/create');
+    expect(onboardingApi.getPath).not.toHaveBeenCalled();
+  });
+
   it('Later_ClosesItForGoodAndAddsNoOtherLayer', async () => {
     renderWith(<FirstRunWizard />);
 
@@ -201,6 +224,23 @@ describe('the welcome of the first access («Inizia con CasaZen» as the first w
     await act(async () => {});
     expect(screen.queryByTestId('first-run-wizard')).not.toBeInTheDocument();
     expect(onboardingApi.getPath).not.toHaveBeenCalled();
+  });
+
+  it('leaves the dashboard resume action visible after saving from a direct link to the plan', async () => {
+    savePlanResume('u-1', 'org-a', 'properties');
+    renderWith(<FirstRunWizard />);
+    await waitFor(() => expect(onboardingApi.getPlan).toHaveBeenCalled());
+    await act(async () => {});
+    expect(screen.queryByTestId('first-run-wizard')).not.toBeInTheDocument();
+    expect(window.localStorage.getItem('casazen:welcome-seen:u-1')).toBeNull();
+  });
+
+  it('keeps the connected plan out of the welcome when property.read is missing', async () => {
+    workspace.canReadProperties = false;
+    renderWith(<FirstRunWizard />);
+    await waitFor(() => expect(onboardingApi.getPath).toHaveBeenCalled());
+    await act(async () => {});
+    expect(screen.queryByTestId('first-run-wizard')).not.toBeInTheDocument();
   });
 
   it('SetupComplete_HasNothingToWelcomeTo', async () => {

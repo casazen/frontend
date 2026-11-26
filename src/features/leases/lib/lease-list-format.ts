@@ -40,7 +40,7 @@ export function isLeasePlaceholderDate(date: string | null | undefined): boolean
 }
 
 /** "dal 1 ott 2026 al 30 set 2030": the days as the API wrote them, never moved by the time zone of the browser. */
-export function leaseTermText(lease: LeaseSummary, t: TFunction, language: string): string {
+export function leaseTermText(lease: Pick<LeaseSummary, 'startDate' | 'endDate'>, t: TFunction, language: string): string {
   if (isLeasePlaceholderDate(lease.startDate)) return t('leaseList.termToDefine');
   const from = formatStayDate(parseStayDate(lease.startDate), language, FULL_DAY);
   const to = formatStayDate(parseStayDate(lease.endDate), language, FULL_DAY);

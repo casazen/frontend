@@ -28,6 +28,8 @@ import type {
  */
 const PUBLIC_MULTIPART: ApiRequestOptions = { public: true, headers: { 'Content-Type': 'multipart/form-data' } };
 
+export interface SelfiePose { turnedSelfie: Blob; challengeToken: string }
+
 export const publicCheckinApi = {
   requestInvoice: async (token: string, request: PublicCheckInInvoiceRequest) => {
     await axios.post(`/public/checkin/${token}/invoice`, request, { public: true });
@@ -60,6 +62,8 @@ export const publicCheckinApi = {
     body.append('file', file);
     const response = await axios.post<CheckInDocumentReadResult>(`/public/checkin/${token}/read-document`, body, {
       public: true,
+      // The vision provider, MRZ and printed-field readers each have a separate deadline.
+      timeout: 60_000,
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return response.data;
@@ -106,9 +110,17 @@ export const publicCheckinApi = {
    * The selfie of the guest who verifies (ADR-013-R1: compared in the request, ADR-013-R2: nothing of it is kept). For a property in Ticino the photo
    * of the document comes again with it (`documentPhoto`, and `documentPhotoBack` for a document of two sides). The answer is `ok` (with the lock code), `retry` or `operator`.
    */
-  postSelfie: (token: string, selfie: Blob, documentPhoto?: Blob | null, documentPhotoBack?: Blob | null) => {
+  startSelfieChallenge: (token: string) =>
+    ApiClient.post<{ challengeToken: string; noseToRight: boolean; expiresAt: string }>(
+      `/public/checkin/${token}/selfie-challenge`, undefined, { public: true }),
+
+  postSelfie: (token: string, selfie: Blob, documentPhoto?: Blob | null, documentPhotoBack?: Blob | null, pose?: SelfiePose) => {
     const body = new FormData();
     body.append('selfie', selfie, 'selfie.jpg');
+    if (pose) {
+      body.append('turnedSelfie', pose.turnedSelfie, 'turned.jpg');
+      body.append('challengeToken', pose.challengeToken);
+    }
     if (documentPhoto) body.append('documentPhoto', documentPhoto, 'document.jpg');
     if (documentPhotoBack) body.append('documentPhotoBack', documentPhotoBack, 'document-back.jpg');
     return ApiClient.post<IdentitySelfieResponse>(`/public/checkin/${token}/selfie`, body, PUBLIC_MULTIPART);

@@ -1,3 +1,4 @@
+import { WorkspaceContext } from '@/contexts/workspace-context';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen, within } from '@testing-library/react';
 import { createElement } from 'react';
@@ -61,20 +62,23 @@ function sync(changes: Partial<BookingOctorateSync> = {}): BookingOctorateSync {
 }
 
 /** What the page passes to the result: whether the booking is on the channel manager, from the mirror it already read (the result reads nothing itself). */
-function renderDone(completion: CheckoutWizardCompleteResult, options: { connector?: boolean; mirror?: BookingOctorateSync | null } = {}) {
+function renderDone(completion: CheckoutWizardCompleteResult, options: { connector?: boolean; mirror?: BookingOctorateSync | null; permissions?: string[] } = {}) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   const flags = { ...DEFAULT_FEATURE_FLAGS, octorateConnector: options.connector ?? false };
   return render(
     createElement(I18nextProvider, { i18n },
       createElement(QueryClientProvider, { client },
         createElement(FeatureFlagsContext.Provider, { value: { flags, isLoading: false } },
-          createElement(MemoryRouter, null,
+          createElement(WorkspaceContext.Provider, { value: {
+            contexts: [], activeContext: 'short-rent', isReady: true, setActiveContext: vi.fn(), getDefaultRoute: () => '/app/short-rent',
+            hasPermission: (_, permission) => (options.permissions ?? []).includes(permission),
+          } }, createElement(MemoryRouter, null,
             createElement(CheckoutDone, {
               bookingId: 'b-1',
               guestName: 'Mario Rossi',
               result: completion,
               channelManager: channelManagerLinked(options.mirror),
-            }))))),
+            })))))),
   );
 }
 
@@ -110,6 +114,18 @@ describe('CheckoutDone', () => {
       "L'immobile è segnato come pronto per il prossimo ospite.",
     ]);
     expect(tones()).toEqual(['done', 'done', 'done', 'done', 'done']);
+  });
+
+  it('links a permitted reader to the actual housekeeping receipt after checkout', () => {
+    renderDone(result({ serviceRequestId: 'sr-1' }), { permissions: ['property.read'] });
+    expect(screen.getByTestId('checkout-done-cleaning')).toHaveAttribute('href', '/app/short-rent/interventions/sr-1');
+  });
+
+  it('starts a fresh linked request when checkout could not send housekeeping and the host can write', () => {
+    renderDone(result({}, { cleaning: { choice: 'Request', supplierOrgId: 's-1', category: 'cleaning', notes: null, requestId: null } }),
+      { permissions: ['servicerequest.write'] });
+    expect(screen.getByTestId('checkout-done-cleaning')).toHaveAttribute('href',
+      '/app/short-rent/interventions/request?propertyId=p-1&bookingId=b-1&type=cleaning');
   });
 
   it('CheckoutDone_WhatIsNotCompleted_IsSaidAsSuchAndNeverAsDone', () => {

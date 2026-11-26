@@ -9,7 +9,7 @@ import { bookingNights } from '@/features/bookings/lib/booking-price';
 import { todayInRome } from '@/lib/stay-dates';
 import { formatCurrency } from '@/lib/utils';
 import type { Booking } from '@/types';
-import { sortStays, stayRangeText } from '../lib/guest-stays';
+import { focusStayOf, sortStays, stayRangeText } from '../lib/guest-stays';
 
 const ROW =
   'group/open flex min-h-11 min-w-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-md py-3 outline-hidden ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
@@ -29,7 +29,9 @@ interface GuestStaysTabProps {
 export function GuestStaysTab({ stays, isLoading, isError, error, onRetry }: GuestStaysTabProps) {
   const { t, i18n } = useTranslation();
   const today = todayInRome();
+  const focus = focusStayOf(stays, today);
   const sorted = sortStays(stays);
+  const ordered = focus ? [focus.booking, ...sorted.filter(stay => stay.id !== focus.booking.id)] : sorted;
 
   return (
     <PlainSection title={t('guests.detailPage.staysTitle')} count={sorted.length} data-testid="guest-stays">
@@ -47,15 +49,21 @@ export function GuestStaysTab({ stays, isLoading, isError, error, onRetry }: Gue
         </p>
       ) : (
         <ul role="list" className="divide-y divide-border border-y border-border">
-          {sorted.map((booking) => {
+          {ordered.map((booking) => {
+            const phase = focus?.booking.id === booking.id ? focus.phase : undefined;
             const nights = bookingNights(booking);
-            const when = [stayRangeText(booking, i18n.language, today), nights > 0 ? t('booking.list.nights', { count: nights }) : ''].filter(Boolean).join(' · ');
+            const details = [
+              stayRangeText(booking, i18n.language, today),
+              nights > 0 ? t('booking.list.nights', { count: nights }) : '',
+              booking.numberOfGuests > 0 ? t('booking.list.guestCount', { count: booking.numberOfGuests }) : '',
+            ].filter(Boolean).join(' · ');
             return (
               <li key={booking.id}>
                 <Link to={`${BOOKINGS_PATH}/${booking.id}`} className={ROW} data-testid={`guest-stay-${booking.id}`}>
                   <span className="min-w-0 flex-1 basis-56">
+                    {phase && <span className="block text-xs font-semibold text-primary-text">{t(`guests.detailPage.focus.${phase}`)}</span>}
                     <span className="block break-words font-semibold group-hover/open:underline">{booking.propertyName || '—'}</span>
-                    <span className="block break-words text-sm text-foreground/70">{when}</span>
+                    <span className="block break-words text-sm text-foreground/70">{details}</span>
                   </span>
                   <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
                     <span className="text-sm font-medium tabular-nums">{formatCurrency(booking.totalPrice, booking.currency)}</span>

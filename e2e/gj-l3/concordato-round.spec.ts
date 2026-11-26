@@ -503,8 +503,9 @@ async function runRound(browser: Browser, request: APIRequestContext, access: Ac
     });
 
     await step('The history of the contract tells the round in words, with no name of the supplier', async () => {
-      await page.getByRole('button', { name: 'Mostra tutta la cronologia' }).click();
       const timeline = page.getByTestId('lease-timeline');
+      await timeline.locator('summary').click();
+      await timeline.getByRole('button', { name: 'Mostra tutta la cronologia' }).click();
       const told = [
         'Informativa privacy accettata',
         'Modulo guidato aperto',

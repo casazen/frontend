@@ -166,6 +166,15 @@ describe('landlord maintenance approval', () => {
     expect(toast.error).not.toHaveBeenCalled();
   });
 
+  it('returns keyboard focus to the reject action when the reason is cancelled', async () => {
+    renderAt('/app/long-rent/leases/lease-1/manutenzione', <LandlordMaintenancePage />);
+    fireEvent.click(await screen.findByTestId('maintenance-reject'));
+    expect(screen.getByTestId('maintenance-reject-reason')).toHaveFocus();
+    fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
+    expect(screen.getByTestId('maintenance-reject')).toHaveFocus();
+    expect(post).not.toHaveBeenCalled();
+  });
+
   it('rejects with a reason and keeps pay hidden', async () => {
     renderAt('/app/long-rent/leases/lease-1/manutenzione', <LandlordMaintenancePage />);
     fireEvent.click(await screen.findByTestId('maintenance-reject'));

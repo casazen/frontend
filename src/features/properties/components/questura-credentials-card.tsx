@@ -31,22 +31,38 @@ export function QuesturaCredentialsCard({ propertyId, canEdit }: QuesturaCredent
   const remove = useRemoveQuesturaCredentials(propertyId);
   const [values, setValues] = useState<SetQuesturaCredentialsRequest>(EMPTY_QUESTURA_CREDENTIALS);
   const [errors, setErrors] = useState<QuesturaCredentialsErrors>({});
+  const [profile, setProfile] = useState<'preserve' | 'single' | 'apartments'>('preserve');
+  const [apartmentId, setApartmentId] = useState('');
+  const [invalidApartment, setInvalidApartment] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState(false);
 
-  const configured = status.data?.configured === true;
+  const busy = save.isPending || remove.isPending;
+  const configured = status.isSuccess && status.data.configured;
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
+    if (busy) return;
     const found = validateQuesturaCredentials(values);
     setErrors(found);
     if (Object.keys(found).length > 0) return;
-    save.mutate(values, {
+    const apartment = Number(apartmentId);
+    const invalid = profile === 'apartments' && (!/^\d+$/.test(apartmentId) || !Number.isSafeInteger(apartment) || apartment < 1 || apartment > 2147483647);
+    setInvalidApartment(invalid);
+    if (invalid) return;
+    const data = profile === 'preserve' ? values : { ...values, apartmentId: profile === 'single' ? 0 : apartment };
+    save.mutate(data, {
       // Write-only: the values leave the page as soon as the API has them.
-      onSuccess: () => setValues(EMPTY_QUESTURA_CREDENTIALS),
+      onSuccess: () => {
+        setValues(EMPTY_QUESTURA_CREDENTIALS);
+        setProfile('preserve');
+        setApartmentId('');
+      },
+      onSettled: () => save.reset(),
     });
   };
 
   const handleRemove = () => {
+    if (busy) return;
     remove.mutate(undefined, { onSettled: () => setConfirmRemove(false) });
   };
 
@@ -87,7 +103,7 @@ export function QuesturaCredentialsCard({ propertyId, canEdit }: QuesturaCredent
 
         <p className="text-xs text-muted-foreground">{t('questuraCredentials.writeOnlyHint')}</p>
 
-        {canEdit && status.data && (
+        {canEdit && status.isSuccess && (
           <form className="@container min-w-0 space-y-3" onSubmit={handleSubmit} noValidate data-testid="questura-credentials-form">
             <QuesturaCredentialsFields
               values={values}
@@ -97,8 +113,23 @@ export function QuesturaCredentialsCard({ propertyId, canEdit }: QuesturaCredent
                 setErrors((current) => ({ ...current, [field]: undefined }));
               }}
             />
+            <label className="grid gap-1 text-sm font-medium">
+              {t('institutionalPortals.accountProfile')}
+              <select className="rounded-md border bg-background p-2" value={profile}
+                onChange={(event) => { setProfile(event.target.value as typeof profile); setInvalidApartment(false); }}>
+                <option value="preserve">{t('institutionalPortals.preserve')}</option>
+                <option value="single">{t('institutionalPortals.single')}</option>
+                <option value="apartments">{t('institutionalPortals.apartments')}</option>
+              </select>
+            </label>
+            {profile === 'apartments' && <label className="grid gap-1 text-sm font-medium">
+              {t('institutionalPortals.apartmentId')}
+              <input inputMode="numeric" className="rounded-md border bg-background p-2" value={apartmentId}
+                aria-invalid={invalidApartment} onChange={(event) => { setApartmentId(event.target.value); setInvalidApartment(false); }} />
+              {invalidApartment && <span role="alert" className="text-destructive">{t('institutionalPortals.invalidApartment')}</span>}
+            </label>}
             <div className="flex flex-wrap items-center gap-2 pt-1">
-              <Button type="submit" disabled={save.isPending} data-testid="questura-credentials-save">
+              <Button type="submit" disabled={busy} data-testid="questura-credentials-save">
                 {save.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {configured ? t('questuraCredentials.replace') : t('questuraCredentials.save')}
               </Button>
@@ -109,7 +140,7 @@ export function QuesturaCredentialsCard({ propertyId, canEdit }: QuesturaCredent
                       type="button"
                       variant="destructive"
                       onClick={handleRemove}
-                      disabled={remove.isPending}
+                      disabled={busy}
                       data-testid="questura-credentials-remove-confirm"
                     >
                       {remove.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -123,6 +154,7 @@ export function QuesturaCredentialsCard({ propertyId, canEdit }: QuesturaCredent
                   <Button
                     type="button"
                     variant="outline"
+                    disabled={busy}
                     onClick={() => setConfirmRemove(true)}
                     data-testid="questura-credentials-remove"
                   >

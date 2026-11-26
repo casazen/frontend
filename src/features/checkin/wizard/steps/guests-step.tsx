@@ -67,10 +67,19 @@ function GuestsFields({ state, source, withDocuments }: GuestsFieldsProps) {
           {t('checkin.guestCountMismatch', { count: declared })}
         </p>
       )}
+      {fields.length > 1 && (
+        <nav aria-label={t('checkin.guestsIntro')} className="flex flex-wrap gap-2">
+          {fields.map((field, index) => (
+            <a key={field.id} href={`#checkin-guest-${field.id}`} className="inline-flex min-h-11 items-center rounded-xl border px-3 text-sm font-medium text-primary hover:bg-muted">
+              {t('checkin.guestHeading', { index: index + 1 })}
+            </a>
+          ))}
+        </nav>
+      )}
       {fields.map((field, index) => {
         const level = documentLevels[index] ?? null;
         return (
-          <div key={field.id} className="space-y-3">
+          <div id={`checkin-guest-${field.id}`} key={field.id} tabIndex={-1} className="scroll-mt-24 space-y-3">
             <StayGuestPersonalFields
               index={index}
               arrivalDate={state.booking.checkIn}

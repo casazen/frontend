@@ -326,8 +326,8 @@ describe('the import step', () => {
     const list = await screen.findByTestId('activation-import-prop-1', {}, WAIT);
     await waitFor(() => expect(list).toHaveAttribute('data-rooms', 'in'), WAIT);
     expect(list.querySelector('[data-item="rooms"]')).toHaveAttribute('data-state', 'done');
-    expect(list.querySelector('[data-item="reservations"]')).toHaveAttribute('data-state', 'requested');
-    expect(list.querySelector('[data-item="calendar"]')).toHaveAttribute('data-state', 'requested');
+    expect(list.querySelector('[data-item="reservations"]')).toBeNull();
+    expect(list.querySelector('[data-item="calendar"]')).toBeNull();
   });
 
   it('ImportStep_RoomsNotInYet_ShowsTheWaitAndContinueIsRefusedUntilTheyAre', async () => {

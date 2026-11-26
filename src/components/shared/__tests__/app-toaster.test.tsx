@@ -93,6 +93,25 @@ describe('AppToaster (UI-04b)', () => {
     expect(toaster.style.getPropertyValue('--mobile-offset-bottom')).toBe(ABOVE_THE_BAR_AND_THE_PRIMARY_ACTION);
   });
 
+  it('places a toast below the header of a short mobile wizard', async () => {
+    stubViewportWidth(390);
+    const matchWidth = window.matchMedia;
+    vi.stubGlobal('matchMedia', (query: string) => query.startsWith('(height')
+      ? { ...matchWidth(query), matches: true }
+      : matchWidth(query));
+    useUiStore.setState({ bottomBarVisible: true, mobilePrimaryVisible: true, openWizards: 1 });
+
+    try {
+      render(<AppToaster />);
+      const toaster = await showAToast();
+      expect(toaster).toHaveAttribute('data-y-position', 'top');
+      expect(toaster).toHaveAttribute('data-x-position', 'center');
+      expect(toaster.style.getPropertyValue('--mobile-offset-top')).toContain('--header-height');
+    } finally {
+      act(() => useUiStore.setState({ openWizards: 0 }));
+    }
+  });
+
   it('AppToaster_PrimaryActionComesAndGoes_TheToastsFollowIt', async () => {
     stubViewportWidth(390);
     useUiStore.setState({ bottomBarVisible: true });

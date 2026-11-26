@@ -10,6 +10,7 @@ import { useNavCounts } from '@/hooks/use-nav-counts';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { useUiStore } from '@/store/ui-store';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { MenuSearch } from './menu-search';
 import { AreaSwitcher } from './area-switcher';
 import { GroupedNavLinks } from './grouped-nav-links';
 import { SheetAccount } from './sheet-account';
@@ -110,13 +111,15 @@ export function MoreSheet({ contextKey, organizationName = null }: MoreSheetProp
             <AreaSwitcher contextKey={contextKey} organizationName={organizationName} />
           </div>
           <nav aria-label={t('nav.menuLabel', { area: t(getArea(contextKey).nameKey) })}>
-            <GroupedNavLinks
-              nav={nav}
-              matchEntries={matchEntries}
-              variant="sheet"
-              counts={counts}
-              onNavigate={() => setOpen(false)}
-            />
+            <MenuSearch key={contextKey} entries={matchEntries} onNavigate={() => setOpen(false)}>
+              <GroupedNavLinks
+                nav={nav}
+                matchEntries={matchEntries}
+                variant="sheet"
+                counts={counts}
+                onNavigate={() => setOpen(false)}
+              />
+            </MenuSearch>
           </nav>
           <SheetAccount onNavigate={() => setOpen(false)} />
         </div>

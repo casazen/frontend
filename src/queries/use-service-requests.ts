@@ -77,6 +77,11 @@ function onSupplierActionError(queryClient: QueryClient, error: unknown) {
  * Short-rent requests (D2): `bookingId` for one stay, `propertyId` for a property, `listAll` for every request in
  * scope. Nothing is fetched without one of them.
  */
+/**
+ * Stay or property short-rent requests. Read again when the page opens: the host creates them in the
+ * intervention wizard (another screen) and the shared client keeps `refetchOnMount: false`, so without
+ * this the stay card would keep an empty list after the wizard returns (GJ L3 pay-at-property).
+ */
 export function useServiceRequests(params?: {
   propertyId?: string;
   bookingId?: string;
@@ -89,6 +94,7 @@ export function useServiceRequests(params?: {
     queryKey: [SERVICE_REQUESTS_KEY, params],
     queryFn: () => fetchServiceRequests(params),
     enabled: !!params?.listAll || !!params?.propertyId || !!params?.bookingId,
+    refetchOnMount: 'always',
   });
 }
 
@@ -354,21 +360,22 @@ export function useSuppliersByProperty(propertyId?: string, category?: string, o
  * suppliers of a comune change when one is activated or changes its prices.
  */
 export function useMarketplaceSuppliers(params: {
+  includeTrusted?: boolean;
   propertyId?: string;
   accountScope?: boolean;
   category?: string;
   q?: string;
   sort?: SupplierPickerSort;
 }) {
-  const { propertyId, accountScope, category, q, sort } = params;
+  const { propertyId, accountScope, category, q, sort, includeTrusted } = params;
   const scopeKey = accountScope ? 'account' : propertyId;
   return useQuery({
-    queryKey: ['suppliers', 'marketplace', scopeKey, category ?? '', q ?? '', sort ?? 'recommended'],
-    queryFn: () => fetchMarketplaceSuppliers({ ...(accountScope ? { accountScope } : { propertyId }), category, q, sort }),
+    queryKey: ['suppliers', 'marketplace', scopeKey, category ?? '', q ?? '', sort ?? 'recommended', includeTrusted === true],
+    queryFn: () => fetchMarketplaceSuppliers({ ...(accountScope ? { accountScope } : { propertyId }), ...(includeTrusted ? { includeTrusted } : {}), category, q, sort }),
     enabled: accountScope === true || !!propertyId,
     refetchOnMount: true,
     placeholderData: (previous, previousQuery) =>
-      previousQuery?.queryKey[2] === scopeKey && previousQuery?.queryKey[3] === (category ?? '') ? previous : undefined,
+      previousQuery?.queryKey[2] === scopeKey && previousQuery?.queryKey[3] === (category ?? '') && previousQuery?.queryKey[6] === (includeTrusted === true) ? previous : undefined,
   });
 }
 

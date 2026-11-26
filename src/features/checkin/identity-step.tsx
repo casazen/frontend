@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BiometricConsent, SelfieCapture } from '@/components/checkin';
+import { ActiveSelfieCapture } from './components/active-selfie-capture';
+import { BiometricConsent } from '@/components/checkin';
 import { useGuestLegalTexts } from '@/queries/use-checkin';
 import { IdentityDocumentCapture } from './components/identity-document-capture';
 import { IdentityResult } from './identity-result';
@@ -95,7 +96,9 @@ export function IdentityStep({ identity, token, takeFront }: IdentityStepProps) 
       )}
 
       {progress.stage === 'selfie' && (
-        <SelfieCapture
+        <ActiveSelfieCapture
+          key={token}
+          token={token}
           onCapture={identity.sendSelfie}
           attemptsRemaining={progress.attemptsRemaining}
           isProcessing={identity.busy}

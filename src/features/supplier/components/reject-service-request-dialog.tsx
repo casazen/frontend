@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
@@ -53,9 +53,9 @@ export function RejectServiceRequestDialog({
             aria-describedby="reject-reason-hint"
             data-testid={cancelling ? 'cancel-reason' : 'reject-reason'}
           />
-          <p id="reject-reason-hint" className="text-sm text-foreground/70">
-            {t('supplier.requests.reject.hint')}
-          </p>
+          <DialogDescription>
+            <span id="reject-reason-hint">{t('supplier.requests.reject.hint')}</span>
+          </DialogDescription>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={close}>

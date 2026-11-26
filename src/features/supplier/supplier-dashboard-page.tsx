@@ -2,8 +2,8 @@ import { useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
-import { Inbox, Plus } from 'lucide-react';
-import { PageHeader } from '@/components/layout/page-header';
+import { CalendarCheck, Inbox, Plus } from 'lucide-react';
+import { ServicePageHeader } from '@/features/supplier/components/service-page-header';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { formatStayDate, todayInRome } from '@/lib/stay-dates';
@@ -15,12 +15,12 @@ import { NextStepSection } from './home/next-step-section';
 import { NumbersSection } from './home/numbers-section';
 import { TodaySection } from './home/today-section';
 import { TodoSection } from './home/todo-section';
-import { INBOX_PATH, requestPath } from './requests/request-model';
+import { INBOX_PATH } from './requests/request-model';
 import { useRequestActions } from './requests/use-request-actions';
 import { NEW_SERVICE_PATH } from './services/lib/service-paths';
 
 /** Two columns from a wide screen, as the Home of Affitti brevi: the day on the left (60 %), what waits on the right. */
-const TWO_COLUMNS = 'grid gap-8 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] xl:items-start';
+const TWO_COLUMNS = 'grid gap-8 xl:has-[>:nth-child(2)]:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] xl:items-start';
 
 /**
  * An active supplier whose accepted Terms of Service are not the current version (SU-05, A4-31): says what happens and links the
@@ -87,22 +87,19 @@ export function SupplierDashboardPage() {
   );
 
   const name = user?.firstName?.trim();
-  const urgent = today.data?.newRequests[0];
   const day = formatStayDate(today.data?.date ?? todayInRome(), locale, { weekday: 'long', day: 'numeric', month: 'long' });
   let description = day;
   if (today.data) {
     const jobs = jobsToDoToday(today.data);
-    const toAnswer = today.data.newRequestsTotal;
-    const parts = [jobs > 0 ? t('supplier.home.purpose.jobsToday', { count: jobs }) : null, toAnswer > 0 ? t('supplier.home.purpose.toAnswer', { count: toAnswer }) : null].filter(Boolean);
-    description = t('supplier.home.purpose.line', { day, what: parts.length > 0 ? parts.join(', ') : t('supplier.home.purpose.quiet') });
+    if (jobs > 0) description = t('supplier.home.purpose.line', { day, what: t('supplier.home.purpose.jobsToday', { count: jobs }) });
   }
 
   return (
     <div className="min-w-0 space-y-6 md:space-y-8" data-testid="supplier-home">
-      <PageHeader
+      <ServicePageHeader
+        icon={CalendarCheck}
         title={name ? t('supplier.home.greeting', { name }) : t('supplier.home.greetingAnonymous')}
         description={description}
-        primary={urgent ? { label: t('supplier.requests.answerUrgent'), icon: Inbox, to: requestPath(urgent.id), testId: 'supplier-home-urgent' } : undefined}
         secondary={[
           { label: t('supplier.home.menu.requests'), icon: Inbox, to: INBOX_PATH },
           { label: t('supplier.home.menu.newService'), icon: Plus, to: NEW_SERVICE_PATH },
@@ -117,8 +114,10 @@ export function SupplierDashboardPage() {
         <TodaySection actions={actions} />
         <TodoSection />
       </div>
-      <NumbersSection />
-      <NextStepSection />
+      <div className="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <NumbersSection />
+        <NextStepSection />
+      </div>
     </div>
   );
 }

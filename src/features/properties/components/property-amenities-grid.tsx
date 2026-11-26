@@ -1,5 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { CheckCircle2 } from 'lucide-react';
+import { createElement } from 'react';
+import { Check } from 'lucide-react';
+import { describeAmenity } from '@/lib/public-amenities';
 import { PlainSection } from '@/components/shared/calm';
 import { useAmenityLabels } from '@/queries/use-amenity-catalog';
 
@@ -19,10 +21,10 @@ export function PropertyAmenitiesGrid({ amenities }: PropertyAmenitiesGridProps)
 
   return (
     <PlainSection title={t('property.form.amenities.title')}>
-      <ul role="list" className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
+      <ul role="list" className="grid gap-x-4 sm:grid-cols-2">
         {amenities.map((amenity) => (
-          <li key={amenity} className="flex min-w-0 items-center gap-2 text-sm">
-            <CheckCircle2 aria-hidden="true" className="size-4 shrink-0 text-success-foreground" />
+          <li key={amenity} className="flex min-h-12 min-w-0 items-center gap-3 border-b py-2 text-sm">
+            {createElement(describeAmenity(amenity)?.icon ?? Check, { 'aria-hidden': true, className: 'size-5 shrink-0 text-foreground' })}
             <span className="min-w-0 break-words">{amenityLabel(amenity)}</span>
           </li>
         ))}

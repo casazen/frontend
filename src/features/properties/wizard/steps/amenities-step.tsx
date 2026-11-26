@@ -7,6 +7,7 @@ import { ChoiceCard, ChoiceGroup } from '@/components/ui/choice-card';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import { describeAmenity } from '@/lib/public-amenities';
 import { getProblemMessage } from '@/lib/api-errors';
 import { labelLanguage, useAmenityCatalog } from '@/queries/use-amenity-catalog';
 import { matchesAmenity } from '../amenity-search';
@@ -65,6 +66,10 @@ export function AmenitiesStep({ form, propertyId }: AmenitiesStepProps) {
         />
       </Field>
 
+      <p role="status" className="rounded-xl border bg-muted/30 px-3 py-2 text-sm font-medium" data-testid="property-wizard-amenities-count">
+        {chosen > 0 ? t('propertyWizard.amenities.count', { count: chosen }) : t('propertyWizard.amenities.none')}
+      </p>
+
       {catalog.isLoading ? (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3" role="status" aria-busy="true" aria-label={t('propertyWizard.amenities.loading')}>
           {[0, 1, 2, 3, 4, 5].map((slot) => (
@@ -92,6 +97,7 @@ export function AmenitiesStep({ form, propertyId }: AmenitiesStepProps) {
                   key={entry.name}
                   type="checkbox"
                   value={entry.name}
+                  icon={describeAmenity(entry.name)?.icon}
                   title={entry.label[language]}
                   checked={amenities.includes(entry.name)}
                   onChange={() => toggle(entry.name)}
@@ -105,9 +111,7 @@ export function AmenitiesStep({ form, propertyId }: AmenitiesStepProps) {
         </>
       )}
 
-      <p role="status" className="text-sm text-foreground/70" data-testid="property-wizard-amenities-count">
-        {chosen > 0 ? t('propertyWizard.amenities.count', { count: chosen }) : t('propertyWizard.amenities.none')}
-      </p>
+
 
       {form.watch('country') === 'IT' ? <SafetyCard propertyId={propertyId} amenities={amenities} areaSqm={area > 0 ? area : null} /> : null}
     </>

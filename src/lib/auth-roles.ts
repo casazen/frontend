@@ -136,6 +136,7 @@ export function deriveContextsFromRoles(user: UserWithRoles): DerivedContext[] {
         'guest.manage',
         'alloggiati.submit',
         'approval.decide',
+        'marketing.manage',
         'verification.decision',
       ],
       defaultRoute: '/app/short-rent',

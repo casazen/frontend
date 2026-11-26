@@ -75,5 +75,6 @@ export async function completeCommercialSignup(page: Page, profile: 'owner' | 'l
   }
   await page.goto('/onboarding?checkout=success');
   const enter = page.getByRole('button', { name: 'Entra e inizia la configurazione' });
-  if (await enter.isVisible().catch(() => false)) await enter.click();
+  await expect(enter).toBeVisible({ timeout: 30_000 });
+  await enter.click();
 }

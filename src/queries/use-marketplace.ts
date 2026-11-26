@@ -75,12 +75,13 @@ function partnersOf(catalog: MarketplaceCatalogResponse | undefined): Marketplac
  * interface. Other screens (the activation wizards) change what it says, so it is stale at once and read again every time a page
  * that shows it opens (the app does not read again on mount what it read in the last 5 minutes: `query-client.ts`).
  */
-export function useMarketplaceCatalog(propertyId: string | undefined) {
+export function useMarketplaceCatalog(propertyId: string | undefined, { enabled = true } = {}) {
   const language = useMarketplaceLanguage();
 
   return useQuery({
     queryKey: [MARKETPLACE_KEY, 'catalog', propertyId ?? null, language],
     queryFn: () => getMarketplaceCatalog(propertyId, language),
+    enabled,
     staleTime: 0,
     refetchOnMount: true,
   });

@@ -1,3 +1,4 @@
+import { CalendarDays, House } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -206,9 +207,16 @@ export function BookingEditPage() {
           description={t('booking.edit.description', { name: guestName })}
         />
 
+        {step.name !== 'saved' && (
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border bg-muted/40 px-4 py-3 text-sm">
+            {booking.propertyName && <span className="flex items-center gap-2 font-medium"><House aria-hidden className="size-4 text-primary-text" />{booking.propertyName}</span>}
+            <span className="flex items-center gap-2"><CalendarDays aria-hidden className="size-4 text-primary-text" />{formatStayDate(booking.checkInDate, i18n.language)} → {formatStayDate(booking.checkOutDate, i18n.language)}</span>
+            {booking.bookingCode && <span className="rounded-md bg-card px-2 py-1 font-mono">{booking.bookingCode}</span>}
+          </div>
+        )}
         {step.name === 'saved' ? (
           <div className={FOCUS_COLUMN}>
-            <div className="space-y-4 rounded-md border bg-card p-6" data-testid="booking-edit-saved">
+            <div className="space-y-4 rounded-2xl border bg-card p-6" data-testid="booking-edit-saved">
               <p role="status" className="font-medium">
                 {t('booking.edit.saved.title')}
               </p>
@@ -304,7 +312,7 @@ function EditReview({ change, quote, canMoveMoney, busy, error, language, onConf
       <CardContent className="@container space-y-4">
         {/* The new stay and, beside it once the card is wide, what happens to the money (under each other when it is not). */}
         <div className={cn(FIELD_COLUMNS, 'gap-y-4')}>
-          <dl className="min-w-0 space-y-1 rounded-lg bg-muted p-4 text-sm">
+          <dl className="min-w-0 space-y-3 rounded-xl border bg-muted/40 p-4 text-sm">
             <div className="flex justify-between gap-4">
               <dt className="text-muted-foreground">{t('booking.edit.review.dates')}</dt>
               <dd>{`${day(change.checkInDate)} → ${day(change.checkOutDate)}`}</dd>
@@ -313,7 +321,7 @@ function EditReview({ change, quote, canMoveMoney, busy, error, language, onConf
               <dt className="text-muted-foreground">{t('booking.edit.review.guests')}</dt>
               <dd>{t('booking.list.guestCount', { count: change.numberOfGuests })}</dd>
             </div>
-            <div className="flex justify-between gap-4 border-t pt-1 font-semibold">
+            <div className="flex justify-between gap-4 border-t pt-3 font-semibold tabular-nums">
               <dt>{t('booking.edit.review.total')}</dt>
               <dd data-testid="booking-edit-review-total">{formatCurrency(quote.newTotal, quote.currency)}</dd>
             </div>
