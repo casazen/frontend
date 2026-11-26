@@ -3,14 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { ApiClient } from '@/api/client';
-import type { GeneratedContent } from '@/api/marketing-studio.api';
+import { assetQueryKey, saveAssetDraft, type GeneratedContent } from '@/api/marketing-studio.api';
 import { Button } from '@/components/ui/button';
 import { MarketingError } from './MarketingInputs';
 
 const assets = '/campaigns/studio/assets';
-export const assetQueryKey = ['marketing-assets'];
-export const saveAssetDraft = (asset: { id: string; subject: string; body: string }) =>
-  ApiClient.post<{ id: string }>(assets + '/' + asset.id + '/draft', { subject: asset.subject, body: asset.body });
 
 export function CampaignAssets() {
   const { t } = useTranslation();

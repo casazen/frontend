@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { marketingStudioApi, marketingChannels, type MarketingChannel } from '@/api/marketing-studio.api';
+import { assetQueryKey, saveAssetDraft, marketingStudioApi, marketingChannels, type MarketingChannel } from '@/api/marketing-studio.api';
 import { useCreateDraft, usePreviewCount } from '@/queries/campaigns';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { AudiencePicker, MarketingError, PropertyPicker } from './MarketingInputs';
-import { CampaignAssets, assetQueryKey, saveAssetDraft } from './CampaignAssets';
+import { CampaignAssets } from './CampaignAssets';
 
 export function CampaignEditor({ onSaved }: { onSaved: () => void }) {
   const { t } = useTranslation();

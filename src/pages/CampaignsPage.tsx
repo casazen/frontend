@@ -77,6 +77,7 @@ function CampaignCard({ campaign }: { campaign: Campaign }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState('');
+  const [dateError, setDateError] = useState(false);
   const submit = useSubmitForApproval();
   const schedule = useScheduleCampaign();
   const report = useCampaignReport(open && campaign.status === 'Sent' ? campaign.id : '');
@@ -114,15 +115,22 @@ function CampaignCard({ campaign }: { campaign: Campaign }) {
               onSubmit={(e) => {
                 e.preventDefault();
                 const instant = new Date(date);
-                if (instant.getTime() > Date.now())
-                  schedule.mutate({ campaignId: campaign.id, scheduledAt: instant.toISOString() });
+                if (!(instant.getTime() > Date.now())) {
+                  setDateError(true);
+                  return;
+                }
+                schedule.mutate({ campaignId: campaign.id, scheduledAt: instant.toISOString() });
               }}
             >
               <label>
                 {t('campaigns.editor.schedule')}
-                <Input type="datetime-local" required value={date} onChange={(e) => setDate(e.target.value)} />
+                <Input type="datetime-local" required aria-invalid={dateError} value={date} onChange={(e) => {
+                  setDate(e.target.value);
+                  setDateError(false);
+                }} />
+                {dateError && <span role="alert">{t('marketingStudio.futureTime')}</span>}
               </label>
-              <Button type="submit" disabled={schedule.isPending || !(new Date(date).getTime() > Date.now())}>
+              <Button type="submit" disabled={schedule.isPending || !date}>
                 {t('campaigns.editor.scheduleButton')}
               </Button>
             </form>
