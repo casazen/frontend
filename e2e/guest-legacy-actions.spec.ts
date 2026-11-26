@@ -16,10 +16,9 @@ for (const entry of [
   test('legacy action uses its own grant at ' + entry.section.split('/').slice(0, 4).join('/') + ' ' + entry.api, async ({ page }) => {
     const fullStay: string[] = [];
     const scoped: string[] = [];
-    await page.route('**/api/**', async route => {
+    await page.route(url => url.pathname.startsWith('/api/'), async route => {
       const request = route.request();
       const path = new URL(request.url()).pathname;
-      if (!path.startsWith('/api/')) return route.continue();
       if (path.endsWith('/public/features')) return route.fulfill({ json: { guestPortal: true } });
       if (path.includes('/public/guest-portal/')) fullStay.push(path);
       if (path.includes(entry.api)) {
@@ -27,7 +26,8 @@ for (const entry of [
         return route.fulfill({ status: 404, json: { status: 404, code: 'document_link_invalid', title: 'Invalid link' } });
       }
       if (path.endsWith('/' + orgSlug)) return route.fulfill({ json: { slug: orgSlug, displayName: 'Casa Lago', primaryColor: null } });
-      return route.fulfill({ json: [] });
+      if (path.endsWith('/properties')) return route.fulfill({ json: [] });
+      return route.fulfill({ status: 404, json: { status: 404 } });
     });
     await page.goto(entry.legacy + entry.query, { waitUntil: 'commit' });
     await expect.poll(() => new URL(page.url()).pathname, { timeout: 75_000 }).toBe(entry.section);
