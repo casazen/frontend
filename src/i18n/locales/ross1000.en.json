@@ -1,0 +1,41 @@
+{
+  "title": "ROSS1000 daily movement",
+  "description": "Confirm the property's capacity on the selected day. CasaZen reads arrivals and departures from recorded check-ins and check-outs.",
+  "day": "Reporting day",
+  "open": "Property open",
+  "rooms": "Available rooms",
+  "occupied": "Occupied rooms",
+  "beds": "Available beds",
+  "preview": "Prepare preview",
+  "send": "Submit movement to Lombardy",
+  "totals": "{{arrivals}} arrivals · {{departures}} departures",
+  "states": {
+    "preview_only": "Local preview. Direct submission must be active on the selected date to send.",
+    "ready": "Ready to submit.",
+    "correction": "This movement has changed since acceptance. You can submit the correction.",
+    "sending": "Submission in progress or interrupted. Check the movement in the portal before taking action.",
+    "unknown": "Outcome unknown. Check this day in ROSS1000 before proceeding.",
+    "accepted": "Movement accepted. Confirmed records: {{accepted}}.",
+    "rejected": "Rejected records: {{rejected}}. Check the portal and correct the data before resubmitting.",
+    "partial": "Accepted records: {{accepted}}. Rejected records: {{rejected}}. Complete the correction in the portal.",
+    "credentials_rejected": "ROSS1000 rejected the credentials. Update them before retrying."
+  },
+  "errors": {
+    "invalid_capacity": "Check the opening status, available rooms, occupied rooms and available beds.",
+    "legacy_checkout": "Some departing guests arrived under the previous sender. Reconcile their records in the portal.",
+    "guest_count_incomplete": "The registered guests do not match the number on the booking.",
+    "invalid_guest": "Complete each guest's type, sex and date of birth.",
+    "invalid_group": "Check guest order and group leaders in the check-in.",
+    "missing_residence": "Complete the guests’ residence in the check-in.",
+    "invalid_place_code": "Complete the official citizenship and residence codes.",
+    "unsupported": "This property is outside the supported territory.",
+    "disabled": "Direct ROSS1000 submission is awaiting activation.",
+    "route_or_day": "Check the activation date for direct submission and choose a day that has already begun.",
+    "credentials_missing": "Enter the ISTAT credentials and ROSS1000 property code.",
+    "missing_actual_date": "An actual arrival or departure date is missing. Check the guest registration.",
+    "manual_correction": "Previously submitted records have been removed. Reconcile them in the portal.",
+    "preview_changed": "The data has changed. Prepare a new preview.",
+    "already_processing": "Another submission is in progress for this day.",
+    "request_failed": "The request did not complete. Open the preview again to check the status."
+  }
+}

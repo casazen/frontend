@@ -1,0 +1,41 @@
+{
+  "title": "Movimento giornaliero ROSS1000",
+  "description": "Conferma la capacità della struttura nel giorno scelto. CasaZen ricava arrivi e partenze dai check-in e check-out registrati.",
+  "day": "Giorno di attività",
+  "open": "Struttura aperta",
+  "rooms": "Camere disponibili",
+  "occupied": "Camere occupate",
+  "beds": "Posti letto disponibili",
+  "preview": "Prepara anteprima",
+  "send": "Invia il movimento alla Lombardia",
+  "totals": "{{arrivals}} arrivi · {{departures}} partenze",
+  "states": {
+    "preview_only": "Anteprima locale. Per trasmettere serve il collegamento diretto attivo alla data scelta.",
+    "ready": "Pronto per l’invio.",
+    "correction": "Il movimento è cambiato dopo l’accettazione. Puoi inviare la rettifica.",
+    "sending": "Invio in corso o interrotto. Verifica il movimento nel portale prima di intervenire.",
+    "unknown": "Esito incerto. Verifica il giorno su ROSS1000 prima di procedere.",
+    "accepted": "Movimento accettato. Registrazioni confermate: {{accepted}}.",
+    "rejected": "Registrazioni respinte: {{rejected}}. Verifica nel portale e correggi i dati prima del nuovo invio.",
+    "partial": "Registrazioni accettate: {{accepted}}. Respinte: {{rejected}}. Completa la rettifica sul portale.",
+    "credentials_rejected": "ROSS1000 ha rifiutato le credenziali. Aggiornale prima di riprovare."
+  },
+  "errors": {
+    "invalid_capacity": "Verifica apertura, camere disponibili, camere occupate e letti effettivi.",
+    "legacy_checkout": "Ci sono partenze relative ad arrivi gestiti dal precedente mittente. Riconcilia le registrazioni sul portale.",
+    "guest_count_incomplete": "Il numero di ospiti registrati differisce dal totale della prenotazione.",
+    "invalid_guest": "Completa tipo alloggiato, sesso e data di nascita degli ospiti.",
+    "invalid_group": "Verifica l’ordine del capogruppo e dei componenti nel check-in.",
+    "missing_residence": "Completa la residenza degli ospiti nel check-in.",
+    "invalid_place_code": "Completa i codici ufficiali di cittadinanza e residenza.",
+    "unsupported": "La struttura è fuori dal territorio abilitato.",
+    "disabled": "L’invio diretto ROSS1000 è in attesa di abilitazione.",
+    "route_or_day": "Verifica la decorrenza del mittente diretto e scegli un giorno già iniziato.",
+    "credentials_missing": "Inserisci le credenziali ISTAT e il codice struttura ROSS1000.",
+    "missing_actual_date": "Per il giorno indicato manca la data effettiva di arrivo o partenza. Verifica la registrazione ospiti.",
+    "manual_correction": "Sono state rimosse registrazioni già trasmesse. Riconciliale sul portale prima di procedere.",
+    "preview_changed": "I dati sono cambiati. Prepara una nuova anteprima.",
+    "already_processing": "È già in corso un invio per questo giorno.",
+    "request_failed": "Richiesta non completata. Riapri l’anteprima per verificare lo stato."
+  }
+}
