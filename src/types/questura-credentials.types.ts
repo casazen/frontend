@@ -13,6 +13,7 @@ export interface SetQuesturaCredentialsRequest {
   username: string;
   password: string;
   wsKey: string;
+  apartmentId?: number;
 }
 
 /** Maximum lengths accepted by the API (PropertyQuesturaCredentials.Max*Length). */

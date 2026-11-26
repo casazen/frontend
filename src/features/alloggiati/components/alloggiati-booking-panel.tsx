@@ -1,3 +1,6 @@
+import { useMutation } from '@tanstack/react-query';
+import { alloggiatiApi } from '@/api/alloggiati.api';
+import { saveBlobAs } from '@/lib/file-download';
 import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
 import { Alert } from '@/components/ui/alert';
@@ -38,7 +41,8 @@ export function AlloggiatiBookingPanel({ bookingId, checkInDate }: AlloggiatiBoo
   // actions «Riprova» and «Correggi») stays on screen.
   const notFound = isError && getHttpStatus(error) === 404;
   const status = notFound ? undefined : data;
-  const channelView = status ? stayChannelViewOf(status) : null;
+  const channelView = status && !status.directSubmission ? stayChannelViewOf(status) : null;
+  const queued = status?.directSubmission && (status.status === 'DaInviareManualmente' || status.status === 'DaInviare');
   const receiptArchived = channelView === 'receiptArchived';
 
   return (
@@ -70,7 +74,8 @@ export function AlloggiatiBookingPanel({ bookingId, checkInDate }: AlloggiatiBoo
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <span className="text-sm text-muted-foreground">{t('booking.detailPage.communicationStatus')}</span>
             {/* A stay with its receipt archived is not late: whatever the term says, the server holds the proof. */}
-            <AlloggiatiStatusBadge status={status.status} isOverdue={receiptArchived ? false : status.isOverdue} receiptArchived={receiptArchived} />
+            {queued && <span className="font-medium">{t('institutionalPortals.directQueue')}</span>}
+            {!queued && <AlloggiatiStatusBadge status={status.status} isOverdue={receiptArchived ? false : status.isOverdue} receiptArchived={receiptArchived} />}
           </div>
 
           {isAlloggiatiNotDue(status.status) ? (
@@ -90,7 +95,7 @@ export function AlloggiatiBookingPanel({ bookingId, checkInDate }: AlloggiatiBoo
                 </div>
               )}
 
-              {status.status === 'DaInviareManualmente' && !receiptArchived && (
+              {status.status === 'DaInviareManualmente' && !status.directSubmission && !receiptArchived && (
                 <Alert variant="warning" data-testid="alloggiati-manual-notice">
                   {t('alloggiati.manualNotice')}
                 </Alert>
@@ -103,7 +108,7 @@ export function AlloggiatiBookingPanel({ bookingId, checkInDate }: AlloggiatiBoo
               )}
               {status.status === 'Inviato' && status.confirmationNumber && (
                 <div className="text-sm">
-                  <span className="text-muted-foreground">{t('booking.detailPage.confirmation')}</span>
+                  <span className="text-muted-foreground">{t(status.directSubmission ? 'institutionalPortals.receiptHash' : 'booking.detailPage.confirmation')}</span>
                   {status.confirmationNumber}
                 </div>
               )}
@@ -115,7 +120,18 @@ export function AlloggiatiBookingPanel({ bookingId, checkInDate }: AlloggiatiBoo
                 <p className="text-sm text-destructive">{t('booking.detailPage.incompleteGuestData')}</p>
               )}
 
-              {channelView === null && (
+              {status.directAttempt === 'TestRejected' && <p role="status">{t('institutionalPortals.testRejected')}</p>}
+              {(status.directAttempt === 'PartiallyAccepted' || status.directAttempt === 'TestRejected' || status.directAttempt === 'Rejected') && (
+                <ul className="list-disc pl-5 text-sm">
+                  {status.directGuests?.map((guest) => (
+                    <li key={guest.position}>{t('institutionalPortals.guestOutcome', {
+                      number: guest.position + 1, outcome: t(`institutionalPortals.outcomes.${guest.outcome}`),
+                    })}</li>
+                  ))}
+                </ul>
+              )}
+              {status.canDownloadDirectReceipt && <DirectReceiptDownload key={bookingId} bookingId={bookingId} />}
+              {channelView === null && !status.directSubmission && (
                 <MarkSentManuallyButton
                   bookingId={bookingId}
                   status={status.status}
@@ -134,10 +150,24 @@ export function AlloggiatiBookingPanel({ bookingId, checkInDate }: AlloggiatiBoo
             bookingId={bookingId}
             canEdit={hasPermission('short-rent', 'booking.write')}
             canRevealDocuments={hasPermission('short-rent', 'guest.read')}
-            canDownloadRecordFile={hasPermission('short-rent', 'guest.read')}
+            canDownloadRecordFile={!status.directSubmission && hasPermission('short-rent', 'guest.read')}
           />
         </div>
       )}
     </div>
+  );
+}
+
+function DirectReceiptDownload({ bookingId }: { bookingId: string }) {
+  const { t } = useTranslation();
+  const download = useMutation({
+    mutationFn: () => alloggiatiApi.downloadDirectReceipt(bookingId),
+    onSuccess: (blob) => saveBlobAs(blob, `alloggiati-${bookingId}.pdf`),
+  });
+  return (
+    <>
+      <Button disabled={download.isPending} variant="outline" onClick={() => download.mutate()}>{t('institutionalPortals.receipt')}</Button>
+      {download.isError && <p role="alert">{t('institutionalPortals.downloadError')}</p>}
+    </>
   );
 }

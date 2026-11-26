@@ -1,4 +1,45 @@
 {
+  "institutionalPortals": {
+    "verifyAccount": "Verifica le credenziali Questura",
+    "accountVerified": "Autenticazione confermata dalla Questura.",
+    "verifyFailed": "Verifica non riuscita. Controlla le credenziali prima di inviare.",
+    "directSince": "CasaZen invia direttamente dal {{date}}",
+    "chooseDirect": "Configura invio diretto",
+    "cutoverTitle": "Passaggio a CasaZen",
+    "cutoverHint": "Il passaggio interrompe tutti gli invii istituzionali tramite Octorate per questa struttura. Gestisci manualmente l’altro adempimento fino alla sua attivazione.",
+    "disabled": "Ho disattivato gli invii automatici precedenti, compreso l’eventuale inoltro alla Questura da ROSS1000.",
+    "reconciled": "Ho riconciliato i giorni precedenti. I dati di oggi di questo servizio devono ancora essere trasmessi.",
+    "activate": "Attiva CasaZen da oggi",
+    "delegation": "Per Alloggiati Web occorre prima accettare la delega alla trasmissione.",
+    "activationFailed": "Attivazione non riuscita. Controlla le credenziali e lo stato degli invii prima di riprovare.",
+    "routeError": "Impossibile leggere il mittente della struttura.",
+    "receiptHash": "Impronta SHA-256 della ricevuta",
+    "guestOutcome": "Ospite {{number}} · {{outcome}}",
+    "outcomes": {
+      "accepted": "Acquisito",
+      "rejected": "Respinto",
+      "validated": "Convalidato",
+      "pending": "In attesa"
+    },
+    "downloadError": "Scaricamento della ricevuta non riuscito.",
+    "receipt": "Scarica ricevuta Questura",
+    "testRejected": "La Questura ha rifiutato il controllo preliminare. Verifica i dati degli ospiti.",
+    "directQueue": "Invio diretto CasaZen in attesa",
+    "accountProfile": "Profilo Alloggiati Web",
+    "preserve": "Usa la configurazione attuale",
+    "single": "Struttura singola",
+    "apartments": "Gestione appartamenti",
+    "apartmentId": "ID appartamento assegnato dalla Questura",
+    "invalidApartment": "Inserisci un ID appartamento valido.",
+    "ross1000": "ROSS1000 · Lombardia",
+    "title": "Portali istituzionali",
+    "sender": "Configura mittente e invio",
+    "tax": "Imposta di soggiorno",
+    "como": "Per la dichiarazione mensile al Comune di Como, accedi a StayTour con SPID o CIE. Usa il rendiconto per verificare gli importi del periodo.",
+    "municipality": "Consulta la procedura prevista dal Comune della struttura per presentare la dichiarazione.",
+    "report": "Apri il rendiconto per Comune",
+    "openComo": "Accedi a StayTour Como"
+  },
   "workspaceView": {
     "focusForms": "Nei percorsi guidati, tieni chiuso l’elenco dei passaggi",
     "propertySettings": "Configurazione per immobile",
@@ -1809,6 +1850,9 @@
       "NotDue": "Non dovuta",
       "Rifiutato": "Rifiutato",
       "Errore": "Errore",
+      "Sending": "Trasmissione in corso",
+      "PartiallyAccepted": "Acquisizione parziale · verifica gli ospiti sul portale",
+      "ToVerify": "Esito incerto · verifica sul portale prima di ripetere l’invio",
       "SentReceiptPending": "Inviato, ricevuta in attesa"
     },
     "deadline": "Scadenza",
@@ -28376,6 +28420,18 @@
       }
     },
     "alloggiati": {
+      "Sending": {
+        "label": "Invio in corso",
+        "explain": "CasaZen sta trasmettendo le schede ad Alloggiati Web."
+      },
+      "PartiallyAccepted": {
+        "label": "Acquisizione parziale",
+        "explain": "Verifica sul portale quali ospiti sono stati acquisiti prima di correggere le schede rimanenti."
+      },
+      "ToVerify": {
+        "label": "Esito da verificare",
+        "explain": "Consulta il portale prima di ripetere l’invio per evitare duplicati."
+      },
       "ChannelManagerWriteFailed": {
         "label": "Da correggere",
         "explain": "Il tuo channel manager non ha preso tutti gli ospiti: guarda il motivo di ognuno, correggi i dati o riprova.",
@@ -32705,6 +32761,28 @@
     "undo": "Annulla",
     "undoFailed": "Non è stato possibile annullare.",
     "commitFailed": "Non è stato possibile completare l'operazione."
+  },
+  "comoStayTour": {
+    "departures": "Soggiorni da riconciliare per data di uscita mancante o diversa da quella usata per il calcolo: {{count}}. Gli importi sono esclusi dai totali.",
+    "title": "Dichiarazione mensile · Como",
+    "period": "Mese della dichiarazione",
+    "taxable": "Ospiti imponibili",
+    "nights": "Pernottamenti imponibili",
+    "amount": "Imposta a carico del gestore",
+    "reason": "Causale",
+    "guests": "Ospiti",
+    "overnights": "Pernottamenti",
+    "missing": "Soggiorni con dati mancanti o da riconfermare: {{count}}. I relativi importi sono esclusi dai totali.",
+    "channel": "Soggiorni con uscita nel mese e riscossione del portale: {{count}}. Verifica sugli estratti degli intermediari tutte le riscossioni del mese, anche per soggiorni con uscita in altri mesi.",
+    "basis": "I totali comprendono i soggiorni con uscita nel mese e imposta confermata a carico del gestore. Verifica le causali di esenzione prima della dichiarazione su StayTour.",
+    "attach": "Archivia la conferma di StayTour",
+    "archive": "Consulta le conferme del mese",
+    "error": "Rendiconto indisponibile",
+    "retry": "Riprova",
+    "over_four_nights": "Pernottamenti successivi al quarto",
+    "unknown": "Causale da verificare",
+    "restricted": "Causale riservata",
+    "loading": "Caricamento del rendiconto"
   },
   "touristTax": {
     "exemption": {

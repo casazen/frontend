@@ -6,7 +6,6 @@ import { Pencil } from 'lucide-react';
 import { PlainSection } from '@/components/shared/calm';
 import { useDetailDrawer } from '@/components/shared/detail-drawer/use-detail-drawer';
 import { Button } from '@/components/ui/button';
-import { IstatCredentialsCard } from '@/features/compliance/components/istat-credentials-card';
 import { TICINO_LAYER_KIND, ticinoLayerPath } from '@/features/compliance/ticino/ticino-layer-address';
 import { TicinoStructureIdForm } from '@/features/compliance/ticino/ticino-structure-id-form';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
@@ -14,7 +13,7 @@ import type { PropertyDetailDto } from '@/types';
 import { propertyEditPath } from '../properties-paths';
 import { PropertyCinBadge } from './property-cin-badge';
 import { PropertyDocumentsSection } from './property-documents-section';
-import { QuesturaCredentialsCard } from './questura-credentials-card';
+import { PropertyInstitutionalPortals } from './property-institutional-portals';
 
 interface PropertyDocumentsTabProps {
   property: PropertyDetailDto;
@@ -23,12 +22,7 @@ interface PropertyDocumentsTabProps {
   onEditCin: () => void;
 }
 
-/**
- * The tab Documenti e adempimenti (SR-07d): the CIN, the documents of the property and the Alloggiati Web credentials. The
- * old page had them in two tabs (Documenti, CIN & Compliance); the summary of the compliance that closed the second one said
- * what the header and "Cosa fare ora" now say. With the activation of the channel manager (the flag `octorateOnboarding`) the regional ISTAT credentials are under them,
- * for a property in Italy (E20/F03/US02/T01): with the flag off nothing of them is drawn or asked.
- */
+/** Property documents, registration details and the institutional portals applicable to the property's country. */
 export function PropertyDocumentsTab({ property, canWrite, onEditCin }: PropertyDocumentsTabProps) {
   const { t } = useTranslation();
   const { flags } = useFeatureFlags();
@@ -74,9 +68,7 @@ export function PropertyDocumentsTab({ property, canWrite, onEditCin }: Property
 
       <PropertyDocumentsSection plain propertyId={property.id} documents={property.documents} />
 
-      {property.country === 'IT' ? <QuesturaCredentialsCard propertyId={property.id} canEdit={canWrite} /> : null}
-
-      {flags.octorateOnboarding && property.country === 'IT' ? <IstatCredentialsCard propertyId={property.id} canEdit={canWrite} /> : null}
+      {property.country === 'IT' && <PropertyInstitutionalPortals key={property.id} property={property} canWrite={canWrite} />}
     </div>
   );
 }

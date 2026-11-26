@@ -1,4 +1,45 @@
 {
+  "institutionalPortals": {
+    "verifyAccount": "Verify police credentials",
+    "accountVerified": "The police service confirmed authentication.",
+    "verifyFailed": "Verification failed. Check the credentials before submitting.",
+    "directSince": "CasaZen sends directly from {{date}}",
+    "chooseDirect": "Set up direct submission",
+    "cutoverTitle": "Switch to CasaZen",
+    "cutoverHint": "Switching stops all government submissions through Octorate for this property. Handle the other service manually until you activate it.",
+    "disabled": "I have disabled previous automatic submissions, including any forwarding from ROSS1000 to the police.",
+    "reconciled": "I have reconciled earlier dates. Today's records for this service still need to be submitted.",
+    "activate": "Activate CasaZen from today",
+    "delegation": "Accept the transmission delegation before activating Alloggiati Web.",
+    "activationFailed": "Activation failed. Check the credentials and submission status before retrying.",
+    "routeError": "Unable to read the sender for this property.",
+    "receiptHash": "Receipt SHA-256",
+    "guestOutcome": "Guest {{number}} · {{outcome}}",
+    "outcomes": {
+      "accepted": "Accepted",
+      "rejected": "Rejected",
+      "validated": "Validated",
+      "pending": "Pending"
+    },
+    "downloadError": "Could not download the receipt.",
+    "receipt": "Download police receipt",
+    "testRejected": "Police validation failed. Check the guest records.",
+    "directQueue": "CasaZen direct submission pending",
+    "accountProfile": "Alloggiati Web account profile",
+    "preserve": "Use current configuration",
+    "single": "Single property",
+    "apartments": "Apartment management",
+    "apartmentId": "Apartment ID assigned by the police",
+    "invalidApartment": "Enter a valid apartment ID.",
+    "ross1000": "ROSS1000 · Lombardy",
+    "title": "Government portals",
+    "sender": "Configure sender and submission",
+    "tax": "Tourist tax",
+    "como": "Sign in to StayTour with SPID or CIE to file the monthly return with the City of Como. Use the report to check the amounts for the period.",
+    "municipality": "Follow the filing procedure of the municipality where the property is located.",
+    "report": "Open the report by municipality",
+    "openComo": "Sign in to StayTour Como"
+  },
   "workspaceView": {
     "focusForms": "Keep the step list collapsed in guided flows",
     "propertySettings": "Property settings",
@@ -1809,6 +1850,9 @@
       "NotDue": "Not due",
       "Rifiutato": "Rejected",
       "Errore": "Error",
+      "Sending": "Submitting",
+      "PartiallyAccepted": "Partially accepted · check guests on the portal",
+      "ToVerify": "Unknown outcome · check the portal before resubmitting",
       "SentReceiptPending": "Sent, receipt pending"
     },
     "deadline": "Deadline",
@@ -28376,6 +28420,18 @@
       }
     },
     "alloggiati": {
+      "Sending": {
+        "label": "Sending",
+        "explain": "CasaZen is transmitting the guest records to Alloggiati Web."
+      },
+      "PartiallyAccepted": {
+        "label": "Partially accepted",
+        "explain": "Check which guests the portal accepted before correcting the remaining records."
+      },
+      "ToVerify": {
+        "label": "Outcome to verify",
+        "explain": "Check the portal before sending again to avoid duplicates."
+      },
       "ChannelManagerWriteFailed": {
         "label": "To correct",
         "explain": "Your channel manager did not take all the guests: see the reason for each one, correct the data or retry.",
@@ -32705,6 +32761,28 @@
     "undo": "Undo",
     "undoFailed": "Could not undo this.",
     "commitFailed": "Could not complete the action."
+  },
+  "comoStayTour": {
+    "departures": "Stays with a missing departure or a departure date different from the tax calculation: {{count}}. Their amounts are excluded from totals.",
+    "title": "Monthly return · Como",
+    "period": "Return month",
+    "taxable": "Taxable guests",
+    "nights": "Taxable guest nights",
+    "amount": "Tax due from the host",
+    "reason": "Exemption reason",
+    "guests": "Guests",
+    "overnights": "Guest nights",
+    "missing": "Stays with missing or outdated figures: {{count}}. Their amounts are excluded from the totals.",
+    "channel": "Departures this month with tax collected by a platform: {{count}}. Check intermediary statements for all collections in the month, including those for stays departing in other months.",
+    "basis": "Figures include departures in the selected month with confirmed host-collected tax. Check exemption reasons before filing in StayTour.",
+    "attach": "Archive the StayTour confirmation",
+    "archive": "View confirmations for this month",
+    "error": "Report unavailable",
+    "retry": "Retry",
+    "over_four_nights": "Nights after the fourth",
+    "unknown": "Reason to review",
+    "restricted": "Restricted reason",
+    "loading": "Loading report"
   },
   "touristTax": {
     "exemption": {

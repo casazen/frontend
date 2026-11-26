@@ -31,6 +31,7 @@ export function useSetQuesturaCredentials(propertyId: string) {
       }
     },
     onSuccess: (status: QuesturaCredentialsStatus) => {
+      void queryClient.invalidateQueries({ queryKey: ['institutional-routes', propertyId] });
       queryClient.setQueryData(questuraCredentialsKey(propertyId), status);
       toast.success(i18n.t('questuraCredentials.saved'));
     },
@@ -45,6 +46,7 @@ export function useRemoveQuesturaCredentials(propertyId: string) {
   return useMutation({
     mutationFn: () => questuraCredentialsApi.remove(propertyId),
     onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['institutional-routes', propertyId] });
       queryClient.setQueryData<QuesturaCredentialsStatus>(questuraCredentialsKey(propertyId), {
         configured: false,
         configuredAt: null,

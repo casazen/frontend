@@ -1,6 +1,6 @@
 import { QUESTURA_CREDENTIALS_MAX_LENGTH, type SetQuesturaCredentialsRequest } from '@/types/questura-credentials.types';
 
-export type QuesturaCredentialsField = keyof SetQuesturaCredentialsRequest;
+export type QuesturaCredentialsField = keyof typeof QUESTURA_CREDENTIALS_MAX_LENGTH;
 export type QuesturaCredentialsErrors = Partial<Record<QuesturaCredentialsField, string>>;
 
 /**

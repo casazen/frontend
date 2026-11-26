@@ -1,3 +1,5 @@
+import ross1000It from './locales/ross1000.it.json';
+import ross1000En from './locales/ross1000.en.json';
 import marketingIt from './locales/marketing.it.json';
 import marketingEn from './locales/marketing.en.json';
 import { askMessages } from './ask-messages';
@@ -35,6 +37,7 @@ export const APP_RESOURCES = {
       auth0DeleteNotAllowed: userRemovalMessages.it.deleteNotAllowed,
     } },
     ...priceEstimateIt,
+    ross1000: ross1000It,
     ownerMandate: { ...it.ownerMandate, wizard: ownerMandateWizardMessages.it },
   } },
   en: { translation: {
@@ -54,6 +57,7 @@ export const APP_RESOURCES = {
       auth0DeleteNotAllowed: userRemovalMessages.en.deleteNotAllowed,
     } },
     ...priceEstimateEn,
+    ross1000: ross1000En,
     ownerMandate: { ...en.ownerMandate, wizard: ownerMandateWizardMessages.en },
   } },
 };
