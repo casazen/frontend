@@ -26,6 +26,9 @@ interface PublicSiteShellProps {
 
 /** The same `/book/:orgSlug/...` path with the org's current slug (segments after the slug are kept as they are). */
 function canonicalOrgPath(pathname: string, slug: string): string {
+  if (pathname.startsWith('/s/action/org/')) {
+    return pathname.replace(/^\/s\/action\/org\/[^/]+/, () => `/s/action/org/${encodeURIComponent(slug)}`);
+  }
   const rest = pathname.split('/').slice(3).join('/');
   return `/book/${encodeURIComponent(slug)}${rest ? `/${rest}` : ''}`;
 }

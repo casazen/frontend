@@ -1,3 +1,5 @@
+import { GuestLinkedSection } from '@/features/guest-portal/guest-linked-section';
+import { linkedStayPaths } from '@/features/guest-portal/linked-stay-paths';
 import { createBrowserRouter, Navigate, Outlet, type RouteObject } from 'react-router-dom';
 import { buildEmbedRoutes } from './embed-routes';
 import { buildHostSiteRoutes } from './host-site-routes';
@@ -287,9 +289,9 @@ export const appRoutes: RouteObject[] = [
       // Outcome of a checkout, read with its checkout token; also the Stripe return_url of redirect methods (BK-07).
       { path: 'booking/:bookingId', element: <CheckoutOutcomePage /> },
       // The link in the email the host sends after a stay: the guest writes the review of the stay with the signed token (DB-12b).
-      { path: 'booking/:bookingId/review', element: <ReviewLinkPage /> },
+      { path: 'booking/:bookingId/review', element: <GuestLinkedSection action="review" legacy><ReviewLinkPage /></GuestLinkedSection> },
       // The link of the email that lets the guest cancel (DB-08a/b): what they get back today, and the cancellation, with the signed token.
-      { path: 'bookings/:bookingId/cancel', element: <GuestCancelLinkPage /> },
+      { path: 'bookings/:bookingId/cancel', element: <GuestLinkedSection action="cancellation" legacy><GuestCancelLinkPage /></GuestLinkedSection> },
       { path: 'property/:propertySlugOrId', element: <PublicPropertyPage /> },
       { path: 'property/:propertySlugOrId/checkout', element: <CheckoutPage /> },
       // Compat for links missing `/property/` (e.g. older mobile share URLs)
@@ -339,6 +341,17 @@ export const appRoutes: RouteObject[] = [
     ],
   },
   {
+    path: '/s/action/org/:orgSlug',
+    element: <PublicSiteShell mode="org" />,
+    handle: NOT_REDESIGNED_ROUTE_HANDLE,
+    children: [
+      { path: linkedStayPaths.review, element: <GuestLinkedSection action="review"><ReviewLinkPage /></GuestLinkedSection> },
+      { path: linkedStayPaths.cancellation, element: <GuestLinkedSection action="cancellation"><GuestCancelLinkPage /></GuestLinkedSection> },
+    ],
+  },
+  { path: linkedStayPaths.checkin, element: <GuestLinkedSection action="checkin"><CheckInPage /></GuestLinkedSection>, handle: NOT_REDESIGNED_ROUTE_HANDLE },
+  { path: linkedStayPaths.documents, element: <GuestLinkedSection action="documents"><PublicFiscalDocumentPage /></GuestLinkedSection>, handle: NOT_REDESIGNED_ROUTE_HANDLE },
+  {
     // Stay tokens and legacy supplier slugs share this prefix.
     path: '/s/:slug',
     element: <GuestPortalEntry />,
@@ -354,7 +367,7 @@ export const appRoutes: RouteObject[] = [
   {
     // A guest's page, not the host's console: it keeps its look until it is redesigned (like the booking site).
     path: '/checkin/:token',
-    element: <CheckInPage />,
+    element: <GuestLinkedSection action="checkin" legacy><CheckInPage /></GuestLinkedSection>,
     handle: NOT_REDESIGNED_ROUTE_HANDLE,
   },
   {
@@ -376,7 +389,7 @@ export const appRoutes: RouteObject[] = [
     // loaded there, `isPublicUnauthenticatedPath`), not indexed, never behind a flag: an e-mail already sent must keep working. The token of the link is the only proof;
     // the page takes it out of the address bar. It keeps its look until it is redesigned (like the pages above).
     path: '/documents/view/:documentId',
-    element: <PublicFiscalDocumentPage />,
+    element: <GuestLinkedSection action="documents" legacy><PublicFiscalDocumentPage /></GuestLinkedSection>,
     handle: NOT_REDESIGNED_ROUTE_HANDLE,
   },
   {
