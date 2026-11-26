@@ -21,8 +21,18 @@ class Test_Assets extends WP_UnitTestCase {
 		wp_set_current_user( 0 );
 		wp_dequeue_script( Assets::HANDLE );
 		wp_deregister_script( Assets::HANDLE );
+		$this->forget_printed_loader();
 		$this->reset_late_flag();
 		$this->configure( array( 'address' => 'https://prenota.example.com' ) );
+	}
+
+	/**
+	 * Forgets that the loader was printed by an earlier test. The queue of WordPress lives as long as the request and keeps the
+	 * handles it has printed in the list `done`: a loader that a test printed would make the next test see «already printed».
+	 */
+	private function forget_printed_loader() {
+		$scripts       = wp_scripts();
+		$scripts->done = array_values( array_diff( $scripts->done, array( Assets::HANDLE ) ) );
 	}
 
 	/**
@@ -152,7 +162,7 @@ class Test_Assets extends WP_UnitTestCase {
 	 * The tag filter only touches the tag of the loader, and keeps the other attributes of the tag.
 	 */
 	public function test_the_tag_filter_only_touches_the_loader() {
-		$tag = "<script src='https://prenota.example.com/embed/v1/embed.js' id='casazen-embed-js' defer data-wp-strategy='defer'></script>\n";
+		$tag = "<script src='https://prenota.example.com/embed/v1/embed.js' id='casazen-embed-js' defer data-wp-strategy='defer'></script>\n"; // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript -- a string for the tag filter to work on, not a script of the page.
 
 		$other = Assets::filter_tag( $tag, 'another-script' );
 		$this->assertSame( $tag, $other );
