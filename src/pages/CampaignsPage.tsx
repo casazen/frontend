@@ -1,191 +1,153 @@
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useState, useMemo } from 'react';
-import { useCampaigns, useCampaignReport } from '@/queries/campaigns';
-import { LoadingScreen } from '@/components/shared/loading-screen';
-import { Alert } from '@/components/ui/alert';
-import { AlertCircle, Plus } from 'lucide-react';
+import { AppShell } from '@/components/layout/app-shell';
+import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
-import { Select } from '@/components/ui/select';
-import type { CampaignStatus } from '@/types/campaign.types';
+import { Input } from '@/components/ui/input';
+import { LoadingScreen } from '@/components/shared/loading-screen';
+import { CampaignEditor } from '@/components/campaigns/CampaignEditor';
+import { MarketingSettingsForm } from '@/components/campaigns/MarketingSettingsForm';
+import { CampaignAssets } from '@/components/campaigns/CampaignAssets';
+import { MarketingError } from '@/components/campaigns/MarketingInputs';
+import { useCampaignReport, useCampaigns, useSubmitForApproval, useScheduleCampaign } from '@/queries/campaigns';
+import type { Campaign } from '@/types/campaign.types';
+
+const sections = ['campaignList', 'compose', 'assets', 'settings'] as const;
 
 export function CampaignsPage() {
   const { t } = useTranslation();
-  const [statusFilter, setStatusFilter] = useState<CampaignStatus | 'all'>('all');
-  const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
-
-  const { data: campaigns, isLoading, error } = useCampaigns();
-  const { data: reportData } = useCampaignReport(selectedCampaignId || '');
-
-  const filteredCampaigns = useMemo(() => {
-    if (!campaigns) return [];
-
-    if (statusFilter === 'all') return campaigns;
-
-    return campaigns.filter((c) => c.status === statusFilter);
-  }, [campaigns, statusFilter]);
-
-  const getStatusBadgeClass = (status: CampaignStatus) => {
-    switch (status) {
-      case 'Draft':
-        return 'bg-muted text-foreground';
-      case 'PendingApproval':
-        return 'bg-warning-soft text-warning-foreground';
-      case 'Approved':
-        return 'bg-success-soft text-success-foreground';
-      case 'Scheduled':
-        return 'bg-info-soft text-info-foreground';
-      case 'Sending':
-        return 'bg-info-soft text-info-foreground';
-      case 'Sent':
-        return 'bg-success-soft text-success-foreground';
-      case 'Failed':
-        return 'bg-danger-soft text-danger-foreground';
-      default:
-        return 'bg-muted text-foreground';
-    }
-  };
-
-  if (isLoading) {
-    return <LoadingScreen message={t('campaigns.loading')} />;
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <Alert variant="danger" title={t('shared.error')} icon={AlertCircle}>
-          {t('campaigns.loadError')}
-        </Alert>
-      </div>
-    );
-  }
-
+  const [section, setSection] = useState<(typeof sections)[number]>('campaignList');
+  const campaigns = useCampaigns();
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b pb-4">
-        <div>
-          <h1 className="text-3xl font-bold">{t('campaigns.title')}</h1>
-          <p className="text-muted-foreground mt-2">
-            {t('campaigns.description')}
-          </p>
-        </div>
-        <Button>
-          <Plus className="w-4 h-4 mr-2" />
-          {t('campaigns.create')}
-        </Button>
-      </div>
-
-      <div className="mb-6">
-        <label htmlFor="status-filter" className="text-sm font-medium mb-2 block">
-          {t('campaigns.filter.status')}
-        </label>
-        <Select
-          id="status-filter"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as CampaignStatus | 'all')}
-          className="w-full sm:w-64"
-        >
-          <option value="all">{t('campaigns.filter.allStatuses')}</option>
-          <option value="Draft">{t('campaigns.status.draft')}</option>
-          <option value="PendingApproval">{t('campaigns.status.pendingApproval')}</option>
-          <option value="Approved">{t('campaigns.status.approved')}</option>
-          <option value="Scheduled">{t('campaigns.status.scheduled')}</option>
-          <option value="Sending">{t('campaigns.status.sending')}</option>
-          <option value="Sent">{t('campaigns.status.sent')}</option>
-          <option value="Failed">{t('campaigns.status.failed')}</option>
-        </Select>
-      </div>
-
-      {filteredCampaigns.length === 0 ? (
-        <Alert variant="info" title={t('campaigns.emptyTitle')} icon={AlertCircle}>
-          {campaigns && campaigns.length > 0
-            ? t('campaigns.emptyFiltered')
-            : t('campaigns.emptyList')}
-        </Alert>
-      ) : (
-        <div className="space-y-4">
-          {filteredCampaigns.map((campaign) => (
-            <div
-              key={campaign.id}
-              className="rounded-xl border bg-card p-4 sm:p-5"
+    <AppShell>
+      <div className="space-y-5">
+        <PageHeader title={t('campaigns.title')} description={t('campaigns.description')} crumbs="auto" />
+        <div className="flex flex-wrap gap-2" aria-label={t('campaigns.title')}>
+          {sections.map((key) => (
+            <Button
+              key={key}
+              variant={key === section ? 'default' : 'outline'}
+              aria-pressed={key === section}
+              onClick={() => setSection(key)}
             >
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0 flex-1 basis-64">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-lg font-semibold">{campaign.subject}</h3>
-                    <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadgeClass(
-                        campaign.status
-                      )}`}
-                    >
-                      {t(`campaigns.status.${campaign.status.toLowerCase()}`)}
-                    </span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {t('campaigns.segment')}: {campaign.segmentName}
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {t('campaigns.createdAt', {
-                      date: new Date(campaign.createdAt).toLocaleDateString(),
-                    })}
-                  </p>
-                  {campaign.scheduledAt && (
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {t('campaigns.scheduledAt', {
-                        date: new Date(campaign.scheduledAt).toLocaleString(),
-                      })}
-                    </p>
-                  )}
-                  {campaign.sentAt && (
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {t('campaigns.sentAt', {
-                        date: new Date(campaign.sentAt).toLocaleString(),
-                      })}
-                    </p>
-                  )}
-                  {selectedCampaignId === campaign.id && reportData && (
-                    <div className="mt-3 p-3 bg-muted rounded-md">
-                      <h4 className="font-medium text-sm mb-2">{t('campaigns.report.title')}</h4>
-                      <div className="grid grid-cols-3 gap-4 text-sm">
-                        <div>
-                          <span className="text-muted-foreground">{t('campaigns.report.sent')}: </span>
-                          <span className="font-medium">{reportData.sent}</span>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">{t('campaigns.report.errors')}: </span>
-                          <span className="font-medium text-danger-foreground">{reportData.errors}</span>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground">
-                            {t('campaigns.report.unsubscribes')}:{' '}
-                          </span>
-                          <span className="font-medium">{reportData.unsubscribes}</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  {(campaign.status === 'Sent' || campaign.status === 'Failed') && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        setSelectedCampaignId(
-                          selectedCampaignId === campaign.id ? null : campaign.id
-                        )
-                      }
-                    >
-                      {selectedCampaignId === campaign.id
-                        ? t('campaigns.report.hide')
-                        : t('campaigns.report.view')}
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
+              {t('marketingStudio.' + key)}
+            </Button>
           ))}
         </div>
+        {section === 'campaignList' && (
+          <section className="space-y-3">
+            <MarketingError error={campaigns.error} />
+            {campaigns.isLoading && <LoadingScreen />}
+            {campaigns.data?.length === 0 && (
+              <div className="rounded-xl border p-5">
+                <h2 className="font-semibold">{t('campaigns.emptyTitle')}</h2>
+                <p>{t('campaigns.emptyList')}</p>
+              </div>
+            )}
+            {campaigns.data?.map((c) => (
+              <CampaignCard key={c.id} campaign={c} />
+            ))}
+          </section>
+        )}
+        {section === 'compose' && <CampaignEditor onSaved={() => setSection('campaignList')} />}
+        {section === 'assets' && <CampaignAssets />}
+        {section === 'settings' && (
+          <>
+            <MarketingSettingsForm />
+            <details className="rounded-xl border bg-card p-4">
+              <summary className="cursor-pointer font-semibold">{t('marketingStudio.visibility')}</summary>
+              <ol className="mt-3 list-decimal space-y-2 pl-5">
+                {['googlePartner', 'googleInventory', 'siteVisibility'].map((key) => (
+                  <li key={key}>{t('marketingStudio.' + key)}</li>
+                ))}
+              </ol>
+              <Link className="mt-3 block text-primary underline" to="/app/short-rent/vetrina">
+                {t('marketingStudio.storefront')}
+              </Link>
+            </details>
+          </>
+        )}
+      </div>
+    </AppShell>
+  );
+}
+
+function CampaignCard({ campaign }: { campaign: Campaign }) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const [date, setDate] = useState('');
+  const submit = useSubmitForApproval();
+  const schedule = useScheduleCampaign();
+  const report = useCampaignReport(open && campaign.status === 'Sent' ? campaign.id : '');
+  const statusKey = campaign.status[0].toLowerCase() + campaign.status.slice(1);
+  return (
+    <article className="rounded-xl border bg-card p-4">
+      <button
+        type="button"
+        className="flex w-full flex-wrap items-center justify-between gap-3 text-left"
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+      >
+        <span>
+          <span className="block text-sm text-muted-foreground">{campaign.segmentName}</span>
+          <strong>{campaign.subject}</strong>
+        </span>
+        <span className="rounded-full bg-muted px-3 py-1 text-sm">{t('campaigns.status.' + statusKey)}</span>
+      </button>
+      {open && (
+        <div className="mt-4 space-y-3">
+          <p className="whitespace-pre-wrap">{campaign.body}</p>
+          {campaign.status === 'Draft' && (
+            <Button disabled={submit.isPending} onClick={() => submit.mutate({ campaignId: campaign.id })}>
+              {t('campaigns.editor.submitForApproval')}
+            </Button>
+          )}
+          {campaign.status === 'PendingApproval' && (
+            <Link className="text-primary underline" to="/app/short-rent/approval-queue">
+              {t('marketingStudio.reviewQueue')}
+            </Link>
+          )}
+          {campaign.status === 'Approved' && (
+            <form
+              className="flex flex-wrap items-end gap-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const instant = new Date(date);
+                if (instant.getTime() > Date.now())
+                  schedule.mutate({ campaignId: campaign.id, scheduledAt: instant.toISOString() });
+              }}
+            >
+              <label>
+                {t('campaigns.editor.schedule')}
+                <Input type="datetime-local" required value={date} onChange={(e) => setDate(e.target.value)} />
+              </label>
+              <Button type="submit" disabled={schedule.isPending || !(new Date(date).getTime() > Date.now())}>
+                {t('campaigns.editor.scheduleButton')}
+              </Button>
+            </form>
+          )}
+          {campaign.scheduledAt && (
+            <p>{t('campaigns.scheduledAt', { date: new Date(campaign.scheduledAt).toLocaleString() })}</p>
+          )}
+          {campaign.sentAt && <p>{t('campaigns.sentAt', { date: new Date(campaign.sentAt).toLocaleString() })}</p>}
+          {report.data && (
+            <dl className="grid gap-3 sm:grid-cols-3">
+              {(
+                ['sentCount', 'errorCount', 'unsubscribeCount', 'openedCount', 'clickedCount', 'bouncedCount'] as const
+              ).map((key, i) => (
+                <div key={key}>
+                  <dt>
+                    {t('campaigns.report.' + ['sent', 'errors', 'unsubscribes', 'opened', 'clicked', 'bounced'][i])}
+                  </dt>
+                  <dd>{report.data[key]}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+          <MarketingError error={submit.error ?? schedule.error ?? report.error} />
+        </div>
       )}
-    </div>
+    </article>
   );
 }

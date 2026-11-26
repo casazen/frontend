@@ -5992,6 +5992,9 @@
       "scheduleError": "Impossibile programmare la campagna"
     },
     "report": {
+      "opened": "Aperte",
+      "clicked": "Cliccate",
+      "bounced": "Rimbalzate",
       "title": "Rapporto campagna",
       "sent": "Inviate",
       "errors": "Errori",
@@ -34088,7 +34091,7 @@
         "text": "Strumenti di supporto per tariffe e risultati."
       },
       "crm": {
-        "title": "CRM ospiti",
+        "title": "CRM e Marketing",
         "text": "Organizza i contatti e cura le relazioni con gli ospiti."
       }
     },

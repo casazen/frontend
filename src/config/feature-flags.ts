@@ -15,6 +15,7 @@ export type FeatureFlagKey =
   | 'supplierRequestBackups'
   | 'agencyTier'
   | 'crmMarketing'
+  | 'marketingGuestInterestAi'
   | 'guestPortal'
   | 'guestPortalSupplierServices'
   | 'complianceTrafficLight'
@@ -119,6 +120,7 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
    * unsubscribe and the welcome pages) are never behind it: an e-mail already sent must keep working.
    */
   crmMarketing: false,
+  marketingGuestInterestAi: false,
   guestPortal: false,
   guestPortalSupplierServices: false,
   /**

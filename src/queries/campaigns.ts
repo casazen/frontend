@@ -3,7 +3,6 @@ import { campaignsApi } from '@/api/campaigns.api';
 import type {
   CreateDraftDto,
   CreateSegmentDto,
-  GenerateContentRequest,
   ScheduleCampaignDto,
   SubmitForApprovalDto,
 } from '@/types/campaign.types';
@@ -59,6 +58,9 @@ export function useCampaigns() {
   return useQuery({
     queryKey: [CAMPAIGNS_KEY],
     queryFn: () => campaignsApi.getCampaigns(),
+    refetchOnMount: 'always',
+    refetchInterval: (query) =>
+      query.state.data?.some((c) => c.status === 'PendingApproval' || c.status === 'Scheduled') ? 15000 : false,
   });
 }
 
@@ -120,14 +122,5 @@ export function useCampaignReport(campaignId: string) {
     queryKey: [CAMPAIGNS_KEY, campaignId, 'report'],
     queryFn: () => campaignsApi.getCampaignReport(campaignId),
     enabled: !!campaignId,
-  });
-}
-
-export function useGenerateContent() {
-  return useMutation({
-    mutationFn: (data: GenerateContentRequest) => campaignsApi.generateContent(data),
-    onError: (error) => {
-      toast.error(getProblemMessage(error, i18n.t) ?? i18n.t('campaigns.generate.error'));
-    },
   });
 }

@@ -5992,6 +5992,9 @@
       "scheduleError": "Could not schedule campaign"
     },
     "report": {
+      "opened": "Opened",
+      "clicked": "Clicked",
+      "bounced": "Bounced",
       "title": "Campaign report",
       "sent": "Sent",
       "errors": "Errors",
@@ -34088,7 +34091,7 @@
         "text": "Tools to support pricing and performance."
       },
       "crm": {
-        "title": "Guest CRM",
+        "title": "CRM and Marketing",
         "text": "Organize contacts and maintain guest relationships."
       }
     },

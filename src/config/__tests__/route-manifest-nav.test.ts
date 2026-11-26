@@ -449,7 +449,7 @@ describe('route-manifest pages that hang from a menu entry (UI-04a)', () => {
     '/app/admin/jobs': ['/app/admin/ai', '/app/admin/demo', '/app/admin/property-preparation'],
     // The CRM is no tab of Prenotazioni any more: it is an entry of "Altro" behind its flag (below), and its pages hang from it as tabs:
     // for now the merge proposals (E07/F01/US04/T03), the last of the tabs the epic has (the audiences, campaigns and automations come first).
-    '/app/short-rent/crm/guests': ['/app/short-rent/crm/merge'],
+    '/app/short-rent/crm/guests': ['/app/short-rent/crm/segments', '/app/short-rent/crm/campaigns', '/app/short-rent/crm/merge'],
     // The steps of a booking, automatic or by hand (casazen/backend#978), are the last tab of Prenotazioni.
     '/app/short-rent/bookings': ['/app/short-rent/guests', '/app/short-rent/reviews', '/app/short-rent/bookings/flow'],
     '/app/short-rent/compliance': [
@@ -1174,7 +1174,7 @@ describe('route-manifest nav helpers', () => {
 // E07/F06/US03/T01 (NF-95, AC-NF95-8): the CRM module is unfinished, so its entry and its pages exist only while the backend flag
 // `CrmMarketing` is on. The pages the e-mails link to are not in this table: they are public routes, never behind the flag.
 describe('route-manifest CRM entries behind the crmMarketing flag (E07/F06/US03/T01)', () => {
-  const CRM_PATHS = ['/app/short-rent/crm/guests', '/app/short-rent/crm/guests/:id', '/app/short-rent/crm/merge'];
+  const CRM_PATHS = ['/app/short-rent/crm/guests', '/app/short-rent/crm/guests/:id', '/app/short-rent/crm/segments', '/app/short-rent/crm/campaigns', '/app/short-rent/crm/merge'];
   const OTHER_FLAGS_ON: Partial<FeatureFlags> = { otaPartnerApi: true, supplierOnlinePayments: true, agencyTier: true };
 
   it('crm entries are hidden while crmMarketing is off', () => {
@@ -1252,13 +1252,13 @@ describe('route-manifest CRM entries behind the crmMarketing flag (E07/F06/US03/
 
     const on: Partial<FeatureFlags> = { crmMarketing: true };
     // The tabs of the CRM: the entry, then the merge proposals. The entry of the menu is still one.
-    expect(paths(getNavSection('/app/short-rent/crm/guests', allowAll, on))).toEqual(['/app/short-rent/crm/guests', '/app/short-rent/crm/merge']);
-    expect(paths(getNavSection('/app/short-rent/crm/merge', allowAll, on))).toEqual(['/app/short-rent/crm/guests', '/app/short-rent/crm/merge']);
-    expect(paths(getNavChildren('/app/short-rent/crm/guests', allowAll, on))).toEqual(['/app/short-rent/crm/merge']);
+    expect(paths(getNavSection('/app/short-rent/crm/guests', allowAll, on))).toEqual(['/app/short-rent/crm/guests', '/app/short-rent/crm/segments', '/app/short-rent/crm/campaigns', '/app/short-rent/crm/merge']);
+    expect(paths(getNavSection('/app/short-rent/crm/merge', allowAll, on))).toEqual(['/app/short-rent/crm/guests', '/app/short-rent/crm/segments', '/app/short-rent/crm/campaigns', '/app/short-rent/crm/merge']);
+    expect(paths(getNavChildren('/app/short-rent/crm/guests', allowAll, on))).toEqual(['/app/short-rent/crm/segments', '/app/short-rent/crm/campaigns', '/app/short-rent/crm/merge']);
     expect(paths(getSecondaryNavEntries('short-rent', allowAll, on))).not.toContain('/app/short-rent/crm/merge');
 
     // Who may read the guests but not write them has the list, no tab and no way to the page.
-    const reader = without('guest.write');
+    const reader = without('guest.write', 'marketing.manage');
     expect(paths(getNavSection('/app/short-rent/crm/guests', reader, on))).toEqual([]);
     expect(paths(getNavChildren('/app/short-rent/crm/guests', reader, on))).toEqual([]);
     expect(paths(getPrimaryNavEntries('short-rent', reader, on))).toContain('/app/short-rent/crm/guests');

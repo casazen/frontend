@@ -1,3 +1,5 @@
+import marketingIt from './locales/marketing.it.json';
+import marketingEn from './locales/marketing.en.json';
 import { askMessages } from './ask-messages';
 import { ownerMandateWizardMessages } from './owner-mandate-messages';
 import onboardingAccessIt from './locales/it-onboarding-access.json';
@@ -20,6 +22,7 @@ export const APP_RESOURCES = {
     ...onboardingAccessIt,
     ask: askMessages.it,
     ...it,
+    marketingStudio: marketingIt,
     listingAi: listingAiIt,
     propertySetup: propertySetupIt,
     userRemoval: userRemovalMessages.it,
@@ -38,6 +41,7 @@ export const APP_RESOURCES = {
     ...onboardingAccessEn,
     ask: askMessages.en,
     ...en,
+    marketingStudio: marketingEn,
     listingAi: listingAiEn,
     propertySetup: propertySetupEn,
     userRemoval: userRemovalMessages.en,
