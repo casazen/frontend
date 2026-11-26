@@ -28420,6 +28420,18 @@
       }
     },
     "alloggiati": {
+      "Sending": {
+        "label": "Invio in corso",
+        "explain": "CasaZen sta trasmettendo le schede ad Alloggiati Web."
+      },
+      "PartiallyAccepted": {
+        "label": "Acquisizione parziale",
+        "explain": "Verifica sul portale quali ospiti sono stati acquisiti prima di correggere le schede rimanenti."
+      },
+      "ToVerify": {
+        "label": "Esito da verificare",
+        "explain": "Consulta il portale prima di ripetere l’invio per evitare duplicati."
+      },
       "ChannelManagerWriteFailed": {
         "label": "Da correggere",
         "explain": "Il tuo channel manager non ha preso tutti gli ospiti: guarda il motivo di ognuno, correggi i dati o riprova.",

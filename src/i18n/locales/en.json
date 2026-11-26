@@ -28420,6 +28420,18 @@
       }
     },
     "alloggiati": {
+      "Sending": {
+        "label": "Sending",
+        "explain": "CasaZen is transmitting the guest records to Alloggiati Web."
+      },
+      "PartiallyAccepted": {
+        "label": "Partially accepted",
+        "explain": "Check which guests the portal accepted before correcting the remaining records."
+      },
+      "ToVerify": {
+        "label": "Outcome to verify",
+        "explain": "Check the portal before sending again to avoid duplicates."
+      },
       "ChannelManagerWriteFailed": {
         "label": "To correct",
         "explain": "Your channel manager did not take all the guests: see the reason for each one, correct the data or retry.",
