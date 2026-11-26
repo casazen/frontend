@@ -1,4 +1,3 @@
-import { useListViewsScope } from '@/hooks/use-list-views-scope';
 import { useTranslation } from 'react-i18next';
 import { Tags, Eye, Plus, Store, Tag } from 'lucide-react';
 import { ServicePageHeader } from '@/features/supplier/components/service-page-header';
@@ -48,7 +47,6 @@ function EmptyCatalog() {
  * most, so it is one request and no paging. The way to add one is the action of the header, which is the guided creation.
  */
 export function SupplierServicesPage() {
-  const viewsScope = useListViewsScope();
   const { t } = useTranslation();
   const { data, isLoading, isError, error, refetch } = useSupplierServices();
   const actions = useServiceActions();
@@ -97,7 +95,7 @@ export function SupplierServicesPage() {
       {data && data.items.length === 0 ? (
         <EmptyCatalog />
       ) : (
-        <ListView viewsScope={viewsScope} list={list} rows={data?.items ?? []} isLoading={isLoading || !data} testId="supplier-services-list" />
+        <ListView list={list} rows={data?.items ?? []} isLoading={isLoading || !data} testId="supplier-services-list" />
       )}
 
       {actions.deleteDialog}

@@ -1,5 +1,8 @@
 {
   "workspaceView": {
+    "propertySettings": "Property settings",
+    "property": "Property",
+    "chooseProperty": "Choose a property",
     "tasksFirst": "Show tasks first on the dashboard",
     "title": "Customize workspace",
     "scope": "Preferences are saved on this device for your profile and this workspace.",

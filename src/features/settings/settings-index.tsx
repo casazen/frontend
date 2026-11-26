@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAppShell } from '@/components/layout/app-shell-context';
+import { PropertySettingsLinks, propertySettingsOptions } from './property-settings-links';
 import { WorkspaceViewDialog } from '@/components/layout/workspace-view-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,6 +33,8 @@ export function SettingsIndex() {
   const [query, setQuery] = useState('');
   const shell = useAppShell();
   const [personalizing, setPersonalizing] = useState(false);
+  const propertySettings = shell?.contextKey === 'short-rent' && hasPermission('short-rent', 'property.read') && canOpen('/app/short-rent/properties');
+  const propertyOptions = propertySettings ? propertySettingsOptions(t, query, hasPermission('short-rent', 'property.write') && canOpen('/app/short-rent/properties/create')) : [];
   const visible = groups.map(({ name, pages }) => ({
     name,
     links: pages.flatMap(page => entries.filter(entry => entry.path.endsWith('/' + page)))
@@ -45,12 +48,13 @@ export function SettingsIndex() {
         </Button>
       )} />
       {personalizing && shell?.viewKey && <WorkspaceViewDialog key={shell.viewKey} viewKey={shell.viewKey} contextKey={shell.contextKey} onClose={() => setPersonalizing(false)} />}
-      {entries.length > 0 && <label className="relative block max-w-md">
+      {(propertySettings || entries.length > 0) && <label className="relative block max-w-md">
         <Search aria-hidden="true" className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input type="search" className="min-h-11 ps-10" aria-label={t('workspaceView.search')} placeholder={t('workspaceView.search')} value={query} onChange={event => setQuery(event.target.value)} />
       </label>}
-      {entries.length > 0 && !visible.length && <p role="status">{t('workspaceView.noMatches')}</p>}
-      {entries.length === 0 && <p>{t('nav.settingsGroups.empty')}</p>}
+      {propertyOptions.length > 0 && <PropertySettingsLinks options={propertyOptions} searching={Boolean(query.trim())} />}
+      {query.trim() && !propertyOptions.length && !visible.length && <p role="status">{t('workspaceView.noMatches')}</p>}
+      {!propertySettings && entries.length === 0 && <p>{t('nav.settingsGroups.empty')}</p>}
       <div className="grid items-start gap-6 lg:grid-cols-2">
         {visible.map(({ name, links }) => {
           return (
