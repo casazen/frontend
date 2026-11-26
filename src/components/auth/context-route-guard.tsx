@@ -12,6 +12,7 @@ import { ReservedPage } from './reserved-page';
 interface ContextRouteGuardProps {
   contextKey: AppContextKey;
   requiredPermissions?: string[];
+  permissionMode?: 'any';
   /** Route behind a backend feature flag (or a list of them, met while any is on): redirects to the context home while the flag is off. */
   featureFlag?: FeatureFlagRule;
   /**
@@ -31,6 +32,7 @@ interface ContextRouteGuardProps {
 export function ContextRouteGuard({
   contextKey,
   requiredPermissions = [],
+  permissionMode,
   featureFlag,
   alternatePaths,
   homeWhenDenied = false,
@@ -63,8 +65,9 @@ export function ContextRouteGuard({
   }
 
   // The user is in the area but the role lacks the permission of this page (UI-03): say so, instead of a silent redirect.
-  const hasAllPermissions = requiredPermissions.every((permission) => current.permissions.includes(permission));
-  if (!hasAllPermissions) {
+  const hasRequiredPermission = (permission: string) => current.permissions.includes(permission);
+  const allowed = permissionMode === 'any' ? requiredPermissions.some(hasRequiredPermission) : requiredPermissions.every(hasRequiredPermission);
+  if (!allowed) {
     if (homeWhenDenied) {
       const home = getContextHomeRoute(current.contextKey, hasPermission, flags);
       if (home !== pathname) return <Navigate to={`${home}${search}${hash}`} replace />;

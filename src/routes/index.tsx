@@ -98,6 +98,7 @@ function buildContextChildren(contextKey: AppContextKey): RouteObject[] {
         <ContextRouteGuard
           contextKey={contextKey}
           requiredPermissions={entry.requiredPermissions}
+          permissionMode={entry.permissionMode}
           featureFlag={entry.featureFlag}
           alternatePaths={getOrgBillingPageAlternates(entry)}
           homeWhenDenied={entry.homeWhenDenied}

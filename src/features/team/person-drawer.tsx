@@ -1,4 +1,8 @@
 import { useTranslation } from 'react-i18next';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { ApiClient } from '@/api/client';
+import { MarketingError } from '@/components/campaigns/MarketingInputs';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { PlainSection } from '@/components/shared/calm';
 import {
   registerDetail,
@@ -76,7 +80,27 @@ function PreviewBody({ row }: { row: PersonRow }) {
   return <AccessPreview role={role} areas={row.areas} deactivated={row.status === 'Deactivated'} />;
 }
 
+function MemberMarketingPermission({id}: {id:string}) {
+  const { t } = useTranslation();
+  const cache = useQueryClient();
+  const path = '/orgs/me/members/' + id + '/marketing';
+  const queryKey = ['member-marketing', id];
+  const read = useQuery({queryKey, queryFn: () => ApiClient.get<{enabled:boolean}>(path)});
+  const change = useMutation({
+    mutationFn: (enabled:boolean) => ApiClient.put<{enabled:boolean}>(path, {enabled}),
+    onSuccess: (data) => cache.setQueryData(queryKey,data),
+  });
+  return <div>
+    <label className="flex min-h-11 items-center gap-2">
+      <input type="checkbox" checked={read.data?.enabled ?? false} disabled={!read.data || change.isPending} onChange={e=>change.mutate(e.target.checked)}/>
+      {t('marketingStudio.delegate')}
+    </label>
+    <MarketingError error={read.error ?? change.error}/>
+  </div>;
+}
+
 function PersonDetails({ row, callerRole, close }: { row: PersonRow; callerRole: OrgRole | null; close: () => void }) {
+  const { flags } = useFeatureFlags();
   const { t, i18n } = useTranslation();
   const language = i18n.language;
 
@@ -97,6 +121,7 @@ function PersonDetails({ row, callerRole, close }: { row: PersonRow; callerRole:
       <StatusExplainer kind="member" status={row.status} />
 
       <PersonActions row={row} callerRole={callerRole} close={close} />
+      {flags.crmMarketing && callerRole === 'Owner' && row.kind === 'member' && row.role === 'Collaborator' && row.status === 'Active' && <MemberMarketingPermission id={row.id}/>}
 
       <PlainSection title={t('team.drawer.data')}>
         <dl className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)] gap-x-3 gap-y-3 rounded-xl border bg-surface-2 p-4 text-sm">
