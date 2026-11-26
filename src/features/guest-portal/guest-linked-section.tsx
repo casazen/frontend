@@ -23,7 +23,7 @@ export function GuestLinkedSection({ action, legacy = false, children }: {
   }
   return <div className="guest-portal guest-linked-section">
     <header className="stay-header"><div className="stay-header-inner">
-      <span className="stay-header-title">{t('guestPortal.setup.title')}</span>
+      <span className="stay-brand">{t('guestPortal.setup.title')}</span>
     </div></header>
     {children}
   </div>;

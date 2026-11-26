@@ -19,6 +19,7 @@ for (const entry of [
     await page.route('**/api/**', async route => {
       const request = route.request();
       const path = new URL(request.url()).pathname;
+      if (!path.startsWith('/api/')) return route.continue();
       if (path.endsWith('/public/features')) return route.fulfill({ json: { guestPortal: true } });
       if (path.includes('/public/guest-portal/')) fullStay.push(path);
       if (path.includes(entry.api)) {
@@ -31,7 +32,7 @@ for (const entry of [
     await page.goto(entry.legacy + entry.query, { waitUntil: 'commit' });
     await expect.poll(() => new URL(page.url()).pathname, { timeout: 75_000 }).toBe(entry.section);
     await expect.poll(() => scoped.some(request => request.includes(grant)), { timeout: 20_000 }).toBe(true);
-    await expect(page.locator('.guest-linked-section .stay-header-title')).toBeVisible();
+    await expect(page.locator('.guest-linked-section .stay-brand')).toBeVisible();
     if (entry.query.includes('token=')) await expect.poll(() => new URL(page.url()).searchParams.has('token')).toBe(false);
     else await expect.poll(() => new URL(page.url()).searchParams.get('step')).toBe('identity');
     expect(fullStay).toEqual([]);
