@@ -87,6 +87,10 @@ export function GuestSupplierOrders({ path, language }: { path: string; language
             <div><dt>{text.price}</dt><dd>{orderMoney(order.supplierPriceCents, language)}</dd></div>
             <div><dt>{text.fee}</dt><dd>{orderMoney(order.commissionCents, language)}</dd></div>
             <div><dt>{text.total}</dt><dd>{orderMoney(order.totalCents, language)}</dd></div>
+            {(order.refundStatus === 'processing' || order.refundStatus === 'failed' || order.refundStatus === 'review') &&
+              <div><dt>{checkoutText(language)(order.refundStatus === 'processing' ? 'refundProcessing' :
+                order.refundStatus === 'failed' ? 'refundFailed' : 'refundReview')}</dt>
+                <dd>{orderMoney(order.refundRequestedCents ?? 0, language)}</dd></div>}
             {order.refundCents > 0 && <div><dt>{text.refund}</dt><dd>{orderMoney(order.refundCents, language)}</dd></div>}
           </dl>}
           {order.stripeSandbox && (order.state === 'Quoted' || returnId === order.id) && (

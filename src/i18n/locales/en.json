@@ -28476,6 +28476,20 @@
     }
   },
   "supplier": {
+    "adjustments": {
+      "recorded": "Decision recorded.",
+      "amount": "Refund in euros (0 to close without a refund)",
+      "confirm": "Resolve dispute",
+      "retry": "Retry refund",
+      "processing": "Refund processing",
+      "failed": "Refund failed",
+      "review": "Refund needs reconciliation with Stripe",
+      "succeeded": "Refund confirmed",
+      "bank_open": "Bank dispute open",
+      "bank_closed": "Bank dispute closed without loss",
+      "bank_lost": "Bank dispute lost",
+      "bank_recovery_pending": "Transfer recovery in progress"
+    },
     "identity": {
       "fields": "Optional identifiers",
       "fieldsHint": "Add the details you know to identify an existing supplier.",
