@@ -1,3 +1,4 @@
+import { withPlanPart } from '@/features/onboarding/plan-return';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -97,7 +98,7 @@ export function PartEntryQuestion() {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         {chosen ? (
           <Button asChild className={TOUCH_TARGET} iconRight={<ArrowRight />}>
-            <Link to={`${OCTORATE_CONNECT_PATH}?scenario=${encodeURIComponent(chosen)}`} data-testid="part-entry-continue">
+            <Link to={withPlanPart(`${OCTORATE_CONNECT_PATH}?scenario=${encodeURIComponent(chosen)}`, 'octorateConnection')} data-testid="part-entry-continue">
               {t('onboardingPlan.launch.entry.continue')}
             </Link>
           </Button>

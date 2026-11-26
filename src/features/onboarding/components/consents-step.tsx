@@ -64,8 +64,8 @@ export function ConsentsStep({ onBack, onContinue, isLoading, backLabel, continu
     );
   }
 
-  const allRequired =
-    tosAccepted && privacyAccepted && dpaAccepted && subprocessorsAcknowledged;
+  const accepted = [tosAccepted, privacyAccepted, dpaAccepted, subprocessorsAcknowledged].filter(Boolean).length;
+  const allRequired = accepted === 4;
 
   const handleContinue = () => {
     if (!allRequired) return;
@@ -160,6 +160,9 @@ export function ConsentsStep({ onBack, onContinue, isLoading, backLabel, continu
         </CardContent>
       </Card>
 
+      <p role="status" className="text-center text-sm text-muted-foreground">
+        {t('onboarding.consentProgress', { accepted, total: 4 })}
+      </p>
       <div className="flex flex-wrap justify-center gap-3">
         {onBack && <Button type="button" variant="outline" onClick={onBack} disabled={isLoading}>
           {backLabel ?? t('onboarding.back')}

@@ -1,3 +1,4 @@
+import { installmentAnchor } from '../lib/rent-breakdown';
 import { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -25,6 +26,7 @@ import {
 import type { ConfigureRentScheduleInput, RentCadence, RentInstallment, RentLedger } from '@/types';
 import { monthName, monthOfDate, trackFromMonths } from '../lib/rent-register';
 import { MarkRentPaidDialog } from './mark-rent-paid-dialog';
+import { RentFocus } from './rent-focus';
 import { RentComposition } from './rent-composition';
 import { RentManualNotices } from './rent-manual-notices';
 
@@ -119,11 +121,12 @@ function RentLedgerContent({
   // words and no link to a page that would refuse them. Outside the workspace (a page on its own) the link stays.
   const workspace = useContext(WorkspaceContext);
   const canOpenPaymentsSettings = workspace ? workspace.hasPermission('short-rent', 'property.write') : true;
+  const canWriteRent = workspace?.hasPermission('long-rent', 'lease.create') ?? false;
   const [editing, setEditing] = useState(false);
   const disable = useDisableRentSchedule(leaseId);
   const schedule = ledger.schedule;
 
-  if (!ledger.canConfigure && !schedule) {
+  if (!ledger.canConfigure && !schedule && ledger.installments.length === 0) {
     return (
       <p className="text-sm text-muted-foreground" data-testid="rent-not-signed">
         {t('rent.notSignedYet')}
@@ -131,10 +134,12 @@ function RentLedgerContent({
     );
   }
 
-  const showForm = ledger.canConfigure && (!schedule || editing || !schedule.isActive);
+  const showForm = canWriteRent && ledger.canConfigure && (!schedule || editing || !schedule.isActive);
 
   return (
     <div className="space-y-4">
+      {!canWriteRent && !schedule && <p className="text-sm text-muted-foreground">{t('rent.focus.noPlan')}</p>}
+      {!editing && <RentFocus installments={ledger.installments} />}
       {!ledger.onlinePaymentsAvailable && (
         <Alert variant="warning" data-testid="rent-online-unavailable">
           {t('rent.onlineUnavailable')}
@@ -164,14 +169,14 @@ function RentLedgerContent({
                 day: schedule.billingDayOfMonth,
               })}
             </p>
-            <div className="flex gap-2">
+            {canWriteRent && ledger.canConfigure && <div className="flex flex-wrap gap-2">
               <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
                 {t('rent.edit')}
               </Button>
               <Button size="sm" variant="outline" onClick={() => disable.mutate()} disabled={disable.isPending}>
                 {t('rent.disable')}
               </Button>
-            </div>
+            </div>}
           </div>
           {schedule.trackFrom ? (
             <p className="text-sm text-foreground/70" data-testid="rent-track-from-summary">
@@ -213,8 +218,8 @@ function RentLedgerContent({
         </p>
       )}
 
-      {schedule && <InstallmentsTable leaseId={leaseId} ledger={ledger} />}
-      <RentManualNotices leaseId={leaseId} notices={ledger.manualNotices ?? []} />
+      {(schedule || ledger.installments.length > 0) && <InstallmentsTable leaseId={leaseId} ledger={ledger} canWrite={canWriteRent} />}
+      <RentManualNotices leaseId={leaseId} notices={ledger.manualNotices ?? []} canSend={canWriteRent} />
     </div>
   );
 }
@@ -417,7 +422,7 @@ function InstallmentActions({
   );
 }
 
-function InstallmentsTable({ leaseId, ledger }: { leaseId: string; ledger: RentLedger }) {
+function InstallmentsTable({ leaseId, ledger, canWrite }: { leaseId: string; ledger: RentLedger; canWrite: boolean }) {
   const { t } = useTranslation();
   const isPhone = useMediaQuery(PHONE_QUERY);
   const [markPaidFor, setMarkPaidFor] = useState<RentInstallment | null>(null);
@@ -445,11 +450,11 @@ function InstallmentsTable({ leaseId, ledger }: { leaseId: string; ledger: RentL
       <div className="min-w-0">
         <ul className="space-y-3" data-testid="rent-installments">
           {ledger.installments.map((installment) => (
-            <li key={installment.id} className="min-w-0 space-y-2 rounded-md border border-border p-3" data-testid="rent-installment">
-              <p className="break-words text-sm">
+            <li key={installment.id} id={installmentAnchor(installment.id)} tabIndex={-1} className="min-w-0 scroll-mt-20 space-y-2 rounded-lg border border-border p-4 focus-visible:ring-2 focus-visible:ring-ring" data-testid="rent-installment">
+              <p className="break-words text-sm font-semibold">
                 {formatDate(installment.periodStart)} – {formatDate(installment.periodEnd)}
               </p>
-              <p className="text-sm text-foreground/70">{formatDate(installment.dueDate)}</p>
+              <p className="text-sm text-muted-foreground">{t('rent.focus.due', { date: formatDate(installment.dueDate) })}</p>
               <RentComposition row={installment} currency={installment.currency} />
               <div className="flex flex-wrap items-center gap-1">
                 <Badge variant={STATUS_VARIANT[installment.status]} data-testid="rent-installment-status">
@@ -462,7 +467,7 @@ function InstallmentsTable({ leaseId, ledger }: { leaseId: string; ledger: RentL
                 )}
               </div>
               <InstallmentDetail installment={installment} />
-              <InstallmentActions leaseId={leaseId} ledger={ledger} installment={installment} onMarkPaid={setMarkPaidFor} />
+              {canWrite && <InstallmentActions leaseId={leaseId} ledger={ledger} installment={installment} onMarkPaid={setMarkPaidFor} />}
             </li>
           ))}
         </ul>
@@ -486,7 +491,7 @@ function InstallmentsTable({ leaseId, ledger }: { leaseId: string; ledger: RentL
         </thead>
         <tbody>
           {ledger.installments.map((installment) => (
-              <tr key={installment.id} className="border-b align-top" data-testid="rent-installment">
+              <tr key={installment.id} id={installmentAnchor(installment.id)} tabIndex={-1} className="scroll-mt-20 border-b align-top focus-visible:outline-2 focus-visible:outline-ring" data-testid="rent-installment">
                 <td className="py-2 pr-3">
                   {formatDate(installment.periodStart)} – {formatDate(installment.periodEnd)}
                 </td>
@@ -508,7 +513,7 @@ function InstallmentsTable({ leaseId, ledger }: { leaseId: string; ledger: RentL
                   <InstallmentDetail installment={installment} />
                 </td>
                 <td className="sticky right-0 bg-card py-2">
-                  <InstallmentActions leaseId={leaseId} ledger={ledger} installment={installment} onMarkPaid={setMarkPaidFor} />
+                  {canWrite && <InstallmentActions leaseId={leaseId} ledger={ledger} installment={installment} onMarkPaid={setMarkPaidFor} />}
                 </td>
               </tr>
           ))}

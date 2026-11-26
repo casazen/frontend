@@ -320,10 +320,10 @@ export function DataView<Row>({
         {/* `relative`: the caption and the hidden title of the actions are `sr-only`, that is absolutely placed; without a
             positioned box around them they belong to the page, and sit where the table has scrolled to, widening it. */}
         <div className="relative overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="workspace-data-table w-full text-sm">
             <caption className="sr-only">{label}</caption>
             <thead>
-              <tr className="border-b bg-muted/40">
+              <tr className="border-b bg-surface-2">
                 {selectable ? (
                   <th scope="col" className="w-11 px-1 py-0">
                     <SelectBox checked={allChosen} indeterminate={someChosen} label={t('dataView.selectAll')} onChange={toggleAll} />
@@ -337,7 +337,7 @@ export function DataView<Row>({
                       scope="col"
                       aria-sort={direction ? (direction === 'asc' ? 'ascending' : 'descending') : undefined}
                       className={cn(
-                        'px-4 py-3 text-left font-medium text-foreground/70',
+                        'px-4 py-2 text-left text-xs font-semibold tracking-wide text-foreground/80',
                         column.align === 'end' && 'text-right',
                         column.className,
                       )}
@@ -348,7 +348,7 @@ export function DataView<Row>({
                           onClick={() => requestSort(column.key)}
                           className={cn(
                             '-mx-2 inline-flex min-h-9 items-center gap-1 rounded-md px-2 text-left font-medium hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                            direction && 'text-foreground',
+                            direction && 'bg-primary-soft text-primary-text',
                             column.align === 'end' && 'flex-row-reverse',
                           )}
                         >
@@ -379,7 +379,7 @@ export function DataView<Row>({
                     data-testid={rowTestId?.(row)}
                     onClick={onRowClick ? (event) => clickRow(row, event) : undefined}
                     className={cn(
-                      'border-b transition-colors last:border-0 hover:bg-muted/30 data-[selected=true]:bg-primary/5',
+                      'border-b transition-colors last:border-0 even:bg-surface-2/50 hover:bg-primary-soft focus-within:bg-primary-soft data-[selected=true]:bg-primary-soft motion-reduce:transition-none',
                       onRowClick && 'cursor-pointer',
                       rowClassName?.(row),
                     )}
@@ -396,7 +396,7 @@ export function DataView<Row>({
                       const cellClass = cn(
                         'px-4 py-3',
                         column.align === 'end' ? 'text-right tabular-nums' : 'text-left',
-                        column.rowHeader ? 'font-medium' : 'text-foreground/70',
+                        column.rowHeader ? 'font-semibold text-foreground' : 'text-foreground/80',
                         column.className,
                       );
                       return column.rowHeader ? (
@@ -426,7 +426,7 @@ export function DataView<Row>({
             {t('dataView.selectAll')}
           </label>
         ) : null}
-        <ul role="list" aria-label={label} className={cn('divide-y', !bare && 'rounded-lg border')}>
+        <ul role="list" aria-label={label} className={cn('divide-y', !bare && 'overflow-hidden rounded-lg border bg-card')}>
           {shownRows.map((row) => {
             const key = rowKey(row);
             const isChosen = chosen.has(key);

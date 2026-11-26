@@ -49,7 +49,7 @@ export function LongRentRequestsPage() {
         mobilePrimary="fab"
       />
 
-      <Tabs label={t('longRentRequests.list.tabs.label')} items={tabs} defaultValue={DEFAULT_REQUEST_TAB} value={tab}>
+      <Tabs className="min-w-0 rounded-2xl border border-border bg-card p-2 sm:p-4" label={t('longRentRequests.list.tabs.label')} items={tabs} defaultValue={DEFAULT_REQUEST_TAB} value={tab}>
         <ListView<ServiceRequest>
           list={list}
           rows={requests.data ?? NO_ROWS}

@@ -122,9 +122,17 @@ function listEventOf(shown: readonly Ga4Card[], listId: string, listName: string
  * the ids (36 characters) and the names a site really has, each with its place, price and list, is over it (about 4.6 KB) and the page would hear nothing
  * of the list. The homes that do not fit are left out from the END, and the currency and the prices are those of the homes that stay (a list that
  * mixes currencies only in the homes left out is a list of one currency).
+ *
+ * A push to the `dataLayer` of the page itself (the agency's own pages: `asEmbedMessage: false`) is no message of the protocol and has no such limit: the first 20
+ * homes go, whatever their size.
  */
-export function viewItemListEvent(cards: readonly Ga4Card[], { listId, listName }: { listId: string; listName: string }): Ga4ListEvent {
+export function viewItemListEvent(
+  cards: readonly Ga4Card[],
+  { listId, listName }: { listId: string; listName: string },
+  { asEmbedMessage = true }: { asEmbedMessage?: boolean } = {},
+): Ga4ListEvent {
   const wanted = cards.slice(0, MAX_LIST_ITEMS);
+  if (!asEmbedMessage) return listEventOf(wanted, listId, listName);
 
   for (let count = wanted.length; count > 0; count -= 1) {
     const event = listEventOf(wanted.slice(0, count), listId, listName);

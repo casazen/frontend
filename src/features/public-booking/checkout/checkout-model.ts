@@ -1,3 +1,4 @@
+import type { CheckoutExtraOffer, CheckoutExtraSelection } from '@/types/direct-booking.types';
 import { hasInternationalPrefix } from '@/features/public-booking/checkout/details-schema';
 import { DIRECT_CHECKOUT_CONSENT_VERSION } from '@/types/direct-booking.types';
 import type { CreateDirectBookingPayload, DirectBookingAttributionPayload, PaymentOption } from '@/types';
@@ -32,6 +33,7 @@ export interface DetailsValues {
 
 /** Everything the guest has chosen and typed across the three steps, kept while they move between them. */
 export interface CheckoutDraft {
+  extras?: CheckoutExtraSelection[];
   mode: CheckoutMode;
   pay: PayChoice;
   requests: string;
@@ -40,6 +42,14 @@ export interface CheckoutDraft {
   details: DetailsValues;
   /** Terms and privacy: asked in the last step, never preselected. */
   consent: boolean;
+}
+
+export function checkoutExtraLines(offers: CheckoutExtraOffer[] = [], selections: CheckoutExtraSelection[] = [], mode: CheckoutMode) {
+  return offers.flatMap((offer) => {
+    const chosen = selections.find((selection) => selection.id === offer.id && selection.expectedUnitPrice === offer.unitPrice);
+    if (!chosen || mode === 'request' || offer.requiresApproval) return [];
+    return [{ id: offer.id, name: offer.name, quantity: chosen.quantity, cents: Math.round(offer.unitPrice * 100) * chosen.quantity }];
+  });
 }
 
 export const EMPTY_DETAILS: DetailsValues = {
@@ -193,6 +203,7 @@ export function buildBookingPayload({
       country: details.country,
     },
     consent: { dataProcessing: true, consentVersion: DIRECT_CHECKOUT_CONSENT_VERSION },
+    ...(draft.extras?.length ? { extras: draft.extras } : {}),
     paymentOption: paymentOptionOf(draft.mode, draft.pay),
     ...(requests ? { specialRequests: requests.slice(0, SPECIAL_REQUESTS_MAX) } : {}),
     ...(details.arrival ? { expectedArrivalTime: details.arrival } : {}),

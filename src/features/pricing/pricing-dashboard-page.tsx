@@ -2,12 +2,13 @@ import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
-import { PAGE_COLUMNS_WIDE } from '@/components/layout/page-columns';
+import { SlidersHorizontal } from 'lucide-react';
 import { ErrorState } from '@/components/shared/error-state';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { PageCrumb } from '@/lib/page-crumbs';
-import { cn } from '@/lib/utils';
 import {
   usePricingAdapterConfig,
   useSavePricingAdapterConfig,
@@ -59,12 +60,7 @@ function rulesOf(config: PricingAdapterConfig): SavePricingAdapterConfigRequest 
   };
 }
 
-/**
- * `/app/short-rent/properties/:id/pricing`: the seasonal suggestions of a property (D4, SR-PRIC). The header says whose prices
- * they are; under it the one highlighted block (the base price and the rule that is on, in words, with the button that moves
- * things on), then the rules and, once there are suggestions, the price of each coming night. Prices and minimum stay for a
- * single date are not here: they need a model of prices by date that does not exist yet.
- */
+/** Review nightly prices here; edit the property's seasonal rules on demand. */
 export function PricingDashboardPage() {
   const { t } = useTranslation();
   const { id: propertyId } = useParams<{ id: string }>();
@@ -118,10 +114,26 @@ export function PricingDashboardPage() {
           title={title}
           description={propertyName}
           action={
-            config ? (
-              <Badge variant={config.isEnabled ? 'success' : 'secondary'} className="px-3 py-1 text-sm">
-                {config.isEnabled ? t('pricing.config.active') : t('pricing.config.disabled')}
-              </Badge>
+            config && !configQuery.isError ? (
+              <div className="flex flex-wrap items-center gap-3">
+                <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm font-medium">
+                  <Switch checked={config.isEnabled} disabled={isSaving} onCheckedChange={handleToggle}
+                    aria-label={t('pricing.config.enableLabel')} data-testid="pricing-toggle" />
+                  {config.isEnabled ? t('pricing.config.active') : t('pricing.config.disabled')}
+                </label>
+                <Dialog key={propertyId}>
+                  <DialogTrigger asChild>
+                    <Button type="button" variant="outline" data-testid="pricing-open-rules">
+                      <SlidersHorizontal aria-hidden="true" className="size-4" />
+                      {t('pricing.config.rulesLabel')}
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-2xl" aria-describedby={undefined}>
+                    <DialogHeader><DialogTitle>{t('pricing.config.rulesLabel')}</DialogTitle></DialogHeader>
+                    <PricingRulesSection config={config} isSaving={isSaving} onSave={handleSave} />
+                  </DialogContent>
+                </Dialog>
+              </div>
             ) : undefined
           }
         />
@@ -139,20 +151,14 @@ export function PricingDashboardPage() {
               propertyId={propertyId!}
               config={config}
               suggestions={suggestionsQuery}
-              isSaving={isSaving}
               isApplying={apply.isPending}
               isRecalculating={recalculate.isPending}
-              onEnable={() => handleToggle(true)}
               onApplyAll={() => apply.mutate([])}
               onRecalculate={() => recalculate.mutate()}
             />
-            {/* The rules on the left, the suggestions they give on the right (under each other on a narrow screen). */}
-            <div className={cn(PAGE_COLUMNS_WIDE, 'gap-8')}>
-              <PricingRulesSection config={config} isSaving={isSaving} onToggle={handleToggle} onSave={handleSave} />
-              {hasSuggestions && suggestions ? (
-                <PricingSuggestionsSection data={suggestions} applying={apply.isPending} onApply={(items) => apply.mutate(items)} />
-              ) : null}
-            </div>
+            {hasSuggestions && suggestions ? (
+              <PricingSuggestionsSection key={propertyId} data={suggestions} applying={apply.isPending} onApply={(items) => apply.mutate(items)} />
+            ) : null}
           </div>
         )}
       </div>

@@ -207,11 +207,11 @@ function SiteDocumentCard({ state, orgSlug }: { state: OrgSiteDocumentState; org
 
   return (
     <Card data-testid={`site-document-${kind}`}>
-      <CardHeader className="space-y-2">
+      <CardHeader className="space-y-2 border-b bg-muted/40">
         <CardTitle>{t(`siteDocuments.kinds.${kind}.title`)}</CardTitle>
         <CardDescription>{t(`siteDocuments.kinds.${kind}.description`)}</CardDescription>
         <p
-          className={cn('flex items-center gap-2 text-sm', state.published ? 'text-foreground' : 'text-muted-foreground')}
+          className={cn('inline-flex w-fit items-center gap-2 rounded-full border bg-card px-3 py-1 text-sm', state.published ? 'text-foreground' : 'text-muted-foreground')}
           data-testid={`${idPrefix}-status`}
         >
           {state.published ? (
@@ -223,7 +223,7 @@ function SiteDocumentCard({ state, orgSlug }: { state: OrgSiteDocumentState; org
         </p>
       </CardHeader>
 
-      <CardContent className="space-y-5">
+      <CardContent className="space-y-5 pt-5">
         {/* UI-07 pilot of ChoiceCard: the same two radio buttons (same names, values and test ids), drawn as cards. */}
         <ChoiceGroup legend={t('siteDocuments.source.label')} legendVisible minCardWidth={14}>
           {SOURCES.map((source) => (

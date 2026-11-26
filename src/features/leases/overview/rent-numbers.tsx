@@ -18,7 +18,7 @@ export function RentNumbers({ rents, rentMonth, currentMonth }: { rents: RentReg
   const euros = (amount: number) => formatCurrency(amount);
 
   return (
-    <PlainSection
+    <PlainSection className="min-w-0 rounded-xl border bg-card p-4 sm:p-5"
       title={t('longRentOverview.rents.title', { month: name })}
       actionLabel={t('longRentOverview.rents.all')}
       href={rentRegisterPath(month, currentMonth)}

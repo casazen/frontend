@@ -57,15 +57,18 @@ describe('ComplianceSummaryLine ("Sono in regola?" in one line, NF-52)', () => {
   it('render_PageWithSeveralLights_SaysWhatEachCounts', () => {
     renderLine(lights({ needs: 6, red: 3, yellow: 2, unknown: 1 }));
 
-    expect(screen.getByTestId('compliance-summary-line')).toHaveTextContent('6 cose da fare: 3 da sistemare, 2 in corso, 1 da verificare');
+    expect(screen.getByTestId('compliance-summary-line')).toHaveTextContent('6 cose da fare');
+    expect(screen.getByTestId('compliance-summary-line')).toHaveTextContent('3 da sistemare');
+    expect(screen.getByTestId('compliance-summary-line')).toHaveTextContent('2 in corso');
+    expect(screen.getByTestId('compliance-summary-line')).toHaveTextContent('1 da verificare');
   });
 
-  it('render_PageWithOneKindOfLight_IsOnlyTheTotalNotTheSameNumberTwice', () => {
+  it('render_PageWithOneKindOfLight_IdentifiesTheOutstandingCategory', () => {
     renderLine(lights({ needs: 3, red: 3 }));
 
     const line = screen.getByTestId('compliance-summary-line');
     expect(line).toHaveTextContent('3 cose da fare');
-    expect(line).not.toHaveTextContent('da sistemare');
+    expect(line).toHaveTextContent('da sistemare');
   });
 
   it.each([
@@ -103,7 +106,9 @@ describe('ComplianceSummaryLine ("Sono in regola?" in one line, NF-52)', () => {
     await i18n.changeLanguage('en');
     renderLine(lights({ needs: 5, red: 3, yellow: 2 }));
 
-    expect(screen.getByTestId('compliance-summary-line')).toHaveTextContent('5 things to do: 3 to fix, 2 in progress');
+    expect(screen.getByTestId('compliance-summary-line')).toHaveTextContent('5 things to do');
+    expect(screen.getByTestId('compliance-summary-line')).toHaveTextContent('3 to fix');
+    expect(screen.getByTestId('compliance-summary-line')).toHaveTextContent('2 in progress');
     await i18n.changeLanguage('it');
   });
 

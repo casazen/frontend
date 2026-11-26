@@ -60,7 +60,7 @@ export function TenantDuesPage() {
   return (
     <div className="space-y-4" data-testid="tenant-dues">
       <header className="space-y-1">
-        <h1 className="text-xl font-semibold">{t('tenantArea.dues.title')}</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">{t('tenantArea.dues.title')}</h1>
         <p className="text-sm text-foreground/70">{t('tenantArea.dues.lead')}</p>
       </header>
       {(area.condominiumReports ?? []).map(report => <section key={report.id} className="space-y-2 rounded-md border p-4" data-testid="tenant-condominium-report">
@@ -69,8 +69,18 @@ export function TenantDuesPage() {
         <p className="text-sm">{t('condoBook.tenantAdjustment')}</p>
         {dues.filter(due => due.periodStart > report.periodEnd && due.components?.some(c => c.kind === 'CondominiumAdvance' && c.description?.includes('conguaglio esercizio precedente'))).slice(0, 1).map(due => <p key={due.id} className="font-medium">{t('condoBook.tenantNewAmount', { date: formatDate(due.periodStart), advance: formatCurrency(rentBreakdown(due).condominiumAdvance ?? 0, due.currency), total: formatCurrency(due.amount, due.currency) })}</p>)}
       </section>)}
-      <TenantSepaSettings leaseId={area.contract.id} />
       {dues.length > 0 ? <PaymentReport dues={dues} /> : null}
+      {dueId && !selected ? (
+        <p role="alert" data-testid="tenant-due-missing" className="text-sm">
+          {t('tenantArea.dues.missing')}{' '}
+          <Link to={tenantDuesPath(area.contract.id)} className="font-medium text-primary underline underline-offset-2">
+            {t('tenantArea.dues.backToList')}
+          </Link>
+        </p>
+      ) : null}
+      {!selected && next ? <NextDue leaseId={area.contract.id} due={next} /> : null}
+      {selected ? <TenantDueDetail key={selected.id} leaseId={area.contract.id} due={selected} /> : null}
+      <TenantSepaSettings leaseId={area.contract.id} />
       {dues.length === 0 ? (
         <div data-testid="tenant-dues-empty">
           <EmptyState icon={Receipt} title={t('tenantArea.dues.emptyTitle')} description={t('tenantArea.dues.emptyDescription')} />
@@ -82,16 +92,7 @@ export function TenantDuesPage() {
           ))}
         </ul>
       )}
-      {dueId && !selected ? (
-        <p role="alert" data-testid="tenant-due-missing" className="text-sm">
-          {t('tenantArea.dues.missing')}{' '}
-          <Link to={tenantDuesPath(area.contract.id)} className="font-medium text-primary underline underline-offset-2">
-            {t('tenantArea.dues.backToList')}
-          </Link>
-        </p>
-      ) : null}
-      {!selected && next ? <NextDue leaseId={area.contract.id} due={next} /> : null}
-      {selected ? <TenantDueDetail key={selected.id} leaseId={area.contract.id} due={selected} /> : null}
+
     </div>
   );
 }
@@ -109,16 +110,16 @@ function PaymentReport({ dues }: { dues: TenantDue[] }) {
       <h2 id="tenant-report-title" className="sr-only">
         {t('tenantArea.dues.reportTitle')}
       </h2>
-      <div className="min-w-0 rounded-md border border-border p-3">
+      <div className="min-w-0 rounded-xl border border-border bg-card p-4">
         <p className="text-sm text-foreground/70">{t('tenantArea.dues.reportOpen')}</p>
-        <p className="break-words text-lg font-semibold" data-testid="tenant-report-open">
+        <p className="break-words text-2xl font-semibold tabular-nums" data-testid="tenant-report-open">
           {formatCurrency(openSum, currency)}
         </p>
         <p className="text-sm text-foreground/70">{t('tenantArea.dues.reportCount', { count: open.length })}</p>
       </div>
-      <div className="min-w-0 rounded-md border border-border p-3">
+      <div className="min-w-0 rounded-xl border border-border bg-card p-4">
         <p className="text-sm text-foreground/70">{t('tenantArea.dues.reportPaid')}</p>
-        <p className="break-words text-lg font-semibold" data-testid="tenant-report-paid">
+        <p className="break-words text-2xl font-semibold tabular-nums" data-testid="tenant-report-paid">
           {formatCurrency(paidSum, currency)}
         </p>
         <p className="text-sm text-foreground/70">{t('tenantArea.dues.reportCount', { count: paid.length })}</p>

@@ -96,12 +96,12 @@ export function SendStep({ bookingId, form, state }: SendStepProps) {
   return (
     <div className="space-y-5" data-testid="checkin-wizard-send">
       <p className="text-sm text-muted-foreground">{t('checkin.wizard.send.intro')}</p>
-      <WizardSummary items={items} />
       {blocking > 0 && (
         <Alert variant="danger" title={t('checkin.wizard.send.blockedTitle')} data-testid="checkin-wizard-send-blocked">
           {t('checkin.wizard.send.blockedText')}
         </Alert>
       )}
+      <WizardSummary items={items} />
       <Alert variant="info" title={t('checkin.wizard.send.routeTitle')} data-testid="checkin-wizard-send-route" data-route={route}>
         {t(`checkin.wizard.send.route.${route}.long`)}
       </Alert>

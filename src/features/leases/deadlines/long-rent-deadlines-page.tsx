@@ -37,7 +37,11 @@ const FILTER_PARAM = 'chip';
 
 function DeadlineGroup({ title, count, items, context }: { title: string; count?: number; items: readonly LongRentDeadline[]; context: DeadlineContext }) {
   return (
-    <PlainSection title={title} count={count}>
+    <PlainSection
+      title={title}
+      count={count}
+      className={cn('rounded-xl border bg-card p-4 sm:p-5', count && 'border-s-4 border-s-destructive')}
+    >
       <DayList items={items.map((item) => deadlineRow(item, context))} />
     </PlainSection>
   );
@@ -125,7 +129,7 @@ export function LongRentDeadlinesPage() {
               testId="long-rent-deadlines-filters"
             />
 
-            <div className={cn('space-y-8 transition-opacity', agenda.isPlaceholderData && 'opacity-60')}>
+            <div className={cn('grid min-w-0 grid-cols-1 items-start gap-4 transition-opacity 2xl:grid-cols-2', agenda.isPlaceholderData && 'opacity-60')}>
               {late.length > 0 ? (
                 <DeadlineGroup title={t('longRentDeadlines.overdueTitle')} count={late.length} items={late} context={context} />
               ) : null}

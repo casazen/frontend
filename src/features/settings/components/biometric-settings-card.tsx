@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { ChevronDown, ScanFace } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Alert } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -135,7 +136,7 @@ function BiometricSettingsForm({ settings }: { settings: BiometricSettings }) {
 
   return (
     <form onSubmit={save} noValidate className="space-y-5" data-testid="biometric-settings-form">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-4 rounded-xl bg-muted/40 p-4">
         <div className="min-w-0 space-y-1">
           <Label htmlFor="biometric-enabled">{t('biometricSettings.enabled.label')}</Label>
           <p id="biometric-enabled-help" className="break-words text-sm text-foreground/70">
@@ -152,34 +153,36 @@ function BiometricSettingsForm({ settings }: { settings: BiometricSettings }) {
         />
       </div>
 
-      <Field label={t('biometricSettings.accept.label')} hint={t('biometricSettings.accept.help')} error={errorText('accept')}>
-        <Input
-          data-testid="biometric-accept"
-          type="number"
-          inputMode="decimal"
-          step="0.01"
-          min={BIOMETRIC_ESCALATE_MIN}
-          max={BIOMETRIC_ACCEPT_MAX}
-          value={form.accept}
-          disabled={update.isPending}
-          onChange={(event) => edit({ accept: event.target.value })}
-        />
-      </Field>
+      <div className="grid items-start gap-4 sm:grid-cols-2">
+        <Field label={t('biometricSettings.accept.label')} hint={t('biometricSettings.accept.help')} error={errorText('accept')}>
+          <Input
+            data-testid="biometric-accept"
+            type="number"
+            inputMode="decimal"
+            step="0.01"
+            min={BIOMETRIC_ESCALATE_MIN}
+            max={BIOMETRIC_ACCEPT_MAX}
+            value={form.accept}
+            disabled={update.isPending}
+            onChange={(event) => edit({ accept: event.target.value })}
+          />
+        </Field>
 
-      <Field label={t('biometricSettings.escalate.label')} hint={t('biometricSettings.escalate.help')} error={errorText('escalate')}>
-        <Input
-          data-testid="biometric-escalate"
-          type="number"
-          inputMode="decimal"
-          step="0.01"
-          min={BIOMETRIC_ESCALATE_MIN}
-          max={BIOMETRIC_ACCEPT_MAX}
-          value={form.escalate}
-          disabled={update.isPending}
-          onChange={(event) => edit({ escalate: event.target.value })}
-        />
-      </Field>
+        <Field label={t('biometricSettings.escalate.label')} hint={t('biometricSettings.escalate.help')} error={errorText('escalate')}>
+          <Input
+            data-testid="biometric-escalate"
+            type="number"
+            inputMode="decimal"
+            step="0.01"
+            min={BIOMETRIC_ESCALATE_MIN}
+            max={BIOMETRIC_ACCEPT_MAX}
+            value={form.escalate}
+            disabled={update.isPending}
+            onChange={(event) => edit({ escalate: event.target.value })}
+          />
+        </Field>
 
+      </div>
       <p className="text-sm text-foreground/70">
         {t('biometricSettings.thresholdsRange', { min: boundText(BIOMETRIC_ESCALATE_MIN, i18n.language), max: boundText(BIOMETRIC_ACCEPT_MAX, i18n.language) })}
       </p>
@@ -233,7 +236,7 @@ function BiometricSettingsForm({ settings }: { settings: BiometricSettings }) {
  * calibration. Platform administrators also see the models: name, state and why one cannot be used. Only for the org billing administrator and only while the identity verification is on; with
  * the flag off the card does not exist and nothing is asked. A save the server refuses (a bound that failed) says so, and nothing is saved.
  */
-export function BiometricSettingsCard() {
+export function BiometricSettingsCard({ compact = false }: { compact?: boolean }) {
   const { t } = useTranslation();
   const { flags } = useFeatureFlags();
   const { contexts } = useWorkspace();
@@ -242,23 +245,8 @@ export function BiometricSettingsCard() {
 
   if (!available) return null;
 
-  return (
-    <section className="mt-8 min-w-0 space-y-4 border-t pt-6" aria-labelledby="biometric-settings-title" data-testid="biometric-settings-card">
-      <div className="space-y-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <h2 id="biometric-settings-title" className="text-base font-semibold">
-            {t('biometricSettings.title')}
-          </h2>
-          {/* A read that failed leaves the older answer in memory, and the body of the card says it cannot be read: the badge is part of what is not known then. */}
-          {!settings.isError && settings.data?.provisional ? (
-            <Badge variant="warning" data-testid="biometric-provisional">
-              {t('biometricSettings.provisional.badge')}
-            </Badge>
-          ) : null}
-        </div>
-        <p className="break-words text-sm text-foreground/70">{t('biometricSettings.description')}</p>
-      </div>
-
+  const controls = (
+    <div className="max-w-3xl space-y-4">
       {settings.isError ? (
         <Alert
           variant="danger"
@@ -280,6 +268,30 @@ export function BiometricSettingsCard() {
       )}
 
       {isPlatformAdmin(contexts) && <ModelsStatus />}
+    </div>
+  );
+
+  return (
+    <section className="min-w-0 space-y-3 rounded-2xl border bg-card p-5 sm:p-6" aria-labelledby="biometric-settings-title" data-testid="biometric-settings-card">
+      <div className="flex flex-wrap items-center gap-2">
+        <ScanFace aria-hidden="true" className="size-5 text-primary-text" />
+        <h2 id="biometric-settings-title" className="font-semibold">{t('biometricSettings.title')}</h2>
+        {/* A read that failed leaves the older answer in memory: the badge is part of what is not known then. */}
+        {!settings.isError && settings.data?.provisional ? (
+          <Badge variant="warning" data-testid="biometric-provisional">{t('biometricSettings.provisional.badge')}</Badge>
+        ) : null}
+      </div>
+      {settings.data && !settings.isError && compact ? (
+        <p className="text-sm">{t(settings.data.enabled ? 'aiSettings.enabledSummary' : 'aiSettings.manualSummary')}</p>
+      ) : <p className="max-w-prose text-sm text-muted-foreground">{t('biometricSettings.description')}</p>}
+      {compact && settings.data && !settings.isError ? (
+        <details className="group">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-md text-sm font-semibold text-primary-text focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
+            {t('aiSettings.advancedVerification')}<ChevronDown aria-hidden="true" className="size-4 group-open:rotate-180" />
+          </summary>
+          {controls}
+        </details>
+      ) : controls}
     </section>
   );
 }

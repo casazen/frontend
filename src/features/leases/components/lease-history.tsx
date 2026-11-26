@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityList, PlainSection } from '@/components/shared/calm';
+import { ActivityList } from '@/components/shared/calm';
 import { getLeaseEventTypeLabel } from '@/lib/i18n-labels';
 import type { LeaseEvent } from '@/types';
 import { leaseEventActor } from '../lib/lease-sheet';
@@ -8,12 +8,7 @@ import { leaseEventActor } from '../lib/lease-sheet';
 /** The latest events of the lease; "Mostra tutta la cronologia" shows the rest. */
 const EVENTS_SHOWN = 5;
 
-/**
- * The history of the lease (column on the right of the sheet, a section under the tabs on a narrow page): what happened, when
- * and, where the type of the event settles it, who did it. The events are those the API already sends (their type and date; the
- * payloads never leave the server), put in order by `ActivityList`, the latest first.
- */
-export function LeaseHistory({ leaseId, events }: { leaseId: string; events: readonly LeaseEvent[] }) {
+export function LeaseHistory({ leaseId, events, initiallyOpen }: { leaseId: string; events: readonly LeaseEvent[]; initiallyOpen: boolean }) {
   const { t } = useTranslation();
 
   const items = useMemo(
@@ -31,12 +26,15 @@ export function LeaseHistory({ leaseId, events }: { leaseId: string; events: rea
   );
 
   return (
-    <PlainSection title={t('leases.timeline')} data-testid="lease-timeline">
-      {items.length === 0 ? (
-        <p className="text-sm text-foreground/70">{t('leaseList.detail.eventsEmpty')}</p>
-      ) : (
-        <ActivityList key={leaseId} items={items} more={{ limit: EVENTS_SHOWN, label: t('leaseSheet.history.more') }} />
-      )}
-    </PlainSection>
+    <details open={initiallyOpen} data-testid="lease-timeline" className="rounded-xl border bg-card px-4">
+      <summary className="cursor-pointer rounded-sm py-3 font-semibold focus-visible:outline-ring">{t('leases.timeline')}</summary>
+      <div className="pb-4">
+        {items.length === 0 ? (
+          <p className="text-sm text-foreground/70">{t('leaseList.detail.eventsEmpty')}</p>
+        ) : (
+          <ActivityList key={leaseId} items={items} more={{ limit: EVENTS_SHOWN, label: t('leaseSheet.history.more') }} />
+        )}
+      </div>
+    </details>
   );
 }

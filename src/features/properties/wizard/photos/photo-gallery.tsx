@@ -34,7 +34,7 @@ export function PhotoGallery({ propertyName, photos, busy, onMove, onSetCover, o
   };
 
   return (
-    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3" aria-busy={busy} data-testid="property-wizard-photos">
+    <ul className="grid grid-cols-1 items-start gap-3 sm:grid-cols-3" aria-busy={busy} data-testid="property-wizard-photos">
       {photos.map((url, index) => {
         const position = index + 1;
         const displayable = isDisplayableMediaUrl(url);
@@ -44,7 +44,7 @@ export function PhotoGallery({ propertyName, photos, busy, onMove, onSetCover, o
             key={url}
             draggable={!busy}
             data-testid="property-wizard-photo"
-            className={cn('min-w-0 space-y-2 rounded-md', dragging === index && 'opacity-50', over === index && dragging !== index && 'ring-2 ring-primary')}
+            className={cn('min-w-0 space-y-2 rounded-xl border bg-card p-2', index === 0 && 'sm:col-span-2', dragging === index && 'opacity-50', over === index && dragging !== index && 'ring-2 ring-primary')}
             onDragStart={(event) => {
               event.dataTransfer.effectAllowed = 'move';
               // Firefox does not start a drag that carries nothing.
@@ -65,7 +65,7 @@ export function PhotoGallery({ propertyName, photos, busy, onMove, onSetCover, o
             }}
             onDragEnd={endDrag}
           >
-            <div className="relative aspect-[4/3] overflow-hidden rounded-md bg-muted">
+            <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-muted">
               {displayable ? (
                 <PhotoImage url={url} alt={t('property.photos.alt', { name: propertyName, index: position })} />
               ) : (

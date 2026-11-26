@@ -64,7 +64,7 @@ export function QuoteSheet({
         <form onSubmit={submit} className="grid gap-5" noValidate>
           <QuoteLinesFields form={form} setForm={setForm} problems={problems} tried={tried} />
 
-          <section className="space-y-2" aria-labelledby="quote-when-title" data-testid="quote-when">
+          <section className="space-y-2 rounded-xl border border-border p-4" aria-labelledby="quote-when-title" data-testid="quote-when">
             <h3 id="quote-when-title" className="text-sm font-semibold">
               {t(`${T}.when.title`)}
             </h3>

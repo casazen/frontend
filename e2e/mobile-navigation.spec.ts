@@ -132,7 +132,9 @@ test.describe('Mobile navigation (UI-04b)', () => {
       await page.keyboard.press('Enter');
       await expect(sheet(page)).toBeFocused();
 
-      // The first Tab reaches the first tile (Messaggi); focus must stay inside the sheet.
+      // The first Tab reaches the scoped search, then the first link.
+      await page.keyboard.press('Tab');
+      await expect(sheet(page).getByRole('searchbox', { name: 'Cerca nel menu' })).toBeFocused();
       await page.keyboard.press('Tab');
       await expect(sheet(page).getByRole('link', { name: 'Messaggi', exact: true })).toBeFocused();
       for (let i = 0; i < 14; i += 1) {
@@ -205,7 +207,7 @@ test.describe('Mobile navigation (UI-04b)', () => {
       expect(box.height).toBeLessThanOrEqual(480 * 0.85 + 1);
       expect(Math.round(box.y + box.height)).toBe(480);
 
-      const last = sheet(page).getByRole('link', { name: 'Consiglia CasaZen' });
+      const last = sheet(page).getByRole('link', { name: 'Impostazioni' });
       await last.scrollIntoViewIfNeeded();
       await expect(last).toBeInViewport();
       // It scrolls up and down, never sideways, and the page behind does not get wider.
@@ -436,8 +438,9 @@ test.describe('Mobile navigation (UI-04b)', () => {
       const settings = foot.getByRole('link', { name: 'Impostazioni', exact: true });
       await settings.focus();
       await expect(tooltip(page)).toHaveText('Impostazioni');
-      await expect(settings).toHaveAttribute('href', '/app/short-rent/settings/organization');
-      await expect(foot.getByRole('link', { name: 'Consiglia CasaZen' })).toHaveAttribute('href', '/app/short-rent/settings/invitations');
+      await expect(settings).toHaveAttribute('href', '/app/short-rent/settings');
+      await settings.click();
+      await expect(page.getByRole('main').getByRole('link', { name: 'Consiglia CasaZen' })).toHaveAttribute('href', '/app/short-rent/settings/invitations');
     });
 
     test('with several areas the switcher is the icon of the area, with its name, and it works', async ({ page }) => {
@@ -502,16 +505,13 @@ test.describe('Mobile navigation (UI-04b)', () => {
 
       // The click gave the toggle the focus; the keyboard goes back through the foot and the menu: the names show as tooltips.
       await page.keyboard.press('Shift+Tab');
-      await expect(sidebar(page).getByRole('link', { name: 'Consiglia CasaZen' })).toBeFocused();
-      await expect(tooltip(page)).toHaveText('Consiglia CasaZen');
-      await page.keyboard.press('Shift+Tab');
       await expect(sidebar(page).getByRole('link', { name: 'Impostazioni' })).toBeFocused();
       await expect(tooltip(page)).toHaveText('Impostazioni');
       await page.keyboard.press('Shift+Tab');
       await expect(sidebar(page).getByRole('link', { name: 'Incassi' })).toBeFocused();
       await expect(tooltip(page)).toHaveText('Incassi');
       await page.keyboard.press('Tab');
-      await page.keyboard.press('Tab');
+      await expect(sidebar(page).getByRole('link', { name: 'Impostazioni' })).toBeFocused();
       await page.keyboard.press('Tab');
       await expect(sidebar(page).getByTestId('sidebar-collapse-toggle')).toBeFocused();
       await expect(tooltip(page)).toHaveText('Espandi menu');

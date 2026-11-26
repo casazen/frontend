@@ -231,36 +231,40 @@ function StatementContent({ version, entries, touristTax }: { version: OwnerStat
         secondary={menu}
       />
 
-      <Alert variant="info" data-testid="statement-non-fiscal">
-        {invoicing ? t('ownerAccounting.statement.nonFiscalInvoicing') : t('ownerAccounting.statement.nonFiscal')}
-      </Alert>
-
-      {version.status === 'Superseded' ? (
-        <Alert
-          variant="warning"
-          data-testid="statement-superseded"
-          action={
-            version.supersededByVersionId ? (
-              <Button asChild size="sm" variant="outline">
-                <Link to={statementPath(version.supersededByVersionId)}>{t('ownerAccounting.statement.openLatest')}</Link>
-              </Button>
-            ) : undefined
-          }
-        >
-          {t('ownerAccounting.statement.superseded')}
+      <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <Alert className="xl:col-start-2 xl:row-start-1" variant="info" data-testid="statement-non-fiscal">
+          {invoicing ? t('ownerAccounting.statement.nonFiscalInvoicing') : t('ownerAccounting.statement.nonFiscal')}
         </Alert>
-      ) : null}
 
-      <FocusBlock
-        tone={tone}
-        kicker={t('ownerAccounting.statement.kicker', { period: periodName })}
-        title={t('ownerAccounting.statement.focusTitle', { version: version.version, status: t(`ownerAccounting.version.status.${version.status}`) })}
-        body={t('ownerAccounting.statement.focusBody', { balance: money(version.closingBalance, version.currency), cutoff: dateTime(version.cutoffAt) })}
-        who={closed ? t('ownerAccounting.statement.closed') : undefined}
-        then={actions.stale ? t('ownerAccounting.actions.stale') : undefined}
-        primary={focusPrimary}
-        data-testid="statement-focus"
-      />
+        {version.status === 'Superseded' ? (
+          <Alert
+            variant="warning"
+            className="xl:col-span-2"
+            data-testid="statement-superseded"
+            action={
+              version.supersededByVersionId ? (
+                <Button asChild size="sm" variant="outline">
+                  <Link to={statementPath(version.supersededByVersionId)}>{t('ownerAccounting.statement.openLatest')}</Link>
+                </Button>
+              ) : undefined
+            }
+          >
+            {t('ownerAccounting.statement.superseded')}
+          </Alert>
+        ) : null}
+
+        <FocusBlock
+          tone={tone}
+          kicker={t('ownerAccounting.statement.kicker', { period: periodName })}
+          title={t('ownerAccounting.statement.focusTitle', { version: version.version, status: t(`ownerAccounting.version.status.${version.status}`) })}
+          body={t('ownerAccounting.statement.focusBody', { balance: money(version.closingBalance, version.currency), cutoff: dateTime(version.cutoffAt) })}
+          who={closed ? t('ownerAccounting.statement.closed') : undefined}
+          then={actions.stale ? t('ownerAccounting.actions.stale') : undefined}
+          primary={focusPrimary}
+          className="xl:col-start-1 xl:row-start-1"
+          data-testid="statement-focus"
+        />
+      </div>
 
       {flagged.length > 0 && version.status === 'Flagged' ? (
         <Alert variant="warning" title={t('ownerAccounting.statement.flaggedTitle')} data-testid="statement-flagged">
@@ -278,7 +282,7 @@ function StatementContent({ version, entries, touristTax }: { version: OwnerStat
         <StatTile label={t('ownerAccounting.statement.paidAndWithheld')} value={money(version.payments + withheld, version.currency)} />
         <StatTile label={t('ownerAccounting.statement.closing')} value={money(version.closingBalance, version.currency)} delta={t('ownerAccounting.statement.opening', { amount: money(version.openingBalance, version.currency) })} />
       </StatStrip>
-      <p className="break-words text-sm text-foreground/70" data-testid="version-formula">
+      <p className="rounded-xl border-l-4 border-primary/50 bg-muted/40 px-4 py-3 text-sm tabular-nums" data-testid="version-formula">
         {t('ownerAccounting.statement.formula', {
           opening: money(version.openingBalance, version.currency),
           revenue: money(version.revenue, version.currency),
@@ -295,11 +299,11 @@ function StatementContent({ version, entries, touristTax }: { version: OwnerStat
         {entries.length === 0 ? (
           <p className="break-words text-sm text-foreground/70">{t('ownerAccounting.lines.empty')}</p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-xl border bg-card p-2 focus-visible:outline-primary" tabIndex={0} role="region" aria-label={t('ownerAccounting.lines.caption')}>
             <table className="w-full min-w-[32rem] text-sm">
               <caption className="sr-only">{t('ownerAccounting.lines.caption')}</caption>
               <thead>
-                <tr className="border-b border-border text-left text-foreground/70">
+                <tr className="border-b border-border bg-muted/50 text-left text-muted-foreground">
                   <th scope="col" className="py-2 pr-3 font-medium">{t('ownerAccounting.lines.date')}</th>
                   <th scope="col" className="py-2 pr-3 font-medium">{t('ownerAccounting.lines.item')}</th>
                   <th scope="col" className="py-2 pr-3 text-right font-medium">{t('ownerAccounting.lines.share')}</th>
@@ -312,7 +316,7 @@ function StatementContent({ version, entries, touristTax }: { version: OwnerStat
                   // it counts in nothing: it is in no total of this page (`statementGroupsOf` leaves it out).
                   const informational = isInformational(entry);
                   return (
-                    <tr key={entry.id} className="border-b border-border last:border-0" data-testid="statement-line" data-type={entry.type} data-informational={informational ? 'true' : undefined}>
+                    <tr key={entry.id} className="border-b border-border even:bg-muted/30 focus-within:bg-primary/5 last:border-0" data-testid="statement-line" data-type={entry.type} data-informational={informational ? 'true' : undefined}>
                       <td className="whitespace-nowrap py-2 pr-3 align-top">{shortDate(entry.recognitionDate)}</td>
                       <td className="py-2 pr-3 align-top">
                         <Button type="button" variant="link" className="h-auto min-h-11 whitespace-normal p-0 text-left" onClick={() => setExplained(entry)} data-testid="statement-line-explain">

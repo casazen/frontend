@@ -38,8 +38,8 @@ const BAR: Record<StepState, string> = {
 };
 
 const NUMBER: Record<StepState, string> = {
-  done: "bg-primary text-primary-foreground",
-  current: "bg-background text-primary ring-2 ring-primary",
+  done: "bg-primary/10 text-primary",
+  current: "bg-primary text-primary-foreground",
   todo: "bg-background text-muted-foreground ring-1 ring-inset ring-border",
 };
 
@@ -88,8 +88,8 @@ export function Stepper({ steps, current, onStepSelect, label, orientation = "ho
   if (orientation === "vertical") {
     return (
       <div className={className} data-orientation="vertical">
-        <p className="text-sm font-semibold">{stepOf}</p>
-        <ol aria-label={label ?? t("ui.stepper.label")} className="mt-3">
+        <p className="border-b pb-3 text-sm font-semibold tracking-tight text-primary">{stepOf}</p>
+        <ol aria-label={label ?? t("ui.stepper.label")} className="mt-4">
           {steps.map((step, position) => {
             const state = stateOf(position, index);
             const content = (
@@ -135,12 +135,23 @@ export function Stepper({ steps, current, onStepSelect, label, orientation = "ho
       <div className="space-y-2 md:hidden">
         <div className="flex items-baseline justify-between gap-3 text-sm">
           <span className="shrink-0 font-semibold">{stepOf}</span>
-          <span className="min-w-0 truncate text-muted-foreground">{steps[index].label}</span>
+          {onStepSelect && index > 0 ? (
+            <select
+              aria-label={label ?? t("ui.stepper.label")}
+              className="min-h-11 min-w-0 max-w-[65%] rounded-lg border bg-card px-2 text-base text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+              value={index}
+              onChange={(event) => onStepSelect(Number(event.target.value))}
+            >
+              {steps.slice(0, index + 1).map((item, position) => (
+                <option key={item.id} value={position}>{item.label}</option>
+              ))}
+            </select>
+          ) : <span className="min-w-0 break-words text-right text-foreground">{steps[index].label}</span>}
         </div>
         <Progress size="sm" value={((index + 1) / steps.length) * 100} label={stepOf} valueText={stepOf} />
       </div>
 
-      <ol aria-label={label ?? t("ui.stepper.label")} className="hidden gap-2 md:flex">
+      <ol aria-label={label ?? t("ui.stepper.label")} className="hidden flex-wrap gap-x-3 gap-y-2 md:flex">
         {steps.map((step, position) => {
           const state = stateOf(position, index);
           const content = (
@@ -158,7 +169,7 @@ export function Stepper({ steps, current, onStepSelect, label, orientation = "ho
           );
 
           return (
-            <li key={step.id} className="flex min-w-0 flex-1">
+            <li key={step.id} className="flex min-w-0 flex-[1_1_7rem]">
               {state === "done" && onStepSelect ? (
                 <button type="button" onClick={() => onStepSelect(position)} className={cn(ITEM, STEP_BUTTON)}>
                   {content}

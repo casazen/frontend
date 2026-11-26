@@ -1,26 +1,27 @@
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ErrorState } from '@/components/shared/error-state';
+import { getHttpStatus } from '@/lib/api-errors';
 import { Badge } from '@/components/ui/badge';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { usePayment } from '@/queries/use-payments';
 import { formatDate, formatCurrency } from '@/lib/utils';
 import { PAYMENT_STATUS_VARIANTS } from './schemas/payment.schema';
 import { getPaymentStatusLabel, getPaymentMethodLabel } from '@/lib/i18n-labels';
-import { Edit, Undo2 } from 'lucide-react';
+import { CalendarDays, Clock3, ReceiptText, Undo2 } from 'lucide-react';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { RefundDialog } from './components/refund-dialog';
 import { PaymentRefundsCard } from './components/payment-refunds-card';
 
 export function PaymentDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const { t } = useTranslation();
-  const { data: payment, isLoading } = usePayment(id!);
+  const { data: payment, isLoading, isError, error, refetch } = usePayment(id!);
   const { hasPermission } = useWorkspace();
   const [refundOpen, setRefundOpen] = useState(false);
 
@@ -28,7 +29,15 @@ export function PaymentDetailPage() {
     return <LoadingScreen message={t('payment.detail.loading')} className="h-auto flex-1" />;
   }
 
-  if (!payment) {
+  if (isError && getHttpStatus(error) !== 404) {
+    return (
+      <AppShell>
+        <ErrorState title={t('payment.list.loadError')} error={error} onRetry={() => void refetch()} />
+      </AppShell>
+    );
+  }
+
+  if (!payment || getHttpStatus(error) === 404) {
     return (
       <AppShell>
         <div className="text-center py-12">
@@ -55,6 +64,7 @@ export function PaymentDetailPage() {
         <PageHeader
           title={`${t('payment.detail.title')}${payment.id.slice(0, 8)}`}
           description={t('payment.detail.description')}
+          crumbs="auto"
           action={
             <div className="flex flex-wrap gap-2">
               {canRefund && (
@@ -63,10 +73,14 @@ export function PaymentDetailPage() {
                   {t('payment.refund.action')}
                 </Button>
               )}
-              <Button onClick={() => navigate(`/payments/${id}/edit`)}>
-                <Edit className="mr-2 h-4 w-4" />
-                {t('payment.detail.editPayment')}
-              </Button>
+              {payment.bookingId && hasPermission('short-rent', 'booking.read') ? (
+                <Button asChild variant="outline">
+                  <Link to={`/app/short-rent/bookings/${payment.bookingId}`}>
+                    <CalendarDays aria-hidden="true" className="size-4" />
+                    {t('marketplace.viewBooking')}
+                  </Link>
+                </Button>
+              ) : null}
             </div>
           }
         />
@@ -76,17 +90,17 @@ export function PaymentDetailPage() {
           <div className="md:col-span-2 space-y-6">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>{t('payment.detail.paymentInformation')}</CardTitle>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <CardTitle className="flex items-center gap-2"><ReceiptText aria-hidden="true" className="size-5 text-primary" />{t('payment.detail.paymentInformation')}</CardTitle>
                   <Badge variant={statusVariant} className="text-base px-3 py-1">
                     {statusLabel}
                   </Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
+                <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5">
                   <div className="text-sm text-muted-foreground mb-1">{t('payment.detail.amount')}</div>
-                  <div className="text-3xl font-bold">
+                  <div className="break-words text-4xl font-semibold tracking-tight tabular-nums">
                     {formatCurrency(payment.amount, payment.currency)}
                   </div>
                 </div>
@@ -144,13 +158,13 @@ export function PaymentDetailPage() {
                   {payment.stripePaymentIntentId && (
                     <div>
                       <div className="text-sm text-muted-foreground">{t('payment.detail.paymentIntentId')}</div>
-                      <div className="font-mono text-sm">{payment.stripePaymentIntentId}</div>
+                      <div className="break-all font-mono text-sm">{payment.stripePaymentIntentId}</div>
                     </div>
                   )}
                   {payment.stripeChargeId && (
                     <div>
                       <div className="text-sm text-muted-foreground">{t('payment.detail.chargeId')}</div>
-                      <div className="font-mono text-sm">{payment.stripeChargeId}</div>
+                      <div className="break-all font-mono text-sm">{payment.stripeChargeId}</div>
                     </div>
                   )}
                 </CardContent>
@@ -169,16 +183,16 @@ export function PaymentDetailPage() {
               <CardContent>
                 <div>
                   <div className="text-sm text-muted-foreground">{t('payment.detail.bookingId')}</div>
-                  <div className="font-medium">{payment.bookingId}</div>
+                  <div className="break-all font-medium">{payment.bookingId}</div>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>{t('payment.detail.timeline')}</CardTitle>
+                <CardTitle className="flex items-center gap-2"><Clock3 aria-hidden="true" className="size-5 text-primary" />{t('payment.detail.timeline')}</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2 text-sm">
+              <CardContent className="ml-6 space-y-4 border-l-2 border-primary/25 pl-4 text-sm">
                 <div>
                   <div className="text-muted-foreground">{t('payment.detail.created')}</div>
                   <div>{formatDate(payment.createdAt, 'PPp')}</div>

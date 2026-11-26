@@ -1,3 +1,4 @@
+import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -10,12 +11,13 @@ import { ownerReadStateOf, type OwnerReadState } from './owner-portal-model';
 import { ownerPortalPaths } from './paths';
 
 /** The title of a page of the portal and, under it, what the page is for. One `h1` for each page. */
-export function PortalPageHeading({ title, description, actions }: { title: string; description?: string; actions?: ReactNode }) {
+export function PortalPageHeading({ title, description, actions, icon: Icon }: { title: string; icon?: LucideIcon; description?: string; actions?: ReactNode }) {
   return (
-    <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-      <div className="min-w-0 space-y-1">
-        <h1 className="break-words text-2xl font-bold text-[#1f3a3d] sm:text-3xl">{title}</h1>
-        {description ? <p className="max-w-2xl text-sm text-muted-foreground">{description}</p> : null}
+    <div className="flex min-w-0 flex-wrap items-center gap-4 border-b border-border pb-5">
+      {Icon ? <Icon aria-hidden="true" className="size-11 shrink-0 rounded-xl bg-muted p-2.5 text-foreground" /> : null}
+      <div className="min-w-0 flex-1 basis-48 space-y-1">
+        <h1 className="workspace-title text-foreground">{title}</h1>
+        {description ? <p className="workspace-description">{description}</p> : null}
       </div>
       {actions ? <div className="flex min-w-0 flex-wrap gap-2">{actions}</div> : null}
     </div>

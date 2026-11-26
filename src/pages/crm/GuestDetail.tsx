@@ -1,3 +1,4 @@
+import { GuestMarketingCategories } from '@/components/campaigns/GuestMarketingCategories';
 import { Star, UserRoundSearch } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
@@ -70,7 +71,7 @@ function ProfileFigures({ profile }: { profile: CrmProfileDetail }) {
 
   return (
     <div className={PAGE_COLUMN}>
-      <PlainSection title={t('crm.detail.group.title')} data-testid="crm-group-section">
+      <PlainSection className="rounded-xl border bg-card p-4" title={t('crm.detail.group.title')} data-testid="crm-group-section">
         {group ? (
           <p className="text-sm">
             {t(group.labelKey)}
@@ -86,7 +87,7 @@ function ProfileFigures({ profile }: { profile: CrmProfileDetail }) {
         )}
       </PlainSection>
 
-      <PlainSection title={t('crm.detail.channels.title')} data-testid="crm-channels-section">
+      <PlainSection className="rounded-xl border bg-card p-4" title={t('crm.detail.channels.title')} data-testid="crm-channels-section">
         {totals.byChannel.length === 0 ? (
           <p className="text-sm text-foreground/70">{t('crm.detail.channels.empty')}</p>
         ) : (
@@ -101,7 +102,7 @@ function ProfileFigures({ profile }: { profile: CrmProfileDetail }) {
         )}
       </PlainSection>
 
-      <PlainSection title={t('crm.detail.properties.title')} data-testid="crm-properties-section">
+      <PlainSection className="rounded-xl border bg-card p-4" title={t('crm.detail.properties.title')} data-testid="crm-properties-section">
         {totals.byProperty.length === 0 ? (
           <p className="text-sm text-foreground/70">{t('crm.detail.properties.empty')}</p>
         ) : (
@@ -116,7 +117,7 @@ function ProfileFigures({ profile }: { profile: CrmProfileDetail }) {
         )}
       </PlainSection>
 
-      <PlainSection title={t('crm.detail.reviews.title')} data-testid="crm-reviews-section">
+      <PlainSection className="rounded-xl border bg-card p-4" title={t('crm.detail.reviews.title')} data-testid="crm-reviews-section">
         {reviews.count === 0 || reviews.averageRating === null ? (
           <p className="text-sm text-foreground/70">{t('crm.detail.reviews.empty')}</p>
         ) : (
@@ -223,7 +224,7 @@ export default function GuestDetail() {
         </Alert>
       ) : null}
 
-      <StatStrip label={t('crm.detail.totals.label')}>
+      <StatStrip className="rounded-xl border bg-card px-4 sm:px-6" label={t('crm.detail.totals.label')}>
         <StatTile label={t('crm.detail.totals.stays')} value={totals.stays} />
         <StatTile label={t('crm.detail.totals.spend')} value={formatMoney(totals.spend, language)} />
         <StatTile label={t('crm.detail.totals.averageSpend')} value={totals.stays > 0 ? formatMoney(totals.averageSpend, language) : '—'} />
@@ -236,6 +237,7 @@ export default function GuestDetail() {
       <div className={PAGE_COLUMNS}>
         <div className={PAGE_COLUMN}>
           <ProfileContacts profileId={profile.id} contacts={profile.contacts} primaryGuestId={profile.primaryGuestId} canWrite={canWrite} />
+          {hasPermission('short-rent', 'marketing.manage') && <GuestMarketingCategories profileId={profile.id}/>}
           <ProfileTags profileId={profile.id} tags={profile.tags} canWrite={canWrite} />
         </div>
         <ProfileFigures profile={profile} />

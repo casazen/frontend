@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import type { TFunction } from 'i18next';
 import { isAxiosError } from 'axios';
 import { Link, useOutletContext, useParams, useSearchParams } from 'react-router-dom';
@@ -38,8 +38,14 @@ function errorCodeOf(error: unknown): string | undefined {
 export function ReviewLinkPage() {
   const { t, i18n } = useTranslation();
   const { orgSlug = '', bookingId = '' } = useParams<{ orgSlug: string; bookingId: string }>();
-  const [searchParams] = useSearchParams();
-  const token = searchParams.get('token') ?? '';
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [token] = useState(() => searchParams.get('token') ?? '');
+  useEffect(() => {
+    if (!searchParams.has('token')) return;
+    const rest = new URLSearchParams(searchParams);
+    rest.delete('token');
+    setSearchParams(rest, { replace: true });
+  }, [searchParams, setSearchParams]);
   const { org } = useOutletContext<PublicBookingContext>();
   useSeoMeta({ title: t('siteReviews.link.pageTitle'), noindex: true });
 

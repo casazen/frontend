@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Building2, Pause, Pencil, Plus, Power, Trash2, Wrench } from 'lucide-react';
+import { Activity, Building2, Cable, FileText, Images, Pause, Pencil, Plus, Power, Trash2, Wrench } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import type { PageHeaderMenuItem } from '@/components/layout/page-header-actions';
@@ -197,11 +197,11 @@ export function PropertyDetailPage() {
 
   // The test ids are how the tests reach the tabs.
   const tabs: TabItem<PropertyPanel>[] = [
-    { value: 'info', label: t('property.detail.tabs.info'), testId: 'property-tab-info' },
-    { value: 'photos', label: t('property.detail.tabs.photos'), testId: 'property-tab-photos' },
-    { value: 'activity', label: t('property.detail.tabs.activity'), testId: 'property-tab-activity' },
-    { value: 'ical', label: otaEnabled ? t('property.detail.tabs.ota') : t('property.detail.tabs.ical'), testId: 'property-tab-ical' },
-    { value: 'documents', label: t('property.detail.tabs.documents'), testId: 'property-tab-documents' },
+    { value: 'info', icon: Building2, label: t('property.detail.tabs.info'), testId: 'property-tab-info' },
+    { value: 'photos', icon: Images, label: t('property.detail.tabs.photos'), testId: 'property-tab-photos' },
+    { value: 'activity', icon: Activity, label: t('property.detail.tabs.activity'), testId: 'property-tab-activity' },
+    { value: 'ical', icon: Cable, label: otaEnabled ? t('property.detail.tabs.ota') : t('property.detail.tabs.ical'), testId: 'property-tab-ical' },
+    { value: 'documents', icon: FileText, label: t('property.detail.tabs.documents'), testId: 'property-tab-documents' },
   ];
 
   // The backend decides whether it can go (409 with upcoming bookings or active leases): the toast of the mutation says why.
@@ -227,21 +227,19 @@ export function PropertyDetailPage() {
 
         <ScheduledChangeNotice area="short-rent" propertyId={property.id} />
 
-        <PropertyNextStep
-          property={property}
-          status={status}
-          canWrite={canWrite}
-          canReadBookings={canReadBookings}
-          onEditCin={() => setCinDialogOpen(true)}
-          onReactivate={() => activateProperty.mutate(property.id)}
-          reactivating={activateProperty.isPending}
-        />
-
         {/* UI-07 Tabs: links with the tab in the address (`?tab=`), a menu on a phone. */}
-        <Tabs label={t('property.detail.tabsLabel')} items={tabs} defaultValue="info" value={panel} selectTestId="property-tabs-select">
+        <Tabs layout="sidebar" label={t('property.detail.tabsLabel')} items={tabs} defaultValue="info" value={panel} selectTestId="property-tabs-select">
           {panel === 'info' && (
             <div className="space-y-8">
-              <PropertyOverviewTab property={property} canWrite={canWrite} publicPath={publicPath} onEditCin={() => setCinDialogOpen(true)} />
+              <PropertyNextStep
+                property={property}
+                status={status}
+                canWrite={canWrite}
+                canReadBookings={canReadBookings}
+                onReactivate={() => activateProperty.mutate(property.id)}
+                reactivating={activateProperty.isPending}
+              />
+              <PropertyOverviewTab property={property} canWrite={canWrite} publicPath={publicPath} />
               {/* «Invio a Polizia e ISTAT» (CHK-12 point 7): who sends, whether it works. It asks `property.read` itself and shows nothing without it. */}
               <ConnectionHealthPanel propertyId={property.id} timeZone={property.timezone} />
               {/* The QR of the welcome page (CRM-03): only where the CRM module is on, and only for who may write the property (what its API asks). */}

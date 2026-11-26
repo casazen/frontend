@@ -1,3 +1,4 @@
+import { isEntryFeatureEnabled } from '@/config/route-manifest';
 import { useMemo, type ReactNode } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -6,6 +7,8 @@ import { FOCUS_COLUMN } from '@/components/layout/page-columns';
 import { PageHeader } from '@/components/layout/page-header';
 import { ErrorState } from '@/components/shared/error-state';
 import { Skeleton } from '@/components/ui/skeleton';
+import { commercialPartAllowed, commercialRouteAllowed } from './commercial-access';
+import { useCommercialProfile } from '@/hooks/use-commercial-profile';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useWizardDraft } from '@/hooks/use-wizard-draft';
 import { useWorkspace } from '@/hooks/use-workspace';
@@ -43,6 +46,7 @@ export function OnboardingPartPage() {
   const { partKey } = useParams();
   const { hasPermission } = useWorkspace();
   const { flags } = useFeatureFlags();
+  const profile = useCommercialProfile();
   const plan = useOnboardingPlan();
   const known = isOnboardingPartKey(partKey);
   const parts = useMemo(() => knownParts(plan.data), [plan.data]);
@@ -50,7 +54,7 @@ export function OnboardingPartPage() {
   // The answer the host gave to the first question (the draft of the wizard of E02): Police and ISTAT default to «Fallo per me» only for «new».
   const draft = useWizardDraft('octorate-connect', { server: { type: 'OnboardingActivation' }, enabled: partKey === 'compliance' });
 
-  if (!known) return <Navigate to={ONBOARDING_PLAN_PATH} replace />;
+  if (!known || !commercialPartAllowed(profile, partKey)) return <Navigate to={ONBOARDING_PLAN_PATH} replace />;
   // An answer that holds no such part (the server knows less than the address): the plan.
   if (plan.isSuccess && !part) return <Navigate to={ONBOARDING_PLAN_PATH} replace />;
 
@@ -58,7 +62,8 @@ export function OnboardingPartPage() {
   const flow = flowOfPart(partKey);
   // The launch that the plan names for the part, resolved against the manifest; the reopen of the backend may name another target for a part that is done. A wizard with
   // steps of its own (the part «Fatturazione») opens at the one the reason of the part points to, and only while its page exists (the issuance of the fiscal documents is on).
-  const launch = part ? resolveLaunchTarget(part.launchTarget, null, null, hasPermission, part.reason, flags) : null;
+  const target = part ? resolveLaunchTarget(part.launchTarget, null, null, hasPermission, part.reason, flags) : null;
+  const launch = target && isEntryFeatureEnabled(target.entry, flags) && commercialRouteAllowed(profile, target.to) ? target : null;
   const waiting = state === 'blocked' || state === 'notAvailable' || state === 'done';
   // The notification of the guests in Switzerland names the properties that lack something, each with its own way in: the one button of the part would only repeat them.
   const missingItems = part && part.code === 'guestRegistration' && !waiting ? missingItemsOf(part) : [];
@@ -81,7 +86,7 @@ export function OnboardingPartPage() {
   } else if (part) {
     content = (
       <>
-        <section className="min-w-0 space-y-2 rounded-lg border p-4" aria-label={t('onboardingPlan.part.statusLabel')} data-testid="onboarding-part-status" data-state={state}>
+        <section className="min-w-0 space-y-3 rounded-2xl border bg-card p-4 shadow-sm sm:p-6" aria-label={t('onboardingPlan.part.statusLabel')} data-testid="onboarding-part-status" data-state={state}>
           <p className="break-words text-sm text-foreground/70">{t(partWhatKey(part.code))}</p>
           <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
             <span className="font-semibold" data-testid="onboarding-part-state">
@@ -89,6 +94,9 @@ export function OnboardingPartPage() {
             </span>
             {part.total > 0 ? <span data-testid="onboarding-part-progress">{t('onboardingPlan.progress', { done: part.done, total: part.total })}</span> : null}
           </p>
+          {part.total > 0 && (
+            <progress aria-label={t('onboardingPlan.part.statusLabel')} value={part.done} max={part.total} className="block h-2 w-full overflow-hidden rounded-full accent-primary" />
+          )}
           {reason ? (
             <p className="break-words text-sm" data-testid="onboarding-part-reason">
               {reason}
@@ -108,13 +116,13 @@ export function OnboardingPartPage() {
           ) : null}
         </section>
 
-        {part.code === 'octorateConnection' && !waiting ? <PartEntryQuestion /> : null}
+        {part.code === 'octorateConnection' && launch && !waiting ? <PartEntryQuestion /> : null}
 
-        <PartLaunchPanel launch={launch} resuming={state === 'deferred' || (part.done > 0 && part.done < part.total)} blocked={waiting || missingItems.length > 0} />
+        <PartLaunchPanel partKey={part.code} launch={launch} resuming={state === 'deferred' || (part.done > 0 && part.done < part.total)} blocked={waiting || missingItems.length > 0} />
 
         {missingItems.length > 0 ? <PartMissingList target={part.launchTarget} items={missingItems} totalMissing={Math.max(0, part.total - part.done)} /> : null}
 
-        {flow && !waiting ? <PartPropertyTable flow={flow} target={part.launchTarget} panelSteps={part.code === 'compliance'} assistFirst={assistFirst} /> : null}
+        {flow && !waiting ? <PartPropertyTable partKey={part.code} flow={flow} target={part.launchTarget} panelSteps={part.code === 'compliance' && hasPermission('short-rent', 'property.write')} assistFirst={assistFirst} /> : null}
       </>
     );
   }

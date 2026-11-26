@@ -192,9 +192,14 @@ export function SiteAppearanceContent() {
     const activeFontId = form.fontId ?? THEME_DEFAULT_FONT[form.themeId];
 
     return (
-      <div className="grid items-start gap-6 lg:grid-cols-2">
+      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
+        <nav aria-label={t('siteAppearance.title')} className="flex flex-wrap gap-2 lg:hidden">
+          {[['appearance-images','siteAppearance.images.title'], ['appearance-style','siteAppearance.style.title'], ['appearance-preview','siteAppearance.preview.title']].map(([id,key]) => (
+            <a key={id} href={`#${id}`} className="inline-flex min-h-11 items-center rounded-full border bg-card px-3 text-sm font-semibold text-primary">{t(key)}</a>
+          ))}
+        </nav>
         <div className="space-y-6">
-          <Card data-testid="site-appearance-images">
+          <Card id="appearance-images" data-testid="site-appearance-images">
             <CardHeader>
               <CardTitle>{t('siteAppearance.images.title')}</CardTitle>
               <CardDescription>{t('siteAppearance.images.description')}</CardDescription>
@@ -205,7 +210,7 @@ export function SiteAppearanceContent() {
             </CardContent>
           </Card>
 
-          <Card data-testid="site-appearance-form">
+          <Card id="appearance-style" data-testid="site-appearance-form">
             <CardHeader>
               <CardTitle>{t('siteAppearance.style.title')}</CardTitle>
               <CardDescription>{t('siteAppearance.style.description')}</CardDescription>
@@ -576,7 +581,7 @@ function SitePreview({ branding, themeId, fontId, colorStyle, tagline }: SitePre
 
   return (
     // The window scrolls in the shell (UI-03), so the preview sticks below the sticky header (`--header-height`) and a 1rem gap.
-    <Card className="lg:sticky lg:top-[calc(var(--header-height)+1rem)]" data-testid="site-appearance-preview">
+    <Card id="appearance-preview" className="lg:sticky lg:top-[calc(var(--header-height)+1rem)]" data-testid="site-appearance-preview">
       <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-2 space-y-0">
         <div className="space-y-1.5">
           <CardTitle>{t('siteAppearance.preview.title')}</CardTitle>
@@ -586,7 +591,7 @@ function SitePreview({ branding, themeId, fontId, colorStyle, tagline }: SitePre
           href={publicPath}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-muted"
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-muted"
           data-testid="site-appearance-open-site"
         >
           {t('siteAppearance.preview.openSite')}

@@ -128,6 +128,7 @@ describe('SignupPage (SE-03, A8-03)', () => {
     const { rerender } = renderSignup();
     expect(auth0.loginWithRedirect).not.toHaveBeenCalled();
     // The attribution is stored before Auth0 is even ready.
+    expect(screen.queryByTestId('signup-continue')).not.toBeInTheDocument();
     expect(pendingAttribution()).toMatchObject({ comune: 'como' });
 
     auth0.isLoading = false;
@@ -144,10 +145,12 @@ describe('SignupPage (SE-03, A8-03)', () => {
     await waitFor(() => expect(auth0.loginWithRedirect).toHaveBeenCalledTimes(1));
   });
 
-  it('SignupPage_ContinueButton_OpensTheSignupScreenAgain', async () => {
+  it('SignupPage_ContinueButton_RetriesTheSignupScreenAfterAFailedHandoff', async () => {
+    auth0.loginWithRedirect.mockRejectedValueOnce(new Error('offline'));
     renderSignup();
     await waitFor(() => expect(auth0.loginWithRedirect).toHaveBeenCalledTimes(1));
 
+    await screen.findByRole('alert');
     screen.getByTestId('signup-continue').click();
 
     await waitFor(() => expect(auth0.loginWithRedirect).toHaveBeenCalledTimes(2));

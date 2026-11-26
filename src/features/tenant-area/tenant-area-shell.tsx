@@ -1,13 +1,12 @@
+import { ResidentNavigation } from '@/components/layout/resident-navigation';
 import { NavLink, Outlet, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { cn } from '@/lib/utils';
+import { FileText, FolderOpen, House, Landmark, Wrench } from 'lucide-react';
+import { SkipLink } from '@/components/layout/skip-link';
+import '@/styles/resident-portals.css';
 import { tenantContractPath, tenantDocumentsPath, tenantDuesPath, tenantMaintenancePath, TENANT_AREA_PATH } from './paths';
 
-const linkClass = ({ isActive }: { isActive: boolean }) =>
-  cn(
-    'inline-flex min-h-11 items-center rounded-md px-3 py-1.5 text-sm',
-    isActive ? 'bg-primary text-primary-foreground' : 'text-foreground/80 hover:bg-muted',
-  );
+const linkClass = 'resident-link min-h-11';
 
 /** The tenant portal: one contract at a time, no organisation menu. Pagamenti is the one place the tenant checks what is paid. */
 export function TenantAreaShell() {
@@ -15,33 +14,34 @@ export function TenantAreaShell() {
   const { leaseId } = useParams();
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border">
-        <div className="mx-auto flex max-w-3xl min-w-0 flex-col gap-3 px-4 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-          <p className="text-lg font-semibold">{t('tenantArea.title')}</p>
+    <div className="resident-shell resident-shell--tenant">
+      <SkipLink targetId="tenant-portal-main" />
+      <header className="resident-rail">
+        <div className="resident-rail__inner">
+          <p className="resident-title"><House aria-hidden="true" />{t('tenantArea.title')}</p>
           {leaseId ? (
-            <nav aria-label={t('tenantArea.nav.label')} className="flex min-w-0 flex-wrap gap-1">
+            <ResidentNavigation label={t('tenantArea.nav.label')}>
               <NavLink to={tenantContractPath(leaseId)} end className={linkClass}>
-                {t('tenantArea.nav.contract')}
+                <FileText aria-hidden="true" />{t('tenantArea.nav.contract')}
               </NavLink>
               <NavLink to={tenantDuesPath(leaseId)} className={linkClass}>
-                {t('tenantArea.nav.dues')}
+                <Landmark aria-hidden="true" />{t('tenantArea.nav.dues')}
               </NavLink>
               <NavLink to={tenantDocumentsPath(leaseId)} className={linkClass}>
-                {t('tenantArea.nav.documents')}
+                <FolderOpen aria-hidden="true" />{t('tenantArea.nav.documents')}
               </NavLink>
               <NavLink to={tenantMaintenancePath(leaseId)} className={linkClass}>
-                {t('tenantArea.nav.maintenance')}
+                <Wrench aria-hidden="true" />{t('tenantArea.nav.maintenance')}
               </NavLink>
-            </nav>
+            </ResidentNavigation>
           ) : (
             <NavLink to={TENANT_AREA_PATH} className={linkClass}>
-              {t('tenantArea.nav.contracts')}
+              <House aria-hidden="true" />{t('tenantArea.nav.contracts')}
             </NavLink>
           )}
         </div>
       </header>
-      <main className="mx-auto min-w-0 max-w-3xl px-4 py-6">
+      <main id="tenant-portal-main" tabIndex={-1} className="resident-main focus:outline-none">
         <Outlet />
       </main>
     </div>

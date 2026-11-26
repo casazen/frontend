@@ -16,6 +16,7 @@ import {
 import { PlainSection } from '@/components/shared/calm';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
 import { Fact, Facts } from '@/features/bookings/components/booking-facts';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { gdprApi } from '@/api/gdpr.api';
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
 import { formatDate, formatDateTime } from '@/lib/utils';
@@ -39,6 +40,7 @@ const WITHDRAWAL_NOTE_MAX_LENGTH = 500;
  */
 export function GdprTab({ guest }: GdprTabProps) {
   const { t } = useTranslation();
+  const { flags } = useFeatureFlags();
   const queryClient = useQueryClient();
   const summaryKey = ['gdpr', 'guests', guest.id] as const;
   const summary = useQuery({ queryKey: summaryKey, queryFn: () => gdprApi.getSummary(guest.id) });
@@ -181,6 +183,8 @@ export function GdprTab({ guest }: GdprTabProps) {
       <RetentionSchedule items={data.retention} />
 
       {/* Actions */}
+      {flags.guestPortal && <PortalPrivacyRequests guestId={guest.id} />}
+
       <PlainSection title={t('guests.gdprTab.actionsTitle')}>
         <div className="space-y-4">
           {blockedByOpenBookings && (
@@ -367,6 +371,51 @@ function RetentionSchedule({ items }: { items: GuestRetentionScheduleItem[] }) {
           </li>
         ))}
       </ul>
+    </PlainSection>
+  );
+}
+
+function PortalPrivacyRequests({ guestId }: { guestId: string }) {
+  const { t } = useTranslation();
+  const [requestId, setRequestId] = useState<string>();
+  const requests = useQuery({
+    queryKey: ['gdpr', 'portal-requests', guestId],
+    queryFn: () => gdprApi.getPortalRequests(guestId),
+    retry: false,
+  });
+  const complete = useMutation({
+    mutationFn: (id: string) => gdprApi.completePortalRequest(guestId, id),
+    onSuccess: async () => {
+      await requests.refetch();
+      setRequestId(undefined);
+    },
+  });
+
+  if (requests.isError && getHttpStatus(requests.error) === 403) return null;
+  if (!requests.isError && !requests.data?.length) return null;
+  return (
+    <PlainSection title={t('guestPortal.host.privacyRequests')}>
+      {requests.isError && <p role="alert">{t('guests.gdprTab.loadError')}</p>}
+      <ul className="space-y-2">
+        {requests.data?.map((request) => (
+          <li key={request.id} className="flex items-center justify-between gap-2">
+            <span>{t(`guestPortal.host.${request.activityType}`)} {request.deadline && formatDate(request.deadline)}</span>
+            <Button variant="outline" size="sm" onClick={() => { complete.reset(); setRequestId(request.id); }}>
+              {t('guestPortal.host.completePrivacyRequest')}
+            </Button>
+          </li>
+        ))}
+      </ul>
+      <ConfirmationDialog
+        open={requestId !== undefined}
+        onOpenChange={(open) => { if (!open) setRequestId(undefined); }}
+        title={t('guestPortal.host.completePrivacyRequest')}
+        description={t('guestPortal.host.completePrivacyDescription')}
+        confirmLabel={t('guestPortal.host.completePrivacyRequest')}
+        onConfirm={() => { if (requestId) complete.mutate(requestId); }}
+        isLoading={complete.isPending}
+      />
+      {complete.isError && <p role="alert">{t('guestPortal.host.completePrivacyError')}</p>}
     </PlainSection>
   );
 }

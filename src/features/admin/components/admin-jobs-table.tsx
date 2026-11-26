@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import { RegisterSearch } from './register-search';
+import { matchesSearch } from '@/components/shared/list-view/list-data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTranslation } from 'react-i18next';
 import i18n from '@/i18n/config';
@@ -23,6 +26,9 @@ function formatDate(value: string | null): string {
 export function AdminJobsTable({ jobs, isLoading }: AdminJobsTableProps) {
   const { t } = useTranslation();
 
+  const [query, setQuery] = useState('');
+  const visible = jobs.filter(job => matchesSearch(job.jobName, query));
+
   if (isLoading) {
     return (
       <div className="space-y-2">
@@ -34,40 +40,43 @@ export function AdminJobsTable({ jobs, isLoading }: AdminJobsTableProps) {
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="space-y-4">
+      {jobs.length > 0 && <RegisterSearch value={query} onChange={setQuery} label={t('admin.jobs.table.job')} />}
+      <div className="overflow-x-auto rounded-lg border">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b text-left text-muted-foreground">
-            <th className="pb-2 pr-4 font-medium">{t('admin.jobs.table.job')}</th>
-            <th className="pb-2 pr-4 font-medium">{t('admin.jobs.table.cron')}</th>
-            <th className="pb-2 pr-4 font-medium">{t('admin.jobs.table.lastRun')}</th>
-            <th className="pb-2 pr-4 font-medium">{t('admin.jobs.table.nextRun')}</th>
+          <tr className="border-b bg-surface-2 text-left text-muted-foreground">
+            <th className="px-3 py-2 font-medium">{t('admin.jobs.table.job')}</th>
+            <th className="px-3 py-2 font-medium">{t('admin.jobs.table.cron')}</th>
+            <th className="px-3 py-2 font-medium">{t('admin.jobs.table.lastRun')}</th>
+            <th className="px-3 py-2 font-medium">{t('admin.jobs.table.nextRun')}</th>
             <th className="pb-2 font-medium">{t('admin.jobs.table.status')}</th>
           </tr>
         </thead>
         <tbody>
-          {jobs.map((job) => (
+          {visible.map((job) => (
             <tr key={job.jobName} className="border-b last:border-0">
-              <td className="py-3 pr-4 font-medium">{job.jobName}</td>
-              <td className="py-3 pr-4 font-mono text-xs text-muted-foreground">
+              <td className="px-3 py-3 font-medium">{job.jobName}</td>
+              <td className="px-3 py-3 font-mono text-xs text-muted-foreground">
                 {job.cronExpression}
               </td>
-              <td className="py-3 pr-4 text-muted-foreground">{formatDate(job.lastRun)}</td>
-              <td className="py-3 pr-4 text-muted-foreground">{formatDate(job.nextRun)}</td>
+              <td className="px-3 py-3 text-muted-foreground">{formatDate(job.lastRun)}</td>
+              <td className="px-3 py-3 text-muted-foreground">{formatDate(job.nextRun)}</td>
               <td className="py-3">
                 <JobStatusBadge status={job.lastStatus} />
               </td>
             </tr>
           ))}
-          {jobs.length === 0 && (
+          {visible.length === 0 && (
             <tr>
               <td colSpan={5} className="py-8 text-center text-muted-foreground">
-                {t('admin.jobs.table.empty')}
+                {t(jobs.length ? 'listView.noResults.title' : 'admin.jobs.table.empty')}
               </td>
             </tr>
           )}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

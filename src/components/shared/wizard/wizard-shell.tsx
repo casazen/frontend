@@ -25,6 +25,7 @@ import { useWizardDraft, type UseWizardDraft, type WizardDraftServer } from "@/h
 import { translateValidationMessage } from "@/i18n/validation-message";
 import { getProblemMessage } from "@/lib/api-errors";
 import { formatRomeDateTime } from "@/lib/stay-dates";
+import { useAppShell } from "@/components/layout/app-shell-context";
 import { useUiStore } from "@/store/ui-store";
 import { useWizardOpenFlag } from "@/store/use-wizard-open-flag";
 import type { WizardDraft } from "@/lib/wizard-draft";
@@ -199,14 +200,14 @@ const TIME_ONLY: Intl.DateTimeFormatOptions = { hour: "2-digit", minute: "2-digi
 // and the focus that goes to a field is scrolled in above them (`scroll-mb`). From `md` there is no bottom bar and they are the
 // end of the form, as usual.
 const FOOTER =
-  "sticky bottom-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom,0px))] z-10 -mx-4 border-t bg-background px-4 py-3 md:static md:z-auto md:mx-0 md:border-t-0 md:bg-transparent md:p-0";
+  "sticky bottom-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom,0px))] z-10 border-t bg-card px-3 py-3 md:static md:z-auto sm:px-6";
 // A name that does not fit goes to a second line instead of out of the screen (wide fonts, 360 px).
-const BUTTON = "h-auto min-h-11 min-w-0 whitespace-normal py-2 text-center leading-tight";
+const BUTTON = "rounded-full h-auto min-h-11 min-w-0 whitespace-normal py-2 text-center leading-tight";
 // From `2xl` the wizard is two columns: the step (title, purpose, fields, buttons) and, beside it, the steps one under the other.
-const WIDE_COLUMNS = "grid grid-cols-[minmax(0,1fr)_20rem] items-start gap-10";
+const WIDE_COLUMNS = "grid grid-cols-[minmax(0,1fr)_20rem] items-start gap-5";
 // The column of the steps stays in view under the header while a long step scrolls (`items-start` keeps it as tall as its content).
 const STEPS_COLUMN =
-  "sticky top-[calc(var(--header-height)+1.5rem)] max-h-[calc(100dvh-var(--header-height)-3rem)] min-w-0 overflow-y-auto rounded-lg border bg-card p-5";
+  "sticky top-[calc(var(--header-height)+1.5rem)] max-h-[calc(100dvh-var(--header-height)-3rem)] min-w-0 overflow-y-auto rounded-2xl border bg-card p-5 shadow-sm";
 
 /**
  * A guided flow: the steps (a compact bar on a phone, a column beside the step from `2xl`), a title and a line of purpose for
@@ -377,7 +378,10 @@ function WizardShellBody<TValues extends FieldValues, TResult = void>({
   // From `2xl` the steps are a column beside the step. Decided here and not by two copies of them hidden by CSS: there is one list of
   // steps on the page, for a screen reader as for a test. Only where the steps are drawn changes: the step, its form and its buttons
   // keep their place in the tree, so a window that crosses `2xl` keeps what is typed and where the focus is.
-  const wide = useMediaQuery(FROM_WIDE_QUERY);
+  const viewKey = useAppShell()?.viewKey;
+  const focusForms = useUiStore(state => Boolean(viewKey && state.workspaceViews[viewKey]?.focusForms));
+  const wideScreen = useMediaQuery(FROM_WIDE_QUERY);
+  const wide = wideScreen && !focusForms;
 
   // Every change of an answer is queued for the draft, with the step it was made on.
   const saveDraft = draft.save;
@@ -533,10 +537,11 @@ function WizardShellBody<TValues extends FieldValues, TResult = void>({
     <div data-testid={ids.root} data-step={step.id} className={cn("min-w-0", wide && WIDE_COLUMNS, className)}>
       {/* The step. It is also the block in which the buttons of a phone stick (a sticky box never leaves its container): it holds the
           whole wizard there, as the wizard itself did. */}
-      <div className="min-w-0 space-y-6">
+      <div className="min-w-0 rounded-2xl border bg-card text-card-foreground shadow-sm">
         {showResume && draft.restored && (
           <Alert
             variant="info"
+            className="m-3 sm:m-5"
             data-testid={ids.draftBanner}
             title={t("wizard.draft.resumeTitle", { time: savedTime(draft.restored.savedAt) })}
             action={
@@ -566,13 +571,20 @@ function WizardShellBody<TValues extends FieldValues, TResult = void>({
           </Alert>
         )}
 
-        {wide ? null : <Stepper steps={stepperSteps} current={stepIndex} onStepSelect={selectStep} />}
+        {focusForms ? (
+          <details key={step.id} className="rounded-t-2xl border-b px-4 py-2">
+            <summary className="min-h-11 cursor-pointer content-center text-sm font-medium focus-visible:outline-ring">
+              {t("ui.stepper.stepOf", { current: stepIndex + 1, total: steps.length })}
+            </summary>
+            <Stepper orientation="vertical" steps={stepperSteps} current={stepIndex} onStepSelect={selectStep} />
+          </details>
+        ) : wide ? null : <Stepper className="rounded-t-2xl border-b bg-muted/45 px-3 py-3 sm:px-6 sm:py-4" steps={stepperSteps} current={stepIndex} onStepSelect={selectStep} />}
 
-        <div className="min-w-0 space-y-1">
-          <h2 id={titleId} ref={titleRef} tabIndex={-1} className="break-words text-xl font-semibold tracking-tight outline-none">
+        <div className="min-w-0 space-y-2 px-3 pb-5 pt-6 sm:px-6 sm:pt-8">
+          <h2 id={titleId} ref={titleRef} tabIndex={-1} className="break-words text-2xl font-semibold leading-tight tracking-tight outline-none sm:text-3xl">
             {step.title}
           </h2>
-          {step.purpose && <p className="break-words text-sm text-muted-foreground">{step.purpose}</p>}
+          {step.purpose && <p className="max-w-prose break-words text-base leading-relaxed text-muted-foreground">{step.purpose}</p>}
         </div>
 
         <FormProvider {...form}>
@@ -581,7 +593,7 @@ function WizardShellBody<TValues extends FieldValues, TResult = void>({
               id={formId}
               noValidate
               aria-labelledby={titleId}
-              className="min-w-0 space-y-6 max-md:[&_[aria-invalid=true]]:scroll-mb-40"
+              className="mx-3 min-w-0 space-y-6 pb-6 sm:mx-6 max-md:[&_[aria-invalid=true]]:scroll-mb-40"
               onBlur={serverOn ? draft.onBlur : undefined}
               onSubmit={(event) => {
                 event.preventDefault();
@@ -666,7 +678,7 @@ function WizardShellBody<TValues extends FieldValues, TResult = void>({
                 loading={busy}
                 disabled={step.nextDisabled}
                 data-testid={isLast ? ids.finish : ids.next}
-                className={cn(BUTTON, "grow sm:grow-0")}
+                className={cn(BUTTON, "grow px-5 sm:grow-0")}
                 iconRight={isLast ? <Check /> : <ArrowRight />}
               >
                 {isLast ? finishLabel : (step.nextLabel ?? t("wizard.continueTo", { step: nextStep?.label }))}
@@ -692,7 +704,7 @@ function WizardShellBody<TValues extends FieldValues, TResult = void>({
 
         {belowFooter ? (
           <FormProvider {...form}>
-            <WizardContext.Provider value={context}>{belowFooter}</WizardContext.Provider>
+            <WizardContext.Provider value={context}><div className="px-3 pb-4 sm:px-6">{belowFooter}</div></WizardContext.Provider>
           </FormProvider>
         ) : null}
       </div>

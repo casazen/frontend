@@ -70,8 +70,8 @@ interface FileRowProps extends FormatButtonsProps {
 
 function FileRow({ id, title, description, control, pending, disabled, failure, children, onDownload }: FileRowProps) {
   return (
-    <li className="min-w-0 space-y-2 py-3" data-testid={`year-end-${id}`}>
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+    <li className="min-w-0 space-y-3 rounded-2xl border bg-card p-4 sm:p-5" data-testid={`year-end-${id}`}>
+      <div className="flex flex-col items-start gap-3">
         <div className="min-w-0 space-y-0.5">
           <p className="break-words text-base font-semibold">{title}</p>
           <p className="break-words text-sm text-foreground/70">{description}</p>
@@ -140,7 +140,7 @@ export function YearEndFiles({ year, by, onByChange, canReadReasons }: YearEndFi
   return (
     <PlainSection title={t('reports.touristTax.yearEnd.files.title')} data-testid="year-end-files">
       <p className="break-words text-sm text-foreground/70">{t('reports.touristTax.yearEnd.files.note')}</p>
-      <ul role="list" className="divide-y divide-border">
+      <ul role="list" className="grid items-start gap-4 xl:grid-cols-3">
         <FileRow
           id="declaration"
           title={declarationTitle}
@@ -163,7 +163,7 @@ export function YearEndFiles({ year, by, onByChange, canReadReasons }: YearEndFi
           pending={pendingFormat('agentAccount')}
           failure={failureOf('agentAccount')}
           control={
-            <Field label={t('reports.touristTax.yearEnd.account.by.label')} className="w-full sm:w-56">
+            <Field label={t('reports.touristTax.yearEnd.account.by.label')} className="w-full max-w-56">
               <Select value={by} onChange={(event) => onByChange(event.target.value as YearEndAccountCut)} data-testid="year-end-agent-account-by">
                 {YEAR_END_ACCOUNT_CUTS.map((cut) => (
                   <option key={cut} value={cut}>

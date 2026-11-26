@@ -12,15 +12,12 @@ import { Tabs, type TabItem } from '@/components/ui/tabs';
 import { guestsApi } from '@/api/guests.api';
 import { asBookingPage, bookingsApi } from '@/api/bookings.api';
 import { getHttpStatus } from '@/lib/api-errors';
-import { todayInRome } from '@/lib/stay-dates';
 import { cn } from '@/lib/utils';
 import type { Guest } from '@/types';
 import { GdprTab } from './components/gdpr-tab';
 import { GuestDataTab } from './components/guest-data-tab';
 import { GuestDocumentsTab } from './components/guest-documents-tab';
-import { GuestStayFocus } from './components/guest-stay-focus';
 import { GuestStaysTab } from './components/guest-stays-tab';
-import { focusStayOf } from './lib/guest-stays';
 
 const GUESTS_PATH = '/app/short-rent/guests';
 
@@ -75,12 +72,7 @@ function GuestDocumentStatus({ onFile }: { onFile: boolean }) {
 
 const hasDocumentOnFile = (guest: Guest) => Boolean(guest.documentNumberMasked) || guest.hasDocumentScan;
 
-/**
- * `/app/short-rent/guests/:id`: one guest (SR-04b, a restyling: same data, same endpoints, same privacy). The header says who
- * the guest is, how to reach them and whether a document is on file; under it the one highlighted block, the stay that matters
- * now with the way to its booking, and then the tabs Dati dell'ospite, Soggiorni, Documenti and Privacy, each made of sections
- * without a box. The tab is in the address (`?tab=`).
- */
+/** Each section owns its content; a direct link to a document never waits for the booking history. */
 export function GuestDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { t } = useTranslation();
@@ -103,7 +95,7 @@ export function GuestDetailPage() {
   const staysQuery = useQuery({
     queryKey: ['bookings', { guestId: id }],
     queryFn: () => bookingsApi.getByGuestId(id!),
-    enabled: !!id,
+    enabled: !!id && !!guest && activeTab === 'stays',
     refetchOnMount: true,
   });
 
@@ -140,7 +132,6 @@ export function GuestDetailPage() {
   }
 
   const stays = asBookingPage(staysQuery.data).items;
-  const focus = focusStayOf(stays, todayInRome());
   const fullName = `${guest.firstName} ${guest.lastName}`.trim() || t('guests.detailPage.fallbackTitle');
   // The line under the name: how to reach the guest (both are on the Dati dell'ospite tab too).
   const contacts = [guest.email, guest.phoneNumber].filter(Boolean).join(' · ');
@@ -163,15 +154,6 @@ export function GuestDetailPage() {
           description={contacts || undefined}
           action={<GuestDocumentStatus onFile={hasDocumentOnFile(guest)} />}
         />
-
-        {staysQuery.isLoading ? (
-          <div role="status" aria-busy="true" data-testid="guest-stay-focus-loading">
-            <span className="sr-only">{t('shared.loading.srOnly')}</span>
-            <Skeleton aria-hidden="true" className="h-36 w-full rounded-xl motion-reduce:animate-none" />
-          </div>
-        ) : focus ? (
-          <GuestStayFocus stay={focus} />
-        ) : null}
 
         {/* UI-07 Tabs: links with the tab in the address (`?tab=`), a menu on a phone. */}
         <Tabs label={t('guests.detailPage.tabsLabel')} items={tabs} defaultValue="details" value={activeTab} selectTestId="guest-tabs-select">

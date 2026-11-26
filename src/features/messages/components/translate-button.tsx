@@ -3,6 +3,7 @@ import { Languages } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { getHttpStatus, getProblemMessage } from '@/lib/api-errors';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { useTranslateMessage } from '@/queries/use-message-thread';
 import type { MessageTranslationRequest } from '@/types';
 
@@ -34,6 +35,10 @@ export function TranslateButton({ threadKey, source, targetLanguage, label, onUs
   const { t } = useTranslation();
   const translate = useTranslateMessage();
   const [shown, setShown] = useState(false);
+  const { flags } = useFeatureFlags();
+  const channelCanTranslate = 'messageId' in source && threadKey.startsWith('ota:');
+  if (!flags.messageTranslationAi && !channelCanTranslate) return null;
+
   const translated = translate.data;
   const kept = 'messageId' in source && translate.isSuccess;
 

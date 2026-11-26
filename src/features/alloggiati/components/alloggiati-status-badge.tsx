@@ -23,6 +23,9 @@ const STATUS_STYLES: Record<AlloggiatiWebStatus, { variant: BadgeProps['variant'
   // Declared by the host, no receipt held by CasaZen: neutral, distinct from the receipt's green.
   InviatoManualmente: { variant: 'outline' },
   // Sent successfully, awaiting receipt retrieval (ADR-015).
+  Sending: { variant: 'secondary' },
+  PartiallyAccepted: { variant: 'warning' },
+  ToVerify: { variant: 'warning' },
   SentReceiptPending: { variant: 'secondary' },
   Inviato: { variant: 'success' },
   Rifiutato: { variant: 'destructive' },

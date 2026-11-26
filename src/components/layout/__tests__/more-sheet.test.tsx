@@ -121,11 +121,27 @@ describe('MoreSheet (UI-04b)', () => {
       // The settings close the sheet as they close the sidebar; the queues are tabs of the Cruscotto, the profile is in the account row
       // at the end of the sheet: there is no "Altro" group left.
       expect(groups[3]).toHaveAccessibleName('Impostazioni e inviti');
-      expect(tiles(groups[3])).toEqual(['Impostazioni', 'Consiglia CasaZen']);
+      expect(tiles(groups[3])).toEqual(['Impostazioni']);
       // The destinations of the bar are not repeated.
       for (const name of ['Cruscotto', 'Calendario', 'Prenotazioni', 'Immobili']) {
         expect(within(sheet()).queryByRole('link', { name })).not.toBeInTheDocument();
       }
+    });
+
+    it('finds nested pages without suggesting pages outside the visible permissions', () => {
+      arrange(['short-rent'], (_context, permission) => permission !== 'booking.read');
+      renderSheet('short-rent');
+      open();
+      const search = within(sheet()).getByRole('searchbox', { name: 'Cerca nel menu' });
+      fireEvent.change(search, { target: { value: 'ospiti' } });
+      expect(within(sheet()).queryByRole('link', { name: /^Ospiti/ })).not.toBeInTheDocument();
+      fireEvent.change(search, { target: { value: 'incassi' } });
+      expect(within(sheet()).getByRole('link', { name: /^Incassi/ })).toHaveAttribute('href', '/app/short-rent/payments');
+      fireEvent.change(search, { target: { value: 'pagina-sconosciuta' } });
+      expect(within(sheet()).getByRole('status')).toHaveTextContent('Nessuna pagina trovata');
+      fireEvent.click(within(sheet()).getByRole('button', { name: 'Azzera la ricerca nel menu' }));
+      expect(search).toHaveFocus();
+      expect(within(sheet()).getByTestId('nav-group-management')).toBeInTheDocument();
     });
 
     it('MoreSheet_Tiles_LeadToTheRealRoutes', () => {
@@ -135,7 +151,7 @@ describe('MoreSheet (UI-04b)', () => {
       open();
 
       expect(within(sheet()).getByRole('link', { name: 'Incassi' })).toHaveAttribute('href', '/app/short-rent/payments');
-      expect(within(sheet()).getByRole('link', { name: 'Impostazioni' })).toHaveAttribute('href', '/app/short-rent/settings/organization');
+      expect(within(sheet()).getByRole('link', { name: 'Impostazioni' })).toHaveAttribute('href', '/app/short-rent/settings');
     });
 
     it('MoreSheet_AreaWithJustAltro_HasNoGroupHeadings', () => {

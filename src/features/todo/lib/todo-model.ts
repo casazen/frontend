@@ -88,6 +88,7 @@ const TYPE_KEYS: Record<string, TypeKeys> = {
   // at the close of the statement. Since FIX/BE-CLEANING-VAT it is about the cleaning request (`ServiceRequest`) with the action `StateCleaningVat`, and «Fallo ora» opens the question «La ditta di pulizie ha applicato l'IVA su
   // questa fattura?» (FIX/FE-CLEANING-VAT-QUESTION, `ACTION_ROUTE_MAP` of `activity-card.tsx`). The items raised before (action `ReviewBooking`, about the stay or the request) keep the button of that action. The `why` of the
   // locale files is what an item says when its reason is not a sentence of the server: it asks to answer the question and says what each answer does.
+  ImportedPropertyReview: { titleKey: 'activationJourney.import.todoTitle', whyKey: 'activationJourney.import.todoWhy' },
   CleaningVatToState: { titleKey: 'activity.todo.type.CleaningVatToState.title', whyKey: 'activity.todo.type.CleaningVatToState.why' },
 };
 

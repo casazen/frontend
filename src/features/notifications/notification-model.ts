@@ -64,6 +64,8 @@ const DOMAIN_SETTINGS_ROUTE = '/app/short-rent/settings/domain';
  */
 const KINDS: Record<string, NotificationKind> = {
   'new-booking': { icon: BedDouble, textKey: 'notifications.types.newBooking', route: bookingRoute },
+  'guest-stay-change-requested': { icon: CalendarClock, textKey: 'notifications.types.guestStayChange', route: bookingTab('portal') },
+  'guest-portal-request': { icon: ClipboardCheck, textKey: 'notifications.types.guestPortalRequest', route: () => '/app/short-rent/activities' },
   'guest-message': { icon: MessageSquare, textKey: 'notifications.types.guestMessage', route: bookingTab('messages') },
   // The guest finished the online check-in: Documenti shows the link's state and the guests registered.
   'guest-checkin-completed': { icon: UserCheck, textKey: 'notifications.types.guestCheckinCompleted', route: bookingTab('guest') },

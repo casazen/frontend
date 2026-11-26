@@ -1,4 +1,7 @@
 /* eslint-disable react-refresh/only-export-components -- A helper of the tests: it has a component of its own (the probe of the address) next to the functions the tests call. */
+import { WorkspaceContext, type WorkspaceContextValue } from '@/contexts/workspace-context';
+import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
+import { DEFAULT_FEATURE_FLAGS } from '@/config/feature-flags';
 import { render, screen, waitFor } from '@testing-library/react';
 import { expect } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -97,25 +100,36 @@ export function axiosError(status: number, data: unknown): AxiosError {
   });
 }
 
+const inventoryWorkspace: WorkspaceContextValue = {
+  contexts: [], activeContext: 'short-rent', isReady: true, setActiveContext: () => undefined,
+  hasPermission: () => true, getDefaultRoute: () => '/app/short-rent',
+};
+
 function LocationProbe() {
   const location = useLocation();
-  return <div data-testid="location">{`${location.pathname}${location.search}`}</div>;
+  return <div data-testid="location">{`${location.pathname}${location.search}${location.hash}`}</div>;
 }
 
 /** The wizard on its own route, with the pages it can lead to marked. */
 export function renderWizard(url: string = OCTORATE_CONNECT_PATH) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+  client.setQueryData(['me'], { id: SCOPE.userId, org: { id: SCOPE.orgId } });
   return render(
     <I18nextProvider i18n={i18n}>
       <QueryClientProvider client={client}>
-        <MemoryRouter initialEntries={[url]}>
+        <WorkspaceContext.Provider value={inventoryWorkspace}>
+          <FeatureFlagsContext.Provider value={{ flags: { ...DEFAULT_FEATURE_FLAGS, octorateOnboarding: true }, isLoading: false }}>
+            <MemoryRouter initialEntries={[url]}>
           <LocationProbe />
           <Routes>
             <Route path={OCTORATE_CONNECT_PATH} element={<OctorateConnectWizardPage />} />
             <Route path={PROPERTY_CREATE_PATH} element={<div data-testid="listing-wizard" />} />
             <Route path={PROPERTIES_PATH} element={<div data-testid="properties-list" />} />
+            <Route path="/app/short-rent/onboarding" element={<div data-testid="plan-returned" />} />
           </Routes>
-        </MemoryRouter>
+            </MemoryRouter>
+          </FeatureFlagsContext.Provider>
+        </WorkspaceContext.Provider>
       </QueryClientProvider>
     </I18nextProvider>,
   );

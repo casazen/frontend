@@ -92,4 +92,17 @@ describe('ui store (UI-04a)', () => {
     expect(stored()?.state).not.toHaveProperty('openWizards');
     useUiStore.getState().wizardClosed();
   });
+  it('keeps independent preferences for each profile, organization and area, including after a reset', () => {
+    const one = JSON.stringify(['host', 'agency-a', 'short-rent']);
+    const two = JSON.stringify(['host', 'agency-b', 'short-rent']);
+    const { updateWorkspaceView } = useUiStore.getState();
+    updateWorkspaceView(one, view => ({ ...view, compact: true }));
+    updateWorkspaceView(two, view => ({ ...view, secondaryPaths: ['/app/short-rent/marketplace'] }));
+    expect(useUiStore.getState().workspaceViews[two].compact).toBe(false);
+    updateWorkspaceView(one, () => ({ compact: false, secondaryPaths: [] }));
+    expect(useUiStore.getState().workspaceViews[one]).toBeUndefined();
+    expect(useUiStore.getState().workspaceViews[two].secondaryPaths).toHaveLength(1);
+    updateWorkspaceView(two, () => ({ compact: false, secondaryPaths: [] }));
+  });
+
 });

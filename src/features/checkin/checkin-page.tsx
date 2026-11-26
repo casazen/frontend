@@ -1,7 +1,8 @@
+import { isGuestPortalToken } from '@/lib/guest-portal-path';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FormProvider, useFieldArray, useForm, useWatch, type FieldErrors, type FieldPath } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingScreen } from '@/components/shared/loading-screen';
@@ -31,6 +32,7 @@ import {
   type StayGuestFormValues,
 } from './schemas/checkin.schema';
 import { StayGuestDocumentFields, StayGuestPersonalFields, VehiclePlateField } from './components/stay-guest-fields';
+import { getDocumentTypeLabel } from '@/lib/i18n-labels';
 import { DocumentReadStep } from './components/document-read-step';
 import { GuestPageFrame } from './components/guest-page-frame';
 import { GuestInvoiceForm } from './guest-invoice-form';
@@ -59,6 +61,14 @@ const STEP_DOCUMENT = 3;
 const STEP_CONSENTS = 5;
 const STEP_IDENTITY = 6;
 const STEP_TAX = 7;
+const STEP_LABEL: Record<number, string> = {
+  [STEP_SCAN]: 'checkin.stepScan',
+  [STEP_GUESTS]: 'checkin.stepGuests',
+  [STEP_DOCUMENT]: 'checkin.stepDocument',
+  [STEP_IDENTITY]: 'checkin.stepIdentity',
+  [STEP_TAX]: 'checkin.touristTax.title',
+  [STEP_CONSENTS]: 'checkin.stepConsents',
+};
 
 /** Every step in the order the page shows them: the steps that are not in `stepsOf` are skipped, and the step that follows one that went away is found here. */
 const STEP_ORDER: readonly number[] = [STEP_SCAN, STEP_GUESTS, STEP_DOCUMENT, STEP_TAX, STEP_IDENTITY, STEP_CONSENTS];
@@ -78,6 +88,7 @@ function stepAfterGone(gone: number, steps: readonly number[]): number {
 }
 
 function scanReasonKey(reason?: string | null): string {
+  if (reason === 'not_document') return 'checkin.scanNotDocument';
   return reason === 'unavailable' || reason === 'budget' ? 'checkin.scanUnavailable' : 'checkin.scanUnread';
 }
 
@@ -175,12 +186,22 @@ function emptyForm(): PublicCheckInFormValues {
 
 export function CheckInPage() {
   const { token = '' } = useParams<{ token: string }>();
+  const [params] = useSearchParams();
+  if (isGuestPortalToken(token)) {
+    const next = withoutPaymentReturn(params) ?? new URLSearchParams(params);
+    next.set('page', 'checkin');
+    return <Navigate replace to={`/s/${token.slice(5)}?${next}`} />;
+  }
   return <GuestCheckInFlow key={token} token={token} />;
 }
 
-function GuestCheckInFlow({ token }: { token: string }) {
+export function GuestCheckInFlow({ token, embedded = false, onCompleted }: {
+  token: string;
+  embedded?: boolean;
+  onCompleted?: () => void;
+}) {
   const { t } = useTranslation();
-  const { data: context, isLoading, isError, refetch } = useCheckInContext(token);
+  const { data: context, isLoading, isFetching, error: contextError, refetch } = useCheckInContext(token);
   const submitCheckIn = useSubmitGuestCheckIn(token);
   const saveLanguage = useSetCheckInLanguage(token);
   // The identity check (CHK-11): its state lives here, so that going back and forth between the steps keeps where the guest is in it.
@@ -200,10 +221,11 @@ function GuestCheckInFlow({ token }: { token: string }) {
   });
   const taxView = taxAvailability === 'ready' ? (taxRead.data ?? null) : null;
   const steps = stepsOf(identity.progress !== null, taxAvailability === 'ready' || taxAvailability === 'failed');
-  // The step the guest moved to; `null` until they move. The guest who came through the door of the property (`?step=identity`, E22/F02/US01/T01) starts at the identity step once the API offers one;
-  // any other address starts at the first step. From the first move on, the guest's own choice is what counts.
+  // Only the return point is kept in the address. Personal fields and photos stay in memory until submitted.
+  const [resumed] = useState(() => searchParams.get('resume') === 'guests');
   const [step, setStep] = useState<number | null>(null);
-  const startStep = searchParams.get('step') === IDENTITY_STEP_PARAM && steps.includes(STEP_IDENTITY) ? STEP_IDENTITY : STEP_SCAN;
+  const doorIdentity = searchParams.get('step') === IDENTITY_STEP_PARAM && steps.includes(STEP_IDENTITY);
+  const startStep = doorIdentity ? STEP_IDENTITY : resumed ? STEP_GUESTS : STEP_SCAN;
   const wantedStep = step ?? startStep;
   // A step that went away (the verification or the tax payment was switched off while the page was open) leaves the guest at the step that follows it.
   const current = steps.includes(wantedStep) ? wantedStep : stepAfterGone(wantedStep, steps);
@@ -227,6 +249,9 @@ function GuestCheckInFlow({ token }: { token: string }) {
   const verifyingPhoto = useRef<File | null>(null);
   const [review, setReview] = useState<{ result: CheckInDocumentReadResult; file: File } | null>(null);
   const [privacyRead, setPrivacyRead] = useState(false);
+  const [acceptedRulesVersion, setAcceptedRulesVersion] = useState<string | undefined>();
+  const activeRulesVersion = context?.houseRulesVersion ?? undefined;
+  const rulesAccepted = !activeRulesVersion || activeRulesVersion === acceptedRulesVersion;
   useEffect(() => {
     if (!identity.progress || identity.concluded || submitted) verifyingPhoto.current = null;
   }, [identity.progress, identity.concluded, submitted]);
@@ -236,16 +261,49 @@ function GuestCheckInFlow({ token }: { token: string }) {
     return photo;
   }, []);
   const formElement = useRef<HTMLFormElement>(null);
+  const stepHeading = useRef<HTMLHeadingElement>(null);
+  const focusHeading = useRef(false);
+  useEffect(() => {
+    if (!focusHeading.current) return;
+    focusHeading.current = false;
+    stepHeading.current?.focus();
+  }, [current]);
+
+  function goToStep(nextStep: number) {
+    focusHeading.current = true;
+    setStep(nextStep);
+    // A refresh can restore only data present in the server response, never an unsent document or consent.
+    if (current === STEP_SCAN || nextStep === STEP_SCAN) {
+      const next = new URLSearchParams(searchParams);
+      if (nextStep === STEP_SCAN) next.delete('resume');
+      else next.set('resume', 'guests');
+      next.delete('step');
+      setSearchParams(next, { replace: true });
+    }
+  }
+
+  const moveFromScan = () => {
+    setReview(null);
+    goToStep(STEP_GUESTS);
+  };
 
   // The page opens in the language the API resolved (the guest's earlier choice, else the browser's, else Italian) until the guest chooses.
-  const locale = chosenLocale ?? resolveGuestLocale(context?.language);
+  const portalLanguage = embedded ? offeredGuestLocales(context?.supportedLanguages).find((language) => language === searchParams.get('lang')) : undefined;
+  const locale = chosenLocale ?? portalLanguage ?? resolveGuestLocale(context?.language);
   // The texts of a language that cannot be loaded (the network): the page stays in the language it has and says so.
   const keepLocale = useCallback((stayedIn: GuestLocale) => {
     setChosenLocale(stayedIn);
     setLanguageNotLoaded(true);
   }, []);
   useGuestPageLocale(locale, keepLocale);
-  const sessionOpen = Boolean(context) && !context?.completed;
+  const status = getHttpStatus(contextError);
+  const invalidLink = !token || status === 404 || status === 410 || context?.status === 'Scaduto';
+  const completed = submitted || context?.completed || (context && COMPLETE_STATUSES.has(context.status));
+  const sessionOpen = context && !invalidLink && !completed;
+  const receiptHeading = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    if (completed) receiptHeading.current?.focus();
+  }, [completed]);
 
   // The statistical fields are asked only where the region requires them (data minimization): none while the page does not know.
   const statisticalFields = useMemo(() => requiredStatisticalFields(context?.requiredGuestFields), [context?.requiredGuestFields]);
@@ -336,7 +394,7 @@ function GuestCheckInFlow({ token }: { token: string }) {
 
   const goNext = async () => {
     if (current === STEP_SCAN) {
-      setStep(STEP_GUESTS);
+      moveFromScan();
       return;
     }
     // The identity check goes on only when it is over: it passed, or a person was asked and has it (the way to a person is always open).
@@ -352,7 +410,7 @@ function GuestCheckInFlow({ token }: { token: string }) {
         : [];
     const valid = await trigger(stepPaths(current));
     extra.forEach((issue) => setError(`guests.${issue.index}.${issue.field}`, { type: 'official', message: issue.message }));
-    if (valid && extra.length === 0) setStep(steps[Math.min(totalSteps - 1, stepIndex + 1)]);
+    if (valid && extra.length === 0) goToStep(steps[Math.min(totalSteps - 1, stepIndex + 1)]);
     else reportProblems();
   };
 
@@ -360,17 +418,23 @@ function GuestCheckInFlow({ token }: { token: string }) {
     index: number,
     list: AlloggiatiCodeList,
     query: string | null | undefined,
-    nameField: 'documentTypeLabel' | 'birthComuneName' | 'birthCountryName' | 'citizenshipName' | 'documentIssuePlaceName',
-    codeField: 'documentTypeCode' | 'birthComuneCode' | 'birthCountryCode' | 'citizenshipCode' | 'documentIssuePlaceCode',
+    nameField: 'documentTypeLabel' | 'birthComuneName' | 'birthCountryName' | 'citizenshipName' | 'documentIssuePlaceName' | 'residenceComuneName' | 'residenceCountryName',
+    codeField: 'documentTypeCode' | 'birthComuneCode' | 'birthCountryCode' | 'citizenshipCode' | 'documentIssuePlaceCode' | 'residenceComuneCode' | 'residenceCountryCode',
+    province?: string | null,
   ) => {
     if (query) setValue(`guests.${index}.${codeField}`, '', { shouldDirty: true });
     if (!query || !isListAvailable(codeSource, list)) return;
     const entries = await codeSource.search(list, query).catch(() => []);
     const norm = (value: string) => value.trim().toLocaleLowerCase('it');
-    const hit = entries.find((entry) => norm(entry.code) === norm(query) || norm(entry.description) === norm(query) || (entry.citizenshipLabel != null && norm(entry.citizenshipLabel) === norm(query)));
-    if (!hit) return;
+    const matches = entries.filter((entry) =>
+      (!province || norm(entry.province ?? '') === norm(province)) &&
+      [entry.code, entry.description, entry.citizenshipLabel].some((value) => value && norm(value) === norm(query)));
+    if (matches.length !== 1) return;
+    const [hit] = matches;
     setValue(`guests.${index}.${nameField}`, hit.description, { shouldDirty: true });
     setValue(`guests.${index}.${codeField}`, hit.code, { shouldDirty: true });
+    if (nameField === 'documentTypeLabel') setValue(`guests.${index}.documentType`, '', { shouldDirty: true });
+    if (hit.province && nameField === 'residenceComuneName') setValue(`guests.${index}.residenceProvince`, hit.province, { shouldDirty: true });
     if (hit.province && nameField === 'birthComuneName') setValue(`guests.${index}.birthProvince`, hit.province, { shouldDirty: true });
   };
 
@@ -383,7 +447,9 @@ function GuestCheckInFlow({ token }: { token: string }) {
     }
     const booked = context?.guests?.[index];
     if (!booked) return;
-    if (context?.identityVerification?.verifyingGuestPosition === index) verifyingPhoto.current = file;
+    if (context?.identityVerification?.verifyingGuestPosition === index && result.side !== 'back') {
+      if (result.side || !verifyingPhoto.current) verifyingPhoto.current = file;
+    }
     const write = (field: keyof StayGuestFormValues, value: string | null | undefined) => {
       if (value) setValue(`guests.${index}.${field}`, value, { shouldDirty: true });
     };
@@ -400,12 +466,23 @@ function GuestCheckInFlow({ token }: { token: string }) {
       write('birthCountryName', guest.birthPlace);
     }
     write('citizenshipName', guest.citizenship);
+    write('residenceStreet', guest.residenceStreet);
+    write('residencePostalCode', guest.residencePostalCode);
+    write('residenceCityName', guest.residenceCityName);
+    write('residenceCountryName', guest.residenceCountryName);
+    if (guest.residenceInItaly != null) {
+      write('residenceInItaly', guest.residenceInItaly ? 'yes' : 'no');
+      if (guest.residenceInItaly) {
+        write('residenceComuneName', guest.residenceCityName);
+        write('residenceProvince', guest.residenceProvince);
+      }
+    }
     let officialKind: string | undefined;
     if (guest.documentKind === 'Passport' || guest.documentKind === 'IdentityCard' || guest.documentKind === 'DriversLicense') {
       if (isListAvailable(codeSource, 'documenti')) {
         officialKind = { Passport: 'PASOR', IdentityCard: 'IDENT', DriversLicense: 'PATEN' }[guest.documentKind];
-        setValue(`guests.${index}.documentType`, '', { shouldDirty: true });
-        setValue(`guests.${index}.documentTypeLabel`, '', { shouldDirty: true });
+        write('documentType', guest.documentKind);
+        write('documentTypeLabel', getDocumentTypeLabel(guest.documentKind, t));
       } else {
         write('documentType', guest.documentKind);
       }
@@ -416,7 +493,9 @@ function GuestCheckInFlow({ token }: { token: string }) {
     write('documentIssuePlaceName', guest.issuePlace);
     await Promise.all([
       bindOfficial(index, 'documenti', officialKind, 'documentTypeLabel', 'documentTypeCode'),
-      guest.bornInItaly === true && bindOfficial(index, 'comuni', guest.birthPlace, 'birthComuneName', 'birthComuneCode'),
+      guest.bornInItaly === true && bindOfficial(index, 'comuni', guest.birthPlace, 'birthComuneName', 'birthComuneCode', guest.birthProvince),
+      guest.residenceInItaly === true && bindOfficial(index, 'comuni', guest.residenceCityName, 'residenceComuneName', 'residenceComuneCode', guest.residenceProvince),
+      bindOfficial(index, 'stati', guest.residenceCountryName, 'residenceCountryName', 'residenceCountryCode'),
       guest.bornInItaly === false && bindOfficial(index, 'stati', guest.birthPlace, 'birthCountryName', 'birthCountryCode'),
       bindOfficial(index, 'stati', guest.citizenship, 'citizenshipName', 'citizenshipCode'),
       bindOfficial(index, 'luoghi', guest.issuePlace, 'documentIssuePlaceName', 'documentIssuePlaceCode'),
@@ -452,15 +531,21 @@ function GuestCheckInFlow({ token }: { token: string }) {
 
   const onSubmit = handleSubmit(
     async (values) => {
-      if (current !== STEP_CONSENTS || !privacyRead || (identity.progress && !identity.concluded)) return;
+      if (current !== STEP_CONSENTS || !privacyRead || !rulesAccepted || (identity.progress && !identity.concluded)) return;
       setSubmitError(null);
       try {
-        await submitCheckIn.mutateAsync({ ...toPublicCheckInSubmitRequest(values, { statisticalFields, swiss }), privacyNoticeAcknowledged: privacyRead });
+        await submitCheckIn.mutateAsync({ ...toPublicCheckInSubmitRequest(values, { statisticalFields, swiss }), privacyNoticeAcknowledged: privacyRead, houseRulesVersion: acceptedRulesVersion });
         setSubmitted(true);
+        onCompleted?.();
       } catch (error) {
         // Already submitted (e.g. from another tab): reload the context, which now shows the completed state.
         if (getHttpStatus(error) === 409) {
-          await refetch();
+          const latest = await refetch();
+          if (latest.data?.completed || (latest.data && COMPLETE_STATUSES.has(latest.data.status))) {
+            onCompleted?.();
+            return;
+          }
+          setSubmitError(guestProblemMessage(error, t));
           return;
         }
 
@@ -496,7 +581,7 @@ function GuestCheckInFlow({ token }: { token: string }) {
     },
   );
 
-  const switcher = (
+  const switcher = !embedded && (
     <div className="space-y-1">
       <LanguageSwitcher
         value={locale}
@@ -518,38 +603,45 @@ function GuestCheckInFlow({ token }: { token: string }) {
 
   if (isLoading) {
     return (
-      <GuestPageFrame switcher={switcher}>
+      <GuestPageFrame embedded={embedded} switcher={switcher}>
         <LoadingScreen message={t('checkin.loading')} className="h-64" />
       </GuestPageFrame>
     );
   }
 
-  if (isError || !context) {
+  if (invalidLink || !context) {
     return (
-      <GuestPageFrame switcher={switcher}>
+      <GuestPageFrame embedded={embedded} switcher={switcher} testId={invalidLink ? 'checkin-invalid-link' : 'checkin-load-problem'}>
         <Card className="mx-auto w-full max-w-md">
           <CardHeader>
-            <CardTitle>{t('checkin.invalidLink')}</CardTitle>
-            <CardDescription>{t('checkin.invalidLinkDescription')}</CardDescription>
+            <h1 className="text-2xl font-semibold tracking-tight">
+              {t(invalidLink ? 'checkin.invalidLink' : 'checkin.reopen.loadTitle')}
+            </h1>
+            <CardDescription>{t(invalidLink ? 'checkin.invalidLinkDescription' : 'checkin.reopen.loadHint')}</CardDescription>
           </CardHeader>
+          {!invalidLink && (
+            <CardContent>
+              <Button type="button" onClick={() => void refetch()} disabled={isFetching}>{t('checkin.reopen.retry')}</Button>
+            </CardContent>
+          )}
         </Card>
       </GuestPageFrame>
     );
   }
 
   if (searchParams.get('invoice') === '1') {
-    return <GuestPageFrame switcher={switcher}><GuestInvoiceForm token={token} context={context} /></GuestPageFrame>;
+    return <GuestPageFrame embedded={embedded} switcher={switcher}><GuestInvoiceForm token={token} context={context} /></GuestPageFrame>;
   }
 
-  if (submitted || context.completed || COMPLETE_STATUSES.has(context.status)) {
+  if (completed) {
     // A completed check-in still pays its tax (the server allows it): what can still be paid, and what was paid, is under the card, when the API offers the payment.
     const taxStillToSay = taxView !== null && isShownOnCompletedCheckIn(guestTaxOutlook(taxView));
     return (
-      <GuestPageFrame switcher={switcher} testId="checkin-success">
+      <GuestPageFrame embedded={embedded} switcher={switcher} testId="checkin-success">
         <Card className="mx-auto w-full max-w-md text-center">
           <CardContent className="pt-10 pb-8 space-y-4">
-            <CheckCircle2 className="h-16 w-16 text-green-600 mx-auto" />
-            <h1 className="text-2xl font-bold">
+            <CheckCircle2 aria-hidden="true" className="h-16 w-16 text-green-600 mx-auto" />
+            <h1 ref={receiptHeading} tabIndex={-1} className="text-2xl font-bold outline-none">
               {submitted ? t('checkin.successTitle') : t('checkin.alreadyCompletedTitle')}
             </h1>
             <p className="text-muted-foreground">
@@ -581,9 +673,9 @@ function GuestCheckInFlow({ token }: { token: string }) {
   const swissDocuments = asksSwissDocument(swiss);
 
   return (
-    <GuestPageFrame switcher={switcher} testId="checkin-page">
+    <GuestPageFrame embedded={embedded} switcher={switcher} testId="checkin-page">
       <>
-        <div className="text-center space-y-2">
+        <div className={embedded ? 'space-y-2' : 'text-center space-y-2'}>
           <h1 className="text-2xl font-bold">{t('checkin.guestCheckIn')}</h1>
           <p className="text-muted-foreground">{context.propertyName}</p>
           {context.checkInDate && context.checkOutDate && (
@@ -592,22 +684,19 @@ function GuestCheckInFlow({ token }: { token: string }) {
             </p>
           )}
         </div>
-        <div className="flex justify-center gap-2" data-testid="checkin-progress">
+        <ol className="mx-auto flex max-w-md justify-center gap-2" aria-label={t('checkin.guestCheckIn')} data-testid="checkin-progress">
           {steps.map((n, index) => (
-            <div key={n} className={`h-2 w-16 rounded-full ${index <= stepIndex ? 'bg-primary' : 'bg-muted'}`} />
+            <li key={n} aria-label={t(STEP_LABEL[n])} aria-current={n === current ? 'step' : undefined}
+              className={`h-2 min-w-0 flex-1 rounded-full ${index <= stepIndex ? 'bg-primary' : 'bg-border'}`} />
           ))}
-        </div>
+        </ol>
         <Card>
           <CardHeader>
-            <CardTitle>
-              {current === STEP_SCAN && t('checkin.stepScan')}
-              {current === STEP_GUESTS && t('checkin.stepGuests')}
-              {current === STEP_DOCUMENT && t('checkin.stepDocument')}
-              {current === STEP_TAX && t('checkin.touristTax.title')}
-              {current === STEP_IDENTITY && t('checkin.stepIdentity')}
-              {current === STEP_CONSENTS && t('checkin.stepConsents')}
-            </CardTitle>
             <CardDescription>{t('checkin.stepOf', { step: stepIndex + 1, total: totalSteps })}</CardDescription>
+            <h2 ref={stepHeading} tabIndex={-1} className="scroll-mt-4 text-2xl font-semibold tracking-tight">{t(STEP_LABEL[current])}</h2>
+            {stepIndex + 1 < totalSteps && (
+              <CardDescription>{t('checkin.reopen.nextStep', { name: t(STEP_LABEL[steps[stepIndex + 1]]) })}</CardDescription>
+            )}
           </CardHeader>
           <CardContent>
             <FormProvider {...form}>
@@ -635,12 +724,17 @@ function GuestCheckInFlow({ token }: { token: string }) {
                       finally { setReadingDocument(false); }
                     }}
                     onFile={(file) => { void readDocument(file); }}
-                    onManual={() => { setReview(null); setStep(STEP_GUESTS); }}
-                    onContinue={() => setStep(STEP_GUESTS)}
+                    onManual={moveFromScan}
+                    onContinue={moveFromScan}
                   />
                 )}
                 {current === STEP_GUESTS && (
                   <div className="space-y-4">
+                    {resumed && step === null && (
+                      <p className="rounded-md border-l-4 border-primary bg-muted px-3 py-2 text-sm" data-testid="checkin-resumed">
+                        {t('checkin.reopen.resumed')}
+                      </p>
+                    )}
                     <p className="text-sm text-muted-foreground">
                       {swissDocuments ? t('checkin.swiss.guestsIntro') : t('checkin.guestsIntro')}
                     </p>
@@ -693,6 +787,18 @@ function GuestCheckInFlow({ token }: { token: string }) {
                 )}
                 {current === STEP_IDENTITY && <IdentityStep identity={identity} token={token} takeFront={takeVerifyingPhoto} />}
                 {current === STEP_CONSENTS && (
+                  <>
+                    {activeRulesVersion && context.houseRules && (
+                      <section className="space-y-3 rounded-md border p-4">
+                        <h2 className="font-semibold">{t('guestPortal.guide.houseRules')}</h2>
+                        <p className="whitespace-pre-wrap break-words">{context.houseRules}</p>
+                        <label className="flex items-center gap-2">
+                          <input type="checkbox" checked={rulesAccepted}
+                            onChange={(event) => setAcceptedRulesVersion(event.target.checked ? activeRulesVersion : undefined)} />
+                          {t('guestPortal.guide.acceptRules')}
+                        </label>
+                      </section>
+                    )}
                   <ConsentStep
                     privacyRead={privacyRead}
                     onPrivacyRead={setPrivacyRead}
@@ -700,6 +806,7 @@ function GuestCheckInFlow({ token }: { token: string }) {
                     privacyNoticeOrgSlug={context.privacyNoticeOrgSlug}
                     marketingConsentVersion={context.marketingConsentVersion}
                   />
+                  </>
                 )}
                 {submitError && (
                   <p role="alert" className="text-sm text-destructive" data-testid="checkin-submit-error">
@@ -708,7 +815,7 @@ function GuestCheckInFlow({ token }: { token: string }) {
                 )}
                 {current !== STEP_SCAN && (
                 <div className="flex justify-between pt-4">
-                  <Button type="button" variant="outline" onClick={() => setStep(steps[Math.max(0, stepIndex - 1)])} disabled={identity.busy || taxPaying}>
+                  <Button type="button" variant="outline" onClick={() => goToStep(steps[Math.max(0, stepIndex - 1)])} disabled={identity.busy || taxPaying}>
                     <ChevronLeft className="mr-1 h-4 w-4" />{t('checkin.back')}
                   </Button>
                   {current !== STEP_CONSENTS ? (
@@ -724,7 +831,7 @@ function GuestCheckInFlow({ token }: { token: string }) {
                       {t('checkin.next')}<ChevronRight className="ml-1 h-4 w-4" />
                     </Button>
                   ) : (
-                    <Button key="checkin-submit" type="submit" disabled={submitCheckIn.isPending || !privacyRead} data-testid="checkin-submit">
+                    <Button key="checkin-submit" type="submit" disabled={submitCheckIn.isPending || !privacyRead || !rulesAccepted} data-testid="checkin-submit">
                       {submitCheckIn.isPending ? t('checkin.saving') : t('checkin.submit')}
                     </Button>
                   )}

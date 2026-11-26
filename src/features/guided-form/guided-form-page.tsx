@@ -117,8 +117,8 @@ export function GuidedFormPage() {
 /** One column on a quiet background: the module has no menu, it is a page of its own. */
 function Shell({ children }: { children: ReactNode }) {
   return (
-    <main className="flex min-h-screen justify-center bg-muted/40 p-4" data-testid="guided-form-page">
-      <div className="w-full min-w-0 max-w-xl space-y-4 py-6">{children}</div>
+    <main className="flex min-h-dvh justify-center border-t-4 border-primary bg-muted/40 px-4" data-testid="guided-form-page">
+      <div className="w-full min-w-0 max-w-2xl space-y-5 py-6 sm:py-12">{children}</div>
     </main>
   );
 }
@@ -162,10 +162,10 @@ function GuidedFormCard({ link, check, onSent }: GuidedFormCardProps) {
   return (
     <Card>
       <CardHeader>
-        <h1 className="text-2xl font-semibold leading-none tracking-tight">{t('guidedForm.title')}</h1>
+        <h1 className="text-3xl font-semibold leading-tight tracking-tight">{t('guidedForm.title')}</h1>
       </CardHeader>
       <CardContent className="space-y-4">
-        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
+        <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2 rounded-xl bg-muted/60 p-4 text-sm">
           <dt className="text-muted-foreground">{t('guidedForm.comune')}</dt>
           <dd className="font-medium" data-testid="guided-form-comune">
             {comune ?? t('guidedForm.notNamed')}

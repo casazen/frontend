@@ -13,7 +13,7 @@ const NOTICE_CHANNELS: readonly NoticeChannel[] = ['Email', 'WhatsApp'];
  * Budgets and settlements the landlord may send. Nothing leaves on open: the post runs only from «Invia», after at least
  * one channel is chosen.
  */
-export function RentManualNotices({ leaseId, notices }: { leaseId: string; notices: RentManualNotice[] }) {
+export function RentManualNotices({ leaseId, notices, canSend = true }: { leaseId: string; notices: RentManualNotice[]; canSend?: boolean }) {
   const { t } = useTranslation();
   const [pending, setPending] = useState<RentManualNotice | null>(null);
   if (notices.length === 0) return null;
@@ -35,9 +35,9 @@ export function RentManualNotices({ leaseId, notices }: { leaseId: string; notic
               </p>
               {notice.summary ? <p className="mt-1 text-sm">{notice.summary}</p> : null}
             </div>
-            <Button type="button" variant="outline" size="sm" onClick={() => setPending(notice)} data-testid={`rent-notice-send-${notice.id}`}>
+            {canSend && <Button type="button" variant="outline" size="sm" onClick={() => setPending(notice)} data-testid={`rent-notice-send-${notice.id}`}>
               {t('rent.notices.send')}
-            </Button>
+            </Button>}
           </li>
         ))}
       </ul>

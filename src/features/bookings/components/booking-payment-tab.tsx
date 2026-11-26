@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Wallet } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { CONTAINER_COLUMNS } from '@/components/layout/page-columns';
 import { Button } from '@/components/ui/button';
@@ -7,9 +8,9 @@ import { RecordPaymentDialog } from '@/features/payments/components/record-payme
 import { balanceOf, canRecordPayment } from '@/features/payments/lib/record-payment';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { formatCurrency } from '@/lib/utils';
-import type { Booking, BookingAmountSources } from '@/types';
+import { BOOKING_AMOUNT_SOURCES, type Booking, type BookingAmountSources } from '@/types';
 import { bookingPriceBreakdown } from '../lib/booking-price';
-import { Amount, AmountSourceLine } from './booking-facts';
+import { Amount, AmountSourceLine, AmountSourceTag } from './booking-facts';
 import { BookingFiscalDocumentCard } from './booking-fiscal-document-card';
 import { BookingInvoiceDataSection } from './booking-invoice-data-section';
 import { BookingLedgerSection } from './booking-ledger-section';
@@ -35,18 +36,26 @@ export function BookingPaymentTab({ booking }: { booking: Booking }) {
   const breakdown = bookingPriceBreakdown(booking);
   const money = (value: number) => formatCurrency(value, booking.currency);
   const sources: BookingAmountSources = booking.otaAmounts ? {} : (booking.amountSources ?? {});
-  const collected = typeof booking.paidAmount === 'number' && booking.paidAmount > 0 ? booking.paidAmount : null;
+  const collected = typeof booking.paidAmount === 'number' && Number.isFinite(booking.paidAmount) && booking.paidAmount >= 0 ? booking.paidAmount : null;
   const { hasPermission } = useWorkspace();
   const [recordOpen, setRecordOpen] = useState(false);
   // What is left to collect is known to who may read the payments; "Registra incasso" (SR-06b) is for who may write them, on a
   // booking the host collects itself that still has something to collect.
+  const [editingRecipient, setEditingRecipient] = useState(false);
   const balance = balanceOf(booking);
+  const outstanding = booking.paymentState !== 'Paid' && booking.paymentState !== 'Refunded';
+  const displayBalance = outstanding && balance !== null && balance > 0;
+  const displayedSources = [sources.total];
+  if (booking.paymentState && collected !== null) displayedSources.push(sources.paid);
+  if (booking.paymentState && displayBalance) displayedSources.push(sources.balance);
+  const commonSource = sources.total && BOOKING_AMOUNT_SOURCES.includes(sources.total) && displayedSources.length > 1
+    && displayedSources.every(source => source === sources.total) ? sources.total : null;
   const canRecord =
-    Boolean(booking.paymentState) && canRecordPayment(booking) && (balance === null || balance > 0) && hasPermission('short-rent', 'payment.write');
+    Boolean(booking.paymentState) && outstanding && canRecordPayment(booking) && (balance === null || balance > 0) && hasPermission('short-rent', 'payment.write');
 
   return (
-    <div className="space-y-8">
-      <PlainSection title={t('booking.detailPage.paymentSummaryTitle')} className="@container">
+    <div className="space-y-6">
+      <PlainSection title={t('booking.detailPage.paymentSummaryTitle')} className="@container rounded-xl border bg-card p-4 sm:p-6">
         <div className={booking.paymentState ? CONTAINER_COLUMNS : 'grid grid-cols-1'}>
           <div className="min-w-0 space-y-3">
             {breakdown ? (
@@ -69,23 +78,24 @@ export function BookingPaymentTab({ booking }: { booking: Booking }) {
                 {money(booking.totalPrice)}
               </dd>
             </dl>
-            <AmountSourceLine source={sources.total} />
+            {!commonSource ? <AmountSourceLine source={sources.total} /> : null}
           </div>
 
           {booking.paymentState ? (
-            <dl className="min-w-0 space-y-2">
+            <dl className="min-w-0 space-y-3 rounded-lg bg-muted/50 p-4">
               <Amount label={t('booking.detailPage.paymentState')}>
-                <span data-testid="booking-payment-state" data-state={booking.paymentState}>
-                  {t(`booking.list.payment.${booking.paymentState}`)}
+                <span className="inline-flex items-center gap-2 font-semibold" data-testid="booking-payment-state" data-state={booking.paymentState}>
+                  <Wallet className="size-4" aria-hidden="true" />
+                  {booking.paymentState === 'Paid' ? t('booking.detailPage.stayPaid') : t(`booking.list.payment.${booking.paymentState}`)}
                 </span>
               </Amount>
               {collected !== null ? (
-                <Amount label={t('booking.detailPage.paidAmount')} source={sources.paid}>
+                <Amount label={t('booking.detailPage.paidAmount')} source={commonSource ? null : sources.paid}>
                   <span data-testid="booking-paid-amount">{money(collected)}</span>
                 </Amount>
               ) : null}
-              {balance !== null && balance > 0 ? (
-                <Amount label={t('booking.detailPage.balanceDue')} source={sources.balance}>
+              {displayBalance ? (
+                <Amount label={t('booking.detailPage.balanceDue')} source={commonSource ? null : sources.balance}>
                   <span data-testid="booking-balance-due">{money(balance)}</span>
                 </Amount>
               ) : null}
@@ -93,6 +103,11 @@ export function BookingPaymentTab({ booking }: { booking: Booking }) {
           ) : null}
         </div>
 
+        {commonSource ? (
+          <p className="flex flex-wrap items-center gap-2 text-sm text-foreground/70">
+            {t('booking.detailPage.amountsSource')} <AmountSourceTag source={commonSource} />
+          </p>
+        ) : null}
         {canRecord ? (
           <div className="pt-2">
             <Button type="button" variant="outline" onClick={() => setRecordOpen(true)} data-testid="booking-record-payment">
@@ -103,6 +118,10 @@ export function BookingPaymentTab({ booking }: { booking: Booking }) {
         ) : null}
       </PlainSection>
 
+      <div className="grid min-w-0 items-start gap-4 xl:grid-cols-2 empty:hidden">
+        <BookingFiscalDocumentCard key={booking.id} bookingId={booking.id} onEditRecipient={() => setEditingRecipient(true)} />
+        <BookingInvoiceDataSection bookingId={booking.id} editing={editingRecipient} onEditingChange={setEditingRecipient} />
+      </div>
       {/* FIS-05, NF-85: everything collected for the booking, line by line; not there for who may not read payments (nothing is asked for them). */}
       <BookingLedgerSection bookingId={booking.id} />
 
@@ -110,11 +129,6 @@ export function BookingPaymentTab({ booking }: { booking: Booking }) {
           may not read payments (the API sends no amounts to them). */}
       <BookingOtaAmounts booking={booking} />
 
-      {/* FIS-01, NF-81: who the invoice is made out to, and where the data comes from; the section is not there for who may not read payments. */}
-      <BookingInvoiceDataSection bookingId={booking.id} />
-
-      {/* E12/F02/US01/T01: the documents CasaZen has for the booking and what to do next with them; not there while the issuance is off, nor for who may not read payments. */}
-      <BookingFiscalDocumentCard bookingId={booking.id} />
     </div>
   );
 }

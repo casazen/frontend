@@ -9,6 +9,15 @@ interface BackendPagedResult<T> {
   pageSize: number;
 }
 
+export type AdminOtaStatus = 'failed' | 'neverSynced' | 'synced';
+
+interface AdminOtaSyncItem {
+  id: string;
+  propertyName: string;
+  platform: string;
+  lastSyncAt: string | null;
+}
+
 export interface CinComplianceQuery {
   page?: number;
   pageSize?: number;
@@ -63,6 +72,9 @@ export const AdminApi = {
         pageSize: res.pageSize ?? 20,
       }),
     ),
+
+  getOtaSync: (status: AdminOtaStatus, page: number, pageSize: number) =>
+    ApiClient.get<BackendPagedResult<AdminOtaSyncItem>>('/admin/ota-sync', { status, page, pageSize }),
 
   getJobs: (): Promise<JobStatus[]> =>
     ApiClient.get<JobStatus[]>('/admin/jobs'),

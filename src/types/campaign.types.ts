@@ -1,49 +1,40 @@
 export type CampaignStatus = 'Draft' | 'PendingApproval' | 'Approved' | 'Scheduled' | 'Sending' | 'Sent' | 'Failed';
 
-export type ConditionOperator =
-  | 'Equals' | 'NotEquals'
-  | 'GreaterThan' | 'LessThan' | 'Between'
-  | 'Before' | 'After' | 'InLast'
-  | 'In' | 'NotIn'
-  | 'Is' | 'IsNot'
-  | 'Contains';
-
 export type ConditionFieldType = 'Text' | 'Number' | 'Date' | 'Boolean' | 'Enum' | 'Set';
 
 export interface ConditionField {
-  field: string;
-  operator: ConditionOperator;
+  fieldId: string;
+  operator: string;
   value: unknown;
 }
 
 export interface ConditionGroup {
   operator: 'AND' | 'OR';
-  conditions: ConditionField[];
+  rules: ConditionField[];
 }
 
 export interface ConditionDefinition {
-  version: number;
+  version: string;
   groups: ConditionGroup[];
 }
 
 export interface FieldDefinition {
-  name: string;
-  type: ConditionFieldType;
-  label: string;
-  operators: ConditionOperator[];
+  fieldId: string;
+  fieldType: ConditionFieldType;
+  displayNameKey: string;
+  operators: string[];
 }
 
 export interface Segment {
   id: string;
-  orgId: string;
   name: string;
-  conditionDefinitionJson: string;
+  condition: ConditionDefinition;
   createdAt: string;
 }
 
 export interface CreateSegmentDto {
   name: string;
-  conditionDefinitionJson: string;
+  condition: ConditionDefinition;
 }
 
 export interface SegmentPreviewResult {
@@ -52,7 +43,6 @@ export interface SegmentPreviewResult {
 
 export interface Campaign {
   id: string;
-  orgId: string;
   segmentId: string;
   segmentName: string;
   subject: string;
@@ -61,12 +51,15 @@ export interface Campaign {
   scheduledAt: string | null;
   sentAt: string | null;
   createdAt: string;
-  createdBy: string;
-  approvedAt: string | null;
-  approvedBy: string | null;
+  sentCount: number;
+  errorCount: number;
+  unsubscribeCount: number;
+  isAiGenerated: boolean;
 }
 
 export interface CreateDraftDto {
+  isAiGenerated?: boolean;
+  propertyId?: string;
   segmentId: string;
   subject: string;
   body: string;
@@ -82,19 +75,11 @@ export interface ScheduleCampaignDto {
 }
 
 export interface CampaignReport {
-  campaignId: string;
-  sent: number;
-  errors: number;
-  unsubscribes: number;
-}
-
-export interface GenerateContentRequest {
-  segmentId: string;
-  tone?: string;
-  topic?: string;
-}
-
-export interface GenerateContentResponse {
-  subject: string;
-  body: string;
+  id: string;
+  openedCount: number;
+  clickedCount: number;
+  bouncedCount: number;
+  sentCount: number;
+  errorCount: number;
+  unsubscribeCount: number;
 }

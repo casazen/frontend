@@ -75,6 +75,20 @@ describe('IdentificationPage (E03/F01/US03)', () => {
     cleanup();
   });
 
+  it('narrows the visible properties by city and missing access code, and resets the queue', async () => {
+    renderPage();
+    const search = await screen.findByRole('searchbox', { name: 'Cerca' });
+    fireEvent.change(search, { target: { value: 'milano' } });
+    expect(screen.getByTestId('identification-row-p-2')).toBeVisible();
+    expect(screen.queryByTestId('identification-row-p-1')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '1 da gestire' }));
+    fireEvent.change(search, { target: { value: 'roma' } });
+    expect(screen.getByRole('status')).toHaveTextContent('0 risultati');
+    fireEvent.click(screen.getByRole('button', { name: 'Azzera i filtri' }));
+    expect(screen.getByTestId('identification-row-p-1')).toBeVisible();
+    expect(screen.getByTestId('identification-row-p-2')).toBeVisible();
+  });
+
   it('render_Properties_ListsEachWithItsCodeStateTheButtonsAndTheQrLink', async () => {
     renderPage();
 

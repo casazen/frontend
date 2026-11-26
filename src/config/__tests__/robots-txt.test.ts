@@ -19,6 +19,7 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
       'Allow: /',
       'Disallow: /app/',
       'Disallow: /checkin/',
+      'Disallow: /s/',
       'Disallow: /invite/',
       'Disallow: /benvenuto/',
       'Disallow: /login',
@@ -86,6 +87,7 @@ describe('buildRobotsTxt (SE-02, A8-02)', () => {
     for (const hidden of [
       '/app/short-rent/bookings',
       '/checkin/abc',
+      '/s/0123456789abcdefghijklmnopqrstuv',
       '/login',
       '/book/x/my-bookings',
       '/book/x/search',

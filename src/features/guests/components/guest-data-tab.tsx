@@ -1,3 +1,4 @@
+import { Mail, Phone } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PlainSection } from '@/components/shared/calm';
 import { FACT_LINK, Fact, Facts } from '@/features/bookings/components/booking-facts';
@@ -17,13 +18,13 @@ export function GuestDataTab({ guest }: GuestDataTabProps) {
   const { t } = useTranslation();
 
   return (
-    <div className="space-y-8">
-      <PlainSection title={t('guests.anagrafica')}>
+    <div className="grid gap-4 xl:grid-cols-2 xl:items-start">
+      <PlainSection className="rounded-xl border bg-card p-4 sm:p-5" title={t('guests.anagrafica')}>
         <Facts>
           <Fact label={t('guests.email')}>
             {guest.email ? (
               <a href={`mailto:${guest.email}`} className={FACT_LINK}>
-                {guest.email}
+                <Mail aria-hidden="true" className="me-2 size-4 shrink-0" />{guest.email}
               </a>
             ) : (
               '—'
@@ -32,7 +33,7 @@ export function GuestDataTab({ guest }: GuestDataTabProps) {
           <Fact label={t('guests.phone')}>
             {guest.phoneNumber ? (
               <a href={`tel:${guest.phoneNumber.replace(/\s+/g, '')}`} className={FACT_LINK}>
-                {guest.phoneNumber}
+                <Phone aria-hidden="true" className="me-2 size-4 shrink-0" />{guest.phoneNumber}
               </a>
             ) : (
               '—'
@@ -45,7 +46,7 @@ export function GuestDataTab({ guest }: GuestDataTabProps) {
         </Facts>
       </PlainSection>
 
-      <PlainSection title={t('guests.addressSection')}>
+      <PlainSection className="rounded-xl border bg-card p-4 sm:p-5" title={t('guests.addressSection')}>
         <Facts>
           <Fact label={t('guests.address')}>{guest.address || '—'}</Fact>
           <Fact label={t('guests.city')}>{guest.city || '—'}</Fact>
@@ -55,7 +56,7 @@ export function GuestDataTab({ guest }: GuestDataTabProps) {
       </PlainSection>
 
       {guest.notes ? (
-        <PlainSection title={t('guests.notes')}>
+        <PlainSection className="rounded-xl border bg-card p-4 sm:p-5" title={t('guests.notes')}>
           <p className="whitespace-pre-line break-words">{guest.notes}</p>
         </PlainSection>
       ) : null}

@@ -13,7 +13,7 @@ import { fetchServiceCategories } from '@/api/service-categories.api';
 import { alloggiatiApi } from '@/api/alloggiati.api';
 import { toast } from 'sonner';
 import { getBookingStatusLabel } from '@/lib/i18n-labels';
-import { addDays, romeWallTimeToUtc, todayInRome } from '@/lib/stay-dates';
+import { addDays, todayInRome } from '@/lib/stay-dates';
 import type { Booking } from '@/types';
 import { BookingDetailPage } from '../booking-detail-page';
 
@@ -56,8 +56,9 @@ vi.mock('@/api/payment-ledger.api', () => ({
   getBookingLedger: vi.fn().mockResolvedValue({ bookingId: 'b0c1d2e3-0000-4000-8000-000000000001', bookingCode: '', channel: '', currency: 'EUR', lines: [], degraded: false }),
   listLedger: vi.fn(),
 }));
+const denied = vi.hoisted(() => new Set<string>());
 vi.mock('@/hooks/use-workspace', () => ({
-  useWorkspace: () => ({ hasPermission: () => true }),
+  useWorkspace: () => ({ hasPermission: (_area: string, permission: string) => !denied.has(permission) }),
 }));
 vi.mock('@/components/layout/app-shell', () => ({
   AppShell: ({ children }: { children: React.ReactNode }) => createElement('div', null, children),
@@ -153,6 +154,7 @@ function renderPage(
 
 beforeEach(async () => {
   vi.clearAllMocks();
+  denied.clear();
   vi.mocked(serviceRequestsApi.fetchServiceRequests).mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 50 });
   vi.mocked(fetchServiceCategories).mockResolvedValue(['cleaning', 'maintenance']);
   // The block "what happens now" of a confirmed stay also reads whether the guest data are complete (the wizard "Guest check-in").
@@ -161,6 +163,27 @@ beforeEach(async () => {
 });
 
 describe('BookingDetailPage', { timeout: 20000 }, () => {
+  it('opens the documents for this stay and offers the authorized host a way into the wizard', async () => {
+    vi.mocked(bookingsApi.getById).mockResolvedValue(booking());
+    renderPage(`/app/short-rent/bookings/${BOOKING_ID}?from=calendar`);
+    const reference = await screen.findByTestId('booking-stay-reference', undefined, WAIT);
+    expect(reference).not.toHaveAttribute('open');
+    fireEvent.click(reference.querySelector('summary')!);
+    expect(reference).toHaveAttribute('open');
+    const review = screen.getByTestId('booking-review-checkin');
+    expect(review.getAttribute('href')).toContain('from=calendar');
+    fireEvent.click(review);
+    expect(await screen.findByTestId('booking-open-checkin-wizard')).toHaveAttribute('href', `/app/short-rent/bookings/${BOOKING_ID}/check-in?return=documents`);
+  });
+
+  it('keeps the guest status readable when the operator cannot save guest records', async () => {
+    denied.add('alloggiati.submit');
+    vi.mocked(bookingsApi.getById).mockResolvedValue(booking());
+    renderPage(`/app/short-rent/bookings/${BOOKING_ID}?tab=guest`);
+    expect(await screen.findByTestId('alloggiati-panel-stub', undefined, WAIT)).toBeInTheDocument();
+    expect(screen.queryByTestId('booking-open-checkin-wizard')).not.toBeInTheDocument();
+  });
+
   it.each(['it', 'en'])('BookingDetailPage_Title_IsTheGuestAndTheCodeIsTheOneTheGuestKnows (%s)', async (lng) => {
     await i18n.changeLanguage(lng);
     vi.mocked(bookingsApi.getById).mockResolvedValue(booking({ bookingCode: 'ABCDE-12345' }));
@@ -206,6 +229,7 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
 
     renderPage();
 
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger', undefined, WAIT));
     expect(await screen.findByTestId('booking-pending-manual', undefined, WAIT)).toBeInTheDocument();
     fireEvent.click(screen.getByTestId('open-confirm-booking'));
     const dialog = await screen.findByRole('dialog');
@@ -228,6 +252,7 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
 
     renderPage();
 
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger', undefined, WAIT));
     fireEvent.click(await screen.findByTestId('open-confirm-booking', undefined, WAIT));
     const dialog = await screen.findByRole('dialog');
     fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('booking.confirm.submit') }));
@@ -253,6 +278,7 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
 
     renderPage();
 
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger', undefined, WAIT));
     fireEvent.click(await screen.findByTestId('open-confirm-booking', undefined, WAIT));
     const dialog = await screen.findByRole('dialog');
     fireEvent.click(within(dialog).getByRole('button', { name: i18n.t('booking.confirm.submit') }));
@@ -375,6 +401,7 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
 
     renderPage();
 
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger', undefined, WAIT));
     const link = await screen.findByTestId('open-checkout-wizard', undefined, WAIT);
     expect(link).toHaveAttribute('href', `/app/short-rent/bookings/${BOOKING_ID}/checkout`);
     expect(screen.queryByTestId('open-confirm-booking')).not.toBeInTheDocument();
@@ -397,6 +424,7 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
 
     renderPage();
 
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger', undefined, WAIT));
     const link = await screen.findByTestId('booking-next-check-in-wizard', undefined, WAIT);
     expect(link).toHaveAttribute('href', `/app/short-rent/bookings/${BOOKING_ID}/check-in`);
     expect(screen.getByTestId('booking-next-step')).toHaveAttribute('data-next-step', 'completeGuestData');
@@ -409,6 +437,7 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
 
     renderPage();
 
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger', undefined, WAIT));
     expect(await screen.findByTestId('booking-next-step', undefined, WAIT)).toHaveAttribute('data-next-step', 'allInOrder');
     expect(screen.queryByTestId('booking-next-check-in-wizard')).not.toBeInTheDocument();
   });
@@ -420,6 +449,7 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
 
     renderPage();
 
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger', undefined, WAIT));
     expect(await screen.findByTestId('open-checkout-wizard', undefined, WAIT)).toBeInTheDocument();
   });
 
@@ -434,6 +464,7 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
 
     renderPage();
 
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger', undefined, WAIT));
     fireEvent.click(await screen.findByTestId('open-register-arrival', undefined, WAIT));
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByTestId('register-arrival-late')).toBeInTheDocument();
@@ -467,6 +498,7 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
 
     renderPage();
 
+    fireEvent.click(await screen.findByTestId('booking-guidance-trigger', undefined, WAIT));
     fireEvent.click(await screen.findByTestId('open-register-arrival', undefined, WAIT));
     const dialog = await screen.findByRole('dialog');
     expect(await within(dialog).findByTestId('guest-data-complete', undefined, WAIT)).toBeInTheDocument();
@@ -639,41 +671,22 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
     expect(screen.queryByTestId('service-requests-empty')).not.toBeInTheDocument();
   });
 
-  it('BookingDetailPage_RequestSupplier_SendsThisStayAndItsProperty', async () => {
+  it('opens housekeeping for the stay and property for a request writer without property.write', async () => {
+    denied.add('property.write');
     vi.mocked(bookingsApi.getById).mockResolvedValue(booking());
-    vi.mocked(serviceRequestsApi.fetchSuppliersByProperty).mockResolvedValue({
-      items: [{ orgId: 'sup-1', legalName: 'Pulizie Express Srl', phone: '', email: '', categories: ['cleaning'], comuni: [], photoUrls: [] }],
-      totalCount: 1,
-      page: 1,
-      pageSize: 1,
-    });
-    vi.mocked(serviceRequestsApi.createServiceRequest).mockResolvedValue({ id: 'sr-new' } as never);
-
     renderPage();
+    const link = await screen.findByTestId('booking-request-cleaning', undefined, WAIT);
+    expect(link).toHaveAttribute('href', `/app/short-rent/interventions/request?propertyId=property-1&bookingId=${BOOKING_ID}&type=cleaning`);
+    expect(serviceRequestsApi.createServiceRequest).not.toHaveBeenCalled();
+  });
 
-    expect(await screen.findByTestId('service-requests-empty', undefined, WAIT)).toHaveTextContent(
-      i18n.t('serviceRequest.emptyForStay'),
-    );
-    fireEvent.click(screen.getByTestId('request-supplier-btn'));
-    const dialog = await screen.findByTestId('service-request-dialog');
-    expect(within(dialog).queryByTestId('service-request-stay')).not.toBeInTheDocument();
-    fireEvent.change(await within(dialog).findByTestId('service-request-supplier', undefined, WAIT), {
-      target: { value: 'sup-1' },
-    });
-    fireEvent.change(within(dialog).getByTestId('service-request-start-time'), { target: { value: '10:00' } });
-    fireEvent.change(within(dialog).getByTestId('service-request-duration'), { target: { value: '120' } });
-    await waitFor(() => expect(within(dialog).getByTestId('submit-service-request')).toBeEnabled());
-    fireEvent.click(within(dialog).getByTestId('submit-service-request'));
-
-    await waitFor(() => expect(serviceRequestsApi.createServiceRequest).toHaveBeenCalledTimes(1));
-    expect(vi.mocked(serviceRequestsApi.createServiceRequest).mock.calls[0][0]).toMatchObject({
-      propertyId: 'property-1',
-      bookingId: BOOKING_ID,
-      supplierOrgId: 'sup-1',
-      category: 'cleaning',
-      scheduledStartUtc: romeWallTimeToUtc('2027-10-05', '10:00'),
-      durationMinutes: 120,
-    });
+  it('hides empty supplier requests when a reader has no creation action', async () => {
+    denied.add('servicerequest.write');
+    vi.mocked(bookingsApi.getById).mockResolvedValue(booking());
+    renderPage();
+    await waitFor(() => expect(serviceRequestsApi.fetchServiceRequests).toHaveBeenCalled());
+    await waitFor(() => expect(screen.queryByTestId('booking-service-requests')).not.toBeInTheDocument());
+    expect(screen.queryByTestId('booking-request-cleaning')).not.toBeInTheDocument();
   });
 
   it('BookingDetailPage_CancelledStay_DoesNotOfferASupplierRequest', async () => {
@@ -681,7 +694,8 @@ describe('BookingDetailPage', { timeout: 20000 }, () => {
 
     renderPage();
 
-    expect(await screen.findByTestId('booking-service-requests', undefined, WAIT)).toBeInTheDocument();
-    expect(screen.queryByTestId('request-supplier-btn')).not.toBeInTheDocument();
+    await waitFor(() => expect(serviceRequestsApi.fetchServiceRequests).toHaveBeenCalled());
+    await waitFor(() => expect(screen.queryByTestId('booking-service-requests')).not.toBeInTheDocument());
+    expect(screen.queryByTestId('booking-request-cleaning')).not.toBeInTheDocument();
   });
 });

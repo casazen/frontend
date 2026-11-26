@@ -1,7 +1,7 @@
-import { Download } from 'lucide-react';
+import { Wallet, Download } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { PageHeader } from '@/components/layout/page-header';
+import { ServicePageHeader } from '@/features/supplier/components/service-page-header';
 import { StatStrip, StatTile } from '@/components/shared/calm';
 import { ListView } from '@/components/shared/list-view/list-view';
 import { useListState } from '@/components/shared/list-view/use-list-state';
@@ -50,7 +50,8 @@ export function SupplierEarningsPage() {
 
   return (
     <div className="min-w-0 space-y-6" data-testid="supplier-earnings-page">
-      <PageHeader
+      <ServicePageHeader
+        icon={Wallet}
         title={t('supplier.earnings.title')}
         description={t('supplier.earnings.description')}
         crumbs="auto"
@@ -67,7 +68,7 @@ export function SupplierEarningsPage() {
 
       {summary ? (
         <>
-          <StatStrip label={t('supplier.earnings.numbers.label')}>
+          <StatStrip className="rounded-2xl border border-border bg-card px-4" label={t('supplier.earnings.numbers.label')}>
             <StatTile
               data-testid="supplier-earnings-to-collect"
               label={t('supplier.earnings.numbers.toCollect')}

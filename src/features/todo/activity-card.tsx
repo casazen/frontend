@@ -118,6 +118,9 @@ const OWNER_STATEMENT_VERSION = 'OwnerStatementVersion';
  * out and the row leads to the list). A conversation is opened through its key (`target: 'thread'`), which the kind of entity tells apart.
  */
 export const ACTION_ROUTE_MAP = {
+  ReviewImportedProperty: {
+    route: { path: '/app/short-rent/activation', propertyParam: 'propertyId', onlyFor: ['PropertyImportReview'] },
+  },
   ReviewBooking: {
     route: { path: '/app/short-rent/bookings/:id', target: 'entity', entityType: BOOKING },
   },
@@ -254,6 +257,10 @@ export const ACTION_ROUTE_MAP = {
  *   rule are told and the regime is recorded (the page of the booking decides nothing); for an item that names no booking, the page of the booking is the fallback of its action.
  */
 const ROUTE_MAP_BY_TYPE = {
+  GuestInvoiceCorrectionRequested: {
+    route: { path: '/app/short-rent/fiscal/documents', onlyFor: [FISCAL_DOCUMENT], entityParam: 'document' },
+    fallback: { path: '/app/short-rent/fiscal' },
+  },
   TouristTaxRefundDue: {
     route: { path: '/app/short-rent/bookings/:id/check-in', target: 'entity', entityType: BOOKING, search: { step: 'tax' } },
   },

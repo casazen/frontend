@@ -251,6 +251,46 @@ async function mockMarketplaceApis(page: Page) {
 }
 
 test.describe('Marketplace suppliers (#340)', () => {
+  test('housekeeping from the stay rechecks availability on resume and sends the linked request once', async ({ page }) => {
+    const { posted } = await mockMarketplaceApis(page);
+    await page.route(`**/api/bookings/${STAY_ID}`, (route) => route.fulfill({ json: {
+      ...sampleStay, propertyName: sampleProperty.name, totalPrice: 0, currency: 'EUR',
+      createdAt: '2026-09-01T12:00:00Z', updatedAt: '2026-09-01T12:00:00Z',
+    } }));
+    await page.route('**/api/service-requests/sr-created-e2e', (route) => route.fulfill({ json: {
+      id: 'sr-created-e2e', propertyId: PROPERTY_ID, propertyName: sampleProperty.name, bookingId: STAY_ID,
+      supplierOrgId: SUPPLIER_ORG_ID, supplierName: sampleSuppliers.items[0].legalName, category: 'cleaning', urgency: 'Normal',
+      status: 'PresoInCarico', chargeToGuest: false, createdAt: '2026-09-01T12:00:00Z', updatedAt: '2026-09-01T12:30:00Z',
+    } }));
+    await page.goto(demoUrl(`/app/short-rent/bookings/${STAY_ID}`, 'short-stay'));
+    await page.getByTestId('booking-request-cleaning').click();
+    await expect(page.getByTestId('cleaning-brief')).toContainText(sampleProperty.name);
+    const chooseSupplier = async () => {
+      await page.getByTestId(`request-supplier-${SUPPLIER_ORG_ID}`).check({ force: true });
+      await page.getByTestId('request-next').click();
+      await expect(page.getByTestId('request-stay')).toHaveValue(STAY_ID);
+      await page.locator('[data-testid^="request-slot-"]').first().click();
+    };
+    await chooseSupplier();
+    await page.getByTestId('request-notes').fill('Private arrival instructions');
+    await page.getByTestId('request-next').click();
+    await expect(page.getByTestId('request-supplier-sees')).toBeVisible();
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(page.getByTestId('request-wizard')).toHaveAttribute('data-step', 'proposals');
+    await chooseSupplier();
+    await expect(page.getByTestId('request-notes')).toHaveValue('');
+    await page.getByTestId('request-next').click();
+    expect(posted).toHaveLength(0);
+    await page.getByTestId('request-finish').click();
+    await expect(page.getByTestId('wizard-done-primary')).toHaveAttribute('href', '/app/short-rent/interventions/sr-created-e2e');
+    await expect(page.getByTestId('wizard-done-secondary')).toHaveAttribute('href', `/app/short-rent/bookings/${STAY_ID}`);
+    expect(posted).toEqual([expect.objectContaining({ bookingId: STAY_ID, propertyId: PROPERTY_ID, category: 'cleaning' })]);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(page).toHaveURL(/\/interventions\/sr-created-e2e$/);
+    await expect(page.getByTestId('intervention-status')).toBeVisible();
+    expect(posted).toHaveLength(1);
+  });
+
   test('AC6: browse account suppliers and request an intervention from Interventions', async ({ page }) => {
     const { posted } = await mockMarketplaceApis(page);
     await page.goto(demoUrl('/app/short-rent/marketplace', 'short-stay'));
@@ -369,7 +409,7 @@ test.describe('Marketplace suppliers (#340)', () => {
     await expect(page.getByTestId('request-assist-result')).toBeVisible();
     expect(assisted).toEqual([{ propertyId: PROPERTY_ID, text: words }]);
     await expect(page.getByTestId('request-assist-category')).toHaveText('Pulizie');
-    await expect(page.getByTestId('request-assist-who')).toContainText('Un fornitore CasaZen');
+    await expect(page.getByTestId('request-assist-who')).toContainText('Un fornitore disponibile');
     await expect(page.getByTestId('ai-content-notice')).toBeVisible();
     // The host has decided nothing yet.
     await expect(page.getByTestId('request-wizard')).toHaveAttribute('data-step', 'channel');

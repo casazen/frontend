@@ -52,7 +52,9 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
   const mainRef = useRef<HTMLElement>(null);
   const { org, user } = useCurrentUser();
   const organizationName = org?.name ?? null;
-  const shell = useMemo(() => ({ contextKey }), [contextKey]);
+  const viewKey = user?.id ? JSON.stringify([user.id, org?.id ?? null, contextKey]) : undefined;
+  const compact = useUiStore(state => viewKey ? state.workspaceViews[viewKey]?.compact : false);
+  const shell = useMemo(() => ({ contextKey, viewKey }), [contextKey, viewKey]);
   // A page that fixes its primary action above the bottom bar of the phone (`PageHeader`, UI-05) needs room under its content.
   const mobilePrimaryVisible = useUiStore((state) => state.mobilePrimaryVisible);
 
@@ -73,7 +75,7 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
         {/* The global search (UI-06): Ctrl/Cmd+K from anywhere in the shell, and the button of the header. The server search (UI-13) is handed to it as `remoteSource` once it is built. */}
         <CommandPaletteProvider contextKey={contextKey} userId={user?.id ?? null}>
           <SkipLink targetId={MAIN_CONTENT_ID} />
-          <div className="flex min-h-dvh" data-testid="app-shell" data-context={contextKey}>
+          <div className="flex min-h-dvh" data-testid="app-shell" data-context={contextKey} data-density={compact ? 'compact' : undefined}>
             <ContextSidebar contextKey={contextKey} organizationName={organizationName} />
             <MoreSheet contextKey={contextKey} organizationName={organizationName} />
             <div className="flex min-w-0 flex-1 flex-col lg:has-[>main>[data-app-viewport]]:h-dvh">
@@ -94,7 +96,7 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
                 ref={mainRef}
                 tabIndex={-1}
                 className={cn(
-                  'flex flex-1 flex-col p-4 pb-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom))] outline-none md:pb-6 md:p-6',
+                  'flex min-w-0 flex-1 flex-col px-[var(--workspace-gutter)] pt-[var(--workspace-gutter)] pb-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom))] outline-none md:pb-[var(--workspace-gutter)]',
                   'lg:has-[>[data-app-viewport]]:min-h-0 lg:has-[>[data-app-viewport]]:overflow-y-auto',
                   mobilePrimaryVisible &&
                     'max-md:pb-[calc(var(--bottom-nav-height)+var(--mobile-primary-height)+env(safe-area-inset-bottom))]',

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
+  ArrowRight,
   Ban,
   CheckCircle2,
   CircleDashed,
@@ -101,6 +102,7 @@ interface OnboardingPartRowProps {
   highlighted: boolean;
   /** An organization administrator may put a part off; anyone else sees the plan and no deferral (the server answers 403 to them). */
   canDefer: boolean;
+  canLaunch: boolean;
   /** The sentence of the page that says why a deferral is not for this person, to tie the disabled button to. */
   adminNoteId?: string;
   onDefer: (part: OnboardingPart) => void;
@@ -113,7 +115,7 @@ interface OnboardingPartRowProps {
  * it still waits for another part, names the part it waits for and has no way in. «Lo faccio dopo» is disabled, with its reason, for a part
  * another part needs and for who is not an organization administrator.
  */
-export function OnboardingPartRow({ part, parts, highlighted, canDefer, adminNoteId, onDefer }: OnboardingPartRowProps) {
+export function OnboardingPartRow({ part, parts, highlighted, canLaunch, canDefer, adminNoteId, onDefer }: OnboardingPartRowProps) {
   const { t, i18n } = useTranslation();
   const state = normalizePartState(part.state);
   const title = t(partTitleKey(part.code));
@@ -136,7 +138,9 @@ export function OnboardingPartRow({ part, parts, highlighted, canDefer, adminNot
   // A part that waits for another one has no way in, put off or not: «Riprendi» would lead to a part that cannot be done yet.
   const canOpen = state === 'open' || (state === 'deferred' && waitingFor.length === 0);
   const resuming = state === 'deferred' || (part.done > 0 && part.done < part.total);
-  const actionLabel = t(resuming ? 'onboardingPlan.actions.resume' : 'onboardingPlan.actions.doNow');
+  const actionLabel = t(!canLaunch ? 'onboardingPlan.workspace.details' : resuming ? 'onboardingPlan.actions.resume'
+    : highlighted && part.code === 'octorateConnection' ? 'onboardingPlan.workspace.connect'
+    : 'onboardingPlan.actions.doNow');
   // «Lo faccio dopo» has a place on a part that is open or blocked; one already put off, done or not available has nothing to postpone.
   const canPutOff = state === 'open' || state === 'blocked';
   // The plan says `false` for a part another part needs; only that says it, so an answer without the field leaves the choice to the server.
@@ -146,18 +150,20 @@ export function OnboardingPartRow({ part, parts, highlighted, canDefer, adminNot
 
   return (
     <li
-      className={cn('min-w-0 rounded-lg border p-4', highlighted && 'border-primary/30 bg-primary/5')}
+      id={`passo-${part.code}`}
+      tabIndex={-1}
+      className={cn('min-w-0 scroll-mt-5 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring', highlighted ? 'space-y-5' : 'py-3.5')}
       data-testid={`onboarding-part-${part.code}`}
       data-state={state}
       data-highlighted={highlighted ? 'true' : undefined}
     >
       <div className="flex min-w-0 items-start gap-3">
-        <span aria-hidden="true" className="mt-0.5 grid size-10 shrink-0 place-items-center rounded-full bg-background ring-1 ring-inset ring-border">
-          <PartIcon className="size-5 text-foreground/80" />
+        <span aria-hidden="true" className={cn('mt-0.5 grid shrink-0 place-items-center', highlighted ? 'size-11 rounded-xl bg-primary/10 text-primary-text' : 'size-7 text-foreground/60')}>
+          <PartIcon className={highlighted ? 'size-6' : 'size-4'} />
         </span>
         <div className="min-w-0 flex-1 space-y-1.5">
           <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
-            <h3 className="break-words text-base font-semibold leading-snug">{title}</h3>
+            <h3 className={cn('break-words font-semibold leading-snug', highlighted ? 'text-xl sm:text-2xl' : 'text-sm')}>{title}</h3>
             <PartStateBadge state={state} remindAt={part.remindAt} />
             {showProgress ? (
               <span className="text-sm text-foreground/70" data-testid="onboarding-part-progress">
@@ -165,9 +171,9 @@ export function OnboardingPartRow({ part, parts, highlighted, canDefer, adminNot
               </span>
             ) : null}
           </div>
-          <p className="break-words text-sm text-foreground/70">{t(partWhatKey(part.code))}</p>
+          {highlighted && <p className="max-w-prose break-words text-sm leading-relaxed text-foreground/75">{t(partWhatKey(part.code))}</p>}
           {reason ? (
-            <p className="break-words text-sm" data-testid="onboarding-part-reason">
+            <p className={cn('break-words text-sm', highlighted ? 'text-foreground' : 'text-foreground/70')} data-testid="onboarding-part-reason">
               {reason}
             </p>
           ) : null}
@@ -175,15 +181,15 @@ export function OnboardingPartRow({ part, parts, highlighted, canDefer, adminNot
       </div>
 
       {canOpen || canPutOff ? (
-        <div className="mt-3 flex flex-wrap items-center gap-2 pl-0 sm:pl-[3.25rem]">
+        <div className={cn('flex flex-wrap items-center gap-x-3 gap-y-2', highlighted ? 'border-t pt-4' : 'mt-2 sm:pl-10')}>
           {canOpen ? (
-            <Button asChild variant={highlighted ? 'default' : 'outline'} className={TOUCH_TARGET}>
+            <Button asChild variant={highlighted ? 'default' : 'link'} className={TOUCH_TARGET}>
               <Link to={partPath(part.code)} aria-label={`${actionLabel}: ${title}`} data-testid={`onboarding-part-${part.code}-open`}>
-                {actionLabel}
+                {actionLabel}{highlighted && <ArrowRight className="size-4" aria-hidden="true" />}
               </Link>
             </Button>
           ) : null}
-          {canPutOff ? (
+          {canPutOff && !(highlighted && deferDisabled) ? (
             <Button
               type="button"
               variant={highlighted ? 'outline' : 'ghost'}
@@ -197,7 +203,7 @@ export function OnboardingPartRow({ part, parts, highlighted, canDefer, adminNot
               {t('onboardingPlan.actions.later')}
             </Button>
           ) : null}
-          {canPutOff && notDeferrable ? (
+          {canPutOff && notDeferrable && !highlighted ? (
             <p id={deferNoteId} className="min-w-0 basis-full text-sm text-foreground/70" data-testid={`onboarding-part-${part.code}-later-note`}>
               {t('onboardingPlan.defer.notDeferrable')}
             </p>

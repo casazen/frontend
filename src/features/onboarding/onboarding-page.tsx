@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { confirmWorkspaceAccess } from './confirm-workspace-access';
 import { CommercialSignupWizard } from './commercial-signup-wizard';
@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { isAxiosError } from 'axios';
 import { useAuth } from '@/hooks/use-auth';
 import { useCompleteOnboarding, useMe } from '@/queries/use-users';
-import type { OnboardingResponse, RentalType } from '@/types';
+import type { OnboardingResponse, RentalType, UserDetail } from '@/types';
 import type { OnboardingConsentsPayload } from '@/types/onboarding.types';
 import { ROLES_CLAIM } from '@/lib/auth-roles';
 import { useUserRoles, useUserRoleState } from '@/hooks/use-user-roles';
@@ -60,12 +60,27 @@ interface PendingAccess {
 
 export function OnboardingPage() {
   const { data: profile, isLoading, error } = useMe();
+  if (isLoading) return <LoadingScreen />;
+  if (!profile && error && isProfileLoadFailure(error)) return <ExistingOnboardingPage />;
+  return <OnboardingRoute key={JSON.stringify([profile?.id, profile?.orgId])} profile={profile} />;
+}
+
+function OnboardingRoute({ profile }: { profile: UserDetail | undefined }) {
   const [params] = useSearchParams();
   const roles = useUserRoles();
-  const legacy = params.get('mode') === 'edit' || (profile?.commercialSetupRequired !== true &&
+  // A profile refetch may observe a settled payment before the workspace check finishes. Keep this visit on its confirmation screen.
+  const [startedInPayment] = useState(profile?.commercialSetupRequired === true);
+  // Back from Stripe (`?checkout=success`) after the webhook already cleared `commercialSetupRequired`: still open the commercial
+  // wizard so «Entra e inizia la configurazione» is shown — not the legacy rental-type choice (GJ L3 / commercial-signup.ts).
+  const returningFromCheckout =
+    params.get('checkout') === 'success' && !!profile?.commercialSignup && !needsConsentRenewal(profile);
+  const commercial =
+    profile?.commercialSetupRequired === true ||
+    returningFromCheckout ||
+    (startedInPayment && !!profile?.commercialSignup && !needsConsentRenewal(profile));
+  const legacy = params.get('mode') === 'edit' || (!commercial &&
     (isExemptFromHostOnboarding(roles) || isLinkedSupplier(profile) || !!profile?.orgId));
-  if (isLoading) return <LoadingScreen />;
-  if (legacy || (!profile && error && isProfileLoadFailure(error))) return <ExistingOnboardingPage />;
+  if (legacy) return <ExistingOnboardingPage />;
   return <CommercialSignupWizard profile={profile} />;
 }
 
@@ -91,6 +106,7 @@ export function ExistingOnboardingPage() {
   } = useMe();
   const completeOnboarding = useCompleteOnboarding();
   const reloadLegalDocuments = useReloadLegalDocuments();
+  const headingRef = useRef<HTMLHeadingElement>(null);
   const [step, setStep] = useState<WizardStep>('role');
   const [selectedType, setSelectedType] = useState<RentalType | null>(null);
   const [consents, setConsents] = useState<OnboardingConsentsPayload | null>(null);
@@ -100,6 +116,10 @@ export function ExistingOnboardingPage() {
   const [consentsForced, setConsentsForced] = useState(false);
   const [pendingAccess, setPendingAccess] = useState<PendingAccess | null>(null);
   const [isLeaving, setIsLeaving] = useState(false);
+
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, [step, consentsAttempt, profileLoading, isLeaving]);
 
   const { roles, isResolved: rolesResolved } = useUserRoleState();
   const hasRoles = roles.length > 0;
@@ -282,7 +302,7 @@ export function ExistingOnboardingPage() {
 
   if (pendingAccess) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted/40 px-4 py-12">
+      <div className="min-h-dvh border-t-4 border-primary bg-muted/40 px-4 py-6 sm:py-12">
         <WorkspaceAccessError
           onRetry={() => void leaveTo(pendingAccess.target, pendingAccess.rentalType)}
         />
@@ -311,9 +331,9 @@ export function ExistingOnboardingPage() {
   const showStepper = !isEditMode && !renewsConsents;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/40 px-4 py-12">
-      <div className="mx-auto max-w-5xl space-y-10 text-center">
-        <div className="space-y-3">
+    <div className="min-h-dvh border-t-4 border-primary bg-muted/40 px-4 py-6 sm:py-12">
+      <div className="mx-auto max-w-5xl space-y-6">
+        <div className="space-y-3 rounded-2xl border bg-card p-5 sm:p-8">
           <p className="text-sm font-semibold uppercase tracking-wide text-primary">{t('onboarding.casaZen')}</p>
           {showStepper ? (
             <>
@@ -324,7 +344,7 @@ export function ExistingOnboardingPage() {
                 })}
               </p>
               <ol
-                className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm"
+                className="flex flex-wrap items-center gap-2 text-sm"
                 aria-label={t('onboarding.stepsLabel')}
                 data-testid="onboarding-steps"
               >
@@ -335,7 +355,7 @@ export function ExistingOnboardingPage() {
                     <li
                       key={wizardStep}
                       aria-current={current ? 'step' : undefined}
-                      className={current ? 'font-semibold text-foreground' : done ? 'text-primary' : 'text-muted-foreground'}
+                      className={current ? 'rounded-full bg-primary px-3 py-1.5 font-semibold text-primary-foreground' : done ? 'rounded-full bg-muted px-3 py-1.5 text-primary' : 'rounded-full px-3 py-1.5 text-muted-foreground'}
                     >
                       <span className="mr-1">{index + 1}.</span>
                       {t(`onboarding.steps.${wizardStep}`)}
@@ -345,7 +365,7 @@ export function ExistingOnboardingPage() {
               </ol>
             </>
           ) : null}
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{heading}</h1>
+          <h1 ref={headingRef} tabIndex={-1} className="text-3xl font-bold tracking-tight outline-none sm:text-4xl">{heading}</h1>
           <p className="text-muted-foreground">{subheading}</p>
         </div>
 

@@ -45,10 +45,10 @@ export type NavPlacement = 'primary' | 'secondary' | 'footer';
 export type NavCountKey = 'bookingRequests' | 'supplierRequests' | 'compliance' | 'activities' | 'messages';
 
 /**
- * The main menu of an area never has more primary entries than this (UI-04a). Nine since the menus lost "Altro" as a place for daily pages:
- * Affitti brevi has nine, including the message inbox, and adds CRM when its flag is on.
+ * The short-rent area has nine standard entries. Licensed workspaces may also show CRM and AI routines.
+ * Entries stay grouped by task and every phone keeps the same four main destinations.
  */
-export const MAX_PRIMARY_NAV_ENTRIES = 10;
+export const MAX_PRIMARY_NAV_ENTRIES = 11;
 
 /** The bottom bar of the phone has at most this many destinations, "Altro" apart (UI-04a/UI-04b). */
 export const MAX_BOTTOM_NAV_ENTRIES = 4;
@@ -57,6 +57,7 @@ export interface RouteManifestEntry {
   path: string;
   context: AppContextKey;
   requiredPermissions: string[];
+  permissionMode?: 'any';
   navKey?: string;
   /**
    * The name of the entry on its tab, when the menu names the whole section and the tab names the page (the menu says «Impostazioni»,
@@ -143,7 +144,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navPlacement: 'primary',
     navOrder: 4,
     navBottom: 4,
-    icon: 'Home',
+    icon: 'Building2',
     component: async () => ({ default: (await import('@/features/properties/properties-page')).PropertiesPage }),
     legacyPaths: ['/properties'],
   },
@@ -356,7 +357,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navKey: 'nav.documents',
     navParent: '/app/short-rent/payments',
     navOrder: 2.5,
-    icon: 'FileText',
+    icon: 'FolderOpen',
     component: async () => ({ default: (await import('@/features/document-archive/documents-page')).DocumentsPage }),
   },
   {
@@ -434,6 +435,16 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/channels/channels-page')).ChannelsPage }),
   },
   {
+    path: '/app/short-rent/activation',
+    context: 'short-rent',
+    requiredPermissions: ['property.read'],
+    navKey: 'nav.propertyActivation',
+    navParent: '/app/short-rent/properties',
+    navOrder: 4,
+    icon: 'ListChecks',
+    component: async () => ({ default: (await import('@/features/properties/property-activation-page')).PropertyActivationPage }),
+  },
+  {
     // Identity verification console (NF-12, NF-50, NF-51): the verifications that wait for an operator, with why and the checks, and the figures.
     // The last tab of the Cruscotto, after «Da approvare», the other queue of decisions. It asks the permission the API asks for every call of it,
     // `verification.decision` (the owner, the administrators and the property managers; E03/F04/US02/T01): an entry the user opens must not end on a 403.
@@ -453,7 +464,8 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     // managers; not the collaborator or the accountant), the one the API asks for every call of the queue: an entry the user opens must not end on a 403.
     path: '/app/short-rent/approval-queue',
     context: 'short-rent',
-    requiredPermissions: ['approval.decide'],
+    requiredPermissions: ['approval.decide','marketing.manage'],
+    permissionMode: 'any',
     navKey: 'nav.approvalQueue',
     navTabKey: 'nav.toApprove',
     navParent: '/app/short-rent',
@@ -480,12 +492,12 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   {
     // The domain of the booking site: the last tab of the section, after its look and its documents.
     path: '/app/short-rent/settings/domain',
+    navParent: '/app/short-rent/settings',
     context: 'short-rent',
     requiredPermissions: ['property.write'],
     navKey: 'nav.domain',
-    navParent: '/app/short-rent/vetrina',
-    navOrder: 3,
     icon: 'Globe',
+    navOrder: 40,
     component: async () => ({
       default: (await import('@/features/settings/domain/custom-domain-settings-page')).CustomDomainSettingsPage,
     }),
@@ -494,10 +506,13 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     // Plans and Stripe checkout; also the return page of the checkout and of the billing portal (backend PL-11). In no
     // menu since UI-04a: the org badge of the header leads here (`usePlanPagePath`) and the page links to the billing one.
     path: '/app/short-rent/settings/plan',
+    navParent: '/app/short-rent/settings',
     context: 'short-rent',
     requiredPermissions: [],
     orgBillingAdmin: true,
     navKey: 'nav.plan',
+    icon: 'CreditCard',
+    navOrder: 70,
     component: async () => ({
       default: (await import('@/features/billing/plans-page')).PlansPage,
     }),
@@ -505,26 +520,38 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   {
     // In no menu since UI-04a: the plan page links to it (and the org badge to the plan page).
     path: '/app/short-rent/settings/billing',
+    navParent: '/app/short-rent/settings',
     context: 'short-rent',
     requiredPermissions: [],
     orgBillingAdmin: true,
     navKey: 'nav.billing',
+    icon: 'Receipt',
+    navOrder: 80,
     component: async () => ({
       default: (await import('@/features/billing/billing-settings-page')).BillingSettingsPage,
     }),
   },
   {
-    // Org identity: name, public slug and contact email opt-in (A1-22, A1-23). «Impostazioni», pinned at the foot of the sidebar: the integration
-    // and the assistant are its tabs, and the menu calls it by the section while its tab keeps the name of the page («Organizzazione»).
-    path: '/app/short-rent/settings/organization',
+    path: '/app/short-rent/settings',
     context: 'short-rent',
     requiredPermissions: [],
-    orgBillingAdmin: true,
     navKey: 'nav.settings',
-    navTabKey: 'nav.organization',
     navPlacement: 'footer',
     navOrder: 40,
     icon: 'Settings',
+    component: async () => ({ default: (await import('@/features/settings/settings-index')).SettingsIndex }),
+  },
+  {
+    // Org identity: name, public slug and contact email opt-in (A1-22, A1-23). «Impostazioni», pinned at the foot of the sidebar: the integration
+    // and the assistant are its tabs, and the menu calls it by the section while its tab keeps the name of the page («Organizzazione»).
+    path: '/app/short-rent/settings/organization',
+    navParent: '/app/short-rent/settings',
+    context: 'short-rent',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    navKey: 'nav.organization',
+    icon: 'Settings',
+    navOrder: 10,
     component: async () => ({
       default: (await import('@/features/settings/organization/organization-settings-page')).OrganizationSettingsPage,
     }),
@@ -532,13 +559,13 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   {
     // Public-site branding: logo, hero, color, tagline, theme (BK-12, A3-17). Short-rent only: it is the booking site.
     path: '/app/short-rent/settings/site-appearance',
+    navParent: '/app/short-rent/settings',
     context: 'short-rent',
     requiredPermissions: [],
     orgBillingAdmin: true,
     navKey: 'nav.siteAppearance',
-    navParent: '/app/short-rent/vetrina',
-    navOrder: 1,
     icon: 'Palette',
+    navOrder: 30,
     component: async () => ({
       default: (await import('@/features/settings/site-appearance/site-appearance-page')).SiteAppearancePage,
     }),
@@ -546,13 +573,13 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   {
     // The host's own privacy notice and booking terms, shown on the public site (BK-14, A3-21). Short-rent only.
     path: '/app/short-rent/settings/site-documents',
+    navParent: '/app/short-rent/settings',
     context: 'short-rent',
     requiredPermissions: [],
     orgBillingAdmin: true,
     navKey: 'nav.siteDocuments',
-    navParent: '/app/short-rent/vetrina',
-    navOrder: 2,
     icon: 'FileText',
+    navOrder: 50,
     component: async () => ({
       default: (await import('@/features/settings/site-documents/site-documents-page')).SiteDocumentsPage,
     }),
@@ -560,12 +587,12 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   {
     // Where the host connects the account that the booking payments go to: the last tab of Incassi.
     path: '/app/short-rent/settings/payments',
+    navParent: '/app/short-rent/settings',
     context: 'short-rent',
     requiredPermissions: ['property.write'],
     navKey: 'nav.stripeConnect',
-    navParent: '/app/short-rent/payments',
-    navOrder: 4,
     icon: 'Wallet',
+    navOrder: 60,
     component: async () => ({
       default: (await import('@/features/settings/payments-page')).ConnectPaymentsPage,
     }),
@@ -574,24 +601,24 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     // A host recommends CasaZen to a friend: any member of a host org, whatever the role (backend policy `SharedPropertyRead`, held by every
     // host role). Daily quota per org. No role is assigned: the invited person signs up as usual. Pinned at the foot of the sidebar, under «Impostazioni».
     path: '/app/short-rent/settings/invitations',
+    navParent: '/app/short-rent/settings',
     context: 'short-rent',
     requiredPermissions: ['property.read'],
     navKey: 'nav.hostInvites',
-    navPlacement: 'footer',
-    navOrder: 41,
     icon: 'Gift',
+    navOrder: 20,
     component: async () => ({
       default: (await import('@/features/invites/host-invites-page')).HostInvitesPage,
     }),
   },
   {
     path: '/app/short-rent/settings/ai',
+    navParent: '/app/short-rent/settings',
     context: 'short-rent',
     requiredPermissions: ['property.write'],
-    navParent: '/app/short-rent/settings/organization',
     navKey: 'aiSettings.title',
-    navOrder: 2,
     icon: 'Sparkles',
+    navOrder: 90,
     component: async () => ({ default: (await import('@/features/settings/ai-settings-page')).AiSettingsPage }),
   },
   {
@@ -600,6 +627,17 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     // answers 404 to every endpoint of the assistant. The page asks `property.write` (the exceptions and the answers of a property are written with it); inside it, the
     // rules, the situations and the answers of the organization are changed by the organization administrator alone, and the others read them with the reason in words.
     // Who may not open «Impostazioni» (not the organization administrator) finds it in "Altro", as every page whose section is closed to its user.
+    path: '/app/short-rent/settings/guest-portal',
+    context: 'short-rent',
+    requiredPermissions: ['guestportal.manage', 'property.read'],
+    featureFlag: 'guestPortal',
+    navKey: 'guestPortal.host.title',
+    navParent: '/app/short-rent/settings',
+    navOrder: 82,
+    icon: 'Settings',
+    component: async () => ({ default: (await import('@/features/settings/guest-portal-settings-page')).GuestPortalSettingsPage }),
+  },
+  {
     path: '/app/short-rent/settings/assistant',
     context: 'short-rent',
     requiredPermissions: ['property.write'],
@@ -611,20 +649,17 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     component: async () => ({ default: (await import('@/features/assistant/assistant-settings-page')).AssistantSettingsPage }),
   },
   {
-    // The automation routines of the host (E01/F04/US02/T01, NF-21, DEB-06): what the host wants done by itself when something happens at a stay, with the library of ready ones,
-    // the log of each and a test mode. «Automazioni», a tab of «Impostazioni» after the integration and the assistant: it is set once, apart from the daily work. Only with the flag
-    // `routines` (backend `Routines`, off by default): while it is off the tab is not there, the address leads to the home of the area and the server answers 404 to every
-    // endpoint of the routines. It asks `property.write`, the permission the changes of the routines ask on the server (which also needs a reach over the whole organization:
-    // a collaborator limited to some properties is told so by the answer, `routines_need_org_scope`). Who may write the properties but not open «Impostazioni» (not the
-    // organization administrator) finds it in "Altro", as every page whose section is closed to its user.
+    // Daily operations. AI settings also links to this page. The API requires organization-wide
+    // access to change routines and the menu observes the feature flag and commercial entitlement.
     path: '/app/short-rent/automations',
     context: 'short-rent',
     requiredPermissions: ['property.write'],
     featureFlag: 'routines',
     navKey: 'nav.routines',
-    navParent: '/app/short-rent/settings/ai',
-    navOrder: 3,
-    icon: 'Repeat',
+    navPlacement: 'primary',
+    navGroup: 'everyday',
+    navOrder: 3.75,
+    icon: 'Workflow',
     component: async () => ({ default: (await import('@/pages/RoutinesPage')).RoutinesPage }),
   },
   {
@@ -638,7 +673,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navBottom: 3,
     // "Pay at the property" requests waiting for the host's answer (the query of the requests panel of this page).
     navCount: 'bookingRequests',
-    icon: 'Calendar',
+    icon: 'BedDouble',
     component: async () => ({ default: (await import('@/features/bookings/bookings-page')).BookingsPage }),
     legacyPaths: ['/bookings'],
   },
@@ -769,12 +804,9 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     }),
   },
   {
-    // The trusted suppliers of an agency (ADR-010): `/trusted-suppliers` answers only an org on the Agency plan (`agencyTier`). Next to
-    // the interventions they are asked for: a tab of Immobili, there while the flag is on.
     path: '/app/short-rent/trusted-suppliers',
     context: 'short-rent',
-    requiredPermissions: ['property.read'],
-    featureFlag: 'agencyTier',
+    requiredPermissions: [ORG_BILLING_ADMIN_PERMISSION],
     navKey: 'nav.trustedSuppliers',
     navParent: '/app/short-rent/properties',
     navOrder: 2,
@@ -1113,7 +1145,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navPlacement: 'primary',
     navOrder: 3,
     navBottom: 2,
-    icon: 'Home',
+    icon: 'Building2',
     component: async () => ({
       default: (await import('@/features/properties/long-rent')).LongRentPropertiesPage,
     }),
@@ -1212,20 +1244,26 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   // UI-04a (the org badge of the header leads to the plan page, which links to the billing one).
   {
     path: '/app/long-rent/settings/plan',
+    navParent: '/app/long-rent/settings',
     context: 'long-rent',
     requiredPermissions: [],
     orgBillingAdmin: true,
     navKey: 'nav.plan',
+    icon: 'CreditCard',
+    navOrder: 70,
     component: async () => ({
       default: (await import('@/features/billing/plans-page')).PlansPageContent,
     }),
   },
   {
     path: '/app/long-rent/settings/billing',
+    navParent: '/app/long-rent/settings',
     context: 'long-rent',
     requiredPermissions: [],
     orgBillingAdmin: true,
     navKey: 'nav.billing',
+    icon: 'Receipt',
+    navOrder: 80,
     component: async () => ({
       default: (await import('@/features/billing/billing-settings-page')).BillingSettingsContent,
     }),
@@ -1233,27 +1271,36 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
   // Org identity: same page as in short-rent (A1-22, A1-23), inside the long-rent shell. «Impostazioni» pinned at the foot of the sidebar, as in
   // short-rent, so the two rental areas keep their settings in the same place.
   {
-    path: '/app/long-rent/settings/organization',
+    path: '/app/long-rent/settings',
     context: 'long-rent',
     requiredPermissions: [],
-    orgBillingAdmin: true,
     navKey: 'nav.settings',
-    navTabKey: 'nav.organization',
     navPlacement: 'footer',
     navOrder: 40,
     icon: 'Settings',
+    component: async () => ({ default: (await import('@/features/settings/settings-index')).SettingsIndex }),
+  },
+  {
+    path: '/app/long-rent/settings/organization',
+    navParent: '/app/long-rent/settings',
+    context: 'long-rent',
+    requiredPermissions: [],
+    orgBillingAdmin: true,
+    navKey: 'nav.organization',
+    icon: 'Settings',
+    navOrder: 10,
     component: async () => ({
       default: (await import('@/features/settings/organization/organization-settings-page')).OrganizationSettingsContent,
     }),
   },
   {
     path: '/app/long-rent/settings/invitations',
+    navParent: '/app/long-rent/settings',
     context: 'long-rent',
     requiredPermissions: ['property.read'],
     navKey: 'nav.hostInvites',
-    navPlacement: 'footer',
-    navOrder: 41,
     icon: 'Gift',
+    navOrder: 20,
     component: async () => ({
       default: (await import('@/features/invites/host-invites-page')).HostInvitesContent,
     }),
@@ -1321,7 +1368,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navPlacement: 'primary',
     navOrder: 3,
     navBottom: 3,
-    icon: 'Home',
+    icon: 'Building2',
     component: async () => ({ default: (await import('@/features/account/properties/account-properties-page')).AccountPropertiesPage }),
   },
   {
@@ -1591,9 +1638,19 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navPlacement: 'primary',
     navOrder: 7,
     navBottom: 4,
-    icon: 'Settings',
+    icon: 'Workflow',
     component: async () => ({ default: (await import('@/features/admin/admin-jobs-page')).AdminJobsPage }),
     legacyPaths: ['/admin/jobs'],
+  },
+  {
+    path: '/app/admin/property-preparation',
+    context: 'admin',
+    requiredPermissions: ['admin.jobs.read'],
+    navKey: 'nav.propertyPreparation',
+    navParent: '/app/admin/jobs',
+    navOrder: 5,
+    icon: 'ListChecks',
+    component: async () => ({ default: (await import('@/features/admin/admin-property-preparation-page')).AdminPropertyPreparationPage }),
   },
   {
     path: '/app/admin/ai',
@@ -1669,7 +1726,7 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     navKey: 'nav.guests',
     navParent: '/app/short-rent/bookings',
     navOrder: 2,
-    icon: 'Users',
+    icon: 'ContactRound',
     component: async () => ({ default: (await import('@/features/guests/guests-page')).GuestsPage }),
   },
   {
@@ -1706,6 +1763,28 @@ export const ROUTE_MANIFEST: RouteManifestEntry[] = [
     requiredPermissions: ['guest.read'],
     featureFlag: 'crmMarketing',
     component: async () => ({ default: (await import('@/pages/crm/GuestDetail')).default }),
+  },
+  {
+    path: '/app/short-rent/crm/segments',
+    context: 'short-rent',
+    requiredPermissions: ['marketing.manage'],
+    featureFlag: 'crmMarketing',
+    navKey: 'nav.crmSegments',
+    navParent: '/app/short-rent/crm/guests',
+    navOrder: 1,
+    icon: 'Users',
+    component: async () => ({ default: (await import('@/pages/SegmentsPage')).SegmentsPage }),
+  },
+  {
+    path: '/app/short-rent/crm/campaigns',
+    context: 'short-rent',
+    requiredPermissions: ['marketing.manage'],
+    featureFlag: 'crmMarketing',
+    navKey: 'nav.crmCampaigns',
+    navParent: '/app/short-rent/crm/guests',
+    navOrder: 2,
+    icon: 'Users',
+    component: async () => ({ default: (await import('@/pages/CampaignsPage')).CampaignsPage }),
   },
   {
     // The merge proposals (E07/F01/US04/T03, NF-88): the pairs of profiles the matching thinks are one guest, which the host decides. The
@@ -2005,6 +2084,7 @@ export function hasEntryPermission(
 ): boolean {
   if (!hasPermission) return true;
   if (entry.orgBillingAdmin && !hasPermission(entry.context, ORG_BILLING_ADMIN_PERMISSION)) return false;
+  if (entry.permissionMode === 'any') return entry.requiredPermissions.some(permission => hasPermission(entry.context, permission));
   return entry.requiredPermissions.every((permission) =>
     hasPermission(entry.context, permission),
   );
@@ -2078,6 +2158,8 @@ function resolveNavEntries(
   const menu: RouteManifestEntry[] = [];
   const hanging: RouteManifestEntry[] = [];
   for (const entry of available) {
+    const isRentalSettings = entry.path === '/app/short-rent/settings' || entry.path === '/app/long-rent/settings';
+    if (isRentalSettings && !available.some(child => child.navParent === entry.path)) continue;
     if (entry.navPlacement !== undefined) menu.push(entry);
     else if (entry.navParent === profilePath) continue;
     else if (entry.navParent !== undefined && availablePaths.has(entry.navParent)) hanging.push(entry);

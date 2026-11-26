@@ -5,6 +5,7 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { AxiosError } from 'axios';
 import { toast } from 'sonner';
 import type { ContextBootstrapDto } from '@/api/contexts';
+import { bookingsApi } from '@/api/bookings.api';
 import { propertiesApi } from '@/api/properties.api';
 import { propertyCleaningApi } from '@/api/property-cleaning.api';
 import { routinesApi } from '@/api/routines.api';
@@ -22,7 +23,7 @@ import { FeatureFlagsContext } from '@/contexts/feature-flags-context';
 import { useWorkspace } from '@/hooks/use-workspace';
 import i18n from '@/i18n/config';
 import { expectNoAxeViolations } from '@/test/axe';
-import type { Property, Routine, RoutineActionCatalogItem, RoutineExecution } from '@/types';
+import type { BookingListItem, Property, Routine, RoutineActionCatalogItem, RoutineExecution } from '@/types';
 import { RoutinesPage } from '../RoutinesPage';
 
 vi.mock('@/api/routines.api', () => ({
@@ -119,6 +120,12 @@ function renderPage() {
   return { ...view, client };
 }
 
+async function routineMenuItem(id: string, action: string) {
+  const card = await screen.findByTestId(`routine-card-${id}`);
+  fireEvent.keyDown(within(card).getByRole('button', { name: /altre azioni/i }), { key: 'Enter' });
+  return screen.findByTestId(`${action}-${id}`);
+}
+
 /** Opens «Crea routine» and waits for the form. */
 async function openCreateEditor() {
   fireEvent.click(await screen.findByTestId('create-routine-button'));
@@ -166,6 +173,9 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       // The card names the event and its actions, as words and not as the codes of the API.
       expect(screen.getByTestId('routine-card-r1')).toHaveTextContent('Check-out effettuato');
       expect(screen.getByTestId('routine-card-r1')).toHaveTextContent('Crea un promemoria manuale');
+      expect(screen.getByTestId('all-tab')).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.getByTestId('routine-card-r2')).toBeVisible();
+      fireEvent.click(screen.getByTestId('active-tab'));
       expect(screen.queryByTestId('routine-card-r2')).not.toBeInTheDocument();
 
       fireEvent.click(screen.getByTestId('test-tab'));
@@ -190,11 +200,11 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       vi.mocked(routinesApi.getAll).mockResolvedValue([]);
       renderPage();
 
-      expect(await screen.findByTestId('routines-empty')).toHaveTextContent('Nessun agente configurato');
+      expect(await screen.findByTestId('routines-empty')).toHaveTextContent('Nessuna routine visibile');
       // One sentence on what a routine is, under the title.
-      expect(screen.getByText(/l’AI valuta il soggiorno/)).toBeInTheDocument();
+      expect(screen.getByText(/provare ogni routine/)).toBeInTheDocument();
 
-      fireEvent.click(within(screen.getByTestId('routines-empty')).getByRole('button', { name: 'Apri la libreria' }));
+      fireEvent.click(screen.getByTestId('open-library-button'));
       expect(await screen.findByTestId('library-template-0')).toBeInTheDocument();
     });
 
@@ -269,6 +279,7 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       fireEvent.click(await screen.findByRole('button', { name: 'Usa «Crea la pulizia»' }));
       fireEvent.change(screen.getByLabelText('Condizione per l’agente AI (facoltativa)'), { target: { value: 'Almeno tre notti' } });
       fireEvent.click(screen.getByTestId('save-routine-button'));
+      fireEvent.click(await screen.findByRole('button', { name: 'Conferma attivazione' }));
       await waitFor(() => expect(routinesApi.create).toHaveBeenCalledWith(expect.objectContaining({
         active: true, testMode: false, actions: [{ type: 'CreateCleaningRequest', config: { aiCondition: 'Almeno tre notti' } }],
       })));
@@ -350,6 +361,7 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       fireEvent.change(screen.getByTestId('activity-text-0'), { target: { value: 'Controlla la casa' } });
       fireEvent.change(screen.getByTestId('activity-due-0'), { target: { value: '1' } });
       fireEvent.click(screen.getByTestId('save-routine-button'));
+      fireEvent.click(await screen.findByRole('button', { name: 'Conferma attivazione' }));
 
       await waitFor(() => expect(routinesApi.create).toHaveBeenCalledTimes(1));
       expect(routinesApi.create).toHaveBeenCalledWith({
@@ -393,6 +405,7 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       fireEvent.change(screen.getByTestId('action-type-select-0'), { target: { value: 'CreateActivity' } });
       fireEvent.change(screen.getByTestId('activity-text-0'), { target: { value: 'Controlla' } });
       fireEvent.click(screen.getByTestId('save-routine-button'));
+      fireEvent.click(await screen.findByRole('button', { name: 'Conferma attivazione' }));
 
       await waitFor(() => expect(routinesApi.create).toHaveBeenCalledTimes(1));
       expect(vi.mocked(routinesApi.create).mock.calls[0][0]).toMatchObject({
@@ -457,6 +470,7 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       fireEvent.change(screen.getByTestId('wait-days-0'), { target: { value: '0' } });
       fireEvent.change(screen.getByTestId('wait-hours-0'), { target: { value: '3' } });
       fireEvent.click(screen.getByTestId('save-routine-button'));
+      fireEvent.click(await screen.findByRole('button', { name: 'Conferma attivazione' }));
 
       await waitFor(() => expect(routinesApi.create).toHaveBeenCalledTimes(1));
       expect(routinesApi.create).toHaveBeenCalledWith(
@@ -553,6 +567,8 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       const toggle = await screen.findByTestId('toggle-active-r3');
       expect(toggle).not.toBeChecked();
       fireEvent.click(toggle);
+      expect(routinesApi.setActive).not.toHaveBeenCalled();
+      fireEvent.click(await screen.findByRole('button', { name: 'Conferma attivazione' }));
 
       await waitFor(() => expect(routinesApi.setActive).toHaveBeenCalledWith('r3', true));
       await waitFor(() =>
@@ -565,12 +581,34 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       expect(toast.success).not.toHaveBeenCalled();
     });
 
+    it('previews live actions when leaving simulation and permits cancellation or a single confirmed write', async () => {
+      const pending = deferred<Routine>();
+      vi.mocked(routinesApi.setTestMode).mockReturnValue(pending.promise);
+      renderPage();
+      const mode = await routineMenuItem('r2', 'toggle-test-mode');
+      fireEvent.click(mode);
+      const preview = await screen.findByRole('dialog', { name: 'Attivare le azioni reali?' });
+      expect(preview).toHaveTextContent('2 giorni prima del check-in');
+      expect(preview).toHaveTextContent(i18n.t('routines.actionTypes.messageToGuest'));
+      fireEvent.click(within(preview).getByRole('button', { name: i18n.t('shared.cancel') }));
+      expect(routinesApi.setTestMode).not.toHaveBeenCalled();
+      fireEvent.click(await routineMenuItem('r2', 'toggle-test-mode'));
+      const confirm = await screen.findByRole('button', { name: 'Conferma attivazione' });
+      fireEvent.click(confirm);
+      fireEvent.click(confirm);
+      await waitFor(() => expect(routinesApi.setTestMode).toHaveBeenCalledTimes(1));
+      expect(routinesApi.setTestMode).toHaveBeenCalledWith('r2', false);
+      pending.resolve({ ...IN_TEST, testMode: false });
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    });
+
     it('RoutinesPage_RefusalWithNoNamesOfActions_SaysItInTheWordsOfTheCode', async () => {
       vi.mocked(routinesApi.setActive).mockRejectedValue(httpError(422, { code: 'routine_action_not_available' }));
       renderPage();
 
       fireEvent.click(await screen.findByTestId('inactive-tab'));
       fireEvent.click(await screen.findByTestId('toggle-active-r3'));
+      fireEvent.click(await screen.findByRole('button', { name: 'Conferma attivazione' }));
 
       await waitFor(() =>
         expect(toast.error).toHaveBeenCalledWith(
@@ -585,10 +623,14 @@ describe('the routines page (E01/F04/US02/T01)', () => {
 
       fireEvent.click(await screen.findByTestId('inactive-tab'));
       fireEvent.click(await screen.findByTestId('toggle-active-r3'));
+      fireEvent.click(await screen.findByRole('button', { name: 'Conferma attivazione' }));
 
       await waitFor(() =>
         expect(toast.error).toHaveBeenCalledWith('Le routine valgono per tutti gli immobili dell’organizzazione: per cambiarle serve poterli vedere tutti.'),
       );
+      expect(screen.getByRole('dialog')).toBeVisible();
+      expect(within(screen.getByRole('dialog')).getByRole('alert')).toHaveTextContent('serve poterli vedere tutti');
+      expect(screen.getByTestId('toggle-active-r3')).not.toBeChecked();
     });
 
     it('RoutinesPage_WriteOnACardInFlight_DisablesEveryControlOfThatCardAndOnlyOfThatCard', async () => {
@@ -599,16 +641,17 @@ describe('the routines page (E01/F04/US02/T01)', () => {
 
       fireEvent.click(await screen.findByTestId('toggle-active-r1'));
 
-      await waitFor(() => expect(screen.getByTestId('toggle-test-mode-r1')).toBeDisabled());
+      await waitFor(() => expect(screen.getByTestId('edit-routine-r1')).toBeDisabled());
       expect(screen.getByTestId('toggle-active-r1')).toBeDisabled();
-      expect(screen.getByTestId('edit-routine-r1')).toBeDisabled();
-      expect(screen.getByTestId('delete-routine-r1')).toBeDisabled();
+      expect(await routineMenuItem('r1', 'toggle-test-mode')).toHaveAttribute('aria-disabled', 'true');
+      expect(screen.getByTestId('delete-routine-r1')).toHaveAttribute('aria-disabled', 'true');
+      fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
       // Another routine is not waiting for it.
       expect(screen.getByTestId('toggle-active-r5')).toBeEnabled();
-      expect(screen.getByTestId('toggle-test-mode-r5')).toBeEnabled();
+      expect(screen.getByTestId('edit-routine-r5')).toBeEnabled();
 
       pending.resolve({ ...CLEANING, active: false });
-      await waitFor(() => expect(screen.getByTestId('toggle-test-mode-r1')).toBeEnabled());
+      await waitFor(() => expect(screen.getByTestId('edit-routine-r1')).toBeEnabled());
     });
 
     it('RoutinesPage_WritesOnTwoCardsInFlightAtOnce_KeepEachCardWaitingUntilItsOwnAnswer', async () => {
@@ -621,26 +664,25 @@ describe('the routines page (E01/F04/US02/T01)', () => {
 
       // A write on the first card and, while it is still on its way, one with the same hook on the second: a mutation hook follows only its last call.
       fireEvent.click(await screen.findByTestId('toggle-active-r1'));
-      await waitFor(() => expect(screen.getByTestId('toggle-test-mode-r1')).toBeDisabled());
+      await waitFor(() => expect(screen.getByTestId('edit-routine-r1')).toBeDisabled());
       fireEvent.click(screen.getByTestId('toggle-active-r5'));
-      await waitFor(() => expect(screen.getByTestId('toggle-test-mode-r5')).toBeDisabled());
+      await waitFor(() => expect(screen.getByTestId('edit-routine-r5')).toBeDisabled());
 
       // The first card still waits for its own answer.
-      for (const control of ['toggle-active-r1', 'toggle-test-mode-r1', 'edit-routine-r1', 'delete-routine-r1']) {
+      for (const control of ['toggle-active-r1', 'edit-routine-r1']) {
         expect(screen.getByTestId(control), control).toBeDisabled();
       }
 
       // The answer of the second one frees the second card only.
       second.resolve({ ...other, active: false });
-      await waitFor(() => expect(screen.getByTestId('toggle-test-mode-r5')).toBeEnabled());
-      for (const control of ['toggle-active-r1', 'toggle-test-mode-r1', 'edit-routine-r1', 'delete-routine-r1']) {
+      await waitFor(() => expect(screen.getByTestId('edit-routine-r5')).toBeEnabled());
+      for (const control of ['toggle-active-r1', 'edit-routine-r1']) {
         expect(screen.getByTestId(control), control).toBeDisabled();
       }
 
       first.resolve({ ...CLEANING, active: false });
-      await waitFor(() => expect(screen.getByTestId('toggle-test-mode-r1')).toBeEnabled());
-      expect(screen.getByTestId('edit-routine-r1')).toBeEnabled();
-      expect(screen.getByTestId('delete-routine-r1')).toBeEnabled();
+      await waitFor(() => expect(screen.getByTestId('edit-routine-r1')).toBeEnabled());
+      expect(await routineMenuItem('r1', 'delete-routine')).not.toHaveAttribute('aria-disabled', 'true');
     });
 
     it('RoutinesPage_WritesOfDifferentKindsOnTwoCards_KeepEachCardWaitingUntilItsOwnAnswer', async () => {
@@ -654,7 +696,7 @@ describe('the routines page (E01/F04/US02/T01)', () => {
 
       fireEvent.click(await screen.findByTestId('toggle-active-r1'));
       await waitFor(() => expect(screen.getByTestId('edit-routine-r1')).toBeDisabled());
-      fireEvent.click(screen.getByTestId('toggle-test-mode-r5'));
+      fireEvent.click(await routineMenuItem('r5', 'toggle-test-mode'));
       await waitFor(() => expect(screen.getByTestId('edit-routine-r5')).toBeDisabled());
       expect(screen.getByTestId('edit-routine-r1')).toBeDisabled();
 
@@ -668,96 +710,38 @@ describe('the routines page (E01/F04/US02/T01)', () => {
   });
 
   describe('the library', () => {
-    it('RoutineLibrary_TemplateWithAnActionThatCannotRun_IsCreatedInTestModeOnlyAndSaysWhy', async () => {
-      vi.mocked(routinesApi.create).mockResolvedValue(IN_TEST);
+    it.each([
+      [0, 'Pulizia al check-out', 'AfterCheckout', 0, 'CreateCleaningRequest'],
+      [1, "Istruzioni prima dell'arrivo", 'BeforeCheckin', 2, 'MessageToGuest'],
+      [2, 'Richiesta di recensione', 'AfterCheckout', 1, 'RequestReview'],
+      [3, "Promemoria documenti prima dell'arrivo", 'BeforeCheckin', 3, 'MessageToGuest'],
+    ])('reviews template %s before saving it paused and preserves its authorized event and actions', async (index, name, eventType, days, type) => {
+      vi.mocked(routinesApi.create).mockResolvedValue(routine({ id: 'draft', active: false, testMode: true }));
       renderPage();
-
       fireEvent.click(await screen.findByTestId('open-library-button'));
-      // The cleaning is made by an action that runs; the instructions need a message, which does not exist yet.
-      expect(await screen.findByTestId('activate-template-0')).toBeEnabled();
-      expect(screen.queryByTestId('template-unavailable-0')).not.toBeInTheDocument();
-      expect(screen.getByTestId('template-unavailable-1')).toHaveTextContent('Non ancora disponibile');
-      expect(screen.getByTestId('template-unavailable-1')).toHaveTextContent('puoi crearla solo in modalità test');
-      // There is no way to create it on.
-      expect(screen.queryByTestId('activate-template-1')).not.toBeInTheDocument();
-
-      fireEvent.click(screen.getByTestId('test-template-1'));
-
+      const card = await screen.findByTestId(`library-template-${index}`);
+      expect(card).toHaveTextContent(String(name));
+      fireEvent.click(screen.getByTestId(`configure-template-${index}`));
+      expect(await screen.findByTestId('routine-name-input')).toHaveValue(name);
+      expect(routinesApi.create).not.toHaveBeenCalled();
+      expect(routinesApi.setActive).not.toHaveBeenCalled();
+      fireEvent.click(screen.getByTestId('save-routine-button'));
       await waitFor(() => expect(routinesApi.create).toHaveBeenCalledTimes(1));
-      expect(routinesApi.create).toHaveBeenCalledWith({
-        agentObjective: expect.any(String),
-        name: 'Istruzioni prima dell\'arrivo',
-        eventType: 'BeforeCheckin',
-        eventConfig: { days: 2, hours: 0 },
-        actions: [{ type: 'MessageToGuest', config: { channel: 'email' } }],
-        testMode: true,
-        active: true,
-      });
-      // What was just made is in the tab of the tests.
-      await waitFor(() => expect(screen.getByTestId('test-tab')).toHaveAttribute('aria-pressed', 'true'));
+      expect(routinesApi.create).toHaveBeenCalledWith(expect.objectContaining({
+        name, eventType, eventConfig: { days, hours: 0 }, actions: [expect.objectContaining({ type })],
+        agentObjective: expect.any(String), active: false, testMode: true, condition: {},
+      }));
+      await waitFor(() => expect(screen.getByTestId('inactive-tab')).toHaveAttribute('aria-pressed', 'true'));
     });
 
-    it('RoutineLibrary_ReadyCleaningRoutine_IsTheCleaningActionAtTheTimeOfTheCheckOutAndExplainsItself', async () => {
-      vi.mocked(routinesApi.create).mockResolvedValue(CLEANING);
+    it('shows unavailable actions and document reminder scope before configuration', async () => {
       renderPage();
-
       fireEvent.click(await screen.findByTestId('open-library-button'));
-      const card = await screen.findByTestId('library-template-0');
-
-      // What it does, for whom and when, in words.
-      expect(card).toHaveTextContent("Crea la pulizia per chi pulisce l'appartamento, all'ora del check-out.");
-      expect(card).toHaveTextContent('Dopo il check-out');
-      expect(card).toHaveTextContent("All'ora dell'evento");
-      expect(screen.getByTestId('template-note-0')).toHaveTextContent('gli altri restano come ora');
-
-      // One click: the routine acts on every property that has a cleaner.
-      fireEvent.click(screen.getByTestId('activate-template-0'));
-
-      await waitFor(() => expect(routinesApi.create).toHaveBeenCalledTimes(1));
-      // The action of the cleaning at check-out (no more a To do of the host), a time event with no delay (the time of the check-out of the property), and nothing to configure.
-      expect(routinesApi.create).toHaveBeenCalledWith({
-        agentObjective: expect.any(String),
-        name: 'Pulizia al check-out',
-        eventType: 'AfterCheckout',
-        eventConfig: { days: 0, hours: 0 },
-        actions: [{ type: 'CreateCleaningRequest', config: {} }],
-        testMode: false,
-        active: true,
-      });
-    });
-
-    it('RoutineLibrary_ReadyReviewRoutine_IsTheReviewRequestActionADayAfterTheCheckOut', async () => {
-      vi.mocked(routinesApi.create).mockResolvedValue(CLEANING);
-      renderPage();
-
-      fireEvent.click(await screen.findByTestId('open-library-button'));
-      expect(await screen.findByTestId('library-template-2')).toHaveTextContent('Richiesta di recensione');
+      expect(await screen.findByTestId('template-unavailable-1')).toHaveTextContent('soltanto in simulazione');
+      expect(screen.getByTestId('library-template-3')).toHaveTextContent('le routine non leggono ancora lo stato dei documenti');
       expect(screen.getByTestId('library-template-2')).toHaveTextContent('1 giorno');
-      fireEvent.click(screen.getByTestId('activate-template-2'));
-
-      await waitFor(() => expect(routinesApi.create).toHaveBeenCalledTimes(1));
-      expect(routinesApi.create).toHaveBeenCalledWith({
-        agentObjective: expect.any(String),
-        name: 'Richiesta di recensione',
-        eventType: 'AfterCheckout',
-        eventConfig: { days: 1, hours: 0 },
-        actions: [{ type: 'RequestReview', config: {} }],
-        testMode: false,
-        active: true,
-      });
-    });
-
-    it('RoutineLibrary_ReviewRequestThatTheServerSaysCannotRunYet_IsCreatedInTestModeOnlyAndSaysWhy', async () => {
-      vi.mocked(routinesApi.getActionCatalog).mockResolvedValue(
-        CATALOG.map((item) => (item.type === 'RequestReview' ? { ...item, available: false, code: 'routine_action_not_available' } : item)),
-      );
-      renderPage();
-
-      fireEvent.click(await screen.findByTestId('open-library-button'));
-
-      expect(await screen.findByTestId('template-unavailable-2')).toHaveTextContent('Non ancora disponibile');
-      expect(screen.queryByTestId('activate-template-2')).not.toBeInTheDocument();
-      expect(screen.getByTestId('test-template-2')).toBeEnabled();
+      expect(screen.getByTestId('template-note-0')).toHaveTextContent('gli altri restano come ora');
+      expect(routinesApi.create).not.toHaveBeenCalled();
     });
 
     it('RoutineLibrary_SetupCleaners_OpensTheLayerOverTheLibraryWithTheProperties', async () => {
@@ -782,46 +766,60 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       expect(screen.queryByTestId('setup-cleaners-1')).not.toBeInTheDocument();
     });
 
-    it('RoutineLibrary_NoTemplateHasAConditionTheServerRefuses', async () => {
+    it('keeps the configured template open when the server refuses to save it', async () => {
+      vi.mocked(routinesApi.create).mockRejectedValue(httpError(403, { code: 'routines_need_org_scope' }));
       renderPage();
-
       fireEvent.click(await screen.findByTestId('open-library-button'));
-      await screen.findByTestId('test-template-3');
-      // The reminder of the documents had a condition on a field a routine does not read: it has none, and its text says that it goes to every guest.
-      expect(screen.getByTestId('library-template-3')).toHaveTextContent('le routine non leggono ancora lo stato dei documenti');
-      fireEvent.click(screen.getByTestId('test-template-3'));
-
-      await waitFor(() => expect(routinesApi.create).toHaveBeenCalledTimes(1));
-      expect(vi.mocked(routinesApi.create).mock.calls[0][0]).not.toHaveProperty('condition');
-    });
-
-    it('RoutineLibrary_CatalogThatCannotBeRead_MarksNothingAndTheServerDecidesWithoutAFalseSuccess', async () => {
-      vi.mocked(routinesApi.getActionCatalog).mockRejectedValue(httpError(500));
-      vi.mocked(routinesApi.create).mockRejectedValue(httpError(422, { code: 'routine_action_not_available', actions: ['RequestReview'] }));
-      renderPage();
-
-      fireEvent.click(await screen.findByTestId('open-library-button'));
-      // Nothing is known of the actions, so nothing is marked; the activation is the server's to refuse, and it does.
-      fireEvent.click(await screen.findByTestId('activate-template-2'));
-      expect(screen.queryByTestId('template-unavailable-2')).not.toBeInTheDocument();
-
-      await waitFor(() => expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('Richiedi recensione')));
+      fireEvent.click(await screen.findByTestId('configure-template-2'));
+      fireEvent.click(await screen.findByTestId('save-routine-button'));
+      await waitFor(() => expect(toast.error).toHaveBeenCalled());
+      expect(screen.getByTestId('routine-name-input')).toHaveValue('Richiesta di recensione');
       expect(toast.success).not.toHaveBeenCalled();
-      // The library stays open on the same template: nothing was made.
-      expect(screen.getByTestId('library-template-2')).toBeInTheDocument();
+    });
+  });
+
+  describe('previewing a booking', () => {
+    function bookingAccess(allowed: boolean) {
+      vi.mocked(useWorkspace).mockReturnValue({
+        activeContext: 'short-rent', contexts: [], isReady: true, setActiveContext: vi.fn(),
+        getDefaultRoute: () => ROUTINES_PATH, hasPermission: () => allowed,
+      });
+    }
+    it('does not request a booking list without booking.read', async () => {
+      bookingAccess(false);
+      const search = vi.spyOn(bookingsApi, 'search');
+      try {
+        renderPage();
+        fireEvent.click(await routineMenuItem('r1', 'simulate'));
+        expect(screen.getByRole('dialog')).toHaveTextContent(i18n.t('routines.flow.noBookingAccess'));
+        expect(search).not.toHaveBeenCalled();
+        expect(routinesApi.simulate).not.toHaveBeenCalled();
+      } finally { search.mockRestore(); }
     });
 
-    it('RoutineLibrary_CreationInFlight_DisablesEveryButtonOfTheLibrary', async () => {
-      const pending = deferred<Routine>();
-      vi.mocked(routinesApi.create).mockReturnValue(pending.promise);
-      renderPage();
-
-      fireEvent.click(await screen.findByTestId('open-library-button'));
-      fireEvent.click(await screen.findByTestId('activate-template-0'));
-
-      await waitFor(() => expect(screen.getByTestId('test-template-1')).toBeDisabled());
-      expect(screen.getByTestId('activate-template-0')).toBeDisabled();
-      pending.resolve(CLEANING);
+    it('shows a refused preview and a blocked action without activating or running the routine', async () => {
+      bookingAccess(true);
+      const search = vi.spyOn(bookingsApi, 'search').mockResolvedValue({
+        page: 1, pageSize: 25, totalCount: 1,
+        items: [{ id: 'stay', bookingCode: 'ROMA1-00200', checkInDate: '2026-11-18' } as BookingListItem],
+      });
+      vi.mocked(routinesApi.simulate)
+        .mockRejectedValueOnce(httpError(403, { code: 'routines_need_org_scope' }))
+        .mockResolvedValue({ routineId: 'r1', routineName: CLEANING.name, conditionsMatched: true, wouldExecute: true,
+          actions: [{ index: 0, type: 'CreateActivity', wouldBlock: true, code: 'routine_action_not_available' }] });
+      try {
+        renderPage();
+        fireEvent.click(await routineMenuItem('r1', 'simulate'));
+        fireEvent.change(await screen.findByLabelText(i18n.t('routines.flow.chooseBooking')), { target: { value: 'stay' } });
+        const simulate = screen.getByRole('button', { name: i18n.t('routines.flow.try') });
+        fireEvent.click(simulate);
+        expect(await screen.findByRole('alert')).toHaveTextContent('serve poterli vedere tutti');
+        fireEvent.click(simulate);
+        expect(await screen.findByText(i18n.t('routines.flow.blocked'))).toBeVisible();
+        expect(routinesApi.simulate).toHaveBeenCalledWith('r1', { bookingId: 'stay' });
+        expect(routinesApi.setActive).not.toHaveBeenCalled();
+        expect(routinesApi.setTestMode).not.toHaveBeenCalled();
+      } finally { search.mockRestore(); }
     });
   });
 
@@ -859,7 +857,7 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       vi.mocked(routinesApi.getExecutions).mockResolvedValue([waiting, simulated, blocked]);
       renderPage();
 
-      fireEvent.click(await screen.findByTestId('show-log-r1'));
+      fireEvent.click(await routineMenuItem('r1', 'show-log'));
 
       const waitingRow = await screen.findByTestId('execution-e1');
       expect(waitingRow).toHaveTextContent('In attesa');
@@ -895,7 +893,7 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       ]);
       renderPage();
 
-      fireEvent.click(await screen.findByTestId('show-log-r1'));
+      fireEvent.click(await routineMenuItem('r1', 'show-log'));
 
       // Nothing to do for this booking: neutral, never a green «Completata», and the reason in words.
       const skipped = await screen.findByTestId('execution-outcome-k1');
@@ -943,7 +941,7 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       ]);
       renderPage();
 
-      fireEvent.click(await screen.findByTestId('show-log-r1'));
+      fireEvent.click(await routineMenuItem('r1', 'show-log'));
 
       const done = await screen.findByTestId('execution-outcome-d1');
       expect(done).toHaveTextContent('Completata');
@@ -963,7 +961,7 @@ describe('the routines page (E01/F04/US02/T01)', () => {
       vi.mocked(routinesApi.delete).mockResolvedValue(undefined);
       renderPage();
 
-      fireEvent.click(await screen.findByTestId('delete-routine-r1'));
+      fireEvent.click(await routineMenuItem('r1', 'delete-routine'));
 
       const dialog = await screen.findByRole('dialog');
       expect(dialog).toHaveTextContent('Vuoi eliminare la routine «Pulizia al check-out»?');
@@ -985,17 +983,17 @@ describe('the route of the routines page (E01/F04/US02/T01, behind the flag rout
 
   const ON = { routines: true };
 
-  it('RoutinesRoute_Manifest_IsATabOfImpostazioniThatNeedsToWriteTheProperties', () => {
+  it('RoutinesRoute_Manifest_IsDailyNavigationThatNeedsToWriteTheProperties', () => {
     expect(entry).toBeDefined();
     expect(entry?.context).toBe('short-rent');
     expect(entry?.requiredPermissions).toEqual(['property.write']);
     expect(entry?.featureFlag).toBe('routines');
     expect(entry?.navKey).toBe('nav.routines');
-    expect(entry?.navParent).toBe('/app/short-rent/settings/ai');
-    // Not in "Altro" for who may open «Impostazioni»: the menus have no such section any more.
-    expect(entry?.navPlacement).toBeUndefined();
-    expect(i18n.getFixedT('it')('nav.routines')).toBe('AI Agents');
-    expect(i18n.getFixedT('en')('nav.routines')).toBe('AI Agents');
+    expect(entry?.navParent).toBeUndefined();
+    expect(entry?.navPlacement).toBe('primary');
+    expect(entry?.navGroup).toBe('everyday');
+    expect(i18n.getFixedT('it')('nav.routines')).toBe('Routine AI');
+    expect(i18n.getFixedT('en')('nav.routines')).toBe('AI routines');
   });
 
   it('RoutinesRoute_Flag_IsOffByDefaultWhileLoadingAndWhenTheAnswerIsNotTrue', () => {
@@ -1025,10 +1023,12 @@ describe('the route of the routines page (E01/F04/US02/T01, behind the flag rout
     expect(entry && isEntryFeatureEnabled(entry, ON)).toBe(true);
     expect(entry && hasEntryPermission(entry, writer)).toBe(true);
     expect(entry && hasEntryPermission(entry, reader)).toBe(false);
-    // The organization administrator finds it as a tab of «Impostazioni»; who may write the properties but not open «Impostazioni» finds it in "Altro".
-    expect(getNavChildren('/app/short-rent/settings/ai', admin, ON).map((page) => page.path)).toContain(ROUTINES_PATH);
+    for (const allowed of [admin, writer]) {
+      expect(getVisibleNavEntries('short-rent', allowed, ON).map(page => page.path)).toContain(ROUTINES_PATH);
+    }
+    expect(getVisibleNavEntries('short-rent', reader, ON).map(page => page.path)).not.toContain(ROUTINES_PATH);
     expect(getSecondaryNavEntries('short-rent', admin, ON).map((page) => page.path)).not.toContain(ROUTINES_PATH);
-    expect(getSecondaryNavEntries('short-rent', writer, ON).map((page) => page.path)).toContain('/app/short-rent/settings/ai');
+    expect(getNavChildren('/app/short-rent/settings', writer, ON).map((page) => page.path)).toContain('/app/short-rent/settings/ai');
     expect(getSecondaryNavEntries('short-rent', reader, ON).map((page) => page.path)).not.toContain(ROUTINES_PATH);
   });
 

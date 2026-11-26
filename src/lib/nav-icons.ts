@@ -1,4 +1,9 @@
 import {
+  BedDouble,
+  Building2,
+  Workflow,
+  ContactRound,
+  FolderOpen,
   BadgeCheck,
   Bell,
   Calendar,
@@ -44,6 +49,11 @@ import {
 } from 'lucide-react';
 
 export const NAV_ICONS: Record<string, LucideIcon> = {
+  BedDouble,
+  Building2,
+  Workflow,
+  ContactRound,
+  FolderOpen,
   BadgeCheck,
   Bell,
   LayoutDashboard,

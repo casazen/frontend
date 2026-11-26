@@ -45,7 +45,7 @@ export type AuthBridgeValue = {
    */
   error?: Error;
   user: ReturnType<typeof useAuth0>['user'] | ReturnType<typeof getDemoUser> | undefined;
-  login: (options?: LoginOptions) => void;
+  login: (options?: LoginOptions) => void | Promise<void>;
   logout: () => void;
   logoutToLogin: () => void;
   forceReauth: () => void;
@@ -153,7 +153,7 @@ function Auth0AuthBridge({ children }: { children: ReactNode }) {
         ...options?.appState,
         ...(options?.returnTo ? { returnTo: options.returnTo } : {}),
       };
-      void loginWithRedirect({
+      return loginWithRedirect({
         authorizationParams: {
           ...AUTH_PARAMS,
           ...options?.authorizationParams,

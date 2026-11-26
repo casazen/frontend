@@ -11,7 +11,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { User, LogOut } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { useAppShell } from '@/components/layout/app-shell-context';
+import { WorkspaceViewDialog } from '@/components/layout/workspace-view-dialog';
+import { User, LogOut, SlidersHorizontal } from 'lucide-react';
 import { getInitials } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { useWorkspace } from '@/hooks/use-workspace';
@@ -36,6 +39,9 @@ export function UserMenu() {
   const { activeContext, contexts, setActiveContext } = useWorkspace();
   const { locale, setLocale } = useAppLocale();
   const navigate = useNavigate();
+  const shell = useAppShell();
+  const [customizing, setCustomizing] = useState(false);
+  const avatar = useRef<HTMLButtonElement>(null);
 
   if (!user) return null;
 
@@ -43,9 +49,11 @@ export function UserMenu() {
   const areas = getAccessibleAreas(contexts ?? []);
 
   return (
+    <>
     <DropdownMenu>
       {/* The trigger is only an avatar: it needs a name of its own (UI-03, a11y) and a visible focus ring. */}
       <DropdownMenuTrigger
+        ref={avatar}
         aria-label={displayName ? t('appShell.userMenuNamed', { name: displayName }) : t('appShell.userMenu')}
         className="flex min-h-11 min-w-11 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >
@@ -101,11 +109,16 @@ export function UserMenu() {
           </>
         ) : null}
         <DropdownMenuSeparator />
+        {shell?.viewKey && <DropdownMenuItem className={ITEM_CLASS} onSelect={() => setCustomizing(true)}>
+          <SlidersHorizontal aria-hidden="true" className="size-4" />{t('workspaceView.title')}
+        </DropdownMenuItem>}
         <DropdownMenuItem className={ITEM_CLASS} onClick={logout}>
           <LogOut className="h-4 w-4" />
           {t('shared.userMenu.logout')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+    {customizing && shell?.viewKey && <WorkspaceViewDialog key={shell.viewKey} viewKey={shell.viewKey} contextKey={shell.contextKey} onClose={() => { setCustomizing(false); avatar.current?.focus(); }} />}
+    </>
   );
 }

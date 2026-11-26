@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import i18n from '@/i18n/config';
 import { getActivation, getActivationMapping, getActivationPlan, saveActivationMapping } from '@/api/marketplace.api';
 import { propertiesApi } from '@/api/properties.api';
@@ -123,11 +123,11 @@ describe('the mapping step: the rooms of the channel', () => {
     renderActivation(MAPPING_URL);
 
     await screen.findByTestId('activation-room-prop-1-room-1', {}, WAIT);
-    expect(screen.getAllByRole('combobox')).toHaveLength(5);
+    expect(within(screen.getByTestId('activation-mapping-prop-1-rooms')).getAllByRole('combobox')).toHaveLength(5);
 
     fireEvent.click(screen.getByTestId('activation-mapping-prop-1-more'));
 
-    expect(screen.getAllByRole('combobox')).toHaveLength(7);
+    expect(within(screen.getByTestId('activation-mapping-prop-1-rooms')).getAllByRole('combobox')).toHaveLength(7);
     expect(screen.queryByTestId('activation-mapping-prop-1-more')).not.toBeInTheDocument();
   });
 });

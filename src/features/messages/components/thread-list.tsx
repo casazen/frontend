@@ -66,8 +66,8 @@ function ThreadRow({ thread, selected, search, now, showNeedsReply, compact, can
         data-testid="message-thread-row"
         data-thread-key={thread.threadKey}
         className={cn(
-          'grid min-h-11 grid-cols-[auto_minmax(0,1fr)] gap-x-3 rounded-xl px-3 py-3 outline-none transition-colors hover:bg-accent/50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
-          selected ? 'bg-accent ring-1 ring-inset ring-primary/30' : unread ? 'bg-muted/35' : 'bg-card',
+          'grid min-h-11 grid-cols-[auto_minmax(0,1fr)] gap-x-3 rounded-lg px-3 py-4 outline-none transition-colors hover:bg-accent/50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
+          selected ? 'bg-accent ring-1 ring-inset ring-primary/30' : unread ? 'bg-primary-soft/40' : 'bg-card',
         )}
       >
         <GuestAvatar name={thread.guestName} className="row-span-2" />
@@ -186,7 +186,7 @@ export function ThreadList({ page, loading, error, onRetry, state, search, selec
           {t('messages.loadError')}
         </p>
       ) : null}
-      <ul aria-label={t('messages.inbox.listLabel')} className="space-y-1">
+      <ul aria-label={t('messages.inbox.listLabel')} className="divide-y divide-border">
         {items.map((thread) =>
           // A review opens its own detail, never the endpoints of a conversation: the list under «Recensioni» is the only place it is in.
           thread.kind === 'Review' ? (

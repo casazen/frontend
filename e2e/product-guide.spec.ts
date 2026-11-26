@@ -17,7 +17,9 @@ test('guide opens from the header and remains usable on a phone', async ({ page 
   await expect(page).toHaveURL(/#guide-compliance$/);
   await expect(page.getByText(/Nel flusso attuale CasaZen prepara/)).toBeVisible();
   await page.setViewportSize({ width: 375, height: 812 });
-  await page.getByRole('searchbox').fill('');
+  await page.getByRole('link', { name: 'Torna agli argomenti' }).click();
+  await expect(page.getByRole('searchbox', { name: 'Cerca nella guida' })).toHaveValue('ricevuta del portale');
+  await page.getByRole('searchbox', { name: 'Cerca nella guida' }).fill('');
   await expect(page.getByRole('heading', { level: 2 })).toHaveCount(11);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });

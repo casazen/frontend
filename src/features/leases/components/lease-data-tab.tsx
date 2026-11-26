@@ -110,7 +110,7 @@ export function LeaseDataTab({ lease, onRequestErasure }: { lease: LeaseDetail; 
   );
 
   return (
-    <div className="space-y-8">
+    <div className="grid min-w-0 items-start gap-5 xl:grid-cols-2 [&>section]:rounded-xl [&>section]:border [&>section]:bg-card [&>section]:p-4 sm:[&>section]:p-5">
       {onRequestErasure ? (
         <PlainSection
           title={t('leases.parties')}
