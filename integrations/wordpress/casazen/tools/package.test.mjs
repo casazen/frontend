@@ -2,12 +2,15 @@
  * Development tool, not shipped in the plugin ZIP. Run with `npm run test:tools` (the workflow "WordPress plugin" does not need a
  * browser or WordPress for it).
  *
- * The proof of two rules of the release:
+ * The proof of three rules of the release:
  *
  *   - DATA: a release whose tag is not `wp-plugin-v<version>` of the plugin is refused (tools/check-version.mjs), and so is a plugin
  *     whose version strings differ.
  *   - DATA AND SECURITY: the ZIP has ONE top-level folder `casazen/` and holds no test, tool, `node_modules`, `vendor`, composer or
  *     package file, dotfile, key or other ZIP, however the sources are laid out (tools/build-zip.mjs with the real `.distignore`).
+ *   - DATA: the texts of the block editor are found by WordPress. It asks for `languages/<domain>-<locale>-<md5 of the path of the
+ *     built script>.json`, and `wp i18n make-json` names each file after the md5 of the path that the catalog cites: so the catalog
+ *     must cite `blocks/build/<block>/index.js`, never the sources (`blocks/src`), or the files in the ZIP are never loaded.
  */
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
@@ -16,7 +19,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { after, describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { buildZip, listZip, parseDistignore, verifyEntries, isIgnored } from './build-zip.mjs';
+import { blockNames, buildZip, listZip, parseDistignore, verifyEntries, isIgnored } from './build-zip.mjs';
 import { checkVersions, readVersions, TAG_PREFIX } from './check-version.mjs';
 
 const TOOLS = dirname(fileURLToPath(import.meta.url));
@@ -223,4 +226,27 @@ describe('.distignore', () => {
 			assert.equal(isIgnored(rules, path, directory), false, `${path} must be kept`);
 		}
 	});
+});
+
+describe('translation catalog', () => {
+	const blocks = blockNames(PLUGIN);
+	const built = (block) => `blocks/build/${block}/index.js`;
+
+	for (const file of ['casazen.pot', 'casazen-it_IT.po']) {
+		it(`${file} cites the built script of every block and no source script`, () => {
+			assert.ok(blocks.length > 0, 'the plugin has blocks');
+			const scripts = readFileSync(join(PLUGIN, 'languages', file), 'utf8')
+				.split(/\r?\n/)
+				.filter((line) => line.startsWith('#: '))
+				.flatMap((line) => line.slice(3).split(' '))
+				.map((reference) => reference.replace(/:\d+$/, ''))
+				.filter((reference) => reference.endsWith('.js'));
+
+			const notBuilt = scripts.filter((script) => !blocks.some((block) => script === built(block)));
+			assert.deepEqual(notBuilt, [], `${file} cites a script that WordPress never asks the translations of: cite blocks/build/<block>/index.js (the editor texts of the blocks stay in English otherwise)`);
+			for (const block of blocks) {
+				assert.ok(scripts.includes(built(block)), `${file} must cite ${built(block)}: without it there is no JSON file for the editor of the block "${block}"`);
+			}
+		});
+	}
 });

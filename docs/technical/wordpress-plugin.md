@@ -20,6 +20,8 @@ integrations/wordpress/casazen/
 └── .wp-env.json, phpcs.xml.dist, phpunit.xml.dist, composer.json, package.json, .distignore
 ```
 
+**Traduzioni dei blocchi.** Il `.po` (e il `.pot`) cita come origine dei testi dell’editor gli script costruiti, `blocks/build/<blocco>/index.js`, non i sorgenti: WordPress cerca il file `languages/casazen-it_IT-<md5 del percorso dello script costruito>.json`, e `wp i18n make-json` dà ai file il nome dall’md5 del percorso che il `.po` cita. Se rigeneri il catalogo dai sorgenti (`blocks/src`) rimetti quei riferimenti, altrimenti i `.json` nello ZIP non vengono mai caricati e i testi dell’editor restano in inglese: `npm run test:tools` lo controlla.
+
 Non c’è nessuna dipendenza Composer a runtime: Composer serve solo agli strumenti di sviluppo (`require-dev`). Il plugin deve funzionare su PHP 7.4 e 8.3 e su WordPress 6.4 e successivi.
 
 ## Comandi
