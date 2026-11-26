@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useState, useMemo } from 'react';
 import { useCampaigns, useCampaignReport } from '@/queries/campaigns';
+import { PageHeader } from '@/components/layout/page-header';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { Alert } from '@/components/ui/alert';
 import { AlertCircle, Plus } from 'lucide-react';
@@ -51,7 +52,7 @@ export function CampaignsPage() {
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="workspace-page">
         <Alert variant="danger" title={t('shared.error')} icon={AlertCircle}>
           {t('campaigns.loadError')}
         </Alert>
@@ -60,19 +61,12 @@ export function CampaignsPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b pb-4">
-        <div>
-          <h1 className="text-3xl font-bold">{t('campaigns.title')}</h1>
-          <p className="text-muted-foreground mt-2">
-            {t('campaigns.description')}
-          </p>
-        </div>
-        <Button>
-          <Plus className="w-4 h-4 mr-2" />
-          {t('campaigns.create')}
-        </Button>
-      </div>
+    <div className="workspace-page space-y-6">
+      <PageHeader
+        title={t('campaigns.title')}
+        description={t('campaigns.description')}
+        action={<Button><Plus aria-hidden="true" className="mr-2 size-4" />{t('campaigns.create')}</Button>}
+      />
 
       <div className="mb-6">
         <label htmlFor="status-filter" className="text-sm font-medium mb-2 block">

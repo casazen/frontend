@@ -9,6 +9,16 @@ html[data-ui='v2'] {
   --rail-hover: #304c4e;
   --panel-shadow: var(--cz-shadow-raised);
 }
+:root { --workspace-gutter: 1rem; }
+@media (min-width: 48rem) {
+  :root { --workspace-gutter: 1.5rem; }
+}
+
+/* Page gutters belong to the shell. Forms and reading columns can size their own contents. */
+.workspace-page {
+  inline-size: 100%;
+  min-inline-size: 0;
+}
 [data-context] > div > main {
   background-color: var(--workspace-canvas, var(--color-background));
 }

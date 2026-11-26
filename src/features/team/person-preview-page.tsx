@@ -142,7 +142,7 @@ function PersonPreview({ row, callerRole, roles }: { row: PersonRow; callerRole:
   if (may.changeRole) secondary.push({ label: t('team.roles.title'), to: ACCOUNT_ROLES_PATH, testId: 'preview-roles-link' });
 
   return (
-    <div className="mx-auto min-w-0 max-w-6xl space-y-8" data-testid="person-preview">
+    <div className="workspace-page space-y-8" data-testid="person-preview">
       <PageHeader
         title={row.kind === 'invitation' ? t('team.access.titleInvited', { name: row.name }) : t('team.access.title', { name: row.name })}
         description={t('team.access.description', { role: orgRoleLabel(shown.role, t) })}

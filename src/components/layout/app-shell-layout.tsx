@@ -94,7 +94,7 @@ export function AppShellLayout({ contextKey, children }: AppShellLayoutProps) {
                 ref={mainRef}
                 tabIndex={-1}
                 className={cn(
-                  'flex flex-1 flex-col p-4 pb-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom))] outline-none md:pb-6 md:p-6',
+                  'flex min-w-0 flex-1 flex-col px-[var(--workspace-gutter)] pt-[var(--workspace-gutter)] pb-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom))] outline-none md:pb-[var(--workspace-gutter)]',
                   'lg:has-[>[data-app-viewport]]:min-h-0 lg:has-[>[data-app-viewport]]:overflow-y-auto',
                   mobilePrimaryVisible &&
                     'max-md:pb-[calc(var(--bottom-nav-height)+var(--mobile-primary-height)+env(safe-area-inset-bottom))]',

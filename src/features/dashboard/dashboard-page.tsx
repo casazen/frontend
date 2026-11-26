@@ -127,7 +127,7 @@ export function DashboardPage() {
   return (
     <AppShell>
       <div className="space-y-6 md:space-y-8" data-testid="sr-home">
-        <div className="rounded-2xl border bg-gradient-to-br from-primary-soft via-card to-card p-5 md:p-7">
+        <div className="space-y-6">
           <PageHeader
             title={firstName ? t('dashboard.title', { name: firstName }) : t('dashboard.titleNoName')}
             description={canReadBookings && today.data && !today.isError && !noActiveProperty ? purposeOf(today.data, propertyId, t, locale) : undefined}

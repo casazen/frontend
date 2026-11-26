@@ -24,7 +24,7 @@ export function SettingsIndex() {
   const canOpen = useCommercialRouteAccess();
   const entries = getNavChildren(pathname.replace(/\/$/, ''), hasPermission, flags, canOpen);
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-8">
+    <div className="workspace-page space-y-8">
       <PageHeader title={t('nav.settings')} />
       {entries.length === 0 && <p>{t('nav.settingsGroups.empty')}</p>}
       <div className="grid items-start gap-6 lg:grid-cols-2">

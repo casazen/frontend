@@ -351,6 +351,7 @@ async function mockLandlord(page: Page) {
     endDate: '2027-12-31',
     monthlyRent: 900,
     securityDeposit: 1800,
+    createdAt: '2025-12-10T09:00:00Z',
     concordatoAssessment: null,
     stipulaDate: '2026-01-01',
     registrationDeadline: null,

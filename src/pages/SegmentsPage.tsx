@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { useSegments, useCreateSegment, usePreviewCount } from '@/queries/campaigns';
+import { PageHeader } from '@/components/layout/page-header';
 import { LoadingScreen } from '@/components/shared/loading-screen';
 import { Alert } from '@/components/ui/alert';
 import { AlertCircle, Plus } from 'lucide-react';
@@ -46,7 +47,7 @@ export function SegmentsPage() {
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="workspace-page">
         <Alert variant="danger" title={t('shared.error')} icon={AlertCircle}>
           {t('campaigns.segment.loadError')}
         </Alert>
@@ -55,21 +56,12 @@ export function SegmentsPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b pb-4">
-        <div>
-          <h1 className="text-3xl font-bold">{t('campaigns.segment.title')}</h1>
-          <p className="text-muted-foreground mt-2">
-            {t('campaigns.segment.description')}
-          </p>
-        </div>
-        {!isCreating && (
-          <Button onClick={() => setIsCreating(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            {t('campaigns.segment.create')}
-          </Button>
-        )}
-      </div>
+    <div className="workspace-page space-y-6">
+      <PageHeader
+        title={t('campaigns.segment.title')}
+        description={t('campaigns.segment.description')}
+        action={!isCreating && <Button onClick={() => setIsCreating(true)}><Plus aria-hidden="true" className="mr-2 size-4" />{t('campaigns.segment.create')}</Button>}
+      />
 
       {isCreating && (
         <div className="mb-6 border rounded-lg p-4 bg-muted/50">

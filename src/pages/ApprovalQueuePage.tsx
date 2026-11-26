@@ -115,7 +115,7 @@ export function ApprovalQueuePage() {
 
   return (
     <>
-      <div className="container mx-auto space-y-6 px-4 py-8">
+      <div className="workspace-page space-y-6">
         <PageHeader title={t('approval.queue.title')} description={t('approval.queue.description')} />
 
         {loadFailed ? (
@@ -124,7 +124,7 @@ export function ApprovalQueuePage() {
           </Alert>
         ) : (
           <>
-            <div className="rounded-2xl border bg-card p-4">
+            {(waiting.length > 0 || decided.length > 0) && (
               <div className="w-full sm:w-64">
                 <label htmlFor="type-filter" className="mb-2 block text-sm font-medium">
                   {t('approval.filter.type')}
@@ -142,7 +142,7 @@ export function ApprovalQueuePage() {
                   <span className="tabular-nums">{filteredItems.length}</span>
                 </output>
               </div>
-            </div>
+            )}
 
             {filteredItems.length === 0 ? (
               <Alert variant="info" title={t('approval.queue.emptyTitle')} icon={AlertCircle}>
