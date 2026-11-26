@@ -23,7 +23,9 @@ interface Offer {
 
 interface Catalog { environment: string; offers: Offer[]; orders: GuestSupplierOrder[] }
 
-export function GuestSupplierOrders({ path, language }: { path: string; language: string }) {
+export function GuestSupplierOrders({ path, language, checkIn, checkOut }: {
+  path: string; language: string; checkIn?: string; checkOut?: string;
+}) {
   const endpoint = `${path}/supplier-orders`;
   const text = supplierOrderText(language);
   const [submittedOrders, setSubmittedOrders] = useState<Record<string, string>>({});
@@ -65,6 +67,8 @@ export function GuestSupplierOrders({ path, language }: { path: string; language
     ? text.unavailable : text.failed}</p>;
 
   const sandbox = query.data.environment === 'stripe-sandbox';
+  const today = romeDateOf(new Date(now).toISOString());
+  const earliestDate = checkIn && checkIn.slice(0, 10) > today ? checkIn.slice(0, 10) : today;
   const offers = sandbox ? query.data.offers.filter(offer => offer.priceCents === null
     || offer.priceCents + Math.round(offer.priceCents * offer.commissionBasisPoints / 10000) >= 50) : query.data.offers;
   return (
@@ -73,7 +77,7 @@ export function GuestSupplierOrders({ path, language }: { path: string; language
       <h2>{text.catalog}</h2>
       {offers.length === 0 && <p>{text.emptyCatalog}</p>}
       {Object.keys(submittedOrders).length > 0 && <p role="status" className="stay-card stay-content">{text.sent} <a href="#guest-service-orders">{text.orders}</a></p>}
-      {offers.map((offer) => <OfferForm key={`${offer.id}:${submittedOrders[offer.id] ?? ''}`} offer={offer} language={language} sandbox={sandbox} now={now}
+      {offers.map((offer) => <OfferForm key={`${offer.id}:${submittedOrders[offer.id] ?? ''}`} offer={offer} language={language} sandbox={sandbox} earliestDate={earliestDate} latestDate={checkOut?.slice(0, 10)}
         busy={change.isPending} submit={(body) => change.mutate({ suffix: '', body })} />)}
       <h2 id="guest-service-orders" tabIndex={-1}>{text.orders}</h2>
       {query.data.orders.length === 0 && <p>{text.emptyOrders}</p>}
@@ -114,8 +118,8 @@ export function GuestSupplierOrders({ path, language }: { path: string; language
   );
 }
 
-function OfferForm({ offer, language, sandbox, now, busy, submit }: {
-  offer: Offer; language: string; sandbox: boolean; now: number; busy: boolean; submit: (body: object) => void;
+function OfferForm({ offer, language, sandbox, earliestDate, latestDate, busy, submit }: {
+  offer: Offer; language: string; sandbox: boolean; earliestDate: string; latestDate?: string; busy: boolean; submit: (body: object) => void;
 }) {
   const [requestId, setRequestId] = useState(() => crypto.randomUUID());
   const [invalidTime, setInvalidTime] = useState(false);
@@ -144,8 +148,7 @@ function OfferForm({ offer, language, sandbox, now, busy, submit }: {
       }}>
         <p>{offer.category} · {offer.supplierName}</p>
         {offer.summary && <p>{offer.summary}</p>}
-        <label>{text.date} <input className="stay-supplier-input" type="date" name="date" min={sandbox ? romeDateOf(new Date(now).toISOString()) : undefined}
-          required /></label>
+        <label>{text.date} <input className="stay-supplier-input" type="date" name="date" min={sandbox ? earliestDate : undefined} max={sandbox ? latestDate : undefined} required /></label>
         <label>{text.time} <input className="stay-supplier-input" type="time" name="time" required /></label>
         {invalidTime && <p role="alert">{sandbox ? checkoutText(language)('sandboxTime') : text.invalidTime}</p>}
         <label>{text.note} <textarea className="stay-supplier-input" name="note" maxLength={2000} /></label>

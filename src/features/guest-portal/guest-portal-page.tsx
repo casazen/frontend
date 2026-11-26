@@ -315,7 +315,7 @@ function GuestPortalPage({ token }: { token: string }) {
             ) : services ? (
               <>
                 <GuestHostExtras path={path} language={language} />
-                {overview?.features?.supplierServices && <GuestSupplierOrders path={path} language={language} />}
+                {overview?.features?.supplierServices && <GuestSupplierOrders path={path} language={language} checkIn={stay.checkIn} checkOut={stay.checkOut} />}
               </>
             ) : extras ? (
               <GuestHostExtras path={path} language={language} />
@@ -369,7 +369,7 @@ function GuestPortalPage({ token }: { token: string }) {
                 refund: text('refund'), changed: text('refundChanged'), confirm: text('confirmCancellation'),
               }} />
             ) : supplierOrders ? (
-              <GuestSupplierOrders path={path} language={language} />
+              <GuestSupplierOrders path={path} language={language} checkIn={stay.checkIn} checkOut={stay.checkOut} />
             ) : details ? (
               <>
               {stay.canEditArrival ? <ArrivalForm stay={stay} path={path} text={text} onSaved={(arrivalTime) => {
