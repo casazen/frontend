@@ -39,7 +39,7 @@ export function SupplierCard({ supplier, rows, onOpen }: SupplierCardProps) {
       }}
       data-testid={`marketplace-supplier-${supplier.orgId}`}
       // The whole card opens the supplier: it lifts under the pointer and sinks under the finger (`CARD_LIFT`, UX round 2026-11).
-      className={cn('min-w-0 cursor-pointer py-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring', CARD_LIFT)}
+      className={cn('min-w-0 cursor-pointer py-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring', CARD_LIFT)}
     >
       <div className="flex items-start justify-between gap-x-3">
         <span data-testid="supplier-name" className="min-w-0 break-words text-lg font-semibold leading-snug">{supplier.legalName}</span>

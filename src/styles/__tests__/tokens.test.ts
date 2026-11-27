@@ -349,7 +349,7 @@ describe('tokens.css and fonts.css: nothing changes without the redesign', () =>
     const imports = globals.nodes.filter((node): node is AtRule => node.type === 'atrule' && node.name === 'import').map((node) => normalize(node.params));
     // `tw-animate-css` (UI-07) is the last: the animation utilities the shadcn components ask for. The fonts and the tokens stay
     // right after Tailwind.
-    expect(imports).toEqual(['"tailwindcss"', '"./design-foundations.css"', '"./fonts.css"', '"./tokens.css"', '"./workspace.css"', '"tw-animate-css"']);
+    expect(imports).toEqual(['"tailwindcss"', '"./design-foundations.css"', '"./fonts.css"', '"./tokens.css"', '"./workspace.css"', '"./motion.css"', '"tw-animate-css"']);
   });
 
   it('Tokens_RedesignBlock_OverridesTheExistingTokens', () => {
