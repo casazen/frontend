@@ -106,7 +106,7 @@ Prenotazioni e date che registri tu in CasaZen vengono comunicate a Octorate per
 ### Collegare un calendario iCal
 Importa in CasaZen le date occupate di un portale. **Ti serve:** il permesso di modifica degli immobili, la casa già creata in CasaZen e l'accesso al tuo account Airbnb, Booking.com (o all'altro portale) per copiare il link del calendario.
 1. Sul portale cerca la funzione che **esporta** il calendario dell'annuncio e copia il suo **link iCal**: un indirizzo che comincia con https. Ogni portale lo chiama in modo diverso: «Esporta calendario», «Sincronizza calendari», «Indirizzo segreto iCal». Secondo la guida dentro CasaZen, su Airbnb lo trovi nell'annuncio, in Disponibilità › Sincronizzazione calendari › «Esporta calendario»; su Booking.com, nell'Extranet, in Tariffe e disponibilità (Calendario › «Esporta»). I portali cambiano spesso nomi e posizioni: se non trovi la voce, cerca nel portale «esporta calendario» o «sincronizza calendari». Non usare il link dell'annuncio né quello di importazione.
-2. In CasaZen apri **Affitti brevi › Immobili › Canali e calendari** e premi «Collega» sulla casa, oppure apri la scheda della casa e la scheda **Calendari iCal**. Se non sai dove trovare il link sul portale, sotto il campo «URL import (HTTPS)» premi «Come trovare il link iCal»: si apre la pagina «Come collegare il calendario via iCal» con i passi per Airbnb, Booking.com, VRBO, Google Calendar, Apple Calendar e Outlook (la stessa guida si apre dal «?» «Cos'è iCal» in Canali e calendari).
+2. In CasaZen apri **Affitti brevi › Immobili › Canali e calendari** e premi «Collega» sulla casa, oppure apri la scheda della casa e la scheda **Calendari iCal**. Se non sai dove trovare il link sul portale, accanto al campo «URL import (HTTPS)» premi il «?» e poi «Apri nel manuale»: si apre questa sezione della guida. La pagina «Come collegare il calendario via iCal», con i passi per Airbnb, Booking.com, VRBO, Google Calendar, Apple Calendar e Outlook, si apre dal «?» «Cos'è iCal» in Canali e calendari.
 3. Nel modulo «Collega un calendario» scegli il «Canale»: Airbnb, Booking.com o Altro.
 4. Se vuoi, scrivi un'«Etichetta (facoltativa)», fino a 60 caratteri, per esempio «Airbnb - camera 2». Serve se una casa ha più calendari.
 5. Incolla il link in «URL import (HTTPS)». Deve cominciare con https ed essere raggiungibile da internet.
@@ -119,12 +119,12 @@ Una casa può avere fino a 10 calendari, ognuno con un link diverso. Se il canal
 
 ### Incollare il link di CasaZen sui portali
 Serve perché i portali chiudano le date prese su CasaZen (prenotazioni del tuo sito, quelle che inserisci tu e i blocchi manuali). **Ti serve:** il permesso di leggere gli immobili e l'accesso ai portali.
-1. Apri la scheda **Calendari iCal** della casa e guarda «Link di esportazione per le OTA».
-2. Premi «Copia». Se la copia non riesce, seleziona il link e copialo a mano. In **Canali e calendari** puoi anche aprire il menu «⋯» di una riga e scegliere «Copia il link di CasaZen».
-3. Sul portale cerca la funzione che **importa** o sincronizza un calendario esterno e incolla il link, dandogli un nome (per esempio CasaZen). Secondo la guida dentro CasaZen, su **Airbnb**: nell'annuncio apri Disponibilità › Sincronizzazione calendari › Importa calendario; su **Booking.com**: nell'Extranet apri Tariffe e disponibilità › Sincronizza calendari e aggiungi un calendario da importare. I nomi sui portali possono cambiare.
+1. Apri la scheda **Calendari iCal** della casa e guarda il riquadro «Link di esportazione per le OTA».
+2. Premi l'icona di copia accanto al link. Se la copia non riesce, seleziona il link e copialo a mano. In **Canali e calendari** puoi anche aprire il menu «⋯» di una riga e scegliere «Copia il link di CasaZen».
+3. Sul portale cerca la funzione che **importa** o sincronizza un calendario esterno e incolla il link, dandogli un nome (per esempio CasaZen). Su **Airbnb**: nell'annuncio apri Disponibilità › Sincronizzazione calendari › Importa calendario; su **Booking.com**: nell'Extranet apri Tariffe e disponibilità › Sincronizza calendari e aggiungi un calendario da importare. I nomi sui portali possono cambiare.
 4. I portali rileggono il link ogni tanto: le modifiche non compaiono subito.
 
-> **Attenzione:** chi ha il link vede le date occupate. Incollalo solo sui portali che devono leggerle («Tienilo riservato»).
+> **Attenzione:** chi ha il link vede le date occupate. Incollalo solo sui portali che devono leggerle e tienilo riservato.
 > **Attenzione:** il link di CasaZen porta ai portali solo ciò che si prenota su CasaZen. Non basta per allineare tra loro Airbnb e Booking.com: serve anche il compito seguente.
 
 ### Evitare le doppie prenotazioni tra portali con i calendari iCal

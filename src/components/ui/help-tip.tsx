@@ -40,7 +40,8 @@ export interface HelpTipProps {
   className?: string;
 }
 
-const EXTERNAL_HREF = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
+// An address with a scheme, or a page of the user manual (`/guida/…`, static files that the router of the app does not know).
+const EXTERNAL_HREF = /^(?:[a-z][a-z0-9+.-]*:|\/\/|\/guida\/)/i;
 
 function LearnMoreLink({ href, label, onNavigate }: { href: string; label: string; onNavigate: () => void }) {
   const className =

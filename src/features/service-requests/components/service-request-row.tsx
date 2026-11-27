@@ -31,6 +31,7 @@ export interface ServiceRequestRowProps {
   showStay: boolean;
   showProperty: boolean;
   canManage: boolean;
+  compact?: boolean;
   /** Opens the request in the drawer of the app; false when it cannot (no drawer on the page), and the link goes to its page. */
   onOpenDetail: (request: ServiceRequest, event: MouseEvent<HTMLAnchorElement>) => void;
 }
@@ -65,7 +66,7 @@ function byText(actor: string | null, t: TFunction): string | null {
  * and when. The one thing the host can do is a button of the row («Segna pagato», «Richiedi ad altro fornitore»); the story of the request, with
  * every step, is in the drawer that its name opens.
  */
-export function ServiceRequestRow({ request, requests, context, showStay, showProperty, canManage, onOpenDetail }: ServiceRequestRowProps) {
+export function ServiceRequestRow({ request, requests, context, showStay, showProperty, canManage, compact = false, onOpenDetail }: ServiceRequestRowProps) {
   const { t, i18n } = useTranslation();
   const markStayPaid = useMarkServiceRequestPaid();
   const markLongRentPaid = useMarkLongRentServiceRequestPaid();
@@ -108,7 +109,7 @@ export function ServiceRequestRow({ request, requests, context, showStay, showPr
             {detail ? <span className="block break-words text-sm text-foreground/70">{detail}</span> : null}
           </Link>
 
-          {waitingKey ? (
+          {waitingKey && !compact ? (
             <p
               className={request.status === 'Completato' ? 'break-words text-sm font-medium' : 'break-words text-sm text-foreground/70'}
               data-testid={`service-request-waiting-${request.id}`}

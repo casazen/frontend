@@ -1,22 +1,22 @@
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertCircle, CheckCircle2, Clock, CloudOff, Loader2, Network } from 'lucide-react';
+import { InfoCard } from '@/components/shared/calm';
 import { Badge } from '@/components/ui/badge';
 import type { OtaIntegrationSummaryDto } from '@/types';
 import { formatDateTime } from '@/lib/utils';
-import { AlertCircle, CheckCircle2, Clock, Loader2 } from 'lucide-react';
 
 function SyncStatusIcon({ status }: { status: OtaIntegrationSummaryDto['syncStatus'] }) {
   switch (status) {
     case 'Success':
-      return <CheckCircle2 className="h-5 w-5 text-green-600" />;
+      return <CheckCircle2 aria-hidden="true" className="size-4 shrink-0 text-success-foreground" />;
     case 'Failed':
-      return <AlertCircle className="h-5 w-5 text-destructive" />;
+      return <AlertCircle aria-hidden="true" className="size-4 shrink-0 text-destructive" />;
     case 'InProgress':
-      return <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />;
+      return <Loader2 aria-hidden="true" className="size-4 shrink-0 animate-spin text-info-foreground motion-reduce:animate-none" />;
     case 'Pending':
-      return <Clock className="h-5 w-5 text-yellow-600" />;
+      return <Clock aria-hidden="true" className="size-4 shrink-0 text-warning-foreground" />;
     default:
-      return <Clock className="h-5 w-5 text-muted-foreground" />;
+      return <Clock aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />;
   }
 }
 
@@ -28,37 +28,33 @@ export function PropertyOtaSummary({ integrations }: PropertyOtaSummaryProps) {
   const { t } = useTranslation();
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t('property.ota.title')}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {integrations.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t('property.ota.empty')}</p>
-        ) : (
-          <div className="grid gap-3 sm:grid-cols-2">
-            {integrations.map((integration) => (
-              <div key={integration.id} className="rounded-lg border p-4 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">{integration.platform}</span>
-                  <SyncStatusIcon status={integration.syncStatus} />
-                </div>
-                <div className="flex gap-2">
-                  <Badge variant={integration.isActive ? 'success' : 'secondary'}>
-                    {integration.isActive ? t('property.ota.active') : t('property.ota.inactive')}
-                  </Badge>
-                  {integration.syncEnabled && (
-                    <Badge variant="outline">{t('property.ota.syncOn')}</Badge>
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {t('property.ota.lastSync')} {integration.lastSyncAt ? formatDateTime(integration.lastSyncAt) : '—'}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <InfoCard icon={Network} title={t('property.ota.title')} data-testid="property-ota-summary">
+      {integrations.length === 0 ? (
+        <p className="flex items-center gap-2 text-sm text-muted-foreground">
+          <CloudOff aria-hidden="true" className="size-4 shrink-0" />
+          {t('property.ota.empty')}
+        </p>
+      ) : (
+        <ul className="divide-y divide-border">
+          {integrations.map((integration) => (
+            <li key={integration.id} className="flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-1 py-2.5 first:pt-0 last:pb-0">
+              <span className="flex min-w-0 items-center gap-2 font-medium">
+                <SyncStatusIcon status={integration.syncStatus} />
+                <span className="min-w-0 break-words">{integration.platform}</span>
+              </span>
+              <span className="flex flex-wrap items-center gap-1.5">
+                <Badge variant={integration.isActive ? 'success' : 'secondary'}>
+                  {integration.isActive ? t('property.ota.active') : t('property.ota.inactive')}
+                </Badge>
+                {integration.syncEnabled && <Badge variant="outline">{t('property.ota.syncOn')}</Badge>}
+              </span>
+              <span className="basis-full text-xs text-muted-foreground">
+                {t('property.ota.lastSync')} {integration.lastSyncAt ? formatDateTime(integration.lastSyncAt) : '—'}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </InfoCard>
   );
 }

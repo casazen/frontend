@@ -253,7 +253,11 @@ describe('PropertyDetailPage', () => {
 
     const note = screen.getByTestId('property-cin-istat-mismatch');
     expect(note).toHaveAttribute('role', 'note');
-    expect(note).toHaveTextContent(i18n.t('property.cin.istatMismatch'));
+    expect(note).toHaveTextContent(i18n.t('property.cin.istatMismatchShort'));
+    expect(note).not.toHaveTextContent(i18n.t('property.cin.istatMismatch'));
+    fireEvent.click(within(note).getByRole('button', { name: `Cos'è: ${i18n.t('property.drawer.cin')}` }));
+    expect(screen.getByRole('dialog')).toHaveTextContent(i18n.t('property.cin.istatMismatch'));
+    expect(screen.getByRole('link', { name: i18n.t('manual.open') })).toHaveAttribute('href', '/guida/cin-identificazione-ticino.html#cin-cosa-e-e-cosa-controlla-casazen');
   });
 
   // A2-05: the state and the action read `isPaused`, never `isActive` — pausing is a dedicated, reversible

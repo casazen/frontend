@@ -8909,32 +8909,7 @@
   "connectionHealth": {
     "activate": "Activate or reconnect the submission",
     "archiveLink": "Upload the receipts to the proof archive",
-    "credentials": {
-      "none": "CasaZen doesn't hold the credentials of the Alloggiati Web portal: you upload the receipts yourself.",
-      "stored": "The portal credentials are saved in CasaZen but not verified: you upload the receipts yourself.",
-      "usable": "The portal credentials are verified: CasaZen can download the receipts."
-    },
     "description": "Who sends the guest data to the police and ISTAT, and whether the submission works.",
-    "detail": {
-      "Active": {
-        "CasaZen": "CasaZen holds the portal credentials and can send the data.",
-        "ChannelManager": "Your channel manager confirms that the connection works and that the daily automatic submission is on.",
-        "other": "The submission shows as active."
-      },
-      "Inactive": {
-        "CasaZen": "CasaZen can't send the data with the saved credentials.",
-        "ChannelManager": "Your channel manager says the submission is not active: the guest data don't go out by themselves.",
-        "other": "The submission does not show as active."
-      },
-      "Manual": "You send the data to the portals yourself: CasaZen reminds you of the deadlines.",
-      "Unknown": {
-        "CasaZen": "CasaZen can't verify the submission with the saved credentials.",
-        "ChannelManager": "CasaZen can't verify this connection: your channel manager doesn't say whether the submission is active.",
-        "other": "CasaZen can't verify this connection."
-      }
-    },
-    "disclosureBody": "The state is read from your channel manager: CasaZen does not confirm it by itself and does not import the result.",
-    "disclosureTitle": "Data consulted on Octorate",
     "instructions": {
       "CasaZen": "Check the Alloggiati Web portal credentials saved in CasaZen.",
       "ChannelManager": {
@@ -8942,12 +8917,13 @@
         "Unknown": "Check in the panel of your channel manager that the connection with the police is active and that the daily automatic submission is on, then come back here and check again."
       }
     },
-    "istatSeeNotice": "Whether the channel manager sends the ISTAT depends on your region: see the notice below.",
+    "istatSeeNotice": "See the notice below",
     "lastRun": "Last automatic submission: {{when}}",
     "loadError": "We couldn't read the state of the submission.",
     "loading": "Reading the state of the submission…",
     "notFound": "We can't find this property.",
     "outsideItaly": "Outside Italy the guest data are not sent to the police and ISTAT from here.",
+    "outsideItalyShort": "Not applicable outside Italy",
     "reason": {
       "connection_not_checked_yet": "We haven't checked it yet: we read it the next time you open this page.",
       "credentials_refused": "The portal refused the saved credentials.",
@@ -11026,40 +11002,47 @@
       "mustNotNotify": "I do not have to notify",
       "mustNotify": "I have to notify",
       "required": "For this property the notification is due.",
-      "reversible": "The answer blocks nothing and you can change it at any time.",
       "saveFailed": "I could not save the answer. Try again."
     },
     "facts": {
-      "channel": "Where and how to notify",
+      "channel": "How",
       "deadline": "Deadline",
-      "obligation": "What the canton asks",
+      "obligation": "Obligation",
       "portal": "Official portal",
-      "retention": "How long to keep the data",
-      "support": "What CasaZen does"
+      "retention": "Retention"
     },
     "missing": {
       "fixMunicipality": "Set the municipality",
-      "swiss_municipality_missing": "The municipality is missing. Without it we do not know which rules apply to your guests: choose it from the postal code and the locality, in the property details.",
-      "ticino_structure_id_missing": "The structure identification number is missing: it is needed to prepare the notification to the Ticino police.",
+      "swiss_municipality_missing": "The municipality is missing.",
+      "ticino_structure_id_missing": "The structure identification number is missing.",
       "title": "To complete",
       "unknown": "There is still something to complete."
-    },
-    "obligation": {
-      "KeepRegister": "You must keep a register of the guests and show it to the police if asked.",
-      "Optional": "Keeping a register of the guests is optional.",
-      "ReportToAuthority": "You must send the guests' data to the authority.",
-      "Unknown": "The sources do not say for certain what the canton asks."
-    },
-    "privateRentals": {
-      "No": "It does not apply to whoever lets a private home.",
-      "Partial": "It applies only in part to whoever lets a private home.",
-      "Unknown": "It is not certain whether it applies to whoever lets a private home.",
-      "Yes": "It also applies to whoever lets a private home."
     },
     "retention": {
       "none": "The sources give no period",
       "years_one": "{{count}} year",
       "years_other": "{{count}} years"
+    },
+    "short": {
+      "channel": {
+        "EmailFile": "File by e-mail",
+        "None": "Nothing sent: keep a register",
+        "Paper": "Paper form",
+        "PortalFileUpload": "File on the portal",
+        "PortalForm": "Form on the portal",
+        "VendorInterface": "From your software"
+      },
+      "obligation": {
+        "KeepRegister": "Register to keep",
+        "Optional": "Optional",
+        "ReportToAuthority": "Notification required",
+        "Unknown": "To check"
+      },
+      "privateRentals": {
+        "No": "not for private homes",
+        "Partial": "partly for private homes",
+        "Unknown": "private homes to check"
+      }
     },
     "step": {
       "complete": "Nothing is missing to notify the guests.",
@@ -11068,12 +11051,6 @@
     "structureId": {
       "loading": "Reading the structure number…",
       "value": "Identification number: {{value}}"
-    },
-    "support": {
-      "AssistedNotification": "CasaZen prepares the guests' data for you to copy and reminds you of the deadline; you make the notification.",
-      "FileExport": "Prepares the file in the official format: you upload it on the portal.",
-      "GuestRegister": "CasaZen prepares the guest register for you to download and print, with a column for the signature; you keep it and show it to the police if asked.",
-      "InformationOnly": "Tells you what the canton asks: it sends nothing."
     },
     "toVerify": "To check with the municipality or the police"
   },
@@ -11305,6 +11282,9 @@
     "label": "More information",
     "labelFor": "About: {{title}}",
     "learnMore": "Learn more"
+  },
+  "manual": {
+    "open": "Open in the manual"
   },
   "hostContact": {
     "consent": "I agree that my message and my email are sent to {{host}}, to receive the answer.",
@@ -11543,7 +11523,7 @@
     "feedsTitle": "Linked calendars",
     "feedsLoadError": "Could not load the linked calendars.",
     "retry": "Try again",
-    "noFeeds": "No calendar linked yet: add the iCal link from Airbnb, Booking.com or another channel.",
+    "noFeeds": "No calendar linked yet.",
     "channels": {
       "Airbnb": "Airbnb",
       "BookingCom": "Booking.com",
@@ -11588,13 +11568,8 @@
     "syncStarted": "Sync started: the blocked dates update as soon as it ends.",
     "exportTitle": "Export link for OTAs",
     "exportDescription": "Airbnb, Booking.com and your other channels read from this link the bookings made on CasaZen and your manual blocks, so they do not sell those dates twice.",
-    "exportContentNote": "CasaZen exports direct and manual bookings (and your blocks), not the bookings that came from the OTAs nor the dates imported from their calendars: link every OTA to the others too, for example the Booking.com calendar on Airbnb and the Airbnb one on Booking.com.",
     "exportLoading": "Loading the export link…",
     "exportPrivate": "Keep it private: anyone with the link can see the dates taken.",
-    "exportHowTo": "Where to paste it",
-    "exportAirbnbSteps": "in your listing open Availability → Calendar sync → Import calendar, paste the link and give it a name (e.g. CasaZen).",
-    "exportBookingSteps": "in the Extranet open Rates & availability → Sync calendars, add a calendar to import and paste the link.",
-    "exportRefreshNote": "OTAs read the link again from time to time: changes do not show up at once.",
     "copyFailed": "Could not copy: select the link and copy it by hand.",
     "regenerate": "Regenerate link",
     "regenerateTitle": "Regenerate the export link?",
@@ -22650,6 +22625,8 @@
       "cinDescription": "The National Identification Code (CIN) is mandatory under D.L. 145/2023 for all accommodation facilities in Italy. Format: IT + ISTAT municipality code (6 digits) + category (2 characters) + alphanumeric code (up to 8 characters), e.g. IT015146C2ABCDEFGH.",
       "editCin": "Edit CIN",
       "managePricing": "Manage suggestions",
+      "amenitiesMore": "Show {{count}} more",
+      "amenitiesLess": "Show fewer",
       "viewOnPublicSite": "View on public site",
       "newBooking": "New booking",
       "allBookings": "See the bookings",
@@ -22724,8 +22701,6 @@
       "loadError": "The photos could not be loaded.",
       "retry": "Try again",
       "emptyTitle": "No photos",
-      "emptyDescription": "Add photos of the property: guests also choose by looking at the pictures.",
-      "emptyReadOnly": "No photos have been uploaded for this property.",
       "emptyAction": "Upload the first photo",
       "cover": "Cover",
       "setCover": "Set as cover",
@@ -22787,7 +22762,8 @@
         "saving": "Saving...",
         "save": "Save CIN"
       },
-      "istatMismatch": "The comune inside the CIN differs from the comune of the property. This is not an error: a CIN does not change after a relocation or reclassification. Just check that it is the CIN of this property."
+      "istatMismatch": "The comune inside the CIN differs from the comune of the property. This is not an error: a CIN does not change after a relocation or reclassification. Just check that it is the CIN of this property.",
+      "istatMismatchShort": "Different CIN comune"
     },
     "ota": {
       "title": "OTA Integrations",
@@ -23233,7 +23209,7 @@
     },
     "loadError": "We cannot read who cleans this property: we do not know how it is set.",
     "loading": "Loading who cleans…",
-    "none": "Nobody was chosen to clean this property. Until you choose, the cleaning at check-out does not start by itself: it stays in the to do list as «Cleaning to arrange».",
+    "none": "Nobody chosen to clean this property.",
     "notFound": "We cannot find this property any more.",
     "problem": {
       "duration": "The length is from 5 to 1,440 minutes, in whole numbers.",
@@ -23247,10 +23223,10 @@
     "retry": "Try again",
     "routine": {
       "link": "Go to the automations",
-      "off": "The routine «Cleaning at check-out» is not on: until you switch it on no cleaning starts by itself.",
-      "on": "The routine «Cleaning at check-out» is on: the cleaning starts by itself at check-out.",
-      "onNoCleaner": "The routine «Cleaning at check-out» is on, but this property has no active cleaner: no cleaning starts for this property.",
-      "unknown": "From here we cannot tell whether the routine «Cleaning at check-out» is on: check it in the automations."
+      "off": "Routine off: no automatic cleaning",
+      "on": "Starts by itself at check-out",
+      "onNoCleaner": "No cleaner set: won't start by itself",
+      "unknown": "Routine status unknown"
     },
     "save": "Save",
     "saved": "Who cleans was saved",
@@ -23265,7 +23241,7 @@
       "stored": "Person already set"
     },
     "state": {
-      "off": "Off: the setting stays saved but the cleaning does not start by itself.",
+      "off": "Off",
       "on": "On"
     },
     "summary": {
@@ -23273,16 +23249,12 @@
       "duration": "Length",
       "minutes_one": "{{count}} minute",
       "minutes_other": "{{count}} minutes",
-      "noCurrency": "The currency is not stated: the amount is shown without a symbol.",
       "noPrice": "No price stated",
       "price": "Agreed price",
       "staffNamed": "{{name}} (staff)",
       "staffUnknown": "A member of the staff",
-      "state": "State",
       "supplierUnknown": "A supplier",
       "time": "Start time",
-      "timeDefault": "{{time}} (default time: the property has no check-out time)",
-      "timeOfProperty": "{{time}} (the check-out time of the property)",
       "trusted": "Trusted"
     },
     "suppliers": {
@@ -33422,7 +33394,7 @@
     "commitFailed": "Could not complete the action."
   },
   "comoStayTour": {
-    "departures": "Stays with a missing departure or a departure date different from the tax calculation: {{count}}. Their amounts are excluded from totals.",
+    "departures": "Stays to reconcile: {{count}} (excluded from totals)",
     "title": "Monthly return · Como",
     "period": "Return month",
     "taxable": "Taxable guests",
@@ -33431,9 +33403,8 @@
     "reason": "Exemption reason",
     "guests": "Guests",
     "overnights": "Guest nights",
-    "missing": "Stays with missing or outdated figures: {{count}}. Their amounts are excluded from the totals.",
-    "channel": "Departures this month with tax collected by a platform: {{count}}. Check intermediary statements for all collections in the month, including those for stays departing in other months.",
-    "basis": "Figures include departures in the selected month with confirmed host-collected tax. Check exemption reasons before filing in StayTour.",
+    "missing": "Stays to complete or reconfirm: {{count}} (excluded from totals)",
+    "channel": "Tax collected by a platform: {{count}} stays",
     "attach": "Archive the StayTour confirmation",
     "archive": "View confirmations for this month",
     "error": "Report unavailable",

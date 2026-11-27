@@ -1,6 +1,6 @@
-import { useId, useRef, useState, type ChangeEvent } from 'react';
+import { useRef, useState, type ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, ArrowRight, ImageIcon, ImageOff, Loader2, Star, Trash2, Upload } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ImageOff, Images, Loader2, Star, Trash2, Upload } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,7 +12,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { EmptyState } from '@/components/shared/empty-state';
+import { InfoCard } from '@/components/shared/calm';
+import { ManualHint } from '@/components/shared/manual-hint';
 import { getProblemMessage } from '@/lib/api-errors';
 import { isDisplayableMediaUrl } from '@/lib/media-url';
 import { FALLBACK_PHOTO_RULES, toMegabytes, validatePhotoSelection } from '../photo-selection';
@@ -39,7 +40,6 @@ interface PropertyPhotoManagerProps {
  */
 export function PropertyPhotoManager({ propertyId, propertyName, canEdit }: PropertyPhotoManagerProps) {
   const { t } = useTranslation();
-  const titleId = useId();
   const gallery = usePropertyPhotos(propertyId);
   const upload = useUploadPropertyPhotos(propertyId);
   const remove = useDeletePropertyPhoto(propertyId);
@@ -92,125 +92,115 @@ export function PropertyPhotoManager({ propertyId, propertyName, canEdit }: Prop
   };
 
   return (
-    <section aria-labelledby={titleId} className="min-w-0 space-y-4" data-testid="property-photo-manager">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0 space-y-1">
-          <h2 id={titleId} className="flex min-w-0 items-center gap-2 break-words text-lg font-semibold">
-            <ImageIcon aria-hidden="true" className="size-5 shrink-0" />
-            {t('property.photos.title')}
-          </h2>
-          <p className="text-sm text-foreground/70">{t('property.photos.description')}</p>
-          <p className="text-xs text-foreground/70">
-            {t('property.photos.rules', {
-              max: rules.maxPhotos,
-              size: toMegabytes(rules.maxFileSizeBytes),
-            })}
-          </p>
-        </div>
-        {canEdit && gallery.isSuccess && photos.length > 0 && (
-          <Button type="button" variant="outline" onClick={openFilePicker} disabled={busy || full} className="shrink-0">
-            {upload.isPending ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Upload className="mr-2 h-4 w-4" />
-            )}
+    <InfoCard
+      icon={Images}
+      title={t('property.photos.title')}
+      hint={
+        <ManualHint page="immobili" anchor="leggere-la-scheda-di-un-immobile" title={t('property.photos.title')}>
+          {t('property.photos.description')}{' '}
+          {t('property.photos.rules', {
+            max: rules.maxPhotos,
+            size: toMegabytes(rules.maxFileSizeBytes),
+          })}
+        </ManualHint>
+      }
+      aside={
+        canEdit && gallery.isSuccess && photos.length > 0 ? (
+          <Button type="button" variant="outline" size="sm" onClick={openFilePicker} disabled={busy || full}>
+            {upload.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
             {upload.isPending ? t('property.photos.uploading') : t('property.photos.upload')}
           </Button>
-        )}
-      </div>
+        ) : undefined
+      }
+      data-testid="property-photo-manager"
+    >
+      <input
+        ref={inputRef}
+        type="file"
+        accept={rules.allowedContentTypes.join(',')}
+        multiple
+        className="hidden"
+        onChange={handleFiles}
+        data-testid="property-photo-input"
+        aria-label={t('property.photos.upload')}
+      />
 
-      <div className="space-y-4">
-        <input
-          ref={inputRef}
-          type="file"
-          accept={rules.allowedContentTypes.join(',')}
-          multiple
-          className="hidden"
-          onChange={handleFiles}
-          data-testid="property-photo-input"
-          aria-label={t('property.photos.upload')}
-        />
+      {selectionError && (
+        <p className="text-sm text-destructive" role="alert" data-testid="property-photo-selection-error">
+          {selectionError}
+        </p>
+      )}
+      {actionError !== undefined && (
+        <p className="text-sm text-destructive" role="alert" data-testid="property-photo-action-error">
+          {getProblemMessage(actionError, t) ?? t('property.photos.actionFailed')}
+        </p>
+      )}
 
-        {selectionError && (
-          <p className="text-sm text-destructive" role="alert" data-testid="property-photo-selection-error">
-            {selectionError}
+      {gallery.isLoading ? (
+        <div
+          className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4"
+          role="status"
+          aria-busy="true"
+          aria-label={t('property.photos.loading')}
+          data-testid="property-photos-loading"
+        >
+          {[0, 1, 2, 3].map((slot) => (
+            <Skeleton key={slot} className="aspect-[4/3] w-full" />
+          ))}
+        </div>
+      ) : gallery.isError ? (
+        <div className="space-y-2 rounded-md border border-destructive/40 p-4" role="alert" data-testid="property-photos-error">
+          <p className="text-sm text-destructive">
+            {getProblemMessage(gallery.error, t) ?? t('property.photos.loadError')}
           </p>
-        )}
-        {actionError !== undefined && (
-          <p className="text-sm text-destructive" role="alert" data-testid="property-photo-action-error">
-            {getProblemMessage(actionError, t) ?? t('property.photos.actionFailed')}
-          </p>
-        )}
-
-        {gallery.isLoading ? (
-          <div
-            className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4"
-            role="status"
-            aria-busy="true"
-            aria-label={t('property.photos.loading')}
-            data-testid="property-photos-loading"
-          >
-            {[0, 1, 2, 3].map((slot) => (
-              <Skeleton key={slot} className="aspect-[4/3] w-full" />
-            ))}
-          </div>
-        ) : gallery.isError ? (
-          <div className="space-y-2 rounded-md border border-destructive/40 p-4" role="alert" data-testid="property-photos-error">
-            <p className="text-sm text-destructive">
-              {getProblemMessage(gallery.error, t) ?? t('property.photos.loadError')}
-            </p>
-            <Button type="button" variant="outline" size="sm" onClick={() => void gallery.refetch()}>
-              {t('property.photos.retry')}
+          <Button type="button" variant="outline" size="sm" onClick={() => void gallery.refetch()}>
+            {t('property.photos.retry')}
+          </Button>
+        </div>
+      ) : photos.length === 0 ? (
+        <div
+          className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border px-4 py-8 text-center"
+          data-testid="property-photos-empty"
+        >
+          <ImageOff aria-hidden="true" className="size-8 text-muted-foreground" />
+          <h3 className="text-sm font-semibold">{t('property.photos.emptyTitle')}</h3>
+          {canEdit ? (
+            <Button type="button" onClick={openFilePicker} disabled={busy}>
+              {upload.isPending ? t('property.photos.uploading') : t('property.photos.emptyAction')}
             </Button>
-          </div>
-        ) : photos.length === 0 ? (
-          <div data-testid="property-photos-empty">
-            <EmptyState
-              icon={ImageIcon}
-              title={t('property.photos.emptyTitle')}
-              description={t(canEdit ? 'property.photos.emptyDescription' : 'property.photos.emptyReadOnly')}
-              action={
-                canEdit
-                  ? {
-                      label: upload.isPending ? t('property.photos.uploading') : t('property.photos.emptyAction'),
-                      onClick: openFilePicker,
-                    }
-                  : undefined
-              }
-            />
-          </div>
-        ) : (
-          <>
-            <p className="text-sm text-muted-foreground" data-testid="property-photo-counter">
-              {t('property.photos.counter', { count: photos.length, max: rules.maxPhotos })}
-              {full && canEdit ? ` · ${t('property.photos.limitReached', { max: rules.maxPhotos })}` : ''}
-            </p>
-            <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4" aria-busy={busy}>
-              {photos.map((url, index) => (
-                <PhotoTile
-                  key={url}
-                  url={url}
-                  index={index}
-                  total={photos.length}
-                  propertyName={propertyName}
-                  isCover={url === coverUrl}
-                  canEdit={canEdit}
-                  busy={busy}
-                  onMove={(offset) => move(index, offset)}
-                  onSetCover={() => {
-                    setCover.reset();
-                    setCover.mutate(url);
-                  }}
-                  onDelete={() => {
-                    remove.reset();
-                    setPhotoToDelete(url);
-                  }}
-                />
-              ))}
-            </ul>
-          </>
-        )}
-      </div>
+          ) : null}
+        </div>
+      ) : (
+        <>
+          <p className="text-sm text-muted-foreground" data-testid="property-photo-counter">
+            {t('property.photos.counter', { count: photos.length, max: rules.maxPhotos })}
+            {full && canEdit ? ` · ${t('property.photos.limitReached', { max: rules.maxPhotos })}` : ''}
+          </p>
+          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4" aria-busy={busy}>
+            {photos.map((url, index) => (
+              <PhotoTile
+                key={url}
+                url={url}
+                index={index}
+                total={photos.length}
+                propertyName={propertyName}
+                isCover={url === coverUrl}
+                canEdit={canEdit}
+                busy={busy}
+                onMove={(offset) => move(index, offset)}
+                onSetCover={() => {
+                  setCover.reset();
+                  setCover.mutate(url);
+                }}
+                onDelete={() => {
+                  remove.reset();
+                  setPhotoToDelete(url);
+                }}
+              />
+            ))}
+          </ul>
+        </>
+      )}
 
       <Dialog open={photoToDelete !== null} onOpenChange={(open) => !open && closeDelete()}>
         <DialogContent>
@@ -234,7 +224,7 @@ export function PropertyPhotoManager({ propertyId, propertyName, canEdit }: Prop
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </section>
+    </InfoCard>
   );
 }
 

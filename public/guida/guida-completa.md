@@ -1013,6 +1013,7 @@ Funzionalità: Pausa e riattivazione; Cosa fa: Toglie la casa dalla vendita senz
 Funzionalità: Elimina immobile; Cosa fa: Nasconde la casa dall'elenco; Dove si trova: Riga o scheda › «⋯» › «Elimina immobile»; Chi può usarla: gestore, amministratore (permesso di modifica); Disponibilità: Disponibile; Come si usa: Eliminare un immobile
 Funzionalità: Cambia modalità; Cosa fa: Programma il passaggio da affitto breve a lungo (e viceversa); Dove si trova: Scheda › «⋯» › «Cambia modalità»; Chi può usarla: gestore, amministratore (permesso di modifica); Disponibilità: Disponibile; Come si usa: Passare un immobile all'affitto lungo (o breve)
 Funzionalità: Codice QR; Cosa fa: Foglio stampabile con il codice QR per gli ospiti; Dove si trova: Pagina del codice QR dell'immobile; Chi può usarla: gestore, amministratore; Disponibilità: Disponibile; Come si usa: Stampare il codice QR
+Funzionalità: QR di benvenuto; Cosa fa: Cartello da mettere in casa: chi lo inquadra lascia un contatto e sceglie se ricevere le tue offerte; Dove si trova: Scheda › Panoramica › «QR di benvenuto»; Chi può usarla: gestore, amministratore (permesso di modifica); Disponibilità: Su attivazione; Come si usa: Stampare il QR di benvenuto
 Funzionalità: Chi invia Polizia e ISTAT, fatturazione; Cosa fa: Due passi della procedura, presenti solo dove le funzioni sono attive; Dove si trova: Procedura «Aggiungi immobile»; Chi può usarla: gestore, amministratore; Disponibilità: Su attivazione; Come si usa: Vedi Adempimenti: Alloggiati Web, ISTAT e attivazione degli immobili e Regime fiscale e documenti fiscali
 
 ### Come funziona
@@ -1099,8 +1100,9 @@ Nota: in ogni passo c'è «Salva e chiudi»: salva ciò che hai scritto e ti rip
 1. Dall'elenco premi il nome e poi «Scheda completa», oppure apri il menu «⋯» della riga.
 2. In alto vedi il nome, un riassunto (camere · ospiti · città) e lo stato.
 3. «Cosa fare ora» è il riquadro che ti dice il prossimo passo: «Completa l'attivazione» (con «Mancano:» e l'elenco), «Manca il codice CIN», «Il CIN non è nel formato ufficiale», «Aggiungi le foto», «L'immobile è in pausa», «L'immobile è sospeso» oppure «Tutto in ordine» con il prossimo arrivo.
-4. Le schede: Panoramica (dati, prezzi, canali, invio a Polizia e ISTAT), Foto, Prenotazioni e interventi, Calendari iCal (si chiama «Canali OTA» dove è attiva l'integrazione diretta; vedi Canali, calendari e Octorate) e Documenti e adempimenti (documenti, CIN).
-5. Se la casa è pubblicata, «Vedi sul sito pubblico» apre la sua pagina sul tuo sito di prenotazione.
+4. Le schede: Panoramica (la foto e i dati essenziali con le loro icone, poi i riquadri «Prezzi», «Servizi», «Canali», «Invio a Polizia e ISTAT» e «QR di benvenuto»), Foto, Prenotazioni e interventi (i numeri delle prenotazioni, «Pulizie al check-out» e «Richieste fornitore»), Calendari iCal (si chiama «Canali OTA» dove è attiva l'integrazione diretta; vedi Canali, calendari e Octorate) e Documenti e adempimenti (CIN o, per le case in Svizzera, la notifica degli ospiti; i documenti; per le case in Italia anche i portali di Alloggiati Web, ISTAT e imposta di soggiorno).
+5. Ogni riquadro ha un'icona, un titolo e i dati che contano: niente paragrafi. Il «?» accanto al titolo apre una frase di spiegazione e il link «Apri nel manuale», che porta alla sezione di questa guida che racconta tutto.
+6. Se la casa è pubblicata, «Vedi sul sito pubblico» apre la sua pagina sul tuo sito di prenotazione.
 Gestire le foto dalla scheda
 1. Apri la scheda Foto.
 2. Premi «Carica foto» (o «Carica la prima foto»). Valgono gli stessi limiti della procedura: 20 foto, JPEG, PNG o WebP, 10 MB.
@@ -1160,6 +1162,14 @@ Si può tornare indietro? Sì, fino al giorno prima: nella scheda dell'immobile 
 2. Dove la verifica dell'identità degli ospiti è attiva vedi «Codice QR della porta»: gli ospiti lo inquadrano alla porta, scrivono il codice della prenotazione e la data di arrivo e proseguono con il check-in. Altrimenti vedi «Codice QR per verifica ospiti», che porta alla pagina di verifica dell'ospite.
 3. Premi «Stampa» (il browser apre un foglio pronto; se lo blocca, consenti le finestre) oppure «Scarica PNG».
 4. Per sostituire il codice del «Codice QR della porta» premi «Rigenera» e conferma con «Rigenera il codice»: quello stampato prima smette di funzionare subito. Solo chi può modificare l'immobile vede il codice e può rigenerarlo.
+
+#### Stampare il QR di benvenuto
+
+Su attivazione (Cosa significa «Su attivazione»?). Ti serve: il permesso di modifica degli immobili.
+1. Apri la scheda dell'immobile: in Panoramica c'è il riquadro «QR di benvenuto». Se la casa non ne ha ancora uno vedi «Per questa casa non c'è ancora un QR di benvenuto»: premi «Crea il QR».
+2. Premi «Stampa il cartello»: si apre un foglio pronto con il codice e una riga in italiano e in inglese (se il browser lo blocca, consenti le finestre). L'icona di copia accanto all'indirizzo copia il link della pagina di benvenuto.
+3. Metti il cartello in casa. Chi lo inquadra apre la pagina di benvenuto, può lasciarti un contatto e scegliere se ricevere le tue offerte. Per l'ospite è facoltativo e non cambia il suo soggiorno.
+4. Per sostituire il codice premi «Crea un nuovo QR» e conferma con «Sì, crea un nuovo QR»: quello stampato prima smette di funzionare subito e va sostituito in casa.
 
 ### Flussi completi
 
@@ -1331,7 +1341,7 @@ Chi può fare cosa. Vedere Canali e calendari richiede il permesso di lettura de
 
 Importa in CasaZen le date occupate di un portale. Ti serve: il permesso di modifica degli immobili, la casa già creata in CasaZen e l'accesso al tuo account Airbnb, Booking.com (o all'altro portale) per copiare il link del calendario.
 1. Sul portale cerca la funzione che esporta il calendario dell'annuncio e copia il suo link iCal: un indirizzo che comincia con https. Ogni portale lo chiama in modo diverso: «Esporta calendario», «Sincronizza calendari», «Indirizzo segreto iCal». Secondo la guida dentro CasaZen, su Airbnb lo trovi nell'annuncio, in Disponibilità › Sincronizzazione calendari › «Esporta calendario»; su Booking.com, nell'Extranet, in Tariffe e disponibilità (Calendario › «Esporta»). I portali cambiano spesso nomi e posizioni: se non trovi la voce, cerca nel portale «esporta calendario» o «sincronizza calendari». Non usare il link dell'annuncio né quello di importazione.
-2. In CasaZen apri Affitti brevi › Immobili › Canali e calendari e premi «Collega» sulla casa, oppure apri la scheda della casa e la scheda Calendari iCal. Se non sai dove trovare il link sul portale, sotto il campo «URL import (HTTPS)» premi «Come trovare il link iCal»: si apre la pagina «Come collegare il calendario via iCal» con i passi per Airbnb, Booking.com, VRBO, Google Calendar, Apple Calendar e Outlook (la stessa guida si apre dal «?» «Cos'è iCal» in Canali e calendari).
+2. In CasaZen apri Affitti brevi › Immobili › Canali e calendari e premi «Collega» sulla casa, oppure apri la scheda della casa e la scheda Calendari iCal. Se non sai dove trovare il link sul portale, accanto al campo «URL import (HTTPS)» premi il «?» e poi «Apri nel manuale»: si apre questa sezione della guida. La pagina «Come collegare il calendario via iCal», con i passi per Airbnb, Booking.com, VRBO, Google Calendar, Apple Calendar e Outlook, si apre dal «?» «Cos'è iCal» in Canali e calendari.
 3. Nel modulo «Collega un calendario» scegli il «Canale»: Airbnb, Booking.com o Altro.
 4. Se vuoi, scrivi un'«Etichetta (facoltativa)», fino a 60 caratteri, per esempio «Airbnb - camera 2». Serve se una casa ha più calendari.
 5. Incolla il link in «URL import (HTTPS)». Deve cominciare con https ed essere raggiungibile da internet.
@@ -1343,11 +1353,11 @@ Attenzione: questo passo porta le date del portale dentro CasaZen, non le porta 
 #### Incollare il link di CasaZen sui portali
 
 Serve perché i portali chiudano le date prese su CasaZen (prenotazioni del tuo sito, quelle che inserisci tu e i blocchi manuali). Ti serve: il permesso di leggere gli immobili e l'accesso ai portali.
-1. Apri la scheda Calendari iCal della casa e guarda «Link di esportazione per le OTA».
-2. Premi «Copia». Se la copia non riesce, seleziona il link e copialo a mano. In Canali e calendari puoi anche aprire il menu «⋯» di una riga e scegliere «Copia il link di CasaZen».
-3. Sul portale cerca la funzione che importa o sincronizza un calendario esterno e incolla il link, dandogli un nome (per esempio CasaZen). Secondo la guida dentro CasaZen, su Airbnb: nell'annuncio apri Disponibilità › Sincronizzazione calendari › Importa calendario; su Booking.com: nell'Extranet apri Tariffe e disponibilità › Sincronizza calendari e aggiungi un calendario da importare. I nomi sui portali possono cambiare.
+1. Apri la scheda Calendari iCal della casa e guarda il riquadro «Link di esportazione per le OTA».
+2. Premi l'icona di copia accanto al link. Se la copia non riesce, seleziona il link e copialo a mano. In Canali e calendari puoi anche aprire il menu «⋯» di una riga e scegliere «Copia il link di CasaZen».
+3. Sul portale cerca la funzione che importa o sincronizza un calendario esterno e incolla il link, dandogli un nome (per esempio CasaZen). Su Airbnb: nell'annuncio apri Disponibilità › Sincronizzazione calendari › Importa calendario; su Booking.com: nell'Extranet apri Tariffe e disponibilità › Sincronizza calendari e aggiungi un calendario da importare. I nomi sui portali possono cambiare.
 4. I portali rileggono il link ogni tanto: le modifiche non compaiono subito.
-Attenzione: chi ha il link vede le date occupate. Incollalo solo sui portali che devono leggerle («Tienilo riservato»). Attenzione: il link di CasaZen porta ai portali solo ciò che si prenota su CasaZen. Non basta per allineare tra loro Airbnb e Booking.com: serve anche il compito seguente.
+Attenzione: chi ha il link vede le date occupate. Incollalo solo sui portali che devono leggerle e tienilo riservato. Attenzione: il link di CasaZen porta ai portali solo ciò che si prenota su CasaZen. Non basta per allineare tra loro Airbnb e Booking.com: serve anche il compito seguente.
 
 #### Evitare le doppie prenotazioni tra portali con i calendari iCal
 
@@ -3245,7 +3255,7 @@ Canton Ticino. La polizia del Canton Ticino vuole ogni ospite notificato entro 2
 - Per creare il file serve il numero identificativo della struttura («Numero identificativo LEAR / NO-LEAR», per esempio NL-12345678), quello che Ticino Turismo ti ha dato con la registrazione.
 - Una volta caricato il file, il giorno si chiude con la dichiarazione «Ho caricato il file» oppure caricando la ricevuta del portale (il riepilogo come PDF, immagine o CSV, fino a 10 MB). Il giorno si chiude anche senza ricevuta.
 - Se scarichi di nuovo il file di un giorno già chiuso, CasaZen ti chiede conferma: se lo carichi ancora, il portale potrebbe creare notifiche doppie.
-Altri cantoni (su attivazione). Ogni cantone ha una regola sua: alcuni chiedono solo un registro da tenere, altri una notifica a un'autorità. CasaZen mostra «Cosa chiede il cantone», con un livello di certezza («Letto sulle fonti ufficiali», «Le fonti non sono tutte ufficiali o non dicono tutto», «Non abbiamo trovato una fonte ufficiale»): in ogni caso verifica con il comune o la polizia, perché CasaZen non dà consulenza legale. Dove la notifica è prevista, ti prepara i dati ospite per ospite da copiare sul portale del cantone; non c'è un file. Per i cantoni dove le fonti non indicano una scadenza la riga dice «Scadenza non nota». Se le fonti non dicono con certezza che la notifica vale per chi affitta una casa privata, decidi tu e puoi cambiare la risposta nella scheda dell'immobile.
+Altri cantoni (su attivazione). Ogni cantone ha una regola sua: alcuni chiedono solo un registro da tenere, altri una notifica a un'autorità. CasaZen mostra, nella scheda «Notifica degli ospiti nel tuo cantone», quattro riquadri con la loro icona («Obbligo», «Scadenza», «Conservazione», «Come») e un livello di certezza («Verificato», «Parzialmente verificato», «Non verificato»; il «?» accanto al titolo dice che cosa significa: «Letto sulle fonti ufficiali», «Le fonti non sono tutte ufficiali o non dicono tutto», «Non abbiamo trovato una fonte ufficiale»): in ogni caso verifica con il comune o la polizia, perché CasaZen non dà consulenza legale. Dove la notifica è prevista, ti prepara i dati ospite per ospite da copiare sul portale del cantone; non c'è un file. Per i cantoni dove le fonti non indicano una scadenza la riga dice «Scadenza non nota». Se le fonti non dicono con certezza che la notifica vale per chi affitta una casa privata, decidi tu e puoi cambiare la risposta nella scheda dell'immobile.
 Avvisi (su attivazione). Per il Ticino, e per i giorni dei cantoni che li hanno, CasaZen avvisa chi può inviare i dati degli ospiti: la sera del giorno di arrivo (o 2 ore dopo l'arrivo previsto), 6 ore prima della scadenza, alla scadenza e con al massimo 2 promemoria a distanza di 24 ore, finché il giorno non è chiuso. L'e-mail va all'indirizzo dell'organizzazione e non contiene mai nomi o numeri di documento, solo i tipi di dato che mancano.
 
 #### Differenze per paese dell'immobile
@@ -3321,7 +3331,7 @@ Nota: il vecchio indirizzo della notifica del Ticino non è più una pagina: apr
 
 Su attivazione (Cosa significa «Su attivazione»?). Funziona come per il Ticino, ma senza file.
 1. In Adempimenti premi «Notifica» sulla voce «Notifica all'autorità gli ospiti arrivati il {data}», oppure apri la scheda dell'immobile («Apri la notifica degli ospiti»).
-2. Leggi «Cosa chiede il cantone» e il livello di certezza.
+2. Leggi i riquadri «Obbligo», «Scadenza», «Conservazione» e «Come» e il livello di certezza.
 3. Passo Ospiti: usa «Copia tutto» per ogni ospite o «Copia {campo}» per ogni dato.
 4. Passo Apri il portale: premi «Apri il portale ufficiale», incolla i dati e conferma.
 5. Passo Ho notificato: premi «Ho notificato». Per annullare, «Non l'ho notificato: riapri il giorno».
@@ -3478,7 +3488,8 @@ La pagina Imposta di soggiorno: dovuta e versata mette insieme, per ogni comune 
 - Versata: i versamenti che hai registrato con periodo compreso nel periodo;
 - Saldo: la differenza dei due totali. Lo stato di ogni comune è «Da versare», «Versata», «Versata in più» o «Nessun importo registrato».
 Il periodo si sceglie tra i periodi proposti o con date a scelta, al massimo un anno. Contano solo gli immobili in Italia. I soggiorni senza imposta registrata non sono contati come zero: sono segnalati («N soggiorni non hanno l'imposta registrata: l'importo dovuto può essere incompleto»). Un versamento è una tua dichiarazione, non un movimento bancario: più versamenti per lo stesso comune e periodo sono rate. Se il tuo accesso copre solo alcuni immobili, vedi l'imposta dovuta su quelli ma non i versamenti, che appartengono a tutta l'organizzazione.
-Nella scheda dell'immobile, sezione Portali istituzionali › Imposta di soggiorno, trovi il collegamento al rendiconto per comune («Apri il rendiconto per Comune»). Per Como la dichiarazione mensile si fa su StayTour (il portale del comune) con SPID o CIE, cioè con l'identità digitale o la carta d'identità elettronica («Accedi a StayTour Como»), usando il rendiconto per controllare gli importi: CasaZen non la invia. Per gli altri comuni la sezione rimanda alla procedura prevista dal comune.
+Nella scheda dell'immobile, scheda Documenti e adempimenti, riquadro Imposta di soggiorno, trovi il collegamento al rendiconto per comune («Apri il rendiconto per Comune»). Per Como la dichiarazione mensile si fa su StayTour (il portale del comune) con SPID o CIE, cioè con l'identità digitale o la carta d'identità elettronica («Accedi a StayTour Como»), usando il rendiconto per controllare gli importi: CasaZen non la invia. Per gli altri comuni il riquadro rimanda alla procedura prevista dal comune.
+Il riepilogo Dichiarazione mensile · Como, nello stesso riquadro, conta per il mese scelto gli ospiti imponibili, i pernottamenti imponibili e l'imposta a carico del gestore dei soggiorni con uscita nel mese e imposta confermata. Prima di dichiarare su StayTour controlla le causali di esenzione. I soggiorni «da riconciliare» (data di uscita mancante o diversa da quella usata per il calcolo) e quelli «da completare o riconfermare» (dati mancanti o da riconfermare) restano fuori dai totali finché non li sistemi. «Imposta riscossa dal portale» dice per quanti soggiorni l'imposta l'ha già riscossa il portale di prenotazione: controlla sugli estratti degli intermediari tutte le riscossioni del mese, anche quelle dei soggiorni con uscita in altri mesi. «Archivia la conferma di StayTour» salva la conferma nell'archivio e «Consulta le conferme del mese» la ritrova.
 Scadenze. CasaZen non conosce la scadenza della dichiarazione e del versamento del tuo comune e non la inventa: la trovi nel regolamento o sul sito del comune. In Adempimenti le voci «Dichiara e paga l'imposta di soggiorno di {mese}» compaiono quando il mese è finito e ci sono soggiorni con imposta. Con il semaforo la voce è «Da fare» finché non carichi né la dichiarazione né la ricevuta del pagamento, «In corso» con una sola delle due, «In regola» con tutte e due. Il pulsante ti porta all'archivio delle prove, già filtrato sul mese, per caricare la dichiarazione o il pagamento.
 
 #### Fine anno

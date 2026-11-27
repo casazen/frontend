@@ -32,6 +32,7 @@ Una casa nuova nasce «Da completare» e non riceve prenotazioni finché non la 
 | Elimina immobile | Nasconde la casa dall'elenco | Riga o scheda › «⋯» › «Elimina immobile» | gestore, amministratore (permesso di modifica) | Disponibile | Eliminare un immobile |
 | Cambia modalità | Programma il passaggio da affitto breve a lungo (e viceversa) | Scheda › «⋯» › «Cambia modalità» | gestore, amministratore (permesso di modifica) | Disponibile | Passare un immobile all'affitto lungo (o breve) |
 | Codice QR | Foglio stampabile con il codice QR per gli ospiti | Pagina del codice QR dell'immobile | gestore, amministratore | Disponibile | Stampare il codice QR |
+| QR di benvenuto | Cartello da mettere in casa: chi lo inquadra lascia un contatto e sceglie se ricevere le tue offerte | Scheda › Panoramica › «QR di benvenuto» | gestore, amministratore (permesso di modifica) | Su attivazione | Stampare il QR di benvenuto |
 | Chi invia Polizia e ISTAT, fatturazione | Due passi della procedura, presenti solo dove le funzioni sono attive | Procedura «Aggiungi immobile» | gestore, amministratore | Su attivazione | Vedi [[alloggiati-istat]] e [[fisco-documenti]] |
 
 ## Come funziona
@@ -124,8 +125,9 @@ Errori frequenti: «Scegli il comune dall'elenco» (il comune va scelto dall'ele
 1. Dall'elenco premi il nome e poi «Scheda completa», oppure apri il menu «⋯» della riga.
 2. In alto vedi il nome, un riassunto (camere · ospiti · città) e lo stato.
 3. «Cosa fare ora» è il riquadro che ti dice il prossimo passo: «Completa l'attivazione» (con «Mancano:» e l'elenco), «Manca il codice CIN», «Il CIN non è nel formato ufficiale», «Aggiungi le foto», «L'immobile è in pausa», «L'immobile è sospeso» oppure «Tutto in ordine» con il prossimo arrivo.
-4. Le schede: **Panoramica** (dati, prezzi, canali, invio a Polizia e ISTAT), **Foto**, **Prenotazioni e interventi**, **Calendari iCal** (si chiama «Canali OTA» dove è attiva l'integrazione diretta; vedi [[canali-octorate]]) e **Documenti e adempimenti** (documenti, CIN).
-5. Se la casa è pubblicata, «Vedi sul sito pubblico» apre la sua pagina sul tuo sito di prenotazione.
+4. Le schede: **Panoramica** (la foto e i dati essenziali con le loro icone, poi i riquadri «Prezzi», «Servizi», «Canali», «Invio a Polizia e ISTAT» e «QR di benvenuto»), **Foto**, **Prenotazioni e interventi** (i numeri delle prenotazioni, «Pulizie al check-out» e «Richieste fornitore»), **Calendari iCal** (si chiama «Canali OTA» dove è attiva l'integrazione diretta; vedi [[canali-octorate]]) e **Documenti e adempimenti** (CIN o, per le case in Svizzera, la notifica degli ospiti; i documenti; per le case in Italia anche i portali di Alloggiati Web, ISTAT e imposta di soggiorno).
+5. Ogni riquadro ha un'icona, un titolo e i dati che contano: niente paragrafi. Il «?» accanto al titolo apre una frase di spiegazione e il link «Apri nel manuale», che porta alla sezione di questa guida che racconta tutto.
+6. Se la casa è pubblicata, «Vedi sul sito pubblico» apre la sua pagina sul tuo sito di prenotazione.
 
 #### Gestire le foto dalla scheda
 1. Apri la scheda **Foto**.
@@ -187,6 +189,13 @@ Verso l'affitto breve: fino alla data contratti e canoni restano come sono; dal 
 2. Dove la verifica dell'identità degli ospiti è attiva vedi «Codice QR della porta»: gli ospiti lo inquadrano alla porta, scrivono il codice della prenotazione e la data di arrivo e proseguono con il check-in. Altrimenti vedi «Codice QR per verifica ospiti», che porta alla pagina di verifica dell'ospite.
 3. Premi «Stampa» (il browser apre un foglio pronto; se lo blocca, consenti le finestre) oppure «Scarica PNG».
 4. Per sostituire il codice del «Codice QR della porta» premi «Rigenera» e conferma con «Rigenera il codice»: **quello stampato prima smette di funzionare subito**. Solo chi può modificare l'immobile vede il codice e può rigenerarlo.
+
+### Stampare il QR di benvenuto
+Su attivazione ([[per-iniziare#cosa-significa-su-attivazione]]). **Ti serve:** il permesso di modifica degli immobili.
+1. Apri la scheda dell'immobile: in **Panoramica** c'è il riquadro «QR di benvenuto». Se la casa non ne ha ancora uno vedi «Per questa casa non c'è ancora un QR di benvenuto»: premi «Crea il QR».
+2. Premi «Stampa il cartello»: si apre un foglio pronto con il codice e una riga in italiano e in inglese (se il browser lo blocca, consenti le finestre). L'icona di copia accanto all'indirizzo copia il link della pagina di benvenuto.
+3. Metti il cartello in casa. Chi lo inquadra apre la pagina di benvenuto, può lasciarti un contatto e scegliere se ricevere le tue offerte. Per l'ospite è facoltativo e non cambia il suo soggiorno.
+4. Per sostituire il codice premi «Crea un nuovo QR» e conferma con «Sì, crea un nuovo QR»: **quello stampato prima smette di funzionare subito** e va sostituito in casa.
 
 ## Flussi completi
 

@@ -6,6 +6,8 @@ export { ChecklistCompact } from './checklist-compact';
 export { DayList, TodayList, type DayListItem, type TodayListItem } from './day-list';
 export { FocusBlock } from './focus-block';
 export { GuidePath, type GuidePathState, type GuidePathStep } from './guide-path';
+export { Figure, Figures, IconFact, IconFacts } from './icon-fact';
+export { InfoCard } from './info-card';
 export { NextStepCard } from './next-step-card';
 export { PlainSection } from './plain-section';
 export { StatStrip, StatTile } from './stat-strip';

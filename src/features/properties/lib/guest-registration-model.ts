@@ -7,7 +7,6 @@ import {
   GUEST_REGISTRATION_MISSING_CODES,
   GUEST_REGISTRATION_OBLIGATIONS,
   GUEST_REGISTRATION_PRIVATE_RENTALS,
-  GUEST_REGISTRATION_SUPPORTS,
   type GuestNotificationOverride,
   type GuestRegistrationCertainty,
   type GuestRegistrationMissingCode,
@@ -38,26 +37,23 @@ function retentionText(t: TFunction, years: number | null): string {
     : t('guestRegistration.retention.none');
 }
 
-/** What the regime says, line by line (the deadline note is apart: the card shows it under the deadline). */
 export interface RegimeFacts {
   obligation: string;
   deadline: string;
   deadlineNote: string | null;
   retention: string;
   channel: string;
-  support: string;
 }
 
 export function regimeFacts(regime: GuestRegistrationRegime, t: TFunction): RegimeFacts {
   const note = typeof regime.deadlineNote === 'string' ? regime.deadlineNote.trim() : '';
+  const privateRentals = regime.privateRentals === 'Yes' ? null : textOf(t, 'short.privateRentals', GUEST_REGISTRATION_PRIVATE_RENTALS, regime.privateRentals);
   return {
-    // What the canton asks, then whether it covers who lets a private home: the second sentence is what makes the first one certain or not.
-    obligation: `${textOf(t, 'obligation', GUEST_REGISTRATION_OBLIGATIONS, regime.obligation)} ${textOf(t, 'privateRentals', GUEST_REGISTRATION_PRIVATE_RENTALS, regime.privateRentals)}`,
+    obligation: [textOf(t, 'short.obligation', GUEST_REGISTRATION_OBLIGATIONS, regime.obligation), privateRentals].filter(Boolean).join(' · '),
     deadline: textOf(t, 'deadline', GUEST_REGISTRATION_DEADLINE_KINDS, regime.deadlineKind),
     deadlineNote: note === '' ? null : note,
     retention: retentionText(t, regime.retentionYears),
-    channel: textOf(t, 'channel', GUEST_REGISTRATION_CHANNELS, regime.channel),
-    support: textOf(t, 'support', GUEST_REGISTRATION_SUPPORTS, regime.casaZenSupport),
+    channel: textOf(t, 'short.channel', GUEST_REGISTRATION_CHANNELS, regime.channel),
   };
 }
 

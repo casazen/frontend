@@ -2,12 +2,13 @@ import { useState, type ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 import { useTranslation } from 'react-i18next';
-import { CheckCircle2, CircleHelp, ExternalLink, Info, Loader2, type LucideIcon } from 'lucide-react';
-import { PlainSection } from '@/components/shared/calm';
-import { STATUS_TONE_CLASSES } from '@/components/shared/status/status-view';
+import { Archive, CheckCircle2, CircleHelp, Clock, ExternalLink, Globe, Info, Landmark, Loader2, MapPin, Scale, Upload, type LucideIcon } from 'lucide-react';
+import { Figure, Figures, IconFact, IconFacts, InfoCard } from '@/components/shared/calm';
+import { ManualHint } from '@/components/shared/manual-hint';
+import { StatusPill } from '@/components/shared/status/status-pill';
 import { Button } from '@/components/ui/button';
+import { HelpTip } from '@/components/ui/help-tip';
 import { getHttpStatus, getProblemCode, getProblemMessage } from '@/lib/api-errors';
-import { cn } from '@/lib/utils';
 import type { StatusTone } from '@/lib/status-dictionary';
 import { useGuestRegistration, useSetGuestRegistrationOverride } from '@/queries/guestRegistration';
 import { certaintyView, isPlaceUnknown, isTicinoRegime, missingCodesOf, portalLink, regimeFacts } from '../lib/guest-registration-model';
@@ -42,25 +43,10 @@ interface GuestRegistrationCardProps {
   municipalityHref?: string;
   /** After the structure number is saved (a wizard reads its steps again). */
   onChanged?: () => void;
+  className?: string;
 }
 
-/** One line of the facts: what it is and what it says. */
-function Fact({ label, children, testId }: { label: string; children: ReactNode; testId: string }) {
-  return (
-    <div className="grid min-w-0 gap-0.5 sm:grid-cols-[12rem_minmax(0,1fr)] sm:gap-x-4" data-testid={testId}>
-      <dt className="text-sm font-medium text-foreground/70">{label}</dt>
-      <dd className="min-w-0 break-words text-sm">{children}</dd>
-    </div>
-  );
-}
-
-/**
- * «Notifica degli ospiti nel tuo cantone» (E29/F02/US02/T01, NF-125, NF-129): what the canton of the property asks for the registration of the guests, in plain words,
- * how sure the sources are, what CasaZen does for it and what the host decides (`GET` and `PUT api/properties/{id}/guest-registration`). In Ticino it carries the field of the
- * structure number and what is still missing. It reads what the server says now: a read that fails is told as a failure and never as the answer it gave before, a 404 is
- * always «not found», and an answer the sources do not settle is the host's to give, never a red alarm. Nothing is sent to anybody from here.
- */
-export function GuestRegistrationCard({ propertyId, variant, canWrite, onFixMunicipality, municipalityHref, onChanged }: GuestRegistrationCardProps) {
+export function GuestRegistrationCard({ propertyId, variant, canWrite, onFixMunicipality, municipalityHref, onChanged, className }: GuestRegistrationCardProps) {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
   const query = useGuestRegistration(propertyId);
@@ -84,6 +70,8 @@ export function GuestRegistrationCard({ propertyId, variant, canWrite, onFixMuni
   const unreadable = query.isError && status !== 404 && status !== 403 && !unsupportedCountry;
 
   let body: ReactNode;
+  let state: ReactNode;
+  let hint: ReactNode;
   if (query.isError && status === 404) {
     body = <p className="text-sm" data-testid="guest-registration-not-found">{t('guestRegistration.card.notFound')}</p>;
   } else if (query.isError && status === 403) {
@@ -112,72 +100,71 @@ export function GuestRegistrationCard({ propertyId, variant, canWrite, onFixMuni
     const { regime, place } = query.data;
     const facts = regimeFacts(regime, t);
     const certainty = certaintyView(regime, t, i18n.language);
-    const CertaintyIcon = CERTAINTY_ICONS[certainty.tone];
     const portal = portalLink(regime.portalUrl);
     const municipality = place && !place.ambiguous && place.municipalityName ? place.municipalityName : null;
     const canton = place?.cantonCode ?? regime.cantonCode;
     const missing = missingCodesOf(query.data.identifierMissing);
 
+    state = (
+      <StatusPill tone={certainty.tone} icon={CERTAINTY_ICONS[certainty.tone]} data-testid="guest-registration-certainty" data-certainty={certainty.certainty}>
+        {certainty.label}
+      </StatusPill>
+    );
+    hint =
+      variant === 'page' ? (
+        <ManualHint page="cin-identificazione-ticino" anchor="svizzera-e-ticino-notifica-degli-ospiti" title={t('guestRegistration.card.title')}>
+          {certainty.text}
+        </ManualHint>
+      ) : (
+        <HelpTip title={t('guestRegistration.card.title')}>{certainty.text}</HelpTip>
+      );
+
     body = (
       <>
         {unreadable ? <RefreshFailedNotice testId="guest-registration-refresh-error" retrying={query.isFetching} onRetry={() => void query.refetch()} /> : null}
         {municipality && canton ? (
-          <p className="text-sm text-foreground/70" data-testid="guest-registration-place">
-            {t('guestRegistration.card.place', { municipality, canton })}
-          </p>
+          <IconFacts>
+            <IconFact icon={MapPin} data-testid="guest-registration-place">
+              {t('guestRegistration.card.place', { municipality, canton })}
+            </IconFact>
+          </IconFacts>
         ) : null}
-        <p className="text-sm" data-testid="guest-registration-summary">{regime.summary}</p>
 
-        <dl className="space-y-2" data-testid="guest-registration-facts">
-          <Fact label={t('guestRegistration.facts.obligation')} testId="guest-registration-fact-obligation">
+        <Figures className="grid-cols-2 @2xl:grid-cols-4" data-testid="guest-registration-facts">
+          <Figure icon={Scale} label={t('guestRegistration.facts.obligation')} size="sm" data-testid="guest-registration-fact-obligation">
             {facts.obligation}
-          </Fact>
-          <Fact label={t('guestRegistration.facts.deadline')} testId="guest-registration-fact-deadline">
+          </Figure>
+          <Figure icon={Clock} label={t('guestRegistration.facts.deadline')} size="sm" data-testid="guest-registration-fact-deadline">
             {facts.deadline}
-            {facts.deadlineNote ? <span className="block text-foreground/70">{facts.deadlineNote}</span> : null}
-          </Fact>
-          <Fact label={t('guestRegistration.facts.retention')} testId="guest-registration-fact-retention">
+            {facts.deadlineNote ? <span className="sr-only">. {facts.deadlineNote}</span> : null}
+          </Figure>
+          <Figure icon={Archive} label={t('guestRegistration.facts.retention')} size="sm" data-testid="guest-registration-fact-retention">
             {facts.retention}
-          </Fact>
-          <Fact label={t('guestRegistration.facts.channel')} testId="guest-registration-fact-channel">
+          </Figure>
+          <Figure icon={Upload} label={t('guestRegistration.facts.channel')} size="sm" data-testid="guest-registration-fact-channel">
             {facts.channel}
-          </Fact>
-          {portal ? (
-            <Fact label={t('guestRegistration.facts.portal')} testId="guest-registration-fact-portal">
-              {variant === 'page' ? (
-                // The only way out of the card, and only from the page of the property: a step of a wizard that is in progress never leaves the process.
-                <a
-                  href={portal.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex min-h-11 items-center gap-1 text-primary hover:underline sm:min-h-0"
-                  data-testid="guest-registration-portal-link"
-                >
-                  {t('guestRegistration.card.openPortal')} ({portal.host})
-                  <ExternalLink aria-hidden="true" className="size-3.5" />
-                </a>
-              ) : (
-                <>
-                  <span data-testid="guest-registration-portal-host">{portal.host}</span>
-                  <span className="block text-foreground/70">{t('guestRegistration.card.portalLater')}</span>
-                </>
-              )}
-            </Fact>
-          ) : null}
-          <Fact label={t('guestRegistration.facts.support')} testId="guest-registration-fact-support">
-            {facts.support}
-          </Fact>
-        </dl>
+          </Figure>
+        </Figures>
 
-        <div className="space-y-1" data-testid="guest-registration-certainty" data-certainty={certainty.certainty}>
-          <span
-            className={cn('inline-flex max-w-full items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset', STATUS_TONE_CLASSES[certainty.tone])}
-          >
-            <CertaintyIcon aria-hidden="true" className="size-3.5 shrink-0" />
-            <span className="min-w-0 break-words">{certainty.label}</span>
-          </span>
-          <p className="text-sm text-foreground/70">{certainty.text}</p>
-        </div>
+        {portal ? (
+          <div data-testid="guest-registration-fact-portal">
+            {variant === 'page' ? (
+              <Button asChild variant="outline" size="sm">
+                <a href={portal.href} target="_blank" rel="noopener noreferrer" data-testid="guest-registration-portal-link">
+                  {t('guestRegistration.card.openPortal')}
+                  <ExternalLink aria-hidden="true" className="size-4" />
+                  <span className="sr-only">({portal.host})</span>
+                </a>
+              </Button>
+            ) : (
+              <IconFacts>
+                <IconFact icon={Globe} label={t('guestRegistration.facts.portal')}>
+                  <span data-testid="guest-registration-portal-host">{portal.host}</span>
+                </IconFact>
+              </IconFacts>
+            )}
+          </div>
+        ) : null}
 
         <GuestRegistrationDuty
           duty={query.data.effectiveDuty}
@@ -210,8 +197,16 @@ export function GuestRegistrationCard({ propertyId, variant, canWrite, onFixMuni
   }
 
   return (
-    <PlainSection title={t('guestRegistration.card.title')} data-testid="guest-registration-card" data-variant={variant}>
-      <div className="space-y-3">{body}</div>
-    </PlainSection>
+    <InfoCard
+      icon={Landmark}
+      title={t('guestRegistration.card.title')}
+      status={state}
+      hint={hint}
+      className={className}
+      data-testid="guest-registration-card"
+      data-variant={variant}
+    >
+      <div className="@container space-y-3">{body}</div>
+    </InfoCard>
   );
 }

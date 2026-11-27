@@ -2,7 +2,10 @@ import { useState, type FormEvent } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { isAxiosError } from 'axios';
+import { ChartColumn } from 'lucide-react';
 import { ApiClient } from '@/api/client';
+import { InfoCard } from '@/components/shared/calm';
+import { ManualHint } from '@/components/shared/manual-hint';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useWorkspace } from '@/hooks/use-workspace';
@@ -46,9 +49,16 @@ function DayPanel({ propertyId, canSend }: { propertyId: string; canSend: boolea
   if (typeof errorCode !== 'string' || !/^[a-z_]+$/.test(errorCode)) errorCode = 'request_failed';
 
   return (
-    <section className="space-y-3 rounded-lg border p-4" aria-label={t('ross1000.title')}>
-      <h3 className="text-lg font-semibold">{t('ross1000.title')}</h3>
-      <p className="text-sm text-muted-foreground">{t('ross1000.description')}</p>
+    <InfoCard
+      icon={ChartColumn}
+      title={t('ross1000.title')}
+      hint={
+        <ManualHint page="alloggiati-istat" anchor="comunicare-l-istat-della-tua-regione" title={t('ross1000.title')}>
+          {t('ross1000.description')}
+        </ManualHint>
+      }
+      data-testid="ross1000-panel"
+    >
       <form onSubmit={preview} onChange={() => submit.reset()} className="space-y-3">
         <fieldset disabled={submit.isPending} className="grid gap-3 sm:grid-cols-2">
           <label>{t('ross1000.day')}<Input type="date" required max={todayInRome()} value={day} onChange={e => setDay(e.target.value)} /></label>
@@ -76,6 +86,6 @@ function DayPanel({ propertyId, canSend }: { propertyId: string; canSend: boolea
         {maySend && <Button type="button" disabled={submit.isPending}
           onClick={() => submit.mutate({ action: 'send', capacity, hash: info.hash })}>{t('ross1000.send')}</Button>}
       </div>}
-    </section>
+    </InfoCard>
   );
 }
