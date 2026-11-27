@@ -152,7 +152,8 @@ export const publicCheckinApi = {
   /**
    * The challenge of the presence of a self-hosted verification (E72/F02/US01/T01, NF-192), which takes the place of `startSelfieChallenge`: the moves to follow and for how long, when it expires and how the frames
    * are to be taken. A challenge is consumed only by the server, when it closes the verification, so asking for another one is always fine. 409 `presence_challenge_unavailable` (the automatic check cannot be done
-   * for this session: a person verifies, and the state in the body says why) and 409 `identity_already_closed` (the verification is over, the state is in the body). Never cached: it is private to the attempt.
+   * for this session: a person verifies, and the state in the body says why) and 409 `identity_already_closed` (the verification is over; unlike the one of the other steps this 409 carries NO state in the body, so the
+   * caller reads the state of the link, `getContext`, to know how it ended). Never cached: it is private to the attempt.
    */
   startPresenceChallenge: (token: string) =>
     ApiClient.post<PresenceChallenge>(`/public/checkin/${token}/presence-challenge`, undefined, { public: true }),

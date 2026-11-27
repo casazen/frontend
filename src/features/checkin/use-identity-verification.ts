@@ -15,6 +15,7 @@ import {
   afterSelfie,
   assistedReasonOf,
   classifyIdentityError,
+  closedAnswerOf,
   closedStateOf,
   frontWasTaken,
   identityStateOf,
@@ -195,6 +196,24 @@ export function useIdentityVerification(token: string, initial: IdentityVerifica
     [letGoOfThePictures, update],
   );
 
+  /**
+   * The state a verification that was found closed ended in, for the calls of the presence (E72/F02/US01/T02). The 409 `identity_already_closed` of the challenge carries no state (`known` is `null`), and the page does not
+   * deduce how it ended: a verification closed with an `ok` in another tab is a verification that passed. The state of the link is read again, with the same call the page started from (the context of the link), and shown
+   * as it says. When the link cannot be read, or does not say the verification is closed, no outcome is shown: `problem` is why, and the guest tries again.
+   */
+  const readClosedState = useCallback(
+    async (known: IdentityVerificationState | null): Promise<{ state: IdentityVerificationState } | { problem: IdentityProblem }> => {
+      if (known) return { state: known };
+      try {
+        const state = identityStateOf((await publicCheckinApi.getContext(token))?.identityVerification);
+        return state !== null && state.closed === true ? { state } : { problem: 'failed' };
+      } catch (error) {
+        return { problem: classifyIdentityError(error) };
+      }
+    },
+    [token],
+  );
+
   /** One call at a time. A failure never throws out of here: it becomes a problem, and the guest stays where they are. */
   const run = useCallback(
     async <T,>(call: () => Promise<T>, apply: (current: IdentityProgress, answer: T) => IdentityProgress): Promise<boolean> => {
@@ -351,11 +370,19 @@ export function useIdentityVerification(token: string, initial: IdentityVerifica
       return { kind: 'failed' };
     } catch (error) {
       if (!isCurrent()) return { kind: 'stale' };
-      // The verification is over (another tab, a reload): the guest sees where it ended.
-      const closed = closedStateOf(error);
+      // The verification is over (another tab, a reload): the guest sees where it ended. The 409 of the challenge carries no state, so the state of the link says how it ended: nothing is deduced, and a verification
+      // that passed in another tab is shown as one that passed.
+      const closed = closedAnswerOf(error);
       if (closed) {
-        showClosed(closed);
-        return { kind: 'moved' };
+        const read = await readClosedState(closed.state);
+        if (!isCurrent()) return { kind: 'stale' };
+        if ('state' in read) {
+          showClosed(read.state);
+          return { kind: 'moved' };
+        }
+        // The link could not be read, or does not say it is over: no outcome is shown, the guest tries again.
+        setProblem(read.problem);
+        return { kind: 'failed' };
       }
       // The automatic check cannot be done for this session: the message of the assisted path, with what the state says about why.
       const unavailable = presenceUnavailableOf(error);
@@ -410,11 +437,17 @@ export function useIdentityVerification(token: string, initial: IdentityVerifica
       if (outcome.kind === 'gave-up') return { kind: 'kept', problem: getHttpStatus(outcome.error) === undefined ? 'network' : 'processing' };
 
       const { error } = outcome;
-      // The verification is over (a recording sent from another tab, or after a reload): the server answered where it ended, and that is what the guest sees; the call is answered, and it is not a failure.
-      const closed = closedStateOf(error);
+      // The verification is over (a recording sent from another tab, or after a reload): the server answered where it ended, and that is what the guest sees; the call is answered, and it is not a failure. An answer that
+      // carries no state is not taken for a person: the state of the link is read.
+      const closed = closedAnswerOf(error);
       if (closed) {
-        showClosed(closed);
-        return { kind: 'answered' };
+        const read = await readClosedState(closed.state);
+        if ('state' in read) {
+          showClosed(read.state);
+          return { kind: 'answered' };
+        }
+        setProblem(read.problem);
+        return { kind: 'failed' };
       }
       // Too many requests in a short time: the server did not process this one, so the same recording may be sent again with the same key.
       if (isRateLimited(error)) return { kind: 'kept', problem: 'too_many_requests' };

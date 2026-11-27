@@ -11,7 +11,7 @@ import guestFr from '@/i18n/locales/guest-checkin.fr.json';
 import guestEs from '@/i18n/locales/guest-checkin.es.json';
 import { publicCheckinApi } from '@/api/checkin.api';
 import { expectNoAxeViolations } from '@/test/axe';
-import type { IdentityPresenceResponse, IdentityVerificationState, PresenceChallenge } from '@/types/public-checkin.types';
+import type { IdentityPresenceResponse, IdentityVerificationState, PresenceChallenge, PublicCheckInContextDto } from '@/types/public-checkin.types';
 import { PresenceSequenceCapture } from '../components/presence-sequence-capture';
 import { IdentityStep } from '../identity-step';
 import {
@@ -19,6 +19,7 @@ import {
   afterPresence,
   afterRetake,
   classifyIdentityError,
+  closedAnswerOf,
   IDENTITY_PROBLEMS,
   PRESENCE_GUIDANCE_CODES,
   presenceGuidanceKey,
@@ -32,6 +33,7 @@ import { useIdentityVerification } from '../use-identity-verification';
 
 vi.mock('@/api/checkin.api', () => ({
   publicCheckinApi: {
+    getContext: vi.fn(),
     getLegalTexts: vi.fn(),
     openIdentity: vi.fn(),
     postBiometricConsent: vi.fn(),
@@ -94,6 +96,23 @@ function httpError(status: number, data?: unknown): AxiosError {
   const config = { headers: new AxiosHeaders() } as InternalAxiosRequestConfig;
   return new AxiosError('Request failed', AxiosError.ERR_BAD_REQUEST, config, {}, { status, data, statusText: '', headers: {}, config });
 }
+
+/**
+ * The 409 `identity_already_closed` of `presence-challenge` as the server sends it: the bare problem (`ApiProblem`: type, title, status, detail, instance, `code` and `traceId`) and NO `state`. The document, the selfie, the
+ * presence and the opening send the state with this code; the challenge does not (`IssuePresenceChallenge`, tested on the backend by `IssuePresenceChallenge_AClosedVerification_Is409IdentityAlreadyClosed_AndNothingIsIssued`).
+ */
+const closedChallengeBody = {
+  type: 'https://tools.ietf.org/html/rfc9110#section-15.5.10',
+  title: 'Conflict',
+  status: 409,
+  detail: 'The identity verification is already closed.',
+  instance: `/api/public/checkin/${TOKEN}/presence-challenge`,
+  code: 'identity_already_closed',
+  traceId: '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01',
+};
+
+/** The context of the link as the page reads it again: only what the identity step reads of it. */
+const linkSays = (identityVerification: IdentityVerificationState) => ({ identityVerification }) as unknown as PublicCheckInContextDto;
 
 /** What the canvases were asked to encode, and what was drawn. */
 let encoded: Array<{ width: number; height: number; type: string | undefined; quality: unknown }> = [];
@@ -737,17 +756,60 @@ describe('presence-sequence-capture: the legacy selfie stays for the legacy path
     expect(publicCheckinApi.postSelfie).not.toHaveBeenCalled();
   });
 
-  it('IdentityStep_TheVerificationIsFoundClosedWhileAskingForTheChallenge_ShowsWhereItEnded', async () => {
-    stubCamera();
-    vi.mocked(publicCheckinApi.startPresenceChallenge).mockRejectedValue(
-      httpError(409, { code: 'identity_already_closed', state: state({ step: 'done', result: 'ok', closed: true, outcome: 'ok' }) }),
-    );
+  // The 409 of the challenge is the real one: the bare problem, with no `state`. The page reads the state of the link and shows what it says, and deduces nothing from the 409.
+  it('IdentityStep_TheVerificationPassedInAnotherTabWhileAskingForTheChallenge_TheLinkSaysSoAndItIsShownDone', async () => {
+    const rig = stubCamera();
+    vi.mocked(publicCheckinApi.startPresenceChallenge).mockRejectedValue(httpError(409, closedChallengeBody));
+    vi.mocked(publicCheckinApi.getContext).mockResolvedValue(linkSays(state({ step: 'done', result: 'ok', closed: true, outcome: 'ok' })));
     renderStep(state());
     await settle();
 
+    expect(publicCheckinApi.getContext).toHaveBeenCalledTimes(1);
+    expect(publicCheckinApi.getContext).toHaveBeenCalledWith(TOKEN);
     expect(screen.getByTestId('checkin-identity-step')).toHaveAttribute('data-stage', 'done');
     expect(screen.getByTestId('identity-result-ok')).toBeInTheDocument();
+    expect(screen.getByTestId('identity-closed-note')).toHaveTextContent(text('checkin.identity.result.closed'));
+    expect(screen.queryByTestId('identity-result-operator')).not.toBeInTheDocument();
     expect(screen.queryByTestId('checkin-identity-problem')).not.toBeInTheDocument();
+    expect(rig.getUserMedia).not.toHaveBeenCalled();
+    // Nobody is asked for a person on a guess.
+    expect(publicCheckinApi.requestOperator).not.toHaveBeenCalled();
+  });
+
+  it('IdentityStep_TheVerificationEndedWithAPersonInAnotherTabWhileAskingForTheChallenge_TheLinkSaysSoAndItIsShownWithAPerson', async () => {
+    stubCamera();
+    vi.mocked(publicCheckinApi.startPresenceChallenge).mockRejectedValue(httpError(409, closedChallengeBody));
+    vi.mocked(publicCheckinApi.getContext).mockResolvedValue(linkSays(state({ step: 'operator', result: 'operator', operatorRequested: true, closed: true, outcome: 'operator' })));
+    renderStep(state());
+    await settle();
+
+    expect(publicCheckinApi.getContext).toHaveBeenCalledWith(TOKEN);
+    expect(screen.getByTestId('checkin-identity-step')).toHaveAttribute('data-stage', 'operator');
+    expect(screen.getByTestId('identity-result-operator')).toBeInTheDocument();
+    expect(screen.getByTestId('identity-closed-note')).toBeInTheDocument();
+    expect(screen.queryByTestId('identity-result-ok')).not.toBeInTheDocument();
+    expect(publicCheckinApi.requestOperator).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['the link cannot be read', () => vi.mocked(publicCheckinApi.getContext).mockRejectedValue(Object.assign(new Error('Network Error'), { code: 'ERR_NETWORK', isAxiosError: true })), 'network'],
+    ['the link does not say it is closed', () => vi.mocked(publicCheckinApi.getContext).mockResolvedValue(linkSays(state())), 'failed'],
+    ['the link carries no state', () => vi.mocked(publicCheckinApi.getContext).mockResolvedValue({} as unknown as PublicCheckInContextDto), 'failed'],
+  ])('IdentityStep_TheChallengeIsRefusedAsClosedAnd_%s_ShowsNoOutcomeAndTheGuestTriesAgain', async (_name, arrange, problem) => {
+    stubCamera();
+    vi.mocked(publicCheckinApi.startPresenceChallenge).mockRejectedValue(httpError(409, closedChallengeBody));
+    arrange();
+    renderStep(state());
+    await settle();
+
+    // Neither a pass nor a person is deduced: the guest is told that it did not work and can try again, or ask for a person.
+    expect(phase()).toBe('failed');
+    expect(screen.getByTestId('checkin-identity-problem')).toHaveTextContent(text(`checkin.identity.problem.${problem}`));
+    expect(screen.queryByTestId('identity-result-ok')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('identity-result-operator')).not.toBeInTheDocument();
+    expect(screen.getByTestId('checkin-presence-retry')).toBeEnabled();
+    expect(screen.getByTestId('checkin-identity-assisted-path')).toBeEnabled();
+    expect(publicCheckinApi.requestOperator).not.toHaveBeenCalled();
   });
 
   it('IdentityStep_TheChallengeFailsOnTheNetwork_SaysSoUnderTheStepAndKeepsTheWayToAPerson', async () => {
@@ -871,6 +933,16 @@ describe('the presence in the model of the identity step (E72/F02/US01/T01)', ()
     expect(retakeTargetOf(['document_portrait_missing'], true)).toBe('document');
     expect(retakeTargetOf(['more_light'])).toBe('selfie');
     expect(afterRetake({ ...progressFromState(state()), stage: 'retry', guidanceCodes: ['presence_timing'] }).stage).toBe('presence');
+  });
+
+  it('closedAnswerOf_TheBareProblemOfTheChallenge_IsAClosedVerificationWithNoStateAndNeverAPerson', () => {
+    expect(closedAnswerOf(httpError(409, closedChallengeBody))).toEqual({ state: null });
+    expect(closedAnswerOf(httpError(409, { ...closedChallengeBody, state: state({ step: 'done', result: 'ok', closed: true, outcome: 'ok' }) }))).toMatchObject({ state: { closed: true, outcome: 'ok' } });
+    // A state that does not say the verification is closed is no state of a closed one: the caller reads the link.
+    expect(closedAnswerOf(httpError(409, { ...closedChallengeBody, state: state() }))).toEqual({ state: null });
+    expect(closedAnswerOf(httpError(409, { code: 'presence_challenge_unavailable' }))).toBeNull();
+    expect(closedAnswerOf(httpError(422, closedChallengeBody))).toBeNull();
+    expect(closedAnswerOf(new Error('closed'))).toBeNull();
   });
 
   it.each([

@@ -312,7 +312,10 @@ export function identityStateOf(value: unknown): IdentityVerificationState | nul
 /** The `code` of the 409 that refuses a step because the verification is over (API `IdentityApiErrors.IdentityAlreadyClosed`). */
 const IDENTITY_ALREADY_CLOSED = 'identity_already_closed';
 
-/** A verification that is closed with a person: what the page shows when the 409 says it is closed and says no more. It never says «passed». */
+/**
+ * A verification that is closed with a person: what the page shows when the 409 of the document, the selfie, the request for a person or the opening says it is closed and carries no state it can read (those answers always carry
+ * one: the page never meets this case with the server of today). It never says «passed». The calls of the presence do not use it: see {@link closedAnswerOf}.
+ */
 const CLOSED_WITH_A_PERSON: IdentityVerificationState = {
   step: 'operator',
   result: 'operator',
@@ -331,16 +334,29 @@ const CLOSED_WITH_A_PERSON: IdentityVerificationState = {
 };
 
 /**
- * The state the verification ended in, when `error` is the 409 `identity_already_closed` (a document, a selfie or a presence step sent after it was closed, from another tab or after a reload): the body carries
- * the `state`, and that is what the page shows. A 409 that says it is closed and carries no state that can be read is a verification that ended with a person. `null` for any other failure.
+ * The 409 `identity_already_closed`, when `error` is one: the verification is over (a document, a selfie or a presence step sent after it was closed, from another tab or after a reload). `state` is the state the body
+ * carries when it carries one that says the verification is closed, and `null` when it carries none the page can read. `null` itself for any other failure.
+ *
+ * Not every 409 of this kind carries the state: the one of the challenge of the presence (`presence-challenge`) is the bare problem (`code` and nothing else), while the document, the selfie, the presence itself and the
+ * opening send it. The page never deduces how a verification ended from a body that says only that it ended (it may have passed in another tab): the calls of the presence read the state of the link instead.
  */
-export function closedStateOf(error: unknown): IdentityVerificationState | null {
+export function closedAnswerOf(error: unknown): { state: IdentityVerificationState | null } | null {
   if (!isAxiosError(error) || error.response?.status !== 409) return null;
   const body: unknown = error.response.data;
   if (getProblemCode(body) !== IDENTITY_ALREADY_CLOSED) return null;
 
   const state = identityStateOf(isRecord(body) ? body.state : undefined);
-  return state !== null && state.closed === true ? state : CLOSED_WITH_A_PERSON;
+  return { state: state !== null && state.closed === true ? state : null };
+}
+
+/**
+ * The state the verification ended in, when `error` is the 409 `identity_already_closed` of a call whose answer always carries the state (the document, the selfie, the request for a person and the opening): the body carries
+ * the `state`, and that is what the page shows. Where it carries none the page can read, it is taken as a verification that ended with a person, and never as a pass. `null` for any other failure. The calls of the presence
+ * do not use this: the 409 of their challenge carries no state, and a verification closed with an `ok` in another tab must not be shown as one that ended with a person ({@link closedAnswerOf}).
+ */
+export function closedStateOf(error: unknown): IdentityVerificationState | null {
+  const closed = closedAnswerOf(error);
+  return closed === null ? null : (closed.state ?? CLOSED_WITH_A_PERSON);
 }
 
 /**

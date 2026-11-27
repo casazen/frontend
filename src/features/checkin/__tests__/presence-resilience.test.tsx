@@ -7,13 +7,14 @@ import type { InternalAxiosRequestConfig } from 'axios';
 import i18n from '@/i18n/config';
 import { publicCheckinApi } from '@/api/checkin.api';
 import { expectNoAxeViolations } from '@/test/axe';
-import type { IdentityPresenceResponse, IdentityVerificationState, PresenceChallenge } from '@/types/public-checkin.types';
+import type { IdentityPresenceResponse, IdentityVerificationState, PresenceChallenge, PublicCheckInContextDto } from '@/types/public-checkin.types';
 import { PresenceSequenceCapture } from '../components/presence-sequence-capture';
 import { IdentityStep } from '../identity-step';
 import { useIdentityVerification } from '../use-identity-verification';
 
 vi.mock('@/api/checkin.api', () => ({
   publicCheckinApi: {
+    getContext: vi.fn(),
     getLegalTexts: vi.fn(),
     openIdentity: vi.fn(),
     postBiometricConsent: vi.fn(),
@@ -920,6 +921,23 @@ describe('presence-resilience: the end of the step (AC6)', () => {
     expect(screen.getByTestId('checkin-identity-step')).toHaveAttribute('data-stage', 'operator');
     expect(screen.getByTestId('identity-closed-note')).toBeInTheDocument();
     expect(screen.queryByTestId('identity-result-ok')).not.toBeInTheDocument();
+  });
+
+  it('IdentityStep_TheSequenceIsRefusedAsClosedWithNoState_TheLinkIsReadAndNoPersonIsDeduced', async () => {
+    stubCamera();
+    vi.mocked(publicCheckinApi.postPresence).mockRejectedValue(httpError(409, { code: 'identity_already_closed' }));
+    vi.mocked(publicCheckinApi.getContext).mockResolvedValue({ identityVerification: state({ step: 'done', result: 'ok', closed: true, outcome: 'ok' }) } as unknown as PublicCheckInContextDto);
+    renderStep();
+    await startRecording();
+    await advanceUntil(() => posts().length > 0);
+    await settle();
+
+    expect(posts()).toHaveLength(1);
+    expect(publicCheckinApi.getContext).toHaveBeenCalledWith(TOKEN);
+    expect(screen.getByTestId('checkin-identity-step')).toHaveAttribute('data-stage', 'done');
+    expect(screen.getByTestId('identity-result-ok')).toBeInTheDocument();
+    expect(screen.getByTestId('identity-closed-note')).toBeInTheDocument();
+    expect(publicCheckinApi.requestOperator).not.toHaveBeenCalled();
   });
 
   it('IdentityStep_AVerificationThatIsNotClosed_HasNoNoteThatItWasOver', async () => {
