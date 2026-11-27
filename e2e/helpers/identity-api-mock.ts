@@ -39,6 +39,7 @@ export interface IdentityMockOptions {
   presence?: PresenceStep[];
   refuseFirstDocument?: string[];
   documentDelayMs?: number;
+  plan?: Partial<Pick<PresenceChallenge, 'leadInMs' | 'stepMs' | 'targetFps'>>;
 }
 
 export interface IdentityCall {
@@ -248,10 +249,10 @@ export async function mockIdentityApi(page: Page, options: IdentityMockOptions =
     return {
       challengeToken,
       steps: [...PRESENCE_PLAN.steps],
-      stepMs: PRESENCE_PLAN.stepMs,
-      leadInMs: PRESENCE_PLAN.leadInMs,
+      stepMs: options.plan?.stepMs ?? PRESENCE_PLAN.stepMs,
+      leadInMs: options.plan?.leadInMs ?? PRESENCE_PLAN.leadInMs,
       expiresAt: new Date(Date.now() + 120_000).toISOString(),
-      targetFps: 8,
+      targetFps: options.plan?.targetFps ?? 8,
       maxFrames: 40,
       // Small frames keep the multipart body of a recording small.
       maxFrameSide: 160,

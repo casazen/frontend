@@ -29,6 +29,9 @@ const FIRST = { timeout: 20_000 };
 
 const AFTER_RECORDING = { timeout: 40_000 };
 
+// For the proofs that act while the prompts run (the turn of the screen, the click on the way to a person): the recording outlasts any delay of the test, and few frames a second keep its body as small as the short one's.
+const LONG_PLAN = { leadInMs: 2000, stepMs: 2000, targetFps: 2 };
+
 const stepOf = (page: Page) => page.getByTestId('checkin-identity-step');
 const presenceOf = (page: Page) => page.getByTestId('checkin-presence');
 const documentOf = (page: Page) => page.getByTestId('checkin-identity-document');
@@ -146,7 +149,7 @@ async function connectionBreaksDuringTheUpload(page: Page): Promise<void> {
 }
 
 async function screenTurnsDuringTheRecording(page: Page): Promise<void> {
-  const identity = await mockIdentityApi(page, { startAt: 'presence' });
+  const identity = await mockIdentityApi(page, { startAt: 'presence', plan: LONG_PLAN });
   await installFakeCamera(page);
   await page.goto(identity.entry);
 
@@ -372,7 +375,7 @@ test.describe('Guest identity, self-hosted: a fake camera and a mocked API', () 
 
   test('(g) the way to a person is there at every sub-step of the identity step, and it releases the camera', async ({ page }) => {
     test.slow();
-    const identity = await mockIdentityApi(page, { refuseFirstDocument: ['document_glare'] });
+    const identity = await mockIdentityApi(page, { refuseFirstDocument: ['document_glare'], plan: LONG_PLAN });
     await installFakeCamera(page);
     await page.goto(identity.entry);
     const assisted = page.getByTestId('checkin-identity-assisted-path');
