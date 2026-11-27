@@ -50,10 +50,48 @@ export const GUIDANCE_CODES = [
   'document_front_needed',
   'document_not_recognized',
   'active_pose_retry',
+  // The targeted codes of the document step of the self-hosted flow (E71/F01/US03/T01, NF-189): what is wrong with the photo of a side, one code each.
+  'document_not_found',
+  'document_edges_not_visible',
+  'document_layout_mismatch',
+  'document_orientation',
+  'document_portrait_missing',
+  'document_side_duplicate',
+  'document_wrong_side',
+  'document_format_unsupported',
+  'document_glare',
+  'document_blur',
+  'document_unreadable',
 ] as const;
 
-/** The key of the words of a guidance code, or of the generic sentence for a code that is not known. */
-export function guidanceKey(code: string): string {
+/**
+ * The two codes after which the verification is no longer in the hands of the guest: the server has already closed it with a person (a document of a format it does not know, a side
+ * refused as many times as the policy allows). Nothing is asked of the guest any more: the page shows the way of a person, not another capture.
+ */
+export const ASSISTED_GUIDANCE_CODES = ['document_format_unsupported', 'document_unreadable'] as const;
+
+/** The first of the codes that end the document step with a person, or `null` when none of them is in `codes`. */
+export function assistedReasonOf(codes: readonly string[]): string | null {
+  return codes.find((code) => (ASSISTED_GUIDANCE_CODES as readonly string[]).includes(code)) ?? null;
+}
+
+/** The older code of the capture checks that says what a targeted code of the document step says (a reflection, a blurred picture): the server sends both when both checks find it. */
+const OLDER_TWIN: Readonly<Record<string, string>> = { document_glare: 'avoid_glare', document_blur: 'hold_still' };
+
+/**
+ * The codes of a refusal as the page lists them: a targeted code and the older code that gives the same advice are one line, the targeted one (the server sends the targeted codes first and then the
+ * codes of the capture checks of before). An older code on its own is listed as it always was, and so is every other.
+ */
+export function listedGuidance(codes: readonly string[]): string[] {
+  return codes.filter((code) => !Object.entries(OLDER_TWIN).some(([targeted, older]) => older === code && codes.includes(targeted)));
+}
+
+/**
+ * The key of the words of a guidance code, or of the generic sentence for a code that is not known. A photo that shows the other side than the one asked (`document_wrong_side`) says which side to
+ * photograph when the page knows it (`asked`): «this is the back: photograph the front», or the other way round; otherwise it says it in general.
+ */
+export function guidanceKey(code: string, asked?: DocumentSide | null): string {
+  if (code === 'document_wrong_side' && asked) return `checkin.identity.guidance.document_wrong_side_${asked}`;
   return (GUIDANCE_CODES as readonly string[]).includes(code) ? `checkin.identity.guidance.${code}` : 'checkin.identity.guidance.other';
 }
 
@@ -72,8 +110,13 @@ export function sideAskedBy(codes: readonly string[]): DocumentSide | null {
   return null;
 }
 
-/** The codes that ask for the document to be photographed again, not the selfie. */
-const DOCUMENT_GUIDANCE: ReadonlySet<string> = new Set(['upload_document_again', 'use_valid_document', ...Object.keys(SIDE_GUIDANCE)]);
+/** The codes that ask for the document to be photographed again, not the selfie: the targeted codes of the document step (`document_*`) are all about the photo of a side. */
+const DOCUMENT_GUIDANCE: ReadonlySet<string> = new Set([
+  'upload_document_again',
+  'use_valid_document',
+  ...Object.keys(SIDE_GUIDANCE),
+  ...GUIDANCE_CODES.filter((code) => code.startsWith('document_') && code !== 'document_not_recognized'),
+]);
 
 /** What the guest takes again after a `retry`: the document when the guidance says so, otherwise the selfie. */
 export function retakeTargetOf(codes: readonly string[]): 'document' | 'selfie' {
@@ -312,6 +355,12 @@ function withSide(sides: readonly DocumentSide[], side: DocumentSide): DocumentS
  */
 export function afterDocument(progress: IdentityProgress, response: IdentityDocumentResponse, sent: DocumentSide = progress.documentSideNeeded): IdentityProgress {
   const codes = response.guidanceCodes;
+  if (!response.acceptable && assistedReasonOf(codes) !== null) {
+    // The server has already closed the verification with a person (a format it does not know, or a side refused as many times as the policy allows): nothing is asked of the guest any more,
+    // so the page shows the way of a person, with the reason, and not another capture. The pictures this page held are let go.
+    return { ...progress, stage: 'operator', operatorRequested: true, guidanceCodes: codes, documentRefused: false, documentSidesTaken: [], lockCode: null, lockCodeHeld: null };
+  }
+
   const asked = sideAskedBy(codes);
   const twoSided = progress.documentTwoSided || asked !== null;
   const taken = withSide(progress.documentSidesTaken, sent);
@@ -334,6 +383,14 @@ export function afterDocument(progress: IdentityProgress, response: IdentityDocu
     guidanceCodes: response.acceptable ? [] : codes,
     documentRefused: !response.acceptable && (codes.length === 0 || codes.some((code) => !(code in SIDE_GUIDANCE))),
   };
+}
+
+/**
+ * The photo that was sent was the face side and it was good: it is accepted, or it is the answer that only asks for the back (`document_back_needed`, the front was fine and the card has its
+ * lines of letters on the back). The step keeps what it needs of that front to warn before the back looks like it (a hint, E71/F02/US01/T02).
+ */
+export function frontWasTaken(response: IdentityDocumentResponse, sent: DocumentSide): boolean {
+  return sent === 'front' && (response.acceptable || sideAskedBy(response.guidanceCodes) === 'back');
 }
 
 /** After the selfie: the lock code comes only with an `ok` (or why it is held back); a retry says what to change; a person verifies otherwise. */

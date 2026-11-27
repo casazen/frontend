@@ -6287,6 +6287,31 @@
       "Female": "Femmina",
       "Other": "Altro"
     },
+    "prefill": {
+      "checkIt": "Controllalo: è letto dal testo stampato.",
+      "complete": "Hai già tutti i dati che si leggono su questo documento: controllali e conferma.",
+      "confirm": "Confermo questi dati",
+      "discard": "Rifai la foto",
+      "field": {
+        "birthPlace": "Luogo di nascita",
+        "citizenship": "Cittadinanza",
+        "dateOfBirth": "Data di nascita",
+        "documentExpiresOn": "Data di scadenza",
+        "documentIssuedOn": "Data di rilascio",
+        "documentKind": "Tipo di documento",
+        "documentNumber": "Numero del documento",
+        "firstName": "Nome",
+        "gender": "Sesso",
+        "issuePlace": "Luogo di rilascio",
+        "lastName": "Cognome",
+        "other": "Altri dati"
+      },
+      "intro": "Controlla i dati letti dal documento e correggi quelli sbagliati. Nei prossimi passi ti chiederemo solo quelli che non siamo riusciti a leggere.",
+      "missingText": "Questi dati non si leggono dalla foto: li inserirai nei prossimi passi.",
+      "missingTitle": "Ti chiederemo ancora",
+      "readFromDocument": "Letto dal documento",
+      "title": "Dati letti dal documento"
+    },
     "validation": {
       "firstName": {
         "required": "Nome obbligatorio",
@@ -6744,6 +6769,41 @@
           "pick": "Fotografa il retro",
           "pickAgain": "Fotografa di nuovo il retro"
         },
+        "camera": {
+          "captureBack": "Scatta il retro",
+          "captureFront": "Scatta il fronte",
+          "chooseFile": "Scegli una foto dal telefono",
+          "chooseHint": "Puoi anche usare una foto già scattata o la fotocamera del telefono.",
+          "duplicate": {
+            "send": "Invia comunque",
+            "text": "Questa foto assomiglia a quella del fronte. Gira il documento e rifai la foto, oppure inviala comunque: dopo l'invio la controlliamo noi.",
+            "title": "Sembra lo stesso lato"
+          },
+          "heldLabel": "La foto del documento che hai scattato",
+          "hint": {
+            "blur": "Immagine sfocata: tieni fermo il telefono.",
+            "bright": "C'è troppa luce: spostati dove la luce è più morbida.",
+            "dark": "C'è poca luce: spostati in un posto più luminoso.",
+            "edges": "Inquadra tutto il documento, con i quattro bordi dentro la cornice.",
+            "glare": "Riflesso sul documento: inclinalo leggermente o allontanati dalla luce.",
+            "orientation": "Ruota il telefono in orizzontale.",
+            "ready": "Inquadratura pronta: puoi scattare.",
+            "settling": "Tieni fermo il telefono…",
+            "waiting": "Apertura della fotocamera…"
+          },
+          "previewLabel": "Anteprima della fotocamera con la cornice del documento",
+          "problem": {
+            "denied": "Il browser ha bloccato la fotocamera. Per consentirla, tocca l'icona del lucchetto o della fotocamera accanto all'indirizzo web, scegli «Consenti» per la fotocamera e premi «Riprova con la fotocamera».",
+            "fallback": "Puoi scegliere una foto del documento dal telefono qui sotto, oppure continuare con una persona.",
+            "not_found": "Su questo dispositivo non è stata trovata nessuna fotocamera.",
+            "title": "La fotocamera non è disponibile",
+            "unknown": "Non è stato possibile avviare la fotocamera.",
+            "unsupported": "Questa pagina non può usare la fotocamera in questo browser."
+          },
+          "retake": "Rifai la foto",
+          "retryCamera": "Riprova con la fotocamera",
+          "sendAgain": "Invia di nuovo"
+        },
         "fileLabel": "Foto del documento d'identità",
         "frontReceived": "Il lato con la tua foto è arrivato.",
         "instructions": "Appoggia il documento su una superficie piana e ben illuminata. Mostra tutto il lato con la tua foto, senza riflessi. Il passaporto ha tutto in una pagina: mostra la pagina con la foto e le due righe di lettere in basso.",
@@ -6759,8 +6819,21 @@
         "avoid_glare": "Evita i riflessi: inclina un poco il documento o allontanati dalla luce.",
         "document_back_needed": "Ora fotografa il retro della carta, dove ci sono le righe di lettere.",
         "active_pose_retry": "Ripeti i due scatti seguendo la direzione mostrata.",
+        "document_blur": "La foto è sfocata: tieni fermo il telefono e riprova.",
+        "document_edges_not_visible": "Inquadra tutto il documento, con i quattro bordi visibili.",
+        "document_format_unsupported": "Documento non supportato: continua con una persona.",
+        "document_glare": "Riflesso sulla foto: inclina leggermente il documento.",
+        "document_layout_mismatch": "Non riconosciamo la disposizione del documento: tienilo dritto, intero e fermo, poi riprova.",
+        "document_not_found": "Non vediamo un documento in questa foto: appoggialo su una superficie piana e inquadralo tutto.",
         "document_not_recognized": "Questa foto non è stata riconosciuta come documento. Carica una foto della carta d’identità, del passaporto o della patente.",
         "document_front_needed": "Fotografa il lato della carta con la tua foto.",
+        "document_orientation": "Il documento è girato: tienilo dritto, in orizzontale.",
+        "document_portrait_missing": "Non vediamo la tua foto sul documento: mostra il lato con la foto, senza coprirla.",
+        "document_side_duplicate": "Hai fotografato due volte lo stesso lato: ora fotografa l'altro lato del documento.",
+        "document_unreadable": "Non riusciamo a leggere il documento: continua con una persona.",
+        "document_wrong_side": "Questa foto mostra l'altro lato del documento: fotografa il lato richiesto.",
+        "document_wrong_side_back": "Questo è il fronte: ora fotografa il retro, dove ci sono le righe di lettere e numeri.",
+        "document_wrong_side_front": "Questo è il retro: fotografa il fronte, dove c'è la tua foto.",
         "hold_still": "Tieni fermo il telefono: la foto è sfocata.",
         "less_light": "C'è troppa luce: spostati dove la luce è più morbida.",
         "more_light": "C'è poca luce: spostati in un posto più luminoso.",
