@@ -6741,6 +6741,36 @@
           "pick": "Photograph the back",
           "pickAgain": "Photograph the back again"
         },
+        "camera": {
+          "captureBack": "Photograph the back",
+          "captureFront": "Photograph the front",
+          "chooseFile": "Choose a photo from your phone",
+          "chooseHint": "You can also use a photo you already took, or the camera app of your phone.",
+          "heldLabel": "The photo of the document you took",
+          "hint": {
+            "blur": "The picture is blurred: hold the phone steady.",
+            "bright": "There is too much light: move to a softer light.",
+            "dark": "There is too little light: move somewhere brighter.",
+            "edges": "Show the whole document, with all four edges inside the frame.",
+            "glare": "Glare on the document: tilt it slightly or move away from the light.",
+            "orientation": "Turn your phone to landscape.",
+            "ready": "The framing is right: you can take the photo.",
+            "settling": "Hold the phone still…",
+            "waiting": "Opening the camera…"
+          },
+          "previewLabel": "Camera preview with the outline of the document",
+          "problem": {
+            "denied": "The browser blocked the camera. To allow it, tap the lock or camera icon next to the web address, choose \"Allow\" for the camera and press \"Try the camera again\".",
+            "fallback": "You can choose a photo of the document from your phone below, or continue with a person.",
+            "not_found": "No camera was found on this device.",
+            "title": "The camera is not available",
+            "unknown": "The camera could not be started.",
+            "unsupported": "This page cannot use the camera in this browser."
+          },
+          "retake": "Take the photo again",
+          "retryCamera": "Try the camera again",
+          "sendAgain": "Send again"
+        },
         "fileLabel": "Photo of the identity document",
         "frontReceived": "The side with your photo has arrived.",
         "instructions": "Place the document on a flat, well-lit surface. Show the whole side with your photo, without reflections. A passport has everything on one page: show the page with your photo and the two lines of letters at the bottom.",

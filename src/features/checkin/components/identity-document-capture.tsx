@@ -5,6 +5,7 @@ import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import type { DocumentSide } from '@/types/public-checkin.types';
 import { guidanceKey } from '../lib/identity-model';
+import { DocumentCameraGuide } from './document-camera-guide';
 import { MrzPositionIllustration } from './mrz-position-illustration';
 
 interface IdentityDocumentCaptureProps {
@@ -20,8 +21,13 @@ interface IdentityDocumentCaptureProps {
   frontReceived: boolean;
   /** A call of the step is in flight, or the photo for one is being made ready (this one or another): the buttons and the file input stay disabled. */
   busy: boolean;
-  /** The guest took or chose a photo. */
-  onPhoto: (file: File) => void;
+  /**
+   * The state of the verification says `selfHosted` (E71/F02/US01/T01): the photo is taken with the guided camera, and the file or the camera of the phone is the second way. False on the legacy path,
+   * where the page is the one it always was.
+   */
+  selfHosted?: boolean;
+  /** The guest took or chose a photo. Resolves `true` when the API answered and `false` when the call failed; the screen of the legacy path does not wait for it. */
+  onPhoto: (file: File) => Promise<boolean> | void;
   /** The guest asks for a person: the way out of a document that cannot be read (GDPR art. 22). */
   onRequestOperator: () => void;
 }
@@ -31,8 +37,11 @@ interface IdentityDocumentCaptureProps {
  * what to change, and asks to take it again before the selfie (a photo that cannot be compared never goes on). A document of two sides is asked one side at a time: the side with the
  * photo first, then, when the answer says so, the back with the lines of letters, with a drawing of where they are on the Italian electronic identity card. It is a photo of a document,
  * not a selfie: a file or the camera of the phone is fine (the camera-only rule is the selfie's, ADR-013-R11). The page keeps no picture: each is sent and let go.
+ *
+ * On a self-hosted verification (E71/F02/US01/T01, NF-189) the photo is taken with the guided camera: the rear camera with the outline of the card and a line that says what to change; a guest
+ * with no camera (denied, missing, not supported) is told why and has the file of the phone and the way to a person, with the same checks on the photo. The server stays the authority on the photo.
  */
-export function IdentityDocumentCapture({ refused, guidanceCodes, side, twoSided, frontReceived, busy, onPhoto, onRequestOperator }: IdentityDocumentCaptureProps) {
+export function IdentityDocumentCapture({ refused, guidanceCodes, side, twoSided, frontReceived, busy, selfHosted = false, onPhoto, onRequestOperator }: IdentityDocumentCaptureProps) {
   const { t } = useTranslation();
   const titleId = useId();
   const inputId = useId();
@@ -41,6 +50,26 @@ export function IdentityDocumentCapture({ refused, guidanceCodes, side, twoSided
 
   let pickLabel = refused ? 'checkin.identity.document.pickAgain' : 'checkin.identity.document.pick';
   if (isBack) pickLabel = refused ? 'checkin.identity.document.back.pickAgain' : 'checkin.identity.document.back.pick';
+
+  const fileInput = (
+    <input
+      ref={inputRef}
+      id={inputId}
+      type="file"
+      accept="image/jpeg,image/png"
+      className="sr-only"
+      tabIndex={-1}
+      disabled={busy}
+      aria-label={t(isBack ? 'checkin.identity.document.back.fileLabel' : 'checkin.identity.document.fileLabel')}
+      data-testid="checkin-identity-document-file"
+      onChange={(event) => {
+        const file = event.target.files?.[0];
+        // The file input is emptied at once: the page keeps nothing of the picture it was given.
+        event.target.value = '';
+        if (file) void onPhoto(file);
+      }}
+    />
+  );
 
   return (
     <section className="space-y-4" aria-labelledby={titleId} data-testid="checkin-identity-document" data-side={side}>
@@ -76,36 +105,42 @@ export function IdentityDocumentCapture({ refused, guidanceCodes, side, twoSided
         </Alert>
       )}
 
-      <div className="rounded-md border border-dashed p-6 text-center space-y-3">
-        <Camera className="mx-auto h-8 w-8 text-muted-foreground" aria-hidden="true" />
-        <input
-          ref={inputRef}
-          id={inputId}
-          type="file"
-          accept="image/jpeg,image/png"
-          className="sr-only"
-          tabIndex={-1}
-          disabled={busy}
-          aria-label={t(isBack ? 'checkin.identity.document.back.fileLabel' : 'checkin.identity.document.fileLabel')}
-          data-testid="checkin-identity-document-file"
-          onChange={(event) => {
-            const file = event.target.files?.[0];
-            // The file input is emptied at once: the page keeps nothing of the picture it was given.
-            event.target.value = '';
-            if (file) onPhoto(file);
-          }}
-        />
-        <Button
-          type="button"
-          size="lg"
-          disabled={busy}
-          loading={busy}
-          onClick={() => inputRef.current?.click()}
-          data-testid="checkin-identity-document-pick"
-        >
-          {busy ? t('checkin.identity.document.sending') : t(pickLabel)}
-        </Button>
-      </div>
+      {selfHosted && (
+        <DocumentCameraGuide side={side} busy={busy} onPhoto={async (photo) => (await onPhoto(photo)) !== false} />
+      )}
+
+      {selfHosted ? (
+        <div className="rounded-md border border-dashed p-4 text-center space-y-2">
+          <p className="text-sm text-muted-foreground">{t('checkin.identity.document.camera.chooseHint')}</p>
+          {fileInput}
+          <Button
+            type="button"
+            size="lg"
+            variant="outline"
+            disabled={busy}
+            loading={busy}
+            onClick={() => inputRef.current?.click()}
+            data-testid="checkin-identity-document-pick"
+          >
+            {busy ? t('checkin.identity.document.sending') : t('checkin.identity.document.camera.chooseFile')}
+          </Button>
+        </div>
+      ) : (
+        <div className="rounded-md border border-dashed p-6 text-center space-y-3">
+          <Camera className="mx-auto h-8 w-8 text-muted-foreground" aria-hidden="true" />
+          {fileInput}
+          <Button
+            type="button"
+            size="lg"
+            disabled={busy}
+            loading={busy}
+            onClick={() => inputRef.current?.click()}
+            data-testid="checkin-identity-document-pick"
+          >
+            {busy ? t('checkin.identity.document.sending') : t(pickLabel)}
+          </Button>
+        </div>
+      )}
 
       {refused && <div>
         <Button type="button" variant="ghost" disabled={busy} onClick={onRequestOperator} data-testid="checkin-identity-document-operator">

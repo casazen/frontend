@@ -70,6 +70,16 @@ export async function canvasToJpeg(
   }
 }
 
+/**
+ * The frame the guest took with the camera that guides the photo of the document (E71/F02/US01/T01) as the file the step sends: a JPEG of {@link DOCUMENT_MAX_WIDTH} at most at
+ * {@link DOCUMENT_JPEG_QUALITY}, the limits of a photo of the document that had to be redrawn. `postDocument` takes it as it is when it is under the request limits, and the step makes it
+ * smaller when it must (`prepareDocumentPhoto`). Rejects when the browser cannot draw or encode it. Like {@link canvasToJpeg} it empties the canvas it draws on; the canvas it is given is the caller's.
+ */
+export async function frameToDocumentPhoto(frame: HTMLCanvasElement): Promise<File> {
+  const jpeg = await canvasToJpeg(frame, DOCUMENT_MAX_WIDTH, DOCUMENT_JPEG_QUALITY);
+  return new File([jpeg], 'document.jpg', { type: 'image/jpeg' });
+}
+
 /** A photo of the document that can be sent, or why it cannot: a type the API does not read, or a size it refuses that this browser could not reduce. */
 export type PreparedPhoto = { ok: true; blob: Blob } | { ok: false; problem: 'unsupported' | 'too_large' };
 

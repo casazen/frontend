@@ -348,6 +348,36 @@
           "pick": "Photographier le verso",
           "pickAgain": "Photographier de nouveau le verso"
         },
+        "camera": {
+          "captureBack": "Photographier le verso",
+          "captureFront": "Photographier le recto",
+          "chooseFile": "Choisir une photo sur le téléphone",
+          "chooseHint": "Vous pouvez aussi utiliser une photo déjà prise ou l'appareil photo de votre téléphone.",
+          "heldLabel": "La photo du document que vous avez prise",
+          "hint": {
+            "blur": "L'image est floue : tenez le téléphone immobile.",
+            "bright": "Il y a trop de lumière : placez-vous sous une lumière plus douce.",
+            "dark": "Il n'y a pas assez de lumière : placez-vous dans un endroit plus lumineux.",
+            "edges": "Montrez tout le document, avec les quatre bords dans le cadre.",
+            "glare": "Reflet sur le document : inclinez-le un peu ou éloignez-vous de la lumière.",
+            "orientation": "Tournez le téléphone en mode paysage.",
+            "ready": "Le cadrage est bon : vous pouvez prendre la photo.",
+            "settling": "Tenez le téléphone immobile…",
+            "waiting": "Ouverture de la caméra…"
+          },
+          "previewLabel": "Aperçu de la caméra avec le contour du document",
+          "problem": {
+            "denied": "Le navigateur a bloqué la caméra. Pour l'autoriser, touchez l'icône du cadenas ou de la caméra à côté de l'adresse web, choisissez « Autoriser » pour la caméra, puis appuyez sur « Réessayer la caméra ».",
+            "fallback": "Vous pouvez choisir ci-dessous une photo du document sur votre téléphone, ou continuer avec une personne.",
+            "not_found": "Aucune caméra n'a été trouvée sur cet appareil.",
+            "title": "La caméra n'est pas disponible",
+            "unknown": "La caméra n'a pas pu être démarrée.",
+            "unsupported": "Cette page ne peut pas utiliser la caméra dans ce navigateur."
+          },
+          "retake": "Reprendre la photo",
+          "retryCamera": "Réessayer la caméra",
+          "sendAgain": "Envoyer de nouveau"
+        },
         "fileLabel": "Photo de la pièce d'identité",
         "frontReceived": "Le côté avec votre photo a bien été reçu.",
         "instructions": "Posez le document sur une surface plane et bien éclairée. Montrez tout le côté avec votre photo, sans reflets. Un passeport a tout sur une seule page : montrez la page avec votre photo et les deux lignes de lettres en bas.",

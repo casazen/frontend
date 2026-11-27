@@ -348,6 +348,36 @@
           "pick": "Fotografiar el reverso",
           "pickAgain": "Fotografiar de nuevo el reverso"
         },
+        "camera": {
+          "captureBack": "Fotografiar el reverso",
+          "captureFront": "Fotografiar el anverso",
+          "chooseFile": "Elegir una foto del teléfono",
+          "chooseHint": "También puede usar una foto ya hecha o la cámara de su teléfono.",
+          "heldLabel": "La foto del documento que ha hecho",
+          "hint": {
+            "blur": "La imagen está borrosa: mantenga quieto el teléfono.",
+            "bright": "Hay demasiada luz: pase a un lugar con luz más suave.",
+            "dark": "Hay poca luz: pase a un lugar más luminoso.",
+            "edges": "Muestre todo el documento, con los cuatro bordes dentro del marco.",
+            "glare": "Reflejo en el documento: inclínelo un poco o aléjese de la luz.",
+            "orientation": "Gire el teléfono en horizontal.",
+            "ready": "El encuadre es correcto: puede hacer la foto.",
+            "settling": "Mantenga quieto el teléfono…",
+            "waiting": "Abriendo la cámara…"
+          },
+          "previewLabel": "Vista previa de la cámara con el contorno del documento",
+          "problem": {
+            "denied": "El navegador bloqueó la cámara. Para permitirla, toque el icono del candado o de la cámara junto a la dirección web, elija «Permitir» para la cámara y pulse «Reintentar con la cámara».",
+            "fallback": "Puede elegir abajo una foto del documento desde su teléfono, o continuar con una persona.",
+            "not_found": "No se encontró ninguna cámara en este dispositivo.",
+            "title": "La cámara no está disponible",
+            "unknown": "No se pudo iniciar la cámara.",
+            "unsupported": "Esta página no puede usar la cámara en este navegador."
+          },
+          "retake": "Volver a hacer la foto",
+          "retryCamera": "Reintentar con la cámara",
+          "sendAgain": "Enviar de nuevo"
+        },
         "fileLabel": "Foto del documento de identidad",
         "frontReceived": "Hemos recibido el lado con su foto.",
         "instructions": "Coloque el documento sobre una superficie plana y bien iluminada. Muestre todo el lado con su foto, sin reflejos. El pasaporte lo tiene todo en una página: muestre la página con su foto y las dos líneas de letras de abajo.",

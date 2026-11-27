@@ -348,6 +348,36 @@
           "pick": "Rückseite fotografieren",
           "pickAgain": "Rückseite erneut fotografieren"
         },
+        "camera": {
+          "captureBack": "Rückseite fotografieren",
+          "captureFront": "Vorderseite fotografieren",
+          "chooseFile": "Foto vom Telefon auswählen",
+          "chooseHint": "Sie können auch ein bereits aufgenommenes Foto oder die Kamera-App Ihres Telefons verwenden.",
+          "heldLabel": "Das von Ihnen aufgenommene Foto des Dokuments",
+          "hint": {
+            "blur": "Das Bild ist unscharf: Halten Sie das Handy ruhig.",
+            "bright": "Es ist zu hell: Gehen Sie an einen Ort mit weicherem Licht.",
+            "dark": "Es ist zu dunkel: Gehen Sie an einen helleren Ort.",
+            "edges": "Zeigen Sie das ganze Dokument mit allen vier Kanten im Rahmen.",
+            "glare": "Spiegelung auf dem Dokument: Neigen Sie es leicht oder gehen Sie vom Licht weg.",
+            "orientation": "Drehen Sie das Handy ins Querformat.",
+            "ready": "Der Bildausschnitt passt: Sie können das Foto aufnehmen.",
+            "settling": "Halten Sie das Handy ruhig…",
+            "waiting": "Kamera wird geöffnet…"
+          },
+          "previewLabel": "Kameravorschau mit dem Umriss des Dokuments",
+          "problem": {
+            "denied": "Der Browser hat die Kamera blockiert. Zum Erlauben tippen Sie auf das Schloss- oder Kamerasymbol neben der Webadresse, wählen Sie für die Kamera „Zulassen“ und drücken Sie „Kamera erneut versuchen“.",
+            "fallback": "Sie können unten ein Foto des Dokuments von Ihrem Telefon auswählen oder mit einer Person fortfahren.",
+            "not_found": "Auf diesem Gerät wurde keine Kamera gefunden.",
+            "title": "Die Kamera ist nicht verfügbar",
+            "unknown": "Die Kamera konnte nicht gestartet werden.",
+            "unsupported": "Diese Seite kann in diesem Browser die Kamera nicht verwenden."
+          },
+          "retake": "Foto erneut aufnehmen",
+          "retryCamera": "Kamera erneut versuchen",
+          "sendAgain": "Erneut senden"
+        },
         "fileLabel": "Foto des Ausweisdokuments",
         "frontReceived": "Die Seite mit Ihrem Foto ist angekommen.",
         "instructions": "Legen Sie das Dokument auf eine ebene, gut beleuchtete Fläche. Zeigen Sie die ganze Seite mit Ihrem Foto, ohne Spiegelungen. Ein Reisepass hat alles auf einer Seite: Zeigen Sie die Seite mit Ihrem Foto und den zwei Zeilen mit Buchstaben unten.",
