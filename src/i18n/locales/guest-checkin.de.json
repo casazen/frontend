@@ -472,6 +472,8 @@
           "busy": "Eine andere App verwendet die Kamera. Schließen Sie sie und drücken Sie „Erneut versuchen“.",
           "fallback": "Sie können es erneut versuchen oder mit einer Person fortfahren, die Ihre Identität prüft."
         },
+        "cancel": "Abbrechen und eine Person bitten",
+        "cancelling": "Der Versand wird abgebrochen …",
         "instructions": "Stellen Sie sich an einen hellen Ort und halten Sie Ihr Gesicht im Oval. Drücken Sie „Start“ und folgen Sie den Anweisungen auf dem Bildschirm: Sie drehen den Kopf und schauen nach oben oder unten. Das dauert nur wenige Sekunden.",
         "kept": {
           "offline": "Keine Verbindung. Wir konnten Ihre Aufnahme nicht senden, sie ist aber noch da: Wenn die Verbindung wieder da ist, drücken Sie „Erneut senden“.",

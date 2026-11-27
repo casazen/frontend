@@ -312,6 +312,116 @@ describe('presence-upload: the environment of the browser', () => {
   });
 });
 
+describe('presence-upload: the guest stops the upload (E72/F02/US01/T02)', () => {
+  /** What the waits of the upload are while the test holds them: a pause and a wait for the connection that end only when the test says so. */
+  function heldEnvironment(options: { online?: boolean } = {}) {
+    const rig = environment({ online: options.online });
+    const paused: Array<() => void> = [];
+    rig.env.sleep = (ms) =>
+      new Promise<void>((resolve) => {
+        rig.sleeps.push(ms);
+        paused.push(resolve);
+      });
+    return { ...rig, endThePause: () => paused.splice(0).forEach((resolve) => resolve()) };
+  }
+
+  it('uploadPresence_TheGuestStopsWhileARequestIsOnItsWay_IsCancelledAndNothingIsSentAgain', async () => {
+    const rig = heldEnvironment();
+    const stop = new AbortController();
+    const send = vi.fn((_key: string) => new Promise<string>(() => undefined));
+
+    const upload = uploadPresence(send, KEY, rig.env, stop.signal);
+    await Promise.resolve();
+    expect(send).toHaveBeenCalledTimes(1);
+    stop.abort();
+
+    await expect(upload).resolves.toEqual({ kind: 'cancelled' });
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(rig.sleeps).toEqual([]);
+  });
+
+  it('uploadPresence_ARequestThatFailsBecauseItWasCancelled_IsNotANetworkFailureAndIsNotRepeated', async () => {
+    const rig = heldEnvironment();
+    const stop = new AbortController();
+    // What axios does with a request whose signal is aborted: it rejects with a cancellation, which is neither a refusal nor a failure of the network.
+    const send = vi.fn(
+      (_key: string) =>
+        new Promise<string>((_resolve, reject) => {
+          stop.signal.addEventListener('abort', () => reject(httpError(undefined, AxiosError.ERR_CANCELED)));
+        }),
+    );
+
+    const upload = uploadPresence(send, KEY, rig.env, stop.signal);
+    await Promise.resolve();
+    stop.abort();
+
+    await expect(upload).resolves.toEqual({ kind: 'cancelled' });
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(rig.sleeps).toEqual([]);
+  });
+
+  it('uploadPresence_TheGuestStopsDuringThePauseBetweenTwoTries_NothingIsSentAfterIt', async () => {
+    const rig = heldEnvironment();
+    const stop = new AbortController();
+    const send = vi.fn().mockRejectedValue(networkError());
+
+    const upload = uploadPresence(send, KEY, rig.env, stop.signal);
+    await vi.waitFor(() => expect(rig.sleeps).toEqual([1_000]));
+    stop.abort();
+    // The pause ends later on its own: the upload does not go on.
+    rig.endThePause();
+
+    await expect(upload).resolves.toEqual({ kind: 'cancelled' });
+    expect(send).toHaveBeenCalledTimes(1);
+  });
+
+  it('uploadPresence_TheGuestStopsWhileTheUploadWaitsForTheConnection_NothingIsSentWhenItComesBack', async () => {
+    const rig = heldEnvironment({ online: false });
+    const stop = new AbortController();
+    const send = vi.fn().mockResolvedValue('answer');
+
+    const upload = uploadPresence(send, KEY, rig.env, stop.signal);
+    await vi.waitFor(() => expect(rig.waitForOnline).toHaveBeenCalledTimes(1));
+    stop.abort();
+    await expect(upload).resolves.toEqual({ kind: 'cancelled' });
+
+    rig.comeBack();
+    await Promise.resolve();
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it('uploadPresence_ASignalThatWasAbortedBeforeTheStart_SendsNothing', async () => {
+    const rig = heldEnvironment();
+    const stop = new AbortController();
+    stop.abort();
+    const send = vi.fn().mockResolvedValue('answer');
+
+    await expect(uploadPresence(send, KEY, rig.env, stop.signal)).resolves.toEqual({ kind: 'cancelled' });
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it('uploadPresence_TheServerAnswersBeforeTheGuestStops_TheAnswerIsTheOutcome', async () => {
+    const rig = heldEnvironment();
+    const stop = new AbortController();
+    const send = vi.fn().mockResolvedValue('answer');
+
+    const outcome = await uploadPresence(send, KEY, rig.env, stop.signal);
+    stop.abort();
+
+    expect(outcome).toEqual({ kind: 'answered', answer: 'answer' });
+  });
+
+  it('uploadPresence_NoSignal_IsTheUploadItAlwaysWas_TheWaitsAreTheSame', async () => {
+    const rig = environment();
+    const send = vi.fn().mockRejectedValueOnce(networkError()).mockRejectedValueOnce(networkError()).mockResolvedValueOnce('answer');
+
+    const outcome = await uploadPresence(send, KEY, rig.env);
+
+    expect(outcome).toEqual({ kind: 'answered', answer: 'answer' });
+    expect(rig.sleeps).toEqual([1_000, 2_000]);
+  });
+});
+
 describe('presence-upload: the key of a recording', () => {
   it('newIdempotencyKey_AKey_HasTheShapeTheApiWantsAndEveryCallMakesANewOne', () => {
     const first = newIdempotencyKey();

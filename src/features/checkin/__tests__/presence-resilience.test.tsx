@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, renderHook, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AxiosError, AxiosHeaders } from 'axios';
 import type { InternalAxiosRequestConfig } from 'axios';
@@ -838,7 +838,7 @@ describe('presence-resilience: a second tap sends nothing twice (AC5)', () => {
     type CaptureProps = ComponentProps<typeof PresenceSequenceCapture>;
     const startChallenge = vi.fn<CaptureProps['startChallenge']>().mockImplementation(async () => ({ kind: 'ready', challenge: challengeBody() }));
     const sendSequence = vi.fn<CaptureProps['sendSequence']>().mockResolvedValueOnce({ kind: 'busy' }).mockResolvedValueOnce({ kind: 'answered' });
-    render(<PresenceSequenceCapture startChallenge={startChallenge} sendSequence={sendSequence} busy={false} />);
+    render(<PresenceSequenceCapture startChallenge={startChallenge} sendSequence={sendSequence} cancelSequence={vi.fn()} busy={false} />);
     await waitForTheStart();
     fireEvent.click(startButton());
     await settle();
@@ -868,7 +868,7 @@ describe('presence-resilience: a second tap sends nothing twice (AC5)', () => {
       .fn<CaptureProps['sendSequence']>()
       .mockResolvedValueOnce({ kind: 'kept', problem: 'network' })
       .mockReturnValue(new Promise(() => undefined));
-    render(<PresenceSequenceCapture startChallenge={startChallenge} sendSequence={sendSequence} busy={false} />);
+    render(<PresenceSequenceCapture startChallenge={startChallenge} sendSequence={sendSequence} cancelSequence={vi.fn()} busy={false} />);
     await waitForTheStart();
     fireEvent.click(startButton());
     await settle();
@@ -926,6 +926,167 @@ describe('presence-resilience: a second tap sends nothing twice (AC5)', () => {
 
     expect(screen.getByTestId('checkin-identity-assisted-path')).toBeDisabled();
   });
+});
+
+describe('presence-resilience: the guest stops the upload and asks for a person (the way to a person is reachable while the sequence is on its way)', () => {
+  /** A request that stays on its way, as one does on a slow network, until it is cancelled; then it fails the way axios does when its signal is aborted. Gives the signal of each request. */
+  function slowRequestThatCanBeCancelled() {
+    const signals: Array<AbortSignal | undefined> = [];
+    vi.mocked(publicCheckinApi.postPresence).mockImplementation((_token, sequence, key, signal) => {
+      signals.push(signal);
+      seen.push({ key, frames: [...sequence.frames], timestamps: [...sequence.timestamps], challengeToken: sequence.challengeToken });
+      return new Promise<IdentityPresenceResponse>((_resolve, reject) => {
+        signal?.addEventListener('abort', () => reject(httpError(undefined, undefined, AxiosError.ERR_CANCELED)));
+      });
+    });
+    return signals;
+  }
+
+  it('IdentityStep_TheGuestStopsTheUploadThatIsOnItsWay_TheRequestIsCancelledAPersonIsAskedForAndNoFrameIsKept', async () => {
+    const rig = stubCamera();
+    const signals = slowRequestThatCanBeCancelled();
+    renderStep();
+    await startRecording();
+    await advanceUntil(() => posts().length > 0);
+    const held = posts()[0][1];
+    const drawing = canvas();
+
+    // The upload is on its way: the way to a person of the step is disabled (a second call cannot start), and the screen has its own.
+    expect(phase()).toBe('uploading');
+    expect(held.frames.length).toBeGreaterThan(20);
+    expect(screen.getByTestId('checkin-identity-assisted-path')).toBeDisabled();
+    expect(screen.getByTestId('checkin-presence-cancel')).toBeEnabled();
+    expect(screen.getByTestId('checkin-presence-cancel')).toHaveTextContent(text('checkin.identity.presence.cancel'));
+    expect(signals[0]?.aborted).toBe(false);
+
+    fireEvent.click(screen.getByTestId('checkin-presence-cancel'));
+    await settle();
+    await advanceUntil(() => screen.queryByTestId('identity-result-operator') !== null);
+
+    // The request that was on its way was cancelled, and nothing was sent again.
+    expect(signals[0]?.aborted).toBe(true);
+    await advance(10_000);
+    expect(posts()).toHaveLength(1);
+    // A person was asked for, once, and the step is the assisted path.
+    expect(publicCheckinApi.requestOperator).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId('checkin-identity-step')).toHaveAttribute('data-stage', 'operator');
+    expect(screen.queryByTestId('checkin-presence')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('identity-result-ok')).not.toBeInTheDocument();
+    // No frame is kept: the arrays that held the recording are empty, so is the canvas, the camera is off, and nothing was written anywhere.
+    expect(held.frames).toHaveLength(0);
+    expect(held.timestamps).toHaveLength(0);
+    expect(drawing.width).toBe(0);
+    expect(rig.stop).toHaveBeenCalled();
+    expect(localStorage).toHaveLength(0);
+    expect(sessionStorage).toHaveLength(0);
+  });
+
+  it('IdentityStep_TwoTapsOnCancel_StopTheUploadAndAskForAPersonOnce', async () => {
+    stubCamera();
+    const signals = slowRequestThatCanBeCancelled();
+    renderStep();
+    await startRecording();
+    await advanceUntil(() => posts().length > 0);
+
+    const cancel = screen.getByTestId('checkin-presence-cancel');
+    act(() => {
+      fireEvent.click(cancel);
+      fireEvent.click(cancel);
+    });
+    await settle();
+    await advanceUntil(() => screen.queryByTestId('identity-result-operator') !== null);
+
+    expect(signals).toHaveLength(1);
+    expect(publicCheckinApi.requestOperator).toHaveBeenCalledTimes(1);
+  });
+
+  it('IdentityStep_TheGuestStopsTheUploadThatWaitsForTheConnection_NothingIsSentAndAPersonIsAskedFor', async () => {
+    stubCamera();
+    renderStep();
+    await startRecording();
+    // The connection is gone while the guest follows the prompts: the upload waits for it.
+    setOnline(false);
+    await advanceUntil(() => phase() === 'uploading');
+    await advance(2_000);
+    expect(posts()).toHaveLength(0);
+    expect(screen.getByTestId('checkin-presence-prompt')).toHaveTextContent(text('checkin.identity.presence.waitingForConnection'));
+    expect(screen.getByTestId('checkin-presence-cancel')).toBeEnabled();
+
+    fireEvent.click(screen.getByTestId('checkin-presence-cancel'));
+    await settle();
+    await advanceUntil(() => screen.queryByTestId('identity-result-operator') !== null);
+
+    // The connection that comes back later finds nothing to send: the upload is over.
+    setOnline(true);
+    await advance(40_000);
+    expect(posts()).toHaveLength(0);
+    expect(publicCheckinApi.requestOperator).toHaveBeenCalledTimes(1);
+  });
+
+  it('IdentityStep_TheRequestForAPersonDoesNotGetThrough_TheGuestIsToldKeepsTheWayToAPersonAndNoFrameIsKept', async () => {
+    stubCamera();
+    slowRequestThatCanBeCancelled();
+    vi.mocked(publicCheckinApi.requestOperator).mockRejectedValue(networkError());
+    renderStep();
+    await startRecording();
+    await advanceUntil(() => posts().length > 0);
+    const held = posts()[0][1];
+
+    fireEvent.click(screen.getByTestId('checkin-presence-cancel'));
+    await settle();
+    await advanceUntil(() => phase() === 'failed');
+
+    expect(posts()).toHaveLength(1);
+    expect(screen.getByTestId('checkin-identity-problem')).toHaveTextContent(text('checkin.identity.problem.network'));
+    expect(screen.getByTestId('checkin-presence-retry')).toBeEnabled();
+    expect(screen.getByTestId('checkin-identity-assisted-path')).toBeEnabled();
+    // The recording was let go with the stop: there is nothing to send again, only to record again.
+    expect(held.frames).toHaveLength(0);
+    expect(screen.queryByTestId('checkin-presence-send-again')).not.toBeInTheDocument();
+  });
+
+  it('IdentityStep_TheServerHadAnsweredBeforeTheUploadCouldBeStopped_ItsAnswerIsShownAndNobodyIsAskedFor', async () => {
+    stubCamera();
+    // The sequence was refused as closed (the verification passed in another tab), and the page is still reading the state of the link when the guest taps «cancel and ask for a person».
+    vi.mocked(publicCheckinApi.postPresence).mockRejectedValue(httpError(409, { code: 'identity_already_closed' }));
+    let linkIsRead: (context: PublicCheckInContextDto) => void = () => undefined;
+    vi.mocked(publicCheckinApi.getContext).mockReturnValue(
+      new Promise<PublicCheckInContextDto>((resolve) => {
+        linkIsRead = resolve;
+      }),
+    );
+    renderStep();
+    await startRecording();
+    await advanceUntil(() => posts().length > 0);
+    expect(phase()).toBe('uploading');
+
+    fireEvent.click(screen.getByTestId('checkin-presence-cancel'));
+    await settle();
+    expect(publicCheckinApi.requestOperator).not.toHaveBeenCalled();
+
+    await act(async () => {
+      linkIsRead({ identityVerification: state({ step: 'done', result: 'ok', closed: true, outcome: 'ok' }) } as unknown as PublicCheckInContextDto);
+      await vi.advanceTimersByTimeAsync(0);
+    });
+
+    expect(screen.getByTestId('identity-result-ok')).toBeInTheDocument();
+    expect(screen.getByTestId('identity-closed-note')).toBeInTheDocument();
+    expect(publicCheckinApi.requestOperator).not.toHaveBeenCalled();
+  });
+
+  it('useIdentityVerification_NothingIsOnItsWay_StoppingAsksForAPersonAtOnce', async () => {
+    const { result } = renderHook(() => useIdentityVerification(TOKEN, state()));
+    let outcome: string | undefined;
+
+    await act(async () => {
+      outcome = await result.current.cancelPresence();
+    });
+
+    expect(outcome).toBe('asked');
+    expect(publicCheckinApi.requestOperator).toHaveBeenCalledTimes(1);
+    expect(result.current.progress?.stage).toBe('operator');
+  });
+
 });
 
 describe('presence-resilience: the end of the step (AC6)', () => {
@@ -1014,6 +1175,19 @@ describe('presence-resilience: accessibility', () => {
     stubCamera({ name: 'NotAllowedError' });
     const { container } = renderStep();
     await screen.findByTestId('checkin-presence-camera-problem');
+
+    await expectNoAxeViolations(container);
+  });
+
+  it('PresenceSequenceCapture_TheUploadOnItsWayWithTheWayToAPerson_HasNoAccessibilityViolations', async () => {
+    stubCamera();
+    vi.mocked(publicCheckinApi.startPresenceChallenge).mockImplementation(async () => challengeBody({ leadInMs: 100, stepMs: 100, steps: ['turn_left'] }));
+    vi.mocked(publicCheckinApi.postPresence).mockReturnValue(new Promise(() => undefined));
+    const { container } = renderStep();
+    await waitFor(() => expect(phase()).toBe('ready'));
+    fireEvent.click(startButton());
+    await waitFor(() => expect(phase()).toBe('uploading'), { timeout: 5_000 });
+    expect(screen.getByTestId('checkin-presence-cancel')).toBeEnabled();
 
     await expectNoAxeViolations(container);
   });

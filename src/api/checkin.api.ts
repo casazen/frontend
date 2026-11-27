@@ -163,9 +163,9 @@ export const publicCheckinApi = {
    * they answer; for a property that keeps no document (Ticino) the picture(s) of the document come again as `documentPhoto` and `documentPhotoBack`, as with the legacy selfie. `idempotencyKey` (8-64 of letters, digits and
    * hyphens) is made once for each recording and goes in the `Idempotency-Key` header: a request that reached the server and is sent again with the same key gets the stored answer, so a repeat never decides twice.
    * 400 `idempotency_key_required`; 409 `presence_challenge_required`, `presence_challenge_expired`, `identity_already_closed` (with the state); 413 `presence_sequence_too_large`; 422 `presence_sequence_invalid`.
-   * The sequence of a phone on a slow network is a few megabytes, so the call waits longer than the default.
+   * The sequence of a phone on a slow network is a few megabytes, so the call waits longer than the default. `signal` is the guest stopping the upload (E72/F02/US01/T02): the request that is on its way is cancelled with it.
    */
-  postPresence: (token: string, sequence: PresenceSequence, idempotencyKey: string) => {
+  postPresence: (token: string, sequence: PresenceSequence, idempotencyKey: string, signal?: AbortSignal) => {
     const body = new FormData();
     sequence.frames.forEach((frame, index) => body.append('frames', frame, `frame-${index}.jpg`));
     body.append('timestamps', JSON.stringify(sequence.timestamps));
@@ -176,6 +176,7 @@ export const publicCheckinApi = {
       public: true,
       timeout: PRESENCE_UPLOAD_TIMEOUT_MS,
       headers: { 'Content-Type': 'multipart/form-data', 'Idempotency-Key': idempotencyKey },
+      ...(signal ? { signal } : {}),
     });
   },
 

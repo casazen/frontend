@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useId, useReducer, useRef, useSyncExternalStore } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Loader2, RefreshCw, ScanFace, Video, WifiOff, type LucideIcon } from 'lucide-react';
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Loader2, RefreshCw, ScanFace, Video, WifiOff, X, type LucideIcon } from 'lucide-react';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import type { PresenceChallenge, PresenceMove, PresenceSequence } from '@/types/public-checkin.types';
@@ -16,13 +16,18 @@ import {
 } from '../lib/frame-sequence';
 import { problemKey, type IdentityProblem } from '../lib/identity-model';
 import { newIdempotencyKey } from '../lib/presence-upload';
-import type { PresenceChallengeResult, PresenceSendResult } from '../use-identity-verification';
+import type { PresenceCancelResult, PresenceChallengeResult, PresenceSendResult } from '../use-identity-verification';
 
 interface PresenceSequenceCaptureProps {
   /** Asks for a challenge (the hook of the step). `isCurrent` says whether this screen is still the one that wants the answer. */
   startChallenge: (isCurrent?: () => boolean) => Promise<PresenceChallengeResult>;
   /** Sends the sequence with the key of its recording (the hook of the step). It repeats a request that did not get through, with the same frames and the same key. */
   sendSequence: (sequence: PresenceSequence, idempotencyKey: string) => Promise<PresenceSendResult>;
+  /**
+   * Stops the upload that is on its way and asks for a person (the hook of the step): the request is cancelled, and a person is asked for unless the server had already answered. The way to a person under the screen is
+   * disabled while the upload lasts; this is the one that is open then.
+   */
+  cancelSequence: () => Promise<PresenceCancelResult>;
   /** A call of the step is in flight (this one or another): the buttons stay disabled. */
   busy: boolean;
 }
@@ -103,10 +108,10 @@ function useIsOnline(): boolean {
 }
 
 /**
- * Where the screen is: asking for the challenge and opening the camera, ready for the guest to start, renewing the challenge that ran out before the start, following the prompts, sending, holding the recording
- * that did not get through for one manual retry, without a camera, or a recording that was refused.
+ * Where the screen is: asking for the challenge and opening the camera, ready for the guest to start, renewing the challenge that ran out before the start, following the prompts, sending, stopping the sending to ask for
+ * a person, holding the recording that did not get through for one manual retry, without a camera, or a recording that was refused.
  */
-type Phase = 'preparing' | 'ready' | 'starting' | 'recording' | 'uploading' | 'kept' | 'camera-problem' | 'failed';
+type Phase = 'preparing' | 'ready' | 'starting' | 'recording' | 'uploading' | 'cancelling' | 'kept' | 'camera-problem' | 'failed';
 
 /** The sentence of a recording that is kept: no connection, or a service that does not answer; any other reason (too many requests) has its own sentence among the problems of the step. */
 const KEPT_TEXT: Partial<Record<IdentityProblem, string>> = {
@@ -152,6 +157,7 @@ type CaptureAction =
   | { type: 'recording'; prompt: PromptView | null }
   | { type: 'prompt'; prompt: PromptView | null }
   | { type: 'uploading' }
+  | { type: 'cancelling' }
   | { type: 'kept'; problem: IdentityProblem }
   | { type: 'camera-problem'; problem: CameraProblem }
   | { type: 'failed' }
@@ -178,6 +184,8 @@ function reduce(state: CaptureState, action: CaptureAction): CaptureState {
     }
     case 'uploading':
       return { ...state, phase: 'uploading', prompt: null };
+    case 'cancelling':
+      return { ...state, phase: 'cancelling', prompt: null };
     case 'kept':
       return { ...state, phase: 'kept', kept: action.problem, prompt: null };
     case 'camera-problem':
@@ -236,9 +244,10 @@ function outlivesTheRecording(challenge: PresenceChallenge): boolean {
  * It survives what a phone does to a guest (T02): no camera (denied, missing, busy, not supported) says why and the way to a person is the button the step keeps under it; a phone that is turned or a page that goes to the
  * background while recording throws the frames away, says why, and starts again with a new challenge; a challenge that runs out before the start is renewed without a word, and one that the server says ran out (409) starts a new
  * recording with a new key; a connection that drops is waited for and the same frames go again with the same key (the hook repeats the request), and when that is not enough the recording is kept in memory for ONE manual
- * retry with the same key and then let go; a second tap while something is on its way does nothing.
+ * retry with the same key and then let go; a second tap while something is on its way does nothing. While the sequence is on its way the way to a person under the screen is disabled (a second call of the step cannot start), so
+ * the screen has a button of its own, «cancel and ask for a person», that stops the upload (the request is cancelled, nothing waits for the connection any more), lets the frames go at once and asks for a person.
  */
-export function PresenceSequenceCapture({ startChallenge, sendSequence, busy }: PresenceSequenceCaptureProps) {
+export function PresenceSequenceCapture({ startChallenge, sendSequence, cancelSequence, busy }: PresenceSequenceCaptureProps) {
   const { t } = useTranslation();
   const titleId = useId();
   const online = useIsOnline();
@@ -256,6 +265,8 @@ export function PresenceSequenceCapture({ startChallenge, sendSequence, busy }: 
   const landscapeAtStartRef = useRef(true);
   const startingRef = useRef(false);
   const uploadingRef = useRef(false);
+  /** The guest stopped the upload to ask for a person, and the request for her is on its way: a second tap does nothing, and an end of the upload that is not an answer is not shown. */
+  const cancellingRef = useRef(false);
   /** The page went to the background and the camera was let go: it is opened again when the page is back. */
   const hiddenRef = useRef(false);
   const phaseRef = useRef<Phase>('preparing');
@@ -263,9 +274,9 @@ export function PresenceSequenceCapture({ startChallenge, sendSequence, busy }: 
   /** Counts the starts of the screen: an answer that comes for an older start is not for this one. */
   const epoch = useRef(0);
   // What the callbacks that live across renders read of the props and of the state: the latest ones.
-  const latest = useRef({ startChallenge, sendSequence });
+  const latest = useRef({ startChallenge, sendSequence, cancelSequence });
   useEffect(() => {
-    latest.current = { startChallenge, sendSequence };
+    latest.current = { startChallenge, sendSequence, cancelSequence };
     phaseRef.current = state.phase;
   });
 
@@ -416,6 +427,12 @@ export function PresenceSequenceCapture({ startChallenge, sendSequence, busy }: 
           letGoOfTheAttempt();
           return;
         }
+        // The guest stopped the upload to ask for a person, or asked to while it ended some other way: the recording is not kept for a retry that was given up, and `cancel` goes on from here.
+        if (result.kind === 'cancelled' || cancellingRef.current) {
+          letGoOfTheAttempt();
+          if (!cancellingRef.current) dispatch({ type: 'failed' });
+          return;
+        }
         if (result.kind === 'busy') {
           // Another call of the step was in flight and nothing was sent: the recording is still held, and the retry that was spent is given back. The sentence is the general one: it was not the connection.
           if (manual) attempt.manualRetriesLeft += 1;
@@ -440,6 +457,24 @@ export function PresenceSequenceCapture({ startChallenge, sendSequence, busy }: 
     },
     [letGoOfTheAttempt, prepare],
   );
+
+  /**
+   * The guest stops the upload and asks for a person. The way to a person under the screen is disabled while the sequence is on its way (a second call of the step cannot start), and on a slow network that can be minutes,
+   * so this is the one way to a person that is open then. The hook cancels the request, and the recording is let go at once (`upload`): it is not kept for a retry the guest chose not to make. Then a person is asked for, and the
+   * step moves to the assisted path, which takes this screen away. If the server had answered first, that answer moves the step on instead. If the request for a person did not get through the hook says why (`problem`), and
+   * the guest, who has no recording any more, records again or asks again. A second tap does nothing.
+   */
+  const cancel = async () => {
+    if (cancellingRef.current || !uploadingRef.current) return;
+    cancellingRef.current = true;
+    dispatch({ type: 'cancelling' });
+    try {
+      const outcome = await latest.current.cancelSequence().catch((): PresenceCancelResult => 'failed');
+      if (mounted.current && outcome === 'failed') dispatch({ type: 'failed' });
+    } finally {
+      cancellingRef.current = false;
+    }
+  };
 
   /** The prompts are over (or the frames are at their limit): the sequence is taken, the camera is stopped, and the sequence is sent. */
   const finishRecording = useCallback(async () => {
@@ -595,6 +630,7 @@ export function PresenceSequenceCapture({ startChallenge, sendSequence, busy }: 
     if (phase === 'recording' && prompt) return prompt.kind === 'lead-in' ? t('checkin.identity.presence.leadIn') : move ? t(move.text) : '';
     if (phase === 'preparing') return t('checkin.identity.presence.preparing');
     if (phase === 'uploading') return online ? t('checkin.biometric.capture.sending') : t('checkin.identity.presence.waitingForConnection');
+    if (phase === 'cancelling') return t('checkin.identity.presence.cancelling');
     return '';
   })();
 
@@ -652,7 +688,7 @@ export function PresenceSequenceCapture({ startChallenge, sendSequence, busy }: 
               data-testid="checkin-presence-oval"
               className="pointer-events-none absolute left-1/2 top-1/2 h-[78%] w-[58%] -translate-x-1/2 -translate-y-1/2 rounded-[50%] border-2 border-white/90 shadow-[0_0_0_9999px_rgba(0,0,0,0.45)]"
             />
-            {(phase === 'preparing' || phase === 'uploading' || phase === 'kept') && (
+            {(phase === 'preparing' || phase === 'uploading' || phase === 'cancelling' || phase === 'kept') && (
               <div className="absolute inset-0 grid place-items-center bg-black/60 text-white" data-testid="checkin-presence-wait">
                 {phase === 'kept' || (phase === 'uploading' && !online) ? (
                   <WifiOff className="size-8" aria-hidden="true" />
@@ -691,6 +727,13 @@ export function PresenceSequenceCapture({ startChallenge, sendSequence, busy }: 
             <Button type="button" size="lg" disabled={busy || phase === 'starting'} onClick={() => void start()} className="w-full sm:w-auto" data-testid="checkin-presence-start">
               <Video className="mr-2 h-4 w-4" aria-hidden="true" />
               {t('checkin.identity.presence.start')}
+            </Button>
+          )}
+
+          {phase === 'uploading' && (
+            <Button type="button" size="lg" variant="outline" onClick={() => void cancel()} className="w-full sm:w-auto" data-testid="checkin-presence-cancel">
+              <X className="mr-2 h-4 w-4" aria-hidden="true" />
+              {t('checkin.identity.presence.cancel')}
             </Button>
           )}
 

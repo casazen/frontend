@@ -22,7 +22,9 @@ export type UploadOutcome<T> =
   /** The network or the server did not answer after the tries (or the browser stayed offline): the frames are worth keeping, the same request may be sent again with the same key. */
   | { kind: 'gave-up'; error: unknown }
   /** The server answered with a refusal a repeat would not change (a 4xx, or a failure that is not the network's): not repeated. */
-  | { kind: 'refused'; error: unknown };
+  | { kind: 'refused'; error: unknown }
+  /** The guest stopped the upload (its `AbortSignal` was aborted) before the server answered: the request that was on its way is given up, and nothing is sent, repeated or waited for any more. */
+  | { kind: 'cancelled' };
 
 /** The things an upload needs of the browser, so that a test can bring its own. */
 export interface UploadEnvironment {
@@ -70,30 +72,69 @@ export function isRateLimited(error: unknown): boolean {
   return getHttpStatus(error) === 429;
 }
 
+/** What a wait gives when the upload was stopped while it lasted. */
+const ABORTED = Symbol('aborted');
+
+/**
+ * What `promise` gives, or {@link ABORTED} as soon as `signal` aborts, whichever comes first. The promise is left to settle on its own (a wait for the connection or a pause between two tries costs nothing when it ends
+ * later; a request that was on its way is cancelled by the same signal, where the caller handed it to the request). Without a signal it is the promise itself.
+ */
+function orAborted<T>(promise: Promise<T>, signal: AbortSignal | undefined): Promise<T | typeof ABORTED> {
+  if (!signal) return promise;
+  if (signal.aborted) return Promise.resolve(ABORTED);
+  return new Promise<T | typeof ABORTED>((resolve, reject) => {
+    const onAbort = () => resolve(ABORTED);
+    signal.addEventListener('abort', onAbort, { once: true });
+    promise.then(
+      (value) => {
+        signal.removeEventListener('abort', onAbort);
+        resolve(value);
+      },
+      (error: unknown) => {
+        signal.removeEventListener('abort', onAbort);
+        reject(error);
+      },
+    );
+  });
+}
+
 /**
  * Sends with `send(idempotencyKey)` until the server answers or the tries run out. A failure that a repeat may fix is repeated after 1 s, 2 s and 4 s, with the same key every time; while the browser says it is offline
- * nothing is sent: the upload waits for `online` (at most {@link OFFLINE_WAIT_MS}) and then goes on. An answer of the 4xx family is not repeated.
+ * nothing is sent: the upload waits for `online` (at most {@link OFFLINE_WAIT_MS}) and then goes on. An answer of the 4xx family is not repeated. The waits and the tries are the same whatever the speed of the network: a slow
+ * request is given its whole time.
+ *
+ * `signal` is the guest stopping the upload (E72/F02/US01/T02): from then on nothing is sent, repeated or waited for, whatever the upload was doing (a request on its way, a pause between two tries, the wait for the connection),
+ * and the outcome is `cancelled`. An answer that came before the signal is the answer, never a cancellation: the server decided, and the page shows what it decided.
  */
 export async function uploadPresence<T>(
   send: (idempotencyKey: string) => Promise<T>,
   idempotencyKey: string,
   environment: UploadEnvironment = browserEnvironment(),
+  signal?: AbortSignal,
 ): Promise<UploadOutcome<T>> {
   let lastError: unknown = null;
 
   for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt += 1) {
-    if (!environment.isOnline() && !(await environment.waitForOnline(OFFLINE_WAIT_MS))) {
-      return { kind: 'gave-up', error: lastError };
+    if (signal?.aborted) return { kind: 'cancelled' };
+
+    if (!environment.isOnline()) {
+      const online = await orAborted(environment.waitForOnline(OFFLINE_WAIT_MS), signal);
+      if (online === ABORTED) return { kind: 'cancelled' };
+      if (!online) return { kind: 'gave-up', error: lastError };
     }
 
     try {
-      return { kind: 'answered', answer: await send(idempotencyKey) };
+      const answer = await orAborted(send(idempotencyKey), signal);
+      if (answer === ABORTED) return { kind: 'cancelled' };
+      return { kind: 'answered', answer };
     } catch (error) {
+      // The request that was on its way was cancelled with the upload: it is not a failure of the network, and it is not repeated.
+      if (signal?.aborted) return { kind: 'cancelled' };
       if (!isWorthRepeating(error)) return { kind: 'refused', error };
       lastError = error;
     }
 
-    if (attempt < RETRY_DELAYS_MS.length) await environment.sleep(RETRY_DELAYS_MS[attempt]);
+    if (attempt < RETRY_DELAYS_MS.length && (await orAborted(environment.sleep(RETRY_DELAYS_MS[attempt]), signal)) === ABORTED) return { kind: 'cancelled' };
   }
 
   return { kind: 'gave-up', error: lastError };

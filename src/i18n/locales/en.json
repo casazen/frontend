@@ -6868,6 +6868,8 @@
           "busy": "Another app is using the camera. Close it and press “Try again”.",
           "fallback": "You can try again, or carry on with a person who checks your identity."
         },
+        "cancel": "Cancel and ask for a person",
+        "cancelling": "Stopping the upload…",
         "instructions": "Stand somewhere well lit and keep your face inside the oval. Press “Start” and follow the instructions on the screen: you will turn your head and look up or down. It takes a few seconds.",
         "kept": {
           "offline": "No connection. We could not send your recording, but it is still here: when the connection is back press “Send again”.",

@@ -177,9 +177,10 @@ function recordingSender(...results: Array<Awaited<ReturnType<CaptureProps['send
 function renderCapture(overrides: Partial<CaptureProps> = {}) {
   const startChallenge = vi.fn<CaptureProps['startChallenge']>().mockImplementation(async () => ({ kind: 'ready', challenge: challengeBody() }));
   const { sendSequence, sent } = recordingSender({ kind: 'answered' });
-  const props: CaptureProps = { startChallenge, sendSequence, busy: false, ...overrides };
+  const cancelSequence = vi.fn<CaptureProps['cancelSequence']>().mockResolvedValue('asked');
+  const props: CaptureProps = { startChallenge, sendSequence, cancelSequence, busy: false, ...overrides };
   const view = render(<PresenceSequenceCapture {...props} />);
-  return { ...view, startChallenge, sendSequence, sent, update: (next: Partial<CaptureProps>) => view.rerender(<PresenceSequenceCapture {...props} {...next} />) };
+  return { ...view, startChallenge, sendSequence, cancelSequence, sent, update: (next: Partial<CaptureProps>) => view.rerender(<PresenceSequenceCapture {...props} {...next} />) };
 }
 
 /** The camera is open and the guest can start: the button of the start is there and awake. */
@@ -532,6 +533,76 @@ describe('presence-sequence-capture: one key for each recording (AC4, AC5)', () 
 
     expect(randomUUID).toHaveBeenCalledTimes(1);
     expect(view.sendSequence).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('presence-sequence-capture: the guest stops the upload and asks for a person (E72/F02/US01/T02)', () => {
+  it('PresenceSequenceCapture_TheUploadIsOnItsWay_OffersCancelAndAskForAPersonAndTwoTapsStopItOnce', async () => {
+    stubCamera();
+    const send = vi.fn<CaptureProps['sendSequence']>().mockReturnValue(new Promise(() => undefined));
+    const cancelSequence = vi.fn<CaptureProps['cancelSequence']>().mockReturnValue(new Promise(() => undefined));
+    renderCapture({ sendSequence: send, cancelSequence });
+    await recordTheWholeSequence(send);
+
+    expect(phase()).toBe('uploading');
+    const cancel = screen.getByTestId('checkin-presence-cancel');
+    expect(cancel).toBeEnabled();
+    expect(cancel).toHaveTextContent(text('checkin.identity.presence.cancel'));
+
+    act(() => {
+      fireEvent.click(cancel);
+      fireEvent.click(cancel);
+    });
+    await settle();
+
+    expect(cancelSequence).toHaveBeenCalledTimes(1);
+    expect(phase()).toBe('cancelling');
+    expect(prompt()).toHaveTextContent(text('checkin.identity.presence.cancelling'));
+    expect(screen.queryByTestId('checkin-presence-cancel')).not.toBeInTheDocument();
+  });
+
+  it('PresenceSequenceCapture_NoUploadIsOnItsWay_OffersNoCancel', async () => {
+    stubCamera();
+    renderCapture();
+    await waitForTheStart();
+
+    expect(screen.queryByTestId('checkin-presence-cancel')).not.toBeInTheDocument();
+
+    fireEvent.click(startButton());
+    await settle();
+    await advance(500);
+
+    expect(phase()).toBe('recording');
+    expect(screen.queryByTestId('checkin-presence-cancel')).not.toBeInTheDocument();
+  });
+
+  it('PresenceSequenceCapture_TheStopEndsTheSend_TheRecordingIsLetGoAndARequestForAPersonThatFailedLeavesTheGuestToRecordAgain', async () => {
+    stubCamera();
+    let endTheSend: (result: Awaited<ReturnType<CaptureProps['sendSequence']>>) => void = () => undefined;
+    const send = vi.fn<CaptureProps['sendSequence']>().mockReturnValue(
+      new Promise((resolve) => {
+        endTheSend = resolve;
+      }),
+    );
+    const cancelSequence = vi.fn<CaptureProps['cancelSequence']>().mockImplementation(async () => {
+      endTheSend({ kind: 'cancelled' });
+      return 'failed';
+    });
+    renderCapture({ sendSequence: send, cancelSequence });
+    await recordTheWholeSequence(send);
+    const held = send.mock.calls[0][0];
+    expect(held.frames.length).toBeGreaterThan(20);
+
+    fireEvent.click(screen.getByTestId('checkin-presence-cancel'));
+    await settle();
+
+    // Nothing of the recording is kept for a retry that was given up.
+    expect(held.frames).toHaveLength(0);
+    expect(held.timestamps).toHaveLength(0);
+    expect(canvas().width).toBe(0);
+    expect(phase()).toBe('failed');
+    expect(screen.getByTestId('checkin-presence-retry')).toBeEnabled();
+    expect(screen.queryByTestId('checkin-presence-send-again')).not.toBeInTheDocument();
   });
 });
 

@@ -40,14 +40,22 @@ export type PresenceChallengeResult = { kind: 'ready'; challenge: PresenceChalle
 /**
  * What sending the sequence of the presence came to (E72/F02/US01/T02): the server answered (the step moved on: a pass, a retry with its guidance, a person, or a verification found closed); the upload did not get
  * through (the network, the server, too many requests) and the same recording may be sent again with the same key (`problem` says which); the challenge ran out and nothing was decided (a new challenge, a new
- * key, a new recording); the server refused for good (`problem` says why, and the recording starts again); or another call of the step is in flight and nothing was sent.
+ * key, a new recording); the server refused for good (`problem` says why, and the recording starts again); another call of the step is in flight and nothing was sent; or the guest stopped the upload
+ * (`cancelled`, see `cancelPresence`: the request that was on its way was given up, and the recording is not kept).
  */
 export type PresenceSendResult =
   | { kind: 'answered' }
   | { kind: 'kept'; problem: IdentityProblem }
   | { kind: 'renew' }
   | { kind: 'failed' }
-  | { kind: 'busy' };
+  | { kind: 'busy' }
+  | { kind: 'cancelled' };
+
+/**
+ * What stopping the upload of the presence and asking for a person came to (E72/F02/US01/T02): `asked` (a person was asked for, and the step moved to the assisted path), `answered` (the server had answered before the upload
+ * could be stopped: the step moved on by itself, and nobody is asked for), or `failed` (the request for a person did not get through: the guest is told and keeps the way to a person).
+ */
+export type PresenceCancelResult = 'asked' | 'answered' | 'failed';
 
 /** What the identity step of the check-in page can do, and what it knows (E03/F04/US03/T01, E22/F02/US01/T01). */
 export interface IdentityVerificationController {
@@ -93,6 +101,13 @@ export interface IdentityVerificationController {
    * One call at a time (`busy` while it lasts): a second one is not sent. The sequence is not kept here: the caller owns its frames and lets them go.
    */
   sendPresence: (sequence: PresenceSequence, idempotencyKey: string) => Promise<PresenceSendResult>;
+  /**
+   * The guest stops the upload of the sequence and asks for a person (E72/F02/US01/T02): the way to a person is disabled while a call of the step is in flight, and a recording on a slow network may take minutes, so this is
+   * the one way to a person that is open while the upload is on its way. The request that is on its way is cancelled (`AbortController`: nothing is repeated and nothing waits for the connection any more), the recording is not
+   * kept, and when the upload has ended a person is asked for, as `askOperator` does. If the server had answered before the upload could be stopped, that answer is what the guest sees and nobody is asked for (`answered`).
+   * The timeouts of the tries are not shortened: a slow network is given its whole time unless the guest stops it.
+   */
+  cancelPresence: () => Promise<PresenceCancelResult>;
   /** The guest asks for a person, from any screen of the step (GDPR art. 22). */
   askOperator: () => Promise<void>;
   /** The guest takes again what the guidance asked for (from the screen of a `retry`). */
@@ -158,6 +173,8 @@ export function useIdentityVerification(token: string, initial: IdentityVerifica
   const documentPictures = useRef<HeldPictures>(NO_PICTURES);
   // The difference hash of the front that was taken with the camera (a value derived from the document: a reference only, never state, never a storage, a request or a log).
   const frontFingerprint = useRef<string | null>(null);
+  // The upload of the sequence of the presence that is on its way (E72/F02/US01/T02): what stops it, and a promise that settles once the step is free again (`true` when it ended with the answer of the server). `null` when none is.
+  const presenceUpload = useRef<{ abort: AbortController; finished: Promise<boolean> } | null>(null);
 
   const progress = local ?? (initial ? progressFromState(initial) : null);
 
@@ -416,9 +433,20 @@ export function useIdentityVerification(token: string, initial: IdentityVerifica
     inFlight.current = true;
     setBusy(true);
     setProblem(null);
+    // The guest may stop the upload (`cancelPresence`): the signal goes to every request of it, and `finished` settles once the step is free again, with whether the server answered.
+    const abort = new AbortController();
+    let settle: (answered: boolean) => void = () => undefined;
+    const finished = new Promise<boolean>((resolve) => {
+      settle = resolve;
+    });
+    presenceUpload.current = { abort, finished };
+    let answered = false;
     try {
       const body: PresenceSequence = { ...sequence, documentPhoto: needsDocument ? held.front : null, documentPhotoBack: needsBack ? held.back : null };
-      const outcome = await uploadPresence((key) => publicCheckinApi.postPresence(token, body, key), idempotencyKey);
+      const outcome = await uploadPresence((key) => publicCheckinApi.postPresence(token, body, key, abort.signal), idempotencyKey, undefined, abort.signal);
+
+      // The guest stopped the upload: the request that was on its way is given up and nothing of it is shown, no outcome and no sentence (`cancelPresence` goes on from here).
+      if (outcome.kind === 'cancelled') return { kind: 'cancelled' };
 
       if (outcome.kind === 'answered') {
         const answer = readPresenceAnswer(outcome.answer);
@@ -430,6 +458,7 @@ export function useIdentityVerification(token: string, initial: IdentityVerifica
         // A pass or a person ends the step: the pictures of the document are let go. After a retry they are needed for the next recording.
         if (answer.result !== 'retry') letGoOfThePictures();
         update((current) => afterPresence(current, answer));
+        answered = true;
         return { kind: 'answered' };
       }
 
@@ -444,6 +473,7 @@ export function useIdentityVerification(token: string, initial: IdentityVerifica
         const read = await readClosedState(closed.state);
         if ('state' in read) {
           showClosed(read.state);
+          answered = true;
           return { kind: 'answered' };
         }
         setProblem(read.problem);
@@ -459,15 +489,33 @@ export function useIdentityVerification(token: string, initial: IdentityVerifica
       update((current) => afterProblem(current, reason));
       return { kind: 'failed' };
     } finally {
+      presenceUpload.current = null;
       inFlight.current = false;
       setBusy(false);
+      settle(answered);
     }
   };
 
-  const askOperator = async () => {
+  /** The request for a person of the guest, answered or not: a person has it, or it passed (the pictures of the document are no longer needed), or the call failed (they stay, for the guest who tries again). */
+  const requestOperator = async (): Promise<boolean> => {
     const asked = await run(() => publicCheckinApi.requestOperator(token), afterOperatorRequest);
-    // A person has it, or it passed: the pictures of the document are no longer needed. A call that failed leaves them, for the guest who tries again.
     if (asked) letGoOfThePictures();
+    return asked;
+  };
+
+  const askOperator = async () => {
+    await requestOperator();
+  };
+
+  const cancelPresence = async (): Promise<PresenceCancelResult> => {
+    const upload = presenceUpload.current;
+    if (upload) {
+      // The request that is on its way is cancelled with the upload, and what waits (the pause before a repeat, the connection that is not there) stops waiting.
+      upload.abort.abort();
+      // The step is free again once the upload has ended, and only then can a person be asked for. If the server had answered first, that answer is what the guest sees: nobody is asked for on top of it.
+      if (await upload.finished) return 'answered';
+    }
+    return (await requestOperator()) ? 'asked' : 'failed';
   };
 
   const retake = () => {
@@ -487,6 +535,7 @@ export function useIdentityVerification(token: string, initial: IdentityVerifica
     sendSelfie,
     startPresence,
     sendPresence,
+    cancelPresence,
     askOperator,
     retake,
     openNotice,

@@ -14,7 +14,7 @@ beforeEach(() => {
 /** The body and the options of the only call to `post`. */
 function postCall() {
   const [url, body, options] = vi.mocked(axios.post).mock.calls[0];
-  return { url, body, options: options as { public?: boolean; headers?: Record<string, string>; timeout?: number } };
+  return { url, body, options: options as { public?: boolean; headers?: Record<string, string>; timeout?: number; signal?: AbortSignal } };
 }
 
 describe('the identity calls of the guest check-in (E03/F04/US03/T01)', () => {
@@ -187,6 +187,23 @@ describe('the presence of the self-hosted identity step (E72/F02/US01/T01)', () 
     expect([...(body as FormData).values()].map(String)).not.toContain(KEY);
     // A sequence of a few megabytes on a mobile network is given longer than the default.
     expect(options.timeout).toBeGreaterThan(30_000);
+  });
+
+  it('postPresence_TheSignalOfTheGuestWhoStopsTheUpload_IsHandedToTheRequestAndTheTimeoutIsNotShortenedByIt', async () => {
+    const stop = new AbortController();
+
+    await publicCheckinApi.postPresence(TOKEN, { frames: [jpeg('one')], timestamps: [0], challengeToken: 'challenge-1' }, KEY, stop.signal);
+
+    const { options } = postCall();
+    expect(options.signal).toBe(stop.signal);
+    // The request is cancelled by the guest, never by a shorter wait: a slow network is given the whole time.
+    expect(options.timeout).toBeGreaterThan(30_000);
+  });
+
+  it('postPresence_NoSignal_IsTheRequestItWas_WithNoSignalInItsOptions', async () => {
+    await publicCheckinApi.postPresence(TOKEN, { frames: [jpeg('one')], timestamps: [0], challengeToken: 'challenge-1' }, KEY);
+
+    expect(postCall().options).not.toHaveProperty('signal');
   });
 
   it('postPresence_Ticino_SendsThePicturesOfTheDocumentAgainInTheFieldsTheApiReads', async () => {

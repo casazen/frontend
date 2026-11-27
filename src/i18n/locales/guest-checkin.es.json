@@ -472,6 +472,8 @@
           "busy": "Otra aplicación está usando la cámara. Ciérrela y pulse «Reintentar».",
           "fallback": "Puede volver a intentarlo o continuar con una persona que verifique su identidad."
         },
+        "cancel": "Cancelar y pedir una persona",
+        "cancelling": "Cancelando el envío…",
         "instructions": "Colóquese en un lugar bien iluminado y mantenga el rostro dentro del óvalo. Pulse «Empezar» y siga las indicaciones de la pantalla: tendrá que girar la cabeza y subir o bajar la mirada. Dura unos segundos.",
         "kept": {
           "offline": "Sin conexión. No hemos podido enviar su grabación, pero sigue aquí: cuando vuelva la conexión pulse «Enviar de nuevo».",

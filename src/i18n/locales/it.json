@@ -6868,6 +6868,8 @@
           "busy": "La fotocamera è usata da un'altra app. Chiudila e premi «Riprova».",
           "fallback": "Puoi riprovare, oppure continuare con una persona che verifica la tua identità."
         },
+        "cancel": "Annulla e chiedi una persona",
+        "cancelling": "Interrompo l'invio…",
         "instructions": "Mettiti in un posto ben illuminato e tieni il viso dentro l'ovale. Premi «Inizia» e segui le indicazioni sullo schermo: dovrai girare la testa e alzare o abbassare lo sguardo. Dura pochi secondi.",
         "kept": {
           "offline": "Connessione assente. Non siamo riusciti a inviare la tua registrazione, ma è ancora qui: quando la connessione torna premi «Invia di nuovo».",

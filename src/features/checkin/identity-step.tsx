@@ -136,7 +136,13 @@ export function IdentityStep({ identity, token, takeFront }: IdentityStepProps) 
       )}
 
       {progress.stage === 'presence' && (
-        <PresenceSequenceCapture key={token} startChallenge={identity.startPresence} sendSequence={identity.sendPresence} busy={identity.busy} />
+        <PresenceSequenceCapture
+          key={token}
+          startChallenge={identity.startPresence}
+          sendSequence={identity.sendPresence}
+          cancelSequence={identity.cancelPresence}
+          busy={identity.busy}
+        />
       )}
 
       {assistedPathVisible && <AssistedPathButton busy={identity.busy} onChoose={() => void identity.askOperator()} />}

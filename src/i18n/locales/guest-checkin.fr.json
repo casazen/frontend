@@ -472,6 +472,8 @@
           "busy": "Une autre application utilise la caméra. Fermez-la puis appuyez sur « Réessayer ».",
           "fallback": "Vous pouvez réessayer, ou continuer avec une personne qui vérifie votre identité."
         },
+        "cancel": "Annuler et demander une personne",
+        "cancelling": "Interruption de l'envoi…",
         "instructions": "Placez-vous dans un endroit bien éclairé et gardez votre visage dans l'ovale. Appuyez sur « Commencer » et suivez les indications à l'écran : vous allez tourner la tête et lever ou baisser les yeux. Cela ne dure que quelques secondes.",
         "kept": {
           "offline": "Pas de connexion. Nous n'avons pas pu envoyer votre enregistrement, mais il est toujours là : quand la connexion revient, appuyez sur « Envoyer de nouveau ».",
