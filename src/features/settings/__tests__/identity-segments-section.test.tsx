@@ -374,6 +374,8 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
     expect(biometricSettingsApi.updateSegment).not.toHaveBeenCalled();
     expect(radio(row, 'Osservazione')).toBeChecked();
     expect(within(row).queryByTestId('identity-segment-apply')).not.toBeInTheDocument();
+    // «Applica», which had the focus, is gone: the keys go on from the group of the segment and not from the top of the page.
+    await waitFor(() => expect(radio(row, 'Osservazione')).toHaveFocus());
   });
 
   it('IdentitySegmentsSection_TheKeysMoveThroughTheGroupOfAQualifiedSegment_NothingIsSentAndAutomaticIsNeverTurnedOn', async () => {
@@ -436,6 +438,8 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
     await waitFor(() => expect(row).toHaveAttribute('data-mode', 'observation'));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(within(row).queryByTestId('identity-segment-apply')).not.toBeInTheDocument();
+    // The group, which was off while the request was on its way, has the focus again.
+    await waitFor(() => expect(radio(row, 'Osservazione')).toHaveFocus());
   });
 
   it('IdentitySegmentsSection_Suspending_AsksForAReasonAndSendsNothingWithoutOne', async () => {
@@ -501,9 +505,10 @@ describe('identity-segments-section: the mode of a segment (E70/F03/US01/T02, AC
 
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     expect(biometricSettingsApi.updateSegment).not.toHaveBeenCalled();
-    // The group shows the mode in force again, with nothing to apply.
+    // The group shows the mode in force again, with nothing to apply, and has the focus («Applica», which opened the dialog, is gone).
     expect(radio(row, 'Automatica')).toBeChecked();
     expect(within(row).queryByTestId('identity-segment-apply')).not.toBeInTheDocument();
+    await waitFor(() => expect(radio(row, 'Automatica')).toHaveFocus());
     // The next time it opens it is empty.
     chooseAndApply(row, 'Sospesa');
     expect(await within(await screen.findByRole('dialog')).findByTestId('identity-segment-suspend-reason')).toHaveValue('');

@@ -1,4 +1,4 @@
-import { useId, useState, type FormEvent } from 'react';
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { ConfirmationDialog } from '@/components/shared/confirmation-dialog';
@@ -204,6 +204,8 @@ function SuspendDialog({ segment, name, onClose }: SuspendDialogProps) {
       confirmDisabled={clean === null}
       isLoading={setMode.isPending}
       contentClassName="sm:max-h-[90dvh] sm:overflow-y-auto"
+      // «Applica», which opened the dialog, is gone when it closes: the section gives the focus to the group of the segment.
+      onCloseAutoFocus={(event) => event.preventDefault()}
       onConfirm={async () => {
         if (clean === null) return;
         await setMode.mutateAsync({ id: segment.id, request: { mode: 'suspended', reason: clean } });
@@ -259,6 +261,8 @@ function AutomaticDialog({ segment, name, onClose }: AutomaticDialogProps) {
       consequences={[t('biometricSettings.segments.automatic.consequences.approves'), t('biometricSettings.segments.automatic.consequences.revocable')]}
       confirmLabel={t('biometricSettings.segments.automatic.confirm')}
       isLoading={setMode.isPending}
+      // «Applica», which opened the dialog, is gone when it closes: the section gives the focus to the group of the segment.
+      onCloseAutoFocus={(event) => event.preventDefault()}
       onConfirm={async () => {
         await setMode.mutateAsync({ id: segment.id, request: { mode: 'automatic' } });
       }}
@@ -402,6 +406,18 @@ export function IdentitySegmentsSection() {
   // so a read in the background that fails while the reason is being typed takes neither the dialog nor the reason away (and does not bring an empty one back when the list is read again).
   const [confirming, setConfirming] = useState<{ segment: IdentitySegment; mode: 'automatic' | 'suspended'; name: string } | null>(null);
   const titleId = useId();
+  const list = useRef<HTMLUListElement>(null);
+  // The segment whose group is to get the focus back: when what was chosen in it goes away (a dialog closed, a write answered) «Applica», which had the focus, goes with it, and the keys would start again from the top.
+  const focusAfter = useRef<string | null>(null);
+
+  useEffect(() => {
+    // After the render in which nothing of the card is in flight any more: the checked radio of that group takes the focus.
+    const id = focusAfter.current;
+    if (id === null || busy) return;
+    focusAfter.current = null;
+    const row = Array.from(list.current?.children ?? []).find((child) => child.getAttribute('data-segment-id') === id);
+    row?.querySelector<HTMLInputElement>('input[type="radio"]:checked')?.focus();
+  });
 
   if (!available) return null;
 
@@ -424,7 +440,15 @@ export function IdentitySegmentsSection() {
     if (busy || mode === undefined || mode === segmentModeOf(segment.mode)) return;
     setMode.reset();
     if (mode === 'observation') {
-      setMode.mutate({ id: segment.id, request: { mode } }, { onSettled: () => dropPick(segment.id) });
+      setMode.mutate(
+        { id: segment.id, request: { mode } },
+        {
+          onSettled: () => {
+            dropPick(segment.id);
+            focusAfter.current = segment.id;
+          },
+        },
+      );
       return;
     }
     setConfirming({ segment, mode, name: segmentName(segment, overview?.formats ?? [], t) });
@@ -432,7 +456,10 @@ export function IdentitySegmentsSection() {
 
   const closeConfirmation = () => {
     setMode.reset();
-    if (confirming !== null) dropPick(confirming.segment.id);
+    if (confirming !== null) {
+      dropPick(confirming.segment.id);
+      focusAfter.current = confirming.segment.id;
+    }
     setConfirming(null);
   };
 
@@ -482,7 +509,7 @@ export function IdentitySegmentsSection() {
               {t('biometricSettings.segments.empty')}
             </p>
           ) : (
-            <ul className="space-y-3">
+            <ul ref={list} className="space-y-3">
               {overview.segments.map((segment) => (
                 <SegmentRow
                   key={segment.id}
