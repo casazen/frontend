@@ -12,7 +12,6 @@ interface CrmEmptyStateProps {
   testId?: string;
 }
 
-/** A page of the guests with nothing to show yet: a large icon on the accent of the area, one sentence, and the way forward. */
 export function CrmEmptyState({ icon: Icon, title, description, action, secondaryAction, helpLink, testId }: CrmEmptyStateProps) {
   return (
     <div data-testid={testId} className="flex flex-col items-center rounded-2xl border bg-card px-4 py-12 text-center sm:px-8">

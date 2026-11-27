@@ -23,7 +23,6 @@ interface FactProps {
   children: ReactNode;
 }
 
-/** One short line about a guest: an icon, and the name of the fact for a screen reader. */
 function Fact({ icon: Icon, label, children }: FactProps) {
   return (
     <li className="flex items-start gap-2">
@@ -36,7 +35,6 @@ function Fact({ icon: Icon, label, children }: FactProps) {
   );
 }
 
-/** One of the two guests of a proposal: the face, the name and a few facts (the contacts masked). No birth date, no document. */
 function ProfileSide({ profile, className }: { profile: CrmMergeProfile; className?: string }) {
   const { t, i18n } = useTranslation();
   const headingId = useId();

@@ -100,7 +100,6 @@ function TagChips({ tags }: { tags: string[] }) {
   );
 }
 
-/** The channels a guest booked on, each with the small icon of its kind. */
 function ChannelChips({ channels }: { channels: string[] }) {
   const { t } = useTranslation();
   if (channels.length === 0) return null;
@@ -119,7 +118,6 @@ function ChannelChips({ channels }: { channels: string[] }) {
   );
 }
 
-/** Where the guest comes from and the language they speak, as the guest has them. */
 function Origin({ profile }: { profile: CrmProfileListItem }) {
   const { t } = useTranslation();
   const language = profile.language ? languageLabel(t, profile.language) : '';
@@ -159,7 +157,6 @@ function GuestCell({ profile }: { profile: CrmProfileListItem }) {
   );
 }
 
-/** How many stays and, under it in bold, what the guest spent. */
 function StaysCell({ profile }: { profile: CrmProfileListItem }) {
   const { t, i18n } = useTranslation();
   if (profile.totalStays === 0) return <span className="text-foreground/70">{t('crm.list.noStays')}</span>;
@@ -171,7 +168,6 @@ function StaysCell({ profile }: { profile: CrmProfileListItem }) {
   );
 }
 
-/** The last stay as people say it ("3 giorni fa") and, under it, the day. */
 function LastStayCell({ profile }: { profile: CrmProfileListItem }) {
   const { i18n } = useTranslation();
   const day = formatDay(profile.lastStayAt, i18n.language);
@@ -194,7 +190,6 @@ function EmailCell({ profile }: { profile: CrmProfileListItem }) {
   );
 }
 
-/** The four numbers over the list: who the guests are, how many can be written to, how many came back and how many are loyal. */
 function GuestOverview({ overview }: { overview: CrmOverview }) {
   const { t } = useTranslation();
   return (
@@ -207,7 +202,6 @@ function GuestOverview({ overview }: { overview: CrmOverview }) {
   );
 }
 
-/** The one highlighted block of the page: the next thing a host who has guests has not done yet. */
 function NextStep({ kind }: { kind: NextStepKind }) {
   const { t } = useTranslation();
   const step = NEXT_STEPS[kind];
@@ -313,7 +307,7 @@ export default function GuestList() {
         icon={Users}
         title={t('crm.list.title')}
         description={t('crm.list.description')}
-        primary={canMarket ? { label: t('crm.list.actions.campaign'), icon: Send, to: NEW_CAMPAIGN_PATH, testId: 'crm-new-campaign' } : undefined}
+        primary={canMarket && !noGuestsAtAll ? { label: t('crm.list.actions.campaign'), icon: Send, to: NEW_CAMPAIGN_PATH, testId: 'crm-new-campaign' } : undefined}
         secondary={
           canMarket
             ? [

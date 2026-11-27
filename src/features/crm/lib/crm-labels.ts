@@ -30,7 +30,6 @@ export function channelLabel(t: TFunction, channel: string, portal?: string | nu
   return known ? t(known.labelKey) : channel;
 }
 
-/** The small icon of a channel: the own site, a booking written by hand, or a booking portal. */
 export function channelIcon(channel: string): LucideIcon {
   if (channel === 'Direct') return Globe;
   if (channel === 'Manual' || channel === 'Local') return PenLine;

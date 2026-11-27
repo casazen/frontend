@@ -29,10 +29,6 @@ export function formatDay(value: string | null | undefined, language: string): s
   return day ? formatStayDate(day, language, { day: 'numeric', month: 'short', year: 'numeric' }) : null;
 }
 
-/**
- * How long ago a stay day was, in the words of the language ("ieri", "3 giorni fa", "2 mesi fa"), counted in calendar days of Rome as the
- * stay dates are. A day more than a week away is counted in weeks, then months, then years. `null` when there is none.
- */
 export function formatRelativeDay(value: string | null | undefined, language: string, now: Date = new Date()): string | null {
   const day = parseStayDate(value);
   if (!day) return null;

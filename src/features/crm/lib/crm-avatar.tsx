@@ -16,10 +16,6 @@ interface CrmAvatarProps {
   className?: string;
 }
 
-/**
- * The face of a guest in a list: the initials of the first and the last word of the name on a soft tint that is always the same for
- * the same name, so a list of guests has color. A lead without a name has the icon of a person. The name is always written next to it.
- */
 export function CrmAvatar({ name, className }: CrmAvatarProps) {
   const words = name?.trim().split(/\s+/).filter(Boolean) ?? [];
   const initials = [words[0], words.length > 1 ? words.at(-1) : undefined]

@@ -120,7 +120,7 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
   agencyTier: false,
   /**
    * The CRM and marketing module (backend `CrmMarketing`, E07): the guest profiles, the segments, the campaigns, the automations and their
-   * menu entries, off until the product owner turns it on. While it is off the entry «CRM Ospiti» of «Altro» and the pages that hang from it
+   * menu entries, off until the product owner turns it on. While it is off the entry «Ospiti e marketing» of «Altro» and the pages that hang from it
    * are in no menu and their addresses lead to the home of the area. The pages the e-mails link to (the consent, the confirmation, the
    * unsubscribe and the welcome pages) are never behind it: an e-mail already sent must keep working.
    */

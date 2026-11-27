@@ -36,7 +36,6 @@ export function useGuestCrmProfiles(params?: CrmProfileListParams) {
   });
 }
 
-/** The guests the summary strip of the list counts, whatever the filters on the screen. */
 export interface CrmOverview {
   guests: number;
   reachableByEmail: number;
@@ -54,12 +53,7 @@ function combineOverview(results: ReadonlyArray<{ data: number | undefined }>): 
   return { guests, reachableByEmail, returned, loyal };
 }
 
-/**
- * The four numbers of the strip over the list: all the guests, those who can be written to by e-mail, those who came back (two stays or
- * more) and the loyal ones (three or more). Each is a list of one row read for its `totalCount`, under the same key as the list, so
- * whatever refreshes the list (a merge, a tag) refreshes them too. `undefined` until all four are known and when one fails: the strip is
- * then left out, never half drawn.
- */
+// Same key as the list: whatever refreshes the list (a merge, a tag) refreshes these counts too.
 export function useCrmOverview(): CrmOverview | undefined {
   return useQueries({
     queries: OVERVIEW_FILTERS.map((filters) => ({
