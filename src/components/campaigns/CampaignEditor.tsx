@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { AudiencePicker, MarketingError, PropertyPicker } from './MarketingInputs';
 import { CampaignAssets } from './CampaignAssets';
 
-export function CampaignEditor({ onSaved }: { onSaved: () => void }) {
+export function CampaignEditor({ onSaved, title }: { onSaved: () => void; title?: string }) {
   const { t } = useTranslation();
   const [propertyId, setProperty] = useState('');
   const [segmentId, setSegment] = useState('');
@@ -63,7 +63,7 @@ export function CampaignEditor({ onSaved }: { onSaved: () => void }) {
   const busy = generate.isPending || events.isPending || save.isPending || assetDraft.isPending;
   return (
     <div className="space-y-4 rounded-xl border bg-card p-5">
-      <h2 className="text-xl font-semibold">{t('campaigns.create')}</h2>
+      <h2 className="text-xl font-semibold">{title ?? t('campaigns.create')}</h2>
       <fieldset disabled={busy} className="space-y-4">
         <div className="grid gap-3 md:grid-cols-2">
           <PropertyPicker

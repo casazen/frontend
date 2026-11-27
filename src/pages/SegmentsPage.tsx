@@ -1,270 +1,180 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useMutation } from '@tanstack/react-query';
-import { ApiClient } from '@/api/client';
-import { useProperties } from '@/queries/use-properties';
-import { PageHeader } from '@/components/layout/page-header';
-import { AppShell } from '@/components/layout/app-shell';
-import { MarketingError } from '@/components/campaigns/MarketingInputs';
+import { Plus, Upload, UsersRound } from 'lucide-react';
 import { GuestImport } from '@/components/campaigns/GuestImport';
+import { PageHeader } from '@/components/layout/page-header';
+import { ErrorState } from '@/components/shared/error-state';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select } from '@/components/ui/select';
-import { useCreateSegment, useFields, usePreviewCount, useSegments } from '@/queries/campaigns';
-import type { ConditionDefinition, CreateSegmentDto, FieldDefinition } from '@/types/campaign.types';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ConditionCount } from '@/features/marketing/audience-count';
+import { CampaignWizard } from '@/features/marketing/campaign-wizard';
+import { GroupCard } from '@/features/marketing/group-card';
+import { GroupsArt } from '@/features/marketing/illustrations';
+import { PickCard } from '@/features/marketing/pick-card';
+import { recipeText } from '@/features/marketing/recipe-text';
+import { SEGMENT_RECIPES, propertyRecipes, type SegmentRecipe } from '@/features/marketing/segment-recipes';
+import { SegmentWizard } from '@/features/marketing/segment-wizard';
+import { useSegments } from '@/queries/campaigns';
+import { useProperties } from '@/queries/use-properties';
+import type { Segment } from '@/types/campaign.types';
 
-interface RuleInput {
-  fieldId: string;
-  operator: string;
-  value: string;
-}
+const FEW_GROUPS = 3;
+const EMPTY_STEPS = ['pick', 'check', 'write'] as const;
 
-function toValue(rule: RuleInput, field: FieldDefinition) {
-  const convert = (s: string) =>
-    field.fieldType === 'Number' || rule.operator === 'inLast'
-      ? Number(s)
-      : field.fieldType === 'Boolean'
-        ? s === 'true'
-        : s.trim();
-  return ['in', 'notIn', 'between'].includes(rule.operator) ? rule.value.split(',').map(convert) : convert(rule.value);
+interface WizardRequest {
+  recipeId?: string;
 }
 
 export function SegmentsPage() {
-  const { t } = useTranslation();
-  const [section, setSection] = useState<'list' | 'new' | 'import'>('list');
-  const [selected, setSelected] = useState('');
+  const { t, i18n } = useTranslation();
+  const [params, setParams] = useSearchParams();
   const segments = useSegments();
-  const preview = usePreviewCount(selected);
+  const properties = useProperties({ mode: 'short' });
+  const [wizard, setWizard] = useState<WizardRequest | null>(() => (params.has('new') ? {} : null));
+  const [importOpen, setImportOpen] = useState(() => params.has('import'));
+  const [campaignFor, setCampaignFor] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!params.has('new') && !params.has('import')) return;
+    const next = new URLSearchParams(params);
+    next.delete('new');
+    next.delete('import');
+    setParams(next, { replace: true });
+  }, [params, setParams]);
+
+  const propertyList = useMemo(() => (properties.data ?? []).map((property) => ({ id: property.id, name: property.name })), [properties.data]);
+  const recipes = useMemo(() => [...SEGMENT_RECIPES, ...propertyRecipes(propertyList)], [propertyList]);
+  const env = { t, language: i18n.language, propertyName: (id: string) => propertyList.find((property) => property.id === id)?.name };
+
+  const created = segments.data ?? [];
+  const missingRecipes = recipes.filter((recipe) => !created.some((segment) => JSON.stringify(segment.condition.groups) === JSON.stringify(recipe.condition.groups)));
+
+  const recipeCard = (recipe: SegmentRecipe) => {
+    const text = recipeText(t, recipe);
+    return (
+      <PickCard
+        key={recipe.id}
+        icon={recipe.icon}
+        tone={recipe.tone}
+        title={text.title}
+        description={text.description}
+        footer={<ConditionCount condition={recipe.condition} />}
+        onPick={() => setWizard({ recipeId: recipe.id })}
+        testId={`group-recipe-${recipe.id}`}
+      />
+    );
+  };
+
   return (
-    <AppShell>
-      <div className="workspace-page space-y-5">
-        <PageHeader title={t('nav.crmSegments')} description={t('campaigns.segment.description')} crumbs="auto" />
-        <div className="flex flex-wrap gap-2">
-          {(['list', 'new', 'import'] as const).map((item, i) => (
-            <Button
-              key={item}
-              aria-pressed={section === item}
-              variant={section === item ? 'default' : 'outline'}
-              onClick={() => setSection(item)}
-            >
-              {t(['nav.crmSegments', 'campaigns.segment.create', 'marketingStudio.importTitle'][i])}
-            </Button>
-          ))}
+    <div className="min-w-0 space-y-6" data-testid="segments-page">
+      <PageHeader
+        icon={UsersRound}
+        title={t('marketingHub.groups.title')}
+        description={t('marketingHub.groups.description')}
+        primary={{ label: t('marketingHub.groups.create'), icon: Plus, onClick: () => setWizard({}), testId: 'groups-create' }}
+        secondary={[{ label: t('marketingHub.groups.import'), icon: Upload, onClick: () => setImportOpen(true), testId: 'groups-import' }]}
+      />
+
+      {segments.isPending ? (
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <Skeleton className="h-40 rounded-2xl" />
+          <Skeleton className="h-40 rounded-2xl" />
+          <Skeleton className="hidden h-40 rounded-2xl xl:block" />
         </div>
-        {section === 'list' && (
-          <div className="space-y-3">
-            <MarketingError error={segments.error ?? preview.error} />
-            {segments.isLoading && <p role="status">{t('campaigns.segment.loading')}</p>}
-            {segments.data?.length === 0 && <p>{t('campaigns.segment.emptyList')}</p>}
-            {segments.data?.map((segment) => (
-              <article className="rounded-xl border bg-card p-4" key={segment.id}>
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <h2 className="font-semibold">{segment.name}</h2>
-                  <Button variant="outline" onClick={() => setSelected(segment.id === selected ? '' : segment.id)}>
-                    {t(selected === segment.id ? 'campaigns.segment.hidePreview' : 'campaigns.segment.preview')}
+      ) : null}
+
+      {segments.isError ? (
+        <ErrorState title={t('campaigns.loadError')} error={segments.error} onRetry={() => void segments.refetch()} testId="groups-error" />
+      ) : null}
+
+      {segments.data && created.length === 0 ? (
+        <div className="space-y-8" data-testid="groups-empty">
+          <section className="overflow-hidden rounded-3xl bg-primary-soft ring-1 ring-inset ring-border">
+            <div className="grid items-center gap-6 p-6 sm:p-8 md:grid-cols-[minmax(0,1fr)_15rem]">
+              <div className="min-w-0 space-y-4">
+                <h2 className="text-balance text-2xl font-semibold tracking-tight">{t('marketingHub.groups.empty.title')}</h2>
+                <p className="max-w-prose text-foreground/80">{t('marketingHub.groups.empty.text')}</p>
+                <ol className="space-y-2 text-sm">
+                  {EMPTY_STEPS.map((item, index) => (
+                    <li key={item} className="flex items-center gap-3">
+                      <span aria-hidden="true" className="grid size-7 shrink-0 place-items-center rounded-full bg-card text-sm font-bold text-primary-text ring-1 ring-inset ring-border">
+                        {index + 1}
+                      </span>
+                      <span className="min-w-0">{t(`marketingHub.groups.empty.steps.${item}`)}</span>
+                    </li>
+                  ))}
+                </ol>
+                <div className="flex flex-wrap gap-2">
+                  <Button type="button" className="max-md:hidden" onClick={() => setWizard({})} data-testid="groups-empty-create">
+                    <Plus aria-hidden="true" className="size-4" />
+                    {t('marketingHub.groups.empty.create')}
+                  </Button>
+                  <Button type="button" variant="outline" onClick={() => setImportOpen(true)}>
+                    <Upload aria-hidden="true" className="size-4" />
+                    {t('marketingHub.groups.import')}
                   </Button>
                 </div>
-                {selected === segment.id && (
-                  <p role="status">
-                    {preview.data
-                      ? t('campaigns.segment.previewCount', { count: preview.data.count })
-                      : preview.isPending
-                        ? t('campaigns.segment.loading')
-                        : null}
-                  </p>
-                )}
-              </article>
+              </div>
+              <GroupsArt className="hidden w-full md:block" />
+            </div>
+          </section>
+          <section aria-labelledby="ready-groups-title" className="space-y-3">
+            <h2 id="ready-groups-title" className="text-lg font-semibold">
+              {t('marketingHub.groups.empty.ready')}
+            </h2>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{recipes.map(recipeCard)}</div>
+          </section>
+        </div>
+      ) : null}
+
+      {created.length > 0 ? (
+        <div className="space-y-8">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3" data-testid="groups-list">
+            {created.map((segment) => (
+              <GroupCard key={segment.id} segment={segment} env={env} onWrite={(item: Segment) => setCampaignFor(item.id)} />
             ))}
           </div>
-        )}
-        {section === 'new' && <SegmentForm onSaved={() => setSection('list')} />}
-        {section === 'import' && <GuestImport />}
-      </div>
-    </AppShell>
-  );
-}
-
-function SegmentForm({ onSaved }: { onSaved: () => void }) {
-  const { t } = useTranslation();
-  const fields = useFields();
-  const properties = useProperties({mode:'short'});
-  const save = useCreateSegment();
-  const [name, setName] = useState('');
-  const [phrase, setPhrase] = useState('');
-  const [rules, setRules] = useState<RuleInput[]>([]);
-  const [logic, setLogic] = useState<'AND' | 'OR'>('AND');
-  const [suggested, setSuggested] = useState<ConditionDefinition>();
-  const ai = useMutation({
-    mutationFn: () => ApiClient.post<CreateSegmentDto>('/campaigns/studio/suggest-segment', { brief: phrase }),
-    onSuccess: (result) => {
-      setName(result.name);
-      setSuggested(result.condition);
-    },
-  });
-  function update(i: number, change: Partial<RuleInput>) {
-    setRules((items) => items.map((rule, idx) => (idx === i ? { ...rule, ...change } : rule)));
-  }
-  return (
-    <form
-      className="space-y-4 rounded-xl border bg-card p-5"
-      onSubmit={(e) => {
-        e.preventDefault();
-        const condition: ConditionDefinition = suggested ?? {
-          version: '1.0',
-          groups: [
-            {
-              operator: logic,
-              rules: rules.map((r) => ({
-                ...r,
-                value: toValue(
-                  r,
-                  fields.data!.find((f) => f.fieldId === r.fieldId)!,
-                ),
-              })),
-            },
-          ],
-        };
-        save.mutate({ name: name.trim(), condition }, { onSuccess: onSaved });
-      }}
-    >
-      <h2 className="text-xl font-semibold">{t('campaigns.segment.newSegment')}</h2>
-      <label className="block">
-        {t('marketingStudio.audiencePhrase')}
-        <Input value={phrase} onChange={(e) => setPhrase(e.target.value)} />
-      </label>
-      <Button variant="outline" type="button" disabled={!phrase.trim() || ai.isPending} onClick={() => ai.mutate()}>
-        {t('marketingStudio.suggestRules')}
-      </Button>
-      <label className="block">
-        {t('campaigns.segment.name')}
-        <Input required value={name} onChange={(e) => setName(e.target.value)} />
-      </label>
-      {suggested ? (
-        <div>
-          <ul>
-            {suggested.groups.map((group, i) => (
-              <li key={i}>
-                {group.rules
-                  .map((r) =>
-                    [
-                      t('marketingStudio.fields.' + r.fieldId, { defaultValue: r.fieldId }),
-                      t('marketingStudio.operators.' + r.operator, { defaultValue: r.operator }),
-                      String(r.value),
-                    ].join(' '),
-                  )
-                  .join(' ' + group.operator + ' ')}
-              </li>
-            ))}
-          </ul>
-          <Button type="button" variant="outline" onClick={() => setSuggested(undefined)}>
-            {t('marketingStudio.manualRules')}
-          </Button>
+          {created.length <= FEW_GROUPS && missingRecipes.length > 0 ? (
+            <section aria-labelledby="more-groups-title" className="space-y-3">
+              <h2 id="more-groups-title" className="text-lg font-semibold">
+                {t('marketingHub.groups.more')}
+              </h2>
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{missingRecipes.slice(0, 3).map(recipeCard)}</div>
+            </section>
+          ) : null}
         </div>
-      ) : (
-        <>
-          <label className="block">
-            {t('marketingStudio.match')}
-            <Select value={logic} onChange={(e) => setLogic(e.target.value as typeof logic)}>
-              <option value="AND">{t('marketingStudio.all')}</option>
-              <option value="OR">{t('marketingStudio.any')}</option>
-            </Select>
-          </label>
-          {rules.map((rule, i) => {
-            const field = fields.data?.find((f) => f.fieldId === rule.fieldId);
-            return (
-              <div key={i} className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-                <label>
-                  {t('marketingStudio.field')}
-                  <Select
-                    value={rule.fieldId}
-                    onChange={(e) => {
-                      const next = fields.data!.find((f) => f.fieldId === e.target.value)!;
-                      update(i, { fieldId: next.fieldId, operator: next.operators[0], value: '' });
-                    }}
-                  >
-                    {fields.data?.map((f) => (
-                      <option key={f.fieldId} value={f.fieldId}>
-                        {t('marketingStudio.fields.' + f.fieldId, { defaultValue: f.fieldId })}
-                      </option>
-                    ))}
-                  </Select>
-                </label>
-                <label>
-                  {t('marketingStudio.operator')}
-                  <Select value={rule.operator} onChange={(e) => update(i, { operator: e.target.value, value: '' })}>
-                    {field?.operators.map((op) => (
-                      <option key={op} value={op}>
-                        {t('marketingStudio.operators.' + op, { defaultValue: op })}
-                      </option>
-                    ))}
-                  </Select>
-                </label>
-                <label>
-                  {t('marketingStudio.value')}
-                  {rule.fieldId === 'propertyHistory' || rule.fieldId === 'stage' ? (
-                    <select multiple required className="block w-full rounded-md border bg-card p-2" value={rule.value ? rule.value.split(',') : []}
-                      onChange={event => update(i, {value: Array.from(event.currentTarget.selectedOptions, option => option.value).join(',')})}>
-                      {rule.fieldId === 'propertyHistory'
-                        ? properties.data?.map(p => <option key={p.id} value={p.id}>{p.name}</option>)
-                        : ['upcoming','first','returning','loyal','lost'].map(stage => <option key={stage} value={stage}>{t('marketingStudio.category.' + stage)}</option>)}
-                    </select>
-                  ) : field?.fieldType === 'Boolean' ? (
-                    <Select required value={rule.value} onChange={(e) => update(i, { value: e.target.value })}>
-                      <option value="">—</option>
-                      <option value="true">{t('marketingStudio.yes')}</option>
-                      <option value="false">{t('marketingStudio.no')}</option>
-                    </Select>
-                  ) : (
-                    <Input
-                      required
-                      type={
-                        ['between', 'in', 'notIn'].includes(rule.operator)
-                          ? 'text'
-                          : field?.fieldType === 'Number' || rule.operator === 'inLast'
-                            ? 'number'
-                            : field?.fieldType === 'Date'
-                              ? 'date'
-                              : 'text'
-                      }
-                      value={rule.value}
-                      onChange={(e) => update(i, { value: e.target.value })}
-                      placeholder={
-                        ['between', 'in', 'notIn'].includes(rule.operator)
-                          ? t('marketingStudio.commaValues')
-                          : undefined
-                      }
-                    />
-                  )}
-                </label>
-                <Button
-                  className="self-end"
-                  variant="outline"
-                  type="button"
-                  onClick={() => setRules((rows) => rows.filter((_, idx) => idx !== i))}
-                >
-                  {t('marketingStudio.remove')}
-                </Button>
-              </div>
-            );
-          })}
-          <Button
-            type="button"
-            variant="outline"
-            disabled={!fields.data?.length}
-            onClick={() => {
-              const f = fields.data![0];
-              setRules([...rules, { fieldId: f.fieldId, operator: f.operators[0], value: '' }]);
-            }}
-          >
-            {t('marketingStudio.addRule')}
-          </Button>
-          {!rules.length && <p>{t('marketingStudio.allReachable')}</p>}
-        </>
-      )}
-      <MarketingError error={fields.error ?? ai.error ?? save.error} />
-      <Button type="submit" disabled={!name.trim() || save.isPending || ai.isPending}>
-        {t('shared.save')}
-      </Button>
-    </form>
+      ) : null}
+
+      <SegmentWizard
+        open={wizard !== null}
+        onOpenChange={(open) => {
+          if (!open) setWizard(null);
+        }}
+        initialRecipeId={wizard?.recipeId}
+        onWriteCampaign={(segment) => {
+          setWizard(null);
+          setCampaignFor(segment.id);
+        }}
+      />
+      <CampaignWizard
+        open={campaignFor !== null}
+        onOpenChange={(open) => {
+          if (!open) setCampaignFor(null);
+        }}
+        initialSegmentId={campaignFor ?? undefined}
+      />
+
+      <Dialog open={importOpen} onOpenChange={setImportOpen}>
+        <DialogContent className="max-h-[92dvh] overflow-y-auto sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>{t('marketingStudio.importTitle')}</DialogTitle>
+            <DialogDescription>{t('marketingHub.groups.importIntro')}</DialogDescription>
+          </DialogHeader>
+          {importOpen ? <GuestImport /> : null}
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }

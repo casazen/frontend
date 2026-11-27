@@ -24,6 +24,8 @@ export const campaignsApi = {
   previewCondition: (condition: ConditionDefinition, propertyId?: string) =>
     ApiClient.post<SegmentPreviewResult>('/campaigns/segments/preview', { condition, propertyId }),
 
+  suggestSegment: (brief: string) => ApiClient.post<CreateSegmentDto>('/campaigns/studio/suggest-segment', { brief }),
+
   // Field catalog
   getFields: () => ApiClient.get<FieldDefinition[]>('/campaigns/fields'),
 

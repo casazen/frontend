@@ -83,7 +83,9 @@ const studio = '/campaigns/studio';
 export const assetQueryKey = ['marketing-assets'];
 export const saveAssetDraft = (asset: {id:string; subject:string; body:string}) =>
   ApiClient.post<{id:string}>(studio + '/assets/' + asset.id + '/draft', {subject:asset.subject, body:asset.body});
+export const dismissAsset = (id: string) => ApiClient.post<void>(studio + '/assets/' + id + '/dismiss', {});
 export const marketingStudioApi = {
+  assets: () => ApiClient.get<GeneratedContent[]>(studio + '/assets'),
   settings: () => ApiClient.get<MarketingSettings>(studio + '/settings'),
   saveSettings: (value: MarketingSettings) => ApiClient.put<void>(studio + '/settings', value),
   events: (propertyId: string, from: string, to: string) =>

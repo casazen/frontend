@@ -1,1 +1,450 @@
-{}
+{
+  "layer": {
+    "back": "Back",
+    "cancel": "Cancel",
+    "continue": "Continue"
+  },
+  "count": {
+    "guests_one": "{{count}} guest",
+    "guests_other": "{{count}} guests",
+    "reached_one": "guest reached",
+    "reached_other": "guests reached",
+    "zeroHint": "Nobody matches yet. Try removing a rule to widen the group.",
+    "consentHint": "We only count guests who agreed to receive e-mails."
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again in a moment.",
+    "aiUnavailable": "The AI assistant is not active for your account yet: you can write the text yourself.",
+    "aiInvalid": "The AI could not write a suitable text. Try again or write it yourself.",
+    "searchUnavailable": "We cannot search for events right now. Try again later or skip this step.",
+    "cityRequired": "To search for events we need the city of the house: add it on the property page.",
+    "periodInvalid": "The period you chose is not valid: pick a shorter one.",
+    "segmentSave": "We could not save the group. Please try again.",
+    "campaignSave": "We could not save the campaign. Please try again."
+  },
+  "stage": {
+    "upcoming": "With a stay coming up",
+    "first": "On their first visit",
+    "returning": "Returning",
+    "loyal": "Loyal",
+    "lost": "To win back"
+  },
+  "language": {
+    "it": "Italian",
+    "en": "English",
+    "de": "German",
+    "fr": "French",
+    "es": "Spanish",
+    "nl": "Dutch"
+  },
+  "filters": {
+    "lastStay": "Last stay",
+    "stays": "Number of stays",
+    "stage": "Type of guest",
+    "properties": "House",
+    "language": "Language",
+    "country": "Country",
+    "tag": "Label",
+    "spend": "Spend"
+  },
+  "rule": {
+    "staysAtLeast_one": "Stayed at least {{count}} time",
+    "staysAtLeast_other": "Stayed at least {{count}} times",
+    "staysExactly_one": "Stayed exactly {{count}} time",
+    "staysExactly_other": "Stayed exactly {{count}} times",
+    "staysLessThan_one": "Stayed fewer than {{count}} time",
+    "staysLessThan_other": "Stayed fewer than {{count}} times",
+    "staysBetween": "Stayed from {{from}} to {{to}} times",
+    "lastInLast_one": "Last stay within the last day",
+    "lastInLast_other": "Last stay within the last {{count}} days",
+    "lastBefore": "Last stay before {{date}}",
+    "lastAfter": "Last stay after {{date}}",
+    "lastBetween": "Last stay between {{from}} and {{to}}",
+    "firstInLast_one": "First stay within the last day",
+    "firstInLast_other": "First stay within the last {{count}} days",
+    "firstBefore": "First stay before {{date}}",
+    "firstAfter": "First stay after {{date}}",
+    "firstBetween": "First stay between {{from}} and {{to}}",
+    "spendMore": "Spent more than {{amount}}",
+    "spendLess": "Spent less than {{amount}}",
+    "spendBetween": "Spent between {{from}} and {{to}}",
+    "stageIn": "Guests: {{list}}",
+    "stageNotIn": "Everyone except guests: {{list}}",
+    "languageIn": "Speak {{list}}",
+    "languageNotIn": "Do not speak {{list}}",
+    "countryIn": "Come from {{list}}",
+    "countryNotIn": "Do not come from {{list}}",
+    "propertyIn": "Stayed at {{list}}",
+    "propertyNotIn": "Never stayed at {{list}}",
+    "unknownProperty": "one of your houses",
+    "tagIn": "Have the label {{list}}",
+    "tagNotIn": "Do not have the label {{list}}",
+    "generic": "{{field}} {{operator}} {{value}}"
+  },
+  "editor": {
+    "apply": "Apply",
+    "cancel": "Cancel",
+    "add": "Add",
+    "removeValue": "Remove {{value}}",
+    "includeLabel": "How to use the choice",
+    "include": "Include",
+    "exclude": "Exclude",
+    "stays": {
+      "title": "Number of stays",
+      "atLeast": "At least",
+      "exactly": "Exactly",
+      "lessThan": "Fewer than",
+      "count": "How many stays",
+      "unit": "stays"
+    },
+    "lastStay": {
+      "title": "Last stay",
+      "inLast": "In the last days",
+      "before": "Before",
+      "after": "After",
+      "days_one": "{{count}} day",
+      "days_other": "{{count}} days",
+      "dayCount": "How many days",
+      "dayUnit": "days",
+      "date": "Date"
+    },
+    "spend": {
+      "title": "How much they spent",
+      "moreThan": "More than",
+      "lessThan": "Less than",
+      "amount": "Amount"
+    },
+    "stage": {
+      "title": "What kind of guests"
+    },
+    "language": {
+      "title": "Which language they speak"
+    },
+    "properties": {
+      "title": "Which houses they stayed at"
+    },
+    "country": {
+      "title": "Which country they come from",
+      "placeholder": "For example: Germany"
+    },
+    "tag": {
+      "title": "With which label",
+      "placeholder": "For example: skiers"
+    }
+  },
+  "recipes": {
+    "recent": {
+      "title": "Recent guests",
+      "description": "Who stayed in the last 60 days. Ideal to say thanks and ask for a review."
+    },
+    "first": {
+      "title": "On their first visit",
+      "description": "Who stayed with you only once. Invite them back."
+    },
+    "returning": {
+      "title": "Returning guests",
+      "description": "Who has already come back more than once."
+    },
+    "loyal": {
+      "title": "Loyal guests",
+      "description": "Who comes back often: your best ambassadors."
+    },
+    "lost": {
+      "title": "To win back",
+      "description": "Who has not come back for a long time. A message can bring them back."
+    },
+    "upcoming": {
+      "title": "With a stay coming up",
+      "description": "Who has yet to arrive: perfect for tips and extra services."
+    },
+    "all": {
+      "title": "All guests",
+      "description": "Everyone who agreed to receive e-mails."
+    },
+    "property": {
+      "title": "Who stayed at {{name}}",
+      "description": "Guests who stayed at {{name}}."
+    }
+  },
+  "segmentWizard": {
+    "title": "New group of guests",
+    "steps": {
+      "choose": "Choose",
+      "refine": "Check",
+      "name": "Confirm"
+    },
+    "ready": "Or start from a ready-made group",
+    "choose": {
+      "title": "Who do you want to reach?",
+      "purpose": "Describe it to the AI or pick a ready-made group: you can change it however you like in the next step."
+    },
+    "refine": {
+      "title": "Check who is in it",
+      "purpose": "The number changes as you add or remove rules. Stop when it looks right.",
+      "aiNotice": "The AI proposed these rules: check them and change them as you prefer.",
+      "rules": "The rules of the group",
+      "noRules": "No rules: the group includes every guest we can contact.",
+      "edit": "Edit the rule: {{rule}}",
+      "remove": "Remove the rule: {{rule}}",
+      "add": "Add a rule",
+      "logicLabel": "Who joins the group",
+      "all": "Meets all the rules",
+      "any": "Meets at least one rule"
+    },
+    "name": {
+      "title": "Give the group a name",
+      "purpose": "You will find it by this name when you write a campaign.",
+      "label": "Name of the group",
+      "summary": "Who is in it"
+    },
+    "ai": {
+      "title": "Describe who you want to reach",
+      "label": "Write it in your own words: the AI proposes the rules and you check them.",
+      "placeholder": "For example: guests who came back more than once",
+      "submit": "Propose with AI",
+      "working": "The AI is thinking…",
+      "examples": {
+        "returning": "Guests who came back more than once",
+        "recent": "Who stayed in the last month",
+        "lost": "Who has not come for over a year"
+      }
+    },
+    "scratch": "Start from scratch",
+    "create": "Create the group",
+    "done": {
+      "title": "Group created",
+      "ready": "The group “{{name}}” is ready",
+      "text": "You can now pick it every time you write a campaign.",
+      "close": "Close",
+      "write": "Write a campaign for this group"
+    }
+  },
+  "goals": {
+    "thanks": {
+      "title": "Thank who stayed with you",
+      "description": "A warm message for those who just stayed, with an invitation to leave a review.",
+      "brief": "Write a warm thank-you message to guests who stayed recently. Invite them to leave a review and to come back soon.",
+      "detailsLabel": "Want to add something? (optional)",
+      "detailsPlaceholder": "For example: a personal greeting or a tip about the area"
+    },
+    "comeback": {
+      "title": "Bring back who has been away",
+      "description": "A friendly invitation to book again, directly with you.",
+      "brief": "Write a friendly message to bring back guests who have not stayed for a while. Recall the good times and invite them to book directly.",
+      "detailsLabel": "Want to add something? (optional)",
+      "detailsPlaceholder": "For example: something new in the house or the area"
+    },
+    "offer": {
+      "title": "Offer a deal or a free period",
+      "description": "To fill free dates with people who already know you.",
+      "brief": "Write an e-mail presenting this offer to guests, without inventing dates, prices or discounts that I did not give you:",
+      "detailsLabel": "What do you want to offer?",
+      "detailsPlaceholder": "For example: 10% off September, minimum 3 nights"
+    },
+    "event": {
+      "title": "An event in your area",
+      "description": "The AI looks for festivals and events near your house and writes the invitation.",
+      "brief": "Write an invitation for guests to come back for this event in the area of the house.",
+      "detailsLabel": "Which event or occasion do you want to tell about?",
+      "detailsPlaceholder": "For example: the village fair on the second weekend of October"
+    },
+    "loyal": {
+      "title": "Reward loyal guests",
+      "description": "A special thank-you to those who come back often.",
+      "brief": "Write a special thank-you message for loyal guests who come back often. Warm and grateful tone.",
+      "detailsLabel": "Want to add something? (optional)",
+      "detailsPlaceholder": "For example: a small gift or a discount just for them"
+    },
+    "custom": {
+      "title": "I choose what to talk about",
+      "description": "Tell me the topic and the AI prepares the text.",
+      "brief": "Write an e-mail for my guests about this topic:",
+      "detailsLabel": "What do you want to talk about?",
+      "detailsPlaceholder": "For example: we renovated the terrace"
+    }
+  },
+  "campaignWizard": {
+    "title": "New e-mail campaign",
+    "steps": {
+      "goal": "Goal",
+      "audience": "Guests",
+      "event": "Event",
+      "message": "Message",
+      "confirm": "Send"
+    },
+    "goal": {
+      "title": "What do you want to achieve?",
+      "purpose": "Pick a ready-made idea: the AI helps you write the message.",
+      "recommended": "Suggested group: {{group}}"
+    },
+    "resume": {
+      "title": "You have a campaign in progress",
+      "text": "You can pick up where you left off: nothing is lost.",
+      "resume": "Resume",
+      "restart": "Start over"
+    },
+    "audience": {
+      "title": "Who are you writing to?",
+      "purpose": "Choose the house and the group of guests who will receive the message.",
+      "property": "For which house?",
+      "group": "Which group of guests?",
+      "recommended": "Suggested",
+      "createForYou": "We create it for you. {{description}}",
+      "createAnother": "Create another group",
+      "noProperties": "You need at least one house to write a campaign.",
+      "noPropertiesAction": "Add a house"
+    },
+    "event": {
+      "title": "Choose an event",
+      "purpose": "The AI looks for events near your house: pick one to tell about.",
+      "period": "Period to search",
+      "days_one": "Next day",
+      "days_other": "Next {{count}} days",
+      "search": "Search events",
+      "searching": "Searching…",
+      "hint": "The search can take up to a minute.",
+      "none": "We found no events in this period. Try a longer period or skip this step.",
+      "skip": "Skip, I write without an event"
+    },
+    "message": {
+      "title": "Write the message",
+      "purpose": "The AI prepares a draft: you read it and change it as you like.",
+      "generate": "Write it with AI",
+      "regenerate": "Rewrite with AI",
+      "working": "The AI is writing…",
+      "manual": "I prefer to write it myself",
+      "subject": "Subject",
+      "body": "Message text",
+      "aiNotice": "Text written by the AI: read it carefully before sending.",
+      "steerLabel": "Want to change it?",
+      "steer": {
+        "shorter": "Shorter",
+        "warmer": "Warmer",
+        "formal": "More formal",
+        "shorterBrief": "Make it shorter: at most 80 words.",
+        "warmerBrief": "Use a warmer, more personal tone.",
+        "formalBrief": "Use a more formal, professional tone."
+      },
+      "eventBrief": "Event to tell about: {{name}} ({{date}})."
+    },
+    "confirm": {
+      "title": "Check and send",
+      "purpose": "Here is the summary. Nothing leaves without your approval.",
+      "goal": "Goal",
+      "property": "House",
+      "group": "Group",
+      "subject": "Subject",
+      "send": "Send for approval",
+      "saveDraft": "Save as draft",
+      "afterTitle": "What happens now",
+      "after": {
+        "approve": "The campaign goes to the “To approve” queue: you check it and approve it (or whoever has the permission).",
+        "limit": "Each guest receives at most 2 marketing e-mails a month and can unsubscribe with one click."
+      }
+    },
+    "done": {
+      "sentTitle": "Campaign sent for approval",
+      "sentText": "The campaign is waiting for your go-ahead: no e-mail leaves until you approve it.",
+      "draftTitle": "Draft saved",
+      "draftText": "The draft is in the list of campaigns: you can pick it up whenever you like.",
+      "close": "Close",
+      "openQueue": "Go to “To approve”",
+      "nextTitle": "What happens now",
+      "next": {
+        "approve": "You approve the campaign in the “To approve” queue.",
+        "schedule": "You choose when it goes out.",
+        "results": "Here you will see how many people opened it."
+      }
+    }
+  },
+  "preview": {
+    "label": "E-mail preview",
+    "from": "From: {{name}}",
+    "subjectEmpty": "The subject will appear here",
+    "bodyEmpty": "The text will appear here",
+    "footer": "Annulla iscrizione · Unsubscribe"
+  },
+  "pipeline": {
+    "draft": "Draft",
+    "approval": "Approval",
+    "approved": "Approved",
+    "scheduled": "Scheduled",
+    "sent": "Sent",
+    "done": "done",
+    "current": "current step",
+    "todo": "to do"
+  },
+  "campaigns": {
+    "title": "E-mail campaigns",
+    "description": "Write to your guests: the AI prepares the text, you check and approve before it goes out.",
+    "create": "New campaign",
+    "content": "Content for social and ads",
+    "contentIntro": "Prepare texts to copy for Instagram, Facebook, LinkedIn and ads.",
+    "viewIdeas": "All ideas and content",
+    "ideasIntro": "Here are the texts the AI prepared for e-mail, social and ads. Check them, approve them and use them.",
+    "listTitle": "Your campaigns",
+    "pipelineLabel": "Where the campaign stands",
+    "schedule": {
+      "tomorrow": "Tomorrow at 10",
+      "saturday": "Saturday at 10"
+    },
+    "next": {
+      "Draft": "It is a draft: when you are ready, send it for approval.",
+      "PendingApproval": "Waiting for the go-ahead: you find it in the “To approve” queue.",
+      "Approved": "Approved! Choose when it goes out.",
+      "Scheduled": "It goes out on {{date}}.",
+      "Sending": "It is going out right now.",
+      "Sent": "Sent on {{sent}}. See how it went.",
+      "Failed": "The send did not work for every recipient. Look at the results."
+    },
+    "hideText": "Hide the text",
+    "showResults": "See text and results",
+    "showText": "See the text",
+    "results": {
+      "sent": "Sent",
+      "opened": "Opened",
+      "clicked": "Clicks",
+      "unsubscribed": "Unsubscribed"
+    },
+    "empty": {
+      "title": "Take the first step with your guests",
+      "text": "In a few minutes you write a message for those who already stayed with you: the AI helps and nothing leaves without your go-ahead.",
+      "steps": {
+        "group": "Choose who to write to",
+        "write": "The AI writes the message, you correct it",
+        "approve": "You approve and choose when it goes out"
+      },
+      "starters": "Start from an idea"
+    }
+  },
+  "ideas": {
+    "title": "AI ideas for you",
+    "seeAll": "See all {{count}} ideas",
+    "kicker": "Idea",
+    "eventKicker": "Event nearby",
+    "use": "Review and send",
+    "dismiss": "Not now"
+  },
+  "groups": {
+    "title": "Groups of guests",
+    "description": "A group is a list of guests who have something in common, for example those who came back more than once. You pick it when you write a campaign.",
+    "create": "Create a group",
+    "import": "Import guests from a file",
+    "importIntro": "Upload a file with your past guests: you will then find them in the groups and in the guest list.",
+    "rulesLabel": "Rules of the group",
+    "everyone": "Every guest we can contact.",
+    "write": "Write a campaign",
+    "more": "More ready-made groups",
+    "empty": {
+      "title": "Write to the right guests",
+      "text": "A group tells you who to send a message to. Start from a ready-made one: a few clicks are enough.",
+      "steps": {
+        "pick": "Pick a ready-made group",
+        "check": "See how many guests are in it",
+        "write": "Write the campaign with the help of the AI"
+      },
+      "create": "Create your first group",
+      "ready": "Ready-made groups"
+    }
+  }
+}
