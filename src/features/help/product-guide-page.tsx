@@ -91,6 +91,11 @@ export function ProductGuidePage() {
               <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input ref={searchInput} id="guide-search" className="h-11 pl-9" type="search" value={query} onChange={event => setQuery(event.target.value)} />
             </div>
+            <a href="/guida/" target="_blank" rel="noopener"
+              className="inline-flex min-h-11 items-center gap-2 rounded-md text-sm font-medium text-primary-text underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring">
+              <BookOpen aria-hidden="true" className="size-4 shrink-0" />
+              <span>{t('productGuide.fullManual')}<span className="sr-only"> ({t('productGuide.fullManualNewTab')})</span></span>
+            </a>
           </div>
           <nav aria-label={t('productGuide.contents')} className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {matches.map(([key, section]) => {

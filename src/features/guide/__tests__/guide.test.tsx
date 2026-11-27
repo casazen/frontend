@@ -138,6 +138,11 @@ describe('the guide of the header', () => {
 
     const panel = await screen.findByTestId('guide-panel');
     expect(within(panel).getByTestId('guide-help-manual')).toHaveAttribute('href', '/app/supplier/help');
+    // The full manual (static pages, own tab) is one click from the panel in every area.
+    const fullManual = within(panel).getByTestId('guide-help-full-manual');
+    expect(fullManual).toHaveAttribute('href', '/guida/');
+    expect(fullManual).toHaveAttribute('target', '_blank');
+    expect(fullManual).toHaveAttribute('rel', expect.stringContaining('noopener'));
     expect(within(panel).queryByTestId('guide-setup')).not.toBeInTheDocument();
     expect(within(panel).queryByTestId('guide-todo')).not.toBeInTheDocument();
     expect(onboardingApi.getPath).not.toHaveBeenCalled();

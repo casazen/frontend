@@ -32,6 +32,7 @@ import { NoAccessPage } from '@/pages/no-access-page';
 import { AccountInactivePage } from '@/pages/account-inactive-page';
 import { ACCOUNT_INACTIVE_PATH } from '@/lib/axios';
 import { OnboardingPage } from '@/features/onboarding/onboarding-page';
+import { ConnectWordPressPage } from '@/features/connect/connect-wordpress-page';
 import { getOrgBillingPageAlternates, ROUTE_MANIFEST, type AppContextKey } from '@/config/route-manifest';
 import { LegacyRedirect } from './legacy-redirect';
 import { ManifestRoute } from './manifest-route';
@@ -151,6 +152,13 @@ const workspaceRoutes: RouteObject[] = [
       {
         path: 'no-access',
         element: <NoAccessPage />,
+      },
+      {
+        // The page the plugin for WordPress opens to be linked to the agency account (PLG-FE-CONSOLE, NF-201): `/app/connect/wordpress?site=…&return=…&state=…&challenge=…&method=S256`. Inside the
+        // signed-in app (a visitor who is not signed in goes to the sign-in through `ProtectedRoute` and comes back to this very address, query included) and outside every area: no menu, no
+        // tabs, one block. It is not in the route manifest, which lists the pages of an area; its flag (`SiteEmbed`) and its permission (billing administrator) are read by the page itself.
+        path: 'connect/wordpress',
+        element: <ConnectWordPressPage />,
       },
       {
         path: 'short-rent',
