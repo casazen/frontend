@@ -22111,6 +22111,8 @@
     "empty": "No topics found. Try another word.",
     "contents": "Guide topics",
     "availability": "Visible features depend on your work area, permissions and organisation configuration.",
+    "fullManual": "Open the full manual (in Italian): step-by-step guides, feature list and FAQ",
+    "fullManualNewTab": "opens in a new tab",
     "sections": {
       "start": {
         "title": "Getting started and work areas",

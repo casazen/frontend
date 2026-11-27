@@ -1,0 +1,68 @@
+# Guida CasaZen
+
+> Manuale d'uso di CasaZen in italiano: guide passo passo, elenco delle funzionalità, flussi completi e domande frequenti. Aggiornato il 27 novembre 2026.
+
+## Per iniziare
+
+- [Per iniziare con CasaZen](/guida/per-iniziare.html): Come registrarti e accedere, come funziona l'invito, la configurazione guidata, le aree di lavoro, il menu, «Cerca» e la Guida, con i primi 30 minuti per chi gestisce affitti brevi, affitti lunghi o offre servizi.
+- [Cruscotto, Da fare, notifiche e assistente](/guida/cruscotto-notifiche-assistente.html): Cosa vedi ogni giorno nel Cruscotto, come lavorare con «Da fare», «Da approvare» e «Verifiche», come funzionano campanella e avvisi, cosa sa fare davvero «Chiedi a CasaZen» e cosa si attiva nelle impostazioni AI.
+
+## Affitti brevi
+
+- [Immobili](/guida/immobili.html): Come aggiungere e gestire le case che affitti a notte. L'elenco, la procedura guidata «Aggiungi immobile», la scheda, l'attivazione, la pausa, il passaggio tra affitto breve e lungo e il codice QR.
+- [Canali, calendari e Octorate](/guida/canali-octorate.html): Come tenere allineate le date tra CasaZen e i portali (Airbnb, Booking.com e altri) con i calendari iCal, come collegare il channel manager Octorate, abbinare gli annunci ai tuoi immobili e attivare canali e funzioni dal Marketplace.
+- [Prezzi e tariffe](/guida/prezzi-tariffe.html): Come si forma il prezzo di un soggiorno e dove lo imposti: prezzo base, weekend, pulizia, soggiorno minimo, sconti per soggiorni lunghi, suggerimenti stagionali, prezzo calcolato con l'AI, modifiche su più giorni e immobili e politica di cancellazione.
+- [Prenotazioni e calendario](/guida/prenotazioni.html): Come lavorare una prenotazione dall'arrivo della richiesta alla partenza dell'ospite: elenco, calendario, nuova prenotazione a mano, richieste da accettare, modifiche, annullamenti e passaggi che CasaZen fa da solo.
+- [Ospiti e check-in online](/guida/ospiti-checkin.html): L'anagrafica degli ospiti e il check-in online: come l'ospite compila i suoi dati e i documenti con un link, come segui lo stato, come completi tu i dati mancanti e cosa fa CasaZen con questi dati.
+- [Messaggi, assistente e recensioni](/guida/messaggi-recensioni.html): Tutte le conversazioni con gli ospiti in un solo posto, i modelli di messaggio, l'assistente che prepara le bozze (che parte solo se le approvi tu), i messaggi programmati e le recensioni da leggere, chiedere e rispondere.
+- [Routine AI, CRM e marketing](/guida/routine-ai-crm.html): Le routine fanno da sole cose ripetitive (messaggi, pulizie, promemoria, richieste di recensione) e le puoi provare in simulazione prima di attivarle. Il CRM raccoglie i profili degli ospiti, i duplicati, i pubblici e le campagne email. Entrambi i moduli sono su attivazione.
+
+## Adempimenti
+
+- [Adempimenti: Alloggiati Web, ISTAT e attivazione degli immobili](/guida/alloggiati-istat.html): La pagina Adempimenti ti dice cosa devi fare per essere in regola: comunicazione degli ospiti alla Questura (Alloggiati Web), statistiche ISTAT, attivazione degli immobili. Qui trovi chi invia cosa, le scadenze, come correggere un invio e cosa fa «Gestisci con AI».
+- [CIN, identificazione degli ospiti e notifiche in Svizzera](/guida/cin-identificazione-ticino.html): Dove inserire e controllare il CIN, come funziona la verifica dell'identità degli ospiti e il codice della serratura, e come notificare gli ospiti alla polizia del Canton Ticino o all'autorità di un altro cantone.
+- [Imposta di soggiorno, archivio documenti e check-out](/guida/imposta-soggiorno-documenti.html): Come CasaZen calcola l'imposta di soggiorno, come la incassa e la rendiconta per comune, dove trovi tutti i documenti, come si chiude un soggiorno con il check-out guidato e cosa succede ai dati degli ospiti nel tempo.
+
+## Incassi e fisco
+
+- [Incassi e pagamenti](/guida/incassi.html): Come incassi i soldi delle prenotazioni (carta, bonifico, contanti), come colleghi Stripe, come registri un incasso, rimborsi un ospite e leggi i ricavi.
+- [Regime fiscale e documenti fiscali](/guida/fisco-documenti.html): Come scegli il regime fiscale degli immobili, come imposti la fatturazione e come CasaZen prepara, emette e invia fatture, ricevute e note di credito agli ospiti.
+- [Report e pacchetto per il commercialista](/guida/report-commercialista.html): Come leggi e scarichi i report su ricavi, incassi e costi dei canali, e come dai al commercialista il pacchetto di dati del mese o dell'anno, a mano o con l'invio automatico.
+
+## Affitti lunghi
+
+- [Affitti lunghi: panoramica e immobili](/guida/affitti-lunghi.html): L'area per le case affittate con un contratto: la Panoramica ti dice cosa fare oggi, gli Immobili raccolgono case, APE e dati catastali, e da qui apri il report fiscale, le spese condominiali e gli interventi.
+- [Contratti di locazione](/guida/contratti.html): Come creare un contratto in CasaZen o caricarne uno già firmato, farlo firmare e registrarlo, preparare le lettere (disdetta, recesso, rinnovo, ISTAT, cauzione) e chiudere il contratto.
+- [Canoni, scadenze e inquilini](/guida/canoni-scadenze.html): Come tieni sotto controllo i canoni mese per mese (chi ha pagato, solleciti, estratto conto), le scadenze del contratto e le schede degli inquilini, con cauzione e spese condominiali.
+
+## Agenzie e proprietari
+
+- [Agenzie e proprietari, dati finanziari e portale del proprietario](/guida/agenzie-proprietari.html): Come un'agenzia fa lavorare i proprietari in CasaZen, con l'elenco Proprietari, i dati finanziari e il mandato, gli inviti, il portale che il proprietario usa per rendiconti, documenti e calendario, e le commissioni dei canali.
+- [Chiusura mensile, rendiconti, fatture, ritenute e bonifici ai proprietari](/guida/chiusura-mensile.html): Come un'agenzia chiude ogni mese i conti dei proprietari, dal controllo al rendiconto, dall'approvazione e dalla pubblicazione al pagamento e alla chiusura, poi fatture, autofatture, ritenute d'acconto, F24 e file dei bonifici. Chi emette cosa e cosa resta a te.
+
+## Fornitori e marketplace
+
+- [Marketplace dei servizi, interventi e fornitori fidati](/guida/marketplace.html): Come trovi un fornitore nella tua zona (pulizie, idraulico, elettricista…), come gli chiedi un intervento, lo segui, lo paghi e lo annulli, e come inviti i tuoi fornitori di fiducia.
+- [Area Fornitori, richieste, agenda, servizi e incassi](/guida/area-fornitore.html): Come un fornitore (pulizie, idraulico, elettricista…) attiva il profilo, riceve e accetta le richieste dei gestori, tiene l'agenda, scrive servizi e prezzi, conosce i suoi clienti e si fa pagare.
+- [La vetrina del fornitore, pagina pubblica, prenotazioni e richieste su misura](/guida/vetrina-fornitore.html): Come un fornitore crea, pubblica e condivide la sua pagina pubblica (stile, testi, foto, servizi), apre le prenotazioni online e risponde ai clienti; come la usa chi la visita.
+
+## Sito e portali
+
+- [Area conduttore e richieste di manutenzione](/guida/area-inquilino.html): Cosa vede e fa l'inquilino nella sua area (contratto, scadenze da pagare, documenti, richieste di manutenzione) e come, da proprietario o gestore, lo fai entrare e gestisci le sue richieste.
+- [Sito di prenotazione](/guida/sito-prenotazione.html): Il sito pubblico dove i tuoi ospiti vedono le case, scelgono le date, pagano con la carta e prenotano senza commissioni. Come lo controlli, lo personalizzi (aspetto e documenti) e cosa vede e riceve l'ospite.
+- [Dominio, widget e plugin WordPress](/guida/dominio-incorpora.html): Come dare al tuo sito di prenotazione un indirizzo tuo (sottodominio o dominio personalizzato), come metterlo dentro il sito che hai già con i widget da incollare o con il plugin per WordPress, e cosa passa dal tuo dominio.
+- [Portale ospite](/guida/portale-ospite.html): La pagina personale che ogni ospite riceve per il suo soggiorno: check-in online, guida della casa, servizi, chat, pagamenti, documenti e recensione, in cinque lingue. Come la prepari, come mandi il link e cosa vedi delle azioni dell'ospite.
+- [Pagine pubbliche di CasaZen](/guida/pagine-pubbliche.html): Le pagine che chiunque può aprire senza accedere: il sito di presentazione di CasaZen, la ricerca delle case, le guide per comune e il calcolo della tassa di soggiorno, i documenti legali e le pagine di servizio degli ospiti. Cosa pubblica CasaZen, cosa controlli tu e cosa trovano i motori di ricerca.
+
+## App mobile
+
+- [App mobile CasaZen](/guida/app-mobile.html): L'app CasaZen per iPhone e Android: cosa fanno dal telefono il gestore, l'ospite, il fornitore e l'inquilino, come si accede, come funzionano notifiche e uso senza connessione e cosa si fa solo sul sito.
+
+## Account e piano
+
+- [Account, persone, ruoli e piano](/guida/account-team-piano.html): Come gestire la tua organizzazione: dati e impostazioni, persone e inviti, ruoli e permessi, immobili dell'account, piano, limiti, fatturazione dell'abbonamento, «Consiglia CasaZen», profilo e notifiche.
+
+## Per i sistemi automatici
+
+- [Blocchi di conoscenza (JSON)](/guida/guida-chunks.json): un blocco autosufficiente per compito, domanda, flusso e regola
+- [Testo completo](/guida/guida-completa.md)

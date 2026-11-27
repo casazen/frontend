@@ -22111,6 +22111,8 @@
     "empty": "Nessun argomento trovato. Prova con un’altra parola.",
     "contents": "Argomenti della guida",
     "availability": "Le funzioni visibili dipendono dalla tua area, dai permessi e dalla configurazione dell’organizzazione.",
+    "fullManual": "Apri il manuale completo: guide passo passo, elenco delle funzionalità e domande frequenti",
+    "fullManualNewTab": "si apre in una nuova scheda",
     "sections": {
       "start": {
         "title": "Primi passi e aree di lavoro",

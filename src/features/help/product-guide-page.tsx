@@ -110,6 +110,13 @@ export function ProductGuidePage() {
             <Button variant="outline" type="button" onClick={() => { setQuery(''); searchInput.current?.focus(); }}>{t('productGuide.clearSearch')}</Button>
           </div>}
           <p className="text-sm text-muted-foreground">{t('productGuide.availability')}</p>
+          <p className="text-sm">
+            <a href="/guida/" target="_blank" rel="noopener"
+              className="inline-flex min-h-11 items-center gap-2 rounded-md font-medium text-primary-text underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring">
+              <BookOpen aria-hidden="true" className="size-4 shrink-0" />
+              <span>{t('productGuide.fullManual')}<span className="sr-only"> ({t('productGuide.fullManualNewTab')})</span></span>
+            </a>
+          </p>
         </>
       )}
       {back && <Button asChild variant="outline" className="h-auto min-h-11 whitespace-normal">
