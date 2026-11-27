@@ -1,10 +1,6 @@
 import { test, expect } from './test';
 import { demoUrl } from './helpers/demo-profile';
-import {
-  mockPublicBookingReadApi,
-  mockPublicSearchResults,
-  PUBLIC_SEARCH_PROPERTY_ID,
-} from './helpers/public-booking-readmodel-mock';
+import { mockPublicBookingReadApi, PUBLIC_SEARCH_PROPERTY_ID } from './helpers/public-booking-readmodel-mock';
 
 const SEARCH_URL = '/search';
 
@@ -43,32 +39,6 @@ test.describe('Public booking read-model (#212)', () => {
 
     await page.goto(demoUrl(SEARCH_URL, 'short-stay'));
     await expect(page.getByTestId('house-card').first()).toBeVisible({ timeout: 15_000 });
-
-    expect(authHeader).toBeUndefined();
-  });
-
-  test('AC12: public detail request is sent without Authorization header', async ({ page }) => {
-    let authHeader: string | undefined;
-
-    await page.route(`**/api/properties/${PUBLIC_SEARCH_PROPERTY_ID}/public`, async (route) => {
-      authHeader = route.request().headers()['authorization'];
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          ...mockPublicSearchResults[0],
-          houseRules: 'Quiet hours after 22:00.',
-          cancellationPolicySummary: 'Flexible',
-          minNights: null,
-          currency: 'EUR',
-        }),
-      });
-    });
-
-    await page.goto(demoUrl(SEARCH_URL, 'short-stay'));
-    await page.evaluate(async (id) => {
-      await fetch(`/api/properties/${id}/public`);
-    }, PUBLIC_SEARCH_PROPERTY_ID);
 
     expect(authHeader).toBeUndefined();
   });

@@ -1,7 +1,7 @@
 name: E2E Golden Journey
 
 # No placeholder or `continue-on-error` gates here: a failing step fails the check.
-# - `GJ web suite`: L2 (demo, page.route) shell checks, fast, not the journey gate.
+# - The L2 (demo, page.route) shell checks are not repeated here: the whole L2 suite already runs in `e2e.yml`.
 # - `GJ L3 (UI, ephemeral stack)`: the real Golden Journey from the UI against a real backend + PostgreSQL + mock
 #   IdP/mail (admin, host, supplier, guest; F1-F2), Stripe test mode when the secrets exist (FN-03).
 #   Runbook: backend docs/runbooks/golden-journey-l3.md.
@@ -22,22 +22,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  golden-journey-web:
-    name: GJ web suite
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-      - run: npm ci
-      # No --with-deps: the ubuntu-latest image already has every library Chromium needs; --with-deps only added
-      # fonts from the apt mirror, which at times took 10 minutes to download (~45 kB/s).
-      - run: npx playwright install chromium
-      - name: Run golden-journey-web (L2 demo shell checks)
-        run: npx playwright test e2e/golden-journey-web.spec.ts --project=chromium
-
   gj-l3:
     name: GJ L3 (UI, ephemeral stack)
     runs-on: ubuntu-24.04

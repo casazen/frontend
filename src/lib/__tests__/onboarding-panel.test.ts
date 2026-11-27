@@ -166,12 +166,12 @@ describe('what the page opens and what it asks', () => {
     });
 
     expect(findOpenAssist([request({})], 'panelPolice', 'p1')?.id).toBe('r');
-    expect(findOpenAssist([request({ status: 'InProgress' })], 'panelPolice', 'p1')).toBeDefined();
+    expect(findOpenAssist([request({ status: 'InProgress' })], 'panelPolice', 'p1')?.id).toBe('r');
     expect(findOpenAssist([request({ status: 'Done' })], 'panelPolice', 'p1')).toBeUndefined();
     expect(findOpenAssist([request({ status: 'Cancelled' })], 'panelPolice', 'p1')).toBeUndefined();
     expect(findOpenAssist([request({})], 'panelIstat', 'p1')).toBeUndefined();
     expect(findOpenAssist([request({})], 'panelPolice', 'p2')).toBeUndefined();
-    expect(findOpenAssist([request({ propertyId: null })], 'panelPolice', null)).toBeDefined();
+    expect(findOpenAssist([request({ propertyId: null })], 'panelPolice', null)?.id).toBe('r');
   });
 
   it('findOpenAssist_ARequestOfOneChannel_IsNeverTheRequestOfAnotherChannelOrOfNone', () => {
@@ -195,8 +195,8 @@ describe('what the page opens and what it asks', () => {
     // A step with no channel matches only a request with none (an older request, or one that is not about a channel), whether the server says `null` or says nothing.
     expect(findOpenAssist([request('142')], 'panelChannelAccess')).toBeUndefined();
     expect(findOpenAssist([request('142')], 'panelChannelAccess', null, null)).toBeUndefined();
-    expect(findOpenAssist([request(null)], 'panelChannelAccess')).toBeDefined();
-    expect(findOpenAssist([request()], 'panelChannelAccess', null, null)).toBeDefined();
+    expect(findOpenAssist([request(null)], 'panelChannelAccess')?.id).toBe('r');
+    expect(findOpenAssist([request()], 'panelChannelAccess', null, null)?.id).toBe('r');
     // And the other way: a request with no channel is not the request of a channel.
     expect(findOpenAssist([request(null)], 'panelChannelAccess', null, '142')).toBeUndefined();
     expect(findOpenAssist([request('274'), request('142')], 'panelChannelAccess', null, '142')?.channelCode).toBe('142');
