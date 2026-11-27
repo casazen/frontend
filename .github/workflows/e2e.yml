@@ -50,7 +50,9 @@ jobs:
           CI: true
 
       - name: Compare the first setup screen with the base branch
-        if: github.event_name == 'pull_request' && matrix.shard == 1
+        # Only against develop: a release pull request to main has a base weeks older than the e2e helpers copied into it
+        # (they import fixtures that main does not have yet), so the "before" run can only fail there.
+        if: github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'develop' && matrix.shard == 1
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
@@ -67,7 +69,7 @@ jobs:
           npx playwright test e2e/onboarding-plan-screen.spec.ts --project=chromium --grep 'prima vista' --workers=1 --output="$RUNNER_TEMP/setup-before-results"
 
       - name: Upload base branch setup screens
-        if: always() && github.event_name == 'pull_request' && matrix.shard == 1
+        if: always() && github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'develop' && matrix.shard == 1
         uses: actions/upload-artifact@v4
         with:
           name: onboarding-plan-before
