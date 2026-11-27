@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { campaignsApi } from '@/api/campaigns.api';
 import type {
+  ConditionDefinition,
   CreateDraftDto,
   CreateSegmentDto,
   ScheduleCampaignDto,
@@ -14,11 +15,11 @@ const SEGMENTS_KEY = 'segments';
 const CAMPAIGNS_KEY = 'campaigns';
 const FIELDS_KEY = 'campaign-fields';
 
-// Segments
-export function useSegments() {
+export function useSegments(enabled = true) {
   return useQuery({
     queryKey: [SEGMENTS_KEY],
     queryFn: () => campaignsApi.getSegments(),
+    enabled,
   });
 }
 
@@ -45,7 +46,16 @@ export function usePreviewCount(segmentId: string, propertyId?: string) {
   });
 }
 
-// Field catalog
+export function usePreviewCondition(condition: ConditionDefinition | null, propertyId?: string) {
+  return useQuery({
+    queryKey: [SEGMENTS_KEY, 'preview-condition', condition, propertyId ?? null],
+    queryFn: () => campaignsApi.previewCondition(condition as ConditionDefinition, propertyId),
+    enabled: condition !== null,
+    retry: false,
+    staleTime: 30_000,
+  });
+}
+
 export function useFields() {
   return useQuery({
     queryKey: [FIELDS_KEY],
@@ -53,11 +63,11 @@ export function useFields() {
   });
 }
 
-// Campaigns
-export function useCampaigns() {
+export function useCampaigns(enabled = true) {
   return useQuery({
     queryKey: [CAMPAIGNS_KEY],
     queryFn: () => campaignsApi.getCampaigns(),
+    enabled,
     refetchOnMount: 'always',
     refetchInterval: (query) =>
       query.state.data?.some((c) => c.status === 'PendingApproval' || c.status === 'Scheduled') ? 15000 : false,
