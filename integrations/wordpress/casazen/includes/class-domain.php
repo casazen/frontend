@@ -177,7 +177,7 @@ class Domain {
 	 * Connects a domain of the agency.
 	 *
 	 * @param string $domain The domain as typed (`prenota.example.com`; an address such as `https://prenota.example.com/` is read too).
-	 * @return array { ok: bool, message: string }
+	 * @return array { ok: bool, message: string, notice: string }
 	 */
 	public static function save( $domain ) {
 		$link = Link::get();
@@ -195,7 +195,7 @@ class Domain {
 	/**
 	 * Removes the domain of the agency: its booking site goes back to the address of CasaZen.
 	 *
-	 * @return array { ok: bool, message: string }
+	 * @return array { ok: bool, message: string, notice: string }
 	 */
 	public static function remove() {
 		$link = Link::get();
@@ -209,7 +209,9 @@ class Domain {
 	/**
 	 * Asks CasaZen to check the domain now. Never while the plan has no custom domain, nor without a domain.
 	 *
-	 * @return array { ok: bool, message: string }
+	 * A check that worked but found the domain not active yet is a warning, never a success (the console says it the same way).
+	 *
+	 * @return array { ok: bool, message: string, notice: string }
 	 */
 	public static function verify() {
 		$link = Link::get();
@@ -228,7 +230,7 @@ class Domain {
 		$account = ( $reply['ok'] && is_array( $reply['data'] ) && isset( $reply['data']['account'] ) ) ? $reply['data']['account'] : null;
 		$result  = self::after( $reply, $account, __( 'Your domain is active.', 'casazen' ) );
 		if ( $result['ok'] && 'verified' !== Account::domain_state( Account::cached() ) ) {
-			return self::result( true, __( 'Checked: the domain is not active yet. The state below says why.', 'casazen' ) );
+			return self::result( true, __( 'Checked: the domain is not active yet. The state below says why.', 'casazen' ), 'warning' );
 		}
 		return $result;
 	}
@@ -239,7 +241,7 @@ class Domain {
 	 * @param bool $guest_area   The guest area on the domain.
 	 * @param bool $owner_portal The owner portal on the domain.
 	 * @param bool $links        The links of the e-mails on the domain.
-	 * @return array { ok: bool, message: string }
+	 * @return array { ok: bool, message: string, notice: string }
 	 */
 	public static function set_surfaces( $guest_area, $owner_portal, $links ) {
 		$link = Link::get();
@@ -281,7 +283,7 @@ class Domain {
 	public static function ajax_verify() {
 		self::check_ajax();
 		$result = self::verify();
-		Admin::flash( $result['ok'] ? 'success' : 'error', $result['message'] );
+		Admin::flash( $result['notice'], $result['message'] );
 		wp_send_json_success(
 			array_merge(
 				self::poll_state(),
@@ -352,7 +354,7 @@ class Domain {
 	 * @param array  $reply   The result of Api_Client::request().
 	 * @param mixed  $account The decoded account of the answer.
 	 * @param string $success The sentence of a success.
-	 * @return array { ok: bool, message: string }
+	 * @return array { ok: bool, message: string, notice: string }
 	 */
 	private static function after( array $reply, $account, $success ) {
 		if ( ! $reply['ok'] ) {
@@ -375,13 +377,13 @@ class Domain {
 	}
 
 	/**
-	 * Shows the result of a form on the screen.
+	 * Shows the result of a form on the screen, as the notice of its kind.
 	 *
-	 * @param array $result { ok: bool, message: string }.
+	 * @param array $result { ok: bool, message: string, notice: string }.
 	 * @return void
 	 */
 	private static function finish( array $result ) {
-		Admin::flash( $result['ok'] ? 'success' : 'error', $result['message'] );
+		Admin::flash( $result['notice'], $result['message'] );
 		Admin::redirect_to_page();
 	}
 
@@ -401,12 +403,15 @@ class Domain {
 	 *
 	 * @param bool   $ok      Whether it worked.
 	 * @param string $message The sentence for the administrator.
-	 * @return array
+	 * @param string $notice  The kind of notice that shows it: `warning` for an action that worked without reaching its goal (a check
+	 *                        that found the domain not active yet); by default `success` when it worked and `error` when it did not.
+	 * @return array { ok: bool, message: string, notice: string }
 	 */
-	private static function result( $ok, $message ) {
+	private static function result( $ok, $message, $notice = '' ) {
 		return array(
 			'ok'      => (bool) $ok,
 			'message' => (string) $message,
+			'notice'  => '' !== $notice ? (string) $notice : ( $ok ? 'success' : 'error' ),
 		);
 	}
 }

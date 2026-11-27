@@ -8,6 +8,7 @@
 require_once __DIR__ . '/includes/casazen-api-stub.php';
 
 use Casazen\Account;
+use Casazen\Admin;
 use Casazen\Domain;
 
 // phpcs:disable Generic.Files.OneObjectStructurePerFile.MultipleFound -- the exception below is a helper of the test class of this file alone.
@@ -118,6 +119,41 @@ class Test_Ajax extends WP_UnitTestCase {
 		// A second refresh right after: the copy is younger than 25 seconds, so CasaZen is not asked again.
 		$this->assertTrue( $this->ajax( Domain::AJAX_ACCOUNT, wp_create_nonce( Domain::AJAX_NONCE ) )['success'] );
 		$this->assertCount( 1, $this->calls_to( '/api/site/v1/account', 'GET' ) );
+	}
+
+	/**
+	 * «Check now» that finds the domain not active yet is a warning, never a success, through the form and through the script alike
+	 * (the console says it the same way); only a check that finds it active is a success.
+	 */
+	public function test_check_now_that_finds_the_domain_not_active_yet_is_a_warning() {
+		$checked = function ( $state ) {
+			return array(
+				'verify'  => array(
+					'domainVerificationStatus' => $state,
+					'customDomain'             => 'prenota.example.com',
+					'checkedAt'                => '2026-11-27T10:05:00Z',
+				),
+				'account' => $this->account( 'prenota.example.com', $state ),
+			);
+		};
+		$this->route( 'POST', '/api/site/v1/domain/verify', 200, $checked( 'Pending' ) );
+
+		// The form (admin-post).
+		$_REQUEST = array( Admin::NONCE_FIELD => wp_create_nonce( Domain::VERIFY_ACTION ) );
+		$this->redirect_of( array( Domain::class, 'handle_verify' ) );
+		$flash = Admin::take_flash();
+		$this->assertSame( 'warning', $flash['type'], 'The form shows a check that found the domain not active as a warning.' );
+		$this->assertStringContainsString( 'not active yet', $flash['text'] );
+
+		// The script (admin-ajax).
+		$this->assertTrue( $this->ajax( Domain::AJAX_VERIFY, wp_create_nonce( Domain::AJAX_NONCE ) )['success'] );
+		$this->assertSame( 'warning', Admin::take_flash()['type'], 'The script shows it as a warning too.' );
+		$this->assertCount( 2, $this->calls_to( '/api/site/v1/domain/verify', 'POST' ) );
+
+		// The domain is active: that check is a success.
+		$this->route( 'POST', '/api/site/v1/domain/verify', 200, $checked( 'Verified' ) );
+		$this->assertTrue( $this->ajax( Domain::AJAX_VERIFY, wp_create_nonce( Domain::AJAX_NONCE ) )['success'] );
+		$this->assertSame( 'success', Admin::take_flash()['type'] );
 	}
 
 	/**
