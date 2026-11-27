@@ -147,10 +147,21 @@ export function buildEmbedMountOptions(input: EmbedSnippetInput): Record<string,
 }
 
 /**
- * The address the plugin can be downloaded from (`VITE_WORDPRESS_PLUGIN_URL`: the ZIP of the latest release), or `null` while it is not set or is not an address on `https`
- * (no default in code: the link is simply not shown).
+ * Where the ZIP of the plugin of each channel is published (the rolling releases `wp-plugin-main` and `wp-plugin-develop` of the repository, `docs/technical/wordpress-plugin.md`,
+ * PLG-FE-PUBLISH, NF-200): the asset `casazen.zip` keeps its address, only its content changes with every push of the branch of the channel.
  */
-export function pluginDownloadUrl(raw: unknown): string | null {
+const PLUGIN_RELEASES = 'https://github.com/casazen/frontend/releases/download';
+
+/** The channels of the plugin: `main` carries the address of the production console, `develop` the one of the test console. */
+export type PluginChannel = 'main' | 'develop';
+
+/** The channel of a build: `main` for a Vercel Production build (`VERCEL_ENV=production`), `develop` for every other one (a preview, a local or a CI build). */
+export function pluginChannel(deployEnv: unknown): PluginChannel {
+  return deployEnv === 'production' ? 'main' : 'develop';
+}
+
+/** An address on `https` with no user name or password, as the browser writes it, or `null` for anything else (nothing, text that is not an address, `http`, a credential). */
+function httpsAddress(raw: unknown): string | null {
   if (typeof raw !== 'string' || raw.trim() === '') return null;
   try {
     const url = new URL(raw.trim());
@@ -158,4 +169,12 @@ export function pluginDownloadUrl(raw: unknown): string | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * The address the plugin is downloaded from: the ZIP of the channel of the build, so the page always has the link and nobody has to set anything. `override` is the optional
+ * `VITE_WORDPRESS_PLUGIN_URL` (the ZIP of a release with a version, for instance): it wins when it is an address on `https`, and an invalid one is ignored, never shown.
+ */
+export function pluginDownloadUrl(override: unknown, deployEnv: unknown): string {
+  return httpsAddress(override) ?? `${PLUGIN_RELEASES}/wp-plugin-${pluginChannel(deployEnv)}/casazen.zip`;
 }
