@@ -278,7 +278,8 @@ class Connect {
 			)
 		);
 		Account::store( $account );
-		if ( ! Account::apply_address( $account ) ) {
+		// The new link has no address written yet: the address and the slug of the agency go into the settings, as they always did.
+		if ( ! Account::follow_address( $account ) ) {
 			// The address was already the right one: the connection test runs all the same, as after any connection.
 			Connection::refresh();
 		}

@@ -18,7 +18,8 @@ defined( 'ABSPATH' ) || exit;
  * its DNS records (at most every 30 seconds) and by every action on the domain. Never by a public page.
  *
  * When `publicAddress` changes (the domain is verified, or it is removed) the address and the slug of the settings follow it, through
- * Settings::sanitize(), and the connection test runs again for them (Settings::on_update()).
+ * Settings::sanitize(), and the connection test runs again for them (Settings::on_update()). Only then: an address or a slug written by
+ * hand under «Advanced» stays while CasaZen keeps the same address (follow_address()).
  */
 class Account {
 
@@ -229,7 +230,7 @@ class Account {
 	}
 
 	/**
-	 * A good account: keeps the copy, the name of the agency in the link, and the address in the settings.
+	 * A good account: keeps the copy, the name of the agency in the link, and the address in the settings when CasaZen changed it.
 	 *
 	 * @param array $account The account of read().
 	 * @return void
@@ -237,7 +238,46 @@ class Account {
 	public static function accept( array $account ) {
 		self::store( $account );
 		Link::update_org( $account['org_name'], $account['org_slug'] );
-		self::apply_address( $account );
+		self::follow_address( $account );
+	}
+
+	/**
+	 * The address of an account as the plugin writes it into the settings, with its kind: what follow_address() compares with the one
+	 * it wrote last. On the address of CasaZen the slug is part of it.
+	 *
+	 * @param array $account The account of read().
+	 * @return array { address, kind, org_slug }
+	 */
+	public static function applied_copy( array $account ) {
+		$settings = self::settings_for( $account );
+		return array(
+			'address'  => $settings['address'],
+			'kind'     => (string) $account['public_address_kind'],
+			'org_slug' => $settings['org_slug'],
+		);
+	}
+
+	/**
+	 * Writes the address and the slug of an account into the settings only when CasaZen changed them since the plugin last wrote them
+	 * (the connection itself and the first read write them, as there is no earlier copy): an address or a slug written by hand under
+	 * «Advanced» stays while CasaZen keeps the same address, and follows CasaZen when the agency moves (its domain becomes active, or
+	 * it is removed). The copy that was written is kept in the link, once the settings hold it.
+	 *
+	 * @param array $account The account of read().
+	 * @return bool Whether the settings changed.
+	 */
+	public static function follow_address( array $account ) {
+		$link   = Link::get();
+		$wanted = self::applied_copy( $account );
+		if ( null === $link || $link['applied'] === $wanted ) {
+			return false;
+		}
+		$changed  = self::apply_address( $account );
+		$settings = Settings::get();
+		if ( $settings['address'] === $wanted['address'] && $settings['org_slug'] === $wanted['org_slug'] ) {
+			Link::mark_applied( $wanted );
+		}
+		return $changed;
 	}
 
 	/**

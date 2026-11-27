@@ -229,6 +229,46 @@ class Test_Domain extends WP_UnitTestCase {
 	}
 
 	/**
+	 * An address and a slug written by hand under «Advanced» stay while CasaZen keeps the same address, and follow CasaZen when its
+	 * address changes: the domain becomes active, or it is removed.
+	 */
+	public function test_values_written_by_hand_stay_until_the_address_of_casazen_changes() {
+		$this->healthy_addresses();
+		$this->route( 'GET', '/api/site/v1/account', 200, $this->account() );
+
+		// The first read writes the address of CasaZen and the slug, as the connection does.
+		Account::refresh();
+		$this->assertSame( 'https://app.casazen.example', Settings::get()['address'] );
+		$this->assertSame( 'agenzia-esempio', Settings::get()['org_slug'] );
+
+		// Written by hand, then read again with the same address of CasaZen (also once a domain waits for its records): they stay.
+		$this->store_settings(
+			array(
+				'address'  => 'https://manual.example.com',
+				'org_slug' => 'manual-slug',
+			)
+		);
+		Account::refresh();
+		$this->route( 'GET', '/api/site/v1/account', 200, $this->account( 'prenota.example.com', 'Pending' ) );
+		Account::refresh();
+		$this->assertSame( 'https://manual.example.com', Settings::get()['address'] );
+		$this->assertSame( 'manual-slug', Settings::get()['org_slug'] );
+
+		// The domain becomes active: the settings follow CasaZen.
+		$this->route( 'GET', '/api/site/v1/account', 200, $this->account( 'prenota.example.com', 'Verified' ) );
+		Account::refresh();
+		$this->assertSame( 'https://prenota.example.com', Settings::get()['address'] );
+		$this->assertSame( '', Settings::get()['org_slug'] );
+
+		// Written by hand again, then the domain is removed: back to the address of CasaZen, with the slug.
+		$this->store_settings( array( 'address' => 'https://manual.example.com' ) );
+		$this->route( 'GET', '/api/site/v1/account', 200, $this->account() );
+		Account::refresh();
+		$this->assertSame( 'https://app.casazen.example', Settings::get()['address'] );
+		$this->assertSame( 'agenzia-esempio', Settings::get()['org_slug'] );
+	}
+
+	/**
 	 * The three choices are sent as they are ticked (all three, every time).
 	 */
 	public function test_the_choices_of_the_domain_are_sent_as_they_are_ticked() {

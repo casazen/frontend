@@ -20,6 +20,8 @@ defined( 'ABSPATH' ) || exit;
  * - `site_url`: the origin of this site, as CasaZen confirmed it.
  * - `app_origin`, `api_base`: the console the site was connected with and the address of its API (read from its manifest).
  * - `connected_at`: when.
+ * - `applied`: the address of the agency that the plugin last wrote into the settings (`address`, `kind`, `org_slug`; see
+ *   Account::follow_address()), or null while it wrote none for this connection. No secret.
  *
  * When CasaZen no longer accepts the credential (a 401: the connection was removed in the console), the option keeps only a marker
  * `{ revoked_at, org_name }`: the credential is gone, and the screen can say «No longer connected».
@@ -55,7 +57,7 @@ class Link {
 	 *
 	 * Only the classes that call CasaZen read it: the screen reads summary().
 	 *
-	 * @return array|null { token, connection_id, org_slug, org_name, site_url, app_origin, api_base, connected_at }
+	 * @return array|null { token, connection_id, org_slug, org_name, site_url, app_origin, api_base, connected_at, applied }
 	 */
 	public static function get() {
 		$stored = get_option( self::OPTION, null );
@@ -75,6 +77,7 @@ class Link {
 			'app_origin'    => self::string_field( $stored, 'app_origin' ),
 			'api_base'      => $api_base,
 			'connected_at'  => isset( $stored['connected_at'] ) ? (int) $stored['connected_at'] : 0,
+			'applied'       => self::applied_field( $stored ),
 		);
 	}
 
@@ -97,14 +100,14 @@ class Link {
 		if ( null === $link ) {
 			return null;
 		}
-		unset( $link['token'], $link['api_base'], $link['connection_id'] );
+		unset( $link['token'], $link['api_base'], $link['connection_id'], $link['applied'] );
 		return $link;
 	}
 
 	/**
 	 * Stores a new link (autoload off). The values were checked by the caller (Connect).
 	 *
-	 * @param array $link { token, connection_id, org_slug, org_name, site_url, app_origin, api_base, connected_at }.
+	 * @param array $link { token, connection_id, org_slug, org_name, site_url, app_origin, api_base, connected_at, applied (optional) }.
 	 * @return bool Whether it was stored.
 	 */
 	public static function save( array $link ) {
@@ -120,6 +123,7 @@ class Link {
 			'app_origin'    => self::string_field( $link, 'app_origin' ),
 			'api_base'      => self::string_field( $link, 'api_base' ),
 			'connected_at'  => isset( $link['connected_at'] ) ? (int) $link['connected_at'] : time(),
+			'applied'       => self::applied_field( $link ),
 		);
 		// A new option is created with autoload off; an option that already exists is replaced, and its autoload set off again.
 		delete_option( self::OPTION );
@@ -140,6 +144,21 @@ class Link {
 		}
 		$link['org_name'] = (string) $org_name;
 		$link['org_slug'] = (string) $org_slug;
+		self::save( $link );
+	}
+
+	/**
+	 * Remembers the address of the agency that the plugin has just written into the settings (the credential does not change).
+	 *
+	 * @param array $applied { address, kind, org_slug } (Account::applied_copy()).
+	 * @return void
+	 */
+	public static function mark_applied( array $applied ) {
+		$link = self::get();
+		if ( null === $link ) {
+			return;
+		}
+		$link['applied'] = $applied;
 		self::save( $link );
 	}
 
@@ -214,5 +233,22 @@ class Link {
 	 */
 	private static function string_field( array $values, $key ) {
 		return ( isset( $values[ $key ] ) && is_string( $values[ $key ] ) ) ? $values[ $key ] : '';
+	}
+
+	/**
+	 * The address of the agency that the plugin last wrote into the settings, from a stored array.
+	 *
+	 * @param array $values The array.
+	 * @return array|null { address, kind, org_slug }, or null while none was written for this connection.
+	 */
+	private static function applied_field( array $values ) {
+		if ( ! isset( $values['applied'] ) || ! is_array( $values['applied'] ) ) {
+			return null;
+		}
+		return array(
+			'address'  => self::string_field( $values['applied'], 'address' ),
+			'kind'     => self::string_field( $values['applied'], 'kind' ),
+			'org_slug' => self::string_field( $values['applied'], 'org_slug' ),
+		);
 	}
 }
