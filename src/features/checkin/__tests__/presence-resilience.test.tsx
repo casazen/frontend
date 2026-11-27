@@ -797,6 +797,32 @@ describe('presence-resilience: an expired challenge is renewed (AC4)', () => {
 });
 
 describe('presence-resilience: a second tap sends nothing twice (AC5)', () => {
+  it('PresenceSequenceCapture_AnotherCallOfTheStepIsInFlight_NothingIsSentTheRecordingStaysAndTheGuestSendsItOnceItIsOver', async () => {
+    stubCamera();
+    type CaptureProps = ComponentProps<typeof PresenceSequenceCapture>;
+    const startChallenge = vi.fn<CaptureProps['startChallenge']>().mockImplementation(async () => ({ kind: 'ready', challenge: challengeBody() }));
+    const sendSequence = vi.fn<CaptureProps['sendSequence']>().mockResolvedValueOnce({ kind: 'busy' }).mockResolvedValueOnce({ kind: 'answered' });
+    render(<PresenceSequenceCapture startChallenge={startChallenge} sendSequence={sendSequence} busy={false} />);
+    await waitForTheStart();
+    fireEvent.click(startButton());
+    await settle();
+    await advanceUntil(() => phase() === 'kept');
+
+    // Nothing reached the server, and it was not the connection: the general sentence, and the recording is still there.
+    expect(screen.getByTestId('checkin-presence-kept')).toHaveAttribute('data-problem', 'failed');
+    expect(screen.getByTestId('checkin-presence-kept')).toHaveTextContent(text('checkin.identity.problem.failed'));
+    const first = sendSequence.mock.calls[0][0];
+    expect(first.frames.length).toBeGreaterThan(20);
+
+    fireEvent.click(screen.getByTestId('checkin-presence-send-again'));
+    await settle();
+
+    expect(sendSequence).toHaveBeenCalledTimes(2);
+    expect(sendSequence.mock.calls[1][1]).toBe(sendSequence.mock.calls[0][1]);
+    // Answered: the frames are let go.
+    expect(first.frames).toHaveLength(0);
+  });
+
   it('PresenceSequenceCapture_TwoTapsOnSendAgain_HandTheRecordingToTheSendOnceWhateverTheHookDoes', async () => {
     stubCamera();
     // The screen on its own, with a send that is not the hook's: the guard of the screen is what is looked at.

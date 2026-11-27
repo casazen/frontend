@@ -48,7 +48,7 @@ const CAMERA_TEXT: Record<CameraProblem, string> = {
  * The words and the drawing of each move of the challenge, as they are asked of the guest.
  *
  * The server names the moves by the picture it receives, as the camera gives it (contract of the challenge, E72/F01): `turn_right` is the nose going to the RIGHT of the frame, `look_up` the nose going up. The frames
- * are sent as the camera gives them (never flipped: the server and its qualification work on that picture), while the guest looks at a MIRROR (the preview is mirrored). In front of the camera, what goes to the
+ * are sent as the camera gives them (never flipped: that is the picture the server reads), while the guest looks at a MIRROR (the preview is mirrored). In front of the camera, what goes to the
  * right of the frame is the guest's LEFT, and it is the left of the screen they look at: so the move the server calls `turn_right` is asked as «turn your head to the left», with an arrow that points left, and
  * `turn_left` as «turn your head to the right». Up and down are the same for the guest and for the frame. The words say what the guest does; the arrow points where their face goes on the preview.
  */
@@ -415,9 +415,9 @@ export function PresenceSequenceCapture({ startChallenge, sendSequence, busy }: 
           return;
         }
         if (result.kind === 'busy') {
-          // Another call of the step was in flight and nothing was sent: the recording is still held, and the retry that was spent is given back.
+          // Another call of the step was in flight and nothing was sent: the recording is still held, and the retry that was spent is given back. The sentence is the general one: it was not the connection.
           if (manual) attempt.manualRetriesLeft += 1;
-          dispatch({ type: 'kept', problem: 'network' });
+          dispatch({ type: 'kept', problem: 'failed' });
           return;
         }
         if (result.kind === 'kept' && attempt.manualRetriesLeft > 0) {
