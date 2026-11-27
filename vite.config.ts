@@ -2,7 +2,6 @@ import { defineConfig } from 'vitest/config'
 import { loadEnv, type Plugin, type PluginOption } from 'vite'
 import react from '@vitejs/plugin-react'
 import { devPublicSite } from './scripts/dev-public-site'
-import { vitestProjects } from './scripts/vitest-environments'
 import basicSsl from '@vitejs/plugin-basic-ssl'
 import path from 'path'
 import { assertDemoBuildAllowed } from './src/config/demo-build-guard'
@@ -101,14 +100,12 @@ export default defineConfig(({ command, mode, isSsrBuild }) => {
           },
         },
     test: {
+      environment: 'jsdom',
       globals: true,
+      setupFiles: ['./src/test/setup.ts'],
       // Exclude Playwright E2E tests — they are run separately via `npm run test:e2e`.
       // `integrations/**` is the WordPress plugin: its tests (PHPUnit, and the Node tests of its tools) run in its own workflow.
       exclude: ['**/node_modules/**', '**/dist/**', 'e2e/**', 'integrations/**', '**/.worktrees/**'],
-      // Two projects (scripts/vitest-environments.ts): the `.test.ts` files that touch no DOM run in plain Node with no setup,
-      // every other test keeps jsdom and `src/test/setup.ts` (jest-dom, i18n, stand-ins). Only under vitest, which sets VITEST before it
-      // reads this file: `vite dev` and `vite build` do not scan the test files.
-      projects: process.env.VITEST ? vitestProjects(__dirname, ['./src/test/setup.ts']) : undefined,
     },
   }
 })
