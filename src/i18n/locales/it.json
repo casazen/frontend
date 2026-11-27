@@ -6639,6 +6639,18 @@
       "SingleGuest": "Ospite singolo"
     },
     "identity": {
+      "choice": {
+        "assisted": {
+          "hint": "Una persona controlla la tua identità, senza confronto automatico del viso. Non serve il consenso al controllo del volto.",
+          "label": "Verifica con una persona",
+          "switch": "Passa alla verifica con una persona"
+        },
+        "automatic": {
+          "hint": "Fotografi il documento e inquadri il viso con la fotocamera. Serve il tuo consenso, scritto qui sopra.",
+          "label": "Verifica automatica"
+        },
+        "title": "Come vuoi farti verificare?"
+      },
       "document": {
         "back": {
           "fileLabel": "Foto del retro del documento di identità",
@@ -6721,6 +6733,10 @@
           "noReason": "Questa volta il controllo non è andato a buon fine.",
           "title": "Non siamo ancora riusciti a verificarti"
         }
+      },
+      "unsupported": {
+        "text": "Questa pagina non può ancora svolgere questo passaggio della verifica. Puoi chiedere che sia una persona a controllare la tua identità: chi gestisce la struttura verrà avvisato.",
+        "title": "Questo passaggio richiede una persona"
       }
     },
     "invoice": {

@@ -6639,6 +6639,18 @@
       "SingleGuest": "Single guest"
     },
     "identity": {
+      "choice": {
+        "assisted": {
+          "hint": "A person checks your identity, with no automatic face comparison. No consent to the face check is needed.",
+          "label": "Verification by a person",
+          "switch": "Switch to verification by a person"
+        },
+        "automatic": {
+          "hint": "You photograph your document and show your face to the camera. It needs your consent, written above.",
+          "label": "Automatic verification"
+        },
+        "title": "How would you like to be verified?"
+      },
       "document": {
         "back": {
           "fileLabel": "Photo of the back of the identity document",
@@ -6721,6 +6733,10 @@
           "noReason": "The check did not pass this time.",
           "title": "We could not verify you yet"
         }
+      },
+      "unsupported": {
+        "text": "This page cannot do this step of the verification yet. You can ask for a person to check your identity: whoever manages the property will be told.",
+        "title": "This step needs a person"
       }
     },
     "invoice": {

@@ -79,6 +79,30 @@ describe('the identity calls of the guest check-in (E03/F04/US03/T01)', () => {
   });
 });
 
+describe('the opening of the self-hosted identity step (E70/F03/US01/T01)', () => {
+  it('openIdentity_TheVersionShown_IsAnAnonymousJsonPostWhoseBodyHoldsTheVersionAndTheAddressNone', async () => {
+    const state = { step: 'consent', selfHosted: true, opened: true, noticeVersion: 'checkin-biometric-2026-11', closed: false };
+    vi.mocked(axios.post).mockResolvedValue({ data: { state } });
+
+    await expect(publicCheckinApi.openIdentity(TOKEN, 'checkin-biometric-2026-11')).resolves.toEqual({ state });
+
+    expect(postCall()).toEqual({
+      url: `/public/checkin/${TOKEN}/identity/open`,
+      body: { noticeVersion: 'checkin-biometric-2026-11' },
+      options: { public: true },
+    });
+    // The version is the one the guest read, sent in the body: never part of the address of the call.
+    expect(postCall().url).not.toContain('checkin-biometric-2026-11');
+  });
+
+  it('openIdentity_TheServerRefuses_RejectsAndNothingIsHidden', async () => {
+    const refusal = Object.assign(new Error('Request failed'), { isAxiosError: true, response: { status: 422, data: { code: 'notice_version_unknown' } } });
+    vi.mocked(axios.post).mockRejectedValue(refusal);
+
+    await expect(publicCheckinApi.openIdentity(TOKEN, 'an-old-version')).rejects.toBe(refusal);
+  });
+});
+
 describe('the document on two sides, the legal texts and the door (E22/F02/US01/T01)', () => {
   it.each(['front', 'back'] as const)('postDocument_Side_%s_SendsTheSideInTheFieldTheApiReads', async (side) => {
     await publicCheckinApi.postDocument(TOKEN, new Blob(['document'], { type: 'image/jpeg' }), side);

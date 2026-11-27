@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -63,6 +64,11 @@ interface BiometricConsentProps {
   refreshing?: boolean;
   /** The language the page is shown in (`it`, `en`, `de`, `fr`, `es`). */
   pageLanguage: string;
+  /**
+   * The answers are two ways to be verified, of equal weight (self-hosted verification, E70/F03/US01/T01): «Verifica automatica» (agreeing to the text) and «Verifica con una persona» (refusing it), side by side,
+   * the same size and the same look, with a line each, instead of the button that agrees with the one that refuses beside it. What each does and its test id are the same either way.
+   */
+  choices?: boolean;
 }
 
 /**
@@ -81,8 +87,14 @@ export function BiometricConsent({
   isLoading = false,
   refreshing = false,
   pageLanguage,
+  choices = false,
 }: BiometricConsentProps) {
   const { t } = useTranslation();
+  const choiceId = useId();
+  const agree = () => {
+    if (consent) onConsent(consent.version);
+  };
+  const mayAgree = !(isLoading || refreshing || status !== 'ready' || !consent);
 
   return (
     // The title of the text is the registry's own (its first heading); the section is named here so that a screen reader finds it by what it is for.
@@ -117,22 +129,59 @@ export function BiometricConsent({
       {status === 'ready' && consent && <LegalTextBlock text={consent} testId="checkin-consent-text" pageLanguage={pageLanguage} />}
       {status === 'ready' && notice && <LegalTextBlock text={notice} testId="checkin-ticino-notice" pageLanguage={pageLanguage} />}
 
-      <div className="flex flex-col gap-3 sm:flex-row-reverse sm:justify-start">
-        <Button
-          type="button"
-          size="lg"
-          onClick={() => {
-            if (consent) onConsent(consent.version);
-          }}
-          disabled={isLoading || refreshing || status !== 'ready' || !consent}
-          data-testid="checkin-biometric-accept"
-        >
-          {t('checkin.biometric.consent.accept')}
-        </Button>
-        <Button type="button" size="lg" variant="outline" onClick={onDecline} disabled={isLoading} data-testid="checkin-biometric-decline">
-          {t('checkin.biometric.consent.decline')}
-        </Button>
-      </div>
+      {choices ? (
+        // Two ways to be verified, neither one nudged: the same button for both (size, look, width), the same kind of line under each, the automatic one first because it is the one that needs the text above.
+        <div role="group" aria-labelledby={`${choiceId}-title`} className="space-y-3" data-testid="checkin-identity-choices">
+          <p id={`${choiceId}-title`} className="text-sm font-semibold">
+            {t('checkin.identity.choice.title')}
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-2">
+              <Button
+                type="button"
+                size="lg"
+                variant="outline"
+                className="h-auto min-h-11 w-full whitespace-normal py-2 text-center"
+                onClick={agree}
+                disabled={!mayAgree}
+                aria-describedby={`${choiceId}-automatic`}
+                data-testid="checkin-biometric-accept"
+              >
+                {t('checkin.identity.choice.automatic.label')}
+              </Button>
+              <p id={`${choiceId}-automatic`} className="text-sm text-foreground/70">
+                {t('checkin.identity.choice.automatic.hint')}
+              </p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Button
+                type="button"
+                size="lg"
+                variant="outline"
+                className="h-auto min-h-11 w-full whitespace-normal py-2 text-center"
+                onClick={onDecline}
+                disabled={isLoading}
+                aria-describedby={`${choiceId}-assisted`}
+                data-testid="checkin-biometric-decline"
+              >
+                {t('checkin.identity.choice.assisted.label')}
+              </Button>
+              <p id={`${choiceId}-assisted`} className="text-sm text-foreground/70">
+                {t('checkin.identity.choice.assisted.hint')}
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3 sm:flex-row-reverse sm:justify-start">
+          <Button type="button" size="lg" onClick={agree} disabled={!mayAgree} data-testid="checkin-biometric-accept">
+            {t('checkin.biometric.consent.accept')}
+          </Button>
+          <Button type="button" size="lg" variant="outline" onClick={onDecline} disabled={isLoading} data-testid="checkin-biometric-decline">
+            {t('checkin.biometric.consent.decline')}
+          </Button>
+        </div>
+      )}
 
       {status === 'ready' && consent && (
         <p className="text-xs text-muted-foreground" data-testid="checkin-consent-version">
