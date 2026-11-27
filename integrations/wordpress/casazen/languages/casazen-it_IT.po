@@ -3,7 +3,7 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: CasaZen 0.1.0\n"
+"Project-Id-Version: CasaZen 0.2.0\n"
 "Report-Msgid-Bugs-To: https://github.com/casazen/frontend/issues\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -615,3 +615,433 @@ msgstr "Prenota"
 #: includes/class-wizard.php:94
 msgid "Online check-in"
 msgstr "Check-in online"
+
+#: includes/class-admin.php:172
+msgid "Copied to the clipboard"
+msgstr "Copiato negli appunti"
+
+#: includes/class-admin.php:173
+msgid "Cannot copy: select the value by hand"
+msgstr "Impossibile copiare: seleziona il valore a mano"
+
+#: includes/class-admin.php:174
+msgid "Checking…"
+msgstr "Controllo in corso…"
+
+#: includes/class-admin.php:560
+msgid "Advanced: manual set-up"
+msgstr "Avanzate: configurazione manuale"
+
+#: includes/class-admin.php:564
+msgid "Without connecting the site, write the address of your CasaZen booking site (and, on the CasaZen address, the slug of your organisation) yourself."
+msgstr "Senza collegare il sito, scrivi tu l'indirizzo del tuo sito di prenotazione CasaZen (e, sull'indirizzo di CasaZen, l'identificativo della tua organizzazione)."
+
+#: includes/class-admin.php:566
+msgid "This site is connected: CasaZen fills in the address and the slug by itself. Change them here only if CasaZen asks you to."
+msgstr "Questo sito è collegato: CasaZen compila da solo l'indirizzo e l'identificativo. Cambiali qui solo se te lo chiede CasaZen."
+
+#: includes/class-admin.php:600
+msgid "Next step: create the pages of your booking site."
+msgstr "Passo successivo: crea le pagine del tuo sito di prenotazione."
+
+#: includes/class-admin.php:602
+msgid "Open the guided setup"
+msgstr "Apri la procedura guidata"
+
+#: includes/class-admin.php:651
+msgid "Connect this site to CasaZen"
+msgstr "Collega questo sito a CasaZen"
+
+#: includes/class-admin.php:654
+msgid "No longer connected"
+msgstr "Non più collegato"
+
+#. translators: %s: the name of the agency in CasaZen.
+#: includes/class-admin.php:660
+#, php-format
+msgid "CasaZen does not accept this site for %s any more: the connection was removed in the CasaZen console. Your settings were kept: connect the site again to manage the domain from here."
+msgstr "CasaZen non accetta più questo sito per %s: il collegamento è stato rimosso nella console di CasaZen. Le tue impostazioni sono state mantenute: collega di nuovo il sito per gestire il dominio da qui."
+
+#: includes/class-admin.php:664
+msgid "CasaZen does not accept this site any more: the connection was removed in the CasaZen console. Your settings were kept: connect the site again to manage the domain from here."
+msgstr "CasaZen non accetta più questo sito: il collegamento è stato rimosso nella console di CasaZen. Le tue impostazioni sono state mantenute: collega di nuovo il sito per gestire il dominio da qui."
+
+#: includes/class-admin.php:670
+msgid "One button: CasaZen opens, you confirm, and the address of your booking site is filled in here by itself. Then you manage your domain from this screen."
+msgstr "Un solo pulsante: si apre CasaZen, confermi, e l'indirizzo del tuo sito di prenotazione si compila qui da solo. Poi gestisci il tuo dominio da questa schermata."
+
+#: includes/class-admin.php:671
+msgid "Connect to CasaZen"
+msgstr "Connetti a CasaZen"
+
+#: includes/class-admin.php:672
+msgid "You need to be an administrator of your agency in CasaZen. Without connecting, you can set the address by hand under Advanced."
+msgstr "Serve essere amministratore della tua agenzia in CasaZen. Senza collegare il sito puoi impostare l'indirizzo a mano in Avanzate."
+
+#. translators: %s: the name of the agency in CasaZen.
+#: includes/class-admin.php:690
+#, php-format
+msgid "Connected to %s"
+msgstr "Collegato a %s"
+
+#: includes/class-admin.php:695
+msgid "Site"
+msgstr "Sito"
+
+#: includes/class-admin.php:697
+msgid "Disconnect"
+msgstr "Scollega"
+
+#: includes/class-admin.php:698
+msgid "The site stops managing the domain from here and CasaZen forgets its credential. The address and the settings stay, so the widgets keep working."
+msgstr "Il sito smette di gestire il dominio da qui e CasaZen dimentica la sua credenziale. L'indirizzo e le impostazioni restano, quindi i widget continuano a funzionare."
+
+#: includes/class-admin.php:699
+msgid "Yes, disconnect"
+msgstr "Sì, scollega"
+
+#: includes/class-admin.php:722
+msgid "Domain"
+msgstr "Dominio"
+
+#: includes/class-admin.php:725
+msgid "The data of your domain could not be read from CasaZen. Try again in a few minutes."
+msgstr "Non è stato possibile leggere da CasaZen i dati del tuo dominio. Riprova tra qualche minuto."
+
+#: includes/class-admin.php:726
+msgid "Reload the data"
+msgstr "Ricarica i dati"
+
+#: includes/class-admin.php:734
+msgid "These data may not be up to date:"
+msgstr "Questi dati potrebbero non essere aggiornati:"
+
+#. translators: %s: the address of the booking site of the agency.
+#: includes/class-admin.php:743
+#, php-format
+msgid "Your booking site answers on %s."
+msgstr "Il tuo sito di prenotazione risponde su %s."
+
+#: includes/class-admin.php:754
+msgid "Open the domain settings in CasaZen"
+msgstr "Apri le impostazioni del dominio in CasaZen"
+
+#: includes/class-admin.php:761
+msgid "To use an address of your own, such as prenota.example.com, write it here. Then you create two DNS records where your domain is managed."
+msgstr "Per usare un indirizzo tuo, come prenota.example.com, scrivilo qui. Poi crei due record DNS dove si gestisce il tuo dominio."
+
+#: includes/class-admin.php:769 includes/class-admin.php:807
+msgid "Your domain"
+msgstr "Il tuo dominio"
+
+#: includes/class-admin.php:777
+msgid "Check now"
+msgstr "Controlla ora"
+
+#: includes/class-admin.php:784
+msgid "Remove domain"
+msgstr "Rimuovi dominio"
+
+#: includes/class-admin.php:785
+msgid "Your booking site goes back to the CasaZen address, and this site follows it by itself. The DNS records can then be deleted."
+msgstr "Il tuo sito di prenotazione torna sull'indirizzo di CasaZen, e questo sito lo segue da solo. Poi puoi cancellare i record DNS."
+
+#: includes/class-admin.php:786
+msgid "Yes, remove the domain"
+msgstr "Sì, rimuovi il dominio"
+
+#: includes/class-admin.php:810
+msgid "The address where your guests book, without https://, for example prenota.example.com."
+msgstr "L'indirizzo dove prenotano i tuoi ospiti, senza https://, per esempio prenota.example.com."
+
+#: includes/class-admin.php:811
+msgid "Connect domain"
+msgstr "Collega dominio"
+
+#: includes/class-admin.php:827
+msgid "Your domain is active"
+msgstr "Il tuo dominio è attivo"
+
+#: includes/class-admin.php:828
+msgid "Waiting for the DNS records"
+msgstr "In attesa dei record DNS"
+
+#: includes/class-admin.php:829
+msgid "Activation in progress"
+msgstr "Attivazione in corso"
+
+#: includes/class-admin.php:830
+msgid "The domain cannot be activated"
+msgstr "Il dominio non può essere attivato"
+
+#: includes/class-admin.php:833
+msgid "Your guests can book from your domain. We keep checking the DNS records: if they are removed, the domain stops being active."
+msgstr "I tuoi ospiti possono prenotare dal tuo dominio. Continuiamo a controllare i record DNS: se vengono rimossi, il dominio smette di essere attivo."
+
+#: includes/class-admin.php:834
+msgid "Create the DNS records shown below at your provider and wait for them to propagate (it can take a few hours). Then press Check now, or wait for the automatic check."
+msgstr "Crea i record DNS indicati qui sotto presso il tuo provider e attendi la propagazione (può richiedere alcune ore). Poi premi Controlla ora, oppure aspetta il controllo automatico."
+
+#: includes/class-admin.php:835
+msgid "The DNS records are not the problem: we are finishing the activation of the domain on the platform and will retry automatically."
+msgstr "I record DNS non sono il problema: stiamo completando l'attivazione del dominio sulla piattaforma e riproveremo in automatico."
+
+#: includes/class-admin.php:836
+msgid "The domain cannot be activated. Check that it is spelled correctly or choose another domain."
+msgstr "Il dominio non può essere attivato. Controlla che sia scritto correttamente o scegli un altro dominio."
+
+#: includes/class-admin.php:849
+msgid "Activating custom domains is not available on the platform yet: the domain will stay on hold until the service is configured. There is nothing different to do on your DNS."
+msgstr "L'attivazione dei domini personalizzati non è ancora disponibile sulla piattaforma: il dominio resterà in attesa finché il servizio non sarà configurato. Non devi fare nulla di diverso sul tuo DNS."
+
+#: includes/class-admin.php:854
+msgid "not checked yet"
+msgstr "non ancora controllato"
+
+#: includes/class-admin.php:857
+msgid "We re-check the domain automatically: you do not need to come back here."
+msgstr "Ricontrolliamo il dominio in automatico: non serve tornare qui."
+
+#: includes/class-admin.php:858
+msgid "The automatic check is paused because the domain has not been configured for too long: press Check now after fixing the DNS records."
+msgstr "Il controllo automatico è sospeso perché il dominio non risulta configurato da troppo tempo: premi Controlla ora dopo aver sistemato i record DNS."
+
+#: includes/class-admin.php:870
+msgid "DNS records to create"
+msgstr "Record DNS da creare"
+
+#: includes/class-admin.php:871
+msgid "Create these records at the provider of your domain (where you registered it). Then press Check now."
+msgstr "Crea questi record presso il provider del tuo dominio (dove l'hai registrato). Poi premi Controlla ora."
+
+#: includes/class-admin.php:875
+msgid "Record"
+msgstr "Record"
+
+#: includes/class-admin.php:876
+msgid "Name"
+msgstr "Nome"
+
+#: includes/class-admin.php:877
+msgid "Value"
+msgstr "Valore"
+
+#: includes/class-admin.php:881
+msgid "1. Ownership TXT record"
+msgstr "1. Record TXT di proprietà"
+
+#: includes/class-admin.php:881
+msgid "Proves the domain is yours. Type TXT."
+msgstr "Dimostra che il dominio è tuo. Tipo TXT."
+
+#: includes/class-admin.php:882
+msgid "2. CNAME record"
+msgstr "2. Record CNAME"
+
+#: includes/class-admin.php:882
+msgid "Points the domain to our service. Type CNAME, for a subdomain such as www."
+msgstr "Fa puntare il dominio al nostro servizio. Tipo CNAME, per un sottodominio come www."
+
+#: includes/class-admin.php:885
+msgid "Alternatively: A record"
+msgstr "In alternativa: record A"
+
+#: includes/class-admin.php:886
+msgid "For a domain without www (the root of a domain cannot have a CNAME) create a record of type A for each address."
+msgstr "Per un dominio senza www (la radice del dominio non può avere un CNAME) crea un record di tipo A per ogni indirizzo."
+
+#: includes/class-admin.php:892
+msgid "3. Service provider TXT record"
+msgstr "3. Record TXT del fornitore del servizio"
+
+#: includes/class-admin.php:892
+msgid "Required only because the domain is already used on another account of the provider. Type TXT."
+msgstr "Richiesto solo perché il dominio risulta già usato su un altro account del fornitore. Tipo TXT."
+
+#: includes/class-admin.php:895
+msgid "The SSL certificate is generated automatically once the domain is active."
+msgstr "Il certificato SSL viene generato automaticamente dopo l'attivazione del dominio."
+
+#: includes/class-admin.php:916
+msgid "Copy the name"
+msgstr "Copia il nome"
+
+#: includes/class-admin.php:918
+msgid "Copy the value"
+msgstr "Copia il valore"
+
+#. translators: %s: the address of the domain of the agency.
+#: includes/class-admin.php:951
+#, php-format
+msgid "The links you send start from %s."
+msgstr "I link che invii partono da %s."
+
+#: includes/class-admin.php:953
+msgid "For now the links stay the CasaZen ones."
+msgstr "Per ora i link restano quelli di CasaZen."
+
+#: includes/class-admin.php:957
+msgid "Guest area on my domain"
+msgstr "Area ospite sul mio dominio"
+
+#: includes/class-admin.php:958
+msgid "Your guests manage their booking and check in from your address, under your brand."
+msgstr "I tuoi ospiti gestiscono la prenotazione e fanno il check-in dal tuo indirizzo, con il tuo marchio."
+
+#: includes/class-admin.php:959
+msgid "For now the guest area stays on the CasaZen address."
+msgstr "Per ora l'area ospite resta sull'indirizzo di CasaZen."
+
+#: includes/class-admin.php:962
+msgid "Owner portal on my domain"
+msgstr "Portale proprietari sul mio dominio"
+
+#: includes/class-admin.php:963
+msgid "Owners sign in from your address. Their links move only once owner sign-in is active."
+msgstr "I proprietari accedono dal tuo indirizzo. I link per loro si spostano solo quando l'accesso dei proprietari è attivo."
+
+#: includes/class-admin.php:964
+msgid "For now the owner portal stays on the CasaZen address."
+msgstr "Per ora il portale proprietari resta sull'indirizzo di CasaZen."
+
+#: includes/class-admin.php:967
+msgid "Use my domain in the links I send"
+msgstr "Usa il mio dominio nei link che invio"
+
+#: includes/class-admin.php:968
+msgid "Check-in, booking management, confirmations and invitations start from your address instead of the CasaZen one."
+msgstr "Check-in, gestione della prenotazione, conferme e inviti partono dal tuo indirizzo invece che da quello di CasaZen."
+
+#: includes/class-admin.php:973
+msgid "registration failed"
+msgstr "registrazione non riuscita"
+
+#: includes/class-admin.php:974
+msgid "not requested yet"
+msgstr "non ancora richiesto"
+
+#: includes/class-admin.php:975
+msgid "registration in progress"
+msgstr "registrazione in corso"
+
+#: includes/class-admin.php:976
+msgid "waiting for CasaZen to enable it"
+msgstr "in attesa di abilitazione da parte di CasaZen"
+
+#: includes/class-admin.php:977
+msgid "active"
+msgstr "attivo"
+
+#: includes/class-admin.php:981 includes/class-admin.php:986
+msgid "What runs on your domain"
+msgstr "Cosa passa dal tuo dominio"
+
+#: includes/class-admin.php:982
+msgid "Choose what runs on your address. Anything you leave off stays on the CasaZen address."
+msgstr "Scegli cosa passa dal tuo indirizzo. Quello che lasci spento resta sull'indirizzo di CasaZen."
+
+#: includes/class-admin.php:1000
+msgid "Save the choices"
+msgstr "Salva le scelte"
+
+#: includes/class-admin.php:1006
+msgid "CasaZen enables it: there is nothing for you to do."
+msgstr "Lo abilita CasaZen: per te non c'è nulla da fare."
+
+#: includes/class-api-client.php:210
+msgid "No longer connected: CasaZen does not accept this site any more. Connect it again; your settings were kept."
+msgstr "Non più collegato: CasaZen non accetta più questo sito. Collegalo di nuovo; le tue impostazioni sono state mantenute."
+
+#: includes/class-api-client.php:212
+msgid "Your own domain needs the Pro plan."
+msgstr "Il dominio personalizzato richiede il piano Pro."
+
+#: includes/class-api-client.php:214
+msgid "Your CasaZen subscription does not include the booking site: switch it on in the CasaZen console."
+msgstr "Il tuo abbonamento CasaZen non include il sito di prenotazione: attivalo dalla console di CasaZen."
+
+#: includes/class-api-client.php:216
+msgid "Finish setting up your account in the CasaZen console first."
+msgstr "Prima completa la configurazione del tuo account nella console di CasaZen."
+
+#: includes/class-api-client.php:218
+msgid "CasaZen does not allow this for your account."
+msgstr "CasaZen non lo consente per il tuo account."
+
+#: includes/class-api-client.php:220
+msgid "This CasaZen address does not offer the connection of the plugin, or embedding is not switched on for your agency. Use the manual set-up under Advanced."
+msgstr "Questo indirizzo CasaZen non offre il collegamento del plugin, oppure l'incorporamento non è attivo per la tua agenzia. Usa la configurazione manuale in Avanzate."
+
+#: includes/class-api-client.php:222
+msgid "Too many requests to CasaZen in a short time. Try again in a few minutes."
+msgstr "Troppe richieste a CasaZen in poco tempo. Riprova tra qualche minuto."
+
+#: includes/class-api-client.php:224
+msgid "CasaZen could not be reached. Try again in a few minutes."
+msgstr "CasaZen non è raggiungibile. Riprova tra qualche minuto."
+
+#: includes/class-api-client.php:226
+msgid "The connection was not completed: the request expired or was already used. Press Connect to CasaZen again."
+msgstr "Il collegamento non è stato completato: la richiesta è scaduta o è già stata usata. Premi di nuovo Connetti a CasaZen."
+
+#: includes/class-api-client.php:228
+msgid "The domain is not valid. Write it like prenota.example.com."
+msgstr "Il dominio non è valido. Scrivilo come prenota.example.com."
+
+#: includes/class-api-client.php:230
+msgid "This domain is already in use by another CasaZen site."
+msgstr "Questo dominio risulta già in uso da un altro sito CasaZen."
+
+#: includes/class-api-client.php:232
+msgid "Connect a domain first."
+msgstr "Prima collega un dominio."
+
+#: includes/class-api-client.php:234
+msgid "CasaZen gave an answer the plugin does not understand. Try again in a few minutes."
+msgstr "CasaZen ha dato una risposta che il plugin non capisce. Riprova tra qualche minuto."
+
+#: includes/class-connect.php:140
+msgid "CasaZen can connect a site whose address starts with https:// and whose administration is on the same address. Use the manual set-up under Advanced."
+msgstr "CasaZen può collegare un sito il cui indirizzo inizia con https:// e la cui amministrazione è sullo stesso indirizzo. Usa la configurazione manuale in Avanzate."
+
+#. translators: %s: the name of the agency in CasaZen.
+#: includes/class-connect.php:209
+#, php-format
+msgid "Connected to %s."
+msgstr "Collegato a %s."
+
+#: includes/class-connect.php:235
+msgid "This connection request is not valid any more. Press Connect to CasaZen again."
+msgstr "Questa richiesta di collegamento non è più valida. Premi di nuovo Connetti a CasaZen."
+
+#: includes/class-connect.php:302
+msgid "This site is no longer connected to CasaZen. The address and the settings stay, so the widgets keep working."
+msgstr "Questo sito non è più collegato a CasaZen. L'indirizzo e le impostazioni restano, quindi i widget continuano a funzionare."
+
+#: includes/class-connect.php:304
+msgid "This site is no longer connected, but CasaZen could not be told. If the site is still listed among the connected sites in the CasaZen console, remove it there."
+msgstr "Questo sito non è più collegato, ma non è stato possibile avvisare CasaZen. Se il sito compare ancora tra i siti collegati nella console di CasaZen, rimuovilo da lì."
+
+#: includes/class-domain.php:170
+msgid "The data of CasaZen are up to date."
+msgstr "I dati di CasaZen sono aggiornati."
+
+#: includes/class-domain.php:192
+msgid "Domain saved. Now create the DNS records shown below."
+msgstr "Dominio salvato. Ora crea i record DNS indicati qui sotto."
+
+#: includes/class-domain.php:206
+msgid "The domain was removed: your booking site is back on the CasaZen address."
+msgstr "Il dominio è stato rimosso: il tuo sito di prenotazione è tornato sull'indirizzo di CasaZen."
+
+#: includes/class-domain.php:229
+msgid "Your domain is active."
+msgstr "Il tuo dominio è attivo."
+
+#: includes/class-domain.php:231
+msgid "Checked: the domain is not active yet. The state below says why."
+msgstr "Controllo eseguito: il dominio non è ancora attivo. Lo stato qui sotto dice perché."
+
+#: includes/class-domain.php:260
+msgid "Your choices were saved."
+msgstr "Le tue scelte sono state salvate."
