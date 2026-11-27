@@ -160,15 +160,35 @@ describe('TodoListPage (NF-07, ADR-026)', () => {
     expect(within(channels).getByTestId('todo-why')).toHaveTextContent('Il collegamento con il gestionale dei canali si è interrotto.');
   });
 
-  it('TodoListPage_Urgency_IsToldWithAWordAndNotWithColorAlone', () => {
+  it('TodoListPage_Urgency_OnlyTheUrgentItemsSaySo_WithAWordAndNotWithColorAlone', () => {
     renderPage();
 
-    expect(cards().map((card) => within(card).getByTestId('todo-urgency').textContent)).toEqual([
-      'Quando puoi',
+    // The list is already in the order of urgency: a badge on every card was noise (UX round 2026-11), the urgent ones keep theirs.
+    expect(cards().map((card) => within(card).queryByTestId('todo-urgency')?.textContent ?? null)).toEqual([
+      null,
       'Urgente',
-      'Importante',
+      null,
       'Urgente',
     ]);
+  });
+
+  it('TodoListPage_DoNow_IsFilledOnlyOnTheFirstCardThatHasOne', () => {
+    answer({ data: [todo({ id: 'x', action: 'ActionOfALaterVersion' }), ...LIST] });
+    renderPage();
+
+    const links = screen.getAllByTestId('todo-do-now');
+    // The card of an action unknown to this version has no button: the first one that has it is the filled one, the rest are outlined.
+    expect(within(cards()[0]).queryByTestId('todo-do-now')).not.toBeInTheDocument();
+    expect(links[0]).toHaveClass('bg-primary');
+    for (const link of links.slice(1)) expect(link).not.toHaveClass('bg-primary');
+    expect(links.slice(1).every((link) => link.classList.contains('border-input'))).toBe(true);
+  });
+
+  it('TodoListPage_Count_IsNoCalloutAnyMoreButAScreenReaderStillHearsIt', () => {
+    renderPage();
+
+    expect(screen.getByTestId('todo-summary')).toHaveClass('sr-only');
+    expect(screen.getByTestId('todo-summary')).toHaveAttribute('aria-live', 'polite');
   });
 
   it('TodoListPage_TypeOfALaterTask_UsesItsOwnWordsFromTheLocaleFilesAndTheGenericOnesWhenItHasNone', () => {
@@ -336,10 +356,10 @@ describe('TodoListPage (NF-07, ADR-026)', () => {
     renderPage();
 
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('To-do list');
-    expect(cards().map((card) => within(card).getByTestId('todo-urgency').textContent)).toEqual([
-      'When you can',
+    expect(cards().map((card) => within(card).queryByTestId('todo-urgency')?.textContent ?? null)).toEqual([
+      null,
       'Urgent',
-      'Important',
+      null,
       'Urgent',
     ]);
     expect(within(cards()[1]).getByRole('link', { name: /^Do it now/ })).toBeInTheDocument();

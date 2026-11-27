@@ -74,13 +74,12 @@ function BookingsListPage() {
       <div className="space-y-6">
         <PageHeader
           title={t('booking.list.title')}
-          description={t('booking.list.description')}
           primary={canWrite ? { label: t('booking.list.newBooking'), icon: Plus, to: createPath, testId: 'new-booking' } : undefined}
           mobilePrimary="fab"
         />
 
         {nothingAtAll ? (
-          <div className="rounded-lg border bg-card text-card-foreground shadow-sm" data-testid="bookings-empty">
+          <div data-testid="bookings-empty">
             <EmptyState icon={emptyIcon ?? CalendarDays} {...empty} />
           </div>
         ) : (

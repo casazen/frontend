@@ -27,7 +27,10 @@ export interface FocusBlockProps extends Omit<React.HTMLAttributes<HTMLElement>,
   icon?: LucideIcon;
 }
 
-/** A named section for a current task, its owner and its actions. The tone is conveyed by the icon and the wording. */
+/**
+ * A named section for a current task, its owner and its actions. The tone is conveyed by the icon and the wording. It is the
+ * one focal point of a page, so it is also the one block that arrives with a short rise (`cz-enter`, `styles/motion.css`).
+ */
 export function FocusBlock({ tone = 'neutral', kicker, title, body, who, when, primary, secondary, then, icon, className, ...props }: FocusBlockProps) {
   const titleId = React.useId();
   const style = TONE_STYLES[tone];
@@ -39,7 +42,7 @@ export function FocusBlock({ tone = 'neutral', kicker, title, body, who, when, p
       aria-labelledby={titleId}
       data-tone={tone}
       className={cn(
-        'flex min-w-0 items-start gap-2.5',
+        'cz-enter flex min-w-0 items-start gap-2.5',
         className,
       )}
     >

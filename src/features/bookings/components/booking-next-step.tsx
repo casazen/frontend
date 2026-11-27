@@ -297,10 +297,19 @@ export function BookingNextStep({ booking, canWrite, viewingCheckIn, useGuestPor
   }
 
   const requiresComplianceAction = step.kind === 'sendAlloggiati' || (step.kind === 'compliance' && step.line?.state === 'red');
+  // The next action of the stay is a button in view, next to the title of the page (register the arrival, confirm, send the
+  // link…), not a step hidden behind the hint: the hint keeps the why, the who and the when, with the same button. Where there
+  // is nothing to do but wait, the action is the way back to the list: then the hint alone says what is going on.
+  const directAction = view.primary === toBookings ? null : view.primary;
   return (
     <>
-      {requiresComplianceAction && <CalmActionButton action={{ ...view.primary, testId: 'booking-compliance-action' }} variant="outline" size="sm" />}
-      <ContextualHint testId="booking-guidance-trigger" label={view.title} tone={step.tone} iconOnly={requiresComplianceAction}>
+      {directAction && (
+        <CalmActionButton
+          action={{ ...directAction, testId: requiresComplianceAction ? 'booking-compliance-action' : 'booking-next-action' }}
+          size="sm"
+        />
+      )}
+      <ContextualHint testId="booking-guidance-trigger" label={view.title} tone={step.tone} iconOnly={directAction !== null}>
         <FocusBlock data-testid="booking-next-step" data-next-step={step.kind} tone={step.tone} {...view} body={body} />
       </ContextualHint>
     </>

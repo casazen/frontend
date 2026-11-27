@@ -6,6 +6,7 @@ import { RentComposition } from '@/features/leases/components/rent-composition';
 import { rentBreakdown, type RentBreakdown } from '@/features/leases/lib/rent-breakdown';
 import { bankLinkDebitAvailable } from '@/features/bank-transfer/bank-link-currency';
 import { TenantSepaSettings, TenantSepaPayment } from './tenant-sepa';
+import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -59,10 +60,7 @@ export function TenantDuesPage() {
 
   return (
     <div className="space-y-4" data-testid="tenant-dues">
-      <header className="space-y-1">
-        <h1 className="text-3xl font-semibold tracking-tight">{t('tenantArea.dues.title')}</h1>
-        <p className="text-sm text-foreground/70">{t('tenantArea.dues.lead')}</p>
-      </header>
+      <PageHeader title={t('tenantArea.dues.title')} description={t('tenantArea.dues.lead')} />
       {(area.condominiumReports ?? []).map(report => <section key={report.id} className="space-y-2 rounded-md border p-4" data-testid="tenant-condominium-report">
         <h2 className="font-semibold">{t('condoBook.tenantReport', { year: report.periodLabel })}</h2>
         <p>{t('condoBook.tenantReportAmounts', { final: formatCurrency(report.recoverable, 'EUR'), advances: formatCurrency(report.advances, 'EUR'), prior: formatCurrency(report.prior, 'EUR'), balance: formatCurrency(report.balance, 'EUR') })}</p>

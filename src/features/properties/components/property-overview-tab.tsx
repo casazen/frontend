@@ -94,22 +94,22 @@ export function PropertyOverviewTab({ property, canWrite, publicPath }: Property
           ) : null}
         </PlainSection>
         {canWrite ? (
-          <PlainSection className="rounded-xl border bg-card p-4 sm:p-5" title={t('property.detail.sections.data')} actionLabel={t('property.detail.edit')} href={propertyEditPath(property.id)}>
+          <PlainSection title={t('property.detail.sections.data')} actionLabel={t('property.detail.edit')} href={propertyEditPath(property.id)}>
             {data}
           </PlainSection>
         ) : (
-          <PlainSection className="rounded-xl border bg-card p-4 sm:p-5" title={t('property.detail.sections.data')}>{data}</PlainSection>
+          <PlainSection title={t('property.detail.sections.data')}>{data}</PlainSection>
         )}
 
         <PlainSection
           id={PRICING_SECTION_ID}
-          className="scroll-mt-6 rounded-xl border bg-card p-4 sm:p-5"
+          className="scroll-mt-6"
           title={t('property.detail.sections.pricing')}
           actionLabel={t('property.detail.managePricing')}
           href={propertyPricingPath(property.id)}
           actionTestId="property-manage-pricing"
         >
-          <dl className="grid grid-cols-2 gap-x-3 gap-y-2 rounded-lg bg-muted/60 p-3 sm:grid-cols-3">
+          <dl className="grid grid-cols-2 gap-x-3 gap-y-2 sm:grid-cols-3">
             <div className="col-span-2 sm:col-span-1">
               <dt className="text-sm text-foreground/70">{t('property.info.nightlyRate')}</dt>
               <dd className="break-words text-xl font-semibold tabular-nums">{formatCurrency(property.nightlyRate, property.currency)}</dd>

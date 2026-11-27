@@ -119,9 +119,10 @@ export function TodaySection({ actions }: { actions: RequestActions }) {
     <section
       aria-labelledby="supplier-today-title"
       data-testid="supplier-today"
-      className="min-w-0 overflow-hidden rounded-xl bg-card ring-1 ring-inset ring-primary/25"
+      className="min-w-0 overflow-hidden rounded-xl border border-border bg-card"
     >
-      <header className="space-y-3 bg-primary-soft px-4 py-4 sm:px-5">
+      {/* The same quiet head as the day of the host (UX round 2026-11): no tint, so the block «what now» stays the one highlight. */}
+      <header className="space-y-3 border-b border-border px-4 py-4 sm:px-5">
         <h2 id="supplier-today-title" className="break-words text-xl font-bold tracking-tight">
           {t('supplier.home.today.title')}
         </h2>

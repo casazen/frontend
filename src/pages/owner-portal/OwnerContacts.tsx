@@ -29,7 +29,7 @@ export function OwnerContacts() {
         <>
           <InviteContactForm />
           <section aria-labelledby="owner-contacts-title" className="space-y-3">
-            <h2 id="owner-contacts-title" className="text-xl font-semibold text-[#1f3a3d]">
+            <h2 id="owner-contacts-title" className="text-xl font-semibold">
               {t('ownerPortal.contacts.listTitle')}
             </h2>
             <ContactList contacts={contacts.data} />

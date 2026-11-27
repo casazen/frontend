@@ -20,6 +20,7 @@ interface DocumentReadStepProps {
 export function DocumentReadStep({ review, onConfirm, reading, message, readCount, onFile, onManual, onContinue, notArchived = false }: DocumentReadStepProps) {
   const { t } = useTranslation();
   const inputId = useId();
+  const hintId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
 
   return (
@@ -27,12 +28,6 @@ export function DocumentReadStep({ review, onConfirm, reading, message, readCoun
       <p className="text-sm text-muted-foreground">{t('checkin.scanIntro')}</p>
       <div className="rounded-md border border-dashed p-6 text-center space-y-3">
         <Camera className="mx-auto h-8 w-8 text-muted-foreground" aria-hidden />
-        <p className="text-sm">{t('checkin.scanHint')}</p>
-        {notArchived && (
-          <p className="text-sm font-medium" data-testid="checkin-document-not-archived">
-            {t('checkin.identity.documentNotArchived')}
-          </p>
-        )}
         <input
           ref={inputRef}
           id={inputId}
@@ -49,9 +44,23 @@ export function DocumentReadStep({ review, onConfirm, reading, message, readCoun
             if (file) onFile(file);
           }}
         />
-        <Button type="button" disabled={reading} onClick={() => inputRef.current?.click()} data-testid="checkin-document-pick">
+        {/* After a first read «Avanti» is the way on: the camera becomes the second choice. */}
+        <Button
+          type="button"
+          variant={readCount > 0 ? 'outline' : 'default'}
+          disabled={reading}
+          onClick={() => inputRef.current?.click()}
+          aria-describedby={hintId}
+          data-testid="checkin-document-pick"
+        >
           {reading ? t('checkin.scanReading') : readCount > 0 ? t('checkin.scanAnother') : t('checkin.scanButton')}
         </Button>
+        <p id={hintId} className="text-xs text-foreground/70" data-testid="checkin-document-hint">{t('checkin.scanHint')}</p>
+        {notArchived && (
+          <p className="text-xs font-medium" data-testid="checkin-document-not-archived">
+            {t('checkin.identity.documentNotArchived')}
+          </p>
+        )}
       </div>
       {review && <div role="status" className="space-y-2">
         <p>{review}</p>

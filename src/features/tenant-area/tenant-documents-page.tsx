@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Download, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { tenantAreaApi } from '@/api/tenant-area.api';
+import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/shared/empty-state';
 import { getProblemMessage } from '@/lib/api-errors';
@@ -29,7 +30,7 @@ export function TenantDocumentsPage() {
 
   return (
     <div data-testid="tenant-documents" className="space-y-5">
-      <h1 className="text-3xl font-semibold tracking-tight">{t('tenantArea.nav.documents')}</h1>
+      <PageHeader title={t('tenantArea.nav.documents')} />
       {documents.length === 0 ? (
         <div data-testid="tenant-documents-empty">
           <EmptyState

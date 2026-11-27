@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ErrorState } from '@/components/shared/error-state';
 import { SkeletonCard, SkeletonLine } from '@/components/ui/skeleton';
-import { PortalReadProblem, TOUCH } from '@/features/owner-portal/portal-parts';
+import { PortalPageHeading, PortalReadProblem, TOUCH } from '@/features/owner-portal/portal-parts';
 import { ownerPortalPaths } from '@/features/owner-portal/paths';
 import { useOwnerProperties } from '@/queries/ownerPortal';
 import { formatStayDate, parseStayDate } from '@/lib/stay-dates';
@@ -70,27 +70,28 @@ export function OwnerProperties() {
             {t('ownerPortal.properties.backToDashboard')}
           </Link>
         </Button>
-        <div className="min-w-0">
-          <h1 className="flex min-w-0 items-start gap-2 break-words text-2xl font-bold text-[#1f3a3d] sm:text-3xl">
-            <Building2 aria-hidden="true" className="mt-1 h-7 w-7 shrink-0" />
-            <span className="min-w-0">{property.propertyName}</span>
-          </h1>
-          <p className="mt-1 break-words text-muted-foreground">{property.address}</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button asChild className={TOUCH}>
-            <Link to={ownerPortalPaths.calendar(property.propertyId)} data-testid="owner-property-calendar">
-              <Calendar aria-hidden="true" className="h-4 w-4" />
-              {t('ownerPortal.properties.openCalendar')}
-            </Link>
-          </Button>
-          <Button asChild variant="outline" className={TOUCH}>
-            <Link to={`${ownerPortalPaths.messages}?topic=property&propertyId=${encodeURIComponent(property.propertyId)}`} data-testid="owner-property-message">
-              <MessageSquare aria-hidden="true" className="h-4 w-4" />
-              {t('ownerPortal.properties.writeToAgency')}
-            </Link>
-          </Button>
-        </div>
+        {/* The head of every page of the portal, in the colors of the theme (it was a title in a fixed green). */}
+        <PortalPageHeading
+          icon={Building2}
+          title={property.propertyName}
+          description={property.address}
+          actions={
+            <>
+              <Button asChild className={TOUCH}>
+                <Link to={ownerPortalPaths.calendar(property.propertyId)} data-testid="owner-property-calendar">
+                  <Calendar aria-hidden="true" className="h-4 w-4" />
+                  {t('ownerPortal.properties.openCalendar')}
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className={TOUCH}>
+                <Link to={`${ownerPortalPaths.messages}?topic=property&propertyId=${encodeURIComponent(property.propertyId)}`} data-testid="owner-property-message">
+                  <MessageSquare aria-hidden="true" className="h-4 w-4" />
+                  {t('ownerPortal.properties.writeToAgency')}
+                </Link>
+              </Button>
+            </>
+          }
+        />
       </div>
 
       {/* Property summary */}

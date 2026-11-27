@@ -27,7 +27,7 @@ interface MessageListProps {
  */
 export function MessageList({ conversationId, messages }: MessageListProps) {
   const { t, i18n } = useTranslation();
-  const { download, busyKey, failure } = useOwnerDownload();
+  const { download, busyKey } = useOwnerDownload();
 
   return (
     <div className="space-y-3">
@@ -69,11 +69,6 @@ export function MessageList({ conversationId, messages }: MessageListProps) {
                   </Button>
                   <span className="text-sm text-muted-foreground">{formatBytes(attachment.sizeBytes, i18n.language)}</span>
                 </div>
-              ) : null}
-              {failure?.key === message.id ? (
-                <Alert variant="danger" className="mt-3" data-testid="owner-attachment-failed">
-                  {failure.message}
-                </Alert>
               ) : null}
             </li>
           );

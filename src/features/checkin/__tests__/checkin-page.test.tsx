@@ -197,8 +197,12 @@ describe('CheckInPage', () => {
     expect(notice).toHaveTextContent('Versione dell’informativa: notice-2026-10');
     expect(within(notice).getByRole('checkbox')).not.toBeChecked();
     expect(screen.getByTestId('checkin-submit')).toBeDisabled();
+    // A disabled button says what it waits for, in a line under it (UX round 2026-11), which goes once the box is ticked.
+    expect(screen.getByTestId('checkin-submit-hint')).toHaveTextContent('spunta prima le caselle obbligatorie');
+    expect(screen.getByTestId('checkin-submit')).toHaveAttribute('aria-describedby', 'checkin-submit-hint');
 
     acknowledgePrivacy();
+    expect(screen.queryByTestId('checkin-submit-hint')).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId('checkin-submit'));
 
     await waitFor(() => expect(publicCheckinApi.submit).toHaveBeenCalledTimes(1));

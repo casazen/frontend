@@ -155,7 +155,7 @@ export function OwnerWithholdingSection() {
 
   return (
     <section aria-labelledby="owner-withholding-title" className="space-y-3" data-testid="owner-withholding">
-      <h2 id="owner-withholding-title" className="text-xl font-semibold text-[#1f3a3d]">
+      <h2 id="owner-withholding-title" className="text-xl font-semibold">
         {t('ownerPortal.withholding.title')}
       </h2>
       <p className="text-sm text-muted-foreground">{t('ownerPortal.withholding.note')}</p>

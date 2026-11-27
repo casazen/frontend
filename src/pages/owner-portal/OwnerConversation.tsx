@@ -1,9 +1,9 @@
 import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Mail, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MessageList, ReplyForm } from '@/features/owner-portal/conversation-thread';
-import { PortalLoading, PortalNotice, PortalReadProblem, TOUCH } from '@/features/owner-portal/portal-parts';
+import { PortalLoading, PortalNotice, PortalPageHeading, PortalReadProblem, TOUCH } from '@/features/owner-portal/portal-parts';
 import { ownerPortalPaths } from '@/features/owner-portal/paths';
 import { useOwnerConversations, useOwnerMessages } from '@/queries/ownerPortal';
 
@@ -34,18 +34,18 @@ export function OwnerConversation() {
     <div className="space-y-6">
       <div className="space-y-2">
         {back}
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h1 className="break-words text-2xl font-bold text-[#1f3a3d] sm:text-3xl" data-testid="owner-conversation-subject">
-              {conversation?.subject ?? t('ownerPortal.inbox.thread.title')}
-            </h1>
-            {conversation ? <p className="text-sm text-muted-foreground">{t(`ownerPortal.inbox.topic.${conversation.topic}`)}</p> : null}
-          </div>
-          <Button type="button" variant="outline" className={TOUCH} onClick={() => void messages.refetch()} loading={messages.isFetching && !messages.isLoading}>
-            <RefreshCw aria-hidden="true" className="h-4 w-4" />
-            {t('ownerPortal.inbox.thread.refresh')}
-          </Button>
-        </div>
+        {/* The head of every page of the portal, in the colors of the theme (it was a title in a fixed green). */}
+        <PortalPageHeading
+          icon={Mail}
+          title={conversation?.subject ?? t('ownerPortal.inbox.thread.title')}
+          description={conversation ? t(`ownerPortal.inbox.topic.${conversation.topic}`) : undefined}
+          actions={
+            <Button type="button" variant="outline" className={TOUCH} onClick={() => void messages.refetch()} loading={messages.isFetching && !messages.isLoading}>
+              <RefreshCw aria-hidden="true" className="h-4 w-4" />
+              {t('ownerPortal.inbox.thread.refresh')}
+            </Button>
+          }
+        />
       </div>
 
       {messages.isLoading ? (

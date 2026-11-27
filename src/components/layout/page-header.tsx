@@ -26,6 +26,12 @@ interface PageHeaderProps {
   description?: string;
   icon?: LucideIcon;
   /**
+   * The state of what the page shows (a `StatusBadge`: «Confermata», «Da completare»). It goes under the title, at the start
+   * of the line of the description, so the state, the name and the facts read as one line, and the controls on the right are
+   * only actions (on a phone they no longer wrap into three rows). A page shows its state here once, not again in a card.
+   */
+  status?: React.ReactNode;
+  /**
    * Free content on the right of the title, as it always was. A page that is moved to the new header gives its actions as
    * `primary` and `secondary` instead (a page has one primary action).
    */
@@ -61,7 +67,7 @@ interface PageHeaderProps {
  * section right under its head (`NavSectionTabs`): the page does not have to ask for them, and a page that is in no section is
  * unchanged.
  */
-export function PageHeader({ title, description, icon, action, crumbs, primary, secondary, mobilePrimary }: PageHeaderProps) {
+export function PageHeader({ title, description, icon, status, action, crumbs, primary, secondary, mobilePrimary }: PageHeaderProps) {
   usePageTitle(title);
   const shell = useAppShell();
 
@@ -71,9 +77,14 @@ export function PageHeader({ title, description, icon, action, crumbs, primary, 
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
           <div className="min-w-0 grow basis-56">
             <h1 className="break-words text-3xl font-semibold tracking-tight text-balance">{title}</h1>
-            {description && (
+            {status ? (
+              <div className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
+                {status}
+                {description ? <p className="text-muted-foreground break-words">{description}</p> : null}
+              </div>
+            ) : description ? (
               <p className="text-muted-foreground mt-2 break-words">{description}</p>
-            )}
+            ) : null}
           </div>
           {action && <div className="min-w-0 max-w-full">{action}</div>}
         </div>
@@ -88,6 +99,7 @@ export function PageHeader({ title, description, icon, action, crumbs, primary, 
         title={title}
         description={description}
         icon={icon}
+        status={status}
         action={action}
         crumbs={crumbs ?? (shell ? 'auto' : undefined)}
         primary={primary}
@@ -99,7 +111,7 @@ export function PageHeader({ title, description, icon, action, crumbs, primary, 
   );
 }
 
-function PageHeaderWithTrail({ title, description, icon: Icon, action, crumbs, primary, secondary, mobilePrimary = 'bar' }: PageHeaderProps) {
+function PageHeaderWithTrail({ title, description, icon: Icon, status, action, crumbs, primary, secondary, mobilePrimary = 'bar' }: PageHeaderProps) {
   const { t } = useTranslation();
   const shell = useAppShell();
   const { pathname } = useLocation();
@@ -138,8 +150,10 @@ function PageHeaderWithTrail({ title, description, icon: Icon, action, crumbs, p
 
   return (
     <div className="workspace-page-heading flex flex-col gap-2" data-testid="page-header">
+      {/* The breadcrumb is for a computer (`PageCrumbs` hides itself on a phone): the row and its icon go with it, or a phone shows
+          the icon of the area alone above the way back. */}
       {items.length > 0 && (
-        <div className="flex items-center gap-2">
+        <div className="hidden items-center gap-2 md:flex">
           {shell && !Icon && (
             <span className="cz-icon-tile workspace-page-icon" aria-hidden="true">
               <NavIcon name={getManifestEntry(pathname)?.icon ?? getArea(shell.contextKey).icon} className="size-4" />
@@ -159,7 +173,14 @@ function PageHeaderWithTrail({ title, description, icon: Icon, action, crumbs, p
           )}
           <div className="min-w-0">
             <h1 className="workspace-title">{title}</h1>
-            {description ? <p className="workspace-description">{description}</p> : null}
+            {status ? (
+              <div className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1.5" data-testid="page-header-status">
+                {status}
+                {description ? <p className="workspace-description mt-0">{description}</p> : null}
+              </div>
+            ) : description ? (
+              <p className="workspace-description">{description}</p>
+            ) : null}
           </div>
         </div>
         {hasActions ? (

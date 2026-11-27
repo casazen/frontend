@@ -527,7 +527,7 @@ test.describe('Aligned cards', () => {
       });
     }
 
-    test('the badges of two suppliers of a row start at the same height whatever the length of their names', async ({ page }) => {
+    test('the categories of two suppliers of a row start at the same height whatever the length of their names', async ({ page }) => {
       await mockMarketplace(page);
       await page.setViewportSize({ width: 1280, height: 900 });
       await page.goto(demoUrl('/app/short-rent/marketplace/categories/cleaning', 'short-stay'));
@@ -543,11 +543,12 @@ test.describe('Aligned cards', () => {
       expect(await linesOf(cards.nth(0).getByTestId('supplier-name'))).toBeGreaterThanOrEqual(3);
       expect(await linesOf(cards.nth(1).getByTestId('supplier-name'))).toBe(1);
 
-      await expectAligned([0, 1].map((index) => cards.nth(index).locator('.flex-wrap')), 'badges');
+      // The categories are one line of words («Pulizie · Manutenzione»), a row of the card like the others (UX round 2026-11).
+      await expectAligned([0, 1].map((index) => cards.nth(index).getByTestId('marketplace-supplier-categories')), 'categories');
       await expectAligned([0, 1].map((index) => cards.nth(index)), 'card', 'bottom');
-      // The badge of the second one keeps its own size (a flex line that grows with its row would stretch it).
-      const [tall, short] = await Promise.all([cards.nth(0).locator('.flex-wrap > *').first().boundingBox(), cards.nth(1).locator('.flex-wrap > *').first().boundingBox()]);
-      expect(Math.abs(short!.height - tall!.height)).toBeLessThanOrEqual(1);
+      // The first supplier has four categories and the second one: both are told, in words.
+      await expect(cards.nth(0).getByTestId('marketplace-supplier-categories')).toContainText('Pulizie');
+      await expect(cards.nth(1).getByTestId('marketplace-supplier-categories')).toHaveText('Pulizie');
     });
   });
 

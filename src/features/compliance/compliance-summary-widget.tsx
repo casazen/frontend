@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle2, ChevronDown, ChevronRight, ListChecks } from 'lucide-react';
 import { PlainSection } from '@/components/shared/calm';
+import { EmptyState } from '@/components/shared/empty-state';
 import { ErrorState } from '@/components/shared/error-state';
 import { StatusBadge } from '@/components/shared/status/status-badge';
 import { Button } from '@/components/ui/button';
@@ -91,6 +92,23 @@ function Disclosure({ id, label, open, onToggle, testId, children }: { id: strin
   );
 }
 
+/**
+ * Why a section matters, one click away (UX round 2026-11): the host reads it once, and then it stops taking the room of the rows
+ * every time the page opens. A native disclosure: Enter and Space open it, a screen reader says whether it is open.
+ */
+function SectionWhy({ testId, children }: { testId: string; children: React.ReactNode }) {
+  const { t } = useTranslation();
+  return (
+    <details className="group text-sm" data-testid={testId}>
+      <summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-1 rounded-sm font-medium text-foreground/70 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:min-h-0 [&::-webkit-details-marker]:hidden">
+        <ChevronRight aria-hidden="true" className="size-4 transition-transform group-open:rotate-90 motion-reduce:transition-none" />
+        {t('compliance.cockpit.why')}
+      </summary>
+      <p className="mt-1 max-w-prose text-foreground/70">{children}</p>
+    </details>
+  );
+}
+
 /** Group open obligations by deadline, activation and upkeep. Each action appears once, in its own row. */
 export function ComplianceSummaryWidget() {
   const { t } = useTranslation();
@@ -126,16 +144,20 @@ export function ComplianceSummaryWidget() {
     <div data-testid="compliance-summary-widget" className="space-y-6 md:space-y-8">
       {model.total > 0 ? <ComplianceSummaryLine lights={model.lights} /> : null}
 
+      {/* Nothing to do is the empty state of the app, not a box of its own (UX round 2026-11). */}
       {model.total === 0 && (
-        <div className="flex items-center gap-3 rounded-xl border bg-card p-5" data-testid="compliance-summary-all-clear">
-          {model.lights.lightsOn ? <CheckCircle2 aria-hidden="true" className="size-6 text-success-foreground" /> : <ListChecks aria-hidden="true" className="size-6" />}
-          <h2 className="text-lg font-semibold">{t(model.lights.lightsOn ? 'compliance.cockpit.allClear.title' : 'complianceNoDeadlines')}</h2>
+        <div data-testid="compliance-summary-all-clear">
+          <EmptyState
+            icon={model.lights.lightsOn ? CheckCircle2 : ListChecks}
+            title={t(model.lights.lightsOn ? 'compliance.cockpit.allClear.title' : 'complianceNoDeadlines')}
+            description={t(model.lights.lightsOn ? 'compliance.cockpit.allClear.body' : 'compliance.cockpit.allClear.noDeadlinesBody')}
+          />
         </div>
       )}
 
       {fine.total > 0 ? (
         <PlainSection title={t('compliance.cockpit.fine.title')} count={fine.total} data-testid="compliance-tier-fine">
-          <p className="text-sm text-foreground/70">{t('compliance.cockpit.fine.intro')}</p>
+          <SectionWhy testId="compliance-tier-fine-why">{t('compliance.cockpit.fine.intro')}</SectionWhy>
           <RowList rows={fine.rows} />
           {fine.hidden > 0 ? (
             <p className="text-sm text-foreground/70" data-testid="compliance-summary-more">
@@ -155,7 +177,7 @@ export function ComplianceSummaryWidget() {
           data-testid="compliance-tier-start"
           {...more(start.rows, showAllStart, () => setShowAllStart((value) => !value))}
         >
-          <p className="text-sm text-foreground/70">{t('compliance.cockpit.start.intro')}</p>
+          <SectionWhy testId="compliance-tier-start-why">{t('compliance.cockpit.start.intro')}</SectionWhy>
           <RowList rows={shown(start.rows, showAllStart)} />
         </PlainSection>
       ) : null}

@@ -56,7 +56,7 @@ describe('daily workspace', () => {
   it('shows the agenda and one pending list, with no analytics or duplicate alerts', async () => {
     renderDashboard();
     expect(await screen.findByTestId('home-today')).toBeInTheDocument();
-    expect(screen.getByTestId('home-todo')).toHaveTextContent('Nessuna priorità operativa in elenco');
+    expect(screen.getByTestId('home-todo')).toHaveTextContent('Tutto in ordine: niente da fare adesso');
     expect(screen.queryByTestId('home-todo-path')).not.toBeInTheDocument();
     expect(screen.queryByTestId('home-compliance-line')).not.toBeInTheDocument();
     expect(screen.queryByTestId('dashboard-period')).not.toBeInTheDocument();
